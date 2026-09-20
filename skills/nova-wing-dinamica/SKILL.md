@@ -7,7 +7,7 @@ description: Alterar combate, ondas, recursos, dificuldade, chefe ou transiçõe
 
 ## Contexto
 
-Leia src/game.js e tests/game.test.mjs. Especifique momento, recurso e transição alterados. Preserve o caminho comum de dano ao chefe para bombas e tiros.
+Leia src/campaign.js, src/game.js e tests/campaign.test.mjs. Preserve a sequência dos dez setores, loja com saldo validado e recuperação de checkpoint inválido. Especifique momento, recurso e transição alterados. Preserve o caminho comum de dano ao chefe para bombas e tiros.
 
 ## Procedimento
 

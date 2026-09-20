@@ -99,6 +99,7 @@ if (workflow) {
     workflow.permissions?.contents === 'read',
     'CI must have read-only contents permission',
   );
+  requireThat(workflow.jobs?.pages?.needs === 'browser', 'Pages requires the browser gate');
   requireThat(!workflow.on?.pull_request_target, 'No privileged PR trigger');
   requireThat(workflow.jobs?.quality && workflow.jobs?.browser, 'Missing quality/browser gate');
   for (const job of Object.values(workflow.jobs))

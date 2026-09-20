@@ -16,7 +16,7 @@ Referência: [branches protegidas](https://docs.github.com/en/repositories/confi
 
 ## Hospedagem estática
 
-O arquivo `index.html` contém código, estilos e retrato. Para GitHub Pages, configure a publicação da raiz de `main` quando o plano e a visibilidade permitirem; `.nojekyll` evita processamento Jekyll. Habilitar Pages torna o jogo acessível conforme as regras do serviço: é uma decisão de publicação distinta do upload do código.
+O arquivo `index.html` contém código, estilos e retrato. O GitHub Pages deve usar **GitHub Actions** como fonte. O job `pages` depende do job `browser`, que depende de `quality`; apenas depois dos testes o HTML e as licenças são enviados à hospedagem. `.nojekyll` evita processamento Jekyll. Habilitar Pages torna o jogo acessível conforme as regras do serviço: é uma decisão de publicação distinta do upload do código.
 
 A versão já hospedada em Sites continua sendo uma entrega separada. Push no GitHub não a atualiza automaticamente. Não copie configuração privada de Sites para este repositório.
 

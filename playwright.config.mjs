@@ -14,7 +14,12 @@ export default defineConfig({
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
     },
   },
-  webServer: { command: 'npm run dev', port: 4173, reuseExistingServer: !process.env.CI },
+  webServer: {
+    command: 'node tools/visual-fixture.mjs && npm run dev',
+    env: { NOVA_VISUAL_TEST: '1' },
+    port: 4173,
+    reuseExistingServer: !process.env.CI,
+  },
   projects: [
     { name: 'desktop', use: { viewport: { width: 1366, height: 768 } } },
     {

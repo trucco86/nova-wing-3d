@@ -1008,3 +1008,192 @@ body.menu #touch {
     transition: none;
   }
 }
+
+/* Campaign HUD and orbital hangar */
+#loadout {
+  position: fixed;
+  left: 32px;
+  top: 150px;
+  z-index: 4;
+  display: grid;
+  gap: 6px;
+  width: 270px;
+  font-size: 10px;
+  color: #9ab8c4;
+  pointer-events: none;
+}
+#loadout strong {
+  font-size: 12px;
+  color: #9affde;
+}
+#loadout small {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+#loadout .bar {
+  height: 3px;
+}
+#chargeBar {
+  width: 0;
+  background: #ba82ff;
+}
+#attackWarning {
+  position: fixed;
+  left: 50%;
+  top: 23%;
+  transform: translateX(-50%);
+  z-index: 6;
+  color: #ffd3a0;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px #ff4030;
+  white-space: nowrap;
+}
+.campaign-route {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #779aa4;
+  margin: 18px 0;
+}
+.campaign-route i {
+  color: #5bf0c3;
+  margin: 0 8px;
+}
+.secondary {
+  display: block;
+  background: #10262d;
+  border: 1px solid #305249;
+  padding: 12px 24px;
+  margin-top: 10px;
+  color: #bcebdc;
+}
+.secondary[hidden] {
+  display: none;
+}
+#shop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: radial-gradient(ellipse at 70% 20%, #14383bdf, #030c16ef 70%);
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  touch-action: pan-y;
+  padding: 24px;
+}
+#shop[hidden] {
+  display: none;
+}
+.hangar-card {
+  width: min(760px, 100%);
+  border: 1px solid #345852;
+  padding: 36px;
+  background: #08151ddd;
+  box-shadow: 0 20px 100px #0009;
+}
+.hangar-card h2 {
+  font-size: clamp(25px, 5vw, 46px);
+  letter-spacing: -1px;
+  margin: 16px 0;
+}
+.hangar-card p {
+  color: #9bb9c2;
+  line-height: 1.6;
+}
+.hangar-card > strong {
+  color: #8affda;
+  font-size: 28px;
+}
+.hangar-card > small {
+  display: block;
+  color: #7d99a4;
+  margin-top: 18px;
+}
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 0;
+}
+.shop-grid button {
+  background: #112b35;
+  border: 1px solid #315460;
+  min-height: 76px;
+  font-size: 12px;
+  padding: 12px;
+}
+.shop-grid button:hover:not(:disabled) {
+  background: #245044;
+  border-color: #71eac3;
+}
+.shop-grid button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+@media (max-height: 560px) {
+  #loadout {
+    top: 105px;
+    left: 20px;
+    width: 210px;
+    font-size: 8px;
+  }
+  #loadout strong {
+    font-size: 9px;
+  }
+  #loadout small {
+    display: none;
+  }
+  #attackWarning {
+    top: 28%;
+    font-size: 11px;
+  }
+  .hangar-card {
+    padding: 20px;
+  }
+  .hangar-card h2 {
+    margin: 8px 0;
+    font-size: 28px;
+  }
+  .hangar-card p {
+    margin: 8px 0;
+    font-size: 12px;
+  }
+  .shop-grid {
+    margin: 12px 0;
+  }
+  .shop-grid button {
+    min-height: 50px;
+  }
+  .campaign-route {
+    margin: 8px 0;
+  }
+  .secondary {
+    padding: 8px 20px;
+  }
+  .menu-inner .pilot-card {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  #loadout {
+    left: 16px;
+    top: 118px;
+    width: 220px;
+  }
+  #loadout small {
+    display: none;
+  }
+  .shop-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  #attackWarning {
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+  .hangar-card {
+    padding: 22px;
+  }
+  #bossHUD {
+    width: 84%;
+  }
+}

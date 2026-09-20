@@ -1,6 +1,6 @@
 # Instruções para agentes
 
-Leia este arquivo, a especificação da tarefa e somente os módulos necessários. O escopo atual é uma missão de rail shooter WebGL, com teclado e toque. Não atribua a este jogo funcionalidades do Nova Wing original que não estejam implementadas.
+Leia este arquivo, a especificação da tarefa e somente os módulos necessários. O escopo atual é uma campanha de dez setores de rail shooter WebGL, com teclado e toque. Não atribua a este jogo funcionalidades do Nova Wing original que não estejam implementadas.
 
 ## Contexto e mudanças
 

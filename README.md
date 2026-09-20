@@ -1,10 +1,29 @@
 # Nova Wing 3D — Five Cats
 
-Uma missão de combate aéreo em WebGL, feita para abrir no navegador. A piloto Bia atravessa uma cidade costeira sob ataque até enfrentar ROK. O cargueiro Marvin compõe o cenário. A direção visual combina água, prédios iluminados, lua fragmentada, propulsores e bloom.
+Uma campanha de combate aéreo em WebGL, feita para abrir no navegador. Pilote a NOVA-7 com Bia, Bob e Christopher, atravesse dez setores e enfrente as máquinas de Marvin. Cidade costeira, cinturão de asteroides, fortalezas orbitais, cristais e abismos têm cenários próprios.
 
-[Jogar a versão publicada](https://aurora-flight-trucco.trucco67.chatgpt.site) · [Projeto de referência](https://github.com/trucco86/nova-wing)
+[Jogar no GitHub Pages](https://trucco86.github.io/nova-wing-3d/) · [Projeto de referência](https://github.com/trucco86/nova-wing)
 
-Esta edição adapta a temática de Nova Wing para o protótipo 3D desenvolvido nesta conversa. Tem **uma fase**, com ondas de inimigos e chefe após aproximadamente 145 segundos. Não implementa as dez fases, loja, upgrades ou trilha musical do projeto de referência. Não é um produto oficial Star Fox e não inclui modelos ou texturas extraídos daquele jogo.
+## Campanha
+
+| Setor | Ambiente              | Chefe colossal   |
+| ----- | --------------------- | ---------------- |
+| 01    | Cidade das Máquinas   | Caça-líder ROK   |
+| 02    | Distrito Portuário    | Nave-Ferrão      |
+| 03    | Cinturão de Destroços | Perfurador       |
+| 04    | Estação Órbita-9      | Fortaleza Órbita |
+| 05    | Tempestade de Dados   | Fênix de Plasma  |
+| 06    | Setor Congelado       | Colosso Glacial  |
+| 07    | Núcleo Púrpura        | Colmeia Viva     |
+| 08    | Grade de Batalha      | Couraçado Ômega  |
+| 09    | Abismo de Órion       | Núcleo Bastião   |
+| 10    | Trono de Marvin       | Imperador Marvin |
+
+Cada setor apresenta ondas, subchefe, rival e chefe. Destrua os dois geradores vermelhos do chefe para expor o núcleo. Barragens frontais, espirais e barreiras são anunciadas na tela. O chefe acelera os ataques quando sua integridade fica baixa.
+
+Entre setores, o hangar permite comprar canhões, blindagem, pods, reparos e bombas. Créditos vêm de inimigos, geradores e anéis. O checkpoint registra o próximo setor, créditos e melhorias neste navegador; continuar reinicia com três vidas e suprimentos básicos. Não há sincronização entre aparelhos.
+
+Esta é uma adaptação 3D da temática e dos principais sistemas de Nova Wing. Não é uma reprodução integral do motor original nem um produto oficial Star Fox.
 
 ## Jogar
 
@@ -18,7 +37,9 @@ No computador, use teclado. No celular, use os controles de toque; paisagem ofer
 | Bomba     | B ou X        |
 | Acelerar  | Shift         |
 
-Os botões na tela permitem iniciar e pausar. A missão começa com 100 de escudo e três bombas. Rolamentos oferecem proteção temporária. Acelerar consome energia, recuperada ao soltar. Acertos, derrota, vitória e reinício fazem parte do ciclo jogável.
+Os botões na tela permitem iniciar e pausar. A campanha começa com três vidas, 100 de escudo e três bombas. Cada nave perdida troca o piloto: Bia → Bob → Christopher. Rolamentos oferecem proteção temporária. Acelerar consome energia, recuperada ao soltar. Anéis azuis elevam a arma até seis níveis; a cada três, chega um pod (máximo três). O terceiro conjunto usa tiros teleguiados; arma máxima com três pods oferece Escudo Ômega contra projéteis. Anéis dourados recuperam escudo. Bases-servidor nos dois primeiros setores fornecem suprimentos quando destruídas.
+
+A música usa as dez composições do Nova Wing original e um tema de chefe, sintetizados por Web Audio. Os botões ♪ e SOM controlam música e efeitos separadamente. O áudio começa somente após clicar em iniciar; a música silencia na pausa.
 
 ## Desenvolvimento
 
@@ -77,7 +98,7 @@ A organização materializa a estrutura modular descrita no README do Nova Wing.
 
 Comece por [AGENTS.md](AGENTS.md). As skills cobrem gráficos, áudio, dinâmica, física e entrega. O [harness](docs/HARNESS.md) conecta contexto, especificação, ferramentas e gates executáveis. Ele não é um agente autônomo residente e não garante ausência de defeitos.
 
-A CI executa os jobs `quality` e `browser`. Torná-los obrigatórios para merge depende da configuração de proteção de branch no GitHub; adicionar o YAML sozinho não ativa essa proteção.
+A CI executa os jobs `quality` e `browser`. O job `pages` publica apenas depois que ambos passam, usando somente HTML e licenças; fixtures de teste não são publicadas. Torná-los obrigatórios para merge depende da configuração de proteção de branch no GitHub; adicionar o YAML sozinho não ativa essa proteção.
 
 ## Documentação
 

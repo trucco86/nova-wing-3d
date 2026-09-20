@@ -7,7 +7,7 @@ description: Alterar efeitos sonoros Web Audio do Nova Wing 3D. Use para sons de
 
 ## Contexto
 
-Leia o trecho de áudio em src/game.js e a inicialização da missão. O jogo atual tem efeitos sintetizados, não trilha musical. Preserve desbloqueio por gesto do usuário.
+Leia o trecho de áudio em src/game.js e a inicialização da missão. `src/audio.js` contém dez temas por setor e tema de chefe. O sequenciador acompanha a simulação; deve silenciar na pausa e descartar vozes ao mudar de faixa. Preserve desbloqueio por gesto do usuário.
 
 ## Procedimento
 
