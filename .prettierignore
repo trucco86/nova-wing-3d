@@ -1,0 +1,5 @@
+index.html
+src/assets/
+artifacts/
+package-lock.json
+node_modules/
