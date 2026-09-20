@@ -1,6 +1,7 @@
 # Créditos e licenças
 
 - Projeto de referência e temática: [Nova Wing, de Cristian Trucco](https://github.com/trucco86/nova-wing), MIT. Esta edição preserva a licença do projeto.
+- Nomes dos setores e composições musicais: adaptados do código MIT do Nova Wing, de Cristian Trucco. O sequenciador foi integrado ao ciclo de simulação desta edição.
 - Implementação desta edição 3D: desenvolvida com assistência do Codex, a partir do protótipo desta conversa.
 - Three.js 0.170.0: MIT, copyright dos autores Three.js; [texto integral](docs/THREE-LICENSE.txt). O bundle inclui a biblioteca.
 - Retrato de Bia: imagem gerada para este protótipo, otimizada para WebP.

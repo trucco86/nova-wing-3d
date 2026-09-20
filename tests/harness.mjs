@@ -40,7 +40,7 @@ function element() {
     },
   };
 }
-export function harness({ spawnEncounters = false, seed = 42 } = {}) {
+export function harness({ spawnEncounters = false, seed = 42, storage } = {}) {
   const elements = new Map(
     [
       ...readFileSync(new URL('../src/shell.html', import.meta.url), 'utf8').matchAll(
@@ -70,12 +70,17 @@ export function harness({ spawnEncounters = false, seed = 42 } = {}) {
       return {
         frequency: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
         connect() {},
+        disconnect() {},
         start() {},
         stop() {},
       };
     }
     createGain() {
-      return { gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} }, connect() {} };
+      return {
+        gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
+        connect() {},
+        disconnect() {},
+      };
     }
   }
   const window = {
@@ -85,6 +90,7 @@ export function harness({ spawnEncounters = false, seed = 42 } = {}) {
     devicePixelRatio: 1,
     matchMedia: () => ({ matches: false }),
     AudioContext,
+    localStorage: storage,
   };
   const renderer = {
     extensions: { has: () => true },

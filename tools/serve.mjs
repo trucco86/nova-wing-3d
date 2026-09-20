@@ -7,13 +7,19 @@ if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('Inv
 // Serve only the public artifact. Never serve .git, credentials or the repository tree.
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
-  if (!['/', '/index.html', '/nova-wing-3d/', '/nova-wing-3d/index.html'].includes(url.pathname)) {
+  const visual = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__visual.html';
+  if (
+    !visual &&
+    !['/', '/index.html', '/nova-wing-3d/', '/nova-wing-3d/index.html'].includes(url.pathname)
+  ) {
     res.writeHead(404);
     res.end('Not found');
     return;
   }
   try {
-    const html = await readFile(new URL('../index.html', import.meta.url));
+    const html = await readFile(
+      new URL(visual ? '../artifacts/visual.html' : '../index.html', import.meta.url),
+    );
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
     res.end(html);
   } catch {

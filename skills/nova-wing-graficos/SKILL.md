@@ -7,7 +7,7 @@ description: Alterar gráficos, shaders, modelos, cenário ou pós-processamento
 
 ## Contexto
 
-Leia src/visuals.js, src/styles.css e docs/ARQUITETURA.md. Preserve geometria compartilhada, instâncias e fallback de WebGL. Não copie modelos proprietários.
+Leia src/bosses.js, src/visuals.js, src/styles.css e docs/ARQUITETURA.md. Preserve geometria compartilhada, instâncias e fallback de WebGL. Não copie modelos proprietários.
 
 ## Procedimento
 

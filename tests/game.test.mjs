@@ -68,7 +68,7 @@ test('spawn protection and barrel roll block damage', (t) => {
   h.game.start();
   h.game.damage(10);
   assert.equal(h.game.snapshot().shield, 100);
-  h.advance(2.1);
+  h.advance(3.1);
   h.game.roll();
   h.game.damage(10);
   assert.equal(h.game.snapshot().shield, 100);
@@ -79,7 +79,7 @@ test('spawn protection and barrel roll block damage', (t) => {
 test('invalid damage cannot heal or poison shield', (t) => {
   const h = setup(t);
   h.game.start();
-  h.advance(2.1);
+  h.advance(3.1);
   for (const n of [-10, NaN, Infinity]) h.game.damage(n);
   assert.equal(h.game.snapshot().shield, 100);
 });
@@ -127,22 +127,27 @@ test('touch input moves the same ship and cancellation releases movement', (t) =
   h.advance(0.2);
   assert.equal(h.game.snapshot().player.x, x);
 });
-test('boss appears at 145 seconds; bomb uses the shared defeat path', (t) => {
+test('boss generators must fall before the bomb can complete a sector', (t) => {
   const h = setup(t);
   h.game.start();
-  h.advance(145.05, 0.1);
+  h.advance(65.05, 0.1);
+  h.game.damageBoss(1000);
+  h.game.damageBoss(1000);
   assert.equal(h.game.snapshot().boss, true);
   h.game.damageBoss(170);
   h.game.bomb();
-  assert.equal(h.game.snapshot().state, 'won');
+  assert.equal(h.game.snapshot().state, 'shop');
   assert.equal(h.game.snapshot().boss, false);
-  assert.equal(h.elements.get('result').hidden, false);
+  assert.equal(h.elements.get('shop').hidden, false);
 });
 test('defeat and restart reset encounter and resource state', (t) => {
   const h = setup(t);
   h.game.start();
-  h.advance(2.1);
-  h.game.damage(200);
+  for (let i = 0; i < 3; i++) {
+    h.advance(3.1);
+    h.game.damage(200);
+    if (i < 2) h.advance(1.6);
+  }
   assert.equal(h.game.snapshot().state, 'lost');
   h.game.start();
   const s = h.game.snapshot();

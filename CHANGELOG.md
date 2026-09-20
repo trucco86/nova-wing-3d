@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.0.0 — Campanha Five Cats
+
+- Dez setores, cenários próprios e chefes colossais com geradores destrutíveis.
+- Subchefes, rivais, bases-servidor e obstáculos por ambiente.
+- Loja, créditos, seis níveis de arma, plasma carregado, pods e três pilotos.
+- Dez músicas e tema de chefe; controles independentes de áudio.
+- Checkpoints locais e publicação Pages condicionada à CI.
+- Testes da campanha completa e capturas de chefes desktop/mobile.
+
 ## 0.3.0 — Fundação para desenvolvimento com agentes
 
 - Fontes modulares e HTML único gerado.

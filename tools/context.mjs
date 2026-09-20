@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs';
 const args = process.argv.slice(2);
 const map = {
   game: 'src/game.js',
+  campaign: 'src/campaign.js',
+  audio: 'src/audio.js',
+  bosses: 'src/bosses.js',
   graphics: 'src/visuals.js',
   interface: 'src/shell.html',
   styles: 'src/styles.css',

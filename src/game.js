@@ -1,14 +1,18 @@
 import * as T from 'three';
 import {
-  fighter,
-  createWorld,
-  postProcessor,
-  bossModel,
-  halo,
-  glowMaterial,
-  metal,
-  box,
-} from './visuals.js';
+  SECTORS,
+  PILOTS,
+  WEAPONS,
+  SHOT_COUNTS,
+  WEAPON_COLORS,
+  SHOP,
+  shopPrice,
+  readSave,
+  writeSave,
+} from './campaign.js';
+import { createMusic } from './audio.js';
+import { createBossModel, disposeBoss } from './bosses.js';
+import { fighter, createWorld, postProcessor, halo, glowMaterial, metal, box } from './visuals.js';
 /** Create one isolated game. Node tests inject the browser boundary, not source code. */
 export function createGame({
   document = globalThis.document,
@@ -114,6 +118,161 @@ export function createGame({
     visualTime = 0,
     shake = 0,
     lastStage = -1;
+  let sectorIndex = 0,
+    lives = 3,
+    credits = 0,
+    weapon = 0,
+    armor = 0,
+    podCount = 0,
+    blueRings = 0,
+    charge = 0,
+    chargeLatch = false,
+    podsDetached = false,
+    podCd = 0,
+    subDone = false,
+    rivalDone = false,
+    baseDone = false,
+    respawnTime = 0,
+    totalTime = 0,
+    music = null,
+    musicOn = true,
+    bossVolley = 0;
+  const podMeshes = [];
+  let storage;
+  try {
+    storage = window.localStorage;
+  } catch {
+    /* Storage is optional. */
+  }
+  const saved = readSave(storage);
+  $('continue').hidden = !saved;
+  const maxHp = () => 100 + armor * 25;
+  const current = () => SECTORS[sectorIndex];
+  function saveCheckpoint(next = sectorIndex) {
+    writeSave(storage, { sector: next, credits, weapon, armor, pods: podCount });
+  }
+  function syncPods() {
+    while (podMeshes.length < podCount) {
+      const o = new T.Mesh(new T.OctahedronGeometry(0.65), cyan);
+      o.add(halo('#69ffda', 2, 0.5));
+      scene.add(o);
+      podMeshes.push(o);
+    }
+    while (podMeshes.length > podCount) scene.remove(podMeshes.pop());
+  }
+  function collect(kind) {
+    if (state !== 'playing') return;
+    if (kind === 'blue') {
+      weapon = Math.min(5, weapon + 1);
+      blueRings++;
+      if (blueRings % 3 === 0) podCount = Math.min(3, podCount + 1);
+      syncPods();
+      message('ARMA ' + WEAPONS[weapon] + ' · PODS ' + podCount);
+    } else {
+      hp = Math.min(maxHp(), hp + 25);
+      message('ESCUDO +25');
+    }
+    credits += 15;
+    sound(1400, 0.25, 'sine');
+  }
+  function showShop() {
+    state = 'shop';
+    keys.clear();
+    touchFire = touchBoost = false;
+    charge = 0;
+    music?.pause();
+    $('bossHUD').hidden = true;
+    $('shop').hidden = false;
+    $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
+    $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
+    renderShop();
+    saveCheckpoint(sectorIndex + 1);
+  }
+  function renderShop() {
+    $('shopCredits').textContent = credits + ' CR';
+    for (const k of Object.keys(SHOP)) {
+      const level = k === 'weapon' ? weapon : k === 'armor' ? armor : k === 'pods' ? podCount : 0;
+      const full =
+        k === 'repair' ? hp >= maxHp() : k === 'bomb' ? bombs >= 5 : level >= SHOP[k].max;
+      const price = shopPrice(k, level);
+      $('buy' + k).textContent = SHOP[k].label + ' · ' + (full ? 'MÁXIMO' : price + ' CR');
+      $('buy' + k).disabled = full || credits < price;
+    }
+  }
+  function buy(k) {
+    if (state !== 'shop' || !SHOP[k]) return false;
+    const n = k === 'weapon' ? weapon : k === 'armor' ? armor : k === 'pods' ? podCount : 0,
+      price = shopPrice(k, n);
+    if (
+      credits < price ||
+      (k === 'repair' ? hp >= maxHp() : k === 'bomb' ? bombs >= 5 : n >= SHOP[k].max)
+    )
+      return false;
+    credits -= price;
+    if (k === 'weapon') weapon++;
+    if (k === 'armor') {
+      armor++;
+      hp = Math.min(maxHp(), hp + 25);
+    }
+    if (k === 'pods') {
+      podCount++;
+      syncPods();
+    }
+    if (k === 'repair') hp = maxHp();
+    if (k === 'bomb') bombs++;
+    renderShop();
+    saveCheckpoint(sectorIndex + 1);
+    return true;
+  }
+  function nextSector() {
+    if (state !== 'shop') return;
+    sectorIndex++;
+    enterSector();
+    saveCheckpoint();
+  }
+  function enterSector() {
+    clearWorld();
+    world.reset();
+    world.setSector(current());
+    lastStage = -1;
+    elapsed = 0;
+    spawnCd = 2;
+    ringCd = 4;
+    obstacleCd = 9;
+    subDone = rivalDone = baseDone = false;
+    bossVolley = 0;
+    bossCd = 2;
+    bossHp = 200 + sectorIndex * 55;
+    shotCd = 0;
+    charge = 0;
+    chargeLatch = false;
+    invuln = 3;
+    energy = 100;
+    hp = Math.min(maxHp(), hp + 30);
+    bombs = Math.min(5, bombs + 1);
+    keys.clear();
+    stick.x = stick.y = 0;
+    touchFire = touchBoost = false;
+    roll = 0;
+    player.position.set(0, 6, 9);
+    player.rotation.set(0, 0, 0);
+    state = 'playing';
+    $('shop').hidden = true;
+    $('result').hidden = true;
+    $('bossHUD').hidden = true;
+    $('menu').hidden = true;
+    document.body.classList.remove('menu');
+    $('pause').textContent = 'Ⅱ';
+    $('sectorLabel').textContent =
+      (sectorIndex < 5 ? 'BLOCO I · ASCENSÃO' : 'BLOCO II · DEVASTADOR') +
+      ' / ' +
+      String(sectorIndex + 1).padStart(2, '0');
+    $('chapter').textContent = String(sectorIndex + 1).padStart(2, '0');
+    $('stage').textContent = current().name;
+    syncPods();
+    music?.start(sectorIndex);
+    message(PILOTS[3 - lives] + ' / ' + current().brief);
+  }
   const keys = new Set(),
     stick = { x: 0, y: 0 };
   let touchFire = false,
@@ -195,11 +354,31 @@ export function createGame({
     $('flash').style.opacity = '.3';
     setTimeout(() => ($('flash').style.opacity = '0'), 150);
     sound(60, 0.25);
-    if (hp <= 0) finish(false);
+    if (hp <= 0) {
+      lives--;
+      if (lives <= 0) finish(false);
+      else {
+        state = 'respawning';
+        respawnTime = 1.5;
+        explode(player.position, 40);
+        player.visible = false;
+        keys.clear();
+        touchFire = touchBoost = false;
+        charge = 0;
+        music?.pause();
+        message('NAVE PERDIDA · ' + PILOTS[3 - lives] + ' ASSUMINDO O COMANDO');
+      }
+    }
   }
   function kill(e) {
     explode(e.o.position);
-    score += e.boss ? 50 : 1;
+    score += e.elite ? 15 : 1;
+    credits += e.elite ? 90 : 12;
+    if (e.kind === 'base') {
+      collect('blue');
+      hp = Math.min(maxHp(), hp + 25);
+      message('BASE DESTRUÍDA · ARMA E ESCUDO RECUPERADOS');
+    }
     dispose(e.o);
     e.dead = true;
   }
@@ -229,33 +408,55 @@ export function createGame({
     }, 180);
     sound(45, 0.8, 'sawtooth', 0.08);
   }
+  function launchShot(x, damage = 2, charged = false) {
+    const o = new T.Mesh(charged ? orbGeo : laserGeo, green);
+    o.add(halo(WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5));
+    o.rotation.x = Math.PI / 2;
+    o.position.copy(player.position);
+    o.position.x += x;
+    o.position.z -= 3;
+    if (charged) o.scale.setScalar(5);
+    scene.add(o);
+    shots.push({ o, life: 2, damage, charged });
+  }
   function fire() {
     if (state !== 'playing' || shotCd > 0) return;
-    for (let s of [-1, 1]) {
-      let o = new T.Mesh(laserGeo, green);
-      let a = halo(0x52ffcc, 1.8, 0.45);
-      o.add(a);
-      o.rotation.x = Math.PI / 2;
-      o.position.copy(player.position);
-      o.position.x += s * 0.8;
-      o.position.z -= 3;
-      scene.add(o);
-      shots.push({ o, life: 2 });
-    }
-    sound(900);
+    green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
+    const count = SHOT_COUNTS[weapon];
+    for (let i = 0; i < count; i++) launchShot((i - (count - 1) / 2) * 0.9, 2 + weapon);
+    sound(900 + weapon * 110);
     shotCd = 0.135;
   }
-  function enemy() {
+  function enemy(kind = 'fighter') {
     let o = fighter(true);
-    o.scale.setScalar(0.65);
+    if (kind === 'base') {
+      o = new T.Group();
+      o.add(box(8, 12, 9, buildingMat, 0, -4, 0));
+      o.add(box(10, 3, 10, metal('#483346'), 0, 3, 0));
+      o.add(new T.Mesh(new T.SphereGeometry(1.8, 12, 8), enemyOrbMat));
+      o.userData.owned = true;
+    }
+    const elite = kind !== 'fighter';
+    o.scale.setScalar(elite ? (kind === 'subboss' ? 2.7 : 1.6) : 0.65);
     o.rotation.y = Math.PI;
     const x = rnd(-24, 24),
       y = rnd(1, 19);
     o.position.set(x, y, -200);
     scene.add(o);
-    enemies.push({ o, x, y, phase: rnd(0, 6), cd: rnd(1, 3), life: 2, dead: false });
+    enemies.push({
+      o,
+      x,
+      y,
+      phase: rnd(0, 6),
+      cd: rnd(1, 3),
+      life: elite ? 35 + sectorIndex * 8 : 2 + Math.floor(sectorIndex / 3),
+      dead: false,
+      elite,
+      kind,
+    });
   }
   function bullet(pos, target) {
+    if (hostile.length >= 180) return;
     let o = new T.Mesh(orbGeo, enemyOrbMat);
     o.add(halo(0xff4265, 2.6, 0.8));
     o.position.copy(pos);
@@ -263,28 +464,62 @@ export function createGame({
     hostile.push({ o, v: target.clone().sub(pos).normalize().multiplyScalar(58), life: 6 });
   }
   function makeBoss() {
-    boss = bossModel();
-    boss.position.set(0, 10, -100);
+    boss = createBossModel(current(), sectorIndex);
+    boss.position.set(0, 10, -230);
+    music?.start(sectorIndex, true);
+    $('bossName').textContent = current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
-    message('BIA / Caça-líder ROK à frente. Concentre o fogo no núcleo!');
+    message('ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS');
   }
-  function damageBoss(amount) {
+  function damageBoss(amount, target = null) {
     if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return;
+    const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    let part = target
+      ? parts.find(
+          (p) =>
+            Math.hypot(
+              target.x - boss.position.x - p.mesh.position.x,
+              target.y - boss.position.y - p.mesh.position.y,
+            ) < 6,
+        )
+      : parts[0];
+    if (parts.length) {
+      if (!part) return;
+      part.hp = Math.max(0, part.hp - amount);
+      if (part.hp === 0) {
+        part.mesh.visible = false;
+        explode(boss.position.clone().add(part.mesh.position), 24);
+        credits += 35;
+        message(
+          'GERADOR DESTRUÍDO · ' +
+            (parts.length === 1 ? 'NÚCLEO EXPOSTO' : 'MIRE NO OUTRO GERADOR'),
+        );
+      }
+      return;
+    }
+    if (target && Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7) return;
     bossHp = Math.max(0, bossHp - amount);
     if (bossHp === 0) {
-      explode(boss.position, 70);
-      dispose(boss);
+      const dead = boss;
+      explode(dead.position, 70);
+      dispose(dead);
+      disposeBoss(dead);
       boss = null;
-      finish(true);
+      score += 50;
+      credits += 250 + sectorIndex * 40;
+      if (sectorIndex === SECTORS.length - 1) {
+        finish(true);
+      } else showShop();
     }
   }
   function finish(win) {
+    music?.pause();
     state = win ? 'won' : 'lost';
     $('result').hidden = false;
-    $('resultTitle').textContent = win ? 'SETOR LIBERTADO' : 'NAVE ABATIDA';
+    $('resultTitle').textContent = win ? 'A TERRA ESTÁ LIVRE' : 'NAVE ABATIDA';
     $('resultText').textContent =
-      `${score} acertos · ${Math.floor(elapsed / 60)}m ${String(Math.floor(elapsed % 60)).padStart(2, '0')}s de voo. ${win ? 'Five Cats: caminho aberto. A Devastador ainda está lá fora.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
+      `${score} acertos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os dez setores estão livres. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
@@ -299,10 +534,22 @@ export function createGame({
     particles = [];
     rings = [];
     obstacles = [];
-    if (boss) dispose(boss);
+    if (boss) {
+      dispose(boss);
+      disposeBoss(boss);
+    }
     boss = null;
   }
-  function start() {
+  function start(resume = false) {
+    const checkpoint = resume === true ? readSave(storage) : null;
+    sectorIndex = checkpoint?.sector ?? 0;
+    credits = checkpoint?.credits ?? 0;
+    weapon = checkpoint?.weapon ?? 0;
+    armor = checkpoint?.armor ?? 0;
+    podCount = checkpoint?.pods ?? 0;
+    lives = 3;
+    blueRings = 0;
+    totalTime = 0;
     clearWorld();
     reticle.visible = false;
     $('comms').classList.remove('active');
@@ -313,7 +560,7 @@ export function createGame({
     touchFire = touchBoost = false;
     elapsed = 0;
     score = 0;
-    hp = 100;
+    hp = maxHp();
     bombs = 3;
     energy = 100;
     shotCd = 0;
@@ -338,23 +585,39 @@ export function createGame({
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       audioCtx.resume().catch(() => {});
+      if (!music) music = createMusic(audioCtx);
+      music.setEnabled(musicOn);
     } catch {
       /* Optional browser capability; gameplay remains available. */
     }
-    message('BIA / Five Cats na escuta. Vamos tirar Marvin desta cidade.');
+    enterSector();
+    bombs = 3;
   }
   function pause() {
     if (state === 'playing') {
       state = 'paused';
+      music?.pause();
       message('PAUSADO · pressione P ou Ⅱ para continuar');
       $('pause').textContent = '▶';
     } else if (state === 'paused') {
       state = 'playing';
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');
+      music?.resume();
     }
   }
-  $('start').onclick = start;
+  $('start').onclick = () => start();
+  $('continue').onclick = () => start(true);
+  $('nextSector').onclick = nextSector;
+  for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
+  $('music').onclick = () => {
+    musicOn = !musicOn;
+    music?.setEnabled(musicOn);
+    $('music').textContent = musicOn ? '♪ ON' : '♪ OFF';
+  };
+  $('podsTouch').onclick = () => {
+    podsDetached = !podsDetached;
+  };
   $('restart').onclick = start;
   $('pause').onclick = pause;
   $('sound').onclick = () => {
@@ -366,6 +629,7 @@ export function createGame({
       e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
+    if (e.code === 'KeyV') podsDetached = !podsDetached;
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
@@ -422,6 +686,7 @@ export function createGame({
   function update(dt) {
     if (state !== 'playing') return;
     elapsed += dt;
+    totalTime += dt;
     shotCd -= dt;
     invuln -= dt;
     rollCd -= dt;
@@ -438,6 +703,19 @@ export function createGame({
     boosting = (keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost) && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
     const speed = boosting ? 90 : 48;
+    const holding = keys.has('Space') || touchFire;
+    if (holding) {
+      charge = Math.min(1.5, charge + dt);
+      chargeLatch = true;
+    } else if (chargeLatch) {
+      if (charge >= 0.8) {
+        launchShot(0, 20 + weapon * 12, true);
+        sound(160, 0.4, 'sawtooth', 0.06);
+      }
+      charge = 0;
+      chargeLatch = false;
+    }
+    $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
     reticle.visible = true;
     reticle.position.set(player.position.x, player.position.y, -60);
     player.position.x = clamp(
@@ -466,26 +744,67 @@ export function createGame({
     }
     if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
     spawnCd -= dt;
-    if (spawnEncounters && elapsed < 145 && spawnCd <= 0) {
-      for (let i = 0; i < (elapsed > 65 ? 3 : 2); i++) enemy();
-      spawnCd = elapsed > 65 ? 2.7 : 3.5;
+    if (spawnEncounters && elapsed < current().duration && spawnCd <= 0) {
+      for (let i = 0; i < 2 + Math.floor(sectorIndex / 4); i++) enemy();
+      spawnCd = 3.4 - sectorIndex * 0.12;
     }
-    if (elapsed >= 145 && !boss) makeBoss();
-    const phase = elapsed < 50 ? 0 : elapsed < 100 ? 1 : elapsed < 145 ? 2 : 3;
-    const names = ['APROXIMAÇÃO', 'CIDADE DAS MÁQUINAS', 'FROTA DE MARVIN', 'CAÇA-LÍDER ROK'];
-    $('stage').textContent = names[phase];
+    if (spawnEncounters && !subDone && elapsed > current().duration * 0.32) {
+      subDone = true;
+      enemy('subboss');
+      message('SUBCHEFE / CRUZADOR DE INTERCEPTAÇÃO');
+    }
+    if (spawnEncounters && !rivalDone && elapsed > current().duration * 0.7) {
+      rivalDone = true;
+      enemy('rival');
+      message('CAÇA RIVAL / NÃO DEIXE QUE ELE ENCERRE A MISSÃO');
+    }
+    if (spawnEncounters && !baseDone && sectorIndex < 2 && elapsed > 18) {
+      baseDone = true;
+      enemy('base');
+      message('BASE-SERVIDOR / ELIMINE A TORRE PARA RECEBER SUPRIMENTOS');
+    }
+    if (elapsed >= current().duration && !boss) makeBoss();
+    const phase = boss
+      ? 3
+      : elapsed < current().duration * 0.32
+        ? 0
+        : elapsed < current().duration * 0.7
+          ? 1
+          : 2;
+    $('stage').textContent = boss ? current().boss : current().name;
     if (phase !== lastStage) {
       lastStage = phase;
-      $('chapter').textContent = String(phase + 1).padStart(2, '0');
-      if (phase === 1) message('BIA / Torres de dados à frente. Mantenha o corredor livre!');
-      if (phase === 2) message('BIA / A frota de Marvin está chegando. Prepare as bombas.');
+    }
+    $('pilotName').textContent = PILOTS[3 - lives] + ' / ' + lives + ' VIDAS';
+    $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
+    podCd -= dt;
+    podMeshes.forEach((p, i) => {
+      const a = visualTime * 1.8 + (i * Math.PI * 2) / Math.max(1, podCount);
+      p.position.set(
+        player.position.x + Math.cos(a) * (podsDetached ? 8 : 4),
+        player.position.y + Math.sin(a) * 2,
+        player.position.z - (podsDetached ? 12 : 0),
+      );
+      p.rotation.y += dt * 2;
+    });
+    if (podCount > 0 && podCd <= 0) {
+      podCd = 0.65;
+      for (const p of podMeshes) {
+        launchShot(p.position.x - player.position.x, 3 + weapon);
+        const shot = shots[shots.length - 1];
+        shot.o.position.copy(p.position);
+        if (podCount === 3) shot.homing = true;
+      }
     }
 
     for (let e of enemies) {
       if (e.dead) continue;
-      e.o.position.z += dt * (speed + 12);
-      e.o.position.x = e.x + Math.sin(elapsed * 1.1 + e.phase) * 5;
-      e.o.position.y = e.y + Math.sin(elapsed + e.phase) * 2;
+      e.o.position.z += dt * (e.elite ? (e.o.position.z < -55 ? speed : 6) : speed + 12);
+      e.o.position.x =
+        e.kind === 'base'
+          ? e.x * 0.7
+          : e.x + Math.sin(elapsed * (e.kind === 'rival' ? 2 : 1.1) + e.phase) * 5;
+      e.o.position.y = e.kind === 'base' ? -1 : e.y + Math.sin(elapsed + e.phase) * 2;
       e.cd -= dt;
       if (e.cd <= 0 && e.o.position.z < -15) {
         bullet(e.o.position, player.position);
@@ -501,21 +820,49 @@ export function createGame({
       }
     }
     if (boss) {
-      boss.position.z = T.MathUtils.lerp(boss.position.z, -65, dt * 0.4);
-      boss.position.x = Math.sin(elapsed * 0.5) * 17;
-      boss.position.y = 10 + Math.sin(elapsed * 0.7) * 7;
+      boss.position.z = T.MathUtils.lerp(boss.position.z, -88, dt * 0.7);
+      boss.position.x = Math.sin(elapsed * 0.3) * 7;
+      boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
+      boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
+      const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
+      $('bossState').textContent = remaining ? 'GERADORES ' + remaining + '/2' : 'NÚCLEO EXPOSTO';
       bossCd -= dt;
-      if (bossCd < 0) {
-        for (let s of [-1, 0, 1])
-          bullet(
-            boss.position.clone().add(new T.Vector3(s * 12, 0, 10)),
-            player.position.clone().add(new T.Vector3(s * 3, 0, 0)),
-          );
-        bossCd = bossHp < 90 ? 0.6 : 1.1;
+      $('attackWarning').textContent =
+        bossCd < 0.65
+          ? '⚠ ' + ['RAJADA FRONTAL', 'ESPIRAL DE PLASMA', 'BARREIRA LATERAL'][sectorIndex % 3]
+          : '';
+      if (bossCd <= 0) {
+        bossVolley++;
+        const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
+        const count = 5 + Math.floor(sectorIndex / 3);
+        for (let i = 0; i < count; i++) {
+          let target = player.position.clone();
+          const offset = i - (count - 1) / 2;
+          if (sectorIndex % 3 === 0) target.x += offset * 7;
+          if (sectorIndex % 3 === 1) {
+            const angle = (i * Math.PI * 2) / count + bossVolley * 0.55;
+            target.x += Math.cos(angle) * 16;
+            target.y += Math.sin(angle) * 12;
+          }
+          if (sectorIndex % 3 === 2) {
+            target.x = offset * 10;
+            target.y = 4 + (bossVolley % 3) * 6;
+          }
+          bullet(origin, target);
+        }
+        bossCd = bossHp < (200 + sectorIndex * 55) * 0.45 ? 1.2 : 2;
       }
-    }
+    } else $('attackWarning').textContent = '';
     for (let b of shots) {
       const prev = b.o.position.z;
+      if (b.homing) {
+        const target = boss ? boss.position : enemies.find((e) => !e.dead)?.o.position;
+        if (target) {
+          b.o.position.x = T.MathUtils.lerp(b.o.position.x, target.x, dt * 3);
+          b.o.position.y = T.MathUtils.lerp(b.o.position.y, target.y, dt * 3);
+        }
+      }
       b.o.position.z -= dt * 190;
       b.life -= dt;
       for (let e of enemies) {
@@ -526,20 +873,22 @@ export function createGame({
           Math.abs(e.o.position.x - b.o.position.x) < 3.4 &&
           Math.abs(e.o.position.y - b.o.position.y) < 2
         ) {
-          e.life--;
+          const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
+          e.life -= (b.damage ?? 2) * (weak ? 2 : 1);
           b.life = 0;
           if (e.life <= 0) kill(e);
           break;
         }
       }
       if (
+        b.life > 0 &&
         boss &&
-        boss.position.z + 10 <= prev + 3 &&
-        boss.position.z + 10 >= b.o.position.z - 4 &&
-        Math.abs(b.o.position.x - boss.position.x) < 5 &&
-        Math.abs(b.o.position.y - boss.position.y) < 5
+        boss.position.z + 18 <= prev + 3 &&
+        boss.position.z + 18 >= b.o.position.z - 4 &&
+        Math.abs(b.o.position.x - boss.position.x) < 24 &&
+        Math.abs(b.o.position.y - boss.position.y) < 12
       ) {
-        damageBoss(2);
+        damageBoss(b.damage ?? 2, b.o.position);
         b.life = 0;
         explode(b.o.position, 2, 0x88ffee);
       }
@@ -548,18 +897,21 @@ export function createGame({
       b.o.position.addScaledVector(b.v, dt);
       b.life -= dt;
       if (b.o.position.distanceTo(player.position) < 2.1) {
-        hit(10);
+        if (!(weapon === 5 && podCount === 3)) hit(10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       }
     }
     ringCd -= dt;
-    if (spawnEncounters && ringCd < 0 && elapsed < 145) {
-      const o = new T.Mesh(new T.TorusGeometry(3, 0.26, 8, 28), gold);
+    if (spawnEncounters && ringCd < 0 && elapsed < current().duration) {
+      const o = new T.Mesh(
+        new T.TorusGeometry(3, 0.26, 8, 28),
+        Math.floor(elapsed / 6) % 3 !== 0 ? cyan : gold,
+      );
       o.position.set(rnd(-20, 20), rnd(2, 18), -170);
       scene.add(o);
-      rings.push({ o, life: 10 });
-      ringCd = 12;
+      rings.push({ o, life: 10, kind: Math.floor(elapsed / 6) % 3 !== 0 ? 'blue' : 'shield' });
+      ringCd = 6;
     }
     for (let r of rings) {
       r.o.position.z += speed * dt;
@@ -568,18 +920,17 @@ export function createGame({
         Math.abs(r.o.position.z - player.position.z) < 3 &&
         Math.hypot(r.o.position.x - player.position.x, r.o.position.y - player.position.y) < 3.8
       ) {
-        hp = Math.min(100, hp + 20);
         score += 3;
         r.life = 0;
-        sound(1400, 0.25, 'sine');
-        message('ESCUDO RESTAURADO +20');
+        collect(r.kind);
       }
       if (r.o.position.z > 40) r.life = 0;
     }
     obstacleCd -= dt;
-    if (spawnEncounters && obstacleCd <= 0 && elapsed < 145) {
+    if (spawnEncounters && obstacleCd <= 0 && elapsed < current().duration) {
       let o = new T.Group();
-      o.add(box(7, 35, 7, buildingMat, 0, 10, 0));
+      if (sectorIndex < 2) o.add(box(7, 35, 7, buildingMat, 0, 10, 0));
+      else o.add(new T.Mesh(new T.IcosahedronGeometry(4, 1), buildingMat));
       o.add(box(7.2, 1, 7.2, cyan, 0, 20, 0));
       o.position.set(rnd(-23, 23), -7, -230);
       scene.add(o);
@@ -603,18 +954,31 @@ export function createGame({
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
-    $('shieldValue').textContent = Math.ceil(hp) + ' / 100';
+    $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
     $('speedValue').textContent = boosting ? '890' : '480';
-    $('shield').style.width = hp + '%';
+    $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('score').textContent = String(score).padStart(3, '0');
     $('bombs').textContent = '◆ '.repeat(bombs) || '—';
     $('energy').style.width = energy + '%';
-    $('progress').style.width = Math.min(100, (elapsed / 180) * 100) + '%';
-    $('bossHealth').style.width = Math.max(0, bossHp / 2) + '%';
+    $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
+    $('bossHealth').style.width = Math.max(0, (bossHp / (200 + sectorIndex * 55)) * 100) + '%';
   }
   let last = now();
   function tick(dt, nowMs) {
     const now = nowMs;
+    if (state === 'playing') music?.update(dt);
+    if (state === 'respawning') {
+      respawnTime -= dt;
+      player.rotation.z += dt * 7;
+      if (respawnTime <= 0) {
+        hp = maxHp();
+        invuln = 3;
+        state = 'playing';
+        player.visible = true;
+        music?.resume();
+        message(PILOTS[3 - lives] + ' / ASSUMINDO A NOVA-7. VAMOS CONTINUAR.');
+      }
+    }
     if (state !== 'paused') {
       visualTime += dt;
       world.update(dt, visualTime, boosting ? 90 : 48, state === 'playing');
@@ -693,8 +1057,20 @@ export function createGame({
     // These are internal domain events, never installed on window or WebMCP.
     damage: hit,
     damageBoss,
+    collect,
+    buy,
+    nextSector,
     snapshot: () => ({
       state,
+      sector: sectorIndex + 1,
+      lives,
+      credits,
+      weapon: weapon + 1,
+      pods: podCount,
+      armor,
+      charge,
+      music: music?.snapshot() ?? null,
+      bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
       seconds: elapsed,
       shield: hp,
       hits: score,
@@ -715,6 +1091,7 @@ export function createGame({
     }),
     destroy() {
       running = false;
+      music?.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
       renderer.dispose?.();

@@ -31,20 +31,28 @@
         <div class="status-caption">NOVA-7 <span>● SISTEMAS ONLINE</span></div>
       </div>
       <div class="mission">
-        <span class="eyebrow">TERRA / SETOR 01</span><strong id="stage">CIDADE DAS MÁQUINAS</strong>
+        <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
+        ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
         <div class="route"><i id="progress"></i></div>
       </div>
       <div class="rightHUD">
         <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
         <div class="utilities">
-          <button id="sound" aria-label="Ativar ou desativar som">SOM ON</button
+          <button id="music" aria-label="Ativar ou desativar música">♪ ON</button
+          ><button id="sound" aria-label="Ativar ou desativar som">SOM ON</button
           ><button id="pause" aria-label="Pausar jogo">Ⅱ</button>
         </div>
       </div>
     </header>
     <div id="bossHUD" hidden>
-      <span>CAÇA-LÍDER ROK <b>NÚCLEO EXPOSTO</b></span>
+      <span><strong id="bossName">CAÇA-LÍDER ROK</strong> <b id="bossState">GERADORES 2/2</b></span>
       <div class="bar"><i id="bossHealth"></i></div>
+    </div>
+    <div id="attackWarning" role="status"></div>
+    <div id="loadout">
+      <span id="pilotName">BIA / 3 VIDAS</span><strong id="weaponLabel">PULSO MK-I</strong>
+      <div class="bar"><i id="chargeBar"></i></div>
+      <small>SEGURE E SOLTE O TIRO PARA LANÇAR PLASMA</small>
     </div>
     <div id="comms">
       <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
@@ -68,8 +76,9 @@
     <div id="touch">
       <div id="stick" aria-label="Direcional virtual"><div id="nub"></div></div>
       <div class="actions">
-        <button id="rollTouch">GIRO</button><button id="bombTouch">BOMBA</button
-        ><button id="fireTouch">TIRO</button><button id="boostTouch">BOOST</button>
+        <button id="podsTouch">PODS</button><button id="rollTouch">GIRO</button
+        ><button id="bombTouch">BOMBA</button><button id="fireTouch">TIRO</button
+        ><button id="boostTouch">BOOST</button>
       </div>
     </div>
     <section id="menu">
@@ -82,11 +91,14 @@
         <h1>
           NOVA<span>WING<span class="title-dot">.</span></span>
         </h1>
-        <div class="subtitle"><i></i>CIDADE DAS MÁQUINAS</div>
+        <div class="subtitle"><i></i>UMA GALÁXIA. DEZ SETORES.</div>
         <p id="brief">
-          A frota de Marvin tomou a cidade.<br />Assuma a NOVA-7 e abra caminho para os Five Cats.
+          Da costa neon ao trono de Marvin.<br />Dez setores. Dez colossos. Um esquadrão para salvar
+          a Terra.
         </p>
         <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+        <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
+        <div class="campaign-route">01 TERRA <i>→</i> 05 PLASMA <i>→</i> 10 MARVIN</div>
         <div class="controls">
           <span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPAÇO</kbd> Disparar</span
           ><span><kbd>Q / E</kbd> Giro</span>
@@ -95,7 +107,7 @@
           <img src="BUILD:PILOT" alt="Capitã Bia" />
           <div>
             <span class="eyebrow">SUA PILOTO</span><strong>CAPITÃ BIA</strong
-            ><small>Five Cats. Uma cidade para salvar.</small>
+            ><small>Bia · Bob · Christopher. Três vidas, uma missão.</small>
           </div>
         </div>
       </div>
@@ -106,13 +118,31 @@
         <span class="ready">● PRONTA PARA DECOLAR</span>
       </div>
       <div class="menu-footer">
-        <span>01 <i>/</i> MISSÃO: LIBERTAR O SETOR</span
+        <span>10 SETORES <i>/</i> CAMPANHA FIVE CATS</span
         ><span>TECLADO OU TOQUE <i>·</i> NO CELULAR, JOGUE NA HORIZONTAL</span>
       </div>
     </section>
     <div id="sectorTag">
       <span id="chapter">01</span><small>SETOR<br />ATIVO</small>
     </div>
+    <section id="shop" hidden aria-label="Hangar de melhorias">
+      <div class="hangar-card">
+        <div class="eyebrow">FIVE CATS / HANGAR ORBITAL</div>
+        <h2 id="shopTitle">SETOR LIBERTADO</h2>
+        <p id="shopNext"></p>
+        <strong id="shopCredits">0 CR</strong>
+        <p>
+          Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
+        </p>
+        <div class="shop-grid">
+          <button id="buyweapon">CANHÃO</button><button id="buyarmor">BLINDAGEM</button
+          ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
+          ><button id="buybomb">BOMBA</button>
+        </div>
+        <button class="primary" id="nextSector">SALTAR PARA O PRÓXIMO SETOR ↗</button
+        ><small>Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small>
+      </div>
+    </section>
     <section id="result" hidden>
       <div class="result-card">
         <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>

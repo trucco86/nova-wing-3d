@@ -29,3 +29,7 @@ Relatórios distinguem teste aprovado, falha e teste não executado. O ambiente 
 ## Harness não equivale a garantia absoluta
 
 Instruções orientam agentes; scripts verificam contratos; regras do GitHub podem bloquear merges. Nenhuma dessas camadas isoladamente impede todos os defeitos. A documentação mantém explícita a diferença entre workflow versionado e proteção de branch ativada.
+
+## Campanha 1.0
+
+A expansão levou os dados de fases para um módulo próprio e acrescentou loja, checkpoint e estados de respawn. Testes da sequência inteira evitam que a vitória de um chefe termine a campanha cedo demais. Um teste de silhuetas detectou dois pares de chefes inicialmente semelhantes; seus modelos foram diferenciados antes da entrega.

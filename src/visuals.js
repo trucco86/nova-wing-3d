@@ -224,11 +224,12 @@ export function createWorld(scene, random = Math.random) {
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
+    uniforms: { tint: { value: new T.Color('#ffffff') } },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c,1.);}`,
+    fragmentShader: `uniform vec3 tint;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c*tint,1.);}`,
   });
   scene.add(new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat));
   const starPos = [],
@@ -410,8 +411,84 @@ export function createWorld(scene, random = Math.random) {
     }),
   );
   scene.add(rain);
+  const sectorScenery = new T.Group();
+  scene.add(sectorScenery);
+  let sceneryTheme = 'city';
+  function clearScenery() {
+    const geometries = new Set(),
+      materials = new Set();
+    sectorScenery.traverse((o) => {
+      if (o.geometry) geometries.add(o.geometry);
+      if (o.material) materials.add(o.material);
+    });
+    geometries.forEach((x) => x.dispose());
+    materials.forEach((x) => x.dispose());
+    sectorScenery.clear();
+  }
   let travel = 0;
   return {
+    setSector(sector) {
+      clearScenery();
+      sceneryTheme = sector.theme;
+      const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
+      ground.visible = land;
+      city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
+      near.forEach((o) => (o.visible = city.visible));
+      rain.visible = land;
+      moon.visible = atmosphere.visible = !['void', 'throne', 'sun'].includes(sceneryTheme);
+      rim.color.set(sector.accent);
+      scene.fog.color.set(sector.sky);
+      scene.fog.density = land ? 0.0014 : 0.00045;
+      skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.6);
+      dust.material.color.set(sector.accent);
+      const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
+        light = glowMaterial(sector.accent, 1.3);
+      if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {
+        const geo =
+          sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
+        for (let i = 0; i < 60; i++) {
+          const o = new T.Mesh(geo, mat);
+          o.position.set(
+            (i % 2 ? 1 : -1) * rnd(38, 180),
+            sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
+            -i * 22,
+          );
+          o.scale.setScalar(rnd(0.5, 2.5));
+          o.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+          sectorScenery.add(o);
+        }
+      }
+      if (['station', 'fleet'].includes(sceneryTheme))
+        for (let i = 0; i < 10; i++) {
+          const g = new T.Group();
+          const ring = new T.Mesh(new T.TorusGeometry(78, 2.2, 6, 8), mat);
+          g.add(ring);
+          g.add(new T.Mesh(new T.TorusGeometry(74, 0.4, 6, 8), light));
+          g.position.set(0, 0, -i * 150 - 100);
+          g.rotation.z = i * 0.13;
+          sectorScenery.add(g);
+        }
+      if (['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme)) {
+        const orb = new T.Mesh(
+          new T.SphereGeometry(135, 32, 20),
+          sceneryTheme === 'sun' ? light : metal('#05020a', 0, 1),
+        );
+        orb.position.set(90, 90, -600);
+        sectorScenery.add(orb);
+        for (let i = 0; i < 4; i++) {
+          const disk = new T.Mesh(new T.TorusGeometry(160 + i * 18, 1 + i * 0.5, 6, 96), light);
+          disk.position.copy(orb.position);
+          disk.rotation.x = 0.9;
+          disk.rotation.y = 0.2;
+          sectorScenery.add(disk);
+        }
+      }
+      // Materials unused by a theme are disposed immediately.
+      if (!sectorScenery.children.length) {
+        mat.dispose();
+        light.dispose();
+      }
+    },
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
       if (playing) {
@@ -429,6 +506,14 @@ export function createWorld(scene, random = Math.random) {
         }
         dustGeo.attributes.position.needsUpdate = true;
       }
+      if (playing)
+        for (const o of sectorScenery.children) {
+          if (['station', 'fleet', 'asteroids', 'ice'].includes(sceneryTheme)) {
+            o.position.z += speed * dt;
+            if (o.position.z > 100) o.position.z -= 1500;
+          }
+          if (sceneryTheme !== 'ice') o.rotation.z += dt * 0.025;
+        }
       rain.position.y = -((time * 12) % 90);
       carrier.position.y = 62 + Math.sin(time * 0.25) * 3;
     },
