@@ -99,7 +99,9 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
   await page.mouse.down();
   await expect(fire).toHaveClass(/pressed/);
   await expect
-    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)))
+    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
+      timeout: 15000,
+    })
     .toBeGreaterThan(65);
   const cancelled = await fire.evaluate(
     (el) => !el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),

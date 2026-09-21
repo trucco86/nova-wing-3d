@@ -47,3 +47,5 @@ Se não houver WebGL disponível, registre o bloqueio. Não substitua o navegado
 ## Regressões da instalação industrial
 
 `tests/flight-environments.test.mjs` verifica a câmera em 30/60 Hz, congelamento/reset, colisões varridas em sólidos e passagens, tanques atingíveis, disparos terrestres, túnel único com limpeza e entradas simultâneas/canceladas. O navegador mantém renderização WebGL real e captura também túnel, tanques, robôs e a disposição de botões. O teste de pressão prolongada verifica carga de plasma, menu contextual cancelado, ausência de scroll/seleção e liberação. Não representa todos os gestos nativos de Safari/iOS; completar uma verificação em aparelho real permanece recomendado.
+
+O prazo de observação da carga no teste de pressão longa é de 15 segundos: SwiftShader pode renderizar abaixo da taxa de simulação (o delta de frame é limitado). O teste mantém o limiar de carga acima de 65%; ampliar o prazo não altera a cadência nem a mecânica do jogo.
