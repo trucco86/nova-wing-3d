@@ -10,6 +10,13 @@ import {
   readSave,
   writeSave,
 } from './campaign.js';
+import { createFlightCamera, crossesSolid } from './flight.js';
+import {
+  createGroundEnemy,
+  animateGroundEnemy,
+  createObstacle,
+  isGroundSector,
+} from './encounters.js';
 import { createMusic } from './audio.js';
 import { createBossModel, disposeBoss } from './bosses.js';
 import { fighter, createWorld, postProcessor, halo, glowMaterial, metal, box } from './visuals.js';
@@ -59,6 +66,7 @@ export function createGame({
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
+  const flightCamera = createFlightCamera(camera);
   const world = createWorld(scene, random),
     post = postProcessor(renderer, scene, camera);
   post.resize(innerWidth, innerHeight);
@@ -132,6 +140,9 @@ export function createGame({
     subDone = false,
     rivalDone = false,
     baseDone = false,
+    groundCd = 5,
+    groundWave = 0,
+    tunnelDone = false,
     respawnTime = 0,
     totalTime = 0,
     music = null,
@@ -177,6 +188,7 @@ export function createGame({
   }
   function showShop() {
     state = 'shop';
+    releaseControls();
     keys.clear();
     touchFire = touchBoost = false;
     charge = 0;
@@ -240,6 +252,9 @@ export function createGame({
     ringCd = 4;
     obstacleCd = 9;
     subDone = rivalDone = baseDone = false;
+    groundCd = 5;
+    groundWave = 0;
+    tunnelDone = false;
     bossVolley = 0;
     bossCd = 2;
     bossHp = 200 + sectorIndex * 55;
@@ -250,12 +265,12 @@ export function createGame({
     energy = 100;
     hp = Math.min(maxHp(), hp + 30);
     bombs = Math.min(5, bombs + 1);
-    keys.clear();
-    stick.x = stick.y = 0;
+    releaseControls();
     touchFire = touchBoost = false;
     roll = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
+    flightCamera.reset(player.position);
     state = 'playing';
     $('shop').hidden = true;
     $('result').hidden = true;
@@ -298,7 +313,7 @@ export function createGame({
   function message(t) {
     $('message').textContent = t;
     $('comms').classList.add('active');
-    msgTime = 5;
+    msgTime = 3;
   }
   function dispose(o) {
     scene.remove(o);
@@ -359,6 +374,7 @@ export function createGame({
       if (lives <= 0) finish(false);
       else {
         state = 'respawning';
+        releaseControls();
         respawnTime = 1.5;
         explode(player.position, 40);
         player.visible = false;
@@ -428,7 +444,8 @@ export function createGame({
     shotCd = 0.135;
   }
   function enemy(kind = 'fighter') {
-    let o = fighter(true);
+    const ground = kind === 'tank' || kind === 'walker';
+    let o = ground ? createGroundEnemy(kind) : fighter(true);
     if (kind === 'base') {
       o = new T.Group();
       o.add(box(8, 12, 9, buildingMat, 0, -4, 0));
@@ -436,11 +453,11 @@ export function createGame({
       o.add(new T.Mesh(new T.SphereGeometry(1.8, 12, 8), enemyOrbMat));
       o.userData.owned = true;
     }
-    const elite = kind !== 'fighter';
-    o.scale.setScalar(elite ? (kind === 'subboss' ? 2.7 : 1.6) : 0.65);
-    o.rotation.y = Math.PI;
-    const x = rnd(-24, 24),
-      y = rnd(1, 19);
+    const elite = !ground && kind !== 'fighter';
+    o.scale.setScalar(ground ? 1 : elite ? (kind === 'subboss' ? 2.7 : 1.6) : 0.65);
+    o.rotation.y = ground ? 0 : Math.PI;
+    const x = ground ? (groundWave % 2 ? -17 : 17) : rnd(-24, 24),
+      y = ground ? -7 : rnd(1, 19);
     o.position.set(x, y, -200);
     scene.add(o);
     enemies.push({
@@ -449,7 +466,18 @@ export function createGame({
       y,
       phase: rnd(0, 6),
       cd: rnd(1, 3),
-      life: elite ? 35 + sectorIndex * 8 : 2 + Math.floor(sectorIndex / 3),
+      life: ground
+        ? (kind === 'walker' ? 28 : 14) + sectorIndex * 3
+        : elite
+          ? 35 + sectorIndex * 8
+          : 2 + Math.floor(sectorIndex / 3),
+      ground,
+      hitY: kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
+      half: new T.Vector3(
+        ground ? (kind === 'walker' ? 10 : 6) : 3.4,
+        ground ? (kind === 'walker' ? 10 : 3) : 2,
+        ground ? 8 : 3,
+      ),
       dead: false,
       elite,
       kind,
@@ -514,6 +542,7 @@ export function createGame({
     }
   }
   function finish(win) {
+    releaseControls();
     music?.pause();
     state = win ? 'won' : 'lost';
     $('result').hidden = false;
@@ -572,10 +601,10 @@ export function createGame({
     rollCd = 0;
     bossHp = 200;
     bossCd = 2;
-    keys.clear();
-    stick.x = stick.y = 0;
+    releaseControls();
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
+    flightCamera.reset(player.position);
     state = 'playing';
     $('menu').hidden = true;
     $('result').hidden = true;
@@ -595,6 +624,7 @@ export function createGame({
   }
   function pause() {
     if (state === 'playing') {
+      releaseControls();
       state = 'paused';
       music?.pause();
       message('PAUSADO · pressione P ou Ⅱ para continuar');
@@ -615,8 +645,9 @@ export function createGame({
     music?.setEnabled(musicOn);
     $('music').textContent = musicOn ? '♪ ON' : '♪ OFF';
   };
-  $('podsTouch').onclick = () => {
-    podsDetached = !podsDetached;
+  $('podsTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    if (state === 'playing') podsDetached = !podsDetached;
   };
   $('restart').onclick = start;
   $('pause').onclick = pause;
@@ -636,17 +667,41 @@ export function createGame({
     if (e.code === 'Enter' && state === 'menu') start();
   });
   addEventListener('keyup', (e) => keys.delete(e.code));
-  addEventListener('blur', () => {
+  let stickId = null;
+  const heldPointers = new Map();
+  function releaseControls() {
     keys.clear();
     touchFire = touchBoost = false;
+    charge = 0;
+    chargeLatch = false;
     stick.x = stick.y = 0;
+    stickId = null;
+    heldPointers.clear();
+    $('nub').style.transform = '';
+    for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
+  }
+  addEventListener('blur', () => {
+    releaseControls();
     if (state === 'playing') pause();
   });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && state === 'playing') pause();
-  });
-  let stickId = null;
+  const visibility = () => {
+    if (document.hidden) {
+      releaseControls();
+      if (state === 'playing') pause();
+    }
+  };
+  document.addEventListener('visibilitychange', visibility);
+  cleanups.push(() => document.removeEventListener('visibilitychange', visibility));
+  // Scope gesture suppression to the play surface; menus retain normal scrolling.
+  for (const id of ['touch', 'game']) {
+    for (const type of ['contextmenu', 'selectstart', 'dragstart', 'gesturestart']) {
+      const prevent = (e) => e.preventDefault();
+      $(id).addEventListener(type, prevent);
+      cleanups.push(() => $(id).removeEventListener(type, prevent));
+    }
+  }
   function stickMove(e) {
+    e.preventDefault?.();
     const r = $('stick').getBoundingClientRect(),
       dx = e.clientX - r.left - r.width / 2,
       dy = e.clientY - r.top - r.height / 2,
@@ -656,6 +711,8 @@ export function createGame({
     $('nub').style.transform = `translate(${stick.x * 35}px,${-stick.y * 35}px)`;
   }
   $('stick').onpointerdown = (e) => {
+    e.preventDefault?.();
+    if (state !== 'playing' || stickId !== null) return;
     stickId = e.pointerId;
     $('stick').setPointerCapture(e.pointerId);
     stickMove(e);
@@ -663,26 +720,42 @@ export function createGame({
   $('stick').onpointermove = (e) => {
     if (e.pointerId === stickId) stickMove(e);
   };
-  for (let ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
-    $('stick').addEventListener(ev, () => {
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
+    $('stick').addEventListener(ev, (e) => {
+      if (e.pointerId !== undefined && e.pointerId !== stickId) return;
       stickId = null;
       stick.x = stick.y = 0;
       $('nub').style.transform = '';
     });
-  for (let [id, set] of [
+  for (const [id, set] of [
     ['fireTouch', (v) => (touchFire = v)],
     ['boostTouch', (v) => (touchBoost = v)],
   ]) {
-    let b = $(id);
+    const b = $(id);
     b.onpointerdown = (e) => {
+      e.preventDefault?.();
+      if (state !== 'playing' || heldPointers.has(id)) return;
+      heldPointers.set(id, e.pointerId);
       b.setPointerCapture(e.pointerId);
       set(true);
+      b.classList.add('pressed');
     };
-    for (let ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
-      b.addEventListener(ev, () => set(false));
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture'])
+      b.addEventListener(ev, (e) => {
+        if (e.pointerId !== undefined && heldPointers.get(id) !== e.pointerId) return;
+        heldPointers.delete(id);
+        set(false);
+        b.classList.remove('pressed');
+      });
   }
-  $('rollTouch').onpointerdown = doRoll;
-  $('bombTouch').onpointerdown = bomb;
+  $('rollTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    doRoll();
+  };
+  $('bombTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    bomb();
+  };
   function update(dt) {
     if (state !== 'playing') return;
     elapsed += dt;
@@ -717,7 +790,7 @@ export function createGame({
     }
     $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
     reticle.visible = true;
-    reticle.position.set(player.position.x, player.position.y, -60);
+    const previousPlayer = player.position.clone();
     player.position.x = clamp(
       player.position.x + dx * dt * 24,
       -Math.min(25, camera.aspect * 20),
@@ -732,11 +805,8 @@ export function createGame({
       player.rotation.z = Math.PI * 2 * (1 - roll / 0.65);
     }
     player.visible = invuln <= 0 || Math.floor(invuln * 12) % 2 === 0;
-    camera.position.x = T.MathUtils.lerp(camera.position.x, player.position.x * 0.72, dt * 3);
-    camera.position.y = T.MathUtils.lerp(camera.position.y, 6 + player.position.y * 0.64, dt * 3);
-    camera.fov = T.MathUtils.lerp(camera.fov, boosting ? 70 : 60, dt * 4);
-    camera.updateProjectionMatrix();
-    camera.lookAt(camera.position.x * 0.9, camera.position.y - 1.5, -70);
+    flightCamera.update(dt, player.position, clamp(dx, -1, 1), boosting);
+    reticle.position.set(player.position.x, player.position.y, -60);
     if (shake > 0) {
       shake = Math.max(0, shake - dt);
       camera.position.x += Math.sin(visualTime * 70) * shake * 0.3;
@@ -762,6 +832,25 @@ export function createGame({
       baseDone = true;
       enemy('base');
       message('BASE-SERVIDOR / ELIMINE A TORRE PARA RECEBER SUPRIMENTOS');
+    }
+    groundCd -= dt;
+    if (
+      spawnEncounters &&
+      isGroundSector(current()) &&
+      elapsed < current().duration &&
+      groundCd <= 0
+    ) {
+      groundWave++;
+      enemy(groundWave % 2 ? 'tank' : 'walker');
+      groundCd = 6;
+    }
+    if (spawnEncounters && isGroundSector(current()) && !tunnelDone && elapsed >= 24) {
+      tunnelDone = true;
+      const o = createObstacle('tunnel');
+      o.position.z = -230;
+      scene.add(o);
+      obstacles.push({ o, life: 1 });
+      message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     if (elapsed >= current().duration && !boss) makeBoss();
     const phase = boss
@@ -799,18 +888,35 @@ export function createGame({
 
     for (let e of enemies) {
       if (e.dead) continue;
-      e.o.position.z += dt * (e.elite ? (e.o.position.z < -55 ? speed : 6) : speed + 12);
-      e.o.position.x =
-        e.kind === 'base'
+      e.o.position.z +=
+        dt * (e.ground ? speed : e.elite ? (e.o.position.z < -55 ? speed : 6) : speed + 12);
+      e.o.position.x = e.ground
+        ? e.x
+        : e.kind === 'base'
           ? e.x * 0.7
           : e.x + Math.sin(elapsed * (e.kind === 'rival' ? 2 : 1.1) + e.phase) * 5;
-      e.o.position.y = e.kind === 'base' ? -1 : e.y + Math.sin(elapsed + e.phase) * 2;
+      e.o.position.y = e.ground
+        ? -7
+        : e.kind === 'base'
+          ? -1
+          : e.y + Math.sin(elapsed + e.phase) * 2;
+      if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
       e.cd -= dt;
       if (e.cd <= 0 && e.o.position.z < -15) {
-        bullet(e.o.position, player.position);
+        bullet(
+          e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+          player.position,
+        );
         e.cd = 2.3;
       }
-      if (e.o.position.distanceTo(player.position) < 3.8) {
+      if (
+        crossesSolid(
+          previousPlayer,
+          player.position,
+          e.o.position.clone().add(new T.Vector3(0, e.hitY, 0)),
+          e.half,
+        )
+      ) {
         hit(22);
         kill(e);
       }
@@ -824,6 +930,10 @@ export function createGame({
       boss.position.x = Math.sin(elapsed * 0.3) * 7;
       boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
       boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      boss.userData.organic?.forEach((o, i) => {
+        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1;
+      });
+      boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       $('bossState').textContent = remaining ? 'GERADORES ' + remaining + '/2' : 'NÚCLEO EXPOSTO';
@@ -857,7 +967,10 @@ export function createGame({
     for (let b of shots) {
       const prev = b.o.position.z;
       if (b.homing) {
-        const target = boss ? boss.position : enemies.find((e) => !e.dead)?.o.position;
+        const enemy = boss ? null : enemies.find((e) => !e.dead);
+        const target = boss
+          ? boss.position
+          : enemy?.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0));
         if (target) {
           b.o.position.x = T.MathUtils.lerp(b.o.position.x, target.x, dt * 3);
           b.o.position.y = T.MathUtils.lerp(b.o.position.y, target.y, dt * 3);
@@ -870,8 +983,8 @@ export function createGame({
           !e.dead &&
           e.o.position.z <= prev + 3 &&
           e.o.position.z >= b.o.position.z - 3 &&
-          Math.abs(e.o.position.x - b.o.position.x) < 3.4 &&
-          Math.abs(e.o.position.y - b.o.position.y) < 2
+          Math.abs(e.o.position.x - b.o.position.x) < e.half.x &&
+          Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
           e.life -= (b.damage ?? 2) * (weak ? 2 : 1);
@@ -927,25 +1040,33 @@ export function createGame({
       if (r.o.position.z > 40) r.life = 0;
     }
     obstacleCd -= dt;
-    if (spawnEncounters && obstacleCd <= 0 && elapsed < current().duration) {
-      let o = new T.Group();
-      if (sectorIndex < 2) o.add(box(7, 35, 7, buildingMat, 0, 10, 0));
-      else o.add(new T.Mesh(new T.IcosahedronGeometry(4, 1), buildingMat));
-      o.add(box(7.2, 1, 7.2, cyan, 0, 20, 0));
-      o.position.set(rnd(-23, 23), -7, -230);
+    if (
+      spawnEncounters &&
+      obstacleCd <= 0 &&
+      elapsed < current().duration &&
+      !obstacles.some((o) => o.o.userData.kind === 'tunnel')
+    ) {
+      const o = createObstacle(Math.floor(elapsed / 8) % 2 ? 'gantry' : 'reactor');
+      o.position.set(o.userData.kind === 'gantry' ? 0 : rnd(-20, 20), 0, -230);
       scene.add(o);
-      obstacles.push({ o, life: 10 });
+      obstacles.push({ o, life: 1 });
       obstacleCd = 8;
     }
-    for (let o of obstacles) {
-      o.o.position.z += speed * dt;
+    for (const obstacle of obstacles) {
+      const travel = speed * dt;
+      obstacle.o.position.z += travel;
+      const from = previousPlayer
+        .clone()
+        .sub(obstacle.o.position)
+        .add(new T.Vector3(0, 0, travel));
+      const to = player.position.clone().sub(obstacle.o.position);
       if (
-        Math.abs(o.o.position.z - player.position.z) < 5 &&
-        Math.abs(o.o.position.x - player.position.x) < 5
-      ) {
+        obstacle.o.userData.solids.some((solid) =>
+          crossesSolid(from, to, solid.center, solid.half, 1.3),
+        )
+      )
         hit(30);
-      }
-      if (o.o.position.z > 50) o.life = 0;
+      if (obstacle.o.position.z - obstacle.o.userData.length > 50) obstacle.life = 0;
     }
     for (let arr of [shots, hostile, rings, obstacles])
       for (let i = arr.length - 1; i >= 0; i--)
@@ -1080,6 +1201,19 @@ export function createGame({
       bossHp,
       rolling: roll > 0,
       player: { x: player.position.x, y: player.position.y },
+      camera: { x: camera.position.x, y: camera.position.y, bank: camera.rotation.z },
+      encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
+      targets: enemies
+        .filter((e) => !e.dead)
+        .map((e) => ({
+          kind: e.kind,
+          x: e.o.position.x,
+          y: e.o.position.y + e.hitY,
+          z: e.o.position.z,
+          life: e.life,
+        })),
+      tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
+      controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {
         enemies: enemies.length,
         shots: shots.length,

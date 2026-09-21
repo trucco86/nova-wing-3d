@@ -281,10 +281,10 @@ export function createWorld(scene, random = Math.random) {
   atmosphere.position.copy(moon.position);
   scene.add(atmosphere);
   const terrainMat = new T.ShaderMaterial({
-    uniforms: { time: { value: 0 }, travel: { value: 0 } },
+    uniforms: { time: { value: 0 }, travel: { value: 0 }, water: { value: 0 } },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float water=1.-smoothstep(34.,39.,abs(p.x));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-water);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,water);float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
   });
   const ground = new T.Mesh(new T.PlaneGeometry(4000, 4000), terrainMat);
   ground.rotation.x = -Math.PI / 2;
@@ -430,6 +430,7 @@ export function createWorld(scene, random = Math.random) {
     setSector(sector) {
       clearScenery();
       sceneryTheme = sector.theme;
+      terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
       ground.visible = land;
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';

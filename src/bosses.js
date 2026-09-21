@@ -27,6 +27,11 @@ export function createBossModel(sector, index = 0) {
         for (let i = 0; i < 4; i++) add(box(4, 5, 20, dark), s * (15 + i * 8), 5, -5 + i * 2);
       }
       add(box(16, 18, 34, armor), 0, 10, -10);
+      if (heavy)
+        for (const side of [-1, 1]) {
+          add(box(11, 24, 48, armor), side * 45, 17, 3);
+          add(box(7, 7, 2, hot), side * 45, 17, 28);
+        }
       break;
     }
     case 'stingray':
@@ -129,6 +134,69 @@ export function createBossModel(sector, index = 0) {
     add(haloRing, 0, 0, -18);
     rotors.push(haloRing);
   }
+  // Living tissue grafted onto the existing ten mechanical silhouettes.
+  const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
+    bone = metal('#cfb59b', 0.18, 0.62),
+    vein = glowMaterial('#d95b91', 1.1);
+  const organic = [];
+  const tissue = add(sphere(13, flesh, 2), 0, 3, 10);
+  tissue.scale.set(1.1, 1.3, 0.75);
+  // Face above core: a living eye surrounded by a split armored brow.
+  const eye = add(sphere(4.1, bone, 2), 0, 14, 22);
+  eye.scale.set(1.3, 0.7, 0.65);
+  const pupil = add(sphere(2, hot, 2), 0, 14, 25);
+  pupil.scale.set(0.5, 1, 0.4);
+  for (const side of [-1, 1]) {
+    const brow = add(box(11, 2.8, 4, armor), side * 6, 18, 22);
+    brow.rotation.z = side * 0.18;
+    for (let i = 0; i < 4; i++) {
+      const rib = new T.Mesh(new T.TorusGeometry(8 + i * 0.8, 0.65, 6, 18, Math.PI * 0.65), bone);
+      rib.rotation.z = side < 0 ? Math.PI * 0.65 : -Math.PI * 0.3;
+      add(rib, side * 8, -i * 3, 14 - i);
+    }
+    for (let i = 0; i < 3; i++) {
+      const limb = new T.Group();
+      limb.position.set(side * (23 + i * 7), -4 + i * 5, 0);
+      const points = [
+        new T.Vector3(),
+        new T.Vector3(side * 8, -5, 7),
+        new T.Vector3(side * 12, -18 - i * 3, 15),
+        new T.Vector3(side * 4, -24, 23),
+      ];
+      const curve = new T.CatmullRomCurve3(points);
+      limb.add(new T.Mesh(new T.TubeGeometry(curve, 14, 1.7 - i * 0.2, 7, false), flesh));
+      for (let j = 1; j < 4; j++) {
+        const clamp = sphere(2.1 - i * 0.2, armor);
+        clamp.position.copy(curve.getPoint(j / 4));
+        clamp.scale.y = 0.55;
+        limb.add(clamp);
+      }
+      const claw = new T.Mesh(new T.ConeGeometry(1.8, 8, 6), bone);
+      claw.position.copy(points[3]);
+      claw.rotation.x = -0.7;
+      limb.add(claw);
+      g.add(limb);
+      organic.push(limb);
+    }
+    const conduit = new T.CatmullRomCurve3([
+      new T.Vector3(side * 17, 4, 18),
+      new T.Vector3(side * 10, 9, 23),
+      new T.Vector3(side * 7, 4, 21),
+    ]);
+    g.add(new T.Mesh(new T.TubeGeometry(conduit, 12, 0.65, 6, false), vein));
+  }
+  const jaw = new T.Group();
+  jaw.position.set(0, -10, 16);
+  const mouth = new T.Mesh(new T.TorusGeometry(8, 1.6, 8, 24, Math.PI), flesh);
+  mouth.rotation.z = Math.PI;
+  jaw.add(mouth);
+  for (let i = 0; i < 7; i++) {
+    const x = (i - 3) * 2,
+      tooth = new T.Mesh(new T.ConeGeometry(0.7, 4, 5), bone);
+    tooth.position.set(x, -4 + Math.abs(x) * 0.35, 1.5);
+    jaw.add(tooth);
+  }
+  g.add(jaw);
   const core = add(sphere(5, hot, 2), 0, 0, 18);
   const coreRing = add(ring(7), 0, 0, 18);
   rotors.push(coreRing);
@@ -139,7 +207,16 @@ export function createBossModel(sector, index = 0) {
     add(ring(5), s * 17, 4, 18);
     parts.push({ mesh: p, hp: 32 + index * 7, max: 32 + index * 7 });
   }
-  g.userData = { parts, core, rotors, coreZ: 18, owned: true, materials: [armor, dark, edge, hot] };
+  g.userData = {
+    parts,
+    core,
+    rotors,
+    organic,
+    jaw,
+    coreZ: 18,
+    owned: true,
+    materials: [armor, dark, edge, hot, flesh, bone, vein],
+  };
   return g;
 }
 export function disposeBoss(g) {

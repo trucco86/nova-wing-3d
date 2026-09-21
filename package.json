@@ -1,6 +1,6 @@
 {
   "name": "nova-wing-3d",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Rail shooter WebGL Five Cats com harness de desenvolvimento assistido por agentes",
   "type": "module",
