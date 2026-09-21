@@ -967,7 +967,10 @@ export function createGame({
     for (let b of shots) {
       const prev = b.o.position.z;
       if (b.homing) {
-        const target = boss ? boss.position : enemies.find((e) => !e.dead)?.o.position;
+        const enemy = boss ? null : enemies.find((e) => !e.dead);
+        const target = boss
+          ? boss.position
+          : enemy?.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0));
         if (target) {
           b.o.position.x = T.MathUtils.lerp(b.o.position.x, target.x, dt * 3);
           b.o.position.y = T.MathUtils.lerp(b.o.position.y, target.y, dt * 3);

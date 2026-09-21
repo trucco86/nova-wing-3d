@@ -181,3 +181,21 @@ test('multiple fingers, long holds, cancellation and pause never latch touch act
     assert.ok(cancelled);
   }
 });
+
+test('three homing pods damage elevated tank and walker hulls from normal flight', (t) => {
+  for (const [kind, time] of [
+    ['tank', 4.9],
+    ['walker', 10.9],
+  ]) {
+    const h = setup(t, { spawnEncounters: true });
+    h.advance(time);
+    h.game.bomb();
+    for (let i = 0; i < 9; i++) h.game.collect('blue');
+    h.advance(0.3);
+    const before = h.game.snapshot().targets.find((e) => e.kind === kind);
+    assert.ok(before, kind + ' spawned');
+    h.advance(1.5);
+    const after = h.game.snapshot().targets.find((e) => e.kind === kind);
+    assert.ok(!after || after.life < before.life, kind + ' receives homing pod damage');
+  }
+});
