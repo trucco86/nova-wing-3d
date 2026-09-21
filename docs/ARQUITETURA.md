@@ -45,3 +45,13 @@ Os estados incluem `respawning` e `shop`: respawn preserva posição e concede i
 ## Extensões futuras
 
 Novas fases devem extrair dados de encontros para um módulo próprio antes de multiplicar condicionais. Persistência e música exigem especificações separadas. Mudanças de performance devem trazer medições reproduzíveis com dispositivo, resolução e cenário, sem promessas de FPS baseadas apenas em inspeção.
+
+## Voo e instalações terrestres
+
+`src/flight.js` mantém o rig de perseguição (posição, alvo e inclinação) com suavização exponencial em segundos e colisão varrida esfera/AABB. A câmera desloca mais que o alvo para produzir paralaxe entre estruturas próximas e horizonte; shake não contamina o estado do rig. Pausa congela a câmera, reinício a restaura.
+
+`src/encounters.js` fornece tanques, sentinelas articulados, pórticos, reatores e túnel. Templates compartilham geometrias; cada unidade tem transformações próprias. Caixas de colisão são criadas junto às peças sólidas, mantendo aberturas transitáveis e detecção durante impulso. Apenas setores city/ocean/ice têm defesa terrestre e túnel. A instalação começa aos 24 segundos, atravessa a rota e é removida pela posição da saída; não depende da velocidade do jogador para definir um prazo artificial.
+
+Pressão longa é tratada por CSS (`touch-action`, seleção, callout) e eventos de contexto/seleção/arraste restritos à superfície de jogo. Ponteiros possuem dono por controle, permitindo mover/atirar/impulsionar simultaneamente. Cancelamento, pausa, perda de foco, respawn e mudança de setor liberam os controles.
+
+Chefes continuam usando os mesmos contratos de dano e progressão, com mandíbula, olho, costelas e tentáculos integrados às dez estruturas mecânicas. Alterações visuais não alteram geradores nem a ordem de exposição do núcleo.

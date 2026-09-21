@@ -279,7 +279,10 @@ button:hover {
   display: flex;
   gap: 13px;
   padding: 10px;
-  background: linear-gradient(90deg, #051c29e8, #051c29a8);
+  background: linear-gradient(90deg, #051c2952, #051c2910);
+  text-shadow:
+    0 1px 3px #000,
+    0 0 8px #000;
   border-left: 2px solid #6affd2;
   opacity: 0;
   transform: translateX(-10px);
@@ -293,8 +296,9 @@ button:hover {
   transform: none;
 }
 #comms img {
-  width: 63px;
-  height: 63px;
+  width: 38px;
+  height: 38px;
+  opacity: 0.65;
   object-fit: cover;
 }
 #comms .eyebrow {
@@ -1195,5 +1199,127 @@ body.menu #touch {
   }
   #bossHUD {
     width: 84%;
+  }
+}
+
+/* Game gestures belong to the play surface, including iOS long-press callouts. */
+#game,
+#touch,
+#touch * {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  overscroll-behavior: none;
+}
+#touch button.pressed {
+  background: #63dfbd70;
+  border-color: #b9ffe9;
+  transform: scale(0.95);
+}
+#attackWarning,
+#bossHUD {
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  #touch {
+    bottom: max(14px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+    right: max(16px, env(safe-area-inset-right));
+  }
+  .actions {
+    width: 226px;
+    display: grid;
+    grid-template-columns: repeat(3, 68px);
+    gap: 9px;
+  }
+  .actions button {
+    width: 68px;
+    height: 52px;
+    border-radius: 16px;
+    background: #071b3266;
+    backdrop-filter: none;
+  }
+  #fireTouch {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    width: 72px;
+    height: 113px;
+    border-radius: 25px;
+    background: #337a7855;
+  }
+  #comms {
+    bottom: 150px;
+    left: 18px;
+    width: min(350px, calc(100% - 36px));
+    padding: 7px;
+  }
+  #comms img {
+    width: 30px;
+    height: 30px;
+  }
+  #comms b {
+    display: none;
+  }
+  #message {
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+  #loadout {
+    opacity: 0.75;
+  }
+}
+@media (pointer: coarse) and (max-height: 550px) {
+  #comms {
+    top: 76px;
+    bottom: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+  }
+  #comms.active {
+    transform: translateX(-50%);
+  }
+  #comms .eyebrow,
+  #comms img {
+    display: none;
+  }
+  #bossHUD {
+    top: 104px;
+  }
+  #attackWarning {
+    top: 140px;
+  }
+  #bottom {
+    right: 260px;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  .actions {
+    grid-template-columns: repeat(3, 47px);
+    width: 153px;
+    gap: 6px;
+  }
+  .actions button {
+    width: 47px;
+    height: 52px;
+    font-size: 8px !important;
+  }
+  #fireTouch {
+    width: 47px;
+    height: 110px;
+  }
+  #stick {
+    width: 100px;
+    height: 100px;
+  }
+  #bossHUD {
+    left: 8%;
   }
 }

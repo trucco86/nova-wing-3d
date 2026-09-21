@@ -80,3 +80,62 @@ test('colossal bosses and sector scenery render in WebGL', async ({ page }, info
   }
   expect(errors).toEqual([]);
 });
+
+test('held mobile controls suppress browser gestures and release on pause', async ({
+  page,
+}, info) => {
+  test.skip(
+    info.project.name !== 'mobile',
+    'Controles de toque são apresentados apenas em dispositivos coarse.',
+  );
+  await page.goto('/');
+  await page.locator('#start').tap();
+  const fire = page.locator('#fireTouch');
+  await expect(fire).toBeVisible();
+  expect(await fire.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
+  expect(await fire.evaluate((el) => getComputedStyle(el).userSelect)).toBe('none');
+  const bounds = await fire.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await expect(fire).toHaveClass(/pressed/);
+  await expect
+    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)))
+    .toBeGreaterThan(65);
+  const cancelled = await fire.evaluate(
+    (el) => !el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),
+  );
+  expect(cancelled).toBe(true);
+  await page.mouse.up();
+  await expect(fire).not.toHaveClass(/pressed/);
+  await page.locator('#pause').tap();
+  await expect(page.locator('#pause')).toHaveText('▶');
+  expect(
+    await page.evaluate(() => ({ x: scrollX, y: scrollY, selection: String(getSelection()) })),
+  ).toEqual({ x: 0, y: 0, selection: '' });
+  const comms = await page.locator('#comms').evaluate((el) => ({
+    pointer: getComputedStyle(el).pointerEvents,
+    background: getComputedStyle(el).backgroundImage,
+  }));
+  expect(comms.pointer).toBe('none');
+  const alpha = Number(comms.background.match(/rgba\([^)]*,\s*([0-9.]+)\)/)?.[1]);
+  expect(alpha).toBeGreaterThan(0);
+  expect(alpha).toBeLessThanOrEqual(0.35);
+  await page.screenshot({ path: info.outputPath('mobile-controls.png') });
+});
+
+test('industrial tunnel and terrestrial enemies render with lateral camera views', async ({
+  page,
+}, info) => {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+  for (const mode of ['ground', 'tunnel']) {
+    await page.goto('/__visual.html?mode=' + mode + '&lateral=12');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    const shot = await page.screenshot({ path: info.outputPath(mode + '.png') });
+    expect(shot.length).toBeGreaterThan(15000);
+  }
+  expect(errors).toEqual([]);
+});

@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.1.0 — Voo e instalação industrial
+
+- Câmera com paralaxe lateral e inclinação suave; comunicações mais discretas.
+- Controles móveis maiores, pressão prolongada protegida e liberação consistente.
+- Tanques, robôs articulados, pórticos, reatores e trecho de batalha em túnel.
+- Chefes biomecânicos preservando dez silhuetas e pontos fracos.
+- Harness ampliado para câmera, colisões, combate terrestre, toque e capturas WebGL.
+
 ## 1.0.0 — Campanha Five Cats
 
 - Dez setores, cenários próprios e chefes colossais com geradores destrutíveis.

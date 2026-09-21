@@ -6,6 +6,8 @@ const map = {
   audio: 'src/audio.js',
   bosses: 'src/bosses.js',
   graphics: 'src/visuals.js',
+  flight: 'src/flight.js',
+  encounters: 'src/encounters.js',
   interface: 'src/shell.html',
   styles: 'src/styles.css',
   tests: 'tests/game.test.mjs',

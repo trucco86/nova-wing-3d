@@ -114,3 +114,7 @@ A CI executa os jobs `quality` e `browser`. O job `pages` publica apenas depois 
 ## Licença
 
 MIT, conforme [LICENSE](LICENSE). Three.js mantém sua licença própria. A imagem de Bia foi gerada para este protótipo. A fonte Google Fonts é opcional e usa fallback local se a rede não estiver disponível.
+
+### Atualização 1.1 — instalação industrial
+
+Voo com paralaxe, comunicações translúcidas e controles móveis redesenhados. Setores terrestres incluem tanques, sentinelas gigantes, obstáculos industriais e combate no túnel com passagens alternadas. Os dez chefes combinam máquina e criatura. Consulte [a especificação e os critérios de validação](specs/flight-environments.md).
