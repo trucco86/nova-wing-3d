@@ -46,3 +46,5 @@ Um relatório verde não comprova qualidade estética, acessibilidade completa, 
 ## Regressões de voo e entrada
 
 A especificação [flight-environments](../specs/flight-environments.md) liga o pedido de câmera, toque e combate terrestre a `tests/flight-environments.test.mjs` e aos casos de navegador. Os gates incluem paralaxe e 30/60 Hz, pausa/reset, passagens do túnel, colisão durante impulso, dano ao tanque, vida útil dos encontros e posse de múltiplos ponteiros. A fixture visual não é enviada ao Pages; gera capturas de terreno, túnel, controles e dez chefes. Validação física de Safari/iPhone é uma limitação separada da emulação Chromium, que não deve ser omitida no relatório.
+
+A spec `boss-spectacle.md` acrescenta os contratos de subchefe persistente, resistência temporal, cores de anéis, pods evolutivos e cena de derrota. Mudanças nesses sistemas exigem testes de transição/pausa e capturas; mudanças musicais também exigem renderização de áudio real, não somente mocks de Web Audio.

@@ -141,3 +141,50 @@ test('industrial tunnel and terrestrial enemies render with lateral camera views
   }
   expect(errors).toEqual([]);
 });
+
+test('evolving pods, distinct rings, cruiser and reactor collapse render', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+  for (const mode of ['equipment', 'subboss', 'collapse']) {
+    await page.goto('/__visual.html?mode=' + mode);
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    const shot = await page.screenshot({ path: info.outputPath(mode + '.png') });
+    expect(shot.length).toBeGreaterThan(15000);
+  }
+  expect(errors).toEqual([]);
+});
+test('six music states render finite audible audio without clipping', async ({ page }, info) => {
+  test.setTimeout(90000);
+  await page.goto('/__audio.html');
+  await page.getByRole('button', { name: 'Renderizar trilha' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-audio-ready', 'true', {
+    timeout: 60000,
+  });
+  const metrics = JSON.parse(await page.locator('pre').textContent());
+  expect(metrics.map((m) => m.mode)).toEqual([
+    'sector',
+    'subboss',
+    'boss',
+    'enraged',
+    'collapse',
+    'victory',
+  ]);
+  for (const m of metrics) {
+    expect(m.finite).toBe(true);
+    expect(m.rms).toBeGreaterThan(0.005);
+    expect(m.peak).toBeLessThan(0.98);
+  }
+  const download = page.waitForEvent('download');
+  await page.getByRole('link', { name: 'Baixar demonstração' }).click();
+  await (await download).saveAs(info.outputPath('nova-wing-music.wav'));
+  await info.attach('audio-metrics', {
+    body: JSON.stringify(metrics),
+    contentType: 'application/json',
+  });
+});

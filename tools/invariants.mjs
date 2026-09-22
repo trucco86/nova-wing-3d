@@ -14,6 +14,11 @@ const required = [
   'docs/TESTES.md',
   'docs/PUBLICACAO.md',
   'src/main.js',
+  'src/combat.js',
+  'src/equipment.js',
+  'src/finale.js',
+  'specs/boss-spectacle.md',
+  'tests/boss-spectacle.test.mjs',
   'src/game.js',
   'src/visuals.js',
   'src/flight.js',
@@ -32,7 +37,16 @@ const ids = [...html.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
 requireThat(new Set(ids).size === ids.length, 'Duplicate DOM ids');
 for (const [, id] of source.matchAll(/\$\('([^']+)'\)/g))
   requireThat(ids.includes(id), `Missing HUD element ${id}`);
-for (const file of ['src/game.js', 'src/visuals.js', 'src/flight.js', 'src/encounters.js']) {
+for (const file of [
+  'src/game.js',
+  'src/visuals.js',
+  'src/flight.js',
+  'src/encounters.js',
+  'src/combat.js',
+  'src/equipment.js',
+  'src/finale.js',
+  'src/audio.js',
+]) {
   const text = readFileSync(file, 'utf8');
   requireThat(!/\b(?:eval|Function)\s*\(/.test(text), `Dynamic code in ${file}`);
   requireThat(!/https?:\/\//.test(text), `Unexpected runtime network in ${file}`);

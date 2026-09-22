@@ -8,7 +8,7 @@ O movimento para a frente é simulado pelo deslocamento dos elementos em relaç�
 
 ## Estado e tempo
 
-O jogo alterna entre menu, partida, pausa e resultado. O ciclo visual utiliza delta de tempo limitado; testes avançam o mesmo código por `step(dt)`. Cada setor possui duração de aproximação de 65 a 90 segundos. Subchefe e rival entram durante esse percurso; o chefe colossal encerra o setor. Sua morte abre o hangar, exceto no décimo setor, que conclui a campanha. O dano do chefe passa por uma função comum para tiros e bombas, evitando diferenças no encerramento da vitória.
+O jogo alterna entre menu, partida, pausa e resultado. O ciclo visual utiliza delta de tempo limitado; testes avançam o mesmo código por `step(dt)`. Cada setor possui duração de aproximação de 65 a 90 segundos. Subchefe e rival entram durante esse percurso; o chefe colossal encerra o setor. Após sua morte, uma cena de colapso de oito segundos antecede o hangar, exceto no décimo setor, que conclui a campanha. O dano do chefe passa por uma função comum para tiros e bombas, evitando diferenças no encerramento da vitória.
 
 Escudo, bombas, energia, pontuação e entidades pertencem à instância do jogo. Reiniciar limpa entidades e repõe recursos. Pausa congela a simulação. Perder foco limpa teclas pressionadas e pausa a partida.
 
@@ -55,3 +55,13 @@ Novas fases devem extrair dados de encontros para um módulo próprio antes de m
 Pressão longa é tratada por CSS (`touch-action`, seleção, callout) e eventos de contexto/seleção/arraste restritos à superfície de jogo. Ponteiros possuem dono por controle, permitindo mover/atirar/impulsionar simultaneamente. Cancelamento, pausa, perda de foco, respawn e mudança de setor liberam os controles.
 
 Chefes continuam usando os mesmos contratos de dano e progressão, com mandíbula, olho, costelas e tentáculos integrados às dez estruturas mecânicas. Alterações visuais não alteram geradores nem a ordem de exposição do núcleo.
+
+## Espetáculo e combate (1.2)
+
+`src/combat.js` controla chegada protegida, orçamento de dano em segundos, vida e três fases. Todos os tiros e bombas usam esse orçamento; armas máximas continuam úteis, mas não eliminam um chefe em segundos. O núcleo alterna cinco segundos exposto e dois protegido. A fase final acelera ataques e trilha; o conjunto máximo de armas não concede mais imunidade permanente a projéteis.
+
+O subchefe usa um cruzador próprio e se mantém em z=-85 até ser derrotado. Duas bombas vencem o primeiro; outros setores escalam resistência. O túnel aguarda o cruzador, e o chefe aguarda a saída do túnel. A missão pode durar mais que a aproximação nominal caso esses encontros ainda estejam ativos.
+
+`src/equipment.js` compartilha templates de pods e anéis: verde/cruz para escudo, azul/setas para arma. Pods evoluem nos níveis I–III, alterando carcaça, cadência e formação, e preservam mira elevada em alvos terrestres. `src/finale.js` produz a onda de choque e destroços. O estado `collapsing` bloqueia dano/tiro e só concede a recompensa uma vez, ao final; pausa guarda o estado anterior.
+
+O sequenciador possui seis estados musicais e arranjos com harmonia, baixo, melodia e percussão sintetizada; filtro e compressor controlam o espectro e a soma das vozes. Destruição libera os nós. Fixtures gráficas e de áudio não são distribuídas no Pages.

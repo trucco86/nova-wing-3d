@@ -5,6 +5,7 @@ import { SECTORS, readSave } from '../src/campaign.js';
 import { createBossModel, disposeBoss } from '../src/bosses.js';
 import { createMusic, TRACKS } from '../src/audio.js';
 import { harness } from './harness.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 function setup(t, options) {
   const h = harness(options);
   t.after(() => h.close());
@@ -13,7 +14,7 @@ function setup(t, options) {
 function beatBoss(h, index) {
   h.advance(SECTORS[index].duration + 0.05, 0.1);
   assert.equal(h.game.snapshot().boss, true);
-  for (let i = 0; i < 3; i++) h.game.damageBoss(10000);
+  defeatBoss(h);
 }
 test('all ten sectors progress through hangars and only Marvin ends the campaign', (t) => {
   const h = setup(t);

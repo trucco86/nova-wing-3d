@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.2.0 — Chefes, evolução e trilha dinâmica
+
+- Chefes com placas, canhões, cabos, reatores e dano visual; três etapas, resistência temporal e núcleo com janelas de ataque.
+- Subchefe com modelo e barra próprios permanece na arena; encontros não se escondem dentro do túnel.
+- Anéis verdes/cruz recuperam escudo e azuis/setas evoluem arma, alternadamente.
+- Pods com núcleo, garras e carcaça em três evoluções e formação destacável.
+- Colapso de oito segundos, explosões progressivas, destroços e onda de choque antes da recompensa.
+- Arranjos musicais com bateria, harmonia e seis estados; proteção contra clipping e artefato WAV de validação.
+- Removida imunidade permanente a projéteis na combinação máxima de arma/pods; giro defensivo preservado.
+
 ## 1.1.0 — Voo e instalação industrial
 
 - Câmera com paralaxe lateral e inclinação suave; comunicações mais discretas.

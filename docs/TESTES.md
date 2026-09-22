@@ -14,7 +14,7 @@
 
 `tests/harness.mjs` cria elementos com os IDs da interface e fornece relógio, eventos, áudio e renderer simulados. A função `createGame` é a mesma utilizada pela página. Aleatoriedade semeada permite repetir cenários. Os testes de combate usam encontros desativados quando precisam isolar uma regra; há um caso separado para geração de ondas.
 
-A suíte possui 26 testes de lógica e geometria. Cobre menu, início, teclas, limites, pausa, cadência, invulnerabilidade, rolamento, dano inválido, bombas, energia, perda de foco, cancelamento de toque, chefe, vitória, derrota, reinício e estabilidade por delta de tempo.
+A suíte inclui testes de lógica e geometria; a contagem executada consta no relatório de validação. Cobre menu, início, teclas, limites, pausa, cadência, invulnerabilidade, rolamento, dano inválido, bombas, energia, perda de foco, cancelamento de toque, chefe, vitória, derrota, reinício e estabilidade por delta de tempo.
 
 Os testes de campanha atravessam os dez setores, validam compra sem saldo, limites de arma e pods, checkpoint inválido e as três vidas. A geometria dos dez chefes é verificada quanto a tamanho, coordenadas finitas e silhuetas distintas.
 
@@ -49,3 +49,9 @@ Se não houver WebGL disponível, registre o bloqueio. Não substitua o navegado
 `tests/flight-environments.test.mjs` verifica a câmera em 30/60 Hz, congelamento/reset, colisões varridas em sólidos e passagens, tanques atingíveis, disparos terrestres, túnel único com limpeza e entradas simultâneas/canceladas. O navegador mantém renderização WebGL real e captura também túnel, tanques, robôs e a disposição de botões. O teste de pressão prolongada verifica carga de plasma, menu contextual cancelado, ausência de scroll/seleção e liberação. Não representa todos os gestos nativos de Safari/iOS; completar uma verificação em aparelho real permanece recomendado.
 
 O prazo de observação da carga no teste de pressão longa é de 15 segundos: SwiftShader pode renderizar abaixo da taxa de simulação (o delta de frame é limitado). O teste mantém o limiar de carga acima de 65%; ampliar o prazo não altera a cadência nem a mecânica do jogo.
+
+## Chefes, equipamentos e áudio
+
+`tests/boss-spectacle.test.mjs` exige batalha sustentada sob dano extremo, três etapas, subchefe persistente, anéis distintos, evolução de pods e colapso com pausa e recompensa única. O helper de campanha avança tempo real da simulação e respeita a blindagem; não contorna o orçamento de dano.
+
+As novas capturas WebGL cobrem pods I–III, anéis, cruzador e onda de choque. `__audio.html` renderiza 36 segundos via OfflineAudioContext com o sequenciador real: seis segundos por estado musical. A CI verifica RMS não silencioso, amostras finitas e pico sem clipping, e salva WAV para escuta. Isso não atesta gosto musical nem volume percebido em cada dispositivo. A instalação local do Chromium pode depender da rede; quando indisponível, CI é o gate gráfico obrigatório.
