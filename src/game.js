@@ -927,7 +927,7 @@ export function createGame({
       roll -= dt;
       player.rotation.z = Math.PI * 2 * (1 - roll / 0.65);
     }
-    player.visible = invuln <= 0 || Math.floor(invuln * 12) % 2 === 0;
+    player.visible = boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0;
     flightCamera.update(dt, player.position, clamp(dx, -1, 1), boosting);
     reticle.position.set(player.position.x, player.position.y, -60);
     if (shake > 0) {

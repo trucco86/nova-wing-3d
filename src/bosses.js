@@ -392,7 +392,7 @@ export function createSubboss(index = 0) {
       case 4:
         for (const side of [-1, 1])
           for (let j = 0; j < 4; j++) {
-            const feather = new T.Mesh(new T.ConeGeometry(3, 19, 4), hot);
+            const feather = new T.Mesh(new T.ConeGeometry(3, 19, 4), armor);
             feather.rotation.z = side * (0.6 + j * 0.2);
             add(feather, side * (9 + j * 3), 4 + j * 2, -j * 3);
           }
