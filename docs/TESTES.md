@@ -59,3 +59,5 @@ As novas capturas WebGL cobrem pods I–III, anéis, cruzador e onda de choque. 
 ## Voo e Force
 
 `tests/flight-force-variety.test.mjs` cobre cor e comprimento do boost, pausa/reinício, alcance e coleta real em retrato, lançamento contínuo, permanência no mundo e retorno dos pods. Verifica dez silhuetas finitas e assinaturas táticas distintas. O navegador captura boost em teclado/toque e os dez subchefes em ambos os viewports. Critérios em `specs/flight-force-variety.md`.
+
+A suíte gráfica tem orçamento total de seis minutos no harness (demais comandos: três minutos). As vinte verificações e capturas excederam o prazo anterior de três minutos no CI; limites individuais e assertions permanecem iguais. O job externo mantém limite de dez minutos.

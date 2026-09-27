@@ -34,7 +34,10 @@ if (process.argv.includes('--browser')) commands.push('test:browser');
 const checks = [];
 for (const command of commands) {
   const start = Date.now();
-  const r = spawnSync('npm', ['run', command], { encoding: 'utf8', timeout: 180000 });
+  const r = spawnSync('npm', ['run', command], {
+    encoding: 'utf8',
+    timeout: command === 'test:browser' ? 360000 : 180000,
+  });
   const output = (r.stdout ?? '') + (r.stderr ?? '');
   writeFileSync(`artifacts/${command.replaceAll(':', '-')}.log`, output);
   process.stdout.write(output);
