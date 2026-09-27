@@ -49,7 +49,7 @@ export function createBossModel(sector, index = 0) {
     case 'drill': {
       const drill = new T.Mesh(new T.ConeGeometry(13, 40, 8), armor);
       drill.rotation.x = Math.PI / 2;
-      add(drill, 0, 0, 20);
+      add(drill, 0, 0, -8);
       for (let i = 0; i < 4; i++) {
         const q = ring(15 + i * 3);
         add(q, 0, 0, -i * 7);
@@ -217,6 +217,8 @@ export function createBossModel(sector, index = 0) {
     o.position.multiply(new T.Vector3(...proportions));
     o.scale.multiply(new T.Vector3(...proportions));
   }
+  tissue.position.z = Math.min(10, tissue.position.z);
+  tissue.scale.z = Math.min(0.75, tissue.scale.z);
   flesh.color.set(
     [
       '#652e58',
