@@ -1353,3 +1353,36 @@ body {
     font-size: 9px;
   }
 }
+
+/* Peripheral streaks keep the central aiming zone clear. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 2;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 46%,
+    transparent 0deg 13deg,
+    #b8efff77 13.2deg 13.5deg,
+    transparent 13.8deg 22deg
+  );
+  mask-image: radial-gradient(ellipse, transparent 42%, #000 95%);
+  transition: opacity 0.2s;
+}
+body.boosting::after {
+  opacity: 0.65;
+  animation: boost-stream 0.35s linear infinite;
+}
+@keyframes boost-stream {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.16);
+  }
+}
+body:not(.boosting)::after {
+  animation-play-state: paused;
+}

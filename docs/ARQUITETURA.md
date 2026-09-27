@@ -65,3 +65,11 @@ O subchefe usa um cruzador próprio e se mantém em z=-85 até ser derrotado. Du
 `src/equipment.js` compartilha templates de pods e anéis: verde/cruz para escudo, azul/setas para arma. Pods evoluem nos níveis I–III, alterando carcaça, cadência e formação, e preservam mira elevada em alvos terrestres. `src/finale.js` produz a onda de choque e destroços. O estado `collapsing` bloqueia dano/tiro e só concede a recompensa uma vez, ao final; pausa guarda o estado anterior.
 
 O sequenciador possui seis estados musicais e arranjos com harmonia, baixo, melodia e percussão sintetizada; filtro e compressor controlam o espectro e a soma das vozes. Destruição libera os nós. Fixtures gráficas e de áudio não são distribuídas no Pages.
+
+## Voo e Force (1.3)
+
+Anéis derivam sua faixa de spawn do limite horizontal da nave, inclusive após resize, e usam cruzamento varrido em Z e atração de curta distância. O voo mantém os limites anteriores; evita-se posicionar recompensas fora deles.
+
+Pods têm estados `docked`, `launching`, `deployed` e `returning`. A posição solta permanece no mundo; o retorno usa velocidade limitada por delta. Projéteis hostis usam colisão varrida com os pods antes da nave. Acoplados acompanham o comando de tiro; lançados disparam em leque automaticamente. V e toque executam a mesma transição; pausa impede mudanças.
+
+`encounterPattern` define dez assinaturas de ataque usadas por chefe e subchefe do setor, com pressão por fase. Templates de subchefes são compartilhados por variante; a anatomia dos chefes varia em proporção, membros, olhos, cristas e membranas, além das carcaças existentes. Geradores e núcleo preservam as zonas de acerto.

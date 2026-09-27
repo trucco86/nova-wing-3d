@@ -43,3 +43,10 @@
 
 - Missão 3D com inimigos, obstáculos, anéis e chefe.
 - Teclado, controles de toque, escudo, bombas e aceleração.
+
+## 1.3.0
+
+- Boost com jato laranja alongado e rastros periféricos.
+- Upgrades alcançáveis em telas estreitas, atração próxima e coleta varrida.
+- Pods lançáveis com posição independente, retorno, leque e interceptação de projéteis.
+- Dez anatomias de chefes e dez subchefes com identidade e ataques próprios.

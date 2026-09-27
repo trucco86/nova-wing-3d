@@ -122,3 +122,7 @@ Voo com paralaxe, comunicações translúcidas e controles móveis redesenhados.
 ### Combate atualizado — 1.2
 
 Chefes em três etapas e derrota cinematográfica, subchefe persistente, pods com três evoluções e anéis distintos: verde recupera escudo; azul evolui arma. Use V ou o botão de pods para destacar a formação. A trilha muda entre fase, subchefe, chefe, fúria, colapso e vitória. Veja [a especificação](specs/boss-spectacle.md) e [os testes](docs/TESTES.md).
+
+### Atualização 1.3 — voo e Force
+
+Segure Shift ou IMPULSO para o boost com jato laranja. V ou LANÇAR envia os pods à frente; VOLTAR os reacopla. Soltos, atiram automaticamente; acoplados, acompanham seu tiro. Pods interceptam projéteis comuns, sem proteger contra colisões. Anéis verdes recuperam escudo; azuis evoluem armas/pods. Chefes e subchefes têm dez identidades de combate.

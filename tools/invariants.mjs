@@ -18,6 +18,8 @@ const required = [
   'src/equipment.js',
   'src/finale.js',
   'specs/boss-spectacle.md',
+  'specs/flight-force-variety.md',
+  'tests/flight-force-variety.test.mjs',
   'tests/boss-spectacle.test.mjs',
   'src/game.js',
   'src/visuals.js',

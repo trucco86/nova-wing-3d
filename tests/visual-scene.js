@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { createWorld, postProcessor, fighter } from '../src/visuals.js';
-import { createBossModel, createSubboss } from '../src/bosses.js';
+import { createBossModel, createSubboss, SUBBOSS_NAMES } from '../src/bosses.js';
 import { createGroundEnemy, createObstacle } from '../src/encounters.js';
 import { createFlightCamera } from '../src/flight.js';
 import { createPod, createPickup } from '../src/equipment.js';
@@ -47,7 +47,7 @@ if (mode === 'tunnel' || mode === 'ground') {
     scene.add(r);
   }
 } else if (mode === 'subboss') {
-  const sub = createSubboss();
+  const sub = createSubboss(index);
   sub.position.set(0, 10, -85);
   scene.add(sub);
 } else if (mode === 'collapse') {
@@ -80,7 +80,7 @@ document.querySelector('h1').textContent =
       : mode === 'equipment'
         ? 'PODS I / II / III · VERDE: VIDA · AZUL: ARMA'
         : mode === 'subboss'
-          ? 'CRUZADOR DE INTERCEPTAÇÃO'
+          ? SUBBOSS_NAMES[index]
           : mode === 'collapse'
             ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
             : SECTORS[index].boss;
