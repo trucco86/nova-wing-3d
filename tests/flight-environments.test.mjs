@@ -120,6 +120,10 @@ test('tunnel spawns once with combat, clears on restart and freezes with pause',
   const h = setup(t, { spawnEncounters: true });
   for (let i = 0; i < 25; i++) {
     h.game.collect('shield');
+    if (h.game.snapshot().encounterKinds.includes('subboss')) {
+      h.game.bomb();
+      h.game.bomb();
+    }
     h.advance(1);
   }
   assert.equal(h.game.snapshot().tunnel, true);

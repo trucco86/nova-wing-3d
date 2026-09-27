@@ -1323,3 +1323,33 @@ body {
     left: 8%;
   }
 }
+
+#subHUD {
+  position: absolute;
+  top: 100px;
+  left: 30%;
+  width: 40%;
+  pointer-events: none;
+  color: #ffb674;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+#subHUD span {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+#subHealth {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff653a, #ffd17a);
+}
+@media (max-height: 500px) {
+  #subHUD {
+    top: 62px;
+    left: 28%;
+    width: 44%;
+    font-size: 9px;
+  }
+}

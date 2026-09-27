@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 function setup(t, opts) {
   const h = harness(opts);
   t.after(() => h.close());
@@ -127,18 +128,29 @@ test('touch input moves the same ship and cancellation releases movement', (t) =
   h.advance(0.2);
   assert.equal(h.game.snapshot().player.x, x);
 });
-test('boss generators must fall before the bomb can complete a sector', (t) => {
+test('boss generators protect the core and bombs cannot skip the defeat cinematic', (t) => {
   const h = setup(t);
   h.game.start();
   h.advance(65.05, 0.1);
-  h.game.damageBoss(1000);
-  h.game.damageBoss(1000);
-  assert.equal(h.game.snapshot().boss, true);
-  h.game.damageBoss(170);
+  const hp = h.game.snapshot().bossHp;
   h.game.bomb();
+  assert.equal(h.game.snapshot().bossHp, hp);
+  defeatBoss(h, { untilHp: 10 });
+  for (
+    let i = 0;
+    i < 80 && (!h.game.snapshot().coreOpen || h.game.snapshot().bossAge % 7 > 4.5);
+    i++
+  ) {
+    h.game.roll();
+    h.advance(0.1);
+  }
+  h.advance(0.3);
+  h.game.bomb();
+  assert.equal(h.game.snapshot().state, 'collapsing');
+  assert.equal(h.elements.get('shop').hidden, true);
+  h.advance(8.1, 0.1);
   assert.equal(h.game.snapshot().state, 'shop');
   assert.equal(h.game.snapshot().boss, false);
-  assert.equal(h.elements.get('shop').hidden, false);
 });
 test('defeat and restart reset encounter and resource state', (t) => {
   const h = setup(t);

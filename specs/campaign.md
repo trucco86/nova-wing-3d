@@ -12,3 +12,5 @@ Objetivo: expandir o protótipo em uma campanha pública de dez setores, preserv
 - CI exercita campanha, progressão, áudio e navegador. Publicação em Pages somente após gates verdes.
 
 A adaptação mantém identidade e principais sistemas do original; não promete reprodução quadro a quadro. Bases, eventos e pods seguem regras documentadas próprias desta edição.
+
+A versão 1.2 detalha os contratos de batalha, equipamentos e áudio em [boss-spectacle](boss-spectacle.md). A derrota inclui oito segundos de colapso antes da loja/vitória; o subchefe deve ser eliminado para liberar a sequência.

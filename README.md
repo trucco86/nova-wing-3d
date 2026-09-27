@@ -118,3 +118,7 @@ MIT, conforme [LICENSE](LICENSE). Three.js mantém sua licença própria. A imag
 ### Atualização 1.1 — instalação industrial
 
 Voo com paralaxe, comunicações translúcidas e controles móveis redesenhados. Setores terrestres incluem tanques, sentinelas gigantes, obstáculos industriais e combate no túnel com passagens alternadas. Os dez chefes combinam máquina e criatura. Consulte [a especificação e os critérios de validação](specs/flight-environments.md).
+
+### Combate atualizado — 1.2
+
+Chefes em três etapas e derrota cinematográfica, subchefe persistente, pods com três evoluções e anéis distintos: verde recupera escudo; azul evolui arma. Use V ou o botão de pods para destacar a formação. A trilha muda entre fase, subchefe, chefe, fúria, colapso e vitória. Veja [a especificação](specs/boss-spectacle.md) e [os testes](docs/TESTES.md).

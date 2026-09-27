@@ -201,14 +201,53 @@ export function createBossModel(sector, index = 0) {
   const coreRing = add(ring(7), 0, 0, 18);
   rotors.push(coreRing);
   add(halo(sector.accent, 21, 0.7), 0, 0, 20);
+  // Layered armor and exposed machinery stay behind the three aiming zones.
+  const vents = [];
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 5; i++) {
+      const plate = add(box(5.5, 6, 2, armor), side * (25 + i * 5), 1 + (i % 2) * 5, 18 - i);
+      plate.rotation.z = side * (0.15 + i * 0.05);
+      for (let j = 0; j < 3; j++)
+        add(box(3.8, 0.28, 0.3, dark), side * (25 + i * 5), j + (i % 2) * 5, 19.2 - i);
+      const vent = add(box(0.6, 3, 0.4, vein), side * (26 + i * 5), 3 + (i % 2) * 5, 19.4 - i);
+      vents.push(vent);
+    }
+    const turret = new T.Group();
+    turret.position.set(side * 29, 12, 17);
+    turret.add(sphere(4, dark, 1));
+    for (const x of [-1.2, 1.2]) {
+      const barrel = new T.Mesh(new T.CylinderGeometry(0.7, 1, 10, 10), armor);
+      barrel.rotation.x = Math.PI / 2;
+      barrel.position.set(x, 0, 4);
+      turret.add(barrel);
+      turret.add(box(1, 1, 0.3, hot, x, 0, 9));
+    }
+    g.add(turret);
+    const engine = new T.Mesh(new T.CylinderGeometry(4, 5, 12, 16), dark);
+    engine.rotation.x = Math.PI / 2;
+    add(engine, side * 34, -6, -13);
+    for (let j = 0; j < 3; j++) {
+      const hoop = ring(4.5, 0.25);
+      add(hoop, side * 34, -6, -10 - j * 3);
+    }
+    for (let j = 0; j < 3; j++) {
+      const cable = new T.CatmullRomCurve3([
+        new T.Vector3(side * 10, 20 + j, 5),
+        new T.Vector3(side * 18, 23 + j, 12),
+        new T.Vector3(side * 25, 12, 16),
+      ]);
+      g.add(new T.Mesh(new T.TubeGeometry(cable, 12, 0.32, 5, false), j === 1 ? vein : dark));
+    }
+  }
   const parts = [];
   for (const s of [-1, 1]) {
     const p = add(sphere(4, hot), s * 17, 4, 19);
     add(ring(5), s * 17, 4, 18);
-    parts.push({ mesh: p, hp: 32 + index * 7, max: 32 + index * 7 });
+    parts.push({ mesh: p, hp: 180 + index * 25, max: 180 + index * 25 });
   }
   g.userData = {
     parts,
+    vents,
     core,
     rotors,
     organic,
@@ -226,4 +265,30 @@ export function disposeBoss(g) {
   });
   geos.forEach((x) => x.dispose());
   g.userData.materials?.forEach((x) => x.dispose());
+}
+
+let cruiserTemplate;
+export function createSubboss() {
+  if (!cruiserTemplate) {
+    const g = new T.Group(),
+      armor = metal('#60748e'),
+      dark = metal('#152436'),
+      hot = glowMaterial('#ff713c', 2);
+    g.add(box(12, 5, 19, armor), box(7, 3, 23, dark, 0, 3, 0));
+    for (const side of [-1, 1]) {
+      g.add(box(12, 3, 13, armor, side * 11, -1, 0), box(8, 0.5, 14, hot, side * 11, 0.7, 0));
+      for (let i = 0; i < 3; i++) {
+        const barrel = new T.Mesh(new T.CylinderGeometry(0.7, 0.9, 8, 8), dark);
+        barrel.rotation.x = Math.PI / 2;
+        barrel.position.set(side * (6 + i * 3), 0, 9);
+        g.add(barrel);
+      }
+      g.add(box(4, 4, 1, hot, side * 5, 0, 10));
+    }
+    const eye = new T.Mesh(new T.SphereGeometry(2, 12, 8), hot);
+    eye.position.set(0, 2, 12);
+    g.add(eye);
+    cruiserTemplate = g;
+  }
+  return cruiserTemplate.clone(true);
 }

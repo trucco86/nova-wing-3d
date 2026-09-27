@@ -12,7 +12,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['src/**/*.js', 'tests/visual-scene.js'],
+    files: ['src/**/*.js', 'tests/visual-scene.js', 'tests/audio-scene.js'],
     languageOptions: { globals: globals.browser },
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
