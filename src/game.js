@@ -190,11 +190,12 @@ export function createGame({
   function syncPods() {
     if (podMeshes.length === podCount && podMeshes.every((p) => p.userData.level === podCount))
       return;
+    const positions = podMeshes.map((p) => p.position.clone());
     while (podMeshes.length) scene.remove(podMeshes.pop());
     for (let i = 0; i < podCount; i++) {
       const o = createPod(podCount);
       scene.add(o);
-      o.position.copy(player.position);
+      o.position.copy(positions[i] ?? positions[0] ?? player.position);
       podMeshes.push(o);
     }
   }
@@ -793,6 +794,11 @@ export function createGame({
   function releaseControls() {
     boosting = false;
     document.body.classList.remove('boosting');
+    for (const f of player.userData.flames) {
+      f.material.color.set('#78eaff');
+      f.scale.set(1, 1, 1);
+      f.position.z = 4;
+    }
     keys.clear();
     touchFire = touchBoost = false;
     charge = 0;

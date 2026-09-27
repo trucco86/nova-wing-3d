@@ -22,6 +22,8 @@ test('boost visibly changes exhaust and stops on release, pause and restart', (t
   assert.ok(h.document.body.classList.contains('boosting'));
   h.game.pause();
   assert.equal(h.document.body.classList.contains('boosting'), false);
+  assert.equal(h.game.snapshot().boostVisual.color, base.color);
+  assert.equal(h.game.snapshot().boostVisual.length, 1);
   h.game.pause();
   h.advance(0.2);
   assert.equal(h.game.snapshot().boostVisual.color, base.color);
@@ -119,4 +121,21 @@ test('docked Force intercepts real incoming enemy projectiles without global imm
   const before = h.game.snapshot().shield;
   h.game.damage(10);
   assert.ok(h.game.snapshot().shield < before, 'contact damage still applies');
+});
+
+test('upgrading deployed Force preserves existing world positions', (t) => {
+  const h = setup(t);
+  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  h.key('KeyV');
+  h.advance(1);
+  const before = h.game.snapshot().podPositions[0];
+  h.key('KeyD');
+  h.advance(0.5);
+  h.key('KeyD', false);
+  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  assert.deepEqual(h.game.snapshot().podPositions[0], before);
+  assert.equal(h.game.snapshot().podMode, 'deployed');
+  h.advance(0.1);
+  assert.deepEqual(h.game.snapshot().podPositions[0], before);
+  assert.equal(h.game.snapshot().pods, 2);
 });
