@@ -195,6 +195,7 @@ test('three homing pods damage elevated tank and walker hulls from normal flight
     h.advance(time);
     h.game.bomb();
     for (let i = 0; i < 9; i++) h.game.collect('blue');
+    h.key('KeyV'); // Detached Force fires autonomously under the 1.3 contract.
     h.advance(0.3);
     const before = h.game.snapshot().targets.find((e) => e.kind === kind);
     assert.ok(before, kind + ' spawned');

@@ -204,7 +204,10 @@ export function fighter(enemy = false) {
   const o = templates[enemy].clone(true);
   o.userData.flames = [];
   o.traverse((c) => {
-    if (c.name === 'flame') o.userData.flames.push(c);
+    if (c.name === 'flame') {
+      if (!enemy) c.material = c.material.clone();
+      o.userData.flames.push(c);
+    }
   });
   return o;
 }

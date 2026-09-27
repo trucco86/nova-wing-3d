@@ -188,3 +188,30 @@ test('six music states render finite audible audio without clipping', async ({ p
     contentType: 'application/json',
   });
 });
+
+test('boost streaks follow keyboard or touch input and disappear on pause', async ({
+  page,
+}, info) => {
+  await page.goto('/');
+  await page.locator('#start').click();
+  if (info.project.name === 'mobile') {
+    const bounds = await page.locator('#boostTouch').boundingBox();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await page.mouse.down();
+  } else await page.keyboard.down('Shift');
+  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await page.screenshot({ path: info.outputPath('boost.png') });
+  await page.locator('#pause').click();
+  await expect(page.locator('body')).not.toHaveClass(/boosting/);
+});
+test('ten distinct subboss silhouettes render', async ({ page }, info) => {
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  for (let i = 0; i < 10; i++) {
+    await page.goto('/__visual.html?mode=subboss&sector=' + i);
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.screenshot({ path: info.outputPath('subboss-' + i + '.png') });
+  }
+  expect(errors).toEqual([]);
+});

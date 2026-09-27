@@ -55,3 +55,9 @@ O prazo de observação da carga no teste de pressão longa é de 15 segundos: S
 `tests/boss-spectacle.test.mjs` exige batalha sustentada sob dano extremo, três etapas, subchefe persistente, anéis distintos, evolução de pods e colapso com pausa e recompensa única. O helper de campanha avança tempo real da simulação e respeita a blindagem; não contorna o orçamento de dano.
 
 As novas capturas WebGL cobrem pods I–III, anéis, cruzador e onda de choque. `__audio.html` renderiza 36 segundos via OfflineAudioContext com o sequenciador real: seis segundos por estado musical. A CI verifica RMS não silencioso, amostras finitas e pico sem clipping, e salva WAV para escuta. Isso não atesta gosto musical nem volume percebido em cada dispositivo. A instalação local do Chromium pode depender da rede; quando indisponível, CI é o gate gráfico obrigatório.
+
+## Voo e Force
+
+`tests/flight-force-variety.test.mjs` cobre cor e comprimento do boost, pausa/reinício, alcance e coleta real em retrato, lançamento contínuo, permanência no mundo e retorno dos pods. Verifica dez silhuetas finitas e assinaturas táticas distintas. O navegador captura boost em teclado/toque e os dez subchefes em ambos os viewports. Critérios em `specs/flight-force-variety.md`.
+
+A suíte gráfica tem orçamento total de seis minutos no harness (demais comandos: três minutos). As vinte verificações e capturas excederam o prazo anterior de três minutos no CI; limites individuais e assertions permanecem iguais. O job externo mantém limite de dez minutos.

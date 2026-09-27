@@ -49,7 +49,7 @@ export function createBossModel(sector, index = 0) {
     case 'drill': {
       const drill = new T.Mesh(new T.ConeGeometry(13, 40, 8), armor);
       drill.rotation.x = Math.PI / 2;
-      add(drill, 0, 0, 20);
+      add(drill, 0, 0, -8);
       for (let i = 0; i < 4; i++) {
         const q = ring(15 + i * 3);
         add(q, 0, 0, -i * 7);
@@ -134,6 +134,7 @@ export function createBossModel(sector, index = 0) {
     add(haloRing, 0, 0, -18);
     rotors.push(haloRing);
   }
+  const organicStart = g.children.length;
   // Living tissue grafted onto the existing ten mechanical silhouettes.
   const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
     bone = metal('#cfb59b', 0.18, 0.62),
@@ -197,6 +198,62 @@ export function createBossModel(sector, index = 0) {
     jaw.add(tooth);
   }
   g.add(jaw);
+  // Anatomy belongs to the sector: manta gills, drill maw, orbital membranes,
+  // phoenix crest, plated golem, hydra eyes, dreadnought ribs, void iris, crown.
+  const anatomy = g.children.slice(organicStart);
+  const proportions = [
+    [1, 1, 1],
+    [1.65, 0.55, 1],
+    [0.6, 1.3, 1.4],
+    [0.8, 0.8, 0.6],
+    [1.25, 1.6, 0.7],
+    [0.8, 1.65, 0.9],
+    [1.45, 1.15, 1],
+    [1.7, 0.7, 0.7],
+    [0.65, 0.65, 0.5],
+    [1.15, 1.4, 1.1],
+  ][index];
+  for (const o of anatomy) {
+    o.position.multiply(new T.Vector3(...proportions));
+    o.scale.multiply(new T.Vector3(...proportions));
+  }
+  tissue.position.z = Math.min(10, tissue.position.z);
+  tissue.scale.z = Math.min(0.75, tissue.scale.z);
+  flesh.color.set(
+    [
+      '#652e58',
+      '#245a63',
+      '#6e392b',
+      '#37495e',
+      '#a02d1d',
+      '#466b83',
+      '#68267d',
+      '#694638',
+      '#281d58',
+      '#8c2346',
+    ][index],
+  );
+  eye.visible = pupil.visible = ![2, 3, 6, 8].includes(index);
+  jaw.visible = ![1, 3, 4, 8].includes(index);
+  organic.forEach((o, i) => {
+    o.visible = ![2, 3, 5, 7, 8].includes(index) || i % 3 === 0;
+  });
+  for (let i = 0; i < index + 2; i++) {
+    const a = (i * Math.PI * 2) / (index + 2);
+    const growth = [2, 5, 7].includes(index)
+      ? new T.Mesh(new T.ConeGeometry(2.4, 13 + index, 6), bone)
+      : sphere(index === 6 ? 3 : 1.8, index === 6 ? hot : vein, 1);
+    growth.rotation.z = a - Math.PI / 2;
+    add(growth, Math.cos(a) * (12 + index), Math.sin(a) * (12 + index), 21);
+  }
+  if ([3, 8].includes(index)) {
+    for (let i = 0; i < 4; i++) {
+      const iris = new T.Mesh(new T.TorusGeometry(12 + i * 3, 0.7, 8, 32), flesh);
+      iris.rotation.y = i * 0.3;
+      add(iris, 0, 0, 12);
+      rotors.push(iris);
+    }
+  }
   const core = add(sphere(5, hot, 2), 0, 0, 18);
   const coreRing = add(ring(7), 0, 0, 18);
   rotors.push(coreRing);
@@ -267,9 +324,9 @@ export function disposeBoss(g) {
   g.userData.materials?.forEach((x) => x.dispose());
 }
 
-let cruiserTemplate;
-export function createSubboss() {
-  if (!cruiserTemplate) {
+const cruiserTemplates = new Map();
+export function createSubboss(index = 0) {
+  if (!cruiserTemplates.has(index)) {
     const g = new T.Group(),
       armor = metal('#60748e'),
       dark = metal('#152436'),
@@ -288,7 +345,171 @@ export function createSubboss() {
     const eye = new T.Mesh(new T.SphereGeometry(2, 12, 8), hot);
     eye.position.set(0, 2, 12);
     g.add(eye);
-    cruiserTemplate = g;
+    const frames = new T.Group();
+    // Shared fittings sit on ten independently shaped hulls.
+    const hull = new T.Group();
+    while (g.children.length) hull.add(g.children[0]);
+    const sizes = [
+      [1, 1, 1],
+      [1.2, 0.6, 0.7],
+      [0.55, 1.2, 1.4],
+      [0.55, 0.7, 0.55],
+      [0.9, 0.6, 0.7],
+      [0.65, 1.6, 0.6],
+      [0.5, 0.8, 0.5],
+      [1.1, 1.1, 1],
+      [0.4, 1.2, 0.5],
+      [0.75, 1.3, 0.9],
+    ];
+    hull.scale.set(...sizes[index]);
+    g.add(hull, frames);
+    const add = (o, x, y, z = 0) => {
+      o.position.set(x, y, z);
+      frames.add(o);
+    };
+    switch (index) {
+      case 0:
+        for (const side of [-1, 1]) add(box(3, 9, 17, dark), side * 14, 4);
+        break;
+      case 1:
+        for (const side of [-1, 1]) {
+          const wing = box(18, 1.5, 12, armor);
+          wing.rotation.z = side * 0.4;
+          add(wing, side * 14, 2);
+        }
+        break;
+      case 2: {
+        const cone = new T.Mesh(new T.ConeGeometry(7, 26, 8), armor);
+        cone.rotation.x = Math.PI / 2;
+        add(cone, 0, 0, 14);
+        break;
+      }
+      case 3:
+        for (let i = 0; i < 4; i++) {
+          const arm = box(18, 3, 7, armor);
+          arm.rotation.z = (i * Math.PI) / 2;
+          add(arm, Math.cos((i * Math.PI) / 2) * 12, Math.sin((i * Math.PI) / 2) * 12);
+        }
+        break;
+      case 4:
+        for (const side of [-1, 1])
+          for (let j = 0; j < 4; j++) {
+            const feather = new T.Mesh(new T.ConeGeometry(3, 19, 4), armor);
+            feather.rotation.z = side * (0.6 + j * 0.2);
+            add(feather, side * (9 + j * 3), 4 + j * 2, -j * 3);
+          }
+        break;
+      case 5:
+        for (const side of [-1, 1]) {
+          add(box(5, 17, 7, armor), side * 13, -5);
+          add(box(9, 4, 10, dark), side * 13, -14, 3);
+        }
+        break;
+      case 6:
+        for (let i = 0; i < 6; i++) {
+          const a = (i * Math.PI) / 3;
+          const tube = new T.CatmullRomCurve3([
+            new T.Vector3(),
+            new T.Vector3(Math.cos(a) * 10, Math.sin(a) * 10, 2),
+            new T.Vector3(Math.cos(a) * 16, Math.sin(a) * 16, 10),
+          ]);
+          frames.add(new T.Mesh(new T.TubeGeometry(tube, 12, 1.4, 6, false), hot));
+        }
+        break;
+      case 7:
+        for (const side of [-1, 1]) {
+          add(box(8, 12, 25, armor), side * 13, 2);
+          add(box(4, 4, 8, hot), side * 13, 4, 16);
+        }
+        break;
+      case 8:
+        add(
+          new T.Mesh(
+            new T.OctahedronGeometry(17),
+            new T.MeshStandardMaterial({ color: '#6735af', wireframe: true }),
+          ),
+          0,
+          0,
+        );
+        break;
+      case 9:
+        for (let i = 0; i < 7; i++) {
+          const a = (i / 6) * Math.PI;
+          const tooth = new T.Mesh(new T.ConeGeometry(2.5, 12, 5), hot);
+          tooth.rotation.z = a - Math.PI / 2;
+          add(tooth, Math.cos(a) * 15, Math.sin(a) * 15);
+        }
+        break;
+    }
+    g.userData.variant = index;
+    cruiserTemplates.set(index, g);
   }
-  return cruiserTemplate.clone(true);
+  return cruiserTemplates.get(index).clone(true);
+}
+
+export const SUBBOSS_NAMES = [
+  'CRUZADOR ROK',
+  'ARRAIA ABISSAL',
+  'BROCA SENTINELA',
+  'SATÉLITE CRUZADO',
+  'AVE SOLAR',
+  'CARANGUEJO GLACIAL',
+  'MEDUSA VIVA',
+  'FORTIM ÔMEGA',
+  'PRISMA DO VAZIO',
+  'GUARDIÃO DA COROA',
+];
+/** Ten tactical signatures; phase adds pressure without closing every escape lane. */
+export function encounterPattern(index, volley, player, phase = 1) {
+  const result = [];
+  const count = 4 + phase;
+  for (let i = 0; i < count; i++) {
+    const u = i - (count - 1) / 2;
+    const a = (i * Math.PI * 2) / count + volley * 0.4;
+    let x, y;
+    switch (index) {
+      case 0:
+        x = u * 7;
+        y = i % 2 ? 3 : -3;
+        break;
+      case 1:
+        x = (i % 2 ? 1 : -1) * (8 + i * 2);
+        y = u * 4;
+        break;
+      case 2:
+        x = Math.cos(a) * 14;
+        y = Math.sin(a) * 10;
+        break;
+      case 3:
+        x = i % 2 ? u * 8 : 0;
+        y = i % 2 ? 0 : u * 6;
+        break;
+      case 4:
+        x = u * 8;
+        y = Math.abs(u) * 4 - 6;
+        break;
+      case 5:
+        x = u * 5;
+        y = Math.sin(volley) * 7 + (i % 2) * 5;
+        break;
+      case 6:
+        x = Math.sin(a * 3) * 17;
+        y = Math.cos(a) * 11;
+        break;
+      case 7:
+        x = u * 9;
+        y = ((Math.floor(volley) % 3) - 1) * 7;
+        break;
+      case 8:
+        x = Math.cos(a) * (8 + phase * 3);
+        y = Math.sin(a) * 14;
+        break;
+      default:
+        x = u * 7;
+        y = Math.cos(a * 2) * 12;
+        break;
+    }
+    result.push(new T.Vector3(player.x + x, player.y + y, player.z));
+  }
+  return result;
 }
