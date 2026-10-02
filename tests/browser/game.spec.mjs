@@ -215,3 +215,46 @@ test('ten distinct subboss silhouettes render', async ({ page }, info) => {
   }
   expect(errors).toEqual([]);
 });
+
+test('minimal title screen hides combat HUD and fits landscape and portrait', async ({
+  page,
+}, info) => {
+  await page.goto('/');
+  await expect(page.locator('#loadout')).toBeHidden();
+  await expect(page.locator('.title-help')).not.toHaveAttribute('open', '');
+  await expect(page.locator('#start')).toBeInViewport();
+  await page.screenshot({ path: info.outputPath('title.png') });
+  await page.locator('.title-help summary').click();
+  await expect(page.locator('.help-panel')).toBeVisible();
+  await page.locator('.title-help summary').click();
+  if (info.project.name === 'mobile') {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('#start')).toBeInViewport();
+    await page.screenshot({ path: info.outputPath('title-portrait.png') });
+  }
+});
+test('holding Space never activates focused browser-page buttons or selects HUD text', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.locator('#start').click();
+  await page.locator('#music').focus();
+  const label = await page.locator('#music').textContent();
+  await page.keyboard.down('Space');
+  await expect
+    .poll(() => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
+      timeout: 15000,
+    })
+    .toBeGreaterThan(30);
+  await page.keyboard.up('Space');
+  await expect(page.locator('#music')).toHaveText(label);
+  const blocked = await page
+    .locator('#loadout')
+    .evaluate(
+      (el) => !el.dispatchEvent(new Event('selectstart', { bubbles: true, cancelable: true })),
+    );
+  expect(blocked).toBe(true);
+  expect(await page.locator('#loadout').evaluate((el) => getComputedStyle(el).userSelect)).toBe(
+    'none',
+  );
+});

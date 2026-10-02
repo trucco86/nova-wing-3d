@@ -1,3 +1,4 @@
+import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
 import {
   SECTORS,
@@ -727,6 +728,8 @@ export function createGame({
     player.rotation.set(0, 0, 0);
     flightCamera.reset(player.position);
     state = 'playing';
+    document.getSelection?.()?.removeAllRanges();
+    $('game').focus?.({ preventScroll: true });
     $('menu').hidden = true;
     $('result').hidden = true;
     $('bossHUD').hidden = true;
@@ -777,9 +780,10 @@ export function createGame({
     muted = !muted;
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
+  const inFlight = () => ['playing', 'paused', 'respawning', 'collapsing'].includes(state);
   addEventListener('keydown', (e) => {
-    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code))
-      e.preventDefault();
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (inFlight() && isGameKey(e)) e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
     if (e.code === 'KeyV') togglePods();
@@ -788,7 +792,11 @@ export function createGame({
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') start();
   });
-  addEventListener('keyup', (e) => keys.delete(e.code));
+  addEventListener('keyup', (e) => {
+    if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
+    keys.delete(e.code);
+  });
+  cleanups.push(protectFlightSurface(document, $('game'), $('touch'), inFlight));
   let stickId = null;
   const heldPointers = new Map();
   function releaseControls() {
@@ -821,14 +829,6 @@ export function createGame({
   };
   document.addEventListener('visibilitychange', visibility);
   cleanups.push(() => document.removeEventListener('visibilitychange', visibility));
-  // Scope gesture suppression to the play surface; menus retain normal scrolling.
-  for (const id of ['touch', 'game']) {
-    for (const type of ['contextmenu', 'selectstart', 'dragstart', 'gesturestart']) {
-      const prevent = (e) => e.preventDefault();
-      $(id).addEventListener(type, prevent);
-      cleanups.push(() => $(id).removeEventListener(type, prevent));
-    }
-  }
   function stickMove(e) {
     e.preventDefault?.();
     const r = $('stick').getBoundingClientRect(),
@@ -1348,7 +1348,7 @@ export function createGame({
     else if (state === 'menu') {
       player.visible = true;
       const small = camera.aspect < 1;
-      player.position.set(small ? 0 : 5, small ? 3.2 : 6, small ? 0 : 7);
+      player.position.set(small ? 0 : 9, small ? 12 : 7, small ? -3 : 5);
       player.rotation.set(0.12, -0.45 + Math.sin(now * 0.0003) * 0.08, -0.12);
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);

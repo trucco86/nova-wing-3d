@@ -18,7 +18,11 @@
     </style>
   </head>
   <body>
-    <canvas id="game" aria-label="Jogo 3D Nova Wing, combate aéreo na Cidade das Máquinas"></canvas>
+    <canvas
+      tabindex="-1"
+      id="game"
+      aria-label="Jogo 3D Nova Wing, combate aéreo na Cidade das Máquinas"
+    ></canvas>
     <div id="vignette"></div>
     <div id="flash"></div>
     <header id="hud">
@@ -85,46 +89,27 @@
         ><button id="boostTouch">BOOST</button>
       </div>
     </div>
-    <section id="menu">
-      <div class="menu-top">
-        <span class="brand-mini">FIVE CATS <b> / FLIGHT DIVISION</b></span
-        ><span class="eyebrow">TERRA · 2186</span>
-      </div>
-      <div class="menu-inner">
-        <div class="eyebrow accent">ESQUADRÃO FIVE CATS / STAR ASSAULT</div>
-        <h1>
-          NOVA<span>WING<span class="title-dot">.</span></span>
-        </h1>
-        <div class="subtitle"><i></i>UMA GALÁXIA. DEZ SETORES.</div>
-        <p id="brief">
-          Da costa neon ao trono de Marvin.<br />Dez setores. Dez colossos. Um esquadrão para salvar
-          a Terra.
-        </p>
-        <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
-        <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
-        <div class="campaign-route">01 TERRA <i>→</i> 05 PLASMA <i>→</i> 10 MARVIN</div>
-        <div class="controls">
-          <span><kbd>W A S D</kbd> Pilotar</span><span><kbd>ESPAÇO</kbd> Disparar</span
-          ><span><kbd>Q / E</kbd> Giro</span>
+    <section id="menu" class="title-screen" aria-label="Menu principal">
+      <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
+      <div class="title-content">
+        <h1>NOVA<span>WING</span></h1>
+        <p id="brief">O último voo começa com você.</p>
+        <div class="title-actions">
+          <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+          <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
         </div>
-        <div class="pilot-card">
-          <img src="BUILD:PILOT" alt="Capitã Bia" />
-          <div>
-            <span class="eyebrow">SUA PILOTO</span><strong>CAPITÃ BIA</strong
-            ><small>Bia · Bob · Christopher. Três vidas, uma missão.</small>
+        <details class="title-help">
+          <summary>Como jogar</summary>
+          <div class="help-panel">
+            <p><b>WASD / setas</b> pilotar · <b>Espaço</b> atirar</p>
+            <p><b>Shift</b> boost · <b>Q / E</b> giro · <b>B</b> bomba</p>
+            <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
+            <p>No celular, use os controles de toque. Jogue na horizontal.</p>
           </div>
-        </div>
+        </details>
       </div>
-      <div class="ship-spec">
-        <span class="eyebrow">INTERCEPTADOR TÁTICO</span><strong>NOVA–7</strong>
-        <p>CANHÕES DUPLOS <i>/</i> PROPULSÃO IÔNICA</p>
-        <div class="spec-line"></div>
-        <span class="ready">● PRONTA PARA DECOLAR</span>
-      </div>
-      <div class="menu-footer">
-        <span>10 SETORES <i>/</i> CAMPANHA FIVE CATS</span
-        ><span>TECLADO OU TOQUE <i>·</i> NO CELULAR, JOGUE NA HORIZONTAL</span>
-      </div>
+      <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>
+      <span id="gameVersion">vBUILD:VERSION</span>
     </section>
     <div id="sectorTag">
       <span id="chapter">01</span><small>SETOR<br />ATIVO</small>
