@@ -48,3 +48,47 @@ Um relatório verde não comprova qualidade estética, acessibilidade completa, 
 A especificação [flight-environments](../specs/flight-environments.md) liga o pedido de câmera, toque e combate terrestre a `tests/flight-environments.test.mjs` e aos casos de navegador. Os gates incluem paralaxe e 30/60 Hz, pausa/reset, passagens do túnel, colisão durante impulso, dano ao tanque, vida útil dos encontros e posse de múltiplos ponteiros. A fixture visual não é enviada ao Pages; gera capturas de terreno, túnel, controles e dez chefes. Validação física de Safari/iPhone é uma limitação separada da emulação Chromium, que não deve ser omitida no relatório.
 
 A spec `boss-spectacle.md` acrescenta os contratos de subchefe persistente, resistência temporal, cores de anéis, pods evolutivos e cena de derrota. Mudanças nesses sistemas exigem testes de transição/pausa e capturas; mudanças musicais também exigem renderização de áudio real, não somente mocks de Web Audio.
+
+## Quem controla cada parte
+
+| Responsabilidade      | Implementação atual                                | Limite                                                                           |
+| --------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Intenção e escopo     | Pedido do mantenedor e spec versionada             | O agente não decide nova permissão por conta própria                             |
+| Contexto              | AGENTS, mapa em `tools/context.mjs`, docs e skills | Não existe dependência de memória de conversa para construir o jogo              |
+| Execução do agente    | Runtime usado pelo desenvolvedor, fora do jogo     | Este repo não escolhe modelo nem executa uma frota de agentes                    |
+| Isolamento da mudança | Branch e, quando necessário, worktree              | Worktree não é sandbox de segurança                                              |
+| Verificação           | Node, ESLint, invariantes e Playwright             | Teste simulado não comprova gesto nativo de iOS                                  |
+| Integração            | PR, revisão e checks do GitHub                     | Regras remotas precisam ser conferidas; instrução em Markdown não bloqueia merge |
+| Publicação            | Job Pages após `browser` em `main`                 | Só sucesso de build não confirma deploy                                          |
+| Recuperação           | Revert e mesmos gates                              | Não alterar relatório nem forçar histórico para esconder falha                   |
+
+## O que cada gate prova
+
+| Gate           | Prova procurada                                                                                | Não prova                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `format:check` | Formatação consistente                                                                         | Correção do comportamento                                   |
+| `lint`         | Padrões estáticos e erros detectáveis                                                          | Ausência de bugs de execução                                |
+| `test`         | Estados, entradas, colisões, campanha e contratos em simulação                                 | Renderização da GPU ou gestos do sistema                    |
+| `check:repo`   | Arquivos exigidos, links locais, IDs, skills, dependência fixada, workflow e orçamento do HTML | Segurança completa ou proteção remota ativada               |
+| `build:check`  | HTML exatamente recomposto a partir da fonte                                                   | Qualidade visual                                            |
+| `test:browser` | WebGL, interação, capturas e áudio no Chromium da CI                                           | Safari físico, FPS em todo aparelho ou preferência estética |
+
+O relatório contém `started`, `finished`, `commit`, `sourceDigest`, `passed`, `checks` e `browser`. Cada check tem comando, exit code, duração e erro. Um timeout aparece como erro, não como sucesso parcial. O comando de navegador tem orçamento total de seis minutos; os demais, três. Cada job da CI tem limite de dez minutos.
+
+## Exemplo concreto: pressão longa no tiro
+
+1. Contrato em [input-title-screen](../specs/input-title-screen.md): gesto deve permanecer no jogo e não selecionar textos do HUD.
+2. Contexto dirigido: `npm run agent:context -- input` e handlers relacionados em `game.js`.
+3. Implementação: proteção de gestos em `input.js`, regras CSS e consumo de keydown/keyup.
+4. Evidência de domínio: evento cancelado na partida, permitido no menu e removido após destruir a instância.
+5. Evidência de navegador: Space com botão focado não ativa esse botão; pressão longa carrega plasma; HUD não selecionável.
+6. Revisão visual: capa sem HUD, layout em desktop/paisagem/retrato.
+7. CI no commit final, merge, publicação e verificação da página pública.
+
+O índice [specs/README.md](../specs/README.md) mantém a rastreabilidade para os outros contratos. A inspeção visual continua necessária: nesta campanha, capturas revelaram núcleo encoberto e contraste insuficiente apesar de geometria finita e testes de lógica aprovados.
+
+## Como tratar falhas
+
+Uma falha de comportamento pede reprodução e regressão. Uma falha de infraestrutura pede diagnóstico do ambiente. Um timeout pede verificar se houve lentidão, travamento ou aumento legítimo da suíte antes de ajustar orçamento. Alterar o limite deve ser explícito e não remove assertions.
+
+Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a página pública. Se o navegador de verificação não tiver WebGL, registre a limitação e use a renderização real da CI como evidência separada; não alegue gameplay validado naquele navegador.

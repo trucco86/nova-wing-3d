@@ -1,5 +1,21 @@
 # Histórico
 
+## 1.4.0
+
+- Versionamento SemVer, número na capa, notas por release e GitHub Release após Pages.
+
+- Capa simplificada, ajuda recolhida e painel de combate oculto no menu.
+- Proteção de tiro no teclado e de seleção/callout no toque; foco no canvas.
+- Extração de entrada para `src/input.js`, com cleanup e regressões.
+- README consolidado, mapa de módulos e matriz de specs/testes; harness documentado por responsabilidade e gate.
+
+## 1.3.0
+
+- Boost com jato laranja alongado e rastros periféricos.
+- Upgrades alcançáveis em telas estreitas, atração próxima e coleta varrida.
+- Pods lançáveis com posição independente, retorno, leque e interceptação de projéteis.
+- Dez anatomias de chefes e dez subchefes com identidade e ataques próprios.
+
 ## 1.2.0 — Chefes, evolução e trilha dinâmica
 
 - Chefes com placas, canhões, cabos, reatores e dano visual; três etapas, resistência temporal e núcleo com janelas de ataque.
@@ -43,10 +59,3 @@
 
 - Missão 3D com inimigos, obstáculos, anéis e chefe.
 - Teclado, controles de toque, escudo, bombas e aceleração.
-
-## 1.3.0
-
-- Boost com jato laranja alongado e rastros periféricos.
-- Upgrades alcançáveis em telas estreitas, atração próxima e coleta varrida.
-- Pods lançáveis com posição independente, retorno, leque e interceptação de projéteis.
-- Dez anatomias de chefes e dez subchefes com identidade e ataques próprios.

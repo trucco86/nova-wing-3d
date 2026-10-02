@@ -73,3 +73,9 @@ Anéis derivam sua faixa de spawn do limite horizontal da nave, inclusive após 
 Pods têm estados `docked`, `launching`, `deployed` e `returning`. A posição solta permanece no mundo; o retorno usa velocidade limitada por delta. Projéteis hostis usam colisão varrida com os pods antes da nave. Acoplados acompanham o comando de tiro; lançados disparam em leque automaticamente. V e toque executam a mesma transição; pausa impede mudanças.
 
 `encounterPattern` define dez assinaturas de ataque usadas por chefe e subchefe do setor, com pressão por fase. Templates de subchefes são compartilhados por variante; a anatomia dos chefes varia em proporção, membros, olhos, cristas e membranas, além das carcaças existentes. Geradores e núcleo preservam as zonas de acerto.
+
+## Entrada e apresentação (1.4)
+
+`src/input.js` agrupa as teclas reconhecidas e a proteção de gestos do navegador, retornando cleanup dos listeners. A instância de jogo continua dona das ações e do estado. Keydown e keyup são consumidos para teclas do jogo em missão; modificadores do navegador não disparam ações. O canvas recebe foco ao iniciar. Listeners de toque não passivos protegem a superfície de jogo, e seleção/contextmenu em HUD são cancelados durante a missão.
+
+A capa contém título, frase, iniciar/continuar e ajuda em `details`; HUD de combate fica invisível no menu. A nave apresentada é o próprio modelo 3D. A matriz [de contratos](../specs/README.md) e o [mapa de edição](REPOSITORIO.md) conectam esta organização aos testes e ferramentas.

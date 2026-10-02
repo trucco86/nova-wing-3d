@@ -1,3 +1,4 @@
+import './version.mjs';
 import { readFileSync, existsSync, readdirSync, statSync, lstatSync, readlinkSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { parse } from 'yaml';
@@ -22,6 +23,7 @@ const required = [
   'tests/flight-force-variety.test.mjs',
   'tests/boss-spectacle.test.mjs',
   'src/game.js',
+  'src/input.js',
   'src/visuals.js',
   'src/flight.js',
   'src/encounters.js',
@@ -31,6 +33,10 @@ const required = [
   'src/shell.html',
   '.github/workflows/ci.yml',
   'specs/foundation.md',
+  'specs/input-title-screen.md',
+  'tests/input-title.test.mjs',
+  'docs/REPOSITORIO.md',
+  'specs/README.md',
 ];
 for (const f of required) requireThat(existsSync(f), `Missing ${f}`);
 const source = readFileSync('src/game.js', 'utf8'),
@@ -41,6 +47,7 @@ for (const [, id] of source.matchAll(/\$\('([^']+)'\)/g))
   requireThat(ids.includes(id), `Missing HUD element ${id}`);
 for (const file of [
   'src/game.js',
+  'src/input.js',
   'src/visuals.js',
   'src/flight.js',
   'src/encounters.js',

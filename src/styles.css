@@ -1386,3 +1386,223 @@ body.boosting::after {
 body:not(.boosting)::after {
   animation-play-state: paused;
 }
+
+/* Minimal title composition: typography and the actual 3D interceptor. */
+#menu.title-screen {
+  padding: max(42px, 6vh) 8vw;
+  background:
+    linear-gradient(90deg, #030b16ed, #030b1699 40%, #030b1610 75%),
+    linear-gradient(0deg, #030b16e0, transparent 30%);
+  align-items: center;
+  overflow: auto;
+}
+.title-brand {
+  position: absolute;
+  top: max(28px, env(safe-area-inset-top));
+  left: 8vw;
+  font-size: 12px;
+  letter-spacing: 4px;
+  color: #a6eee0;
+}
+.title-brand span {
+  margin-left: 16px;
+  color: #73929d;
+  font-size: 9px;
+  letter-spacing: 2px;
+}
+.title-content {
+  position: relative;
+  width: min(430px, 46vw);
+}
+#menu.title-screen h1 {
+  font-size: clamp(88px, 10vw, 144px);
+  line-height: 0.85;
+  letter-spacing: 2px;
+  margin: 0 0 28px;
+}
+#menu.title-screen #brief {
+  margin: 0 0 28px;
+  max-width: 360px;
+  color: #a9c1cc;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.title-actions {
+  display: grid;
+  gap: 10px;
+  max-width: 300px;
+}
+.title-actions .primary {
+  min-width: 0;
+  width: 100%;
+  padding: 18px 24px;
+}
+.title-actions .secondary {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+  font-size: 11px;
+}
+.title-help {
+  margin-top: 22px;
+  position: relative;
+  width: max-content;
+  max-width: 100%;
+  color: #9ab5c2;
+  font-size: 12px;
+}
+.title-help summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.help-panel {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: min(360px, 82vw);
+  padding: 18px;
+  border: 1px solid #3b6c73;
+  border-radius: 12px;
+  background: #081923fa;
+  box-shadow: 0 12px 45px #0008;
+  line-height: 1.7;
+  z-index: 5;
+}
+.help-panel p {
+  margin: 0 0 9px;
+}
+.help-panel p:last-child {
+  margin: 0;
+  color: #70ddc3;
+}
+.title-footer {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 8vw;
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #6e939e;
+}
+body.menu #hud,
+body.menu #bottom,
+body.menu #sectorTag,
+body.menu #loadout,
+body.menu #bossHUD,
+body.menu #subHUD,
+body.menu #attackWarning,
+body.menu #comms {
+  visibility: hidden;
+  pointer-events: none;
+}
+body,
+button,
+img,
+canvas {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-drag: none;
+}
+#game:focus {
+  outline: none;
+}
+@media (max-aspect-ratio: 1/1) {
+  #menu.title-screen {
+    align-items: flex-end;
+    padding: 38vh 7vw 64px;
+    background: linear-gradient(0deg, #030b16fa 0%, #030b16d9 42%, #030b1615 75%);
+  }
+  .title-brand {
+    left: 7vw;
+  }
+  .title-brand span {
+    display: none;
+  }
+  .title-content {
+    width: 100%;
+    text-align: center;
+  }
+  #menu.title-screen h1 {
+    font-size: clamp(68px, 19vw, 108px);
+    margin-bottom: 18px;
+  }
+  #menu.title-screen #brief {
+    margin: 0 auto 22px;
+    font-size: 13px;
+  }
+  .title-actions {
+    margin: auto;
+  }
+  .title-help {
+    margin: 12px auto 0;
+  }
+  .help-panel {
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: left;
+  }
+  .title-footer {
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 8px;
+    letter-spacing: 2px;
+    bottom: 22px;
+  }
+}
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen {
+    padding: 50px 7vw 30px;
+  }
+  .title-brand {
+    top: 18px;
+    left: 7vw;
+    font-size: 10px;
+  }
+  .title-brand span,
+  .title-footer {
+    display: none;
+  }
+  #menu.title-screen h1 {
+    font-size: 70px;
+    margin-bottom: 15px;
+  }
+  #menu.title-screen #brief {
+    font-size: 12px;
+    margin-bottom: 15px;
+  }
+  .title-actions {
+    max-width: 260px;
+    gap: 6px;
+  }
+  .title-actions .primary {
+    padding: 12px 18px;
+    font-size: 11px;
+  }
+  .title-help {
+    margin-top: 8px;
+  }
+}
+
+#gameVersion {
+  position: absolute;
+  right: 7vw;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  color: #72949e;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+@media (max-aspect-ratio: 1/1) {
+  #gameVersion {
+    top: 30px;
+    bottom: auto;
+    right: 7vw;
+  }
+}
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  #gameVersion {
+    top: 18px;
+    bottom: auto;
+    font-size: 9px;
+  }
+}
