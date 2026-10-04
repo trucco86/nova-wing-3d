@@ -43,11 +43,11 @@ for (const command of commands) {
   process.stdout.write(output);
   checks.push({
     command,
-    exitCode: r.status ?? 1,
+    exitCode: r.error ? 1 : (r.status ?? 1),
     durationMs: Date.now() - start,
     error: r.error?.message ?? null,
   });
-  if (r.status !== 0) break;
+  if (r.error || r.status !== 0) break;
 }
 const passed = checks.length === commands.length && checks.every((c) => c.exitCode === 0);
 writeFileSync(

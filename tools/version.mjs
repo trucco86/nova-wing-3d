@@ -3,7 +3,8 @@ import { execFileSync } from 'node:child_process';
 const read = (p) => readFileSync(p, 'utf8');
 const pkg = JSON.parse(read('package.json'));
 const version = pkg.version;
-if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Expected MAJOR.MINOR.PATCH version');
+if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version))
+  throw new Error('Expected MAJOR.MINOR.PATCH version');
 const lock = JSON.parse(read('package-lock.json'));
 if (lock.version !== version || lock.packages[''].version !== version)
   throw new Error('Version differs from lockfile');

@@ -24,6 +24,11 @@ test('release gate rejects inconsistent deliverables', () => {
     write('releases/v1.4.0.md', '# v1.4.0\n');
     write('index.html', '<span id="gameVersion">v1.4.0</span>');
     assert.equal(run().status, 0);
+    for (const version of ['01.4.0', '1.04.0', '1.4.00']) {
+      write('package.json', JSON.stringify({ version }));
+      assert.match(run().stderr, /Expected MAJOR.MINOR.PATCH/);
+    }
+    write('package.json', JSON.stringify({ version: '1.4.0' }));
     lock('1.3.0');
     assert.match(run().stderr, /Version differs from lockfile/);
     lock('1.4.0');
