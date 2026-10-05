@@ -210,6 +210,8 @@ flowchart TD
 
 ### Fluxo recomendado
 
+A delegação nativa autorizada usa Luna para documentação e tarefas simples, Sol para implementação e testes, e Astra para arquitetura complexa, bugs difíceis e revisão crítica. O runtime seleciona os modelos dos agentes delegados; o repositório não troca o modelo da conversa principal. O agente principal integra o trabalho e executa os mesmos gates. Veja [modelos e limites](docs/MODELOS.md).
+
 ```sh
 npm run agent:context -- --mapa
 npm run agent:context -- input
