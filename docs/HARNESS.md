@@ -96,3 +96,7 @@ Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a p
 ## Seleção de modelos
 
 `npm run agent:route -- implementation medium 12000` seleciona um modelo configurado ou bloqueia com motivo. A política cobre planejamento, implementação, revisão, testes e documentação, com escalada por risco, contexto, visão e falhas. Consulte [modelos](MODELOS.md) para configuração e responsabilidade do runtime. O seletor não chama APIs nem flexibiliza gates.
+
+## Execução opcional de LLM
+
+O [executor](EXECUCAO-LLM.md) conecta o roteamento às APIs Claude e Gemini, com contagem prévia, timeout, limites de saída e evidência. `npm run agent:benchmark` verifica configuração sem rede; `--case ID --live` executa um experimento autenticado. Não há execução de código retornado ou aprovação automática de mudanças.

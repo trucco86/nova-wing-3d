@@ -61,7 +61,7 @@ export function routeTask(policy, request, env = process.env) {
     inputTokens < 0 ||
     typeof vision !== 'boolean' ||
     !Array.isArray(failedModels) ||
-    !failedModels.every((id) => typeof id === 'string') ||
+    !failedModels.every((id) => policy.models.some((model) => model.key === id)) ||
     !Number.isSafeInteger(attempts) ||
     attempts < 0 ||
     (authorModel !== null && typeof authorModel !== 'string')
@@ -83,7 +83,16 @@ export function routeTask(policy, request, env = process.env) {
         ? 'balanced'
         : 'fast';
   const rejected = [];
-  for (const key of route.candidates) {
+  const candidates = [...route.candidates];
+  if (task === 'review' && authorModel) {
+    const authorProvider = authorModel.split('/')[0];
+    candidates.sort(
+      (a, b) =>
+        Number(policy.models.find((m) => m.key === a).provider === authorProvider) -
+        Number(policy.models.find((m) => m.key === b).provider === authorProvider),
+    );
+  }
+  for (const key of candidates) {
     const model = policy.models.find((m) => m.key === key);
     const modelId = env[model.modelEnv]?.trim();
     let reason;

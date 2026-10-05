@@ -103,3 +103,26 @@ test('policy validation rejects invalid routes, identities and limits', () => {
     assert.throws(() => validatePolicy(config));
   }
 });
+
+test('author-aware review prefers another provider, retaining same-provider fallback', () => {
+  assert.equal(
+    route({ task: 'review', authorModel: 'google/fast-example' }).model.provider,
+    'anthropic',
+  );
+  assert.equal(
+    route({ task: 'review', authorModel: 'anthropic/balanced-example' }).model.provider,
+    'google',
+  );
+  assert.equal(
+    route({ task: 'review', authorModel: 'google/fast-example' }, policy, {
+      NOVA_MODEL_DEEP_FALLBACK: 'deep-alternative',
+    }).model.provider,
+    'google',
+  );
+});
+test('unknown failed-model keys are rejected instead of retrying a failed candidate', () => {
+  assert.throws(
+    () => route({ task: 'planning', failedModels: ['depp'], attempts: 1 }),
+    /Invalid routing request/,
+  );
+});

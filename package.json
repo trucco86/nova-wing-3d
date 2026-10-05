@@ -21,7 +21,8 @@
     "validate": "node tools/validate.mjs",
     "agent:context": "node tools/context.mjs",
     "agent:new": "node tools/task.mjs",
-    "agent:route": "node tools/model-router.mjs"
+    "agent:route": "node tools/model-router.mjs",
+    "agent:benchmark": "node tools/model-benchmark.mjs"
   },
   "dependencies": {
     "three": "0.170.0"

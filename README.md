@@ -269,3 +269,5 @@ MIT, conforme [LICENSE](LICENSE). Nomes e bases musicais foram adaptados do Nova
 ### Modelos para desenvolvimento
 
 O harness inclui seleção determinística por tarefa, risco e capacidade, com fallback entre modelos configurados. Veja [política e exemplos](docs/MODELOS.md). Execute `npm run agent:route -- implementation medium 12000`; sem configuração, a seleção permanece bloqueada.
+
+Para executar o preflight da comparação: `npm run agent:benchmark`. Chamadas reais exigem configuração e `--case ID --live`; veja [executor e benchmark](docs/EXECUCAO-LLM.md).

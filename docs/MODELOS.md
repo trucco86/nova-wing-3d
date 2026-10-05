@@ -1,6 +1,6 @@
 # Modelos LLM para tarefas de desenvolvimento
 
-O seletor `tools/model-router.mjs` resolve uma política versionada em `model-policy.json`. Ele retorna uma decisão JSON; o runtime externo deve chamar a API e aplicar os limites. Não existe chamada de modelo, cobrança ou agente residente neste repositório.
+O seletor `tools/model-router.mjs` resolve uma política versionada em `model-policy.json`. Ele retorna uma decisão JSON; o runtime externo deve chamar a API e aplicar os limites. O seletor não faz chamadas. O [executor e benchmark](EXECUCAO-LLM.md) pode chamar APIs quando iniciado explicitamente com `--live`.
 
 ## Política inicial
 
@@ -38,3 +38,7 @@ O runtime deve contar a entrada completa (instruções, contexto e ferramentas),
 Compare modelos com as mesmas tarefas e gates: correção de boost, coleta nos limites da tela, pausa/reset e revisão de PR. Registre commit, tarefa, risco, modelo resolvido, tentativas, duração, tokens/custo observado e resultado dos testes. Escolha pelo custo de uma entrega validada. Ainda não há resultados medidos nem recomendação definitiva de fornecedor.
 
 Os testes do roteador rodam em `npm run validate` sem credenciais. A decisão de modelo não aprova merge, não executa testes e não altera a publicação do jogo.
+
+## Executar a comparação
+
+Use `npm run agent:benchmark` para preflight. O [guia de execução](EXECUCAO-LLM.md) explica credenciais, casos, tarifas, limites e avaliação humana. Resultados bloqueados não são medições.
