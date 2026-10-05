@@ -42,7 +42,7 @@ No celular, prefira a horizontal. O navegador precisa de WebGL e aceleração gr
 
 ### Escudo, vidas e impulso
 
-Você começa com três vidas, 100 de escudo e três bombas. Ao perder uma nave, o próximo piloto assume na mesma posição, com proteção temporária. O giro também protege por um intervalo curto. O boost consome energia e acelera o cenário; soltar permite recuperar energia. A chama alaranjada e os rastros indicam que o impulso está ativo.
+Você começa com três vidas, 100 de escudo e três bombas. Ao perder uma nave, o próximo piloto assume na mesma posição, com proteção temporária. O giro também protege por um intervalo curto. O boost consome energia e acelera o cenário; soltar permite recuperar energia. Ao esgotar a reserva, o impulso encerra e a energia recarrega; solte Shift ou BOOST e pressione novamente para reativar. A chama alaranjada e os rastros indicam que o impulso está ativo.
 
 ### Anéis e armamento
 

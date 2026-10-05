@@ -33,6 +33,60 @@ test('boost visibly changes exhaust and stops on release, pause and restart', (t
   h.advance(0.1);
   assert.equal(h.game.snapshot().boostVisual.color, base.color);
 });
+for (const dt of [1 / 60, 0.035, 0.05]) {
+  test(`depleted boost stays at cruise while held and rearms after release (dt=${dt})`, (t) => {
+    const h = setup(t);
+    h.key('ShiftLeft');
+    h.advance(4, dt);
+    const before = h.game.snapshot().energy;
+    assert.equal(h.elements.get('speedValue').textContent, '480');
+    for (let i = 0; i < 30; i++) {
+      h.advance(dt, dt);
+      assert.equal(h.document.body.classList.contains('boosting'), false);
+      assert.equal(h.elements.get('speedValue').textContent, '480');
+    }
+    assert.match(h.elements.get('message').textContent, /SOLTE.*BOOST/);
+    assert.ok(Math.abs(h.game.snapshot().energy - before - 30 * dt * 15) < 1e-7);
+    h.advance(8, dt);
+    assert.equal(h.game.snapshot().energy, 100);
+    assert.equal(h.document.body.classList.contains('boosting'), false);
+    h.key('ShiftLeft', false);
+    h.key('ShiftRight');
+    h.advance(dt * 2, dt);
+    assert.equal(h.document.body.classList.contains('boosting'), true);
+    assert.ok(h.game.snapshot().energy < 100);
+  });
+}
+test('touch depletion shares rearm rules, including mixed controls, cancel, pause and reset', (t) => {
+  const h = setup(t);
+  const boost = h.elements.get('boostTouch');
+  boost.onpointerdown({ pointerId: 3, preventDefault() {} });
+  h.advance(4);
+  assert.equal(h.elements.get('speedValue').textContent, '480');
+  h.key('ShiftLeft');
+  boost.emit('pointercancel', { pointerId: 3 });
+  h.advance(0.3);
+  assert.equal(h.document.body.classList.contains('boosting'), false);
+  h.key('ShiftLeft', false);
+  boost.onpointerdown({ pointerId: 4, preventDefault() {} });
+  h.advance(0.1);
+  assert.equal(h.document.body.classList.contains('boosting'), true);
+  h.advance(4);
+  const energy = h.game.snapshot().energy;
+  h.game.pause();
+  h.advance(2);
+  assert.equal(h.game.snapshot().energy, energy);
+  assert.equal(h.game.snapshot().controls.boost, false);
+  h.game.pause();
+  boost.onpointerdown({ pointerId: 5, preventDefault() {} });
+  h.advance(0.1);
+  assert.equal(h.document.body.classList.contains('boosting'), true);
+  h.game.start();
+  assert.equal(h.game.snapshot().energy, 100);
+  assert.equal(h.document.body.classList.contains('boosting'), false);
+  h.advance(0.1);
+  assert.equal(h.game.snapshot().controls.boost, false);
+});
 test('rings stay reachable after portrait resize and can be collected at boost speed', (t) => {
   const h = setup(t, { spawnEncounters: true });
   h.advance(4.1);

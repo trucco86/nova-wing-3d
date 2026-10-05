@@ -34,6 +34,42 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await page.screenshot({ path: test.info().outputPath('mission.png') });
   expect(errors).toEqual([]);
 });
+test('held depleted boost settles at cruise and rearms on keyboard and touch', async ({
+  page,
+}, info) => {
+  test.setTimeout(60000);
+  await page.goto('/');
+  await page.locator('#start').click();
+  const mobile = info.project.name === 'mobile';
+  if (mobile) {
+    const bounds = await page.locator('#boostTouch').boundingBox();
+    await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await page.mouse.down();
+  } else await page.keyboard.down('Shift');
+  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await expect(page.locator('#speedValue')).toHaveText('890');
+  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 30000 });
+  await expect
+    .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)), {
+      timeout: 20000,
+    })
+    .toBeGreaterThan(20);
+  await expect(page.locator('body')).not.toHaveClass(/boosting/);
+  await expect(page.locator('#speedValue')).toHaveText('480');
+  await page.screenshot({ path: info.outputPath('boost-depleted.png') });
+  if (mobile) {
+    await page.mouse.up();
+    await page.mouse.down();
+  } else {
+    await page.keyboard.up('Shift');
+    await page.keyboard.down('Shift');
+  }
+  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await expect(page.locator('#speedValue')).toHaveText('890');
+  await page.screenshot({ path: info.outputPath('boost-rearmed.png') });
+  if (mobile) await page.mouse.up();
+  else await page.keyboard.up('Shift');
+});
 test('missing WebGL presents an honest, non-interactive error', async ({ page }) => {
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;

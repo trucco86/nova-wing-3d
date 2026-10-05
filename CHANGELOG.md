@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.4.1
+
+- Impulso esgotado encerra sem oscilar entre velocidades ou piscar os jatos; a energia recarrega continuamente enquanto o comando permanece pressionado.
+- Comunicação explica como rearmar: soltar Shift/BOOST e pressionar novamente. Teclado, toque e cancelamento compartilham a regra, inclusive entre quadros.
+- Regressões de esgotamento em três deltas e controles mistos; capturas WebGL desktop/mobile de impulso esgotado e reativado.
+
 ## 1.4.0
 
 - Versionamento SemVer, número na capa, notas por release e GitHub Release após Pages.
