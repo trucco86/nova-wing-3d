@@ -61,3 +61,7 @@ As novas capturas WebGL cobrem pods I–III, anéis, cruzador e onda de choque. 
 `tests/flight-force-variety.test.mjs` cobre cor e comprimento do boost, pausa/reinício, alcance e coleta real em retrato, lançamento contínuo, permanência no mundo e retorno dos pods. Verifica dez silhuetas finitas e assinaturas táticas distintas. O navegador captura boost em teclado/toque e os dez subchefes em ambos os viewports. Critérios em `specs/flight-force-variety.md`.
 
 A suíte gráfica tem orçamento total de seis minutos no harness (demais comandos: três minutos). As vinte verificações e capturas excederam o prazo anterior de três minutos no CI; limites individuais e assertions permanecem iguais. O job externo mantém limite de dez minutos.
+
+## Entrada e capa
+
+`tests/input-title.test.mjs` cobre consumo de down/up/repetição, isolamento de modificadores, proteção de gestos e cleanup. O navegador testa Space com um botão de áudio focado, seleção em texto do HUD, ajuda recolhida e capa em desktop, celular horizontal e retrato. Capturas comprovam apresentação; não substituem ensaio nativo de pressão longa no Safari físico.
