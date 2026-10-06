@@ -36,7 +36,8 @@ for (const command of commands) {
   const start = Date.now();
   const r = spawnSync('npm', ['run', command], {
     encoding: 'utf8',
-    timeout: command === 'test:browser' ? 360000 : 180000,
+    // Full desktop/mobile WebGL coverage needs more than six minutes on software rendering.
+    timeout: command === 'test:browser' ? 480000 : 180000,
   });
   const output = (r.stdout ?? '') + (r.stderr ?? '');
   writeFileSync(`artifacts/${command.replaceAll(':', '-')}.log`, output);

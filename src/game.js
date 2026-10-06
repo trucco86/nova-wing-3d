@@ -127,6 +127,7 @@ export function createGame({
     roll = 0,
     rollCd = 0,
     boosting = false,
+    boostNeedsRelease = false,
     bossHp = 200,
     bossCd = 0,
     msgTime = 0,
@@ -795,12 +796,17 @@ export function createGame({
   addEventListener('keyup', (e) => {
     if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
     keys.delete(e.code);
+    if (!boostRequested()) boostNeedsRelease = false;
   });
   cleanups.push(protectFlightSurface(document, $('game'), $('touch'), inFlight));
   let stickId = null;
   const heldPointers = new Map();
+  function boostRequested() {
+    return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
+  }
   function releaseControls() {
     boosting = false;
+    boostNeedsRelease = false;
     document.body.classList.remove('boosting');
     for (const f of player.userData.flames) {
       f.material.color.set('#78eaff');
@@ -874,6 +880,7 @@ export function createGame({
         if (e.pointerId !== undefined && heldPointers.get(id) !== e.pointerId) return;
         heldPointers.delete(id);
         set(false);
+        if (!boostRequested()) boostNeedsRelease = false;
         b.classList.remove('pressed');
       });
   }
@@ -902,7 +909,13 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
-    boosting = (keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost) && energy > 5;
+    const boostHeld = boostRequested();
+    if (!boostHeld) boostNeedsRelease = false;
+    if (boostHeld && energy <= 5 && !boostNeedsRelease) {
+      boostNeedsRelease = true;
+      message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
+    }
+    boosting = boostHeld && !boostNeedsRelease && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
     const speed = boosting ? 90 : 48;
     const holding = keys.has('Space') || touchFire;
