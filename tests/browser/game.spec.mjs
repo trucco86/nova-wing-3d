@@ -37,7 +37,9 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
 test('held depleted boost settles at cruise and rearms on keyboard and touch', async ({
   page,
 }, info) => {
-  test.setTimeout(60000);
+  // Software WebGL can take over 30 wall-clock seconds for 3.4 simulated seconds.
+  // The CI trace still had 50% energy at the old deadline; preserve all state assertions.
+  test.setTimeout(150000);
   await page.goto('/');
   await page.locator('#start').click();
   const mobile = info.project.name === 'mobile';
@@ -48,10 +50,10 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
   } else await page.keyboard.down('Shift');
   await expect(page.locator('body')).toHaveClass(/boosting/);
   await expect(page.locator('#speedValue')).toHaveText('890');
-  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 30000 });
+  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 90000 });
   await expect
     .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 20000,
+      timeout: 40000,
     })
     .toBeGreaterThan(20);
   await expect(page.locator('body')).not.toHaveClass(/boosting/);
