@@ -51,16 +51,16 @@ A spec `boss-spectacle.md` acrescenta os contratos de subchefe persistente, resi
 
 ## Quem controla cada parte
 
-| Responsabilidade      | Implementação atual                                | Limite                                                                           |
-| --------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Intenção e escopo     | Pedido do mantenedor e spec versionada             | O agente não decide nova permissão por conta própria                             |
-| Contexto              | AGENTS, mapa em `tools/context.mjs`, docs e skills | Não existe dependência de memória de conversa para construir o jogo              |
-| Execução do agente    | Runtime usado pelo desenvolvedor, fora do jogo     | Este repo não escolhe modelo nem executa uma frota de agentes                    |
-| Isolamento da mudança | Branch e, quando necessário, worktree              | Worktree não é sandbox de segurança                                              |
-| Verificação           | Node, ESLint, invariantes e Playwright             | Teste simulado não comprova gesto nativo de iOS                                  |
-| Integração            | PR, revisão e checks do GitHub                     | Regras remotas precisam ser conferidas; instrução em Markdown não bloqueia merge |
-| Publicação            | Job Pages após `browser` em `main`                 | Só sucesso de build não confirma deploy                                          |
-| Recuperação           | Revert e mesmos gates                              | Não alterar relatório nem forçar histórico para esconder falha                   |
+| Responsabilidade      | Implementação atual                                   | Limite                                                                                   |
+| --------------------- | ----------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Intenção e escopo     | Pedido do mantenedor e spec versionada                | O agente não decide nova permissão por conta própria                                     |
+| Contexto              | AGENTS, mapa em `tools/context.mjs`, docs e skills    | Não existe dependência de memória de conversa para construir o jogo                      |
+| Execução do agente    | Runtime com delegação nativa disponível, fora do jogo | O runtime seleciona modelos dos agentes; o repo não troca o modelo da conversa principal |
+| Isolamento da mudança | Branch e, quando necessário, worktree                 | Worktree não é sandbox de segurança                                                      |
+| Verificação           | Node, ESLint, invariantes e Playwright                | Teste simulado não comprova gesto nativo de iOS                                          |
+| Integração            | PR, revisão e checks do GitHub                        | Regras remotas precisam ser conferidas; instrução em Markdown não bloqueia merge         |
+| Publicação            | Job Pages após `browser` em `main`                    | Só sucesso de build não confirma deploy                                                  |
+| Recuperação           | Revert e mesmos gates                                 | Não alterar relatório nem forçar histórico para esconder falha                           |
 
 ## O que cada gate prova
 
@@ -92,3 +92,11 @@ O índice [specs/README.md](../specs/README.md) mantém a rastreabilidade para o
 Uma falha de comportamento pede reprodução e regressão. Uma falha de infraestrutura pede diagnóstico do ambiente. Um timeout pede verificar se houve lentidão, travamento ou aumento legítimo da suíte antes de ajustar orçamento. Alterar o limite deve ser explícito e não remove assertions.
 
 Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a página pública. Se o navegador de verificação não tiver WebGL, registre a limitação e use a renderização real da CI como evidência separada; não alegue gameplay validado naquele navegador.
+
+## Delegação nativa de modelos
+
+O fluxo padrão usa os modelos nativos disponíveis no runtime para delegação autorizada: Luna (`gpt-6-luna`) para documentação e tarefas simples, Sol (`gpt-6.1-sol`) para implementação e testes, e Astra (`gpt-6-astra`) para arquitetura complexa, bugs difíceis e revisão crítica. Consulte [modelos](MODELOS.md) para escolha por risco, escalada e prestação de contas.
+
+A seleção ocorre ao criar agentes delegados. A documentação do repositório orienta essa escolha; não muda o modelo da conversa principal nem garante disponibilidade em outras sessões. O agente principal coordena o escopo, integra o resultado, verifica os gates e informa os modelos efetivamente usados. Sem delegação disponível, segue o fluxo local e relata a limitação.
+
+O experimento de roteamento e execução por APIs externas permanece pausado no [PR 6](https://github.com/trucco86/nova-wing-3d/pull/6), fora do fluxo padrão. A delegação nativa não exige essas APIs nem chaves de provedor.
