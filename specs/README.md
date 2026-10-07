@@ -11,6 +11,10 @@ Specs descrevem intenção e critérios observáveis; o comportamento executáve
 | [flight-force-variety](flight-force-variety.md) | Boost, coleta alcançável, pods e identidade de encontros | `game.js`, `bosses.js`, `visuals.js`                 | `tests/flight-force-variety.test.mjs`, capturas      |
 | [input-title-screen](input-title-screen.md)     | Tiro sem gestos nativos e capa simplificada              | `input.js`, `game.js`, HTML/CSS                      | `tests/input-title.test.mjs`, teclado/toque e layout |
 
+| [model-routing](model-routing.md) | Seleção por tarefa, risco, recursos e fallback | `tools/model-router.mjs`, `model-policy.json` | `tests/model-router.test.mjs` |
+
+| [model-execution](model-execution.md) | Chamadas limitadas, consumo e comparação rastreável | `tools/model-executor.mjs`, `tools/model-provider.mjs`, `tools/model-benchmark.mjs` | `tests/model-execution.test.mjs`, `tests/model-benchmark.test.mjs` |
+
 As specs se complementam. A evolução de pods em `flight-force-variety` detalha o comportamento originalmente introduzido em `boss-spectacle`; a mudança mais recente precisa declarar o contrato alterado, sem deixar duas regras incompatíveis.
 
 ## Antes de encerrar uma mudança

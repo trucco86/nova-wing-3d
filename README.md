@@ -265,3 +265,9 @@ Para desfazer uma entrega, reverta o commit, gere novamente o HTML e passe pelos
 - [Licenças e referência original](THIRD_PARTY_NOTICES.md)
 
 MIT, conforme [LICENSE](LICENSE). Nomes e bases musicais foram adaptados do Nova Wing de Cristian Trucco; Three.js mantém sua licença. O retrato de Bia foi gerado para este protótipo. Google Fonts é opcional, com fallback local. Star Fox e R-Type servem como referências de gênero e mecânica; este projeto não é um produto oficial dessas franquias.
+
+### Modelos para desenvolvimento
+
+O harness inclui seleção determinística por tarefa, risco e capacidade, com fallback entre modelos configurados. Veja [política e exemplos](docs/MODELOS.md). Execute `npm run agent:route -- implementation medium 12000`; sem configuração, a seleção permanece bloqueada.
+
+Para executar o preflight da comparação: `npm run agent:benchmark`. Chamadas reais exigem configuração e `--case ID --live`; veja [executor e benchmark](docs/EXECUCAO-LLM.md).

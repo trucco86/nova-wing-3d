@@ -55,7 +55,7 @@ A spec `boss-spectacle.md` acrescenta os contratos de subchefe persistente, resi
 | --------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------- |
 | Intenção e escopo     | Pedido do mantenedor e spec versionada             | O agente não decide nova permissão por conta própria                             |
 | Contexto              | AGENTS, mapa em `tools/context.mjs`, docs e skills | Não existe dependência de memória de conversa para construir o jogo              |
-| Execução do agente    | Runtime usado pelo desenvolvedor, fora do jogo     | Este repo não escolhe modelo nem executa uma frota de agentes                    |
+| Execução do agente    | Runtime usado pelo desenvolvedor, fora do jogo     | O seletor local recomenda modelo; o runtime externo chama APIs e aplica limites  |
 | Isolamento da mudança | Branch e, quando necessário, worktree              | Worktree não é sandbox de segurança                                              |
 | Verificação           | Node, ESLint, invariantes e Playwright             | Teste simulado não comprova gesto nativo de iOS                                  |
 | Integração            | PR, revisão e checks do GitHub                     | Regras remotas precisam ser conferidas; instrução em Markdown não bloqueia merge |
@@ -92,3 +92,11 @@ O índice [specs/README.md](../specs/README.md) mantém a rastreabilidade para o
 Uma falha de comportamento pede reprodução e regressão. Uma falha de infraestrutura pede diagnóstico do ambiente. Um timeout pede verificar se houve lentidão, travamento ou aumento legítimo da suíte antes de ajustar orçamento. Alterar o limite deve ser explícito e não remove assertions.
 
 Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a página pública. Se o navegador de verificação não tiver WebGL, registre a limitação e use a renderização real da CI como evidência separada; não alegue gameplay validado naquele navegador.
+
+## Seleção de modelos
+
+`npm run agent:route -- implementation medium 12000` seleciona um modelo configurado ou bloqueia com motivo. A política cobre planejamento, implementação, revisão, testes e documentação, com escalada por risco, contexto, visão e falhas. Consulte [modelos](MODELOS.md) para configuração e responsabilidade do runtime. O seletor não chama APIs nem flexibiliza gates.
+
+## Execução opcional de LLM
+
+O [executor](EXECUCAO-LLM.md) conecta o roteamento às APIs Claude e Gemini, com contagem prévia, timeout, limites de saída e evidência. `npm run agent:benchmark` verifica configuração sem rede; `--case ID --live` executa um experimento autenticado. Não há execução de código retornado ou aprovação automática de mudanças.
