@@ -10,6 +10,7 @@ Distribuir a mesma campanha offline em um projeto iOS Capacitor 8, mantendo a ve
 - O pacote incorpora código, imagens, música sintetizada e licenças; não depende do Pages nem de fontes remotas.
 - Sair do app, bloquear a tela ou interromper a sessão pausa o combate, libera os toques e suspende o áudio. Retornar exige retomada explícita.
 - Eventos de foco do WebView não reativam uma sessão que o sistema marcou como inativa.
+- Telas externas não criam outra instância do jogo; apenas sessões de aplicativo recebem o delegado com WebView.
 - iOS não registra o botão Voltar nem chama a API Android de minimizar.
 - Versão de marketing vem de `package.json`; número de build usa major × 1000000 + minor × 1000 + patch.
 - Projeto inclui ícone, tela de abertura, manifesto de privacidade e não declara permissões sem uso.

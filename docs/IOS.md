@@ -20,7 +20,7 @@ O CI disponibiliza o artefato `ios-simulator` e a captura de inicialização. El
 2. Em Signing & Capabilities do target App, selecione a equipe e configure assinatura automática pelo Xcode. Mantenha certificados e perfis fora do Git.
 3. No App Store Connect, crie o registro Nova Wing com o mesmo identificador.
 4. Selecione um destino iOS físico/genérico no Xcode e use Product → Archive. Em Organizer, valide o archive e distribua para App Store Connect.
-5. Após o processamento, configure TestFlight e teste em iPhone/iPad reais: áudio após bloqueio, retorno pausado, três toques simultâneos, recortes da tela, reinício e checkpoint offline.
+5. Após o processamento, configure TestFlight e teste em iPhone/iPad reais: áudio após bloqueio, retorno pausado, três toques simultâneos, recortes da tela, reinício, checkpoint offline e espelhamento AirPlay sem abrir uma segunda sessão.
 6. Prepare capturas reais, descrição, categoria, classificação etária, URL de suporte e política de privacidade; preencha as declarações de dados conforme o comportamento efetivo do app e seus SDKs. Envie para análise após os testes.
 
 Não envie senhas, chaves privadas ou certificados pela conversa. A configuração da equipe pode ser feita pelo titular no Xcode.
