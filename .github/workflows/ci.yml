@@ -72,10 +72,11 @@ jobs:
           java-version: '21'
       - run: npm ci
       - name: Install Android API 36
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
       - run: npm run android:sync
       - name: Compile installable debug APK and unsigned release AAB
         run: |
+          set -o pipefail
           mkdir -p artifacts/android
           (cd android && ./gradlew --no-daemon assembleDebug bundleRelease) | tee artifacts/android/gradle.log
           unzip -p android/app/build/outputs/apk/debug/app-debug.apk assets/public/index.html | cmp - android-web/index.html
@@ -106,6 +107,7 @@ jobs:
       - run: npm ci
       - name: Build iOS simulator app
         run: |
+          set -o pipefail
           mkdir -p artifacts/ios
           npm run ios:build 2>&1 | tee artifacts/ios/xcodebuild.log
           ditto -c -k --keepParent artifacts/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app artifacts/ios/Nova-Wing-iOS-Simulator.zip
