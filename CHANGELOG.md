@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.5.0
+
+- Projeto iOS com Swift Package Manager, pacote offline, versão sincronizada, ícone e manifesto de privacidade. CI compila e inicializa no simulador; assinatura e TestFlight ficam para a conta Apple do titular.
+
+- Aplicativo Android Capacitor 8 com jogo e licenças incluídos, sem dependência de conexão durante a partida; compile/target API 36.
+- Pausa idempotente e suspensão de áudio ao sair da atividade, inclusive durante respawn e colapso; retomada explícita preserva a sessão.
+- Voltar pausa antes de minimizar. Tela imersiva, orientação de paisagem preferida e HUD/toque respeitando recortes e barras do sistema.
+- Projeto Gradle, ícone Nova Wing, scripts de sincronização/APK/AAB e CI com APK debug e AAB release sem assinatura, sem chaves de publicação.
+
 ## 1.4.1
 
 - Impulso esgotado encerra sem oscilar entre velocidades ou piscar os jatos; a energia recarrega continuamente enquanto o comando permanece pressionado.

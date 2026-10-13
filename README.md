@@ -129,6 +129,12 @@ Geometrias compartilhadas, instâncias e limites de entidades reduzem trabalho d
 
 ## Desenvolvimento
 
+### Android
+
+O projeto Capacitor em `android/` inclui o jogo offline, com compile/target SDK 36. Use `npm run android:sync`, `npm run android:apk` ou `npm run android:aab`; os dois builds já recompõem os assets. A CI gera APK debug instalável e AAB release sem assinatura no artefato `android-builds`. Requer JDK 21, SDK 36 e WebView atualizado com WebGL2. Veja [instalação, comandos e checklist físico](docs/ANDROID.md).
+
+Ao retornar de Home/bloqueio, toque ▶ para retomar a missão. Voltar pausa primeiro e depois minimiza. O aplicativo preserva o formato dos checkpoints e usa armazenamento independente do site.
+
 Use **Node.js 24**. Python 3 é opcional para os atalhos legados em `tools/`.
 
 ```sh
@@ -265,3 +271,7 @@ Para desfazer uma entrega, reverta o commit, gere novamente o HTML e passe pelos
 - [Licenças e referência original](THIRD_PARTY_NOTICES.md)
 
 MIT, conforme [LICENSE](LICENSE). Nomes e bases musicais foram adaptados do Nova Wing de Cristian Trucco; Three.js mantém sua licença. O retrato de Bia foi gerado para este protótipo. Google Fonts é opcional, com fallback local. Star Fox e R-Type servem como referências de gênero e mecânica; este projeto não é um produto oficial dessas franquias.
+
+## iPhone e iPad
+
+Projeto iOS e comandos de sincronização/compilação preparados. Consulte [iOS e App Store](docs/IOS.md). O CI produz um app de simulador; a publicação na loja exige assinatura da equipe Apple Developer.

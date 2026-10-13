@@ -40,7 +40,12 @@ function element() {
     },
   };
 }
-export function harness({ spawnEncounters = false, seed = 42, storage } = {}) {
+export function harness({
+  spawnEncounters = false,
+  seed = 42,
+  storage,
+  nativeLifecycle = false,
+} = {}) {
   const elements = new Map(
     [
       ...readFileSync(new URL('../src/shell.html', import.meta.url), 'utf8').matchAll(
@@ -57,13 +62,18 @@ export function harness({ spawnEncounters = false, seed = 42, storage } = {}) {
       return elements.get(id);
     },
   };
-  const calls = { audio: 0, renders: 0 };
+  const calls = { audio: 0, audioResume: 0, audioSuspend: 0, renders: 0 };
   class AudioContext {
     constructor() {
       calls.audio++;
       this.currentTime = 0;
     }
     resume() {
+      calls.audioResume++;
+      return Promise.resolve();
+    }
+    suspend() {
+      calls.audioSuspend++;
       return Promise.resolve();
     }
     createOscillator() {
@@ -116,6 +126,7 @@ export function harness({ spawnEncounters = false, seed = 42, storage } = {}) {
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    nativeLifecycle,
   });
   return {
     game,

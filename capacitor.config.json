@@ -1,0 +1,21 @@
+{
+  "appId": "com.fivecats.novawing",
+  "appName": "Nova Wing",
+  "webDir": "android-web",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#050e19"
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "hidden": true,
+      "style": "DARK"
+    }
+  },
+  "ios": {
+    "backgroundColor": "#050e19",
+    "contentInset": "never",
+    "scrollEnabled": false
+  }
+}

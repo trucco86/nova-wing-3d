@@ -17,11 +17,26 @@ const excludes = new Set([
   'artifacts',
   'test-results',
   'playwright-report',
+  'android-web',
+  '.gradle',
+  'build',
+  'capacitor-cordova-android-plugins',
+  'capacitor-cordova-ios-plugins',
+  'DerivedData',
+  '.build',
 ]);
 function files(dir = '.') {
   return readdirSync(dir, { withFileTypes: true })
     .flatMap((e) =>
-      excludes.has(e.name) ? [] : e.isDirectory() ? files(join(dir, e.name)) : [join(dir, e.name)],
+      excludes.has(e.name) ||
+      join(dir, e.name).startsWith('android/app/src/main/assets') ||
+      join(dir, e.name).startsWith('ios/App/App/public') ||
+      ['ios/App/App/capacitor.config.json', 'ios/App/App/config.xml'].includes(join(dir, e.name)) ||
+      join(dir, e.name) === 'android/app/src/main/res/xml/config.xml'
+        ? []
+        : e.isDirectory()
+          ? files(join(dir, e.name))
+          : [join(dir, e.name)],
     )
     .sort();
 }

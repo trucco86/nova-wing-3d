@@ -40,6 +40,7 @@ export function createGame({
   random = Math.random,
   autoLoop = true,
   spawnEncounters = true,
+  nativeLifecycle = false,
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const matchMedia = (q) => window.matchMedia(q);
@@ -268,7 +269,8 @@ export function createGame({
     return true;
   }
   function nextSector() {
-    if (state !== 'shop') return;
+    if (state !== 'shop' || !appActive) return;
+    resumeAudio();
     sectorIndex++;
     enterSector();
     saveCheckpoint();
@@ -333,9 +335,13 @@ export function createGame({
     stick = { x: 0, y: 0 };
   let touchFire = false,
     touchBoost = false,
-    audioCtx;
+    audioCtx,
+    appActive = true;
+  function resumeAudio() {
+    if (appActive) audioCtx?.resume().catch(() => {});
+  }
   function sound(freq = 400, duration = 0.07, type = 'sawtooth', vol = 0.025) {
-    if (muted || !audioCtx) return;
+    if (muted || !audioCtx || !appActive) return;
     const o = audioCtx.createOscillator(),
       g = audioCtx.createGain();
     o.type = type;
@@ -693,6 +699,7 @@ export function createGame({
     boss = null;
   }
   function start(resume = false) {
+    if (!appActive) return;
     const checkpoint = resume === true ? readSave(storage) : null;
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
@@ -748,19 +755,36 @@ export function createGame({
     bombs = 3;
   }
   function pause() {
-    if (state === 'playing' || state === 'collapsing') {
+    if (!appActive) return;
+    if (['playing', 'collapsing', 'respawning'].includes(state)) {
       pausedFrom = state;
       releaseControls();
       state = 'paused';
       music?.pause();
+      audioCtx?.suspend?.().catch(() => {});
       message('PAUSADO · pressione P ou Ⅱ para continuar');
       $('pause').textContent = '▶';
     } else if (state === 'paused') {
+      resumeAudio();
       state = pausedFrom;
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');
       music?.resume();
     }
+  }
+  function setActive(active) {
+    if (appActive === active) return;
+    if (!active) {
+      if (['playing', 'collapsing', 'respawning'].includes(state)) pause();
+      else {
+        releaseControls();
+        music?.pause();
+        audioCtx?.suspend?.().catch(() => {});
+      }
+    }
+    appActive = active;
+    // Returning to the Activity never resumes combat or audio without player input.
+    last = now();
   }
   $('start').onclick = () => start();
   $('continue').onclick = () => start(true);
@@ -825,13 +849,13 @@ export function createGame({
   }
   addEventListener('blur', () => {
     releaseControls();
-    if (state === 'playing' || state === 'collapsing') pause();
+    if (['playing', 'collapsing', 'respawning'].includes(state)) pause();
+  });
+  addEventListener('focus', () => {
+    if (!nativeLifecycle) setActive(true);
   });
   const visibility = () => {
-    if (document.hidden) {
-      releaseControls();
-      if (state === 'playing' || state === 'collapsing') pause();
-    }
+    if (!nativeLifecycle) setActive(!document.hidden);
   };
   document.addEventListener('visibilitychange', visibility);
   cleanups.push(() => document.removeEventListener('visibilitychange', visibility));
@@ -1312,6 +1336,7 @@ export function createGame({
   }
   let last = now();
   function tick(dt, nowMs) {
+    if (!appActive) return;
     const now = nowMs;
     if (['playing', 'collapsing', 'shop', 'won'].includes(state)) music?.update(dt);
     if (state === 'collapsing') updateFinale(dt);
@@ -1408,6 +1433,7 @@ export function createGame({
   return {
     start,
     pause,
+    setActive,
     fire,
     bomb,
     roll: doRoll,

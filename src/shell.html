@@ -25,121 +25,127 @@
     ></canvas>
     <div id="vignette"></div>
     <div id="flash"></div>
-    <header id="hud">
-      <div class="status">
-        <div class="brand-mini">NOVA <b>WING</b><span>FIVE CATS</span></div>
-        <div class="shield-head">
-          <span>INTEGRIDADE DO ESCUDO</span><strong id="shieldValue">100 / 100</strong>
-        </div>
-        <div class="bar"><i id="shield"></i></div>
-        <div class="status-caption">NOVA-7 <span>● SISTEMAS ONLINE</span></div>
-      </div>
-      <div class="mission">
-        <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
-        ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
-        <div class="route"><i id="progress"></i></div>
-      </div>
-      <div class="rightHUD">
-        <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
-        <div class="utilities">
-          <button id="music" aria-label="Ativar ou desativar música">♪ ON</button
-          ><button id="sound" aria-label="Ativar ou desativar som">SOM ON</button
-          ><button id="pause" aria-label="Pausar jogo">Ⅱ</button>
-        </div>
-      </div>
-    </header>
-    <div id="bossHUD" hidden>
-      <span><strong id="bossName">CAÇA-LÍDER ROK</strong> <b id="bossState">GERADORES 2/2</b></span>
-      <div class="bar"><i id="bossHealth"></i></div>
-    </div>
-    <div id="subHUD" hidden>
-      <span>SUBCHEFE <b id="subState">CRUZADOR DE INTERCEPTAÇÃO</b></span>
-      <div class="bar"><i id="subHealth"></i></div>
-    </div>
-    <div id="attackWarning" role="status"></div>
-    <div id="loadout">
-      <span id="pilotName">BIA / 3 VIDAS</span><strong id="weaponLabel">PULSO MK-I</strong>
-      <div class="bar"><i id="chargeBar"></i></div>
-      <small>SEGURE E SOLTE O TIRO PARA LANÇAR PLASMA</small>
-    </div>
-    <div id="comms">
-      <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
-      <div>
-        <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
-        <p id="message" aria-live="polite"></p>
-      </div>
-    </div>
-    <div id="bottom">
-      <div class="ordnance">
-        <span class="eyebrow">BOMBAS DE PLASMA</span><b id="bombs">◆ ◆ ◆</b
-        ><small>B / X PARA LANÇAR</small>
-      </div>
-      <div class="speed"><strong id="speedValue">480</strong><span>VELOCIDADE</span></div>
-      <div class="boost">
-        <div class="shield-head"><span>IMPULSO</span><strong>SHIFT</strong></div>
-        <div class="bar"><i id="energy"></i></div>
-        <small>Q / E / Z · GIRO DEFENSIVO</small>
-      </div>
-    </div>
-    <div id="touch">
-      <div id="stick" aria-label="Direcional virtual"><div id="nub"></div></div>
-      <div class="actions">
-        <button id="podsTouch">PODS</button><button id="rollTouch">GIRO</button
-        ><button id="bombTouch">BOMBA</button><button id="fireTouch">TIRO</button
-        ><button id="boostTouch">BOOST</button>
-      </div>
-    </div>
-    <section id="menu" class="title-screen" aria-label="Menu principal">
-      <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
-      <div class="title-content">
-        <h1>NOVA<span>WING</span></h1>
-        <p id="brief">O último voo começa com você.</p>
-        <div class="title-actions">
-          <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
-          <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
-        </div>
-        <details class="title-help">
-          <summary>Como jogar</summary>
-          <div class="help-panel">
-            <p><b>WASD / setas</b> pilotar · <b>Espaço</b> atirar</p>
-            <p><b>Shift</b> boost · <b>Q / E</b> giro · <b>B</b> bomba</p>
-            <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
-            <p>No celular, use os controles de toque. Jogue na horizontal.</p>
+    <div id="interface">
+      <header id="hud">
+        <div class="status">
+          <div class="brand-mini">NOVA <b>WING</b><span>FIVE CATS</span></div>
+          <div class="shield-head">
+            <span>INTEGRIDADE DO ESCUDO</span><strong id="shieldValue">100 / 100</strong>
           </div>
-        </details>
-      </div>
-      <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>
-      <span id="gameVersion">vBUILD:VERSION</span>
-    </section>
-    <div id="sectorTag">
-      <span id="chapter">01</span><small>SETOR<br />ATIVO</small>
-    </div>
-    <section id="shop" hidden aria-label="Hangar de melhorias">
-      <div class="hangar-card">
-        <div class="eyebrow">FIVE CATS / HANGAR ORBITAL</div>
-        <h2 id="shopTitle">SETOR LIBERTADO</h2>
-        <p id="shopNext"></p>
-        <strong id="shopCredits">0 CR</strong>
-        <p>
-          Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
-        </p>
-        <div class="shop-grid">
-          <button id="buyweapon">CANHÃO</button><button id="buyarmor">BLINDAGEM</button
-          ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
-          ><button id="buybomb">BOMBA</button>
+          <div class="bar"><i id="shield"></i></div>
+          <div class="status-caption">NOVA-7 <span>● SISTEMAS ONLINE</span></div>
         </div>
-        <button class="primary" id="nextSector">SALTAR PARA O PRÓXIMO SETOR ↗</button
-        ><small>Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small>
+        <div class="mission">
+          <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
+          ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
+          <div class="route"><i id="progress"></i></div>
+        </div>
+        <div class="rightHUD">
+          <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
+          <div class="utilities">
+            <button id="music" aria-label="Ativar ou desativar música">♪ ON</button
+            ><button id="sound" aria-label="Ativar ou desativar som">SOM ON</button
+            ><button id="pause" aria-label="Pausar jogo">Ⅱ</button>
+          </div>
+        </div>
+      </header>
+      <div id="bossHUD" hidden>
+        <span
+          ><strong id="bossName">CAÇA-LÍDER ROK</strong> <b id="bossState">GERADORES 2/2</b></span
+        >
+        <div class="bar"><i id="bossHealth"></i></div>
       </div>
-    </section>
-    <section id="result" hidden>
-      <div class="result-card">
-        <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>
-        <h2 id="resultTitle"></h2>
-        <p id="resultText"></p>
-        <button class="primary" id="restart">VOAR NOVAMENTE ↗</button>
+      <div id="subHUD" hidden>
+        <span>SUBCHEFE <b id="subState">CRUZADOR DE INTERCEPTAÇÃO</b></span>
+        <div class="bar"><i id="subHealth"></i></div>
       </div>
-    </section>
+      <div id="attackWarning" role="status"></div>
+      <div id="loadout">
+        <span id="pilotName">BIA / 3 VIDAS</span><strong id="weaponLabel">PULSO MK-I</strong>
+        <div class="bar"><i id="chargeBar"></i></div>
+        <small>SEGURE E SOLTE O TIRO PARA LANÇAR PLASMA</small>
+      </div>
+      <div id="comms">
+        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
+        <div>
+          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
+          <p id="message" aria-live="polite"></p>
+        </div>
+      </div>
+      <div id="bottom">
+        <div class="ordnance">
+          <span class="eyebrow">BOMBAS DE PLASMA</span><b id="bombs">◆ ◆ ◆</b
+          ><small>B / X PARA LANÇAR</small>
+        </div>
+        <div class="speed"><strong id="speedValue">480</strong><span>VELOCIDADE</span></div>
+        <div class="boost">
+          <div class="shield-head"><span>IMPULSO</span><strong>SHIFT</strong></div>
+          <div class="bar"><i id="energy"></i></div>
+          <small>Q / E / Z · GIRO DEFENSIVO</small>
+        </div>
+      </div>
+      <div id="touch">
+        <div id="stick" aria-label="Direcional virtual"><div id="nub"></div></div>
+        <div class="actions">
+          <button id="podsTouch">PODS</button><button id="rollTouch">GIRO</button
+          ><button id="bombTouch">BOMBA</button><button id="fireTouch">TIRO</button
+          ><button id="boostTouch">BOOST</button>
+        </div>
+      </div>
+      <section id="menu" class="title-screen" aria-label="Menu principal">
+        <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
+        <div class="title-content">
+          <h1>NOVA<span>WING</span></h1>
+          <p id="brief">O último voo começa com você.</p>
+          <div class="title-actions">
+            <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+            <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
+          </div>
+          <details class="title-help">
+            <summary>Como jogar</summary>
+            <div class="help-panel">
+              <p><b>WASD / setas</b> pilotar · <b>Espaço</b> atirar</p>
+              <p><b>Shift</b> boost · <b>Q / E</b> giro · <b>B</b> bomba</p>
+              <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
+              <p>No celular, use os controles de toque. Jogue na horizontal.</p>
+            </div>
+          </details>
+        </div>
+        <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>
+        <span id="gameVersion">vBUILD:VERSION</span>
+      </section>
+      <div id="sectorTag">
+        <span id="chapter">01</span><small>SETOR<br />ATIVO</small>
+      </div>
+      <section id="shop" hidden aria-label="Hangar de melhorias">
+        <div class="hangar-card">
+          <div class="eyebrow">FIVE CATS / HANGAR ORBITAL</div>
+          <h2 id="shopTitle">SETOR LIBERTADO</h2>
+          <p id="shopNext"></p>
+          <strong id="shopCredits">0 CR</strong>
+          <p>
+            Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
+          </p>
+          <div class="shop-grid">
+            <button id="buyweapon">CANHÃO</button><button id="buyarmor">BLINDAGEM</button
+            ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
+            ><button id="buybomb">BOMBA</button>
+          </div>
+          <button class="primary" id="nextSector">SALTAR PARA O PRÓXIMO SETOR ↗</button
+          ><small
+            >Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small
+          >
+        </div>
+      </section>
+      <section id="result" hidden>
+        <div class="result-card">
+          <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>
+          <h2 id="resultTitle"></h2>
+          <p id="resultText"></p>
+          <button class="primary" id="restart">VOAR NOVAMENTE ↗</button>
+        </div>
+      </section>
+    </div>
     <script>
       /* BUILD:GAME */
     </script>
