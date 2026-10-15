@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.6.0 — Validação web
+
+- Trajetórias curvas, subida orbital e conduítes espaciais; voo guiado e controles preservados.
+- Desafios laterais 2D nos setores 3 e 7, com pausa da campanha e prêmio único no retorno.
+- Buraco negro estilizado com disco de acreção no setor final.
+- Cinco pinturas no hangar, compradas com créditos e requisitos de acertos; propriedade e escolha persistem no checkpoint.
+- Funcionalidades novas desativadas nos aplicativos até validação web. Release deste ciclo não distribui APK/AAB/IPA; metadados de versão permanecem sincronizados para os gates de compatibilidade.
+
 ## 1.5.0
 
 - Projeto iOS com Swift Package Manager, pacote offline, versão sincronizada, ícone e manifesto de privacidade. CI compila e inicializa no simulador; assinatura e TestFlight ficam para a conta Apple do titular.

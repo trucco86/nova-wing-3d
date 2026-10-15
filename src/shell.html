@@ -23,6 +23,10 @@
       id="game"
       aria-label="Jogo 3D Nova Wing, combate aéreo na Cidade das Máquinas"
     ></canvas>
+    <section id="arcadePanel" hidden aria-label="Desafio de nave 2D">
+      <canvas id="arcadeCanvas"></canvas><strong id="arcadeStatus"></strong>
+      <p>WASD / SETAS · ESPAÇO / TIRO · DOURADO = CRÉDITOS</p>
+    </section>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="interface">
@@ -39,6 +43,7 @@
           <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
           ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
           <div class="route"><i id="progress"></i></div>
+          <small id="routeLabel"></small>
         </div>
         <div class="rightHUD">
           <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
@@ -131,6 +136,15 @@
             ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
             ><button id="buybomb">BOMBA</button>
           </div>
+          <details id="customization">
+            <summary>PINTURAS DA NOVA-7</summary>
+            <p>Visual da nave · sem alteração de atributos</p>
+            <div class="skin-grid">
+              <button id="skin-classic">POLAR</button><button id="skin-ember">BRASA</button
+              ><button id="skin-aurora">AURORA</button><button id="skin-nebula">NEBULOSA</button
+              ><button id="skin-solar">SOLAR</button>
+            </div>
+          </details>
           <button class="primary" id="nextSector">SALTAR PARA O PRÓXIMO SETOR ↗</button
           ><small
             >Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small

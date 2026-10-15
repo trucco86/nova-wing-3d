@@ -203,7 +203,19 @@ export function fighter(enemy = false) {
   }
   const o = templates[enemy].clone(true);
   o.userData.flames = [];
+  o.userData.paint = [];
+  const paints = new Map();
   o.traverse((c) => {
+    if (!enemy && (c.material === white || c.material === navy)) {
+      const original = c.material;
+      if (!paints.has(original)) {
+        const paint = original.clone();
+        paint.userData.paintAccent = original === navy;
+        paints.set(original, paint);
+        o.userData.paint.push(paint);
+      }
+      c.material = paints.get(original);
+    }
     if (c.name === 'flame') {
       if (!enemy) c.material = c.material.clone();
       o.userData.flames.push(c);
@@ -212,7 +224,7 @@ export function fighter(enemy = false) {
   return o;
 }
 const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+5.;a*=.5;}return s;}`;
-export function createWorld(scene, random = Math.random) {
+export function createWorld(scene, random = Math.random, dynamicFlight = false) {
   const rnd = (a, b) => a + random() * (b - a);
   scene.background = new T.Color('#030914');
   scene.fog = new T.FogExp2('#071c23', 0.0014);
@@ -289,7 +301,10 @@ export function createWorld(scene, random = Math.random) {
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
     fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
   });
-  const ground = new T.Mesh(new T.PlaneGeometry(4000, 4000), terrainMat);
+  const ground = new T.Mesh(
+    new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
+    terrainMat,
+  );
   ground.rotation.x = -Math.PI / 2;
   ground.position.set(0, -7, -1000);
   scene.add(ground);
@@ -472,7 +487,10 @@ export function createWorld(scene, random = Math.random) {
           g.rotation.z = i * 0.13;
           sectorScenery.add(g);
         }
-      if (['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme)) {
+      if (
+        ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&
+        !(dynamicFlight && sceneryTheme === 'throne')
+      ) {
         const orb = new T.Mesh(
           new T.SphereGeometry(135, 32, 20),
           sceneryTheme === 'sun' ? light : metal('#05020a', 0, 1),
@@ -485,6 +503,65 @@ export function createWorld(scene, random = Math.random) {
           disk.rotation.x = 0.9;
           disk.rotation.y = 0.2;
           sectorScenery.add(disk);
+        }
+      }
+      if (dynamicFlight && sceneryTheme === 'throne') {
+        const hole = new T.Group();
+        hole.userData.fixedSky = true;
+        hole.position.set(0, 125, -850);
+        const black = new T.Mesh(
+          new T.SphereGeometry(122, 48, 32),
+          new T.MeshBasicMaterial({ color: '#000003', fog: false }),
+        );
+        hole.add(black);
+        const disk = new T.Mesh(
+          new T.RingGeometry(130, 310, 128, 4),
+          new T.ShaderMaterial({
+            side: T.DoubleSide,
+            transparent: true,
+            depthWrite: false,
+            vertexShader:
+              'varying vec3 p; void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+            fragmentShader:
+              'varying vec3 p; void main(){float r=length(p.xy);float band=.6+.4*sin(r*1.5);float a=(1.-smoothstep(200.,310.,r))*smoothstep(130.,142.,r);vec3 c=mix(vec3(1.,.25,.035),vec3(1.,.88,.5),pow(1.-clamp((r-130.)/180.,0.,1.),2.));gl_FragColor=vec4(c*(1.5+band),a);}',
+          }),
+        );
+        disk.rotation.x = 1.34;
+        disk.rotation.z = -0.12;
+        hole.add(disk);
+        for (const radius of [125, 135]) {
+          const ring = new T.Mesh(
+            new T.TorusGeometry(radius, radius === 125 ? 1.8 : 5, 8, 128),
+            new T.MeshBasicMaterial({
+              color: radius === 125 ? '#fff0c8' : '#faab52',
+              transparent: true,
+              opacity: radius === 125 ? 1 : 0.38,
+              fog: false,
+            }),
+          );
+          ring.scale.y = radius === 125 ? 1 : 1.14;
+          hole.add(ring);
+        }
+        hole.traverse((o) => {
+          o.userData.fixedSky = true;
+        });
+        sectorScenery.add(hole);
+      }
+      if (dynamicFlight && ['asteroids', 'nebula'].includes(sceneryTheme)) {
+        const gateway = new T.Mesh(new T.TorusGeometry(32, 3, 8, 64), light);
+        gateway.position.set(0, 10, -390);
+        gateway.userData.conduit = true;
+        const inner = new T.Mesh(new T.TorusGeometry(28, 0.4, 6, 64), light);
+        gateway.add(inner);
+        sectorScenery.add(gateway);
+      }
+      if (dynamicFlight && !land) {
+        for (let i = 0; i < 22; i++) {
+          const ring = new T.Mesh(new T.TorusGeometry(43, 1.5, 6, 24), mat);
+          ring.add(new T.Mesh(new T.TorusGeometry(40.5, 0.32, 4, 48), light));
+          ring.position.set(0, 10, -800 - i * 22);
+          ring.userData.conduit = true;
+          sectorScenery.add(ring);
         }
       }
       // Materials unused by a theme are disposed immediately.
@@ -512,6 +589,12 @@ export function createWorld(scene, random = Math.random) {
       }
       if (playing)
         for (const o of sectorScenery.children) {
+          if (o.userData.conduit) {
+            o.position.z += speed * dt;
+            o.visible = o.position.z < 65;
+            continue;
+          }
+          if (o.userData.fixedSky) continue;
           if (['station', 'fleet', 'asteroids', 'ice'].includes(sceneryTheme)) {
             o.position.z += speed * dt;
             if (o.position.z > 100) o.position.z -= 1500;

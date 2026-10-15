@@ -275,3 +275,9 @@ MIT, conforme [LICENSE](LICENSE). Nomes e bases musicais foram adaptados do Nova
 ## iPhone e iPad
 
 Projeto iOS e comandos de sincronização/compilação preparados. Consulte [iOS e App Store](docs/IOS.md). O CI produz um app de simulador; a publicação na loja exige assinatura da equipe Apple Developer.
+
+### Validação web: voo dinâmico
+
+A versão web incorpora curvas e subida orbital, conduítes espaciais e um buraco negro estilizado no setor final. O voo continua guiado; os controles de movimento e combate são os mesmos. Nos setores 3 e 7, a entrada da fenda abre um desafio lateral 2D de 18 segundos: atire nos alvos, recolha créditos dourados e evite colisões para preservar seu prêmio. Pausa e toque funcionam também nesse trecho.
+
+No hangar, abra **Pinturas da NOVA-7**: Polar é gratuita; Brasa e Aurora usam créditos; Nebulosa e Solar também exigem acertos da campanha. A pintura é cosmética e acompanha o checkpoint local. Uma nova campanha reinicia suas compras junto com os demais recursos. Aplicativos nativos mantêm o voo anterior até a validação desta experiência web.

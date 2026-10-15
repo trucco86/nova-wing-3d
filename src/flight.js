@@ -14,11 +14,11 @@ export function createFlightCamera(camera) {
       camera.lookAt(aim);
       camera.updateProjectionMatrix();
     },
-    update(dt, player, steering, boosting) {
+    update(dt, player, steering, boosting, route = { bank: 0, ascent: 0 }) {
       const a = 1 - Math.exp(-4 * dt);
-      eye.lerp(new T.Vector3(player.x * 1.18, 6 + player.y * 0.72, 32), a);
-      aim.lerp(new T.Vector3(player.x * 0.28, player.y * 0.5 + 3, -70), a);
-      bank += (-steering * 0.045 - bank) * (1 - Math.exp(-3 * dt));
+      eye.lerp(new T.Vector3(player.x * 1.18, 6 + player.y * 0.72 + route.ascent * 4, 32), a);
+      aim.lerp(new T.Vector3(player.x * 0.28, player.y * 0.5 + 3 + route.ascent * 12, -70), a);
+      bank += (-steering * 0.045 + route.bank - bank) * (1 - Math.exp(-3 * dt));
       camera.position.copy(eye);
       camera.lookAt(aim);
       camera.rotateZ(bank);
