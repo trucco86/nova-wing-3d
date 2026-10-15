@@ -56,6 +56,73 @@ jobs:
             test-results/
             playwright-report/
 
+  android:
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci
+      - name: Install Android API 36
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"'
+      - run: npm run android:sync
+      - name: Compile installable debug APK and unsigned release AAB
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/android
+          (cd android && ./gradlew --no-daemon assembleDebug bundleRelease) | tee artifacts/android/gradle.log
+          unzip -p android/app/build/outputs/apk/debug/app-debug.apk assets/public/index.html | cmp - android-web/index.html
+          unzip -p android/app/build/outputs/bundle/release/app-release.aab base/assets/public/index.html | cmp - android-web/index.html
+          sha256sum android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/bundle/release/app-release.aab > artifacts/android/SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: android-builds
+          path: |
+            artifacts/android/
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+
+  ios:
+    needs: quality
+    runs-on: macos-15
+    timeout-minutes: 25
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: xcodebuild -version
+      - run: npm ci
+      - name: Build iOS simulator app
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/ios
+          npm run ios:build 2>&1 | tee artifacts/ios/xcodebuild.log
+          ditto -c -k --keepParent artifacts/ios/DerivedData/Build/Products/Debug-iphonesimulator/App.app artifacts/ios/Nova-Wing-iOS-Simulator.zip
+      - name: Install and launch in iPhone simulator
+        run: npm run ios:smoke
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: ios-simulator
+          path: |
+            artifacts/ios/*.zip
+            artifacts/ios/*.png
+            artifacts/ios/*.json
+            artifacts/ios/*.log
+
   pages:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: browser
@@ -85,13 +152,17 @@ jobs:
 
   release:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: pages
+    needs: [pages, android, ios]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: android-builds
+          path: artifacts/native-release
       - name: Publish versioned release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -103,3 +174,13 @@ jobs:
           else
             gh release create "$tag" --target "$GITHUB_SHA" --title "Nova Wing 3D $tag" --notes-file "releases/$tag.md"
           fi
+          mkdir -p artifacts/release-android
+          cp artifacts/native-release/android/app/build/outputs/apk/debug/app-debug.apk "artifacts/release-android/Nova-Wing-$tag-debug.apk"
+          cp artifacts/native-release/android/app/build/outputs/bundle/release/app-release.aab "artifacts/release-android/Nova-Wing-$tag-unsigned.aab"
+          (cd artifacts/release-android && sha256sum *.apk *.aab) > "artifacts/release-android/Nova-Wing-$tag-Android-SHA256SUMS.txt"
+          for artifact in artifacts/release-android/*; do
+            name=$(basename "$artifact")
+            if ! gh release view "$tag" --json assets --jq '.assets[].name' | rg --fixed-strings --line-regexp --quiet "$name"; then
+              gh release upload "$tag" "$artifact"
+            fi
+          done

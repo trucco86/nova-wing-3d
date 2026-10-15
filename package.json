@@ -1,6 +1,6 @@
 {
   "name": "nova-wing-3d",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "private": true,
   "description": "Rail shooter WebGL Five Cats com harness de desenvolvimento assistido por agentes",
   "type": "module",
@@ -20,12 +20,25 @@
     "check:repo": "node tools/invariants.mjs",
     "validate": "node tools/validate.mjs",
     "agent:context": "node tools/context.mjs",
-    "agent:new": "node tools/task.mjs"
+    "agent:new": "node tools/task.mjs",
+    "android:prepare": "node tools/android.mjs prepare",
+    "android:sync": "node tools/android.mjs sync",
+    "android:apk": "node tools/android.mjs apk",
+    "android:aab": "node tools/android.mjs aab",
+    "ios:sync": "node tools/ios.mjs sync",
+    "ios:open": "node tools/ios.mjs open",
+    "ios:build": "node tools/ios.mjs build",
+    "ios:smoke": "node tools/ios-simulator-smoke.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/core": "8.5.2",
+    "@capacitor/ios": "8.5.2",
     "three": "0.170.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "8.5.2",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.63.0",
     "esbuild": "0.28.2",

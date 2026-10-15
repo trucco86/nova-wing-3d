@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { prepareAndroidWeb } from '../../tools/android.mjs';
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -272,6 +273,49 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
     await expect(page.locator('#start')).toBeInViewport();
     await page.screenshot({ path: info.outputPath('title-portrait.png') });
   }
+});
+test('offline Android interface protects controls from cutout and gesture insets', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'Android layout requires the touch viewport.');
+  const offline = await prepareAndroidWeb(info.outputPath('offline-assets'));
+  const external = [];
+  page.on('request', (request) => {
+    if (!request.url().startsWith('http://127.0.0.1:4173/')) external.push(request.url());
+  });
+  await page.route('**/__android.html', (route) =>
+    route.fulfill({ contentType: 'text/html', body: offline }),
+  );
+  await page.goto('/__android.html');
+  await page.evaluate(() => {
+    document.body.classList.add('native-android');
+    for (const [side, value] of Object.entries({ left: 32, right: 18, top: 12, bottom: 24 }))
+      document.documentElement.style.setProperty(`--safe-area-inset-${side}`, `${value}px`);
+  });
+  await page.locator('#start').tap();
+  await expect(page.locator('#touch')).toBeVisible();
+  const viewport = page.viewportSize();
+  const safe = await page.locator('#interface').boundingBox();
+  expect(safe).toEqual({ x: 32, y: 12, width: viewport.width - 50, height: viewport.height - 36 });
+  for (const id of [
+    'stick',
+    'fireTouch',
+    'boostTouch',
+    'bombTouch',
+    'rollTouch',
+    'podsTouch',
+    'pause',
+  ]) {
+    const bounds = await page.locator(`#${id}`).boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(safe.x);
+    expect(bounds.y).toBeGreaterThanOrEqual(safe.y);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(safe.x + safe.width);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(safe.y + safe.height);
+  }
+  await page.locator('#pause').tap();
+  await expect(page.locator('#pause')).toHaveText('▶');
+  expect(external).toEqual([]);
+  await page.screenshot({ path: info.outputPath('android-safe-area.png') });
 });
 test('holding Space never activates focused browser-page buttons or selects HUD text', async ({
   page,

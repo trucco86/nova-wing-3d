@@ -79,3 +79,13 @@ Pods têm estados `docked`, `launching`, `deployed` e `returning`. A posição s
 `src/input.js` agrupa as teclas reconhecidas e a proteção de gestos do navegador, retornando cleanup dos listeners. A instância de jogo continua dona das ações e do estado. Keydown e keyup são consumidos para teclas do jogo em missão; modificadores do navegador não disparam ações. O canvas recebe foco ao iniciar. Listeners de toque não passivos protegem a superfície de jogo, e seleção/contextmenu em HUD são cancelados durante a missão.
 
 A capa contém título, frase, iniciar/continuar e ajuda em `details`; HUD de combate fica invisível no menu. A nave apresentada é o próprio modelo 3D. A matriz [de contratos](../specs/README.md) e o [mapa de edição](REPOSITORIO.md) conectam esta organização aos testes e ferramentas.
+
+## Android (1.5)
+
+`src/native.js` conecta App/SystemBars do Capacitor à mesma instância do jogo. `setActive(false)` libera comandos, pausa combate/respawn/colapso e suspende Web Audio; `setActive(true)` não retoma a missão. No aplicativo, eventos nativos controlam atividade e eventos de foco/visibilidade web não podem reativá-la. Back pausa antes de minimizar. A retomada pelo jogador reutiliza o AudioContext.
+
+`tools/android.mjs` recompõe o jogo, remove a fonte externa opcional e sincroniza assets/plugins para o projeto Gradle em `android/`. Esses assets, caches e builds são ignorados pelo git e pelo digest de validação. O wrapper é versionado; a versão do aplicativo vem de `package.json`. A CI compila APK debug e AAB sem assinatura. A interface Android ganha um bloco de contenção com insets CSS fornecidos por SystemBars; a cena continua ocupando a tela inteira. Veja [Android](ANDROID.md) para construção e limitações físicas.
+
+## iOS
+
+`tools/ios.mjs` compartilha o bundle offline com Android, sincroniza o projeto Swift Package Manager e alinha a versão Xcode. `installNativeShell` compartilha pausa/retorno entre as duas plataformas; Voltar e minimizar permanecem exclusivos do Android. As classes nativas usam a mesma área segura. O CI macOS compila e inicia o app em simulador, sem assinatura de distribuição.

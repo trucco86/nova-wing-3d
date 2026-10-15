@@ -22,6 +22,31 @@ body {
   overflow: hidden;
   touch-action: none;
 }
+#interface {
+  display: contents;
+}
+body:is(.native-android, .native-ios) #interface {
+  display: block;
+  position: fixed;
+  inset: var(--safe-area-inset-top, env(safe-area-inset-top, 0px))
+    var(--safe-area-inset-right, env(safe-area-inset-right, 0px))
+    var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px))
+    var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  /* A containing block for fixed HUD/modal elements, with the canvas left full screen. */
+  transform: translateZ(0);
+  pointer-events: none;
+}
+body:is(.native-android, .native-ios) #menu,
+body:is(.native-android, .native-ios) #shop,
+body:is(.native-android, .native-ios) #result {
+  pointer-events: auto;
+}
+body:is(.native-android, .native-ios):not(.menu) #touch {
+  display: flex;
+  left: 16px;
+  right: 16px;
+  bottom: 14px;
+}
 canvas {
   position: fixed;
   inset: 0;

@@ -101,7 +101,14 @@ function walk(dir) {
     e.name === '.git' ||
     e.name === 'artifacts' ||
     e.name === 'test-results' ||
-    e.name === 'playwright-report'
+    e.name === 'playwright-report' ||
+    e.name === 'android-web' ||
+    e.name === '.gradle' ||
+    e.name === 'build' ||
+    e.name === 'capacitor-cordova-android-plugins' ||
+    e.name === 'capacitor-cordova-ios-plugins' ||
+    e.name === 'DerivedData' ||
+    e.name === '.build'
       ? []
       : e.isDirectory()
         ? walk(join(dir, e.name))
@@ -129,6 +136,8 @@ if (workflow) {
   requireThat(workflow.jobs?.pages?.needs === 'browser', 'Pages requires the browser gate');
   requireThat(!workflow.on?.pull_request_target, 'No privileged PR trigger');
   requireThat(workflow.jobs?.quality && workflow.jobs?.browser, 'Missing quality/browser gate');
+  requireThat(workflow.jobs?.android?.needs === 'quality', 'Android requires the quality gate');
+  requireThat(workflow.jobs?.ios?.needs === 'quality', 'iOS requires the quality gate');
   for (const job of Object.values(workflow.jobs))
     for (const step of job.steps ?? [])
       if (step.uses) requireThat(/@[a-f0-9]{40}$/.test(step.uses), `Unpinned action ${step.uses}`);

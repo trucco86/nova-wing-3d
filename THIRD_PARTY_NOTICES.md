@@ -4,6 +4,7 @@
 - Nomes dos setores e composições musicais: adaptados do código MIT do Nova Wing, de Cristian Trucco. O sequenciador foi integrado ao ciclo de simulação desta edição.
 - Implementação desta edição 3D: desenvolvida com assistência do Codex, a partir do protótipo desta conversa.
 - Three.js 0.170.0: MIT, copyright dos autores Three.js; [texto integral](docs/THREE-LICENSE.txt). O bundle inclui a biblioteca.
+- Capacitor core/Android 8.5.2 e App 8.1.2: MIT, Ionic. Os textos integrais são copiados dos pacotes para os assets Android durante a preparação.
 - Retrato de Bia: imagem gerada para este protótipo, otimizada para WebP.
 - Tipografia: carregamento opcional por Google Fonts; as fontes não são incorporadas ao bundle e a interface possui fallback local.
 - Star Fox Zero é referência de estilo e dinâmica solicitada pelo usuário. Não há afiliação com Nintendo nem distribuição de modelos extraídos daquele jogo.
