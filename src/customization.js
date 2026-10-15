@@ -1,5 +1,5 @@
 export const SKINS = [
-  { id: 'classic', name: 'POLAR', color: '#d8e6ef', accent: '#122d50', price: 0, hits: 0 },
+  { id: 'classic', name: 'POLAR', color: '#c4d5e3', accent: '#15243e', price: 0, hits: 0 },
   { id: 'ember', name: 'BRASA', color: '#fa663d', accent: '#421e29', price: 120, hits: 0 },
   { id: 'aurora', name: 'AURORA', color: '#46e5b0', accent: '#0c4458', price: 180, hits: 0 },
   { id: 'nebula', name: 'NEBULOSA', color: '#b385ff', accent: '#35225e', price: 260, hits: 50 },

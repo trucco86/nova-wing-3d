@@ -31,11 +31,18 @@ test('2D perspective supports controls, pause and return to the same mission', a
   await page.goto('/__dynamic.html?sector=2&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
+  let touch;
   if (info.project.name === 'mobile') {
-    await page.locator('#fireTouch').dispatchEvent('pointerdown', { pointerId: 7 });
-    await page
-      .locator('#stick')
-      .dispatchEvent('pointerdown', { pointerId: 8, clientX: 80, clientY: 260 });
+    touch = await page.context().newCDPSession(page);
+    const fire = await page.locator('#fireTouch').boundingBox();
+    const stick = await page.locator('#stick').boundingBox();
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [
+        { x: fire.x + fire.width / 2, y: fire.y + fire.height / 2, id: 7 },
+        { x: stick.x + stick.width * 0.75, y: stick.y + stick.height * 0.5, id: 8 },
+      ],
+    });
   } else {
     await page.keyboard.down('Space');
     await page.keyboard.down('ArrowRight');
@@ -43,7 +50,9 @@ test('2D perspective supports controls, pause and return to the same mission', a
   await page.evaluate(() => window.fixture.advance(1));
   const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
   expect(snapshot.arcade.shots.length).toBeGreaterThan(0);
+  expect(snapshot.arcade.player.x).toBeGreaterThan(170);
   await page.screenshot({ path: info.outputPath('arcade.png') });
+  if (touch) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   await page.locator('#pause').click();
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   await page.evaluate(() => window.fixture.advance(2));

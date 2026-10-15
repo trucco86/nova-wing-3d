@@ -509,6 +509,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const hole = new T.Group();
         hole.userData.fixedSky = true;
         hole.position.set(0, 125, -850);
+        hole.scale.setScalar(1.35);
         const black = new T.Mesh(
           new T.SphereGeometry(122, 48, 32),
           new T.MeshBasicMaterial({ color: '#000003', fog: false }),
