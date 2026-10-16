@@ -24,3 +24,5 @@ As specs se complementam. A evolução de pods em `flight-force-variety` detalha
 - Limitações, publicação e recuperação foram registradas?
 
 - [iOS e App Store](ios.md): projeto nativo, ciclo de vida, assets offline e validação no simulador.
+
+- [Voo dinâmico web](dynamic-flight.md): curvas, órbita, desafios 2D, buraco negro e pinturas; `tests/dynamic-flight.test.mjs` e `tests/browser/dynamic.spec.mjs`.

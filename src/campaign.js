@@ -1,3 +1,4 @@
+import { readCosmetics } from './customization.js';
 // Names and narrative adapted from Cristian Trucco's Nova Wing (MIT).
 export const SECTORS = [
   {
@@ -142,6 +143,8 @@ export function readSave(storage) {
       weapon: d.weapon,
       armor: d.armor,
       pods: d.pods,
+      ...(d.cosmetics ? { cosmetics: readCosmetics(d.cosmetics) } : {}),
+      ...(integer(d.score, 0, 10000000) ? { score: d.score } : {}),
     };
   } catch {
     return null;

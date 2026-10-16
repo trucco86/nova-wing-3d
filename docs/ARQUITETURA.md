@@ -89,3 +89,11 @@ A capa contém título, frase, iniciar/continuar e ajuda em `details`; HUD de co
 ## iOS
 
 `tools/ios.mjs` compartilha o bundle offline com Android, sincroniza o projeto Swift Package Manager e alinha a versão Xcode. `installNativeShell` compartilha pausa/retorno entre as duas plataformas; Voltar e minimizar permanecem exclusivos do Android. As classes nativas usam a mesma área segura. O CI macOS compila e inicia o app em simulador, sem assinatura de distribuição.
+
+## Voo dinâmico (web em validação)
+
+`route.js` aplica a mesma deformação por profundidade à projeção de malhas, instâncias, linhas, sprites e terreno da rota. Colisões continuam no referencial local; a câmera inclina suavemente e a rota se alinha antes do chefe. Céu e buraco negro são referências distantes. O terreno web tem subdivisões para curvar; o nativo mantém o original. Materiais de projeção são isolados por instância e liberados quando deixam a cena. Não há mudança para voo livre.
+
+`arcade.js` mantém a simulação 2D lateral de 18 segundos; `game.js` coordena a interrupção aos oito segundos nos setores 3 e 7, congela a campanha e credita o resultado uma vez no retorno. O estado `arcade` participa de pausa, foco, toque e liberação de comandos. A renderização 2D usa canvas em coordenadas virtuais independentes da resolução.
+
+`customization.js` valida cinco pinturas, propriedade, preço e limiares de acertos. O checkpoint v1 aceita os campos opcionais `cosmetics` e `score`, preservando a leitura de saves antigos. A pintura usa materiais exclusivos do jogador; não altera inimigos nem atributos. `nativeLifecycle` desativa rota, cenário ampliado, desafios e loja de pinturas nos apps. A fixture acelerada `tests/dynamic-scene.js` é servida exclusivamente com NOVA_VISUAL_TEST=1 e não vai ao Pages.

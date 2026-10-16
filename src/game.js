@@ -1,3 +1,6 @@
+import { routeAt, createRouteRenderer } from './route.js';
+import { SKINS, readCosmetics, skinPurchase } from './customization.js';
+import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
 import {
@@ -78,7 +81,12 @@ export function createGame({
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
   const flightCamera = createFlightCamera(camera);
-  const world = createWorld(scene, random),
+  const dynamicFlight = !nativeLifecycle;
+  const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
+  let route = routeAt(0, 0, 65);
+  let arcade = null,
+    arcadeDone = false;
+  const world = createWorld(scene, random, dynamicFlight),
     post = postProcessor(renderer, scene, camera);
   post.resize(innerWidth, innerHeight);
   const buildingMat = metal('#173344');
@@ -183,12 +191,49 @@ export function createGame({
   } catch {
     /* Storage is optional. */
   }
+  let cosmetics = readCosmetics(null);
   const saved = readSave(storage);
+  if (saved) cosmetics = readCosmetics(saved.cosmetics);
+  function applySkin() {
+    const skin = SKINS.find((s) => s.id === (dynamicFlight ? cosmetics.skin : 'classic'));
+    player.userData.paint?.forEach((m) =>
+      m.color.set(m.userData.paintAccent ? skin.accent : skin.color),
+    );
+  }
+  applySkin();
+  $('customization').hidden = !dynamicFlight;
+  function renderSkins() {
+    for (const skin of SKINS) {
+      const button = $('skin-' + skin.id);
+      const owned = cosmetics.owned.includes(skin.id);
+      button.textContent =
+        skin.name +
+        (cosmetics.skin === skin.id
+          ? ' · EQUIPADA'
+          : owned
+            ? ' · EQUIPAR'
+            : ' · ' + skin.price + ' CR' + (skin.hits ? ' / ' + skin.hits + ' ACERTOS' : ''));
+      button.disabled =
+        cosmetics.skin === skin.id || (!owned && (credits < skin.price || score < skin.hits));
+    }
+  }
+  function buySkin(id) {
+    if (!dynamicFlight || state !== 'shop') return false;
+    const result = skinPurchase(cosmetics, id, credits, score);
+    if (!result) return false;
+    credits = result.credits;
+    cosmetics = { owned: result.owned, skin: result.skin };
+    applySkin();
+    renderShop();
+    saveCheckpoint(sectorIndex + 1);
+    return true;
+  }
+  for (const skin of SKINS) $('skin-' + skin.id).onclick = () => buySkin(skin.id);
   $('continue').hidden = !saved;
   const maxHp = () => 100 + armor * 25;
   const current = () => SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
-    writeSave(storage, { sector: next, credits, weapon, armor, pods: podCount });
+    writeSave(storage, { sector: next, credits, weapon, armor, pods: podCount, score, cosmetics });
   }
   function syncPods() {
     if (podMeshes.length === podCount && podMeshes.every((p) => p.userData.level === podCount))
@@ -233,7 +278,8 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
   }
   function renderShop() {
-    $('shopCredits').textContent = credits + ' CR';
+    $('shopCredits').textContent = credits + ' CR · ' + score + ' ACERTOS';
+    renderSkins();
     for (const k of Object.keys(SHOP)) {
       const level = k === 'weapon' ? weapon : k === 'armor' ? armor : k === 'pods' ? podCount : 0;
       const full =
@@ -276,6 +322,11 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector() {
+    arcade = null;
+    arcadeDone = false;
+    $('arcadePanel').hidden = true;
+    route = routeAt(sectorIndex, 0, current().duration);
+    routeRenderer?.update(route);
     clearWorld();
     world.reset();
     world.setSector(current());
@@ -718,7 +769,9 @@ export function createGame({
     boosting = false;
     touchFire = touchBoost = false;
     elapsed = 0;
-    score = 0;
+    score = checkpoint?.score ?? 0;
+    cosmetics = readCosmetics(checkpoint?.cosmetics);
+    applySkin();
     hp = maxHp();
     bombs = 3;
     energy = 100;
@@ -756,7 +809,7 @@ export function createGame({
   }
   function pause() {
     if (!appActive) return;
-    if (['playing', 'collapsing', 'respawning'].includes(state)) {
+    if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) {
       pausedFrom = state;
       releaseControls();
       state = 'paused';
@@ -775,7 +828,7 @@ export function createGame({
   function setActive(active) {
     if (appActive === active) return;
     if (!active) {
-      if (['playing', 'collapsing', 'respawning'].includes(state)) pause();
+      if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) pause();
       else {
         releaseControls();
         music?.pause();
@@ -805,7 +858,8 @@ export function createGame({
     muted = !muted;
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
-  const inFlight = () => ['playing', 'paused', 'respawning', 'collapsing'].includes(state);
+  const inFlight = () =>
+    ['playing', 'paused', 'respawning', 'collapsing', 'arcade'].includes(state);
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (inFlight() && isGameKey(e)) e.preventDefault();
@@ -849,7 +903,7 @@ export function createGame({
   }
   addEventListener('blur', () => {
     releaseControls();
-    if (['playing', 'collapsing', 'respawning'].includes(state)) pause();
+    if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) pause();
   });
   addEventListener('focus', () => {
     if (!nativeLifecycle) setActive(true);
@@ -871,7 +925,7 @@ export function createGame({
   }
   $('stick').onpointerdown = (e) => {
     e.preventDefault?.();
-    if (state !== 'playing' || stickId !== null) return;
+    if (!['playing', 'arcade'].includes(state) || stickId !== null) return;
     stickId = e.pointerId;
     $('stick').setPointerCapture(e.pointerId);
     stickMove(e);
@@ -893,7 +947,7 @@ export function createGame({
     const b = $(id);
     b.onpointerdown = (e) => {
       e.preventDefault?.();
-      if (state !== 'playing' || heldPointers.has(id)) return;
+      if (!['playing', 'arcade'].includes(state) || heldPointers.has(id)) return;
       heldPointers.set(id, e.pointerId);
       b.setPointerCapture(e.pointerId);
       set(true);
@@ -920,6 +974,26 @@ export function createGame({
     if (state !== 'playing') return;
     elapsed += dt;
     totalTime += dt;
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      !arcadeDone &&
+      [2, 6].includes(sectorIndex) &&
+      elapsed >= 8
+    ) {
+      arcadeDone = true;
+      arcade = createArcade(sectorIndex + 1);
+      state = 'arcade';
+      releaseControls();
+      $('arcadePanel').hidden = false;
+      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS');
+      return;
+    }
+    if (dynamicFlight) {
+      route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
+      routeRenderer.update(route);
+      $('routeLabel').textContent = route.label;
+    }
     shotCd -= dt;
     invuln -= dt;
     rollCd -= dt;
@@ -971,7 +1045,13 @@ export function createGame({
       player.rotation.z = Math.PI * 2 * (1 - roll / 0.65);
     }
     player.visible = boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0;
-    flightCamera.update(dt, player.position, clamp(dx, -1, 1), boosting);
+    flightCamera.update(
+      dt,
+      player.position,
+      clamp(dx, -1, 1),
+      boosting,
+      dynamicFlight ? route : undefined,
+    );
     reticle.position.set(player.position.x, player.position.y, -60);
     if (shake > 0) {
       shake = Math.max(0, shake - dt);
@@ -1338,7 +1418,7 @@ export function createGame({
   function tick(dt, nowMs) {
     if (!appActive) return;
     const now = nowMs;
-    if (['playing', 'collapsing', 'shop', 'won'].includes(state)) music?.update(dt);
+    if (['playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) music?.update(dt);
     if (state === 'collapsing') updateFinale(dt);
     if (state === 'respawning') {
       respawnTime -= dt;
@@ -1352,7 +1432,7 @@ export function createGame({
         message(PILOTS[3 - lives] + ' / ASSUMINDO A NOVA-7. VAMOS CONTINUAR.');
       }
     }
-    if (state !== 'paused') {
+    if (state !== 'paused' && state !== 'arcade') {
       visualTime += dt;
       world.update(dt, visualTime, boosting ? 90 : 48, state === 'playing');
       const boostVisible = boosting && state === 'playing';
@@ -1382,7 +1462,39 @@ export function createGame({
         }
       }
     }
-    if (state === 'playing') update(dt);
+    if (state === 'arcade') {
+      arcade.update(dt, {
+        x:
+          (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
+          (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
+          stick.x,
+        y:
+          (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
+          (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
+          stick.y,
+        fire: keys.has('Space') || touchFire,
+      });
+      const data = arcade.snapshot();
+      $('arcadeStatus').textContent =
+        'FENDA 2D · ' +
+        Math.ceil(18 - data.time) +
+        's · +' +
+        data.credits +
+        ' CR · ' +
+        data.hits +
+        ' ACERTOS';
+      drawArcade($('arcadeCanvas'), data, SKINS.find((s) => s.id === cosmetics.skin).color);
+      if (data.done) {
+        credits += data.credits;
+        score += data.hits;
+        arcade = null;
+        state = 'playing';
+        invuln = Math.max(invuln, 3);
+        releaseControls();
+        $('arcadePanel').hidden = true;
+        message('SAÍDA DA FENDA / +' + data.credits + ' CR · ROTA 3D RETOMADA');
+      }
+    } else if (state === 'playing') update(dt);
     else if (state === 'menu') {
       player.visible = true;
       const small = camera.aspect < 1;
@@ -1391,6 +1503,7 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
+    routeRenderer?.prepare();
     post.render();
   }
   function step(dt) {
@@ -1443,9 +1556,13 @@ export function createGame({
     damageBoss,
     collect,
     buy,
+    buySkin,
     nextSector,
     snapshot: () => ({
       state,
+      route: { ...route },
+      arcade: arcade?.snapshot() ?? null,
+      cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       sector: sectorIndex + 1,
       lives,
       credits,
@@ -1512,6 +1629,8 @@ export function createGame({
       cleanups.forEach((fn) => fn());
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
+      routeRenderer?.destroy();
+      player.userData.paint?.forEach((m) => m.dispose());
       renderer.dispose?.();
     },
   };
