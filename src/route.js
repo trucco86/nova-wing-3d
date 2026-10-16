@@ -42,6 +42,16 @@ export function createRouteRenderer(scene, camera) {
     if (copies.has(material)) return material;
     if (originals.has(material)) return originals.get(material);
     const copy = material.clone();
+    // Animation code may retain the original (finale) or write to the mesh (particles).
+    // Keep both references on one opacity value.
+    Object.defineProperty(copy, 'opacity', {
+      enumerable: true,
+      configurable: true,
+      get: () => material.opacity,
+      set: (value) => {
+        material.opacity = value;
+      },
+    });
     if (material.color) copy.color = material.color;
     if (material.emissive) copy.emissive = material.emissive;
     if (material.uniforms) copy.uniforms = material.uniforms;

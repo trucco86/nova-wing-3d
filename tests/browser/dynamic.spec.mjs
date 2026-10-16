@@ -31,6 +31,9 @@ test('2D perspective supports controls, pause and return to the same mission', a
   await page.goto('/__dynamic.html?sector=2&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
+  await expect(page.locator('#arcadePanel')).toHaveCSS('opacity', '1');
+  await expect(page.locator('#comms')).toHaveCSS('visibility', 'hidden');
+  await expect(page.locator('#boostTouch')).toBeHidden();
   let touch;
   if (info.project.name === 'mobile') {
     touch = await page.context().newCDPSession(page);

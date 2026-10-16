@@ -107,3 +107,24 @@ test('hangar paint purchases persist ownership, score and selected paint across 
   assert.equal(reload.game.snapshot().cosmetics.skin, 'ember');
   assert.equal(reload.game.snapshot().hits, saved.score);
 });
+
+test('curved rendering preserves finale fade and mesh-driven particle opacity', async () => {
+  const T = await import('three');
+  const { createRouteRenderer } = await import('../src/route.js');
+  const { createCollapse, updateCollapse, disposeCollapse } = await import('../src/finale.js');
+  const scene = new T.Scene(),
+    camera = new T.PerspectiveCamera();
+  const collapse = createCollapse(new T.Vector3());
+  scene.add(collapse);
+  const route = createRouteRenderer(scene, camera);
+  route.prepare();
+  const wave = collapse.getObjectByName('wave');
+  updateCollapse(collapse, 6.1);
+  assert.ok(Math.abs(wave.material.opacity - 0.5) < 1e-9);
+  updateCollapse(collapse, 8);
+  assert.equal(wave.material.opacity, 0);
+  wave.material.opacity = 0.3;
+  assert.equal(collapse.userData.hot.opacity, 0.3);
+  route.destroy();
+  disposeCollapse(collapse);
+});

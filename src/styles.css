@@ -1722,8 +1722,8 @@ canvas {
 }
 @keyframes arcade-enter {
   from {
-    opacity: 0;
-    transform: scale(1.08);
+    opacity: 1;
+    transform: scale(1.03);
   }
   to {
     opacity: 1;
@@ -1741,4 +1741,17 @@ body:has(#arcadePanel:not([hidden])) :is(#hud, #touch, #comms, #bottom, #loadout
 }
 body:has(#arcadePanel:not([hidden])) :is(#bossHUD, #subHUD, #attackWarning) {
   visibility: hidden;
+}
+
+/* Give the bonus its own readable HUD; only movement, fire and pause apply. */
+body:has(#arcadePanel:not([hidden])) :is(.mission, #comms, #loadout, #bottom, #sectorTag) {
+  visibility: hidden;
+}
+body:has(#arcadePanel:not([hidden])) :is(#boostTouch, #podsTouch, #rollTouch, #bombTouch) {
+  display: none;
+}
+@media (max-height: 500px) {
+  #routeLabel {
+    display: none;
+  }
 }
