@@ -328,7 +328,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   for (let i = 0; i < 200; i++) {
     let s = i % 2 ? 1 : -1,
       z = -30 - Math.floor(i / 2) * 19,
-      x = s * rnd(47, 300),
+      x = s * rnd(dynamicFlight ? 105 : 47, 300),
       h = rnd(16, 105),
       w = rnd(7, 19),
       depth = rnd(8, 18);
@@ -372,7 +372,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     let h = halo('#37ffcb', 5, 0.45);
     h.position.set(0, 9, 0);
     g.add(h);
-    g.position.set(s * 41, 0, -i * 65);
+    g.position.set(s * (dynamicFlight ? 92 : 41), 0, -i * 65);
     scene.add(g);
     near.push(g);
   }

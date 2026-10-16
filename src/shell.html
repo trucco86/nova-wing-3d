@@ -27,6 +27,10 @@
       <canvas id="arcadeCanvas"></canvas><strong id="arcadeStatus"></strong>
       <p>WASD / SETAS · ESPAÇO / TIRO · DOURADO = CRÉDITOS</p>
     </section>
+    <div id="cockpitPanel" hidden>
+      <span>NOVA-7 / SISTEMAS DE VOO</span><strong id="cockpitReadout"></strong>
+    </div>
+    <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="interface">
@@ -110,6 +114,7 @@
             <summary>Como jogar</summary>
             <div class="help-panel">
               <p><b>WASD / setas</b> pilotar · <b>Espaço</b> atirar</p>
+              <p><b>C</b> câmera: perseguição / cockpit / combate</p>
               <p><b>Shift</b> boost · <b>Q / E</b> giro · <b>B</b> bomba</p>
               <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
               <p>No celular, use os controles de toque. Jogue na horizontal.</p>

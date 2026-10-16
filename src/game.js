@@ -1,3 +1,4 @@
+import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import { createArcade, drawArcade } from './arcade.js';
@@ -80,9 +81,22 @@ export function createGame({
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
-  const flightCamera = createFlightCamera(camera);
+  const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
+  scene.add(camera);
+  const cockpit = dynamicFlight ? createCockpit(camera) : null;
+  let cameraMode = 'chase';
+  const cameraNames = { chase: 'PERSEGUIÇÃO', cockpit: 'COCKPIT', combat: 'COMBATE' };
+  function cycleCamera() {
+    if (!dynamicFlight || state !== 'playing') return;
+    const modes = ['chase', 'cockpit', 'combat'];
+    cameraMode = modes[(modes.indexOf(cameraMode) + 1) % modes.length];
+    flightCamera.setMode(cameraMode);
+    $('cameraView').textContent = 'C · ' + cameraNames[cameraMode];
+  }
+  $('cameraView').hidden = !dynamicFlight;
+  $('cameraView').onclick = cycleCamera;
   let route = routeAt(0, 0, 65);
   let arcade = null,
     arcadeDone = false;
@@ -184,7 +198,7 @@ export function createGame({
     podAnchor.copy(player.position);
     podAnchor.z -= 42;
   }
-  const flightLimit = () => Math.min(25, camera.aspect * 20);
+  const flightLimit = () => (dynamicFlight ? 72 : Math.min(25, camera.aspect * 20));
   let storage;
   try {
     storage = window.localStorage;
@@ -362,6 +376,7 @@ export function createGame({
     roll = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
+    flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     state = 'playing';
     $('shop').hidden = true;
@@ -553,6 +568,7 @@ export function createGame({
   function fire() {
     if (state !== 'playing' || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
+    cockpit?.fire();
     const count = SHOT_COUNTS[weapon];
     for (let i = 0; i < count; i++) launchShot((i - (count - 1) / 2) * 0.9, 2 + weapon);
     sound(900 + weapon * 110);
@@ -694,6 +710,7 @@ export function createGame({
       music?.start(sectorIndex, 'victory');
       $('attackWarning').textContent = 'ALVO DESTRUÍDO';
     }
+    if (dynamicFlight) flightCamera.setMode('combat');
     flightCamera.update(dt, player.position, 0, false);
     const vibration = collapseFinal ? Math.max(0, 1 - (collapseTime - 4.7) / 2) : 0.15;
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
@@ -751,6 +768,9 @@ export function createGame({
   }
   function start(resume = false) {
     if (!appActive) return;
+    cameraMode = 'chase';
+    flightCamera.setMode(cameraMode);
+    $('cameraView').textContent = 'C · PERSEGUIÇÃO';
     const checkpoint = resume === true ? readSave(storage) : null;
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
@@ -787,6 +807,7 @@ export function createGame({
     releaseControls();
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
+    flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
@@ -865,6 +886,7 @@ export function createGame({
     if (inFlight() && isGameKey(e)) e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
+    if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -1031,12 +1053,8 @@ export function createGame({
     $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
     reticle.visible = true;
     const previousPlayer = player.position.clone();
-    player.position.x = clamp(
-      player.position.x + dx * dt * 24,
-      -Math.min(25, camera.aspect * 20),
-      Math.min(25, camera.aspect * 20),
-    );
-    player.position.y = clamp(player.position.y + dy * dt * 20, -1, 23);
+    player.position.x = clamp(player.position.x + dx * dt * 24, -flightLimit(), flightLimit());
+    player.position.y = clamp(player.position.y + dy * dt * 20, -1, dynamicFlight ? 46 : 23);
     player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
@@ -1044,7 +1062,8 @@ export function createGame({
       roll -= dt;
       player.rotation.z = Math.PI * 2 * (1 - roll / 0.65);
     }
-    player.visible = boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0;
+    player.visible =
+      cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
     flightCamera.update(
       dt,
       player.position,
@@ -1339,7 +1358,14 @@ export function createGame({
       const kind = ringWave++ % 2 === 0 ? 'blue' : 'shield';
       const o = createPickup(kind);
       const extent = Math.max(0, flightLimit() - 2);
-      o.position.set(rnd(-extent, extent), rnd(2, 18), -170);
+      const spread = Math.min(23, camera.aspect * 20 - 2);
+      o.position.set(
+        dynamicFlight
+          ? clamp(player.position.x + rnd(-spread, spread), -extent, extent)
+          : rnd(-extent, extent),
+        dynamicFlight ? clamp(player.position.y + rnd(-8, 8), 2, 42) : rnd(2, 18),
+        -170,
+      );
       scene.add(o);
       rings.push({ o, life: 10, kind });
       ringCd = 6;
@@ -1503,6 +1529,18 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
+    const inside =
+      cameraMode === 'cockpit' &&
+      (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
+    cockpit?.update(state === 'paused' ? 0 : dt, inside);
+    $('cockpitPanel').hidden = !inside;
+    $('cameraView').disabled = state !== 'playing';
+    $('cockpitReadout').textContent =
+      Math.ceil(hp) +
+      '% ESCUDO · ' +
+      Math.ceil(energy) +
+      '% ENERGIA · ' +
+      (boosting ? '890' : '480');
     routeRenderer?.prepare();
     post.render();
   }
@@ -1545,6 +1583,7 @@ export function createGame({
 
   return {
     start,
+    cycleCamera,
     pause,
     setActive,
     fire,
@@ -1560,6 +1599,8 @@ export function createGame({
     nextSector,
     snapshot: () => ({
       state,
+      cameraMode,
+      playerVisible: player.visible,
       route: { ...route },
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
@@ -1601,7 +1642,13 @@ export function createGame({
       })),
       rolling: roll > 0,
       player: { x: player.position.x, y: player.position.y },
-      camera: { x: camera.position.x, y: camera.position.y, bank: camera.rotation.z },
+      camera: {
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+        fov: camera.fov,
+        bank: camera.rotation.z,
+      },
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
@@ -1629,6 +1676,7 @@ export function createGame({
       cleanups.forEach((fn) => fn());
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
+      cockpit?.destroy();
       routeRenderer?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       renderer.dispose?.();

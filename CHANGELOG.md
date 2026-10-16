@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.7.0 — Câmeras e navegação ampla (web)
+
+- Área de voo ampliada e perseguição com liberdade de enquadramento.
+- Câmeras cockpit, perseguição e combate distante alternadas por C ou toque.
+- Cockpit com painel e canhões, preservando projéteis e colisões da missão.
+- Recursos disponíveis primeiro na web para validação; apps mantêm voo anterior.
+
 ## 1.6.0 — Validação web
 
 - Trajetórias curvas, subida orbital e conduítes espaciais; voo guiado e controles preservados.
