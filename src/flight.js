@@ -16,7 +16,7 @@ export function createFlightCamera(camera, wideFlight = false) {
       return;
     }
     const distant = mode === 'combat';
-    const horizontal = Math.min(distant ? 22 : 14, camera.aspect * (distant ? 16 : 9));
+    const horizontal = Math.min(distant ? 22 : 14, camera.aspect * (distant ? 14 : 7));
     const vertical = distant ? 12 : 7;
     anchor.x = T.MathUtils.clamp(anchor.x, player.x - horizontal, player.x + horizontal);
     anchor.y = T.MathUtils.clamp(anchor.y, player.y - vertical, player.y + vertical);
@@ -59,7 +59,7 @@ export function createFlightCamera(camera, wideFlight = false) {
         if (mode !== 'cockpit') {
           const maxOffset = Math.min(
             mode === 'combat' ? 29 : 19,
-            camera.aspect * (mode === 'combat' ? 23 : 13),
+            camera.aspect * (mode === 'combat' ? 20 : 10),
           );
           eye.x = T.MathUtils.clamp(eye.x, player.x - maxOffset, player.x + maxOffset);
         }

@@ -9,3 +9,5 @@ Pedido: reduzir sensação de nave presa ao centro, acompanhar deslocamento pelo
 - Combate afasta câmera e amplia campo de visão; não altera velocidade, dano, recursos ou cadência.
 - Apps preservam limites e câmera anteriores; escolha começa em perseguição em nova campanha. Recompensas continuam alcançáveis e passam a nascer na vizinhança lateral da nave.
 - Validar deslocamento da nave na tela, acompanhamento, limites, pausa, reinício, alternância com teclado/toque, tiros e renderização sem erros nas três câmeras, inclusive retrato.
+
+- Prédios e postes decorativos ficam fora da área ampliada de voo; obstáculos de combate preservam colisões. Cockpit pausado só aparece se a pausa veio de voo 3D. Painel do cockpit substitui indicadores inferiores duplicados.

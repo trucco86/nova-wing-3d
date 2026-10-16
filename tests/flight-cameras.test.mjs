@@ -61,3 +61,26 @@ test('web camera selection preserves combat and pause, resets on restart, and is
   assert.equal(native.game.snapshot().player.x, 25);
   assert.equal(native.game.snapshot().player.y, 23);
 });
+
+test('pausing a 2D rift keeps the cockpit hidden and restores it only on return to flight', (t) => {
+  const storage = {
+    getItem: () =>
+      JSON.stringify({ version: 1, sector: 2, credits: 0, weapon: 0, armor: 0, pods: 0 }),
+    setItem() {},
+  };
+  const h = harness({ storage, spawnEncounters: true });
+  t.after(() => h.close());
+  h.game.start(true);
+  h.game.cycleCamera();
+  h.advance(0.1);
+  assert.equal(h.elements.get('cockpitPanel').hidden, false);
+  h.advance(8);
+  assert.equal(h.game.snapshot().state, 'arcade');
+  h.game.pause();
+  h.advance(0.1);
+  assert.equal(h.elements.get('cockpitPanel').hidden, true);
+  h.game.pause();
+  h.advance(19);
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.elements.get('cockpitPanel').hidden, false);
+});

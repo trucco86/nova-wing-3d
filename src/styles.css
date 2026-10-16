@@ -1809,3 +1809,12 @@ body:has(#arcadePanel:not([hidden])) #cameraView {
     font-size: 8px;
   }
 }
+
+body:has(#cockpitPanel:not([hidden])) #bottom {
+  visibility: hidden;
+}
+@media (pointer: coarse) and (max-height: 550px) {
+  body:has(#cockpitPanel:not([hidden])) #comms {
+    top: 123px;
+  }
+}

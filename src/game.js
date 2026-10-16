@@ -1529,12 +1529,18 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
-    const inside = cameraMode === 'cockpit' && ['playing', 'paused'].includes(state);
+    const inside =
+      cameraMode === 'cockpit' &&
+      (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
     cockpit?.update(state === 'paused' ? 0 : dt, inside);
     $('cockpitPanel').hidden = !inside;
     $('cameraView').disabled = state !== 'playing';
     $('cockpitReadout').textContent =
-      Math.ceil(hp) + '% ESCUDO · ' + Math.ceil(energy) + '% ENERGIA';
+      Math.ceil(hp) +
+      '% ESCUDO · ' +
+      Math.ceil(energy) +
+      '% ENERGIA · ' +
+      (boosting ? '890' : '480');
     routeRenderer?.prepare();
     post.render();
   }
