@@ -87,8 +87,8 @@ test('touch depletion shares rearm rules, including mixed controls, cancel, paus
   h.advance(0.1);
   assert.equal(h.game.snapshot().controls.boost, false);
 });
-test('rings stay reachable after portrait resize and can be collected at boost speed', (t) => {
-  const h = setup(t, { spawnEncounters: true });
+test('native rings stay reachable after portrait resize and can be collected at boost speed', (t) => {
+  const h = setup(t, { spawnEncounters: true, nativeLifecycle: true });
   h.advance(4.1);
   h.window.innerWidth = 390;
   h.window.innerHeight = 844;

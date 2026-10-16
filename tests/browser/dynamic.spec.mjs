@@ -85,3 +85,43 @@ test('hangar equips purchased paint and preserves it on reload', async ({ page }
     await page.evaluate(() => JSON.parse(localStorage.getItem('nova-wing-3d-v1')).cosmetics.skin),
   ).toBe('ember');
 });
+
+test('wide flight and three camera perspectives render and switch with keyboard or touch', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.keyboard.down('ArrowRight');
+  await page.evaluate(() => window.fixture.advance(2));
+  await page.keyboard.up('ArrowRight');
+  expect((await page.evaluate(() => window.fixture.game.snapshot())).player.x).toBeGreaterThan(25);
+  await page.screenshot({ path: info.outputPath('wide-chase.png') });
+  for (const mode of ['cockpit', 'combat', 'chase']) {
+    if (info.project.name === 'mobile') await page.locator('#cameraView').tap();
+    else await page.keyboard.press('KeyC');
+    await page.evaluate(() => window.fixture.advance(2));
+    expect(await page.evaluate(() => window.fixture.game.snapshot().cameraMode)).toBe(mode);
+    if (mode === 'cockpit') {
+      await expect(page.locator('#cockpitPanel')).toBeVisible();
+      await page.keyboard.down('Space');
+      await page.evaluate(() => window.fixture.advance(0.03));
+      expect(
+        await page.evaluate(() => window.fixture.game.snapshot().entities.shots),
+      ).toBeGreaterThan(0);
+    }
+    await page.screenshot({ path: info.outputPath('camera-' + mode + '.png') });
+    await page.keyboard.up('Space');
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.keyboard.down('ArrowLeft');
+  await page.evaluate(() => window.fixture.advance(4));
+  await page.keyboard.up('ArrowLeft');
+  await page.screenshot({ path: info.outputPath('wide-portrait.png') });
+  expect(errors).toEqual([]);
+});

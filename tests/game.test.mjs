@@ -31,8 +31,8 @@ test('keyboard movement is bounded and diagonal input remains finite', (t) => {
   h.key('KeyW');
   h.advance(4);
   const s = h.game.snapshot();
-  assert.equal(s.player.x, 25);
-  assert.equal(s.player.y, 23);
+  assert.equal(s.player.x, 72);
+  assert.equal(s.player.y, 46);
   h.key('KeyD', false);
   h.key('KeyW', false);
   h.advance(1);

@@ -97,3 +97,7 @@ A capa contém título, frase, iniciar/continuar e ajuda em `details`; HUD de co
 `arcade.js` mantém a simulação 2D lateral de 18 segundos; `game.js` coordena a interrupção aos oito segundos nos setores 3 e 7, congela a campanha e credita o resultado uma vez no retorno. O estado `arcade` participa de pausa, foco, toque e liberação de comandos. A renderização 2D usa canvas em coordenadas virtuais independentes da resolução.
 
 `customization.js` valida cinco pinturas, propriedade, preço e limiares de acertos. O checkpoint v1 aceita os campos opcionais `cosmetics` e `score`, preservando a leitura de saves antigos. A pintura usa materiais exclusivos do jogador; não altera inimigos nem atributos. `nativeLifecycle` desativa rota, cenário ampliado, desafios e loja de pinturas nos apps. A fixture acelerada `tests/dynamic-scene.js` é servida exclusivamente com NOVA_VISUAL_TEST=1 e não vai ao Pages.
+
+## Câmeras web (1.7)
+
+`flight.js` mantém o rig nativo original e um rig web com zona de enquadramento, acompanhamento por tempo e três modos. Limites da missão web são x ±72 e y -1..46, independentes da proporção da tela; a câmera adapta o enquadramento ao aspect. `cockpit.js` cria uma estrutura presa à câmera, excluída da deformação da rota, com materiais e geometrias liberados ao destruir a instância. Casco externo é ocultado no cockpit, sem remover posição, projéteis ou colisões. Colapso usa vista distante e o setor seguinte restaura a escolha do jogador. C e botão chamam a mesma transição, bloqueada fora da partida ativa.

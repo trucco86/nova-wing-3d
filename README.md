@@ -281,3 +281,7 @@ Projeto iOS e comandos de sincronização/compilação preparados. Consulte [iOS
 A versão web incorpora curvas e subida orbital, conduítes espaciais e um buraco negro estilizado no setor final. O voo continua guiado; os controles de movimento e combate são os mesmos. Nos setores 3 e 7, a entrada da fenda abre um desafio lateral 2D de 18 segundos: atire nos alvos, recolha créditos dourados e evite colisões para preservar seu prêmio. Pausa e toque funcionam também nesse trecho.
 
 No hangar, abra **Pinturas da NOVA-7**: Polar é gratuita; Brasa e Aurora usam créditos; Nebulosa e Solar também exigem acertos da campanha. A pintura é cosmética e acompanha o checkpoint local. Uma nova campanha reinicia suas compras junto com os demais recursos. Aplicativos nativos mantêm o voo anterior até a validação desta experiência web.
+
+### Câmeras e navegação (web v1.7)
+
+Use **C** ou o botão de câmera para alternar **perseguição**, **cockpit** e **combate distante** durante o voo. A nave pode cruzar uma área maior da missão; a câmera deixa espaço para manobrar na tela e acompanha o deslocamento pelo cenário. O cockpit inclui painel e canhões sincronizados com o tiro. A campanha ainda avança por uma rota guiada. Pausa e fendas 2D suspendem a troca de perspectiva. Reiniciar retorna à perseguição. Os apps preservam a câmera e os limites anteriores até validação da web.
