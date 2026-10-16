@@ -40,7 +40,9 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
 }, info) => {
   // Software WebGL can take over 30 wall-clock seconds for 3.4 simulated seconds.
   // The CI trace still had 50% energy at the old deadline; preserve all state assertions.
-  test.setTimeout(150000);
+  // CI evidence shows boost rendered after the default 5s assertion deadline.
+  // Keep the real animation loop and input; allow software rendering to present the frame.
+  test.setTimeout(180000);
   await page.goto('/');
   await page.locator('#start').click();
   const mobile = info.project.name === 'mobile';
@@ -49,7 +51,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.down();
   } else await page.keyboard.down('Shift');
-  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   await expect(page.locator('#speedValue')).toHaveText('890');
   await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 90000 });
   await expect
@@ -67,7 +69,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.keyboard.up('Shift');
     await page.keyboard.down('Shift');
   }
-  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   await expect(page.locator('#speedValue')).toHaveText('890');
   await page.screenshot({ path: info.outputPath('boost-rearmed.png') });
   if (mobile) await page.mouse.up();
