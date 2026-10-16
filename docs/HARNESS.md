@@ -73,7 +73,7 @@ A spec `boss-spectacle.md` acrescenta os contratos de subchefe persistente, resi
 | `build:check`  | HTML exatamente recomposto a partir da fonte                                                   | Qualidade visual                                            |
 | `test:browser` | WebGL, interação, capturas e áudio no Chromium da CI                                           | Safari físico, FPS em todo aparelho ou preferência estética |
 
-O relatório contém `started`, `finished`, `commit`, `sourceDigest`, `passed`, `checks` e `browser`. Cada check tem comando, exit code, duração e erro. Um timeout aparece como erro, não como sucesso parcial. O comando de navegador tem orçamento total de seis minutos; os demais, três. Cada job da CI tem limite de dez minutos.
+O relatório contém `started`, `finished`, `commit`, `sourceDigest`, `passed`, `checks` e `browser`. Cada check tem comando, exit code, duração e erro. Um timeout aparece como erro, não como sucesso parcial. O comando de navegador tem orçamento total de doze minutos; os demais, três. O job de navegador tem limite de quinze minutos, incluindo instalação e upload das evidências; os demais limites estão no workflow.
 
 ## Exemplo concreto: pressão longa no tiro
 
@@ -92,3 +92,7 @@ O índice [specs/README.md](../specs/README.md) mantém a rastreabilidade para o
 Uma falha de comportamento pede reprodução e regressão. Uma falha de infraestrutura pede diagnóstico do ambiente. Um timeout pede verificar se houve lentidão, travamento ou aumento legítimo da suíte antes de ajustar orçamento. Alterar o limite deve ser explícito e não remove assertions.
 
 Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a página pública. Se o navegador de verificação não tiver WebGL, registre a limitação e use a renderização real da CI como evidência separada; não alegue gameplay validado naquele navegador.
+
+### Margem de renderização no CI (v1.6.0)
+
+Na execução 38832496066, a primeira tentativa excedeu oito minutos da suíte. Na segunda, 31 testes de navegador passaram e a ativação de impulso no desktop ultrapassou a assertion de cinco segundos; a captura posterior já mostrava impulso ativo e velocidade 890. O teste conserva entradas reais, loop de animação e todas as assertions, com até vinte segundos para observar a ativação/reativação. O orçamento da suíte passa a doze minutos e o job a quinze, sem retries automáticos nem exclusão de testes. Esses limites acomodam o runner com WebGL por software e não constituem uma medição de desempenho em dispositivos reais.
