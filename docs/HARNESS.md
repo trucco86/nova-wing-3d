@@ -96,3 +96,5 @@ Antes de afirmar “publicado”, confira o job `pages`, o commit entregue e a p
 ### Margem de renderização no CI (v1.6.0)
 
 Na execução 38832496066, a primeira tentativa excedeu oito minutos da suíte. Na segunda, 31 testes de navegador passaram e a ativação de impulso no desktop ultrapassou a assertion de cinco segundos; a captura posterior já mostrava impulso ativo e velocidade 890. O teste conserva entradas reais, loop de animação e todas as assertions, com até vinte segundos para observar a ativação/reativação. O orçamento da suíte passa a doze minutos e o job a quinze, sem retries automáticos nem exclusão de testes. Esses limites acomodam o runner com WebGL por software e não constituem uma medição de desempenho em dispositivos reais.
+
+A execução 38867331206 confirmou o teste de esgotamento aprovado, mas o teste separado de rastro/pausa ainda usava cinco segundos para observar o mesmo estado visual. Ele passa a usar a mesma margem de vinte segundos, com sessenta segundos para o cenário completo. Nenhuma assertion foi removida.
