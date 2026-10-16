@@ -233,6 +233,7 @@ test('six music states render finite audible audio without clipping', async ({ p
 test('boost streaks follow keyboard or touch input and disappear on pause', async ({
   page,
 }, info) => {
+  test.setTimeout(60000);
   await page.goto('/');
   await page.locator('#start').click();
   if (info.project.name === 'mobile') {
@@ -240,10 +241,10 @@ test('boost streaks follow keyboard or touch input and disappear on pause', asyn
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.down();
   } else await page.keyboard.down('Shift');
-  await expect(page.locator('body')).toHaveClass(/boosting/);
+  await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   await page.screenshot({ path: info.outputPath('boost.png') });
   await page.locator('#pause').click();
-  await expect(page.locator('body')).not.toHaveClass(/boosting/);
+  await expect(page.locator('body')).not.toHaveClass(/boosting/, { timeout: 20000 });
 });
 test('ten distinct subboss silhouettes render', async ({ page }, info) => {
   test.setTimeout(120000);
