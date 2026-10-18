@@ -101,3 +101,18 @@ A capa contém título, frase, iniciar/continuar e ajuda em `details`; HUD de co
 ## Câmeras web (1.7)
 
 `flight.js` mantém o rig nativo original e um rig web com zona de enquadramento, acompanhamento por tempo e três modos. Limites da missão web são x ±72 e y -1..46, independentes da proporção da tela; a câmera adapta o enquadramento ao aspect. `cockpit.js` cria uma estrutura presa à câmera, excluída da deformação da rota, com materiais e geometrias liberados ao destruir a instância. Casco externo é ocultado no cockpit, sem remover posição, projéteis ou colisões. Colapso usa vista distante e o setor seguinte restaura a escolha do jogador. C e botão chamam a mesma transição, bloqueada fora da partida ativa.
+
+## Combate estratégico web (1.8)
+
+`strategy.js` define limiares XP, arsenal, especiais, fraquezas e validação dos
+campos opcionais de checkpoint. `evolution.js` compartilha templates de módulos
+visuais; evolução não amplia hitbox. `game.js` aplica efeitos por delta de tempo,
+energia arcana, cadência e perseguição dos pods. Estados novos são reiniciados
+com a campanha, congelados na pausa e desativados por `nativeLifecycle`.
+
+A arena usa o referencial do jogador: órbita transforma cenário, chefe e projéteis já
+em voo em torno do centro; pontos de acerto vêm das matrizes mundiais das malhas.
+J/L e botões laterais orbitam, enquanto movimento tradicional ajusta a mira.
+Geradores nos flancos e núcleo frontal compartilham o orçamento de dano existente.
+Bombas respeitam os ângulos e proteção. O cenário para de avançar durante a arena.
+Testes usam entrada de órbita antes do dano; não ignoram a proteção de posição.

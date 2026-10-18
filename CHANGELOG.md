@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.8.0 — Combate estratégico web
+
+- Dez evoluções por XP, módulos visuais, agilidade gradual e cinco famílias de armas.
+- Barreira, nova e estase com energia arcana e recarga; fraquezas elementais.
+- Pods acoplados amplificam dano; lançados perseguem inimigos com tiro guiado.
+- Três variantes de tanques, robôs e caças com peças e silhuetas adicionais.
+- Subchefes com chegada protegida, escudo cíclico e três fases de ataque.
+- Arena relativa de 360°: J/L ou toque orbitam chefes e expõem geradores laterais.
+- Checkpoints antigos aceitos; apps mantêm a versão anterior destas mecânicas.
+
 ## 1.7.0 — Câmeras e navegação ampla (web)
 
 - Área de voo ampliada e perseguição com liberdade de enquadramento.

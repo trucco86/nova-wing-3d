@@ -5,7 +5,15 @@ const params = new URLSearchParams(location.search);
 const sector = Number(params.get('sector') ?? 0);
 localStorage.setItem(
   'nova-wing-3d-v1',
-  JSON.stringify({ version: 1, sector, credits: 650, weapon: 0, armor: 0, pods: 0 }),
+  JSON.stringify({
+    version: 1,
+    sector,
+    credits: 650,
+    weapon: 0,
+    armor: 0,
+    pods: Number(params.get('pods') ?? 0),
+    strategy: { xp: Number(params.get('xp') ?? 0), arsenal: 0, special: 0 },
+  }),
 );
 let rendering = true,
   capture = true;

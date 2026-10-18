@@ -30,6 +30,19 @@
     <div id="cockpitPanel" hidden>
       <span>NOVA-7 / SISTEMAS DE VOO</span><strong id="cockpitReadout"></strong>
     </div>
+    <div id="strategyControls">
+      <span id="strategyStatus"></span>
+      <div class="strategyButtons">
+        <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
+        ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
+        ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+      </div>
+      <div id="orbitControls" hidden>
+        <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
+        ><span>ORBITAR</span
+        ><button id="orbitRight" aria-label="Orbitar chefe à direita">L · ↷</button>
+      </div>
+    </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
     <div id="vignette"></div>
     <div id="flash"></div>
@@ -119,6 +132,12 @@
               <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
               <p>No celular, use os controles de toque. Jogue na horizontal.</p>
             </div>
+            <p>
+              WEB: F troca arma · H escolhe especial · G ativa · J/L orbitam chefes. Anéis e abates
+              dão XP para dez evoluções. Gelo retarda, plasma queima, arcano busca e vazio perfura.
+              Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos ±60° para
+              geradores e frente 0° para núcleo.
+            </p>
           </details>
         </div>
         <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>

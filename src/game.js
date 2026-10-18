@@ -1,3 +1,14 @@
+import {
+  ARSENAL,
+  SPECIALS,
+  XP_STAGES,
+  stageAt,
+  readStrategy,
+  weaknessAt,
+  elementalDamage,
+  weakPointOpen,
+} from './strategy.js';
+import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
@@ -126,6 +137,18 @@ export function createGame({
   const player = fighter();
   scene.add(player);
   player.position.set(0, 6, 9);
+  const barrierVisual = new T.Mesh(
+    new T.SphereGeometry(5.8, 16, 10),
+    new T.MeshBasicMaterial({
+      color: '#6eeaff',
+      transparent: true,
+      opacity: 0.2,
+      wireframe: true,
+      depthWrite: false,
+    }),
+  );
+  barrierVisual.visible = false;
+  player.add(barrierVisual);
   let enemies = [],
     shots = [],
     hostile = [],
@@ -187,6 +210,72 @@ export function createGame({
     collapseFinal = false,
     pausedFrom = 'playing',
     ringWave = 0;
+  let strategy = readStrategy(null),
+    arcana = 100,
+    specialCd = 0,
+    barrier = 0,
+    stasis = 0;
+  let evolution = null,
+    evolutionStage = -1,
+    orbitAngle = 0,
+    orbitTouch = 0;
+  const stage = () => (dynamicFlight ? stageAt(strategy.xp) : 0);
+  const selectedWeapon = () => ARSENAL[dynamicFlight ? strategy.arsenal : 0];
+  function evolve() {
+    if (!dynamicFlight || evolutionStage === stage()) return;
+    evolutionStage = stage();
+    if (evolution) player.remove(evolution);
+    evolution = createEvolution(evolutionStage);
+    player.add(evolution);
+    player.scale.setScalar(1 + evolutionStage * 0.025);
+  }
+  function gainXP(amount) {
+    if (!dynamicFlight) return;
+    const before = stage();
+    strategy.xp = Math.min(1000000, strategy.xp + amount);
+    weapon = Math.max(weapon, Math.min(5, Math.floor(stage() / 3)));
+    evolve();
+    if (stage() > before) message('EVOLUÇÃO ' + (stage() + 1) + ' · NOVOS MÓDULOS / F: ARSENAL');
+  }
+  function orbit(direction) {
+    if (dynamicFlight && boss && state === 'playing') orbitTouch = clamp(direction, -1, 1);
+  }
+  function cycleArsenal() {
+    if (!dynamicFlight || state !== 'playing') return;
+    const available = ARSENAL.filter((w) => w.stage <= stage()).length;
+    strategy.arsenal = (strategy.arsenal + 1) % available;
+    message('ARMA · ' + selectedWeapon().name);
+  }
+  function cycleSpecial() {
+    if (!dynamicFlight || state !== 'playing') return;
+    strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
+  }
+  function castSpecial() {
+    if (!dynamicFlight || state !== 'playing' || specialCd > 0) return false;
+    const spell = SPECIALS[strategy.special];
+    if (arcana < spell.cost) {
+      message('ENERGIA ARCANA INSUFICIENTE');
+      return false;
+    }
+    arcana -= spell.cost;
+    specialCd = 8;
+    if (strategy.special === 0) barrier = 4;
+    if (strategy.special === 2) stasis = 5;
+    if (strategy.special === 1) {
+      for (let i = 0; i < 9; i++) {
+        const angle = (i * Math.PI * 2) / 9;
+        const direction = new T.Vector3(Math.sin(angle), 0, Math.cos(angle));
+        launchShot(0, 18 + stage() * 3, true);
+        const b = shots.at(-1);
+        b.o.position.copy(player.position).addScaledVector(direction, 4);
+        b.o.material = shotMaterials[3];
+        b.v = direction.multiplyScalar(130);
+        b.element = 'arcane';
+      }
+    }
+    message('ESPECIAL · ' + spell.name);
+    return true;
+  }
   const podMeshes = [];
   let podMode = 'docked';
   let podBlocks = 0;
@@ -247,7 +336,16 @@ export function createGame({
   const maxHp = () => 100 + armor * 25;
   const current = () => SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
-    writeSave(storage, { sector: next, credits, weapon, armor, pods: podCount, score, cosmetics });
+    writeSave(storage, {
+      sector: next,
+      credits,
+      weapon,
+      armor,
+      pods: podCount,
+      score,
+      cosmetics,
+      ...(dynamicFlight ? { strategy } : {}),
+    });
   }
   function syncPods() {
     if (podMeshes.length === podCount && podMeshes.every((p) => p.userData.level === podCount))
@@ -265,11 +363,16 @@ export function createGame({
   function collect(kind) {
     if (state !== 'playing') return;
     if (kind === 'blue') {
-      weapon = Math.min(5, weapon + 1);
+      if (dynamicFlight) gainXP(4);
+      else weapon = Math.min(5, weapon + 1);
       blueRings++;
-      if (blueRings % 3 === 0) podCount = Math.min(3, podCount + 1);
+      if (blueRings % (dynamicFlight ? 6 : 3) === 0) podCount = Math.min(3, podCount + 1);
       syncPods();
-      message('ARMA ' + WEAPONS[weapon] + ' · PODS ' + podCount);
+      message(
+        dynamicFlight
+          ? 'XP +4 · EVOLUÇÃO ' + (stage() + 1) + '/10 · PODS ' + podCount
+          : 'ARMA ' + WEAPONS[weapon] + ' · PODS ' + podCount,
+      );
     } else {
       hp = Math.min(maxHp(), hp + 25);
       message('ESCUDO +25');
@@ -350,6 +453,9 @@ export function createGame({
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
+    orbitAngle = orbitTouch = 0;
+    arcana = 100;
+    specialCd = barrier = stasis = 0;
     podsDetached = false;
     podMode = 'docked';
     podBlocks = 0;
@@ -479,6 +585,7 @@ export function createGame({
     }
   }
   function hit(d) {
+    if (dynamicFlight && barrier > 0) return;
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
     hp = Math.max(0, hp - d);
     shake = 0.35;
@@ -512,6 +619,7 @@ export function createGame({
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
     }
     score += e.elite ? 15 : 1;
+    gainXP(e.elite ? 8 : 1);
     credits += e.elite ? 90 : 12;
     if (e.kind === 'base') {
       collect('blue');
@@ -533,7 +641,7 @@ export function createGame({
     for (let e of enemies)
       if (!e.dead) {
         if (e.kind === 'subboss') {
-          e.life -= 90;
+          damageEnemy(e, 90, 'kinetic');
           explode(e.o.position, 20);
           if (e.life <= 0) kill(e);
         } else kill(e);
@@ -554,33 +662,70 @@ export function createGame({
     }, 180);
     sound(45, 0.8, 'sawtooth', 0.08);
   }
+  const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  function damageEnemy(e, amount, element = 'kinetic') {
+    if (dynamicFlight) {
+      if (e.kind === 'subboss') {
+        if (e.age < 3) return;
+        amount *= e.age % 6 < 1.5 ? 0.25 : 1;
+      }
+      amount = elementalDamage(amount, element, weaknessAt(e.variant, e.combatPhase));
+      if (element === 'ice') e.chilled = 2;
+      if (element === 'fire') e.burning = 2;
+    }
+    e.life -= amount;
+    if (e.life <= 0) kill(e);
+  }
   function launchShot(x, damage = 2, charged = false) {
-    const o = new T.Mesh(charged ? orbGeo : laserGeo, green);
-    o.add(halo(WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5));
+    const o = new T.Mesh(
+      charged ? orbGeo : laserGeo,
+      dynamicFlight ? shotMaterials[strategy.arsenal] : green,
+    );
+    o.add(
+      halo(dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
+    );
     o.rotation.x = Math.PI / 2;
     o.position.copy(player.position);
     o.position.x += x;
     o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
     scene.add(o);
-    shots.push({ o, life: 2, damage, charged });
+    shots.push({
+      o,
+      life: 2,
+      damage,
+      charged,
+      element: dynamicFlight ? selectedWeapon().element : 'kinetic',
+      pierced: new Set(),
+    });
   }
   function fire() {
     if (state !== 'playing' || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
     const count = SHOT_COUNTS[weapon];
-    for (let i = 0; i < count; i++) launchShot((i - (count - 1) / 2) * 0.9, 2 + weapon);
+    for (let i = 0; i < count; i++) {
+      const power = dynamicFlight
+        ? selectedWeapon().damage * (1 + stage() * 0.12) * (podsDetached ? 1 : 1 + podCount * 0.3)
+        : 1;
+      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
+      const b = shots.at(-1);
+      if (dynamicFlight) {
+        b.homing = strategy.arsenal === 3;
+        b.spread = strategy.arsenal === 2 ? (i - (count - 1) / 2) * 7 : 0;
+        b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
+      }
+    }
     sound(900 + weapon * 110);
-    shotCd = 0.135;
+    shotCd = dynamicFlight ? selectedWeapon().cadence / (1 + stage() * 0.035) : 0.135;
   }
   function enemy(kind = 'fighter') {
     const ground = kind === 'tank' || kind === 'walker';
     let o = ground
-      ? createGroundEnemy(kind)
+      ? createGroundEnemy(kind, dynamicFlight ? (groundWave + sectorIndex) % 3 : -1)
       : kind === 'subboss'
         ? createSubboss(sectorIndex)
-        : fighter(true);
+        : fighter(true, dynamicFlight ? (Math.floor(elapsed / 3) + sectorIndex) % 3 : -1);
     if (kind === 'base') {
       o = new T.Group();
       o.add(box(8, 12, 9, buildingMat, 0, -4, 0));
@@ -603,12 +748,21 @@ export function createGame({
       cd: rnd(1, 3),
       life:
         kind === 'subboss'
-          ? 180 + sectorIndex * 40
+          ? dynamicFlight
+            ? 620 + sectorIndex * 110
+            : 180 + sectorIndex * 40
           : ground
             ? (kind === 'walker' ? 28 : 14) + sectorIndex * 3
             : elite
               ? 35 + sectorIndex * 8
               : 2 + Math.floor(sectorIndex / 3),
+      variant: (groundWave + sectorIndex) % 5,
+      age: 0,
+      combatPhase: 1,
+      chilled: 0,
+      burning: 0,
+      maxLife:
+        kind === 'subboss' ? (dynamicFlight ? 620 + sectorIndex * 110 : 180 + sectorIndex * 40) : 1,
       ground,
       hitY: kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
       half: new T.Vector3(
@@ -621,47 +775,77 @@ export function createGame({
       kind,
     });
   }
-  function bullet(pos, target) {
+  function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
-    let o = new T.Mesh(orbGeo, enemyOrbMat);
+    let o = new T.Mesh(
+      orbGeo,
+      spell === 'arcane' ? shotMaterials[3] : spell === 'fire' ? shotMaterials[2] : enemyOrbMat,
+    );
+    if (spell) o.scale.setScalar(1.8);
     o.add(halo(0xff4265, 2.6, 0.8));
     o.position.copy(pos);
     scene.add(o);
-    hostile.push({ o, v: target.clone().sub(pos).normalize().multiplyScalar(58), life: 6 });
+    hostile.push({
+      o,
+      v: target
+        .clone()
+        .sub(pos)
+        .normalize()
+        .multiplyScalar(spell === 'arcane' ? 38 : 58),
+      life: 6,
+      spell,
+      age: 0,
+    });
   }
   function makeBoss() {
     bossCombat = createBossCombat(sectorIndex);
+    orbitAngle = 0;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
-    boss.position.set(0, 10, -230);
+    boss.position.set(0, 10, dynamicFlight ? -88 : -230);
+    if (dynamicFlight) {
+      for (const o of obstacles) dispose(o.o);
+      obstacles = [];
+      message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
+    }
     music?.start(sectorIndex, true);
     $('bossName').textContent = current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
-    message('ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS');
+    message(
+      dynamicFlight
+        ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+        : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
+    );
   }
-  function damageBoss(amount, target = null) {
+  function damageBoss(amount, target = null, element = 'kinetic') {
     if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return;
+    boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    const openPart = (p) =>
+      !dynamicFlight || weakPointOpen(orbitAngle, boss.userData.parts.indexOf(p));
+    if (dynamicFlight)
+      amount = elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase));
     let part = target
-      ? parts.find(
-          (p) =>
-            Math.hypot(
-              target.x - boss.position.x - p.mesh.position.x,
-              target.y - boss.position.y - p.mesh.position.y,
-            ) < 6,
+      ? parts.find((p) =>
+          dynamicFlight
+            ? target.distanceTo(p.mesh.getWorldPosition(new T.Vector3())) < 6
+            : Math.hypot(
+                target.x - boss.position.x - p.mesh.position.x,
+                target.y - boss.position.y - p.mesh.position.y,
+              ) < 6,
         )
-      : parts[0];
+      : parts.find(openPart);
     if (parts.length) {
-      if (!part) return;
+      if (!part || !openPart(part)) return;
       part.hp = Math.max(0, part.hp - bossCombat.spend(amount));
       if (part.hp === 0) {
         part.mesh.visible = false;
-        explode(boss.position.clone().add(part.mesh.position), 24);
+        explode(part.mesh.getWorldPosition(new T.Vector3()), 24);
         credits += 35;
         message(
           'GERADOR DESTRUÍDO · ' +
@@ -670,11 +854,18 @@ export function createGame({
       }
       return;
     }
-    if (target && Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7) return;
-    if (!bossCombat.coreOpen) return;
+    if (
+      target &&
+      (dynamicFlight
+        ? target.distanceTo(boss.userData.core.getWorldPosition(new T.Vector3())) > 8
+        : Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7)
+    )
+      return;
+    if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(orbitAngle))) return;
     bossCombat.damage(bossCombat.spend(amount));
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
+      gainXP(30);
       state = 'collapsing';
       releaseControls();
       for (const arr of [shots, hostile]) {
@@ -775,6 +966,8 @@ export function createGame({
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
+    strategy = dynamicFlight ? readStrategy(checkpoint?.strategy) : readStrategy(null);
+    evolve();
     armor = checkpoint?.armor ?? 0;
     podCount = checkpoint?.pods ?? 0;
     lives = 3;
@@ -869,6 +1062,27 @@ export function createGame({
     music?.setEnabled(musicOn);
     $('music').textContent = musicOn ? '♪ ON' : '♪ OFF';
   };
+  $('arsenalSwitch').onclick = cycleArsenal;
+  $('specialSwitch').onclick = cycleSpecial;
+  $('specialCast').onclick = castSpecial;
+  for (const [id, direction] of [
+    ['orbitLeft', -1],
+    ['orbitRight', 1],
+  ]) {
+    $(id).onpointerdown = (e) => {
+      e.preventDefault?.();
+      if (state !== 'playing' || !boss) return;
+      $(id).setPointerCapture(e.pointerId);
+      orbitTouch = direction;
+    };
+    $(id).onpointerup =
+      $(id).onpointercancel =
+      $(id).onlostpointercapture =
+        () => {
+          orbitTouch = 0;
+        };
+  }
+  $('strategyControls').hidden = !dynamicFlight;
   $('podsTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     if (state === 'playing') togglePods();
@@ -886,6 +1100,9 @@ export function createGame({
     if (inFlight() && isGameKey(e)) e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
+    if (e.code === 'KeyF') cycleArsenal();
+    if (e.code === 'KeyH') cycleSpecial();
+    if (e.code === 'KeyG') castSpecial();
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
@@ -905,6 +1122,7 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    orbitTouch = 0;
     boosting = false;
     boostNeedsRelease = false;
     document.body.classList.remove('boosting');
@@ -1017,6 +1235,31 @@ export function createGame({
       $('routeLabel').textContent = route.label;
     }
     shotCd -= dt;
+    if (dynamicFlight) {
+      arcana = Math.min(100, arcana + dt * 4);
+      specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      barrier = Math.max(0, barrier - dt);
+      stasis = Math.max(0, stasis - dt);
+      $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
+      $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
+      $('specialCast').textContent =
+        'G · ' +
+        (specialCd > 0 ? Math.ceil(specialCd) + 's' : 'ATIVAR') +
+        ' · ' +
+        Math.floor(arcana);
+      $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('orbitControls').hidden = !boss;
+      $('strategyStatus').textContent =
+        'EV ' +
+        (stage() + 1) +
+        '/10 · XP ' +
+        strategy.xp +
+        '/' +
+        (XP_STAGES[stage() + 1] ?? 'MAX') +
+        ' · VEL ' +
+        (boosting ? '890' : '480') +
+        (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
+    }
     invuln -= dt;
     rollCd -= dt;
     msgTime -= dt;
@@ -1037,7 +1280,7 @@ export function createGame({
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
-    const speed = boosting ? 90 : 48;
+    const speed = (boosting ? 90 : 48) * (1 + stage() * 0.02);
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -1053,8 +1296,16 @@ export function createGame({
     $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
     reticle.visible = true;
     const previousPlayer = player.position.clone();
-    player.position.x = clamp(player.position.x + dx * dt * 24, -flightLimit(), flightLimit());
-    player.position.y = clamp(player.position.y + dy * dt * 20, -1, dynamicFlight ? 46 : 23);
+    player.position.x = clamp(
+      player.position.x + dx * dt * 24 * (1 + stage() * 0.03),
+      -flightLimit(),
+      flightLimit(),
+    );
+    player.position.y = clamp(
+      player.position.y + dy * dt * 20 * (1 + stage() * 0.03),
+      -1,
+      dynamicFlight ? 46 : 23,
+    );
     player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
@@ -1146,6 +1397,19 @@ export function createGame({
     $('pilotName').textContent = PILOTS[3 - lives] + ' / ' + lives + ' VIDAS';
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     podCd -= dt;
+    if (dynamicFlight && podsDetached) {
+      const prey = enemies
+        .filter((e) => !e.dead && e.o.position.z < player.position.z)
+        .sort(
+          (a, b) =>
+            a.o.position.distanceToSquared(player.position) -
+            b.o.position.distanceToSquared(player.position),
+        )[0];
+      const destination = boss
+        ? boss.position.clone().add(new T.Vector3(0, 0, 40))
+        : prey?.o.position.clone().add(new T.Vector3(0, prey.hitY, 20));
+      if (destination) podAnchor.lerp(destination, 1 - Math.exp(-3 * dt));
+    }
     let podsArrived = true;
     podMeshes.forEach((p, i) => {
       const offset = new T.Vector3(i === 0 ? 0 : i === 1 ? -5 : 5, i === 0 ? 0 : 2, -6);
@@ -1169,13 +1433,27 @@ export function createGame({
           const shot = shots[shots.length - 1];
           shot.o.position.copy(p.position);
           shot.spread = spread * (8 + podCount * 2);
-          if (podCount === 3) shot.homing = true;
+          if (podCount === 3 || (dynamicFlight && podsDetached)) shot.homing = true;
         }
       }
     }
 
     for (let e of enemies) {
       if (e.dead) continue;
+      e.age += dt;
+      if (dynamicFlight) {
+        e.chilled = Math.max(0, e.chilled - dt);
+        e.burning = Math.max(0, e.burning - dt);
+        if (e.burning > 0) {
+          e.life -= dt * (3 + stage());
+          if (e.life <= 0) {
+            kill(e);
+            continue;
+          }
+        }
+        if (e.kind === 'subboss')
+          e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
+      }
       e.o.position.z +=
         dt *
         (e.kind === 'subboss'
@@ -1191,28 +1469,43 @@ export function createGame({
         ? e.x
         : e.kind === 'base'
           ? e.x * 0.7
-          : e.x + Math.sin(elapsed * (e.kind === 'rival' ? 2 : 1.1) + e.phase) * 5;
+          : e.x +
+            Math.sin(elapsed * (e.kind === 'rival' ? 2 : 1.1) + e.phase) *
+              (dynamicFlight && e.kind === 'subboss' ? 18 : 5);
       e.o.position.y = e.ground
         ? -7
         : e.kind === 'base'
           ? -1
           : e.y + Math.sin(elapsed + e.phase) * 2;
       if (e.kind === 'subboss') {
-        $('subHealth').style.width = Math.max(0, (e.life / (180 + sectorIndex * 40)) * 100) + '%';
+        $('subHealth').style.width = Math.max(0, (e.life / e.maxLife) * 100) + '%';
         if (e.cd < 0.6) $('subState').textContent = '⚠ CANHÕES CARREGANDO';
-        else $('subState').textContent = SUBBOSS_NAMES[sectorIndex];
+        else
+          $('subState').textContent = dynamicFlight
+            ? 'FASE ' +
+              e.combatPhase +
+              ' · FRACO: ' +
+              ARSENAL.find((w) => w.element === weaknessAt(e.variant, e.combatPhase)).name +
+              (e.age % 6 < 1.5 ? ' · ESCUDO' : '')
+            : SUBBOSS_NAMES[sectorIndex];
       }
       if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
-      e.cd -= dt;
+      e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
         bullet(
           e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
           player.position,
         );
         if (e.kind === 'subboss')
-          for (const target of encounterPattern(sectorIndex, elapsed, player.position, 1))
+          for (const target of encounterPattern(
+            sectorIndex,
+            elapsed,
+            player.position,
+            e.combatPhase,
+          ))
             bullet(e.o.position.clone().add(new T.Vector3(0, 0, 10)), target);
-        e.cd = e.kind === 'subboss' ? 1.5 : 2.3;
+        e.cd =
+          e.kind === 'subboss' ? (dynamicFlight ? [1.8, 1.35, 1][e.combatPhase - 1] : 1.5) : 2.3;
       }
       if (
         crossesSolid(
@@ -1231,13 +1524,33 @@ export function createGame({
       }
     }
     if (boss) {
+      if (dynamicFlight) {
+        const turn =
+          ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
+        orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
+        boss.rotation.y = -orbitAngle;
+        world.setOrbit(-orbitAngle, boss.position);
+        // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
+        if (turn)
+          for (const b of [...shots, ...hostile]) {
+            b.o.position
+              .sub(boss.position)
+              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
+              .add(boss.position);
+            if (!b.v) b.v = new T.Vector3(0, 0, -190);
+            b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
+          }
+        boss.userData.parts.forEach((p, i) => {
+          p.mesh.scale.setScalar(weakPointOpen(orbitAngle, i) ? 1.15 : 0.75);
+        });
+      }
       bossCombat.update(dt);
       const combatPhase = bossCombat.phase;
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       boss.position.z = T.MathUtils.lerp(boss.position.z, -88, dt * 0.7);
-      boss.position.x = Math.sin(elapsed * 0.3) * 7;
-      boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
+      boss.position.x = dynamicFlight ? 0 : Math.sin(elapsed * 0.3) * 7;
+      boss.position.y = dynamicFlight ? 10 : 10 + Math.sin(elapsed * 0.4) * 3;
       boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
       boss.userData.organic?.forEach((o, i) => {
         o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1;
@@ -1258,6 +1571,12 @@ export function createGame({
               combatPhase +
               ' · ' +
               (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+      if (dynamicFlight)
+        $('bossState').textContent +=
+          ' · ÓRBITA ' +
+          Math.round((orbitAngle * 180) / Math.PI) +
+          '° · FRACO: ' +
+          ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
       $('attackWarning').textContent =
         bossCd < 0.65
@@ -1275,6 +1594,9 @@ export function createGame({
               'COROA IMPERIAL',
             ][sectorIndex]
           : '';
+      if (dynamicFlight && bossCd < 0.65)
+        $('attackWarning').textContent +=
+          (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
       if (bossCd <= 0 && bossCombat.age >= 3) {
         bossVolley++;
         const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
@@ -1284,18 +1606,20 @@ export function createGame({
           player.position,
           combatPhase,
         ))
-          bullet(origin, target);
+          bullet(origin, target, dynamicFlight ? (bossVolley % 3 === 0 ? 'arcane' : 'fire') : '');
         bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
       }
     } else $('attackWarning').textContent = '';
     for (let b of shots) {
+      const previousShot = b.o.position.clone();
       const prev = b.o.position.z;
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
+        const weakPart = boss?.userData.parts.find(
+          (p, i) => p.hp > 0 && (!dynamicFlight || weakPointOpen(orbitAngle, i)),
+        );
         const target = boss
-          ? boss.position
-              .clone()
-              .add(boss.userData.parts.find((p) => p.hp > 0)?.mesh.position ?? new T.Vector3())
+          ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
           : enemy?.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0));
         if (target) {
           b.o.position.x = T.MathUtils.lerp(b.o.position.x, target.x, dt * 3);
@@ -1303,24 +1627,36 @@ export function createGame({
         }
       }
       b.o.position.x += (b.spread ?? 0) * dt;
-      b.o.position.z -= dt * 190;
+      if (b.v) b.o.position.addScaledVector(b.v, dt);
+      else b.o.position.z -= dt * 190;
       b.life -= dt;
       for (let e of enemies) {
         if (
           !e.dead &&
-          e.o.position.z <= prev + 3 &&
-          e.o.position.z >= b.o.position.z - 3 &&
-          Math.abs(e.o.position.x - b.o.position.x) < e.half.x &&
-          Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y
+          !b.pierced.has(e) &&
+          (dynamicFlight
+            ? crossesSolid(
+                previousShot,
+                b.o.position,
+                e.o.position.clone().add(new T.Vector3(0, e.hitY, 0)),
+                e.half,
+                0.2,
+              )
+            : e.o.position.z <= prev + 3 &&
+              e.o.position.z >= b.o.position.z - 3 &&
+              Math.abs(e.o.position.x - b.o.position.x) < e.half.x &&
+              Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y)
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
-          e.life -= (b.damage ?? 2) * (weak ? 2 : 1);
-          b.life = 0;
+          damageEnemy(e, (b.damage ?? 2) * (weak ? 2 : 1), b.element);
+          b.pierced.add(e);
+          if (b.element !== 'void') b.life = 0;
           if (e.life <= 0) kill(e);
           break;
         }
       }
       if (
+        !dynamicFlight &&
         b.life > 0 &&
         boss &&
         boss.position.z + 18 <= prev + 3 &&
@@ -1332,10 +1668,31 @@ export function createGame({
         b.life = 0;
         explode(b.o.position, 2, 0x88ffee);
       }
+      if (b.life > 0 && boss && dynamicFlight) {
+        boss.updateMatrixWorld(true);
+        const targets = boss.userData.parts.some((p) => p.hp > 0)
+          ? boss.userData.parts.filter((p) => p.hp > 0).map((p) => p.mesh)
+          : [boss.userData.core];
+        for (const mesh of targets) {
+          const center = mesh.getWorldPosition(new T.Vector3());
+          if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
+            damageBoss(b.damage ?? 2, center, b.element);
+            b.life = 0;
+            explode(center, 2, 0x88ffee);
+            break;
+          }
+        }
+      }
     }
     for (let b of hostile) {
       const from = b.o.position.clone();
-      b.o.position.addScaledVector(b.v, dt);
+      b.age += dt;
+      if (b.spell === 'arcane' && b.age < 0.8)
+        b.v.lerp(
+          player.position.clone().sub(b.o.position).normalize().multiplyScalar(38),
+          1 - Math.exp(-2 * dt),
+        );
+      b.o.position.addScaledVector(b.v, dt * (stasis > 0 ? 0.3 : 1));
       b.life -= dt;
       if (
         podMeshes.some((p) =>
@@ -1348,7 +1705,7 @@ export function createGame({
         continue;
       }
       if (b.o.position.distanceTo(player.position) < 2.1) {
-        hit(10);
+        hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       }
@@ -1460,7 +1817,12 @@ export function createGame({
     }
     if (state !== 'paused' && state !== 'arcade') {
       visualTime += dt;
-      world.update(dt, visualTime, boosting ? 90 : 48, state === 'playing');
+      world.update(
+        dt,
+        visualTime,
+        (boosting ? 90 : 48) * (1 + stage() * 0.02),
+        state === 'playing' && !(dynamicFlight && boss),
+      );
       const boostVisible = boosting && state === 'playing';
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
@@ -1532,9 +1894,15 @@ export function createGame({
     const inside =
       cameraMode === 'cockpit' &&
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
+    barrierVisual.visible =
+      dynamicFlight && barrier > 0 && !inside && ['playing', 'paused'].includes(state);
     cockpit?.update(state === 'paused' ? 0 : dt, inside);
     $('cockpitPanel').hidden = !inside;
     $('cameraView').disabled = state !== 'playing';
+    $('strategyControls').hidden =
+      !dynamicFlight ||
+      !['playing', 'paused'].includes(state) ||
+      (state === 'paused' && pausedFrom !== 'playing');
     $('cockpitReadout').textContent =
       Math.ceil(hp) +
       '% ESCUDO · ' +
@@ -1584,6 +1952,10 @@ export function createGame({
   return {
     start,
     cycleCamera,
+    orbit,
+    cycleArsenal,
+    cycleSpecial,
+    castSpecial,
     pause,
     setActive,
     fire,
@@ -1599,6 +1971,10 @@ export function createGame({
     nextSector,
     snapshot: () => ({
       state,
+      strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
+      shotPower: shots[0]?.damage ?? 0,
+      shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
+      hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
       cameraMode,
       playerVisible: player.visible,
       route: { ...route },
@@ -1612,6 +1988,14 @@ export function createGame({
       armor,
       charge,
       music: music?.snapshot() ?? null,
+      arena: dynamicFlight && !!boss,
+      bossTargets:
+        boss?.userData.parts.map((p, i) => ({
+          hp: p.hp,
+          open: !dynamicFlight || weakPointOpen(orbitAngle, i),
+          angle: i === 0 ? -Math.PI / 3 : Math.PI / 3,
+          position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
+        })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
       seconds: elapsed,
       shield: hp,
@@ -1658,6 +2042,9 @@ export function createGame({
           y: e.o.position.y + e.hitY,
           z: e.o.position.z,
           life: e.life,
+          chilled: e.chilled,
+          burning: e.burning,
+          phase: e.combatPhase,
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
@@ -1677,6 +2064,9 @@ export function createGame({
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
+      shotMaterials.forEach((m) => m.dispose());
+      barrierVisual.geometry.dispose();
+      barrierVisual.material.dispose();
       routeRenderer?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       renderer.dispose?.();

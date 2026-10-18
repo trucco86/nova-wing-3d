@@ -1,3 +1,4 @@
+import { readStrategy } from './strategy.js';
 import { readCosmetics } from './customization.js';
 // Names and narrative adapted from Cristian Trucco's Nova Wing (MIT).
 export const SECTORS = [
@@ -138,6 +139,7 @@ export function readSave(storage) {
       return null;
     return {
       version: 1,
+      ...(d.strategy ? { strategy: readStrategy(d.strategy) } : {}),
       sector: d.sector,
       credits: d.credits,
       weapon: d.weapon,

@@ -116,8 +116,8 @@ test('low-altitude laser fire can damage a terrestrial tank', (t) => {
   const after = h.game.snapshot().targets.find((e) => e.kind === 'tank');
   assert.ok(!after || after.life < tank.life, 'ground hull hitbox accepts low flight shots');
 });
-test('tunnel spawns once with combat, clears on restart and freezes with pause', (t) => {
-  const h = setup(t, { spawnEncounters: true });
+test('native tunnel spawns once with combat, clears on restart and freezes with pause', (t) => {
+  const h = setup(t, { spawnEncounters: true, nativeLifecycle: true });
   for (let i = 0; i < 25; i++) {
     h.game.collect('shield');
     if (h.game.snapshot().encounterKinds.includes('subboss')) {
@@ -194,7 +194,7 @@ test('three homing pods damage elevated tank and walker hulls from normal flight
     const h = setup(t, { spawnEncounters: true });
     h.advance(time);
     h.game.bomb();
-    for (let i = 0; i < 9; i++) h.game.collect('blue');
+    for (let i = 0; i < 18; i++) h.game.collect('blue');
     h.key('KeyV'); // Detached Force fires autonomously under the 1.3 contract.
     h.advance(0.3);
     const before = h.game.snapshot().targets.find((e) => e.kind === kind);

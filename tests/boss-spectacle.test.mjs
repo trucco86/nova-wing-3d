@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
-import { defeatBoss } from './combat-helper.mjs';
+import { defeatBoss, aimOrbit } from './combat-helper.mjs';
 import { createPod, createPickup, PICKUP_COLORS } from '../src/equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse } from '../src/finale.js';
 function setup(t, opts) {
@@ -19,6 +19,7 @@ test('boss armor sustains combat across three stages even against extreme damage
   const phases = new Set();
   let combatSeconds = 0;
   while (h.game.snapshot().state !== 'collapsing' && combatSeconds < 120) {
+    aimOrbit(h.game);
     h.game.roll();
     h.advance(0.1);
     h.game.damageBoss(1e6);
@@ -29,8 +30,8 @@ test('boss armor sustains combat across three stages even against extreme damage
   assert.ok(combatSeconds > 40 && combatSeconds < 90, 'bounded sustained encounter');
   assert.deepEqual([...phases], [1, 2, 3]);
 });
-test('subboss stays visible, blocks overlap and survives a single bomb', (t) => {
-  const h = setup(t, { spawnEncounters: true });
+test('native subboss retains previous two-bomb balance and tunnel sequencing', (t) => {
+  const h = setup(t, { spawnEncounters: true, nativeLifecycle: true });
   for (let i = 0; i < 36; i++) {
     h.game.collect('shield');
     h.advance(1);
@@ -63,7 +64,8 @@ test('green health and blue upgrade rings retain distinct colors and effects', (
   assert.equal(h.game.snapshot().shield, hp + 25);
   assert.equal(h.game.snapshot().weapon, 1);
   h.game.collect('blue');
-  assert.equal(h.game.snapshot().weapon, 2);
+  assert.equal(h.game.snapshot().weapon, 1);
+  assert.equal(h.game.snapshot().strategy.xp, 4);
   assert.equal(h.game.snapshot().shield, hp + 25);
   assert.equal(h.game.snapshot().pickups[0].kind, 'blue');
   h.advance(6.1);
@@ -84,7 +86,7 @@ test('pods evolve through three armored forms and reset formation on restart', (
   assert.ok(counts[0] < counts[1] && counts[1] < counts[2]);
   const h = setup(t);
   for (let level = 1; level <= 3; level++) {
-    for (let i = 0; i < 3; i++) h.game.collect('blue');
+    for (let i = 0; i < 6; i++) h.game.collect('blue');
     assert.deepEqual(h.game.snapshot().podLevels, Array(level).fill(level));
   }
   h.key('KeyV');
