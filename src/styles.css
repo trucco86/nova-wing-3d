@@ -2000,3 +2000,16 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
     bottom: 105px;
   }
 }
+/* Keep status readable when the side drawer is expanded. */
+body:has(#strategyControls:not([hidden])) #loadout > small,
+body:has(#strategyControls:not([hidden])) #weaponLabel {
+  display: none;
+}
+body:has(#strategyDrawer[open]):has(#strategyControls:not([hidden])) #loadout {
+  visibility: hidden;
+}
+@media (max-width: 700px), (max-height: 500px) {
+  body:has(#strategyControls:not([hidden])) #comms {
+    visibility: hidden;
+  }
+}
