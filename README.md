@@ -295,3 +295,10 @@ Pods acoplados reforçam o tiro; **V** lança os pods para perseguir alvos.
 Nos chefes, **J/L** orbitam: procure geradores nos flancos (±60°) e núcleo na
 frente (0°). Todos esses comandos têm botões de toque. Veja
 [contratos de combate](specs/strategic-combat.md). Apps aguardam validação web.
+
+### Web 1.9.0
+
+Escolha Ataque, Defesa ou Espiritual no início. Abra **NAVE** na lateral para
+trocar arma/especial; F/H/G continuam ativos com o menu fechado. XP continua após
+o nível 10. O cockpit tem instrumentos iluminados e o setor 3 acentua a ascensão.
+Veja [notas 1.9.0](releases/v1.9.0.md).

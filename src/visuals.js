@@ -487,6 +487,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    setAscent(amount, enabled) {
+      if (!dynamicFlight) return;
+      if (enabled) {
+        moon.visible = atmosphere.visible = true;
+        moon.position.set(0, -260 - amount * 180, -1000);
+        moon.scale.setScalar(2.6 - amount * 0.8);
+        atmosphere.position.copy(moon.position);
+        atmosphere.scale.copy(moon.scale);
+        skyMat.uniforms.tint.value.setRGB(1 - amount * 0.65, 1.4 - amount, 2 - amount * 0.8);
+        scene.fog.density = 0.00045 - amount * 0.0003;
+      }
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -496,6 +508,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     setSector(sector) {
       clearScenery();
+      moon.position.set(480, 280, -1000);
+      moon.scale.setScalar(1);
+      atmosphere.position.copy(moon.position);
+      atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);

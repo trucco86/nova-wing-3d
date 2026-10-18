@@ -12,7 +12,7 @@ export function createFlightCamera(camera, wideFlight = false) {
   function targets(player, route) {
     if (mode === 'cockpit') {
       targetEye.set(player.x, player.y + 1.4, player.z + 2);
-      targetAim.set(player.x, player.y + 1.4, -100);
+      targetAim.set(player.x, player.y + 1.4 + route.ascent * 22, -100);
       return;
     }
     const distant = mode === 'combat';
@@ -21,7 +21,7 @@ export function createFlightCamera(camera, wideFlight = false) {
     anchor.x = T.MathUtils.clamp(anchor.x, player.x - horizontal, player.x + horizontal);
     anchor.y = T.MathUtils.clamp(anchor.y, player.y - vertical, player.y + vertical);
     targetEye.set(anchor.x, anchor.y + (distant ? 12 : 6), distant ? 62 : 43);
-    targetAim.set(anchor.x, anchor.y + 1 + route.ascent * 4, -90);
+    targetAim.set(anchor.x, anchor.y + 1 + route.ascent * 22, -90);
   }
   return {
     setMode(value) {

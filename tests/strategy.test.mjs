@@ -36,6 +36,7 @@ test('web XP unlocks gradually, rejects corrupt selections, and restart clears p
     xp: 0,
     arsenal: 0,
     special: 0,
+    specialty: 'attack',
   });
   h.game.start();
   assert.equal(h.game.snapshot().strategy.xp, 0);
@@ -74,7 +75,7 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   assert.deepEqual(h.game.snapshot(), paused);
   assert.equal(h.game.castSpecial(), false);
   h.game.pause();
-  h.advance(4.1);
+  h.advance(4.6);
   h.game.damage(30);
   assert.ok(h.game.snapshot().shield < shield);
   h.advance(4);
@@ -160,7 +161,7 @@ test('web subboss survives two bombs, changes phases, and native retains prior b
     h.advance(1);
   }
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
-  assert.ok(before.life >= 620);
+  assert.ok(before.life >= 360 && before.life < 620);
   h.game.bomb();
   h.game.bomb();
   h.advance(0.1);
@@ -191,4 +192,47 @@ test('model variants and evolution have finite geometry and distinct silhouettes
     }
     assert.ok(new Set(sizes).size > 1);
   }
+});
+
+test('progression continues beyond ten, specialties accelerate their branch and visuals stay bounded', async () => {
+  const { xpForStage, specialtyRank } = await import('../src/strategy.js');
+  for (const level of [10, 30, 100, 10000]) {
+    const xp = xpForStage(level);
+    assert.equal(stageAt(xp), level);
+    assert.equal(stageAt(xp - 1), level - 1);
+  }
+  assert.ok(specialtyRank(10000, 'spirit', 'spirit') > specialtyRank(10000, 'attack', 'spirit'));
+  assert.equal(readStrategy({ xp: 10000000, specialty: 'spirit' }).specialty, 'spirit');
+  assert.equal(createEvolution(10000).children.length, createEvolution(18).children.length);
+});
+test('specialty choice applies on new game and charge scales with progression and arsenal', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.elements.get('specialty').value = 'defense';
+  h.game.start();
+  assert.equal(h.game.snapshot().strategy.specialty, 'defense');
+  assert.equal(h.game.snapshot().shield, 125);
+  const powers = [];
+  for (const xp of [0, 10000]) {
+    const g = setup(t, { storage: save({ xp, arsenal: xp ? 4 : 0 }) });
+    g.key('Space');
+    g.advance(1.5);
+    g.key('Space', false);
+    g.advance(0.05);
+    powers.push(g.game.snapshot().chargedPower);
+  }
+  assert.ok(powers[0] >= 40);
+  assert.ok(powers[1] > powers[0] * 3);
+});
+
+test('charged boss hits retain their own reserve under sustained normal fire', async () => {
+  const { createBossCombat } = await import('../src/combat.js');
+  const boss = createBossCombat(0, 1);
+  for (let i = 0; i < 80; i++) {
+    boss.update(0.05);
+    boss.spend(1000);
+  }
+  assert.equal(boss.spend(10), 0);
+  assert.ok(boss.spend(120, true) >= 50);
+  assert.equal(boss.spend(120, true), 0);
 });

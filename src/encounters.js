@@ -66,6 +66,31 @@ export function createGroundEnemy(kind, variant = -1) {
     }
     if (variant >= 0) {
       const light = variant === 1 ? cyan : red;
+      for (const side of [-1, 1]) {
+        for (let j = 0; j < 4; j++) {
+          const hub = new T.Mesh(
+            new T.CylinderGeometry(
+              kind === 'tank' ? 1.25 : 0.65,
+              kind === 'tank' ? 1.25 : 0.65,
+              0.5,
+              12,
+            ),
+            joint,
+          );
+          hub.rotation.z = Math.PI / 2;
+          hub.position.set(
+            side * (kind === 'tank' ? 6.7 : 5.5),
+            kind === 'tank' ? 1.8 : 3 + j * 3,
+            kind === 'tank' ? j * 3 - 4.5 : 1,
+          );
+          g.add(hub);
+        }
+        const fin = new T.Mesh(new T.ConeGeometry(1.5, 4, 4), armor);
+        fin.position.set(side * (kind === 'tank' ? 4 : 9), kind === 'tank' ? 6 : 24, -2);
+        g.add(fin);
+        turret.add(beam([side * 2, 0, -2], [side * 2.7, 3, -3], 0.2, joint));
+        turret.add(box(0.7, 0.5, 0.4, light, side * 1.1, 1.3, 3.2));
+      }
       if (kind === 'tank') {
         // Sloped glacis and segmented skirts break up the rectangular silhouette.
         for (const side of [-1, 1]) {

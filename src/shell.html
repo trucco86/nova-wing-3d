@@ -31,12 +31,15 @@
       <span>NOVA-7 / SISTEMAS DE VOO</span><strong id="cockpitReadout"></strong>
     </div>
     <div id="strategyControls">
-      <span id="strategyStatus"></span>
-      <div class="strategyButtons">
-        <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
-        ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
-        ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
-      </div>
+      <details id="strategyDrawer">
+        <summary>⚙ NAVE</summary>
+        <span id="strategyStatus"></span>
+        <div class="strategyButtons">
+          <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
+          ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
+          ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+        </div>
+      </details>
       <div id="orbitControls" hidden>
         <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
         ><span>ORBITAR</span
@@ -119,6 +122,14 @@
         <div class="title-content">
           <h1>NOVA<span>WING</span></h1>
           <p id="brief">O último voo começa com você.</p>
+          <label id="specialtyChoice"
+            >ESPECIALIDADE
+            <select id="specialty">
+              <option value="attack">Ataque · potência</option>
+              <option value="defense">Defesa · escudo</option>
+              <option value="spirit">Espiritual · magia</option>
+            </select></label
+          >
           <div class="title-actions">
             <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
@@ -134,9 +145,9 @@
             </div>
             <p>
               WEB: F troca arma · H escolhe especial · G ativa · J/L orbitam chefes. Anéis e abates
-              dão XP para dez evoluções. Gelo retarda, plasma queima, arcano busca e vazio perfura.
-              Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos ±60° para
-              geradores e frente 0° para núcleo.
+              dão XP para evolução contínua. Gelo retarda, plasma queima, arcano busca e vazio
+              perfura. Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos
+              ±60° para geradores e frente 0° para núcleo.
             </p>
           </details>
         </div>

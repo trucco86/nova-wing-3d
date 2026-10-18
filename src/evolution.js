@@ -2,6 +2,7 @@ import * as T from 'three';
 import { box, metal, glowMaterial } from './visuals.js';
 const templates = new Map();
 export function createEvolution(stage) {
+  stage = Math.min(18, Math.max(0, Math.floor(stage)));
   if (!templates.has(stage)) {
     const g = new T.Group(),
       armor = metal('#b8d9e7', 0.8),

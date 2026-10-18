@@ -1902,3 +1902,101 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
 body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
   visibility: hidden;
 }
+
+/* Web 1.9: compact lateral loadout; central flight corridor remains clear. */
+#strategyControls {
+  left: 10px;
+  top: 112px;
+  bottom: auto;
+  transform: none;
+  max-width: 210px;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+#strategyDrawer {
+  background: #061322ee;
+  border: 1px solid #4eb5ad88;
+  border-radius: 8px;
+  padding: 8px;
+}
+#strategyDrawer summary {
+  cursor: pointer;
+  color: #8fffe0;
+  padding: 4px;
+  font: 11px monospace;
+}
+#strategyDrawer[open] {
+  width: 190px;
+}
+#strategyStatus {
+  display: block;
+  padding: 10px 0;
+  line-height: 1.6;
+}
+.strategyButtons {
+  flex-direction: column;
+  gap: 6px;
+}
+#strategyControls button {
+  min-height: 34px;
+  font-size: 10px;
+}
+#orbitControls {
+  margin-top: 8px;
+  background: #061322dd;
+  border-radius: 8px;
+  padding: 4px;
+}
+#specialtyChoice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 14px 0;
+  font: 11px monospace;
+  color: #8cb9c8;
+}
+#specialty {
+  background: #102334;
+  color: #baffec;
+  border: 1px solid #478c91;
+  border-radius: 6px;
+  padding: 10px;
+}
+body:has(#strategyControls:not([hidden])) .status-caption,
+body:has(#strategyControls:not([hidden])) #loadout .instruction,
+body:has(#strategyControls:not([hidden])) #bottom .speed {
+  display: none;
+}
+body:has(#strategyControls:not([hidden])) #comms {
+  max-width: min(400px, 50vw);
+  opacity: 0.85;
+}
+body:has(#strategyControls:not([hidden])) #cockpitPanel {
+  bottom: 24px;
+  pointer-events: none;
+}
+@media (max-height: 500px) {
+  #strategyControls {
+    top: 90px;
+  }
+  #strategyDrawer[open] {
+    width: 170px;
+  }
+  #strategyControls button {
+    min-height: 28px;
+  }
+}
+@media (max-width: 500px) {
+  #strategyControls {
+    top: 145px;
+    max-width: 190px;
+  }
+  #strategyDrawer[open] {
+    width: 170px;
+  }
+  body:has(#strategyControls:not([hidden])) #cockpitPanel {
+    bottom: 105px;
+  }
+}
