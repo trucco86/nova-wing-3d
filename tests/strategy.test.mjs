@@ -236,3 +236,13 @@ test('charged boss hits retain their own reserve under sustained normal fire', a
   assert.ok(boss.spend(120, true) >= 50);
   assert.equal(boss.spend(120, true), 0);
 });
+
+test('legacy saves ignore the new-campaign specialty selector when continuing', (t) => {
+  const h = harness({ storage: save(undefined) });
+  t.after(() => h.close());
+  h.elements.get('specialty').value = 'spirit';
+  h.game.start(true);
+  assert.equal(h.game.snapshot().strategy.specialty, 'attack');
+  h.game.start();
+  assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
+});

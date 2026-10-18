@@ -686,6 +686,14 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  function impact(position) {
+    explode(position, 3, 0xbaffee);
+    const flash = halo('#baffee', 5, 0.9);
+    flash.material = flash.material.clone();
+    flash.position.copy(position);
+    scene.add(flash);
+    particles.push({ o: flash, v: new T.Vector3(), life: 0.22, kind: 'flash' });
+  }
   function damageEnemy(e, amount, element = 'kinetic') {
     if (dynamicFlight) {
       if (e.kind === 'subboss') {
@@ -697,7 +705,7 @@ export function createGame({
       if (element === 'fire') e.burning = 2;
     }
     if (dynamicFlight && amount > 0 && (e.hitCooldown ?? 0) <= 0) {
-      explode(e.o.position.clone().add(new T.Vector3(0, e.hitY, 3)), 3, 0xbaffee);
+      impact(e.o.position.clone().add(new T.Vector3(0, e.hitY, 3)));
       e.hitCooldown = 0.08;
     }
     e.life -= amount;
@@ -869,8 +877,7 @@ export function createGame({
       if (!part || !openPart(part)) return;
       const dealt = bossCombat.spend(amount, dynamicFlight && charged);
       part.hp = Math.max(0, part.hp - dealt);
-      if (dynamicFlight && dealt > 0)
-        explode(part.mesh.getWorldPosition(new T.Vector3()), 3, 0xbaffee);
+      if (dynamicFlight && dealt > 0) impact(part.mesh.getWorldPosition(new T.Vector3()));
       if (part.hp === 0) {
         part.mesh.visible = false;
         explode(part.mesh.getWorldPosition(new T.Vector3()), 24);
@@ -892,8 +899,7 @@ export function createGame({
     if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(orbitAngle))) return;
     const dealt = bossCombat.spend(amount, dynamicFlight && charged);
     bossCombat.damage(dealt);
-    if (dynamicFlight && dealt > 0)
-      explode(boss.userData.core.getWorldPosition(new T.Vector3()), 3, 0xbaffee);
+    if (dynamicFlight && dealt > 0) impact(boss.userData.core.getWorldPosition(new T.Vector3()));
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
       gainXP(30);
@@ -998,7 +1004,7 @@ export function createGame({
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
     strategy = dynamicFlight
-      ? readStrategy(checkpoint?.strategy ?? { specialty: $('specialty').value })
+      ? readStrategy(checkpoint ? checkpoint.strategy : { specialty: $('specialty').value })
       : readStrategy(null);
     $('strategyDrawer').open = false;
     evolve();
@@ -1267,7 +1273,7 @@ export function createGame({
     if (dynamicFlight) {
       route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
       routeRenderer.update(route);
-      world.setAscent(route.ascent, sectorIndex === 2);
+      world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       $('routeLabel').textContent = route.label;
     }
     shotCd -= dt;

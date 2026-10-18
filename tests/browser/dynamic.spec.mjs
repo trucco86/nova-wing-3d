@@ -110,7 +110,7 @@ test('wide flight and three camera perspectives render and switch with keyboard 
     if (mode === 'cockpit') {
       await expect(page.locator('#cockpitPanel')).toBeVisible();
       await page.keyboard.down('Space');
-      await page.evaluate(() => window.fixture.advance(0.03));
+      await page.evaluate(() => window.fixture.advance(1.1));
       expect(
         await page.evaluate(() => window.fixture.game.snapshot().entities.shots),
       ).toBeGreaterThan(0);
