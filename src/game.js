@@ -1249,6 +1249,8 @@ export function createGame({
         strategy.xp +
         '/' +
         (XP_STAGES[stage() + 1] ?? 'MAX') +
+        ' · VEL ' +
+        (boosting ? '890' : '480') +
         (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
     }
     invuln -= dt;

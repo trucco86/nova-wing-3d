@@ -1881,3 +1881,20 @@ body.arcade #strategyControls {
     max-width: 95vw;
   }
 }
+
+body:has(#strategyControls:not([hidden])) #bottom .speed {
+  visibility: hidden;
+}
+body:has(#strategyControls:not([hidden])) #cockpitPanel {
+  bottom: 145px;
+}
+@media (max-height: 550px) {
+  body:has(#strategyControls:not([hidden])) #cockpitPanel {
+    bottom: 120px;
+  }
+}
+@media (max-width: 500px) and (min-height: 551px) {
+  body:has(#strategyControls:not([hidden])) #cockpitPanel {
+    bottom: 115px;
+  }
+}
