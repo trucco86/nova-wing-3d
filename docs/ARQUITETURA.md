@@ -110,7 +110,7 @@ visuais; evolução não amplia hitbox. `game.js` aplica efeitos por delta de te
 energia arcana, cadência e perseguição dos pods. Estados novos são reiniciados
 com a campanha, congelados na pausa e desativados por `nativeLifecycle`.
 
-A arena usa o referencial do jogador: órbita transforma o chefe e projéteis já
+A arena usa o referencial do jogador: órbita transforma cenário, chefe e projéteis já
 em voo em torno do centro; pontos de acerto vêm das matrizes mundiais das malhas.
 J/L e botões laterais orbitam, enquanto movimento tradicional ajusta a mira.
 Geradores nos flancos e núcleo frontal compartilham o orçamento de dano existente.

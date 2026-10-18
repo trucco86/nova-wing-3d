@@ -1520,6 +1520,7 @@ export function createGame({
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
         boss.rotation.y = -orbitAngle;
+        world.setOrbit(-orbitAngle, boss.position);
         // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
         if (turn)
           for (const b of [...shots, ...hostile]) {

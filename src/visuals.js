@@ -260,6 +260,7 @@ function enemyDetails(variant) {
 }
 const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+5.;a*=.5;}return s;}`;
 export function createWorld(scene, random = Math.random, dynamicFlight = false) {
+  const existing = new Set(scene.children);
   const rnd = (a, b) => a + random() * (b - a);
   scene.background = new T.Color('#030914');
   scene.fog = new T.FogExp2('#071c23', 0.0014);
@@ -479,7 +480,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     sectorScenery.clear();
   }
   let travel = 0;
+  const orbitalFrame = dynamicFlight ? new T.Group() : null;
+  if (orbitalFrame) {
+    const nodes = scene.children.filter((o) => !existing.has(o));
+    scene.add(orbitalFrame);
+    nodes.forEach((o) => orbitalFrame.add(o));
+  }
   return {
+    setOrbit(angle, center) {
+      if (!orbitalFrame) return;
+      orbitalFrame.rotation.y = angle;
+      orbitalFrame.position
+        .copy(center)
+        .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), angle));
+    },
     setSector(sector) {
       clearScenery();
       sceneryTheme = sector.theme;
@@ -641,6 +655,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       carrier.position.y = 62 + Math.sin(time * 0.25) * 3;
     },
     reset() {
+      if (orbitalFrame) {
+        orbitalFrame.position.set(0, 0, 0);
+        orbitalFrame.rotation.set(0, 0, 0);
+      }
       travel = 0;
       city.position.z = 0;
       cityFar.position.z = -1900;

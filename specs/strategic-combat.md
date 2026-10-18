@@ -23,7 +23,7 @@ robôs/tanques variados, subchefes resistentes e chefes com flanqueamento.
 - Subchefes: vida maior, chegada protegida, três fases, janela defensiva,
   aviso antes de rajada e fraqueza alternada. Bombas não eliminam dois encontros inteiros.
 - Arena de chefe: J/L ou dois botões orbitam 360 graus em referencial relativo ao
-  jogador. O chefe gira, assim como projéteis já disparados; A/D e W/S continuam
+  jogador. O cenário e chefe giram no referencial da nave, assim como projéteis já disparados; A/D e W/S continuam
   ajustando mira. Geradores laterais têm ângulos de exposição distintos; núcleo
   frontal só recebe dano quando exposto. Dano comum a tiros, pods e bombas.
 - Progresso e escolhas são campos opcionais validados do checkpoint v1; saves antigos
