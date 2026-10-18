@@ -125,3 +125,80 @@ test('wide flight and three camera perspectives render and switch with keyboard 
   await page.screenshot({ path: info.outputPath('wide-portrait.png') });
   expect(errors).toEqual([]);
 });
+
+test('strategic progression, spells and orbital flanks render with keyboard and touch', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
+  });
+  for (const xp of [0, 160, 740]) {
+    await page.goto('/__dynamic.html?xp=' + xp + '&pods=2');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.evaluate(() => window.fixture.advance(2));
+    await page.screenshot({ path: info.outputPath('evolution-' + xp + '.png') });
+  }
+  if (info.project.name === 'mobile') await page.locator('#arsenalSwitch').tap();
+  else await page.keyboard.press('KeyF');
+  await page.evaluate(() => window.fixture.advance(0.1));
+  await expect(page.locator('#arsenalSwitch')).toContainText('GEADA');
+  await page.locator('#specialCast').click();
+  await page.evaluate(() => window.fixture.advance(0.1));
+  expect(
+    await page.evaluate(() => window.fixture.game.snapshot().strategy.barrier),
+  ).toBeGreaterThan(3);
+  await page.screenshot({ path: info.outputPath('barrier.png') });
+  await page.locator('#pause').click();
+  const paused = await page.evaluate(() => window.fixture.game.snapshot());
+  await page.evaluate(() => window.fixture.advance(1));
+  expect(await page.evaluate(() => window.fixture.game.snapshot().strategy)).toEqual(
+    paused.strategy,
+  );
+  await page.locator('#pause').click();
+  await page.evaluate(() => window.fixture.advance(66));
+  await expect(page.locator('#orbitControls')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('arena-front.png') });
+  if (info.project.name === 'mobile') {
+    const box = await page.locator('#orbitLeft').boundingBox();
+    const touch = await page.context().newCDPSession(page);
+    await touch.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2, id: 7 }],
+    });
+    await page.evaluate(() => window.fixture.advance(1.3));
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  } else {
+    await page.keyboard.down('KeyJ');
+    await page.evaluate(() => window.fixture.advance(1.3));
+    await page.keyboard.up('KeyJ');
+  }
+  const orbital = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(orbital.bossTargets[0].open).toBe(true);
+  expect(orbital.bossTargets[1].open).toBe(false);
+  expect(orbital.strategy.orbitAngle).toBeLessThan(-1);
+  await page.screenshot({ path: info.outputPath('arena-flank.png') });
+  if (info.project.name === 'mobile') {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.evaluate(() => window.fixture.advance(0.1));
+    const bounds = await page.locator('#strategyControls').boundingBox();
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
+    await page.screenshot({ path: info.outputPath('strategy-portrait.png') });
+  }
+  expect(errors).toEqual([]);
+});
+
+test('three detailed tank robot and enemy fighter variants render', async ({ page }, info) => {
+  test.setTimeout(90000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  for (let variant = 0; variant < 3; variant++) {
+    await page.goto('/__visual.html?mode=ground&variant=' + variant);
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.screenshot({ path: info.outputPath('enemy-variant-' + variant + '.png') });
+  }
+  expect(errors).toEqual([]);
+});

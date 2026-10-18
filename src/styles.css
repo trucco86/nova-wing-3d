@@ -1818,3 +1818,66 @@ body:has(#cockpitPanel:not([hidden])) #bottom {
     top: 123px;
   }
 }
+
+#strategyControls {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 25;
+  text-align: center;
+  color: #a8e9fa;
+  font: 10px monospace;
+  background: #071222db;
+  border: 1px solid #3c6c7b;
+  border-radius: 8px;
+  padding: 6px;
+}
+.strategyButtons {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+}
+#strategyControls button {
+  background: #102a3b;
+  color: #bdf7ef;
+  border: 1px solid #3d7282;
+  border-radius: 5px;
+  font: 10px monospace;
+  padding: 8px;
+  min-height: 34px;
+  touch-action: none;
+}
+#strategyControls button:disabled {
+  opacity: 0.5;
+}
+#orbitControls {
+  margin-top: 4px;
+}
+#orbitControls span {
+  margin: 0 10px;
+}
+.menu #strategyControls,
+body.arcade #strategyControls {
+  display: none;
+}
+@media (pointer: coarse), (max-width: 700px) {
+  #strategyControls {
+    bottom: 9px;
+    max-width: calc(100vw - 260px);
+    padding: 4px;
+  }
+  #strategyControls button {
+    padding: 5px;
+    font-size: 9px;
+  }
+  .strategyButtons {
+    gap: 3px;
+  }
+}
+@media (max-width: 500px) {
+  #strategyControls {
+    bottom: 170px;
+    max-width: 95vw;
+  }
+}

@@ -22,15 +22,23 @@ camera.lookAt(0, 8, -70);
 const world = createWorld(scene);
 world.setSector(SECTORS[index]);
 const mode = new URLSearchParams(location.search).get('mode');
+const variant = Number(new URLSearchParams(location.search).get('variant') ?? -1);
 if (mode === 'tunnel' || mode === 'ground') {
   const tunnel = createObstacle(mode === 'tunnel' ? 'tunnel' : 'gantry');
   tunnel.position.z = mode === 'tunnel' ? 90 : -150;
   scene.add(tunnel);
-  const tank = createGroundEnemy('tank'),
-    walker = createGroundEnemy('walker');
+  const tank = createGroundEnemy('tank', variant),
+    walker = createGroundEnemy('walker', variant);
   tank.position.set(12, -7, -33);
   walker.position.set(-15, -7, -67);
   scene.add(tank, walker);
+  if (variant >= 0) {
+    const enemy = fighter(true, variant);
+    enemy.scale.setScalar(2);
+    enemy.position.set(0, 16, -38);
+    enemy.rotation.y = Math.PI;
+    scene.add(enemy);
+  }
 } else if (mode === 'equipment') {
   for (let i = 1; i <= 3; i++) {
     const p = createPod(i);

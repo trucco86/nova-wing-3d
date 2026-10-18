@@ -69,7 +69,7 @@ function line(points, color = '#4bf6d8') {
   );
 }
 const templates = {};
-export function fighter(enemy = false) {
+export function fighter(enemy = false, variant = -1) {
   if (!templates[enemy]) {
     const g = new T.Group(),
       armor = enemy ? red : white,
@@ -221,7 +221,42 @@ export function fighter(enemy = false) {
       o.userData.flames.push(c);
     }
   });
+  if (enemy && variant >= 0) o.add(enemyDetails(variant));
   return o;
+}
+const variants = new Map();
+function enemyDetails(variant) {
+  if (!variants.has(variant)) {
+    const g = new T.Group();
+    for (const side of [-1, 1]) {
+      if (variant === 0) {
+        const blade = wing(
+          [
+            [side * 2, 0],
+            [side * 5, -3],
+            [side * 4, 2],
+            [side * 2.5, 2.5],
+          ],
+          red,
+        );
+        g.add(blade, box(0.25, 0.4, 3, pink, side * 3.8, 0, -1.8));
+      } else if (variant === 1) {
+        g.add(box(1.2, 0.8, 4, navy, side * 2, 0, 0));
+        for (let j = 0; j < 3; j++)
+          g.add(box(0.4, 0.4, 2, copper, side * (1.5 + j * 0.5), -0.6, -0.5));
+        const dome = new T.Mesh(new T.SphereGeometry(0.7, 12, 8), pink);
+        dome.position.set(side * 2, 0.4, 0.5);
+        g.add(dome);
+      } else {
+        const ring = new T.Mesh(new T.TorusGeometry(1.2, 0.25, 8, 16), steel);
+        ring.position.set(side * 3.2, 0, 1);
+        g.add(ring);
+        g.add(box(0.3, 0.3, 5, pink, side * 3.2, 0, -1.5));
+      }
+    }
+    variants.set(variant, g);
+  }
+  return variants.get(variant).clone(true);
 }
 const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+5.;a*=.5;}return s;}`;
 export function createWorld(scene, random = Math.random, dynamicFlight = false) {

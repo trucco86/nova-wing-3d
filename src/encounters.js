@@ -18,10 +18,11 @@ function beam(a, b, r, material) {
   o.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), d.normalize());
   return o;
 }
-export function createGroundEnemy(kind) {
-  if (!templates.has(kind)) {
+export function createGroundEnemy(kind, variant = -1) {
+  const key = kind + ':' + variant;
+  if (!templates.has(key)) {
     const g = new T.Group();
-    g.add(box(kind === 'walker' ? 23 : 16, 1, 24, dark, 0, -0.5));
+    if (variant < 0) g.add(box(kind === 'walker' ? 23 : 16, 1, 24, dark, 0, -0.5));
     const turret = new T.Group();
     turret.name = 'turret';
     if (kind === 'tank') {
@@ -63,11 +64,84 @@ export function createGroundEnemy(kind) {
       turret.add(box(5.5, 1, 0.4, red, 0, 0.4, 3.1));
       turret.add(beam([0, 1, 0], [0, 5, 0], 0.25, joint));
     }
+    if (variant >= 0) {
+      const light = variant === 1 ? cyan : red;
+      if (kind === 'tank') {
+        // Sloped glacis and segmented skirts break up the rectangular silhouette.
+        for (const side of [-1, 1]) {
+          const cheek = box(2.7, 2.4, 8, armor, side * 3.8, 4, 0);
+          cheek.rotation.z = side * 0.35;
+          g.add(cheek);
+          for (let j = 0; j < 7; j++) {
+            const tread = box(3, 0.5, 1.2, armor, side * 5, 3.7, j * 2 - 6);
+            g.add(tread, box(0.3, 1.5, 0.7, hazard, side * 6.4, 2.4, j * 2 - 6));
+          }
+          g.add(beam([side * 3, 4, -4], [side * 3, 8, -4], 0.25, joint));
+          const exhaust = new T.Mesh(new T.CylinderGeometry(0.6, 0.6, 3, 8), dark);
+          exhaust.position.set(side * 3, 4, -5);
+          g.add(exhaust);
+          turret.add(box(1.3, 2.2, 3.5, dark, side * 3.5, 0.7, -1));
+          for (let j = 0; j < 3; j++)
+            turret.add(box(0.7, 0.4, 0.3, light, side * 3.5, j * 0.6, -0.2));
+          if (variant === 1) {
+            turret.add(beam([side * 1.6, 0, 3], [side * 1.6, 0, 13], 0.45, joint));
+            turret.add(box(1.2, 1.1, 1.4, light, side * 1.6, 0, 13));
+          }
+          if (variant === 2) {
+            const rack = box(3, 3, 5, dark, side * 4, 2, -1);
+            rack.rotation.x = -0.35;
+            turret.add(rack);
+            for (const x of [-0.7, 0.7])
+              for (const y of [1.3, 2.5]) {
+                const tube = new T.Mesh(new T.CylinderGeometry(0.4, 0.4, 3.7, 8), joint);
+                tube.rotation.x = Math.PI / 2;
+                tube.position.set(side * 4 + x, y, 1);
+                turret.add(tube);
+              }
+          }
+        }
+        const hatch = new T.Mesh(new T.CylinderGeometry(1.4, 1.7, 0.5, 10), joint);
+        hatch.position.set(0, 1.7, -1);
+        turret.add(hatch);
+        const prow = box(7, 2, 3, armor, 0, 3, 5);
+        prow.rotation.x = 0.45;
+        g.add(prow);
+      } else {
+        for (const side of [-1, 1]) {
+          const shoulder = new T.Mesh(new T.IcosahedronGeometry(3.6, 0), armor);
+          shoulder.scale.set(1, 0.7, 1);
+          shoulder.position.set(side * 9, 21, 0);
+          g.add(shoulder);
+          g.add(beam([side * 4, 15, 3], [side * 7, 9, 2], 0.45, hazard));
+          g.add(beam([side * 7, 9, 2], [side * 5, 3, 3], 0.35, joint));
+          for (let j = 0; j < 3; j++) g.add(box(3.5, 0.4, 5, dark, side * 9, 18 + j, 1));
+          if (variant === 1) {
+            const shield = new T.Mesh(new T.CylinderGeometry(4.5, 4.5, 1, 6), armor);
+            shield.rotation.x = Math.PI / 2;
+            shield.position.set(side * 12, 16, 4);
+            g.add(shield);
+            g.add(box(0.5, 6, 1.2, cyan, side * 12, 16, 4.7));
+          } else {
+            for (let j = 0; j < (variant === 2 ? 3 : 1); j++)
+              g.add(beam([side * 10 + j - 1, 13, 3], [side * 10 + j - 1, 13, 12], 0.38, joint));
+          }
+        }
+        const chest = new T.Mesh(new T.IcosahedronGeometry(4.5, 0), armor);
+        chest.scale.set(1.3, 1, 0.5);
+        chest.position.set(0, 19, 3);
+        g.add(chest);
+        const reactor = ball(1.6, light);
+        reactor.position.set(0, 19, 5);
+        g.add(reactor);
+        turret.add(box(1, 1, 3, armor, -3, 2.5, 0), box(1, 1, 3, armor, 3, 2.5, 0));
+        if (variant === 2) turret.add(beam([0, 2, 0], [0, 8, -1], 0.5, hazard));
+      }
+    }
     g.add(turret);
-    templates.set(kind, g);
+    templates.set(key, g);
   }
-  const model = templates.get(kind).clone(true);
-  model.userData = { turret: model.getObjectByName('turret'), kind };
+  const model = templates.get(key).clone(true);
+  model.userData = { turret: model.getObjectByName('turret'), kind, variant };
   return model;
 }
 export function animateGroundEnemy(model, time, target) {

@@ -64,11 +64,12 @@ test('three pilots respawn in place with protection before final defeat', (t) =>
   }
   assert.equal(h.game.snapshot().state, 'lost');
 });
-test('blue rings cap weapon and pods; held fire releases charged plasma', (t) => {
+test('web blue rings advance slowly and cap pods; held fire releases charged plasma', (t) => {
   const h = setup(t);
   h.game.start();
   for (let i = 0; i < 20; i++) h.game.collect('blue');
-  assert.equal(h.game.snapshot().weapon, 6);
+  assert.equal(h.game.snapshot().weapon, 2);
+  assert.equal(h.game.snapshot().strategy.stage, 3);
   assert.equal(h.game.snapshot().pods, 3);
   h.key('Space');
   h.advance(1);

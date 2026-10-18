@@ -111,7 +111,7 @@ test('native rings stay reachable after portrait resize and can be collected at 
 });
 test('Force launches continuously, holds world position, pauses and returns to moving ship', (t) => {
   const h = setup(t);
-  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  for (let i = 0; i < 6; i++) h.game.collect('blue');
   h.advance(0.5);
   const start = h.game.snapshot().podPositions[0];
   h.key('KeyV');
@@ -166,7 +166,7 @@ test('all ten encounter pairs have distinct geometry and tactical signatures', (
 
 test('docked Force intercepts real incoming enemy projectiles without global immunity', (t) => {
   const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  for (let i = 0; i < 6; i++) h.game.collect('blue');
   for (let i = 0; i < 35; i++) {
     h.game.collect('shield');
     h.advance(1);
@@ -179,14 +179,14 @@ test('docked Force intercepts real incoming enemy projectiles without global imm
 
 test('upgrading deployed Force preserves existing world positions', (t) => {
   const h = setup(t);
-  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  for (let i = 0; i < 6; i++) h.game.collect('blue');
   h.key('KeyV');
   h.advance(1);
   const before = h.game.snapshot().podPositions[0];
   h.key('KeyD');
   h.advance(0.5);
   h.key('KeyD', false);
-  for (let i = 0; i < 3; i++) h.game.collect('blue');
+  for (let i = 0; i < 6; i++) h.game.collect('blue');
   assert.deepEqual(h.game.snapshot().podPositions[0], before);
   assert.equal(h.game.snapshot().podMode, 'deployed');
   h.advance(0.1);
