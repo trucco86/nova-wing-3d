@@ -81,6 +81,11 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);
   assert.equal(h.game.snapshot().entities.shots, 9);
+  const directions = h.game.snapshot().shotDirections;
+  assert.equal(directions.length, 9);
+  assert.ok(directions.some((v) => v[2] > 100) && directions.some((v) => v[2] < -100));
+  assert.ok(directions.some((v) => v[0] > 100) && directions.some((v) => v[0] < -100));
+  assert.ok(directions.every((v) => Math.abs(Math.hypot(...v) - 130) < 1e-8));
   h.advance(8);
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);

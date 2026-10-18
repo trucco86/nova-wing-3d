@@ -1898,3 +1898,7 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
     bottom: 115px;
   }
 }
+
+body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
+  visibility: hidden;
+}

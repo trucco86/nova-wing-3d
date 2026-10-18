@@ -158,7 +158,17 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     paused.strategy,
   );
   await page.locator('#pause').click();
-  await page.evaluate(() => window.fixture.advance(66));
+  await page.evaluate(() => {
+    window.fixture.advance(8);
+    window.fixture.game.cycleSpecial();
+    window.fixture.game.castSpecial();
+    window.fixture.advance(0.15);
+  });
+  expect(
+    await page.evaluate(() => window.fixture.game.snapshot().shotDirections.length),
+  ).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('nova-radial.png') });
+  await page.evaluate(() => window.fixture.advance(58));
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
   if (info.project.name === 'mobile') {

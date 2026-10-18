@@ -262,12 +262,15 @@ export function createGame({
     if (strategy.special === 0) barrier = 4;
     if (strategy.special === 2) stasis = 5;
     if (strategy.special === 1) {
-      for (let i = -4; i <= 4; i++) {
-        launchShot(i * 1.5, 18 + stage() * 3, true);
+      for (let i = 0; i < 9; i++) {
+        const angle = (i * Math.PI * 2) / 9;
+        const direction = new T.Vector3(Math.sin(angle), 0, Math.cos(angle));
+        launchShot(0, 18 + stage() * 3, true);
         const b = shots.at(-1);
-        b.spread = i * 8;
+        b.o.position.copy(player.position).addScaledVector(direction, 4);
+        b.o.material = shotMaterials[3];
+        b.v = direction.multiplyScalar(130);
         b.element = 'arcane';
-        b.homing = true;
       }
     }
     message('ESPECIAL · ' + spell.name);
@@ -813,7 +816,11 @@ export function createGame({
     $('bossName').textContent = current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
-    message('ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS');
+    message(
+      dynamicFlight
+        ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+        : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
+    );
   }
   function damageBoss(amount, target = null, element = 'kinetic') {
     if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return;
@@ -1568,9 +1575,7 @@ export function createGame({
         $('bossState').textContent +=
           ' · ÓRBITA ' +
           Math.round((orbitAngle * 180) / Math.PI) +
-          '° · ' +
-          (remaining ? 'FLANCO ±60°' : 'FRENTE 0°') +
-          ' · FRACO: ' +
+          '° · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
       $('attackWarning').textContent =
@@ -1629,10 +1634,18 @@ export function createGame({
         if (
           !e.dead &&
           !b.pierced.has(e) &&
-          e.o.position.z <= prev + 3 &&
-          e.o.position.z >= b.o.position.z - 3 &&
-          Math.abs(e.o.position.x - b.o.position.x) < e.half.x &&
-          Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y
+          (dynamicFlight
+            ? crossesSolid(
+                previousShot,
+                b.o.position,
+                e.o.position.clone().add(new T.Vector3(0, e.hitY, 0)),
+                e.half,
+                0.2,
+              )
+            : e.o.position.z <= prev + 3 &&
+              e.o.position.z >= b.o.position.z - 3 &&
+              Math.abs(e.o.position.x - b.o.position.x) < e.half.x &&
+              Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y)
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
           damageEnemy(e, (b.damage ?? 2) * (weak ? 2 : 1), b.element);
@@ -1960,6 +1973,7 @@ export function createGame({
       state,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       shotPower: shots[0]?.damage ?? 0,
+      shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
       cameraMode,
       playerVisible: player.visible,
