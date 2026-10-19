@@ -302,3 +302,10 @@ Escolha Ataque, Defesa ou Espiritual no início. Abra **NAVE** na lateral para
 trocar arma/especial; F/H/G continuam ativos com o menu fechado. XP continua após
 o nível 10. O cockpit tem instrumentos iluminados e o setor 3 acentua a ascensão.
 Veja [notas 1.9.0](releases/v1.9.0.md).
+
+### Web 1.10.0 — combate orbital tático
+
+Chefes móveis, radar de risco e scanner. Na gaveta NAVE: **I** analisa, **K** dispara
+precisão, **R** repara e **U** lança rajada guiada. As três reservas recarregam mais
+devagar durante órbita. Clarão branco confirma dano; âmbar indica bloqueio.
+Veja [notas 1.10.0](releases/v1.10.0.md).

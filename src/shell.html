@@ -33,11 +33,17 @@
     <div id="strategyControls">
       <details id="strategyDrawer">
         <summary>⚙ NAVE</summary>
-        <span id="strategyStatus"></span>
+        <span id="strategyStatus"></span
+        ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
         <div class="strategyButtons">
           <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
           ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
           ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+        </div>
+        <div class="tacticButtons">
+          <button id="scanBoss">I · SCAN</button><button id="precisionShot">K · PRECISÃO ◆</button>
+          <button id="repairPulse">R · REPARO ◆◆</button
+          ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
         </div>
       </details>
       <div id="orbitControls" hidden>
@@ -47,6 +53,11 @@
       </div>
     </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
+    <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
+      <div id="battleRadar"><i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b></div>
+      <span id="tacticState"></span><span id="battleCharge" aria-label="Reservas de ação"></span>
+    </aside>
+    <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="interface">

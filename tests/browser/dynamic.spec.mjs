@@ -215,3 +215,46 @@ test('three detailed tank robot and enemy fighter variants render', async ({ pag
   }
   expect(errors).toEqual([]);
 });
+
+test('orbital radar, scanner and reserve attacks work without covering the combat center', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.advance(74));
+  await expect(page.locator('#tacticalPanel')).toBeVisible();
+  await expect(page.locator('#tacticState')).toContainText('BATERIA');
+  await page.locator('#strategyDrawer summary').click();
+  await page.locator('#scanBoss').click();
+  await page.evaluate(() => window.fixture.advance(0.1));
+  await expect(page.locator('#radarWeak')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('tactical-scan.png') });
+  await page.locator('#homingBarrage').click();
+  await page.locator('#strategyDrawer summary').click();
+  await page.evaluate(() => window.fixture.advance(0.1));
+  const state = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(state.entities.shots).toBeGreaterThan(0);
+  expect(state.tactics.energy).toBeLessThan(1);
+  await page.screenshot({ path: info.outputPath('tactical-barrage.png') });
+  await page.evaluate(() => window.fixture.advance(3));
+  await page.screenshot({ path: info.outputPath('tactical-motion.png') });
+  await page.goto('/__dynamic.html?sector=0');
+  await page.evaluate(() => {
+    window.fixture.advance(68.1);
+    window.fixture.game.orbit(-1);
+    window.fixture.advance(1.3);
+    window.fixture.game.orbit(0);
+    window.fixture.game.tacticalAction('precision');
+    window.fixture.advance(0.35);
+  });
+  await expect(page.locator('#hitFeedback')).toBeVisible();
+  await expect(page.locator('#hitFeedback')).toContainText('✦');
+  expect(await page.evaluate(() => window.fixture.game.snapshot().bossTargets[0].hp)).toBeLessThan(
+    180,
+  );
+  await page.screenshot({ path: info.outputPath('confirmed-impact.png') });
+  expect(errors).toEqual([]);
+});

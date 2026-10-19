@@ -63,7 +63,7 @@ if (mode === 'tunnel' || mode === 'ground') {
   updateCollapse(fx, 5.8);
   scene.add(fx);
 } else {
-  const boss = createBossModel(SECTORS[index], index);
+  const boss = createBossModel(SECTORS[index], index, true);
   boss.position.set(0, 10, -88);
   scene.add(boss);
 }
