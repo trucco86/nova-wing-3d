@@ -231,6 +231,7 @@ export function createGame({
   let tacticEnergy = 0,
     scanTime = 0,
     impactTime = 0,
+    impactConfirmed = false,
     lastSpecialCycle = -1;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
@@ -516,6 +517,7 @@ export function createGame({
     orbitAngle = orbitTouch = 0;
     arcana = 100;
     tacticEnergy = scanTime = impactTime = 0;
+    impactConfirmed = false;
     lastSpecialCycle = -1;
     specialCd = barrier = stasis = 0;
     podsDetached = false;
@@ -561,6 +563,7 @@ export function createGame({
       String(sectorIndex + 1).padStart(2, '0');
     $('chapter').textContent = String(sectorIndex + 1).padStart(2, '0');
     $('stage').textContent = current().name;
+    $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     syncPods();
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
@@ -740,9 +743,12 @@ export function createGame({
     flash.material.depthTest = false;
     flash.material.depthWrite = false;
     flash.renderOrder = 100;
-    impactTime = 0.25;
-    $('hitFeedback').textContent = dealt > 0 ? '✦ ' + Math.max(1, Math.round(dealt)) : '◇';
-    $('hitFeedback').style.color = color;
+    if (dealt > 0 || impactTime <= 0 || !impactConfirmed) {
+      impactTime = 0.25;
+      impactConfirmed = dealt > 0;
+      $('hitFeedback').textContent = dealt > 0 ? '✦ ' + Math.max(1, Math.round(dealt)) : '◇';
+      $('hitFeedback').style.color = color;
+    }
     flash.position.copy(position);
     scene.add(flash);
     particles.push({ o: flash, v: new T.Vector3(), life: 0.22, kind: 'flash' });

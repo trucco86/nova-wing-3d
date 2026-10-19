@@ -92,3 +92,30 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
   assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
   assert.match(h.elements.get('hitFeedback').textContent, /✦/);
 });
+
+test('barrage keeps confirmed feedback when later projectiles are blocked', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(68.1);
+  h.game.orbit(-1);
+  h.advance(1.3);
+  h.game.orbit(0);
+  assert.equal(h.game.tacticalAction('barrage'), true);
+  h.advance(0.35);
+  assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
+  assert.match(h.elements.get('hitFeedback').textContent, /✦/);
+});
+
+test('checkpoint weapon label is restored before the first simulation frame', (t) => {
+  const h = harness({
+    storage: {
+      getItem: () =>
+        JSON.stringify({ version: 1, sector: 9, credits: 500, weapon: 3, armor: 1, pods: 2 }),
+      setItem() {},
+    },
+  });
+  t.after(() => h.close());
+  h.game.start(true);
+  assert.match(h.elements.get('weaponLabel').textContent, /PLASMA VÓRTICE/);
+});

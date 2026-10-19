@@ -5,7 +5,9 @@ reservas de ação e ataques de precisão. Adaptação própria para ação em t
 sem copiar personagens, modelos, músicas ou interromper o tiro básico.
 
 - Impactos na superfície da colisão: clarão visível e confirmação breve; bloqueios
-  têm cor/ícone distintos, sem simular dano. Robôs mantêm HP atual.
+  têm cor/ícone distintos, sem simular dano. Um bloqueio não apaga um acerto
+  confirmado durante sua janela de 250 ms. Robôs mantêm HP atual.
+- Checkpoint atualiza o indicador de arma na entrada, sem depender do primeiro frame.
 - Chefes têm movimento corporal, orientação e ataques especiais por perfil. A
   telemetria antecipa a zona perigosa antes da execução; reposicionamento importa.
 - Pontos fracos acompanham a orientação do chefe; scanner revela a leitura tática.
