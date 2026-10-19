@@ -133,7 +133,7 @@
         <div class="title-content">
           <h1>NOVA<span>WING</span></h1>
           <p id="brief">O último voo começa com você.</p>
-          <label id="specialtyChoice"
+          <label id="specialtyChoice" hidden
             >ESPECIALIDADE
             <select id="specialty">
               <option value="attack">Ataque · potência</option>
@@ -141,6 +141,107 @@
               <option value="spirit">Espiritual · magia</option>
             </select></label
           >
+          <section id="squadSelection" aria-label="Seleção dos Five Cats">
+            <div class="selection-head">
+              <span class="eyebrow">01 / ESCOLHA O PILOTO</span>
+              <strong>FIVE CATS</strong>
+            </div>
+            <div class="pilot-roster" role="group" aria-label="Pilotos disponíveis">
+              <button id="pilot-bia" class="pilot-choice selected" aria-pressed="true">
+                <i class="cat-avatar" style="--pilot: #67ffe0">B</i><span>BIA</span>
+              </button>
+              <button id="pilot-bob" class="pilot-choice" aria-pressed="false">
+                <i class="cat-avatar" style="--pilot: #77b8ff">B</i><span>BOB</span>
+              </button>
+              <button id="pilot-christopher" class="pilot-choice" aria-pressed="false">
+                <i class="cat-avatar" style="--pilot: #ffbf5e">C</i><span>CHRIS</span>
+              </button>
+              <button id="pilot-calvin" class="pilot-choice" aria-pressed="false">
+                <i class="cat-avatar" style="--pilot: #c28aff">C</i><span>CALVIN</span>
+              </button>
+              <button id="pilot-antonio" class="pilot-choice" aria-pressed="false">
+                <i class="cat-avatar" style="--pilot: #ff718f">A</i><span>ANTÔNIO</span>
+              </button>
+            </div>
+            <div class="pilot-profile">
+              <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
+              <div class="profile-copy">
+                <span id="profileRole">COMANDANTE VANGUARDA</span>
+                <h2 id="profileName">BIA</h2>
+                <strong id="profileSkill">SOBRECARGA</strong>
+                <p id="profileDescription"></p>
+              </div>
+              <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
+            </div>
+            <div class="selection-head ship-head">
+              <span class="eyebrow">02 / ESCOLHA A NAVE</span
+              ><strong id="selectedShipName">NOVA-7</strong>
+            </div>
+            <div class="ship-roster" role="group" aria-label="Modelos de nave">
+              <button id="ship-nova7" class="ship-choice selected" aria-pressed="true">
+                <i class="ship-silhouette nova7"></i><span>NOVA-7</span><small>EQUILÍBRIO</small>
+              </button>
+              <button id="ship-specter" class="ship-choice" aria-pressed="false">
+                <i class="ship-silhouette specter"></i><span>SPECTER-X</span
+                ><small>AGILIDADE +</small>
+              </button>
+              <button id="ship-aegis" class="ship-choice" aria-pressed="false">
+                <i class="ship-silhouette aegis"></i><span>AEGIS-R</span><small>DEFESA +</small>
+              </button>
+            </div>
+            <div class="color-roster" role="group" aria-label="Cor base da nave">
+              <span>COR BASE</span
+              ><button
+                id="ship-color-polar"
+                class="selected"
+                style="--swatch: #c4d5e3"
+                aria-label="Polar"
+              ></button
+              ><button id="ship-color-mint" style="--swatch: #63e7c3" aria-label="Mint"></button
+              ><button
+                id="ship-color-cobalt"
+                style="--swatch: #5f91ed"
+                aria-label="Cobalto"
+              ></button
+              ><button
+                id="ship-color-crimson"
+                style="--swatch: #e65f70"
+                aria-label="Carmesim"
+              ></button
+              ><button id="ship-color-gold" style="--swatch: #e7bd63" aria-label="Ouro"></button>
+            </div>
+            <p id="selectedShipDescription" class="ship-description"></p>
+            <details id="loadoutCatalog">
+              <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
+              <div class="loadout-catalog">
+                <article>
+                  <i class="gear-icon pulse"></i><b>PULSO</b><small>Cadência / cinético</small>
+                </article>
+                <article>
+                  <i class="gear-icon ice"></i><b>GEADA</b><small>Nível 3 / controle</small>
+                </article>
+                <article>
+                  <i class="gear-icon plasma"></i><b>PLASMA</b><small>Nível 5 / combustão</small>
+                </article>
+                <article>
+                  <i class="gear-icon arcane"></i><b>ARCANO</b><small>Nível 7 / perseguição</small>
+                </article>
+                <article>
+                  <i class="gear-icon void"></i><b>VAZIO</b><small>Nível 9 / perfuração</small>
+                </article>
+                <article>
+                  <i class="gear-icon armor"></i><b>BLINDAGEM</b><small>4 classes no hangar</small>
+                </article>
+                <article>
+                  <i class="gear-icon bomb"></i><b>BOMBA</b><small>Artilharia pesada</small>
+                </article>
+                <article>
+                  <i class="gear-icon special"></i><b>ESPECIAIS</b
+                  ><small>Barreira / Nova / Estase</small>
+                </article>
+              </div>
+            </details>
+          </section>
           <div class="title-actions">
             <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>

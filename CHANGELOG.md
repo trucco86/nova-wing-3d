@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.11.0 — Esquadrão Five Cats
+
+- Seleção visual dos cinco gatos com função, habilidade e seis atributos comparáveis.
+- Três chassis de nave com silhuetas e compromissos próprios, além de cinco cores-base.
+- Perfil escolhido altera dano, escudo, agilidade, arcana e potência de bomba.
+- Galeria ilustrada de armas, blindagem, bomba e especiais antes da missão.
+- Piloto, modelo e cor persistem no checkpoint; saves antigos usam Bia e NOVA-7.
+
 ## 1.10.0 — Combate orbital tático web
 
 - Impactos visíveis na superfície, dano confirmado e bloqueio de blindagem distintos.

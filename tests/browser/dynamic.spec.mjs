@@ -1,5 +1,31 @@
 import { test, expect } from '@playwright/test';
 
+test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
+  page,
+}, info) => {
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+  await page.goto('/');
+  await expect(page.locator('#squadSelection')).toBeVisible();
+  await page.locator('#pilot-calvin').click();
+  await expect(page.locator('#profileName')).toHaveText('CALVIN');
+  await expect(page.locator('#profileSkill')).toHaveText('FLUXO ARCANO');
+  await page.locator('#ship-aegis').click();
+  await expect(page.locator('#selectedShipName')).toHaveText('AEGIS-R');
+  await page.locator('#ship-color-gold').click();
+  await expect(page.locator('#ship-color-gold')).toHaveClass(/selected/);
+  await page.locator('#loadoutCatalog summary').click();
+  await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
+  await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
+  await page.locator('#start').click();
+  await expect(page.locator('#pilotName')).toContainText('CALVIN');
+  await expect(page.locator('#strategyStatus')).toContainText('EV 1');
+  expect(errors).toEqual([]);
+});
+
 test('web route, orbital ascent and final black hole render without shader errors', async ({
   page,
 }, info) => {

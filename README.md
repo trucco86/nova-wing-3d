@@ -309,3 +309,12 @@ Chefes móveis, radar de risco e scanner. Na gaveta NAVE: **I** analisa, **K** d
 precisão, **R** repara e **U** lança rajada guiada. As três reservas recarregam mais
 devagar durante órbita. Clarão branco confirma dano; âmbar indica bloqueio.
 Veja [notas 1.10.0](releases/v1.10.0.md).
+
+### Web 1.11.0 — esquadrão Five Cats
+
+Antes de uma nova campanha, escolha entre **Bia, Bob, Christopher, Calvin e Antônio**.
+Cada piloto mostra ataque, defesa, agilidade, força, vida e espírito, além de um bônus
+de especialidade aplicado ao combate. Também é possível combinar três chassis —
+NOVA-7, SPECTER-X e AEGIS-R — com cinco cores-base. A galeria da tela apresenta as
+famílias de tiro, armaduras, bombas e especiais antes do voo. A escolha acompanha o
+checkpoint local. Veja [notas 1.11.0](releases/v1.11.0.md).

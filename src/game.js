@@ -21,6 +21,15 @@ import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
+import {
+  PILOT_PROFILES,
+  SHIP_MODELS,
+  SHIP_COLORS,
+  readPilotLoadout,
+  pilotAt,
+  shipAt,
+  shipColorAt,
+} from './pilots.js';
 import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
@@ -53,7 +62,16 @@ import {
 import { createBossCombat } from './combat.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
-import { fighter, createWorld, postProcessor, halo, glowMaterial, metal, box } from './visuals.js';
+import {
+  fighter,
+  createShipModule,
+  createWorld,
+  postProcessor,
+  halo,
+  glowMaterial,
+  metal,
+  box,
+} from './visuals.js';
 /** Create one isolated game. Node tests inject the browser boundary, not source code. */
 export function createGame({
   document = globalThis.document,
@@ -146,6 +164,11 @@ export function createGame({
   const player = fighter();
   scene.add(player);
   player.position.set(0, 6, 9);
+  let pilotLoadout = readPilotLoadout(null);
+  let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
+  player.add(shipModule);
+  const activePilot = () => pilotAt(pilotLoadout.pilot);
+  const activeShip = () => shipAt(pilotLoadout.ship);
   const barrierVisual = new T.Mesh(
     new T.SphereGeometry(5.8, 16, 10),
     new T.MeshBasicMaterial({
@@ -243,6 +266,7 @@ export function createGame({
       ? selectedWeapon().damage *
         (1 + rank('attack') * 0.12) *
         (strategy.specialty === 'attack' ? 1.15 : 1) *
+        activePilot().bonuses.damage *
         (podsDetached ? 1 : 1 + podCount * 0.3)
       : 1;
   const selectedWeapon = () => ARSENAL[dynamicFlight ? strategy.arsenal : 0];
@@ -357,10 +381,105 @@ export function createGame({
   if (saved) cosmetics = readCosmetics(saved.cosmetics);
   function applySkin() {
     const skin = SKINS.find((s) => s.id === (dynamicFlight ? cosmetics.skin : 'classic'));
+    const starter = shipColorAt(pilotLoadout.color);
+    const palette = dynamicFlight && cosmetics.skin === 'classic' ? starter : skin;
     player.userData.paint?.forEach((m) =>
-      m.color.set(m.userData.paintAccent ? skin.accent : skin.color),
+      m.color.set(m.userData.paintAccent ? palette.accent : palette.color),
     );
+    shipModule.traverse((o) => {
+      if (o.material?.userData.paintModule) o.material.color.set(palette.color);
+    });
   }
+  function applyShipModel() {
+    if (shipModule) {
+      player.remove(shipModule);
+      shipModule.traverse((o) => {
+        o.geometry?.dispose();
+        if (o.material?.userData.paintModule) o.material.dispose();
+      });
+    }
+    shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
+    player.add(shipModule);
+    applySkin();
+  }
+  const statLabels = {
+    attack: 'ATAQUE',
+    defense: 'DEFESA',
+    agility: 'AGILIDADE',
+    force: 'FORÇA',
+    vitality: 'VIDA',
+    spirit: 'ESPÍRITO',
+  };
+  function renderPilotSelection() {
+    const pilot = activePilot(),
+      ship = activeShip();
+    $('squadSelection').style.setProperty?.('--profile-color', pilot.color);
+    $('profileAvatar').style.setProperty?.('--pilot', pilot.color);
+    $('profileAvatar').textContent = pilot.name[0];
+    $('profileName').textContent = pilot.name;
+    $('profileRole').textContent = pilot.role;
+    $('profileSkill').textContent = pilot.skill.toUpperCase();
+    $('profileDescription').textContent = pilot.description;
+    $('profileStats').innerHTML = Object.entries(pilot.stats)
+      .map(
+        ([key, value]) =>
+          '<span class="stat-row"><b>' +
+          statLabels[key] +
+          '</b><i style="--stat:' +
+          value +
+          '"></i></span>',
+      )
+      .join('');
+    $('selectedShipName').textContent = ship.name;
+    $('selectedShipDescription').textContent = ship.role + ' · ' + ship.description;
+    $('specialty').value = pilot.specialty;
+    for (const entry of PILOT_PROFILES) {
+      const button = $('pilot-' + entry.id),
+        selected = entry.id === pilot.id;
+      button.classList[selected ? 'add' : 'remove']('selected');
+      button.setAttribute?.('aria-pressed', String(selected));
+    }
+    for (const entry of SHIP_MODELS) {
+      const button = $('ship-' + entry.id),
+        selected = entry.id === ship.id;
+      button.classList[selected ? 'add' : 'remove']('selected');
+      button.setAttribute?.('aria-pressed', String(selected));
+    }
+    for (const entry of SHIP_COLORS) {
+      const button = $('ship-color-' + entry.id),
+        selected = entry.id === pilotLoadout.color;
+      button.classList[selected ? 'add' : 'remove']('selected');
+      button.setAttribute?.('aria-pressed', String(selected));
+    }
+  }
+  function selectPilot(id) {
+    if (!dynamicFlight || state !== 'menu' || !PILOT_PROFILES.some((p) => p.id === id))
+      return false;
+    pilotLoadout.pilot = id;
+    renderPilotSelection();
+    return true;
+  }
+  function selectShip(id) {
+    if (!dynamicFlight || state !== 'menu' || !SHIP_MODELS.some((p) => p.id === id)) return false;
+    pilotLoadout.ship = id;
+    applyShipModel();
+    renderPilotSelection();
+    return true;
+  }
+  function selectShipColor(id) {
+    if (!dynamicFlight || state !== 'menu' || !SHIP_COLORS.some((entry) => entry.id === id))
+      return false;
+    pilotLoadout.color = id;
+    applySkin();
+    renderPilotSelection();
+    return true;
+  }
+  for (const pilot of PILOT_PROFILES) $('pilot-' + pilot.id).onclick = () => selectPilot(pilot.id);
+  for (const ship of SHIP_MODELS) $('ship-' + ship.id).onclick = () => selectShip(ship.id);
+  for (const color of SHIP_COLORS)
+    $('ship-color-' + color.id).onclick = () => selectShipColor(color.id);
+  $('squadSelection').hidden = !dynamicFlight;
+  renderPilotSelection();
   applySkin();
   $('customization').hidden = !dynamicFlight;
   function renderSkins() {
@@ -392,9 +511,13 @@ export function createGame({
   for (const skin of SKINS) $('skin-' + skin.id).onclick = () => buySkin(skin.id);
   $('continue').hidden = !saved;
   const maxHp = () =>
-    100 +
-    armor * 25 +
-    (dynamicFlight ? rank('defense') * 3 + (strategy.specialty === 'defense' ? 25 : 0) : 0);
+    Math.round(
+      (100 +
+        armor * 25 +
+        (dynamicFlight ? rank('defense') * 3 + (strategy.specialty === 'defense' ? 25 : 0) : 0) +
+        (dynamicFlight ? activeShip().stats.defense * 12 : 0)) *
+        (dynamicFlight ? activePilot().bonuses.shield : 1),
+    );
   const current = () => SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
     writeSave(storage, {
@@ -405,6 +528,7 @@ export function createGame({
       pods: podCount,
       score,
       cosmetics,
+      ...(dynamicFlight ? { loadout: pilotLoadout } : {}),
       ...(dynamicFlight ? { strategy } : {}),
     });
   }
@@ -703,10 +827,11 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    const bombPower = dynamicFlight ? activePilot().bonuses.bomb : 1;
     for (let e of enemies)
       if (!e.dead) {
         if (e.kind === 'subboss') {
-          damageEnemy(e, 90, 'kinetic');
+          damageEnemy(e, 90 * bombPower, 'kinetic');
           explode(e.o.position, 20);
           if (e.life <= 0) kill(e);
         } else kill(e);
@@ -715,7 +840,7 @@ export function createGame({
     hostile = [];
     if (boss) {
       explode(boss.position, 40);
-      damageBoss(35);
+      damageBoss(35 * bombPower);
     }
     $('flash').style.background = '#baffff';
     $('flash').style.opacity = '.35';
@@ -1064,8 +1189,12 @@ export function createGame({
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
+    pilotLoadout = dynamicFlight
+      ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
+      : readPilotLoadout(null);
+    applyShipModel();
     strategy = dynamicFlight
-      ? readStrategy(checkpoint ? checkpoint.strategy : { specialty: $('specialty').value })
+      ? readStrategy(checkpoint ? checkpoint.strategy : { specialty: activePilot().specialty })
       : readStrategy(null);
     $('strategyDrawer').open = false;
     evolve();
@@ -1188,7 +1317,7 @@ export function createGame({
         };
   }
   $('strategyControls').hidden = !dynamicFlight;
-  $('specialtyChoice').hidden = !dynamicFlight;
+  $('specialtyChoice').hidden = true;
   $('podsTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     if (state === 'playing') togglePods();
@@ -1365,7 +1494,11 @@ export function createGame({
       $('scanBoss').disabled = !boss || arcana < 10 || scanTime > 0;
       arcana = Math.min(
         100,
-        arcana + dt * (4 + rank('spirit') * 0.1) * (strategy.specialty === 'spirit' ? 1.3 : 1),
+        arcana +
+          dt *
+            (4 + rank('spirit') * 0.1) *
+            (strategy.specialty === 'spirit' ? 1.3 : 1) *
+            activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
       barrier = Math.max(0, barrier - dt);
@@ -1410,7 +1543,10 @@ export function createGame({
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
-    const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02);
+    const profileSpeed = dynamicFlight
+      ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
+      : 1;
+    const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -1437,12 +1573,12 @@ export function createGame({
     reticle.visible = true;
     const previousPlayer = player.position.clone();
     player.position.x = clamp(
-      player.position.x + dx * dt * 24 * (1 + Math.min(30, stage()) * 0.03),
+      player.position.x + dx * dt * 24 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
       -flightLimit(),
       flightLimit(),
     );
     player.position.y = clamp(
-      player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03),
+      player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
       -1,
       dynamicFlight ? 46 : 23,
     );
@@ -1534,7 +1670,8 @@ export function createGame({
     if (phase !== lastStage) {
       lastStage = phase;
     }
-    $('pilotName').textContent = PILOTS[3 - lives] + ' / ' + lives + ' VIDAS';
+    $('pilotName').textContent =
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + ' VIDAS';
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     podCd -= dt;
     if (dynamicFlight && podsDetached) {
@@ -2009,7 +2146,11 @@ export function createGame({
       world.update(
         dt,
         visualTime,
-        (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02),
+        (boosting ? 90 : 48) *
+          (1 + Math.min(30, stage()) * 0.02) *
+          (dynamicFlight
+            ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
+            : 1),
         state === 'playing' && !(dynamicFlight && boss),
       );
       const boostVisible = boosting && state === 'playing';
@@ -2162,6 +2303,9 @@ export function createGame({
     collect,
     buy,
     buySkin,
+    selectPilot,
+    selectShip,
+    selectShipColor,
     nextSector,
     snapshot: () => ({
       state,
@@ -2177,6 +2321,7 @@ export function createGame({
       route: { ...route },
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
+      loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
       sector: sectorIndex + 1,
       lives,
       credits,
@@ -2268,6 +2413,10 @@ export function createGame({
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
+      shipModule.traverse((o) => {
+        o.geometry?.dispose();
+        if (o.material?.userData.paintModule) o.material.dispose();
+      });
       renderer.dispose?.();
     },
   };
