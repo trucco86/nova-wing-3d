@@ -110,7 +110,7 @@ test('wide flight and three camera perspectives render and switch with keyboard 
     if (mode === 'cockpit') {
       await expect(page.locator('#cockpitPanel')).toBeVisible();
       await page.keyboard.down('Space');
-      await page.evaluate(() => window.fixture.advance(0.03));
+      await page.evaluate(() => window.fixture.advance(1.1));
       expect(
         await page.evaluate(() => window.fixture.game.snapshot().entities.shots),
       ).toBeGreaterThan(0);
@@ -141,6 +141,9 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.advance(2));
     await page.screenshot({ path: info.outputPath('evolution-' + xp + '.png') });
   }
+  await expect(page.locator('#specialCast')).toBeHidden();
+  await page.locator('#strategyDrawer summary').click();
+  await page.screenshot({ path: info.outputPath('loadout-drawer.png') });
   if (info.project.name === 'mobile') await page.locator('#arsenalSwitch').tap();
   else await page.keyboard.press('KeyF');
   await page.evaluate(() => window.fixture.advance(0.1));

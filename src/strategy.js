@@ -11,13 +11,22 @@ export const SPECIALS = [
   { name: 'NOVA', stage: 3, cost: 55 },
   { name: 'ESTASE', stage: 5, cost: 65 },
 ];
-export const stageAt = (xp) => XP_STAGES.reduce((n, threshold, i) => (xp >= threshold ? i : n), 0);
+export const xpForStage = (n) => (n < 10 ? XP_STAGES[n] : 740 + 250 * (n - 9) + 30 * (n - 9) ** 2);
+export const stageAt = (xp) =>
+  xp < 740
+    ? XP_STAGES.reduce((n, threshold, i) => (xp >= threshold ? i : n), 0)
+    : 9 + Math.floor((-250 + Math.sqrt(62500 + 120 * (xp - 740))) / 60);
+export const specialtyRank = (xp, specialty, branch) =>
+  stageAt(xp * (specialty === branch ? 1.4 : 1));
 export function readStrategy(value) {
   const valid = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
-  const xp = valid(value?.xp, 1000000) ? value.xp : 0;
+  const xp = valid(value?.xp, Number.MAX_SAFE_INTEGER) ? value.xp : 0;
   const stage = stageAt(xp);
   return {
     xp,
+    specialty: ['attack', 'defense', 'spirit'].includes(value?.specialty)
+      ? value.specialty
+      : 'attack',
     arsenal: valid(value?.arsenal, 4) && ARSENAL[value.arsenal].stage <= stage ? value.arsenal : 0,
     special: valid(value?.special, 2) && SPECIALS[value.special].stage <= stage ? value.special : 0,
   };

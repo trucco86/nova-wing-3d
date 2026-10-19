@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.9.0 — Evolução contínua web
+
+- RPG em gaveta lateral e especialidades Ataque, Defesa e Espiritual.
+- Progressão após nível 10; carga acompanha armas, XP e pods.
+- Subchefe inicial mais curto e impactos visíveis ao causar dano.
+- Instrumentos iluminados no cockpit, ascensão orbital e detalhes nos inimigos.
+
 ## 1.8.0 — Combate estratégico web
 
 - Dez evoluções por XP, módulos visuais, agilidade gradual e cinco famílias de armas.
