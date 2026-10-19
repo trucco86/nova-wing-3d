@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.10.0 — Combate orbital tático web
+
+- Impactos visíveis na superfície, dano confirmado e bloqueio de blindagem distintos.
+- Chefes móveis com dez perfis, zonas de risco, preparação de especiais e recuperação.
+- Pontos fracos acompanham a orientação; scanner e radar lateral.
+- Reservas para precisão, reparo e rajada guiada; recarga menor durante órbita.
+- Proporções e apêndices distintos nos chefes web; resistência dos robôs preservada.
+
 ## 1.9.0 — Evolução contínua web
 
 - RPG em gaveta lateral e especialidades Ataque, Defesa e Espiritual.

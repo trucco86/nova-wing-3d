@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
-export function createBossModel(sector, index = 0) {
+export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
     armor = metal('#344658', 0.8, 0.3),
     dark = metal('#111b2c'),
@@ -301,6 +301,40 @@ export function createBossModel(sector, index = 0) {
     const p = add(sphere(4, hot), s * 17, 4, 19);
     add(ring(5), s * 17, 4, 18);
     parts.push({ mesh: p, hp: 180 + index * 25, max: 180 + index * 25 });
+  }
+  if (tactical) {
+    const proportions = [
+      [1.2, 0.72, 1],
+      [0.95, 0.65, 1.2],
+      [0.75, 1.1, 1.5],
+      [0.8, 1.25, 0.8],
+      [1.25, 0.7, 0.85],
+      [0.85, 1.3, 1.1],
+      [1.1, 1.2, 0.9],
+      [1.25, 0.8, 1.15],
+      [0.85, 1.35, 0.85],
+      [1.1, 1.25, 1],
+    ];
+    g.scale.set(...proportions[index % 10]);
+    for (const side of [-1, 1]) {
+      const blade = new T.Mesh(new T.ConeGeometry(4 + (index % 3), 25 + index * 2, 4), armor);
+      blade.rotation.z = side * (index % 2 ? 1.1 : 0.4);
+      add(blade, side * (27 + index), index % 2 ? 1 : 20, -8);
+    }
+    hot.color.set(
+      [
+        '#ff8850',
+        '#52dfff',
+        '#ffca50',
+        '#7e80ff',
+        '#ff603a',
+        '#a888ff',
+        '#66ffa0',
+        '#ff5d87',
+        '#cd70ff',
+        '#ffce70',
+      ][index % 10],
+    );
   }
   g.userData = {
     parts,

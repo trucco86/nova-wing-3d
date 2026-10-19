@@ -2013,3 +2013,104 @@ body:has(#strategyDrawer[open]):has(#strategyControls:not([hidden])) #loadout {
     visibility: hidden;
   }
 }
+/* Tactical information stays at the edge; confirmed hits briefly mark the reticle. */
+#hitFeedback {
+  position: fixed;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  z-index: 26;
+  pointer-events: none;
+  font: bold 14px monospace;
+  text-shadow: 0 0 8px currentColor;
+}
+#tacticalPanel {
+  position: fixed;
+  right: 18px;
+  top: 151px;
+  width: 106px;
+  z-index: 24;
+  pointer-events: none;
+  text-align: center;
+  color: #b9ffeb;
+  font: 9px monospace;
+}
+#battleRadar {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 5px;
+  border-radius: 50%;
+  border: 1px solid #8dc4c0;
+  position: relative;
+  box-shadow: 0 0 0 3px #061522aa;
+}
+#battleRadar i {
+  position: absolute;
+  inset: 3px;
+  font: 12px monospace;
+  font-style: normal;
+  text-align: center;
+}
+#radarWeak {
+  color: #ffef85;
+}
+#radarPlayer {
+  color: white;
+  z-index: 2;
+}
+#battleRadar b {
+  position: absolute;
+  left: 29px;
+  top: 28px;
+}
+#tacticState {
+  display: block;
+  background: #061522dd;
+  padding: 4px;
+  line-height: 1.3;
+}
+#tacticCharge {
+  display: block;
+  color: #d8b3ff;
+  letter-spacing: 6px;
+  padding-bottom: 4px;
+}
+.tacticButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 6px;
+}
+#strategyDrawer[open] {
+  max-height: calc(100dvh - 155px);
+  overflow-y: auto;
+}
+@media (max-height: 500px) {
+  #tacticalPanel {
+    top: 118px;
+    right: 18px;
+    width: 90px;
+  }
+  #battleRadar {
+    width: 58px;
+    height: 58px;
+  }
+  #battleRadar b {
+    left: 22px;
+    top: 21px;
+  }
+  #strategyControls .tacticButtons button {
+    font-size: 8px;
+    padding: 3px;
+  }
+  #strategyDrawer[open] {
+    max-height: 235px;
+  }
+}
+@media (max-width: 500px) {
+  #tacticalPanel {
+    top: 113px;
+    right: 10px;
+    width: 90px;
+  }
+}
