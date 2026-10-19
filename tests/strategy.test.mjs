@@ -6,6 +6,8 @@ import { readStrategy, elementalDamage, stageAt } from '../src/strategy.js';
 import { createGroundEnemy } from '../src/encounters.js';
 import { createEvolution } from '../src/evolution.js';
 import { fighter } from '../src/visuals.js';
+import { createShipModule } from '../src/visuals.js';
+import { PILOT_PROFILES, SHIP_MODELS, readPilotLoadout } from '../src/pilots.js';
 import { defeatBoss } from './combat-helper.mjs';
 function setup(t, options = {}) {
   const h = harness(options);
@@ -208,10 +210,11 @@ test('progression continues beyond ten, specialties accelerate their branch and 
 test('specialty choice applies on new game and charge scales with progression and arsenal', (t) => {
   const h = harness();
   t.after(() => h.close());
-  h.elements.get('specialty').value = 'defense';
+  assert.equal(h.game.selectPilot('bob'), true);
   h.game.start();
   assert.equal(h.game.snapshot().strategy.specialty, 'defense');
-  assert.equal(h.game.snapshot().shield, 125);
+  assert.equal(h.game.snapshot().loadout.pilot, 'bob');
+  assert.ok(h.game.snapshot().shield > 125);
   const powers = [];
   for (const xp of [0, 10000]) {
     const g = setup(t, { storage: save({ xp, arsenal: xp ? 4 : 0 }) });
@@ -240,9 +243,56 @@ test('charged boss hits retain their own reserve under sustained normal fire', a
 test('legacy saves ignore the new-campaign specialty selector when continuing', (t) => {
   const h = harness({ storage: save(undefined) });
   t.after(() => h.close());
-  h.elements.get('specialty').value = 'spirit';
+  h.game.selectPilot('calvin');
   h.game.start(true);
   assert.equal(h.game.snapshot().strategy.specialty, 'attack');
   h.game.start();
   assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
+});
+
+test('five pilots and three ships validate selection, alter real stats and persist in checkpoints', (t) => {
+  assert.equal(PILOT_PROFILES.length, 5);
+  assert.equal(SHIP_MODELS.length, 3);
+  assert.deepEqual(readPilotLoadout({ pilot: 'invalid', ship: 'invalid' }), {
+    pilot: 'bia',
+    ship: 'nova7',
+    color: 'polar',
+  });
+  const map = new Map();
+  const storage = { getItem: (key) => map.get(key), setItem: (key, value) => map.set(key, value) };
+  const h = harness({ storage });
+  t.after(() => h.close());
+  assert.equal(h.game.selectPilot('calvin'), true);
+  assert.equal(h.game.selectShip('aegis'), true);
+  assert.equal(h.game.selectShipColor('gold'), true);
+  h.game.start();
+  assert.equal(h.game.snapshot().loadout.pilot, 'calvin');
+  assert.equal(h.game.snapshot().loadout.ship, 'aegis');
+  assert.equal(h.game.snapshot().loadout.color, 'gold');
+  assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
+  h.advance(65.1);
+  defeatBoss(h);
+  const restored = harness({ storage });
+  t.after(() => restored.close());
+  restored.game.start(true);
+  assert.equal(restored.game.snapshot().loadout.pilot, 'calvin');
+  assert.equal(restored.game.snapshot().loadout.ship, 'aegis');
+  assert.equal(restored.game.snapshot().loadout.color, 'gold');
+});
+
+test('all selectable ship modules have finite and distinct silhouettes', () => {
+  const signatures = [];
+  for (const ship of SHIP_MODELS) {
+    const model = createShipModule(ship.id);
+    let meshes = 0;
+    model.traverse((node) => {
+      if (!node.isMesh) return;
+      meshes++;
+      for (const value of node.geometry.attributes.position.array)
+        assert.ok(Number.isFinite(value));
+    });
+    const size = new T.Box3().setFromObject(model).getSize(new T.Vector3());
+    signatures.push([meshes, size.x.toFixed(2), size.y.toFixed(2), size.z.toFixed(2)].join(':'));
+  }
+  assert.equal(new Set(signatures).size, SHIP_MODELS.length);
 });

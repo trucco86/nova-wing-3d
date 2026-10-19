@@ -224,6 +224,41 @@ export function fighter(enemy = false, variant = -1) {
   if (enemy && variant >= 0) o.add(enemyDetails(variant));
   return o;
 }
+
+export function createShipModule(model = 'nova7') {
+  const g = new T.Group();
+  g.name = 'ship-model-' + model;
+  const shell = metal('#a9c8d7', 0.78, 0.25);
+  shell.userData.paintModule = true;
+  if (model === 'specter') {
+    for (const side of [-1, 1]) {
+      const blade = wing(
+        [
+          [side * 1.1, -1.1],
+          [side * 5.9, 0.5],
+          [side * 4.4, 1.25],
+          [side * 1.8, 0.8],
+        ],
+        shell,
+      );
+      blade.position.y = -0.12;
+      g.add(blade, box(0.18, 0.18, 3.8, cyan, side * 4.2, -0.05, 0.2));
+    }
+    g.add(box(0.5, 0.18, 5.4, shell, 0, -0.2, 0.25));
+  } else if (model === 'aegis') {
+    for (const side of [-1, 1]) {
+      g.add(box(1.15, 0.72, 4.8, shell, side * 2.55, 0.05, 0.7));
+      const guard = new T.Mesh(new T.IcosahedronGeometry(0.82, 0), shell);
+      guard.scale.set(1.5, 0.65, 2.1);
+      guard.position.set(side * 3.25, 0.05, -0.1);
+      g.add(guard);
+    }
+    g.add(box(2.2, 0.48, 3.7, shell, 0, -0.18, 1.15));
+  } else {
+    for (const side of [-1, 1]) g.add(box(0.22, 0.25, 2.8, mint, side * 3.45, 0.04, -0.15));
+  }
+  return g;
+}
 const variants = new Map();
 function enemyDetails(variant) {
   if (!variants.has(variant)) {
