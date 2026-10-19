@@ -244,10 +244,18 @@ test('legacy saves ignore the new-campaign specialty selector when continuing', 
   const h = harness({ storage: save(undefined) });
   t.after(() => h.close());
   h.game.selectPilot('calvin');
+  h.game.selectShip('aegis');
+  h.game.selectShipColor('gold');
   h.game.start(true);
   assert.equal(h.game.snapshot().strategy.specialty, 'attack');
-  h.game.start();
-  assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
+  assert.equal(h.game.snapshot().loadout.pilot, 'bia');
+  assert.equal(h.game.snapshot().loadout.ship, 'nova7');
+  assert.equal(h.game.snapshot().loadout.color, 'polar');
+  const fresh = harness();
+  t.after(() => fresh.close());
+  fresh.game.selectPilot('calvin');
+  fresh.game.start();
+  assert.equal(fresh.game.snapshot().strategy.specialty, 'spirit');
 });
 
 test('five pilots and three ships validate selection, alter real stats and persist in checkpoints', (t) => {

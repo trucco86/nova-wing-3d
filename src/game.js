@@ -827,10 +827,11 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    const bombPower = dynamicFlight ? activePilot().bonuses.bomb : 1;
     for (let e of enemies)
       if (!e.dead) {
         if (e.kind === 'subboss') {
-          damageEnemy(e, 90, 'kinetic');
+          damageEnemy(e, 90 * bombPower, 'kinetic');
           explode(e.o.position, 20);
           if (e.life <= 0) kill(e);
         } else kill(e);
@@ -839,7 +840,7 @@ export function createGame({
     hostile = [];
     if (boss) {
       explode(boss.position, 40);
-      damageBoss(35 * (dynamicFlight ? activePilot().bonuses.bomb : 1));
+      damageBoss(35 * bombPower);
     }
     $('flash').style.background = '#baffff';
     $('flash').style.opacity = '.35';
@@ -1189,7 +1190,7 @@ export function createGame({
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
     pilotLoadout = dynamicFlight
-      ? readPilotLoadout(checkpoint?.loadout ?? pilotLoadout)
+      ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
       : readPilotLoadout(null);
     applyShipModel();
     strategy = dynamicFlight
@@ -1316,7 +1317,7 @@ export function createGame({
         };
   }
   $('strategyControls').hidden = !dynamicFlight;
-  $('specialtyChoice').hidden = !dynamicFlight;
+  $('specialtyChoice').hidden = true;
   $('podsTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     if (state === 'playing') togglePods();
@@ -2145,7 +2146,11 @@ export function createGame({
       world.update(
         dt,
         visualTime,
-        (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02),
+        (boosting ? 90 : 48) *
+          (1 + Math.min(30, stage()) * 0.02) *
+          (dynamicFlight
+            ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
+            : 1),
         state === 'playing' && !(dynamicFlight && boss),
       );
       const boostVisible = boosting && state === 'playing';
