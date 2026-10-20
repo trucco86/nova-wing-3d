@@ -304,3 +304,16 @@ test('all selectable ship modules have finite and distinct silhouettes', () => {
   }
   assert.equal(new Set(signatures).size, SHIP_MODELS.length);
 });
+
+test('corrected roster preserves legacy loadouts and heavy pilot balance', () => {
+  assert.deepEqual(
+    PILOT_PROFILES.map((p) => p.name).sort(),
+    ['BIA', 'BOB', 'CALVINHO', 'CHRISTOPHER', 'JENIFER'].sort(),
+  );
+  assert.equal(readPilotLoadout({ pilot: 'antonio' }).pilot, 'christopher');
+  assert.equal(readPilotLoadout({ pilot: 'calvin' }).pilot, 'calvin');
+  const heavy = PILOT_PROFILES.find((p) => p.id === 'christopher');
+  const fast = PILOT_PROFILES.find((p) => p.id === 'jenifer');
+  assert.ok(heavy.stats.force > fast.stats.force);
+  assert.ok(fast.bonuses.speed > heavy.bonuses.speed);
+});
