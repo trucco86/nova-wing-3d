@@ -62,7 +62,7 @@ Chefes continuam usando os mesmos contratos de dano e progressão, com mandíbul
 
 O subchefe usa um cruzador próprio e se mantém em z=-85 até ser derrotado. Duas bombas vencem o primeiro; outros setores escalam resistência. O túnel aguarda o cruzador, e o chefe aguarda a saída do túnel. A missão pode durar mais que a aproximação nominal caso esses encontros ainda estejam ativos.
 
-`src/equipment.js` compartilha templates de pods e anéis: verde/cruz para escudo, azul/setas para arma. Pods evoluem nos níveis I–III, alterando carcaça, cadência e formação, e preservam mira elevada em alvos terrestres. `src/finale.js` produz a onda de choque e destroços. O estado `collapsing` bloqueia dano/tiro e só concede a recompensa uma vez, ao final; pausa guarda o estado anterior.
+`src/equipment.js` compartilha templates de pods e anéis: verde/cruz para escudo, azul/setas para arma. Pods evoluem nos níveis I–III, alterando carcaça, cadência e formação, e preservam mira elevada em alvos terrestres. `src/finale.js` produz a onda de choque e destroços. O estado `collapsing` bloqueia dano e só concede a recompensa uma vez, ao final; na web, movimento, impulso e tiro continuam ativos durante o colapso; pausa guarda o estado anterior.
 
 O sequenciador possui seis estados musicais e arranjos com harmonia, baixo, melodia e percussão sintetizada; filtro e compressor controlam o espectro e a soma das vozes. Destruição libera os nós. Fixtures gráficas e de áudio não são distribuídas no Pages.
 
