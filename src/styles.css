@@ -1630,23 +1630,23 @@ canvas {
 }
 
 /* Five Cats selection: decisions stay before combat and remain readable at a glance. */
-#menu.title-screen:has(#squadSelection) {
+#menu.title-screen.selecting {
   align-items: flex-start;
   padding-top: max(68px, 8vh);
   padding-bottom: 48px;
 }
-#menu.title-screen:has(#squadSelection) .title-content {
+#menu.title-screen.selecting .title-content {
   width: min(1180px, 88vw);
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   column-gap: 34px;
   align-items: start;
 }
-#menu.title-screen:has(#squadSelection) h1 {
+#menu.title-screen.selecting h1 {
   font-size: clamp(62px, 7vw, 104px);
   margin: 4px 0 16px;
 }
-#menu.title-screen:has(#squadSelection) #brief {
+#menu.title-screen.selecting #brief {
   grid-column: 1;
   margin-bottom: 18px;
 }
@@ -2015,18 +2015,18 @@ canvas {
 }
 
 @media (max-width: 900px), (max-height: 620px) {
-  #menu.title-screen:has(#squadSelection) {
+  #menu.title-screen.selecting {
     padding: 52px 3vw 30px;
   }
-  #menu.title-screen:has(#squadSelection) .title-content {
+  #menu.title-screen.selecting .title-content {
     width: 94vw;
     grid-template-columns: 170px minmax(0, 1fr);
     column-gap: 14px;
   }
-  #menu.title-screen:has(#squadSelection) h1 {
+  #menu.title-screen.selecting h1 {
     font-size: 52px;
   }
-  #menu.title-screen:has(#squadSelection) #brief {
+  #menu.title-screen.selecting #brief {
     font-size: 10px;
     margin-bottom: 10px;
   }
@@ -2075,28 +2075,28 @@ canvas {
     width: 16px;
     height: 16px;
   }
-  #menu.title-screen:has(#squadSelection) .title-actions {
+  #menu.title-screen.selecting .title-actions {
     gap: 5px;
   }
-  #menu.title-screen:has(#squadSelection) .title-actions .primary {
+  #menu.title-screen.selecting .title-actions .primary {
     padding: 11px 15px;
   }
-  #menu.title-screen:has(#squadSelection) .title-help {
+  #menu.title-screen.selecting .title-help {
     margin-top: 5px;
   }
 }
 
 @media (max-aspect-ratio: 1/1) {
-  #menu.title-screen:has(#squadSelection) {
+  #menu.title-screen.selecting {
     padding: 70px 5vw 50px;
     align-items: flex-start;
   }
-  #menu.title-screen:has(#squadSelection) .title-content {
+  #menu.title-screen.selecting .title-content {
     display: block;
     width: 90vw;
     text-align: left;
   }
-  #menu.title-screen:has(#squadSelection) h1 {
+  #menu.title-screen.selecting h1 {
     font-size: 64px;
   }
   #squadSelection {
