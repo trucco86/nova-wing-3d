@@ -12,7 +12,7 @@ _Captura real do jogo em teste de navegador. Os diagramas abaixo explicam a arqu
 
 ## 🎮 O jogo
 
-Bia, Bob e Christopher enfrentam a frota de máquinas de Marvin. Cada piloto representa uma das três vidas da campanha. A nave avança automaticamente; você controla a posição, desvia dos obstáculos, administra o impulso e escolhe quando carregar plasma, lançar pods ou gastar uma bomba.
+Na web, Bia, Jenifer, Christopher, Bob e Calvinho enfrentam a frota de máquinas de Marvin; escolha seu piloto antes da campanha. Cada partida começa com três vidas. A nave avança automaticamente; você controla a posição, desvia dos obstáculos, administra o impulso e escolhe quando carregar plasma, lançar pods ou gastar uma bomba.
 
 - **Dez setores**, cada um com ambiente, chefe e subchefe próprios.
 - **Chefes biomecânicos** com dois geradores destrutíveis, núcleo protegido e três etapas de combate.
@@ -312,9 +312,20 @@ Veja [notas 1.10.0](releases/v1.10.0.md).
 
 ### Web 1.11.0 — esquadrão Five Cats
 
-Antes de uma nova campanha, escolha entre **Bia, Bob, Christopher, Calvin e Antônio**.
+Antes de uma nova campanha, escolha entre **Bia, Jenifer, Christopher, Bob e Calvinho**.
 Cada piloto mostra ataque, defesa, agilidade, força, vida e espírito, além de um bônus
 de especialidade aplicado ao combate. Também é possível combinar três chassis —
 NOVA-7, SPECTER-X e AEGIS-R — com cinco cores-base. A galeria da tela apresenta as
 famílias de tiro, armaduras, bombas e especiais antes do voo. A escolha acompanha o
 checkpoint local. Veja [notas 1.11.0](releases/v1.11.0.md).
+
+### Web 1.12.0 — Five Cats: capa e voo de vitória
+
+Capa ilustrada com os cinco gatos e Marvin, sem a ficha de configuração sobre a arte.
+**PILOTO E NAVE** abre a seleção de personagem, modelo e cor. INICIAR MISSÃO permite
+voar imediatamente com a configuração atual. Christopher assume o perfil pesado;
+Jenifer é a interceptadora cinza e Calvinho mantém seu perfil espiritual.
+
+Chefes se aproximam durante três segundos. Na web, continue pilotando, usando boost
+e atirando durante o colapso; após oito segundos o hangar abre normalmente. Marvin
+permanece no setor dez, com rosto de pitbull integrado à fortaleza.
