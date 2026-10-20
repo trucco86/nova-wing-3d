@@ -5,8 +5,7 @@ export const PILOT_PROFILES = [
     role: 'COMANDANTE VANGUARDA',
     specialty: 'attack',
     skill: 'Sobrecarga',
-    description:
-      'Potência ofensiva e tiros carregados. Ideal para abrir pontos fracos rapidamente.',
+    description: 'A gatinha preta que lidera o esquadrão. Potência ofensiva e tiros carregados.',
     color: '#67ffe0',
     stats: { attack: 5, defense: 3, agility: 4, force: 4, vitality: 3, spirit: 2 },
     bonuses: { damage: 1.12, shield: 1, speed: 1.04, arcana: 1, bomb: 1.08 },
@@ -18,7 +17,7 @@ export const PILOT_PROFILES = [
     specialty: 'defense',
     skill: 'Muralha orbital',
     description:
-      'Escudo e vida superiores para sobreviver a zonas de risco e combates prolongados.',
+      'Gato preto, um pouco menor que Christopher. Escudo e vida para combates prolongados.',
     color: '#77b8ff',
     stats: { attack: 3, defense: 5, agility: 2, force: 4, vitality: 5, spirit: 2 },
     bonuses: { damage: 1, shield: 1.22, speed: 0.96, arcana: 1, bomb: 1.05 },
@@ -26,35 +25,37 @@ export const PILOT_PROFILES = [
   {
     id: 'christopher',
     name: 'CHRISTOPHER',
-    role: 'INTERCEPTADOR',
+    role: 'ARTILHEIRO PESADO',
     specialty: 'attack',
-    skill: 'Instinto de caça',
-    description: 'Agilidade e cadência para reposicionamento, perseguição e combate veloz.',
+    skill: 'Impacto gravitacional',
+    description: 'O maior e mais forte dos gatos. Casco resistente e bombas de alto impacto.',
     color: '#ffbf5e',
-    stats: { attack: 4, defense: 2, agility: 5, force: 3, vitality: 3, spirit: 3 },
-    bonuses: { damage: 1.06, shield: 0.96, speed: 1.14, arcana: 1.05, bomb: 1 },
+    stats: { attack: 4, defense: 4, agility: 2, force: 5, vitality: 4, spirit: 2 },
+    bonuses: { damage: 1.08, shield: 1.08, speed: 0.94, arcana: 0.96, bomb: 1.35 },
   },
   {
     id: 'calvin',
-    name: 'CALVIN',
+    name: 'CALVINHO',
     role: 'MÍSTICO DO VAZIO',
     specialty: 'spirit',
     skill: 'Fluxo arcano',
-    description: 'Recarga espiritual acelerada e maior domínio de especiais elementais.',
+    description:
+      'Pequeno e com pouco pelo. Recarga espiritual acelerada para dominar os especiais.',
     color: '#c28aff',
     stats: { attack: 3, defense: 2, agility: 3, force: 2, vitality: 3, spirit: 5 },
     bonuses: { damage: 1, shield: 1, speed: 1.02, arcana: 1.28, bomb: 1.12 },
   },
   {
-    id: 'antonio',
-    name: 'ANTÔNIO',
-    role: 'ARTILHEIRO PESADO',
+    id: 'jenifer',
+    name: 'JENIFER',
+    role: 'INTERCEPTADORA',
     specialty: 'attack',
-    skill: 'Impacto gravitacional',
-    description: 'Força máxima, bombas mais potentes e alto dano por disparo.',
+    skill: 'Instinto de caça',
+    description:
+      'Gata cinza do tamanho da Bia. Ágil para perseguir alvos e escapar do fogo inimigo.',
     color: '#ff718f',
-    stats: { attack: 4, defense: 4, agility: 2, force: 5, vitality: 4, spirit: 2 },
-    bonuses: { damage: 1.08, shield: 1.08, speed: 0.94, arcana: 0.96, bomb: 1.35 },
+    stats: { attack: 4, defense: 2, agility: 5, force: 3, vitality: 3, spirit: 3 },
+    bonuses: { damage: 1.06, shield: 0.96, speed: 1.14, arcana: 1.05, bomb: 1 },
   },
 ];
 
@@ -91,7 +92,9 @@ export const SHIP_COLORS = [
 ];
 
 export function readPilotLoadout(value) {
-  const pilot = PILOT_PROFILES.some((p) => p.id === value?.pilot) ? value.pilot : 'bia';
+  // Preserve checkpoints created before the corrected roster.
+  const pilotId = value?.pilot === 'antonio' ? 'christopher' : value?.pilot;
+  const pilot = PILOT_PROFILES.some((p) => p.id === pilotId) ? pilotId : 'bia';
   const ship = SHIP_MODELS.some((p) => p.id === value?.ship) ? value.ship : 'nova7';
   const color = SHIP_COLORS.some((entry) => entry.id === value?.color) ? value.color : 'polar';
   return { pilot, ship, color };
