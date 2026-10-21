@@ -244,7 +244,13 @@ export function installShowroom({
     setAuto(!reduced.matches);
     sync();
   });
-  const observer = new window.MutationObserver(sync);
+  let menuVisible = document.body.classList.contains('menu');
+  const observer = new window.MutationObserver((records) => {
+    const visible = document.body.classList.contains('menu');
+    const changed = visible !== menuVisible || records.some((record) => record.target === root);
+    menuVisible = visible;
+    if (changed) sync();
+  });
   observer.observe(root, {
     attributes: true,
     attributeFilter: ['hidden', 'data-pilot', 'data-ship', 'data-ship-color'],

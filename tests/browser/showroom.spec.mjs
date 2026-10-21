@@ -4,6 +4,16 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   page,
 }, info) => {
   test.setTimeout(120000);
+  await page.addInitScript(() => {
+    window.hangarDraws = 0;
+    for (const name of ['drawElements', 'drawArrays']) {
+      const original = WebGL2RenderingContext.prototype[name];
+      WebGL2RenderingContext.prototype[name] = function (...args) {
+        if (this.canvas.id === 'hangarCanvas') window.hangarDraws++;
+        return original.apply(this, args);
+      };
+    }
+  });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -22,6 +32,11 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   const canvas = page.locator('#hangarCanvas');
   await expect(canvas).toHaveAttribute('data-model', 'nova7');
   await expect(page.locator('#hangarAuto')).toHaveAttribute('aria-pressed', 'false');
+  // Observe a settled static scene long enough to catch a render loop or body mutations.
+  await page.waitForTimeout(200);
+  const staticDraws = await page.evaluate(() => window.hangarDraws);
+  await page.waitForTimeout(250);
+  expect(await page.evaluate(() => window.hangarDraws)).toBe(staticDraws);
   const portrait = await page
     .locator('#profileAvatar')
     .evaluate((e) => getComputedStyle(e).backgroundImage);
