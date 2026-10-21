@@ -38,7 +38,6 @@ test('city remains present after one full scenery wrap and reset', () => {
   world.update(0.1, 0.1, 48, true);
 });
 
-
 test('NOVA-7 has a sealed, symmetric forward fuselage in gameplay and hangar', () => {
   const ship = fighter();
   const fuselage = ship.getObjectByName('ship-fuselage');
@@ -50,7 +49,10 @@ test('NOVA-7 has a sealed, symmetric forward fuselage in gameplay and hangar', (
   assert.ok(profile.every((point, i) => i === 0 || point.y > profile[i - 1].y));
   assert.ok(profile.every((point, i) => i === 0 || point.x <= profile[i - 1].x));
   assert.ok(Math.abs(fuselage.rotation.x + Math.PI / 2) < 0.001);
-  assert.equal(ship.children.some((o) => o.geometry?.type === 'ConeGeometry' && o.position.z < -3), false);
+  assert.equal(
+    ship.children.some((o) => o.geometry?.type === 'ConeGeometry' && o.position.z < -3),
+    false,
+  );
 });
 
 test('NOVA-7 fuselage has one forward contour, shared by gameplay and hangar', () => {
@@ -59,7 +61,9 @@ test('NOVA-7 fuselage has one forward contour, shared by gameplay and hangar', (
   assert.ok(hull?.isMesh, 'single fuselage mesh is present');
   assert.equal(hull.geometry.type, 'LatheGeometry');
   assert.equal(
-    ship.children.filter((child) => child.geometry?.type === 'ConeGeometry' && child.position.z < -2).length,
+    ship.children.filter(
+      (child) => child.geometry?.type === 'ConeGeometry' && child.position.z < -2,
+    ).length,
     0,
     'no separate mismatched four-sided nose remains',
   );

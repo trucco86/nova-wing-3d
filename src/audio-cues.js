@@ -59,8 +59,7 @@ export function createAudioCues(context) {
 
   function play(name, { enabled = true, active = true } = {}) {
     const cue = AUDIO_CUES[name];
-    if (!cue || destroyed || !enabled || !active || context.state === 'suspended')
-      return false;
+    if (!cue || destroyed || !enabled || !active || context.state === 'suspended') return false;
     const now = context.currentTime;
     if (now - (lastPlayed.get(name) ?? -Infinity) < cue.cooldown) return false;
     if (voices.size + cue.tones.length > LIMIT) return false;

@@ -5,10 +5,12 @@ export const PET_ITEMS = [
   { id: 'litter', name: 'AREIA', care: 'hygiene', points: 15, color: '#bca1e9' },
 ];
 export function readPetCare(raw) {
-  return Object.fromEntries(PET_ITEMS.map(({ id }) => {
-    const value = raw?.[id];
-    return [id, Number.isSafeInteger(value) && value >= 0 ? Math.min(999, value) : 0];
-  }));
+  return Object.fromEntries(
+    PET_ITEMS.map(({ id }) => {
+      const value = raw?.[id];
+      return [id, Number.isSafeInteger(value) && value >= 0 ? Math.min(999, value) : 0];
+    }),
+  );
 }
 export function collectPetItem(raw, id) {
   const item = PET_ITEMS.find((entry) => entry.id === id);

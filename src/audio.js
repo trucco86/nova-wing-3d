@@ -145,7 +145,11 @@ export function createMusic(context) {
       silence();
       sector = Math.max(0, Math.min(9, index));
       mode =
-        typeof mood === 'string' && (MUSIC_MODES.includes(mood) || mood === 'menu') ? mood : mood ? 'boss' : 'sector';
+        typeof mood === 'string' && (MUSIC_MODES.includes(mood) || mood === 'menu')
+          ? mood
+          : mood
+            ? 'boss'
+            : 'sector';
       step = 0;
       remaining = 0;
       playing = true;

@@ -2507,9 +2507,7 @@ export function createGame({
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
-      cinematic: cinematic
-        ? { elapsed: cinematic.elapsed, duration: cinematic.duration }
-        : null,
+      cinematic: cinematic ? { elapsed: cinematic.elapsed, duration: cinematic.duration } : null,
       loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
       sector: sectorIndex + 1,
       lives,

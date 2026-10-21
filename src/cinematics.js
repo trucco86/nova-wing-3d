@@ -1,10 +1,22 @@
 // Captions, cutscene progression and timing are independent of rendering.
 export const CINEMATICS = {
   intro: [
-    { time: 0, speaker: 'NARRADOR', text: 'Em algum lugar entre as estrelas, a paz dos Five Cats foi interrompida.' },
-    { time: 4, speaker: 'NARRADOR', text: 'Marvin roubou os suprimentos dos gatos e fugiu para o espaço profundo.' },
+    {
+      time: 0,
+      speaker: 'NARRADOR',
+      text: 'Em algum lugar entre as estrelas, a paz dos Five Cats foi interrompida.',
+    },
+    {
+      time: 4,
+      speaker: 'NARRADOR',
+      text: 'Marvin roubou os suprimentos dos gatos e fugiu para o espaço profundo.',
+    },
     { time: 8, speaker: 'BIA', text: 'Preparem as naves. Vamos recuperar tudo o que ele roubou.' },
-    { time: 12, speaker: 'NARRADOR', text: 'A perseguição irá até a galáxia mais distante. Marvin não vai escapar.' },
+    {
+      time: 12,
+      speaker: 'NARRADOR',
+      text: 'A perseguição irá até a galáxia mais distante. Marvin não vai escapar.',
+    },
   ],
   campaign: [
     { time: 0, speaker: 'BIA', text: 'Five Cats, todos a postos. Temos um rastro para seguir.' },

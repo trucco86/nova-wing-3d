@@ -17,10 +17,14 @@ test('pet care pickups update score, HUD and a compatible checkpoint', (t) => {
   assert.match(h.elements.get('petCareHud').textContent, /LATINHA 1/);
   const items = [];
   const storage = {
-    setItem(_, json) { items.push(json); },
-    getItem() { return items.at(-1) ?? null; },
+    setItem(_, json) {
+      items.push(json);
+    },
+    getItem() {
+      return items.at(-1) ?? null;
+    },
   };
-  const expected = {sector:1,credits:25,weapon:0,armor:0,pods:0,petCare:snap.petCare};
+  const expected = { sector: 1, credits: 25, weapon: 0, armor: 0, pods: 0, petCare: snap.petCare };
   assert.equal(writeSave(storage, expected), true);
   assert.deepEqual(readSave(storage).petCare, snap.petCare);
 });
@@ -31,8 +35,8 @@ test('shield warning becomes visible on severe damage and clears on new mission'
   h.game.start();
   h.advance(3.1);
   h.game.damage(80);
-  assert.equal(h.game.snapshot().shield,20);
-  assert.equal(h.elements.get('criticalWarning').hidden,false);
+  assert.equal(h.game.snapshot().shield, 20);
+  assert.equal(h.elements.get('criticalWarning').hidden, false);
   h.game.start();
-  assert.equal(h.elements.get('criticalWarning').hidden,true);
+  assert.equal(h.elements.get('criticalWarning').hidden, true);
 });
