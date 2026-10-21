@@ -9,3 +9,6 @@
 - Validar testes de regressão, build, gates e capturas desktop/celular.
 
 - Usar a capa aprovada em 20/10: Marvin marrom e branco, atlético, focinho rosado e olhos mel esverdeados.
+
+- A fixture de navegador deve incorporar a mesma capa do build, sem marcadores BUILD restantes nem erros de recurso.
+- A seleção conserva todas as assertions e duas capturas; orçamento de 60 segundos no CI, pois as capturas consumiram mais de 20 segundos no runner por software.

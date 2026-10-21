@@ -3,6 +3,8 @@ import { test, expect } from '@playwright/test';
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
 }, info) => {
+  // Two screenshots took over 20s on the software-rendered CI runner.
+  test.setTimeout(60000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
