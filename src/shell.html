@@ -331,7 +331,14 @@
           <small>ENTER, ESPAÇO OU ESC PARA PULAR</small>
         </div>
       </section>
-      <section id="pauseMenu" class="nw-modal" role="dialog" aria-modal="true" aria-label="Pausa da missão" hidden>
+      <section
+        id="pauseMenu"
+        class="nw-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Pausa da missão"
+        hidden
+      >
         <div class="nw-modal-card">
           <span class="eyebrow">FIVE CATS / MISSÃO</span>
           <h2 id="pauseTitle">MISSÃO PAUSADA</h2>
@@ -351,23 +358,69 @@
           </div>
         </div>
       </section>
-      <section id="settingsMenu" class="nw-modal" role="dialog" aria-modal="true" aria-label="Configurações" hidden>
+      <section
+        id="settingsMenu"
+        class="nw-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Configurações"
+        hidden
+      >
         <div class="nw-modal-card nw-settings-card">
           <h2 id="settingsTitle">OPÇÕES</h2>
           <div class="nw-settings-grid">
-            <label><span id="labelLanguage">IDIOMA</span>
-              <select id="settingLanguage"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option></select></label>
-            <label><span id="labelMaster">VOLUME GERAL</span><input id="settingMaster" type="range" min="0" max="1" step="0.05" value="0.85"/></label>
-            <label><span id="labelMusic">MÚSICA</span><input id="settingMusic" type="range" min="0" max="1" step="0.05" value="0.7"/></label>
-            <label><span id="labelSfx">EFEITOS</span><input id="settingSfx" type="range" min="0" max="1" step="0.05" value="0.75"/></label>
-            <label><span id="labelSensitivity">SENSIBILIDADE DO TOQUE</span><input id="settingSensitivity" type="range" min="0.6" max="1.6" step="0.1" value="1"/></label>
-            <label><span id="labelOpacity">OPACIDADE DOS BOTÕES</span><input id="settingOpacity" type="range" min="0.4" max="1" step="0.05" value="0.9"/></label>
-            <label class="nw-setting-check"><input id="settingSubtitles" type="checkbox" checked/><span id="labelSubtitles">LEGENDAS</span></label>
-            <label class="nw-setting-check"><input id="settingIntro" type="checkbox" checked/><span id="labelIntro">ABERTURA AUTOMÁTICA</span></label>
-            <label class="nw-setting-check"><input id="settingVibration" type="checkbox"/><span id="labelVibration">VIBRAÇÃO</span></label>
-            <label class="nw-setting-check"><input id="settingLeftHanded" type="checkbox"/><span id="labelLeftHanded">CONTROLES PARA CANHOTOS</span></label>
+            <label
+              ><span id="labelLanguage">IDIOMA</span>
+              <select id="settingLanguage">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select></label
+            >
+            <label
+              ><span id="labelMaster">VOLUME GERAL</span
+              ><input id="settingMaster" type="range" min="0" max="1" step="0.05" value="0.85"
+            /></label>
+            <label
+              ><span id="labelMusic">MÚSICA</span
+              ><input id="settingMusic" type="range" min="0" max="1" step="0.05" value="0.7"
+            /></label>
+            <label
+              ><span id="labelSfx">EFEITOS</span
+              ><input id="settingSfx" type="range" min="0" max="1" step="0.05" value="0.75"
+            /></label>
+            <label
+              ><span id="labelSensitivity">SENSIBILIDADE DO TOQUE</span
+              ><input id="settingSensitivity" type="range" min="0.6" max="1.6" step="0.1" value="1"
+            /></label>
+            <label
+              ><span id="labelOpacity">OPACIDADE DOS BOTÕES</span
+              ><input id="settingOpacity" type="range" min="0.4" max="1" step="0.05" value="0.9"
+            /></label>
+            <label class="nw-setting-check"
+              ><input id="settingSubtitles" type="checkbox" checked /><span id="labelSubtitles"
+                >LEGENDAS</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingIntro" type="checkbox" checked /><span id="labelIntro"
+                >ABERTURA AUTOMÁTICA</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingVibration" type="checkbox" /><span id="labelVibration"
+                >VIBRAÇÃO</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingLeftHanded" type="checkbox" /><span id="labelLeftHanded"
+                >CONTROLES PARA CANHOTOS</span
+              ></label
+            >
           </div>
-          <div class="nw-modal-actions"><button id="settingsClose" class="primary">FECHAR</button></div>
+          <div class="nw-modal-actions">
+            <button id="settingsClose" class="primary">FECHAR</button>
+          </div>
         </div>
       </section>
       <div id="sectorTag">

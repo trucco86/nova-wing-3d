@@ -3141,8 +3141,12 @@ body:not(.menu) #menu::after {
 body.in-mission .brand-mini,
 body.in-mission #petCareHud,
 body.in-mission .utilities #music,
-body.in-mission .utilities #sound { display: none !important; }
-body.in-mission .status { padding-top: 3px; }
+body.in-mission .utilities #sound {
+  display: none !important;
+}
+body.in-mission .status {
+  padding-top: 3px;
+}
 body.in-mission .mission .eyebrow,
 body.in-mission .mission strong {
   opacity: 0;
@@ -3150,28 +3154,67 @@ body.in-mission .mission strong {
   pointer-events: none;
 }
 body.in-mission.stage-intro .mission .eyebrow,
-body.in-mission.stage-intro .mission strong { opacity: 1; }
-body.in-mission .mission { padding-top: 0; }
-body.in-mission .mission .route { margin-top: 6px; }
-body.in-mission #loadout small { display: none; }
-body.in-mission .utilities #pause { min-width: 42px; min-height: 42px; pointer-events: auto; }
-body.in-mission #tacticalPanel { top: 136px; right: 14px; width: 84px; }
-body.in-mission #battleRadar { width: 60px; height: 60px; }
-body.in-mission #battleRadar b { left: 24px; top: 22px; }
-body.in-mission #tacticState { font-size: 9px; overflow-wrap: anywhere; }
-body.left-handed #stick { right: 22px; left: auto; }
-body.left-handed #touch .actions { left: 22px; right: auto; }
-body.left-handed .actions { order: -1; }
-body.left-handed #touch { flex-direction: row-reverse; }
+body.in-mission.stage-intro .mission strong {
+  opacity: 1;
+}
+body.in-mission .mission {
+  padding-top: 0;
+}
+body.in-mission .mission .route {
+  margin-top: 6px;
+}
+body.in-mission #loadout small {
+  display: none;
+}
+body.in-mission .utilities #pause {
+  min-width: 42px;
+  min-height: 42px;
+  pointer-events: auto;
+}
+body.in-mission #tacticalPanel {
+  top: 136px;
+  right: 14px;
+  width: 84px;
+}
+body.in-mission #battleRadar {
+  width: 60px;
+  height: 60px;
+}
+body.in-mission #battleRadar b {
+  left: 24px;
+  top: 22px;
+}
+body.in-mission #tacticState {
+  font-size: 9px;
+  overflow-wrap: anywhere;
+}
+body.left-handed #stick {
+  right: 22px;
+  left: auto;
+}
+body.left-handed #touch .actions {
+  left: 22px;
+  right: auto;
+}
+body.left-handed .actions {
+  order: -1;
+}
+body.left-handed #touch {
+  flex-direction: row-reverse;
+}
 #cinematic .cinematic-space::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #020912d9, #02091259 58%, #0209128c), var(--cover-art) center/cover no-repeat;
+  background:
+    linear-gradient(90deg, #020912d9, #02091259 58%, #0209128c),
+    var(--cover-art) center/cover no-repeat;
   opacity: 0.45;
 }
 #cinematic.hide-subtitles #cinematicCaption,
-#cinematic.hide-subtitles #cinematicSpeaker { display: none; }
+#cinematic.hide-subtitles #cinematicSpeaker {
+  display: none;
+}
 .nw-modal {
   position: fixed;
   inset: 0;
@@ -3186,7 +3229,9 @@ body.left-handed #touch { flex-direction: row-reverse; }
   pointer-events: auto;
   overflow-y: auto;
 }
-#settingsMenu { z-index: 120; }
+#settingsMenu {
+  z-index: 120;
+}
 .nw-modal-card {
   width: min(420px, 100%);
   max-height: calc(100dvh - 32px);
@@ -3198,10 +3243,22 @@ body.left-handed #touch { flex-direction: row-reverse; }
   box-shadow: 0 20px 80px #0009;
   color: #e4f8fa;
 }
-.nw-modal-card h2 { margin: 6px 0 16px; letter-spacing: 2px; font-size: 24px; }
-.nw-modal-card p { line-height: 1.55; }
-.nw-care { font-size: 11px; color: #a0bdc7; }
-.nw-modal-actions { display: grid; gap: 10px; }
+.nw-modal-card h2 {
+  margin: 6px 0 16px;
+  letter-spacing: 2px;
+  font-size: 24px;
+}
+.nw-modal-card p {
+  line-height: 1.55;
+}
+.nw-care {
+  font-size: 11px;
+  color: #a0bdc7;
+}
+.nw-modal-actions {
+  display: grid;
+  gap: 10px;
+}
 .nw-modal button {
   border: 1px solid #579da8;
   border-radius: 7px;
@@ -3210,35 +3267,122 @@ body.left-handed #touch { flex-direction: row-reverse; }
   font-size: 12px;
   letter-spacing: 1px;
 }
-.nw-modal button.primary { background: #62d9cb; color: #061721; font-weight: 800; border-color: #92f6e5; }
-.nw-confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-.nw-settings-card { width: min(570px, 100%); }
-.nw-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 20px; margin: 14px 0 20px; }
-.nw-settings-grid label { display: flex; flex-direction: column; gap: 8px; font-size: 11px; color: #a9d1d2; letter-spacing: 0.6px; }
-.nw-settings-grid input[type=range] { width: 100%; cursor: pointer; accent-color: #70ffe1; }
-.nw-settings-grid select { width: 100%; color: #e1f7fa; background: #123140; padding: 10px; border: 1px solid #569b9f; border-radius: 6px; }
-.nw-settings-grid .nw-setting-check { flex-direction: row; align-items: center; gap: 9px; }
-.nw-setting-check input { width: 18px; height: 18px; accent-color: #70ffe1; }
+.nw-modal button.primary {
+  background: #62d9cb;
+  color: #061721;
+  font-weight: 800;
+  border-color: #92f6e5;
+}
+.nw-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+.nw-settings-card {
+  width: min(570px, 100%);
+}
+.nw-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 20px;
+  margin: 14px 0 20px;
+}
+.nw-settings-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 11px;
+  color: #a9d1d2;
+  letter-spacing: 0.6px;
+}
+.nw-settings-grid input[type='range'] {
+  width: 100%;
+  cursor: pointer;
+  accent-color: #70ffe1;
+}
+.nw-settings-grid select {
+  width: 100%;
+  color: #e1f7fa;
+  background: #123140;
+  padding: 10px;
+  border: 1px solid #569b9f;
+  border-radius: 6px;
+}
+.nw-settings-grid .nw-setting-check {
+  flex-direction: row;
+  align-items: center;
+  gap: 9px;
+}
+.nw-setting-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: #70ffe1;
+}
 @media (pointer: coarse) {
-  body.in-mission .mission { width: min(25vw, 170px); }
-  body.in-mission #tacticalPanel { top: 110px; right: 8px; width: 70px; font-size: 8px; }
-  body.in-mission #battleRadar { width: 54px; height: 54px; }
-  body.in-mission #battleRadar b { left: 21px; top: 19px; }
-  body.in-mission #tacticState { display: none; }
-  body.in-mission #loadout > span { display: none; }
-  body.in-mission .status-caption { display: none; }
-  body.in-mission .status { width: min(40vw, 205px); }
-  body.in-mission .mission strong { font-size: 10px; }
+  body.in-mission .mission {
+    width: min(25vw, 170px);
+  }
+  body.in-mission #tacticalPanel {
+    top: 110px;
+    right: 8px;
+    width: 70px;
+    font-size: 8px;
+  }
+  body.in-mission #battleRadar {
+    width: 54px;
+    height: 54px;
+  }
+  body.in-mission #battleRadar b {
+    left: 21px;
+    top: 19px;
+  }
+  body.in-mission #tacticState {
+    display: none;
+  }
+  body.in-mission #loadout > span {
+    display: none;
+  }
+  body.in-mission .status-caption {
+    display: none;
+  }
+  body.in-mission .status {
+    width: min(40vw, 205px);
+  }
+  body.in-mission .mission strong {
+    font-size: 10px;
+  }
 }
 @media (max-width: 550px) {
-  .nw-settings-grid { grid-template-columns: 1fr; gap: 11px; }
-  .nw-modal-card { padding: 18px; }
-  body.in-mission .mission { position: absolute; top: 73px; left: 36%; width: 45%; }
-  body.in-mission .rightHUD { align-items: flex-end; }
-  body.in-mission .score b { font-size: 30px; }
-  body.in-mission #tacticalPanel { top: 155px; }
+  .nw-settings-grid {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+  .nw-modal-card {
+    padding: 18px;
+  }
+  body.in-mission .mission {
+    position: absolute;
+    top: 73px;
+    left: 36%;
+    width: 45%;
+  }
+  body.in-mission .rightHUD {
+    align-items: flex-end;
+  }
+  body.in-mission .score b {
+    font-size: 30px;
+  }
+  body.in-mission #tacticalPanel {
+    top: 155px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  body.in-mission .mission .eyebrow, body.in-mission .mission strong { transition: none; }
-  #cinematic .cinematic-space::before { animation: none; }
+  body.in-mission .mission .eyebrow,
+  body.in-mission .mission strong {
+    transition: none;
+  }
+  #cinematic .cinematic-space::before {
+    animation: none;
+  }
 }

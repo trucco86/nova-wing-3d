@@ -112,7 +112,9 @@ export function createAudioCues(context) {
   }
   return {
     play,
-    setVolume(level) { output.gain.value = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 1; },
+    setVolume(level) {
+      output.gain.value = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 1;
+    },
     destroy,
     snapshot: () => ({ voices: voices.size, destroyed }),
   };

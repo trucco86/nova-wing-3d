@@ -737,9 +737,16 @@ export function createGame({
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     syncPods();
     sectorStart = {
-      sector: sectorIndex, credits, weapon, armor, pods: podCount, score,
+      sector: sectorIndex,
+      credits,
+      weapon,
+      armor,
+      pods: podCount,
+      score,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
-      loadout: { ...pilotLoadout }, strategy: { ...strategy }, petCare: { ...petCare },
+      loadout: { ...pilotLoadout },
+      strategy: { ...strategy },
+      petCare: { ...petCare },
     };
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
@@ -1359,8 +1366,10 @@ export function createGame({
       $('pauseActions').hidden = false;
       confirmation = null;
       $('pause').textContent = '▶';
-      $('pauseCare').textContent = PET_ITEMS.map(({id,name})=>name+' '+petCare[id]).join(' · ');
-      $('pauseResume').focus?.({preventScroll:true});
+      $('pauseCare').textContent = PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(
+        ' · ',
+      );
+      $('pauseResume').focus?.({ preventScroll: true });
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
@@ -1368,16 +1377,18 @@ export function createGame({
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');
       music?.resume();
-      $('game').focus?.({preventScroll:true});
+      $('game').focus?.({ preventScroll: true });
     }
   }
   function requestPauseAction(kind) {
-    if (state !== 'paused' || !['restart','exit'].includes(kind)) return;
+    if (state !== 'paused' || !['restart', 'exit'].includes(kind)) return;
     confirmation = kind;
     $('pauseActions').hidden = true;
     $('pauseConfirmPanel').hidden = false;
-    $('pauseConfirmText').textContent =
-      uiText(settings.language,kind === 'restart' ? 'confirmRestart' : 'confirmExit');
+    $('pauseConfirmText').textContent = uiText(
+      settings.language,
+      kind === 'restart' ? 'confirmRestart' : 'confirmExit',
+    );
   }
   function exitToMenu() {
     if (state !== 'paused') return;
@@ -1389,14 +1400,24 @@ export function createGame({
     confirmation = null;
     settingsOpen = false;
     stageIntroTime = 0;
-    document.body.classList.remove('in-mission','stage-intro');
+    document.body.classList.remove('in-mission', 'stage-intro');
     document.body.classList.add('menu');
-    for(const id of ['pauseMenu','pauseConfirmPanel','settingsMenu','cinematic',
-      'arcadePanel','shop','result','bossHUD','subHUD']) $(id).hidden = true;
+    for (const id of [
+      'pauseMenu',
+      'pauseConfirmPanel',
+      'settingsMenu',
+      'cinematic',
+      'arcadePanel',
+      'shop',
+      'result',
+      'bossHUD',
+      'subHUD',
+    ])
+      $(id).hidden = true;
     $('menu').hidden = false;
     $('continue').hidden = !readSave(storage);
-    $('pause').textContent='Ⅱ';
-    $('start').focus?.({preventScroll:true});
+    $('pause').textContent = 'Ⅱ';
+    $('start').focus?.({ preventScroll: true });
   }
   function confirmPauseAction() {
     if (!confirmation || state !== 'paused') return;
@@ -1404,52 +1425,82 @@ export function createGame({
     confirmation = null;
     $('pauseConfirmPanel').hidden = true;
     if (action === 'exit') exitToMenu();
-    else start(false, sectorStart ? {
-      ...sectorStart, cosmetics: { ...sectorStart.cosmetics, owned: [...sectorStart.cosmetics.owned] },
-      loadout: { ...sectorStart.loadout }, strategy: { ...sectorStart.strategy },
-      petCare: { ...sectorStart.petCare },
-    } : null);
+    else
+      start(
+        false,
+        sectorStart
+          ? {
+              ...sectorStart,
+              cosmetics: { ...sectorStart.cosmetics, owned: [...sectorStart.cosmetics.owned] },
+              loadout: { ...sectorStart.loadout },
+              strategy: { ...sectorStart.strategy },
+              petCare: { ...sectorStart.petCare },
+            }
+          : null,
+      );
   }
   function applySettings() {
-    const label=(id,key)=> { $(id).textContent=uiText(settings.language,key); };
-    for(const [id,key] of [
-      ['settingsTitle','options'],['labelLanguage','language'],['labelMaster','master'],
-      ['labelMusic','music'],['labelSfx','effects'],['labelSensitivity','sensitivity'],
-      ['labelOpacity','opacity'],['labelSubtitles','subtitles'],['labelIntro','intro'],
-      ['labelVibration','vibration'],['labelLeftHanded','leftHanded'],
-      ['pauseTitle','pause'],['pauseResume','resume'],['pauseRestart','restart'],
-      ['pauseExit','exit'],['pauseOptions','options'],['pauseConfirmCancel','cancel'],
-      ['pauseConfirmOk','confirm'],['settingsClose','close'],['optionsFromMenu','options']
-    ])label(id,key);
-    $('continue').textContent=uiText(settings.language,'continue')+' ↗';
-    $('watchIntro').textContent='▶ '+uiText(settings.language,'watch');
-    $('criticalWarning').textContent=uiText(settings.language,'critical');
-    for(const [key,id] of [
-      ['language','settingLanguage'],['master','settingMaster'],['music','settingMusic'],
-      ['sfx','settingSfx'],['sensitivity','settingSensitivity'],['opacity','settingOpacity'],
-      ['subtitles','settingSubtitles'],['intro','settingIntro'],['vibration','settingVibration'],
-      ['leftHanded','settingLeftHanded'],
+    const label = (id, key) => {
+      $(id).textContent = uiText(settings.language, key);
+    };
+    for (const [id, key] of [
+      ['settingsTitle', 'options'],
+      ['labelLanguage', 'language'],
+      ['labelMaster', 'master'],
+      ['labelMusic', 'music'],
+      ['labelSfx', 'effects'],
+      ['labelSensitivity', 'sensitivity'],
+      ['labelOpacity', 'opacity'],
+      ['labelSubtitles', 'subtitles'],
+      ['labelIntro', 'intro'],
+      ['labelVibration', 'vibration'],
+      ['labelLeftHanded', 'leftHanded'],
+      ['pauseTitle', 'pause'],
+      ['pauseResume', 'resume'],
+      ['pauseRestart', 'restart'],
+      ['pauseExit', 'exit'],
+      ['pauseOptions', 'options'],
+      ['pauseConfirmCancel', 'cancel'],
+      ['pauseConfirmOk', 'confirm'],
+      ['settingsClose', 'close'],
+      ['optionsFromMenu', 'options'],
+    ])
+      label(id, key);
+    $('continue').textContent = uiText(settings.language, 'continue') + ' ↗';
+    $('watchIntro').textContent = '▶ ' + uiText(settings.language, 'watch');
+    $('criticalWarning').textContent = uiText(settings.language, 'critical');
+    for (const [key, id] of [
+      ['language', 'settingLanguage'],
+      ['master', 'settingMaster'],
+      ['music', 'settingMusic'],
+      ['sfx', 'settingSfx'],
+      ['sensitivity', 'settingSensitivity'],
+      ['opacity', 'settingOpacity'],
+      ['subtitles', 'settingSubtitles'],
+      ['intro', 'settingIntro'],
+      ['vibration', 'settingVibration'],
+      ['leftHanded', 'settingLeftHanded'],
     ]) {
-      if(typeof settings[key]==='boolean') $(id).checked=settings[key];
-      else $(id).value=String(settings[key]);
+      if (typeof settings[key] === 'boolean') $(id).checked = settings[key];
+      else $(id).value = String(settings[key]);
     }
-    $('touch').style.opacity=String(settings.opacity);
-    document.body.classList[settings.leftHanded?'add':'remove']('left-handed');
-    $('cinematic').classList[settings.subtitles?'remove':'add']('hide-subtitles');
-    music?.setVolume(settings.master*settings.music);
-    audioCues?.setVolume(settings.master*settings.sfx);
+    $('touch').style.opacity = String(settings.opacity);
+    document.body.classList[settings.leftHanded ? 'add' : 'remove']('left-handed');
+    $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
+    music?.setVolume(settings.master * settings.music);
+    audioCues?.setVolume(settings.master * settings.sfx);
   }
   function openSettings() {
-    if(state!=='menu' && state!=='paused')return;
-    settingsOpen=true;
-    $('settingsMenu').hidden=false;
+    if (state !== 'menu' && state !== 'paused') return;
+    settingsOpen = true;
+    $('settingsMenu').hidden = false;
     applySettings();
-    $('settingLanguage').focus?.({preventScroll:true});
+    $('settingLanguage').focus?.({ preventScroll: true });
   }
   function closeSettings() {
-    settingsOpen=false;
-    $('settingsMenu').hidden=true;
-    (state==='paused' ? $('pauseResume') : $('optionsFromMenu')).focus?.({preventScroll:true});
+    settingsOpen = false;
+    $('settingsMenu').hidden = true;
+    (state === 'paused' ? $('pauseResume') : $('optionsFromMenu')).focus?.({ preventScroll: true });
   }
   function setActive(active) {
     if (appActive === active) return;
@@ -1510,7 +1561,7 @@ export function createGame({
     // stacking contexts otherwise intercept taps meant for the skip action.
     $('menu').hidden = true;
     $('cinematic').hidden = false;
-    $('cinematic').classList[settings.subtitles?'remove':'add']('hide-subtitles');
+    $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     $('cinematicSkip').focus?.({ preventScroll: true });
     updateCinematic();
   }
@@ -1527,7 +1578,7 @@ export function createGame({
     }
     $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
   }
-  $('start').onclick = () => settings.intro ? beginCinematic() : start();
+  $('start').onclick = () => (settings.intro ? beginCinematic() : start());
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
@@ -1544,17 +1595,30 @@ export function createGame({
     $('pauseActions').hidden = false;
   };
   $('pauseConfirmOk').onclick = confirmPauseAction;
-  for (const [key,id] of [
-    ['language','settingLanguage'],['master','settingMaster'],['music','settingMusic'],
-    ['sfx','settingSfx'],['sensitivity','settingSensitivity'],['opacity','settingOpacity'],
-    ['subtitles','settingSubtitles'],['intro','settingIntro'],['vibration','settingVibration'],
-    ['leftHanded','settingLeftHanded'],
+  for (const [key, id] of [
+    ['language', 'settingLanguage'],
+    ['master', 'settingMaster'],
+    ['music', 'settingMusic'],
+    ['sfx', 'settingSfx'],
+    ['sensitivity', 'settingSensitivity'],
+    ['opacity', 'settingOpacity'],
+    ['subtitles', 'settingSubtitles'],
+    ['intro', 'settingIntro'],
+    ['vibration', 'settingVibration'],
+    ['leftHanded', 'settingLeftHanded'],
   ]) {
     $(id).oninput = () => {
-      const el=$(id);
-      settings=readSettings({ ...settings, [key]: typeof settings[key]==='boolean'
-        ? !!el.checked : key==='language' ? el.value : Number(el.value) });
-      storeSettings(storage,settings);
+      const el = $(id);
+      settings = readSettings({
+        ...settings,
+        [key]:
+          typeof settings[key] === 'boolean'
+            ? !!el.checked
+            : key === 'language'
+              ? el.value
+              : Number(el.value),
+      });
+      storeSettings(storage, settings);
       applySettings();
     };
   }
@@ -1623,12 +1687,21 @@ export function createGame({
       return;
     }
     if (settingsOpen) {
-      if (e.code==='Escape') { e.preventDefault?.(); closeSettings(); }
+      if (e.code === 'Escape') {
+        e.preventDefault?.();
+        closeSettings();
+      }
       return;
     }
     if (confirmation) {
-      if (e.code==='Escape') { e.preventDefault?.(); $('pauseConfirmCancel').onclick(); }
-      if (e.code==='Enter') { e.preventDefault?.(); confirmPauseAction(); }
+      if (e.code === 'Escape') {
+        e.preventDefault?.();
+        $('pauseConfirmCancel').onclick();
+      }
+      if (e.code === 'Enter') {
+        e.preventDefault?.();
+        confirmPauseAction();
+      }
       return;
     }
     if (inFlight() && isGameKey(e)) e.preventDefault();
@@ -1697,8 +1770,8 @@ export function createGame({
       dx = e.clientX - r.left - r.width / 2,
       dy = e.clientY - r.top - r.height / 2,
       len = Math.max(r.width * 0.35, Math.hypot(dx, dy));
-    stick.x = clamp((dx / len)*settings.sensitivity,-1,1);
-    stick.y = clamp((-dy / len)*settings.sensitivity,-1,1);
+    stick.x = clamp((dx / len) * settings.sensitivity, -1, 1);
+    stick.y = clamp((-dy / len) * settings.sensitivity, -1, 1);
     $('nub').style.transform = `translate(${stick.x * 35}px,${-stick.y * 35}px)`;
   }
   $('stick').onpointerdown = (e) => {
@@ -2459,9 +2532,9 @@ export function createGame({
     if (!appActive) return;
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
-    if (state === 'playing' && stageIntroTime>0) {
-      stageIntroTime=Math.max(0,stageIntroTime-dt);
-      if(stageIntroTime===0)document.body.classList.remove('stage-intro');
+    if (state === 'playing' && stageIntroTime > 0) {
+      stageIntroTime = Math.max(0, stageIntroTime - dt);
+      if (stageIntroTime === 0) document.body.classList.remove('stage-intro');
     }
     if (['menu', 'playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) {
       if (state !== 'menu' || menuThemePlaying) music?.update(dt);
@@ -2654,7 +2727,7 @@ export function createGame({
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
-      stageTitleVisible: stageIntroTime>0,
+      stageTitleVisible: stageIntroTime > 0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
@@ -2752,9 +2825,9 @@ export function createGame({
     }),
     destroy() {
       running = false;
-      document.body.classList.remove('in-mission','stage-intro','left-handed');
-      $('pauseMenu').hidden=true;
-      $('settingsMenu').hidden=true;
+      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
+      $('pauseMenu').hidden = true;
+      $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
       cleanups.forEach((fn) => fn());

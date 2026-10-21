@@ -38,7 +38,6 @@ Os jobs **Android e iOS ficam desabilitados por padrão**. Não exigem contas de
 
 Quando for decidido retomar Android/iOS, a opção explícita de reativação do pipeline é a variável do repositório `NOVA_BUILD_NATIVE=true`, sujeita a nova revisão dos testes e configuração nativa. Não reative essa opção durante os ciclos de experimentação da versão web.
 
-
 ### Preparação da release v1.15
 
 Antes da revisão final, a branch recebe um commit sincronizado com formatação e o HTML
