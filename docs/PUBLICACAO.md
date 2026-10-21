@@ -37,3 +37,12 @@ O canal oficial está definido como `"releaseChannel": "web"` em `package.json`.
 Os jobs **Android e iOS ficam desabilitados por padrão**. Não exigem contas de desenvolvedor nas lojas, builds nativos, assinatura ou submissão para distribuir a web. Os projetos nativos são preservados para posterior adaptação, sem novas versões até a conclusão da experiência web.
 
 Quando for decidido retomar Android/iOS, a opção explícita de reativação do pipeline é a variável do repositório `NOVA_BUILD_NATIVE=true`, sujeita a nova revisão dos testes e configuração nativa. Não reative essa opção durante os ciclos de experimentação da versão web.
+
+
+### Preparação da release v1.15
+
+Antes da revisão final, a branch recebe um commit sincronizado com formatação e o HTML
+produzido por `npm run build`. A CI normal **continua somente leitura**: executa
+`npm run validate`, incluindo `format:check`, `build:check` e browser tests.
+O commit de sincronização não autoriza merge: a PR requer checks verdes no SHA
+final. Se a automação de preparação falhar, não publique uma versão com bundle antigo.
