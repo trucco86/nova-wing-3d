@@ -2902,6 +2902,35 @@ body:not(.menu) #menu::after {
   background: radial-gradient(ellipse at 70% 30%, #10283b, #030b16 75%);
 }
 
+.showroom-web #menu {
+  touch-action: pan-y;
+}
+.showroom-web .pilot-roster .cat-avatar {
+  display: block;
+  flex-shrink: 0;
+}
+.hangar-tools button:nth-child(-n + 4) {
+  font:
+    18px Arial,
+    sans-serif;
+  min-width: 38px;
+  min-height: 38px;
+}
+@media (max-width: 900px), (max-height: 620px) {
+  .showroom-web .pilot-choice {
+    flex-direction: column;
+    gap: 5px;
+  }
+  .showroom-web .pilot-choice span {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .showroom-web .profile-portrait .cat-avatar {
+    width: 48px;
+    height: 48px;
+  }
+}
+
     </style>
   </head>
   <body>

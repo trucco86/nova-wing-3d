@@ -16,6 +16,9 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
     .evaluate((e) => getComputedStyle(e, '::before').animationName);
   expect(cover).toBe('none');
   await page.locator('#prepareSquad').click();
+  for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
+    await expect(page.locator('#pilot-' + id + ' .cat-avatar')).toBeVisible();
+  }
   const canvas = page.locator('#hangarCanvas');
   await expect(canvas).toHaveAttribute('data-model', 'nova7');
   await expect(page.locator('#hangarAuto')).toHaveAttribute('aria-pressed', 'false');
