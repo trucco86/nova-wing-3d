@@ -1367,6 +1367,7 @@ export function createGame({
     cinematic = null;
     $('cinematic').hidden = true;
     if (playMission) start();
+    else $('menu').hidden = false;
   }
   function advanceCinematic(dt) {
     if (!cinematic) return;
@@ -1393,6 +1394,9 @@ export function createGame({
       duration: introDuration + cinematicDuration(CINEMATICS.campaign),
       playMission,
     };
+    // Hide the underlying hangar while the modal is active. Native safe-area
+    // stacking contexts otherwise intercept taps meant for the skip action.
+    $('menu').hidden = true;
     $('cinematic').hidden = false;
     $('cinematicSkip').focus?.({ preventScroll: true });
     updateCinematic();
