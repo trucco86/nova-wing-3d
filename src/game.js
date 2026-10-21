@@ -52,6 +52,7 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
+import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAudioCues } from './audio-cues.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
@@ -250,7 +251,11 @@ export function createGame({
     collapseBurst = 0,
     collapseFinal = false,
     pausedFrom = 'playing',
-    ringWave = 0;
+    ringWave = 0,
+    stageIntroTime = 0,
+    sectorStart = null,
+    confirmation = null,
+    settingsOpen = false;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -387,6 +392,7 @@ export function createGame({
   }
   let cosmetics = readCosmetics(null);
   let petCare = readPetCare(null);
+  let settings = loadSettings(storage);
   const saved = readSave(storage);
   if (saved) {
     cosmetics = readCosmetics(saved.cosmetics);
@@ -717,6 +723,11 @@ export function createGame({
     $('menu').hidden = true;
     document.body.classList.remove('menu');
     $('pause').textContent = 'Ⅱ';
+    $('pauseMenu').hidden = true;
+    $('settingsMenu').hidden = true;
+    settingsOpen = false;
+    document.body.classList.add('in-mission', 'stage-intro');
+    stageIntroTime = 3;
     $('sectorLabel').textContent =
       (sectorIndex < 5 ? 'BLOCO I · ASCENSÃO' : 'BLOCO II · DEVASTADOR') +
       ' / ' +
@@ -725,6 +736,11 @@ export function createGame({
     $('stage').textContent = current().name;
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     syncPods();
+    sectorStart = {
+      sector: sectorIndex, credits, weapon, armor, pods: podCount, score,
+      cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
+      loadout: { ...pilotLoadout }, strategy: { ...strategy }, petCare: { ...petCare },
+    };
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
   }
@@ -741,6 +757,8 @@ export function createGame({
       if (!music) music = createMusic(audioCtx);
       if (!audioCues) audioCues = createAudioCues(audioCtx);
       music.setEnabled(musicOn);
+      music.setVolume(settings.master * settings.music);
+      audioCues.setVolume(settings.master * settings.sfx);
       return true;
     } catch {
       return false;
@@ -753,7 +771,8 @@ export function createGame({
     if (appActive) audioCtx?.resume().catch(() => {});
   }
   function sound(freq = 400, duration = 0.07, type = 'sawtooth', vol = 0.025) {
-    if (muted || !audioCtx || !appActive) return;
+    if (muted || !audioCtx || !appActive || settings.master * settings.sfx <= 0) return;
+    vol *= settings.master * settings.sfx;
     const o = audioCtx.createOscillator(),
       g = audioCtx.createGain();
     o.type = type;
@@ -829,6 +848,7 @@ export function createGame({
     if (dynamicFlight && barrier > 0) return;
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
     hp = Math.max(0, hp - d);
+    if (settings.vibration) window.navigator?.vibrate?.(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
       cue('critical');
@@ -1252,12 +1272,14 @@ export function createGame({
     }
     boss = null;
   }
-  function start(resume = false) {
+  function start(resume = false, restart = null) {
     if (!appActive) return;
+    $('pauseConfirmPanel').hidden = true;
+    confirmation = null;
     cameraMode = 'chase';
     flightCamera.setMode(cameraMode);
     $('cameraView').textContent = 'C · PERSEGUIÇÃO';
-    const checkpoint = resume === true ? readSave(storage) : null;
+    const checkpoint = restart ?? (resume === true ? readSave(storage) : null);
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
@@ -1316,6 +1338,9 @@ export function createGame({
     $('bossHUD').hidden = true;
     document.body.classList.remove('menu');
     $('pause').textContent = 'Ⅱ';
+    $('pauseMenu').hidden = true;
+    $('settingsMenu').hidden = true;
+    settingsOpen = false;
     unlockAudio();
     menuThemePlaying = false;
     enterSector();
@@ -1329,15 +1354,102 @@ export function createGame({
       state = 'paused';
       music?.pause();
       audioCtx?.suspend?.().catch(() => {});
-      message('PAUSADO · pressione P ou Ⅱ para continuar');
+      $('pauseMenu').hidden = false;
+      $('pauseConfirmPanel').hidden = true;
+      $('pauseActions').hidden = false;
+      confirmation = null;
       $('pause').textContent = '▶';
-    } else if (state === 'paused') {
+      $('pauseCare').textContent = PET_ITEMS.map(({id,name})=>name+' '+petCare[id]).join(' · ');
+      $('pauseResume').focus?.({preventScroll:true});
+    } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
+      $('pauseMenu').hidden = true;
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');
       music?.resume();
+      $('game').focus?.({preventScroll:true});
     }
+  }
+  function requestPauseAction(kind) {
+    if (state !== 'paused' || !['restart','exit'].includes(kind)) return;
+    confirmation = kind;
+    $('pauseActions').hidden = true;
+    $('pauseConfirmPanel').hidden = false;
+    $('pauseConfirmText').textContent =
+      uiText(settings.language,kind === 'restart' ? 'confirmRestart' : 'confirmExit');
+  }
+  function exitToMenu() {
+    if (state !== 'paused') return;
+    releaseControls();
+    music?.pause();
+    clearWorld();
+    state = 'menu';
+    menuThemePlaying = false;
+    confirmation = null;
+    settingsOpen = false;
+    stageIntroTime = 0;
+    document.body.classList.remove('in-mission','stage-intro');
+    document.body.classList.add('menu');
+    for(const id of ['pauseMenu','pauseConfirmPanel','settingsMenu','cinematic',
+      'arcadePanel','shop','result','bossHUD','subHUD']) $(id).hidden = true;
+    $('menu').hidden = false;
+    $('continue').hidden = !readSave(storage);
+    $('pause').textContent='Ⅱ';
+    $('start').focus?.({preventScroll:true});
+  }
+  function confirmPauseAction() {
+    if (!confirmation || state !== 'paused') return;
+    const action = confirmation;
+    confirmation = null;
+    $('pauseConfirmPanel').hidden = true;
+    if (action === 'exit') exitToMenu();
+    else start(false, sectorStart ? {
+      ...sectorStart, cosmetics: { ...sectorStart.cosmetics, owned: [...sectorStart.cosmetics.owned] },
+      loadout: { ...sectorStart.loadout }, strategy: { ...sectorStart.strategy },
+      petCare: { ...sectorStart.petCare },
+    } : null);
+  }
+  function applySettings() {
+    const label=(id,key)=> { $(id).textContent=uiText(settings.language,key); };
+    for(const [id,key] of [
+      ['settingsTitle','options'],['labelLanguage','language'],['labelMaster','master'],
+      ['labelMusic','music'],['labelSfx','effects'],['labelSensitivity','sensitivity'],
+      ['labelOpacity','opacity'],['labelSubtitles','subtitles'],['labelIntro','intro'],
+      ['labelVibration','vibration'],['labelLeftHanded','leftHanded'],
+      ['pauseTitle','pause'],['pauseResume','resume'],['pauseRestart','restart'],
+      ['pauseExit','exit'],['pauseOptions','options'],['pauseConfirmCancel','cancel'],
+      ['pauseConfirmOk','confirm'],['settingsClose','close'],['optionsFromMenu','options']
+    ])label(id,key);
+    $('continue').textContent=uiText(settings.language,'continue')+' ↗';
+    $('watchIntro').textContent='▶ '+uiText(settings.language,'watch');
+    $('criticalWarning').textContent=uiText(settings.language,'critical');
+    for(const [key,id] of [
+      ['language','settingLanguage'],['master','settingMaster'],['music','settingMusic'],
+      ['sfx','settingSfx'],['sensitivity','settingSensitivity'],['opacity','settingOpacity'],
+      ['subtitles','settingSubtitles'],['intro','settingIntro'],['vibration','settingVibration'],
+      ['leftHanded','settingLeftHanded'],
+    ]) {
+      if(typeof settings[key]==='boolean') $(id).checked=settings[key];
+      else $(id).value=String(settings[key]);
+    }
+    $('touch').style.opacity=String(settings.opacity);
+    document.body.classList[settings.leftHanded?'add':'remove']('left-handed');
+    $('cinematic').classList[settings.subtitles?'remove':'add']('hide-subtitles');
+    music?.setVolume(settings.master*settings.music);
+    audioCues?.setVolume(settings.master*settings.sfx);
+  }
+  function openSettings() {
+    if(state!=='menu' && state!=='paused')return;
+    settingsOpen=true;
+    $('settingsMenu').hidden=false;
+    applySettings();
+    $('settingLanguage').focus?.({preventScroll:true});
+  }
+  function closeSettings() {
+    settingsOpen=false;
+    $('settingsMenu').hidden=true;
+    (state==='paused' ? $('pauseResume') : $('optionsFromMenu')).focus?.({preventScroll:true});
   }
   function setActive(active) {
     if (appActive === active) return;
@@ -1398,6 +1510,7 @@ export function createGame({
     // stacking contexts otherwise intercept taps meant for the skip action.
     $('menu').hidden = true;
     $('cinematic').hidden = false;
+    $('cinematic').classList[settings.subtitles?'remove':'add']('hide-subtitles');
     $('cinematicSkip').focus?.({ preventScroll: true });
     updateCinematic();
   }
@@ -1414,11 +1527,38 @@ export function createGame({
     }
     $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
   }
-  $('start').onclick = () => beginCinematic();
+  $('start').onclick = () => settings.intro ? beginCinematic() : start();
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
   $('cinematicSkip').onclick = finishCinematic;
+  $('optionsFromMenu').onclick = openSettings;
+  $('pauseOptions').onclick = openSettings;
+  $('settingsClose').onclick = closeSettings;
+  $('pauseResume').onclick = pause;
+  $('pauseRestart').onclick = () => requestPauseAction('restart');
+  $('pauseExit').onclick = () => requestPauseAction('exit');
+  $('pauseConfirmCancel').onclick = () => {
+    confirmation = null;
+    $('pauseConfirmPanel').hidden = true;
+    $('pauseActions').hidden = false;
+  };
+  $('pauseConfirmOk').onclick = confirmPauseAction;
+  for (const [key,id] of [
+    ['language','settingLanguage'],['master','settingMaster'],['music','settingMusic'],
+    ['sfx','settingSfx'],['sensitivity','settingSensitivity'],['opacity','settingOpacity'],
+    ['subtitles','settingSubtitles'],['intro','settingIntro'],['vibration','settingVibration'],
+    ['leftHanded','settingLeftHanded'],
+  ]) {
+    $(id).oninput = () => {
+      const el=$(id);
+      settings=readSettings({ ...settings, [key]: typeof settings[key]==='boolean'
+        ? !!el.checked : key==='language' ? el.value : Number(el.value) });
+      storeSettings(storage,settings);
+      applySettings();
+    };
+  }
+  applySettings();
   $('nextSector').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
   $('music').onclick = () => {
@@ -1482,6 +1622,15 @@ export function createGame({
       }
       return;
     }
+    if (settingsOpen) {
+      if (e.code==='Escape') { e.preventDefault?.(); closeSettings(); }
+      return;
+    }
+    if (confirmation) {
+      if (e.code==='Escape') { e.preventDefault?.(); $('pauseConfirmCancel').onclick(); }
+      if (e.code==='Enter') { e.preventDefault?.(); confirmPauseAction(); }
+      return;
+    }
     if (inFlight() && isGameKey(e)) e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
@@ -1497,7 +1646,7 @@ export function createGame({
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
-    if (e.code === 'Enter' && state === 'menu') beginCinematic();
+    if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
   addEventListener('keyup', (e) => {
     if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
@@ -1548,8 +1697,8 @@ export function createGame({
       dx = e.clientX - r.left - r.width / 2,
       dy = e.clientY - r.top - r.height / 2,
       len = Math.max(r.width * 0.35, Math.hypot(dx, dy));
-    stick.x = dx / len;
-    stick.y = -dy / len;
+    stick.x = clamp((dx / len)*settings.sensitivity,-1,1);
+    stick.y = clamp((-dy / len)*settings.sensitivity,-1,1);
     $('nub').style.transform = `translate(${stick.x * 35}px,${-stick.y * 35}px)`;
   }
   $('stick').onpointerdown = (e) => {
@@ -2310,6 +2459,10 @@ export function createGame({
     if (!appActive) return;
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
+    if (state === 'playing' && stageIntroTime>0) {
+      stageIntroTime=Math.max(0,stageIntroTime-dt);
+      if(stageIntroTime===0)document.body.classList.remove('stage-intro');
+    }
     if (['menu', 'playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) {
       if (state !== 'menu' || menuThemePlaying) music?.update(dt);
     }
@@ -2498,6 +2651,10 @@ export function createGame({
     nextSector,
     snapshot: () => ({
       state,
+      settings: { ...settings },
+      pauseDialog: !$('pauseMenu').hidden,
+      confirmation,
+      stageTitleVisible: stageIntroTime>0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
@@ -2595,6 +2752,9 @@ export function createGame({
     }),
     destroy() {
       running = false;
+      document.body.classList.remove('in-mission','stage-intro','left-handed');
+      $('pauseMenu').hidden=true;
+      $('settingsMenu').hidden=true;
       music?.destroy();
       audioCues?.destroy();
       cleanups.forEach((fn) => fn());
