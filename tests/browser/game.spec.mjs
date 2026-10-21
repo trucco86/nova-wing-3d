@@ -11,6 +11,7 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   // A disabled WebGL context is a failure in this required CI job, never a skipped pass.
   expect(await page.locator('#brief').innerText()).not.toContain('não conseguiu');
   await page.getByRole('button', { name: /INICIAR MISSÃO/ }).click();
+  await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
   await page.locator('#music').click();
   await expect(page.locator('#music')).toHaveText('♪ OFF');
@@ -45,6 +46,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
   test.setTimeout(180000);
   await page.goto('/');
   await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
   const mobile = info.project.name === 'mobile';
   if (mobile) {
     const bounds = await page.locator('#boostTouch').boundingBox();
@@ -131,6 +133,7 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
   );
   await page.goto('/');
   await page.locator('#start').tap();
+  await page.locator('#cinematicSkip').tap();
   const fire = page.locator('#fireTouch');
   await expect(fire).toBeVisible();
   expect(await fire.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
@@ -236,6 +239,7 @@ test('boost streaks follow keyboard or touch input and disappear on pause', asyn
   test.setTimeout(60000);
   await page.goto('/');
   await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
   if (info.project.name === 'mobile') {
     const bounds = await page.locator('#boostTouch').boundingBox();
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
@@ -296,6 +300,7 @@ test('offline Android interface protects controls from cutout and gesture insets
       document.documentElement.style.setProperty(`--safe-area-inset-${side}`, `${value}px`);
   });
   await page.locator('#start').tap();
+  await page.locator('#cinematicSkip').tap();
   await expect(page.locator('#touch')).toBeVisible();
   const viewport = page.viewportSize();
   const safe = await page.locator('#interface').boundingBox();
@@ -325,6 +330,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
 }) => {
   await page.goto('/');
   await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
   await page.locator('#music').focus();
   const label = await page.locator('#music').textContent();
   await page.keyboard.down('Space');
