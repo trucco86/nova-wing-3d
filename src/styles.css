@@ -38,7 +38,9 @@ body:is(.native-android, .native-ios) #interface {
 }
 body:is(.native-android, .native-ios) #menu,
 body:is(.native-android, .native-ios) #shop,
-body:is(.native-android, .native-ios) #result {
+body:is(.native-android, .native-ios) #result,
+body:is(.native-android, .native-ios) #cinematic {
+  /* The safe-area wrapper ignores empty touches; modal controls opt back in. */
   pointer-events: auto;
 }
 body:is(.native-android, .native-ios):not(.menu) #touch {
