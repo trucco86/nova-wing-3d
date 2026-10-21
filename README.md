@@ -6,6 +6,14 @@ Pilote a NOVA-7 com o esquadrão Five Cats em uma campanha de combate aéreo: ci
 
 **[▶ Jogar agora](https://trucco86.github.io/nova-wing-3d/)** · [Como desenvolver](#desenvolvimento) · [Mapa do repositório](docs/REPOSITORIO.md) · [Harness](docs/HARNESS.md) · [Histórico](CHANGELOG.md)
 
+## Case de engenharia: Nova Wing além do jogo
+
+O projeto também é um laboratório público de **validação rápida de ideias e engenharia de software assistida por IA**. A documentação mostra como a hipótese virou protótipo, quais regressões apareceram durante as iterações e como specs, contexto de agentes, harness, testes de navegador e CI/CD passaram a orientar a evolução. O foco é o **processo verificável**, não alegar ganhos de produtividade que ainda não foram medidos.
+
+**[Ler o case completo](docs/case/README.md)** · [Narrativa executiva](docs/case/CASE-STUDY.md) · [Agentes e handoffs](docs/case/PAPEIS-E-HANDOFFS.md) · [Evidências](docs/case/EVIDENCIAS.md) · [Roteiro do vídeo](docs/case/VIDEO.md) · [Deck executivo](docs/case/DECK.md) · [Como gravar gameplay](docs/case/CAPTURA.md)
+
+_Nota metodológica: habilidades e procedimentos especializados não são prova de uma orquestração automática de agentes independentes. A arquitetura de múltiplos papéis é uma proposta de evolução, descrita separadamente das capacidades existentes._
+
 ![NOVA-7 em impulso na Cidade das Máquinas — captura real em WebGL](docs/images/boost.png)
 
 _Captura real do jogo em teste de navegador. Os diagramas abaixo explicam a arquitetura; não são imagens de gameplay._
