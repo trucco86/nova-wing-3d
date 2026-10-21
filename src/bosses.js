@@ -336,6 +336,41 @@ export function createBossModel(sector, index = 0, tactical = false) {
       ][index % 10],
     );
   }
+  // Marvin pilots a crown-shaped dreadnought with a broad pitbull face.
+  if (index === 9) {
+    eye.visible = pupil.visible = false;
+    tissue.visible = false;
+    organic.forEach((o) => (o.visible = false));
+    const face = new T.Group();
+    face.name = 'marvin-pitbull';
+    face.position.set(0, 25, 8);
+    const head = sphere(12, armor, 2);
+    head.scale.set(1.35, 1, 0.72);
+    face.add(head);
+    for (const side of [-1, 1]) {
+      const cheek = sphere(5.5, bone, 1);
+      cheek.position.set(side * 4.5, -4, 9);
+      cheek.scale.set(1, 0.85, 0.7);
+      face.add(cheek);
+      const ear = new T.Mesh(new T.ConeGeometry(5, 10, 3), armor);
+      ear.position.set(side * 12, 8, 0);
+      ear.rotation.z = side * -0.7;
+      face.add(ear);
+      const eye = sphere(1.4, hot, 1);
+      eye.position.set(side * 6, 2, 9);
+      eye.scale.y = 0.5;
+      face.add(eye);
+      const brow = box(7, 2, 3, dark);
+      brow.position.set(side * 6, 4, 9);
+      brow.rotation.z = side * 0.2;
+      face.add(brow);
+    }
+    const nose = sphere(2.8, dark, 1);
+    nose.position.set(0, -2, 13);
+    nose.scale.set(1.4, 0.7, 0.65);
+    face.add(nose);
+    g.add(face);
+  }
   g.userData = {
     parts,
     vents,

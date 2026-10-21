@@ -37,11 +37,14 @@ const { readFile } = await import('node:fs/promises');
 const shell = await readFile('src/shell.html', 'utf8');
 const css = await readFile('src/styles.css', 'utf8');
 const pilot = await readFile('src/assets/bia-pilot.webp');
+const cover = (await readFile('src/assets/cover.webp.base64', 'utf8')).trim();
 await writeFile(
   'artifacts/dynamic.html',
   shell
     .replace('/* BUILD:GAME */', () => dynamic.outputFiles[0].text)
-    .replace('/* BUILD:STYLES */', () => css)
+    .replace('/* BUILD:STYLES */', () =>
+      css.replaceAll('BUILD:COVER', 'data:image/webp;base64,' + cover),
+    )
     .replace('BUILD:PILOT', 'data:image/webp;base64,' + pilot.toString('base64'))
     .replace('BUILD:VERSION', 'web-preview'),
 );

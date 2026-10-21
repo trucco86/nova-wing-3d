@@ -415,7 +415,8 @@ export function createGame({
       ship = activeShip();
     $('squadSelection').style.setProperty?.('--profile-color', pilot.color);
     $('profileAvatar').style.setProperty?.('--pilot', pilot.color);
-    $('profileAvatar').textContent = pilot.name[0];
+    $('profileAvatar').textContent = '';
+    $('profileAvatar').setAttribute?.('data-pilot', pilot.id);
     $('profileName').textContent = pilot.name;
     $('profileRole').textContent = pilot.role;
     $('profileSkill').textContent = pilot.skill.toUpperCase();
@@ -478,7 +479,15 @@ export function createGame({
   for (const ship of SHIP_MODELS) $('ship-' + ship.id).onclick = () => selectShip(ship.id);
   for (const color of SHIP_COLORS)
     $('ship-color-' + color.id).onclick = () => selectShipColor(color.id);
-  $('squadSelection').hidden = !dynamicFlight;
+  $('squadSelection').hidden = true;
+  $('prepareSquad').hidden = !dynamicFlight;
+  $('prepareSquad').onclick = () => {
+    const open = $('squadSelection').hidden;
+    $('squadSelection').hidden = !open;
+    $('prepareSquad').setAttribute?.('aria-expanded', String(open));
+    $('menu').classList[open ? 'add' : 'remove']('selecting');
+    $('prepareSquad').textContent = open ? 'VOLTAR À CAPA −' : 'PILOTO E NAVE ＋';
+  };
   renderPilotSelection();
   applySkin();
   $('customization').hidden = !dynamicFlight;
@@ -916,7 +925,7 @@ export function createGame({
     });
   }
   function fire() {
-    if (state !== 'playing' || shotCd > 0) return;
+    if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
     const count = SHOT_COUNTS[weapon];
@@ -1022,7 +1031,7 @@ export function createGame({
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
-    boss.position.set(0, 10, dynamicFlight ? -88 : -230);
+    boss.position.set(0, 10, -230);
     if (dynamicFlight) {
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
@@ -1089,7 +1098,7 @@ export function createGame({
     if (bossHp === 0) {
       gainXP(30);
       state = 'collapsing';
-      releaseControls();
+      if (!dynamicFlight) releaseControls();
       for (const arr of [shots, hostile]) {
         for (const e of arr) dispose(e.o);
         arr.length = 0;
@@ -1107,6 +1116,19 @@ export function createGame({
     return dealt;
   }
   function updateFinale(dt) {
+    if (dynamicFlight) {
+      shotCd -= dt;
+      updatePiloting(dt);
+      for (let i = shots.length - 1; i >= 0; i--) {
+        const shot = shots[i];
+        shot.o.position.z -= 190 * dt;
+        shot.life -= dt;
+        if (shot.life <= 0) {
+          dispose(shot.o);
+          shots.splice(i, 1);
+        }
+      }
+    }
     collapseTime += dt;
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
@@ -1404,7 +1426,7 @@ export function createGame({
   }
   $('stick').onpointerdown = (e) => {
     e.preventDefault?.();
-    if (!['playing', 'arcade'].includes(state) || stickId !== null) return;
+    if (!['playing', 'arcade', 'collapsing'].includes(state) || stickId !== null) return;
     stickId = e.pointerId;
     $('stick').setPointerCapture(e.pointerId);
     stickMove(e);
@@ -1426,7 +1448,7 @@ export function createGame({
     const b = $(id);
     b.onpointerdown = (e) => {
       e.preventDefault?.();
-      if (!['playing', 'arcade'].includes(state) || heldPointers.has(id)) return;
+      if (!['playing', 'arcade', 'collapsing'].includes(state) || heldPointers.has(id)) return;
       heldPointers.set(id, e.pointerId);
       b.setPointerCapture(e.pointerId);
       set(true);
@@ -1449,84 +1471,7 @@ export function createGame({
     e.preventDefault?.();
     bomb();
   };
-  function update(dt) {
-    if (state !== 'playing') return;
-    elapsed += dt;
-    totalTime += dt;
-    if (
-      dynamicFlight &&
-      spawnEncounters &&
-      !arcadeDone &&
-      [2, 6].includes(sectorIndex) &&
-      elapsed >= 8
-    ) {
-      arcadeDone = true;
-      arcade = createArcade(sectorIndex + 1);
-      state = 'arcade';
-      releaseControls();
-      $('arcadePanel').hidden = false;
-      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS');
-      return;
-    }
-    if (dynamicFlight) {
-      route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
-      routeRenderer.update(route);
-      world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
-      $('routeLabel').textContent = route.label;
-    }
-    shotCd -= dt;
-    if (dynamicFlight) {
-      tacticEnergy = chargeTactics(
-        tacticEnergy,
-        dt,
-        !!(orbitTouch || keys.has('KeyJ') || keys.has('KeyL')),
-        rank('spirit'),
-      );
-      scanTime = Math.max(0, scanTime - dt);
-      impactTime = Math.max(0, impactTime - dt);
-      $('tacticCharge').textContent = Array.from({ length: 3 }, (_, i) =>
-        tacticEnergy >= i + 1 ? '◆' : '◇',
-      ).join(' ');
-      $('battleCharge').textContent = $('tacticCharge').textContent;
-      $('precisionShot').disabled = tacticEnergy < 1;
-      $('repairPulse').disabled = tacticEnergy < 2 || hp >= maxHp();
-      $('homingBarrage').disabled = tacticEnergy < 3;
-      $('scanBoss').disabled = !boss || arcana < 10 || scanTime > 0;
-      arcana = Math.min(
-        100,
-        arcana +
-          dt *
-            (4 + rank('spirit') * 0.1) *
-            (strategy.specialty === 'spirit' ? 1.3 : 1) *
-            activePilot().bonuses.arcana,
-      );
-      specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
-      barrier = Math.max(0, barrier - dt);
-      stasis = Math.max(0, stasis - dt);
-      $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
-      $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
-      $('specialCast').textContent =
-        'G · ' +
-        (specialCd > 0 ? Math.ceil(specialCd) + 's' : 'ATIVAR') +
-        ' · ' +
-        Math.floor(arcana);
-      $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
-      $('orbitControls').hidden = !boss;
-      $('strategyStatus').textContent =
-        'EV ' +
-        (stage() + 1) +
-        ' · XP ' +
-        strategy.xp +
-        '/' +
-        xpForStage(stage() + 1) +
-        ' · VEL ' +
-        (boosting ? '890' : '480') +
-        (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
-    }
-    invuln -= dt;
-    rollCd -= dt;
-    msgTime -= dt;
-    if (msgTime <= 0) $('comms').classList.remove('active');
+  function updatePiloting(dt) {
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -1605,6 +1550,87 @@ export function createGame({
       camera.position.y += Math.cos(visualTime * 65) * shake * 0.2;
     }
     if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
+    return { speed, previousPlayer, holding };
+  }
+  function update(dt) {
+    if (state !== 'playing') return;
+    elapsed += dt;
+    totalTime += dt;
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      !arcadeDone &&
+      [2, 6].includes(sectorIndex) &&
+      elapsed >= 8
+    ) {
+      arcadeDone = true;
+      arcade = createArcade(sectorIndex + 1);
+      state = 'arcade';
+      releaseControls();
+      $('arcadePanel').hidden = false;
+      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS');
+      return;
+    }
+    if (dynamicFlight) {
+      route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
+      routeRenderer.update(route);
+      world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
+      $('routeLabel').textContent = route.label;
+    }
+    shotCd -= dt;
+    if (dynamicFlight) {
+      tacticEnergy = chargeTactics(
+        tacticEnergy,
+        dt,
+        !!(orbitTouch || keys.has('KeyJ') || keys.has('KeyL')),
+        rank('spirit'),
+      );
+      scanTime = Math.max(0, scanTime - dt);
+      impactTime = Math.max(0, impactTime - dt);
+      $('tacticCharge').textContent = Array.from({ length: 3 }, (_, i) =>
+        tacticEnergy >= i + 1 ? '◆' : '◇',
+      ).join(' ');
+      $('battleCharge').textContent = $('tacticCharge').textContent;
+      $('precisionShot').disabled = tacticEnergy < 1;
+      $('repairPulse').disabled = tacticEnergy < 2 || hp >= maxHp();
+      $('homingBarrage').disabled = tacticEnergy < 3;
+      $('scanBoss').disabled = !boss || arcana < 10 || scanTime > 0;
+      arcana = Math.min(
+        100,
+        arcana +
+          dt *
+            (4 + rank('spirit') * 0.1) *
+            (strategy.specialty === 'spirit' ? 1.3 : 1) *
+            activePilot().bonuses.arcana,
+      );
+      specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      barrier = Math.max(0, barrier - dt);
+      stasis = Math.max(0, stasis - dt);
+      $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
+      $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
+      $('specialCast').textContent =
+        'G · ' +
+        (specialCd > 0 ? Math.ceil(specialCd) + 's' : 'ATIVAR') +
+        ' · ' +
+        Math.floor(arcana);
+      $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('orbitControls').hidden = !boss;
+      $('strategyStatus').textContent =
+        'EV ' +
+        (stage() + 1) +
+        ' · XP ' +
+        strategy.xp +
+        '/' +
+        xpForStage(stage() + 1) +
+        ' · VEL ' +
+        (boosting ? '890' : '480') +
+        (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
+    }
+    invuln -= dt;
+    rollCd -= dt;
+    msgTime -= dt;
+    if (msgTime <= 0) $('comms').classList.remove('active');
+    const { speed, previousPlayer, holding } = updatePiloting(dt);
     spawnCd -= dt;
     if (spawnEncounters && elapsed < current().duration && spawnCd <= 0) {
       for (let i = 0; i < 2 + Math.floor(sectorIndex / 4); i++) enemy();
@@ -1828,7 +1854,12 @@ export function createGame({
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       if (dynamicFlight) {
         const t = tactics();
-        boss.position.set(t.x, t.y, t.z);
+        const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
+        boss.position.set(
+          t.x * approach,
+          10 + (t.y - 10) * approach,
+          -230 + (t.z + 230) * approach,
+        );
         boss.rotation.z = t.bank;
         $('battleRadar').style.background = radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
@@ -2151,9 +2182,10 @@ export function createGame({
           (dynamicFlight
             ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
             : 1),
-        state === 'playing' && !(dynamicFlight && boss),
+        (state === 'playing' && !(dynamicFlight && boss)) ||
+          (dynamicFlight && state === 'collapsing'),
       );
-      const boostVisible = boosting && state === 'playing';
+      const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
       for (let f of player.userData.flames) {
@@ -2350,6 +2382,7 @@ export function createGame({
       bossHp,
       bossPhase: bossCombat?.phase ?? 0,
       bossAge: bossCombat?.age ?? 0,
+      bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
       podsDetached,

@@ -135,3 +135,40 @@ test('collapse geometry has expanding blast and dispersed debris then fades', ()
   assert.equal(g.userData.hot.opacity, 0);
   disposeCollapse(g);
 });
+
+test('web victory flyby accepts movement and fire, pauses, then rewards once', (t) => {
+  const h = setup(t);
+  h.advance(65.05, 0.1);
+  defeatBoss(h, { stopAtCollapse: true });
+  const initial = h.game.snapshot();
+  h.key('KeyD');
+  h.key('Space');
+  h.advance(0.4);
+  const flying = h.game.snapshot();
+  assert.equal(flying.state, 'collapsing');
+  assert.ok(flying.player.x > initial.player.x);
+  assert.ok(flying.entities.shots > 0);
+  h.game.pause();
+  const paused = h.game.snapshot();
+  h.advance(1);
+  assert.deepEqual(h.game.snapshot(), paused);
+  h.game.pause();
+  h.advance(8);
+  assert.equal(h.game.snapshot().state, 'shop');
+  const credits = h.game.snapshot().credits;
+  h.advance(3);
+  assert.equal(h.game.snapshot().credits, credits);
+});
+
+test('boss approaches from the horizon without an instant arena teleport', (t) => {
+  const h = setup(t);
+  h.advance(65.01, 0.01);
+  const arrival = h.game.snapshot();
+  assert.ok(arrival.bossZ < -220);
+  h.advance(1);
+  const approach = h.game.snapshot();
+  assert.ok(approach.bossZ > arrival.bossZ);
+  assert.ok(approach.bossZ < -110);
+  h.advance(2.1);
+  assert.ok(h.game.snapshot().bossZ > -110);
+});

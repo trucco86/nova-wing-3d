@@ -1630,23 +1630,23 @@ canvas {
 }
 
 /* Five Cats selection: decisions stay before combat and remain readable at a glance. */
-#menu.title-screen:has(#squadSelection) {
+#menu.title-screen.selecting {
   align-items: flex-start;
   padding-top: max(68px, 8vh);
   padding-bottom: 48px;
 }
-#menu.title-screen:has(#squadSelection) .title-content {
+#menu.title-screen.selecting .title-content {
   width: min(1180px, 88vw);
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   column-gap: 34px;
   align-items: start;
 }
-#menu.title-screen:has(#squadSelection) h1 {
+#menu.title-screen.selecting h1 {
   font-size: clamp(62px, 7vw, 104px);
   margin: 4px 0 16px;
 }
-#menu.title-screen:has(#squadSelection) #brief {
+#menu.title-screen.selecting #brief {
   grid-column: 1;
   margin-bottom: 18px;
 }
@@ -2015,18 +2015,18 @@ canvas {
 }
 
 @media (max-width: 900px), (max-height: 620px) {
-  #menu.title-screen:has(#squadSelection) {
+  #menu.title-screen.selecting {
     padding: 52px 3vw 30px;
   }
-  #menu.title-screen:has(#squadSelection) .title-content {
+  #menu.title-screen.selecting .title-content {
     width: 94vw;
     grid-template-columns: 170px minmax(0, 1fr);
     column-gap: 14px;
   }
-  #menu.title-screen:has(#squadSelection) h1 {
+  #menu.title-screen.selecting h1 {
     font-size: 52px;
   }
-  #menu.title-screen:has(#squadSelection) #brief {
+  #menu.title-screen.selecting #brief {
     font-size: 10px;
     margin-bottom: 10px;
   }
@@ -2075,28 +2075,28 @@ canvas {
     width: 16px;
     height: 16px;
   }
-  #menu.title-screen:has(#squadSelection) .title-actions {
+  #menu.title-screen.selecting .title-actions {
     gap: 5px;
   }
-  #menu.title-screen:has(#squadSelection) .title-actions .primary {
+  #menu.title-screen.selecting .title-actions .primary {
     padding: 11px 15px;
   }
-  #menu.title-screen:has(#squadSelection) .title-help {
+  #menu.title-screen.selecting .title-help {
     margin-top: 5px;
   }
 }
 
 @media (max-aspect-ratio: 1/1) {
-  #menu.title-screen:has(#squadSelection) {
+  #menu.title-screen.selecting {
     padding: 70px 5vw 50px;
     align-items: flex-start;
   }
-  #menu.title-screen:has(#squadSelection) .title-content {
+  #menu.title-screen.selecting .title-content {
     display: block;
     width: 90vw;
     text-align: left;
   }
-  #menu.title-screen:has(#squadSelection) h1 {
+  #menu.title-screen.selecting h1 {
     font-size: 64px;
   }
   #squadSelection {
@@ -2596,5 +2596,86 @@ body:has(#strategyDrawer[open]):has(#strategyControls:not([hidden])) #loadout {
     top: 113px;
     right: 10px;
     width: 90px;
+  }
+}
+
+/* The cover stays quiet; configuration is a separate, explicit step. */
+#menu.title-screen:not(.selecting) {
+  align-items: center;
+  padding: max(68px, 8vh) 8vw 52px;
+  background:
+    linear-gradient(90deg, #030b16eb, #030b1666 48%, #030b1610 75%),
+    url('BUILD:COVER') center / cover;
+}
+#menu.title-screen:not(.selecting) .title-content {
+  display: block;
+  width: min(430px, 84vw);
+}
+#menu.title-screen:not(.selecting) h1 {
+  font-size: clamp(68px, 10vw, 140px);
+  margin-bottom: 24px;
+}
+#menu.title-screen:not(.selecting) #brief {
+  font-size: 15px;
+  margin-bottom: 26px;
+}
+#squadSelection[hidden] {
+  display: none;
+}
+.cat-avatar {
+  --fur: #131723;
+  color: transparent;
+  background:
+    radial-gradient(ellipse at 35% 46%, #c5f776 0 7%, transparent 8%),
+    radial-gradient(ellipse at 65% 46%, #c5f776 0 7%, transparent 8%),
+    radial-gradient(ellipse at 50% 72%, #a77787 0 5%, transparent 6%), var(--fur);
+}
+.cat-avatar::before,
+.cat-avatar::after {
+  background: var(--fur);
+}
+#pilot-jenifer .cat-avatar,
+.cat-avatar[data-pilot='jenifer'] {
+  --fur: #747c8d;
+}
+#pilot-calvin .cat-avatar,
+.cat-avatar[data-pilot='calvin'] {
+  --fur: #24212a;
+  border-radius: 35% 35% 50% 50%;
+}
+#pilot-christopher .cat-avatar {
+  width: 38px;
+  height: 32px;
+}
+.cat-avatar[data-pilot='christopher'] {
+  transform: scale(1.13);
+}
+.cat-avatar[data-pilot='bob'] {
+  transform: scale(1.08);
+}
+.cat-avatar[data-pilot='calvin'] {
+  transform: scale(0.85);
+}
+@media (max-height: 500px) {
+  #menu.title-screen:not(.selecting) {
+    padding-top: 48px;
+    padding-bottom: 24px;
+  }
+  #menu.title-screen:not(.selecting) h1 {
+    font-size: 62px;
+    margin-bottom: 10px;
+  }
+  #menu.title-screen:not(.selecting) #brief {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+  #menu.title-screen:not(.selecting) .title-actions {
+    gap: 6px;
+  }
+  #menu.title-screen:not(.selecting) .title-actions button {
+    padding: 10px 18px;
+  }
+  #menu.title-screen:not(.selecting) .title-help {
+    margin-top: 8px;
   }
 }

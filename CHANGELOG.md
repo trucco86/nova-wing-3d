@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.12.0 — capa e voo de vitória
+
+- Capa ilustrada e configuração de piloto/nave aberta sob comando.
+- Elenco corrigido: Bia, Jenifer, Christopher, Bob e Calvinho.
+- Christopher pesado e Jenifer ágil; checkpoints antigos preservados.
+- Aproximação gradual dos chefes; movimento e tiros livres durante o colapso web.
+- Marvin com rosto de pitbull no último setor.
+
 ## 1.11.0 — Esquadrão Five Cats
 
 - Seleção visual dos cinco gatos com função, habilidade e seis atributos comparáveis.

@@ -3,15 +3,20 @@ import { test, expect } from '@playwright/test';
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
 }, info) => {
+  // Two screenshots took over 20s on the software-rendered CI runner.
+  test.setTimeout(60000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
     if (message.type() === 'error') errors.push(message.text());
   });
   await page.goto('/');
+  await expect(page.locator('#squadSelection')).toBeHidden();
+  await page.screenshot({ path: info.outputPath('cover.png') });
+  await page.locator('#prepareSquad').click();
   await expect(page.locator('#squadSelection')).toBeVisible();
   await page.locator('#pilot-calvin').click();
-  await expect(page.locator('#profileName')).toHaveText('CALVIN');
+  await expect(page.locator('#profileName')).toHaveText('CALVINHO');
   await expect(page.locator('#profileSkill')).toHaveText('FLUXO ARCANO');
   await page.locator('#ship-aegis').click();
   await expect(page.locator('#selectedShipName')).toHaveText('AEGIS-R');
@@ -21,7 +26,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
   await page.locator('#start').click();
-  await expect(page.locator('#pilotName')).toContainText('CALVIN');
+  await expect(page.locator('#pilotName')).toContainText('CALVINHO');
   await expect(page.locator('#strategyStatus')).toContainText('EV 1');
   expect(errors).toEqual([]);
 });
