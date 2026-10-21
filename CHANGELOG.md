@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.14.0 — Áudio, suprimentos e prólogo
+
+- Música original na tela inicial sob gesto do usuário; efeitos de tiro e plasma mais suaves.
+- Explosões de combate, alerta de integridade crítica e quatro itens para cuidar dos Five Cats.
+- Abertura animada e pulável apresenta o roubo de suprimentos por Marvin.
+- Correção da fuselagem e do nariz da NOVA-7 no hangar e no voo.
+- Compatibilidade com checkpoints e os controles atuais.
+
+
 ## 1.13.0 — capa viva e hangar 360
 
 - Capa animada com respeito a movimento reduzido.
