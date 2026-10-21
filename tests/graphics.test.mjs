@@ -37,3 +37,18 @@ test('city remains present after one full scenery wrap and reset', () => {
   world.reset();
   world.update(0.1, 0.1, 48, true);
 });
+
+
+test('NOVA-7 has a sealed, symmetric forward fuselage in gameplay and hangar', () => {
+  const ship = fighter();
+  const fuselage = ship.getObjectByName('ship-fuselage');
+  assert.ok(fuselage, 'player fighter and showroom share the front fuselage');
+  assert.equal(fuselage.geometry.type, 'LatheGeometry');
+  const profile = fuselage.geometry.parameters.points;
+  assert.ok(profile.length >= 8);
+  assert.equal(profile.at(-1).x, 0, 'nose finishes at the exact central axis');
+  assert.ok(profile.every((point, i) => i === 0 || point.y > profile[i - 1].y));
+  assert.ok(profile.every((point, i) => i === 0 || point.x <= profile[i - 1].x));
+  assert.ok(Math.abs(fuselage.rotation.x + Math.PI / 2) < 0.001);
+  assert.equal(ship.children.some((o) => o.geometry?.type === 'ConeGeometry' && o.position.z < -3), false);
+});
