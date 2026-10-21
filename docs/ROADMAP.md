@@ -1,61 +1,80 @@
 # Roadmap de produto, qualidade e apresentação
 
-Atualizado em 21/10/2026. Este documento organiza os pedidos do mantenedor
-sem substituir `specs/`, o histórico de releases ou as evidências dos testes.
-**Status em execução** e **concluído** só devem ser atribuídos com evidência real
-no GitHub. O jogo web v1.13.0 é a última base concluída e validada.
+Atualizado em 21/10/2026. Este roadmap registra decisões do mantenedor sem
+substituir specs, testes, histórico de releases ou evidências.
 
-## Ordenação de trabalho
+## Prioridades, em ordem
 
-| Ordem | Prioridade | Entrega | Estado / contrato |
-| --- | --- | --- | --- |
-| 1 | P0 — release atual | v1.14 web: trilha da tela inicial; efeitos menos irritantes de disparo, carga de plasma e explosão; alerta de escudo crítico; coletáveis pet (latinha, petiscos, brinquedos, areia); narrativa de introdução e campanha | **Pendente de integração e validação**, em branch de desenvolvimento; sem publicação |
-| 2 | P1 — estratégico, em paralelo | **Documentação e harness demonstráveis; transformar Nova Wing em um case profissional para compartilhar com pessoas e empresas** | [Issue #21](https://github.com/trucco86/nova-wing-3d/issues/21); planejamento registrado, implementação documental e demonstração pendentes |
-| 3 | P1 — qualidade contínua | Testes reais de desktop/mobile, regressão de controles, performance e UX, rastreabilidade dos requisitos e evidências por release | Atividade recorrente; não trocar checks reais por asserts artificiais |
-| 4 | P2 — próxima evolução de jogo | Refinar chefes, progressão e identidade dos inimigos; consolidar narrativa, cuidado dos pets, mecânicas RPG e acessibilidade do HUD | Evolução incremental após estabilizar v1.14 |
-| 5 | P3 — outras plataformas | Propagar somente mecânicas aprovadas da web para Android e iOS; testar em aparelhos e organizar distribuição | Posterior ao aceite web; apps já possuem bases existentes |
+1. **P0 — Fechar a próxima release web (v1.14).**
+   Implementar e validar tema musical da tela inicial, sons de tiros,
+   carga de plasma e explosões, alerta de integridade crítica, itens de
+   cuidado dos gatos e aberturas da narrativa. Depois, revisar no
+   desktop e celular e publicar somente com os checks aprovados.
+   **Estado:** pendente de integração, verificação e publicação.
 
-## O que preservar sempre
+2. **P1 — Documentação, harness e case profissional.**
+   Transformar Nova Wing em uma referência de engenharia de software
+   e desenvolvimento assistido por agentes que possa ser apresentada
+   a profissionais, executivos e empresas. Iniciar documentação em
+   paralelo ao P0; finalizar a demonstração com evidências da release.
+   **Estado:** pedido registrado na [issue #21](https://github.com/trucco86/nova-wing-3d/issues/21),
+   materiais e demonstração ainda pendentes.
 
-- Arte da capa aprovada e caracterização dos Five Cats: Bia e Jenifer de tamanho
-  semelhante (preta e cinza); Christopher e Bob pretos, de porte parecido,
-  com cabeça maior de Christopher; Calvinho preto, pequeno e de pouco pelo.
-- Marvin é um pitbull marrom e branco, de focinho rosa e olhos mel-esverdeados,
-  vilão final da campanha. A história pública fala da perseguição para recuperar
-  o que ele roubou, sem revelar contagem interna de fases.
-- Hangar 360°, modelos e cores de nave, câmeras, combate, missões, saves,
-  compras com créditos fictícios, música e mecânicas da versão publicada.
-- Web como plataforma prioritária, seguida por validação de Android/iOS.
-- Não declarar uma release publicada com base apenas na criação de branch ou PR.
+3. **P1 — Qualidade contínua e rastreabilidade.**
+   Preservar regressões de teclado/toque, gameplay, saves, áudio,
+   performance, renderização e publicação. Conectar cada requisito
+   a specs, testes e evidências reais. **Estado:** responsabilidade
+   permanente em cada entrega.
 
-## P1: case de referência — entregáveis
+4. **P2 — Evolução do gameplay.**
+   Refinar identidade e variedade de inimigos, chefes, progressão,
+   acessibilidade dos elementos RPG e experiência de cuidado pet.
+   **Estado:** melhorias incrementais após estabilizar v1.14.
 
-O objetivo não é somente escrever mais documentação, e sim tornar o projeto
-**reproduzível e apresentável como demonstração real de desenvolvimento
-assistido por agentes**.
+5. **P3 — Plataformas nativas.**
+   Adaptar recursos aprovados da web para Android e iOS; testar
+   em dispositivos e preparar distribuição. **Estado:** posterior
+   ao aceite web, preservando os projetos nativos existentes.
 
-1. **Documentação de produto:** um README inicial objetivo, capturas reais,
-   mecânicas verificadas, instruções para jogar e visão do roadmap.
-2. **Documentação técnica:** arquitetura, mapa de módulos, trade-offs,
-   persistência, contratos de áudio/câmera/controles e ADRs.
-3. **Harness reproduzível:** ligar `AGENTS.md`, `specs/`, `skills/`,
-   `tools/`, `tests/` e CI num fluxo que outro desenvolvedor reproduz.
-4. **Case ponta a ponta:** mostrar um pedido real transformado em spec,
-   código, testes, evidências visuais, PR, gates e release; explicitar onde
-   houve validação humana e quais etapas não são autônomas.
-5. **Material de apresentação:** narrativa executiva de cinco minutos,
-   deep dive técnico de 15–20 minutos, demo curta, FAQ e versão em inglês
-   posteriormente, com dados medidos e sem métricas inventadas.
-6. **Publicação e licenças:** página/índice público com links estáveis,
-   verificação de direitos, atribuições e revisão de segurança.
+## Compromissos que não podem regredir
 
-O detalhamento, os critérios de aceite e o checklist vivo estão na
-[Issue #21](https://github.com/trucco86/nova-wing-3d/issues/21).
+- Preservar a capa aprovada, o hangar 360°, os pilotos, modelos e
+  cores das naves, mecânicas e checkpoints da v1.13.0.
+- Bia e Jenifer têm porte semelhante; Bia é preta e Jenifer é
+  cinza. Christopher e Bob são pretos e têm porte parecido,
+  mas Christopher tem a cabeça maior. Calvinho é pequeno,
+  preto e de pouco pelo.
+- Marvin é o pitbull marrom e branco de focinho rosa e olhos
+  cor de mel esverdeados. Ele é o último chefe.
+- Na história pública, Marvin roubou suprimentos dos gatos.
+  O esquadrão vai persegui-lo até a galáxia mais distante,
+  sem divulgar a quantidade interna de fases.
+- Publicação web tem prioridade sobre distribuição Android/iOS.
+- Nunca marcar uma entrega como concluída sem validação real.
 
-## Regras de promoção entre prioridades
+## P1 — Entregáveis do case profissional
 
-- Fechar P0 só após integração, validação com navegador e publicação verificadas.
-- Trabalhar a documentação P1 em paralelo quando não bloquear o P0.
-- Publicar o case somente com capturas, números e logs que comprovem as alegações.
-- Revisitar a ordem se surgirem bugs que impeçam jogar, perdas de save,
-  problemas de publicação ou falhas graves de acessibilidade.
+- **Produto:** README executivo, proposta do jogo, controles,
+  galeria de capturas reais, visão do roadmap e instruções de jogo.
+- **Engenharia:** arquitetura, mapa de módulos, decisões técnicas
+  (ADRs), limites, trade-offs e instruções de execução local.
+- **Harness:** guia reproduzível de AGENTS.md, specs, skills,
+  ferramentas, testes, CI, gates e proteção de release.
+- **Rastreabilidade:** demonstrar um pedido real evoluindo de
+  requisito para spec, código, testes, PR, CI e release.
+- **Apresentação:** case executivo de cinco minutos, deep dive
+  técnico de 15–20 minutos, roteiro de demo, FAQ e materiais
+  visuais; versão em inglês em uma etapa posterior.
+- **Publicação segura:** link público estável para jogo, código
+  e evidências, com verificação de licenças e atribuições.
+
+Detalhes e critérios de aceite: [issue #21](https://github.com/trucco86/nova-wing-3d/issues/21).
+
+## Regras para mudar o estado
+
+- P0 só termina após integração, CI, teste de navegador e
+  publicação verificada.
+- O case P1 precisa de evidências reproduzíveis e uma demonstração
+  real, sem números ou ganhos de produtividade inventados.
+- Bugs bloqueantes, perda de save ou regressão grave assumem
+  prioridade sobre melhorias estéticas e novas features.
