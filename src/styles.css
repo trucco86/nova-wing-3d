@@ -3063,3 +3063,5 @@ body:not(.menu) #menu::after {
 @media (prefers-reduced-motion: reduce) {
   .cinematic-space, .cinematic-ship, #criticalWarning { animation: none; }
 }
+
+#cinematic[hidden], #criticalWarning[hidden], #petCareHud[hidden] { display: none !important; }
