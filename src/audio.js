@@ -40,6 +40,7 @@ export function createMusic(context) {
     remaining = 0,
     enabled = true,
     playing = false,
+    volume = 1,
     sector = 0,
     mode = 'sector';
   const voices = new Set();
@@ -155,7 +156,7 @@ export function createMusic(context) {
       playing = true;
       if (!master) {
         master = context.createGain();
-        master.gain.value = 0.55;
+        master.gain.value = 0.55 * volume;
         let output = master;
         if (context.createBiquadFilter) {
           filter = context.createBiquadFilter();
@@ -187,6 +188,10 @@ export function createMusic(context) {
     resume() {
       playing = true;
       remaining = 0;
+    },
+    setVolume(value) {
+      volume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 1;
+      if (master) master.gain.value = 0.55 * volume;
     },
     setEnabled(value) {
       enabled = !!value;
