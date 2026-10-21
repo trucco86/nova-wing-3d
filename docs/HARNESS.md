@@ -2,6 +2,9 @@
 
 O harness é o conjunto de contexto, procedimentos e verificações que acompanha cada mudança. Não há processo residente chamando modelos nem promessa de desenvolvimento sem revisão.
 
+O [case Nova Wing](case/README.md) relaciona esse harness a ciclos de prototipação, specs, revisão e CI/CD. O [desenho de agentes especializados](case/PAPEIS-E-HANDOFFS.md) é um **modelo de responsabilidades e handoffs**, não evidência de que o repositório já execute uma orquestração autônoma de múltiplos agentes.
+
+
 | Camada          | Função                                       | Fonte                    |
 | --------------- | -------------------------------------------- | ------------------------ |
 | Contexto        | Escopo, arquitetura, regras e caminhos       | AGENTS.md e docs         |
