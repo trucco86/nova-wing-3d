@@ -33,3 +33,9 @@ Instruções orientam agentes; scripts verificam contratos; regras do GitHub pod
 ## Campanha 1.0
 
 A expansão levou os dados de fases para um módulo próprio e acrescentou loja, checkpoint e estados de respawn. Testes da sequência inteira evitam que a vitória de um chefe termine a campanha cedo demais. Um teste de silhuetas detectou dois pares de chefes inicialmente semelhantes; seus modelos foram diferenciados antes da entrega.
+
+## Da ideia rápida ao processo verificável
+
+O Nova Wing tornou visível a tensão entre velocidade de prototipação e custo de preservar comportamentos existentes. A evolução do processo foi documentar intenção, usar as fontes editáveis como verdade, construir testes sobre a simulação real, completar com browser e associar cada release a um SHA. O aprendizado central não é que agentes substituem engenharia, mas que **engenharia explícita e verificável habilita mudanças assistidas por IA com menor ambiguidade**.
+
+O modelo de papéis independentes ainda é uma proposta: não declarar autonomia, ganho de produtividade ou ROI sem execução instrumentada e medição comparável. Veja o [case](case/README.md), as [evidências](case/EVIDENCIAS.md) e o [plano de mensuração](case/METRICAS.md).
