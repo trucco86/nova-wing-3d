@@ -92,7 +92,7 @@ test('2D perspective supports controls, pause and return to the same mission', a
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   await page.evaluate(() => window.fixture.advance(2));
   expect(await page.evaluate(() => window.fixture.game.snapshot().arcade)).toEqual(before.arcade);
-  await page.locator('#pause').click();
+  await page.locator('#pauseResume').click();
   await page.evaluate(() => window.fixture.advance(18));
   await expect(page.locator('#arcadePanel')).toBeHidden();
   expect(await page.evaluate(() => window.fixture.game.snapshot().state)).toBe('playing');
@@ -192,7 +192,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   expect(await page.evaluate(() => window.fixture.game.snapshot().strategy)).toEqual(
     paused.strategy,
   );
-  await page.locator('#pause').click();
+  await page.locator('#pauseResume').click();
   await page.evaluate(() => {
     window.fixture.advance(8);
     window.fixture.game.cycleSpecial();
