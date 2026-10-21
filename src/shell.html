@@ -276,6 +276,7 @@
               PILOTO E NAVE <span>＋</span>
             </button>
             <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+            <button class="secondary" id="optionsFromMenu">⚙ OPÇÕES</button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
           </div>
           <div class="title-extras">
@@ -303,7 +304,7 @@
             </p>
           </details>
         </div>
-        <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>
+        <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
         <span id="gameVersion">vBUILD:VERSION</span>
       </section>
       <section
@@ -328,6 +329,98 @@
             PULAR / INICIAR VOO ↗
           </button>
           <small>ENTER, ESPAÇO OU ESC PARA PULAR</small>
+        </div>
+      </section>
+      <section
+        id="pauseMenu"
+        class="nw-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Pausa da missão"
+        hidden
+      >
+        <div class="nw-modal-card">
+          <span class="eyebrow">FIVE CATS / MISSÃO</span>
+          <h2 id="pauseTitle">MISSÃO PAUSADA</h2>
+          <p id="pauseCare" class="nw-care"></p>
+          <div id="pauseActions" class="nw-modal-actions">
+            <button class="primary" id="pauseResume">CONTINUAR</button>
+            <button class="secondary" id="pauseRestart">REINICIAR FASE</button>
+            <button class="secondary" id="pauseOptions">⚙ OPÇÕES</button>
+            <button class="secondary" id="pauseExit">SAIR PARA O MENU</button>
+          </div>
+          <div id="pauseConfirmPanel" hidden>
+            <p id="pauseConfirmText"></p>
+            <div class="nw-confirm-actions">
+              <button id="pauseConfirmCancel">CANCELAR</button>
+              <button class="primary" id="pauseConfirmOk">CONFIRMAR</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        id="settingsMenu"
+        class="nw-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Configurações"
+        hidden
+      >
+        <div class="nw-modal-card nw-settings-card">
+          <h2 id="settingsTitle">OPÇÕES</h2>
+          <div class="nw-settings-grid">
+            <label
+              ><span id="labelLanguage">IDIOMA</span>
+              <select id="settingLanguage">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select></label
+            >
+            <label
+              ><span id="labelMaster">VOLUME GERAL</span
+              ><input id="settingMaster" type="range" min="0" max="1" step="0.05" value="0.85"
+            /></label>
+            <label
+              ><span id="labelMusic">MÚSICA</span
+              ><input id="settingMusic" type="range" min="0" max="1" step="0.05" value="0.7"
+            /></label>
+            <label
+              ><span id="labelSfx">EFEITOS</span
+              ><input id="settingSfx" type="range" min="0" max="1" step="0.05" value="0.75"
+            /></label>
+            <label
+              ><span id="labelSensitivity">SENSIBILIDADE DO TOQUE</span
+              ><input id="settingSensitivity" type="range" min="0.6" max="1.6" step="0.1" value="1"
+            /></label>
+            <label
+              ><span id="labelOpacity">OPACIDADE DOS BOTÕES</span
+              ><input id="settingOpacity" type="range" min="0.4" max="1" step="0.05" value="0.9"
+            /></label>
+            <label class="nw-setting-check"
+              ><input id="settingSubtitles" type="checkbox" checked /><span id="labelSubtitles"
+                >LEGENDAS</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingIntro" type="checkbox" checked /><span id="labelIntro"
+                >ABERTURA AUTOMÁTICA</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingVibration" type="checkbox" /><span id="labelVibration"
+                >VIBRAÇÃO</span
+              ></label
+            >
+            <label class="nw-setting-check"
+              ><input id="settingLeftHanded" type="checkbox" /><span id="labelLeftHanded"
+                >CONTROLES PARA CANHOTOS</span
+              ></label
+            >
+          </div>
+          <div class="nw-modal-actions">
+            <button id="settingsClose" class="primary">FECHAR</button>
+          </div>
         </div>
       </section>
       <div id="sectorTag">

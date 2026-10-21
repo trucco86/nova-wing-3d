@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.15.0 — HUD, pausa e opções
+
+- Logotipo sai do voo e título de fase desaparece após três segundos; radares de chefe mais compactos no celular.
+- Menu de pausa permite continuar, reiniciar setor (com restauração do estado de entrada) e voltar ao menu, com confirmação para ações destrutivas.
+- Tela de opções na abertura e na pausa: volume geral, música, efeitos, idioma da interface, sensibilidade de toque, opacidade, legendas, intro, vibração e modo canhoto.
+- Preferências independentes do checkpoint e validadas antes do uso; redução de movimento preservada.
+- Capa, Five Cats, Marvin, prólogo, recompensas, voo e conteúdo de combate da v1.14 permanecem intactos.
+
 ## 1.14.0 — Áudio, suprimentos e prólogo
 
 - Música original na tela inicial sob gesto do usuário; efeitos de tiro e plasma mais suaves.

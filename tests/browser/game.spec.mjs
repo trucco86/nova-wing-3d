@@ -13,9 +13,8 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await page.getByRole('button', { name: /INICIAR MISSÃO/ }).click();
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
-  await page.locator('#music').click();
-  await expect(page.locator('#music')).toHaveText('♪ OFF');
-  await page.locator('#music').click();
+  await expect(page.locator('#music')).toBeHidden();
+  await expect(page.locator('.brand-mini')).toBeHidden();
   await expect(page.locator('#stage')).toContainText('CIDADE DAS MÁQUINAS');
   if (info.project.name === 'mobile') {
     await expect(page.locator('#touch')).toBeVisible();
@@ -27,8 +26,13 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   }
   await expect(page.locator('#bombs')).toHaveText('◆ ◆');
   await page.getByRole('button', { name: 'Pausar jogo' }).click();
-  await expect(page.locator('#message')).toContainText('PAUSADO');
+  await expect(page.locator('#pauseTitle')).toHaveText('MISSÃO PAUSADA');
+  await expect(page.locator('#pauseMenu')).toBeVisible();
   await expect(page.locator('#pause')).toHaveText('▶');
+  await page.locator('#pauseOptions').click();
+  await expect(page.locator('#settingsMenu')).toBeVisible();
+  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
+  await page.locator('#settingsClose').click();
   await expect(page.locator('#game')).toHaveJSProperty(
     'width',
     info.project.name === 'mobile' ? 844 : 1366,
@@ -101,9 +105,13 @@ test('checkpoint restores the final sector with independent music control', asyn
   await page.locator('#continue').click();
   await expect(page.locator('#stage')).toHaveText('TRONO DE MARVIN');
   await expect(page.locator('#weaponLabel')).toContainText('PLASMA VÓRTICE');
-  await page.locator('#music').click();
-  await expect(page.locator('#music')).toHaveText('♪ OFF');
-  await expect(page.locator('#sound')).toHaveText('SOM ON');
+  await page.locator('#pause').click();
+  await page.locator('#pauseOptions').click();
+  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
+  await expect(page.locator('#settingSfx')).toHaveValue('0.75');
+  await page.locator('#settingsClose').click();
+  await page.locator('#pauseResume').click();
+  await expect(page.locator('#pauseMenu')).toBeHidden();
 });
 test('colossal bosses and sector scenery render in WebGL', async ({ page }, info) => {
   test.setTimeout(120000);
@@ -332,8 +340,8 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
   await page.goto('/');
   await page.locator('#start').click();
   await page.locator('#cinematicSkip').click();
-  await page.locator('#music').focus();
-  const label = await page.locator('#music').textContent();
+  await page.locator('#pause').focus();
+  const label = await page.locator('#pause').textContent();
   await page.keyboard.down('Space');
   await expect
     .poll(() => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
@@ -341,7 +349,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
     })
     .toBeGreaterThan(30);
   await page.keyboard.up('Space');
-  await expect(page.locator('#music')).toHaveText(label);
+  await expect(page.locator('#pause')).toHaveText(label);
   const blocked = await page
     .locator('#loadout')
     .evaluate(
