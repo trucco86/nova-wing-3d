@@ -52,7 +52,12 @@ for (const command of commands) {
   const args = ['run', command];
   if (command === 'test:browser' && process.env.NOVA_BROWSER_SHARD) {
     const shard = process.env.NOVA_BROWSER_SHARD;
-    if (!new RegExp('^[0-9]+/[0-9]+
+    const parts = shard.split('/');
+    if (
+      parts.length !== 2 ||
+      parts.some((part) => !part || !Number.isSafeInteger(Number(part)) || Number(part) < 1)
+    )
+      throw new Error('Invalid browser shard');
     args.push('--', '--shard=' + shard);
   }
   const r = spawnSync('npm', args, {
