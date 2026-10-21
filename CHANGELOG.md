@@ -8,7 +8,6 @@
 - Correção da fuselagem e do nariz da NOVA-7 no hangar e no voo.
 - Compatibilidade com checkpoints e os controles atuais.
 
-
 ## 1.13.0 — capa viva e hangar 360
 
 - Capa animada com respeito a movimento reduzido.
