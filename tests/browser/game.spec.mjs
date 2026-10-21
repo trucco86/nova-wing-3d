@@ -300,6 +300,7 @@ test('offline Android interface protects controls from cutout and gesture insets
       document.documentElement.style.setProperty(`--safe-area-inset-${side}`, `${value}px`);
   });
   await page.locator('#start').tap();
+  await expect(page.locator('#cinematic')).toHaveCSS('pointer-events', 'auto');
   await page.locator('#cinematicSkip').tap();
   await expect(page.locator('#touch')).toBeVisible();
   const viewport = page.viewportSize();
