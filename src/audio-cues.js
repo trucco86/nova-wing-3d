@@ -54,6 +54,9 @@ const LIMIT = 24;
 
 export function createAudioCues(context) {
   const voices = new Set();
+  const output = context.createGain();
+  output.gain.value = 1;
+  output.connect(context.destination);
   const lastPlayed = new Map();
   let destroyed = false;
 
@@ -78,7 +81,7 @@ export function createAudioCues(context) {
       gain.gain.exponentialRampToValueAtTime(tone.gain, starts + 0.015);
       gain.gain.exponentialRampToValueAtTime(0.0001, ends);
       osc.connect(gain);
-      gain.connect(context.destination);
+      gain.connect(output);
       voices.add(voice);
       osc.onended = () => {
         voices.delete(voice);
@@ -105,6 +108,12 @@ export function createAudioCues(context) {
     }
     voices.clear();
     lastPlayed.clear();
+    output.disconnect();
   }
-  return { play, destroy, snapshot: () => ({ voices: voices.size, destroyed }) };
+  return {
+    play,
+    setVolume(level) { output.gain.value = Number.isFinite(level) ? Math.max(0, Math.min(1, level)) : 1; },
+    destroy,
+    snapshot: () => ({ voices: voices.size, destroyed }),
+  };
 }
