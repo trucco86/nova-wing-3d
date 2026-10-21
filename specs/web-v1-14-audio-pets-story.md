@@ -23,3 +23,7 @@ bosses, HUD, hangar 360, controles, pausas e checkpoints existentes.
 - Checkpoints anteriores continuam válidos (campos novos opcionais).
 - Check de qualidade, testes de navegador e build sincronizado passam.
 - Visual e áudio são testados por navegador, não só por testes unitários.
+
+## Gate de publicação
+
+- A branch só é mesclada depois de validação de qualidade e navegador concluídas com sucesso.
