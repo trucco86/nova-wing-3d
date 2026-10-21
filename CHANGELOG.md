@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.13.0 — capa viva e hangar 360
+
+- Capa animada com respeito a movimento reduzido.
+- Retratos recortados da arte aprovada e esculturas 3D dos cinco gatos.
+- Inspeção 360 das naves reais com cor, zoom, giro e controles por toque ou teclado.
+
 ## 1.12.0 — capa e voo de vitória
 
 - Capa ilustrada e configuração de piloto/nave aberta sob comando.

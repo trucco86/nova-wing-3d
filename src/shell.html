@@ -163,6 +163,33 @@
                 <i class="cat-avatar" style="--pilot: #ff718f">J</i><span>JENIFER</span>
               </button>
             </div>
+
+            <section class="hangar-preview" aria-label="Hangar de inspeção 360 graus">
+              <div class="hangar-topline">
+                <span id="hangarKind">NAVE DE COMBATE / 360°</span
+                ><strong id="hangarName">NOVA-7</strong>
+              </div>
+              <div class="hangar-tabs" role="group" aria-label="Objeto em inspeção">
+                <button id="hangarShip" aria-pressed="true">NAVE 360°</button>
+                <button id="hangarPilot" aria-pressed="false">PILOTO 360°</button>
+              </div>
+              <canvas
+                id="hangarCanvas"
+                tabindex="0"
+                role="img"
+                aria-label="Modelo 3D. Arraste para girar; setas inclinam e giram, mais e menos ajustam o zoom, Home restaura."
+              ></canvas>
+              <div class="hangar-floor"></div>
+              <div class="hangar-tools" role="group" aria-label="Controles de inspeção">
+                <button id="hangarLeft" aria-label="Girar para a esquerda">↶</button>
+                <button id="hangarRight" aria-label="Girar para a direita">↷</button>
+                <button id="hangarZoomOut" aria-label="Afastar">−</button>
+                <button id="hangarZoomIn" aria-label="Aproximar">＋</button>
+                <button id="hangarAuto" aria-pressed="true">AUTO GIRO · ON</button>
+                <button id="hangarReset">RESTAURAR</button>
+              </div>
+              <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
+            </section>
             <div class="pilot-profile">
               <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
               <div class="profile-copy">

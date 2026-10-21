@@ -116,3 +116,7 @@ J/L e botões laterais orbitam, enquanto movimento tradicional ajusta a mira.
 Geradores nos flancos e núcleo frontal compartilham o orçamento de dano existente.
 Bombas respeitam os ângulos e proteção. O cenário para de avançar durante a arena.
 Testes usam entrada de órbita antes do dano; não ignoram a proteção de posição.
+
+## Hangar web (1.13)
+
+`showroom.js` instala uma visualização Three.js isolada da simulação, ativada somente na seleção visível. Observa os IDs de piloto, nave e cor publicados pela seleção; não cria comandos globais nem muda o checkpoint. `showroom-models.js` cria esculturas dos gatos e clona recursos dos modelos reais de nave para descarte independente. O destroy da aplicação libera renderer, observers e listeners. Recortes CSS compartilham a única capa incorporada; não há download de modelos externos.

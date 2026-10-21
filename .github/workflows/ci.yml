@@ -7,7 +7,9 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ci-${{ github.ref }}
+  # A cancelled native build must not hold newer PR web checks in the workflow queue.
+  # Main deliveries remain serialized to prevent stale Pages deployments.
+  group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.sha || 'delivery' }}
   cancel-in-progress: true
 jobs:
   quality:

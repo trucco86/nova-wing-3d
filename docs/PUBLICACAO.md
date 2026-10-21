@@ -25,3 +25,7 @@ A versão já hospedada em Sites continua sendo uma entrega separada. Push no Gi
 Prefira `git revert` do commit problemático, execute build e validação, e publique o novo commit. Não use force push para esconder histórico. Para recuperar uma entrega anterior, faça checkout do commit conhecido em uma pasta isolada e execute `npm ci` seguido de `npm run build:check`.
 
 Não versione segredos ou relatórios locais. O arquivo de lock permite reinstalar as versões utilizadas; ele não garante disponibilidade futura dos serviços externos.
+
+### Concorrência de validação
+
+Cada commit de PR tem seu próprio grupo de workflow, evitando que o encerramento lento de um build nativo cancelado bloqueie novos checks web. As entregas de main continuam no mesmo grupo serializado, com cancelamento da entrega anterior, para impedir publicação fora de ordem. Nenhum gate é removido.
