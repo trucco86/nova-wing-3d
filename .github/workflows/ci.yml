@@ -32,7 +32,7 @@ jobs:
         with:
           name: quality-evidence
           path: artifacts/
-  browser:
+  browser-shard:
     needs: quality
     strategy:
       fail-fast: false
@@ -62,6 +62,23 @@ jobs:
             artifacts/
             test-results/
             playwright-report/
+
+
+  browser:
+    # Branch protection requires this stable check name.
+    # Success means every browser shard and the quality gate succeeded.
+    if: ${{ always() }}
+    needs: [quality, browser-shard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify all browser shards and quality
+        env:
+          QUALITY_RESULT: ${{ needs.quality.result }}
+          SHARDS_RESULT: ${{ needs.browser-shard.result }}
+        run: |
+          test "$QUALITY_RESULT" = "success"
+          test "$SHARDS_RESULT" = "success"
 
   android:
     # Native builds are opt-in. Web-first development never requires store accounts.
