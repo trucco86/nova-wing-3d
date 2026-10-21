@@ -1,6 +1,6 @@
 # Vídeo do case — roteiro e storyboard
 
-**Título de trabalho:** *Nova Wing: o aprendizado maior do que o jogo*  
+**Título de trabalho:** _Nova Wing: o aprendizado maior do que o jogo_  
 **Audiência:** líderes de engenharia, tecnologia, produto e negócios.  
 **Formato:** 16:9, 1080p; duração estimada de **2min15s**.  
 **Tom:** autoral, claro e técnico; menos trailer, mais relato de decisão.  
@@ -30,20 +30,20 @@
 >
 > Porque gerar código ficou mais fácil. Construir software confiável continua sendo trabalho de engenharia.
 
-*Notas editoriais:* “comecei” refere-se ao processo do autor/projeto; não significa execução pessoal exclusiva. "Agentes especializados" é a direção operacional documentada, **não** uma afirmação de agentes independentes em execução automática hoje.
+_Notas editoriais:_ “comecei” refere-se ao processo do autor/projeto; não significa execução pessoal exclusiva. "Agentes especializados" é a direção operacional documentada, **não** uma afirmação de agentes independentes em execução automática hoje.
 
 ## Storyboard de edição
 
-| Tempo aproximado | Cena | Tela/asset recomendado | Mensagem |
-| --- | --- | --- | --- |
-| 00:00–00:16 | A ideia | Capa do Nova Wing + 5–8 segundos de gameplay **real** | Hipótese que vale testar |
-| 00:16–00:33 | Protótipo | Voo com nave, cenário, controle e feedback | Ver antes de discutir por semanas |
-| 00:33–00:52 | Fricções | HUD mobile, tiros, chefe, bugs demonstráveis (sem fabricar falhas) | Evoluir implica regressões |
-| 00:52–01:12 | Mudança de pergunta | Animação gráfica *Ideia → Spec → Código → Teste → Feedback* | Processo verificável |
-| 01:12–01:31 | Contexto e papéis | Captura autêntica de `AGENTS.md`, skills, spec; fluxograma rotulado “modelo proposto” | Agentes com responsabilidade |
-| 01:31–01:49 | Harness | Trecho de teste em `tests/harness.mjs` e cenário de navegador | Validar cedo, sem simular sucesso |
-| 01:49–02:04 | CI/CD | PR #24 + execução de pipeline v1.15 concluída com sucesso | Evidência por SHA |
-| 02:04–02:15 | Fechamento | Gameplay + URL do repositório, frase final | O aprendizado maior do que o jogo |
+| Tempo aproximado | Cena                | Tela/asset recomendado                                                                | Mensagem                          |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------- | --------------------------------- |
+| 00:00–00:16      | A ideia             | Capa do Nova Wing + 5–8 segundos de gameplay **real**                                 | Hipótese que vale testar          |
+| 00:16–00:33      | Protótipo           | Voo com nave, cenário, controle e feedback                                            | Ver antes de discutir por semanas |
+| 00:33–00:52      | Fricções            | HUD mobile, tiros, chefe, bugs demonstráveis (sem fabricar falhas)                    | Evoluir implica regressões        |
+| 00:52–01:12      | Mudança de pergunta | Animação gráfica _Ideia → Spec → Código → Teste → Feedback_                           | Processo verificável              |
+| 01:12–01:31      | Contexto e papéis   | Captura autêntica de `AGENTS.md`, skills, spec; fluxograma rotulado “modelo proposto” | Agentes com responsabilidade      |
+| 01:31–01:49      | Harness             | Trecho de teste em `tests/harness.mjs` e cenário de navegador                         | Validar cedo, sem simular sucesso |
+| 01:49–02:04      | CI/CD               | PR #24 + execução de pipeline v1.15 concluída com sucesso                             | Evidência por SHA                 |
+| 02:04–02:15      | Fechamento          | Gameplay + URL do repositório, frase final                                            | O aprendizado maior do que o jogo |
 
 **Observação de montagem:** as janelas são aproximadas; ajuste cortes à narração real, nunca acelere artificialmente a fala para caber. Use capturas reais com [plano de gravação](CAPTURA.md). Qualquer gráfico animado deve ser rotulado como diagrama, não footage do produto.
 

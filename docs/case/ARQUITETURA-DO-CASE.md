@@ -55,11 +55,11 @@ As proteções administrativas de merge não podem ser inferidas do YAML: devem 
 
 ## Três níveis de maturidade
 
-| Nível | Estado | Evidência |
-| --- | --- | --- |
-| **1. Contexto e ferramentas** | Existente | [AGENTS.md](../../AGENTS.md), [skills](../../skills/README.md), [specs](../../specs/README.md) |
-| **2. Harness e CI/CD com rastreabilidade** | Existente | [testes](../TESTES.md), [workflow](../../.github/workflows/ci.yml), [execução](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578) |
-| **3. Agentes independentes por etapa, com handoffs observáveis** | Modelo proposto; requer instrumentação e provas | [Papéis](PAPEIS-E-HANDOFFS.md), [métricas](METRICAS.md) |
+| Nível                                                            | Estado                                          | Evidência                                                                                                                                         |
+| ---------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Contexto e ferramentas**                                    | Existente                                       | [AGENTS.md](../../AGENTS.md), [skills](../../skills/README.md), [specs](../../specs/README.md)                                                    |
+| **2. Harness e CI/CD com rastreabilidade**                       | Existente                                       | [testes](../TESTES.md), [workflow](../../.github/workflows/ci.yml), [execução](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578) |
+| **3. Agentes independentes por etapa, com handoffs observáveis** | Modelo proposto; requer instrumentação e provas | [Papéis](PAPEIS-E-HANDOFFS.md), [métricas](METRICAS.md)                                                                                           |
 
 ## Princípio transferível
 

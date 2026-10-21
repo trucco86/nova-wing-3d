@@ -4,56 +4,56 @@
 
 ## Slide 1 — Um jogo de nave. Um experimento de engenharia.
 
-**Headline:** *O produto é o Nova Wing. O case é o processo que conseguimos construir ao redor dele.*
+**Headline:** _O produto é o Nova Wing. O case é o processo que conseguimos construir ao redor dele._
 
 Visual: arte/captura real do jogo, sem diagramas nesta primeira tela.  
 Fala: objetivo de validar ideia e aprender sobre entrega acelerada com IA, não vender um jogo.
 
 ## Slide 2 — Ideia → primeiro protótipo → feedback
 
-**Headline:** *A distância entre imaginar e testar ficou menor.*
+**Headline:** _A distância entre imaginar e testar ficou menor._
 
 Visual: três quadros com hipótese, protótipo e jogador avaliando.  
 Fala: o jogo permitia perceber movimento, colisão, HUD e som imediatamente. **Não atribuir número de dias economizados sem baseline.**
 
 ## Slide 3 — O problema mudou quando o produto cresceu
 
-**Headline:** *Gerar a primeira versão era simples. Preservar o que funcionava era outra história.*
+**Headline:** _Gerar a primeira versão era simples. Preservar o que funcionava era outra história._
 
 Visual: imagens reais de controles mobile, chefe e áudio com labels de risco.  
 Fala: regressões e complexidade — alterações localizadas podem afetar o restante.
 
 ## Slide 4 — Contexto: transformar conversa em contrato
 
-**Headline:** *Se a decisão só existe no chat, a próxima alteração começa sem memória operacional confiável.*
+**Headline:** _Se a decisão só existe no chat, a próxima alteração começa sem memória operacional confiável._
 
 Visual: mapa de `AGENTS.md`, `specs/`, `skills/`, `docs/`.  
 Fala: por que conhecimento versionado reduz ambiguidade e o que ainda exige revisão humana.
 
 ## Slide 5 — Especialização por etapa, não agentes soltos
 
-**Headline:** *Cada etapa precisa de uma responsabilidade, uma entrada e uma evidência de saída.*
+**Headline:** _Cada etapa precisa de uma responsabilidade, uma entrada e uma evidência de saída._
 
 Visual: pipeline de [papéis e handoffs](PAPEIS-E-HANDOFFS.md). **Legenda obrigatória: modelo proposto.**  
 Fala: Product Discovery → Requirements → Architecture → Implementation → Quality → Review → Release → Learning. Skills existentes ≠ agentes autônomos executando.
 
 ## Slide 6 — Harness e validação: reduzir feedback sem mascarar risco
 
-**Headline:** *Não basta uma resposta do agente dizendo “funciona”.*
+**Headline:** _Não basta uma resposta do agente dizendo “funciona”._
 
 Visual: foto da execução real do teste/screenshot e diagrama “harness determinístico + navegador + pessoa”.  
 Fala: casos reproduzíveis, teste de produção com interface injetada e complemento visual real.
 
 ## Slide 7 — CI/CD: de alteração para release auditável
 
-**Headline:** *Cada release precisa de um commit e de uma história de evidências.*
+**Headline:** _Cada release precisa de um commit e de uma história de evidências._
 
 Visual: [CI oficial](../../.github/workflows/ci.yml), [run v1.15](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578), [PR #24](https://github.com/trucco86/nova-wing-3d/pull/24).  
 Fala: gates, versões, falhas e rollback. CI verde não implica zero defeitos. Proteção de main exige verificação administrativa.
 
 ## Slide 8 — O que eu levaria para uma plataforma de produto
 
-**Headline:** *IA acelera a geração. Engenharia determina se conseguimos evoluir com confiança.*
+**Headline:** _IA acelera a geração. Engenharia determina se conseguimos evoluir com confiança._
 
 Visual: cadeia com loop de feedback; links de demo e repositório.  
 Fala: aplicar os princípios em produtos reais, medir custo/qualidade/lead time e ampliar o modelo de agentes apenas quando houver observabilidade e limites.

@@ -6,7 +6,7 @@
 
 ![Gameplay real capturado em WebGL](../images/boost.png)
 
-*Captura real do jogo; não é uma ilustração sintética de gameplay.*
+_Captura real do jogo; não é uma ilustração sintética de gameplay._
 
 ## A ideia em 30 segundos
 
@@ -16,14 +16,14 @@ A resposta investigada neste repositório é um fluxo com intenção clara, `spe
 
 ## O que demonstramos
 
-| Capacidade | Evidência no repositório |
-| --- | --- |
-| Ideia → protótipo → ciclos incrementais | [histórico](../../CHANGELOG.md), [releases](https://github.com/trucco86/nova-wing-3d/releases) |
-| Contexto explícito para mudança | [instruções](../../AGENTS.md), [skills](../../skills/README.md), [specs](../../specs/README.md) |
-| Testabilidade sem reimplementar o jogo | [harness determinístico](../../tests/harness.mjs), [testes](../TESTES.md) |
-| Validação real de WebGL e mobile em browser | [suíte Playwright](../../tests/browser/) |
-| Qualidade antes de publicar | [CI/CD](../../.github/workflows/ci.yml), [run da v1.15](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578) |
-| Limites e aprendizado | [decisões](DECISOES.md), [evidências](EVIDENCIAS.md) |
+| Capacidade                                  | Evidência no repositório                                                                                                   |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Ideia → protótipo → ciclos incrementais     | [histórico](../../CHANGELOG.md), [releases](https://github.com/trucco86/nova-wing-3d/releases)                             |
+| Contexto explícito para mudança             | [instruções](../../AGENTS.md), [skills](../../skills/README.md), [specs](../../specs/README.md)                            |
+| Testabilidade sem reimplementar o jogo      | [harness determinístico](../../tests/harness.mjs), [testes](../TESTES.md)                                                  |
+| Validação real de WebGL e mobile em browser | [suíte Playwright](../../tests/browser/)                                                                                   |
+| Qualidade antes de publicar                 | [CI/CD](../../.github/workflows/ci.yml), [run da v1.15](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578) |
+| Limites e aprendizado                       | [decisões](DECISOES.md), [evidências](EVIDENCIAS.md)                                                                       |
 
 ## Navegação do case
 

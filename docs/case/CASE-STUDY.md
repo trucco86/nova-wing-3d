@@ -19,6 +19,7 @@ Isso não torna o desenvolvimento trivial. Ao contrário: experiências interati
 O protótipo ajudou a materializar hipóteses. Mas cada nova funcionalidade aumentou o risco de regressão. O problema deixou de ser somente criar mecânicas e passou a ser **evoluir sem destruir decisões anteriores**.
 
 O feedback do gameplay precisou se tornar:
+
 - um problema observável;
 - critérios de aceite;
 - limites de mudança;

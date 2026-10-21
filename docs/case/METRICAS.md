@@ -4,17 +4,17 @@ O projeto ilustra um processo; **não dispõe de dados suficientes para afirmar 
 
 ## Instrumentação mínima por tarefa
 
-| Campo | Definição e coleta |
-| --- | --- |
-| `task_id`, `spec_ref`, `commit_sha`, `pr_number` | Identidade e rastreabilidade única da mudança |
-| `started_at`, `ready_for_review_at`, `merged_at`, `deployed_at` | Marcos observáveis; guardar timestamps e timezone |
-| `human_active_minutes` | Tempo humano efetivamente despendido em descoberta, revisão e correção |
-| `agent_invocations`, `model_id`, `agent_role` | Chamadas, papel e versão do modelo, se houver orquestração instrumentada |
-| `inference_cost`, `tool_cost` | Custo medido por tarefa, moeda e fonte; não estimar sem evidência |
-| `ci_duration`, `checks_total`, `checks_failed` | Logs de execução por SHA, incluindo novas tentativas |
-| `rework_minutes`, `reopened`, `post_release_defects` | Retrabalho humano e defeitos com severidade definida |
-| `acceptance_outcome` | Critérios de aceite cumpridos, rejeitados ou inconclusivos |
-| `device_validation` | Navegador, versão, sistema, orientação, viewport e captura real |
+| Campo                                                           | Definição e coleta                                                       |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `task_id`, `spec_ref`, `commit_sha`, `pr_number`                | Identidade e rastreabilidade única da mudança                            |
+| `started_at`, `ready_for_review_at`, `merged_at`, `deployed_at` | Marcos observáveis; guardar timestamps e timezone                        |
+| `human_active_minutes`                                          | Tempo humano efetivamente despendido em descoberta, revisão e correção   |
+| `agent_invocations`, `model_id`, `agent_role`                   | Chamadas, papel e versão do modelo, se houver orquestração instrumentada |
+| `inference_cost`, `tool_cost`                                   | Custo medido por tarefa, moeda e fonte; não estimar sem evidência        |
+| `ci_duration`, `checks_total`, `checks_failed`                  | Logs de execução por SHA, incluindo novas tentativas                     |
+| `rework_minutes`, `reopened`, `post_release_defects`            | Retrabalho humano e defeitos com severidade definida                     |
+| `acceptance_outcome`                                            | Critérios de aceite cumpridos, rejeitados ou inconclusivos               |
+| `device_validation`                                             | Navegador, versão, sistema, orientação, viewport e captura real          |
 
 ## Indicadores derivados
 
@@ -40,14 +40,14 @@ As [métricas DORA](https://dora.dev/) referenciam desempenho de entrega; o proj
 
 ## Painel executivo — campos sem valores fictícios
 
-| KPI | Baseline | Atual | Meta | Status |
-| --- | --- | --- | --- | --- |
-| Lead time p50/p90 | A medir | A medir | Definir após baseline | Não instrumentado |
-| Tempo até feedback CI | A medir | A medir | Definir após baseline | Logs disponíveis, agregação pendente |
-| Retrabalho por tarefa | A medir | A medir | Definir após baseline | Não instrumentado |
-| Taxa de falha de release | A medir | A medir | Definir após baseline | Exige classificação de incidente |
-| Horas humanas por entrega válida | A medir | A medir | Definir após baseline | Não instrumentado |
-| Custo total por entrega válida | A medir | A medir | Definir após baseline | Não instrumentado |
+| KPI                              | Baseline | Atual   | Meta                  | Status                               |
+| -------------------------------- | -------- | ------- | --------------------- | ------------------------------------ |
+| Lead time p50/p90                | A medir  | A medir | Definir após baseline | Não instrumentado                    |
+| Tempo até feedback CI            | A medir  | A medir | Definir após baseline | Logs disponíveis, agregação pendente |
+| Retrabalho por tarefa            | A medir  | A medir | Definir após baseline | Não instrumentado                    |
+| Taxa de falha de release         | A medir  | A medir | Definir após baseline | Exige classificação de incidente     |
+| Horas humanas por entrega válida | A medir  | A medir | Definir após baseline | Não instrumentado                    |
+| Custo total por entrega válida   | A medir  | A medir | Definir após baseline | Não instrumentado                    |
 
 **Lição:** velocidade útil é entregar mudanças aceitas com evidência, não gerar diffs mais rapidamente.
 
