@@ -62,8 +62,6 @@ jobs:
             artifacts/
             test-results/
             playwright-report/
-
-
   browser:
     # Branch protection requires this stable check name.
     # Success means every browser shard and the quality gate succeeded.
@@ -79,7 +77,6 @@ jobs:
         run: |
           test "$QUALITY_RESULT" = "success"
           test "$SHARDS_RESULT" = "success"
-
   android:
     # Native builds are opt-in. Web-first development never requires store accounts.
     if: ${{ vars.NOVA_BUILD_NATIVE == 'true' }}
