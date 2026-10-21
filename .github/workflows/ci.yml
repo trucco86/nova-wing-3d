@@ -34,10 +34,15 @@ jobs:
           path: artifacts/
   browser:
     needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
       NOVA_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      NOVA_BROWSER_SHARD: ${{ matrix.shard }}/4
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -52,7 +57,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
-          name: browser-evidence
+          name: browser-evidence-${{ matrix.shard }}
           path: |
             artifacts/
             test-results/
