@@ -2605,7 +2605,7 @@ body:has(#strategyDrawer[open]):has(#strategyControls:not([hidden])) #loadout {
   padding: max(68px, 8vh) 8vw 52px;
   background:
     linear-gradient(90deg, #030b16eb, #030b1666 48%, #030b1610 75%),
-    url('BUILD:COVER') center / cover;
+    var(--cover-art) center / cover;
 }
 #menu.title-screen:not(.selecting) .title-content {
   display: block;
@@ -2677,5 +2677,206 @@ body:has(#strategyDrawer[open]):has(#strategyControls:not([hidden])) #loadout {
   }
   #menu.title-screen:not(.selecting) .title-help {
     margin-top: 8px;
+  }
+}
+
+/* One embedded artwork, shared by the cover and every original-art portrait. */
+:root {
+  --cover-art: url('BUILD:COVER');
+}
+.showroom-web #menu.title-screen:not(.selecting) {
+  background: #030b16;
+  isolation: isolate;
+}
+.showroom-web #menu.title-screen:not(.selecting)::before {
+  content: '';
+  position: fixed;
+  inset: -2%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #030b16eb, #030b1655 48%, #030b1610 75%),
+    var(--cover-art) center/cover;
+  animation: cover-drift 22s ease-in-out infinite alternate;
+}
+.showroom-web #menu.title-screen:not(.selecting)::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 72% 68%, #5aeaff22, transparent 28%),
+    radial-gradient(1px 1px at 18% 24%, white, transparent),
+    radial-gradient(2px 2px at 38% 64%, #7cdbff, transparent),
+    radial-gradient(1px 1px at 65% 15%, white, transparent);
+  background-size:
+    auto,
+    270px 310px,
+    430px 510px,
+    570px 620px;
+  animation: cover-stars 18s linear infinite;
+}
+@keyframes cover-drift {
+  from {
+    transform: scale(1.01) translate3d(-0.5%, 0, 0);
+  }
+  to {
+    transform: scale(1.055) translate3d(0.5%, -0.5%, 0);
+  }
+}
+@keyframes cover-stars {
+  from {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0.95;
+    transform: translateY(-22px);
+  }
+}
+body:not(.menu) #menu::before,
+body:not(.menu) #menu::after {
+  animation-play-state: paused !important;
+}
+.showroom-web .cat-avatar {
+  background-image: var(--cover-art);
+  background-size: 836% auto;
+  background-position: 57.75% 40.5%;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px #c3e4ea55;
+  aspect-ratio: 1;
+}
+.showroom-web .cat-avatar::before,
+.showroom-web .cat-avatar::after {
+  display: none;
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+  transform: none;
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+  transform: none;
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+  transform: none;
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+  transform: none;
+}
+.showroom-web .pilot-roster .cat-avatar {
+  width: 54px !important;
+  height: 54px !important;
+}
+.showroom-web .profile-portrait .cat-avatar {
+  width: 100px;
+  height: 100px;
+}
+.hangar-preview {
+  position: relative;
+  isolation: isolate;
+  margin: 16px 0;
+  border: 1px solid #79ddff33;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 70%, #173b4b, #030e1a 75%);
+  overflow: hidden;
+}
+.hangar-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 15px 18px 8px;
+  font: 10px monospace;
+  letter-spacing: 1.6px;
+  color: #86a8ba;
+}
+.hangar-topline strong {
+  color: #dffcff;
+}
+.hangar-tabs {
+  position: absolute;
+  left: 14px;
+  top: 42px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+}
+.hangar-tabs button,
+.hangar-tools button {
+  background: #071824cc;
+  color: #b7d3df;
+  border: 1px solid #5aafc54d;
+  border-radius: 5px;
+  padding: 8px 10px;
+  font: 9px monospace;
+  cursor: pointer;
+}
+.hangar-tabs button[aria-pressed='true'],
+.hangar-tools button[aria-pressed='true'] {
+  color: #8ffff0;
+  border-color: #65e8c9;
+}
+#hangarCanvas {
+  display: block;
+  width: 100%;
+  height: 330px;
+  touch-action: none;
+  outline-offset: -3px;
+  cursor: grab;
+  position: relative;
+  z-index: 1;
+}
+#hangarCanvas:active {
+  cursor: grabbing;
+}
+.hangar-floor {
+  position: absolute;
+  inset: 55% 14% 48px;
+  z-index: -1;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 24px, #7ed4f218 25px 26px),
+    repeating-linear-gradient(90deg, transparent 0 24px, #7ed4f218 25px 26px);
+  transform: perspective(180px) rotateX(55deg);
+  border-radius: 50%;
+}
+.hangar-tools {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 4px 10px;
+}
+#hangarHint {
+  color: #82a4b8;
+  font: 9px monospace;
+  text-align: center;
+  letter-spacing: 1.3px;
+  padding: 5px 12px 13px;
+  margin: 0;
+}
+@media (max-width: 900px), (max-height: 620px) {
+  #hangarCanvas {
+    height: 270px;
+  }
+  .showroom-web .pilot-roster .cat-avatar {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .hangar-topline {
+    font-size: 8px;
+    letter-spacing: 0.7px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .showroom-web #menu.title-screen::before,
+  .showroom-web #menu.title-screen::after {
+    animation: none !important;
   }
 }

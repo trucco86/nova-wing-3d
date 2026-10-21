@@ -414,6 +414,9 @@ export function createGame({
     const pilot = activePilot(),
       ship = activeShip();
     $('squadSelection').style.setProperty?.('--profile-color', pilot.color);
+    $('squadSelection').setAttribute?.('data-pilot', pilot.id);
+    $('squadSelection').setAttribute?.('data-ship', pilotLoadout.ship);
+    $('squadSelection').setAttribute?.('data-ship-color', pilotLoadout.color);
     $('profileAvatar').style.setProperty?.('--pilot', pilot.color);
     $('profileAvatar').textContent = '';
     $('profileAvatar').setAttribute?.('data-pilot', pilot.id);
