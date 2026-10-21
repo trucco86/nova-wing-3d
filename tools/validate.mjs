@@ -49,7 +49,13 @@ if (process.argv.includes('--browser')) commands.push('test:browser');
 const checks = [];
 for (const command of commands) {
   const start = Date.now();
-  const r = spawnSync('npm', ['run', command], {
+  const args = ['run', command];
+  if (command === 'test:browser' && process.env.NOVA_BROWSER_SHARD) {
+    const shard = process.env.NOVA_BROWSER_SHARD;
+    if (!/^\\d+\/\\d+$/.test(shard)) throw new Error('Invalid browser shard');
+    args.push('--', '--shard=' + shard);
+  }
+  const r = spawnSync('npm', args, {
     encoding: 'utf8',
     // The complete suite exceeded eight minutes on a software-rendered CI runner.
     timeout: command === 'test:browser' ? 720000 : 180000,
