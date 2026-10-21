@@ -7,3 +7,5 @@
 - Arrastar com mouse/toque gira horizontalmente e inclina; botões permitem rotação, zoom, restauração e auto giro sem depender de gestos. Cancelar ponteiro libera captura. Seleção não altera controles da missão.
 - Atualizar modelo e cor imediatamente; fechar seleção, iniciar missão ou ocultar página interrompe o renderer do hangar. Liberar recursos exclusivos ao trocar modelos e ao destruir.
 - Preservar teclado, toque, pausa, checkpoints e orçamento de 2 MB. Validar modelos finitos e independentes, interação desktop/mobile, redução de movimento, build e gates.
+
+- Com a capa/hangar opacos abertos, o renderer principal fica ocioso; o hangar renderiza continuamente apenas em auto giro. Interações e resize continuam renderizando sob demanda.

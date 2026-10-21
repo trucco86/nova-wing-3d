@@ -2880,3 +2880,7 @@ body:not(.menu) #menu::after {
     animation: none !important;
   }
 }
+
+.showroom-web #menu.title-screen.selecting {
+  background: radial-gradient(ellipse at 70% 30%, #10283b, #030b16 75%);
+}

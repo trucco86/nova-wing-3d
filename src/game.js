@@ -2277,8 +2277,11 @@ export function createGame({
       Math.ceil(energy) +
       '% ENERGIA · ' +
       (boosting ? '890' : '480');
-    routeRenderer?.prepare();
-    post.render();
+    // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
+    if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
+      routeRenderer?.prepare();
+      post.render();
+    }
   }
   function step(dt) {
     if (!Number.isFinite(dt) || dt < 0 || dt > 1)

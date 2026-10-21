@@ -114,7 +114,7 @@ export function installShowroom({
       draw();
       loop.lastDraw = time;
     }
-    frame = window.requestAnimationFrame(loop);
+    if (auto) frame = window.requestAnimationFrame(loop);
   }
   function sync() {
     if (!active()) {
@@ -150,7 +150,7 @@ export function installShowroom({
       $('hangarPilot').setAttribute('aria-pressed', String(mode === 'pilot'));
     }
     draw();
-    if (!frame) {
+    if (auto && !frame) {
       lastTime = window.performance.now();
       frame = window.requestAnimationFrame(loop);
     }
@@ -159,6 +159,10 @@ export function installShowroom({
     auto = value;
     $('hangarAuto').setAttribute('aria-pressed', String(auto));
     $('hangarAuto').textContent = auto ? 'AUTO GIRO · ON' : 'AUTO GIRO · OFF';
+    if (!auto) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    } else sync();
   }
   function manual() {
     setAuto(false);
