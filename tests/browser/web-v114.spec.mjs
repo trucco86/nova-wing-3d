@@ -18,6 +18,7 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
 
   await page.locator('#watchIntro').click();
   await expect(page.locator('#cinematic')).toBeVisible();
+  await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#cinematicCaption')).toContainText('paz dos Five Cats');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#cinematic')).toBeHidden();
