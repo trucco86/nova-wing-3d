@@ -7,9 +7,9 @@ on:
 permissions:
   contents: read
 concurrency:
-  # A cancelled native build must not hold newer PR web checks in the workflow queue.
+  # New PR commits supersede stale browser checks; no redundant native builds.
   # Main deliveries remain serialized to prevent stale Pages deployments.
-  group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.sha || 'delivery' }}
+  group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
   quality:
@@ -59,6 +59,8 @@ jobs:
             playwright-report/
 
   android:
+    # Native builds are opt-in. Web-first development never requires store accounts.
+    if: ${{ vars.NOVA_BUILD_NATIVE == 'true' }}
     needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -94,6 +96,8 @@ jobs:
             android/app/build/outputs/bundle/release/app-release.aab
 
   ios:
+    # Re-enable when the web game is accepted and native work resumes.
+    if: ${{ vars.NOVA_BUILD_NATIVE == 'true' }}
     needs: quality
     runs-on: macos-15
     timeout-minutes: 25
@@ -153,7 +157,13 @@ jobs:
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
 
   release:
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    # Skipped native jobs must not block a successful web-only release.
+    if: >-
+      ${{ always() && github.ref == 'refs/heads/main'
+          && github.event_name != 'pull_request'
+          && needs.pages.result == 'success'
+          && (vars.NOVA_BUILD_NATIVE != 'true'
+              || (needs.android.result == 'success' && needs.ios.result == 'success')) }}
     needs: [pages, android, ios]
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -162,6 +172,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: vars.NOVA_BUILD_NATIVE == 'true'
         with:
           name: android-builds
           path: artifacts/native-release

@@ -75,16 +75,25 @@ export function fighter(enemy = false, variant = -1) {
       armor = enemy ? red : white,
       accent = enemy ? black : navy,
       light = enemy ? pink : cyan;
-    const hull = new T.Mesh(new T.CylinderGeometry(0.16, 0.78, 5.6, 6), armor);
+    // A single continuous fuselage avoids the intersecting, skewed four-sided
+    // nose cone. Keep the forward tip on the -Z flight axis in game and showroom.
+    const profile = [
+      [0.78, -2.8],
+      [0.69, -1.9],
+      [0.54, -0.6],
+      [0.38, 0.9],
+      [0.22, 2.3],
+      [0.16, 2.8],
+      [0.08, 3.25],
+      [0.025, 3.62],
+      [0, 3.75],
+    ].map(([radius, forward]) => new T.Vector2(radius, forward));
+    const hull = new T.Mesh(new T.LatheGeometry(profile, 16), armor);
+    hull.name = 'ship-fuselage';
     hull.rotation.x = -Math.PI / 2;
     hull.position.z = -0.9;
     g.add(hull);
     g.add(box(0.72, 0.45, 2.2, accent, 0, 0.38, 0.7));
-    const nose = new T.Mesh(new T.ConeGeometry(0.46, 2.4, 4), armor);
-    nose.rotation.x = -Math.PI / 2;
-    nose.rotation.z = Math.PI / 4;
-    nose.position.set(0, 0.14, -3.4);
-    g.add(nose);
     const cockpit = new T.Mesh(
       new T.SphereGeometry(0.68, 24, 16),
       new T.MeshPhysicalMaterial({

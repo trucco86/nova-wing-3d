@@ -58,6 +58,8 @@
       <span id="tacticState"></span><span id="battleCharge" aria-label="Reservas de ação"></span>
     </aside>
     <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
+    <div id="criticalWarning" hidden role="alert">⚠ INTEGRIDADE CRÍTICA — BUSQUE REPARO</div>
+    <div id="petCareHud" hidden aria-label="Itens resgatados para cuidar dos gatos"></div>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="interface">
@@ -132,7 +134,7 @@
         <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
         <div class="title-content">
           <h1>NOVA<span>WING</span></h1>
-          <p id="brief">Cinco gatos. Uma galáxia para salvar.</p>
+          <p id="brief">Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.</p>
           <label id="specialtyChoice" hidden
             >ESPECIALIDADE
             <select id="specialty">
@@ -276,6 +278,14 @@
             <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
           </div>
+          <div class="title-extras">
+            <button id="menuMusic" class="secondary" aria-label="Ouvir ou pausar a trilha do menu">
+              ♪ OUVIR TEMA
+            </button>
+            <button id="watchIntro" class="secondary" aria-label="Assistir à abertura de Nova Wing">
+              ▶ VER ABERTURA
+            </button>
+          </div>
           <details class="title-help">
             <summary>Como jogar</summary>
             <div class="help-panel">
@@ -295,6 +305,30 @@
         </div>
         <div class="title-footer">DEZ SETORES. UMA ÚLTIMA CHANCE.</div>
         <span id="gameVersion">vBUILD:VERSION</span>
+      </section>
+      <section
+        id="cinematic"
+        hidden
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Abertura da campanha Five Cats"
+      >
+        <div class="cinematic-space" aria-hidden="true">
+          <div class="cinematic-planet"></div>
+          <div class="cinematic-ship ship-one"></div>
+          <div class="cinematic-ship ship-two"></div>
+        </div>
+        <div class="cinematic-story">
+          <span class="eyebrow">NOVA WING / FIVE CATS</span>
+          <strong id="cinematicSpeaker">NARRADOR</strong>
+          <p id="cinematicCaption" aria-live="polite"></p>
+          <div class="cinematic-track"><i id="cinematicProgress"></i></div>
+          <button id="cinematicSkip" class="secondary" aria-label="Pular abertura">
+            PULAR / INICIAR VOO ↗
+          </button>
+          <small>ENTER, ESPAÇO OU ESC PARA PULAR</small>
+        </div>
       </section>
       <div id="sectorTag">
         <span id="chapter">01</span><small>SETOR<br />ATIVO</small>

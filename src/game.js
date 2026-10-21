@@ -52,6 +52,10 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
+import { createAudioCues } from './audio-cues.js';
+import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
+import { createPetPickup } from './pet-visuals.js';
+import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import {
   createBossModel,
   createSubboss,
@@ -200,6 +204,8 @@ export function createGame({
     shotCd = 0,
     spawnCd = 0,
     ringCd = 0,
+    petCd = 0,
+    petWave = 0,
     obstacleCd = 0,
     invuln = 0,
     roll = 0,
@@ -233,7 +239,10 @@ export function createGame({
     respawnTime = 0,
     totalTime = 0,
     music = null,
+    audioCues = null,
     musicOn = true,
+    menuThemePlaying = false,
+    cinematic = null,
     bossVolley = 0,
     bossCombat = null,
     collapse = null,
@@ -377,8 +386,12 @@ export function createGame({
     /* Storage is optional. */
   }
   let cosmetics = readCosmetics(null);
+  let petCare = readPetCare(null);
   const saved = readSave(storage);
-  if (saved) cosmetics = readCosmetics(saved.cosmetics);
+  if (saved) {
+    cosmetics = readCosmetics(saved.cosmetics);
+    petCare = readPetCare(saved.petCare);
+  }
   function applySkin() {
     const skin = SKINS.find((s) => s.id === (dynamicFlight ? cosmetics.skin : 'classic'));
     const starter = shipColorAt(pilotLoadout.color);
@@ -540,6 +553,7 @@ export function createGame({
       pods: podCount,
       score,
       cosmetics,
+      ...(dynamicFlight ? { petCare } : {}),
       ...(dynamicFlight ? { loadout: pilotLoadout } : {}),
       ...(dynamicFlight ? { strategy } : {}),
     });
@@ -559,6 +573,16 @@ export function createGame({
 
   function collect(kind) {
     if (state !== 'playing') return;
+    if (dynamicFlight && typeof kind === 'string' && kind.startsWith('pet:')) {
+      const result = collectPetItem(petCare, kind.slice(4));
+      if (!result) return;
+      petCare = result.care;
+      score += result.points;
+      credits += Math.ceil(result.points / 2);
+      message(result.message + ' RESGATADO · CUIDE DOS FIVE CATS');
+      cue(result.audioCue);
+      return;
+    }
     if (kind === 'blue') {
       if (dynamicFlight) gainXP(4);
       else weapon = Math.min(5, weapon + 1);
@@ -575,7 +599,7 @@ export function createGame({
       message('ESCUDO +25');
     }
     credits += 15;
-    sound(1400, 0.25, 'sine');
+    if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
   function showShop() {
     state = 'shop';
@@ -710,6 +734,21 @@ export function createGame({
     touchBoost = false,
     audioCtx,
     appActive = true;
+  function unlockAudio() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      void audioCtx.resume?.().catch?.(() => {});
+      if (!music) music = createMusic(audioCtx);
+      if (!audioCues) audioCues = createAudioCues(audioCtx);
+      music.setEnabled(musicOn);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function cue(name) {
+    audioCues?.play(name, { enabled: !muted, active: appActive });
+  }
   function resumeAudio() {
     if (appActive) audioCtx?.resume().catch(() => {});
   }
@@ -743,7 +782,8 @@ export function createGame({
     scene.remove(o);
   }
   function explode(pos, n = 16, color = 0xffa04a) {
-    if (n > 3) sound(100, 0.2, 'sawtooth', 0.035);
+    if (n >= 12 && dynamicFlight) cue('explosion');
+    else if (n > 3) sound(100, 0.2, 'sine', 0.025);
     for (let i = 0; i < n; i++) {
       const p = new T.Mesh(
         particleGeo,
@@ -789,6 +829,10 @@ export function createGame({
     if (dynamicFlight && barrier > 0) return;
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
     hp = Math.max(0, hp - d);
+    if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
+      $('criticalWarning').hidden = false;
+      cue('critical');
+    }
     shake = 0.35;
     invuln = 1.1;
     $('flash').style.opacity = '.3';
@@ -862,7 +906,8 @@ export function createGame({
       $('flash').style.opacity = '0';
       $('flash').style.background = '#f43f43';
     }, 180);
-    sound(45, 0.8, 'sawtooth', 0.08);
+    if (dynamicFlight) cue('explosion');
+    else sound(45, 0.8, 'sawtooth', 0.08);
   }
   const chargeGlow = dynamicFlight ? halo('#8effed', 1, 0.65) : null;
   if (chargeGlow) {
@@ -942,7 +987,8 @@ export function createGame({
         b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
       }
     }
-    sound(900 + weapon * 110);
+    if (dynamicFlight) cue('shot');
+    else sound(900 + weapon * 110);
     shotCd = dynamicFlight ? selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035) : 0.135;
   }
   function enemy(kind = 'fighter') {
@@ -1145,7 +1191,8 @@ export function createGame({
       collapseFinal = true;
       boss.visible = false;
       explode(boss.position.clone().add(new T.Vector3(0, 0, 24)), 100, 0xffd27c);
-      sound(38, 1.8, 'sawtooth', 0.12);
+      if (dynamicFlight) cue('explosion');
+      else sound(38, 1.8, 'sawtooth', 0.12);
       music?.start(sectorIndex, 'victory');
       $('attackWarning').textContent = 'ALVO DESTRUÍDO';
     }
@@ -1177,7 +1224,7 @@ export function createGame({
     $('result').hidden = false;
     $('resultTitle').textContent = win ? 'A TERRA ESTÁ LIVRE' : 'NAVE ABATIDA';
     $('resultText').textContent =
-      `${score} acertos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os dez setores estão livres. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
+      `${score} acertos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
@@ -1246,6 +1293,10 @@ export function createGame({
     shotCd = 0;
     spawnCd = 2;
     ringCd = 8;
+    petCd = 11;
+    petWave = 0;
+    petCare = readPetCare(checkpoint?.petCare);
+    $('criticalWarning').hidden = true;
     obstacleCd = 12;
     invuln = 2;
     roll = 0;
@@ -1265,14 +1316,8 @@ export function createGame({
     $('bossHUD').hidden = true;
     document.body.classList.remove('menu');
     $('pause').textContent = 'Ⅱ';
-    try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      audioCtx.resume().catch(() => {});
-      if (!music) music = createMusic(audioCtx);
-      music.setEnabled(musicOn);
-    } catch {
-      /* Optional browser capability; gameplay remains available. */
-    }
+    unlockAudio();
+    menuThemePlaying = false;
     enterSector();
     bombs = 3;
   }
@@ -1308,8 +1353,72 @@ export function createGame({
     // Returning to the Activity never resumes combat or audio without player input.
     last = now();
   }
-  $('start').onclick = () => start();
+  function updateCinematic() {
+    if (!cinematic) return;
+    const beat = cinematicBeat(cinematic.scenes, cinematic.elapsed);
+    $('cinematicSpeaker').textContent = beat.speaker;
+    $('cinematicCaption').textContent = beat.text;
+    $('cinematicProgress').style.width =
+      (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
+  }
+  function finishCinematic() {
+    if (!cinematic) return;
+    const playMission = cinematic.playMission;
+    cinematic = null;
+    $('cinematic').hidden = true;
+    if (playMission) start();
+    else $('menu').hidden = false;
+  }
+  function advanceCinematic(dt) {
+    if (!cinematic) return;
+    cinematic.elapsed += dt;
+    if (cinematic.elapsed >= cinematic.duration) finishCinematic();
+    else updateCinematic();
+  }
+  function beginCinematic(playMission = true) {
+    if (!dynamicFlight || !appActive) {
+      if (playMission) start();
+      return;
+    }
+    const introDuration = cinematicDuration(CINEMATICS.intro);
+    const scenes = [
+      ...CINEMATICS.intro,
+      ...CINEMATICS.campaign.map((scene) => ({
+        ...scene,
+        time: scene.time + introDuration,
+      })),
+    ];
+    cinematic = {
+      elapsed: 0,
+      scenes,
+      duration: introDuration + cinematicDuration(CINEMATICS.campaign),
+      playMission,
+    };
+    // Hide the underlying hangar while the modal is active. Native safe-area
+    // stacking contexts otherwise intercept taps meant for the skip action.
+    $('menu').hidden = true;
+    $('cinematic').hidden = false;
+    $('cinematicSkip').focus?.({ preventScroll: true });
+    updateCinematic();
+  }
+  function beginMenuTheme() {
+    if (state !== 'menu' || !appActive) return;
+    if (menuThemePlaying) {
+      music?.pause();
+      menuThemePlaying = false;
+    } else if (unlockAudio()) {
+      musicOn = true;
+      music.setEnabled(true);
+      music.start(0, 'menu');
+      menuThemePlaying = true;
+    }
+    $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
+  }
+  $('start').onclick = () => beginCinematic();
   $('continue').onclick = () => start(true);
+  $('menuMusic').onclick = beginMenuTheme;
+  $('watchIntro').onclick = () => beginCinematic(false);
+  $('cinematicSkip').onclick = finishCinematic;
   $('nextSector').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
   $('music').onclick = () => {
@@ -1353,10 +1462,26 @@ export function createGame({
     muted = !muted;
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
+  const visibilityHandler = () => {
+    if (document.hidden && state === 'menu') {
+      music?.pause();
+      menuThemePlaying = false;
+      $('menuMusic').textContent = '♪ OUVIR TEMA';
+    }
+  };
+  document.addEventListener?.('visibilitychange', visibilityHandler);
+  cleanups.push(() => document.removeEventListener?.('visibilitychange', visibilityHandler));
   const inFlight = () =>
     ['playing', 'paused', 'respawning', 'collapsing', 'arcade'].includes(state);
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (cinematic) {
+      if (['Enter', 'Space', 'Escape'].includes(e.code)) {
+        e.preventDefault?.();
+        finishCinematic();
+      }
+      return;
+    }
     if (inFlight() && isGameKey(e)) e.preventDefault();
     keys.add(e.code);
     if (e.repeat) return;
@@ -1372,7 +1497,7 @@ export function createGame({
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
-    if (e.code === 'Enter' && state === 'menu') start();
+    if (e.code === 'Enter' && state === 'menu') beginCinematic();
   });
   addEventListener('keyup', (e) => {
     if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
@@ -1498,6 +1623,7 @@ export function createGame({
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
+      if (dynamicFlight && charge > 0.15 && charge - dt <= 0.15) cue('plasmaCharge');
       chargeLatch = true;
     } else if (chargeLatch) {
       if (charge >= 0.8) {
@@ -1507,7 +1633,8 @@ export function createGame({
           true,
         );
         cockpit?.fire();
-        sound(160, 0.4, 'sawtooth', 0.06);
+        if (dynamicFlight) cue('plasmaRelease');
+        else sound(160, 0.4, 'sawtooth', 0.06);
       }
       charge = 0;
       chargeLatch = false;
@@ -2087,6 +2214,23 @@ export function createGame({
       rings.push({ o, life: 10, kind });
       ringCd = 6;
     }
+    if (dynamicFlight && spawnEncounters && elapsed < current().duration) {
+      petCd -= dt;
+      if (petCd <= 0) {
+        const id = PET_ITEMS[petWave++ % PET_ITEMS.length].id;
+        const o = createPetPickup(id);
+        const extent = Math.max(0, flightLimit() - 2);
+        const spread = Math.min(16, camera.aspect * 17 - 2);
+        o.position.set(
+          clamp(player.position.x + rnd(-spread, spread), -extent, extent),
+          clamp(player.position.y + rnd(-7, 7), 2, 42),
+          -160,
+        );
+        scene.add(o);
+        rings.push({ o, life: 12, kind: 'pet:' + id });
+        petCd = 9;
+      }
+    }
     for (let r of rings) {
       const previousZ = r.o.position.z;
       const extent = Math.max(0, flightLimit() - 2);
@@ -2151,6 +2295,10 @@ export function createGame({
     $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
     $('speedValue').textContent = boosting ? '890' : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
+    $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
+    $('petCareHud').hidden = !dynamicFlight;
+    $('petCareHud').textContent =
+      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');
     $('score').textContent = String(score).padStart(3, '0');
     $('bombs').textContent = '◆ '.repeat(bombs) || '—';
     $('energy').style.width = energy + '%';
@@ -2161,7 +2309,10 @@ export function createGame({
   function tick(dt, nowMs) {
     if (!appActive) return;
     const now = nowMs;
-    if (['playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) music?.update(dt);
+    if (cinematic && state === 'menu') advanceCinematic(dt);
+    if (['menu', 'playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) {
+      if (state !== 'menu' || menuThemePlaying) music?.update(dt);
+    }
     if (state === 'collapsing') updateFinale(dt);
     if (state === 'respawning') {
       respawnTime -= dt;
@@ -2359,6 +2510,8 @@ export function createGame({
       route: { ...route },
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
+      petCare: { ...petCare },
+      cinematic: cinematic ? { elapsed: cinematic.elapsed, duration: cinematic.duration } : null,
       loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
       sector: sectorIndex + 1,
       lives,
@@ -2443,6 +2596,7 @@ export function createGame({
     destroy() {
       running = false;
       music?.destroy();
+      audioCues?.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());

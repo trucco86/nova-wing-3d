@@ -26,6 +26,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
   await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
   await expect(page.locator('#pilotName')).toContainText('CALVINHO');
   await expect(page.locator('#strategyStatus')).toContainText('EV 1');
   expect(errors).toEqual([]);

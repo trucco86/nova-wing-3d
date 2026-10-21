@@ -90,7 +90,18 @@ export function createMusic(context) {
       root = (combat ? [0, -1, -5, -2] : [0, -3, -5, -2])[bar],
       f = (oct, n) => t.base * oct * 2 ** (n / 12),
       heavy = mode !== 'sector';
-    if (mode === 'victory') {
+    if (mode === 'menu') {
+      // Five Cats' title theme: a warm pulse and recognizable rising motif,
+      // lighter and quieter than battle percussion.
+      const chord = [0, -3, -5, -2][bar];
+      if (s === 0 || s === 8)
+        for (const n of [0, 3, 7]) note(f(1, chord + n), d * 11, 'sine', 0.027);
+      if (s % 2 === 0) {
+        const melody = [0, 3, 7, 10, 7, 5, 3, 7][s / 2];
+        note(f(2, chord + melody), d * 2.6, 'triangle', 0.046);
+      }
+      if (s % 4 === 0) note(f(0.5, chord), d * 3, 'sine', 0.052);
+    } else if (mode === 'victory') {
       if (s % 4 === 0) for (const n of [0, 4, 7, 12]) note(f(1, n), d * 7, 'triangle', 0.08);
       if (s % 2 === 0) note(f(2, [0, 4, 7, 12, 7, 12, 16, 19][s / 2]), d * 3, 'sine', 0.08);
     } else {
@@ -134,7 +145,11 @@ export function createMusic(context) {
       silence();
       sector = Math.max(0, Math.min(9, index));
       mode =
-        typeof mood === 'string' && MUSIC_MODES.includes(mood) ? mood : mood ? 'boss' : 'sector';
+        typeof mood === 'string' && (MUSIC_MODES.includes(mood) || mood === 'menu')
+          ? mood
+          : mood
+            ? 'boss'
+            : 'sector';
       step = 0;
       remaining = 0;
       playing = true;

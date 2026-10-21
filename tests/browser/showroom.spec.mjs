@@ -81,6 +81,7 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   await page.locator('#hangarShip').click();
   await page.screenshot({ path: info.outputPath('hangar-ship.png') });
   await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
   expect(errors).toEqual([]);
 });

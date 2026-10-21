@@ -28,4 +28,12 @@ Não versione segredos ou relatórios locais. O arquivo de lock permite reinstal
 
 ### Concorrência de validação
 
-Cada commit de PR tem seu próprio grupo de workflow, evitando que o encerramento lento de um build nativo cancelado bloqueie novos checks web. As entregas de main continuam no mesmo grupo serializado, com cancelamento da entrega anterior, para impedir publicação fora de ordem. Nenhum gate é removido.
+Cada PR mantém um grupo de execução. Um novo commit cancela a validação anterior da mesma PR, evitando testes concorrentes obsoletos e preservando os gates do commit mais recente. As entregas de `main` continuam serializadas, para impedir publicação fora de ordem.
+
+### Prioridade web (fase de desenvolvimento)
+
+O canal oficial está definido como `"releaseChannel": "web"` em `package.json`. Nesta fase, o CI exige **quality** e **browser** (desktop e mobile), depois publica o `index.html` testado em GitHub Pages e a release web correspondente.
+
+Os jobs **Android e iOS ficam desabilitados por padrão**. Não exigem contas de desenvolvedor nas lojas, builds nativos, assinatura ou submissão para distribuir a web. Os projetos nativos são preservados para posterior adaptação, sem novas versões até a conclusão da experiência web.
+
+Quando for decidido retomar Android/iOS, a opção explícita de reativação do pipeline é a variável do repositório `NOVA_BUILD_NATIVE=true`, sujeita a nova revisão dos testes e configuração nativa. Não reative essa opção durante os ciclos de experimentação da versão web.
