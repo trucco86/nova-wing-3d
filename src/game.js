@@ -599,7 +599,7 @@ export function createGame({
       message('ESCUDO +25');
     }
     credits += 15;
-    sound(1400, 0.25, 'sine');
+    if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
   function showShop() {
     state = 'shop';
@@ -906,7 +906,8 @@ export function createGame({
       $('flash').style.opacity = '0';
       $('flash').style.background = '#f43f43';
     }, 180);
-    sound(45, 0.8, 'sawtooth', 0.08);
+    if (dynamicFlight) cue('explosion');
+    else sound(45, 0.8, 'sawtooth', 0.08);
   }
   const chargeGlow = dynamicFlight ? halo('#8effed', 1, 0.65) : null;
   if (chargeGlow) {
@@ -1190,7 +1191,8 @@ export function createGame({
       collapseFinal = true;
       boss.visible = false;
       explode(boss.position.clone().add(new T.Vector3(0, 0, 24)), 100, 0xffd27c);
-      sound(38, 1.8, 'sawtooth', 0.12);
+      if (dynamicFlight) cue('explosion');
+      else sound(38, 1.8, 'sawtooth', 0.12);
       music?.start(sectorIndex, 'victory');
       $('attackWarning').textContent = 'ALVO DESTRUÍDO';
     }
