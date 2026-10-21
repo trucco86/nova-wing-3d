@@ -1,6 +1,7 @@
 import { readStrategy } from './strategy.js';
 import { readCosmetics } from './customization.js';
 import { readPilotLoadout } from './pilots.js';
+import { readPetCare } from './pet-collectibles.js';
 // Names and narrative adapted from Cristian Trucco's Nova Wing (MIT).
 export const SECTORS = [
   {
@@ -147,6 +148,7 @@ export function readSave(storage) {
       armor: d.armor,
       pods: d.pods,
       ...(d.cosmetics ? { cosmetics: readCosmetics(d.cosmetics) } : {}),
+      ...(d.petCare ? { petCare: readPetCare(d.petCare) } : {}),
       ...(d.loadout ? { loadout: readPilotLoadout(d.loadout) } : {}),
       ...(integer(d.score, 0, 10000000) ? { score: d.score } : {}),
     };
