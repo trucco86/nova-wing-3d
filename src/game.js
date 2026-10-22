@@ -57,6 +57,7 @@ import { createAudioCues } from './audio-cues.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
+import { createI18n } from './i18n.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import {
   createBossModel,
@@ -395,6 +396,7 @@ export function createGame({
   let cosmetics = readCosmetics(null);
   let petCare = readPetCare(null);
   let settings = loadSettings(storage);
+  const localization = createI18n(document, window);
   const saved = readSave(storage);
   if (saved) {
     cosmetics = readCosmetics(saved.cosmetics);
@@ -1521,6 +1523,7 @@ export function createGame({
     $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     music?.setVolume(settings.master * settings.music);
     audioCues?.setVolume(settings.master * settings.sfx);
+    localization.setLanguage(settings.language);
   }
   function openSettings() {
     if (state !== 'menu' && state !== 'paused') return;
@@ -2868,6 +2871,7 @@ export function createGame({
       $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
+      localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
