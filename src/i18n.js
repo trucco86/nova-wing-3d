@@ -37,8 +37,9 @@ const ADDITIONAL = [
   ['CIDADE','CITY','CIUDAD'],
 ];
 for (const [pt,en,es] of ADDITIONAL) MAP.set(pt,{en,es});
-const TOKEN_KEYS = [...MAP.keys()].filter((s) => /^[\p{L}]{4,}$/u.test(s)).sort((a,b) => b.length-a.length);
-const TOKEN_RE = new RegExp('(?<![\\p{L}])(' + TOKEN_KEYS.join('|') + ')(?![\\p{L}])', 'gu');
+const TOKEN_KEYS = [...MAP.keys()].filter((s) => s.length >= 4).sort((a,b) => b.length-a.length);
+const escapePattern = (s) => [...s].map((c) => '.?*+^$[]{}()|\\'.includes(c) ? '\\' + c : c).join('');
+const TOKEN_RE = new RegExp('(?<![\\p{L}])(' + TOKEN_KEYS.map(escapePattern).join('|') + ')(?![\\p{L}])', 'gu');
 export function translateText(text, lang = 'pt') {
   if (lang === 'pt' || !['en','es'].includes(lang) || typeof text !== 'string') return text;
   const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(text);
