@@ -7,7 +7,6 @@
 - Suporte a PT-BR, inglês e espanhol; verificação de estado, tempo e reset por harness determinístico.
 - Continuidade do jogo, checkpoints, armas e personagens preservada.
 
-
 ## 1.17.0 — Impactos verificáveis e leitura de pontos fracos
 
 - Efeitos de impacto no ponto projetado de colisão; feedback diferente para tiro bloqueado, acerto comum e ponto fraco.
