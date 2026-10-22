@@ -1,7 +1,11 @@
 /** Predictable swept pickup attraction and contact, independent from the renderer. */
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export function pickupStep({ position, player, speed, dt, kind = 'shield' }) {
-  if (![position.x, position.y, position.z, player.x, player.y, player.z, speed, dt].every(Number.isFinite))
+  if (
+    ![position.x, position.y, position.z, player.x, player.y, player.z, speed, dt].every(
+      Number.isFinite,
+    )
+  )
     return { x: position.x, y: position.y, z: position.z, collected: false, attracted: false };
   const nextZ = position.z + Math.max(0, speed) * Math.max(0, dt);
   const pet = kind.startsWith('pet:');

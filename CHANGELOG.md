@@ -8,7 +8,6 @@
 - Confirmação imediata de coleta por mensagem dedicada, partículas e efeitos de áudio para anéis verdes e azuis.
 - Contratos, testes de tradução, colisão e regressão no navegador preservando checkpoints e progressão.
 
-
 ## 1.15.0 — HUD, pausa e opções
 
 - Logotipo sai do voo e título de fase desaparece após três segundos; radares de chefe mais compactos no celular.

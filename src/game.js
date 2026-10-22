@@ -814,8 +814,13 @@ export function createGame({
     // Shots travel forward along the ship's own x/y axis, not screen center.
     camera.updateMatrixWorld();
     const target = new T.Vector3(player.position.x, player.position.y, -80).project(camera);
-    const visible = Number.isFinite(target.x) && Number.isFinite(target.y) &&
-      target.z >= -1 && target.z <= 1 && Math.abs(target.x) <= 1 && Math.abs(target.y) <= 1;
+    const visible =
+      Number.isFinite(target.x) &&
+      Number.isFinite(target.y) &&
+      target.z >= -1 &&
+      target.z <= 1 &&
+      Math.abs(target.x) <= 1 &&
+      Math.abs(target.y) <= 1;
     $('aimReticle').hidden = !visible;
     if (visible) {
       $('aimReticle').style.left = (((target.x + 1) / 2) * window.innerWidth).toFixed(1) + 'px';
@@ -827,7 +832,9 @@ export function createGame({
     const pet = kind.startsWith('pet:');
     element.textContent = pet
       ? '✦ ' + (PET_ITEMS.find((item) => item.id === kind.slice(4))?.name ?? 'ITEM') + ' +1'
-      : kind === 'blue' ? '✦ XP +4 · PODS' : '✦ ESCUDO +25';
+      : kind === 'blue'
+        ? '✦ XP +4 · PODS'
+        : '✦ ESCUDO +25';
     element.style.color = kind === 'blue' ? '#75c8ff' : kind === 'shield' ? '#92ff97' : '#ffd994';
     element.hidden = false;
     pickupFeedbackTime = 1;

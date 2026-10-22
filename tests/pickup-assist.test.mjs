@@ -18,12 +18,24 @@ test('magnetism starts when close in approach corridor but does not collect earl
   assert.equal(result.collected, false);
 });
 test('pets use a smaller contact radius but accept close swept encounters', () => {
-  const yes = pickupStep({ position: { x: 3, y: 6, z: 0 }, player, speed: 300, dt: 0.05, kind: 'pet:toy' });
-  const no = pickupStep({ position: { x: 7, y: 6, z: 0 }, player, speed: 300, dt: 0.05, kind: 'pet:toy' });
+  const yes = pickupStep({
+    position: { x: 3, y: 6, z: 0 },
+    player,
+    speed: 300,
+    dt: 0.05,
+    kind: 'pet:toy',
+  });
+  const no = pickupStep({
+    position: { x: 7, y: 6, z: 0 },
+    player,
+    speed: 300,
+    dt: 0.05,
+    kind: 'pet:toy',
+  });
   assert.equal(yes.collected, true);
   assert.equal(no.collected, false);
 });
 test('invalid motion never awards pickups', () => {
-  const r=pickupStep({ position:{x:0,y:6,z:0},player,speed:NaN,dt:0.035 });
-  assert.equal(r.collected,false);
+  const r = pickupStep({ position: { x: 0, y: 6, z: 0 }, player, speed: NaN, dt: 0.035 });
+  assert.equal(r.collected, false);
 });

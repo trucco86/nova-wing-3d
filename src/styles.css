@@ -3387,7 +3387,6 @@ body.left-handed #touch {
   }
 }
 
-
 /* v1.16: projected ballistic sight and unambiguous pickup confirmation. */
 #aimReticle {
   position: fixed;
@@ -3399,7 +3398,9 @@ body.left-handed #touch {
   color: #b7fff0;
   border: 2px solid #042627bb;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px #71ffdfcc, 0 0 9px #80ffda88;
+  box-shadow:
+    inset 0 0 0 1px #71ffdfcc,
+    0 0 9px #80ffda88;
 }
 #aimReticle::before,
 #aimReticle::after {
@@ -3408,12 +3409,24 @@ body.left-handed #touch {
   background: #eafff7;
   box-shadow: 0 0 5px #29ffc8;
 }
-#aimReticle::before { width: 2px; height: 46px; left: 15px; top: -7px; }
-#aimReticle::after { height: 2px; width: 46px; top: 15px; left: -7px; }
+#aimReticle::before {
+  width: 2px;
+  height: 46px;
+  left: 15px;
+  top: -7px;
+}
+#aimReticle::after {
+  height: 2px;
+  width: 46px;
+  top: 15px;
+  left: -7px;
+}
 #aimReticle i {
   position: absolute;
-  left: 13px; top: 13px;
-  width: 6px; height: 6px;
+  left: 13px;
+  top: 13px;
+  width: 6px;
+  height: 6px;
   border: 1px solid #072d2a;
   background: #a7ffe8;
   border-radius: 50%;
@@ -3436,14 +3449,42 @@ body.left-handed #touch {
   letter-spacing: 1px;
   white-space: nowrap;
 }
-#pickupFlash[hidden], #aimReticle[hidden] { display: none !important; }
+#pickupFlash[hidden],
+#aimReticle[hidden] {
+  display: none !important;
+}
 @media (pointer: coarse), (max-width: 850px) {
-  #aimReticle { width: 26px; height: 26px; }
-  #aimReticle::before { height: 34px; left: 11px; top: -6px; }
-  #aimReticle::after { width: 34px; top: 11px; left: -6px; }
-  #aimReticle i { left: 8px; top: 8px; }
-  #pickupFlash { top: 25%; padding: 5px 10px; font-size: 11px; max-width: 85vw; overflow: hidden; text-overflow: ellipsis; }
+  #aimReticle {
+    width: 26px;
+    height: 26px;
+  }
+  #aimReticle::before {
+    height: 34px;
+    left: 11px;
+    top: -6px;
+  }
+  #aimReticle::after {
+    width: 34px;
+    top: 11px;
+    left: -6px;
+  }
+  #aimReticle i {
+    left: 8px;
+    top: 8px;
+  }
+  #pickupFlash {
+    top: 25%;
+    padding: 5px 10px;
+    font-size: 11px;
+    max-width: 85vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  #pickupFlash, #aimReticle { transition: none; animation: none; }
+  #pickupFlash,
+  #aimReticle {
+    transition: none;
+    animation: none;
+  }
 }
