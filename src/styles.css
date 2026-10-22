@@ -3526,3 +3526,34 @@ body.left-handed #touch {
     font-size: 10px;
   }
 }
+
+/* v1.18: upcoming boss signal is visible without obscuring flight or controls. */
+#bossIncoming {
+  position: fixed;
+  top: 24%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 26;
+  max-width: min(380px, 70vw);
+  text-align: center;
+  pointer-events: none;
+  font: 800 14px/1.35 monospace;
+  letter-spacing: 0.08em;
+  color: #ffe3a8;
+  border: 1px solid #ffc36c;
+  border-radius: 7px;
+  background: #170d13d9;
+  box-shadow: 0 0 20px #ffb76455;
+  padding: 7px 14px;
+}
+#bossIncoming[hidden] {
+  display: none !important;
+}
+@media (max-width: 850px), (pointer: coarse) {
+  #bossIncoming {
+    top: 27%;
+    font-size: 11px;
+    max-width: 68vw;
+    padding: 4px 8px;
+  }
+}

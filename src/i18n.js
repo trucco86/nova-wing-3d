@@ -468,6 +468,11 @@ const MAP = new Map(ROWS.map(([pt, en, es]) => [pt, { en, es }]));
 
 // Dynamic terms and inflected labels used in HUD strings created at runtime.
 const ADDITIONAL = [
+  [
+    '⚠ ALERTA · CHEFE SE APROXIMANDO',
+    '⚠ WARNING · BOSS APPROACHING',
+    '⚠ ALERTA · SE ACERCA UN JEFE',
+  ],
   ['ACERTO', 'HIT', 'IMPACTO'],
   ['SEM DANO', 'NO DAMAGE', 'SIN DAÑO'],
   ['SEM DANO · AJUSTE O ÂNGULO', 'NO DAMAGE · CHANGE ANGLE', 'SIN DAÑO · CAMBIA EL ÁNGULO'],

@@ -55,6 +55,7 @@ import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAudioCues } from './audio-cues.js';
 import { combatFeedback } from './combat-feedback.js';
+import { shouldWarnBoss } from './boss-telegraph.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
@@ -258,7 +259,9 @@ export function createGame({
     stageIntroTime = 0,
     sectorStart = null,
     confirmation = null,
-    settingsOpen = false;
+    settingsOpen = false,
+    bossWarned = false,
+    bossWarningTime = 0;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -685,6 +688,9 @@ export function createGame({
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
+    bossWarned = false;
+    bossWarningTime = 0;
+    $('bossIncoming').hidden = true;
     orbitAngle = orbitTouch = 0;
     arcana = 100;
     tacticEnergy = scanTime = impactTime = 0;
@@ -1164,6 +1170,8 @@ export function createGame({
     });
   }
   function makeBoss() {
+    bossWarningTime = 0;
+    $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     orbitAngle = 0;
     scanTime = 0;
@@ -1426,6 +1434,7 @@ export function createGame({
       pausedFrom = state;
       releaseControls();
       state = 'paused';
+      $('bossIncoming').hidden = true;
       music?.pause();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
@@ -1440,6 +1449,7 @@ export function createGame({
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
+      $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');
@@ -2100,6 +2110,28 @@ export function createGame({
       scene.add(o);
       obstacles.push({ o, life: 1 });
       message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
+    }
+    const bossBlocked =
+      enemies.some((e) => !e.dead && e.kind === 'subboss') ||
+      obstacles.some((o) => o.o.userData.kind === 'tunnel');
+    if (
+      shouldWarnBoss({
+        elapsed,
+        duration: current().duration,
+        warned: bossWarned,
+        boss: !!boss,
+        blocked: bossBlocked,
+      })
+    ) {
+      bossWarned = true;
+      bossWarningTime = 3.5;
+      $('bossIncoming').textContent = '⚠ ALERTA · CHEFE SE APROXIMANDO';
+      $('bossIncoming').hidden = false;
+      cue('critical');
+    }
+    if (bossWarningTime > 0) {
+      bossWarningTime = Math.max(0, bossWarningTime - dt);
+      if (bossWarningTime === 0) $('bossIncoming').hidden = true;
     }
     if (
       elapsed >= current().duration &&
