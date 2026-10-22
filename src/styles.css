@@ -3546,7 +3546,9 @@ body.left-handed #touch {
   box-shadow: 0 0 20px #ffb76455;
   padding: 7px 14px;
 }
-#bossIncoming[hidden] { display: none !important; }
+#bossIncoming[hidden] {
+  display: none !important;
+}
 @media (max-width: 850px), (pointer: coarse) {
   #bossIncoming {
     top: 27%;

@@ -2112,7 +2112,15 @@ export function createGame({
     const bossBlocked =
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel');
-    if (shouldWarnBoss({ elapsed, duration: current().duration, warned: bossWarned, boss: !!boss, blocked: bossBlocked })) {
+    if (
+      shouldWarnBoss({
+        elapsed,
+        duration: current().duration,
+        warned: bossWarned,
+        boss: !!boss,
+        blocked: bossBlocked,
+      })
+    ) {
       bossWarned = true;
       bossWarningTime = 3.5;
       $('bossIncoming').textContent = '⚠ ALERTA · CHEFE SE APROXIMANDO';
