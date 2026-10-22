@@ -19,7 +19,7 @@ let rendering = true,
   capture = true;
 const game = createGame({
   autoLoop: false,
-  spawnEncounters: params.get('arcade') === '1',
+  spawnEncounters: params.get('arcade') === '1' || params.get('encounters') === '1',
   rendererFactory(options) {
     const renderer = new T.WebGLRenderer(options);
     const render = renderer.render.bind(renderer);

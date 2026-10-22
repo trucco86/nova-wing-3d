@@ -56,6 +56,7 @@ import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferen
 import { createAudioCues } from './audio-cues.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
+import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
@@ -190,6 +191,7 @@ export function createGame({
   );
   barrierVisual.visible = false;
   player.add(barrierVisual);
+  let fighterSerial = 0;
   let enemies = [],
     shots = [],
     hostile = [],
@@ -685,6 +687,7 @@ export function createGame({
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
+    fighterSerial = 0;
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -1093,11 +1096,21 @@ export function createGame({
   }
   function enemy(kind = 'fighter') {
     const ground = kind === 'tank' || kind === 'walker';
+    const roleIndex = (fighterSerial + sectorIndex) % 3;
+    const tacticalFighter = dynamicFlight && kind === 'fighter';
+    if (tacticalFighter) fighterSerial++;
     let o = ground
       ? createGroundEnemy(kind, dynamicFlight ? (groundWave + sectorIndex) % 3 : -1)
       : kind === 'subboss'
         ? createSubboss(sectorIndex)
-        : fighter(true, dynamicFlight ? (Math.floor(elapsed / 3) + sectorIndex) % 3 : -1);
+        : fighter(
+            true,
+            dynamicFlight
+              ? tacticalFighter
+                ? roleIndex
+                : (Math.floor(elapsed / 3) + sectorIndex) % 3
+              : -1,
+          );
     if (kind === 'base') {
       o = new T.Group();
       o.add(box(8, 12, 9, buildingMat, 0, -4, 0));
@@ -1112,12 +1125,24 @@ export function createGame({
       y = ground ? -7 : kind === 'subboss' ? 10 : rnd(1, 19);
     o.position.set(x, y, -200);
     scene.add(o);
+    const attackGlow = tacticalFighter
+      ? halo(['#ff7c69', '#65e6ff', '#ffc45e'][roleIndex], 8, 0.85)
+      : null;
+    if (attackGlow) {
+      attackGlow.position.set(0, 1, -5);
+      attackGlow.visible = false;
+      o.add(attackGlow);
+    }
+    const phase = rnd(0, 6);
+    const initialCooldown = rnd(1, 3);
     enemies.push({
       o,
+      role: tacticalFighter ? FIGHTER_ROLES[roleIndex] : null,
+      attackGlow,
       x,
       y,
-      phase: rnd(0, 6),
-      cd: rnd(1, 3),
+      phase,
+      cd: tacticalFighter ? 1.2 : initialCooldown,
       life:
         kind === 'subboss'
           ? dynamicFlight
@@ -2213,17 +2238,20 @@ export function createGame({
         if (e.kind === 'subboss')
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
-      e.o.position.z +=
-        dt *
-        (e.kind === 'subboss'
-          ? Math.max(0, (-85 - e.o.position.z) * 1.4)
-          : e.ground
-            ? speed
-            : e.elite
-              ? e.o.position.z < -55
-                ? speed
-                : 6
-              : speed + 12);
+      if (e.role) {
+        e.o.position.z = fighterAdvance(e.o.position.z, e.age, dt, speed);
+      } else
+        e.o.position.z +=
+          dt *
+          (e.kind === 'subboss'
+            ? Math.max(0, (-85 - e.o.position.z) * 1.4)
+            : e.ground
+              ? speed
+              : e.elite
+                ? e.o.position.z < -55
+                  ? speed
+                  : 6
+                : speed + 12);
       e.o.position.x = e.ground
         ? e.x
         : e.kind === 'base'
@@ -2236,6 +2264,14 @@ export function createGame({
         : e.kind === 'base'
           ? -1
           : e.y + Math.sin(elapsed + e.phase) * 2;
+      if (e.role) {
+        const motion = fighterMotion(e.role, e.age, e.x, e.y, player.position.x, e.phase);
+        e.o.position.x = motion.x;
+        e.o.position.y = motion.y;
+        e.o.rotation.z = motion.bank;
+        e.attackGlow.visible = e.cd <= 0.55 && e.cd > 0 && e.o.position.z < -15;
+        e.attackGlow.scale.setScalar(6 + Math.sin(e.age * 20) * 2);
+      }
       if (e.kind === 'subboss') {
         $('subHealth').style.width = Math.max(0, (e.life / e.maxLife) * 100) + '%';
         if (e.cd < 0.6) $('subState').textContent = '⚠ CANHÕES CARREGANDO';
@@ -2251,10 +2287,12 @@ export function createGame({
       if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
       e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
-        bullet(
-          e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
-          player.position,
-        );
+        for (const offset of e.role ? fighterAimOffsets(e.role) : [0])
+          bullet(
+            e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+            player.position.clone().add(new T.Vector3(offset, 0, 0)),
+          );
+        if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss')
           for (const target of encounterPattern(
             sectorIndex,
@@ -2264,7 +2302,13 @@ export function createGame({
           ))
             bullet(e.o.position.clone().add(new T.Vector3(0, 0, 10)), target);
         e.cd =
-          e.kind === 'subboss' ? (dynamicFlight ? [1.8, 1.35, 1][e.combatPhase - 1] : 1.5) : 2.3;
+          e.kind === 'subboss'
+            ? dynamicFlight
+              ? [1.8, 1.35, 1][e.combatPhase - 1]
+              : 1.5
+            : e.role
+              ? 1.8
+              : 2.3;
       }
       if (
         crossesSolid(
@@ -2914,6 +2958,8 @@ export function createGame({
         .filter((e) => !e.dead)
         .map((e) => ({
           kind: e.kind,
+          role: e.role,
+          charging: e.attackGlow?.visible ?? false,
           x: e.o.position.x,
           y: e.o.position.y + e.hitY,
           z: e.o.position.z,
