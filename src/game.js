@@ -2444,7 +2444,7 @@ export function createGame({
           const center = mesh.getWorldPosition(new T.Vector3());
           if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
             const dealt = damageBoss(b.damage ?? 2, center, b.element, b.charged);
-            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, { bossHit: true });
+            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, { bossHit: true, weak: dealt > 0 });
             b.life = 0;
 
             break;
