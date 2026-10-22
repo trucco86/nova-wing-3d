@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.17.0 — Impactos verificáveis e leitura de pontos fracos
+
+- Efeitos de impacto no ponto projetado de colisão; feedback diferente para tiro bloqueado, acerto comum e ponto fraco.
+- Sinais audiovisuais de escudo resistente, danos reais e vulnerabilidades confirmadas de chefes e subchefes, sem alterar HP, cadência ou multiplicadores.
+- Traduções PT/EN/ES das mensagens de impacto, feedback compacto para dispositivos móveis, especificação e testes de regressão.
+- Backlog vivo e prioridades de evolução registradas com status honesto de entrega web vs homologação física e nativos.
+
+
 ## 1.16.0 — Localização integral, mira e coleta assistida
 
 - Catálogo PT-BR, inglês e espanhol para textos da campanha, hangar, HUD, menus, mensagens de combate e abertura; atualização de idioma sem recarregar o jogo.
