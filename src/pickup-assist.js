@@ -1,5 +1,4 @@
 /** Predictable swept pickup attraction and contact, independent from the renderer. */
-const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 export function pickupStep({ position, player, speed, dt, kind = 'shield' }) {
   if (
     ![position.x, position.y, position.z, player.x, player.y, player.z, speed, dt].every(
