@@ -1119,7 +1119,9 @@ export function createGame({
       o.userData.owned = true;
     }
     const elite = !ground && kind !== 'fighter';
-    o.scale.setScalar(ground || kind === 'subboss' ? 1 : elite ? 1.6 : 0.65);
+    o.scale.setScalar(
+      ground || kind === 'subboss' ? 1 : elite ? 1.6 : tacticalFighter ? 1.3 : 0.65,
+    );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
       y = ground ? -7 : kind === 'subboss' ? 10 : rnd(1, 19);
@@ -1163,9 +1165,17 @@ export function createGame({
       ground,
       hitY: kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
       half: new T.Vector3(
-        ground ? (kind === 'walker' ? 10 : 6) : kind === 'subboss' ? 16 : 3.4,
-        ground ? (kind === 'walker' ? 10 : 3) : kind === 'subboss' ? 5 : 2,
-        ground ? 8 : 3,
+        ground
+          ? kind === 'walker'
+            ? 10
+            : 6
+          : kind === 'subboss'
+            ? 16
+            : tacticalFighter
+              ? 5.5
+              : 3.4,
+        ground ? (kind === 'walker' ? 10 : 3) : kind === 'subboss' ? 5 : tacticalFighter ? 2.6 : 2,
+        ground ? 8 : tacticalFighter ? 4.5 : 3,
       ),
       dead: false,
       elite,
