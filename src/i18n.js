@@ -5,7 +5,11 @@ const MAP = new Map(ROWS.map(([pt,en,es]) => [pt, {en,es}]));
 
 // Dynamic terms and inflected labels used in HUD strings created at runtime.
 const ADDITIONAL = [
-  ['PERSEGUIÇÃO','CHASE','PERSECUCIÓN'],
+  ['Em algum lugar entre as estrelas, a paz dos Five Cats foi interrompida.','Somewhere among the stars, the peace of Five Cats was shattered.','En algún lugar entre las estrellas, la paz de Five Cats fue interrumpida.'],
+  ['Preparem as naves. Vamos recuperar tudo o que ele roubou.','Prepare the ships. We will recover everything he stole.','Preparen las naves. Recuperaremos todo lo que robó.'],
+  ['Five Cats, todos a postos. Temos um rastro para seguir.','Five Cats, all stations ready. We have a trail to follow.','Five Cats, todos a sus puestos. Tenemos un rastro que seguir.'],
+  ['CUIDADOS ·','PET CARE ·','CUIDADOS ·'],
+    ['PERSEGUIÇÃO','CHASE','PERSECUCIÓN'],
   ['COMBATE','COMBAT','COMBATE'],
   ['BARREIRA','BARRIER','BARRERA'],
   ['ESTASE','STASIS','ESTASIS'],
