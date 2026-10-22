@@ -7,7 +7,6 @@
 - Traduções PT/EN/ES das mensagens de impacto, feedback compacto para dispositivos móveis, especificação e testes de regressão.
 - Backlog vivo e prioridades de evolução registradas com status honesto de entrega web vs homologação física e nativos.
 
-
 ## 1.16.0 — Localização integral, mira e coleta assistida
 
 - Catálogo PT-BR, inglês e espanhol para textos da campanha, hangar, HUD, menus, mensagens de combate e abertura; atualização de idioma sem recarregar o jogo.

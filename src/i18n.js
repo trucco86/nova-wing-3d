@@ -468,10 +468,10 @@ const MAP = new Map(ROWS.map(([pt, en, es]) => [pt, { en, es }]));
 
 // Dynamic terms and inflected labels used in HUD strings created at runtime.
 const ADDITIONAL = [
-  ['ACERTO','HIT','IMPACTO'],
-  ['SEM DANO','NO DAMAGE','SIN DAÑO'],
-  ['SEM DANO · AJUSTE O ÂNGULO','NO DAMAGE · CHANGE ANGLE','SIN DAÑO · CAMBIA EL ÁNGULO'],
-  ['PONTO FRACO','WEAK POINT','PUNTO DÉBIL'],
+  ['ACERTO', 'HIT', 'IMPACTO'],
+  ['SEM DANO', 'NO DAMAGE', 'SIN DAÑO'],
+  ['SEM DANO · AJUSTE O ÂNGULO', 'NO DAMAGE · CHANGE ANGLE', 'SIN DAÑO · CAMBIA EL ÁNGULO'],
+  ['PONTO FRACO', 'WEAK POINT', 'PUNTO DÉBIL'],
   ['PRÓXIMO:', 'NEXT:', 'SIGUIENTE:'],
   ['ARMA', 'WEAPON', 'ARMA'],
   [' · EQUIPADA', ' · EQUIPPED', ' · EQUIPADA'],

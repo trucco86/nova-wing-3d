@@ -1006,11 +1006,18 @@ export function createGame({
       // Place the confirmation near the *actual collision*, not at a fixed screen point.
       camera.updateMatrixWorld();
       const projected = position.clone().project(camera);
-      if (Math.abs(projected.x) <= 1.2 && Math.abs(projected.y) <= 1.2 && projected.z >= -1 && projected.z <= 1) {
+      if (
+        Math.abs(projected.x) <= 1.2 &&
+        Math.abs(projected.y) <= 1.2 &&
+        projected.z >= -1 &&
+        projected.z <= 1
+      ) {
         const width = Number.isFinite(window.innerWidth) ? window.innerWidth : 1366;
         const height = Number.isFinite(window.innerHeight) ? window.innerHeight : 768;
-        element.style.left = Math.max(32, Math.min(width - 32, ((projected.x + 1) / 2) * width)) + 'px';
-        element.style.top = Math.max(48, Math.min(height - 48, ((1 - projected.y) / 2) * height - 28)) + 'px';
+        element.style.left =
+          Math.max(32, Math.min(width - 32, ((projected.x + 1) / 2) * width)) + 'px';
+        element.style.top =
+          Math.max(48, Math.min(height - 48, ((1 - projected.y) / 2) * height - 28)) + 'px';
       } else {
         element.style.left = $('aimReticle').style.left || '50%';
         element.style.top = $('aimReticle').style.top || '55%';
@@ -2444,7 +2451,10 @@ export function createGame({
           const center = mesh.getWorldPosition(new T.Vector3());
           if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
             const dealt = damageBoss(b.damage ?? 2, center, b.element, b.charged);
-            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, { bossHit: true, weak: dealt > 0 });
+            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
+              bossHit: true,
+              weak: dealt > 0,
+            });
             b.life = 0;
 
             break;
@@ -2453,7 +2463,9 @@ export function createGame({
         // Hull catches missed/armored shots behind the forward weak-point volumes.
         const hull = new T.Vector3(45, 20, 4);
         if (b.life > 0 && crossesSolid(previousShot, b.o.position, boss.position, hull, 0.2)) {
-          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0, { bossHit: true });
+          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0, {
+            bossHit: true,
+          });
           b.life = 0;
         }
       }
