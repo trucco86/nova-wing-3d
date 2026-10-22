@@ -56,6 +56,7 @@ import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferen
 import { createAudioCues } from './audio-cues.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
+import { pickupStep } from './pickup-assist.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import {
   createBossModel,
@@ -269,7 +270,8 @@ export function createGame({
     scanTime = 0,
     impactTime = 0,
     impactConfirmed = false,
-    lastSpecialCycle = -1;
+    lastSpecialCycle = -1,
+    pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
   const stage = () => (dynamicFlight ? stageAt(strategy.xp) : 0);
@@ -728,6 +730,9 @@ export function createGame({
     settingsOpen = false;
     document.body.classList.add('in-mission', 'stage-intro');
     stageIntroTime = 3;
+    pickupFeedbackTime = 0;
+    $('pickupFlash').hidden = true;
+    $('aimReticle').hidden = true;
     $('sectorLabel').textContent =
       (sectorIndex < 5 ? 'BLOCO I · ASCENSÃO' : 'BLOCO II · DEVASTADOR') +
       ' / ' +
@@ -798,6 +803,33 @@ export function createGame({
     };
     o.start();
     o.stop(audioCtx.currentTime + duration);
+  }
+  function updateAimReticle() {
+    if (!dynamicFlight || !['playing', 'collapsing'].includes(state)) {
+      $('aimReticle').hidden = true;
+      return;
+    }
+    // Shots travel forward along the ship's own x/y axis, not screen center.
+    camera.updateMatrixWorld();
+    const target = new T.Vector3(player.position.x, player.position.y, -80).project(camera);
+    const visible = Number.isFinite(target.x) && Number.isFinite(target.y) &&
+      target.z >= -1 && target.z <= 1 && Math.abs(target.x) <= 1 && Math.abs(target.y) <= 1;
+    $('aimReticle').hidden = !visible;
+    if (visible) {
+      $('aimReticle').style.left = (((target.x + 1) / 2) * window.innerWidth).toFixed(1) + 'px';
+      $('aimReticle').style.top = (((1 - target.y) / 2) * window.innerHeight).toFixed(1) + 'px';
+    }
+  }
+  function pickupFeedback(kind) {
+    const element = $('pickupFlash');
+    const pet = kind.startsWith('pet:');
+    element.textContent = pet
+      ? '✦ ' + (PET_ITEMS.find((item) => item.id === kind.slice(4))?.name ?? 'ITEM') + ' +1'
+      : kind === 'blue' ? '✦ XP +4 · PODS' : '✦ ESCUDO +25';
+    element.style.color = kind === 'blue' ? '#75c8ff' : kind === 'shield' ? '#92ff97' : '#ffd994';
+    element.hidden = false;
+    pickupFeedbackTime = 1;
+    if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
   function message(t) {
     $('message').textContent = t;
@@ -1896,6 +1928,9 @@ export function createGame({
       dynamicFlight ? route : undefined,
     );
     reticle.position.set(player.position.x, player.position.y, -60);
+    // Keep legacy/native 3D sight; use clearer projected HUD for the web.
+    reticle.visible = !dynamicFlight;
+    updateAimReticle();
     if (shake > 0) {
       shake = Math.max(0, shake - dt);
       camera.position.x += Math.sin(visualTime * 70) * shake * 0.3;
@@ -2454,27 +2489,23 @@ export function createGame({
       }
     }
     for (let r of rings) {
-      const previousZ = r.o.position.z;
       const extent = Math.max(0, flightLimit() - 2);
       r.o.position.x = clamp(r.o.position.x, -extent, extent);
-      r.o.position.z += speed * dt;
-      const lateral = Math.hypot(
-        r.o.position.x - player.position.x,
-        r.o.position.y - player.position.y,
-      );
-      if (Math.abs(r.o.position.z - player.position.z) < 16 && lateral < 7) {
-        r.o.position.x += (player.position.x - r.o.position.x) * (1 - Math.exp(-8 * dt));
-        r.o.position.y += (player.position.y - r.o.position.y) * (1 - Math.exp(-8 * dt));
-      }
+      const result = pickupStep({
+        position: r.o.position,
+        player: player.position,
+        speed,
+        dt,
+        kind: r.kind,
+      });
+      r.o.position.set(result.x, result.y, result.z);
       r.o.rotation.z += dt;
-      if (
-        previousZ <= player.position.z + 3 &&
-        r.o.position.z >= player.position.z - 3 &&
-        Math.hypot(r.o.position.x - player.position.x, r.o.position.y - player.position.y) < 3.8
-      ) {
+      if (result.collected) {
         score += 3;
         r.life = 0;
+        explode(r.o.position, 3, r.kind === 'blue' ? 0x61b9ff : 0x9affb5);
         collect(r.kind);
+        pickupFeedback(r.kind);
       }
       if (r.o.position.z > 40) r.life = 0;
     }
@@ -2536,6 +2567,11 @@ export function createGame({
       stageIntroTime = Math.max(0, stageIntroTime - dt);
       if (stageIntroTime === 0) document.body.classList.remove('stage-intro');
     }
+    if (state === 'playing' && pickupFeedbackTime > 0) {
+      pickupFeedbackTime = Math.max(0, pickupFeedbackTime - dt);
+      if (pickupFeedbackTime === 0) $('pickupFlash').hidden = true;
+    }
+    if (!['playing', 'collapsing'].includes(state)) $('aimReticle').hidden = true;
     if (['menu', 'playing', 'collapsing', 'shop', 'won', 'arcade'].includes(state)) {
       if (state !== 'menu' || menuThemePlaying) music?.update(dt);
     }
@@ -2728,6 +2764,8 @@ export function createGame({
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
+      aimReticleVisible: !$('aimReticle').hidden,
+      pickupToastVisible: !$('pickupFlash').hidden,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
