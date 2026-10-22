@@ -3488,3 +3488,41 @@ body.left-handed #touch {
     animation: none;
   }
 }
+
+/* v1.17: combat feedback follows the real collision, never captures input. */
+#hitFeedback {
+  max-width: min(240px, 65vw);
+  white-space: nowrap;
+  line-height: 1.35;
+  border-radius: 7px;
+  padding: 4px 8px;
+  background: #071a29cc;
+  border: 1px solid currentColor;
+  box-shadow: 0 2px 14px #020915bb;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+}
+#hitFeedback[data-impact='weak'] {
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 0 15px #f5da5d66;
+}
+#hitFeedback[data-impact='blocked'] {
+  font-size: 11px;
+  opacity: 0.9;
+}
+@media (pointer: coarse), (max-width: 850px) {
+  #hitFeedback {
+    padding: 3px 6px;
+    font-size: 11px;
+    max-width: 60vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #hitFeedback[data-impact='weak'] {
+    font-size: 12px;
+  }
+  #hitFeedback[data-impact='blocked'] {
+    font-size: 10px;
+  }
+}

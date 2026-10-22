@@ -283,7 +283,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     window.fixture.advance(0.35);
   });
   await expect(page.locator('#hitFeedback')).toBeVisible();
-  await expect(page.locator('#hitFeedback')).toContainText('✦');
+  await expect(page.locator('#hitFeedback')).toContainText(/ACERTO|PONTO FRACO/);
   expect(await page.evaluate(() => window.fixture.game.snapshot().bossTargets[0].hp)).toBeLessThan(
     180,
   );

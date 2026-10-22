@@ -54,6 +54,7 @@ import {
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAudioCues } from './audio-cues.js';
+import { combatFeedback } from './combat-feedback.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
@@ -984,20 +985,45 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
-  function impact(position, dealt = 1) {
+  function impact(position, dealt = 1, { bossHit = false, weak = false } = {}) {
     if (!dynamicFlight) return;
-    const color = dealt > 0 ? '#eaffff' : '#ffad55';
-    explode(position, 3, dealt > 0 ? 0xbaffee : 0xffad55);
-    const flash = halo(color, dealt > 0 ? 8 : 5, 0.95);
+    const feedback = combatFeedback(dealt, { boss: bossHit, weak });
+    const confirmed = feedback.type !== 'blocked';
+    const color = feedback.color;
+    explode(position, 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
+    const flash = halo(color, confirmed ? (weak ? 11 : 8) : 5, 0.95);
     flash.material = flash.material.clone();
     flash.material.depthTest = false;
     flash.material.depthWrite = false;
     flash.renderOrder = 100;
-    if (dealt > 0 || impactTime <= 0 || !impactConfirmed) {
-      impactTime = 0.25;
-      impactConfirmed = dealt > 0;
-      $('hitFeedback').textContent = dealt > 0 ? '✦ ' + Math.max(1, Math.round(dealt)) : '◇';
-      $('hitFeedback').style.color = color;
+    if (confirmed || impactTime <= 0 || !impactConfirmed) {
+      impactTime = feedback.duration;
+      impactConfirmed = confirmed;
+      const element = $('hitFeedback');
+      element.textContent = feedback.label;
+      element.style.color = color;
+      element.setAttribute?.('data-impact', feedback.type);
+      // Place the confirmation near the *actual collision*, not at a fixed screen point.
+      camera.updateMatrixWorld();
+      const projected = position.clone().project(camera);
+      if (
+        Math.abs(projected.x) <= 1.2 &&
+        Math.abs(projected.y) <= 1.2 &&
+        projected.z >= -1 &&
+        projected.z <= 1
+      ) {
+        const width = Number.isFinite(window.innerWidth) ? window.innerWidth : 1366;
+        const height = Number.isFinite(window.innerHeight) ? window.innerHeight : 768;
+        element.style.left =
+          Math.max(32, Math.min(width - 32, ((projected.x + 1) / 2) * width)) + 'px';
+        element.style.top =
+          Math.max(48, Math.min(height - 48, ((1 - projected.y) / 2) * height - 28)) + 'px';
+      } else {
+        element.style.left = $('aimReticle').style.left || '50%';
+        element.style.top = $('aimReticle').style.top || '55%';
+      }
+      if (weak) cue('weakPoint');
+      else if (bossHit && !confirmed) cue('armorHit');
     }
     flash.position.copy(position);
     scene.add(flash);
@@ -2395,6 +2421,7 @@ export function createGame({
               e.half,
             ),
             dealt,
+            { weak: weak && dealt > 0 },
           );
           b.pierced.add(e);
           if (b.element !== 'void') b.life = 0;
@@ -2424,7 +2451,10 @@ export function createGame({
           const center = mesh.getWorldPosition(new T.Vector3());
           if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
             const dealt = damageBoss(b.damage ?? 2, center, b.element, b.charged);
-            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt);
+            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
+              bossHit: true,
+              weak: dealt > 0,
+            });
             b.life = 0;
 
             break;
@@ -2433,7 +2463,9 @@ export function createGame({
         // Hull catches missed/armored shots behind the forward weak-point volumes.
         const hull = new T.Vector3(45, 20, 4);
         if (b.life > 0 && crossesSolid(previousShot, b.o.position, boss.position, hull, 0.2)) {
-          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0);
+          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0, {
+            bossHit: true,
+          });
           b.life = 0;
         }
       }
