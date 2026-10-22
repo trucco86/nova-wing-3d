@@ -468,14 +468,22 @@ const MAP = new Map(ROWS.map(([pt, en, es]) => [pt, { en, es }]));
 
 // Dynamic terms and inflected labels used in HUD strings created at runtime.
 const ADDITIONAL = [
-  ["PRÓXIMO:","NEXT:","SIGUIENTE:"],
-  ["ARMA","WEAPON","ARMA"],
-  [" · EQUIPADA"," · EQUIPPED"," · EQUIPADA"],
-  [" · EQUIPAR"," · EQUIP"," · EQUIPAR"],
-  ["PILOTO E NAVE","PILOT & SHIP","PILOTO Y NAVE"],
-  ["Pilote a NOVA-7 com Bia e os Five Cats. Combate aéreo 3D na Cidade das Máquinas, no teclado ou no celular.","Pilot NOVA-7 with Bia and the Five Cats. 3D aerial combat in the City of Machines, on keyboard or mobile.","Pilota la NOVA-7 con Bia y los Five Cats. Combate aéreo 3D en la Ciudad de las Máquinas, con teclado o móvil."],
-  ["Direção dos disparos","Direction of fire","Dirección de los disparos"],
-  ["Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.","Five cats. Stolen supplies. A galactic pursuit.","Cinco gatos. Suministros robados. Una persecución galáctica."],
+  ['PRÓXIMO:', 'NEXT:', 'SIGUIENTE:'],
+  ['ARMA', 'WEAPON', 'ARMA'],
+  [' · EQUIPADA', ' · EQUIPPED', ' · EQUIPADA'],
+  [' · EQUIPAR', ' · EQUIP', ' · EQUIPAR'],
+  ['PILOTO E NAVE', 'PILOT & SHIP', 'PILOTO Y NAVE'],
+  [
+    'Pilote a NOVA-7 com Bia e os Five Cats. Combate aéreo 3D na Cidade das Máquinas, no teclado ou no celular.',
+    'Pilot NOVA-7 with Bia and the Five Cats. 3D aerial combat in the City of Machines, on keyboard or mobile.',
+    'Pilota la NOVA-7 con Bia y los Five Cats. Combate aéreo 3D en la Ciudad de las Máquinas, con teclado o móvil.',
+  ],
+  ['Direção dos disparos', 'Direction of fire', 'Dirección de los disparos'],
+  [
+    'Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.',
+    'Five cats. Stolen supplies. A galactic pursuit.',
+    'Cinco gatos. Suministros robados. Una persecución galáctica.',
+  ],
   ['ASCENSÃO ORBITAL', 'ORBITAL ASCENT', 'ASCENSO ORBITAL'],
   ['CURVA À DIREITA', 'RIGHT TURN', 'GIRO A LA DERECHA'],
   ['CURVA À ESQUERDA', 'LEFT TURN', 'GIRO A LA IZQUIERDA'],
