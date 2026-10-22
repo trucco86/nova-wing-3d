@@ -2774,8 +2774,6 @@ export function createGame({
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
-      aimReticleVisible: !$('aimReticle').hidden,
-      pickupToastVisible: !$('pickupFlash').hidden,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
