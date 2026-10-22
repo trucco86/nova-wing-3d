@@ -4,7 +4,7 @@
 
 Pilote a NOVA-7 com o esquadrão Five Cats em uma campanha de combate aéreo: cidades neon, instalações industriais, asteroides e fortalezas orbitais até o confronto com Marvin. Abra no navegador, escolha iniciar e jogue com teclado ou toque.
 
-**[▶ Jogar agora](https://trucco86.github.io/nova-wing-3d/)** · [Como desenvolver](#desenvolvimento) · [Mapa do repositório](docs/REPOSITORIO.md) · [Harness](docs/HARNESS.md) · [Histórico](CHANGELOG.md)
+**[▶ Jogar agora](https://trucco86.github.io/nova-wing-3d/)** · [Como desenvolver](#desenvolvimento) · [Mapa do repositório](docs/REPOSITORIO.md) · [Harness](docs/HARNESS.md) · [Histórico](CHANGELOG.md) · [Backlog](docs/BACKLOG.md)
 
 ## Case de engenharia: Nova Wing além do jogo
 
