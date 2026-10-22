@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.16.0 — Localização integral, mira e coleta assistida
+
+- Catálogo PT-BR, inglês e espanhol para textos da campanha, hangar, HUD, menus, mensagens de combate e abertura; atualização de idioma sem recarregar o jogo.
+- Retículo de mira projetado a partir do eixo real do disparo, acompanhando câmeras e movimento lateral.
+- Anéis e suprimentos com magnetismo moderado e detecção varrida na passagem da nave, reduzindo falsos negativos.
+- Confirmação imediata de coleta por mensagem dedicada, partículas e efeitos de áudio para anéis verdes e azuis.
+- Contratos, testes de tradução, colisão e regressão no navegador preservando checkpoints e progressão.
+
 ## 1.15.0 — HUD, pausa e opções
 
 - Logotipo sai do voo e título de fase desaparece após três segundos; radares de chefe mais compactos no celular.

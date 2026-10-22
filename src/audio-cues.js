@@ -26,6 +26,20 @@ export const AUDIO_CUES = {
       { from: 88, to: 30, duration: 0.28, gain: 0.025, wave: 'triangle' },
     ],
   },
+  ringShield: {
+    cooldown: 0.08,
+    tones: [
+      { from: 520, to: 780, duration: 0.19, gain: 0.025, wave: 'sine' },
+      { from: 790, to: 1120, delay: 0.09, duration: 0.17, gain: 0.021, wave: 'triangle' },
+    ],
+  },
+  ringBlue: {
+    cooldown: 0.08,
+    tones: [
+      { from: 580, to: 910, duration: 0.16, gain: 0.025, wave: 'sine' },
+      { from: 930, to: 1240, delay: 0.1, duration: 0.18, gain: 0.024, wave: 'sine' },
+    ],
+  },
   critical: {
     cooldown: 3,
     tones: [
