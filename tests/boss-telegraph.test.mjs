@@ -14,3 +14,21 @@ test('subboss, tunnel and non-finite timing never cause false warnings', () => {
   assert.equal(shouldWarnBoss({elapsed:NaN,duration:60}),false);
   assert.equal(shouldWarnBoss({elapsed:9,duration:8}),false);
 });
+
+import { harness } from './harness.mjs';
+test('real game announces boss before arrival, once, without freezing flight', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(54);
+  assert.equal(h.elements.get('bossIncoming').hidden, true);
+  h.advance(3);
+  assert.equal(h.elements.get('bossIncoming').hidden, false);
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().boss, false);
+  h.advance(5);
+  assert.equal(h.elements.get('bossIncoming').hidden, true);
+  h.advance(3);
+  assert.equal(h.game.snapshot().boss, true);
+  assert.equal(h.elements.get('bossIncoming').hidden, true);
+});
