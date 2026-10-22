@@ -9,6 +9,7 @@ test('confirmed damage gets exact rounded, positive value', () => {
 test('boss hits differ from weak-point and blocked impact', () => {
   assert.equal(combatFeedback(14,{boss:true}).type,'boss');
   assert.equal(combatFeedback(18,{weak:true}).type,'weak');
+  assert.equal(combatFeedback(4, {boss:true,weak:true}).type,'weak');
   assert.equal(combatFeedback(0,{boss:true}).label,'SEM DANO · AJUSTE O ÂNGULO');
 });
 test('negative, nonfinite and zero values are never communicated as damage', () => {
