@@ -26,6 +26,14 @@ export const AUDIO_CUES = {
       { from: 88, to: 30, duration: 0.28, gain: 0.025, wave: 'triangle' },
     ],
   },
+  weakPoint: {
+    cooldown: 0.18,
+    tones: [{ from: 850, to: 1320, duration: 0.13, gain: 0.018, wave: 'sine' }],
+  },
+  armorHit: {
+    cooldown: 0.35,
+    tones: [{ from: 260, to: 175, duration: 0.13, gain: 0.014, wave: 'triangle' }],
+  },
   ringShield: {
     cooldown: 0.08,
     tones: [
