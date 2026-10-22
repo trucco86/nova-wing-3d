@@ -1434,6 +1434,7 @@ export function createGame({
       pausedFrom = state;
       releaseControls();
       state = 'paused';
+      $('bossIncoming').hidden = true;
       music?.pause();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
@@ -1448,6 +1449,7 @@ export function createGame({
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
+      $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
       $('pause').textContent = 'Ⅱ';
       message('Missão retomada.');

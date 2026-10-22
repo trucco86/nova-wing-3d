@@ -26,6 +26,11 @@ test('real game announces boss before arrival, once, without freezing flight', (
   assert.equal(h.elements.get('bossIncoming').hidden, false);
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.game.snapshot().boss, false);
+  h.game.pause();
+  assert.equal(h.elements.get('bossIncoming').hidden, true);
+  h.advance(10);
+  h.game.pause();
+  assert.equal(h.elements.get('bossIncoming').hidden, false);
   h.advance(5);
   assert.equal(h.elements.get('bossIncoming').hidden, true);
   h.advance(3.5);
