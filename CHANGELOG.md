@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.18.0 — Aviso antecipado de chefe
+
+- Aviso discreto, localizado e sonoro antes da chegada de cada chefe, evitando surgimento inesperado.
+- O aviso é limitado a uma ocorrência por fase, respeita as pausas e não altera o tempo do combate nem o HP dos chefes.
+- Suporte a PT-BR, inglês e espanhol; verificação de estado, tempo e reset por harness determinístico.
+- Continuidade do jogo, checkpoints, armas e personagens preservada.
+
+
 ## 1.17.0 — Impactos verificáveis e leitura de pontos fracos
 
 - Efeitos de impacto no ponto projetado de colisão; feedback diferente para tiro bloqueado, acerto comum e ponto fraco.
