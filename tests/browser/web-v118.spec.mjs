@@ -6,7 +6,7 @@ test('boss warning precedes arrival, stays clear of controls and respects pause'
   test.setTimeout(60000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/artifacts/dynamic.html');
+  await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.evaluate(() => window.fixture.advance(57));
   const warning = page.locator('#bossIncoming');
