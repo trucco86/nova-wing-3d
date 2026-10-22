@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const { version } = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 
 test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ page }) => {
   test.setTimeout(120000);
@@ -8,7 +11,7 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await expect(page.locator('#cinematic')).toBeHidden();
   await expect(page.locator('#criticalWarning')).toBeHidden();
   await expect(page.locator('#petCareHud')).toBeHidden();
-  await expect(page.locator('#gameVersion')).toHaveText('v1.15.0');
+  await expect(page.locator('#gameVersion')).toHaveText(`v${version}`);
 
   const menuTheme = page.locator('#menuMusic');
   await menuTheme.click();
