@@ -2598,6 +2598,15 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
   #specialCast {
     grid-column: 1 / -1;
   }
+  body:has(#strategyControls:not([hidden])) #attackWarning {
+    top: 246px;
+    max-width: calc(100vw - 32px);
+    padding: 3px 8px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #071521c9;
+    text-overflow: ellipsis;
+  }
   body:has(#strategyControls:not([hidden])) #cockpitPanel {
     bottom: 105px;
   }

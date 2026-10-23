@@ -329,6 +329,16 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/__dynamic.html?sector=0');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.evaluate(() => {
+      window.fixture.advance(68.1);
+      window.fixture.game.tacticalAction('precision');
+      window.fixture.advance(0.65);
+    });
+    await expect(page.locator('#game')).toBeVisible();
+    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
+    await expect(page.locator('#hitFeedback')).toBeVisible();
     await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
