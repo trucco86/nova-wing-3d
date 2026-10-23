@@ -167,25 +167,38 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  for (const xp of [0, 160, 740]) {
+  for (const xp of [0, 740, 160]) {
     await page.goto('/__dynamic.html?xp=' + xp + '&pods=2');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await page.evaluate(() => window.fixture.advance(2));
     await page.screenshot({ path: info.outputPath('evolution-' + xp + '.png') });
   }
-  await expect(page.locator('#specialCast')).toBeHidden();
-  await page.locator('#strategyDrawer summary').click();
-  await page.screenshot({ path: info.outputPath('loadout-drawer.png') });
+  await expect(page.locator('#quickRpg')).toBeVisible();
+  await expect(page.locator('#specialCast')).toBeVisible();
+  await expect(page.locator('#rpgLevel')).toContainText('EV 6');
+  expect(
+    await page
+      .locator('#quickRpg button')
+      .evaluateAll((buttons) =>
+        buttons.every((button) => button.scrollWidth <= button.clientWidth),
+      ),
+  ).toBe(true);
+  await page.screenshot({ path: info.outputPath('rpg-quick-access.png') });
   if (info.project.name === 'mobile') await page.locator('#arsenalSwitch').tap();
   else await page.keyboard.press('KeyF');
   await page.evaluate(() => window.fixture.advance(0.1));
   await expect(page.locator('#arsenalSwitch')).toContainText('GEADA');
+  await page.locator('#strategyDrawer summary').click();
+  await page.screenshot({ path: info.outputPath('loadout-drawer.png') });
+  await expect(page.locator('#strategyStatus')).toContainText('ATAQUE');
+  await expect(page.locator('#rpgNext')).toContainText('ARCANO');
   await page.locator('#specialCast').click();
   await page.evaluate(() => window.fixture.advance(0.1));
   expect(
     await page.evaluate(() => window.fixture.game.snapshot().strategy.barrier),
   ).toBeGreaterThan(3);
   await page.screenshot({ path: info.outputPath('barrier.png') });
+  await page.locator('#strategyDrawer summary').click();
   await page.locator('#pause').click();
   const paused = await page.evaluate(() => window.fixture.game.snapshot());
   await page.evaluate(() => window.fixture.advance(1));
@@ -206,6 +219,16 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   await page.evaluate(() => window.fixture.advance(58));
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
+  await page.evaluate(() => {
+    window.fixture.game.tacticalAction('precision');
+    window.fixture.advance(0.35);
+  });
+  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
+  await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
+  const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
+  expect(blockedFeedback.width).toBeLessThanOrEqual(24);
+  expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   if (info.project.name === 'mobile') {
     const box = await page.locator('#orbitLeft').boundingBox();
     const touch = await page.context().newCDPSession(page);
@@ -231,7 +254,33 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     const bounds = await page.locator('#strategyControls').boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
+    const bossBounds = await page.locator('#bossHUD').boundingBox();
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(bossBounds.y);
+    const missionBounds = await page.locator('.mission').boundingBox();
+    expect(
+      missionBounds.x >= bounds.x + bounds.width ||
+        missionBounds.x + missionBounds.width <= bounds.x ||
+        missionBounds.y >= bounds.y + bounds.height ||
+        missionBounds.y + missionBounds.height <= bounds.y,
+    ).toBe(true);
+    for (const id of ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch']) {
+      const button = await page.locator(`#${id}`).boundingBox();
+      expect(button.width).toBeGreaterThanOrEqual(60);
+      expect(button.height).toBeGreaterThanOrEqual(60);
+    }
+    const orbitBounds = await page.locator('#orbitControls').boundingBox();
+    const touchBounds = await page.locator('#touch').boundingBox();
+    expect(orbitBounds.y + orbitBounds.height).toBeLessThanOrEqual(touchBounds.y);
     await page.screenshot({ path: info.outputPath('strategy-portrait.png') });
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.evaluate(() => window.fixture.advance(0.1));
+    const compactTouch = await page.locator('#touch').boundingBox();
+    const compactStick = await page.locator('#stick').boundingBox();
+    const compactActions = await page.locator('.actions').boundingBox();
+    expect(compactTouch.x).toBeGreaterThanOrEqual(0);
+    expect(compactTouch.x + compactTouch.width).toBeLessThanOrEqual(320);
+    expect(compactStick.x + compactStick.width).toBeLessThanOrEqual(compactActions.x);
+    await page.screenshot({ path: info.outputPath('strategy-compact-320.png') });
   }
   expect(errors).toEqual([]);
 });

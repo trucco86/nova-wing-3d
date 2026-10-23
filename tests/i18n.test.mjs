@@ -29,6 +29,11 @@ test('interpolated gameplay statuses localize numbers without changing IDs', () 
   );
   assert.equal(translateText('✦ ESCUDO +25', 'en'), '✦ SHIELD +25');
   assert.equal(translateText('XP +4 · PODS', 'en'), 'XP +4 · PODS');
+  assert.equal(
+    translateText('XP 160/250 · ATAQUE +87% · ESCUDO +15 · AGILIDADE +15% · ARCANA +13%', 'en'),
+    'XP 160/250 · ATTACK +87% · SHIELD +15 · AGILITY +15% · ARCANA +13%',
+  );
+  assert.equal(translateText('ARSENAL COMPLETO', 'es'), 'ARSENAL COMPLETO');
 });
 test('defaults, proper names and spacing are preserved', () => {
   assert.equal(translateText(' CIDADE DAS MÁQUINAS ', 'pt'), ' CIDADE DAS MÁQUINAS ');

@@ -1256,7 +1256,7 @@ body {
   overscroll-behavior: none;
 }
 #touch button.pressed {
-  background: #63dfbd70;
+  background-color: #63dfbd70;
   border-color: #b9ffe9;
   transform: scale(0.95);
 }
@@ -2395,7 +2395,8 @@ body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
   top: 112px;
   bottom: auto;
   transform: none;
-  max-width: 210px;
+  width: 248px;
+  max-width: calc(100vw - 20px);
   padding: 0;
   border: 0;
   background: none;
@@ -2411,6 +2412,12 @@ body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
   color: #8fffe0;
   padding: 4px;
   font: 11px monospace;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+#strategyDrawer summary b {
+  color: #fff3a1;
 }
 #strategyDrawer[open] {
   width: 190px;
@@ -2419,6 +2426,42 @@ body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
   display: block;
   padding: 10px 0;
   line-height: 1.6;
+}
+.rpgProgress {
+  height: 5px;
+  overflow: hidden;
+  background: #183344;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+.rpgProgress i {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #56e6ca, #ffe277);
+  box-shadow: 0 0 8px #56e6ca;
+}
+#rpgNext {
+  display: block;
+  color: #ffe89b;
+  line-height: 1.35;
+}
+#quickRpg {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr 1fr;
+  gap: 4px;
+  margin-top: 5px;
+  padding: 4px;
+  background: #061322e8;
+  border: 1px solid #4eb5ad66;
+  border-radius: 8px;
+}
+#quickRpg button {
+  min-width: 0;
+  min-height: 38px;
+  padding: 5px 3px;
+  font-size: 9px;
+  white-space: nowrap;
 }
 .strategyButtons {
   flex-direction: column;
@@ -2473,6 +2516,9 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
   #strategyControls button {
     min-height: 28px;
   }
+  #quickRpg button {
+    min-height: 36px;
+  }
 }
 @media (max-width: 500px) {
   #strategyControls {
@@ -2481,6 +2527,15 @@ body:has(#strategyControls:not([hidden])) #cockpitPanel {
   }
   #strategyDrawer[open] {
     width: 170px;
+  }
+  #strategyControls {
+    width: 190px;
+  }
+  #quickRpg {
+    grid-template-columns: 1fr 1fr;
+  }
+  #specialCast {
+    grid-column: 1 / -1;
   }
   body:has(#strategyControls:not([hidden])) #cockpitPanel {
     bottom: 105px;
@@ -3508,8 +3563,28 @@ body.left-handed #touch {
   box-shadow: 0 0 15px #f5da5d66;
 }
 #hitFeedback[data-impact='blocked'] {
-  font-size: 11px;
-  opacity: 0.9;
+  width: 22px;
+  height: 22px;
+  max-width: none;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0;
+  opacity: 0.95;
+}
+#hitFeedback[data-impact='blocked']::after {
+  content: '×';
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: #160c12aa;
+  box-shadow: 0 0 10px currentColor;
+  font: 900 17px/1 monospace;
 }
 @media (pointer: coarse), (max-width: 850px) {
   #hitFeedback {
@@ -3523,7 +3598,295 @@ body.left-handed #touch {
     font-size: 12px;
   }
   #hitFeedback[data-impact='blocked'] {
+    width: 20px;
+    height: 20px;
+    max-width: none;
+    padding: 0;
+    overflow: visible;
+    text-overflow: clip;
+    font-size: 0;
+  }
+}
+
+/* v1.22: safe-zone mobile HUD and resource rings keep the flight corridor unobstructed. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #hud {
+    inset: 12px 14px auto;
+    min-height: 72px;
+  }
+  body.in-mission .status {
+    width: min(54vw, 210px);
+    padding: 10px 11px 9px;
+    border: 1px solid #6affd22e;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #061522e8, #071b2699);
+    box-shadow: 0 8px 24px #01081166;
+    backdrop-filter: none;
+  }
+  body.in-mission .shield-head {
+    align-items: center;
+    gap: 10px;
     font-size: 10px;
+    line-height: 1.25;
+  }
+  body.in-mission .shield-head strong {
+    flex: none;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  body.in-mission .status > .bar {
+    height: 9px;
+    margin: 7px 0 0;
+    overflow: hidden;
+    transform: none;
+    border: 0;
+    border-radius: 999px;
+    box-shadow: inset 0 0 0 1px #83ffe133;
+  }
+  body.in-mission .status > .bar i {
+    border-radius: inherit;
+  }
+  body.in-mission .rightHUD {
+    gap: 7px;
+  }
+  body.in-mission .score {
+    display: grid;
+    justify-items: end;
+  }
+  body.in-mission .score b {
+    font-size: 34px;
+  }
+  body.in-mission .utilities #pause {
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 12px;
+    background: #071824e6;
+  }
+  body.in-mission .mission {
+    top: 86px;
+    right: 14px;
+    left: auto;
+    width: min(32vw, 126px);
+    transform: none;
+  }
+  body.in-mission .mission .route {
+    margin-top: 4px;
+  }
+  #strategyControls {
+    top: 91px;
+    left: 14px;
+    width: min(58vw, 226px);
+    max-width: none;
+  }
+  #strategyDrawer {
+    padding: 6px 8px;
+    border-radius: 10px;
+    background: #061522e8;
+    box-shadow: 0 8px 24px #01081166;
+    backdrop-filter: none;
+  }
+  #strategyDrawer summary {
+    min-height: 32px;
+    align-items: center;
+    padding: 0 2px;
+    font-size: 10px;
+  }
+  #strategyDrawer summary b {
+    color: #fff4a8;
+    font-size: 11px;
+  }
+  #strategyDrawer[open] {
+    width: min(72vw, 270px);
+  }
+  #quickRpg {
+    grid-template-columns: 0.8fr 1fr 1.35fr;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 10px;
+    background: #061522e8;
+    box-shadow: 0 8px 24px #01081155;
+    backdrop-filter: none;
+  }
+  #quickRpg button,
+  #specialCast {
+    grid-column: auto;
+    min-height: 46px;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  #orbitControls {
+    position: fixed;
+    bottom: 153px;
+    left: 14px;
+    display: grid;
+    width: 198px;
+    grid-template-columns: 54px 1fr 54px;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 5px;
+    border: 1px solid #64cabe55;
+    border-radius: 12px;
+    background: #061522e8;
+    box-shadow: 0 8px 24px #01081166;
+    backdrop-filter: none;
+  }
+  #orbitControls button {
+    min-height: 48px;
+    border-radius: 9px;
+    font-size: 11px;
+  }
+  #orbitControls span {
+    margin: 0;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+  }
+  body.in-mission #bossHUD {
+    top: 206px;
+    left: 14px;
+    width: calc(100% - 28px);
+  }
+  body.in-mission #tacticalPanel {
+    top: 258px;
+    right: 10px;
+  }
+  #loadout {
+    top: 212px;
+    left: 14px;
+    width: 42vw;
+  }
+  #loadout > .bar {
+    display: none;
+  }
+  #touch {
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: max(15px, env(safe-area-inset-bottom, 0px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    align-items: end;
+  }
+  #stick {
+    width: 112px;
+    height: 112px;
+    border-width: 2px;
+    background: radial-gradient(circle, #77ffe31a, #06162444 68%);
+    box-shadow: 0 0 0 7px #06111c33;
+  }
+  #nub {
+    width: 50px;
+    height: 50px;
+    border-width: 2px;
+  }
+  .actions {
+    display: grid;
+    width: 210px;
+    grid-template-columns: 64px 64px 70px;
+    grid-template-rows: 60px 60px;
+    grid-template-areas:
+      'pods roll fire'
+      'bomb boost fire';
+    gap: 8px 6px;
+  }
+  .actions button {
+    position: relative;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    min-height: 60px;
+    border: 1px solid #76dccc55;
+    border-radius: 17px;
+    background: #061522e8;
+    box-shadow:
+      inset 0 0 18px #54d5c70a,
+      0 6px 20px #01070d66;
+    font-size: 11px !important;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    backdrop-filter: none;
+  }
+  #podsTouch {
+    grid-area: pods;
+  }
+  #rollTouch {
+    grid-area: roll;
+  }
+  #bombTouch {
+    grid-area: bomb;
+  }
+  #boostTouch {
+    grid-area: boost;
+  }
+  #fireTouch {
+    grid-area: fire;
+    width: auto;
+    height: auto;
+    border: 0;
+    border-radius: 28px;
+    background: conic-gradient(#72ffe0 var(--meter, 0%), #183344 var(--meter, 0%));
+    box-shadow: 0 0 22px #5effdb25;
+    isolation: isolate;
+  }
+  #boostTouch {
+    border: 0;
+    background: conic-gradient(#ffd07a var(--meter, 100%), #3d3325 var(--meter, 100%));
+    isolation: isolate;
+  }
+  #fireTouch::before,
+  #boostTouch::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 4px;
+    border: 1px solid #8ffff048;
+    border-radius: inherit;
+    background: #061522f2;
+  }
+  #bombTouch {
+    position: relative;
+  }
+  #bombTouch::after {
+    content: attr(data-count);
+    position: absolute;
+    top: -6px;
+    right: -5px;
+    display: grid;
+    width: 23px;
+    height: 23px;
+    place-items: center;
+    border: 1px solid #f0afff;
+    border-radius: 50%;
+    background: #2a1238;
+    color: #f5c7ff;
+    font-size: 11px;
+  }
+  #bottom {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 390px) {
+  #stick {
+    width: 102px;
+    height: 102px;
+  }
+  .actions {
+    width: 198px;
+    grid-template-columns: 60px 60px 66px;
+  }
+}
+
+@media (pointer: coarse) and (max-width: 340px) {
+  #stick {
+    width: 88px;
+    height: 88px;
+  }
+  .actions {
+    width: 196px;
+    grid-template-columns: 60px 60px 64px;
   }
 }
 

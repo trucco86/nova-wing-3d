@@ -32,20 +32,24 @@
     </div>
     <div id="strategyControls">
       <details id="strategyDrawer">
-        <summary>⚙ NAVE</summary>
+        <summary><span>⚙ RPG</span><b id="rpgLevel">EV 1</b></summary>
         <span id="strategyStatus"></span
         ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
-        <div class="strategyButtons">
-          <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
-          ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
-          ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+        <div class="rpgProgress" aria-label="Progresso de evolução">
+          <i id="rpgProgressBar"></i>
         </div>
+        <small id="rpgNext">PRÓXIMO · ARMA GEADA · EV 3</small>
         <div class="tacticButtons">
           <button id="scanBoss">I · SCAN</button><button id="precisionShot">K · PRECISÃO ◆</button>
           <button id="repairPulse">R · REPARO ◆◆</button
           ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
         </div>
       </details>
+      <div id="quickRpg" aria-label="Ações rápidas de RPG">
+        <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
+        ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
+        ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+      </div>
       <div id="orbitControls" hidden>
         <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
         ><span>ORBITAR</span

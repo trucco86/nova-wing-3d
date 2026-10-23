@@ -1,6 +1,8 @@
 import {
   ARSENAL,
   SPECIALS,
+  progressionBenefits,
+  nextRpgUnlock,
   xpForStage,
   specialtyRank,
   stageAt,
@@ -1992,7 +1994,9 @@ export function createGame({
       charge = 0;
       chargeLatch = false;
     }
-    $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
+    const chargePercent = (charge / 1.5) * 100;
+    $('chargeBar').style.width = chargePercent + '%';
+    $('fireTouch').style.setProperty?.('--meter', chargePercent + '%');
     if (chargeGlow) {
       chargeGlow.visible = charge > 0.15;
       chargeGlow.scale.setScalar(2 + charge * (5 + Math.sin(elapsed * 30) * 0.5));
@@ -2100,16 +2104,34 @@ export function createGame({
         ' · ' +
         Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('arsenalSwitch').disabled = ARSENAL.filter((item) => item.stage <= stage()).length < 2;
+      $('specialSwitch').disabled = SPECIALS.filter((item) => item.stage <= stage()).length < 2;
       $('orbitControls').hidden = !boss;
+      const level = stage();
+      const nextXp = xpForStage(level + 1);
+      const previousXp = xpForStage(level);
+      const progress = Math.min(1, (strategy.xp - previousXp) / Math.max(1, nextXp - previousXp));
+      const benefits = progressionBenefits(strategy.xp, strategy.specialty);
+      const unlock = nextRpgUnlock(level);
+      $('rpgLevel').textContent = 'EV ' + (level + 1);
+      $('rpgProgressBar').style.width = progress * 100 + '%';
+      $('rpgNext').textContent = unlock
+        ? 'PRÓXIMO · ' + unlock.type + ' ' + unlock.name + ' · EV ' + (unlock.stage + 1)
+        : 'ARSENAL COMPLETO';
       $('strategyStatus').textContent =
-        'EV ' +
-        (stage() + 1) +
-        ' · XP ' +
+        'XP ' +
         strategy.xp +
         '/' +
-        xpForStage(stage() + 1) +
-        ' · VEL ' +
-        (boosting ? '890' : '480') +
+        nextXp +
+        ' · ATAQUE +' +
+        benefits.attack +
+        '% · ESCUDO +' +
+        benefits.shield +
+        ' · AGILIDADE +' +
+        benefits.agility +
+        '% · ARCANA +' +
+        benefits.arcana +
+        '%' +
         (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
     }
     invuln -= dt;
@@ -2727,6 +2749,8 @@ export function createGame({
     $('score').textContent = String(score).padStart(3, '0');
     $('bombs').textContent = '◆ '.repeat(bombs) || '—';
     $('energy').style.width = energy + '%';
+    $('boostTouch').style.setProperty?.('--meter', energy + '%');
+    $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
     $('bossHealth').style.width = Math.max(0, (bossHp / (bossCombat?.max ?? 1400)) * 100) + '%';
   }

@@ -132,3 +132,15 @@ O movimento deriva da idade do encontro, sem integração acumulativa dependente
 quadros. O HUD e o brilho do canhão compartilham a mesma janela de preparação. As
 fases alteram pressão, mas não HP, fraquezas, recompensas, bloqueio do túnel nem o
 limite global de projéteis.
+
+## Acesso rápido ao RPG web (1.22)
+
+`strategy.js` deriva uma descrição dos bônus efetivos e o próximo desbloqueio a partir
+do mesmo XP e especialidade usados pelo combate. `game.js` apenas projeta esse estado no
+HUD: arma, especial e ativação permanecem acessíveis fora da gaveta; detalhes e ações
+táticas continuam recolhidos na lateral. Não existe estado duplicado de equipamento.
+
+Os botões de troca ficam desabilitados enquanto houver uma única opção desbloqueada.
+Teclas F/H/G, toque, limiares, custos, checkpoint e fórmulas de combate não mudam. O
+layout retrato coloca a ativação em uma linha própria; o nativo preserva a interface
+anterior porque os controles estratégicos continuam condicionados ao voo web.
