@@ -219,16 +219,6 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   await page.evaluate(() => window.fixture.advance(58));
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
-  await page.evaluate(() => {
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.35);
-  });
-  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
-  await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
-  const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
-  expect(blockedFeedback.width).toBeLessThanOrEqual(24);
-  expect(blockedFeedback.height).toBeLessThanOrEqual(24);
-  await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   if (info.project.name === 'mobile') {
     const box = await page.locator('#orbitLeft').boundingBox();
     const touch = await page.context().newCDPSession(page);
@@ -322,6 +312,19 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.screenshot({ path: info.outputPath('tactical-barrage.png') });
   await page.evaluate(() => window.fixture.advance(3));
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
+  await page.goto('/__dynamic.html?sector=0');
+  await page.evaluate(() => {
+    window.fixture.advance(68.1);
+    window.fixture.game.tacticalAction('precision');
+    window.fixture.advance(0.65);
+  });
+  await expect(page.locator('#hitFeedback')).toBeVisible();
+  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
+  await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
+  const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
+  expect(blockedFeedback.width).toBeLessThanOrEqual(24);
+  expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   await page.goto('/__dynamic.html?sector=0');
   await page.evaluate(() => {
     window.fixture.advance(68.1);
