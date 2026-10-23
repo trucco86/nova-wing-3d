@@ -120,3 +120,15 @@ Testes usam entrada de órbita antes do dano; não ignoram a proteção de posi�
 ## Hangar web (1.13)
 
 `showroom.js` instala uma visualização Three.js isolada da simulação, ativada somente na seleção visível. Observa os IDs de piloto, nave e cor publicados pela seleção; não cria comandos globais nem muda o checkpoint. `showroom-models.js` cria esculturas dos gatos e clona recursos dos modelos reais de nave para descarte independente. O destroy da aplicação libera renderer, observers e listeners. Recortes CSS compartilham a única capa incorporada; não há download de modelos externos.
+
+## Subchefes táticos web (1.20)
+
+`subboss-tactics.js` mantém dez perfis puros de aproximação, movimento, cadência,
+mira, projétil e preparação. `game.js` aplica esses perfis somente no voo web; o
+caminho nativo conserva movimento, dano e cadência anteriores. As silhuetas e os
+padrões de projéteis permanecem em `bosses.js`.
+
+O movimento deriva da idade do encontro, sem integração acumulativa dependente de
+quadros. O HUD e o brilho do canhão compartilham a mesma janela de preparação. As
+fases alteram pressão, mas não HP, fraquezas, recompensas, bloqueio do túnel nem o
+limite global de projéteis.
