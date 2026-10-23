@@ -246,13 +246,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
     const bossBounds = await page.locator('#bossHUD').boundingBox();
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(bossBounds.y);
-    const missionBounds = await page.locator('.mission').boundingBox();
-    expect(
-      missionBounds.x >= bounds.x + bounds.width ||
-        missionBounds.x + missionBounds.width <= bounds.x ||
-        missionBounds.y >= bounds.y + bounds.height ||
-        missionBounds.y + missionBounds.height <= bounds.y,
-    ).toBe(true);
+    await expect(page.locator('.mission')).toBeHidden();
     for (const id of ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch']) {
       const button = await page.locator(`#${id}`).boundingBox();
       expect(button.width).toBeGreaterThanOrEqual(60);

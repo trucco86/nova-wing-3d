@@ -3664,11 +3664,14 @@ body.left-handed #touch {
     border-radius: 12px;
     background: #071824e6;
   }
-  body.in-mission .mission {
-    top: 86px;
+  body.in-mission:not(.stage-intro) .mission {
+    display: none;
+  }
+  body.in-mission.stage-intro .mission {
+    top: 185px;
     right: 14px;
-    left: auto;
-    width: min(32vw, 126px);
+    left: 14px;
+    width: auto;
     transform: none;
   }
   body.in-mission .mission .route {
