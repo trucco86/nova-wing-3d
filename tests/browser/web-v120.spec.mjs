@@ -19,6 +19,12 @@ test('subboss reaches combat quickly and telegraphs its distinct attack', async 
   });
   expect(subboss.z).toBeGreaterThan(-100);
   await expect(page.locator('#subState')).toContainText('RAJADA FRONTAL');
+  const labels = await page.evaluate(() => {
+    const stage = document.querySelector('#stage').getBoundingClientRect();
+    const subboss = document.querySelector('#subState').getBoundingClientRect();
+    return { stageBottom: stage.bottom, subbossTop: subboss.top };
+  });
+  expect(labels.subbossTop).toBeGreaterThan(labels.stageBottom + 4);
   await page.screenshot({ path: info.outputPath('subboss-charge.png') });
 
   await page.locator('#pause').click();
