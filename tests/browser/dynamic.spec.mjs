@@ -247,6 +247,8 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     const bossBounds = await page.locator('#bossHUD').boundingBox();
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(bossBounds.y);
     await expect(page.locator('.mission')).toBeHidden();
+    await expect(page.locator('#pilotHudAvatar')).toBeVisible();
+    await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bia');
     for (const id of ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch']) {
       const button = await page.locator(`#${id}`).boundingBox();
       expect(button.width).toBeGreaterThanOrEqual(60);

@@ -110,6 +110,11 @@ test('every boss is colossal, finite and has two targetable generators', () => {
     const size = new T.Box3().setFromObject(g).getSize(new T.Vector3());
     assert.ok(Math.max(size.x, size.y) > 65);
     assert.equal(g.userData.parts.length, 2);
+    assert.equal(
+      g.userData.parts.every((part) => part.marker.name === 'vulnerable-target'),
+      true,
+    );
+    assert.equal(g.userData.coreMarker.name, 'vulnerable-target');
     g.traverse((o) => {
       if (o.geometry?.attributes.position)
         assert.ok([...o.geometry.attributes.position.array].every(Number.isFinite));

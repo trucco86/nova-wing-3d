@@ -457,6 +457,10 @@ export function createGame({
     $('profileAvatar').style.setProperty?.('--pilot', pilot.color);
     $('profileAvatar').textContent = '';
     $('profileAvatar').setAttribute?.('data-pilot', pilot.id);
+    $('pilotHudAvatar').style.setProperty?.('--pilot', pilot.color);
+    $('pilotHudAvatar').setAttribute?.('data-pilot', pilot.id);
+    $('pilotHudAvatar').setAttribute?.('aria-label', pilot.name + ', piloto em missão');
+    $('pilotHudName').textContent = pilot.name;
     $('profileName').textContent = pilot.name;
     $('profileRole').textContent = pilot.role;
     $('profileSkill').textContent = pilot.skill.toUpperCase();
@@ -2416,7 +2420,11 @@ export function createGame({
             b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
           }
         boss.userData.parts.forEach((p, i) => {
-          p.mesh.scale.setScalar(weakPointOpen(relativeOrbit(), i) ? 1.15 : 0.75);
+          const open = weakPointOpen(relativeOrbit(), i) && p.hp > 0;
+          p.mesh.scale.setScalar(open ? 1.18 : 0.75);
+          p.marker.visible = open;
+          p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
+          p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
       }
       bossCombat.update(dt);
@@ -2472,19 +2480,36 @@ export function createGame({
       boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
+      const openGenerator = boss.userData.parts.findIndex(
+        (p, i) => p.hp > 0 && (!dynamicFlight || weakPointOpen(relativeOrbit(), i)),
+      );
+      const coreVulnerable =
+        remaining === 0 &&
+        bossCombat.coreOpen &&
+        (!dynamicFlight || weakPointOpen(relativeOrbit()));
+      boss.userData.coreMarker.visible = coreVulnerable;
+      boss.userData.coreMarker.rotation.z -= dt * 1.8;
+      boss.userData.coreMarker.scale.setScalar(1 + Math.sin(visualTime * 8) * 0.12);
       boss.userData.vents.forEach((v, i) => {
         v.visible = bossHp / bossCombat.max > 0.65 || i % 3 !== 0;
       });
       boss.userData.core.scale.setScalar(bossCombat.coreOpen ? 1.1 : 0.7);
+      $('bossHUD').setAttribute?.('data-vulnerable', String(openGenerator >= 0 || coreVulnerable));
       $('bossState').textContent =
         bossCombat.age < 3
           ? 'APROXIMAÇÃO'
           : remaining
-            ? 'GERADORES ' + remaining + '/2'
+            ? openGenerator >= 0
+              ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
+              : 'BLINDAGEM · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
-              (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+              (coreVulnerable
+                ? 'ALVO VULNERÁVEL · NÚCLEO'
+                : bossCombat.coreOpen
+                  ? 'ORBITE PARA A FRENTE'
+                  : 'BLINDAGEM ATIVA');
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
