@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.20.0 — Subchefes táticos
+
+- Dez perfis de movimento e aproximação ligados às silhuetas existentes dos subchefes.
+- Cadência, mira e tipo de projétil variam por confronto e aumentam a pressão nas fases finais.
+- Brilho de preparação e HUD identificam cada ataque antes da rajada, inclusive em celular.
+- HP, fraquezas, bombas, recompensas, túnel, pausa, reinício e comportamento nativo preservados.
+
 ## 1.19.0 — Caças com papéis de combate
 
 - Três papéis ligados aos modelos existentes: perseguição, interceptação lateral e leque de projéteis.
