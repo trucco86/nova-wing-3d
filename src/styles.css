@@ -3935,6 +3935,20 @@ body.left-handed #touch {
 }
 
 @media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission .score {
+    display: none;
+  }
+  body.in-mission #bossHUD span {
+    justify-content: center;
+  }
+  body.in-mission #bossName {
+    display: none;
+  }
+  body.in-mission #bossState {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
   #stick {
     width: 88px;
     height: 88px;
@@ -3968,6 +3982,12 @@ body.left-handed #touch {
     border: 1px solid #8ffff048;
     border-radius: inherit;
     background: #061522f2;
+  }
+}
+
+@media (pointer: coarse) and (max-height: 550px) {
+  body.in-mission #bottom {
+    display: none;
   }
 }
 

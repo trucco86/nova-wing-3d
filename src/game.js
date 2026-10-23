@@ -2261,7 +2261,7 @@ export function createGame({
       animatePod(p, visualTime + i);
     });
     if (podsArrived) podMode = podsDetached ? 'deployed' : 'docked';
-    $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'LANÇAR';
+    $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'PODS';
     if (podCount > 0 && podCd <= 0 && (podsDetached || holding)) {
       podCd = 0.72 - podCount * 0.1;
       for (const p of podMeshes) {

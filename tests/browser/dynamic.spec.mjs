@@ -249,6 +249,9 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await expect(page.locator('.mission')).toBeHidden();
     await expect(page.locator('#pilotHudAvatar')).toBeVisible();
     await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bia');
+    const statusBounds = await page.locator('.status').boundingBox();
+    const scoreBounds = await page.locator('.score').boundingBox();
+    expect(statusBounds.x + statusBounds.width).toBeLessThanOrEqual(scoreBounds.x);
     for (const id of ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch']) {
       const button = await page.locator(`#${id}`).boundingBox();
       expect(button.width).toBeGreaterThanOrEqual(60);
@@ -266,6 +269,9 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     expect(compactTouch.x).toBeGreaterThanOrEqual(0);
     expect(compactTouch.x + compactTouch.width).toBeLessThanOrEqual(320);
     expect(compactStick.x + compactStick.width).toBeLessThanOrEqual(compactActions.x);
+    await expect(page.locator('.score')).toBeHidden();
+    await expect(page.locator('#bossName')).toBeHidden();
+    await expect(page.locator('#bossState')).toBeVisible();
     await page.screenshot({ path: info.outputPath('strategy-compact-320.png') });
   }
   expect(errors).toEqual([]);
@@ -321,6 +327,10 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   expect(blockedFeedback.width).toBeLessThanOrEqual(24);
   expect(blockedFeedback.height).toBeLessThanOrEqual(24);
   await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
+  if (info.project.name === 'mobile') {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
+  }
   await page.goto('/__dynamic.html?sector=0');
   await page.evaluate(() => {
     window.fixture.advance(68.1);
