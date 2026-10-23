@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.19.0 — Caças com papéis de combate
+
+- Três papéis ligados aos modelos existentes: perseguição, interceptação lateral e leque de projéteis.
+- Aproximação e janela de ataque antes da saída, com carga luminosa, pausa e reinício preservados.
+- Testes do jogo real e capturas desktop/mobile; tempo de frames da fixture registrado como diagnóstico da CI.
+- Subchefes e chefes mantêm os contratos anteriores; NW-06 segue parcial.
+
 ## 1.18.0 — Aviso antecipado de chefe
 
 - Aviso discreto, localizado e sonoro antes da chegada de cada chefe, evitando surgimento inesperado.
