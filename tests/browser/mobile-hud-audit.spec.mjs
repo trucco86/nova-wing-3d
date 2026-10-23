@@ -79,6 +79,8 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     const marker = await page.locator('#hitFeedback').boundingBox();
     expect(marker.width).toBeLessThanOrEqual(24);
     expect(marker.height).toBeLessThanOrEqual(24);
-    await page.screenshot({ path: info.outputPath('nw03-' + viewport.width + 'x' + viewport.height + '.png') });
+    await page.screenshot({
+      path: info.outputPath('nw03-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
   }
 });
