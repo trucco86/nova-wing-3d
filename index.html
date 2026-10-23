@@ -2478,7 +2478,9 @@ body:has(#strategyControls:not([hidden])):has(#bossHUD:not([hidden])) .mission {
   min-height: 38px;
   padding: 5px 3px;
   font-size: 9px;
-  white-space: nowrap;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .strategyButtons {
   flex-direction: column;
@@ -3904,6 +3906,32 @@ body.left-handed #touch {
   .actions {
     width: 196px;
     grid-template-columns: 60px 60px 64px;
+  }
+}
+
+@media (pointer: coarse) {
+  #touch #fireTouch,
+  #touch #boostTouch {
+    position: relative;
+    border: 0;
+    isolation: isolate;
+  }
+  #touch #fireTouch {
+    background: conic-gradient(#72ffe0 var(--meter, 0%), #183344 var(--meter, 0%));
+    box-shadow: 0 0 22px #5effdb25;
+  }
+  #touch #boostTouch {
+    background: conic-gradient(#ffd07a var(--meter, 100%), #3d3325 var(--meter, 100%));
+  }
+  #touch #fireTouch::before,
+  #touch #boostTouch::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: 4px;
+    border: 1px solid #8ffff048;
+    border-radius: inherit;
+    background: #061522f2;
   }
 }
 

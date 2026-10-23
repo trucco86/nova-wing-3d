@@ -28,7 +28,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.locator('#start').click();
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#pilotName')).toContainText('CALVINHO');
-  await expect(page.locator('#strategyStatus')).toContainText('EV 1');
+  await expect(page.locator('#rpgLevel')).toContainText('EV 1');
   expect(errors).toEqual([]);
 });
 
