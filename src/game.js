@@ -1306,7 +1306,7 @@ export function createGame({
       }
       collapseTime = collapseBurst = 0;
       collapseFinal = false;
-      collapse = createCollapse(boss.position);
+      collapse = createCollapse(boss.position, { final: sectorIndex === SECTORS.length - 1 });
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
       $('bossState').textContent = 'COLAPSO DO REATOR';
@@ -1346,7 +1346,10 @@ export function createGame({
       if (dynamicFlight) cue('explosion');
       else sound(38, 1.8, 'sawtooth', 0.12);
       music?.start(sectorIndex, 'victory');
-      $('attackWarning').textContent = 'ALVO DESTRUÍDO';
+      $('attackWarning').textContent =
+        sectorIndex === SECTORS.length - 1
+          ? 'MARVIN DERROTADO · SUPRIMENTOS RECUPERADOS'
+          : 'ALVO DESTRUÍDO';
     }
     if (dynamicFlight) flightCamera.setMode('combat');
     flightCamera.update(dt, player.position, 0, false);
@@ -2460,6 +2463,10 @@ export function createGame({
               combatPhase +
               ' · ' +
               (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+      if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
+        $('bossState').textContent =
+          'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
+          (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
       if (dynamicFlight && scanTime > 0)
         $('bossState').textContent +=
           ' · FRACO: ' +

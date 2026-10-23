@@ -136,6 +136,19 @@ test('collapse geometry has expanding blast and dispersed debris then fades', ()
   disposeCollapse(g);
 });
 
+test('Marvin finale alone reveals the three recovered-supply rings', () => {
+  const regular = createCollapse(new T.Vector3());
+  const marvin = createCollapse(new T.Vector3(), { final: true });
+  assert.equal(regular.getObjectsByProperty('name', 'supply-ring').length, 0);
+  const rings = marvin.getObjectsByProperty('name', 'supply-ring');
+  assert.equal(rings.length, 3);
+  assert.ok(rings.every((ring) => !ring.visible));
+  updateCollapse(marvin, 5.8);
+  assert.ok(rings.every((ring) => ring.visible && ring.scale.x > 1));
+  disposeCollapse(regular);
+  disposeCollapse(marvin);
+});
+
 test('web victory flyby accepts movement and fire, pauses, then rewards once', (t) => {
   const h = setup(t);
   h.advance(65.05, 0.1);
