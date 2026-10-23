@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.21.0 — Final exclusivo do Marvin
+
+- HUD identifica a última resistência do Marvin sem alterar a cadência ou o orçamento de dano.
+- Colapso final próprio com três anéis de energia representando os suprimentos recuperados.
+- Mensagem de derrota exclusiva antes da tela de missão cumprida; recompensa continua única após oito segundos.
+- Pausa, voo durante o colapso, reinício, controles e os nove chefes anteriores preservados.
+
 ## 1.20.0 — Subchefes táticos
 
 - Dez perfis de movimento e aproximação ligados às silhuetas existentes dos subchefes.

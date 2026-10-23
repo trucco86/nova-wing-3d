@@ -62,6 +62,10 @@ if (mode === 'tunnel' || mode === 'ground') {
   const fx = createCollapse(new T.Vector3(0, 10, -88));
   updateCollapse(fx, 5.8);
   scene.add(fx);
+} else if (mode === 'marvin-finale') {
+  const fx = createCollapse(new T.Vector3(0, 10, -88), { final: true });
+  updateCollapse(fx, 5.8);
+  scene.add(fx);
 } else {
   const boss = createBossModel(SECTORS[index], index, true);
   boss.position.set(0, 10, -88);
@@ -91,5 +95,7 @@ document.querySelector('h1').textContent =
           ? SUBBOSS_NAMES[index]
           : mode === 'collapse'
             ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
-            : SECTORS[index].boss;
+            : mode === 'marvin-finale'
+              ? 'MARVIN DERROTADO / SUPRIMENTOS RECUPERADOS'
+              : SECTORS[index].boss;
 document.body.dataset.ready = 'true';

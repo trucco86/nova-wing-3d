@@ -1,6 +1,6 @@
 import * as T from 'three';
 export const COLLAPSE_SECONDS = 8;
-export function createCollapse(position) {
+export function createCollapse(position, { final = false } = {}) {
   const g = new T.Group();
   g.position.copy(position);
   const hot = new T.MeshBasicMaterial({
@@ -28,7 +28,25 @@ export function createCollapse(position) {
     shard.name = 'debris';
     g.add(shard);
   }
-  g.userData = { hot, steel };
+  const supplyMaterials = [];
+  if (final) {
+    ['#65f6ff', '#8dff9b', '#ffd66b'].forEach((color, index) => {
+      const material = new T.MeshBasicMaterial({
+        color,
+        transparent: true,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+      });
+      const ring = new T.Mesh(new T.TorusGeometry(7 + index * 2.5, 0.32, 8, 72), material);
+      ring.name = 'supply-ring';
+      ring.rotation.set(Math.PI / 2 + index * 0.34, index * 0.48, 0);
+      ring.userData.index = index;
+      ring.visible = false;
+      supplyMaterials.push(material);
+      g.add(ring);
+    });
+  }
+  g.userData = { hot, steel, supplyMaterials, final };
   updateCollapse(g, 0);
   return g;
 }
@@ -47,6 +65,11 @@ export function updateCollapse(g, time) {
       o.position.copy(o.userData.velocity).multiplyScalar(burst);
       o.position.y -= burst * burst * 3;
       o.rotation.set(burst * 1.2, burst * 0.7, burst);
+    } else if (o.name === 'supply-ring') {
+      o.visible = burst > 0;
+      o.scale.setScalar(1 + burst * (2.4 + o.userData.index * 0.35));
+      o.rotation.z = burst * (0.7 + o.userData.index * 0.18);
+      o.material.opacity = Math.max(0, 0.95 - burst / 3.5);
     }
 }
 export function disposeCollapse(g) {
@@ -57,4 +80,5 @@ export function disposeCollapse(g) {
   geos.forEach((o) => o.dispose());
   g.userData.hot.dispose();
   g.userData.steel.dispose();
+  g.userData.supplyMaterials.forEach((material) => material.dispose());
 }

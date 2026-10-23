@@ -203,7 +203,7 @@ test('evolving pods, distinct rings, cruiser and reactor collapse render', async
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  for (const mode of ['equipment', 'subboss', 'collapse']) {
+  for (const mode of ['equipment', 'subboss', 'collapse', 'marvin-finale']) {
     await page.goto('/__visual.html?mode=' + mode);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     const shot = await page.screenshot({ path: info.outputPath(mode + '.png') });
