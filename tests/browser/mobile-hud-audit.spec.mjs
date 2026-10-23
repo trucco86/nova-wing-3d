@@ -1,8 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const overlaps = (a, b, tolerance = 2) =>
-  a &&
-  b &&
+  Boolean(a && b) &&
   a.x < b.x + b.width - tolerance &&
   a.x + a.width > b.x + tolerance &&
   a.y < b.y + b.height - tolerance &&
