@@ -1129,8 +1129,16 @@ export function createGame({
     );
     o.rotation.x = Math.PI / 2;
     o.position.copy(player.position);
-    o.position.x += x;
-    o.position.z -= 3;
+    if (robotMode && !charged) {
+      // Project alternating muzzle flashes from the mech's arm cannons.
+      const side = x < 0 ? -1 : x > 0 ? 1 : (shots.length % 2 ? -1 : 1);
+      o.position.x += side * 1.9 + x * 0.2;
+      o.position.y -= 0.45;
+      o.position.z -= 2.2;
+    } else {
+      o.position.x += x;
+      o.position.z -= 3;
+    }
     if (charged) o.scale.setScalar(5);
     scene.add(o);
     shots.push({
