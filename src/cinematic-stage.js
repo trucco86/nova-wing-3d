@@ -42,11 +42,10 @@ export function createCinematicStage(canvas) {
     scene.add(model);
     return model;
   });
-  const ships = [0, 1, 2].map((id) => {
-    const model = createShowroomShip(
-      ['nova7', 'specter', 'aegis'][id],
-      ['mint', 'cobalt', 'gold'][id],
-    );
+  const shipModels = ['nova7', 'specter', 'aegis'];
+  const shipColors = ['mint', 'cobalt', 'gold'];
+  const ships = shipModels.map((modelId, index) => {
+    const model = createShowroomShip(modelId, shipColors[index]);
     model.scale.setScalar(1.2);
     scene.add(model);
     return model;
