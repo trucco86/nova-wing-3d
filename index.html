@@ -4133,6 +4133,21 @@ body.in-mission #hitFeedback[data-impact='blocked']::after {
   }
 }
 
+/* v1.23.1 CI: preserve 60px minimum tap targets on narrow devices. */
+body.in-mission #hitFeedback[data-impact='blocked'] {
+  font-size: 0 !important;
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 218px;
+    grid-template-columns: 60px 60px 82px;
+    column-gap: 8px;
+  }
+  body.in-mission #touch #fireTouch {
+    min-width: 82px;
+  }
+}
+
     </style>
   </head>
   <body>
