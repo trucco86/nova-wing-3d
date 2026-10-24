@@ -335,7 +335,7 @@ export function createGame({
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
-    robot.userData.mechPaint.accent.emissive?.setHex?.(0x000000);
+    // Ship and mech share progression through the player hierarchy.
   }
   function gainXP(amount) {
     if (!dynamicFlight) return;
