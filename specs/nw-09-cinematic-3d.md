@@ -1,12 +1,14 @@
 # NW-09 — Cinemática 3D Five Cats (fase de preparação)
 
 ## Objetivo
+
 Substituir a abertura atual de estrelas e silhuetas CSS por encenação Three.js
 utilizando os modelos reais dos pilotos e naves já disponíveis no hangar.
 Conservar a história aprovada: Marvin roubou suprimentos e será perseguido
 até a galáxia mais distante. Não revelar uma contagem fixa de setores.
 
 ## Storyboard de cinco cenas
+
 1. Estabelecimento do universo: planeta, estação orbital e suprimentos Five Cats.
 2. Roubo: nave de Marvin escapa com carga visível; Marvin é um pitbull atlético
    marrom e branco, com focinho rosa e olhos mel-esverdeados.
@@ -16,6 +18,7 @@ até a galáxia mais distante. Não revelar uma contagem fixa de setores.
 5. Perseguição: aceleração pelo espaço; transição direta ao voo jogável.
 
 ## Contratos de interface e compatibilidade
+
 - Executar apenas no canal web até homologação; caminhos nativos continuam
   com o fluxo anterior e sem dependência de assets externos.
 - Pular abre a missão uma única vez. Assistir à abertura retorna ao menu.
@@ -28,6 +31,7 @@ até a galáxia mais distante. Não revelar uma contagem fixa de setores.
 - Uma falha WebGL deve manter o prólogo textual existente acessível.
 
 ## Qualidade / aceite
+
 - Testes determinísticos: storyboard cronológico, corte, skip e retomada.
 - Playwright: desktop, 390×844 e 320×568; texto sem colisões; sem erro
   de shader/console e transição para missão.
@@ -39,6 +43,7 @@ até a galáxia mais distante. Não revelar uma contagem fixa de setores.
   o que está homologado; evitar alegações de teste físico não realizado.
 
 ## Plano incremental
+
 1. Isolar dados de cenas e transições do loop de jogo.
 2. Compor cena 3D com nave e modelo de piloto real reutilizados.
 3. Acrescentar Marvin e apresentação de todo o esquadrão.
