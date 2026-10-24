@@ -1,0 +1,47 @@
+name: Browser preview via GitHub Pages (PR)
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tools/**'
+      - 'package*.json'
+      - 'index.html'
+      - '.github/workflows/pr-pages-preview.yml'
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pr-pages-preview
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run validate
+      - run: npm run build
+      - name: Prepare preview and preserve production
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          mkdir -p public-site/previews/pr-$PR_NUMBER
+          cp index.html public-site/previews/pr-$PR_NUMBER/index.html
+          touch public-site/.nojekyll
+          printf 'PR=%s\nSHA=%s\n' "$PR_NUMBER" "$GITHUB_SHA" > public-site/previews/pr-$PR_NUMBER/BUILD.txt
+      - name: Upload preview bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-${{ github.event.pull_request.number }}-browser-preview
+          path: public-site/
+          retention-days: 7
