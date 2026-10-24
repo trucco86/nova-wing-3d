@@ -6,12 +6,12 @@ Leia este arquivo, a especificação da tarefa e somente os módulos necessário
 
 1. Execute `npm run agent:context -- --mapa`; consulte `docs/ARQUITETURA.md`.
 2. Para mudança funcional, crie ou atualize uma especificação em `specs/` com comportamento esperado e critérios observáveis.
-3. Leia a skill de domínio em `skills/`; as cópias descobertas em `.agents/skills/` são links, não fontes independentes.
+3. Leia **sempre** `skills/nova-wing-qa/SKILL.md` para mudanças funcionais e a skill de domínio em `skills/`; as cópias descobertas em `.agents/skills/` são links, não fontes independentes.
 4. Edite `src/`, nunca o bundle gerado `index.html` nem `node_modules/`. O build é unidirecional.
 5. Preserve teclado, toque, pausa, reinício, limites de movimento e orçamento do HTML de 2 MB. Mudanças intencionais nesses contratos exigem atualizar especificação, teste e documentação com justificativa.
 6. Acrescente testes quando houver risco comportamental. Não escreva testes que só reproduzem a implementação nem remova gates para obter verde.
 7. Execute `npm run format`, `npm run build`, `npm run validate`. Mudanças visuais ou de entrada precisam também de `npm run validate -- --browser` na CI ou em ambiente compatível.
-8. Revise o diff e informe evidências, limitações e riscos concretos. Nunca declare teste executado apenas porque o arquivo existe.
+8. Antes de propor merge, aplique o parecer de QA definido em `docs/QA-AGENT.md` ao SHA final e revise o diff; informe evidências, limitações e riscos concretos. Nunca declare teste executado apenas porque o arquivo existe.
 
 ## Limites operacionais
 
