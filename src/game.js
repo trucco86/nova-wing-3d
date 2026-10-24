@@ -259,6 +259,7 @@ export function createGame({
     musicOn = true,
     menuThemePlaying = false,
     cinematic = null,
+    cinematicStage = null,
     bossVolley = 0,
     bossCombat = null,
     collapse = null,
