@@ -1,0 +1,4 @@
+#!/bin/sh
+# Nova Wing: fail fast before publishing unformatted or stale assets.
+set -e
+npm run preflight
