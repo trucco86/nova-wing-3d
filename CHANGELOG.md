@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.24.1 — Rotas específicas por setor
+
+- Curvas aplicadas somente em trechos contextualizados por ambiente, sem oscilação universal.
+- Ascensão visual da primeira fase em direção à órbita.
+- Testes de regressão para trajetórias retas, curvas e transição orbital.
+
 ## 1.24.0 — GIRO mobile responsivo
 
 - Toque rápido executa giro completo de 360°.
