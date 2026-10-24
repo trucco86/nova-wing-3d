@@ -239,8 +239,10 @@ export function createFlyingRobot() {
   const robot = new T.Group();
   robot.name = 'five-cats-flight-mech';
   const armor = metal('#a9c8d7', 0.78, 0.25);
+  armor.userData.mechPaint = 'primary';
   const graphite = metal('#172944', 0.8, 0.3);
   const accent = metal('#ffb36b', 0.75, 0.25);
+  accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
     const part = new T.Mesh(new T.IcosahedronGeometry(radius, 1), material);
@@ -280,6 +282,26 @@ export function createFlyingRobot() {
     plume.position.set(side * 1.1, 0.6, 3.2);
     robot.add(plume);
   }
+  // Large rear turbine: concentric housing, bright engine core and exhaust.
+  const turbineHousing = new T.Mesh(new T.CylinderGeometry(1.1, 1.35, 1.9, 20), graphite);
+  turbineHousing.rotation.x = Math.PI / 2;
+  turbineHousing.position.set(0, 1.15, 2.1);
+  robot.add(turbineHousing);
+  const turbineRing = new T.Mesh(new T.TorusGeometry(1.06, 0.18, 10, 24), accent);
+  turbineRing.position.set(0, 1.15, 3.12);
+  robot.add(turbineRing);
+  const turbineCore = new T.Mesh(new T.CylinderGeometry(0.64, 0.72, 0.25, 20), luminous);
+  turbineCore.rotation.x = Math.PI / 2;
+  turbineCore.position.set(0, 1.15, 3.23);
+  robot.add(turbineCore);
+  const turbineFlame = new T.Mesh(
+    new T.ConeGeometry(0.82, 3.1, 20),
+    new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
+  );
+  turbineFlame.rotation.x = Math.PI / 2;
+  turbineFlame.position.set(0, 1.15, 4.7);
+  robot.add(turbineFlame);
+  robot.userData.mechPaint = { primary: armor, accent };
   robot.scale.setScalar(0.88);
   return robot;
 }
