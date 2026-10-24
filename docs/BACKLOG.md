@@ -67,4 +67,3 @@ GitHub Issues rastreia tickets executáveis; PRs registram diffs; este arquivo �
 ## Histórico do backlog anterior
 
 A versão anterior do backlog listava NW-01–NW-17 e foi preservada como referência na história do Git. As linhas acima incorporam esses itens e acrescentam NW-18–NW-28, sem assumir que melhorias discutidas foram homologadas.
-
