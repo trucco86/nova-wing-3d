@@ -191,13 +191,20 @@ export function createGame({
   robot.visible = false;
   player.add(robot);
   let robotMode = false;
+  let robotCooldown = 0;
+  let robotTransition = 0;
   function toggleRobot() {
-    if (!dynamicFlight || state !== 'playing') return;
+    if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
+    energy -= 15;
+    robotCooldown = 2.5;
+    robotTransition = 0.35;
     robotMode = !robotMode;
     robot.visible = robotMode;
     for (const part of player.children) {
       if (part !== robot && part !== barrierVisual) part.visible = !robotMode;
     }
+    $('robotTouch').setAttribute('aria-pressed', String(robotMode));
+    $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
@@ -711,6 +718,10 @@ export function createGame({
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
     robotMode = false;
+    robotCooldown = 0;
+    robotTransition = 0;
+    $('robotTouch').setAttribute('aria-pressed', 'false');
+    $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
     for (const part of player.children) if (part !== robot && part !== barrierVisual) part.visible = true;
     routeRenderer?.update(route);
@@ -1985,11 +1996,21 @@ export function createGame({
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
+  $('robotTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    toggleRobot();
+  };
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
   };
   function updatePiloting(dt) {
+    robotCooldown = Math.max(0, robotCooldown - dt);
+    robotTransition = Math.max(0, robotTransition - dt);
+    if (robot.visible) {
+      robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
+      robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
+    }
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -2005,7 +2026,7 @@ export function createGame({
       message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
-    energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
+    energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) * (robotMode ? 0.65 : 1)
       : 1;
