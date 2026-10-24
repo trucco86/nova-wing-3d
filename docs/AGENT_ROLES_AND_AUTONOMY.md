@@ -12,41 +12,49 @@ This document defines eight specialized **roles**, not eight always-running serv
 ## Roles
 
 ### qa-test (P0)
+
 Own regression, unit/browser checks, accessibility and failure reproduction. Never waive tests.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### release (P0)
+
 Own reproducible build, semver, changelog, CI/CD, rollback and candidate releases. Never deploy failing checks.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### architecture (P0)
+
 Review module boundaries, performance, dependencies and save compatibility. Avoid speculative rewrites.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### visual-ux (P1)
+
 Own HUD readability, mobile hit targets, stage palettes, responsiveness and visual evidence.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### gameplay (P1)
+
 Own ship/robot controls, combat balance, boss weak points and deterministic gameplay tests.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### orchestrator (P1)
+
 Translate approved backlog into bounded specs, dependencies, assignments and evidence-linked PRs. No unlimited self-triggering.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### documentation (P2)
+
 Maintain specs, ADRs, architecture maps, release notes and portfolio case, based on verified changes.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
 
 ### quality-supervisor (P0)
+
 Independent adversarial review of code, UX, gameplay and evidence at final commit SHA; can veto merge, never self-approve.
 
 Deliverable: bounded spec or issue, implementation/review as appropriate, tests and evidence, linked PR, explicit risks and rollback.
