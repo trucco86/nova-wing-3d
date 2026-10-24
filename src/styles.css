@@ -4144,4 +4144,3 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
 body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
 }
-
