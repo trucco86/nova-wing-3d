@@ -193,6 +193,7 @@ export function createGame({
   robot.visible = false;
   player.add(robot);
   let robotMode = false;
+  const mechPodMounts = [];
   let robotCooldown = 0;
   let robotTransition = 0;
   function toggleRobot() {
@@ -202,6 +203,9 @@ export function createGame({
     robotTransition = 0.35;
     robotMode = !robotMode;
     robot.visible = robotMode;
+    shipModule.visible = !robotMode;
+    if (evolution) evolution.visible = !robotMode;
+    for (const mount of mechPodMounts) mount.visible = robotMode && !podsDetached;
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
@@ -332,7 +336,9 @@ export function createGame({
     if (evolution) player.remove(evolution);
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
+    evolution.visible = !robotMode;
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
+    // Ship and mech share progression through the player hierarchy.
   }
   function gainXP(amount) {
     if (!dynamicFlight) return;
@@ -451,6 +457,9 @@ export function createGame({
     shipModule.traverse((o) => {
       if (o.material?.userData.paintModule) o.material.color.set(palette.color);
     });
+    robot.userData.mechPaint.primary.color.set(palette.color);
+    robot.userData.mechPaint.accent.color.set(palette.accent);
+    $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
@@ -462,6 +471,10 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.visible = !robotMode;
+    // Preserve the chosen ship silhouette in its alternate mech configuration.
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
@@ -616,11 +629,31 @@ export function createGame({
       return;
     const positions = podMeshes.map((p) => p.position.clone());
     while (podMeshes.length) scene.remove(podMeshes.pop());
+    while (mechPodMounts.length) robot.remove(mechPodMounts.pop());
     for (let i = 0; i < podCount; i++) {
       const o = createPod(podCount);
       scene.add(o);
       o.position.copy(positions[i] ?? positions[0] ?? player.position);
       podMeshes.push(o);
+      // Docked pods reconfigure as shoulder-mounted heavy launchers in mech mode.
+      const mount = new T.Group();
+      const side = i % 2 === 0 ? -1 : 1;
+      mount.position.set(side * (2.5 + Math.floor(i / 2) * 0.6), 2.8, 0.15);
+      const barrel = new T.Mesh(
+        new T.CylinderGeometry(0.46 + podCount * 0.05, 0.56, 2.6, 12),
+        new T.MeshStandardMaterial({ color: '#23374c', metalness: 0.8, roughness: 0.27 }),
+      );
+      barrel.rotation.x = Math.PI / 2;
+      mount.add(barrel);
+      const muzzle = new T.Mesh(
+        new T.TorusGeometry(0.46 + podCount * 0.05, 0.12, 8, 16),
+        robot.userData.mechPaint.accent,
+      );
+      muzzle.position.z = -1.4;
+      mount.add(muzzle);
+      mount.visible = robotMode && !podsDetached;
+      robot.add(mount);
+      mechPodMounts.push(mount);
     }
   }
 
@@ -2008,8 +2041,12 @@ export function createGame({
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
     if (robot.visible) {
+      for (const mount of mechPodMounts) mount.visible = !podsDetached;
       robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
+      const modelWidth =
+        pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
+      robot.scale.set(modelWidth, 0.88, 0.88);
+      robot.scale.multiplyScalar(1 + robotTransition * 0.7);
     }
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
