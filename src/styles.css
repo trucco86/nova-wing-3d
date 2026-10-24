@@ -4030,3 +4030,26 @@ body.left-handed #touch {
     padding: 4px 8px;
   }
 }
+
+/* Optional realtime cinematic layer, with original CSS background as fallback. */
+#cinematic .cinematic-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+}
+#cinematic .cinematic-story {
+  z-index: 3;
+}
+#cinematic:has(.cinematic-canvas) .cinematic-ship {
+  opacity: 0.12;
+}
+@media (prefers-reduced-motion: reduce) {
+  #cinematic .cinematic-canvas {
+    opacity: 0.75;
+  }
+}
