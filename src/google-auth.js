@@ -23,10 +23,12 @@ export function installGoogleLogin() {
   let auth;
   let authSdk;
   let provider;
-  const setStatus = (message) => { if (!disposed) status.textContent = message; };
+  const setStatus = (message) => {
+    if (!disposed) status.textContent = message;
+  };
   const setUser = (user) => {
     if (disposed) return;
-    name.textContent = user ? (user.displayName || 'Piloto Google') : 'Piloto visitante';
+    name.textContent = user ? user.displayName || 'Piloto Google' : 'Piloto visitante';
     login.hidden = !!user;
     logout.hidden = !user;
     setStatus(user ? 'Sessão Google ativa' : 'Modo visitante · progresso local');
@@ -38,21 +40,36 @@ export function installGoogleLogin() {
     try {
       await authSdk.signInWithPopup(auth, provider);
     } catch (error) {
-      if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/operation-not-supported-in-this-environment') {
-        try { await authSdk.signInWithRedirect(auth, provider); return; }
-        catch { setStatus('Não foi possível abrir o login. Tente novamente.'); }
-      } else if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+      if (
+        error?.code === 'auth/popup-blocked' ||
+        error?.code === 'auth/operation-not-supported-in-this-environment'
+      ) {
+        try {
+          await authSdk.signInWithRedirect(auth, provider);
+          return;
+        } catch {
+          setStatus('Não foi possível abrir o login. Tente novamente.');
+        }
+      } else if (
+        error?.code === 'auth/popup-closed-by-user' ||
+        error?.code === 'auth/cancelled-popup-request'
+      ) {
         setStatus('Login cancelado · modo visitante');
       } else {
         setStatus('Falha no login Google. Confira os domínios autorizados.');
         console.error('Firebase login:', error?.code || error);
       }
-    } finally { if (!disposed) login.disabled = false; }
+    } finally {
+      if (!disposed) login.disabled = false;
+    }
   });
   logout.addEventListener('click', async () => {
     if (!auth) return;
-    try { await authSdk.signOut(auth); }
-    catch { setStatus('Não foi possível sair da conta.'); }
+    try {
+      await authSdk.signOut(auth);
+    } catch {
+      setStatus('Não foi possível sair da conta.');
+    }
   });
   guest.addEventListener('click', () => {
     panel.open = false;
@@ -68,7 +85,9 @@ export function installGoogleLogin() {
       provider = new authSdk.GoogleAuthProvider();
       await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
       if (disposed) return;
-      unsubscribe = authSdk.onAuthStateChanged(auth, setUser, () => setStatus('Sessão indisponível. Jogue como visitante.'));
+      unsubscribe = authSdk.onAuthStateChanged(auth, setUser, () =>
+        setStatus('Sessão indisponível. Jogue como visitante.'),
+      );
       await authSdk.getRedirectResult(auth).catch((error) => {
         console.error('Firebase redirect:', error?.code || error);
         setStatus('Não foi possível concluir o login Google.');
@@ -79,5 +98,8 @@ export function installGoogleLogin() {
       setStatus('Login indisponível. Você pode jogar como visitante.');
     }
   })();
-  return () => { disposed = true; unsubscribe(); };
+  return () => {
+    disposed = true;
+    unsubscribe();
+  };
 }
