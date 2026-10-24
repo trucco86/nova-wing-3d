@@ -40,3 +40,10 @@ jobs:
           name: browser-preview-${{ github.event.pull_request.number || github.sha }}
           path: preview/
           retention-days: 7
+      - name: Publish PR preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy preview --project-name=nova-wing-preview --branch=pr-${{ github.event.pull_request.number || '54' }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
