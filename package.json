@@ -19,6 +19,8 @@
     "test:browser": "playwright test",
     "check:repo": "node tools/invariants.mjs",
     "validate": "node tools/validate.mjs",
+    "preflight": "node tools/preflight.mjs",
+    "preflight:fix": "node tools/preflight.mjs --fix",
     "agent:context": "node tools/context.mjs",
     "agent:new": "node tools/task.mjs",
     "android:prepare": "node tools/android.mjs prepare",
