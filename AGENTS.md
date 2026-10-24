@@ -22,3 +22,7 @@ A autorização do usuário determina publicação e alterações remotas. Açõ
 ## Evidências
 
 `artifacts/validation.json` registra commit, digest da fonte, comandos e resultados. Relatórios são locais/artefatos da CI, não fonte de verdade editável para substituir testes. Quando um gate não puder rodar, descreva o bloqueio e deixe o status pendente. A proteção de merge depende das regras efetivamente configuradas no GitHub.
+
+## Papéis especializados e supervisão
+
+Consulte `docs/AGENT_ROLES_AND_AUTONOMY.md` para autonomia e qualidade. Skills específicas: `skills/nova-wing-{release,architecture,visual-ux,gameplay,orchestrator,documentation,quality-supervisor}/SKILL.md`; a skill QA existente continua obrigatória. Nenhuma skill isolada concede permissão para merge ou deploy.
