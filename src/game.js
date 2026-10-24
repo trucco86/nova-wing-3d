@@ -70,6 +70,7 @@ import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
+import { createCinematicStage } from './cinematic-stage.js';
 import {
   createBossModel,
   createSubboss,
@@ -1658,6 +1659,7 @@ export function createGame({
     const beat = cinematicBeat(cinematic.scenes, cinematic.elapsed);
     $('cinematicSpeaker').textContent = beat.speaker;
     $('cinematicCaption').textContent = beat.text;
+    cinematicStage?.update(cinematic.elapsed, window.innerWidth, window.innerHeight);
     $('cinematicProgress').style.width =
       (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
   }
@@ -1665,6 +1667,8 @@ export function createGame({
     if (!cinematic) return;
     const playMission = cinematic.playMission;
     cinematic = null;
+    cinematicStage?.destroy();
+    cinematicStage = null;
     $('cinematic').hidden = true;
     if (playMission) start();
     else $('menu').hidden = false;
@@ -1698,6 +1702,7 @@ export function createGame({
     // stacking contexts otherwise intercept taps meant for the skip action.
     $('menu').hidden = true;
     $('cinematic').hidden = false;
+    if (!cinematicStage) cinematicStage = createCinematicStage($('cinematicCanvas'));
     $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     $('cinematicSkip').focus?.({ preventScroll: true });
     updateCinematic();
@@ -3091,6 +3096,7 @@ export function createGame({
       $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
+      cinematicStage?.destroy();
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
