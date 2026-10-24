@@ -4,7 +4,7 @@
 
 ## Resumo executivo
 
-- **28 épicos NW-01–NW-28**: 17 anteriores + 11 frentes complementares. Os épicos são agrupamentos de escopo, não tickets independentes de implementação.
+- **28 épicos NW-01–NW-29**: 17 anteriores + 11 frentes complementares. Os épicos são agrupamentos de escopo, não tickets independentes de implementação.
 - **6 issues abertas no GitHub**: #21, #34, #39, #40, #41 e #42. Outras frentes estão documentadas aqui e ainda não possuem issue própria.
 - **PRs acompanhadas**: #6, #7, #22, #43, #44, #45 e #46; #38 integrada. PR aberta não significa funcionalidade concluída.
 - **Prioridade por risco:** P0 (experiência quebrada/bloqueio), P1 (qualidade principal e combate), P2 (expansão e distribuição), P3 (experimentos futuros).
@@ -42,15 +42,31 @@
 - **NW-27 (P1) — Arenas de chefes com ambientação própria**. Estado: Planejado. Referências: [#47](https://github.com/trucco86/nova-wing-3d/issues/47), #42, NW-07. Dependência: NW-26. Aceite: pelo menos um confronto dentro de cometa/cavidade espacial e outro dentro de nave/estrutura, com geometria, obstáculos, iluminação e limites próprios; rotas de saída e desempenho validados.
 - **NW-28 (P1) — Estratégias e mecânicas exclusivas para cada chefe**. Estado: Planejado. Referências: [#47](https://github.com/trucco86/nova-wing-3d/issues/47), #42, NW-07. Dependência: NW-25, NW-27. Aceite: matriz de chefes com objetivo, padrão de ataque, telegraph, contramedida, condição de vulnerabilidade e fase de combate exclusivos; nenhum chefe vencido apenas pelo mesmo padrão de tiro frontal.
 
+## Direção de arte — variedade visual das fases (NW-29, P1)
+
+**Objetivo:** eliminar a sensação de fases repetitivas e excessivamente escuras, preservando contraste, legibilidade dos projéteis e desempenho mobile. Executar após a transformação NW-24 e em paralelo ao planejamento dos chefes, sem adiar correções críticas.
+
+- **NW-29 (P1) — Identidade visual por setor.** Estado: Planejado. Aceite: cada setor recebe paleta própria de fundo, iluminação, neblina, materiais, silhuetas, arquitetura e elementos de primeiro/segundo plano; não depender apenas de trocar a cor do céu.
+- **Paleta base:** nave e robô mantêm leitura consistente com ciano elétrico, branco e acentos coral; aliados, inimigos, projéteis, coleta e vulnerabilidades usam códigos visuais estáveis. Fundo não pode competir com mira, HUD e indicadores de dano.
+- **Cidade e subida:** coral, dourado e ciano; prédios, tráfego e nuvens volumétricas, transição gradual para atmosfera.
+- **Asteroides:** turquesa, violeta e âmbar; rochas em múltiplas profundidades, detritos e iluminação lateral.
+- **Estruturas espaciais:** azul elétrico, vermelho e amarelo; corredores, hangares, comportas e silhuetas industriais.
+- **Gelo e cristais:** azul-gelo, rosa e verde-água; reflexos, cavernas e formações cristalinas.
+- **Nebulosa e regiões finais:** magenta, índigo, esmeralda e laranja; volumetria e contrastes controlados, sem tela inteira preta.
+- **Ritmo e cenários:** variar formações de inimigos, obstáculos, altitude, velocidade percebida, aproximação do chefe, momentos de exploração e rotas; usar câmeras NW-26 quando a mecânica justificar.
+- **Validação:** capturas comparativas por setor (desktop e mobile), checagem de acessibilidade/contraste, FPS e tempo de carregamento; assegurar que 3 setores consecutivos não compartilhem a mesma combinação de silhueta, iluminação e ritmo.
+
 ## Ordem de execução e ondas
 
 - **S0 — estabilização:** concluir release mobile #46 e corrigir bloqueios críticos de HUD (#40); NW-19 (#39/PR #43) segue após transformação, salvo regressão bloqueante. Resultado: trajetória coerente e HUD mobile sem sobreposição.
-- **S1 — transformação e chefes:** NW-24 (nave → robô voador) → NW-07 (#42) → NW-25/NW-28 → NW-27 → NW-20 (#41) → NW-06/NW-08. Resultado: ataques próprios e especiais de dupla/5 naves.
+- **S1 — transformação e chefes:** NW-24 (nave → robô voador) → NW-07 (#42) → NW-25/NW-28 → NW-27 → NW-29 → NW-20 (#41) → NW-06/NW-08. Resultado: ataques próprios e especiais de dupla/5 naves.
 - **S2 — acabamento:** NW-26 → NW-10 → NW-09 (#34) → NW-04/NW-05. Resultado: áudio, narrativa e feedback homologáveis.
 - **S3 — engenharia pública:** NW-18 (PR #38) → NW-11 (#21/PR #22) → NW-14 → NW-12. Resultado: harness, qualidade e case.
 - **S4 — expansão:** NW-16 → NW-13 → NW-23 → NW-21 → NW-22 → NW-17 → NW-15. Resultado: conteúdo e plataformas com gates específicos.
 
-**Decisão de priorização (24/10/2026):** após estabilizar a publicação em andamento, entregar primeiro a transformação nave → robô voador (NW-24), depois a diferenciação dos chefes (NW-07, NW-25, NW-28 e NW-27). Câmeras alternativas (NW-26) vêm depois. Não iniciar novas expansões antes desses marcos.\n\n**Paralelismo seguro:** documentação NW-18 pode avançar junto de S0, sem alterar gameplay. PRs antigas #6, #7 e #22 devem ser revisadas quanto a conflitos/obsolescência antes de qualquer merge.
+**Decisão de priorização (24/10/2026):** após estabilizar a publicação em andamento, entregar primeiro a transformação nave → robô voador (NW-24), depois a diferenciação dos chefes (NW-07, NW-25, NW-28 e NW-27). Câmeras alternativas (NW-26) vêm depois. Não iniciar novas expansões antes desses marcos.
+
+**Paralelismo seguro:** documentação NW-18 pode avançar junto de S0, sem alterar gameplay. PRs antigas #6, #7 e #22 devem ser revisadas quanto a conflitos/obsolescência antes de qualquer merge.
 
 ## Definição de pronto
 
@@ -66,4 +82,4 @@ GitHub Issues rastreia tickets executáveis; PRs registram diffs; este arquivo �
 
 ## Histórico do backlog anterior
 
-A versão anterior do backlog listava NW-01–NW-17 e foi preservada como referência na história do Git. As linhas acima incorporam esses itens e acrescentam NW-18–NW-28, sem assumir que melhorias discutidas foram homologadas.
+A versão anterior do backlog listava NW-01–NW-17 e foi preservada como referência na história do Git. As linhas acima incorporam esses itens e acrescentam NW-18–NW-29, sem assumir que melhorias discutidas foram homologadas.
