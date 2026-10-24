@@ -451,6 +451,9 @@ export function createGame({
     shipModule.traverse((o) => {
       if (o.material?.userData.paintModule) o.material.color.set(palette.color);
     });
+    robot.userData.mechPaint.primary.color.set(palette.color);
+    robot.userData.mechPaint.accent.color.set(palette.accent);
+    $('robotTouch').style.setProperty('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
@@ -462,6 +465,8 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    // Preserve the chosen ship silhouette in its alternate mech configuration.
+    robot.scale.x = pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
