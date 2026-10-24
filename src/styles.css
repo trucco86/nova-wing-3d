@@ -3834,15 +3834,15 @@ body.left-handed #touch {
     align-items: end;
   }
   #stick {
-    width: 112px;
-    height: 112px;
+    width: 128px;
+    height: 128px;
     border-width: 2px;
     background: radial-gradient(circle, #77ffe31a, #06162444 68%);
     box-shadow: 0 0 0 7px #06111c33;
   }
   #nub {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-width: 2px;
   }
   .actions {
