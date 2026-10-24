@@ -252,57 +252,67 @@ export function createFlyingRobot() {
     return part;
   };
   // Angular fighter-style chest, layered breastplate and recessed reactor.
-  plating(1.5, 0, 1.4, 0, 1.35, 1.25, 0.75);
-  plating(1.05, 0, 1.45, -0.7, 1.4, 0.8, 0.35, graphite);
+  plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
+  plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
   plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
   plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite);
   plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous);
-  plating(0.85, 0, 0, 0.18, 1.05, 0.8, 0.72, graphite);
+  plating(0.85, 0, 0, 0.18, 0.78, 0.72, 0.58, graphite);
   for (const side of [-1, 1]) {
     // Swept shoulder wings and layered gauntlet armor, not rectangular limbs.
-    const shoulder = plating(0.95, side * 1.95, 2.55, 0.05, 1.45, 0.85, 1.25);
+    const shoulder = plating(0.95, side * 1.65, 2.55, 0.05, 1.12, 0.72, 1.05);
     shoulder.rotation.z = side * 0.28;
-    const fin = plating(0.9, side * 2.85, 3.08, 0.62, 1.55, 0.28, 1.5, accent);
+    const fin = plating(0.9, side * 2.45, 3.08, 0.62, 1.1, 0.22, 1.35, accent);
     fin.rotation.z = side * 0.36;
-    plating(0.85, side * 2.22, 0.95, -0.05, 0.8, 1.8, 0.82);
-    plating(0.8, side * 2.24, -0.48, -0.7, 0.9, 0.75, 1.3, graphite);
-    plating(0.55, side * 2.24, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
-    plating(0.9, side * 0.88, -1.65, 0.15, 0.8, 1.6, 0.9);
-    plating(0.7, side * 0.9, -3.25, -0.65, 0.9, 0.65, 1.5, graphite);
-    plating(0.48, side * 0.9, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
-    const nozzle = new T.Mesh(new T.CylinderGeometry(0.48, 0.65, 1.6, 12), graphite);
+    plating(0.85, side * 1.88, 0.95, -0.05, 0.62, 1.7, 0.68);
+    plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
+    plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
+    plating(0.9, side * 0.73, -1.75, 0.15, 0.6, 1.8, 0.72);
+    plating(0.7, side * 0.75, -3.5, -0.65, 0.72, 0.58, 1.25, graphite);
+    plating(0.48, side * 0.75, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
+    const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
     nozzle.rotation.x = Math.PI / 2;
-    nozzle.position.set(side * 1.1, 0.6, 1.7);
+    nozzle.position.set(side * 1.05, 0.75, 1.5);
     robot.add(nozzle);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.45, 2.4, 12),
+      new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
     plume.rotation.x = Math.PI / 2;
-    plume.position.set(side * 1.1, 0.6, 3.2);
+    plume.position.set(side * 1.05, 0.75, 2.55);
     robot.add(plume);
   }
-  // Large rear turbine: concentric housing, bright engine core and exhaust.
-  const turbineHousing = new T.Mesh(new T.CylinderGeometry(1.1, 1.35, 1.9, 20), graphite);
+  // Compact folding wings on the back preserve the ship silhouette without broad shoulders.
+  for (const side of [-1, 1]) {
+    const backWing = box(0.22, 0.36, 3.7, armor, side * 1.35, 2.0, 1.35);
+    backWing.rotation.z = side * 0.38;
+    backWing.rotation.y = side * 0.32;
+    robot.add(backWing);
+    const wingTip = box(0.13, 0.15, 2.5, accent, side * 2.1, 2.55, 1.85);
+    wingTip.rotation.z = side * 0.38;
+    robot.add(wingTip);
+  }
+  // Compact rear turbine: concentric housing, bright engine core and exhaust.
+  const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
   turbineHousing.rotation.x = Math.PI / 2;
-  turbineHousing.position.set(0, 1.15, 2.1);
+  turbineHousing.position.set(0, 1.15, 1.9);
   robot.add(turbineHousing);
-  const turbineRing = new T.Mesh(new T.TorusGeometry(1.06, 0.18, 10, 24), accent);
-  turbineRing.position.set(0, 1.15, 3.12);
+  const turbineRing = new T.Mesh(new T.TorusGeometry(0.58, 0.12, 10, 24), accent);
+  turbineRing.position.set(0, 1.15, 2.55);
   robot.add(turbineRing);
-  const turbineCore = new T.Mesh(new T.CylinderGeometry(0.64, 0.72, 0.25, 20), luminous);
+  const turbineCore = new T.Mesh(new T.CylinderGeometry(0.35, 0.4, 0.18, 20), luminous);
   turbineCore.rotation.x = Math.PI / 2;
-  turbineCore.position.set(0, 1.15, 3.23);
+  turbineCore.position.set(0, 1.15, 2.62);
   robot.add(turbineCore);
   const turbineFlame = new T.Mesh(
-    new T.ConeGeometry(0.82, 3.1, 20),
+    new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
   turbineFlame.rotation.x = Math.PI / 2;
-  turbineFlame.position.set(0, 1.15, 4.7);
+  turbineFlame.position.set(0, 1.15, 3.65);
   robot.add(turbineFlame);
   robot.userData.mechPaint = { primary: armor, accent };
-  robot.scale.setScalar(0.88);
+  robot.scale.setScalar(1.03);
   return robot;
 }
 
