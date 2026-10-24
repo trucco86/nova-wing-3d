@@ -2028,7 +2028,9 @@ export function createGame({
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     const profileSpeed = dynamicFlight
-      ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) * (robotMode ? 0.65 : 1)
+      ? activePilot().bonuses.speed *
+        (1 + activeShip().stats.agility * 0.08) *
+        (robotMode ? 0.65 : 1)
       : 1;
     const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
