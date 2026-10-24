@@ -1,7 +1,17 @@
 import * as T from 'three';
-import { createShowroomPilot, createShowroomShip, disposeShowroomModel } from './showroom-models.js';
+import {
+  createShowroomPilot,
+  createShowroomShip,
+  disposeShowroomModel,
+} from './showroom-models.js';
 
-const POSITIONS = [[-5, -1.3, 0], [-2.4, -1.3, 0], [0, -1.3, 0], [2.4, -1.3, 0], [5, -1.3, 0]];
+const POSITIONS = [
+  [-5, -1.3, 0],
+  [-2.4, -1.3, 0],
+  [0, -1.3, 0],
+  [2.4, -1.3, 0],
+  [5, -1.3, 0],
+];
 const PILOTS = ['bia', 'jenifer', 'christopher', 'bob', 'calvin'];
 export const cinematicShot = (elapsed) =>
   elapsed < 4 ? 'arrival' : elapsed < 8 ? 'escape' : elapsed < 16 ? 'squad' : 'pursuit';
