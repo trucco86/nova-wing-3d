@@ -234,6 +234,42 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
+/** Lightweight flying mech built from reusable primitives; forward fire axis remains -Z. */
+export function createFlyingRobot() {
+  const robot = new T.Group();
+  robot.name = 'five-cats-flight-mech';
+  const armor = metal('#d9e6f0', 0.7, 0.3);
+  const dark = metal('#21365c', 0.68, 0.36);
+  const trim = metal('#ffb36b', 0.6, 0.28);
+  const light = glowMaterial('#62eaff', 2.4);
+  robot.add(box(2.7, 3.2, 1.65, armor, 0, 1.2, 0));
+  robot.add(box(2.2, 1.15, 1.8, dark, 0, 1.55, -0.4));
+  robot.add(box(1.15, 1.25, 1.25, armor, 0, 3.65, -0.12));
+  robot.add(box(0.8, 0.42, 0.16, light, 0, 3.7, -0.82));
+  robot.add(box(1.4, 0.23, 0.15, trim, 0, 2.4, -0.94));
+  for (const side of [-1, 1]) {
+    robot.add(box(1.2, 1, 1.6, trim, side * 2, 2.55, 0));
+    robot.add(box(0.8, 2.6, 1, armor, side * 2.15, 0.85, -0.1));
+    robot.add(box(0.95, 0.85, 1.7, dark, side * 2.15, -0.5, -0.7));
+    robot.add(box(1.1, 2.5, 1.3, armor, side * 0.83, -2.2, 0.1));
+    robot.add(box(1.25, 0.7, 2.2, dark, side * 0.83, -3.6, -0.6));
+    robot.add(box(0.5, 0.6, 1.7, light, side * 2.1, -0.6, -1.65));
+    const thruster = new T.Mesh(new T.CylinderGeometry(0.52, 0.65, 2.2, 12), dark);
+    thruster.rotation.x = Math.PI / 2;
+    thruster.position.set(side * 1.12, 0.8, 1.65);
+    robot.add(thruster);
+    const plume = new T.Mesh(
+      new T.ConeGeometry(0.42, 2.6, 12),
+      new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
+    );
+    plume.rotation.x = Math.PI / 2;
+    plume.position.set(side * 1.12, 0.8, 3.4);
+    robot.add(plume);
+  }
+  robot.scale.setScalar(0.88);
+  return robot;
+}
+
 export function createShipModule(model = 'nova7') {
   const g = new T.Group();
   g.name = 'ship-model-' + model;
