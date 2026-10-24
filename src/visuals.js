@@ -234,36 +234,50 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
-/** Lightweight flying mech built from reusable primitives; forward fire axis remains -Z. */
+/** Flight-mech shares the ship's forward axis, paint palette and upgrade identity. */
 export function createFlyingRobot() {
   const robot = new T.Group();
   robot.name = 'five-cats-flight-mech';
-  const armor = metal('#d9e6f0', 0.7, 0.3);
-  const dark = metal('#21365c', 0.68, 0.36);
-  const trim = metal('#ffb36b', 0.6, 0.28);
-  const light = glowMaterial('#62eaff', 2.4);
-  robot.add(box(2.7, 3.2, 1.65, armor, 0, 1.2, 0));
-  robot.add(box(2.2, 1.15, 1.8, dark, 0, 1.55, -0.4));
-  robot.add(box(1.15, 1.25, 1.25, armor, 0, 3.65, -0.12));
-  robot.add(box(0.8, 0.42, 0.16, light, 0, 3.7, -0.82));
-  robot.add(box(1.4, 0.23, 0.15, trim, 0, 2.4, -0.94));
+  const armor = metal('#a9c8d7', 0.78, 0.25);
+  const graphite = metal('#172944', 0.8, 0.3);
+  const accent = metal('#ffb36b', 0.75, 0.25);
+  const luminous = glowMaterial('#62eaff', 2.4);
+  const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
+    const part = new T.Mesh(new T.IcosahedronGeometry(radius, 1), material);
+    part.position.set(x, y, z);
+    part.scale.set(sx, sy, sz);
+    robot.add(part);
+    return part;
+  };
+  // Angular fighter-style chest, layered breastplate and recessed reactor.
+  plating(1.5, 0, 1.4, 0, 1.35, 1.25, 0.75);
+  plating(1.05, 0, 1.45, -0.7, 1.4, 0.8, 0.35, graphite);
+  plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
+  plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite);
+  plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous);
+  plating(0.85, 0, 0, 0.18, 1.05, 0.8, 0.72, graphite);
   for (const side of [-1, 1]) {
-    robot.add(box(1.2, 1, 1.6, trim, side * 2, 2.55, 0));
-    robot.add(box(0.8, 2.6, 1, armor, side * 2.15, 0.85, -0.1));
-    robot.add(box(0.95, 0.85, 1.7, dark, side * 2.15, -0.5, -0.7));
-    robot.add(box(1.1, 2.5, 1.3, armor, side * 0.83, -2.2, 0.1));
-    robot.add(box(1.25, 0.7, 2.2, dark, side * 0.83, -3.6, -0.6));
-    robot.add(box(0.5, 0.6, 1.7, light, side * 2.1, -0.6, -1.65));
-    const thruster = new T.Mesh(new T.CylinderGeometry(0.52, 0.65, 2.2, 12), dark);
-    thruster.rotation.x = Math.PI / 2;
-    thruster.position.set(side * 1.12, 0.8, 1.65);
-    robot.add(thruster);
+    // Swept shoulder wings and layered gauntlet armor, not rectangular limbs.
+    const shoulder = plating(0.95, side * 1.95, 2.55, 0.05, 1.45, 0.85, 1.25);
+    shoulder.rotation.z = side * 0.28;
+    const fin = plating(0.9, side * 2.85, 3.08, 0.62, 1.55, 0.28, 1.5, accent);
+    fin.rotation.z = side * 0.36;
+    plating(0.85, side * 2.22, 0.95, -0.05, 0.8, 1.8, 0.82);
+    plating(0.8, side * 2.24, -0.48, -0.7, 0.9, 0.75, 1.3, graphite);
+    plating(0.55, side * 2.24, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
+    plating(0.9, side * 0.88, -1.65, 0.15, 0.8, 1.6, 0.9);
+    plating(0.7, side * 0.9, -3.25, -0.65, 0.9, 0.65, 1.5, graphite);
+    plating(0.48, side * 0.9, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
+    const nozzle = new T.Mesh(new T.CylinderGeometry(0.48, 0.65, 1.6, 12), graphite);
+    nozzle.rotation.x = Math.PI / 2;
+    nozzle.position.set(side * 1.1, 0.6, 1.7);
+    robot.add(nozzle);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.42, 2.6, 12),
+      new T.ConeGeometry(0.45, 2.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
     plume.rotation.x = Math.PI / 2;
-    plume.position.set(side * 1.12, 0.8, 3.4);
+    plume.position.set(side * 1.1, 0.6, 3.2);
     robot.add(plume);
   }
   robot.scale.setScalar(0.88);
