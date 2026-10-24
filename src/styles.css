@@ -3786,7 +3786,7 @@ body.left-handed #touch {
   #orbitControls {
     position: fixed;
     /* Keep orbital controls clear of the two-row mobile action pad. */
-    bottom: 230px;
+    bottom: 178px;
     left: 14px;
     display: grid;
     width: 198px;
@@ -4143,4 +4143,50 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
 }
 body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
+}
+
+/* Compact bottom cockpit: main fire/boost actions remain dominant. */
+@media (pointer: coarse) {
+  body.in-mission #touch {
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+  }
+  body.in-mission #touch #fireTouch {
+    box-shadow: 0 0 26px #5effdb70, inset 0 0 14px #70ffe033;
+    font-size: 13px !important;
+  }
+  body.in-mission #touch #boostTouch {
+    box-shadow: 0 0 22px #ffc46c55;
+    font-size: 12px !important;
+  }
+  body.in-mission #touch #robotTouch {
+    position: fixed;
+    top: max(82px, calc(env(safe-area-inset-top, 0px) + 65px));
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: auto;
+    left: auto;
+    z-index: 32;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    width: 62px;
+    height: 62px;
+    min-width: 62px;
+    min-height: 62px;
+    border: 2px solid var(--mech-accent, #ffb36b);
+    border-radius: 16px;
+    background: #081929ed;
+    box-shadow: 0 5px 18px #0008;
+    font-size: 9px !important;
+  }
+  body.in-mission #touch #robotTouch::before {
+    content: '🤖';
+    font-size: 27px;
+    line-height: 1;
+    filter: drop-shadow(0 0 3px var(--mech-accent, #ffb36b));
+  }
+  body.in-mission #touch #robotTouch[aria-pressed='true'] {
+    background: #183c49;
+  }
 }
