@@ -3785,7 +3785,8 @@ body.left-handed #touch {
   }
   #orbitControls {
     position: fixed;
-    bottom: 153px;
+    /* Keep orbital controls clear of the two-row mobile action pad. */
+    bottom: 230px;
     left: 14px;
     display: grid;
     width: 198px;
