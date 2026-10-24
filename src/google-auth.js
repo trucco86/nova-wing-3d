@@ -13,6 +13,18 @@ const AUTH_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebas
 export function installGoogleLogin() {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};
+  // Only stable non-production hosts may use the development Firebase project.
+  // PR previews remain fully playable as guests without adding OAuth domains.
+  const allowedHosts = new Set([
+    'dev.nova-wing-preview.pages.dev',
+    'hml.nova-wing-preview.pages.dev',
+    'localhost',
+    '127.0.0.1',
+  ]);
+  if (!allowedHosts.has(window.location.hostname)) {
+    panel.hidden = true;
+    return () => {};
+  }
   const status = panel.querySelector('[data-auth-status]');
   const login = panel.querySelector('[data-auth-login]');
   const logout = panel.querySelector('[data-auth-logout]');
