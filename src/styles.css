@@ -4053,3 +4053,65 @@ body.left-handed #touch {
     opacity: 0.75;
   }
 }
+
+/* v1.23.1: combat confirmations live on the HUD edge, never over the sight. */
+body.in-mission #hitFeedback {
+  left: 14px !important;
+  top: auto !important;
+  bottom: clamp(110px, 23vh, 180px);
+  transform: none;
+  max-width: 128px;
+  padding: 2px 5px;
+  font-size: 10px;
+  line-height: 1.15;
+  letter-spacing: 0;
+  background: #071a2966;
+  border-color: #a5ffcc44;
+  box-shadow: none;
+  opacity: 0.62;
+}
+body.in-mission #hitFeedback[data-impact='weak'] {
+  font-size: 11px;
+  opacity: 0.85;
+}
+body.in-mission #hitFeedback[data-impact='blocked'] {
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  opacity: 0.42;
+}
+body.in-mission #hitFeedback[data-impact='blocked']::after {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font: 700 12px/1 monospace;
+}
+@media (pointer: coarse) {
+  body.in-mission #hitFeedback {
+    left: 10px !important;
+    bottom: clamp(112px, 24vh, 170px);
+    max-width: 100px;
+    font-size: 9px;
+  }
+  body.in-mission #touch .actions {
+    width: 222px;
+    grid-template-columns: 60px 60px 86px;
+    column-gap: 8px;
+  }
+  body.in-mission #touch #fireTouch {
+    min-width: 86px;
+    border-radius: 28px;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 202px;
+    grid-template-columns: 54px 54px 78px;
+    column-gap: 8px;
+  }
+  body.in-mission #touch #fireTouch {
+    min-width: 78px;
+  }
+}
