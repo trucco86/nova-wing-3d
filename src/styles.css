@@ -4151,7 +4151,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     bottom: max(8px, env(safe-area-inset-bottom, 0px));
   }
   body.in-mission #touch #fireTouch {
-    box-shadow: 0 0 26px #5effdb70, inset 0 0 14px #70ffe033;
+    box-shadow:
+      0 0 26px #5effdb70,
+      inset 0 0 14px #70ffe033;
     font-size: 13px !important;
   }
   body.in-mission #touch #boostTouch {

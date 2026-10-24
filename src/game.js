@@ -469,7 +469,8 @@ export function createGame({
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
     // Preserve the chosen ship silhouette in its alternate mech configuration.
-    robot.scale.x = pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
@@ -2038,7 +2039,8 @@ export function createGame({
     if (robot.visible) {
       for (const mount of mechPodMounts) mount.visible = !podsDetached;
       robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      const modelWidth = pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
+      const modelWidth =
+        pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
       robot.scale.set(modelWidth, 0.88, 0.88);
       robot.scale.multiplyScalar(1 + robotTransition * 0.7);
     }
