@@ -4172,7 +4172,15 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: grid;
   gap: 10px;
 }
-#novaAuth .nova-auth-content p { margin: 0; color: #a4c6ce; }
-#novaAuth .nova-auth-content button { min-height: 40px; cursor: pointer; }
+#novaAuth .nova-auth-content p {
+  margin: 0;
+  color: #a4c6ce;
+}
+#novaAuth .nova-auth-content button {
+  min-height: 40px;
+  cursor: pointer;
+}
 #novaAuth .nova-auth-content small { color: #a4c6ce; }
-#novaAuth [hidden] { display: none !important; }
+#novaAuth [hidden] {
+  display: none !important;
+}
