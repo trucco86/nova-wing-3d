@@ -51,6 +51,19 @@
 - A-03 P1: abertura cinematográfica, narrativa da perseguição de Marvin e encerramento.
 - A-04 P1: trilhas por fase, volume independente e testes de autoplay mobile.
 
+## Trilha S — Sound design cinematográfico (nova frente)
+- S-01 P0: substituir timbres de minigame por direção musical original de ficção científica, inspirada no clima de mistério, tensão e percussão de Panzer Dragoon Saga, sem copiar melodias, gravações ou samples protegidos.
+- S-02 P0: efeito original de transformação nave/robô em camadas (servos, metal, travas, turbinas e impacto final), sincronizado aos frames e reversão.
+- S-03 P0: foguetes com ignição, lançamento, motor em voo e explosão, incluindo distância e prioridade de mixagem.
+- S-04 P0: tiros das armas com assinatura por tipo (laser, plasma, projétil), impacto, cauda e variação para evitar repetição.
+- S-05 P1: motores e propulsores com pitch/volume dinâmicos em aceleração, boost, frenagem e forma robô.
+- S-06 P1: música adaptativa por estado (exploração, ameaça, subchefe, chefe, vitória, derrota) com transições suaves.
+- S-07 P1: áudio espacial/posicional, ducking, limitador, controle separado de música/efeitos e testes com fones/celular.
+- S-08 P1: alerta de vida crítica, colisões, coleta de itens e interfaces com hierarquia de prioridades.
+- S-09 P1: testes automatizados de disparo de eventos de áudio, ausência de sobreposição excessiva, desbloqueio de áudio mobile e licenciamento dos assets.
+- S-10 P2: temas musicais próprios para cada personagem/fase e trilha de boss final Marvin.
+- Critério de aceite S-P0: demonstração em preview com nave e robô, comparativo antes/depois, avaliação subjetiva do impacto e verificação de performance. Áudio não deve ser aprovado só porque o evento foi disparado.
+
 ## Trilha Q — Engenharia, harness e publicação
 - Q-01 P0: manter CI de quality/browser e source repair; evidência por commit.
 - Q-02 P0: não publicar Android/iOS antes da validação web.
@@ -64,9 +77,9 @@
 
 ## Ordem de execução
 Onda 0: E-01..E-05, V-01/V-02 e G-01 usando PR #54 como piloto.
-Onda 1: E-06..E-09, V-03..V-07, G-02 e Q-03/Q-04.
-Onda 2: G-03..G-07, R-02..R-04, A-01..A-04 e Q-05..Q-07.
-Onda 3: R-05/R-06, Q-08/Q-09 e E-10.
+Onda 1: E-06..E-09, V-03..V-07, G-02, S-01..S-04 e Q-03/Q-04.
+Onda 2: G-03..G-07, R-02..R-04, A-01..A-04, S-05..S-09 e Q-05..Q-07.
+Onda 3: R-05/R-06, Q-08/Q-09, S-10 e E-10.
 
 ## Definição de pronto
 - Implementação no código + evidência CI não bastam para aprovação visual.
