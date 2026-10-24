@@ -1,10 +1,10 @@
-## v1.24.0 — GIRO mobile responsivo
+# Histórico
+
+## 1.24.0 — GIRO mobile responsivo
 
 - Toque rápido executa giro completo de 360°.
 - Pressão sustentada inclina a nave suavemente e retorna ao soltar.
 - Cancelamento de toque não dispara giro.
-
-# Histórico
 
 ## 1.23.1 — Mira limpa e giro responsivo
 
