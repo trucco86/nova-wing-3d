@@ -83,6 +83,7 @@ import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import {
   fighter,
+  createFlyingRobot,
   createShipModule,
   createWorld,
   postProcessor,
@@ -186,6 +187,19 @@ export function createGame({
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
+  const robot = createFlyingRobot();
+  robot.visible = false;
+  player.add(robot);
+  let robotMode = false;
+  function toggleRobot() {
+    if (!dynamicFlight || state !== 'playing') return;
+    robotMode = !robotMode;
+    robot.visible = robotMode;
+    for (const part of player.children) {
+      if (part !== robot && part !== barrierVisual) part.visible = !robotMode;
+    }
+    message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
+  }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
   const activeShip = () => shipAt(pilotLoadout.ship);
   const barrierVisual = new T.Mesh(
@@ -696,6 +710,9 @@ export function createGame({
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    robotMode = false;
+    robot.visible = false;
+    for (const part of player.children) if (part !== robot) part.visible = true;
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
@@ -1084,7 +1101,7 @@ export function createGame({
     cockpit?.fire();
     const count = SHOT_COUNTS[weapon];
     for (let i = 0; i < count; i++) {
-      const power = weaponPower();
+      const power = weaponPower() * (robotMode ? 1.45 : 1);
       launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
       const b = shots.at(-1);
       if (dynamicFlight) {
@@ -1849,6 +1866,7 @@ export function createGame({
     if (e.code === 'KeyR') tacticalAction('repair');
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
+    if (e.code === 'KeyT') toggleRobot();
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -1989,7 +2007,7 @@ export function createGame({
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     energy = clamp(energy + dt * (boosting ? -28 : 15), 0, 100);
     const profileSpeed = dynamicFlight
-      ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
+      ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) * (robotMode ? 0.65 : 1)
       : 1;
     const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
