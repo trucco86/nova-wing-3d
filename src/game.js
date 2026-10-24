@@ -2061,19 +2061,24 @@ export function createGame({
       const boostMotion = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.4 : 1;
       for (let i = 0; i < 2; i++) {
         const side = i === 0 ? -1 : 1;
-        rig.arms[i].rotation.x = -0.32 + Math.sin(motion + i * Math.PI) * 0.15 * boostMotion - robotFireKick * 2.2;
+        rig.arms[i].rotation.x =
+          -0.32 + Math.sin(motion + i * Math.PI) * 0.15 * boostMotion - robotFireKick * 2.2;
         rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
         rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
         rig.legs[i].rotation.z = side * 0.035;
       }
-      robot.rotation.y = Math.sin(elapsed * 1.7) * 0.035 + Math.sin(transformProgress * Math.PI * 5) * transformProgress * 0.65;
-      const modelWidth = pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
+      robot.rotation.y =
+        Math.sin(elapsed * 1.7) * 0.035 +
+        Math.sin(transformProgress * Math.PI * 5) * transformProgress * 0.65;
+      const modelWidth =
+        pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
       const unfold = 1 + Math.sin(transformProgress * Math.PI) * 0.16;
       robot.scale.set(modelWidth * unfold, 1.05 * unfold, 1.05 * unfold);
       robot.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.18;
     } else if (robotTransition > 0) {
       // Returning to ship: spin the ship silhouette as the panels fold away.
-      shipModule.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.22;
+      shipModule.rotation.z =
+        Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.22;
     } else {
       shipModule.rotation.z = 0;
     }
