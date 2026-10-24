@@ -13,6 +13,17 @@ const AUTH_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebas
 export function installGoogleLogin() {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};
+  const style = document.createElement('style');
+  style.textContent = `
+    #novaAuth { position: fixed; z-index: 110; bottom: 12px; left: 12px; width: min(300px, calc(100vw - 24px)); color: #e0f0f7; font: 600 13px Arial, sans-serif; }
+    #novaAuth summary { cursor: pointer; display: inline-block; border: 1px solid #55c6c4; border-radius: 9px; background: #071b2de8; padding: 9px 13px; }
+    #novaAuth .nova-auth-content { display: grid; gap: 10px; margin-top: 5px; padding: 14px; background: #071b2df5; border: 1px solid #55c6c4; border-radius: 10px; }
+    #novaAuth .nova-auth-content p { margin: 0; color: #a4c6ce; }
+    #novaAuth .nova-auth-content button { min-height: 40px; cursor: pointer; }
+    #novaAuth .nova-auth-content small { color: #a4c6ce; }
+    #novaAuth [hidden] { display: none !important; }
+  `;
+  document.head.append(style);
   // Only stable non-production hosts may use the development Firebase project.
   // PR previews remain fully playable as guests without adding OAuth domains.
   const allowedHosts = new Set([
@@ -111,6 +122,7 @@ export function installGoogleLogin() {
     }
   })();
   return () => {
+    style.remove();
     disposed = true;
     unsubscribe();
   };
