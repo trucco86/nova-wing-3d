@@ -58,6 +58,13 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.mouse.down();
   } else await page.keyboard.down('Shift');
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
+  if (mobile) {
+    await expect
+      .poll(() =>
+        page.locator('#boostTouch').evaluate((el) => getComputedStyle(el).backgroundImage),
+      )
+      .toContain('conic-gradient');
+  }
   await expect(page.locator('#speedValue')).toHaveText('890');
   await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 90000 });
   await expect
@@ -347,6 +354,11 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
     .poll(() => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
       timeout: 15000,
     })
+    .toBeGreaterThan(30);
+  await expect
+    .poll(() =>
+      page.locator('#fireTouch').evaluate((el) => parseFloat(el.style.getPropertyValue('--meter'))),
+    )
     .toBeGreaterThan(30);
   await page.keyboard.up('Space');
   await expect(page.locator('#pause')).toHaveText(label);

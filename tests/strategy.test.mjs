@@ -2,7 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
-import { readStrategy, elementalDamage, stageAt } from '../src/strategy.js';
+import {
+  readStrategy,
+  elementalDamage,
+  stageAt,
+  progressionBenefits,
+  nextRpgUnlock,
+} from '../src/strategy.js';
 import { createGroundEnemy } from '../src/encounters.js';
 import { createEvolution } from '../src/evolution.js';
 import { fighter } from '../src/visuals.js';
@@ -20,13 +26,30 @@ const save = (strategy) => ({
     JSON.stringify({ version: 1, sector: 0, credits: 0, weapon: 0, armor: 0, pods: 0, strategy }),
   setItem() {},
 });
+test('RPG summary explains effective bonuses and the next real unlock', () => {
+  assert.deepEqual(progressionBenefits(0, 'attack'), {
+    attack: 15,
+    shield: 0,
+    agility: 0,
+    arcana: 0,
+  });
+  assert.deepEqual(nextRpgUnlock(0), { type: 'ARMA', name: 'GEADA', stage: 2 });
+  assert.deepEqual(nextRpgUnlock(2), { type: 'ESPECIAL', name: 'NOVA', stage: 3 });
+  assert.equal(nextRpgUnlock(9), null);
+  assert.ok(progressionBenefits(160, 'defense').shield > 25);
+  assert.ok(progressionBenefits(160, 'spirit').arcana >= 30);
+});
 test('web XP unlocks gradually, rejects corrupt selections, and restart clears progression', (t) => {
   const h = setup(t);
+  h.advance(0.1);
   h.game.collect('blue');
   assert.equal(h.game.snapshot().weapon, 1);
   assert.equal(h.game.snapshot().strategy.stage, 0);
+  assert.equal(h.elements.get('arsenalSwitch').disabled, true);
   for (let i = 0; i < 5; i++) h.game.collect('blue');
   assert.equal(h.game.snapshot().strategy.stage, 2);
+  h.advance(0.1);
+  assert.equal(h.elements.get('arsenalSwitch').disabled, false);
   h.game.cycleArsenal();
   assert.equal(h.game.snapshot().strategy.arsenal, 1);
   h.game.cycleArsenal();

@@ -591,6 +591,10 @@ const ADDITIONAL = [
   ['PONTOS FRACOS', 'WEAK POINTS', 'PUNTOS DÉBILES'],
   ['ALVO', 'TARGET', 'OBJETIVO'],
   ['ESPECIAL', 'SPECIAL', 'ESPECIAL'],
+  ['ARCANA', 'ARCANA', 'ARCANA'],
+  ['ARSENAL COMPLETO', 'ARSENAL COMPLETE', 'ARSENAL COMPLETO'],
+  ['Ações rápidas de RPG', 'Quick RPG actions', 'Acciones rápidas de RPG'],
+  ['Progresso de evolução', 'Evolution progress', 'Progreso de evolución'],
   [
     'Em algum lugar entre as estrelas, a paz dos Five Cats foi interrompida.',
     'Somewhere among the stars, the peace of Five Cats was shattered.',

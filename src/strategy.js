@@ -18,6 +18,29 @@ export const stageAt = (xp) =>
     : 9 + Math.floor((-250 + Math.sqrt(62500 + 120 * (xp - 740))) / 60);
 export const specialtyRank = (xp, specialty, branch) =>
   stageAt(xp * (specialty === branch ? 1.4 : 1));
+export function progressionBenefits(xp, specialty = 'attack') {
+  const level = stageAt(xp);
+  const branch = (name) => specialtyRank(xp, specialty, name);
+  return {
+    attack: Math.round(
+      ((1 + branch('attack') * 0.12) * (specialty === 'attack' ? 1.15 : 1) - 1) * 100,
+    ),
+    shield: branch('defense') * 3 + (specialty === 'defense' ? 25 : 0),
+    agility: Math.min(30, level) * 3,
+    arcana: Math.round(
+      ((1 + branch('spirit') * 0.025) * (specialty === 'spirit' ? 1.3 : 1) - 1) * 100,
+    ),
+  };
+}
+export function nextRpgUnlock(level) {
+  const candidates = [
+    ...ARSENAL.slice(1).map((item) => ({ type: 'ARMA', name: item.name, stage: item.stage })),
+    ...SPECIALS.slice(1).map((item) => ({ type: 'ESPECIAL', name: item.name, stage: item.stage })),
+  ]
+    .filter((item) => item.stage > level)
+    .sort((a, b) => a.stage - b.stage || a.type.localeCompare(b.type));
+  return candidates[0] ?? null;
+}
 export function readStrategy(value) {
   const valid = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
   const xp = valid(value?.xp, Number.MAX_SAFE_INTEGER) ? value.xp : 0;

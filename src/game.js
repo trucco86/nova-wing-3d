@@ -1,6 +1,8 @@
 import {
   ARSENAL,
   SPECIALS,
+  progressionBenefits,
+  nextRpgUnlock,
   xpForStage,
   specialtyRank,
   stageAt,
@@ -455,6 +457,10 @@ export function createGame({
     $('profileAvatar').style.setProperty?.('--pilot', pilot.color);
     $('profileAvatar').textContent = '';
     $('profileAvatar').setAttribute?.('data-pilot', pilot.id);
+    $('pilotHudAvatar').style.setProperty?.('--pilot', pilot.color);
+    $('pilotHudAvatar').setAttribute?.('data-pilot', pilot.id);
+    $('pilotHudAvatar').setAttribute?.('aria-label', pilot.name + ', piloto em missão');
+    $('pilotHudName').textContent = pilot.name;
     $('profileName').textContent = pilot.name;
     $('profileRole').textContent = pilot.role;
     $('profileSkill').textContent = pilot.skill.toUpperCase();
@@ -1992,7 +1998,9 @@ export function createGame({
       charge = 0;
       chargeLatch = false;
     }
-    $('chargeBar').style.width = (charge / 1.5) * 100 + '%';
+    const chargePercent = (charge / 1.5) * 100;
+    $('chargeBar').style.width = chargePercent + '%';
+    $('fireTouch').style.setProperty?.('--meter', chargePercent + '%');
     if (chargeGlow) {
       chargeGlow.visible = charge > 0.15;
       chargeGlow.scale.setScalar(2 + charge * (5 + Math.sin(elapsed * 30) * 0.5));
@@ -2100,16 +2108,34 @@ export function createGame({
         ' · ' +
         Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('arsenalSwitch').disabled = ARSENAL.filter((item) => item.stage <= stage()).length < 2;
+      $('specialSwitch').disabled = SPECIALS.filter((item) => item.stage <= stage()).length < 2;
       $('orbitControls').hidden = !boss;
+      const level = stage();
+      const nextXp = xpForStage(level + 1);
+      const previousXp = xpForStage(level);
+      const progress = Math.min(1, (strategy.xp - previousXp) / Math.max(1, nextXp - previousXp));
+      const benefits = progressionBenefits(strategy.xp, strategy.specialty);
+      const unlock = nextRpgUnlock(level);
+      $('rpgLevel').textContent = 'EV ' + (level + 1);
+      $('rpgProgressBar').style.width = progress * 100 + '%';
+      $('rpgNext').textContent = unlock
+        ? 'PRÓXIMO · ' + unlock.type + ' ' + unlock.name + ' · EV ' + (unlock.stage + 1)
+        : 'ARSENAL COMPLETO';
       $('strategyStatus').textContent =
-        'EV ' +
-        (stage() + 1) +
-        ' · XP ' +
+        'XP ' +
         strategy.xp +
         '/' +
-        xpForStage(stage() + 1) +
-        ' · VEL ' +
-        (boosting ? '890' : '480') +
+        nextXp +
+        ' · ATAQUE +' +
+        benefits.attack +
+        '% · ESCUDO +' +
+        benefits.shield +
+        ' · AGILIDADE +' +
+        benefits.agility +
+        '% · ARCANA +' +
+        benefits.arcana +
+        '%' +
         (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
     }
     invuln -= dt;
@@ -2235,7 +2261,7 @@ export function createGame({
       animatePod(p, visualTime + i);
     });
     if (podsArrived) podMode = podsDetached ? 'deployed' : 'docked';
-    $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'LANÇAR';
+    $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'PODS';
     if (podCount > 0 && podCd <= 0 && (podsDetached || holding)) {
       podCd = 0.72 - podCount * 0.1;
       for (const p of podMeshes) {
@@ -2394,7 +2420,11 @@ export function createGame({
             b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
           }
         boss.userData.parts.forEach((p, i) => {
-          p.mesh.scale.setScalar(weakPointOpen(relativeOrbit(), i) ? 1.15 : 0.75);
+          const open = weakPointOpen(relativeOrbit(), i) && p.hp > 0;
+          p.mesh.scale.setScalar(open ? 1.18 : 0.75);
+          p.marker.visible = open;
+          p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
+          p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
       }
       bossCombat.update(dt);
@@ -2450,19 +2480,36 @@ export function createGame({
       boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
+      const openGenerator = boss.userData.parts.findIndex(
+        (p, i) => p.hp > 0 && (!dynamicFlight || weakPointOpen(relativeOrbit(), i)),
+      );
+      const coreVulnerable =
+        remaining === 0 &&
+        bossCombat.coreOpen &&
+        (!dynamicFlight || weakPointOpen(relativeOrbit()));
+      boss.userData.coreMarker.visible = coreVulnerable;
+      boss.userData.coreMarker.rotation.z -= dt * 1.8;
+      boss.userData.coreMarker.scale.setScalar(1 + Math.sin(visualTime * 8) * 0.12);
       boss.userData.vents.forEach((v, i) => {
         v.visible = bossHp / bossCombat.max > 0.65 || i % 3 !== 0;
       });
       boss.userData.core.scale.setScalar(bossCombat.coreOpen ? 1.1 : 0.7);
+      $('bossHUD').setAttribute?.('data-vulnerable', String(openGenerator >= 0 || coreVulnerable));
       $('bossState').textContent =
         bossCombat.age < 3
           ? 'APROXIMAÇÃO'
           : remaining
-            ? 'GERADORES ' + remaining + '/2'
+            ? openGenerator >= 0
+              ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
+              : 'BLINDAGEM · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
-              (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+              (coreVulnerable
+                ? 'ALVO VULNERÁVEL · NÚCLEO'
+                : bossCombat.coreOpen
+                  ? 'ORBITE PARA A FRENTE'
+                  : 'BLINDAGEM ATIVA');
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
@@ -2727,6 +2774,8 @@ export function createGame({
     $('score').textContent = String(score).padStart(3, '0');
     $('bombs').textContent = '◆ '.repeat(bombs) || '—';
     $('energy').style.width = energy + '%';
+    $('boostTouch').style.setProperty?.('--meter', energy + '%');
+    $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
     $('bossHealth').style.width = Math.max(0, (bossHp / (bossCombat?.max ?? 1400)) * 100) + '%';
   }

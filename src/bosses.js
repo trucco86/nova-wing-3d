@@ -296,11 +296,32 @@ export function createBossModel(sector, index = 0, tactical = false) {
       g.add(new T.Mesh(new T.TubeGeometry(cable, 12, 0.32, 5, false), j === 1 ? vein : dark));
     }
   }
+  const markerMaterial = glowMaterial('#fff27a', 5),
+    targetMarker = (radius) => {
+      const marker = new T.Group();
+      marker.name = 'vulnerable-target';
+      marker.add(new T.Mesh(new T.TorusGeometry(radius, 0.32, 6, 40), markerMaterial));
+      for (let i = 0; i < 4; i++) {
+        const tick = new T.Mesh(new T.BoxGeometry(0.65, 2.8, 0.35), markerMaterial);
+        const angle = (i * Math.PI) / 2;
+        tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
+        tick.rotation.z = -angle;
+        marker.add(tick);
+      }
+      marker.visible = false;
+      return marker;
+    },
+    coreMarker = targetMarker(8.5);
+  coreMarker.position.set(0, 0, 21);
+  g.add(coreMarker);
   const parts = [];
   for (const s of [-1, 1]) {
     const p = add(sphere(4, hot), s * 17, 4, 19);
     add(ring(5), s * 17, 4, 18);
-    parts.push({ mesh: p, hp: 180 + index * 25, max: 180 + index * 25 });
+    const marker = targetMarker(6.5);
+    marker.position.set(s * 17, 4, 22);
+    g.add(marker);
+    parts.push({ mesh: p, marker, hp: 180 + index * 25, max: 180 + index * 25 });
   }
   if (tactical) {
     const proportions = [
@@ -373,6 +394,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   }
   g.userData = {
     parts,
+    coreMarker,
     vents,
     core,
     rotors,
@@ -380,7 +402,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
     jaw,
     coreZ: 18,
     owned: true,
-    materials: [armor, dark, edge, hot, flesh, bone, vein],
+    materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial],
   };
   return g;
 }

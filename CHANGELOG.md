@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.22.0 — RPG acessível durante o voo
+
+- Arma, especial e ativação saem da gaveta e ficam sempre acessíveis em uma barra compacta.
+- Nível, XP, bônus efetivos de ataque, escudo, agilidade e arcana ganham leitura detalhada.
+- Próximo desbloqueio e progresso até o nível seguinte ficam visíveis na gaveta RPG.
+- HUD mobile ganha zonas seguras, botões maiores, carga/impulso circulares e contador de bombas.
+- O aviso bloqueado deixa de cobrir o alvo e passa a usar um marcador compacto de impacto.
+- Valores de combate, progressão, pilotos, naves, saves e canais nativos permanecem inalterados.
+
 ## 1.21.0 — Final exclusivo do Marvin
 
 - HUD identifica a última resistência do Marvin sem alterar a cadência ou o orçamento de dano.
