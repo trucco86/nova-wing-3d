@@ -25,8 +25,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run validate
       - run: npm run build
+      - run: npm run validate
       - name: Prepare isolated preview
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
