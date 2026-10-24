@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.25.0 — Mecha angular e controles mobile
+
+- Robô com armadura angular, turbina traseira e cores sincronizadas com a nave selecionada.
+- Pods acoplados representados como lançadores nos ombros; progressão compartilhada.
+- Controles touch reorganizados, com tiro e boost em destaque e transformação no topo.
+- Candidata em validação: publicação e homologação ainda pendentes.
+
 ## 1.24.1 — Protótipo de transformação robô para testes web
 
 - Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.
