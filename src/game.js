@@ -203,7 +203,7 @@ export function createGame({
     for (const part of player.children) {
       if (part !== robot && part !== barrierVisual) part.visible = !robotMode;
     }
-    $('robotTouch').setAttribute('aria-pressed', String(robotMode));
+    $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
   }
@@ -720,7 +720,7 @@ export function createGame({
     robotMode = false;
     robotCooldown = 0;
     robotTransition = 0;
-    $('robotTouch').setAttribute('aria-pressed', 'false');
+    $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
     for (const part of player.children) if (part !== robot && part !== barrierVisual) part.visible = true;
