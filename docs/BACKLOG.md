@@ -4,7 +4,7 @@
 
 ## Resumo executivo
 
-- **24 épicos NW-01–NW-24**: 17 anteriores + 7 frentes complementares. Os épicos são agrupamentos de escopo, não tickets independentes de implementação.
+- **28 épicos NW-01–NW-28**: 17 anteriores + 11 frentes complementares. Os épicos são agrupamentos de escopo, não tickets independentes de implementação.
 - **6 issues abertas no GitHub**: #21, #34, #39, #40, #41 e #42. Outras frentes estão documentadas aqui e ainda não possuem issue própria.
 - **5 PRs abertas no momento da consolidação**: #6, #7, #22, #38 e #43. PR aberta não significa funcionalidade concluída.
 - **Prioridade por risco:** P0 (experiência quebrada/bloqueio), P1 (qualidade principal e combate), P2 (expansão e distribuição), P3 (experimentos futuros).
@@ -37,11 +37,16 @@
 - **NW-23 (P2) — Identidade de sessão, score e integridade de resultados**. Estado: Planejamento necessário. Referências: —. Dependência: NW-21. Aceite: Modelo de score, validação server-side antes de ranking público.
 - **NW-24 (P2) — Transformação nave → robô voador**. Estado: Ideia aprovada; não iniciada. Referências: —. Dependência: NW-07, NW-08. Aceite: Transformação com trade-off de mobilidade/dano e teste mobile.
 
+- **NW-25 (P1) — Pontos fracos distribuídos pelo corpo inteiro dos chefes, incluindo costas**. Estado: Planejado. Referências: #42, NW-07. Dependência: câmera livre contextual e telegraph de ataques. Aceite: pontos vulneráveis distintos na frente, laterais e costas; rotação/manobra para acessar, feedback de dano, fases do chefe e teste de colisão por região.
+- **NW-26 (P1) — Variedade de câmera: visão superior 3D e bônus lateral 3D**. Estado: Planejado. Referências: NW-16. Dependência: câmera, input e HUD adaptativos. Aceite: fase em perspectiva superior mostrando o mesmo modelo 3D da nave; fase bônus lateral com a mesma nave em perfil, mantendo geometria, skins, tiro e hitboxes coerentes; transições claras, suporte touch e desempenho.
+- **NW-27 (P1) — Arenas de chefes com ambientação própria**. Estado: Planejado. Referências: #42, NW-07. Dependência: NW-26. Aceite: pelo menos um confronto dentro de cometa/cavidade espacial e outro dentro de nave/estrutura, com geometria, obstáculos, iluminação e limites próprios; rotas de saída e desempenho validados.
+- **NW-28 (P1) — Estratégias e mecânicas exclusivas para cada chefe**. Estado: Planejado. Referências: #42, NW-07. Dependência: NW-25, NW-27. Aceite: matriz de chefes com objetivo, padrão de ataque, telegraph, contramedida, condição de vulnerabilidade e fase de combate exclusivos; nenhum chefe vencido apenas pelo mesmo padrão de tiro frontal.
+
 ## Ordem de execução e ondas
 
 - **S0 — estabilização:** NW-19 (#39/PR #43) → NW-03 (#40). Resultado: trajetória coerente e HUD mobile sem sobreposição.
-- **S1 — chefes e coop:** NW-07 (#42) → NW-20 (#41) → NW-06/NW-08. Resultado: ataques próprios e especiais de dupla/5 naves.
-- **S2 — acabamento:** NW-10 → NW-09 (#34) → NW-04/NW-05. Resultado: áudio, narrativa e feedback homologáveis.
+- **S1 — chefes e coop:** NW-07 (#42) → NW-25/NW-28 → NW-27 → NW-20 (#41) → NW-06/NW-08. Resultado: ataques próprios e especiais de dupla/5 naves.
+- **S2 — acabamento:** NW-26 → NW-10 → NW-09 (#34) → NW-04/NW-05. Resultado: áudio, narrativa e feedback homologáveis.
 - **S3 — engenharia pública:** NW-18 (PR #38) → NW-11 (#21/PR #22) → NW-14 → NW-12. Resultado: harness, qualidade e case.
 - **S4 — expansão:** NW-16 → NW-24 → NW-13 → NW-23 → NW-21 → NW-22 → NW-17 → NW-15. Resultado: conteúdo e plataformas com gates específicos.
 
@@ -61,5 +66,5 @@ GitHub Issues rastreia tickets executáveis; PRs registram diffs; este arquivo �
 
 ## Histórico do backlog anterior
 
-A versão anterior do backlog listava NW-01–NW-17 e foi preservada como referência na história do Git. As linhas acima incorporam esses itens e acrescentam NW-18–NW-24, sem assumir que melhorias discutidas foram homologadas.
+A versão anterior do backlog listava NW-01–NW-17 e foi preservada como referência na história do Git. As linhas acima incorporam esses itens e acrescentam NW-18–NW-28, sem assumir que melhorias discutidas foram homologadas.
 
