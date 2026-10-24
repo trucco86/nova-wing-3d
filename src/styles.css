@@ -4130,3 +4130,8 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
     min-width: 82px;
   }
 }
+
+/* Robot mode is a tactical control, never an overlay over the flight stick. */
+#robotTouch { border-color: #ffb36b; color: #ffe1b0; }
+#robotTouch[aria-pressed='true'] { background: #b76536; color: #fff; }
+body:has(#arcadePanel:not([hidden])) #robotTouch { display: none; }
