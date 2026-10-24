@@ -456,7 +456,7 @@ export function createGame({
     });
     robot.userData.mechPaint.primary.color.set(palette.color);
     robot.userData.mechPaint.accent.color.set(palette.accent);
-    $('robotTouch').style.setProperty('--mech-accent', palette.accent);
+    $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
