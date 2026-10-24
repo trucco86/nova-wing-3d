@@ -6,7 +6,7 @@
 
 - **28 épicos NW-01–NW-28**: 17 anteriores + 11 frentes complementares. Os épicos são agrupamentos de escopo, não tickets independentes de implementação.
 - **6 issues abertas no GitHub**: #21, #34, #39, #40, #41 e #42. Outras frentes estão documentadas aqui e ainda não possuem issue própria.
-- **5 PRs abertas no momento da consolidação**: #6, #7, #22, #38 e #43. PR aberta não significa funcionalidade concluída.
+- **PRs acompanhadas**: #6, #7, #22, #43, #44, #45 e #46; #38 integrada. PR aberta não significa funcionalidade concluída.
 - **Prioridade por risco:** P0 (experiência quebrada/bloqueio), P1 (qualidade principal e combate), P2 (expansão e distribuição), P3 (experimentos futuros).
 - **Responsável padrão:** mantenedor do projeto; agentes/skills podem implementar e revisar, mas não substituem a homologação do mantenedor.
 
@@ -14,11 +14,11 @@
 
 - **NW-01 (P3) — Capa Five Cats e hangar 360°**. Estado: Publicado em versões anteriores; preservar. Referências: —. Dependência: —. Aceite: Capa aprovada e seleção preservadas.
 - **NW-02 (P2) — Intro, música, plasma, alertas e itens pet**. Estado: Publicado em versão anterior; qualidade de áudio em revisão. Referências: —. Dependência: NW-10. Aceite: Ouvir em aparelho, capturas e ausência de regressões.
-- **NW-03 (**P0**) — HUD mobile e controles sem colisão visual**. Estado: **Reaberto** por feedback real. Referências: [#40](https://github.com/trucco86/nova-wing-3d/issues/40). Dependência: —. Aceite: Capturas e teste de bounding boxes portrait/landscape, boss e safe-area.
+- **NW-03 (P0) — HUD mobile e controles sem colisão visual**. Estado: **Reaberto** por feedback real. Referências: [#40](https://github.com/trucco86/nova-wing-3d/issues/40). Dependência: —. Aceite: Capturas e teste de bounding boxes portrait/landscape, boss e safe-area.
 - **NW-04 (P2) — Tradução PT/EN/ES, mira e anéis**. Estado: Publicado anteriormente; homologação pendente. Referências: —. Dependência: NW-03. Aceite: Todos os textos na língua escolhida e coleta confirmada.
 - **NW-05 (P2) — Feedback de dano, blindagem e weak spots**. Estado: Publicado anteriormente; homologação pendente. Referências: —. Dependência: NW-07. Aceite: Distinção inequívoca entre acerto, bloqueio e vulnerabilidade.
 - **NW-06 (P1) — IA, silhuetas e ritmo de inimigos/subchefes**. Estado: Parcial, em validação. Referências: —. Dependência: NW-07. Aceite: Padrões distinguíveis, telegraph e FPS observado.
-- **NW-07 (**P1**) — Bosses com ataques específicos, arena e pontos fracos**. Estado: **Reaberto** por repetição de tiros. Referências: [#42](https://github.com/trucco86/nova-wing-3d/issues/42). Dependência: NW-05. Aceite: Choque, investida, tentáculos ou objetos conforme chefe; orbes do setor 3 destrutíveis.
+- **NW-07 (P1) — Bosses com ataques específicos, arena e pontos fracos**. Estado: **Reaberto** por repetição de tiros. Referências: [#42](https://github.com/trucco86/nova-wing-3d/issues/42). Dependência: NW-05. Aceite: Choque, investida, tentáculos ou objetos conforme chefe; orbes do setor 3 destrutíveis.
 - **NW-08 (P1) — RPG e upgrades acessíveis durante gameplay**. Estado: Em validação web. Referências: —. Dependência: NW-03. Aceite: Ações rápidas sem cobrir mira nem comandos.
 - **NW-09 (P1) — Cinemática 3D narrativa Five Cats**. Estado: Pendente. Referências: [#34](https://github.com/trucco86/nova-wing-3d/issues/34). Dependência: NW-02. Aceite: História coerente, cinco gatos e Marvin; sem citar número de fases.
 - **NW-10 (P1) — Som, mixagem e acessibilidade**. Estado: Parcial. Referências: —. Dependência: NW-03. Aceite: Plasma, explosões e alertas distintos, áudio desbloqueado, contraste e legendas.
@@ -29,8 +29,8 @@
 - **NW-15 (P2) — Métricas de Agentic SDLC e observabilidade**. Estado: Pendente. Referências: —. Dependência: NW-11. Aceite: Baseline, lead time, defeitos e custo por SHA.
 - **NW-16 (P2) — Campanha, minigames, túneis, RPG e dificuldade**. Estado: Parcial. Referências: —. Dependência: NW-07, NW-19. Aceite: Fases diferenciadas e progressão equilibrada.
 - **NW-17 (P3) — Loja de skins e expansão de conteúdo**. Estado: Parcial. Referências: —. Dependência: NW-16. Aceite: Compras e save consistentes.
-- **NW-18 (**P1**) — Badges CI, arquitetura, SonarQube e documentação técnica**. Estado: PR aberta; **SonarQube não configurado**. Referências: [PR #38](https://github.com/trucco86/nova-wing-3d/pull/38). Dependência: Identificadores SonarQube + secret. Aceite: Diagramas renderizam; badges reais; Quality Gate só após scanner real.
-- **NW-19 (**P0**) — Curvas por setor e ascensão da primeira fase**. Estado: Correção inicial em PR draft; **não homologada**. Referências: [#39](https://github.com/trucco86/nova-wing-3d/issues/39), [PR #43](https://github.com/trucco86/nova-wing-3d/pull/43). Dependência: Build HTML e testes visuais. Aceite: Fase 1 transmite decolagem; outras curvas só quando justificadas; CI verde.
+- **NW-18 (P1) — Badges CI, arquitetura, SonarQube e documentação técnica**. Estado: PR aberta; **SonarQube não configurado**. Referências: [PR #38](https://github.com/trucco86/nova-wing-3d/pull/38). Dependência: Identificadores SonarQube + secret. Aceite: Diagramas renderizam; badges reais; Quality Gate só após scanner real.
+- **NW-19 (P0) — Curvas por setor e ascensão da primeira fase**. Estado: Correção inicial em PR draft; **não homologada**. Referências: [#39](https://github.com/trucco86/nova-wing-3d/issues/39), [PR #43](https://github.com/trucco86/nova-wing-3d/pull/43). Dependência: Build HTML e testes visuais. Aceite: Fase 1 transmite decolagem; outras curvas só quando justificadas; CI verde.
 - **NW-20 (P1) — Dupla de naves e super especial Five Cats**. Estado: Pendente. Referências: [#41](https://github.com/trucco86/nova-wing-3d/issues/41). Dependência: NW-07, NW-03. Aceite: Recurso e cooldown, especial de 5 naves após setor 3, dano balanceado.
 - **NW-21 (P2) — Ranking competitivo e leaderboard**. Estado: Ideia aprovada; sem implementação confirmada. Referências: —. Dependência: NW-23. Aceite: Antifraude básico, ranking por pontuação verificável e privacidade.
 - **NW-22 (P3) — Login social Google na web**. Estado: Futuro; não iniciado. Referências: —. Dependência: NW-21. Aceite: Consentimento, autenticação segura e dados mínimos.
