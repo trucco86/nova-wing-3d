@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.1 — Protótipo de transformação robô para testes web
+
+- Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.
+- Modo robô com tiros mais potentes e menor mobilidade, custo de energia e tempo de recarga.
+- Correção de visibilidade da nave na transformação e reinício do setor.
+- Versão candidata: publicação condicionada aos testes automatizados e homologação no navegador.
+
 ## 1.24.0 — GIRO mobile responsivo
 
 - Toque rápido executa giro completo de 360°.
