@@ -1,5 +1,12 @@
 # 🚀 Nova Wing 3D — Five Cats
 
+[![CI](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/trucco86/nova-wing-3d?label=release)](https://github.com/trucco86/nova-wing-3d/releases)
+[![License: MIT](https://img.shields.io/github/license/trucco86/nova-wing-3d)](LICENSE)
+[![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white)](package.json)
+[![Playwright](https://img.shields.io/badge/tests-Playwright-2EAD33?logo=playwright&logoColor=white)](tests/)
+[![Code quality](https://img.shields.io/badge/SonarQube%20Cloud-setup%20pending-lightgrey?logo=sonarqubecloud)](docs/SONARQUBE.md)
+
 **Uma nave. Dez setores. A última chance da Terra.**
 
 Pilote a NOVA-7 com o esquadrão Five Cats em uma campanha de combate aéreo: cidades neon, instalações industriais, asteroides e fortalezas orbitais até o confronto com Marvin. Abra no navegador, escolha iniciar e jogue com teclado ou toque.
@@ -134,6 +141,49 @@ O hangar vende canhões, blindagem, pods, reparos e bombas. O checkpoint guarda 
 | Entrega      | GitHub Actions → GitHub Pages                             |
 
 Geometrias compartilhadas, instâncias e limites de entidades reduzem trabalho de renderização. O pixel ratio é limitado por categoria de dispositivo. Não existe aqui o ajuste automático por FPS descrito no projeto original, nem promessa de desempenho uniforme em todo aparelho.
+
+## Arquitetura da stack e pipeline
+
+Os diagramas são renderizados pelo GitHub a partir de Mermaid e representam os componentes reais do repositório. A análise SonarQube Cloud é **planejada, ainda não ativa**; o selo cinza não representa uma aprovação.
+
+### Stack de execução
+
+```mermaid
+flowchart LR
+  A[Jogador: desktop ou celular] --> B[HTML + CSS responsivo]
+  B --> C[JavaScript ES Modules]
+  C --> D[Three.js 0.170.0]
+  D --> E[WebGL / GPU]
+  C --> F[Web Audio API]
+  C --> G[localStorage: progresso]
+  H[esbuild] --> I[index.html distribuído]
+  I --> B
+  I --> J[GitHub Pages: web]
+  I --> K[Capacitor 8]
+  K --> L[Android WebView]
+  K --> M[iOS WKWebView]
+```
+
+### CI/CD e gates de publicação
+
+```mermaid
+flowchart TD
+  A[Push ou Pull Request] --> B[GitHub Actions CI]
+  B --> C[quality: npm ci + npm run validate]
+  C -->|Falha| X[CI vermelha: corrigir código]
+  C -->|Sucesso| D[Playwright Chromium: 4 shards]
+  D -->|Falha| X
+  D -->|Sucesso| E[browser: gate agregado]
+  E --> F{Branch main?}
+  F -->|Não: PR| G[Revisão e merge após checks verdes]
+  F -->|Sim| H[Deploy GitHub Pages]
+  H -->|Sucesso| I[Release versionada]
+  H -->|Falha| X
+  C -.-> N[Android + iOS: opt-in NOVA_BUILD_NATIVE]
+  N -.-> I
+```
+
+**Detalhes:** [diagramas e contratos](docs/DIAGRAMAS.md) · [integração SonarQube Cloud](docs/SONARQUBE.md) · [harness](docs/HARNESS.md). Os testes nativos são opcionais e só integram o gate de release quando habilitados.
 
 ## Desenvolvimento
 
