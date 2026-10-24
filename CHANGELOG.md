@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.23.0 — Introdução cinematográfica 3D
+
+- Sequência cinematográfica em tempo real com os cinco gatos e naves do esquadrão.
+- Cena de perseguição de Marvin e apresentação da campanha antes da missão.
+- Opção de pular a introdução, com legendas e retorno à navegação do menu.
+- Reforço dos gates de qualidade, versionamento e validação no GitHub Actions.
+
 ## 1.22.0 — RPG acessível durante o voo
 
 - Arma, especial e ativação saem da gaveta e ficam sempre acessíveis em uma barra compacta.
