@@ -203,6 +203,8 @@ export function createGame({
     robotTransition = 0.35;
     robotMode = !robotMode;
     robot.visible = robotMode;
+    shipModule.visible = !robotMode;
+    if (evolution) evolution.visible = !robotMode;
     for (const mount of mechPodMounts) mount.visible = robotMode && !podsDetached;
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
@@ -334,6 +336,7 @@ export function createGame({
     if (evolution) player.remove(evolution);
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
+    evolution.visible = !robotMode;
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
     // Ship and mech share progression through the player hierarchy.
   }
@@ -468,6 +471,7 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.visible = !robotMode;
     // Preserve the chosen ship silhouette in its alternate mech configuration.
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
