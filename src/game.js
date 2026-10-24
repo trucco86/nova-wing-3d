@@ -712,7 +712,7 @@ export function createGame({
     route = routeAt(sectorIndex, 0, current().duration);
     robotMode = false;
     robot.visible = false;
-    for (const part of player.children) if (part !== robot) part.visible = true;
+    for (const part of player.children) if (part !== robot && part !== barrierVisual) part.visible = true;
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
