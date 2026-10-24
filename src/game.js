@@ -196,11 +196,14 @@ export function createGame({
   const mechPodMounts = [];
   let robotCooldown = 0;
   let robotTransition = 0;
+  let robotTransformDirection = 1;
+  let robotFireKick = 0;
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
-    robotTransition = 0.35;
+    robotTransition = 0.7;
+    robotTransformDirection = robotMode ? -1 : 1;
     robotMode = !robotMode;
     robot.visible = robotMode;
     shipModule.visible = !robotMode;
@@ -1154,6 +1157,7 @@ export function createGame({
         b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
       }
     }
+    if (robotMode) robotFireKick = 0.22;
     if (dynamicFlight) cue('shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight ? selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035) : 0.135;
@@ -2040,13 +2044,30 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
+    robotFireKick = Math.max(0, robotFireKick - dt);
+    const transformProgress = robotTransition / 0.7;
     if (robot.visible) {
       for (const mount of mechPodMounts) mount.visible = !podsDetached;
-      robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      const modelWidth =
-        pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
-      robot.scale.set(modelWidth, 0.88, 0.88);
-      robot.scale.multiplyScalar(1 + robotTransition * 0.7);
+      const rig = robot.userData.mechRig;
+      const motion = elapsed * 5;
+      const boostMotion = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.4 : 1;
+      for (let i = 0; i < 2; i++) {
+        const side = i === 0 ? -1 : 1;
+        rig.arms[i].rotation.x = -0.32 + Math.sin(motion + i * Math.PI) * 0.15 * boostMotion - robotFireKick * 2.2;
+        rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
+        rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
+        rig.legs[i].rotation.z = side * 0.035;
+      }
+      robot.rotation.y = Math.sin(elapsed * 1.7) * 0.035 + Math.sin(transformProgress * Math.PI * 5) * transformProgress * 0.65;
+      const modelWidth = pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
+      const unfold = 1 + Math.sin(transformProgress * Math.PI) * 0.16;
+      robot.scale.set(modelWidth * unfold, 1.05 * unfold, 1.05 * unfold);
+      robot.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.18;
+    } else if (robotTransition > 0) {
+      // Returning to ship: spin the ship silhouette as the panels fold away.
+      shipModule.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.22;
+    } else {
+      shipModule.rotation.z = 0;
     }
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
