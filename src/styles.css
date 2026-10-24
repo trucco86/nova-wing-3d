@@ -3785,7 +3785,8 @@ body.left-handed #touch {
   }
   #orbitControls {
     position: fixed;
-    bottom: 153px;
+    /* Keep orbital controls clear of the two-row mobile action pad. */
+    bottom: 230px;
     left: 14px;
     display: grid;
     width: 198px;
@@ -4129,4 +4130,17 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
   body.in-mission #touch #fireTouch {
     min-width: 82px;
   }
+}
+
+/* Robot mode is a tactical control, never an overlay over the flight stick. */
+#robotTouch {
+  border-color: #ffb36b;
+  color: #ffe1b0;
+}
+#robotTouch[aria-pressed='true'] {
+  background: #b76536;
+  color: #fff;
+}
+body:has(#arcadePanel:not([hidden])) #robotTouch {
+  display: none;
 }
