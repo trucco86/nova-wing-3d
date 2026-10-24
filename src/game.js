@@ -187,6 +187,8 @@ export function createGame({
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
+  // Only these meshes represent the ship; keep effects independent of form changes.
+  const shipParts = [...player.children];
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
@@ -200,9 +202,7 @@ export function createGame({
     robotTransition = 0.35;
     robotMode = !robotMode;
     robot.visible = robotMode;
-    for (const part of player.children) {
-      if (part !== robot && part !== barrierVisual) part.visible = !robotMode;
-    }
+    for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
@@ -723,7 +723,7 @@ export function createGame({
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
-    for (const part of player.children) if (part !== robot && part !== barrierVisual) part.visible = true;
+    for (const part of shipParts) part.visible = true;
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
