@@ -1,4 +1,4 @@
-name: Browser preview via GitHub Pages (PR)
+name: Isolated PR browser build
 on:
   pull_request:
     paths:
@@ -7,20 +7,17 @@ on:
       - 'package*.json'
       - 'index.html'
       - '.github/workflows/pr-pages-preview.yml'
+  workflow_dispatch:
 permissions:
   contents: read
-  pages: write
-  id-token: write
 concurrency:
-  group: pr-pages-preview
-  cancel-in-progress: false
+  group: isolated-pr-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
-  publish:
-    if: github.event.pull_request.head.repo.full_name == github.repository
+  preview:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment:
-      name: github-pages
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,18 +27,16 @@ jobs:
       - run: npm ci
       - run: npm run validate
       - run: npm run build
-      - name: Prepare preview and preserve production
+      - name: Prepare isolated preview
         env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
         run: |
-          mkdir -p public-site/previews/pr-$PR_NUMBER
-          cp index.html public-site/previews/pr-$PR_NUMBER/index.html
-          touch public-site/.nojekyll
-          printf 'PR=%s\nSHA=%s\n' "$PR_NUMBER" "$GITHUB_SHA" > public-site/previews/pr-$PR_NUMBER/BUILD.txt
-      - name: Upload preview bundle
+          mkdir -p preview
+          cp index.html preview/index.html
+          printf 'PR=%s\nSHA=%s\n' "$PR_NUMBER" "$GITHUB_SHA" > preview/BUILD.txt
+      - name: Upload preview for manual validation
         uses: actions/upload-artifact@v4
         with:
-          name: pr-${{ github.event.pull_request.number }}-browser-preview
-          path: public-site/
+          name: browser-preview-${{ github.event.pull_request.number || github.sha }}
+          path: preview/
           retention-days: 7
