@@ -5,6 +5,7 @@ on:
       - feat/nw24-robot-prototype
     paths:
       - .github/workflows/build-web-candidate.yml
+      - src/styles.css
   workflow_dispatch:
 permissions:
   contents: write
