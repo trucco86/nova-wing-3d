@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.23.1 — Mira limpa e giro responsivo
+
+- Indicador de blindagem menor e sem caixa sobre o alvo; confirmações ficam na borda do HUD.
+- Botão de disparo maior no controle por toque.
+- Giro defensivo completa 360 graus sem retorno visual inverso; segurar GIRO mantém a nave inclinada.
+- Sem alterações intencionais nos atributos de combate ou progressão.
+
 ## 1.23.0 — Introdução cinematográfica 3D
 
 - Sequência cinematográfica em tempo real com os cinco gatos e naves do esquadrão.

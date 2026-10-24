@@ -226,6 +226,8 @@ export function createGame({
     invuln = 0,
     roll = 0,
     rollCd = 0,
+    rollHeld = false,
+    rollAngle = 0,
     boosting = false,
     boostNeedsRelease = false,
     bossHp = 200,
@@ -969,6 +971,7 @@ export function createGame({
   function doRoll() {
     if (state !== 'playing' || rollCd > 0) return;
     roll = 0.65;
+    rollAngle = 0;
     rollCd = 1.6;
     sound(230, 0.25, 'sine');
   }
@@ -1026,25 +1029,9 @@ export function createGame({
       element.textContent = feedback.label;
       element.style.color = color;
       element.setAttribute?.('data-impact', feedback.type);
-      // Place the confirmation near the *actual collision*, not at a fixed screen point.
-      camera.updateMatrixWorld();
-      const projected = position.clone().project(camera);
-      if (
-        Math.abs(projected.x) <= 1.2 &&
-        Math.abs(projected.y) <= 1.2 &&
-        projected.z >= -1 &&
-        projected.z <= 1
-      ) {
-        const width = Number.isFinite(window.innerWidth) ? window.innerWidth : 1366;
-        const height = Number.isFinite(window.innerHeight) ? window.innerHeight : 768;
-        element.style.left =
-          Math.max(32, Math.min(width - 32, ((projected.x + 1) / 2) * width)) + 'px';
-        element.style.top =
-          Math.max(48, Math.min(height - 48, ((1 - projected.y) / 2) * height - 28)) + 'px';
-      } else {
-        element.style.left = $('aimReticle').style.left || '50%';
-        element.style.top = $('aimReticle').style.top || '55%';
-      }
+      // Keep impact labels outside the aiming corridor; the world-space spark marks the hit.
+      element.style.left = '';
+      element.style.top = '';
       if (weak) cue('weakPoint');
       else if (bossHit && !confirmed) cue('armorHit');
     }
@@ -1466,6 +1453,8 @@ export function createGame({
     invuln = 2;
     roll = 0;
     rollCd = 0;
+    rollHeld = false;
+    rollAngle = 0;
     bossHp = 200;
     bossCd = 2;
     releaseControls();
@@ -1956,10 +1945,18 @@ export function createGame({
         b.classList.remove('pressed');
       });
   }
-  $('rollTouch').onpointerdown = (e) => {
+  const rollButton = $('rollTouch');
+  rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
+    if (state !== 'playing') return;
+    rollHeld = true;
+    rollButton.setPointerCapture?.(e.pointerId);
     doRoll();
   };
+  for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
+    rollButton.addEventListener(event, () => {
+      rollHeld = false;
+    });
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -2028,8 +2025,16 @@ export function createGame({
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
     if (roll > 0) {
-      roll -= dt;
-      player.rotation.z = Math.PI * 2 * (1 - roll / 0.65);
+      roll = Math.max(0, roll - dt);
+      rollAngle = Math.PI * 2 * (1 - roll / 0.65);
+      player.rotation.z = rollAngle;
+    } else if (rollHeld) {
+      // Holding GIRO keeps the ship banked without restarting or reversing the full roll.
+      player.rotation.z = -Math.PI / 2;
+    } else if (rollAngle > 0) {
+      // End the 360-degree animation at zero, not by lerping backward through a full turn.
+      player.rotation.z = -dx * 0.48;
+      rollAngle = 0;
     }
     player.visible =
       cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
