@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.24.0 — GIRO mobile responsivo
+
+- Toque rápido executa giro completo de 360°.
+- Pressão sustentada inclina a nave suavemente e retorna ao soltar.
+- Cancelamento de toque não dispara giro.
+
 ## 1.23.1 — Mira limpa e giro responsivo
 
 - Indicador de blindagem menor e sem caixa sobre o alvo; confirmações ficam na borda do HUD.

@@ -740,6 +740,8 @@ export function createGame({
     releaseControls();
     touchFire = touchBoost = false;
     roll = 0;
+    rollHeld = false;
+    rollAngle = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
@@ -1946,17 +1948,25 @@ export function createGame({
       });
   }
   const rollButton = $('rollTouch');
+  let rollPointerId = null;
+  let rollPressStarted = 0;
   rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
-    if (state !== 'playing') return;
+    if (state !== 'playing' || rollPointerId !== null) return;
+    rollPointerId = e.pointerId;
+    rollPressStarted = performance.now();
     rollHeld = true;
     rollButton.setPointerCapture?.(e.pointerId);
-    doRoll();
+  };
+  const finishRollPress = (e) => {
+    if (rollPointerId !== e.pointerId) return;
+    const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
+    rollPointerId = null;
+    rollHeld = false;
+    if (tap) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
-    rollButton.addEventListener(event, () => {
-      rollHeld = false;
-    });
+    rollButton.addEventListener(event, finishRollPress);
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -2028,12 +2038,12 @@ export function createGame({
       roll = Math.max(0, roll - dt);
       rollAngle = Math.PI * 2 * (1 - roll / 0.65);
       player.rotation.z = rollAngle;
-    } else if (rollHeld) {
-      // Holding GIRO keeps the ship banked without restarting or reversing the full roll.
-      player.rotation.z = -Math.PI / 2;
-    } else if (rollAngle > 0) {
-      // End the 360-degree animation at zero, not by lerping backward through a full turn.
-      player.rotation.z = -dx * 0.48;
+    } else {
+      // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
+      // Keep the bank continuous and return to neutral smoothly after release.
+      const bankTarget = rollHeld ? -Math.PI / 2 : -dx * 0.48;
+      const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
+      player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
     }
     player.visible =
