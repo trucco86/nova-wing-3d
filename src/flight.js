@@ -99,7 +99,8 @@ export function projectileHitsObstacle(from, to, obstacle, travel = 0, radius = 
   previous.z += travel;
   const current = to.clone().sub(obstacle.position);
   return obstacle.userData.solids.some((s) =>
-    crossesSolid(previous, current, s.center, s.half, radius));
+    crossesSolid(previous, current, s.center, s.half, radius),
+  );
 }
 /** A swept sphere/AABB broadphase, including fast forward motion through thin walls. */
 export function crossesSolid(from, to, center, half, radius = 1) {
