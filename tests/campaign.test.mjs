@@ -11,7 +11,7 @@ function setup(t, options) {
   t.after(() => h.close());
   return h;
 }
-function beatBoss(h, index) {
+function beatBoss(h, _index) {
   advanceToBoss(h);
   assert.equal(h.game.snapshot().boss, true);
   defeatBoss(h);
