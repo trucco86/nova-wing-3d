@@ -102,6 +102,19 @@ export function projectileHitsObstacle(from, to, obstacle, travel = 0, radius = 
     crossesSolid(previous, current, s.center, s.half, radius),
   );
 }
+/** Before obstacles advance: resolve their swept motion before projectile damage.
+ * Unlike projectileHitsObstacle(), the obstacle position is still at frame start.
+ */
+export function projectileHitsApproachingObstacle(from, to, obstacle, travel = 0, radius = 0.3) {
+  if (!obstacle.userData?.solids?.length) return false;
+  const previous = from.clone().sub(obstacle.position);
+  const current = to.clone().sub(obstacle.position);
+  current.z -= travel;
+  return obstacle.userData.solids.some((solid) =>
+    crossesSolid(previous, current, solid.center, solid.half, radius),
+  );
+}
+
 /** A swept sphere/AABB broadphase, including fast forward motion through thin walls. */
 export function crossesSolid(from, to, center, half, radius = 1) {
   let lo = 0,
