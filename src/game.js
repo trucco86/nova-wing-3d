@@ -2357,6 +2357,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       !tunnelDone &&
+      subDone &&
       (!dynamicFlight || sectorIndex !== 0) &&
       elapsed >= 24 &&
       !enemies.some((e) => !e.dead && e.kind === 'subboss')
