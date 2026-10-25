@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.2 — Hotfix de HUD mobile: botão ROBÔ e zonas de toque
+
+- P0: botão ROBÔ separado da grade de cinco ações no controle por toque, com alvo de 64 × 60 px.
+- Proteção contra sobreposição do HUD do chefe e controle RPG em modo paisagem.
+- Ações PODS, GIRO, BOMBA, BOOST e TIRO conservam alvos mínimos e limites do viewport.
+- Escopo intencionalmente isolado sobre produção 1.24.1; não incorpora DEV, login, ranking, ascensão orbital ou novo visual do robô.
+- Candidata não homologada: release condicionada a CI, validação visual, HML e aceite.
+
+
 ## 1.24.1 — Protótipo de transformação robô para testes web
 
 - Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.
