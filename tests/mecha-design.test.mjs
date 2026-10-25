@@ -83,10 +83,16 @@ test('mech and fighter progressively reveal larger neon panels as XP stage rises
   const ship = createShipModule('nova7');
   animateMechPower(robot, 0, false, 0);
   setFighterEvolution(ship, 0);
-  assert.equal(robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length, 2);
+  assert.equal(
+    robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length,
+    2,
+  );
   assert.equal(ship.userData.progressionNeons.filter((part) => part.mesh.visible).length, 2);
   animateMechPower(robot, 1, false, 6);
   setFighterEvolution(ship, 6);
-  assert.equal(robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length, 6);
+  assert.equal(
+    robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length,
+    6,
+  );
   assert.equal(ship.userData.progressionNeons.filter((part) => part.mesh.visible).length, 6);
 });
