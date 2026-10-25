@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.24.2 — Autenticação em DEV/HML
+
+- Login Google com Firebase restrito aos ambientes fixos de desenvolvimento.
+- Pré-visualizações de PR sem dependência de novos domínios OAuth.
+- Candidata sujeita a CI e homologação.
+
 ## 1.24.1 — Protótipo de transformação robô para testes web
 
 - Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.
