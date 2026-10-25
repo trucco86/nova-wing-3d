@@ -1,4 +1,4 @@
-name: Prepare mission pacing and difficulty candidate (recheck 3)
+name: Prepare mission pacing and difficulty candidate (recheck 4)
 on:
   push:
     branches: [feat/p0-mission-pacing-difficulty-20261025]
