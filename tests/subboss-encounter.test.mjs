@@ -14,8 +14,19 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
   const h = harness({ spawnEncounters: true });
   t.after(() => h.close());
   h.game.start();
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 5.5);
-  const charging = h.game.snapshot();
+  // Find a real windup window rather than hardcoding an absolute game second.
+  advanceProtected(h, SECTORS[0].duration * 0.22);
+  let charging;
+  for (let i = 0; i < 100; i++) {
+    advanceProtected(h, 0.1);
+    const state = h.game.snapshot();
+    const candidate = state.targets.find((enemy) => enemy.kind === 'subboss');
+    if (candidate?.charging && candidate.z > -100 && candidate.z < -75) {
+      charging = state;
+      break;
+    }
+  }
+  assert.ok(charging, 'subboss must visibly wind up after entering combat range');
   const subboss = charging.targets.find((enemy) => enemy.kind === 'subboss');
   assert.equal(subboss.tactic, 'strafe');
   assert.equal(subboss.attack, 'RAJADA FRONTAL');
@@ -36,6 +47,6 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
 
   h.game.start();
   assert.equal(h.game.snapshot().targets.length, 0);
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 4.9);
+  advanceProtected(h, SECTORS[0].duration * 0.22 + 1.2);
   assert.equal(h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').phase, 1);
 });
