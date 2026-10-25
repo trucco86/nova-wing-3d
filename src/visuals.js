@@ -341,6 +341,8 @@ function enemyDetails(variant) {
         g.add(box(0.9, 0.4, 1.5, steel, side * 4, 0.5, 1));
       }
     }
+    if (variant === 2)
+      g.add(box(1.2, 0.24, 5.8, glowMaterial('#a76bff', 2.2), 0, 0.9, -0.8));
     variants.set(variant, g);
   }
   return variants.get(variant).clone(true);
