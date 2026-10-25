@@ -1,4 +1,4 @@
-name: Validate P72 web balancing desktop and mobile
+name: Validate P72 orbital balance and difficulty round 2
 on:
   push:
     branches: [feat/p0-mission-pacing-difficulty-20261025]
