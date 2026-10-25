@@ -41,15 +41,15 @@ test('web route, orbital ascent and final black hole render without shader error
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  for (const [sector, time] of [
-    [0, 12],
-    [2, 30],
-    [9, 10],
+  for (const [sector, time, expected] of [
+    [0, 22, 'CURVA'],
+    [2, 30, 'ASCENSÃO'],
+    [9, 10, 'ROTA DE APROXIMAÇÃO'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await page.evaluate((time) => window.fixture.advance(time), time);
-    await expect(page.locator('#routeLabel')).toContainText(sector === 2 ? 'ASCENSÃO' : 'CURVA');
+    await expect(page.locator('#routeLabel')).toContainText(expected);
     await page.screenshot({ path: info.outputPath('route-' + sector + '.png') });
   }
   expect(errors).toEqual([]);
