@@ -4149,6 +4149,16 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
   }
 }
 
+/* Small landscape: keep the boss bar in its own right-side lane.
+   The left RPG drawer can extend below the default boss HUD top offset. */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  body.in-mission #bossHUD {
+    top: 118px;
+    left: min(32vw, 270px);
+    width: calc(100vw - min(32vw, 270px) - 16px);
+  }
+}
+
 /* Keep transformation outside the five-cell action grid on touch screens.
    Otherwise the sixth button creates an implicit third row and clips the cockpit. */
 @media (pointer: coarse) {
