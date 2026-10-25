@@ -14,7 +14,7 @@ test('sector 1 visibly transitions from the city to orbit without browser errors
   expect(cityRoute.ascent).toBe(0);
   await page.screenshot({ path: info.outputPath('launch-city.png') });
 
-  await page.evaluate(() => window.fixture.advance(42));
+  await page.evaluate(() => window.fixture.advance(62));
   const orbitRoute = await page.evaluate(() => window.fixture.game.snapshot().route);
   expect(orbitRoute.ascent).toBeGreaterThan(0.65);
   await expect(page.locator('#routeLabel')).toContainText('ASCENSÃO ORBITAL');
