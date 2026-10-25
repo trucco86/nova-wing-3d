@@ -11,7 +11,7 @@ test('launch is extended and orbital reveal happens late enough to establish atm
   assert.equal(launchAmount(duration * 0.4, duration), 0);
   assert.ok(launchAmount(duration * 0.65, duration) < 0.5);
   assert.equal(launchOrbitReady(launchAmount(duration * 0.65, duration)), false);
-  assert.ok(routeAt(0, duration * 0.85, duration).ascent > 0.6);
+  assert.ok(routeAt(0, duration * 0.85, duration, false, 0.85).ascent > 0.6);
 });
 
 test('enemy fighter archetypes have distinct detailed meshes', () => {
