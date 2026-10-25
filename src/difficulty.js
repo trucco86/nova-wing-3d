@@ -22,11 +22,11 @@ export function obstacleInterval(sector, mode = 'normal') {
   return (sector === 0 ? 13 : 10) * difficultyProfile(mode).obstacleDelay;
 }
 
-/** Quiet the scene six seconds before the first subboss and throughout combat. */
-export function firstSubbossQuiet(sector, seconds, duration, alive = false) {
+/** Preserve a readable arrival: no new waves six seconds before and nine after entry. */
+export function firstSubbossQuiet(sector, seconds, duration) {
   if (sector !== 0 || !Number.isFinite(duration) || duration <= 0) return false;
   const arrival = duration * 0.22;
-  return alive || (seconds >= arrival - 6 && seconds <= arrival + 9);
+  return seconds >= arrival - 6 && seconds <= arrival + 9;
 }
 
 export function firstSubbossWarmup(sector, age) {
