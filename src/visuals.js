@@ -375,7 +375,45 @@ export function createFlyingRobot() {
   turbineFlame.rotation.x = Math.PI / 2;
   turbineFlame.position.set(0, 3.05, 3.65);
   robot.add(turbineFlame);
-  robot.userData.mechRig = { arms, legs, armMuzzles };
+  // Exposed mechanical fan blades make the turbine visibly rotate during flight.
+  const turbineRotor = new T.Group();
+  turbineRotor.name = 'mech-turbine-rotor';
+  turbineRotor.position.set(0, 3.05, 2.76);
+  for (let bladeIndex = 0; bladeIndex < 5; bladeIndex++) {
+    const bladePivot = new T.Group();
+    bladePivot.rotation.z = (bladeIndex * Math.PI * 2) / 5;
+    const blade = box(0.14, 0.44, 0.12, bladeIndex % 2 ? accent : luminous, 0, 0.23, 0);
+    blade.rotation.z = -0.42;
+    bladePivot.add(blade);
+    turbineRotor.add(bladePivot);
+  }
+  robot.add(turbineRotor);
+  const progressionNeons = [];
+  for (let tier = 0; tier < 3; tier++) {
+    for (const side of [-1, 1]) {
+      const strip = box(
+        0.14 + tier * 0.07,
+        0.18 + tier * 0.06,
+        0.72 + tier * 0.38,
+        luminous,
+        side * (1.62 + tier * 0.42),
+        2.45 - tier * 1.7,
+        -1.03 - tier * 0.08,
+      );
+      strip.name = `mech-evolution-neon-${tier}-${side}`;
+      strip.visible = tier === 0;
+      robot.add(strip);
+      progressionNeons.push({ mesh: strip, threshold: tier * 3 });
+    }
+  }
+  robot.userData.mechRig = {
+    arms,
+    legs,
+    armMuzzles,
+    turbineRotor,
+    turbineFlame,
+    progressionNeons,
+  };
   robot.userData.mechPaint = { primary: armor, accent };
   robot.scale.setScalar(0.94);
   return robot;
@@ -435,7 +473,45 @@ export function createShipModule(model = 'nova7') {
   const keel = box(0.34, 0.18, 3.6, navy, 0, 0.27, 0.18);
   keel.name = 'ship-mechanical-keel';
   g.add(keel);
+  const progressionNeons = [];
+  for (let tier = 0; tier < 3; tier++) {
+    for (const side of [-1, 1]) {
+      const strip = box(
+        0.15 + tier * 0.05,
+        0.12,
+        0.8 + tier * 0.42,
+        cyan,
+        side * (1.95 + tier * 0.65),
+        0.42,
+        0.32 + tier * 0.13,
+      );
+      strip.name = `ship-evolution-neon-${tier}-${side}`;
+      strip.visible = tier === 0;
+      g.add(strip);
+      progressionNeons.push({ mesh: strip, threshold: tier * 3 });
+    }
+  }
+  g.userData.progressionNeons = progressionNeons;
   return g;
+}
+
+/** Activate larger luminous upgrade details as the player's ship gains levels. */
+export function setFighterEvolution(ship, level = 0) {
+  for (const { mesh, threshold } of ship.userData.progressionNeons ?? []) {
+    mesh.visible = level >= threshold;
+  }
+}
+
+/** Flight animation is frame-driven, so it works at variable FPS without timers. */
+export function animateMechPower(robot, elapsed, boosting = false, level = 0) {
+  const rig = robot.userData.mechRig;
+  if (!rig?.turbineRotor) return;
+  rig.turbineRotor.rotation.z = elapsed * (boosting ? 24 : 10);
+  rig.turbineFlame.scale.y = (boosting ? 1.75 : 1) * (0.9 + Math.sin(elapsed * 16) * 0.1);
+  rig.turbineFlame.material.opacity = boosting ? 0.96 : 0.78;
+  for (const { mesh, threshold } of rig.progressionNeons) {
+    mesh.visible = level >= threshold;
+  }
 }
 const variants = new Map();
 function enemyDetails(variant) {
