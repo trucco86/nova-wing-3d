@@ -1133,13 +1133,14 @@ export function createGame({
     shotCd = dynamicFlight ? selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035) : 0.135;
   }
   function enemy(kind = 'fighter') {
-    const ground = kind === 'tank' || kind === 'walker';
+    const airborneRobot = kind === 'hover-walker';
+    const ground = kind === 'tank' || kind === 'walker' || airborneRobot;
     const roleIndex = (fighterSerial + sectorIndex) % 3;
     const tacticalFighter = dynamicFlight && kind === 'fighter';
     const subbossTactic = dynamicFlight && kind === 'subboss' ? subbossProfile(sectorIndex) : null;
     if (tacticalFighter) fighterSerial++;
     let o = ground
-      ? createGroundEnemy(kind, dynamicFlight ? (groundWave + sectorIndex) % 3 : -1)
+      ? createGroundEnemy(airborneRobot ? 'walker' : kind, dynamicFlight ? (groundWave + sectorIndex) % 3 : -1)
       : kind === 'subboss'
         ? createSubboss(sectorIndex)
         : fighter(
@@ -1163,14 +1164,27 @@ export function createGame({
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
-      y = ground
-        ? -7
+      y = airborneRobot
+        ? rnd(9, 23)
+        : ground
+          ? -7
         : kind === 'subboss'
           ? 10
           : dynamicFlight && sectorIndex === 0
             ? rnd(12, 24)
             : rnd(1, 19);
     o.position.set(x, y, -200);
+    if (airborneRobot) {
+      const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
+      for (const side of [-1, 1]) {
+        const thruster = new T.Mesh(new T.ConeGeometry(0.85, 3.8, 10), thrusterMat);
+        thruster.name = 'enemy-hover-thruster';
+        thruster.rotation.x = Math.PI;
+        thruster.position.set(side * 3.2, -6, 0.5);
+        o.add(thruster);
+      }
+      o.userData.airborneRobot = true;
+    }
     scene.add(o);
     const attackGlow = tacticalFighter
       ? halo(['#ff7c69', '#65e6ff', '#ffc45e'][roleIndex], 8, 0.85)
@@ -1216,7 +1230,8 @@ export function createGame({
       maxLife:
         kind === 'subboss' ? (dynamicFlight ? 360 + sectorIndex * 90 : 180 + sectorIndex * 40) : 1,
       ground,
-      hitY: kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
+      airborneRobot,
+      hitY: airborneRobot ? 0 : kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
       half: new T.Vector3(
         ground
           ? kind === 'walker'
@@ -2248,6 +2263,18 @@ export function createGame({
     }
     groundCd -= dt;
     if (
+      dynamicFlight &&
+      spawnEncounters &&
+      sectorIndex === 0 &&
+      orbitalLaunch &&
+      elapsed < current().duration * 0.97 &&
+      groundCd <= 0
+    ) {
+      groundWave++;
+      enemy('hover-walker');
+      groundCd = 7.5;
+    }
+    if (
       spawnEncounters &&
       isGroundSector(current()) &&
       elapsed < current().duration &&
@@ -2395,15 +2422,24 @@ export function createGame({
                 : speed + 12);
       if (!e.subbossTactic) {
         e.o.position.x = e.ground
-          ? e.x
+          ? e.x + (e.airborneRobot ? Math.sin(e.age * 0.85 + e.phase) * 4 : 0)
           : e.kind === 'base'
             ? e.x * 0.7
             : e.x + Math.sin(elapsed * (e.kind === 'rival' ? 2 : 1.1) + e.phase) * 5;
-        e.o.position.y = e.ground
-          ? -7
+        e.o.position.y = e.airborneRobot
+          ? e.y + Math.sin(e.age * 2.1 + e.phase) * 2.8
+          : e.ground
+            ? -7
           : e.kind === 'base'
             ? -1
             : e.y + Math.sin(elapsed + e.phase) * 2;
+      }
+      if (e.airborneRobot) {
+        e.o.rotation.z = Math.sin(e.age * 0.85 + e.phase) * 0.12;
+        e.o.traverse((part) => {
+          if (part.name === 'enemy-hover-thruster')
+            part.scale.y = 0.72 + Math.sin(e.age * 16 + e.phase) * 0.25;
+        });
       }
       if (e.role) {
         const motion = fighterMotion(e.role, e.age, e.x, e.y, player.position.x, e.phase);
