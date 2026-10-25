@@ -1,0 +1,30 @@
+name: Synchronize mecha shared-wing preview
+on:
+  push:
+    branches: [feat/nw25-mech-visual-parity]
+permissions:
+  contents: write
+concurrency:
+  group: mecha-wing-sync
+  cancel-in-progress: false
+jobs:
+  synchronize:
+    if: "!contains(github.event.head_commit.message, '[skip wing-sync]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit reproducible artifact and remove one-off workflow
+        run: |
+          git rm .github/workflows/mecha-wing-sync.yml
+          git add src/ tests/ index.html
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(mecha): reproducible shared-wing preview [skip wing-sync]'
+          git push origin HEAD:refs/heads/feat/nw25-mech-visual-parity
