@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
-import { defeatBoss, advanceToBoss } from './combat-helper.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 function setup(t, opts) {
   const h = harness(opts);
   t.after(() => h.close());
@@ -131,7 +132,7 @@ test('touch input moves the same ship and cancellation releases movement', (t) =
 test('boss generators protect the core and bombs cannot skip the defeat cinematic', (t) => {
   const h = setup(t);
   h.game.start();
-  advanceToBoss(h);
+  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
   const hp = h.game.snapshot().bossHp;
   h.game.bomb();
   assert.equal(h.game.snapshot().bossHp, hp);
