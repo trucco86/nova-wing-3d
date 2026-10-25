@@ -1,4 +1,4 @@
-name: Validate P72 browser experience on final impact tests
+name: Validate P72 integrated v1.24.6 browser final gates
 on:
   push:
     branches: [feat/p0-mission-pacing-difficulty-20261025]
