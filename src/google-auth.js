@@ -10,7 +10,27 @@ const SDK_VERSION = '11.10.0';
 const APP_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebase-app.js';
 const AUTH_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebase-auth.js';
 
-export function installGoogleLogin() {
+export async function signOutToGuest({ auth, authSdk, setUser, setStatus, closePanel }) {
+  if (!auth || !authSdk) {
+    setStatus('Não foi possível verificar a sessão Google. Tente novamente.');
+    return false;
+  }
+  try {
+    await authSdk.signOut(auth);
+    // Keep state immediately consistent even when the Firebase observer is delayed.
+    setUser(null);
+    closePanel();
+    return true;
+  } catch {
+    setStatus('Não foi possível sair do Google. Sua sessão continua ativa.');
+    return false;
+  }
+}
+
+export function installGoogleLogin({
+  loadSdks = () =>
+    Promise.all([import(/* @vite-ignore */ APP_URL), import(/* @vite-ignore */ AUTH_URL)]),
+} = {}) {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};
   // Never load Firebase on PR previews, offline/native shells or automated visual tests.
@@ -48,6 +68,10 @@ export function installGoogleLogin() {
   let auth;
   let authSdk;
   let provider;
+  let resolveInitialization;
+  const initialization = new Promise((resolve) => {
+    resolveInitialization = resolve;
+  });
   const setStatus = (message) => {
     if (!disposed) status.textContent = message;
   };
@@ -61,6 +85,7 @@ export function installGoogleLogin() {
   login.addEventListener('click', async () => {
     if (!auth || !authSdk) return;
     login.disabled = true;
+    guest.disabled = true;
     setStatus('Conectando ao Google...');
     try {
       await authSdk.signInWithPopup(auth, provider);
@@ -85,7 +110,10 @@ export function installGoogleLogin() {
         console.error('Firebase login:', error?.code || error);
       }
     } finally {
-      if (!disposed) login.disabled = false;
+      if (!disposed) {
+        login.disabled = false;
+        guest.disabled = false;
+      }
     }
   });
   logout.addEventListener('click', async () => {
@@ -96,14 +124,29 @@ export function installGoogleLogin() {
       setStatus('Não foi possível sair da conta.');
     }
   });
-  guest.addEventListener('click', () => {
-    panel.open = false;
-    setStatus('Modo visitante · progresso local');
+  guest.addEventListener('click', async () => {
+    guest.disabled = true;
+    setStatus('Verificando sessão Google...');
+    try {
+      await initialization;
+      if (disposed) return;
+      await signOutToGuest({
+        auth,
+        authSdk,
+        setUser,
+        setStatus,
+        closePanel: () => {
+          panel.open = false;
+        },
+      });
+    } finally {
+      if (!disposed) guest.disabled = false;
+    }
   });
   (async () => {
     try {
-      const appSdk = await import(/* @vite-ignore */ APP_URL);
-      authSdk = await import(/* @vite-ignore */ AUTH_URL);
+      const [appSdk, loadedAuthSdk] = await loadSdks();
+      authSdk = loadedAuthSdk;
       if (disposed) return;
       const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(config);
       auth = authSdk.getAuth(app);
@@ -122,7 +165,7 @@ export function installGoogleLogin() {
       console.error('Firebase initialization:', error);
       setStatus('Login indisponível. Você pode jogar como visitante.');
     }
-  })();
+  })().finally(() => resolveInitialization());
   return () => {
     style.remove();
     disposed = true;
