@@ -26,7 +26,7 @@ function curveWindow(progress, { from, to, direction }) {
   return direction * smooth((progress - from) / edge) * (1 - smooth((progress - to + edge) / edge));
 }
 
-export function routeAt(sector, seconds, duration, boss = false) {
+export function routeAt(sector, seconds, duration, boss = false, launchProgress = 0) {
   if (!Number.isFinite(duration) || duration <= 0) {
     return { turn: 0, ascent: 0, bank: 0, label: 'ROTA DE APROXIMAÇÃO' };
   }
@@ -37,12 +37,12 @@ export function routeAt(sector, seconds, duration, boss = false) {
         (total, window) => total + curveWindow(progress, window),
         0,
       );
-  // The city launch climbs progressively toward orbit, while the asteroid belt
-  // keeps the existing orbital transition. Boss arenas remain level.
+  // Sector 1 ascends only after its BOOST-powered state machine progresses.
+  // The asteroid-belt route retains its independent orbital movement.
   const ascent = boss
     ? 0
     : sector === 0
-      ? 1.15 * smooth((progress - 0.48) / 0.46)
+      ? 1.15 * T.MathUtils.clamp(launchProgress, 0, 1)
       : sector === 2
         ? Math.sin(Math.PI * progress)
         : 0;
