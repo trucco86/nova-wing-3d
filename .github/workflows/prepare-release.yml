@@ -1,0 +1,55 @@
+name: Prepare mobile release
+on:
+  push:
+    branches:
+      - fix/mobile-stick-size
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize version metadata
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const version = '1.24.1';
+          for (const file of ['package.json', 'package-lock.json']) {
+            const data = JSON.parse(readFileSync(file, 'utf8'));
+            data.version = version;
+            if (file === 'package-lock.json') data.packages[''].version = version;
+            writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+          }
+          const log = readFileSync('CHANGELOG.md', 'utf8');
+          if (!log.includes('## 1.24.1')) writeFileSync('CHANGELOG.md', log.replace('# Histórico\n', '# Histórico\n\n## 1.24.1 — Analógico mobile ampliado\n\n- Controle analógico 128 px e centro 54 px em telas touch.\n'));
+          writeFileSync('releases/v1.24.1.md', '## Nova Wing 3D v1.24.1\n\n- Analógico mobile maior, preservando controles de voo.\n\nRelease web condicionada a CI verde.\n');
+          NODE
+      - name: Synchronize native iOS marketing version
+        run: |
+          sed -i 's/MARKETING_VERSION = 1\.24\.0;/MARKETING_VERSION = 1.24.1;/g' ios/App/App.xcodeproj/project.pbxproj
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit release bundle and run CI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json CHANGELOG.md releases/v1.24.1.md index.html ios/App/App.xcodeproj/project.pbxproj
+          if ! git diff --cached --quiet; then
+            git commit -m 'build(release): prepare v1.24.1 mobile controls'
+            git push origin HEAD:fix/mobile-stick-size
+          fi
+          gh workflow run ci.yml --ref fix/mobile-stick-size
