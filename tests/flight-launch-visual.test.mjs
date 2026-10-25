@@ -22,7 +22,10 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   assert.equal(earth.visible, false);
   assert.equal(skyDome.material.uniforms.launchHaze.value, 0);
   world.setLaunchAscent(0.5, true);
-  assert.ok(skyDome.material.uniforms.launchHaze.value > 1, 'middle atmospheric phase has luminous cloud cover');
+  assert.ok(
+    skyDome.material.uniforms.launchHaze.value > 1,
+    'middle atmospheric phase has luminous cloud cover',
+  );
   world.setLaunchAscent(0.8, true);
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
