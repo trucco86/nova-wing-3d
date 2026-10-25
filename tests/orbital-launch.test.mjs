@@ -12,9 +12,9 @@ import {
 } from '../src/flight.js';
 
 test('launch gate consistently switches to orbit only after city departure', () => {
-  assert.equal(SECTORS[0].duration, 85);
-  assert.equal(launchOrbitReady(launchAmount(40, 85)), false);
-  assert.equal(launchOrbitReady(launchAmount(62, 85)), true);
+  assert.equal(SECTORS[0].duration, 145);
+  assert.equal(launchOrbitReady(launchAmount(40, 145)), false);
+  assert.equal(launchOrbitReady(launchAmount(110, 145)), true);
   assert.equal(launchOrbitReady(launchAmount(0, 0)), false);
 });
 
@@ -82,6 +82,8 @@ test('the city has industrial hazards and orbit has spatial hazards, not floatin
   let spaceObjectSeen = false;
   for (let i = 0; i < 74; i++) {
     h.game.collect('shield');
+    if (i === 23) h.key('ShiftLeft');
+    if (i === 28) h.key('ShiftLeft', false);
     h.advance(1);
     const state = h.game.snapshot();
     if (i < 35 && state.obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)))
