@@ -1,0 +1,53 @@
+name: QA BOOST-to-orbit and publish isolated PR preview (one-off)
+on:
+  push:
+    branches: [feat/p0-sector-flight-orbit-dev-20261025]
+    paths: ['.github/workflows/flight-boost-browser-qa-once.yml']
+permissions:
+  contents: write
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: nova-preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run build
+      - name: Verify BOOST exhaustion and atmosphere in desktop and mobile WebGL
+        run: npx playwright test tests/browser/launch-orbit.spec.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: boost-orbit-webgl-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+      - name: Assemble review-only Cloudflare preview
+        run: |
+          mkdir -p dist
+          cp index.html dist/index.html
+          touch dist/.nojekyll
+          printf 'sha=%s\nsource=boost-orbit-targeted-qa\n' "$GITHUB_SHA" > dist/BUILD.txt
+      - name: Require existing isolated Cloudflare credentials
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: test -n "$CF_TOKEN" && test -n "$CF_ACCOUNT"
+      - name: Deploy only PR-71 preview (never DEV, HML or production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=nova-wing-preview --branch=pr-71
+      - name: Remove review-only workflow after passing targeted WebGL QA
+        run: |
+          git rm .github/workflows/flight-boost-browser-qa-once.yml
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'ci(flight): remove temporary BOOST preview QA workflow'
+          git push origin HEAD:refs/heads/feat/p0-sector-flight-orbit-dev-20261025
