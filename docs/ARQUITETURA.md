@@ -8,7 +8,6 @@ A evolução de distribuição/identidade foi consolidada em [ARCHITECTURE-PLATF
 
 O novo desenho de robô/naves está especificado em [DESIGN-MECHA-STARFIGHTER](DESIGN-MECHA-STARFIGHTER.md), ainda sem homologação do modelo 3D.
 
-
 ## Fluxo de execução
 
 `src/main.js` chama `createGame()` de `src/game.js`. A fábrica monta a cena Three.js, interface, controles e ciclo de animação. `src/visuals.js` fornece modelos de naves, cenário procedural e pós-processamento.
