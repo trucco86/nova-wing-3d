@@ -84,6 +84,7 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  mechArmPitch,
   createShipModule,
   createWorld,
   postProcessor,
@@ -195,6 +196,7 @@ export function createGame({
   let robotMode = false;
   let robotCooldown = 0;
   let robotTransition = 0;
+  let robotFireKick = 0;
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
@@ -1110,6 +1112,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
+    if (robotMode) robotFireKick = 0.65;
     const count = SHOT_COUNTS[weapon];
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
@@ -2007,7 +2010,19 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
+    robotFireKick = Math.max(0, robotFireKick - dt);
     if (robot.visible) {
+      const rig = robot.userData.mechRig;
+      if (rig?.arms?.length === 2 && rig?.legs?.length === 2) {
+        const motion = elapsed * 5;
+        const boostMotion = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.4 : 1;
+        for (let i = 0; i < 2; i++) {
+          const side = i === 0 ? -1 : 1;
+          rig.arms[i].rotation.x = mechArmPitch(motion, i, boostMotion, robotFireKick);
+          rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
+          rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
+        }
+      }
       robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
       robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
     }
