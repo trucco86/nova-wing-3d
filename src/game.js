@@ -2026,7 +2026,11 @@ export function createGame({
       const turbine = rig?.turbineFlame;
       if (turbine) {
         const thrust = boosting ? 1 : 0.45;
-        turbine.scale.set(1 + Math.sin(elapsed * 31) * 0.08, 1 + thrust * 0.75, 1 + Math.sin(elapsed * 19) * 0.08);
+        turbine.scale.set(
+          1 + Math.sin(elapsed * 31) * 0.08,
+          1 + thrust * 0.75,
+          1 + Math.sin(elapsed * 19) * 0.08,
+        );
         turbine.material.opacity = 0.57 + thrust * 0.27 + Math.sin(elapsed * 27) * 0.07;
         rig.turbineRing.rotation.z = elapsed * (boosting ? 10 : 5);
         rig.turbineCore.rotation.y = elapsed * (boosting ? 13 : 7);
