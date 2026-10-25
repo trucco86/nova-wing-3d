@@ -22,6 +22,8 @@ jobs:
           npm run build
       - name: Show generated changes
         run: git status --short
+      - name: Show markdown formatting diff
+        run: git diff -- CHANGELOG.md
       - name: Validate repaired workspace
         run: npm run validate
       - name: Upload generated index for review
