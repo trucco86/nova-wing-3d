@@ -1,6 +1,7 @@
 export const SETTINGS_KEY = 'nova-wing-preferences-v1';
 export const DEFAULT_SETTINGS = Object.freeze({
   language: 'pt',
+  difficulty: 'normal',
   master: 0.85,
   music: 0.7,
   sfx: 0.75,
@@ -16,6 +17,7 @@ export function readSettings(raw) {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const result = { ...DEFAULT_SETTINGS };
   if (['pt', 'en', 'es'].includes(source.language)) result.language = source.language;
+  if (['easy', 'normal', 'hard'].includes(source.difficulty)) result.difficulty = source.difficulty;
   for (const key of ['master', 'music', 'sfx', 'sensitivity', 'opacity']) {
     if (typeof source[key] === 'number' && Number.isFinite(source[key]))
       result[key] = clamp(
@@ -30,14 +32,17 @@ export function readSettings(raw) {
 }
 export function loadSettings(storage) {
   try {
-    return readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null'));
+    // Difficulty is session-only: each app launch starts on NORMAL.
+    return { ...readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null')), difficulty: 'normal' };
   } catch {
     return readSettings(null);
   }
 }
 export function storeSettings(storage, settings) {
   try {
-    storage?.setItem(SETTINGS_KEY, JSON.stringify(readSettings(settings)));
+    const persistent = readSettings(settings);
+    delete persistent.difficulty;
+    storage?.setItem(SETTINGS_KEY, JSON.stringify(persistent));
     return !!storage;
   } catch {
     return false;
@@ -64,6 +69,10 @@ export const UI_COPY = {
     music: 'MÚSICA',
     effects: 'EFEITOS',
     language: 'IDIOMA',
+    difficulty: 'DIFICULDADE',
+    easy: 'FÁCIL',
+    normal: 'NORMAL',
+    hard: 'DIFÍCIL',
     sensitivity: 'SENSIBILIDADE',
     opacity: 'OPACIDADE DOS CONTROLES',
     subtitles: 'LEGENDAS',
@@ -97,6 +106,10 @@ export const UI_COPY = {
     music: 'MUSIC',
     effects: 'SOUND EFFECTS',
     language: 'LANGUAGE',
+    difficulty: 'DIFFICULTY',
+    easy: 'EASY',
+    normal: 'NORMAL',
+    hard: 'HARD',
     sensitivity: 'SENSITIVITY',
     opacity: 'CONTROL OPACITY',
     subtitles: 'SUBTITLES',
@@ -130,6 +143,10 @@ export const UI_COPY = {
     music: 'MÚSICA',
     effects: 'EFECTOS',
     language: 'IDIOMA',
+    difficulty: 'DIFICULTAD',
+    easy: 'FÁCIL',
+    normal: 'NORMAL',
+    hard: 'DIFÍCIL',
     sensitivity: 'SENSIBILIDAD',
     opacity: 'OPACIDAD DE CONTROLES',
     subtitles: 'SUBTÍTULOS',
