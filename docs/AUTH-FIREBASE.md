@@ -19,14 +19,14 @@
 
 ## Domínios, comportamento e isolamento
 
-| Host | Firebase SDK | Finalidade |
-| --- | --- | --- |
-| `dev.nova-wing-preview.pages.dev` | Habilitado | Login de integração (domínio autorizado no Firebase) |
-| `hml.nova-wing-preview.pages.dev` | Código habilita quando for promovido | Homologação futura, **não confundir com deploy já realizado em HML** |
-| `pr-N.nova-wing-preview.pages.dev` | **Desabilitado** | Preview experimental sem cadastrar cada novo domínio OAuth |
-| `localhost` / `127.0.0.1` | Só com `?auth=1` | Debug local opt-in; domínio precisa estar permitido no Firebase |
-| GitHub Pages PROD | **Desabilitado** | Sem reutilização do projeto Firebase DEV |
-| App Android/iOS offline | **Desabilitado** | Partida sem dependência externa |
+| Host                               | Firebase SDK                         | Finalidade                                                           |
+| ---------------------------------- | ------------------------------------ | -------------------------------------------------------------------- |
+| `dev.nova-wing-preview.pages.dev`  | Habilitado                           | Login de integração (domínio autorizado no Firebase)                 |
+| `hml.nova-wing-preview.pages.dev`  | Código habilita quando for promovido | Homologação futura, **não confundir com deploy já realizado em HML** |
+| `pr-N.nova-wing-preview.pages.dev` | **Desabilitado**                     | Preview experimental sem cadastrar cada novo domínio OAuth           |
+| `localhost` / `127.0.0.1`          | Só com `?auth=1`                     | Debug local opt-in; domínio precisa estar permitido no Firebase      |
+| GitHub Pages PROD                  | **Desabilitado**                     | Sem reutilização do projeto Firebase DEV                             |
+| App Android/iOS offline            | **Desabilitado**                     | Partida sem dependência externa                                      |
 
 A restrição por hostname **não é uma autorização de segurança**. O controle de identidade e score precisa acontecer no Worker, independentemente do hostname do frontend.
 
