@@ -15,7 +15,7 @@ import { createEvolution } from '../src/evolution.js';
 import { fighter } from '../src/visuals.js';
 import { createShipModule } from '../src/visuals.js';
 import { PILOT_PROFILES, SHIP_MODELS, readPilotLoadout } from '../src/pilots.js';
-import { defeatBoss, advanceToBoss } from './combat-helper.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 function setup(t, options = {}) {
   const h = harness(options);
   t.after(() => h.close());
@@ -78,7 +78,7 @@ test('checkpoint persists RPG progress and equipped choices through actual hanga
   for (let i = 0; i < 24; i++) h.game.collect('blue');
   h.game.cycleArsenal();
   h.game.cycleSpecial();
-  advanceToBoss(h);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   assert.equal(h.game.snapshot().state, 'shop');
   const next = setup(t, { storage });
@@ -157,8 +157,8 @@ test('docked pods amplify actual shots and deployed pods pursue moving targets',
 test('orbital flanks reject frontal damage, accept exposed generator hits and remain time based', (t) => {
   for (const dt of [1 / 30, 1 / 60]) {
     const h = setup(t);
-    advanceToBoss(h);
-    h.advance(3);
+    reachSectorBoss(h, { bossAge: 5 });
+    waitForArmoredFront(h, { dt });
     const initial = h.game.snapshot().bossTargets.map((p) => p.hp);
     assert.equal(h.game.damageBoss(10000), 0, 'armored front must reject direct damage');
     assert.deepEqual(
@@ -185,7 +185,7 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
   const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 36; i++) {
+  for (let i = 0; i < 35; i++) {
     h.game.collect('shield');
     h.advance(1);
   }
@@ -305,7 +305,7 @@ test('five pilots and three ships validate selection, alter real stats and persi
   assert.equal(h.game.snapshot().loadout.ship, 'aegis');
   assert.equal(h.game.snapshot().loadout.color, 'gold');
   assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
-  advanceToBoss(h);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   const restored = harness({ storage });
   t.after(() => restored.close());
