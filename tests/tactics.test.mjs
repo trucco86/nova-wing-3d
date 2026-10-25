@@ -80,7 +80,7 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  reachSectorBoss(h, { bossAge: 23 });
+  reachSectorBoss(h, { bossAge: 0.15 });
   h.game.tacticalAction('precision');
   h.advance(0.65);
   assert.equal(h.elements.get('hitFeedback').textContent, 'SEM DANO · AJUSTE O ÂNGULO');
@@ -98,7 +98,7 @@ test('barrage keeps confirmed feedback when later projectiles are blocked', (t) 
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  reachSectorBoss(h, { bossAge: 23 });
+  reachSectorBoss(h, { bossAge: 0.15 });
   h.game.orbit(-1);
   h.advance(1.3);
   h.game.orbit(0);
