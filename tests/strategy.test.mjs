@@ -182,7 +182,7 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
   const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 34; i++) {
+  for (let i = 0; i < 36; i++) {
     h.game.collect('shield');
     h.advance(1);
   }
