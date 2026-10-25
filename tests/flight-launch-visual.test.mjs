@@ -51,7 +51,10 @@ test('all ten flight sectors maintain finite bends, level boss arenas and smooth
   assert.ok(routeAt(0, SECTORS[0].duration * 0.9, SECTORS[0].duration).ascent > 1);
   for (const sector of [2, 4, 7, 9]) {
     for (const progress of [0.1, 0.4, 0.7]) {
-      assert.equal(routeAt(sector, progress * SECTORS[sector].duration, SECTORS[sector].duration).turn, 0);
+      assert.equal(
+        routeAt(sector, progress * SECTORS[sector].duration, SECTORS[sector].duration).turn,
+        0,
+      );
     }
   }
 });
