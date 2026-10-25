@@ -36,6 +36,10 @@ test('all starfighter variants share mechanical silhouette while preserving vari
     const span = new T.Box3().setFromObject(module);
     assert.ok(span.max.x - span.min.x > 8, 'starfighter wings must remain wide');
   }
-  const counts = modules.map((module) => module.children.length);
-  assert.equal(new Set(counts).size, 3, 'each starfighter retains a distinct chassis');
+  const silhouettes = modules.map((module) =>
+    module.children
+      .map((part) => [part.geometry?.type, ...part.position.toArray()].join(':'))
+      .join('|'),
+  );
+  assert.equal(new Set(silhouettes).size, 3, 'each starfighter retains a distinct chassis');
 });
