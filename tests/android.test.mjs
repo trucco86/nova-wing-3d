@@ -7,7 +7,7 @@ import { harness } from './harness.mjs';
 import { reachSectorBoss } from './mission-scenarios.mjs';
 import { installNativeShell } from '../src/native.js';
 import { prepareAndroidWeb } from '../tools/android.mjs';
-import { defeatBoss, advanceToBoss } from './combat-helper.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 
 function setup(t, options) {
   const h = harness(options);
@@ -47,7 +47,7 @@ test('background freezes combat, clears multi-touch and suspends audio until exp
 });
 test('background preserves collapse rewards and the hangar resumes audio only on continuation', (t) => {
   const h = setup(t);
-  advanceToBoss(h);
+  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
   defeatBoss(h, { stopAtCollapse: true });
   assert.equal(h.game.snapshot().state, 'collapsing');
   h.advance(2);
