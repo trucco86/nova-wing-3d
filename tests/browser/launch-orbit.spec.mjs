@@ -30,13 +30,26 @@ test('space hazards replace urban gantries and remain visible as dodging obstacl
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&encounters=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  const snapshot = await page.evaluate(() => {
-    for (let i = 0; i < 73; i++) {
+  // Hazards travel across the screen between spawn waves. Capture an actual
+  // populated orbital frame rather than assuming a craft exists at second 73.
+  const { snapshot, firstVisibleAt } = await page.evaluate(() => {
+    let result = window.fixture.game.snapshot();
+    let firstVisibleAt = -1;
+    for (let i = 0; i < 81; i++) {
       window.fixture.game.collect('shield');
       window.fixture.advance(1);
+      result = window.fixture.game.snapshot();
+      const spacecraft = result.obstacleKinds.some((kind) =>
+        ['satellite', 'carrier', 'debris'].includes(kind),
+      );
+      if (i >= 60 && spacecraft) {
+        firstVisibleAt = i + 1;
+        break;
+      }
     }
-    return window.fixture.game.snapshot();
+    return { snapshot: result, firstVisibleAt };
   });
+  expect(firstVisibleAt, 'an orbital obstacle must appear in the 61-81s window').toBeGreaterThan(0);
   expect(snapshot.route.ascent).toBeGreaterThan(0.7);
   expect(
     snapshot.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind)),
