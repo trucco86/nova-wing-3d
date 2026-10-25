@@ -380,6 +380,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   earthHorizon.userData.fixedSky = true;
   scene.add(earthHorizon);
   const launchSkyTint = new T.Color();
+  const launchSpaceTint = new T.Color('#192a55');
   const starPos = [],
     starCol = [];
   for (let i = 0; i < 2000; i++) {
@@ -608,7 +609,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = -7 - 275 * t;
       rain.visible = t < 0.6;
       scene.fog.density = 0.0014 - 0.0012 * t;
-      skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(new T.Color('#192a55'), t);
+      skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
       starfield.material.opacity = 0.2 + 0.55 * t;
       earthHorizon.visible = t > 0.35;
       earthMat.uniforms.fade.value = T.MathUtils.clamp((t - 0.35) / 0.5, 0, 0.88);
