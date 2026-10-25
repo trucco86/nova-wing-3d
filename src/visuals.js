@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { launchOrbitReady } from './flight.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -608,16 +609,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       near.forEach((o) => (o.position.y = -230 * t));
       ground.position.y = -7 - 275 * t;
       // On reaching orbit, don't leave a giant city plain in front of the planet.
-      ground.visible = t < 0.7;
-      city.visible = cityFar.visible = t < 0.78;
-      near.forEach((o) => (o.visible = t < 0.8));
-      rain.visible = t < 0.6;
-      moon.visible = atmosphere.visible = t < 0.65;
+      // Urban scenery and the planetary horizon are mutually exclusive.
+      const orbital = launchOrbitReady(progress);
+      ground.visible = !orbital;
+      city.visible = cityFar.visible = !orbital;
+      near.forEach((o) => (o.visible = !orbital));
+      rain.visible = !orbital && t < 0.6;
+      moon.visible = atmosphere.visible = !orbital;
       scene.fog.density = 0.0014 - 0.0012 * t;
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
       starfield.material.opacity = 0.2 + 0.55 * t;
-      earthHorizon.visible = t > 0.35;
-      earthMat.uniforms.fade.value = T.MathUtils.clamp((t - 0.35) / 0.5, 0, 0.88);
+      earthHorizon.visible = orbital;
+      earthMat.uniforms.fade.value = orbital ? T.MathUtils.clamp((t - 0.65) / 0.24, 0, 0.88) : 0;
     },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
