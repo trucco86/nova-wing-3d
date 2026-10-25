@@ -1,6 +1,7 @@
 # P0 — Ascensão Orbital: coerência de cenário e colisão
 
 ## Contratos de gameplay
+
 - O primeiro setor dura 85 s até a aparição do chefe (era 65 s), mantendo os 10 setores e saves legados.
 - Cidade, torres, solo e props próximos recuam e desaparecem antes da primeira renderização do planeta. Cidade/Terra não coexistem em nenhum quadro.
 - Caças aparecem acima do solo na fase urbana. Tanques e walkers são exclusivos do trecho terrestre. Túneis industriais não são gerados durante a ascensão orbital web.
@@ -9,6 +10,7 @@
 - Pausa, reinício, troca de fase, combos, combate contra chefe e plataformas nativas preservam os comportamentos previamente contratados.
 
 ## Gates antes de merge / promoção
+
 - Testes unitários para transição, duração, geometrias, aberturas e projéteis rápidos.
 - Browser desktop e mobile: capturas na cidade, transição e órbita, além de nave x parede, projéteis x obstáculos e ausência de erros WebGL.
 - Aprovação visual de usuário obrigatória, CI verde no SHA final e check de FPS/experiência. Sem publicação automática em HML/PROD.
