@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { reachBrowserBoss } from './orbital-journey.mjs';
+import {
+  reachBrowserBoss,
+  waitForBrowserArmoredFront,
+  aimAtBrowserFirstGenerator,
+  fireBrowserPrecision,
+} from './orbital-journey.mjs';
 
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
@@ -318,11 +323,10 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });
-  await page.evaluate(() => {
-    const fired = window.fixture.game.tacticalAction('precision');
-    if (!fired) throw new Error('Tactical precision was not available in boss combat');
-    window.fixture.advance(0.65);
-  });
+  await waitForBrowserArmoredFront(page);
+  const blocked = await fireBrowserPrecision(page);
+  expect(blocked.event.type).toBe('blocked');
+  expect(blocked.after.bossTargets[0].hp).toBe(blocked.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
   await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
@@ -335,11 +339,10 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await reachBrowserBoss(page, { bossAge: 5 });
-    await page.evaluate(() => {
-      if (!window.fixture.game.tacticalAction('precision'))
-        throw new Error('Precision action unavailable during boss combat');
-      window.fixture.advance(0.65);
-    });
+    await waitForBrowserArmoredFront(page);
+    const portraitBlocked = await fireBrowserPrecision(page);
+    expect(portraitBlocked.event.type).toBe('blocked');
+    expect(portraitBlocked.after.bossTargets[0].hp).toBe(portraitBlocked.before.bossTargets[0].hp);
     await expect(page.locator('#game')).toBeVisible();
     await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
     await expect(page.locator('#hitFeedback')).toBeVisible();
@@ -347,32 +350,12 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   }
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });
-  await page.evaluate(() => {
-    const game = window.fixture.game;
-    for (let i = 0; i < 180; i++) {
-      const state = game.snapshot();
-      const weak = state.bossTargets[0];
-      const delta = Math.atan2(
-        Math.sin(weak.angle - state.strategy.orbitAngle),
-        Math.cos(weak.angle - state.strategy.orbitAngle),
-      );
-      if (weak.open && Math.abs(delta) < 0.35 && state.bossAge >= 3) break;
-      game.orbit(Math.sign(delta));
-      window.fixture.advance(0.05);
-    }
-    game.orbit(0);
-    if (!game.snapshot().bossTargets[0].open)
-      throw new Error('Weak point never opened during orbital maneuver');
-    if (!game.tacticalAction('precision'))
-      throw new Error('Precision action unavailable for visible weak point');
-    for (let i = 0; i < 15 && game.snapshot().bossTargets[0].hp === 180; i++)
-      window.fixture.advance(0.1);
-  });
+  await aimAtBrowserFirstGenerator(page);
+  const confirmed = await fireBrowserPrecision(page);
+  expect(['boss', 'weak']).toContain(confirmed.event.type);
+  expect(confirmed.after.bossTargets[0].hp).toBeLessThan(confirmed.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toContainText(/ACERTO|PONTO FRACO/);
-  expect(await page.evaluate(() => window.fixture.game.snapshot().bossTargets[0].hp)).toBeLessThan(
-    180,
-  );
   await page.screenshot({ path: info.outputPath('confirmed-impact.png') });
   expect(errors).toEqual([]);
 });
