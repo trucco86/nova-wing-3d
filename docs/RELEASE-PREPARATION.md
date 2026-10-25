@@ -15,6 +15,7 @@ git status --short
 ```
 
 Run this **before committing a change to src/**, not after waiting for GitHub CI to fail. The helper:
+
 - Validates MAJOR.MINOR.PATCH and rejects downgrade.
 - Updates both Xcode configurations (`MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`) using the numeric formula used by `tests/ios.test.mjs`.
 - Synchronizes the root entries of `package-lock.json` without reinstalling dependencies.
