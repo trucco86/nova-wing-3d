@@ -46,9 +46,16 @@ test('fighter roles charge and attack while desktop and touch controls remain us
   });
   expect(sorted.every((n) => Number.isFinite(n) && n >= 0)).toBe(true);
   await page.evaluate(() => window.fixture.advance(5.2));
+  const nextWave = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(nextWave.targets.some((e) => e.role === 'interceptor')).toBe(true);
+  // The bomber is third in rotation, arriving a further fighter interval later.
+  await page.evaluate(() => {
+    for (let i = 0; i < 12; i++) {
+      window.fixture.game.collect('shield');
+      window.fixture.advance(0.5);
+    }
+  });
   const later = await page.evaluate(() => window.fixture.game.snapshot());
-  // Both follow-up roles still arrive, only with a deliberately gentler cadence.
-  expect(later.targets.some((e) => e.role === 'interceptor')).toBe(true);
   expect(later.targets.some((e) => e.role === 'bomber')).toBe(true);
   await page.screenshot({ path: info.outputPath('fighter-bomber.png') });
   expect(errors).toEqual([]);
