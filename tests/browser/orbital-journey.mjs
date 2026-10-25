@@ -42,10 +42,13 @@ export async function completeOrbitalLaunch(page) {
 
 export async function approachBrowserBoss(page, { secondsBefore = 7 } = {}) {
   await completeOrbitalLaunch(page);
-  await page.evaluate((secondsBefore) => {
-    const seconds = window.fixture.game.snapshot().seconds;
-    window.fixture.advance(Math.max(0, SECTORS[0].duration - secondsBefore - seconds));
-  }, secondsBefore);
+  await page.evaluate(
+    ({ secondsBefore, duration }) => {
+      const seconds = window.fixture.game.snapshot().seconds;
+      window.fixture.advance(Math.max(0, duration - secondsBefore - seconds));
+    },
+    { secondsBefore, duration: SECTORS[0].duration },
+  );
   const state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.boss).toBe(false);
   return state;
@@ -53,10 +56,13 @@ export async function approachBrowserBoss(page, { secondsBefore = 7 } = {}) {
 
 export async function reachBrowserBoss(page, { bossAge = 4 } = {}) {
   await completeOrbitalLaunch(page);
-  await page.evaluate((bossAge) => {
-    const seconds = window.fixture.game.snapshot().seconds;
-    window.fixture.advance(Math.max(0, SECTORS[0].duration + bossAge - seconds));
-  }, bossAge);
+  await page.evaluate(
+    ({ bossAge, duration }) => {
+      const seconds = window.fixture.game.snapshot().seconds;
+      window.fixture.advance(Math.max(0, duration + bossAge - seconds));
+    },
+    { bossAge, duration: SECTORS[0].duration },
+  );
   const state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.boss).toBe(true);
   return state;
