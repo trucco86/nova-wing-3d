@@ -317,9 +317,10 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.evaluate(() => window.fixture.advance(3));
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
   await page.goto('/__dynamic.html?sector=0');
+  await reachBrowserBoss(page, { bossAge: 5 });
   await page.evaluate(() => {
-    window.fixture.advance(88.1);
-    window.fixture.game.tacticalAction('precision');
+    const fired = window.fixture.game.tacticalAction('precision');
+    if (!fired) throw new Error('Tactical precision was not available in boss combat');
     window.fixture.advance(0.65);
   });
   await expect(page.locator('#hitFeedback')).toBeVisible();
