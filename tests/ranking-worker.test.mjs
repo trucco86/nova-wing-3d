@@ -26,10 +26,7 @@ test('ranking API is read-only and rejects self-declared scores', async () => {
 });
 
 test('unprovisioned D1 fails closed', async () => {
-  const res = await worker.fetch(
-    request('/v1/leaderboard?season=current'),
-    {},
-  );
+  const res = await worker.fetch(request('/v1/leaderboard?season=current'), {});
   assert.equal(res.status, 503);
   assert.deepEqual(await res.json(), { error: 'DATABASE_UNAVAILABLE' });
 });
@@ -58,20 +55,16 @@ test('leaderboard uses bound parameters without private fields', async () => {
       };
     },
   };
-  const res = await worker.fetch(
-    request('/v1/leaderboard?season=season-one&limit=5'),
-    { DB: db },
-  );
+  const res = await worker.fetch(request('/v1/leaderboard?season=season-one&limit=5'), { DB: db });
   assert.equal(res.status, 200);
   assert.deepEqual(parameters, ['season-one', 'verified', 5]);
   assert.ok(!statement.includes('email'));
   assert.ok(!statement.includes('SELECT *'));
   assert.equal((await res.json()).entries[0].nickname, 'Piloto');
 
-  const invalid = await worker.fetch(
-    request('/v1/leaderboard?season=foo%27%20OR%201%3D1'),
-    { DB: db },
-  );
+  const invalid = await worker.fetch(request('/v1/leaderboard?season=foo%27%20OR%201%3D1'), {
+    DB: db,
+  });
   assert.equal(invalid.status, 400);
 });
 
@@ -151,18 +144,27 @@ test('Firebase ID token verification checks signature and claims', async () => {
   );
   for (const bad of [
     await token({ alg: 'HS256', kid: 'test-key' }, claims),
-    await token({ alg: 'RS256', kid: 'test-key' }, {
-      ...claims,
-      aud: 'another-project',
-    }),
-    await token({ alg: 'RS256', kid: 'test-key' }, {
-      ...claims,
-      exp: now - 1,
-    }),
-    await token({ alg: 'RS256', kid: 'test-key' }, {
-      ...claims,
-      iss: 'invalid',
-    }),
+    await token(
+      { alg: 'RS256', kid: 'test-key' },
+      {
+        ...claims,
+        aud: 'another-project',
+      },
+    ),
+    await token(
+      { alg: 'RS256', kid: 'test-key' },
+      {
+        ...claims,
+        exp: now - 1,
+      },
+    ),
+    await token(
+      { alg: 'RS256', kid: 'test-key' },
+      {
+        ...claims,
+        iss: 'invalid',
+      },
+    ),
     valid.slice(0, -3) + 'abc',
     'not-a-jwt',
   ]) {
