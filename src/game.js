@@ -2053,7 +2053,8 @@ export function createGame({
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
       boostNeedsRelease = true;
-      message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
+      if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
+        message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     const energyBeforeBoost = energy;
@@ -2306,8 +2307,9 @@ export function createGame({
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
     ) {
+      // Orbital combat gets actual spacecraft, never ground robots floating in space.
       groundWave++;
-      enemy('hover-walker');
+      enemy('fighter');
       groundCd = 7.5;
     }
     if (
@@ -2315,7 +2317,7 @@ export function createGame({
       isGroundSector(current()) &&
       elapsed < current().duration &&
       groundCd <= 0 &&
-      (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
+      (!dynamicFlight || sectorIndex !== 0 || !orbitalLaunch)
     ) {
       groundWave++;
       enemy(groundWave % 2 ? 'tank' : 'walker');
@@ -2906,7 +2908,10 @@ export function createGame({
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
-      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
+      (sectorIndex !== 0 ||
+        !dynamicFlight ||
+        orbitalLaunch ||
+        orbitalLaunchSequence.snapshot().amount < 0.37)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
       const kinds = ['satellite', 'carrier', 'debris'];
