@@ -1,0 +1,30 @@
+name: Prepare P0 orbital projectile blocking (one-off)
+on:
+  push:
+    branches: [feat/p0-sector-flight-orbit-dev-20261025]
+    paths: ['.github/workflows/orbit-projectile-order-prepare-once.yml']
+permissions:
+  contents: write
+concurrency:
+  group: orbit-projectile-prepare
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write src/flight.js src/game.js tests/orbital-launch.test.mjs tests/browser/launch-orbit.spec.mjs
+      - run: npm run build
+      - run: npm run validate
+      - run: npm run build:check
+      - name: Commit generated build and remove one-off workflow
+        run: |
+          git rm .github/workflows/orbit-projectile-order-prepare-once.yml
+          git add src/flight.js src/game.js tests/orbital-launch.test.mjs tests/browser/launch-orbit.spec.mjs index.html
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(P0/orbit): validate obstacle-first projectile damage and web preview'
+          git push origin HEAD:refs/heads/feat/p0-sector-flight-orbit-dev-20261025
