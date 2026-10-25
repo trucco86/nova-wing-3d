@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+
+- Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
+- Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.
+- No primeiro subchefe, janelas sem novas ondas de caças/obstáculos e abertura com tiros menos densos.
+- Revisar testes, WebGL, controles desktop/mobile e ritmo de combate. **Sem homologação visual ou promoção.**
+
 ## 1.24.5 — Candidata de voo por setor e lançamento orbital (DEV)
 
 - Rotas determinísticas com curvas localizadas por fase; corredores retos para setores 3, 5, 8 e 10.
