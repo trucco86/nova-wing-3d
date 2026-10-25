@@ -14,7 +14,7 @@ function setup(t, opts) {
 }
 test('boss armor sustains combat across three stages even against extreme damage', (t) => {
   const h = setup(t);
-  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
+  reachSectorBoss(h, { bossAge: 0.15, dt: 0.1 });
   h.game.damageBoss(1e6);
   assert.equal(h.game.snapshot().bossParts, 2, 'arrival shields active');
   const phases = new Set();
