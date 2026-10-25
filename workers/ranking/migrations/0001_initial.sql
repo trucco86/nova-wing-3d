@@ -44,8 +44,8 @@ CREATE TABLE IF NOT EXISTS scores (
 
 CREATE TABLE IF NOT EXISTS leaderboard_entries (
   season_id TEXT NOT NULL REFERENCES seasons(season_id),
-  uid TEXT NOT NULL REFERENCES players(uid),
-  best_score_id TEXT NOT NULL REFERENCES scores(score_id),
+  uid TEXT NOT NULL REFERENCES players(uid) ON DELETE CASCADE,
+  best_score_id TEXT NOT NULL REFERENCES scores(score_id) ON DELETE CASCADE,
   PRIMARY KEY (season_id, uid)
 );
 
