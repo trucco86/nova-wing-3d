@@ -268,7 +268,32 @@ export function createFlyingRobot() {
   accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
-    const part = new T.Mesh(new T.BoxGeometry(radius * 1.6, radius * 1.7, radius * 1.55), material);
+    const width = radius * 1.6;
+    const height = radius * 1.7;
+    const depth = radius * 1.55;
+    const bevel = Math.min(width, height) * 0.18;
+    // Chamfered, extruded armor panels preserve the lightweight rig while
+    // replacing the rectangular toy-like torso and limbs with facets.
+    const outline = new T.Shape();
+    outline.moveTo(-width / 2 + bevel, -height / 2);
+    outline.lineTo(width / 2 - bevel, -height / 2);
+    outline.lineTo(width / 2, -height / 2 + bevel);
+    outline.lineTo(width / 2, height / 2 - bevel);
+    outline.lineTo(width / 2 - bevel, height / 2);
+    outline.lineTo(-width / 2 + bevel, height / 2);
+    outline.lineTo(-width / 2, height / 2 - bevel);
+    outline.lineTo(-width / 2, -height / 2 + bevel);
+    outline.closePath();
+    const geometry = new T.ExtrudeGeometry(outline, {
+      depth,
+      bevelEnabled: true,
+      bevelSize: 0.055,
+      bevelThickness: 0.055,
+      bevelSegments: 1,
+      steps: 1,
+    });
+    geometry.translate(0, 0, -depth / 2);
+    const part = new T.Mesh(geometry, material);
     part.position.set(x, y, z);
     part.scale.set(sx, sy, sz);
     robot.add(part);
@@ -287,6 +312,21 @@ export function createFlyingRobot() {
     robot.add(collar);
   }
   // Angular fighter-style chest, layered breastplate and recessed reactor.
+  const backArmor = plating(1.4, 0, 1.48, 1.08, 1.02, 1.08, 0.38, graphite);
+  backArmor.name = 'mech-rear-armor-facets';
+  const cranialCrest = new T.Mesh(new T.ConeGeometry(0.34, 1.25, 4), accent);
+  cranialCrest.name = 'mech-cranial-crest';
+  cranialCrest.position.set(0, 4.16, -0.13);
+  cranialCrest.rotation.y = Math.PI / 4;
+  robot.add(cranialCrest);
+  robot.add(box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02));
+  for (const side of [-1, 1]) {
+    const rearRidge = box(0.16, 1.73, 0.19, luminous, side * 0.92, 1.65, 1.65);
+    rearRidge.rotation.z = side * 0.18;
+    robot.add(rearRidge);
+    const sidePlating = plating(0.76, side * 1.19, 1.57, 1.02, 0.42, 1.0, 0.51);
+    sidePlating.rotation.z = side * 0.2;
+  }
   plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
   plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
   plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
@@ -310,10 +350,18 @@ export function createFlyingRobot() {
     shoulder.rotation.z = side * 0.28;
     const fin = plating(0.9, side * 2.45, 3.08, 0.62, 1.1, 0.22, 1.35, accent);
     fin.rotation.z = side * 0.36;
+    const shoulderBlade = new T.Mesh(new T.ConeGeometry(0.48, 1.6, 4), armor);
+    shoulderBlade.rotation.z = -side * 0.34;
+    shoulderBlade.rotation.y = Math.PI / 4;
+    shoulderBlade.position.set(side * 2.55, 3.85, 0.84);
+    robot.add(shoulderBlade);
     const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
     arm.attach(upperArm);
     const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
     arm.attach(gauntlet);
+    const cannonFin = box(0.32, 0.95, 0.65, armor, side * 2.14, -0.37, -0.84);
+    cannonFin.rotation.z = side * 0.24;
+    arm.attach(cannonFin);
     const forearmRail = box(0.16, 1.08, 0.14, accent, side * 1.9, -0.23, -1.23);
     arm.attach(forearmRail);
     const muzzle = plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
@@ -323,6 +371,11 @@ export function createFlyingRobot() {
     leg.attach(thigh);
     const shin = plating(0.7, side * 0.75, -3.5, -0.65, 0.72, 0.58, 1.25, graphite);
     leg.attach(shin);
+    const shinLight = box(0.16, 1.35, 0.17, luminous, side * 0.75, -3.25, 0.54);
+    leg.attach(shinLight);
+    const calfFin = plating(0.69, side * 1.13, -3.34, 0.4, 0.36, 1.1, 0.46, armor);
+    calfFin.rotation.z = side * 0.25;
+    leg.attach(calfFin);
     const knee = plating(0.48, side * 0.75, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
     leg.attach(knee);
     const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
@@ -364,6 +417,10 @@ export function createFlyingRobot() {
   const turbineRing = new T.Mesh(new T.TorusGeometry(0.58, 0.12, 10, 24), accent);
   turbineRing.position.set(0, 3.05, 2.55);
   robot.add(turbineRing);
+  const turbineHalo = halo('#56eaff', 2.1, 0.73);
+  turbineHalo.name = 'mech-turbine-halo';
+  turbineHalo.position.set(0, 3.05, 3.04);
+  robot.add(turbineHalo);
   const turbineCore = new T.Mesh(new T.CylinderGeometry(0.35, 0.4, 0.18, 20), luminous);
   turbineCore.rotation.x = Math.PI / 2;
   turbineCore.position.set(0, 3.05, 2.62);
