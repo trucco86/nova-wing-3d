@@ -62,6 +62,17 @@ function wing(points, m) {
   g.rotateX(Math.PI / 2);
   return new T.Mesh(g, m);
 }
+const SHARED_FIGHTER_WING = [
+  [1.3, -1.15],
+  [4.65, 0.8],
+  [4.12, 1.65],
+  [1.73, 0.82],
+];
+function sharedFighterWing(side, material) {
+  const mesh = wing(SHARED_FIGHTER_WING.map(([x, z]) => [side * x, z]), material);
+  mesh.userData.sharedWingProfile = 'fighter-v1';
+  return mesh;
+}
 function line(points, color = '#4bf6d8') {
   return new T.Line(
     new T.BufferGeometry().setFromPoints(points.map((p) => new T.Vector3(...p))),
@@ -254,7 +265,7 @@ export function createFlyingRobot() {
   accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
-    const part = new T.Mesh(new T.IcosahedronGeometry(radius, 0), material);
+    const part = new T.Mesh(new T.BoxGeometry(radius * 1.6, radius * 1.7, radius * 1.55), material);
     part.position.set(x, y, z);
     part.scale.set(sx, sy, sz);
     robot.add(part);
@@ -323,44 +334,23 @@ export function createFlyingRobot() {
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
   }
-  // High-shoulder, broad-span articulated wings derived from the starfighter.
-  // Geometry is planar in XY: wings read distinctly from rear, front and profile.
+  // The exact same mesh profile as the ship, rotated into the mecha back plane.
+  // No independent enlarged mecha wing geometry: transformation preserves identity.
   for (const side of [-1, 1]) {
-    const coordinates = [
-      [side * 1.05, 2.85],
-      [side * 2.05, 3.78],
-      [side * 5.75, 4.65],
-      [side * 4.85, 2.55],
-      [side * 3.3, 1.73],
-      [side * 1.42, 1.88],
-    ];
-    const outline = new T.Shape();
-    coordinates.forEach(([x, y], i) => (i ? outline.lineTo(x, y) : outline.moveTo(x, y)));
-    outline.closePath();
-    const wingPanel = new T.Mesh(
-      new T.ExtrudeGeometry(outline, { depth: 0.24, bevelEnabled: false }),
-      armor,
-    );
-    wingPanel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
-    wingPanel.position.z = 1.36;
-    robot.add(wingPanel);
-    const leadingEdge = line(
+    const panel = sharedFighterWing(side, armor);
+    panel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
+    panel.rotation.x = -Math.PI / 2;
+    panel.position.set(0, 2.2, 1.36);
+    robot.add(panel);
+    const trim = line(
       [
-        [side * 1.45, 3.05, 1.64],
-        [side * 2.23, 3.57, 1.64],
-        [side * 5.32, 4.37, 1.64],
+        [side * 1.65, 1.5, 1.65],
+        [side * 3.2, 2.45, 1.65],
+        [side * 4.1, 2.87, 1.65],
       ],
-      '#55e8ff',
+      '#66ebff',
     );
-    leadingEdge.name = side < 0 ? 'mech-wing-trim-left' : 'mech-wing-trim-right';
-    robot.add(leadingEdge);
-    const feather = box(0.15, 0.18, 2.9, graphite, side * 3.25, 2.8, 1.7);
-    feather.rotation.z = -side * 0.37;
-    feather.rotation.y = side * 0.2;
-    robot.add(feather);
-    const wingCore = box(0.22, 0.15, 1.28, accent, side * 1.67, 2.81, 1.7);
-    wingCore.rotation.z = -side * 0.28;
-    robot.add(wingCore);
+    robot.add(trim);
   }
   // Main turbine sits between the shoulder blades rather than low at the hips.
   const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
@@ -384,7 +374,7 @@ export function createFlyingRobot() {
   robot.add(turbineFlame);
   robot.userData.mechRig = { arms, legs, armMuzzles };
   robot.userData.mechPaint = { primary: armor, accent };
-  robot.scale.setScalar(1.03);
+  robot.scale.setScalar(0.94);
   return robot;
 }
 
@@ -423,15 +413,7 @@ export function createShipModule(model = 'nova7') {
   // Shared angular starfighter design language: recognizable aero-mecha geometry
   // while preserving each pilot's independent chassis and selected paint.
   for (const side of [-1, 1]) {
-    const strake = wing(
-      [
-        [side * 1.3, -1.15],
-        [side * 4.65, 0.8],
-        [side * 4.12, 1.65],
-        [side * 1.73, 0.82],
-      ],
-      shell,
-    );
+    const strake = sharedFighterWing(side, shell);
     strake.position.y = 0.21;
     g.add(strake);
     const vent = box(0.32, 0.15, 1.28, navy, side * 1.85, 0.35, 0.26);
