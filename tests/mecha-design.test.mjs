@@ -1,7 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createFlyingRobot, createShipModule, mechArmPitch } from '../src/visuals.js';
+import {
+  animateMechPower,
+  createFlyingRobot,
+  createShipModule,
+  mechArmPitch,
+  setFighterEvolution,
+} from '../src/visuals.js';
 
 test('flight mech uses wide dorsal wings and a turbine at shoulder height', () => {
   const robot = createFlyingRobot();
@@ -57,4 +63,30 @@ test('mecha wings reuse the exact fighter wing geometry rather than a larger rou
   const fighterPoints = fighterWing.geometry.attributes.position.array;
   assert.deepEqual(Array.from(mechaPoints), Array.from(fighterPoints));
   assert.ok(robot.scale.x <= 1, 'mecha chassis must not be artificially enlarged');
+});
+
+test('turbine has visible moving rotor and boost lengthens propulsion plume', () => {
+  const robot = createFlyingRobot();
+  const rotor = robot.getObjectByName('mech-turbine-rotor');
+  assert.ok(rotor, 'visible rotating fan must exist');
+  assert.equal(rotor.children.length, 5, 'fan blades must make spin visible');
+  animateMechPower(robot, 0.2, false, 0);
+  const idleRotation = rotor.rotation.z;
+  const idleFlame = robot.userData.mechRig.turbineFlame.scale.y;
+  animateMechPower(robot, 0.4, true, 9);
+  assert.notEqual(rotor.rotation.z, idleRotation);
+  assert.ok(robot.userData.mechRig.turbineFlame.scale.y > idleFlame);
+});
+
+test('mech and fighter progressively reveal larger neon panels as XP stage rises', () => {
+  const robot = createFlyingRobot();
+  const ship = createShipModule('nova7');
+  animateMechPower(robot, 0, false, 0);
+  setFighterEvolution(ship, 0);
+  assert.equal(robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length, 2);
+  assert.equal(ship.userData.progressionNeons.filter((part) => part.mesh.visible).length, 2);
+  animateMechPower(robot, 1, false, 6);
+  setFighterEvolution(ship, 6);
+  assert.equal(robot.userData.mechRig.progressionNeons.filter((part) => part.mesh.visible).length, 6);
+  assert.equal(ship.userData.progressionNeons.filter((part) => part.mesh.visible).length, 6);
 });
