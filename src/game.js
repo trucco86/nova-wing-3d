@@ -52,6 +52,7 @@ import {
   launchAmount,
   launchOrbitReady,
   projectileHitsObstacle,
+  projectileHitsApproachingObstacle,
 } from './flight.js';
 import {
   createGroundEnemy,
@@ -2633,6 +2634,12 @@ export function createGame({
         bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
       }
     } else $('attackWarning').textContent = '';
+    // Resolve walls before damage. At this point obstacles are still at their
+    // previous-frame positions; both projectile and obstacle are swept together.
+    const projectileOccluded = (from, to) =>
+      obstacles.some(({ o }) =>
+        projectileHitsApproachingObstacle(from, to, o, speed * dt),
+      );
     for (let b of shots) {
       const previousShot = b.o.position.clone();
       b.previousPosition = previousShot;
@@ -2654,6 +2661,12 @@ export function createGame({
       if (b.v) b.o.position.addScaledVector(b.v, dt);
       else b.o.position.z -= dt * 190;
       b.life -= dt;
+      if (b.life > 0 && projectileOccluded(previousShot, b.o.position)) {
+        b.life = 0;
+        explode(b.o.position, 3, 0xffbf75);
+        if (dynamicFlight) cue('armorHit');
+        continue;
+      }
       for (let e of enemies) {
         if (
           !e.dead &&
@@ -2741,6 +2754,11 @@ export function createGame({
         );
       b.o.position.addScaledVector(b.v, dt * (stasis > 0 ? 0.3 : 1));
       b.life -= dt;
+      if (b.life > 0 && projectileOccluded(from, b.o.position)) {
+        b.life = 0;
+        explode(b.o.position, 3, 0xffbf75);
+        continue;
+      }
       if (
         podMeshes.some((p) =>
           crossesSolid(from, b.o.position, p.position, new T.Vector3(1.6, 1.6, 1.6), 0.5),
