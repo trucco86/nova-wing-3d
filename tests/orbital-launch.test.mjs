@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
-import { SECTORS } from '../src/campaign.js';
 import { ORBITAL_LAUNCH, createOrbitalLaunch } from '../src/orbital-launch.js';
 import { createObstacle } from '../src/encounters.js';
 import {
