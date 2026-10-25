@@ -120,8 +120,10 @@ test('urban hazards stop after BOOST-powered orbit; space hazards replace them',
     h.game.collect('shield');
     h.advance(1);
     const state = h.game.snapshot();
-    if (state.orbitalLaunch.amount > 0.7 &&
-        state.obstacleKinds.some((k) => ['carrier', 'satellite', 'debris'].includes(k)))
+    if (
+      state.orbitalLaunch.amount > 0.7 &&
+      state.obstacleKinds.some((k) => ['carrier', 'satellite', 'debris'].includes(k))
+    )
       spaceObjectSeen = true;
     assert.equal(state.tunnel, false, 'industrial tunnel is not part of orbital ascent');
   }

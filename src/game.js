@@ -1142,7 +1142,10 @@ export function createGame({
     const subbossTactic = dynamicFlight && kind === 'subboss' ? subbossProfile(sectorIndex) : null;
     if (tacticalFighter) fighterSerial++;
     let o = ground
-      ? createGroundEnemy(airborneRobot ? 'walker' : kind, dynamicFlight ? (groundWave + sectorIndex) % 3 : -1)
+      ? createGroundEnemy(
+          airborneRobot ? 'walker' : kind,
+          dynamicFlight ? (groundWave + sectorIndex) % 3 : -1,
+        )
       : kind === 'subboss'
         ? createSubboss(sectorIndex)
         : fighter(
@@ -1170,11 +1173,11 @@ export function createGame({
         ? rnd(9, 23)
         : ground
           ? -7
-        : kind === 'subboss'
-          ? 10
-          : dynamicFlight && sectorIndex === 0
-            ? rnd(12, 24)
-            : rnd(1, 19);
+          : kind === 'subboss'
+            ? 10
+            : dynamicFlight && sectorIndex === 0
+              ? rnd(12, 24)
+              : rnd(1, 19);
     o.position.set(x, y, -200);
     if (airborneRobot) {
       const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
@@ -2073,8 +2076,7 @@ export function createGame({
           message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
         else if (launchState.phase === 'atmosphere')
           message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA');
-        else if (launchState.phase === 'orbit')
-          message('ÓRBITA ALCANÇADA · TERRA À VISTA');
+        else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA');
       }
     }
     const profileSpeed = dynamicFlight
@@ -2183,8 +2185,13 @@ export function createGame({
     }
     if (dynamicFlight) {
       const launchState = orbitalLaunchSequence.snapshot();
-      route = routeAt(sectorIndex, elapsed, current().duration, !!boss,
-        sectorIndex === 0 ? launchState.amount : 0);
+      route = routeAt(
+        sectorIndex,
+        elapsed,
+        current().duration,
+        !!boss,
+        sectorIndex === 0 ? launchState.amount : 0,
+      );
       if (sectorIndex === 0 && !boss) {
         route.label =
           launchState.phase === 'boost'
@@ -2469,9 +2476,9 @@ export function createGame({
           ? e.y + Math.sin(e.age * 2.1 + e.phase) * 2.8
           : e.ground
             ? -7
-          : e.kind === 'base'
-            ? -1
-            : e.y + Math.sin(elapsed + e.phase) * 2;
+            : e.kind === 'base'
+              ? -1
+              : e.y + Math.sin(elapsed + e.phase) * 2;
       }
       if (e.airborneRobot) {
         e.o.rotation.z = Math.sin(e.age * 0.85 + e.phase) * 0.12;

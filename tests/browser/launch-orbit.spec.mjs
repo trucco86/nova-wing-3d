@@ -55,8 +55,7 @@ test('space obstacles arrive only after the BOOST-powered urban exit', async ({ 
       window.fixture.advance(1);
       return window.fixture.game.snapshot();
     });
-    if (state.obstacleKinds.some((kind) => ['gantry', 'reactor'].includes(kind)))
-      citySeen = true;
+    if (state.obstacleKinds.some((kind) => ['gantry', 'reactor'].includes(kind))) citySeen = true;
   }
   expect(citySeen).toBe(true);
   await page.keyboard.down('Shift');
@@ -84,9 +83,9 @@ test('space obstacles arrive only after the BOOST-powered urban exit', async ({ 
   expect(spaceSeen).toBe(true);
   const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
   expect(snapshot.orbitalLaunch.amount).toBeGreaterThan(0.68);
-  expect(snapshot.obstacleKinds.some((kind) => ['gantry', 'reactor', 'tunnel'].includes(kind))).toBe(
-    false,
-  );
+  expect(
+    snapshot.obstacleKinds.some((kind) => ['gantry', 'reactor', 'tunnel'].includes(kind)),
+  ).toBe(false);
   await page.screenshot({ path: info.outputPath('launch-space-obstacles.png') });
   expect(errors).toEqual([]);
 });

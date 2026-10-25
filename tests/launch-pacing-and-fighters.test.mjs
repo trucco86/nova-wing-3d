@@ -10,7 +10,13 @@ test('launch keeps the extended city mission and does not reveal orbit before BO
   const duration = SECTORS[0].duration;
   assert.ok(duration >= 120, 'first mission needs a longer playable route');
   const launch = createOrbitalLaunch();
-  launch.advance({ seconds: duration * 0.85, dt: 0.05, boosting: false, chargeBefore: 100, chargeAfter: 100 });
+  launch.advance({
+    seconds: duration * 0.85,
+    dt: 0.05,
+    boosting: false,
+    chargeBefore: 100,
+    chargeAfter: 100,
+  });
   assert.equal(launch.snapshot().amount, 0, 'elapsed time alone cannot reveal the planet');
   assert.equal(launchOrbitReady(launch.snapshot().amount), false);
   assert.equal(routeAt(0, duration * 0.85, duration).ascent, 0);
@@ -31,14 +37,20 @@ test('enemy fighter archetypes have distinct detailed meshes', () => {
   const profiles = shapes.map((shape) => {
     const detail = shape.children.at(-1);
     return detail.children
-      .map((node) => [
-        node.type,
-        node.geometry?.type ?? 'none',
-        node.position.x.toFixed(2),
-        node.position.y.toFixed(2),
-        node.position.z.toFixed(2),
-      ].join(':'))
+      .map((node) =>
+        [
+          node.type,
+          node.geometry?.type ?? 'none',
+          node.position.x.toFixed(2),
+          node.position.y.toFixed(2),
+          node.position.z.toFixed(2),
+        ].join(':'),
+      )
       .join('|');
   });
-  assert.equal(new Set(profiles).size, 3, 'fighter variants should differ in silhouette and detail');
+  assert.equal(
+    new Set(profiles).size,
+    3,
+    'fighter variants should differ in silhouette and detail',
+  );
 });
