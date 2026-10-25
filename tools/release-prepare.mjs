@@ -31,7 +31,10 @@ export function releasePlan(version, current) {
   if (!Number.isSafeInteger(buildNumber)) throw new Error('Invalid iOS build number');
   const iosProject = current.iosProject
     .replace(/MARKETING_VERSION = [0-9.]+;/g, 'MARKETING_VERSION = ' + version + ';')
-    .replace(/CURRENT_PROJECT_VERSION = [0-9]+;/g, 'CURRENT_PROJECT_VERSION = ' + buildNumber + ';');
+    .replace(
+      /CURRENT_PROJECT_VERSION = [0-9]+;/g,
+      'CURRENT_PROJECT_VERSION = ' + buildNumber + ';',
+    );
   if (!iosProject.includes('MARKETING_VERSION = ' + version + ';')) {
     throw new Error('Missing iOS marketing version in Xcode project');
   }
@@ -93,8 +96,6 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status || 1);
   console.log(
-    'Release ' +
-      version +
-      ' prepared. Review changelog/release notes and run npm run validate.',
+    'Release ' + version + ' prepared. Review changelog/release notes and run npm run validate.',
   );
 }
