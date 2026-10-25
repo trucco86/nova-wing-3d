@@ -74,12 +74,13 @@ test('shots cannot hurt targets behind solid obstacles before obstacles advance'
   );
 });
 
-test('the city has industrial hazards and orbit has spatial hazards, not floating gantries', (t) => {
+test('city hazards stop at launch and no extra obstacles spawn during first subboss', (t) => {
   const h = harness({ spawnEncounters: true });
   t.after(() => h.close());
   h.game.start();
   let cityObjectSeen = false;
-  let spaceObjectSeen = false;
+  let subbossSeen = false;
+  let orbitalCompletionSeen = false;
   for (let i = 0; i < 74; i++) {
     h.game.collect('shield');
     if (i === 23) h.key('ShiftLeft');
@@ -88,12 +89,17 @@ test('the city has industrial hazards and orbit has spatial hazards, not floatin
     const state = h.game.snapshot();
     if (i < 35 && state.obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)))
       cityObjectSeen = true;
-    if (i >= 60 && state.obstacleKinds.some((k) => ['carrier', 'satellite', 'debris'].includes(k)))
-      spaceObjectSeen = true;
+    if (state.encounterKinds.includes('subboss')) subbossSeen = true;
+    if (state.orbitalLaunch.complete) orbitalCompletionSeen = true;
+    if (i >= 60 && state.encounterKinds.includes('subboss')) {
+      assert.equal(state.obstacleKinds.length, 0, 'no competing obstacle while subboss is alive');
+    }
     assert.equal(state.tunnel, false, 'industrial tunnel is not part of orbital ascent');
   }
   assert.ok(cityObjectSeen, 'urban hazards are retained in the city');
-  assert.ok(spaceObjectSeen, 'spacecraft and satellites replace urban hazards in orbit');
+  assert.ok(subbossSeen, 'the first subboss still spawns');
+  assert.ok(orbitalCompletionSeen, 'the boost-powered ascent completes');
+  // Space props resume once the subboss is defeated; the fight itself stays clear.
   assert.equal(
     h.game.snapshot().obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)),
     false,
