@@ -8,8 +8,18 @@ test('subboss reaches combat quickly and telegraphs its distinct attack', async 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&encounters=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(19.8));
-  const before = await page.evaluate(() => window.fixture.game.snapshot());
+  // Seek the real windup frame after the longer first-sector approach.
+  // The subboss now spawns after 22% of a 130-second level, not at 19.8s.
+  const before = await page.evaluate(() => {
+    for (let i = 0; i < 48; i++) {
+      window.fixture.game.collect('shield');
+      window.fixture.advance(1);
+      const state = window.fixture.game.snapshot();
+      const subboss = state.targets.find((enemy) => enemy.kind === 'subboss');
+      if (subboss?.charging && subboss.z > -100 && subboss.z < -75) return state;
+    }
+    return window.fixture.game.snapshot();
+  });
   const subboss = before.targets.find((enemy) => enemy.kind === 'subboss');
   expect(subboss).toMatchObject({
     tactic: 'strafe',
