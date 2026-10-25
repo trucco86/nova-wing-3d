@@ -72,9 +72,9 @@ test('first subboss has a quiet approach and readable opening fire', () => {
   const trigger = SECTORS[0].duration * 0.22;
   assert.equal(firstSubbossQuiet(0, trigger - 7, SECTORS[0].duration), false);
   assert.equal(firstSubbossQuiet(0, trigger - 4, SECTORS[0].duration), true);
-  assert.equal(firstSubbossQuiet(0, trigger + 30, SECTORS[0].duration, true), true);
-  assert.equal(firstSubbossQuiet(0, trigger + 30, SECTORS[0].duration, false), false);
-  assert.equal(firstSubbossQuiet(1, trigger, SECTORS[1].duration, true), false);
+  assert.equal(firstSubbossQuiet(0, trigger + 5, SECTORS[0].duration), true);
+  assert.equal(firstSubbossQuiet(0, trigger + 30, SECTORS[0].duration), false);
+  assert.equal(firstSubbossQuiet(1, trigger, SECTORS[1].duration), false);
   assert.equal(firstSubbossWarmup(0, 8), true);
   assert.equal(firstSubbossWarmup(0, 9), false);
   assert.equal(firstSubbossWarmup(1, 1), false);
