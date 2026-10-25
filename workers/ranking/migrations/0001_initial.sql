@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS seasons (
 
 CREATE TABLE IF NOT EXISTS runs (
   run_id TEXT PRIMARY KEY NOT NULL,
-  uid TEXT NOT NULL REFERENCES players(uid),
+  uid TEXT NOT NULL REFERENCES players(uid) ON DELETE CASCADE,
   season_id TEXT NOT NULL REFERENCES seasons(season_id),
   build_sha TEXT NOT NULL,
   nonce_hash TEXT NOT NULL UNIQUE,
@@ -31,8 +31,8 @@ CREATE TABLE IF NOT EXISTS runs (
 
 CREATE TABLE IF NOT EXISTS scores (
   score_id TEXT PRIMARY KEY NOT NULL,
-  run_id TEXT NOT NULL UNIQUE REFERENCES runs(run_id),
-  uid TEXT NOT NULL REFERENCES players(uid),
+  run_id TEXT NOT NULL UNIQUE REFERENCES runs(run_id) ON DELETE CASCADE,
+  uid TEXT NOT NULL REFERENCES players(uid) ON DELETE CASCADE,
   season_id TEXT NOT NULL REFERENCES seasons(season_id),
   points INTEGER NOT NULL CHECK (points >= 0),
   sector INTEGER NOT NULL CHECK (sector BETWEEN 1 AND 10),
@@ -44,10 +44,16 @@ CREATE TABLE IF NOT EXISTS scores (
 
 CREATE TABLE IF NOT EXISTS leaderboard_entries (
   season_id TEXT NOT NULL REFERENCES seasons(season_id),
-  uid TEXT NOT NULL REFERENCES players(uid),
-  best_score_id TEXT NOT NULL REFERENCES scores(score_id),
+  uid TEXT NOT NULL REFERENCES players(uid) ON DELETE CASCADE,
+  best_score_id TEXT NOT NULL REFERENCES scores(score_id) ON DELETE CASCADE,
   PRIMARY KEY (season_id, uid)
 );
 
 CREATE INDEX IF NOT EXISTS scores_by_season ON scores (season_id, points DESC, verified_at);
 CREATE INDEX IF NOT EXISTS runs_by_player ON runs (uid, started_at);
+
+-- Match the read-only Worker query's season + verified-score filtering.
+CREATE INDEX IF NOT EXISTS scores_verified_season
+  ON scores (season_id, verdict, points DESC, verified_at ASC);
+CREATE INDEX IF NOT EXISTS runs_status_by_player
+  ON runs (uid, status, expires_at);
