@@ -18,7 +18,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npx prettier --write tests/ranking-d1-schema.test.mjs
+      - run: npx prettier --write tests/ranking-d1-schema.test.mjs workers/ranking/SCHEMA-REVIEW.md
       - run: npm run validate
       - name: Commit formatted test and remove one-off workflow
         run: |
