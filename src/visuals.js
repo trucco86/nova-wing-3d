@@ -321,6 +321,8 @@ function enemyDetails(variant) {
           red,
         );
         g.add(blade, box(0.25, 0.4, 3, pink, side * 3.8, 0, -1.8));
+        g.add(box(0.28, 0.22, 3.8, glowMaterial('#ff547b', 2), side * 4.2, 0.3, -1.2));
+        g.add(box(0.65, 0.55, 2.6, black, side * 2.3, 0.55, -1.6));
       } else if (variant === 1) {
         g.add(box(1.2, 0.8, 4, navy, side * 2, 0, 0));
         for (let j = 0; j < 3; j++)
@@ -328,11 +330,15 @@ function enemyDetails(variant) {
         const dome = new T.Mesh(new T.SphereGeometry(0.7, 12, 8), pink);
         dome.position.set(side * 2, 0.4, 0.5);
         g.add(dome);
+        g.add(box(0.4, 0.3, 4.8, glowMaterial('#ffb36b', 2.1), side * 2.7, 0.52, 0));
+        g.add(box(1.4, 0.35, 1.6, black, side * 2.4, 0.85, -0.9));
       } else {
         const ring = new T.Mesh(new T.TorusGeometry(1.2, 0.25, 8, 16), steel);
         ring.position.set(side * 3.2, 0, 1);
         g.add(ring);
         g.add(box(0.3, 0.3, 5, pink, side * 3.2, 0, -1.5));
+        g.add(box(0.45, 0.45, 3.5, glowMaterial('#a76bff', 2.3), side * 2.3, 0.5, -1.6));
+        g.add(box(0.9, 0.4, 1.5, steel, side * 4, 0.5, 1));
       }
     }
     variants.set(variant, g);
