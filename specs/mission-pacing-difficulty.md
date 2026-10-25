@@ -4,7 +4,7 @@
 
 - Todas as dez fases recebem aproximadamente 10–17% mais duração, sem mudar seu número, ordem, checkpoints e narrativa.
 - A ascensão cidade–órbita na fase 1 continua subordinada ao boost: o usuário precisa esgotar a energia efetivamente, e a saída da atmosfera mantém seu percurso cinematográfico gradual. O tempo da fase não pode antecipar a órbita ou o chefe.
-- Durante os seis segundos anteriores ao primeiro subchefe, enquanto ele existir e por um breve intervalo após sua chegada, não entram novas ondas de caças nem obstáculos. O jogador pode se concentrar em reconhecer seus ataques.
+- Durante os seis segundos anteriores ao primeiro subchefe, e pelos nove segundos iniciais de seu encontro, não entram novas ondas de caças nem obstáculos. O jogador pode se concentrar em reconhecer seus ataques.
 - Durante os nove primeiros segundos do subchefe 1, seus ataques são telegráficos e menos numerosos. A dificuldade volta a crescer durante o combate; os outros subchefes mantêm seus padrões.
 - Options permite selecionar Fácil, Normal e Difícil. Normal é sempre a seleção de **início de sessão**; a alteração manual vale durante a sessão e não é gravada, diferentemente das outras preferências.
 - Fácil: dano ao jogador 70%, frequência de caças/obstáculos reduzida e recarga adversária maior.
