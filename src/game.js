@@ -62,6 +62,13 @@ import {
 } from './encounters.js';
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
+import {
+  difficultyProfile,
+  fighterInterval,
+  obstacleInterval,
+  firstSubbossQuiet,
+  firstSubbossWarmup,
+} from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
@@ -960,7 +967,8 @@ export function createGame({
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
-    hp = Math.max(0, hp - d);
+    const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
+    hp = Math.max(0, hp - receivedDamage);
     if (settings.vibration) window.navigator?.vibrate?.(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
@@ -1633,6 +1641,7 @@ export function createGame({
     for (const [id, key] of [
       ['settingsTitle', 'options'],
       ['labelLanguage', 'language'],
+      ['labelDifficulty', 'difficulty'],
       ['labelMaster', 'master'],
       ['labelMusic', 'music'],
       ['labelSfx', 'effects'],
@@ -1656,8 +1665,13 @@ export function createGame({
     $('continue').textContent = uiText(settings.language, 'continue') + ' ↗';
     $('watchIntro').textContent = '▶ ' + uiText(settings.language, 'watch');
     $('criticalWarning').textContent = uiText(settings.language, 'critical');
+    for (const mode of ['easy', 'normal', 'hard']) {
+      const option = Array.from($('settingDifficulty').options ?? []).find((item) => item.value === mode);
+      if (option) option.textContent = uiText(settings.language, mode);
+    }
     for (const [key, id] of [
       ['language', 'settingLanguage'],
+      ['difficulty', 'settingDifficulty'],
       ['master', 'settingMaster'],
       ['music', 'settingMusic'],
       ['sfx', 'settingSfx'],
@@ -1789,6 +1803,7 @@ export function createGame({
   $('pauseConfirmOk').onclick = confirmPauseAction;
   for (const [key, id] of [
     ['language', 'settingLanguage'],
+    ['difficulty', 'settingDifficulty'],
     ['master', 'settingMaster'],
     ['music', 'settingMusic'],
     ['sfx', 'settingSfx'],
@@ -2276,9 +2291,24 @@ export function createGame({
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
     spawnCd -= dt;
-    if (spawnEncounters && elapsed < current().duration && spawnCd <= 0) {
-      for (let i = 0; i < 2 + Math.floor(sectorIndex / 4); i++) enemy();
-      spawnCd = 3.4 - sectorIndex * 0.12;
+    const quietFirstSubboss =
+      dynamicFlight &&
+      firstSubbossQuiet(
+        sectorIndex,
+        elapsed,
+        current().duration,
+        enemies.some((e) => !e.dead && e.kind === 'subboss'),
+      );
+    if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
+    if (spawnEncounters && elapsed < current().duration && spawnCd <= 0 && !quietFirstSubboss) {
+      const count =
+        dynamicFlight && sectorIndex === 0
+          ? settings.difficulty === 'hard' ? 2 : 1
+          : 2 + Math.floor(sectorIndex / 4);
+      for (let i = 0; i < count; i++) enemy();
+      spawnCd = dynamicFlight
+        ? fighterInterval(sectorIndex, settings.difficulty)
+        : 3.4 - sectorIndex * 0.12;
     }
     if (spawnEncounters && !subDone && elapsed > current().duration * 0.22) {
       subDone = true;
@@ -2509,18 +2539,22 @@ export function createGame({
       if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
       e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
-        for (const offset of e.role
-          ? fighterAimOffsets(e.role)
-          : e.subbossTactic
-            ? e.subbossTactic.aim
-            : [0])
+        const introductorySubboss = dynamicFlight && e.kind === 'subboss' &&
+          firstSubbossWarmup(sectorIndex, e.age);
+        for (const offset of introductorySubboss
+          ? [0]
+          : e.role
+            ? fighterAimOffsets(e.role)
+            : e.subbossTactic
+              ? e.subbossTactic.aim
+              : [0])
           bullet(
             e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
             player.position.clone().add(new T.Vector3(offset, 0, 0)),
             e.subbossTactic?.spell ?? '',
           );
         if (e.attackGlow) e.attackGlow.visible = false;
-        if (e.kind === 'subboss')
+        if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
             sectorIndex,
             elapsed,
@@ -2533,13 +2567,13 @@ export function createGame({
               e.subbossTactic?.spell ?? '',
             );
         e.cd =
-          e.kind === 'subboss'
+          (e.kind === 'subboss'
             ? dynamicFlight
-              ? subbossCooldown(sectorIndex, e.combatPhase)
+              ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
               : 1.5
             : e.role
               ? 1.8
-              : 2.3;
+              : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
         crossesSolid(
@@ -2906,6 +2940,7 @@ export function createGame({
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
+      !quietFirstSubboss &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
@@ -2923,7 +2958,7 @@ export function createGame({
       );
       scene.add(o);
       obstacles.push({ o, life: 1 });
-      obstacleCd = 8;
+      obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
     }
     for (const obstacle of obstacles) {
       const travel = speed * dt;
