@@ -2306,12 +2306,7 @@ export function createGame({
     spawnCd -= dt;
     const quietFirstSubboss =
       dynamicFlight &&
-      firstSubbossQuiet(
-        sectorIndex,
-        elapsed,
-        current().duration,
-        enemies.some((e) => !e.dead && e.kind === 'subboss'),
-      );
+      firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (spawnEncounters && elapsed < current().duration && spawnCd <= 0 && !quietFirstSubboss) {
       const count =
