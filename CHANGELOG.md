@@ -8,7 +8,6 @@
 - Escopo intencionalmente isolado sobre produção 1.24.1; não incorpora DEV, login, ranking, ascensão orbital ou novo visual do robô.
 - Candidata não homologada: release condicionada a CI, validação visual, HML e aceite.
 
-
 ## 1.24.1 — Protótipo de transformação robô para testes web
 
 - Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.
