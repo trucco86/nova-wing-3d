@@ -49,11 +49,11 @@ import {
 import {
   createFlightCamera,
   crossesSolid,
-  launchAmount,
   launchOrbitReady,
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
+import { createOrbitalLaunch } from './orbital-launch.js';
 import {
   createGroundEnemy,
   animateGroundEnemy,
@@ -162,6 +162,7 @@ export function createGame({
   }
   $('cameraView').hidden = !dynamicFlight;
   $('cameraView').onclick = cycleCamera;
+  const orbitalLaunchSequence = createOrbitalLaunch();
   let route = routeAt(0, 0, SECTORS[0].duration);
   let arcade = null,
     arcadeDone = false;
@@ -720,6 +721,7 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector() {
+    orbitalLaunchSequence.reset();
     arcade = null;
     arcadeDone = false;
     $('arcadePanel').hidden = true;
@@ -2054,7 +2056,26 @@ export function createGame({
       message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    const energyBeforeBoost = energy;
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
+    if (dynamicFlight && sectorIndex === 0) {
+      const beforeLaunch = orbitalLaunchSequence.snapshot().phase;
+      const launchState = orbitalLaunchSequence.advance({
+        seconds: elapsed,
+        dt,
+        boosting,
+        chargeBefore: energyBeforeBoost,
+        chargeAfter: energy,
+      });
+      if (launchState.phase !== beforeLaunch) {
+        if (launchState.phase === 'boost')
+          message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
+        else if (launchState.phase === 'atmosphere')
+          message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA');
+        else if (launchState.phase === 'orbit')
+          message('ÓRBITA ALCANÇADA · TERRA À VISTA');
+      }
+    }
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed *
         (1 + activeShip().stats.agility * 0.08) *
@@ -2140,6 +2161,10 @@ export function createGame({
     if (state !== 'playing') return;
     elapsed += dt;
     totalTime += dt;
+    // The first boss cannot begin while the pilot remains in the city or
+    // inside the long post-boost climb. Keep the flight playable meanwhile.
+    if (dynamicFlight && sectorIndex === 0 && !orbitalLaunchSequence.snapshot().complete)
+      elapsed = Math.min(elapsed, current().duration - 7);
     if (
       dynamicFlight &&
       spawnEncounters &&
@@ -2156,17 +2181,28 @@ export function createGame({
       return;
     }
     if (dynamicFlight) {
-      route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
+      const launchState = orbitalLaunchSequence.snapshot();
+      route = routeAt(sectorIndex, elapsed, current().duration, !!boss,
+        sectorIndex === 0 ? launchState.amount : 0);
+      if (sectorIndex === 0 && !boss) {
+        route.label =
+          launchState.phase === 'boost'
+            ? 'SEGURE BOOST PARA SUBIR'
+            : launchState.phase === 'atmosphere'
+              ? 'ATRAVESSANDO A ATMOSFERA'
+              : launchState.phase === 'orbit'
+                ? 'ÓRBITA TERRESTRE'
+                : 'ROTA DE APROXIMAÇÃO';
+      }
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
-      // Sector 1 begins above the city and gradually leaves the atmosphere.
-      world.setLaunchAscent(launchAmount(elapsed, current().duration), sectorIndex === 0);
+      world.setLaunchAscent(launchState.amount, sectorIndex === 0);
       $('routeLabel').textContent = route.label;
     }
     const orbitalLaunch =
       dynamicFlight &&
       sectorIndex === 0 &&
-      launchOrbitReady(launchAmount(elapsed, current().duration));
+      launchOrbitReady(orbitalLaunchSequence.snapshot().amount);
     shotCd -= dt;
     if (dynamicFlight) {
       tacticEnergy = chargeTactics(
@@ -3152,6 +3188,7 @@ export function createGame({
       cameraMode,
       playerVisible: player.visible,
       route: { ...route },
+      orbitalLaunch: orbitalLaunchSequence.snapshot(),
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
