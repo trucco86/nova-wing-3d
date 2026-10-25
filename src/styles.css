@@ -4174,3 +4174,11 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
 body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
 }
+
+/* P0 touch ergonomics: landscape overrides must preserve 60px targets. */
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  body.in-mission #touch .actions button:not(#robotTouch):not(#fireTouch) {
+    height: 60px;
+    min-height: 60px;
+  }
+}
