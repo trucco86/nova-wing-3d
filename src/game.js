@@ -197,14 +197,12 @@ export function createGame({
   const mechPodMounts = [];
   let robotCooldown = 0;
   let robotTransition = 0;
-  let robotTransformDirection = 1;
   let robotFireKick = 0;
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = 0.7;
-    robotTransformDirection = robotMode ? -1 : 1;
     robotMode = !robotMode;
     robot.visible = robotMode;
     shipModule.visible = !robotMode;
@@ -1132,7 +1130,7 @@ export function createGame({
     o.position.copy(player.position);
     if (robotMode && !charged) {
       // Project alternating muzzle flashes from the mech's arm cannons.
-      const side = x < 0 ? -1 : x > 0 ? 1 : (shots.length % 2 ? -1 : 1);
+      const side = x < 0 ? -1 : x > 0 ? 1 : shots.length % 2 ? -1 : 1;
       o.position.x += side * 1.9 + x * 0.2;
       o.position.y -= 0.45;
       o.position.z -= 2.2;
@@ -2078,8 +2076,7 @@ export function createGame({
       robot.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.18;
     } else if (robotTransition > 0) {
       // Returning to ship: spin the ship silhouette as the panels fold away.
-      shipModule.rotation.z =
-        Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.22;
+      shipModule.rotation.z = Math.sin(transformProgress * Math.PI * 2) * transformProgress * 0.22;
     } else {
       shipModule.rotation.z = 0;
     }
