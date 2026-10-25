@@ -21,12 +21,15 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   world.setLaunchAscent(0.8, true);
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
+  assert.equal(city.visible, false, 'city should no longer occlude the orbital horizon');
+  assert.equal(ground.visible, false, 'flat ground must not extend into space');
   assert.ok(scene.fog.density < 0.0006, 'launch reduces atmosphere fog');
   assert.equal(earth.visible, true, 'planetary horizon becomes visible in orbit');
   assert.ok(earth.material.uniforms.fade.value > 0.3);
   world.setSector(SECTORS[1]);
   assert.equal(city.position.y, 0, 'new sector resets city displacement');
   assert.equal(ground.position.y, -7);
+  assert.equal(ground.visible, true, 'new ocean sector restores its ground');
   assert.equal(earth.visible, false, 'the launch horizon is exclusive to sector 1');
   assert.equal(earth.material.uniforms.fade.value, 0);
 });
