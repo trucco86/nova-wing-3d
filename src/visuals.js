@@ -245,12 +245,24 @@ export function createFlyingRobot() {
   accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
-    const part = new T.Mesh(new T.IcosahedronGeometry(radius, 1), material);
+    const part = new T.Mesh(new T.IcosahedronGeometry(radius, 0), material);
     part.position.set(x, y, z);
     part.scale.set(sx, sy, sz);
     robot.add(part);
     return part;
   };
+  // Sharper, layered hard-surface panels: no soft spherical hero silhouette.
+  const spine = box(0.3, 2.9, 0.2, graphite, 0, 1.72, 0.92);
+  spine.name = 'mech-mechanical-spine';
+  robot.add(spine);
+  for (const side of [-1, 1]) {
+    const chestCut = box(0.15, 1.2, 0.16, luminous, side * 0.83, 1.36, -0.92);
+    chestCut.rotation.z = side * 0.35;
+    robot.add(chestCut);
+    const collar = box(0.54, 0.22, 0.72, armor, side * 0.93, 2.63, -0.24);
+    collar.rotation.z = side * 0.28;
+    robot.add(collar);
+  }
   // Angular fighter-style chest, layered breastplate and recessed reactor.
   plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
   plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
@@ -275,10 +287,12 @@ export function createFlyingRobot() {
     shoulder.rotation.z = side * 0.28;
     const fin = plating(0.9, side * 2.45, 3.08, 0.62, 1.1, 0.22, 1.35, accent);
     fin.rotation.z = side * 0.36;
-    const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.62, 1.7, 0.68);
+    const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
     arm.attach(upperArm);
     const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
     arm.attach(gauntlet);
+    const forearmRail = box(0.16, 1.08, 0.14, accent, side * 1.9, -0.23, -1.23);
+    arm.attach(forearmRail);
     const muzzle = plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
     arm.attach(muzzle);
     armMuzzles.push(muzzle);
@@ -290,44 +304,74 @@ export function createFlyingRobot() {
     leg.attach(knee);
     const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
     nozzle.rotation.x = Math.PI / 2;
-    nozzle.position.set(side * 1.05, 0.75, 1.5);
+    nozzle.position.set(side * 1.4, 2.23, 1.85);
     robot.add(nozzle);
     const plume = new T.Mesh(
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
     plume.rotation.x = Math.PI / 2;
-    plume.position.set(side * 1.05, 0.75, 2.55);
+    plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
   }
-  // Compact folding wings on the back preserve the ship silhouette without broad shoulders.
+  // High-shoulder, broad-span articulated wings derived from the starfighter.
+  // Geometry is planar in XY: wings read distinctly from rear, front and profile.
   for (const side of [-1, 1]) {
-    const backWing = box(0.22, 0.36, 3.7, armor, side * 1.35, 2.0, 1.35);
-    backWing.rotation.z = side * 0.38;
-    backWing.rotation.y = side * 0.32;
-    robot.add(backWing);
-    const wingTip = box(0.13, 0.15, 2.5, accent, side * 2.1, 2.55, 1.85);
-    wingTip.rotation.z = side * 0.38;
-    robot.add(wingTip);
+    const coordinates = [
+      [side * 1.05, 2.85],
+      [side * 2.05, 3.78],
+      [side * 5.75, 4.65],
+      [side * 4.85, 2.55],
+      [side * 3.3, 1.73],
+      [side * 1.42, 1.88],
+    ];
+    const outline = new T.Shape();
+    coordinates.forEach(([x, y], i) => (i ? outline.lineTo(x, y) : outline.moveTo(x, y)));
+    outline.closePath();
+    const wingPanel = new T.Mesh(
+      new T.ExtrudeGeometry(outline, { depth: 0.24, bevelEnabled: false }),
+      armor,
+    );
+    wingPanel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
+    wingPanel.position.z = 1.36;
+    robot.add(wingPanel);
+    const leadingEdge = line(
+      [
+        [side * 1.45, 3.05, 1.64],
+        [side * 2.23, 3.57, 1.64],
+        [side * 5.32, 4.37, 1.64],
+      ],
+      '#55e8ff',
+    );
+    leadingEdge.name = side < 0 ? 'mech-wing-trim-left' : 'mech-wing-trim-right';
+    robot.add(leadingEdge);
+    const feather = box(0.15, 0.18, 2.9, graphite, side * 3.25, 2.8, 1.7);
+    feather.rotation.z = -side * 0.37;
+    feather.rotation.y = side * 0.2;
+    robot.add(feather);
+    const wingCore = box(0.22, 0.15, 1.28, accent, side * 1.67, 2.81, 1.7);
+    wingCore.rotation.z = -side * 0.28;
+    robot.add(wingCore);
   }
-  // Compact rear turbine: concentric housing, bright engine core and exhaust.
+  // Main turbine sits between the shoulder blades rather than low at the hips.
   const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
   turbineHousing.rotation.x = Math.PI / 2;
-  turbineHousing.position.set(0, 1.15, 1.9);
+  turbineHousing.name = 'mech-back-turbine';
+  turbineHousing.position.set(0, 3.05, 1.9);
   robot.add(turbineHousing);
   const turbineRing = new T.Mesh(new T.TorusGeometry(0.58, 0.12, 10, 24), accent);
-  turbineRing.position.set(0, 1.15, 2.55);
+  turbineRing.position.set(0, 3.05, 2.55);
   robot.add(turbineRing);
   const turbineCore = new T.Mesh(new T.CylinderGeometry(0.35, 0.4, 0.18, 20), luminous);
   turbineCore.rotation.x = Math.PI / 2;
-  turbineCore.position.set(0, 1.15, 2.62);
+  turbineCore.position.set(0, 3.05, 2.62);
   robot.add(turbineCore);
   const turbineFlame = new T.Mesh(
     new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
   turbineFlame.rotation.x = Math.PI / 2;
-  turbineFlame.position.set(0, 1.15, 3.65);
+  turbineFlame.position.set(0, 3.05, 3.65);
   robot.add(turbineFlame);
   robot.userData.mechRig = { arms, legs, armMuzzles };
   robot.userData.mechPaint = { primary: armor, accent };
