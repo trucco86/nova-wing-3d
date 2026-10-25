@@ -10,7 +10,7 @@ Leia este arquivo, a especificação da tarefa e somente os módulos necessário
 4. Edite `src/`, nunca o bundle gerado `index.html` nem `node_modules/`. O build é unidirecional.
 5. Preserve teclado, toque, pausa, reinício, limites de movimento e orçamento do HTML de 2 MB. Mudanças intencionais nesses contratos exigem atualizar especificação, teste e documentação com justificativa.
 6. Acrescente testes quando houver risco comportamental. Não escreva testes que só reproduzem a implementação nem remova gates para obter verde.
-7. Execute `npm run format`, `npm run build`, `npm run validate`. Mudanças visuais ou de entrada precisam também de `npm run validate -- --browser` na CI ou em ambiente compatível.
+7. Antes de alterar `src/` para uma nova release, execute `npm run release:prepare -- X.Y.Z` e revise o changelog, as notas e o bundle; isso sincroniza pacote, lockfile, versões iOS e `index.html`. Consulte [o guia de release](docs/RELEASE-PREPARATION.md). Depois execute `npm run format`, `npm run build`, `npm run validate`. Mudanças visuais ou de entrada precisam também de `npm run validate -- --browser` na CI ou em ambiente compatível.
 8. Antes de propor merge, aplique o parecer de QA definido em `docs/QA-AGENT.md` ao SHA final e revise o diff; informe evidências, limitações e riscos concretos. Nunca declare teste executado apenas porque o arquivo existe.
 
 ## Limites operacionais
