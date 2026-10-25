@@ -6,6 +6,9 @@ test('sector 1 needs BOOST depletion, then spends time climbing above the city',
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
@@ -45,6 +48,9 @@ test('space obstacles arrive only after the BOOST-powered urban exit', async ({ 
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (msg) => {
+    if (msg.type() === 'error') errors.push(msg.text());
+  });
   await page.goto('/__dynamic.html?sector=0&encounters=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
