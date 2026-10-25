@@ -5,7 +5,7 @@ import { routeAt } from '../src/route.js';
 import { createArcade } from '../src/arcade.js';
 import { readCosmetics, skinPurchase } from '../src/customization.js';
 import { readSave } from '../src/campaign.js';
-import { defeatBoss } from './combat-helper.mjs';
+import { defeatBoss, advanceToBoss } from './combat-helper.mjs';
 
 function storageFor(sector = 2) {
   const map = new Map([
@@ -31,8 +31,8 @@ test('sector-specific route windows keep straight sectors straight and ascend fr
     }
   }
   assert.equal(routeAt(0, 10, 65).ascent, 0);
-  assert.ok(routeAt(0, 55, 65).ascent > 0.8);
-  assert.equal(routeAt(0, 55, 65).label, 'ASCENSÃO ORBITAL');
+  assert.ok(routeAt(0, 55, 65, false, 0.85).ascent > 0.8);
+  assert.equal(routeAt(0, 55, 65, false, 0.85).label, 'ASCENSÃO ORBITAL');
   assert.ok(routeAt(2, 30, 70).ascent > 0.8);
   assert.equal(routeAt(4, 30, 75).ascent, 0);
   assert.equal(routeAt(0, 30, 0).turn, 0);
@@ -102,7 +102,7 @@ test('hangar paint purchases persist ownership, score and selected paint across 
   t.after(() => h.close());
   h.game.start(true);
   assert.equal(h.game.buySkin('ember'), false);
-  h.advance(85.1);
+  advanceToBoss(h);
   defeatBoss(h);
   const before = h.game.snapshot();
   assert.equal(h.game.buySkin('ember'), true);
