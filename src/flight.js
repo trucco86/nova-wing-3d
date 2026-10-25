@@ -87,7 +87,7 @@ export function createFlightCamera(camera, wideFlight = false) {
 // Shared city-to-orbit transition used by rendering and encounters.
 export function launchAmount(seconds, duration) {
   if (!Number.isFinite(duration) || duration <= 0) return 0;
-  return T.MathUtils.clamp((seconds / duration - 0.38) / 0.5, 0, 1);
+  return T.MathUtils.clamp((seconds / duration - 0.48) / 0.46, 0, 1);
 }
 export function launchOrbitReady(amount) {
   const x = T.MathUtils.clamp(amount, 0, 1);
