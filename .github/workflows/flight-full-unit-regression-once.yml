@@ -24,7 +24,7 @@ jobs:
       - run: npm run build
       - run: npm run validate
       - run: npm run build:check
-      - run: node --test tests/orbital-launch.test.mjs
+      - run: node --test tests/orbital-launch.test.mjs tests/strategy.test.mjs tests/tactics.test.mjs
       - name: Commit passing regression and clean up one-off workflow
         run: |
           git rm .github/workflows/flight-full-unit-regression-once.yml
