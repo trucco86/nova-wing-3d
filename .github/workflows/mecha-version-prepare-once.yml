@@ -21,6 +21,7 @@ jobs:
       - run: npx prettier --write CHANGELOG.md releases/v1.25.0.md package.json package-lock.json
       - run: npm run build
       - run: npm run validate
+      - run: npm run build:check
       - name: Commit candidate metadata and generated build, then remove temporary workflow
         run: |
           git rm .github/workflows/mecha-version-prepare-once.yml
