@@ -1,8 +1,8 @@
-name: Deploy isolated web environments (Cloudflare Pages)
+name: Deploy isolated flight preview PR 43
 
 on:
   push:
-    branches: [dev, hml]
+    branches: [preview-pr-43-flight]
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -34,10 +34,10 @@ jobs:
       # Experimental PR previews deliberately require only a reproducible build.
       # Full quality and browser gates still block merges and stable environments.
       - name: Verify experimental PR build
-        if: github.event_name == 'pull_request'
+        if: github.ref_name == 'preview-pr-43-flight'
         run: npm run build:check
       - name: Validate stable DEV/HML build
-        if: github.event_name != 'pull_request'
+        if: github.ref_name != 'preview-pr-43-flight'
         run: npm run validate
       - name: Prepare static website
         run: |
@@ -45,7 +45,7 @@ jobs:
           cp index.html dist/index.html
           touch dist/.nojekyll
           printf 'sha=%s\nref=%s\n' "$GITHUB_SHA" "$GITHUB_REF" > dist/BUILD.txt
-          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+          if [ "${{ github.ref_name }}" = 'preview-pr-43-flight' ]; then
             echo 'gate=EXPERIMENTAL_BUILD_ONLY' >> dist/BUILD.txt
           else
             echo 'gate=FULL_VALIDATION' >> dist/BUILD.txt
@@ -68,7 +68,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=nova-wing-preview --branch=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref_name }}
+          command: pages deploy dist --project-name=nova-wing-preview --branch=pr-43
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
       - name: Confirm deployment attempt
         if: steps.credentials.outputs.configured == 'true'
