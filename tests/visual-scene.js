@@ -127,13 +127,13 @@ document.querySelector('h1').textContent =
       ? 'TÚNEL INDUSTRIAL / DEFESA TERRESTRE'
       : mode === 'ground'
         ? 'CIDADE / TANQUES E SENTINELAS'
-      : mode === 'equipment'
-        ? 'PODS I / II / III · VERDE: VIDA · AZUL: ARMA'
-        : mode === 'subboss'
-          ? SUBBOSS_NAMES[index]
-          : mode === 'collapse'
-            ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
-            : mode === 'marvin-finale'
-              ? 'MARVIN DERROTADO / SUPRIMENTOS RECUPERADOS'
-              : SECTORS[index].boss;
+        : mode === 'equipment'
+          ? 'PODS I / II / III · VERDE: VIDA · AZUL: ARMA'
+          : mode === 'subboss'
+            ? SUBBOSS_NAMES[index]
+            : mode === 'collapse'
+              ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
+              : mode === 'marvin-finale'
+                ? 'MARVIN DERROTADO / SUPRIMENTOS RECUPERADOS'
+                : SECTORS[index].boss;
 document.body.dataset.ready = 'true';
