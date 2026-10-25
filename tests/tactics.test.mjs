@@ -2,7 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
-import { reachSectorBoss } from './mission-scenarios.mjs';
+import {
+  reachSectorBoss,
+  waitForArmoredFront,
+  aimAtFirstGenerator,
+} from './mission-scenarios.mjs';
 import { bossTacticsAt, inDanger, chargeTactics, impactPoint } from '../src/tactics.js';
 
 test('boss profiles telegraph before attacking, move and expose a recovery window', () => {
@@ -80,16 +84,17 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  reachSectorBoss(h, { bossAge: 27 });
-  h.game.tacticalAction('precision');
+  reachSectorBoss(h, { bossAge: 5 });
+  waitForArmoredFront(h);
+  assert.equal(h.game.snapshot().bossTargets.some((part) => part.open), false);
+  assert.equal(h.game.tacticalAction('precision'), true);
   h.advance(0.65);
   assert.equal(h.elements.get('hitFeedback').textContent, 'SEM DANO · AJUSTE O ÂNGULO');
   assert.equal(h.game.snapshot().bossTargets[0].hp, 180);
-  h.game.orbit(-1);
-  h.advance(1.3);
-  h.game.orbit(0);
-  h.game.tacticalAction('precision');
-  h.advance(0.35);
+  aimAtFirstGenerator(h);
+  assert.equal(h.game.tacticalAction('precision'), true);
+  for (let i = 0; i < 15 && h.game.snapshot().bossTargets[0].hp === 180; i++)
+    h.advance(0.1);
   assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
   assert.match(h.elements.get('hitFeedback').textContent, /^(ACERTO|PONTO FRACO) \+\d+$/);
 });
@@ -98,12 +103,11 @@ test('barrage keeps confirmed feedback when later projectiles are blocked', (t) 
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  reachSectorBoss(h, { bossAge: 27 });
-  h.game.orbit(-1);
-  h.advance(1.3);
-  h.game.orbit(0);
+  reachSectorBoss(h, { bossAge: 5 });
+  aimAtFirstGenerator(h);
   assert.equal(h.game.tacticalAction('barrage'), true);
-  h.advance(0.35);
+  for (let i = 0; i < 20 && h.game.snapshot().bossTargets[0].hp === 180; i++)
+    h.advance(0.1);
   assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
   assert.match(h.elements.get('hitFeedback').textContent, /^(ACERTO|PONTO FRACO) \+\d+$/);
 });
