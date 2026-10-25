@@ -1162,7 +1162,13 @@ export function createGame({
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
-      y = ground ? -7 : kind === 'subboss' ? 10 : dynamicFlight && sectorIndex === 0 ? rnd(12, 24) : rnd(1, 19);
+      y = ground
+        ? -7
+        : kind === 'subboss'
+          ? 10
+          : dynamicFlight && sectorIndex === 0
+            ? rnd(12, 24)
+            : rnd(1, 19);
     o.position.set(x, y, -200);
     scene.add(o);
     const attackGlow = tacticalFighter
@@ -2141,7 +2147,9 @@ export function createGame({
       world.setLaunchAscent(launchAmount(elapsed, current().duration), sectorIndex === 0);
       $('routeLabel').textContent = route.label;
     }
-    const orbitalLaunch = dynamicFlight && sectorIndex === 0 &&
+    const orbitalLaunch =
+      dynamicFlight &&
+      sectorIndex === 0 &&
       launchOrbitReady(launchAmount(elapsed, current().duration));
     shotCd -= dt;
     if (dynamicFlight) {
@@ -2810,7 +2818,10 @@ export function createGame({
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
-      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
+      (sectorIndex !== 0 ||
+        !dynamicFlight ||
+        orbitalLaunch ||
+        elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
       const kinds = ['satellite', 'carrier', 'debris'];
