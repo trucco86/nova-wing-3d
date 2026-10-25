@@ -2305,8 +2305,7 @@ export function createGame({
     const { speed, previousPlayer, holding } = updatePiloting(dt);
     spawnCd -= dt;
     const quietFirstSubboss =
-      dynamicFlight &&
-      firstSubbossQuiet(sectorIndex, elapsed, current().duration);
+      dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (spawnEncounters && elapsed < current().duration && spawnCd <= 0 && !quietFirstSubboss) {
       const count =
