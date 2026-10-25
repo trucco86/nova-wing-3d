@@ -334,9 +334,10 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await reachBrowserBoss(page, { bossAge: 5 });
     await page.evaluate(() => {
-      window.fixture.advance(88.1);
-      window.fixture.game.tacticalAction('precision');
+      if (!window.fixture.game.tacticalAction('precision'))
+        throw new Error('Precision action unavailable during boss combat');
       window.fixture.advance(0.65);
     });
     await expect(page.locator('#game')).toBeVisible();
@@ -345,13 +346,27 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
+  await reachBrowserBoss(page, { bossAge: 5 });
   await page.evaluate(() => {
-    window.fixture.advance(88.1);
-    window.fixture.game.orbit(-1);
-    window.fixture.advance(1.3);
-    window.fixture.game.orbit(0);
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.35);
+    const game = window.fixture.game;
+    for (let i = 0; i < 180; i++) {
+      const state = game.snapshot();
+      const weak = state.bossTargets[0];
+      const delta = Math.atan2(
+        Math.sin(weak.angle - state.strategy.orbitAngle),
+        Math.cos(weak.angle - state.strategy.orbitAngle),
+      );
+      if (weak.open && Math.abs(delta) < 0.35 && state.bossAge >= 3) break;
+      game.orbit(Math.sign(delta));
+      window.fixture.advance(0.05);
+    }
+    game.orbit(0);
+    if (!game.snapshot().bossTargets[0].open)
+      throw new Error('Weak point never opened during orbital maneuver');
+    if (!game.tacticalAction('precision'))
+      throw new Error('Precision action unavailable for visible weak point');
+    for (let i = 0; i < 15 && game.snapshot().bossTargets[0].hp === 180; i++)
+      window.fixture.advance(0.1);
   });
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toContainText(/ACERTO|PONTO FRACO/);
