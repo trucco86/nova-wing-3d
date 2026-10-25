@@ -21,7 +21,7 @@ test('sector 1 needs BOOST depletion, then spends time climbing above the city',
   await page.keyboard.up('Shift');
   const exhausted = await page.evaluate(() => window.fixture.game.snapshot());
   expect(exhausted.orbitalLaunch.phase).toBe('atmosphere');
-  expect(exhausted.energy).toBeLessThanOrEqual(5);
+  expect(exhausted.orbitalLaunch.exhaustedAt).toBeLessThanOrEqual(5);
   await page.screenshot({ path: info.outputPath('launch-boost-depleted.png') });
 
   await page.evaluate(() => window.fixture.advance(19));
