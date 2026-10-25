@@ -17,3 +17,5 @@ The read-only Worker uses `scores.season_id`, `scores.verdict = 'verified'`, des
 - Explicit secrets configured in Cloudflare, without committing credentials.
 
 **Status:** schema proposal only; score writes remain disabled.
+
+Migration regression tests: `tests/ranking-d1-schema.test.mjs` executes the candidate SQL in an in-memory SQLite database, verifies query-index selection, rejects duplicate run keys, and checks player-deletion cascades. These tests do not constitute production D1 compatibility or authorization to deploy.
