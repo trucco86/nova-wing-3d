@@ -216,6 +216,34 @@ export function createObstacle(kind = 'gantry') {
         arrow.position.set(gap, 30, z + 3);
         g.add(arrow);
       }
+    } else if (kind === 'carrier') {
+      // Derelict ship: hull, bridge and two wings with escapable upper corridor.
+      solid(36, 11, 42, 0, 14, 0, armor);
+      solid(14, 9, 13, 0, 22, -8, dark);
+      for (const side of [-1, 1]) {
+        solid(18, 4, 25, side * 26, 13, 4, dark);
+        g.add(box(14, 0.8, 17, cyan, side * 26, 15.6, 5));
+        g.add(box(5, 3, 4, red, side * 8, 13, 22));
+      }
+      g.add(box(14, 1, 28, cyan, 0, 20, 3));
+    } else if (kind === 'satellite') {
+      solid(8, 9, 10, 0, 14, 0, armor);
+      solid(2, 9, 2, 0, 22, 0, joint);
+      const antenna = ball(3.6, cyan);
+      antenna.position.y = 28;
+      g.add(antenna);
+      for (const side of [-1, 1]) {
+        solid(19, 1.5, 14, side * 15, 15, 0, dark);
+        for (const z of [-5, 0, 5]) g.add(box(18, 0.2, 0.35, cyan, side * 15, 16, z));
+      }
+    } else if (kind === 'debris') {
+      solid(14, 12, 16, 0, 18, 0, dark);
+      for (const side of [-1, 1]) {
+        const shard = box(8, 2, 12, armor, side * 8, 21, -3);
+        shard.rotation.z = side * 0.35;
+        g.add(shard);
+      }
+      g.add(box(6, 2, 4, red, 0, 18, 9));
     } else if (kind === 'gantry') {
       for (const s of [-1, 1]) {
         solid(7, 38, 10, s * 28, 12, 0);
@@ -235,7 +263,7 @@ export function createObstacle(kind = 'gantry') {
       }
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
-    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : 18 };
+    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
     templates.set(kind, g);
   }
   const template = templates.get(kind),
