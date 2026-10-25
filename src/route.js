@@ -49,7 +49,7 @@ export function routeAt(sector, seconds, duration, boss = false) {
   return {
     turn,
     ascent,
-    bank: -turn * 0.13,
+    bank: turn === 0 ? 0 : -turn * 0.13,
     label:
       ascent > 0.35
         ? 'ASCENSÃO ORBITAL'
