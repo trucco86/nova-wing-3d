@@ -11,10 +11,11 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
   page,
 }, info) => {
   test.skip(info.project.name !== 'mobile', 'Touch ergonomics requires a coarse-pointer project');
-  test.setTimeout(120000);
+  test.setTimeout(180000);
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 320, height: 568 },
+    { width: 844, height: 390 },
   ]) {
     await page.setViewportSize(viewport);
     await page.goto('/__dynamic.html?sector=0&xp=740');
@@ -41,10 +42,9 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
         score: box('.score'),
         status: box('.status'),
         buttons: Object.fromEntries(
-          ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map((id) => [
-            id,
-            box('#' + id),
-          ]),
+          ['robotTouch', 'podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map(
+            (id) => [id, box('#' + id)],
+          ),
         ),
       };
     });
