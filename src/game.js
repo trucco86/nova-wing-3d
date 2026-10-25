@@ -85,6 +85,8 @@ import {
   fighter,
   createFlyingRobot,
   mechArmPitch,
+  animateMechPower,
+  setFighterEvolution,
   createShipModule,
   createWorld,
   postProcessor,
@@ -339,6 +341,7 @@ export function createGame({
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
     evolution.visible = !robotMode;
+    setFighterEvolution(shipModule, evolutionStage);
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
     // Ship and mech share progression through the player hierarchy.
   }
@@ -474,6 +477,7 @@ export function createGame({
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
     shipModule.visible = !robotMode;
+    setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     // Preserve the chosen ship silhouette in its alternate mech configuration.
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
@@ -2095,6 +2099,7 @@ export function createGame({
       message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage());
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed *
