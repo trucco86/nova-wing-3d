@@ -1,6 +1,6 @@
 # Ranking competitivo — Cloudflare Workers + D1 e Firebase Auth
 
-> **ESTADO: ARQUITETURA-ALVO; NÃO IMPLEMENTADO/NÃO PUBLICADO.** Cloudflare Pages já hospeda o HTML nos ambientes de teste, mas não existe Worker API, D1, backend de score, endpoints públicos, integração do frontend com ranking nem validação server-side implantados. O Firebase Auth de DEV não torna o ranking funcional.
+> **ESTADO: API WORKER SOMENTE DE LEITURA EM BRANCH DE FEATURE; NÃO PUBLICADO.** Cloudflare Pages já hospeda o HTML nos ambientes de teste, mas a implementação inicial do Worker em `workers/ranking/` ainda não foi implantada. Não existe D1 provisionado, backend de score, endpoints públicos operacionais ou integração do frontend com ranking. O Firebase Auth de DEV não torna o ranking funcional.
 
 ## 1. Decisão e responsabilidades
 
@@ -8,7 +8,7 @@ Direção proposta para atender à integração Firebase + Cloudflare solicitada
 
 - **Firebase Authentication:** login social Google e emissão de ID token.
 - **Cloudflare Pages:** arquivos estáticos do jogo, DEV, HML e previews de PR.
-- **Cloudflare Worker:** API HTTPS e fronteira de confiança do ranking, token verification, rate limit, verificação de runs, regras por temporada e moderação.
+- **Cloudflare Worker:** esqueleto inicial de API HTTPS somente de leitura, futura fronteira de confiança do ranking, token verification, rate limit, verificação de runs, regras por temporada e moderação.
 - **Cloudflare D1:** persistência SQL de jogadores (mínima), sessões de run, resultados verificados e tabela materializada de leaderboard.
 - **Jogo:** score local e diversão offline. Participação em ranking remoto opcional, separada do progresso da campanha.
 
@@ -46,7 +46,7 @@ sequenceDiagram
 
 ## 2. Contratos HTTP propostos
 
-**Todas as rotas são futuras. Não apresentar estes caminhos como URLs existentes.**
+**As rotas GET/health, GET/leaderboard e GET/me possuem código inicial, ainda sem deployment real. POST de runs devolve 501 e não grava score. Não apresentar os caminhos como URLs existentes.**
 
 - `GET /v1/health` — estado da API sem expor secrets.
 - `GET /v1/leaderboard?season=<slug>&limit=20&cursor=<opaque>` — somente apelidos moderados, score, setor e timestamp público limitado; paginação limitada.
@@ -141,3 +141,13 @@ Implementação sugerida em PRs pequenas, **sem produção**:
 - [ ] Homologação humana antes de habilitar competição em produção.
 
 Referências técnicas: https://firebase.google.com/docs/auth/admin/verify-id-tokens e https://developers.cloudflare.com/d1/worker-api/prepared-statements/.
+
+## Implementação inicial — PR de fundação (não implantada)
+
+- `workers/ranking/src/index.js`: rotas GET com respostas estritas, consulta D1 parametrizada e submissions bloqueadas.
+- `workers/ranking/src/firebase-jwt.js`: verificação Web Crypto de assinatura RS256/claims; requer revisão de segurança antes de exposição.
+- `workers/ranking/migrations/0001_initial.sql`: estrutura SQL versionada, **não aplicada em banco real**.
+- `tests/ranking-worker.test.mjs`: regressões para token falso, payload expirado, CORS, SQL e modos de falha.
+- `specs/ranking-api-foundation.md`: escopo, critérios de segurança e limitações.
+
+Nada disso foi publicado nem conecta o jogo atual a um backend. O endpoint de pontuação permanece deliberadamente desativado até conclusão das validações antifraude.
