@@ -610,23 +610,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (!dynamicFlight || sceneryTheme !== 'city' || !enabled) return;
       const progress = T.MathUtils.clamp(amount, 0, 1);
       const t = progress * progress * (3 - 2 * progress);
-      // Buildings and terrain visibly recede while fog clears and stars emerge.
-      city.position.y = cityFar.position.y = -260 * t;
-      near.forEach((o) => (o.position.y = -230 * t));
-      ground.position.y = -7 - 275 * t;
-      // On reaching orbit, don't leave a giant city plain in front of the planet.
-      // Urban scenery and the planetary horizon are mutually exclusive.
+      // Continuous altitude parallax: the last visible buildings have already
+      // fallen below the camera long before the city meshes are hidden.
+      const retreat = 780 * t * t + 180 * t;
+      city.position.y = cityFar.position.y = -retreat;
+      near.forEach((o) => (o.position.y = -retreat * 0.92));
+      ground.position.y = -7 - retreat * 1.18;
+      const scale = 1 - t * 0.26;
+      city.scale.setScalar(scale);
+      cityFar.scale.setScalar(scale);
+      // Mutually exclusive urban and planetary stages: never draw the city
+      // together with a globe. The planet fades in through the upper atmosphere.
       const orbital = launchOrbitReady(progress);
       ground.visible = !orbital;
       city.visible = cityFar.visible = !orbital;
       near.forEach((o) => (o.visible = !orbital));
       rain.visible = !orbital && t < 0.6;
-      moon.visible = atmosphere.visible = !orbital;
+      moon.visible = atmosphere.visible = false;
       scene.fog.density = 0.0014 - 0.0012 * t;
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
-      starfield.material.opacity = 0.2 + 0.55 * t;
+      starfield.material.opacity = 0.16 + 0.59 * t;
+      earthHorizon.position.y = -940 + t * 180;
       earthHorizon.visible = orbital;
-      earthMat.uniforms.fade.value = orbital ? T.MathUtils.clamp((t - 0.65) / 0.24, 0, 0.88) : 0;
+      const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
+      earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
     },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
@@ -643,6 +650,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
       city.position.y = cityFar.position.y = 0;
+      city.scale.setScalar(1);
+      cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
       ground.position.y = -7;
       earthHorizon.visible = false;
@@ -814,6 +823,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
+      city.scale.setScalar(1);
+      cityFar.scale.setScalar(1);
       ground.position.y = -7;
       earthHorizon.visible = false;
       earthMat.uniforms.fade.value = 0;
