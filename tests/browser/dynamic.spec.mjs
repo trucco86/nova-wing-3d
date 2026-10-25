@@ -42,7 +42,8 @@ test('web route, orbital ascent and final black hole render without shader error
     if (m.type() === 'error') errors.push(m.text());
   });
   for (const [sector, time, expected] of [
-    [0, 22, 'CURVA'],
+    [0, 28, 'SEGURE BOOST'],
+    [1, 30, 'CURVA'],
     [2, 30, 'ASCENSÃO'],
     [9, 10, 'ROTA DE APROXIMAÇÃO'],
   ]) {
