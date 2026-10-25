@@ -23,6 +23,7 @@ jobs:
           npx prettier --write src/game.js src/route.js src/orbital-launch.js src/visuals.js tests/orbital-launch.test.mjs tests/dynamic-flight.test.mjs tests/flight-launch-visual.test.mjs tests/launch-pacing-and-fighters.test.mjs tests/browser/launch-orbit.spec.mjs tests/browser/dynamic.spec.mjs releases/v1.24.5.md
       - run: npm run build
       - run: npm run lint
+      - run: npx prettier --check src/orbital-launch.js tests/orbital-launch.test.mjs
       - name: Execute focused orbital launch and renderer tests
         run: node --test tests/orbital-launch.test.mjs tests/flight-launch-visual.test.mjs tests/launch-pacing-and-fighters.test.mjs
       - run: npm run build:check
