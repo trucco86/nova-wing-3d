@@ -58,3 +58,14 @@ test('mecha wings reuse the exact fighter wing geometry rather than a larger rou
   assert.deepEqual(Array.from(mechaPoints), Array.from(fighterPoints));
   assert.ok(robot.scale.x <= 1, 'mecha chassis must not be artificially enlarged');
 });
+
+test('mecha turbine exposes independently animated flame and rotor geometry', () => {
+  const robot = createFlyingRobot();
+  const rig = robot.userData.mechRig;
+  assert.equal(rig.turbineFlame.name, 'mech-turbine-flame');
+  assert.equal(rig.turbineRing.name, 'mech-turbine-ring');
+  assert.equal(rig.turbineCore.name, 'mech-turbine-core');
+  assert.ok(rig.turbineFlame.material.transparent);
+  assert.ok(rig.turbineFlame.position.z > rig.turbineCore.position.z);
+  assert.notEqual(rig.turbineFlame, rig.turbineCore);
+});
