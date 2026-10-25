@@ -24,3 +24,7 @@ Status: **candidata em DEV / PR #69; NÃO HOMOLOGADA**. Nenhuma promoção para 
 - Conferência da versão `1.25.0` em pacote, lockfile, release notes, build web e projeto iOS.
 
 O CI não substitui aprovação visual. **Aceite explícito do mantenedor** é obrigatório antes de integrar esta candidata ao DEV.
+
+## Segunda revisão visual da candidata
+
+As capturas antigas da PR estavam vazias porque o player piscava durante a invulnerabilidade inicial. O browser test agora avança além desse período e exige `playerVisible=true` antes de fotografar transformação e disparo. As novas capturas tornaram evidente que a primeira versão tinha placas retangulares demais. A revisão adicionou placas 3D chanfradas, capacete com crista, reforços de ombro, canhões e pernas, além de iluminação visível na traseira da turbina. **Os detalhes precisam ser comparados novamente com a prancha conceitual após CI e captura atualizada; não estão homologados.**
