@@ -28,7 +28,8 @@ export async function signOutToGuest({ auth, authSdk, setUser, setStatus, closeP
 }
 
 export function installGoogleLogin({
-  loadSdks = () => Promise.all([import(/* @vite-ignore */ APP_URL), import(/* @vite-ignore */ AUTH_URL)]),
+  loadSdks = () =>
+    Promise.all([import(/* @vite-ignore */ APP_URL), import(/* @vite-ignore */ AUTH_URL)]),
 } = {}) {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};

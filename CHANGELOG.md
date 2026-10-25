@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.3 — Candidata em preparação
+
+- Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
+
 ## 1.24.2 — Autenticação em DEV/HML
 
 - Login Google com Firebase restrito aos ambientes fixos de desenvolvimento.
