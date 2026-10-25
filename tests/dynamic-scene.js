@@ -40,7 +40,31 @@ window.fixture = {
   advance,
   hangar() {
     capture = false;
-    advance(91);
+    // Exercise the first-sector launch with the same keyboard controls as the
+    // player. A timed wait alone must never bypass BOOST exhaustion.
+    if (sector === 0) {
+      advance(23);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          code: 'ShiftLeft',
+          key: 'Shift',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      advance(3.6);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          code: 'ShiftLeft',
+          key: 'Shift',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      advance(38.3);
+    }
+    const duration = sector === 0 ? 130 : 70 + Math.floor((sector - 1) / 2) * 5;
+    advance(Math.max(0, duration + 6 - game.snapshot().seconds));
     defeatBoss({ game, advance });
     capture = rendering = true;
     game.step(0);
