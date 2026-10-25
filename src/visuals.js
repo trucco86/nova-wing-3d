@@ -374,8 +374,11 @@ export function createFlyingRobot() {
   );
   turbineFlame.rotation.x = Math.PI / 2;
   turbineFlame.position.set(0, 3.05, 3.65);
+  turbineFlame.name = 'mech-turbine-flame';
   robot.add(turbineFlame);
-  robot.userData.mechRig = { arms, legs, armMuzzles };
+  turbineRing.name = 'mech-turbine-ring';
+  turbineCore.name = 'mech-turbine-core';
+  robot.userData.mechRig = { arms, legs, armMuzzles, turbineFlame, turbineRing, turbineCore };
   robot.userData.mechPaint = { primary: armor, accent };
   robot.scale.setScalar(0.94);
   return robot;
