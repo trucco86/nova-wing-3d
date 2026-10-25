@@ -30,7 +30,7 @@ test('boost is mandatory; depletion triggers a long atmospheric ascent', (t) => 
   h.key('ShiftLeft', false);
   const exhausted = h.game.snapshot();
   assert.equal(exhausted.orbitalLaunch.phase, 'atmosphere');
-  assert.ok(exhausted.energy <= 5, 'BOOST must have exhausted');
+  assert.ok(exhausted.orbitalLaunch.exhaustedAt <= 5, 'BOOST must have exhausted');
   assert.ok(exhausted.orbitalLaunch.amount <= ORBITAL_LAUNCH.boostClimbFraction);
   h.advance(19);
   const halfway = h.game.snapshot();
