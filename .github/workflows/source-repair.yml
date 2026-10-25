@@ -22,6 +22,8 @@ jobs:
           npm run build
       - name: Show generated changes
         run: git status --short
+      - name: Display Prettier repair patch
+        run: git diff -- src/game.js
       - name: Validate repaired workspace
         run: npm run validate
       - name: Upload generated index for review

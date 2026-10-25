@@ -1,0 +1,49 @@
+name: Isolated PR browser build
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tools/**'
+      - 'package*.json'
+      - 'index.html'
+      - '.github/workflows/pr-pages-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: isolated-pr-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  preview:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm run validate
+      - name: Prepare isolated preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number || 'manual' }}
+        run: |
+          mkdir -p preview
+          cp index.html preview/index.html
+          printf 'PR=%s\nSHA=%s\n' "$PR_NUMBER" "$GITHUB_SHA" > preview/BUILD.txt
+      - name: Upload preview for manual validation
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-preview-${{ github.event.pull_request.number || github.sha }}
+          path: preview/
+          retention-days: 7
+      - name: Publish PR preview to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy preview --project-name=nova-wing-preview --branch=pr-${{ github.event.pull_request.number || '54' }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
