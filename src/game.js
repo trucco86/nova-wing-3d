@@ -84,6 +84,7 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  mechArmPitch,
   createShipModule,
   createWorld,
   postProcessor,
@@ -2061,9 +2062,8 @@ export function createGame({
       const boostMotion = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.4 : 1;
       for (let i = 0; i < 2; i++) {
         const side = i === 0 ? -1 : 1;
-        // Raise cannons into the forward firing arc; avoid the old downward idle pose.
-        rig.arms[i].rotation.x =
-          0.63 + Math.sin(motion + i * Math.PI) * 0.09 * boostMotion + robotFireKick * 0.75;
+        // Elevate the cannon arms without exposing the shoulder joints to overrotation.
+        rig.arms[i].rotation.x = mechArmPitch(motion, i, boostMotion, robotFireKick);
         rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
         rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
         rig.legs[i].rotation.z = side * 0.035;
