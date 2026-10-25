@@ -96,3 +96,16 @@ test('mech and fighter progressively reveal larger neon panels as XP stage rises
   );
   assert.equal(ship.userData.progressionNeons.filter((part) => part.mesh.visible).length, 6);
 });
+
+test('rear-facing armor uses faceted plates, a visible thruster halo and distinct helmet crest', () => {
+  const robot = createFlyingRobot();
+  const rearArmor = robot.getObjectByName('mech-rear-armor-facets');
+  const crest = robot.getObjectByName('mech-cranial-crest');
+  const turbineHalo = robot.getObjectByName('mech-turbine-halo');
+  assert.ok(rearArmor, 'rear armor must have a discernible hero silhouette');
+  assert.equal(rearArmor.geometry.type, 'ExtrudeGeometry', 'main armor must not be a plain box');
+  assert.ok(crest, 'pilot helmet must have a recognizable angular crest');
+  assert.ok(turbineHalo, 'rear-facing turbine must glow in chase camera');
+  assert.equal(robot.userData.mechRig.arms.length, 2);
+  assert.equal(robot.userData.mechRig.legs.length, 2);
+});
