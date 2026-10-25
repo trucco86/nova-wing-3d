@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { reachBrowserBoss } from './orbital-journey.mjs';
+import {
+  reachBrowserBoss,
+  waitForBrowserArmoredFront,
+  aimAtBrowserFirstGenerator,
+  fireBrowserPrecision,
+} from './orbital-journey.mjs';
 
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
@@ -317,11 +322,11 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.evaluate(() => window.fixture.advance(3));
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
   await page.goto('/__dynamic.html?sector=0');
-  await page.evaluate(() => {
-    window.fixture.advance(88.1);
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.65);
-  });
+  await reachBrowserBoss(page, { bossAge: 5 });
+  await waitForBrowserArmoredFront(page);
+  const blocked = await fireBrowserPrecision(page);
+  expect(blocked.event.type).toBe('blocked');
+  expect(blocked.after.bossTargets[0].hp).toBe(blocked.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
   await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
@@ -333,30 +338,26 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    await page.evaluate(() => {
-      window.fixture.advance(88.1);
-      window.fixture.game.tacticalAction('precision');
-      window.fixture.advance(0.65);
-    });
+    await reachBrowserBoss(page, { bossAge: 5 });
+    await waitForBrowserArmoredFront(page);
+    const portraitBlocked = await fireBrowserPrecision(page);
+    expect(portraitBlocked.event.type).toBe('blocked');
+    expect(portraitBlocked.after.bossTargets[0].hp).toBe(
+      portraitBlocked.before.bossTargets[0].hp,
+    );
     await expect(page.locator('#game')).toBeVisible();
     await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
     await expect(page.locator('#hitFeedback')).toBeVisible();
     await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
-  await page.evaluate(() => {
-    window.fixture.advance(88.1);
-    window.fixture.game.orbit(-1);
-    window.fixture.advance(1.3);
-    window.fixture.game.orbit(0);
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.35);
-  });
+  await reachBrowserBoss(page, { bossAge: 5 });
+  await aimAtBrowserFirstGenerator(page);
+  const confirmed = await fireBrowserPrecision(page);
+  expect(['boss', 'weak']).toContain(confirmed.event.type);
+  expect(confirmed.after.bossTargets[0].hp).toBeLessThan(confirmed.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toContainText(/ACERTO|PONTO FRACO/);
-  expect(await page.evaluate(() => window.fixture.game.snapshot().bossTargets[0].hp)).toBeLessThan(
-    180,
-  );
   await page.screenshot({ path: info.outputPath('confirmed-impact.png') });
   expect(errors).toEqual([]);
 });
