@@ -13,7 +13,7 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
   const h = harness({ spawnEncounters: true });
   t.after(() => h.close());
   h.game.start();
-  advanceProtected(h, 15.4);
+  advanceProtected(h, 19.8);
   const charging = h.game.snapshot();
   const subboss = charging.targets.find((enemy) => enemy.kind === 'subboss');
   assert.equal(subboss.tactic, 'strafe');
@@ -35,6 +35,6 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
 
   h.game.start();
   assert.equal(h.game.snapshot().targets.length, 0);
-  advanceProtected(h, 14.4);
+  advanceProtected(h, 19.2);
   assert.equal(h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').phase, 1);
 });
