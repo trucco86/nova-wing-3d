@@ -56,7 +56,7 @@ sequenceDiagram
 
 - A sessão usa `browserLocalPersistence`; a duração real depende das políticas do navegador e do Firebase.
 - O save do jogo é local, não pertence à conta Google e não é sincronizado entre dispositivos.
-- **Débito funcional identificado:** o botão **Continuar como visitante** apenas fecha o painel e altera o texto de status; **não chama `signOut`**. Se já existia sessão autenticada, ela permanece. Registrar como P1 antes de associar runs a UID.
+- **Correção candidata v1.24.3:** o botão **Continuar como visitante** aguarda a inicialização do SDK e a conclusão de `signOut` antes de fechar o painel e declarar sessão visitante. Se o SDK estiver indisponível ou o logout falhar, não afirma que a sessão foi encerrada. Testes simulados comprovam os estados; validação OAuth real em DEV permanece pendente.
 - Tratamento de falhas: popup bloqueado pode abrir redirect; falha de inicialização deixa o jogo disponível como visitante.
 - Nenhum endpoint de ranking ou escopo adicional foi introduzido com a PR #59.
 - Não registrar `access_token`, `id_token` ou e-mail nos logs ou telemetry.
