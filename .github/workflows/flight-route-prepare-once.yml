@@ -1,0 +1,29 @@
+name: Prepare orbital ascent flight candidate (one-off)
+on:
+  push:
+    branches: [feat/p0-sector-flight-orbit-dev-20261025]
+    paths: ['.github/workflows/flight-route-prepare-once.yml']
+permissions:
+  contents: write
+concurrency:
+  group: flight-route-prepare
+  cancel-in-progress: false
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write src/route.js src/game.js src/visuals.js tests/dynamic-flight.test.mjs tests/flight-launch-visual.test.mjs tests/browser/launch-orbit.spec.mjs package.json package-lock.json CHANGELOG.md releases/v1.24.5.md
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated build and remove one-off workflow
+        run: |
+          git rm .github/workflows/flight-route-prepare-once.yml
+          git add src/route.js src/game.js src/visuals.js tests/dynamic-flight.test.mjs tests/flight-launch-visual.test.mjs tests/browser/launch-orbit.spec.mjs package.json package-lock.json CHANGELOG.md releases/v1.24.5.md ios/App/App.xcodeproj/project.pbxproj index.html
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(flight): validate orbital ascent route and prepare web preview'
+          git push origin HEAD:refs/heads/feat/p0-sector-flight-orbit-dev-20261025
