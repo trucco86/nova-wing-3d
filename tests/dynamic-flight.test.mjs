@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import { routeAt } from '../src/route.js';
 import { createArcade } from '../src/arcade.js';
 import { readCosmetics, skinPurchase } from '../src/customization.js';
@@ -103,7 +104,7 @@ test('hangar paint purchases persist ownership, score and selected paint across 
   t.after(() => h.close());
   h.game.start(true);
   assert.equal(h.game.buySkin('ember'), false);
-  h.advance(85.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   const before = h.game.snapshot();
   assert.equal(h.game.buySkin('ember'), true);
