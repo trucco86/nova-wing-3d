@@ -1,3 +1,11 @@
+## Plataforma Web, Firebase Auth, Cloudflare Pages e ranking (25/10/2026)
+
+A evolução de distribuição/identidade foi consolidada em [ARCHITECTURE-PLATFORM](ARCHITECTURE-PLATFORM.md), [AUTH-FIREBASE](AUTH-FIREBASE.md), [DEPLOY-ENVIRONMENTS](DEPLOY-ENVIRONMENTS.md) e [RANKING-CLOUDFLARE](RANKING-CLOUDFLARE.md). As decisões e seus limites constam nos [ADRs](adr/0001-ambientes-e-publicacao.md).
+
+**Atualização importante à seção antiga de dependências:** o texto histórico "não há backend nem conta de jogador" refere-se à release estática do jogo e à sua lógica de gameplay. Em **DEV** existe agora Firebase Authentication opcional para login Google; esse login **não** representa score remoto, save na nuvem ou ranking já implementado. O Cloudflare Pages publica DEV/HML/previews, enquanto Worker API e D1 para ranking são uma proposta arquitetural, ainda sem backend provisionado. `main`/PROD permanece isolada.
+
+O novo desenho de robô/naves está especificado em [DESIGN-MECHA-STARFIGHTER](DESIGN-MECHA-STARFIGHTER.md), ainda sem homologação do modelo 3D.
+
 # Arquitetura
 
 ## Fluxo de execução
