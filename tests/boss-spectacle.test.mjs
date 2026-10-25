@@ -13,7 +13,7 @@ function setup(t, opts) {
 }
 test('boss armor sustains combat across three stages even against extreme damage', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  h.advance(85.05, 0.1);
   h.game.damageBoss(1e6);
   assert.equal(h.game.snapshot().bossParts, 2, 'arrival shields active');
   const phases = new Set();
@@ -97,7 +97,7 @@ test('pods evolve through three armored forms and reset formation on restart', (
 });
 test('reactor collapse freezes on blur, rejects damage and rewards only after eight seconds', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  h.advance(85.05, 0.1);
   defeatBoss(h, { stopAtCollapse: true });
   const initial = h.game.snapshot();
   assert.equal(initial.state, 'collapsing');
@@ -151,7 +151,7 @@ test('Marvin finale alone reveals the three recovered-supply rings', () => {
 
 test('web victory flyby accepts movement and fire, pauses, then rewards once', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  h.advance(85.05, 0.1);
   defeatBoss(h, { stopAtCollapse: true });
   const initial = h.game.snapshot();
   h.key('KeyD');
@@ -175,7 +175,7 @@ test('web victory flyby accepts movement and fire, pauses, then rewards once', (
 
 test('boss approaches from the horizon without an instant arena teleport', (t) => {
   const h = setup(t);
-  h.advance(65.01, 0.01);
+  h.advance(85.01, 0.01);
   const arrival = h.game.snapshot();
   assert.ok(arrival.bossZ < -220);
   h.advance(1);
