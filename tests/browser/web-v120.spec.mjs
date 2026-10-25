@@ -8,7 +8,7 @@ test('subboss reaches combat quickly and telegraphs its distinct attack', async 
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&encounters=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(15.4));
+  await page.evaluate(() => window.fixture.advance(19.8));
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   const subboss = before.targets.find((enemy) => enemy.kind === 'subboss');
   expect(subboss).toMatchObject({
