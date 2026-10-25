@@ -11,7 +11,7 @@ export const SECTORS = [
     theme: 'city',
     accent: '#39ffb0',
     sky: '#041711',
-    duration: 130,
+    duration: 145,
     brief: 'Bia, liberte a costa. As torres alimentam a frota de Marvin.',
   },
   {
@@ -21,7 +21,7 @@ export const SECTORS = [
     theme: 'ocean',
     accent: '#48e5ff',
     sky: '#042036',
-    duration: 70,
+    duration: 80,
     brief: 'Bob detectou uma máquina colossal sob o porto. Proteja a rota de fuga.',
   },
   {
@@ -31,7 +31,7 @@ export const SECTORS = [
     theme: 'asteroids',
     accent: '#ff6ddd',
     sky: '#1b092d',
-    duration: 70,
+    duration: 82,
     brief: 'Subindo para a órbita. Atravesse os destroços sem perder os pods.',
   },
   {
@@ -41,7 +41,7 @@ export const SECTORS = [
     theme: 'station',
     accent: '#5dffee',
     sky: '#06262c',
-    duration: 75,
+    duration: 88,
     brief: 'Christopher encontrou o núcleo da estação. Desative os geradores externos.',
   },
   {
@@ -51,7 +51,7 @@ export const SECTORS = [
     theme: 'sun',
     accent: '#ff9a45',
     sky: '#2c0d04',
-    duration: 75,
+    duration: 88,
     brief: 'A rede entrou em colapso. Cuidado com as rajadas de plasma.',
   },
   {
@@ -61,7 +61,7 @@ export const SECTORS = [
     theme: 'ice',
     accent: '#a3eaff',
     sky: '#08253f',
-    duration: 80,
+    duration: 92,
     brief: 'Bloco dois. Um colosso protege os depósitos de energia de Marvin.',
   },
   {
@@ -71,7 +71,7 @@ export const SECTORS = [
     theme: 'nebula',
     accent: '#d36aff',
     sky: '#200535',
-    duration: 80,
+    duration: 92,
     brief: 'A biofrota reage aos nossos sinais. Quebre as cabeças da colmeia.',
   },
   {
@@ -81,7 +81,7 @@ export const SECTORS = [
     theme: 'fleet',
     accent: '#a18aff',
     sky: '#100b29',
-    duration: 85,
+    duration: 98,
     brief: 'Toda a frota está aqui. Guarde uma bomba para a barragem.',
   },
   {
@@ -91,7 +91,7 @@ export const SECTORS = [
     theme: 'void',
     accent: '#ba7aff',
     sky: '#11051f',
-    duration: 85,
+    duration: 98,
     brief: 'Sem sinal da Terra. Siga o disco de acreção até o Bastião.',
   },
   {
@@ -101,7 +101,7 @@ export const SECTORS = [
     theme: 'throne',
     accent: '#ff4e79',
     sky: '#23030d',
-    duration: 90,
+    duration: 104,
     brief: 'Five Cats reunidos. A Devastador está à frente. Termine esta guerra.',
   },
 ];
