@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import {
   readStrategy,
   elementalDamage,
@@ -77,7 +78,7 @@ test('checkpoint persists RPG progress and equipped choices through actual hanga
   for (let i = 0; i < 24; i++) h.game.collect('blue');
   h.game.cycleArsenal();
   h.game.cycleSpecial();
-  h.advance(85.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   assert.equal(h.game.snapshot().state, 'shop');
   const next = setup(t, { storage });
@@ -156,7 +157,7 @@ test('docked pods amplify actual shots and deployed pods pursue moving targets',
 test('orbital flanks reject frontal damage, accept exposed generator hits and remain time based', (t) => {
   for (const dt of [1 / 30, 1 / 60]) {
     const h = setup(t);
-    h.advance(88.1);
+    reachSectorBoss(h, { bossAge: 23 });
     const initial = h.game.snapshot().bossTargets.map((p) => p.hp);
     h.game.damageBoss(10000);
     assert.deepEqual(
@@ -301,7 +302,7 @@ test('five pilots and three ships validate selection, alter real stats and persi
   assert.equal(h.game.snapshot().loadout.ship, 'aegis');
   assert.equal(h.game.snapshot().loadout.color, 'gold');
   assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
-  h.advance(85.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   const restored = harness({ storage });
   t.after(() => restored.close());
