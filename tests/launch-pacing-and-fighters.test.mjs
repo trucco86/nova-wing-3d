@@ -9,10 +9,19 @@ import { fighter } from '../src/visuals.js';
 test('launch keeps the extended city mission and does not reveal orbit before BOOST exhaustion', () => {
   const duration = SECTORS[0].duration;
   assert.ok(duration >= 120, 'first mission needs a longer playable route');
-  assert.equal(launchAmount(duration * 0.4, duration), 0);
-  assert.ok(launchAmount(duration * 0.65, duration) < 0.5);
-  assert.equal(launchOrbitReady(launchAmount(duration * 0.65, duration)), false);
+  const launch = createOrbitalLaunch();
+  launch.advance({
+    seconds: duration * 0.85,
+    dt: 0.05,
+    boosting: false,
+    chargeBefore: 100,
+    chargeAfter: 100,
+  });
+  assert.equal(launch.snapshot().amount, 0, 'elapsed time alone cannot reveal the planet');
+  assert.equal(launchOrbitReady(launch.snapshot().amount), false);
+  assert.equal(routeAt(0, duration * 0.85, duration).ascent, 0);
   assert.ok(routeAt(0, duration * 0.85, duration, false, 0.85).ascent > 0.6);
+  assert.equal(ORBITAL_LAUNCH.atmosphericSeconds, 38);
 });
 
 test('enemy fighter archetypes have distinct detailed meshes', () => {
