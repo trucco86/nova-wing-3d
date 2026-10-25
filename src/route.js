@@ -42,7 +42,7 @@ export function routeAt(sector, seconds, duration, boss = false) {
   const ascent = boss
     ? 0
     : sector === 0
-      ? 1.15 * smooth((progress - 0.38) / 0.5)
+      ? 1.15 * smooth((progress - 0.48) / 0.46)
       : sector === 2
         ? Math.sin(Math.PI * progress)
         : 0;
