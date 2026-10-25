@@ -27,6 +27,7 @@ jobs:
       - name: Execute focused orbital launch and renderer tests
         run: node --test tests/orbital-launch.test.mjs tests/flight-launch-visual.test.mjs tests/launch-pacing-and-fighters.test.mjs
       - run: npm run build:check
+      - run: npm run format:check
       - name: Commit generated build, remove temporary workflow and stale preparation
         run: |
           git rm .github/workflows/flight-boost-prepare-once.yml
