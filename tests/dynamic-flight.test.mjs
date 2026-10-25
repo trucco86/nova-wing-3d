@@ -102,7 +102,7 @@ test('hangar paint purchases persist ownership, score and selected paint across 
   t.after(() => h.close());
   h.game.start(true);
   assert.equal(h.game.buySkin('ember'), false);
-  h.advance(65.1);
+  h.advance(85.1);
   defeatBoss(h);
   const before = h.game.snapshot();
   assert.equal(h.game.buySkin('ember'), true);
