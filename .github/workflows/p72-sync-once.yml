@@ -1,0 +1,41 @@
+name: Sync orbital parent and validate balance candidate once
+on:
+  push:
+    branches: [feat/p0-mission-pacing-difficulty-20261025]
+    paths: ['.github/workflows/p72-sync-once.yml']
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Merge upstream orbit branch preserving tested balance
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin feat/p0-sector-flight-orbit-dev-20261025
+          git merge --no-ff --no-edit -X ours origin/feat/p0-sector-flight-orbit-dev-20261025
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated asset and remove one-shot workflow
+        run: |
+          git rm .github/workflows/p72-sync-once.yml
+          git add -A
+          git commit -m 'build(balance): reconcile latest orbital collision tests and generated bundle'
+          git push origin HEAD:refs/heads/feat/p0-mission-pacing-difficulty-20261025
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p72-synchronized-quality
+          path: artifacts/
