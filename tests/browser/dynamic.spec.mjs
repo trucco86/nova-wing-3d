@@ -216,7 +216,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.game.snapshot().shotDirections.length),
   ).toBeGreaterThan(0);
   await page.screenshot({ path: info.outputPath('nova-radial.png') });
-  await page.evaluate(() => window.fixture.advance(58));
+  await page.evaluate(() => window.fixture.advance(78));
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
   if (info.project.name === 'mobile') {
@@ -297,7 +297,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(74));
+  await page.evaluate(() => window.fixture.advance(94));
   await expect(page.locator('#tacticalPanel')).toBeVisible();
   await expect(page.locator('#tacticState')).toContainText('BATERIA');
   await page.locator('#strategyDrawer summary').click();
@@ -316,7 +316,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
   await page.goto('/__dynamic.html?sector=0');
   await page.evaluate(() => {
-    window.fixture.advance(68.1);
+    window.fixture.advance(88.1);
     window.fixture.game.tacticalAction('precision');
     window.fixture.advance(0.65);
   });
@@ -332,7 +332,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await page.evaluate(() => {
-      window.fixture.advance(68.1);
+      window.fixture.advance(88.1);
       window.fixture.game.tacticalAction('precision');
       window.fixture.advance(0.65);
     });
@@ -343,7 +343,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   }
   await page.goto('/__dynamic.html?sector=0');
   await page.evaluate(() => {
-    window.fixture.advance(68.1);
+    window.fixture.advance(88.1);
     window.fixture.game.orbit(-1);
     window.fixture.advance(1.3);
     window.fixture.game.orbit(0);
