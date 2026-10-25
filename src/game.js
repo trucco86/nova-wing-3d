@@ -2333,6 +2333,7 @@ export function createGame({
       spawnEncounters &&
       sectorIndex === 0 &&
       orbitalLaunch &&
+      !quietFirstSubboss &&
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
     ) {
@@ -2345,6 +2346,7 @@ export function createGame({
       isGroundSector(current()) &&
       elapsed < current().duration &&
       groundCd <= 0 &&
+      !quietFirstSubboss &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
