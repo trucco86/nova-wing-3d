@@ -434,7 +434,7 @@ export function createShipModule(model = 'nova7') {
     );
     strake.position.y = 0.21;
     g.add(strake);
-    const vent = box(0.32, 0.15, 1.28, graphite, side * 1.85, 0.35, 0.26);
+    const vent = box(0.32, 0.15, 1.28, navy, side * 1.85, 0.35, 0.26);
     vent.rotation.y = side * 0.21;
     g.add(vent);
     const trim = line(
@@ -447,7 +447,7 @@ export function createShipModule(model = 'nova7') {
     );
     g.add(trim);
   }
-  const keel = box(0.34, 0.18, 3.6, graphite, 0, 0.27, 0.18);
+  const keel = box(0.34, 0.18, 3.6, navy, 0, 0.27, 0.18);
   keel.name = 'ship-mechanical-keel';
   g.add(keel);
   return g;
