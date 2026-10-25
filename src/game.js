@@ -2342,6 +2342,7 @@ export function createGame({
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel');
     if (
+      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
       shouldWarnBoss({
         elapsed,
         duration: current().duration,
