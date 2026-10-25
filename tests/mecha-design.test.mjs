@@ -14,7 +14,7 @@ test('flight mech uses wide dorsal wings and a turbine at shoulder height', () =
   assert.ok(turbine.position.y > 2.8, 'turbine must not be at waist height');
   assert.ok(turbine.position.z > 1.5, 'main turbine must be on the back');
   const span = new T.Box3().setFromObject(robot);
-  assert.ok(span.max.x - span.min.x > 10, 'wings must create a broad fighter silhouette');
+  assert.ok(span.max.x - span.min.x > 8, 'mecha wings must retain fighter-scale span');
   assert.ok(leftWing.geometry.type === 'ExtrudeGeometry');
   assert.ok(rightWing.geometry.type === 'ExtrudeGeometry');
   assert.equal(robot.userData.mechRig.arms.length, 2);
@@ -42,4 +42,17 @@ test('all starfighter variants share mechanical silhouette while preserving vari
       .join('|'),
   );
   assert.equal(new Set(silhouettes).size, 3, 'each starfighter retains a distinct chassis');
+});
+
+test('mecha wings reuse the exact fighter wing geometry rather than a larger rounded copy', () => {
+  const robot = createFlyingRobot();
+  const fighter = createShipModule('nova7');
+  const mechaWing = robot.getObjectByName('mech-wing-right');
+  const fighterWing = fighter.children.find((part) => part.userData.sharedWingProfile === 'fighter-v1');
+  assert.ok(fighterWing);
+  assert.equal(mechaWing.userData.sharedWingProfile, fighterWing.userData.sharedWingProfile);
+  const mechaPoints = mechaWing.geometry.attributes.position.array;
+  const fighterPoints = fighterWing.geometry.attributes.position.array;
+  assert.deepEqual(Array.from(mechaPoints), Array.from(fighterPoints));
+  assert.ok(robot.scale.x <= 1, 'mecha chassis must not be artificially enlarged');
 });
