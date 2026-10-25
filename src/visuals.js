@@ -264,6 +264,7 @@ export function createFlyingRobot() {
     );
     plume.rotation.x = Math.PI / 2;
     plume.position.set(side * 1.12, 0.8, 3.4);
+    plume.name = 'mecha-thruster-plume';
     robot.add(plume);
   }
   // Hard-surface detailing: preserve the original rig while improving silhouette.
@@ -301,6 +302,9 @@ export function createFlyingRobot() {
     collar.position.set(side * 1.12, 0.8, 2.65);
     robot.add(collar);
   }
+  robot.userData.flightRig = {
+    plumes: robot.children.filter((child) => child.name === 'mecha-thruster-plume'),
+  };
   robot.scale.setScalar(0.88);
   return robot;
 }
