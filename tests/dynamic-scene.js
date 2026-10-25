@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { createGame } from '../src/game.js';
 import { defeatBoss } from './combat-helper.mjs';
+import { SECTORS } from '../src/campaign.js';
 const params = new URLSearchParams(location.search);
 const sector = Number(params.get('sector') ?? 0);
 localStorage.setItem(
@@ -63,7 +64,7 @@ window.fixture = {
       );
       advance(38.3);
     }
-    const duration = sector === 0 ? 130 : 70 + Math.floor((sector - 1) / 2) * 5;
+    const duration = SECTORS[sector].duration;
     advance(Math.max(0, duration + 6 - game.snapshot().seconds));
     defeatBoss({ game, advance });
     capture = rendering = true;
