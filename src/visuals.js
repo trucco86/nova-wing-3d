@@ -362,14 +362,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
-    uniforms: { tint: { value: new T.Color('#ffffff') } },
+    uniforms: { tint: { value: new T.Color('#ffffff') }, launchHaze: { value: 0 } },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c*tint,1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform float launchHaze;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);gl_FragColor=vec4(c*tint+launchHaze*haze,1.);}`,
   });
-  scene.add(new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat));
+  const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
+  skyDome.name = 'launch-sky-dome';
+  scene.add(skyDome);
   // An Earth-like horizon appears as the first sector leaves the city.
   // This is a background-only visual; collision coordinates do not change.
   const earthMat = new T.ShaderMaterial({
@@ -630,6 +632,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.fog.density = 0.0014 - 0.0012 * t;
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
       starfield.material.opacity = 0.16 + 0.59 * t;
+      // A luminous cloud band bridges the city and the planetary horizon.
+      // It peaks midway through the 38-second coast instead of a blank starfield.
+      skyMat.uniforms.launchHaze.value = 1.4 * Math.sin(Math.PI * t) ** 2;
       earthHorizon.position.y = -940 + t * 180;
       earthHorizon.visible = orbital;
       const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
@@ -656,6 +661,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = -7;
       earthHorizon.visible = false;
       earthMat.uniforms.fade.value = 0;
+      skyMat.uniforms.launchHaze.value = 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
@@ -828,6 +834,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = -7;
       earthHorizon.visible = false;
       earthMat.uniforms.fade.value = 0;
+      skyMat.uniforms.launchHaze.value = 0;
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };
