@@ -46,7 +46,7 @@ test('background freezes combat, clears multi-touch and suspends audio until exp
 });
 test('background preserves collapse rewards and the hangar resumes audio only on continuation', (t) => {
   const h = setup(t);
-  h.advance(65.1, 0.1);
+  h.advance(85.1, 0.1);
   defeatBoss(h, { stopAtCollapse: true });
   assert.equal(h.game.snapshot().state, 'collapsing');
   h.advance(2);
