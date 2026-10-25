@@ -1,6 +1,12 @@
 # Backlog mestre — Nova Wing Five Cats
 
-> **Atualização de arquitetura — 25/10/2026 (UTC).** DEV já possui Google Login opcional via Firebase Auth (PR #59 integrada); OAuth real continua pendente de homologação. Cloudflare Pages hospeda DEV/HML/previews; **Cloudflare Workers + D1 para ranking ainda não foram criados**. A proposta anterior Firestore/Cloud Functions está em PR #57 (draft) e não deve ser confundida com backend ativo. Preview #54 (robô) continua visualmente **não aprovado**; direção do mecha e naves registrada em [DESIGN-MECHA-STARFIGHTER](DESIGN-MECHA-STARFIGHTER.md). Detalhes em [ARCHITECTURE-PLATFORM](ARCHITECTURE-PLATFORM.md), [AUTH-FIREBASE](AUTH-FIREBASE.md) e [RANKING-CLOUDFLARE](RANKING-CLOUDFLARE.md). O inventário histórico abaixo não deve sobrescrever estes estados verificados.
+## Atualização de plataforma — 25/10/2026 (UTC)
+
+- Firebase Authentication (PR #59): integrado em DEV, sem homologação OAuth real.
+- Cloudflare Pages: DEV/HML e previews publicados; Cloudflare Workers e D1 para ranking ainda não criados.
+- PR #57 Firestore/Cloud Functions: proposta alternativa não integrada.
+- Robô da PR #54: protótipo visual não aprovado; direção atual em [DESIGN-MECHA-STARFIGHTER](DESIGN-MECHA-STARFIGHTER.md).
+- Referências: [arquitetura de plataforma](ARCHITECTURE-PLATFORM.md), [Firebase Auth](AUTH-FIREBASE.md) e [ranking proposto](RANKING-CLOUDFLARE.md).
 
 
 **Consolidação: 24/10/2026.** Fonte: backlog anterior NW-01–NW-17, issues abertas #21, #34, #39–#42, PRs abertas #6, #7, #22, #38 e #43 e solicitações recentes. **Inventário de trabalho, não promessa de funcionalidades entregues.**
