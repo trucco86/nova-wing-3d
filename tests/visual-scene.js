@@ -1,5 +1,13 @@
 import * as T from 'three';
-import { createWorld, postProcessor, fighter } from '../src/visuals.js';
+import {
+  animateMechPower,
+  createFlyingRobot,
+  createShipModule,
+  createWorld,
+  fighter,
+  postProcessor,
+  setFighterEvolution,
+} from '../src/visuals.js';
 import { createBossModel, createSubboss, SUBBOSS_NAMES } from '../src/bosses.js';
 import { createGroundEnemy, createObstacle } from '../src/encounters.js';
 import { createFlightCamera } from '../src/flight.js';
@@ -23,7 +31,34 @@ const world = createWorld(scene);
 world.setSector(SECTORS[index]);
 const mode = new URLSearchParams(location.search).get('mode');
 const variant = Number(new URLSearchParams(location.search).get('variant') ?? -1);
-if (mode === 'tunnel' || mode === 'ground') {
+if (mode === 'mecha-review') {
+  // Dedicated close-up inspection: identical environment, scale and camera for both forms.
+  const params = new URLSearchParams(location.search);
+  const view = params.get('view') ?? 'front';
+  const tier = [0, 3, 6].includes(Number(params.get('tier'))) ? Number(params.get('tier')) : 6;
+  const mecha = createFlyingRobot();
+  const ship = createShipModule('nova7');
+  mecha.position.set(-7.2, 13, -46);
+  ship.position.set(7.2, 13, -46);
+  mecha.name = 'review-mecha';
+  ship.name = 'review-ship';
+  animateMechPower(mecha, 1.25, true, tier);
+  setFighterEvolution(ship, tier);
+  scene.add(mecha, ship);
+  if (view === 'rear') {
+    camera.position.set(0, 17, -78);
+    camera.lookAt(0, 13, -46);
+  } else if (view === 'side') {
+    camera.position.set(-32, 19, -32);
+    camera.lookAt(0, 13, -46);
+  } else {
+    camera.position.set(0, 17, -15);
+    camera.lookAt(0, 13, -46);
+  }
+  // Expose deterministic render metadata so screenshot validation catches wrong frames.
+  document.body.dataset.reviewView = view;
+  document.body.dataset.reviewTier = String(tier);
+} else if (mode === 'tunnel' || mode === 'ground') {
   const tunnel = createObstacle(mode === 'tunnel' ? 'tunnel' : 'gantry');
   tunnel.position.z = mode === 'tunnel' ? 90 : -150;
   scene.add(tunnel);
@@ -73,9 +108,10 @@ if (mode === 'tunnel' || mode === 'ground') {
 }
 const player = fighter();
 player.position.set(0, 6, 9);
+player.visible = mode !== 'mecha-review';
 scene.add(player);
 const lateral = Number(new URLSearchParams(location.search).get('lateral') ?? 0);
-if (Number.isFinite(lateral) && Math.abs(lateral) <= 25) {
+if (mode !== 'mecha-review' && Number.isFinite(lateral) && Math.abs(lateral) <= 25) {
   player.position.x = lateral;
   const rig = createFlightCamera(camera);
   rig.reset(player.position);
@@ -85,8 +121,10 @@ post.resize(innerWidth, innerHeight);
 world.update(0, 1, 48, false);
 post.render();
 document.querySelector('h1').textContent =
-  mode === 'tunnel'
-    ? 'TÚNEL INDUSTRIAL / DEFESA TERRESTRE'
+  mode === 'mecha-review'
+    ? 'REVISÃO DE DESIGN / ROBÔ × NAVE / ÂNGULOS E NEONS'
+    : mode === 'tunnel'
+      ? 'TÚNEL INDUSTRIAL / DEFESA TERRESTRE'
     : mode === 'ground'
       ? 'CIDADE / TANQUES E SENTINELAS'
       : mode === 'equipment'
