@@ -1,3 +1,5 @@
+# Arquitetura
+
 ## Plataforma Web, Firebase Auth, Cloudflare Pages e ranking (25/10/2026)
 
 A evolução de distribuição/identidade foi consolidada em [ARCHITECTURE-PLATFORM](ARCHITECTURE-PLATFORM.md), [AUTH-FIREBASE](AUTH-FIREBASE.md), [DEPLOY-ENVIRONMENTS](DEPLOY-ENVIRONMENTS.md) e [RANKING-CLOUDFLARE](RANKING-CLOUDFLARE.md). As decisões e seus limites constam nos [ADRs](adr/0001-ambientes-e-publicacao.md).
@@ -6,7 +8,6 @@ A evolução de distribuição/identidade foi consolidada em [ARCHITECTURE-PLATF
 
 O novo desenho de robô/naves está especificado em [DESIGN-MECHA-STARFIGHTER](DESIGN-MECHA-STARFIGHTER.md), ainda sem homologação do modelo 3D.
 
-# Arquitetura
 
 ## Fluxo de execução
 
