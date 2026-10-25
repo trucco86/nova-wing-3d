@@ -23,6 +23,7 @@ jobs:
           npx prettier --write src/game.js tests/mission-scenarios.mjs tests/android.test.mjs tests/boss-spectacle.test.mjs tests/boss-telegraph.test.mjs tests/campaign.test.mjs tests/dynamic-flight.test.mjs tests/game.test.mjs tests/strategy.test.mjs tests/tactics.test.mjs tests/subboss-encounter.test.mjs tests/flight-launch-visual.test.mjs
       - run: npm run build
       - run: npm run validate
+      - run: npm run build:check
       - name: Commit passing regression and clean up one-off workflow
         run: |
           git rm .github/workflows/flight-full-unit-regression-once.yml
