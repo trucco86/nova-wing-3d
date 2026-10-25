@@ -19,7 +19,7 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     await page.setViewportSize(viewport);
     await page.goto('/__dynamic.html?sector=0&xp=740');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    await page.evaluate(() => window.fixture.advance(68.1));
+    await page.evaluate(() => window.fixture.advance(88.1));
     await expect(page.locator('#bossHUD')).toBeVisible();
     await expect(page.locator('#quickRpg')).toBeVisible();
     await expect(page.locator('#touch')).toBeVisible();
