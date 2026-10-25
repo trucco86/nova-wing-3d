@@ -22,3 +22,9 @@
 - Workflow de preparação da PR #71: **162/162 testes unitários, lint, Prettier e build validados**. Não confundir com a suíte Playwright nem com homologação da jogabilidade.
 - Cenários clássicos de chefe e pós-venda atualizados para realizar a sequência verdadeira: esgotar BOOST, terminar a atmosfera, avançar até a arena e usar controles de órbita para atingir os pontos vulneráveis. A invulnerabilidade inicial de 3 s continua obrigatória.
 - A homologação requer CI final com quatro shards Playwright, inspeção da transição cidade → névoa → planeta, colisão sem atravessar objetos e aceite visual. As alterações continuam em PR draft.
+
+## Regressão de navegador da fase estendida
+
+O conjunto Playwright inclui um helper de jornada em `tests/browser/orbital-journey.mjs`, com ações reais de teclado e avanço de simulação. Ele não altera diretamente o estado interno da fase: utiliza BOOST até o esgotamento, acompanha os 38 s de travessia e somente depois executa cenários de barra do chefe, aviso pré-combate, radar, RPG e hangar.
+
+A verificação de subchefe aguarda a animação de carregamento em uma janela observável, em vez de depender dos antigos 19,8 s. A suíte de navegador ainda precisa passar completamente no SHA da PR antes do aceite visual.
