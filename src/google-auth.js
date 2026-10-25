@@ -27,7 +27,9 @@ export async function signOutToGuest({ auth, authSdk, setUser, setStatus, closeP
   }
 }
 
-export function installGoogleLogin() {
+export function installGoogleLogin({
+  loadSdks = () => Promise.all([import(/* @vite-ignore */ APP_URL), import(/* @vite-ignore */ AUTH_URL)]),
+} = {}) {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};
   // Never load Firebase on PR previews, offline/native shells or automated visual tests.
@@ -142,8 +144,8 @@ export function installGoogleLogin() {
   });
   (async () => {
     try {
-      const appSdk = await import(/* @vite-ignore */ APP_URL);
-      authSdk = await import(/* @vite-ignore */ AUTH_URL);
+      const [appSdk, loadedAuthSdk] = await loadSdks();
+      authSdk = loadedAuthSdk;
       if (disposed) return;
       const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(config);
       auth = authSdk.getAuth(app);
