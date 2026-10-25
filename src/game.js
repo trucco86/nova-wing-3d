@@ -2637,9 +2637,7 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) =>
-        projectileHitsApproachingObstacle(from, to, o, speed * dt),
-      );
+      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
       b.previousPosition = previousShot;

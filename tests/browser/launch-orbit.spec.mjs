@@ -38,8 +38,12 @@ test('space hazards replace urban gantries and remain visible as dodging obstacl
     return window.fixture.game.snapshot();
   });
   expect(snapshot.route.ascent).toBeGreaterThan(0.7);
-  expect(snapshot.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind))).toBe(true);
-  expect(snapshot.obstacleKinds.some((kind) => ['gantry', 'reactor', 'tunnel'].includes(kind))).toBe(false);
+  expect(
+    snapshot.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind)),
+  ).toBe(true);
+  expect(
+    snapshot.obstacleKinds.some((kind) => ['gantry', 'reactor', 'tunnel'].includes(kind)),
+  ).toBe(false);
   await page.screenshot({ path: info.outputPath('launch-space-obstacles.png') });
   expect(errors).toEqual([]);
 });
