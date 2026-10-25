@@ -5,14 +5,15 @@ import { SECTORS, readSave } from '../src/campaign.js';
 import { createBossModel, disposeBoss } from '../src/bosses.js';
 import { createMusic, TRACKS } from '../src/audio.js';
 import { harness } from './harness.mjs';
-import { defeatBoss, advanceToBoss } from './combat-helper.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
+import { defeatBoss } from './combat-helper.mjs';
 function setup(t, options) {
   const h = harness(options);
   t.after(() => h.close());
   return h;
 }
 function beatBoss(h, _index) {
-  advanceToBoss(h);
+  reachSectorBoss(h, { bossAge: 0.15, dt: 0.1 });
   assert.equal(h.game.snapshot().boss, true);
   defeatBoss(h);
 }
