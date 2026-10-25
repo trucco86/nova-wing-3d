@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.24.4 — Candidata P0 de HUD mobile (revisão)
+
+- Remove ROBÔ da linha implícita do grid de cinco ações em telas de toque.
+- Regressão com área clicável e viewport landscape; revisão visual pendente.
+- Não promovida para HML ou PROD.
+
 ## 1.24.3 — Candidata em preparação
 
 - Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
