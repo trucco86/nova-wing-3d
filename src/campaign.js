@@ -11,7 +11,7 @@ export const SECTORS = [
     theme: 'city',
     accent: '#39ffb0',
     sky: '#041711',
-    duration: 65,
+    duration: 85,
     brief: 'Bia, liberte a costa. As torres alimentam a frota de Marvin.',
   },
   {
