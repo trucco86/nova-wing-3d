@@ -118,7 +118,7 @@ test('low-altitude laser fire can damage a terrestrial tank', (t) => {
 });
 test('native tunnel spawns once with combat, clears on restart and freezes with pause', (t) => {
   const h = setup(t, { spawnEncounters: true, nativeLifecycle: true });
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 40; i++) {
     h.game.collect('shield');
     if (h.game.snapshot().encounterKinds.includes('subboss')) {
       h.game.bomb();
