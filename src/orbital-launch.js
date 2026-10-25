@@ -19,9 +19,11 @@ export function createOrbitalLaunch() {
   let boostSeconds = 0;
   let atmosphereSeconds = 0;
   let amount = 0;
+  let exhaustedAt = null;
   const snapshot = () => ({
     phase,
     amount,
+    exhaustedAt,
     boostSeconds,
     atmosphereSeconds,
     complete: phase === 'orbit',
@@ -33,6 +35,7 @@ export function createOrbitalLaunch() {
       boostSeconds = 0;
       atmosphereSeconds = 0;
       amount = 0;
+      exhaustedAt = null;
       return snapshot();
     },
     snapshot,
@@ -53,6 +56,7 @@ export function createOrbitalLaunch() {
           boostSeconds >= ORBITAL_LAUNCH.minimumBoostSeconds
         ) {
           phase = 'atmosphere';
+          exhaustedAt = chargeAfter;
           atmosphereSeconds = 0;
           amount = ORBITAL_LAUNCH.boostClimbFraction;
         }

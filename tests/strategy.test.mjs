@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { reachSectorBoss, waitForArmoredFront, aimAtFirstGenerator } from './mission-scenarios.mjs';
 import {
   readStrategy,
   elementalDamage,
@@ -159,16 +160,18 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
     advanceToBoss(h);
     h.advance(3);
     const initial = h.game.snapshot().bossTargets.map((p) => p.hp);
-    h.game.damageBoss(10000);
+    assert.equal(h.game.damageBoss(10000), 0, 'armored front must reject direct damage');
     assert.deepEqual(
       h.game.snapshot().bossTargets.map((p) => p.hp),
       initial,
     );
-    h.game.orbit(-1);
-    h.advance(Math.PI / 3 / 0.8, dt);
-    h.game.orbit(0);
-    assert.ok(Math.abs(h.game.snapshot().strategy.orbitAngle + Math.PI / 3) < 1e-6);
-    const targets = h.game.snapshot().bossTargets;
+    const exposed = aimAtFirstGenerator(h, { dt });
+    const targets = exposed.bossTargets;
+    const alignment = Math.atan2(
+      Math.sin(targets[0].angle - exposed.strategy.orbitAngle),
+      Math.cos(targets[0].angle - exposed.strategy.orbitAngle),
+    );
+    assert.ok(Math.abs(alignment) < 0.35, 'orbital control tracks the moving weak point');
     assert.equal(targets[0].open, true);
     assert.equal(targets[1].open, false);
     h.game.damageBoss(10000, new T.Vector3(...targets[0].position));

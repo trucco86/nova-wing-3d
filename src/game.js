@@ -611,7 +611,10 @@ export function createGame({
         (dynamicFlight ? activeShip().stats.defense * 12 : 0)) *
         (dynamicFlight ? activePilot().bonuses.shield : 1),
     );
-  const current = () => SECTORS[sectorIndex];
+  // The extended BOOST-gated launch is a web P0; keep the existing native campaign pacing.
+  const nativeLaunchSector = { ...SECTORS[0], duration: 65 };
+  const current = () =>
+    nativeLifecycle && sectorIndex === 0 ? nativeLaunchSector : SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
     writeSave(storage, {
       sector: next,
@@ -2073,7 +2076,8 @@ export function createGame({
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
       boostNeedsRelease = true;
-      message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
+      if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
+        message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     const energyBeforeBoost = energy;
@@ -2348,8 +2352,9 @@ export function createGame({
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
     ) {
+      // Orbital combat gets actual spacecraft, never ground robots floating in space.
       groundWave++;
-      enemy('hover-walker');
+      enemy('fighter');
       groundCd = 7.5;
     }
     if (
@@ -2384,6 +2389,7 @@ export function createGame({
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel');
     if (
+      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
       shouldWarnBoss({
         elapsed,
         duration: current().duration,

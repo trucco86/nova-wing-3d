@@ -12,12 +12,20 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   const city = scene.getObjectByName('launch-city');
   const ground = scene.getObjectByName('launch-ground');
   const earth = scene.getObjectByName('launch-earth-horizon');
+  const skyDome = scene.getObjectByName('launch-sky-dome');
+  assert.ok(skyDome);
   assert.ok(city);
   assert.ok(ground);
   assert.ok(earth);
   assert.equal(city.position.y, 0);
   assert.equal(ground.position.y, -7);
   assert.equal(earth.visible, false);
+  assert.equal(skyDome.material.uniforms.launchHaze.value, 0);
+  world.setLaunchAscent(0.5, true);
+  assert.ok(
+    skyDome.material.uniforms.launchHaze.value > 1,
+    'middle atmospheric phase has luminous cloud cover',
+  );
   world.setLaunchAscent(0.8, true);
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
@@ -37,6 +45,7 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   assert.equal(ground.visible, true, 'new ocean sector restores its ground');
   assert.equal(earth.visible, false, 'the launch horizon is exclusive to sector 1');
   assert.equal(earth.material.uniforms.fade.value, 0);
+  assert.equal(skyDome.material.uniforms.launchHaze.value, 0, 'new sector has no launch haze');
 });
 
 test('all ten flight sectors maintain finite bends, level boss arenas and smooth route endpoints', () => {

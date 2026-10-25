@@ -4,6 +4,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import { installNativeShell } from '../src/native.js';
 import { prepareAndroidWeb } from '../tools/android.mjs';
 import { defeatBoss, advanceToBoss } from './combat-helper.mjs';

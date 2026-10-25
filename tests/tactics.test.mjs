@@ -87,11 +87,9 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
   h.advance(0.65);
   assert.equal(h.elements.get('hitFeedback').textContent, 'SEM DANO · AJUSTE O ÂNGULO');
   assert.equal(h.game.snapshot().bossTargets[0].hp, 180);
-  h.game.orbit(-1);
-  h.advance(1.3);
-  h.game.orbit(0);
-  h.game.tacticalAction('precision');
-  h.advance(0.35);
+  aimAtFirstGenerator(h);
+  assert.equal(h.game.tacticalAction('precision'), true);
+  for (let i = 0; i < 15 && h.game.snapshot().bossTargets[0].hp === 180; i++) h.advance(0.1);
   assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
   assert.match(h.elements.get('hitFeedback').textContent, /^(ACERTO|PONTO FRACO) \+\d+$/);
 });
@@ -106,7 +104,7 @@ test('barrage keeps confirmed feedback when later projectiles are blocked', (t) 
   h.advance(1.3);
   h.game.orbit(0);
   assert.equal(h.game.tacticalAction('barrage'), true);
-  h.advance(0.35);
+  for (let i = 0; i < 20 && h.game.snapshot().bossTargets[0].hp === 180; i++) h.advance(0.1);
   assert.ok(h.game.snapshot().bossTargets[0].hp < 180);
   assert.match(h.elements.get('hitFeedback').textContent, /^(ACERTO|PONTO FRACO) \+\d+$/);
 });

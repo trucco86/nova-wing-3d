@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import { routeAt } from '../src/route.js';
 import { createArcade } from '../src/arcade.js';
 import { readCosmetics, skinPurchase } from '../src/customization.js';
