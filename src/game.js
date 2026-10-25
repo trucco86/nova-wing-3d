@@ -2023,6 +2023,14 @@ export function createGame({
           rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
         }
       }
+      const turbine = rig?.turbineFlame;
+      if (turbine) {
+        const thrust = boosting ? 1 : 0.45;
+        turbine.scale.set(1 + Math.sin(elapsed * 31) * 0.08, 1 + thrust * 0.75, 1 + Math.sin(elapsed * 19) * 0.08);
+        turbine.material.opacity = 0.57 + thrust * 0.27 + Math.sin(elapsed * 27) * 0.07;
+        rig.turbineRing.rotation.z = elapsed * (boosting ? 10 : 5);
+        rig.turbineCore.rotation.y = elapsed * (boosting ? 13 : 7);
+      }
       robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
       robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
     }
