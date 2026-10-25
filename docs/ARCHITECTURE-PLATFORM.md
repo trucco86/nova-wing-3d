@@ -32,25 +32,25 @@ flowchart LR
 
 ## 2. Matriz de componentes e estado verificado
 
-| Componente | Responsabilidade | Evidência | Estado |
-| --- | --- | --- | --- |
-| `src/main.js`, `game.js`, `visuals.js`, `campaign.js` | Bootstrap, jogo, renderização e estado | Código versionado em `dev` | Implementado |
-| `tools/build.mjs`, `index.html` | Bundle HTML reproduzível | `build:check` no harness | Implementado |
-| `src/google-auth.js` | Google sign-in, sessão persistente, logout, modo visitante | PR [#59](https://github.com/trucco86/nova-wing-3d/pull/59) integrada em `dev` | Publicado em DEV; OAuth real não homologado |
-| `cloudflare-preview.yml` | Publicação estática isolada, aliases por branch/PR | Workflows e URLs em [DEPLOY-ENVIRONMENTS](DEPLOY-ENVIRONMENTS.md) | DEV/HML e previews publicados |
-| `ci.yml`, `tests/ci-workflow.test.mjs` | Gates quality/browser e proteção contra HTML desatualizado em shards | PR #59, 139 testes unitários e quatro shards aprovados | Implementado |
-| Cloudflare Worker API do ranking | Validação de sessão, score e leitura do ranking | Contrato em [RANKING-CLOUDFLARE](RANKING-CLOUDFLARE.md) | **Proposto; não existe endpoint ativo** |
-| Cloudflare D1 | Histórico de runs, score verificado e leaderboard por temporada | Esquema lógico documentado | **Proposto; banco não provisionado** |
-| Firestore/Cloud Functions do ranking | Alternativa anterior de backend | PR [#57](https://github.com/trucco86/nova-wing-3d/pull/57) em draft | Não integrado, não publicado |
+| Componente                                            | Responsabilidade                                                     | Evidência                                                                     | Estado                                      |
+| ----------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------- |
+| `src/main.js`, `game.js`, `visuals.js`, `campaign.js` | Bootstrap, jogo, renderização e estado                               | Código versionado em `dev`                                                    | Implementado                                |
+| `tools/build.mjs`, `index.html`                       | Bundle HTML reproduzível                                             | `build:check` no harness                                                      | Implementado                                |
+| `src/google-auth.js`                                  | Google sign-in, sessão persistente, logout, modo visitante           | PR [#59](https://github.com/trucco86/nova-wing-3d/pull/59) integrada em `dev` | Publicado em DEV; OAuth real não homologado |
+| `cloudflare-preview.yml`                              | Publicação estática isolada, aliases por branch/PR                   | Workflows e URLs em [DEPLOY-ENVIRONMENTS](DEPLOY-ENVIRONMENTS.md)             | DEV/HML e previews publicados               |
+| `ci.yml`, `tests/ci-workflow.test.mjs`                | Gates quality/browser e proteção contra HTML desatualizado em shards | PR #59, 139 testes unitários e quatro shards aprovados                        | Implementado                                |
+| Cloudflare Worker API do ranking                      | Validação de sessão, score e leitura do ranking                      | Contrato em [RANKING-CLOUDFLARE](RANKING-CLOUDFLARE.md)                       | **Proposto; não existe endpoint ativo**     |
+| Cloudflare D1                                         | Histórico de runs, score verificado e leaderboard por temporada      | Esquema lógico documentado                                                    | **Proposto; banco não provisionado**        |
+| Firestore/Cloud Functions do ranking                  | Alternativa anterior de backend                                      | PR [#57](https://github.com/trucco86/nova-wing-3d/pull/57) em draft           | Não integrado, não publicado                |
 
 ## 3. Ambientes e fluxo de promoção
 
-| Camada | Fonte | Hospedagem | Finalidade e política |
-| --- | --- | --- | --- |
+| Camada            | Fonte             | Hospedagem                           | Finalidade e política                                                 |
+| ----------------- | ----------------- | ------------------------------------ | --------------------------------------------------------------------- |
 | PR preview `pr-N` | Branch de feature | Cloudflare Pages `nova-wing-preview` | Inspeção experimental de UX/arte/áudio; build válido não libera merge |
-| DEV | `dev` | `dev.nova-wing-preview.pages.dev` | Integrações e teste do Firebase Google; requer gates conforme fluxo |
-| HML | `hml` | `hml.nova-wing-preview.pages.dev` | Versão candidata para aceite visual, funcional e regressão |
-| PROD | `main` | GitHub Pages | Apenas release aprovada com gates e controle de rollback |
+| DEV               | `dev`             | `dev.nova-wing-preview.pages.dev`    | Integrações e teste do Firebase Google; requer gates conforme fluxo   |
+| HML               | `hml`             | `hml.nova-wing-preview.pages.dev`    | Versão candidata para aceite visual, funcional e regressão            |
+| PROD              | `main`            | GitHub Pages                         | Apenas release aprovada com gates e controle de rollback              |
 
 As URLs Cloudflare são publicamente acessíveis por padrão; acesso público não implica autorização para escrita no futuro ranking. Domínios estáticos de DEV/HML evitam registrar cada hostname `pr-N` no Firebase OAuth.
 
