@@ -2131,6 +2131,11 @@ export function createGame({
       route = routeAt(sectorIndex, elapsed, current().duration, !!boss);
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
+      // Sector 1 begins above the city and gradually leaves the atmosphere.
+      world.setLaunchAscent(
+        Math.min(1, Math.max(0, (elapsed / current().duration - 0.38) / 0.5)),
+        sectorIndex === 0,
+      );
       $('routeLabel').textContent = route.label;
     }
     shotCd -= dt;
