@@ -2,7 +2,7 @@
 
 ## Contratos de gameplay
 
-- O primeiro setor dura 85 s até a aparição do chefe (era 65 s), mantendo os 10 setores e saves legados.
+- O primeiro setor tem duração mínima de 145 s até a aparição do chefe; a subida exige boost e pode estender a fase além desse mínimo, mantendo os 10 setores e saves legados.
 - Cidade, torres, solo e props próximos recuam e desaparecem antes da primeira renderização do planeta. Cidade/Terra não coexistem em nenhum quadro.
 - Caças aparecem acima do solo na fase urbana. Tanques e walkers são exclusivos do trecho terrestre. Túneis industriais não são gerados durante a ascensão orbital web.
 - Até a subida, obstáculos industriais pertencem à cidade; em órbita, o tráfego é formado por cargueiras abandonadas, satélites e destroços com rotas de desvio possíveis.
