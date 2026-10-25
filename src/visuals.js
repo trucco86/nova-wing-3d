@@ -69,7 +69,10 @@ const SHARED_FIGHTER_WING = [
   [1.73, 0.82],
 ];
 function sharedFighterWing(side, material) {
-  const mesh = wing(SHARED_FIGHTER_WING.map(([x, z]) => [side * x, z]), material);
+  const mesh = wing(
+    SHARED_FIGHTER_WING.map(([x, z]) => [side * x, z]),
+    material,
+  );
   mesh.userData.sharedWingProfile = 'fighter-v1';
   return mesh;
 }

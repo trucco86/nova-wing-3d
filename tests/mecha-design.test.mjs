@@ -48,7 +48,9 @@ test('mecha wings reuse the exact fighter wing geometry rather than a larger rou
   const robot = createFlyingRobot();
   const fighter = createShipModule('nova7');
   const mechaWing = robot.getObjectByName('mech-wing-right');
-  const fighterWing = fighter.children.filter((part) => part.userData.sharedWingProfile === 'fighter-v1').at(-1);
+  const fighterWing = fighter.children
+    .filter((part) => part.userData.sharedWingProfile === 'fighter-v1')
+    .at(-1);
   assert.ok(fighterWing);
   assert.equal(mechaWing.userData.sharedWingProfile, fighterWing.userData.sharedWingProfile);
   const mechaPoints = mechaWing.geometry.attributes.position.array;
