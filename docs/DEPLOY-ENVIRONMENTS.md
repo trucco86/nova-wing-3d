@@ -4,15 +4,15 @@
 
 ## Ambientes e evidências de implantação
 
-| Finalidade | Branch de origem | URL alias | Último deploy documentado |
-| --- | --- | --- | --- |
-| DEV, integrações | `dev` | https://dev.nova-wing-preview.pages.dev | [Run 40146893159](https://github.com/trucco86/nova-wing-3d/actions/runs/40146893159), SHA `e836b14`, sucesso |
-| HML, candidata estável | `hml` | https://hml.nova-wing-preview.pages.dev | [Run 40139424519](https://github.com/trucco86/nova-wing-3d/actions/runs/40139424519), sucesso |
-| PR #54, mecha experimental | `feat/nw25-mech-visual-parity` | https://pr-54.nova-wing-preview.pages.dev | [Run 40147042554](https://github.com/trucco86/nova-wing-3d/actions/runs/40147042554), build experimental |
-| PR #51, direção visual | `feat/nw29-stage-color-pass` | https://pr-51.nova-wing-preview.pages.dev | [Run 40147044884](https://github.com/trucco86/nova-wing-3d/actions/runs/40147044884), build experimental |
-| PR #46, joystick mobile | `fix/mobile-stick-size` | https://pr-46.nova-wing-preview.pages.dev | [Run 40147048485](https://github.com/trucco86/nova-wing-3d/actions/runs/40147048485), build experimental |
-| PR #43, rotas de voo | `preview-pr-43-flight` (isolada por conflito na PR original) | https://pr-43.nova-wing-preview.pages.dev | [Run 40147162933](https://github.com/trucco86/nova-wing-3d/actions/runs/40147162933), build experimental |
-| PROD, release web | `main` | https://trucco86.github.io/nova-wing-3d/ | GitHub Pages, release `v1.24.1` na última verificação |
+| Finalidade                 | Branch de origem                                             | URL alias                                 | Último deploy documentado                                                                                    |
+| -------------------------- | ------------------------------------------------------------ | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| DEV, integrações           | `dev`                                                        | https://dev.nova-wing-preview.pages.dev   | [Run 40146893159](https://github.com/trucco86/nova-wing-3d/actions/runs/40146893159), SHA `e836b14`, sucesso |
+| HML, candidata estável     | `hml`                                                        | https://hml.nova-wing-preview.pages.dev   | [Run 40139424519](https://github.com/trucco86/nova-wing-3d/actions/runs/40139424519), sucesso                |
+| PR #54, mecha experimental | `feat/nw25-mech-visual-parity`                               | https://pr-54.nova-wing-preview.pages.dev | [Run 40147042554](https://github.com/trucco86/nova-wing-3d/actions/runs/40147042554), build experimental     |
+| PR #51, direção visual     | `feat/nw29-stage-color-pass`                                 | https://pr-51.nova-wing-preview.pages.dev | [Run 40147044884](https://github.com/trucco86/nova-wing-3d/actions/runs/40147044884), build experimental     |
+| PR #46, joystick mobile    | `fix/mobile-stick-size`                                      | https://pr-46.nova-wing-preview.pages.dev | [Run 40147048485](https://github.com/trucco86/nova-wing-3d/actions/runs/40147048485), build experimental     |
+| PR #43, rotas de voo       | `preview-pr-43-flight` (isolada por conflito na PR original) | https://pr-43.nova-wing-preview.pages.dev | [Run 40147162933](https://github.com/trucco86/nova-wing-3d/actions/runs/40147162933), build experimental     |
+| PROD, release web          | `main`                                                       | https://trucco86.github.io/nova-wing-3d/  | GitHub Pages, release `v1.24.1` na última verificação                                                        |
 
 Os aliases DEV/HML/PR são **públicos por padrão**; não substituem uma camada de controle de acesso. O hostname confirmado pelo Wrangler não significa que Safari, Android físico, áudio ou Google OAuth foram homologados.
 
