@@ -8,7 +8,7 @@ test('boss warning precedes arrival, stays clear of controls and respects pause'
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(57));
+  await page.evaluate(() => window.fixture.advance(77));
   const warning = page.locator('#bossIncoming');
   await expect(warning).toBeVisible();
   await expect(warning).toContainText('CHEFE SE APROXIMANDO');
