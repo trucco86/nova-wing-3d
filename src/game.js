@@ -46,7 +46,13 @@ import {
   readSave,
   writeSave,
 } from './campaign.js';
-import { createFlightCamera, crossesSolid } from './flight.js';
+import {
+  createFlightCamera,
+  crossesSolid,
+  launchAmount,
+  launchOrbitReady,
+  projectileHitsObstacle,
+} from './flight.js';
 import {
   createGroundEnemy,
   animateGroundEnemy,
@@ -155,7 +161,7 @@ export function createGame({
   }
   $('cameraView').hidden = !dynamicFlight;
   $('cameraView').onclick = cycleCamera;
-  let route = routeAt(0, 0, 65);
+  let route = routeAt(0, 0, SECTORS[0].duration);
   let arcade = null,
     arcadeDone = false;
   const world = createWorld(scene, random, dynamicFlight),
@@ -1156,7 +1162,7 @@ export function createGame({
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
-      y = ground ? -7 : kind === 'subboss' ? 10 : rnd(1, 19);
+      y = ground ? -7 : kind === 'subboss' ? 10 : dynamicFlight && sectorIndex === 0 ? rnd(12, 24) : rnd(1, 19);
     o.position.set(x, y, -200);
     scene.add(o);
     const attackGlow = tacticalFighter
@@ -2132,12 +2138,11 @@ export function createGame({
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       // Sector 1 begins above the city and gradually leaves the atmosphere.
-      world.setLaunchAscent(
-        Math.min(1, Math.max(0, (elapsed / current().duration - 0.38) / 0.5)),
-        sectorIndex === 0,
-      );
+      world.setLaunchAscent(launchAmount(elapsed, current().duration), sectorIndex === 0);
       $('routeLabel').textContent = route.label;
     }
+    const orbitalLaunch = dynamicFlight && sectorIndex === 0 &&
+      launchOrbitReady(launchAmount(elapsed, current().duration));
     shotCd -= dt;
     if (dynamicFlight) {
       tacticEnergy = chargeTactics(
@@ -2237,7 +2242,8 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       elapsed < current().duration &&
-      groundCd <= 0
+      groundCd <= 0 &&
+      (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
       enemy(groundWave % 2 ? 'tank' : 'walker');
@@ -2247,6 +2253,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       !tunnelDone &&
+      (!dynamicFlight || sectorIndex !== 0) &&
       elapsed >= 24 &&
       !enemies.some((e) => !e.dead && e.kind === 'subboss')
     ) {
@@ -2620,6 +2627,7 @@ export function createGame({
     } else $('attackWarning').textContent = '';
     for (let b of shots) {
       const previousShot = b.o.position.clone();
+      b.previousPosition = previousShot;
       const prev = b.o.position.z;
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
@@ -2716,6 +2724,7 @@ export function createGame({
     }
     for (let b of hostile) {
       const from = b.o.position.clone();
+      b.previousPosition = from;
       b.age += dt;
       if (b.spell === 'arcane' && b.age < 0.8)
         b.v.lerp(
@@ -2800,10 +2809,22 @@ export function createGame({
       spawnEncounters &&
       obstacleCd <= 0 &&
       elapsed < current().duration &&
-      !obstacles.some((o) => o.o.userData.kind === 'tunnel')
+      !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
+      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
-      const o = createObstacle(Math.floor(elapsed / 8) % 2 ? 'gantry' : 'reactor');
-      o.position.set(o.userData.kind === 'gantry' ? 0 : rnd(-20, 20), 0, -230);
+      const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
+      const kinds = ['satellite', 'carrier', 'debris'];
+      const kind = space
+        ? kinds[Math.floor(elapsed / 8) % kinds.length]
+        : Math.floor(elapsed / 8) % 2
+          ? 'gantry'
+          : 'reactor';
+      const o = createObstacle(kind);
+      o.position.set(
+        kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
+        kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
+        -230,
+      );
       scene.add(o);
       obstacles.push({ o, life: 1 });
       obstacleCd = 8;
@@ -2822,6 +2843,15 @@ export function createGame({
         )
       )
         hit(30);
+      // Stop allied and hostile rounds at actual solid geometry, not after it.
+      for (const b of [...shots, ...hostile]) {
+        if (b.life <= 0 || !b.previousPosition) continue;
+        if (projectileHitsObstacle(b.previousPosition, b.o.position, obstacle.o, travel)) {
+          b.life = 0;
+          explode(b.o.position, 3, 0xffbf75);
+          if (dynamicFlight) cue('armorHit');
+        }
+      }
       if (obstacle.o.position.z - obstacle.o.userData.length > 50) obstacle.life = 0;
     }
     for (let arr of [shots, hostile, rings, obstacles])
@@ -3141,6 +3171,7 @@ export function createGame({
           phase: e.combatPhase,
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
+      obstacleKinds: obstacles.map((o) => o.o.userData.kind),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {
         enemies: enemies.length,
