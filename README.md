@@ -387,3 +387,8 @@ Jenifer é a interceptadora cinza e Calvinho mantém seu perfil espiritual.
 Chefes se aproximam durante três segundos. Na web, continue pilotando, usando boost
 e atirando durante o colapso; após oito segundos o hangar abre normalmente. Marvin
 permanece no setor dez, com rosto de pitbull integrado à fortaleza.
+
+
+## Arquitetura atual e decisões de plataforma
+
+O jogo mantém produção estática no GitHub Pages. DEV e HML possuem Cloudflare Pages, e o login Google via Firebase Authentication está integrado **apenas em DEV**, com homologação OAuth real pendente. Ranking com Cloudflare Workers + D1 é **proposto e não está publicado**. Consulte [arquitetura de plataforma](docs/ARCHITECTURE-PLATFORM.md), [autenticação Firebase](docs/AUTH-FIREBASE.md), [ambientes e deploy](docs/DEPLOY-ENVIRONMENTS.md), [contrato de ranking](docs/RANKING-CLOUDFLARE.md) e [direção visual do robô e naves](docs/DESIGN-MECHA-STARFIGHTER.md).
