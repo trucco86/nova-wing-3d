@@ -1,0 +1,31 @@
+name: Verify BOOST first-sector compatibility (one-off)
+on:
+  push:
+    branches: [feat/p0-sector-flight-orbit-dev-20261025]
+    paths: ['.github/workflows/flight-full-unit-regression-once.yml']
+permissions:
+  contents: write
+concurrency:
+  group: flight-full-unit-regression
+  cancel-in-progress: false
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format all touched test scenarios
+        run: |
+          npx prettier --write src/game.js tests/mission-scenarios.mjs tests/android.test.mjs tests/boss-spectacle.test.mjs tests/boss-telegraph.test.mjs tests/campaign.test.mjs tests/dynamic-flight.test.mjs tests/game.test.mjs tests/strategy.test.mjs tests/tactics.test.mjs tests/subboss-encounter.test.mjs tests/flight-launch-visual.test.mjs
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit passing regression and clean up one-off workflow
+        run: |
+          git rm .github/workflows/flight-full-unit-regression-once.yml
+          git add src/game.js tests/mission-scenarios.mjs tests/android.test.mjs tests/boss-spectacle.test.mjs tests/boss-telegraph.test.mjs tests/campaign.test.mjs tests/dynamic-flight.test.mjs tests/game.test.mjs tests/strategy.test.mjs tests/tactics.test.mjs tests/subboss-encounter.test.mjs tests/flight-launch-visual.test.mjs index.html
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'test(flight): synchronize BOOST campaign regressions and clean one-off workflow'
+          git push origin HEAD:refs/heads/feat/p0-sector-flight-orbit-dev-20261025
