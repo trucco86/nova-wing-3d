@@ -2010,6 +2010,14 @@ export function createGame({
     if (robot.visible) {
       robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
       robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
+      const rig = robot.userData.flightRig;
+      if (rig) {
+        const pulse = 1 + 0.12 * Math.sin(now() * 0.012);
+        for (const plume of rig.plumes) {
+          plume.scale.set(1, pulse, 1);
+          plume.material.opacity = 0.58 + 0.17 * Math.sin(now() * 0.009);
+        }
+      }
     }
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
