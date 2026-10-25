@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.5 — Candidata de voo por setor e lançamento orbital (DEV)
+
+- Rotas determinísticas com curvas localizadas por fase; corredores retos para setores 3, 5, 8 e 10.
+- Primeira fase ganha ascensão gradual da cidade ao espaço com horizonte terrestre, atmosfera e estrelas.
+- Chefe mantém arena sem curva; regressão com testes por setor e screenshots browser.
+- Sem aprovação visual nem promoção para HML/PROD.
+
 ## 1.24.3 — Candidata em preparação
 
 - Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
