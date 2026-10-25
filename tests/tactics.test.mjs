@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { advanceToBoss } from './combat-helper.mjs';
 import { bossTacticsAt, inDanger, chargeTactics, impactPoint } from '../src/tactics.js';
 
 test('boss profiles telegraph before attacking, move and expose a recovery window', () => {
@@ -45,7 +46,7 @@ test('scanner, reserve actions, pause and restart respect actual game state', (t
   assert.equal(h.game.tacticalAction('barrage'), true);
   assert.equal(h.game.snapshot().tactics.energy, 0);
   assert.ok(h.game.snapshot().entities.shots >= 7);
-  h.advance(65.1);
+  advanceToBoss(h);
   assert.equal(h.game.scanBoss(), true);
   assert.equal(h.game.scanBoss(), false);
   assert.equal(h.game.snapshot().strategy.arcana, 90);
@@ -62,7 +63,8 @@ test('moving boss weak points follow its orientation and native keeps its origin
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  h.advance(98);
+  advanceToBoss(h);
+  h.advance(13);
   const s = h.game.snapshot();
   assert.ok(Math.abs(s.coreAngle) > 0.1);
   assert.ok(Math.abs(s.bossTargets[0].angle + Math.PI / 3) > 0.1);
@@ -79,7 +81,8 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  h.advance(88.1);
+  advanceToBoss(h);
+  h.advance(3);
   h.game.tacticalAction('precision');
   h.advance(0.65);
   assert.equal(h.elements.get('hitFeedback').textContent, 'SEM DANO · AJUSTE O ÂNGULO');
@@ -97,7 +100,8 @@ test('barrage keeps confirmed feedback when later projectiles are blocked', (t) 
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  h.advance(88.1);
+  advanceToBoss(h);
+  h.advance(3);
   h.game.orbit(-1);
   h.advance(1.3);
   h.game.orbit(0);
