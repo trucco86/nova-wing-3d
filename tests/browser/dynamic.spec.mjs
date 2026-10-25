@@ -342,9 +342,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
     await waitForBrowserArmoredFront(page);
     const portraitBlocked = await fireBrowserPrecision(page);
     expect(portraitBlocked.event.type).toBe('blocked');
-    expect(portraitBlocked.after.bossTargets[0].hp).toBe(
-      portraitBlocked.before.bossTargets[0].hp,
-    );
+    expect(portraitBlocked.after.bossTargets[0].hp).toBe(portraitBlocked.before.bossTargets[0].hp);
     await expect(page.locator('#game')).toBeVisible();
     await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
     await expect(page.locator('#hitFeedback')).toBeVisible();
