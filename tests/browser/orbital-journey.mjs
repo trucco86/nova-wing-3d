@@ -1,4 +1,5 @@
 import { expect } from '@playwright/test';
+import { SECTORS } from '../../src/campaign.js';
 
 /** Advance the playable first-sector challenge with real keyboard BOOST input.
  * This helper never mutates the mission's internal launch or boss state.
@@ -43,7 +44,7 @@ export async function approachBrowserBoss(page, { secondsBefore = 7 } = {}) {
   await completeOrbitalLaunch(page);
   await page.evaluate((secondsBefore) => {
     const seconds = window.fixture.game.snapshot().seconds;
-    window.fixture.advance(Math.max(0, 130 - secondsBefore - seconds));
+    window.fixture.advance(Math.max(0, SECTORS[0].duration - secondsBefore - seconds));
   }, secondsBefore);
   const state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.boss).toBe(false);
@@ -54,7 +55,7 @@ export async function reachBrowserBoss(page, { bossAge = 4 } = {}) {
   await completeOrbitalLaunch(page);
   await page.evaluate((bossAge) => {
     const seconds = window.fixture.game.snapshot().seconds;
-    window.fixture.advance(Math.max(0, 130 + bossAge - seconds));
+    window.fixture.advance(Math.max(0, SECTORS[0].duration + bossAge - seconds));
   }, bossAge);
   const state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.boss).toBe(true);
