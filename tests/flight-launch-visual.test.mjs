@@ -25,6 +25,11 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   assert.equal(ground.visible, false, 'flat ground must not extend into space');
   assert.ok(scene.fog.density < 0.0006, 'launch reduces atmosphere fog');
   assert.equal(earth.visible, true, 'planetary horizon becomes visible in orbit');
+  assert.equal(ground.visible, false, 'planet cannot coexist with city terrain');
+  world.setLaunchAscent(0.45, true);
+  assert.equal(earth.visible, false, 'no planet during the city ascent');
+  assert.equal(city.visible, true);
+  world.setLaunchAscent(0.8, true);
   assert.ok(earth.material.uniforms.fade.value > 0.3);
   world.setSector(SECTORS[1]);
   assert.equal(city.position.y, 0, 'new sector resets city displacement');
