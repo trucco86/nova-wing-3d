@@ -234,6 +234,15 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
+/** Elevate both cannon arms toward forward targets, with bounded recoil. */
+export function mechArmPitch(motion, armIndex, boostMotion, fireKick) {
+  return T.MathUtils.clamp(
+    0.63 + Math.sin(motion + armIndex * Math.PI) * 0.09 * boostMotion + fireKick * 0.75,
+    0.35,
+    1.45,
+  );
+}
+
 /** Flight-mech shares the ship's forward axis, paint palette and upgrade identity. */
 export function createFlyingRobot() {
   const robot = new T.Group();
