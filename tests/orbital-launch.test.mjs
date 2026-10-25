@@ -52,5 +52,8 @@ test('the city has industrial hazards and orbit has spatial hazards, not floatin
   }
   assert.ok(cityObjectSeen, 'urban hazards are retained in the city');
   assert.ok(spaceObjectSeen, 'spacecraft and satellites replace urban hazards in orbit');
-  assert.equal(h.game.snapshot().obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)), false);
+  assert.equal(
+    h.game.snapshot().obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)),
+    false,
+  );
 });
