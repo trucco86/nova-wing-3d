@@ -56,6 +56,9 @@ jobs:
       # Keep the browser gate strict; avoid repeating apt dependency installation on each
       # hosted runner. Missing runtime libraries still fail the real Playwright tests.
       - run: npx playwright install chromium
+      # Fresh runners do not contain generated index.html for the bumped version.
+      # Match the quality job: always rebuild before running the version gate.
+      - run: npm run build
       - run: npm run validate -- --browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
