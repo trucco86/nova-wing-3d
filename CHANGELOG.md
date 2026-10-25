@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.25.0 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.3 — Candidata em preparação
 
 - Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
