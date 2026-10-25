@@ -411,6 +411,36 @@ export function createShipModule(model = 'nova7') {
   } else {
     for (const side of [-1, 1]) g.add(box(0.22, 0.25, 2.8, mint, side * 3.45, 0.04, -0.15));
   }
+  // Shared angular starfighter design language: recognizable aero-mecha geometry
+  // while preserving each pilot's independent chassis and selected paint.
+  for (const side of [-1, 1]) {
+    const strake = wing(
+      [
+        [side * 1.3, -1.15],
+        [side * 4.65, 0.8],
+        [side * 4.12, 1.65],
+        [side * 1.73, 0.82],
+      ],
+      shell,
+    );
+    strake.position.y = 0.21;
+    g.add(strake);
+    const vent = box(0.32, 0.15, 1.28, graphite, side * 1.85, 0.35, 0.26);
+    vent.rotation.y = side * 0.21;
+    g.add(vent);
+    const trim = line(
+      [
+        [side * 1.65, 0.35, -0.7],
+        [side * 3.2, 0.35, 0.25],
+        [side * 4.1, 0.35, 0.67],
+      ],
+      '#66ebff',
+    );
+    g.add(trim);
+  }
+  const keel = box(0.34, 0.18, 3.6, graphite, 0, 0.27, 0.18);
+  keel.name = 'ship-mechanical-keel';
+  g.add(keel);
   return g;
 }
 const variants = new Map();
