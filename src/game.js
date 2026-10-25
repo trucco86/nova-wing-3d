@@ -2818,10 +2818,7 @@ export function createGame({
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
-      (sectorIndex !== 0 ||
-        !dynamicFlight ||
-        orbitalLaunch ||
-        elapsed < current().duration * 0.56)
+      (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
       const kinds = ['satellite', 'carrier', 'debris'];
