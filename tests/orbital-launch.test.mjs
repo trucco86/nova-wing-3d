@@ -3,19 +3,44 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
 import { SECTORS } from '../src/campaign.js';
+import { ORBITAL_LAUNCH, createOrbitalLaunch } from '../src/orbital-launch.js';
 import { createObstacle } from '../src/encounters.js';
 import {
-  launchAmount,
   launchOrbitReady,
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from '../src/flight.js';
 
-test('launch gate consistently switches to orbit only after city departure', () => {
-  assert.equal(SECTORS[0].duration, 85);
-  assert.equal(launchOrbitReady(launchAmount(40, 85)), false);
-  assert.equal(launchOrbitReady(launchAmount(62, 85)), true);
-  assert.equal(launchOrbitReady(launchAmount(0, 0)), false);
+test('boost is mandatory; depletion triggers a long atmospheric ascent', (t) => {
+  const launch = createOrbitalLaunch();
+  for (let seconds = 1; seconds <= 150; seconds++)
+    launch.advance({ seconds, dt: 1, boosting: false, chargeBefore: 100, chargeAfter: 100 });
+  assert.equal(launch.snapshot().phase, 'boost');
+  assert.equal(launch.snapshot().amount, 0);
+  assert.equal(launch.snapshot().complete, false);
+
+  const h = harness({ spawnEncounters: false });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(24);
+  assert.equal(h.game.snapshot().orbitalLaunch.phase, 'boost');
+  assert.equal(h.game.snapshot().orbitalLaunch.amount, 0);
+  h.key('ShiftLeft', true);
+  h.advance(3.5);
+  h.key('ShiftLeft', false);
+  const exhausted = h.game.snapshot();
+  assert.equal(exhausted.orbitalLaunch.phase, 'atmosphere');
+  assert.ok(exhausted.energy <= 5, 'BOOST must have exhausted');
+  assert.ok(exhausted.orbitalLaunch.amount <= ORBITAL_LAUNCH.boostClimbFraction);
+  h.advance(19);
+  const halfway = h.game.snapshot();
+  assert.equal(halfway.orbitalLaunch.phase, 'atmosphere');
+  assert.ok(halfway.orbitalLaunch.amount > 0.5);
+  assert.ok(halfway.orbitalLaunch.amount < 1);
+  h.advance(20);
+  assert.equal(h.game.snapshot().orbitalLaunch.phase, 'orbit');
+  assert.equal(h.game.snapshot().orbitalLaunch.complete, true);
+  assert.equal(launchOrbitReady(h.game.snapshot().orbitalLaunch.amount), true);
 });
 
 test('orbital ship, satellite arrays, wreckage and urban beams block fast shots', () => {
@@ -74,19 +99,29 @@ test('shots cannot hurt targets behind solid obstacles before obstacles advance'
   );
 });
 
-test('the city has industrial hazards and orbit has spatial hazards, not floating gantries', (t) => {
+test('urban hazards stop after BOOST-powered orbit; space hazards replace them', (t) => {
   const h = harness({ spawnEncounters: true });
   t.after(() => h.close());
   h.game.start();
   let cityObjectSeen = false;
   let spaceObjectSeen = false;
-  for (let i = 0; i < 74; i++) {
+  for (let i = 0; i < 24; i++) {
+    h.game.collect('shield');
+    h.advance(1);
+    if (h.game.snapshot().obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)))
+      cityObjectSeen = true;
+  }
+  assert.equal(h.game.snapshot().orbitalLaunch.amount, 0);
+  h.key('ShiftLeft', true);
+  h.advance(3.5);
+  h.key('ShiftLeft', false);
+  assert.equal(h.game.snapshot().orbitalLaunch.phase, 'atmosphere');
+  for (let i = 0; i < 52; i++) {
     h.game.collect('shield');
     h.advance(1);
     const state = h.game.snapshot();
-    if (i < 35 && state.obstacleKinds.some((k) => ['gantry', 'reactor'].includes(k)))
-      cityObjectSeen = true;
-    if (i >= 60 && state.obstacleKinds.some((k) => ['carrier', 'satellite', 'debris'].includes(k)))
+    if (state.orbitalLaunch.amount > 0.7 &&
+        state.obstacleKinds.some((k) => ['carrier', 'satellite', 'debris'].includes(k)))
       spaceObjectSeen = true;
     assert.equal(state.tunnel, false, 'industrial tunnel is not part of orbital ascent');
   }
