@@ -6,7 +6,9 @@ import { parse } from 'yaml';
 test('each browser shard builds current HTML before the release and browser gates', () => {
   const ci = parse(readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8'));
   const steps = ci.jobs['browser-shard'].steps;
-  const commands = steps.filter((step) => typeof step.run === 'string').map((step) => step.run.trim());
+  const commands = steps
+    .filter((step) => typeof step.run === 'string')
+    .map((step) => step.run.trim());
   const installIndex = commands.indexOf('npm ci');
   const buildIndex = commands.indexOf('npm run build');
   const validateIndex = commands.indexOf('npm run validate -- --browser');
