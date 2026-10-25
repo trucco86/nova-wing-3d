@@ -1821,7 +1821,7 @@ export function createGame({
         [key]:
           typeof settings[key] === 'boolean'
             ? !!el.checked
-            : key === 'language'
+            : key === 'language' || key === 'difficulty'
               ? el.value
               : Number(el.value),
       });
