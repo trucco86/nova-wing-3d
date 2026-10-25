@@ -157,7 +157,7 @@ test('docked pods amplify actual shots and deployed pods pursue moving targets',
 test('orbital flanks reject frontal damage, accept exposed generator hits and remain time based', (t) => {
   for (const dt of [1 / 30, 1 / 60]) {
     const h = setup(t);
-    reachSectorBoss(h, { bossAge: 0.15 });
+    reachSectorBoss(h, { bossAge: 27 });
     const initial = h.game.snapshot().bossTargets.map((p) => p.hp);
     h.game.damageBoss(10000);
     assert.deepEqual(
