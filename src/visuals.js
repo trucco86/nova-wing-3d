@@ -375,7 +375,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   });
   const earthHorizon = new T.Mesh(new T.SphereGeometry(680, 48, 28), earthMat);
   earthHorizon.name = 'launch-earth-horizon';
-  earthHorizon.position.set(0, -830, -1450);
+  earthHorizon.position.set(0, -760, -1450);
   earthHorizon.visible = false;
   earthHorizon.userData.fixedSky = true;
   scene.add(earthHorizon);
@@ -607,7 +607,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.position.y = cityFar.position.y = -260 * t;
       near.forEach((o) => (o.position.y = -230 * t));
       ground.position.y = -7 - 275 * t;
+      // On reaching orbit, don't leave a giant city plain in front of the planet.
+      ground.visible = t < 0.7;
+      city.visible = cityFar.visible = t < 0.78;
+      near.forEach((o) => (o.visible = t < 0.8));
       rain.visible = t < 0.6;
+      moon.visible = atmosphere.visible = t < 0.65;
       scene.fog.density = 0.0014 - 0.0012 * t;
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
       starfield.material.opacity = 0.2 + 0.55 * t;
