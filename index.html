@@ -4149,6 +4149,26 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
   }
 }
 
+/* Keep transformation outside the five-cell action grid on touch screens.
+   Otherwise the sixth button creates an implicit third row and clips the cockpit. */
+@media (pointer: coarse) {
+  body.in-mission #touch #robotTouch {
+    position: fixed;
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 137px);
+    z-index: 33;
+    width: 64px;
+    height: 60px;
+    min-width: 64px;
+    min-height: 60px;
+    border: 2px solid #ffb36b;
+    border-radius: 16px;
+    background: #081929ed;
+    box-shadow: 0 5px 18px #0008;
+    font-size: 11px !important;
+  }
+}
+
 /* Robot mode is a tactical control, never an overlay over the flight stick. */
 #robotTouch {
   border-color: #ffb36b;
@@ -4464,7 +4484,7 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
-        <span id="gameVersion">v1.24.3</span>
+        <span id="gameVersion">v1.24.4</span>
       </section>
       <section
         id="cinematic"
