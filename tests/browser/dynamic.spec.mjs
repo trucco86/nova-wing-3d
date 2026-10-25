@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { reachBrowserBoss } from './orbital-journey.mjs';
 
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
@@ -217,7 +218,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.game.snapshot().shotDirections.length),
   ).toBeGreaterThan(0);
   await page.screenshot({ path: info.outputPath('nova-radial.png') });
-  await page.evaluate(() => window.fixture.advance(78));
+  await reachBrowserBoss(page, { bossAge: 6 });
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
   if (info.project.name === 'mobile') {
@@ -298,7 +299,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(94));
+  await reachBrowserBoss(page, { bossAge: 29 });
   await expect(page.locator('#tacticalPanel')).toBeVisible();
   await expect(page.locator('#tacticState')).toContainText('BATERIA');
   await page.locator('#strategyDrawer summary').click();
