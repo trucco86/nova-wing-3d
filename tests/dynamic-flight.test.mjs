@@ -31,8 +31,9 @@ test('sector-specific route windows keep straight sectors straight and ascend fr
     }
   }
   assert.equal(routeAt(0, 10, 65).ascent, 0);
-  assert.ok(routeAt(0, 55, 65).ascent > 0.8);
-  assert.equal(routeAt(0, 55, 65).label, 'ASCENSÃO ORBITAL');
+  assert.equal(routeAt(0, 55, 65).ascent, 0);
+  assert.ok(routeAt(0, 55, 65, false, 0.85).ascent > 0.8);
+  assert.equal(routeAt(0, 55, 65, false, 0.85).label, 'ASCENSÃO ORBITAL');
   assert.ok(routeAt(2, 30, 70).ascent > 0.8);
   assert.equal(routeAt(4, 30, 75).ascent, 0);
   assert.equal(routeAt(0, 30, 0).turn, 0);
