@@ -21,14 +21,8 @@ test('release preparation synchronizes both iOS targets and package lock', () =>
   assert.equal(result.lockJson.version, '1.24.3');
   assert.equal(result.lockJson.packages[''].version, '1.24.3');
   assert.equal(result.lockJson.packages.other.version, '1.0.0');
-  assert.equal(
-    result.iosProject.match(/MARKETING_VERSION = 1.24.3;/g).length,
-    2,
-  );
-  assert.equal(
-    result.iosProject.match(/CURRENT_PROJECT_VERSION = 1024003;/g).length,
-    2,
-  );
+  assert.equal(result.iosProject.match(/MARKETING_VERSION = 1.24.3;/g).length, 2);
+  assert.equal(result.iosProject.match(/CURRENT_PROJECT_VERSION = 1024003;/g).length, 2);
   assert.ok(result.changelog.includes('## 1.24.3'));
   assert.ok(result.notes.includes('v1.24.3'));
   assert.ok(result.notes.includes('Não publicar'));
