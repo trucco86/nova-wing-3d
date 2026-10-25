@@ -41,7 +41,8 @@ export function createOrbitalLaunch() {
       if (phase === 'city' && seconds >= ORBITAL_LAUNCH.armAfterSeconds) phase = 'boost';
       if (phase === 'boost') {
         if (boosting) boostSeconds += dt;
-        amount = ORBITAL_LAUNCH.boostClimbFraction *
+        amount =
+          ORBITAL_LAUNCH.boostClimbFraction *
           smooth(boostSeconds / ORBITAL_LAUNCH.boostClimbSeconds);
         // Only a real transition from charged boost to an exhausted charge
         // may unlock orbit. Tapping BOOST or waiting never advances it.
@@ -56,13 +57,11 @@ export function createOrbitalLaunch() {
           amount = ORBITAL_LAUNCH.boostClimbFraction;
         }
       } else if (phase === 'atmosphere') {
-        atmosphereSeconds = Math.min(
-          ORBITAL_LAUNCH.atmosphericSeconds,
-          atmosphereSeconds + dt,
-        );
-        amount = ORBITAL_LAUNCH.boostClimbFraction +
+        atmosphereSeconds = Math.min(ORBITAL_LAUNCH.atmosphericSeconds, atmosphereSeconds + dt);
+        amount =
+          ORBITAL_LAUNCH.boostClimbFraction +
           (1 - ORBITAL_LAUNCH.boostClimbFraction) *
-          smooth(atmosphereSeconds / ORBITAL_LAUNCH.atmosphericSeconds);
+            smooth(atmosphereSeconds / ORBITAL_LAUNCH.atmosphericSeconds);
         if (atmosphereSeconds >= ORBITAL_LAUNCH.atmosphericSeconds) {
           phase = 'orbit';
           amount = 1;

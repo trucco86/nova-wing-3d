@@ -24,16 +24,22 @@ test('options difficulty defaults to Normal on every new session', () => {
   let stored = null;
   const storage = {
     getItem: () => stored,
-    setItem: (_key, value) => { stored = value; },
+    setItem: (_key, value) => {
+      stored = value;
+    },
   };
   assert.equal(loadSettings(storage).difficulty, 'normal');
   storeSettings(storage, { difficulty: 'hard', language: 'en', sfx: 0.5 });
   assert.equal(JSON.parse(stored).difficulty, undefined, 'difficulty is not persisted');
   assert.equal(loadSettings(storage).difficulty, 'normal');
   assert.equal(loadSettings(storage).language, 'en', 'other preferences persist');
-  assert.equal(loadSettings({
-    getItem: () => JSON.stringify({ difficulty: 'easy' }),
-  }).difficulty, 'normal', 'legacy values cannot force a non-Normal start');
+  assert.equal(
+    loadSettings({
+      getItem: () => JSON.stringify({ difficulty: 'easy' }),
+    }).difficulty,
+    'normal',
+    'legacy values cannot force a non-Normal start',
+  );
 });
 
 test('Options offers easy, normal and hard with real combat differences', (t) => {

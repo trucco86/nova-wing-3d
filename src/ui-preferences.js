@@ -33,7 +33,10 @@ export function readSettings(raw) {
 export function loadSettings(storage) {
   try {
     // Difficulty is session-only: each app launch starts on NORMAL.
-    return { ...readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null')), difficulty: 'normal' };
+    return {
+      ...readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null')),
+      difficulty: 'normal',
+    };
   } catch {
     return readSettings(null);
   }
