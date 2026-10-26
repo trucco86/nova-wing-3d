@@ -4153,7 +4153,7 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     position: fixed;
     top: auto;
     right: max(14px, env(safe-area-inset-right, 0px));
-    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 174px);
+    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 196px);
     left: auto;
     z-index: 36;
     display: grid;
@@ -4208,4 +4208,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   body.in-mission #tacticalPanel:not([hidden]) {
     top: calc(max(9px, env(safe-area-inset-top, 0px)) + 105px);
   }
+}
+
+/* The hidden orbit dock must not capture touch input before the boss arrives. */
+#orbitControls[hidden] {
+  display: none !important;
 }
