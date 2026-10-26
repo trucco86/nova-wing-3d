@@ -9,7 +9,7 @@ import {
   projectileCount,
   firingCooldown,
 } from '../src/campaign.js';
-import { campaignMapSteps } from '../src/campaign-map.js';
+import { campaignMapSteps, drawCampaignMap } from '../src/campaign-map.js';
 
 test('campaign route shows ten real levels with completed/current/future progress', () => {
   const map = campaignMapSteps(SECTORS, 4);
@@ -72,4 +72,35 @@ test('existing checkpoints still load; extra armory upgrades survive save and va
   assert.equal(invalidUpgrade.volley, undefined);
   assert.equal(invalidUpgrade.rapid, undefined);
   assert.equal(invalidUpgrade.bombs, undefined);
+});
+
+test('campaign briefing renders safe, navigable cards and actual next-sector intelligence', () => {
+  const nodes = new Map();
+  function el() {
+    return {
+      children: [],
+      style: { setProperty(key, value) { this[key] = value; } },
+      textContent: '',
+      setAttribute(key, value) { this[key] = value; },
+      append(...kids) { this.children.push(...kids); },
+      replaceChildren(...kids) { this.children = [...kids]; },
+    };
+  }
+  const document = {
+    getElementById(id) {
+      if (!nodes.has(id)) nodes.set(id, el());
+      return nodes.get(id);
+    },
+    createElement: el,
+  };
+  drawCampaignMap(document, SECTORS, 2);
+  const route = document.getElementById('campaignRoute');
+  assert.equal(route.children.length, 10);
+  assert.equal(route.children[0].className, 'campaign-node completed');
+  assert.equal(route.children[2].className, 'campaign-node next');
+  assert.equal(route.children[9].className, 'campaign-node locked');
+  assert.match(document.getElementById('mapSectorTitle').textContent, /CINTURÃO DE DESTROÇOS/);
+  assert.match(document.getElementById('mapSectorThreat').textContent, /Detritos/);
+  assert.match(document.getElementById('mapSectorBoss').textContent, /PERFURADOR/);
+  assert.equal(document.getElementById('mapProgress').textContent, '2 / 10 SETORES CONCLUÍDOS');
 });
