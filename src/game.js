@@ -715,8 +715,10 @@ export function createGame({
       const full =
         k === 'repair'
           ? hp >= maxHp()
-          : k === 'bomb' || k === 'bombPack'
+          : k === 'bomb'
             ? bombs >= 8
+            : k === 'bombPack'
+              ? bombs > 5
             : level >= SHOP[k].max;
       const price = shopPrice(k, level);
       $('buy' + k).textContent = SHOP[k].label + ' · ' + (full ? 'MÁXIMO' : price + ' CR');
@@ -741,8 +743,10 @@ export function createGame({
     const full =
       k === 'repair'
         ? hp >= maxHp()
-        : k === 'bomb' || k === 'bombPack'
+        : k === 'bomb'
           ? bombs >= 8
+          : k === 'bombPack'
+            ? bombs > 5
           : n >= SHOP[k].max;
     if (credits < price || full) return false;
     credits -= price;
@@ -1578,7 +1582,7 @@ export function createGame({
     cosmetics = readCosmetics(checkpoint?.cosmetics);
     applySkin();
     hp = maxHp();
-    bombs = checkpoint?.bombs ?? 2;
+    bombs = dynamicFlight ? (checkpoint?.bombs ?? 3) : 3;
     energy = 100;
     shotCd = 0;
     spawnCd = 2;
