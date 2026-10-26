@@ -69,14 +69,25 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
     expect(geo.orbit.x, 'orbit belongs to the right thumb area').toBeGreaterThan(
       viewport.width * 0.25,
     );
-    expect(
-      geo.actions.y - (geo.orbit.y + geo.orbit.height),
-      'orbit remains immediately above actions',
-    ).toBeGreaterThanOrEqual(0);
-    expect(
-      geo.actions.y - (geo.orbit.y + geo.orbit.height),
-      'orbit must stay close to actions',
-    ).toBeLessThanOrEqual(48);
+    if (viewport.width > viewport.height) {
+      expect(
+        geo.orbit.x + geo.orbit.width,
+        'landscape orbit dock stays directly left of action pad',
+      ).toBeLessThanOrEqual(geo.actions.x);
+      expect(
+        Math.abs(geo.orbit.y + geo.orbit.height - (geo.actions.y + geo.actions.height)),
+        'landscape orbit dock shares the lower action lane',
+      ).toBeLessThanOrEqual(28);
+    } else {
+      expect(
+        geo.actions.y - (geo.orbit.y + geo.orbit.height),
+        'portrait orbit stays immediately above actions',
+      ).toBeGreaterThanOrEqual(0);
+      expect(
+        geo.actions.y - (geo.orbit.y + geo.orbit.height),
+        'portrait orbit stays close to actions',
+      ).toBeLessThanOrEqual(48);
+    }
     for (const id of ['boss', 'rpg', 'camera', 'status', 'score', 'orbit', 'actions']) {
       expect(overlaps(geo.radar, geo[id]), 'radar must not overlap ' + id).toBe(false);
     }
