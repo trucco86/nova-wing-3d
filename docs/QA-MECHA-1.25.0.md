@@ -28,3 +28,10 @@ O CI não substitui aprovação visual. **Aceite explícito do mantenedor** é o
 ## Segunda revisão visual da candidata
 
 As capturas antigas da PR estavam vazias porque o player piscava durante a invulnerabilidade inicial. O browser test agora avança além desse período e exige `playerVisible=true` antes de fotografar transformação e disparo. As novas capturas tornaram evidente que a primeira versão tinha placas retangulares demais. A revisão adicionou placas 3D chanfradas, capacete com crista, reforços de ombro, canhões e pernas, além de iluminação visível na traseira da turbina. **Os detalhes precisam ser comparados novamente com a prancha conceitual após CI e captura atualizada; não estão homologados.**
+
+## Complemento v1.25.1 — turbina articulada (PR #87 incorporada à #69)
+
+- A carcaça dorsal é fixa nos ombros; o bocal gira e inclina separadamente conforme direção do analógico/teclado e boost.
+- O rotor, a chama, o núcleo e o halo acompanham o conjunto articulado. Um teste unitário confere rotação, inclinação e limites mecânicos.
+- **Teste visual adicional:** fotografar traseira no voo normal, guinada esquerda/direita e boost, e comparar a posição da turbina com a arte aprovada.
+- **Pendência:** aferir FPS e responsividade em aparelho físico; o CI e o deploy de preview não substituem homologação.
