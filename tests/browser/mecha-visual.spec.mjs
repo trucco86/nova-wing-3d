@@ -33,3 +33,36 @@ test('the flight mecha transforms, raises its cannon arms and keeps a visible vi
   await expect(page.locator('#robotTouch')).toHaveAttribute('aria-pressed', 'true');
   expect(errors).toEqual([]);
 });
+
+
+test('mecha design review renders frontal side and rear wing parity plus neon tiers', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') errors.push(message.text());
+  });
+
+  for (const [view, tier] of [
+    ['front', 0],
+    ['front', 3],
+    ['front', 6],
+    ['side', 6],
+    ['rear', 6],
+  ]) {
+    await page.goto(`/__visual.html?mode=mecha-review&view=${view}&tier=${tier}`);
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await expect(page.locator('body')).toHaveAttribute('data-review-view', view);
+    await expect(page.locator('body')).toHaveAttribute('data-review-tier', String(tier));
+    const canvas = page.locator('canvas');
+    await expect(canvas).toBeVisible();
+    const bounds = await canvas.boundingBox();
+    expect(bounds.width).toBeGreaterThanOrEqual(300);
+    expect(bounds.height).toBeGreaterThanOrEqual(250);
+    await page.screenshot({ path: info.outputPath(`mecha-${view}-tier${tier}.png`) });
+  }
+
+  expect(errors).toEqual([]);
+});
