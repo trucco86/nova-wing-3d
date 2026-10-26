@@ -81,10 +81,13 @@ test('FPS entry is reachable in compact portrait and landscape without obscuring
     for (const [index, box] of actionBoxes.entries()) {
       expect(box, 'all four pause action buttons must be rendered: ' + index).not.toBeNull();
       expect(box.width, 'pause action must have a usable touch width').toBeGreaterThanOrEqual(90);
-      expect(box.x, 'pause action cannot bleed off the left viewport edge').toBeGreaterThanOrEqual(0);
-      expect(box.x + box.width, 'pause action cannot bleed off the right screen').toBeLessThanOrEqual(
-        viewport.width + 1,
+      expect(box.x, 'pause action cannot bleed off the left viewport edge').toBeGreaterThanOrEqual(
+        0,
       );
+      expect(
+        box.x + box.width,
+        'pause action cannot bleed off the right screen',
+      ).toBeLessThanOrEqual(viewport.width + 1);
       expect(box.x + box.width, 'pause action must fit inside pause card').toBeLessThanOrEqual(
         card.x + card.width + 1,
       );

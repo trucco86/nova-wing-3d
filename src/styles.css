@@ -5131,7 +5131,6 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
-
 /* Compact pause: four primary actions must remain within the screen.
    A legacy 1fr 1fr grid used content-based minimums that crushed EXIT/RESTART. */
 @media (max-width: 600px) {
