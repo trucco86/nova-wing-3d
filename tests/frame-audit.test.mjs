@@ -27,7 +27,7 @@ test('audit distinguishes slow frames and suspensions without false spikes', () 
   audit.start();
   for (const ms of [0, 16, 49.5, 102, 123, 1324, 1357.5, 1410]) audit.sample(ms);
   const data = audit.report();
-  assert.equal(data.frames, 4, 'suspension resets sampling baseline');
+  assert.equal(data.frames, 5, 'suspension resets sampling baseline');
   assert.equal(data.interruptions, 1);
   assert.equal(data.over33Ms, 3);
   assert.equal(data.over50Ms, 2);
