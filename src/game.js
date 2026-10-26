@@ -1380,7 +1380,7 @@ export function createGame({
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
       $('bossState').textContent = 'COLAPSO DO REATOR';
-      $('attackWarning').dataset.severity = 'danger';
+      $('attackWarning').setAttribute?.('data-severity', 'danger');
       $('attackWarning').textContent = 'REATOR INSTÁVEL / AFASTE-SE';
       reticle.visible = false;
       player.visible = true;
@@ -1417,7 +1417,7 @@ export function createGame({
       if (dynamicFlight) cue('explosion');
       else sound(38, 1.8, 'sawtooth', 0.12);
       music?.start(sectorIndex, 'victory');
-      $('attackWarning').dataset.severity = 'info';
+      $('attackWarning').setAttribute?.('data-severity', 'info');
       $('attackWarning').textContent =
         sectorIndex === SECTORS.length - 1
           ? 'MARVIN DERROTADO · SUPRIMENTOS RECUPERADOS'
@@ -2735,7 +2735,7 @@ export function createGame({
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
-      $('attackWarning').dataset.severity = 'danger';
+      $('attackWarning').setAttribute?.('data-severity', 'danger');
       $('attackWarning').textContent =
         bossCd < 0.65
           ? '⚠ ' +
