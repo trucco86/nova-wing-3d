@@ -79,7 +79,7 @@ test('the pause menu documents actual PC commands and mobile actions in PT EN ES
     ['P / ESC', 'Pausar / retomar'],
   ]) {
     const entry = guide.locator('.nw-help-keyboard .nw-control-row').filter({
-      has: page.locator('kbd', { hasText: key, exact: true }),
+      has: page.getByText(key, { exact: true }),
     });
     await expect(entry.locator('span')).toHaveText(meaning);
   }
