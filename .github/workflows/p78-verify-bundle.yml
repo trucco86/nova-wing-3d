@@ -1,4 +1,4 @@
-name: Verify and bundle v1.24.9 HUD candidate
+name: Verify and bundle v1.24.9 HUD candidate after attribute fix
 on:
   push:
     branches: [feat/p0-hud-alert-rail-pause-controls-20261025]
