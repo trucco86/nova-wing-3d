@@ -414,28 +414,37 @@ export function createFlyingRobot() {
   turbineHousing.name = 'mech-back-turbine';
   turbineHousing.position.set(0, 3.05, 1.9);
   robot.add(turbineHousing);
+  // The shoulder-mounted housing remains fixed; the nozzle assembly gimbals
+  // independently to react to flight direction and propulsion load.
+  const turbineGimbal = new T.Group();
+  turbineGimbal.name = 'mech-turbine-gimbal';
+  turbineGimbal.position.set(0, 3.05, 2.05);
+  robot.add(turbineGimbal);
+  for (const side of [-1, 1]) {
+    robot.add(box(0.17, 0.22, 1.15, accent, side * 0.52, 3.05, 1.83));
+  }
   const turbineRing = new T.Mesh(new T.TorusGeometry(0.58, 0.12, 10, 24), accent);
-  turbineRing.position.set(0, 3.05, 2.55);
-  robot.add(turbineRing);
+  turbineRing.position.set(0, 0, 0.5);
+  turbineGimbal.add(turbineRing);
   const turbineHalo = halo('#56eaff', 2.1, 0.73);
   turbineHalo.name = 'mech-turbine-halo';
-  turbineHalo.position.set(0, 3.05, 3.04);
-  robot.add(turbineHalo);
+  turbineHalo.position.set(0, 0, 0.99);
+  turbineGimbal.add(turbineHalo);
   const turbineCore = new T.Mesh(new T.CylinderGeometry(0.35, 0.4, 0.18, 20), luminous);
   turbineCore.rotation.x = Math.PI / 2;
-  turbineCore.position.set(0, 3.05, 2.62);
-  robot.add(turbineCore);
+  turbineCore.position.set(0, 0, 0.57);
+  turbineGimbal.add(turbineCore);
   const turbineFlame = new T.Mesh(
     new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
   turbineFlame.rotation.x = Math.PI / 2;
-  turbineFlame.position.set(0, 3.05, 3.65);
-  robot.add(turbineFlame);
+  turbineFlame.position.set(0, 0, 1.6);
+  turbineGimbal.add(turbineFlame);
   // Exposed mechanical fan blades make the turbine visibly rotate during flight.
   const turbineRotor = new T.Group();
   turbineRotor.name = 'mech-turbine-rotor';
-  turbineRotor.position.set(0, 3.05, 2.76);
+  turbineRotor.position.set(0, 0, 0.71);
   for (let bladeIndex = 0; bladeIndex < 5; bladeIndex++) {
     const bladePivot = new T.Group();
     bladePivot.rotation.z = (bladeIndex * Math.PI * 2) / 5;
@@ -444,7 +453,7 @@ export function createFlyingRobot() {
     bladePivot.add(blade);
     turbineRotor.add(bladePivot);
   }
-  robot.add(turbineRotor);
+  turbineGimbal.add(turbineRotor);
   const progressionNeons = [];
   for (let tier = 0; tier < 3; tier++) {
     for (const side of [-1, 1]) {
@@ -468,6 +477,7 @@ export function createFlyingRobot() {
     legs,
     armMuzzles,
     turbineRotor,
+    turbineGimbal,
     turbineFlame,
     progressionNeons,
   };
@@ -560,10 +570,16 @@ export function setFighterEvolution(ship, level = 0) {
 }
 
 /** Flight animation is frame-driven, so it works at variable FPS without timers. */
-export function animateMechPower(robot, elapsed, boosting = false, level = 0) {
+export function animateMechPower(robot, elapsed, boosting = false, level = 0, steering = {}) {
   const rig = robot.userData.mechRig;
   if (!rig?.turbineRotor) return;
   rig.turbineRotor.rotation.z = elapsed * (boosting ? 24 : 10);
+  const turn = T.MathUtils.clamp(steering.x ?? 0, -1, 1);
+  const climb = T.MathUtils.clamp(steering.y ?? 0, -1, 1);
+  // Yaw follows steering; pitch compensates for climbs and boost.
+  rig.turbineGimbal.rotation.y = turn * 0.19 + Math.sin(elapsed * 1.8) * 0.025;
+  rig.turbineGimbal.rotation.x = -climb * 0.11 - (boosting ? 0.1 : 0.015);
+
   rig.turbineFlame.scale.y = (boosting ? 1.75 : 1) * (0.9 + Math.sin(elapsed * 16) * 0.1);
   rig.turbineFlame.material.opacity = boosting ? 0.96 : 0.78;
   for (const { mesh, threshold } of rig.progressionNeons) {

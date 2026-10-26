@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.25.1 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.25.0 — Candidata Mecha Flight Dynamics (somente DEV/preview)
 
 - Carenagem angular do robô, asas com geometria compartilhada com nave e canhões articulados.

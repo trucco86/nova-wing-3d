@@ -2099,7 +2099,7 @@ export function createGame({
       message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
-    if (robotMode) animateMechPower(robot, elapsed, boosting, stage());
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy });
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed *

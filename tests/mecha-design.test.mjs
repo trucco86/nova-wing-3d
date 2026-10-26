@@ -109,3 +109,22 @@ test('rear-facing armor uses faceted plates, a visible thruster halo and distinc
   assert.equal(robot.userData.mechRig.arms.length, 2);
   assert.equal(robot.userData.mechRig.legs.length, 2);
 });
+
+test('back nozzle gimbal reacts to steering and boost without moving the fixed housing', () => {
+  const robot = createFlyingRobot();
+  const housing = robot.getObjectByName('mech-back-turbine');
+  const gimbal = robot.getObjectByName('mech-turbine-gimbal');
+  const rotor = robot.getObjectByName('mech-turbine-rotor');
+  assert.ok(gimbal, 'articulated nozzle assembly must exist');
+  assert.equal(rotor.parent, gimbal, 'rotor should move with the turbine nozzle');
+  const fixedHousing = housing.position.clone();
+  animateMechPower(robot, 1, false, 0, { x: -1, y: -1 });
+  const yawLeft = gimbal.rotation.y;
+  const pitchClimb = gimbal.rotation.x;
+  animateMechPower(robot, 1, true, 0, { x: 1, y: 1 });
+  assert.ok(gimbal.rotation.y > yawLeft, 'turn input must rotate the nozzle');
+  assert.ok(gimbal.rotation.x < pitchClimb, 'boost and climb must pitch the nozzle');
+  assert.deepEqual(housing.position.toArray(), fixedHousing.toArray());
+  assert.ok(Math.abs(gimbal.rotation.y) < 0.25);
+  assert.ok(Math.abs(gimbal.rotation.x) < 0.25);
+});
