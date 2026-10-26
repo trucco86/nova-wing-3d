@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.24.11 — Controles ORBITAR e campanha integrados (DEV)
+
+- Integra na mesma candidata o P0 mobile de controle ORBITAR/redução do radar (portrait/landscape), validando giro efetivo com toque sustentado.
+- Mantém hangar de preparação com tiros adicionais, cadência, bombas, pods e inventário persistido.
+- Mapa de dez setores apresenta a rota, progresso, descrição da próxima fase, perigos e chefe antes de sair do hangar.
+- Teste de integração Web cobre toque no combate, compra, briefing da campanha e avanço com equipamento preservado.
+- Candidata isolada, sem aceite humano ou promoção HML/produção.
+
 ## 1.24.10 — Hangar de armamentos e mapa da campanha (DEV)
 
 - Entre os setores, o hangar permite adquirir MULTITIRO (+1 ou +2 projéteis por rajada), NÚCLEO RÁPIDO (até 24% menos intervalo entre tiros), bombas unitárias e pacote de três bombas, além de canhão, blindagem, reparo e pods.
