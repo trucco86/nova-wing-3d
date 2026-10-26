@@ -52,6 +52,9 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     });
 
     expect(overlaps(geometry.controls, geometry.boss), 'RPG vs. boss HUD').toBe(false);
+    expect(geometry.boss.x, 'boss HP must stay at the right information edge').toBeGreaterThan(
+      viewport.width * 0.6,
+    );
     expect(overlaps(geometry.controls, geometry.touch), 'RPG vs. touch controls').toBe(false);
     expect(overlaps(geometry.boss, geometry.touch), 'boss HUD vs. touch').toBe(false);
     // The touch wrapper deliberately covers the full footer but receives no input.
