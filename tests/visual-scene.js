@@ -36,6 +36,10 @@ if (mode === 'mecha-review') {
   const params = new URLSearchParams(location.search);
   const view = params.get('view') ?? 'front';
   const tier = [0, 3, 6].includes(Number(params.get('tier'))) ? Number(params.get('tier')) : 6;
+  // A close-up QA lens makes wing geometry, joint motion and back-mounted
+  // turbines readable. This camera exists only in the isolated visual fixture.
+  camera.fov = 40;
+  camera.updateProjectionMatrix();
   const mecha = createFlyingRobot();
   const ship = createShipModule('nova7');
   mecha.position.set(-7.2, 13, -46);
@@ -46,13 +50,13 @@ if (mode === 'mecha-review') {
   setFighterEvolution(ship, tier);
   scene.add(mecha, ship);
   if (view === 'rear') {
-    camera.position.set(0, 17, -78);
+    camera.position.set(0, 17, -72);
     camera.lookAt(0, 13, -46);
   } else if (view === 'side') {
-    camera.position.set(-32, 19, -32);
+    camera.position.set(-24, 18, -31);
     camera.lookAt(0, 13, -46);
   } else {
-    camera.position.set(0, 17, -15);
+    camera.position.set(0, 17, -20);
     camera.lookAt(0, 13, -46);
   }
   // Expose deterministic render metadata so screenshot validation catches wrong frames.
