@@ -106,7 +106,9 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
     return window.fixture.game.snapshot();
   });
   expect(escaped.encounterKinds).not.toContain('subboss');
-  expect(escaped.credits).toBe(engaged.credits);
+  // The fixture replenishes shield 16 times during retreat; each pickup grants
+  // 15 credits. No additional 90-credit subboss kill reward may be granted.
+  expect(escaped.credits - engaged.credits).toBe(16 * 15);
   expect(escaped.boss).toBe(false);
   await expect(page.locator('#subHUD')).toBeHidden();
 
