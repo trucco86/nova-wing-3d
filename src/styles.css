@@ -5006,3 +5006,76 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     grid-column: 2;
   }
 }
+
+
+/* Device-only QA: performance report belongs exclusively in PAUSE, never HUD. */
+#pauseFrameAudit {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid #4c9e9b77;
+  border-radius: 9px;
+  background: #081925d9;
+  color: #d3f1ec;
+}
+#pauseFrameAudit summary {
+  cursor: pointer;
+  min-height: 28px;
+  color: #b8f4df;
+  font: 800 12px/1.4 monospace;
+}
+#pauseFrameAudit p {
+  margin: 7px 0 9px;
+  color: #c5d9e1;
+  font: 11px/1.5 monospace;
+}
+#pauseFrameAudit .nw-audit-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+#pauseFrameAudit button {
+  min-height: 44px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #16394c;
+  color: #e3fffc;
+  border: 1px solid #7bcbbb88;
+  font: 700 10px/1.2 monospace;
+  touch-action: manipulation;
+}
+#pauseFrameAudit button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+#pauseFrameAudit output {
+  display: block;
+  margin-top: 10px;
+  padding: 10px 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid #628f8a55;
+  border-radius: 6px;
+  background: #06121f;
+  font: 11px/1.55 monospace;
+  color: #c9efdf;
+  user-select: text;
+}
+#pauseMenu:has(#pauseConfirmPanel:not([hidden])) #pauseFrameAudit {
+  display: none;
+}
+@media (min-width: 700px) {
+  #pauseMenu #pauseFrameAudit {
+    grid-column: 2;
+    grid-row: 5;
+    margin-top: 0;
+  }
+}
+@media (max-width: 550px) {
+  #pauseFrameAudit .nw-audit-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #pauseFrameAudit .nw-audit-actions button {
+    min-width: 0;
+  }
+}
