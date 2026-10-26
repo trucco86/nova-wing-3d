@@ -719,7 +719,7 @@ export function createGame({
             ? bombs >= 8
             : k === 'bombPack'
               ? bombs > 5
-            : level >= SHOP[k].max;
+              : level >= SHOP[k].max;
       const price = shopPrice(k, level);
       $('buy' + k).textContent = SHOP[k].label + ' · ' + (full ? 'MÁXIMO' : price + ' CR');
       $('buy' + k).disabled = full || credits < price;
@@ -747,7 +747,7 @@ export function createGame({
           ? bombs >= 8
           : k === 'bombPack'
             ? bombs > 5
-          : n >= SHOP[k].max;
+            : n >= SHOP[k].max;
     if (credits < price || full) return false;
     credits -= price;
     if (k === 'weapon') weapon++;
@@ -1582,7 +1582,7 @@ export function createGame({
     cosmetics = readCosmetics(checkpoint?.cosmetics);
     applySkin();
     hp = maxHp();
-    bombs = dynamicFlight ? (checkpoint?.bombs ?? 3) : 3;
+    bombs = dynamicFlight ? (checkpoint?.bombs ?? 2) : 2;
     energy = 100;
     shotCd = 0;
     spawnCd = 2;
