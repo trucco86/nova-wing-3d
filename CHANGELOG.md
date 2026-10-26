@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.24.12 — Candidata em preparação
+## 1.24.12 — Controles orbitais à direita + radar no topo (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Botões ORBITAR 60×60px no rodapé junto ao polegar direito, acima das ações em portrait e adjacentes em landscape.
+- Radar do chefe compacto e separado da vida/vulnerabilidades no canto superior direito; HUD textual fica fora do gameplay.
+- Modo canhoto espelhado, SCAN desbloqueado no RPG aberto, regressões mobile e toque real.
+- Integração experimental em PR isolada, requer CI completo e aceite físico antes de HML/PROD.
+
 
 ## 1.24.11 — Retirada do subchefe urbano e HUD periférico (DEV)
 
