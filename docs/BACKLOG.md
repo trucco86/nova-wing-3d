@@ -4,18 +4,16 @@
 
 Este quadro atualiza as referências históricas abaixo sem apagá-las. **Commit em branch, aprovação de CI, deploy de preview e homologação de gameplay são estados diferentes.** Acompanhar cada entrega com PR/SHA, gate e aceite de responsável.
 
-| Frente | Evidência GitHub | Estado registrado | Próximo gate |
-| --- | --- | --- | --- |
-| NW-24 — Transformação nave/robô | [PR #52](https://github.com/trucco86/nova-wing-3d/pull/52) | Merge em `main` confirmado; evolução estética NÃO homologada | Revisão comparativa do mecha |
-| NW-24 / #66 — Mecha e Fighter 2.0 | [PR #69](https://github.com/trucco86/nova-wing-3d/pull/69), [PR #87](https://github.com/trucco86/nova-wing-3d/pull/87) | Duas candidatas draft encadeadas; a #87 adiciona gimbal articulado à base #69 | CI completo no SHA final, capturas traseiras, FPS e aceite visual |
-| NW-24 — Itens concorrentes | [PR #54](https://github.com/trucco86/nova-wing-3d/pull/54), [PR #67](https://github.com/trucco86/nova-wing-3d/pull/67), [PR #68](https://github.com/trucco86/nova-wing-3d/pull/68) | PRs ainda abertas; código parcial ou alternativo, **não somar versões por merge cego** | Reconciliação de diffs, sem perda de funcionalidades |
-| NW-03 — HUD, órbita e ergonomia mobile | [PR #78](https://github.com/trucco86/nova-wing-3d/pull/78), [PR #81](https://github.com/trucco86/nova-wing-3d/pull/81), [PR #82](https://github.com/trucco86/nova-wing-3d/pull/82), [PR #83](https://github.com/trucco86/nova-wing-3d/pull/83), [PR #85](https://github.com/trucco86/nova-wing-3d/pull/85), [PR #86](https://github.com/trucco86/nova-wing-3d/pull/86) | Drafts encadeados; **não considerar todos integrados em DEV** | Integrar commit consistente, smoke desktop/mobile, screenshots sem sobreposição |
-| NW-03 — Stick ampliado | [PR #46](https://github.com/trucco86/nova-wing-3d/pull/46) | Aberta; gates anteriores com falha. Dimensões-alvo já identificadas no CSS atual, mas a equivalência funcional requer teste | Comparar CSS por breakpoint, corrigir gate ou justificar encerramento por supersessão |
-| NW-29 — Paletas por setor | [PR #51](https://github.com/trucco86/nova-wing-3d/pull/51) | Aberta; formatação falhou em execução anterior | Corrigir formatação, CI e revisar contraste/FPS antes de integrar |
-| NW-22 — Login Google | [PR #59](https://github.com/trucco86/nova-wing-3d/pull/59), [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) | Merge em DEV; **OAuth real e logout de visitante não homologados** | Teste em origem autorizada com conta de teste e consentimento |
-| NW-21/NW-23 — Ranking/D1 | [PR #65](https://github.com/trucco86/nova-wing-3d/pull/65) | Merge em DEV; **sem evidência de Worker/D1 provisionados e acessíveis** | Infraestrutura, integridade do placar e política de privacidade |
-| NW-16 — Loja/mapa | [PR #80](https://github.com/trucco86/nova-wing-3d/pull/80), [issue #84](https://github.com/trucco86/nova-wing-3d/issues/84) | Candidata draft e backlog de armas avançadas | QA de transição de fase, economia e controles mobile |
-| NW-10/NW-11 — Áudio/harness | Backlog histórico abaixo | Sem nova entrega ou homologação comprovada nesta atualização | Planejar e registrar evidências por PR |
+- **NW-24 — Transformação:** [PR #52](https://github.com/trucco86/nova-wing-3d/pull/52) com merge em `main` confirmado; evolução visual não homologada.
+- **NW-24 / #66 — Mecha e Fighter 2.0:** [PR #69](https://github.com/trucco86/nova-wing-3d/pull/69) e [PR #87](https://github.com/trucco86/nova-wing-3d/pull/87) são drafts encadeados. Próximo gate: CI do SHA final, capturas e aceite visual.
+- **NW-24 — Implementações concorrentes:** [PR #54](https://github.com/trucco86/nova-wing-3d/pull/54), [PR #67](https://github.com/trucco86/nova-wing-3d/pull/67), [PR #68](https://github.com/trucco86/nova-wing-3d/pull/68) exigem comparação de diffs e conciliação; não mesclar cegamente.
+- **NW-03 — Mobile e HUD:** [PR #78](https://github.com/trucco86/nova-wing-3d/pull/78), [PR #81](https://github.com/trucco86/nova-wing-3d/pull/81), [PR #82](https://github.com/trucco86/nova-wing-3d/pull/82), [PR #83](https://github.com/trucco86/nova-wing-3d/pull/83), [PR #85](https://github.com/trucco86/nova-wing-3d/pull/85) e [PR #86](https://github.com/trucco86/nova-wing-3d/pull/86) são drafts com bases diferentes e encadeadas; testes no SHA integrado e inspeção mobile são pendentes.
+- **NW-03 — Analógico:** [PR #46](https://github.com/trucco86/nova-wing-3d/pull/46) permanece aberta com gates anteriores falhando. A dimensão de 128 px da PR ainda não consta no CSS atual de DEV/MAIN. Revalidar layout antes de integrar a mudança e não reutilizar workflows antigos sem revisão.
+- **NW-29 — Paletas por setor:** [PR #51](https://github.com/trucco86/nova-wing-3d/pull/51) ainda aberta, formatação anterior falhou; contraste e FPS pendentes.
+- **NW-22 — Login Google:** [PR #59](https://github.com/trucco86/nova-wing-3d/pull/59) mesclada em DEV; [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) rastreia risco do modo visitante. OAuth real e logout não homologados.
+- **NW-21/NW-23 — Ranking/D1:** [PR #65](https://github.com/trucco86/nova-wing-3d/pull/65) mesclada em DEV; Worker e D1 provisionados/operacionais não comprovados.
+- **NW-16 — Arsenal/mapa:** [PR #80](https://github.com/trucco86/nova-wing-3d/pull/80) é draft; [issue #84](https://github.com/trucco86/nova-wing-3d/issues/84) inclui armamento especializado. Economia e controles ainda não homologados.
+- **NW-10/NW-11 — Áudio/harness:** nenhuma nova execução/homologação comprovada neste snapshot; preservar backlog histórico.
 
 ### Critérios de promoção
 
