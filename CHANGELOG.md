@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.24.10 — Candidata em preparação
+## 1.24.10 — Hangar de armamentos e mapa da campanha (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Entre os setores, o hangar permite adquirir MULTITIRO (+1 ou +2 projéteis por rajada), NÚCLEO RÁPIDO (até 24% menos intervalo entre tiros), bombas unitárias e pacote de três bombas, além de canhão, blindagem, reparo e pods.
+- Os upgrades são efetivos no combate Web e salvos junto ao checkpoint, preservando compatibilidade com saves existentes e com a carga inicial de bombas na versão nativa.
+- O pacote de três bombas requer três espaços disponíveis, evitando cobrar por cargas não entregues.
+- Depois da loja, o mapa apresenta a rota dos dez setores, progresso, cenário, ameaças e briefing do próximo chefe, com a opção de voltar ao hangar.
+- Layout responsivo com conexões da rota; candidata sem homologação visual nem publicação em HML/PROD.
 
 ## 1.24.8 — Retirada do primeiro subchefe e continuidade orbital (DEV)
 
