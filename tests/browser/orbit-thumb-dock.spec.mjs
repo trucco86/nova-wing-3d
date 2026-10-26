@@ -41,6 +41,7 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
         actions: box('#touch .actions'),
         stick: box('#stick'),
         radar: box('#tacticalPanel'),
+        notices: box('#hudNotices'),
         boss: box('#bossHUD'),
         rpg: box('#strategyControls'),
         camera: box('#cameraView'),
@@ -66,6 +67,13 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
       false,
     );
     expect(overlaps(geo.orbit, geo.stick), 'orbit must not obstruct joystick').toBe(false);
+    if (viewport.width < 551) {
+      expect(geo.left.x, 'both arrows must remain right of the central ship').toBeGreaterThan(
+        viewport.width * 0.52,
+      );
+      expect(overlaps(geo.notices, geo.rpg), 'top alerts must not cover RPG buttons').toBe(false);
+      expect(overlaps(geo.notices, geo.radar), 'top alerts must not cover boss radar').toBe(false);
+    }
     expect(geo.orbit.x, 'orbit belongs to the right thumb area').toBeGreaterThan(
       viewport.width * 0.25,
     );
