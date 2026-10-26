@@ -1,4 +1,5 @@
 name: Prepare mobile orbit thumb dock v1.24.9
+# Rebuild after the separate landscape thumb dock was corrected from Playwright evidence.
 on:
   push:
     branches: [fix/p0-mobile-orbit-controls-radar-dock-20261025]
