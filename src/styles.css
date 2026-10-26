@@ -4659,7 +4659,6 @@ body.in-mission #tacticalPanel {
   }
 }
 
-
 /* Mobile boss HP belongs to the information edge, not across the boss model. */
 @media (pointer: coarse) and (max-width: 550px) {
   body.in-mission #bossHUD:not([hidden]) {
@@ -4697,12 +4696,11 @@ body.in-mission #tacticalPanel {
   }
 }
 
-
 /* Landscape/desktop pause: controls visible beside actions without hiding Resume. */
 @media (min-width: 700px) {
   #pauseMenu .nw-modal-card {
     display: grid;
-    grid-template-columns: minmax(205px, .72fr) minmax(0, 1.28fr);
+    grid-template-columns: minmax(205px, 0.72fr) minmax(0, 1.28fr);
     align-items: start;
     gap: 7px 16px;
   }
@@ -4729,10 +4727,9 @@ body.in-mission #tacticalPanel {
   }
 }
 
-
 /* Preserve the original translucent/non-interactive radio contract in the top rail. */
 #hudNotices > #comms {
-  background: linear-gradient(90deg, rgba(5, 28, 41, .24), rgba(5, 28, 41, .07));
+  background: linear-gradient(90deg, rgba(5, 28, 41, 0.24), rgba(5, 28, 41, 0.07));
 }
 body:has(#arcadePanel:not([hidden])) #hudNotices #comms {
   visibility: hidden !important;
