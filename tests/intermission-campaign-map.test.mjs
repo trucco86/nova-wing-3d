@@ -53,7 +53,6 @@ test('hangar upgrades add real projectiles and increase cadence without changing
   assert.equal(SHOP.bombPack.max, 8);
   assert.equal(shopPrice('bombPack', 0), 230);
   assert.equal(Math.min(8, 5 + 3), 8);
-
 });
 
 test('existing checkpoints still load; extra armory upgrades survive save and validation', () => {
