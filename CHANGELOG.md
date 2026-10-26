@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.24.8 — Candidata em preparação
+## 1.24.8 — Retirada do primeiro subchefe e continuidade orbital (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- O subchefe urbano recua visivelmente após 22 s de combate e 4 s de retirada se o jogador não conseguir derrotá-lo.
+- A retirada interrompe disparos, libera o enquadramento da câmera e evita bloquear a chegada do chefe principal.
+- A fuga não concede créditos, pontuação ou XP de eliminação; demais setores e plataformas nativas permanecem iguais.
+- Regressão automatizada cobre a fuga, o HUD, o BOOST real e a chegada à arena, sem homologação humana ou publicação em HML/PROD.
 
 ## 1.24.7 — Obstáculos espaciais somente após a subida orbital (DEV)
 
