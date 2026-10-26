@@ -264,8 +264,47 @@ export function createFlyingRobot() {
     );
     plume.rotation.x = Math.PI / 2;
     plume.position.set(side * 1.12, 0.8, 3.4);
+    plume.name = 'mecha-thruster-plume';
     robot.add(plume);
   }
+  // Hard-surface detailing: preserve the original rig while improving silhouette.
+  const neon = glowMaterial('#36f5ee', 1.9);
+  const violet = glowMaterial('#a16bff', 1.65);
+  robot.add(box(1.65, 0.12, 0.12, neon, 0, 2.78, -0.96));
+  robot.add(box(0.18, 1.45, 0.14, neon, 0, 1.05, -0.97));
+  for (const side of [-1, 1]) {
+    // Shoulder and shin armor have visible, offset mechanical layers.
+    const shoulder = box(1.45, 0.25, 1.75, dark, side * 2.02, 3.12, -0.08);
+    shoulder.rotation.z = side * -0.22;
+    robot.add(shoulder);
+    const blade = box(0.26, 1.8, 1.22, armor, side * 2.55, 1.3, -0.12);
+    blade.rotation.z = side * -0.18;
+    robot.add(blade);
+    robot.add(box(0.16, 1.75, 0.12, neon, side * 2.68, 1.25, -0.76));
+    robot.add(box(0.16, 1.5, 0.12, violet, side * 0.88, -2.2, -0.63));
+    // Same angular wing language as the fighter, rather than rounded fins.
+    const bladeWing = wing([
+      [side * 1.35, -0.5],
+      [side * 4.15, 0.75],
+      [side * 3.55, 1.35],
+      [side * 1.5, 0.55],
+    ], dark);
+    bladeWing.position.set(0, 2.0, 0.9);
+    bladeWing.rotation.z = side * 0.12;
+    robot.add(bladeWing);
+    robot.add(line([
+      [side * 1.55, 2.19, 0.42],
+      [side * 3.65, 2.19, 1.63],
+    ], '#43e9ff'));
+    // Rear-mounted engine frame and glowing exhaust collar.
+    robot.add(box(0.85, 0.32, 1.1, trim, side * 1.12, 1.2, 1.4));
+    const collar = new T.Mesh(new T.TorusGeometry(0.54, 0.09, 8, 18), neon);
+    collar.position.set(side * 1.12, 0.8, 2.65);
+    robot.add(collar);
+  }
+  robot.userData.flightRig = {
+    plumes: robot.children.filter((child) => child.name === 'mecha-thruster-plume'),
+  };
   robot.scale.setScalar(0.88);
   return robot;
 }
@@ -301,6 +340,15 @@ export function createShipModule(model = 'nova7') {
     g.add(box(2.2, 0.48, 3.7, shell, 0, -0.18, 1.15));
   } else {
     for (const side of [-1, 1]) g.add(box(0.22, 0.25, 2.8, mint, side * 3.45, 0.04, -0.15));
+  }
+  // Distinct angular light signatures on every playable ship module.
+  for (const side of [-1, 1]) {
+    const rail = box(0.14, 0.12, 2.65, cyan, side * 2.75, 0.17, 0.2);
+    rail.name = 'ship-neon-rail';
+    g.add(rail);
+    const vent = box(0.55, 0.09, 1.1, navy, side * 1.8, 0.22, 1.15);
+    vent.rotation.y = side * 0.28;
+    g.add(vent);
   }
   return g;
 }
