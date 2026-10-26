@@ -524,14 +524,38 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   // The Devastador is a distant narrative landmark; the actual boss retains its combat behavior.
   const carrier = new T.Group();
+  carrier.name = 'distant-orbital-flagship';
   carrier.add(box(95, 10, 30, navy));
   carrier.add(box(35, 20, 25, black, 0, 9, -4));
+  const dorsalArmor = box(72, 2, 26, steel, 0, 6, 0);
+  dorsalArmor.name = 'flagship-dorsal-armor';
+  carrier.add(dorsalArmor);
+  const bridge = box(19, 5, 11, steel, 0, 21, -8);
+  bridge.name = 'flagship-command-bridge';
+  carrier.add(bridge);
+  carrier.add(box(17, 0.8, 1.4, cyan, 0, 22.5, -2));
+  carrier.add(box(24, 6, 1, black, 0, -0.5, 16));
+  for (let i = -3; i <= 3; i++) {
+    carrier.add(box(3, 0.5, 16, navy, i * 9, 7.3, 0));
+    carrier.add(box(3, 0.3, 1.2, cyan, i * 9, 7.7, -8));
+  }
   for (let s of [-1, 1]) {
     carrier.add(box(35, 6, 50, steel, s * 54, 0, 0));
     carrier.add(box(1, 1, 70, pink, s * 55, -3, 0));
     for (let i = 0; i < 5; i++) {
       carrier.add(box(3, 1, 2, pink, s * (5 + i * 8), -2, 16));
     }
+    // Silhouette: paired engine pods, illuminated deck plating and defense towers.
+    carrier.add(box(8, 7, 14, navy, s * 44, -1, 13));
+    const engine = new T.Mesh(new T.TorusGeometry(3.2, 0.55, 6, 16), mint);
+    engine.name = 'flagship-engine-ring';
+    engine.position.set(s * 44, -1, 20.5);
+    carrier.add(engine);
+    carrier.add(box(24, 1.2, 32, navy, s * 54, 4.2, 0));
+    for (let i = 0; i < 4; i++)
+      carrier.add(box(2.2, 0.5, 2, cyan, s * 54, 5.1, -12 + i * 8));
+    carrier.add(box(4, 7, 5, steel, s * 30, 9, -12));
+    carrier.add(box(1.2, 1.2, 13, black, s * 30, 13, -17));
   }
   carrier.position.set(0, 62, -700);
   scene.add(carrier);
