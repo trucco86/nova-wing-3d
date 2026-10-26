@@ -1839,15 +1839,15 @@ export function createGame({
     const text = $('auditReadout').textContent;
     const clipboard = window.navigator?.clipboard;
     if (!clipboard?.writeText) {
-      $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\\n' + text;
+      $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\n' + text;
       return;
     }
     Promise.resolve(clipboard.writeText(text))
       .then(() => {
-        $('auditReadout').textContent = uiText(settings.language, 'auditCopied') + '\\n' + text;
+        $('auditReadout').textContent = uiText(settings.language, 'auditCopied') + '\n' + text;
       })
       .catch(() => {
-        $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\\n' + text;
+        $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\n' + text;
       });
   };
   $('settingsClose').onclick = closeSettings;
