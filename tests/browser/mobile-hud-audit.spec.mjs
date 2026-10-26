@@ -38,11 +38,13 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
         controls: box('#strategyControls'),
         boss: box('#bossHUD'),
         touch: box('#touch'),
+        stick: box('#stick'),
+        actions: box('#touch .actions'),
         orbit: box('#orbitControls'),
         score: box('.score'),
         status: box('.status'),
         buttons: Object.fromEntries(
-          ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map((id) => [
+          ['podsTouch', 'rollTouch', 'bombTouch', 'robotTouch', 'boostTouch', 'fireTouch'].map((id) => [
             id,
             box('#' + id),
           ]),
@@ -53,7 +55,10 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     expect(overlaps(geometry.controls, geometry.boss), 'RPG vs. boss HUD').toBe(false);
     expect(overlaps(geometry.controls, geometry.touch), 'RPG vs. touch controls').toBe(false);
     expect(overlaps(geometry.boss, geometry.touch), 'boss HUD vs. touch').toBe(false);
-    expect(overlaps(geometry.orbit, geometry.touch), 'orbit vs. touch').toBe(false);
+    // The touch wrapper deliberately covers the full footer but receives no input.
+    // Only its actual interactive children must stay clear of the boss orbit controls.
+    expect(overlaps(geometry.orbit, geometry.stick), 'orbit vs. stick').toBe(false);
+    expect(overlaps(geometry.orbit, geometry.actions), 'orbit vs. thumb actions').toBe(false);
     expect(overlaps(geometry.status, geometry.score), 'HP vs. score').toBe(false);
     for (const [id, button] of Object.entries(geometry.buttons)) {
       expect(button, id + ' must remain visible').not.toBeNull();
