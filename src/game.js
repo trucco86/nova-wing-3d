@@ -1380,6 +1380,7 @@ export function createGame({
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
       $('bossState').textContent = 'COLAPSO DO REATOR';
+      $('attackWarning').dataset.severity = 'danger';
       $('attackWarning').textContent = 'REATOR INSTÁVEL / AFASTE-SE';
       reticle.visible = false;
       player.visible = true;
@@ -1416,6 +1417,7 @@ export function createGame({
       if (dynamicFlight) cue('explosion');
       else sound(38, 1.8, 'sawtooth', 0.12);
       music?.start(sectorIndex, 'victory');
+      $('attackWarning').dataset.severity = 'info';
       $('attackWarning').textContent =
         sectorIndex === SECTORS.length - 1
           ? 'MARVIN DERROTADO · SUPRIMENTOS RECUPERADOS'
@@ -1524,6 +1526,7 @@ export function createGame({
     petWave = 0;
     petCare = readPetCare(checkpoint?.petCare);
     $('criticalWarning').hidden = true;
+    $('shieldWarning').hidden = true;
     obstacleCd = 12;
     invuln = 2;
     roll = 0;
@@ -1672,6 +1675,9 @@ export function createGame({
     $('continue').textContent = uiText(settings.language, 'continue') + ' ↗';
     $('watchIntro').textContent = '▶ ' + uiText(settings.language, 'watch');
     $('criticalWarning').textContent = uiText(settings.language, 'critical');
+    $('shieldWarning').textContent = uiText(settings.language, 'shieldLow');
+    for (const node of document.querySelectorAll?.('[data-help-key]') ?? [])
+      node.textContent = uiText(settings.language, node.dataset.helpKey);
     for (const mode of ['easy', 'normal', 'hard']) {
       const option = Array.from($('settingDifficulty').options ?? []).find(
         (item) => item.value === mode,
@@ -2729,6 +2735,7 @@ export function createGame({
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
+      $('attackWarning').dataset.severity = 'danger';
       $('attackWarning').textContent =
         bossCd < 0.65
           ? '⚠ ' +
@@ -3025,6 +3032,8 @@ export function createGame({
     $('speedValue').textContent = boosting ? '890' : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
+    $('shieldWarning').hidden =
+      !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
     $('petCareHud').hidden = !dynamicFlight;
     $('petCareHud').textContent =
       'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');
