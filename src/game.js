@@ -3032,8 +3032,7 @@ export function createGame({
     $('speedValue').textContent = boosting ? '890' : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
-    $('shieldWarning').hidden =
-      !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
+    $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
     $('petCareHud').hidden = !dynamicFlight;
     $('petCareHud').textContent =
       'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');

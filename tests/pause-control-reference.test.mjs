@@ -3,10 +3,27 @@ import assert from 'node:assert/strict';
 import { UI_COPY, uiText } from '../src/ui-preferences.js';
 
 const pauseCommands = [
-  'helpTitle', 'helpKeyboard', 'helpTouch', 'helpMove', 'helpFire', 'helpBoost',
-  'helpRobot', 'helpPods', 'helpBomb', 'helpRoll', 'helpOrbit', 'helpCamera',
-  'helpArsenal', 'helpSpecial', 'helpScan', 'helpPrecision', 'helpRepair',
-  'helpBarrage', 'helpPause', 'shieldLow', 'critical',
+  'helpTitle',
+  'helpKeyboard',
+  'helpTouch',
+  'helpMove',
+  'helpFire',
+  'helpBoost',
+  'helpRobot',
+  'helpPods',
+  'helpBomb',
+  'helpRoll',
+  'helpOrbit',
+  'helpCamera',
+  'helpArsenal',
+  'helpSpecial',
+  'helpScan',
+  'helpPrecision',
+  'helpRepair',
+  'helpBarrage',
+  'helpPause',
+  'shieldLow',
+  'critical',
 ];
 test('pause controls and low/critical shield states are fully localized', () => {
   for (const lang of ['pt', 'en', 'es'])

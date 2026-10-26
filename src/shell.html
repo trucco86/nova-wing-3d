@@ -68,7 +68,9 @@
     <div id="flash"></div>
     <div id="hudNotices" aria-label="Avisos e comunicação da missão">
       <div id="criticalWarning" hidden role="alert">⚠ INTEGRIDADE CRÍTICA — BUSQUE REPARO</div>
-      <div id="shieldWarning" hidden role="status" aria-live="polite">⚠ ESCUDO BAIXO · BUSQUE REPARO</div>
+      <div id="shieldWarning" hidden role="status" aria-live="polite">
+        ⚠ ESCUDO BAIXO · BUSQUE REPARO
+      </div>
       <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
       <div id="attackWarning" role="status"></div>
       <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
@@ -371,35 +373,83 @@
               <section class="nw-help-keyboard" aria-label="Teclado">
                 <h3 data-help-key="helpKeyboard">TECLADO / PC</h3>
                 <div class="nw-keymap">
-                <div class="nw-control-row"><kbd>W A S D / ↑ ← ↓ →</kbd><span data-help-key="helpMove"></span></div>
-                <div class="nw-control-row"><kbd>ESPAÇO</kbd><span data-help-key="helpFire"></span></div>
-                <div class="nw-control-row"><kbd>SHIFT</kbd><span data-help-key="helpBoost"></span></div>
-                <div class="nw-control-row"><kbd>T</kbd><span data-help-key="helpRobot"></span></div>
-                <div class="nw-control-row"><kbd>V</kbd><span data-help-key="helpPods"></span></div>
-                <div class="nw-control-row"><kbd>B / X</kbd><span data-help-key="helpBomb"></span></div>
-                <div class="nw-control-row"><kbd>Q / E / Z</kbd><span data-help-key="helpRoll"></span></div>
-                <div class="nw-control-row"><kbd>J / L</kbd><span data-help-key="helpOrbit"></span></div>
-                <div class="nw-control-row"><kbd>C</kbd><span data-help-key="helpCamera"></span></div>
-                <div class="nw-control-row"><kbd>F</kbd><span data-help-key="helpArsenal"></span></div>
-                <div class="nw-control-row"><kbd>H / G</kbd><span data-help-key="helpSpecial"></span></div>
-                <div class="nw-control-row"><kbd>I</kbd><span data-help-key="helpScan"></span></div>
-                <div class="nw-control-row"><kbd>K</kbd><span data-help-key="helpPrecision"></span></div>
-                <div class="nw-control-row"><kbd>R</kbd><span data-help-key="helpRepair"></span></div>
-                <div class="nw-control-row"><kbd>U</kbd><span data-help-key="helpBarrage"></span></div>
-                <div class="nw-control-row"><kbd>P / ESC</kbd><span data-help-key="helpPause"></span></div>
+                  <div class="nw-control-row">
+                    <kbd>W A S D / ↑ ← ↓ →</kbd><span data-help-key="helpMove"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ESPAÇO</kbd><span data-help-key="helpFire"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>SHIFT</kbd><span data-help-key="helpBoost"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>T</kbd><span data-help-key="helpRobot"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>V</kbd><span data-help-key="helpPods"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>B / X</kbd><span data-help-key="helpBomb"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>Q / E / Z</kbd><span data-help-key="helpRoll"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>J / L</kbd><span data-help-key="helpOrbit"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>C</kbd><span data-help-key="helpCamera"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>F</kbd><span data-help-key="helpArsenal"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>H / G</kbd><span data-help-key="helpSpecial"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>I</kbd><span data-help-key="helpScan"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>K</kbd><span data-help-key="helpPrecision"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>R</kbd><span data-help-key="helpRepair"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>U</kbd><span data-help-key="helpBarrage"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>P / ESC</kbd><span data-help-key="helpPause"></span>
+                  </div>
                 </div>
               </section>
               <section class="nw-help-mobile" aria-label="Celular">
                 <h3 data-help-key="helpTouch">CELULAR / TOQUE</h3>
                 <div class="nw-keymap">
-                <div class="nw-control-row"><kbd>ANALÓGICO</kbd><span data-help-key="helpMove"></span></div>
-                <div class="nw-control-row"><kbd>TIRO</kbd><span data-help-key="helpFire"></span></div>
-                <div class="nw-control-row"><kbd>BOOST</kbd><span data-help-key="helpBoost"></span></div>
-                <div class="nw-control-row"><kbd>ROBÔ</kbd><span data-help-key="helpRobot"></span></div>
-                <div class="nw-control-row"><kbd>PODS</kbd><span data-help-key="helpPods"></span></div>
-                <div class="nw-control-row"><kbd>BOMBA</kbd><span data-help-key="helpBomb"></span></div>
-                <div class="nw-control-row"><kbd>GIRO</kbd><span data-help-key="helpRoll"></span></div>
-                <div class="nw-control-row"><kbd>ÓRBITA ↶ ↷</kbd><span data-help-key="helpOrbit"></span></div>
+                  <div class="nw-control-row">
+                    <kbd>ANALÓGICO</kbd><span data-help-key="helpMove"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>TIRO</kbd><span data-help-key="helpFire"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>BOOST</kbd><span data-help-key="helpBoost"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ROBÔ</kbd><span data-help-key="helpRobot"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>PODS</kbd><span data-help-key="helpPods"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>BOMBA</kbd><span data-help-key="helpBomb"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>GIRO</kbd><span data-help-key="helpRoll"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ÓRBITA ↶ ↷</kbd><span data-help-key="helpOrbit"></span>
+                  </div>
                 </div>
               </section>
             </div>
