@@ -28,14 +28,12 @@ test('combined P0 orbit controls and P1 campaign hangar work in one build on mob
       const actions = rect('#touch .actions');
       const radar = rect('#tacticalPanel');
       const overlaps = (a, b) =>
-        a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height &&
-        a.y + a.height > b.y;
+        a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
       const left = rect('#orbitLeft');
       return {
         orbitActionsOverlap: overlaps(orbit, actions),
         radarActionsOverlap: overlaps(radar, actions),
-        target: document.elementFromPoint(left.x + left.width / 2, left.y + left.height / 2)
-          ?.id,
+        target: document.elementFromPoint(left.x + left.width / 2, left.y + left.height / 2)?.id,
       };
     });
     expect(geo.orbitActionsOverlap).toBe(false);
@@ -60,7 +58,9 @@ test('combined P0 orbit controls and P1 campaign hangar work in one build on mob
     await expect(page.locator('#mapSectorTitle')).toContainText('DISTRITO PORTUÁRIO');
     await expect(page.locator('#mapLaunch')).toBeVisible();
     await page.screenshot({
-      path: info.outputPath('integrated-orbit-to-campaign-' + viewport.width + 'x' + viewport.height + '.png'),
+      path: info.outputPath(
+        'integrated-orbit-to-campaign-' + viewport.width + 'x' + viewport.height + '.png',
+      ),
     });
     await page.locator('#mapLaunch').click();
     const next = await page.evaluate(() => window.fixture.game.snapshot());
