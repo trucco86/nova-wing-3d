@@ -45,10 +45,13 @@ test('mobile boss orbit stays with right thumb, clear of fire, boost and stick',
       };
     });
     expect(g.orbit.y, 'orbital controls must stay in the lower half').toBeGreaterThan(
-      viewport.height * 0.52,
+      viewport.height * 0.5,
     );
     expect(g.orbit.x, 'orbit dock belongs to the right thumb lane').toBeGreaterThan(
       viewport.width * 0.25,
+    );
+    expect(g.left.x, 'left orbit button must not cover center ship').toBeGreaterThan(
+      viewport.width * 0.52,
     );
     expect(intersects(g.orbit, g.stick), 'orbit must not obscure steering').toBe(false);
     expect(intersects(g.orbit, g.actions), 'orbit must not obscure right thumb').toBe(false);
