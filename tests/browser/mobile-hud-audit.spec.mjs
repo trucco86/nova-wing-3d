@@ -84,7 +84,6 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
   }
 });
 
-
 test('NW-03 P0: real mobile taps transform the ship without stealing BOOST or other actions', async ({
   page,
 }, info) => {
