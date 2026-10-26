@@ -28,6 +28,16 @@ test('intermission hangar upgrades projectiles and cadence before campaign map a
   await expect(page.locator('#mapSectorTitle')).toContainText('DISTRITO PORTUÁRIO');
   await expect(page.locator('#mapSectorThreat')).toContainText('Defesas costeiras');
   await expect(page.locator('#mapSectorBoss')).toContainText('NAVE-FERRÃO');
+  if (page.viewportSize().width >= 701 && page.viewportSize().height <= 550) {
+    // On small landscape screens the player must see route and launch
+    // CTA without guessing there is important content below the fold.
+    const launch = await page.locator('#mapLaunch').boundingBox();
+    const briefing = await page.locator('#mapSectorTitle').boundingBox();
+    expect(launch).not.toBeNull();
+    expect(briefing).not.toBeNull();
+    expect(launch.y + launch.height).toBeLessThanOrEqual(page.viewportSize().height);
+    expect(briefing.y).toBeGreaterThanOrEqual(0);
+  }
   await page.screenshot({ path: info.outputPath('campaign-map-10-stages.png') });
   await page.locator('#mapBack').click();
   await expect(page.locator('#shop')).toBeVisible();
