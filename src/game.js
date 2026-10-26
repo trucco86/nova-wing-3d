@@ -67,6 +67,7 @@ import {
   fighterInterval,
   obstacleInterval,
   firstSubbossQuiet,
+  firstSubbossObstacleQuiet,
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
@@ -2955,6 +2956,7 @@ export function createGame({
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
       !quietFirstSubboss &&
+      !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration)) &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
