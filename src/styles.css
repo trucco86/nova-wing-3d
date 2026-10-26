@@ -4348,3 +4348,13 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     right: 10px;
   }
 }
+
+/* Legacy combat CSS imposed an 82px FIRE minimum even on 320px phones.
+   Match the actual 60px third grid column instead of overflowing the viewport. */
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #touch #fireTouch {
+    min-width: 60px;
+    width: 60px;
+    max-width: 60px;
+  }
+}
