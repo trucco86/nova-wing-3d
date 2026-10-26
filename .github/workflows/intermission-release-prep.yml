@@ -1,5 +1,5 @@
 name: Prepare intermission hangar campaign map v1.24.10
-# Rebuild after native inventory compatibility and connected campaign route refinements.
+# Rebuild after fixing initial bomb inventory unit regressions and Prettier
 on:
   push:
     branches: [feat/intermission-arsenal-campaign-map-20261025]
