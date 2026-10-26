@@ -252,7 +252,13 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
     const bossBounds = await page.locator('#bossHUD').boundingBox();
-    expect(bounds.y + bounds.height).toBeLessThanOrEqual(bossBounds.y);
+    expect(
+      bounds.x + bounds.width <= bossBounds.x ||
+        bossBounds.x + bossBounds.width <= bounds.x ||
+        bounds.y + bounds.height <= bossBounds.y ||
+        bossBounds.y + bossBounds.height <= bounds.y,
+      'RPG and boss HP must occupy disjoint screen regions',
+    ).toBe(true);
     await expect(page.locator('.mission')).toBeHidden();
     await expect(page.locator('#pilotHudAvatar')).toBeVisible();
     await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bia');
