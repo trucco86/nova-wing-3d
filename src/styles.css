@@ -4314,3 +4314,17 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     bottom: calc(max(14px, env(safe-area-inset-bottom, 0px)) + 98px);
   }
 }
+
+/* Left-handed mode mirrors the orbit controls onto the stick side. */
+@media (pointer: coarse) {
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: auto;
+    right: max(14px, env(safe-area-inset-right, 0px));
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: auto;
+    right: 10px;
+  }
+}
