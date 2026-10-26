@@ -15,7 +15,15 @@ const meshCount = (root) => {
 
 test('orbital cargo ships, satellites and wrecks gain readable details without losing collision solids', () => {
   const expectations = [
-    ['carrier', ['carrier-command-windows', 'carrier-hangar-gate', 'carrier-engine-nozzle', 'carrier-defense-cannon']],
+    [
+      'carrier',
+      [
+        'carrier-command-windows',
+        'carrier-hangar-gate',
+        'carrier-engine-nozzle',
+        'carrier-defense-cannon',
+      ],
+    ],
     ['satellite', ['satellite-array-rib', 'satellite-telemetry-ring']],
     ['debris', ['debris-broken-ship-fin', 'debris-hull-marking']],
   ];
@@ -34,10 +42,11 @@ test('orbital cargo ships, satellites and wrecks gain readable details without l
     assert.equal(second.userData.kind, kind);
   }
   const hull = createObstacle('carrier');
-  const collidableEngine = hull.userData.solids.some(({ center, half }) =>
-    Math.abs(center.x - 13) <= half.x &&
-    Math.abs(center.y - 14) <= half.y &&
-    Math.abs(center.z - 18) <= half.z,
+  const collidableEngine = hull.userData.solids.some(
+    ({ center, half }) =>
+      Math.abs(center.x - 13) <= half.x &&
+      Math.abs(center.y - 14) <= half.y &&
+      Math.abs(center.z - 18) <= half.z,
   );
   assert.equal(collidableEngine, true, 'engine nacelles must not become non-collidable blocks');
 });
@@ -48,11 +57,8 @@ test('the distant fleet flagship has actual bridge, armor, lit thrusters and dis
   world.setSector(SECTORS[0]);
   const carrier = scene.getObjectByName('distant-orbital-flagship');
   assert.ok(carrier);
-  for (const name of [
-    'flagship-command-bridge',
-    'flagship-dorsal-armor',
-    'flagship-engine-ring',
-  ]) assert.ok(carrier.getObjectByName(name), 'missing flagship detail: ' + name);
+  for (const name of ['flagship-command-bridge', 'flagship-dorsal-armor', 'flagship-engine-ring'])
+    assert.ok(carrier.getObjectByName(name), 'missing flagship detail: ' + name);
   assert.ok(meshCount(carrier) > 35, 'large fleet craft needs a readable multi-part silhouette');
   world.reset();
   const box = new T.Box3().setFromObject(carrier);

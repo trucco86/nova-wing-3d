@@ -552,8 +552,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     engine.position.set(s * 44, -1, 20.5);
     carrier.add(engine);
     carrier.add(box(24, 1.2, 32, navy, s * 54, 4.2, 0));
-    for (let i = 0; i < 4; i++)
-      carrier.add(box(2.2, 0.5, 2, cyan, s * 54, 5.1, -12 + i * 8));
+    for (let i = 0; i < 4; i++) carrier.add(box(2.2, 0.5, 2, cyan, s * 54, 5.1, -12 + i * 8));
     carrier.add(box(4, 7, 5, steel, s * 30, 9, -12));
     carrier.add(box(1.2, 1.2, 13, black, s * 30, 13, -17));
   }

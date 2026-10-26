@@ -65,7 +65,10 @@ test('mobile boss orbit stays at lower stick edge while fire and boost are thumb
     }
     for (let i = 0; i < actions.length; i++)
       for (let j = i + 1; j < actions.length; j++)
-        expect(intersects(actions[i][1], actions[j][1]), 'overlap ' + actions[i][0] + '/' + actions[j][0]).toBe(false);
+        expect(
+          intersects(actions[i][1], actions[j][1]),
+          'overlap ' + actions[i][0] + '/' + actions[j][0],
+        ).toBe(false);
     expect(g.buttons.fireTouch.x).toBeGreaterThan(g.buttons.robotTouch.x);
     expect(g.buttons.boostTouch.x + g.buttons.boostTouch.width).toBeGreaterThanOrEqual(
       g.buttons.fireTouch.x - 8,
@@ -84,7 +87,9 @@ test('mobile boss orbit stays at lower stick edge while fire and boost are thumb
     });
     const after = await page.evaluate(() => window.fixture.game.snapshot());
     expect(after.strategy.orbitAngle).toBeLessThan(-0.3);
-    await page.screenshot({ path: info.outputPath('boss-thumb-' + viewport.width + 'x' + viewport.height + '.png') });
+    await page.screenshot({
+      path: info.outputPath('boss-thumb-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
   }
   expect(errors).toEqual([]);
 });

@@ -241,8 +241,7 @@ export function createObstacle(kind = 'gantry') {
         thruster.name = 'carrier-engine-nozzle';
         g.add(thruster);
         g.add(box(14, 0.8, 14, armor, side * 26, 16, 4));
-        for (let i = 0; i < 3; i++)
-          g.add(box(2.5, 0.35, 1.4, cyan, side * 26, 16.6, -2 + i * 6));
+        for (let i = 0; i < 3; i++) g.add(box(2.5, 0.35, 1.4, cyan, side * 26, 16.6, -2 + i * 6));
         solid(4, 2, 6, side * 12, 22, -16, armor);
         const cannon = box(1.3, 1.3, 8, joint, side * 12, 22.6, -21);
         cannon.name = 'carrier-defense-cannon';

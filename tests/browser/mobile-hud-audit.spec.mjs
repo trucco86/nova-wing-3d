@@ -44,10 +44,9 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
         score: box('.score'),
         status: box('.status'),
         buttons: Object.fromEntries(
-          ['podsTouch', 'rollTouch', 'bombTouch', 'robotTouch', 'boostTouch', 'fireTouch'].map((id) => [
-            id,
-            box('#' + id),
-          ]),
+          ['podsTouch', 'rollTouch', 'bombTouch', 'robotTouch', 'boostTouch', 'fireTouch'].map(
+            (id) => [id, box('#' + id)],
+          ),
         ),
       };
     });
