@@ -343,6 +343,12 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
   expect(blockedFeedback.width).toBeLessThanOrEqual(24);
   expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  expect(blockedFeedback.y + blockedFeedback.height, 'Impact labels stay above the center').toBeLessThan(
+    page.viewportSize().height * 0.49,
+  );
+  expect(await page.locator('#hitFeedback').evaluate((el) => el.parentElement.id)).toBe(
+    'hudNotices',
+  );
   await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
