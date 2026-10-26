@@ -1,0 +1,36 @@
+name: Prepare isolated Mecha QA candidate
+on:
+  push:
+    branches:
+      - feat/mecha-turbine-gimbal-qa-20261026
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare versioned build
+        run: npm run release:prepare -- 1.25.1
+      - name: Format
+        run: npm run format
+      - name: Verify generated artifacts
+        run: npm run validate
+      - name: Commit verified candidate bundle
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json CHANGELOG.md releases/v1.25.1.md index.html ios/App/App.xcodeproj/project.pbxproj src/game.js src/visuals.js tests/mecha-design.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'build(mecha): prepare validated v1.25.1 preview bundle'
+            git push origin HEAD:feat/mecha-turbine-gimbal-qa-20261026
+          fi
