@@ -29,6 +29,16 @@ export function firstSubbossQuiet(sector, seconds, duration) {
   return seconds >= arrival - 6 && seconds <= arrival + 9;
 }
 
+/**
+ * Leave only the first early city obstacle. A later giant reactor/gantry should
+ * not drift across the sight while the first subboss is introduced.
+ * Fighters keep their separate six-second quiet interval.
+ */
+export function firstSubbossObstacleQuiet(sector, seconds, duration) {
+  if (sector !== 0 || !Number.isFinite(duration) || duration <= 0) return false;
+  return seconds >= 12 && seconds <= duration * 0.22 + 9;
+}
+
 export function firstSubbossWarmup(sector, age) {
   return sector === 0 && age < 9;
 }
