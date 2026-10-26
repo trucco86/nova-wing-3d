@@ -4376,6 +4376,14 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   }
 }
 
+/* Mobile RPG drawer is interactive. Give scan/precision/reparo priority over orbit. */
+@media (pointer: coarse) {
+  body.in-mission:has(#strategyDrawer[open]) #orbitControls {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
     </style>
   </head>
   <body>
