@@ -3252,7 +3252,7 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
-    frameAudit.sample(time, appActive && state === 'playing');
+    frameAudit.sample(time, appActive && !document.hidden && state === 'playing');
     const dt = Math.min((time - last) / 1000, 0.035);
     last = time;
     tick(dt, time);
