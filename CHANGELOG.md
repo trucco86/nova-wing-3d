@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.9 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.8 — Retirada do primeiro subchefe e continuidade orbital (DEV)
 
 - O subchefe urbano recua visivelmente após 22 s de combate e 4 s de retirada se o jogador não conseguir derrotá-lo.

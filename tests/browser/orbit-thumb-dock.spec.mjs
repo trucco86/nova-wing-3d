@@ -58,19 +58,34 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
       expect(button.x, id + ' viewport left').toBeGreaterThanOrEqual(0);
       expect(button.x + button.width, id + ' viewport right').toBeLessThanOrEqual(viewport.width);
       expect(button.y, id + ' viewport top').toBeGreaterThanOrEqual(0);
-      expect(button.y + button.height, id + ' viewport bottom').toBeLessThanOrEqual(viewport.height);
+      expect(button.y + button.height, id + ' viewport bottom').toBeLessThanOrEqual(
+        viewport.height,
+      );
     }
-    expect(overlaps(geo.orbit, geo.actions), 'orbit must not block five primary actions').toBe(false);
+    expect(overlaps(geo.orbit, geo.actions), 'orbit must not block five primary actions').toBe(
+      false,
+    );
     expect(overlaps(geo.orbit, geo.stick), 'orbit must not obstruct joystick').toBe(false);
-    expect(geo.orbit.x, 'orbit belongs to the right thumb area').toBeGreaterThan(viewport.width * 0.25);
-    expect(geo.actions.y - (geo.orbit.y + geo.orbit.height), 'orbit remains immediately above actions').toBeGreaterThanOrEqual(0);
-    expect(geo.actions.y - (geo.orbit.y + geo.orbit.height), 'orbit must stay close to actions').toBeLessThanOrEqual(48);
+    expect(geo.orbit.x, 'orbit belongs to the right thumb area').toBeGreaterThan(
+      viewport.width * 0.25,
+    );
+    expect(
+      geo.actions.y - (geo.orbit.y + geo.orbit.height),
+      'orbit remains immediately above actions',
+    ).toBeGreaterThanOrEqual(0);
+    expect(
+      geo.actions.y - (geo.orbit.y + geo.orbit.height),
+      'orbit must stay close to actions',
+    ).toBeLessThanOrEqual(48);
     for (const id of ['boss', 'rpg', 'camera', 'status', 'score', 'orbit', 'actions']) {
       expect(overlaps(geo.radar, geo[id]), 'radar must not overlap ' + id).toBe(false);
     }
 
     const center = (box) => ({ x: box.x + box.width / 2, y: box.y + box.height / 2 });
-    const tapTarget = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, center(geo.left));
+    const tapTarget = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.id,
+      center(geo.left),
+    );
     expect(tapTarget, 'actual left thumb touch must reach orbital button').toBe('orbitLeft');
     const before = await page.evaluate(() => window.fixture.game.snapshot().strategy.orbitAngle);
     const touch = await page.context().newCDPSession(page);
@@ -82,7 +97,9 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await touch.detach();
     const after = await page.evaluate(() => window.fixture.game.snapshot().strategy.orbitAngle);
-    expect(after, 'holding the actual orbit button must steer the boss encounter').toBeLessThan(before - 0.35);
+    expect(after, 'holding the actual orbit button must steer the boss encounter').toBeLessThan(
+      before - 0.35,
+    );
     await page.screenshot({
       path: info.outputPath('orbit-thumb-dock-' + viewport.width + 'x' + viewport.height + '.png'),
     });

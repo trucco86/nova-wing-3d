@@ -4145,7 +4145,6 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
 }
 
-
 /* P0 touch ergonomics: orbital steering is an ACTION, not mid-screen HUD.
    Dock it with the right thumb's combat controls, above their action pad. */
 @media (pointer: coarse) {
