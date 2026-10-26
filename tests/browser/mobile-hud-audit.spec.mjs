@@ -11,10 +11,11 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
   page,
 }, info) => {
   test.skip(info.project.name !== 'mobile', 'Touch ergonomics requires a coarse-pointer project');
-  test.setTimeout(120000);
+  test.setTimeout(180000);
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 320, height: 568 },
+    { width: 844, height: 390 },
   ]) {
     await page.setViewportSize(viewport);
     await page.goto('/__dynamic.html?sector=0&xp=740');
@@ -41,10 +42,9 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
         score: box('.score'),
         status: box('.status'),
         buttons: Object.fromEntries(
-          ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map((id) => [
-            id,
-            box('#' + id),
-          ]),
+          ['robotTouch', 'podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map(
+            (id) => [id, box('#' + id)],
+          ),
         ),
       };
     });
@@ -82,4 +82,59 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
       path: info.outputPath('nw03-' + viewport.width + 'x' + viewport.height + '.png'),
     });
   }
+});
+
+test('NW-03 P0: real mobile taps transform the ship without stealing BOOST or other actions', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'Requires mobile touch input');
+  test.setTimeout(180000);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 320, height: 568 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/__dynamic.html?sector=0&xp=740');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.evaluate(() => window.fixture.advance(68.1));
+    await expect(page.locator('#bossHUD')).toBeVisible();
+    const button = page.locator('#robotTouch');
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect(button).toHaveText('ROBÔ');
+    const box = await button.boundingBox();
+    expect(box, 'ROBÔ needs a physical touch rectangle').not.toBeNull();
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    const hit = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, {
+      x,
+      y,
+    });
+    expect(hit, 'ROBÔ center must win real hit testing, not sit under an overlay').toBe(
+      'robotTouch',
+    );
+    const before = await page.evaluate(() => window.fixture.game.snapshot());
+    await page.touchscreen.tap(x, y);
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(button).toHaveText('NAVE');
+    const transformed = await page.evaluate(() => window.fixture.game.snapshot());
+    expect(transformed.energy).toBeLessThan(before.energy);
+    await page.screenshot({
+      path: info.outputPath('nw03-robot-tap-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
+
+    // Double taps cannot bypass the 2.5-second transformation cooldown.
+    await page.touchscreen.tap(x, y);
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await page.evaluate(() => window.fixture.advance(2.6));
+    await page.touchscreen.tap(x, y);
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect(button).toHaveText('ROBÔ');
+    expect((await page.evaluate(() => window.fixture.game.snapshot())).state).toBe('playing');
+    await expect(page.locator('#boostTouch')).toBeVisible();
+    await expect(page.locator('#fireTouch')).toBeVisible();
+  }
+  expect(errors).toEqual([]);
 });
