@@ -1,5 +1,30 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Situação rastreada — 26/10/2026 (nova referência de acompanhamento)
+
+Este quadro atualiza as referências históricas abaixo sem apagá-las. **Commit em branch, aprovação de CI, deploy de preview e homologação de gameplay são estados diferentes.** Acompanhar cada entrega com PR/SHA, gate e aceite de responsável.
+
+- **NW-24 — Transformação:** [PR #52](https://github.com/trucco86/nova-wing-3d/pull/52) com merge em `main` confirmado; evolução visual não homologada.
+- **NW-24 / #66 — Mecha e Fighter 2.0:** [PR #69](https://github.com/trucco86/nova-wing-3d/pull/69) e [PR #87](https://github.com/trucco86/nova-wing-3d/pull/87) são drafts encadeados. Próximo gate: CI do SHA final, capturas e aceite visual.
+- **NW-24 — Implementações concorrentes:** [PR #54](https://github.com/trucco86/nova-wing-3d/pull/54), [PR #67](https://github.com/trucco86/nova-wing-3d/pull/67), [PR #68](https://github.com/trucco86/nova-wing-3d/pull/68) exigem comparação de diffs e conciliação; não mesclar cegamente.
+- **NW-03 — Mobile e HUD:** [PR #78](https://github.com/trucco86/nova-wing-3d/pull/78), [PR #81](https://github.com/trucco86/nova-wing-3d/pull/81), [PR #82](https://github.com/trucco86/nova-wing-3d/pull/82), [PR #83](https://github.com/trucco86/nova-wing-3d/pull/83), [PR #85](https://github.com/trucco86/nova-wing-3d/pull/85) e [PR #86](https://github.com/trucco86/nova-wing-3d/pull/86) são drafts com bases diferentes e encadeadas; testes no SHA integrado e inspeção mobile são pendentes.
+- **NW-03 — Analógico:** [PR #46](https://github.com/trucco86/nova-wing-3d/pull/46) permanece aberta com gates anteriores falhando. A dimensão de 128 px da PR ainda não consta no CSS atual de DEV/MAIN. Revalidar layout antes de integrar a mudança e não reutilizar workflows antigos sem revisão.
+- **NW-29 — Paletas por setor:** [PR #51](https://github.com/trucco86/nova-wing-3d/pull/51) ainda aberta, formatação anterior falhou; contraste e FPS pendentes.
+- **NW-22 — Login Google:** [PR #59](https://github.com/trucco86/nova-wing-3d/pull/59) mesclada em DEV; [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) rastreia risco do modo visitante. OAuth real e logout não homologados.
+- **NW-21/NW-23 — Ranking/D1:** [PR #65](https://github.com/trucco86/nova-wing-3d/pull/65) mesclada em DEV; Worker e D1 provisionados/operacionais não comprovados.
+- **NW-16 — Arsenal/mapa:** [PR #80](https://github.com/trucco86/nova-wing-3d/pull/80) é draft; [issue #84](https://github.com/trucco86/nova-wing-3d/issues/84) inclui armamento especializado. Economia e controles ainda não homologados.
+- **NW-10/NW-11 — Áudio/harness:** nenhuma nova execução/homologação comprovada neste snapshot; preservar backlog histórico.
+
+### Critérios de promoção
+
+1. **DEV:** integrar somente depois de reconciliar variantes e obter qualidade, build e testes unitários no SHA integrado.
+2. **HML:** CI completo, quatro shards de navegador, preview reproduzível e registro dos critérios de experiência; sem promoção automática a PROD.
+3. **PROD (GitHub Pages):** homologação explícita do mantenedor, rollback verificado e ambiente/release identificados.
+4. **Status:** manter como **pendente/não validado** qualquer comportamento sem teste funcional ou visual; não confundir workflow verde com aprovação do usuário.
+5. **Consolidação de branches:** observar que as PRs #78–#86 têm bases encadeadas, e não compartilham necessariamente a mesma base da #69; usar integração de commits controlada.
+
+---
+
 ## Atualização de plataforma — 25/10/2026 (UTC)
 
 - Firebase Authentication (PR #59): integrado em DEV, sem homologação OAuth real.
