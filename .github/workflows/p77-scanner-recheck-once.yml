@@ -1,0 +1,37 @@
+name: Recheck P77 orbit scanner hit targets and bundle
+on:
+  push:
+    branches: [feat/p0-mobile-boss-thumb-ship-details-20261025]
+    paths: ['.github/workflows/p77-scanner-recheck-once.yml']
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated assets without updating workflow files
+        run: |
+          git restore --worktree .github/workflows
+          git add -A -- . ':!.github/workflows/**'
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(v1.24.8): ship corrected orbit scanner touch gate'
+            git push origin HEAD:refs/heads/feat/p0-mobile-boss-thumb-ship-details-20261025
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p77-scanner-recheck-quality
+          path: artifacts/
