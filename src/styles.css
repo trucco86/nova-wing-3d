@@ -4979,7 +4979,6 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   display: none !important;
 }
 
-
 /* QA of 320px/390px screenshots: keep orbital arrows to the RIGHT of
    the ship's central silhouette and avoid warning labels over the RPG drawer. */
 @media (pointer: coarse) and (max-width: 550px) {
@@ -5003,5 +5002,7 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     grid-template-columns: 60px 60px;
     column-gap: 6px;
   }
-  body.in-mission #orbitRight { grid-column: 2; }
+  body.in-mission #orbitRight {
+    grid-column: 2;
+  }
 }

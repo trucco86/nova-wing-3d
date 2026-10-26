@@ -4996,6 +4996,34 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   display: none !important;
 }
 
+/* QA of 320px/390px screenshots: keep orbital arrows to the RIGHT of
+   the ship's central silhouette and avoid warning labels over the RPG drawer. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body {
+    --nw-portrait-alert-top: max(100px, calc(env(safe-area-inset-top, 0px) + 84px));
+  }
+  #hudNotices {
+    top: var(--nw-portrait-alert-top);
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: calc(100vw - 92px);
+    max-height: 64px;
+    align-items: flex-start;
+  }
+  body.in-mission #strategyControls {
+    top: calc(var(--nw-portrait-alert-top) + 70px);
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    width: 134px;
+    grid-template-columns: 60px 60px;
+    column-gap: 6px;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 2;
+  }
+}
+
     </style>
   </head>
   <body>
