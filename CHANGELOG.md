@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.24.8 — Candidata em preparação
+## 1.24.8 — Candidata: controles mobile e naves espaciais detalhadas (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Controle de órbita reposicionado para o canto inferior junto ao analógico, fora da nave e do retículo.
+- Grade de combate à direita reorganizada para o polegar, com TIRO e BOOST destacados; inclui telas pequenas, landscape e canhotos.
+- Cargueiras, capitânia, satélites e destroços com estruturas mais detalhadas e volumes de colisão preservados.
+- CI, screenshots e homologação visual pendentes; preview isolado, sem promoção.
 
 ## 1.24.7 — Obstáculos espaciais somente após a subida orbital (DEV)
 
