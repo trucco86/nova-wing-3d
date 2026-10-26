@@ -4728,3 +4728,13 @@ body.in-mission #tacticalPanel {
     grid-row: 4;
   }
 }
+
+
+/* Preserve the original translucent/non-interactive radio contract in the top rail. */
+#hudNotices > #comms {
+  background: linear-gradient(90deg, rgba(5, 28, 41, .24), rgba(5, 28, 41, .07));
+}
+body:has(#arcadePanel:not([hidden])) #hudNotices #comms {
+  visibility: hidden !important;
+  display: none !important;
+}
