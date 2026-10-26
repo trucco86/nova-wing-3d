@@ -4658,3 +4658,41 @@ body.in-mission #tacticalPanel {
     opacity: 1;
   }
 }
+
+
+/* Mobile boss HP belongs to the information edge, not across the boss model. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #bossHUD:not([hidden]) {
+    position: fixed;
+    top: max(178px, calc(env(safe-area-inset-top, 0px) + 160px));
+    left: auto;
+    right: max(9px, env(safe-area-inset-right, 0px));
+    width: clamp(100px, 30vw, 142px);
+    min-height: 0;
+    padding: 5px 6px;
+    border: 1px solid #eaa2b16e;
+    border-radius: 9px;
+    background: #140c20db;
+    z-index: 27;
+  }
+  body.in-mission #bossHUD span {
+    display: block;
+    margin: 0 0 5px;
+    text-align: left;
+    line-height: 1.25;
+  }
+  body.in-mission #bossHUD #bossState {
+    display: block;
+    max-height: 54px;
+    overflow: hidden;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  body.in-mission #bossHUD .bar {
+    height: 7px;
+    width: 100%;
+    margin: 0;
+  }
+}
