@@ -4358,3 +4358,268 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     max-width: 60px;
   }
 }
+
+
+/* v1.24.9 — In-flight HUD contract: all text and alerts are in a top rail.
+   Reticle, ships, particles and hit sparks remain in the central gameplay. */
+#hudNotices {
+  position: fixed;
+  z-index: 38;
+  top: max(92px, calc(env(safe-area-inset-top, 0px) + 78px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(500px, calc(100vw - 32px));
+  max-height: min(24vh, 138px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+  overflow: hidden;
+}
+body.menu #hudNotices,
+body:has(#arcadePanel:not([hidden])) #hudNotices {
+  display: none;
+}
+#hudNotices > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 4px 10px;
+  font: 700 11px/1.3 monospace;
+  letter-spacing: .035em;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border-radius: 7px;
+  background: #071625ec;
+  text-shadow: none;
+  box-shadow: none;
+  pointer-events: none;
+}
+#hudNotices > :is(#criticalWarning, #shieldWarning)[hidden],
+#hudNotices > #bossIncoming[hidden],
+#hudNotices > #pickupFlash[hidden],
+#hudNotices > #attackWarning:empty {
+  display: none !important;
+}
+#hudNotices > #criticalWarning {
+  order: 0;
+  color: #ffe0df;
+  background: #57060bea;
+  border: 2px solid #ff5260;
+  box-shadow: 0 0 12px #fc354788;
+  animation: nw-top-danger-blink .8s steps(2,end) infinite;
+}
+#hudNotices > #shieldWarning {
+  order: 1;
+  color: #fff0c2;
+  border: 1px solid #ffd456;
+  background: #47350ee9;
+  animation: nw-top-attention-blink 1.45s ease-in-out infinite;
+}
+#hudNotices > #attackWarning {
+  order: 2;
+  color: #ffede2;
+  border: 1px solid #ff5a67;
+  background: #4f0c17e8;
+  animation: nw-top-danger-blink .85s steps(2,end) infinite;
+}
+#hudNotices > #attackWarning[data-severity='info'] {
+  color: #d7fff1;
+  border-color: #66dfbe;
+  background: #092b31ed;
+  animation: none;
+}
+#hudNotices > #bossIncoming {
+  order: 3;
+  color: #ffefaf;
+  border: 1px solid #ffcd55;
+  background: #42300aed;
+  animation: nw-top-attention-blink 1.5s ease-in-out infinite;
+}
+#hudNotices > #pickupFlash {
+  order: 4;
+  padding: 3px 8px;
+  font-size: 10px;
+  letter-spacing: .025em;
+  color: #9bffe3;
+  border-color: #66dabc8c;
+  background: #09242bdc;
+}
+#hudNotices > #comms {
+  order: 5;
+  display: none;
+  align-items: center;
+  gap: 7px;
+  opacity: 1;
+  visibility: visible !important;
+  border: 1px solid #6de6d358;
+  background: #071a28d8;
+}
+#hudNotices > #comms.active {
+  display: flex;
+}
+#hudNotices #comms img {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  opacity: .85;
+}
+#hudNotices #comms .eyebrow,
+#hudNotices #comms b {
+  display: none;
+}
+#hudNotices #message {
+  margin: 0;
+  color: #d6f1f3;
+  font: 700 10px/1.3 monospace;
+  text-align: left;
+}
+@keyframes nw-top-attention-blink {
+  0%, 100% { opacity: 1; border-color: #ffe675; }
+  50% { opacity: .58; border-color: #e3a42e; }
+}
+@keyframes nw-top-danger-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .52; }
+}
+
+/* Status and current sector remain in the upper HUD; no low-floating tags. */
+body.in-mission #sectorTag {
+  bottom: auto;
+  top: max(84px, calc(env(safe-area-inset-top, 0px) + 72px));
+  right: 12px;
+  opacity: .62;
+  transform: scale(.68);
+  transform-origin: top right;
+}
+body.in-mission #tacticalPanel {
+  top: max(105px, calc(env(safe-area-inset-top, 0px) + 94px));
+}
+@media (pointer: coarse) {
+  #hudNotices {
+    top: max(98px, calc(env(safe-area-inset-top, 0px) + 82px));
+    width: min(430px, calc(100vw - 26px));
+    max-height: min(21vh, 120px);
+    gap: 3px;
+  }
+  #hudNotices > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
+    padding: 3px 7px;
+    font-size: 10px;
+    letter-spacing: 0;
+  }
+  body.in-mission #tacticalPanel {
+    top: max(112px, calc(env(safe-area-inset-top, 0px) + 95px));
+  }
+  /* Opening the RPG drawer must never make orbit buttons intercept SCAN. */
+  body.in-mission:has(#strategyDrawer[open]) #orbitControls {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  #hudNotices {
+    top: max(108px, calc(env(safe-area-inset-top, 0px) + 88px));
+    max-height: 92px;
+  }
+  #hudNotices > #comms img { display: none; }
+  #hudNotices #message { font-size: 9px; text-align: center; }
+  body.in-mission #sectorTag { display: none; }
+}
+@media (pointer: coarse) and (max-height: 550px) and (min-width: 551px) {
+  #hudNotices {
+    top: max(64px, calc(env(safe-area-inset-top, 0px) + 48px));
+    max-height: min(22vh, 74px);
+    width: min(370px, 53vw);
+  }
+  #hudNotices > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
+    padding: 2px 6px;
+    font-size: 9px;
+  }
+}
+
+/* Pause menu is the reference manual, not a mandatory tutorial in combat. */
+#pauseMenu .nw-modal-card {
+  width: min(700px, 100%);
+}
+#pauseControlGuide {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid #3b858b91;
+  border-radius: 10px;
+  background: #081c2ad9;
+}
+#pauseControlGuide summary {
+  cursor: pointer;
+  color: #a7ffe9;
+  font: 800 12px/1.3 monospace;
+  letter-spacing: .06em;
+  min-height: 24px;
+}
+.nw-control-guide {
+  display: grid;
+  gap: 16px;
+  margin-top: 10px;
+}
+.nw-control-guide h3 {
+  margin: 0 0 9px;
+  color: #ffdfa1;
+  font: 800 12px/1.3 monospace;
+}
+.nw-keymap {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 14px;
+}
+.nw-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid #76b6b21f;
+  font: 11px/1.35 monospace;
+}
+.nw-control-row kbd {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid #66c8d28c;
+  border-radius: 5px;
+  background: #123849;
+  color: #e5fffc;
+  font: 800 11px/1.3 monospace;
+}
+.nw-control-row > span {
+  text-align: right;
+  color: #b6d9df;
+}
+#pauseMenu .nw-modal-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+#pauseMenu:has(#pauseConfirmPanel:not([hidden])) #pauseControlGuide {
+  display: none;
+}
+@media (max-width: 600px) {
+  .nw-keymap { grid-template-columns: 1fr; }
+  #pauseMenu .nw-modal-actions { grid-template-columns: 1fr 1fr; gap: 6px; }
+  #pauseMenu .nw-modal-actions button { padding: 9px 6px; font-size: 10px; letter-spacing: 0; }
+  #pauseControlGuide { padding: 8px 10px; }
+  .nw-control-row { font-size: 10px; padding: 4px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #hudNotices > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning) {
+    animation: none !important;
+    opacity: 1;
+  }
+}
