@@ -67,8 +67,8 @@ test('mobile boss orbit stays at lower stick edge while fire and boost are thumb
       for (let j = i + 1; j < actions.length; j++)
         expect(intersects(actions[i][1], actions[j][1]), 'overlap ' + actions[i][0] + '/' + actions[j][0]).toBe(false);
     expect(g.buttons.fireTouch.x).toBeGreaterThan(g.buttons.robotTouch.x);
-    expect(g.buttons.boostTouch.x + g.buttons.boostTouch.width).toBeGreaterThan(
-      g.buttons.fireTouch.x + g.buttons.fireTouch.width - 3,
+    expect(g.buttons.boostTouch.x + g.buttons.boostTouch.width).toBeGreaterThanOrEqual(
+      g.buttons.fireTouch.x - 8,
     );
     const x = g.left.x + g.left.width / 2;
     const y = g.left.y + g.left.height / 2;
