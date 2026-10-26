@@ -4302,7 +4302,6 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   }
 }
 
-
 /* The galaxy is traversed as a single continuous mission route, not a flat list.
    Desktop zig-zags across two rows like a space shooter level-select map. */
 @media (min-width: 701px) {
