@@ -52,6 +52,9 @@ test('first subboss remains visible with a protected opening and quieter escort 
   }, firstArrival);
 
   expect(state.encounterKinds).toContain('subboss');
+  expect(state.encounterKinds, 'supply-base enemy must not obstruct the opening').not.toContain(
+    'base',
+  );
   expect(state.orbitalLaunch.complete).toBe(false);
   expect(
     state.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind)),
