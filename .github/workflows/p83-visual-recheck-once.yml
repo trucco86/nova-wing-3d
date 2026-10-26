@@ -1,0 +1,37 @@
+name: Rebuild and verify v1.24.12 after real screenshot review
+on:
+  push:
+    branches: [feat/p0-orbit-right-radar-hud-unified-20261026]
+    paths: ['.github/workflows/p83-visual-recheck-once.yml']
+permissions:
+  contents: write
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated game and leave workflow unchanged
+        run: |
+          git restore --worktree .github/workflows
+          git add -A -- . ':!.github/workflows/**'
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(v1.24.12): compact orbit dock outside ship and separate warnings'
+            git push origin HEAD:refs/heads/feat/p0-orbit-right-radar-hud-unified-20261026
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: p83-visual-recheck-quality
+          path: artifacts/
