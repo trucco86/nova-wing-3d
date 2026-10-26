@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.24.9 — Candidata em preparação
+## 1.24.9 — Ergonomia P0 de ORBITAR e radar (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Os dois comandos ORBITAR são transferidos do corredor visual de combate para o dock inferior de ações mobile, sem cobrir TIRO, BOOST, joystick ou demais botões.
+- No modo retrato, ORBITAR fica imediatamente acima da ação; em paisagem, acompanha os controles na coluna à esquerda para evitar colisão de hitboxes.
+- O radar do chefe passa à faixa superior de telemetria, afastado do centro do gameplay.
+- Regressão mobile verifica os controles físicos e a rotação real contra o chefe em 320×568, 390×844 e 844×390.
+- Candidata DEV não homologada visualmente nem promovida para HML/produção.
 
 ## 1.24.8 — Retirada do primeiro subchefe e continuidade orbital (DEV)
 
