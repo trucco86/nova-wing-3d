@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { SECTORS } from '../../src/campaign.js';
 
-test('first subboss health stays at the top-right information edge on phones', async ({ page }, info) => {
+test('first subboss health stays at the top-right information edge on phones', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile', 'Subboss touch layout requires a phone viewport');
   test.setTimeout(120000);
   const errors = [];
@@ -34,12 +36,16 @@ test('first subboss health stays at the top-right information edge on phones', a
     );
     // A status card must not cover either quick-RPG button or an alert.
     const overlap = (a, b) =>
-      a.x < b.x + b.width - 3 && a.x + a.width > b.x + 3 &&
-      a.y < b.y + b.height - 3 && a.y + a.height > b.y + 3;
+      a.x < b.x + b.width - 3 &&
+      a.x + a.width > b.x + 3 &&
+      a.y < b.y + b.height - 3 &&
+      a.y + a.height > b.y + 3;
     expect(overlap(bounds, quickRpg), 'Subboss health overlaps quick-RPG actions').toBe(false);
     const state = await page.evaluate(() => window.fixture.game.snapshot());
     expect(state.encounterKinds).toContain('subboss');
-    await page.screenshot({ path: info.outputPath('subboss-health-' + viewport.width + 'x' + viewport.height + '.png') });
+    await page.screenshot({
+      path: info.outputPath('subboss-health-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
     expect(rail.y).toBeLessThan(viewport.height / 2);
   }
   expect(errors).toEqual([]);

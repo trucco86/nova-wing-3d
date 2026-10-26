@@ -4736,7 +4736,6 @@ body:has(#arcadePanel:not([hidden])) #hudNotices #comms {
   display: none !important;
 }
 
-
 /* v1.24.10: confirmation text is status, not an overlay in the lower combat lane.
    The world-space impact spark still marks where the projectile actually landed. */
 body.in-mission #hudNotices > #hitFeedback {
@@ -4759,9 +4758,9 @@ body.in-mission #hudNotices > #hitFeedback {
   border-radius: 7px;
   background: #071a29ed;
   box-shadow: none;
-  opacity: .93;
+  opacity: 0.93;
   font: 800 10px/1.2 monospace;
-  letter-spacing: .015em;
+  letter-spacing: 0.015em;
   text-align: center;
   pointer-events: none;
   white-space: normal;
@@ -4784,7 +4783,7 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked'] {
   padding: 0;
   border: 0;
   background: transparent;
-  opacity: .82;
+  opacity: 0.82;
   font-size: 0 !important;
 }
 body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
