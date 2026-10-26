@@ -24,7 +24,7 @@ jobs:
       - run: npm run validate
       - name: Commit generated website and cleanup
         run: |
-          git rm .github/workflows/p76-verify-recheck.yml
+          git rm -f .github/workflows/p76-verify-recheck.yml
           git add -A
           git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(v1.24.8): sync validated mobile ship and collision assets'
           git push origin HEAD:refs/heads/feat/p0-mobile-boss-thumb-ship-details-20261025
