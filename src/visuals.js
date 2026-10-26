@@ -355,7 +355,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
-    uniforms: { tint: { value: new T.Color('#ffffff') }, ambient: { value: new T.Color('#223b65') } },
+    uniforms: {
+      tint: { value: new T.Color('#ffffff') },
+      ambient: { value: new T.Color('#223b65') },
+    },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
