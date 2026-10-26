@@ -4381,7 +4381,6 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   }
 }
 
-
 /* Short landscape: display route + next mission intelligence together.
    Players should see where they are going before committing to launch. */
 @media (min-width: 701px) and (max-height: 550px) {
