@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.24.9 — Candidata em preparação
+## 1.24.9 — HUD superior e manual de controles na pausa (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Mensagens de missão e avisos migram para uma faixa superior, preservando a mira e o centro do gameplay.
+- Escudo baixo e aproximação de chefe piscam em amarelo; vida crítica e ataques iminentes piscam em vermelho; redução de movimento desliga as piscadas.
+- Pausa passa a ensinar atalhos reais do PC e ações mobile, em português, inglês e espanhol.
+- Corrigido conflito de toque das setas orbitais com o scanner no painel RPG expandido.
+- CI, capturas e homologação em aparelhos reais continuam obrigatórios; sem publicação em HML ou produção.
 
 ## 1.24.8 — Candidata: controles mobile e naves espaciais detalhadas (DEV)
 
