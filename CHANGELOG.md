@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.10 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.9 — HUD superior e manual de controles na pausa (DEV)
 
 - Mensagens de missão e avisos migram para uma faixa superior, preservando a mira e o centro do gameplay.
