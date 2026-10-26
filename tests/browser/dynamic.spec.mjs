@@ -265,8 +265,12 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
       expect(button.height).toBeGreaterThanOrEqual(60);
     }
     const orbitBounds = await page.locator('#orbitControls').boundingBox();
-    const touchBounds = await page.locator('#touch').boundingBox();
-    expect(orbitBounds.y + orbitBounds.height).toBeLessThanOrEqual(touchBounds.y);
+    const stickBounds = await page.locator('#stick').boundingBox();
+    const actionBounds = await page.locator('#touch .actions').boundingBox();
+    // The transparent touch wrapper spans the footer; the true hit targets are
+    // the stick and the action grid. The orbit strip must not overlap either.
+    expect(orbitBounds.y + orbitBounds.height).toBeLessThanOrEqual(stickBounds.y + 2);
+    expect(orbitBounds.x + orbitBounds.width).toBeLessThanOrEqual(actionBounds.x);
     await page.screenshot({ path: info.outputPath('strategy-portrait.png') });
     await page.setViewportSize({ width: 320, height: 568 });
     await page.evaluate(() => window.fixture.advance(0.1));
