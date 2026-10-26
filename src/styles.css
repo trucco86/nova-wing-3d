@@ -4144,3 +4144,160 @@ body.in-mission #hitFeedback[data-impact='blocked'] {
 body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
 }
+
+
+/* Intermission: a tactical hangar followed by an explicit campaign route screen. */
+#shop .shop-grid {
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 9px;
+}
+#shop .shop-grid button {
+  min-height: 72px;
+  border-radius: 10px;
+  text-align: left;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  background: linear-gradient(135deg, #102d38ee, #091b2bee);
+}
+#shop .shop-grid button:focus-visible,
+#campaignMap button:focus-visible {
+  outline: 2px solid #a1ffde;
+  outline-offset: 3px;
+}
+#campaignMap {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  overflow-y: auto;
+  touch-action: pan-y;
+  background:
+    radial-gradient(circle at 70% 12%, #13415a66, transparent 48%),
+    radial-gradient(circle at 20% 80%, #68365f33, transparent 44%),
+    #03101bf5;
+}
+#campaignMap[hidden] {
+  display: none;
+}
+.campaign-map-card {
+  width: min(940px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: clamp(16px, 3.4vw, 32px);
+  border: 1px solid #65d3c966;
+  border-radius: 18px;
+  background: #061621ee;
+  box-shadow: 0 20px 90px #0009;
+}
+.campaign-map-card h2 {
+  margin: 10px 0;
+  color: #a8ffe3;
+  font: 800 clamp(24px, 4vw, 38px)/1.2 sans-serif;
+  letter-spacing: 0.05em;
+}
+#mapProgress {
+  color: #a6d1db;
+  font: 700 11px monospace;
+}
+.campaign-route-map {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 0;
+}
+.campaign-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-height: 98px;
+  padding: 11px;
+  border: 1px solid #527a80;
+  border-radius: 12px;
+  background: linear-gradient(155deg, #113040, #081726);
+  color: #badbe2;
+}
+.campaign-node.completed {
+  border-color: #54dcb988;
+  color: #b4ffdd;
+}
+.campaign-node.next {
+  border: 2px solid var(--sector-accent, #a8ffe3);
+  box-shadow: 0 0 18px #5efedc33, inset 0 0 22px #87ffe90a;
+  color: #fff;
+}
+.campaign-node.locked {
+  opacity: 0.54;
+}
+.campaign-node-icon {
+  color: var(--sector-accent, #a8ffe3);
+  font-size: 23px;
+}
+.campaign-node strong {
+  font: 700 10px/1.35 monospace;
+}
+.campaign-node small {
+  margin-top: auto;
+  color: #8eb9c1;
+  font: 700 9px monospace;
+  letter-spacing: 0.05em;
+}
+.campaign-brief {
+  margin-top: 10px;
+  padding: 16px;
+  border-left: 3px solid #6dffe2;
+  border-radius: 0 10px 10px 0;
+  background: #102b38bb;
+}
+.campaign-brief h3 {
+  margin: 8px 0;
+  font-size: clamp(15px, 2.7vw, 23px);
+}
+.campaign-brief p {
+  margin: 8px 0;
+  color: #b9d5d9;
+  line-height: 1.45;
+}
+.campaign-brief strong {
+  color: #ffdc95;
+  font: 700 11px monospace;
+}
+.campaign-map-actions {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 17px;
+}
+.campaign-map-actions button {
+  min-height: 48px;
+  border: 1px solid #66b8b4;
+  border-radius: 9px;
+  background: #163140;
+  color: #d8fff6;
+  padding: 10px 16px;
+}
+.campaign-map-actions button.primary {
+  background: #257460;
+  border-color: #a5ffda;
+}
+@media (max-width: 600px) {
+  .campaign-route-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .campaign-node {
+    min-height: 78px;
+    padding: 9px;
+  }
+  .campaign-map-card {
+    max-height: 100%;
+  }
+  .campaign-map-actions button {
+    flex: 1 1 130px;
+    min-height: 52px;
+  }
+}
