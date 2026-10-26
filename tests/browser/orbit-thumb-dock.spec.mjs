@@ -100,6 +100,21 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
     expect(after, 'holding the actual orbit button must steer the boss encounter').toBeLessThan(
       before - 0.35,
     );
+    const rightCenter = center(geo.right);
+    expect(
+      await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, rightCenter),
+      'right orbit must receive touches without interception',
+    ).toBe('orbitRight');
+    const rightTouch = await page.context().newCDPSession(page);
+    await rightTouch.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ ...rightCenter, id: 42 }],
+    });
+    await page.evaluate(() => window.fixture.advance(1.2));
+    await rightTouch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await rightTouch.detach();
+    const returned = await page.evaluate(() => window.fixture.game.snapshot().strategy.orbitAngle);
+    expect(returned, 'holding right orbit must turn the ship back').toBeGreaterThan(after + 0.35);
     await page.screenshot({
       path: info.outputPath('orbit-thumb-dock-' + viewport.width + 'x' + viewport.height + '.png'),
     });
