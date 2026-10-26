@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.24.10 — Candidata em preparação
+## 1.24.10 — HUD periférico de impactos e subchefe (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Confirmações textuais de colisão passam para o rail superior; centelha de contato permanece na cena.
+- HP do subchefe reposicionado em cartão lateral superior no celular, sem atravessar a mira ou controles RPG.
+- Testes Playwright com colisões reais e capturas de 320×568, 390×844 e 844×390.
+- CI, revisão visual e aceite em hardware são gates obrigatórios antes de homologação.
 
 ## 1.24.9 — HUD superior e manual de controles na pausa (DEV)
 
