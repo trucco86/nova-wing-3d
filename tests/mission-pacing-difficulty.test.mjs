@@ -6,6 +6,7 @@ import {
   fighterInterval,
   obstacleInterval,
   firstSubbossQuiet,
+  firstSubbossObstacleQuiet,
   firstSubbossWarmup,
 } from '../src/difficulty.js';
 import { harness } from './harness.mjs';
@@ -75,6 +76,13 @@ test('first subboss has a quiet approach and readable opening fire', () => {
   assert.equal(firstSubbossQuiet(0, trigger + 5, SECTORS[0].duration), true);
   assert.equal(firstSubbossQuiet(0, trigger + 30, SECTORS[0].duration), false);
   assert.equal(firstSubbossQuiet(1, trigger, SECTORS[1].duration), false);
+  // One obstacle can teach avoidance near 9s; nothing else should occupy
+  // the foreground during the first subboss introduction.
+  assert.equal(firstSubbossObstacleQuiet(0, 9, SECTORS[0].duration), false);
+  assert.equal(firstSubbossObstacleQuiet(0, 16, SECTORS[0].duration), true);
+  assert.equal(firstSubbossObstacleQuiet(0, trigger + 3, SECTORS[0].duration), true);
+  assert.equal(firstSubbossObstacleQuiet(0, trigger + 10, SECTORS[0].duration), false);
+  assert.equal(firstSubbossObstacleQuiet(1, trigger, SECTORS[1].duration), false);
   assert.equal(firstSubbossWarmup(0, 8), true);
   assert.equal(firstSubbossWarmup(0, 9), false);
   assert.equal(firstSubbossWarmup(1, 1), false);
