@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.13 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.12 — Controles orbitais à direita + radar no topo (DEV)
 
 - Botões ORBITAR 60×60px no rodapé junto ao polegar direito, acima das ações em portrait e adjacentes em landscape.
