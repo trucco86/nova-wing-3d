@@ -55,7 +55,6 @@ test('physical-device FPS measurement is opt-in, pause-only and localized', asyn
   expect(errors).toEqual([]);
 });
 
-
 test('FPS entry is reachable in compact portrait and landscape without obscuring resume', async ({
   page,
 }, info) => {

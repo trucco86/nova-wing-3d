@@ -68,8 +68,8 @@ export const UI_COPY = {
     audio: 'ÁUDIO',
     controls: 'CONTROLES',
     shieldLow: 'ATENÇÃO · ESCUDO BAIXO',
-    helpTab: "CONTROLES",
-    auditTab: "FPS / DESEMPENHO",
+    helpTab: 'CONTROLES',
+    auditTab: 'FPS / DESEMPENHO',
     auditTitle: 'DIAGNÓSTICO DE FPS · DISPOSITIVO',
     auditHint:
       'Inicie, continue jogando por pelo menos 30 segundos e pause. Só mede durante o gameplay; nada é enviado.',
@@ -135,8 +135,8 @@ export const UI_COPY = {
     audio: 'AUDIO',
     controls: 'CONTROLS',
     shieldLow: 'WARNING · LOW SHIELD',
-    helpTab: "CONTROLS",
-    auditTab: "FPS / PERFORMANCE",
+    helpTab: 'CONTROLS',
+    auditTab: 'FPS / PERFORMANCE',
     auditTitle: 'FPS DIAGNOSTICS · DEVICE',
     auditHint:
       'Start, play for at least 30 seconds, then pause. Only gameplay is measured; nothing is uploaded.',
@@ -202,8 +202,8 @@ export const UI_COPY = {
     audio: 'AUDIO',
     controls: 'CONTROLES',
     shieldLow: 'ATENCIÓN · ESCUDO BAJO',
-    helpTab: "CONTROLES",
-    auditTab: "FPS / RENDIMIENTO",
+    helpTab: 'CONTROLES',
+    auditTab: 'FPS / RENDIMIENTO',
     auditTitle: 'DIAGNÓSTICO DE FPS · DISPOSITIVO',
     auditHint:
       'Inicia, juega al menos 30 segundos y pausa. Solo se mide durante el juego; no se envían datos.',

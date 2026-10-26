@@ -5079,7 +5079,6 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
-
 /* FPS report and keyboard guide share one right-hand pane: preserve visibility
    of RESUME in compact landscape while making physical-device QA discoverable. */
 #pausePanelTabs {
