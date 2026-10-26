@@ -5007,7 +5007,6 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
-
 /* Device-only QA: performance report belongs exclusively in PAUSE, never HUD. */
 #pauseFrameAudit {
   margin-top: 10px;
@@ -5044,7 +5043,7 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   touch-action: manipulation;
 }
 #pauseFrameAudit button:disabled {
-  opacity: .4;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 #pauseFrameAudit output {

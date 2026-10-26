@@ -1,9 +1,11 @@
 # QA em aparelho físico — medição opt-in de FPS (v1.24.13)
 
 ## Objetivo
+
 Tornar verificável o desempenho real no próprio celular do jogador, sem presumir que Playwright/Chromium no CI represente um iPhone/Android. A ferramenta só aparece **dentro do menu de pausa**, nunca no centro da nave, radar, HUD ou controles.
 
 ## Contrato funcional
+
 1. Pausa → "Diagnóstico de FPS" (recolhido por padrão) → "Iniciar medição" → continuar jogo por pelo menos 30 segundos → pausar → "Encerrar" → opcionalmente "Copiar relatório".
 2. Medição começa somente após clique explícito do jogador; o amostrador observa o intervalo real entre callbacks `requestAnimationFrame` durante o estado `playing`. Nenhuma medição automática no menu, pausa, loja, cinematic, aba oculta ou minigame 2D.
 3. Relatório inclui FPS médio, duração válida, p95 de frame em ms, quadros superiores a 33,34ms e a 50ms, tamanho do viewport, DPR e interrupções ignoradas.
@@ -13,10 +15,12 @@ Tornar verificável o desempenho real no próprio celular do jogador, sem presum
 7. Os dados representam **cadência do navegador**, não tempo real de GPU, GPU load, temperatura, energia ou benchmark certificado. Cabe ao jogador comparar com a percepção visual, fluidez e aquecimento.
 
 ## Testes e evidências
+
 - Node: períodos pausados, interrupções do sistema, buffer limitado, p95, quadros acima de 33/50 ms, internacionalização e ausência de identificadores no relatório.
 - Playwright desktop/mobile: painel só na pausa, início/parada, nenhum FPS inventado no harness de tempo simulado, labels nos três idiomas e screenshots.
 - Gates existentes: `npm ci`, `npm run format`, `npm run build`, `npm run validate`, `npm run validate -- --browser`.
 - Homologação física: 30–60s de voo urbano e depois 30–60s de boss em portrait e landscape; registrar viewport, média/p95, toque e sensação de aquecimento. Não aprovar HML/PROD sem avaliação do jogador.
 
 ## Status
+
 Candidata DEV preview, PR empilhada sobre #83. Não promove ambiente nem altera produção.
