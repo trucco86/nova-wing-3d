@@ -56,6 +56,9 @@ test('first subboss remains visible with a protected opening and quieter escort 
   expect(
     state.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind)),
   ).toBe(false);
+  expect(state.obstacleKinds, 'no leftover city obstacle should block the subboss opening').toEqual(
+    [],
+  );
   await expect(page.locator('#subHUD')).toBeVisible();
   await page.screenshot({ path: info.outputPath('first-subboss-normal.png') });
   expect(runtimeErrors).toEqual([]);
