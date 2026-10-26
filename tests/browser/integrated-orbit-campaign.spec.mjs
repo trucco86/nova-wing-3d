@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { reachBrowserBoss } from './orbital-journey.mjs';
 
-test('integrated P0 orbit dock and P1 campaign hangar work together on mobile', async ({
+test('combined P0 orbit controls and P1 campaign hangar work in one build on mobile', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'mobile', 'Combined thumb flow runs on mobile');
@@ -42,6 +42,11 @@ test('integrated P0 orbit dock and P1 campaign hangar work together on mobile', 
     expect(geo.radarActionsOverlap).toBe(false);
     expect(geo.target).toBe('orbitLeft');
 
+    // Reload from a clean checkpoint: the hangar helper plays a full sector
+    // before defeating its boss. It is not valid to call it while already
+    // inside an active boss fight; the route and controls share the same build.
+    await page.goto('/__dynamic.html?sector=0&xp=740');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await page.evaluate(() => window.fixture.hangar());
     await expect(page.locator('#shop')).toBeVisible();
     await page.locator('#buyvolley').click();
