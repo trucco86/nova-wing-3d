@@ -4466,3 +4466,85 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     font-size: 9px;
   }
 }
+
+/* P0 touch ergonomics: orbital steering is an ACTION, not mid-screen HUD.
+   Dock it with the right thumb's combat controls, above their action pad. */
+@media (pointer: coarse) {
+  body.in-mission #orbitControls:not([hidden]) {
+    position: fixed;
+    top: auto;
+    right: max(14px, env(safe-area-inset-right, 0px));
+    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 196px);
+    left: auto;
+    z-index: 36;
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) 60px;
+    align-items: center;
+    width: 202px;
+    min-height: 62px;
+    gap: 4px;
+    padding: 3px;
+    margin: 0;
+    background: #061522e8;
+    border: 1px solid #64cabe88;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px #01081166;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  body.in-mission #orbitControls button {
+    min-width: 60px;
+    min-height: 60px;
+    padding: 0;
+    border-radius: 12px;
+    font-size: 14px;
+    touch-action: none;
+  }
+  body.in-mission #orbitControls span {
+    margin: 0;
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  /* Radar is telemetry: keep it in the upper-right information lane, not
+     inside the combat corridor or over the on-screen steering controls. */
+  body.in-mission #tacticalPanel:not([hidden]) {
+    top: calc(max(9px, env(safe-area-inset-top, 0px)) + 106px);
+    right: max(12px, env(safe-area-inset-right, 0px));
+    width: 60px;
+    z-index: 24;
+  }
+  body.in-mission #battleRadar {
+    width: 48px;
+    height: 48px;
+  }
+  body.in-mission #battleRadar b {
+    left: 18px;
+    top: 16px;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  /* Landscape has too little height for a third horizontal control row.
+     Dock J/L vertically immediately to the LEFT of the five-button action grid. */
+  body.in-mission #orbitControls:not([hidden]) {
+    right: calc(max(14px, env(safe-area-inset-right, 0px)) + 238px);
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    width: 68px;
+    min-height: 0;
+    grid-template-columns: 60px;
+    grid-template-rows: repeat(2, 60px);
+    justify-items: center;
+    gap: 6px;
+    padding: 4px;
+  }
+  body.in-mission #orbitControls span {
+    display: none;
+  }
+  body.in-mission #tacticalPanel:not([hidden]) {
+    top: calc(max(9px, env(safe-area-inset-top, 0px)) + 105px);
+  }
+}
+
+/* The hidden orbit dock must not capture touch input before the boss arrives. */
+#orbitControls[hidden] {
+  display: none !important;
+}
