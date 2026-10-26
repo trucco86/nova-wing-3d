@@ -1,4 +1,5 @@
 name: Prepare intermission hangar campaign map v1.24.10
+# Rebuild after native inventory compatibility and connected campaign route refinements.
 on:
   push:
     branches: [feat/intermission-arsenal-campaign-map-20261025]
