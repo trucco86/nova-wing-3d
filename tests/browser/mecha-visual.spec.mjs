@@ -34,7 +34,6 @@ test('the flight mecha transforms, raises its cannon arms and keeps a visible vi
   expect(errors).toEqual([]);
 });
 
-
 test('mecha design review renders frontal side and rear wing parity plus neon tiers', async ({
   page,
 }, info) => {
