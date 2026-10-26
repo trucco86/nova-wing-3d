@@ -123,6 +123,7 @@ export function createGame({
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
+  let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
   const cleanups = [];
   let running = true;
@@ -1544,6 +1545,7 @@ export function createGame({
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     frameAudit.clear();
+    pausePanel = 'controls';
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
     $('game').focus?.({ preventScroll: true });
@@ -1573,6 +1575,7 @@ export function createGame({
       $('pauseConfirmPanel').hidden = true;
       $('pauseActions').hidden = false;
       confirmation = null;
+      showPausePanel(pausePanel);
       $('pause').textContent = '▶';
       $('pauseCare').textContent = PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(
         ' · ',
@@ -1648,6 +1651,18 @@ export function createGame({
             }
           : null,
       );
+  }
+  function showPausePanel(which) {
+    pausePanel = which === 'fps' ? 'fps' : 'controls';
+    const fps = pausePanel === 'fps';
+    $('pauseControlGuide').hidden = fps;
+    $('pauseFrameAudit').hidden = !fps;
+    $('pauseTabControls').setAttribute?.('aria-pressed', String(!fps));
+    $('pauseTabFps').setAttribute?.('aria-pressed', String(fps));
+    if (fps) {
+      $('pauseFrameAudit').open = true;
+      renderFrameAudit();
+    }
   }
   function renderFrameAudit() {
     const result = frameAudit.report();
@@ -1824,6 +1839,8 @@ export function createGame({
   $('cinematicSkip').onclick = finishCinematic;
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
+  $('pauseTabControls').onclick = () => showPausePanel('controls');
+  $('pauseTabFps').onclick = () => showPausePanel('fps');
   $('auditStart').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.start();
