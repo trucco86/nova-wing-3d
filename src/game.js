@@ -2332,7 +2332,13 @@ export function createGame({
       enemy('rival');
       message('CAÇA RIVAL / NÃO DEIXE QUE ELE ENCERRE A MISSÃO');
     }
-    if (spawnEncounters && !baseDone && sectorIndex < 2 && elapsed > 18) {
+    if (
+      spawnEncounters &&
+      !baseDone &&
+      sectorIndex < 2 &&
+      elapsed > 18 &&
+      !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration))
+    ) {
       baseDone = true;
       enemy('base');
       message('BASE-SERVIDOR / ELIMINE A TORRE PARA RECEBER SUPRIMENTOS');
