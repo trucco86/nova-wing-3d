@@ -1,0 +1,33 @@
+name: Prepare integrated orbit and campaign v1.24.11
+on:
+  push:
+    branches: [integration/p0-orbit-hangar-campaign-20261026]
+    paths: ['.github/workflows/integration-release-prep.yml']
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.24.11
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit reproducible release artifacts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/styles.css index.html package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md tests/browser/integrated-orbit-campaign.spec.mjs
+          git diff --cached --quiet && { echo 'No release diff'; exit 1; }
+          git commit -m 'build(release): prepare integrated v1.24.11 orbit and campaign candidate'
+          git push origin HEAD:integration/p0-orbit-hangar-campaign-20261026
