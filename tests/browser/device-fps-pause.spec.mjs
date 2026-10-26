@@ -72,6 +72,23 @@ test('FPS entry is reachable in compact portrait and landscape without obscuring
     const fps = page.locator('#pauseFrameAudit');
     await expect(controls).toBeVisible();
     await expect(fps).toBeHidden();
+    const card = await page.locator('#pauseMenu .nw-modal-card').boundingBox();
+    const actionBoxes = await Promise.all(
+      ['pauseResume', 'pauseRestart', 'pauseOptions', 'pauseExit'].map((id) =>
+        page.locator('#' + id).boundingBox(),
+      ),
+    );
+    for (const [index, box] of actionBoxes.entries()) {
+      expect(box, 'all four pause action buttons must be rendered: ' + index).not.toBeNull();
+      expect(box.width, 'pause action must have a usable touch width').toBeGreaterThanOrEqual(90);
+      expect(box.x, 'pause action cannot bleed off the left viewport edge').toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, 'pause action cannot bleed off the right screen').toBeLessThanOrEqual(
+        viewport.width + 1,
+      );
+      expect(box.x + box.width, 'pause action must fit inside pause card').toBeLessThanOrEqual(
+        card.x + card.width + 1,
+      );
+    }
     await page.locator('#pauseTabFps').click();
     await expect(fps).toBeVisible();
     await expect(controls).toBeHidden();
@@ -79,7 +96,6 @@ test('FPS entry is reachable in compact portrait and landscape without obscuring
     const resume = page.locator('#pauseResume');
     await expect(resume).toBeVisible();
     if (viewport.width > 700) {
-      const card = await page.locator('#pauseMenu .nw-modal-card').boundingBox();
       const tabs = await page.locator('#pausePanelTabs').boundingBox();
       const actions = await resume.boundingBox();
       expect(card).not.toBeNull();
