@@ -278,6 +278,12 @@ export function createObstacle(kind = 'gantry') {
         const shard = box(8, 2, 12, armor, side * 8, 21, -3);
         shard.rotation.z = side * 0.35;
         g.add(shard);
+        // Physical debris fins: include the rotated shard's conservative AABB,
+        // so the ship and projectiles cannot pass through visible wreckage.
+        solids.push({
+          center: new T.Vector3(side * 8, 21, -3),
+          half: new T.Vector3(5, 3, 6),
+        });
       }
       g.add(box(6, 2, 4, red, 0, 18, 9));
       // Debris must read as a destroyed ship, not an anonymous floating box.
