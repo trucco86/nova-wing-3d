@@ -2956,8 +2956,15 @@ export function createGame({
       if (r.o.position.z > 40) r.life = 0;
     }
     obstacleCd -= dt;
+    // Preserve a clear view during BOOST ascent and the atmospheric crossing.
+    // Orbital debris/carriers enter only once the player has reached real orbit.
+    const launchTransit =
+      dynamicFlight &&
+      sectorIndex === 0 &&
+      ['boost', 'atmosphere'].includes(orbitalLaunchSequence.snapshot().phase);
     if (
       spawnEncounters &&
+      !launchTransit &&
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
