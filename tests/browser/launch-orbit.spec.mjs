@@ -71,24 +71,43 @@ test('space obstacles arrive only after the BOOST-powered urban exit', async ({ 
     'atmosphere',
   );
 
-  let spaceSeen = false;
-  for (let i = 0; i < 58; i++) {
+  // No industrial gantries OR orbital blocks should enter the camera lane
+  // while the pilot is still crossing the atmosphere, even at late ascent.
+  let atmosphereSeen = false;
+  let reachedOrbit = false;
+  for (let i = 0; i < 40; i++) {
     const state = await page.evaluate(() => {
       window.fixture.game.collect('shield');
       window.fixture.advance(1);
       return window.fixture.game.snapshot();
     });
-    if (
-      state.orbitalLaunch.amount > 0.68 &&
-      state.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind))
-    ) {
+    if (state.orbitalLaunch.phase === 'atmosphere') {
+      atmosphereSeen = true;
+      expect(state.obstacleKinds, 'atmospheric climb must stay clear of obstacles').toEqual([]);
+    }
+    if (state.orbitalLaunch.phase === 'orbit') {
+      reachedOrbit = true;
+      break;
+    }
+  }
+  expect(atmosphereSeen).toBe(true);
+  expect(reachedOrbit).toBe(true);
+  let spaceSeen = false;
+  for (let i = 0; i < 35; i++) {
+    const state = await page.evaluate(() => {
+      window.fixture.game.collect('shield');
+      window.fixture.advance(0.6);
+      return window.fixture.game.snapshot();
+    });
+    expect(state.orbitalLaunch.phase).toBe('orbit');
+    if (state.obstacleKinds.some((kind) => ['satellite', 'carrier', 'debris'].includes(kind))) {
       spaceSeen = true;
       break;
     }
   }
   expect(spaceSeen).toBe(true);
   const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
-  expect(snapshot.orbitalLaunch.amount).toBeGreaterThan(0.68);
+  expect(snapshot.orbitalLaunch.complete).toBe(true);
   expect(
     snapshot.obstacleKinds.some((kind) => ['gantry', 'reactor', 'tunnel'].includes(kind)),
   ).toBe(false);
