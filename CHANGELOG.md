@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.24.7 — Candidata em preparação
+## 1.24.7 — Obstáculos espaciais somente após a subida orbital (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- O percurso por BOOST e os 38 segundos de travessia atmosférica deixam de gerar obstáculos que cruzam a câmera.
+- Novos satélites, cargueiras e destroços só aparecem quando a fase orbital está completa.
+- Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
+- Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
 
 ## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
