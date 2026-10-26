@@ -14,6 +14,8 @@
 - Difícil: dano ao jogador 125%, frequência adversária maior, mais caças na primeira fase e recargas menores.
 - Idiomas PT/EN/ES traduzem o nome da configuração e as três opções.
 
+- Na primeira fase Web, o subchefe urbano tem 22 s de combate e, caso sobreviva, uma retirada visível de 4 s: sai do corredor de mira, interrompe disparos e libera o bloqueio do chefe da fase. A retirada não concede créditos, XP ou pontuação de derrota; os outros setores e plataformas nativas permanecem sem essa regra.
+
 ## Gates de aceite
 
 - Testes para opções/default mesmo diante de armazenamento legado ou corrompido, persistência das demais preferências e alteração da dificuldade em Options.
