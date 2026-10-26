@@ -4880,7 +4880,6 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
-
 /* v1.24.12 — integrate P0 right-thumb ORBIT and radar from #79 with the
    v1.24.10+ clean HUD. Main fire/boost remain in the lower-right action grid. */
 @media (pointer: coarse) {
@@ -4908,8 +4907,12 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   body.in-mission #orbitControls:not([hidden])::before {
     bottom: calc(100% + 2px);
   }
-  body.in-mission #orbitLeft { grid-column: 1; }
-  body.in-mission #orbitRight { grid-column: 3; }
+  body.in-mission #orbitLeft {
+    grid-column: 1;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 3;
+  }
   body.in-mission #orbitControls button {
     min-width: 60px;
     min-height: 60px;
@@ -4961,11 +4964,17 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     gap: 6px;
     padding: 3px;
   }
-  body.in-mission #orbitRight { grid-column: 1; }
-  body.in-mission #orbitControls:not([hidden])::before { display: none; }
+  body.in-mission #orbitRight {
+    grid-column: 1;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    display: none;
+  }
   body.left-handed.in-mission #orbitControls:not([hidden]) {
     left: calc(max(14px, env(safe-area-inset-left, 0px)) + 280px);
     right: auto;
   }
 }
-#orbitControls[hidden] { display: none !important; }
+#orbitControls[hidden] {
+  display: none !important;
+}

@@ -7,7 +7,6 @@
 - Modo canhoto espelhado, SCAN desbloqueado no RPG aberto, regressões mobile e toque real.
 - Integração experimental em PR isolada, requer CI completo e aceite físico antes de HML/PROD.
 
-
 ## 1.24.11 — Retirada do subchefe urbano e HUD periférico (DEV)
 
 - Integra a correção P0 da PR #76 com o HUD v1.24.10: subchefe urbano recua após 22 segundos, foge em 4 segundos e não concede prêmio indevido.

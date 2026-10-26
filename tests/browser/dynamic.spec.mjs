@@ -275,9 +275,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     const actionBounds = await page.locator('#touch .actions').boundingBox();
     // The touch wrapper spans the footer but is non-interactive; orbit may
     // occupy its empty area. It must be above the actual steering/action targets.
-    expect(orbitBounds.x, 'orbit belongs within right thumb reach').toBeGreaterThan(
-      390 * 0.25,
-    );
+    expect(orbitBounds.x, 'orbit belongs within right thumb reach').toBeGreaterThan(390 * 0.25);
     const overlap = (a, b) =>
       a.x < b.x + b.width - 2 &&
       a.x + a.width > b.x + 2 &&

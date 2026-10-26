@@ -4897,6 +4897,105 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
+/* v1.24.12 — integrate P0 right-thumb ORBIT and radar from #79 with the
+   v1.24.10+ clean HUD. Main fire/boost remain in the lower-right action grid. */
+@media (pointer: coarse) {
+  body.in-mission #orbitControls:not([hidden]) {
+    position: fixed;
+    inset: auto max(14px, env(safe-area-inset-right, 0px))
+      calc(max(15px, env(safe-area-inset-bottom, 0px)) + 196px) auto;
+    z-index: 36;
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) 60px;
+    align-items: center;
+    gap: 4px;
+    width: 202px;
+    min-height: 62px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3px;
+    border: 1px solid #64cabe88;
+    border-radius: 15px;
+    background: #061522e8;
+    box-shadow: 0 5px 20px #01081166;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    bottom: calc(100% + 2px);
+  }
+  body.in-mission #orbitLeft {
+    grid-column: 1;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 3;
+  }
+  body.in-mission #orbitControls button {
+    min-width: 60px;
+    min-height: 60px;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border-radius: 12px;
+    font-size: 0 !important;
+    touch-action: none;
+  }
+  body.in-mission #tacticalPanel:not([hidden]) {
+    top: max(98px, calc(env(safe-area-inset-top, 0px) + 84px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    width: 60px;
+    z-index: 26;
+  }
+  body.in-mission #battleRadar {
+    width: 48px;
+    height: 48px;
+  }
+  body.in-mission #battleRadar b {
+    left: 18px;
+    top: 16px;
+  }
+  /* All textual encounter telemetry remains in the boss HP/status; the radar
+     is a compact visual instrument to avoid covering the boss health card. */
+  body.in-mission #tacticalPanel #tacticState,
+  body.in-mission #tacticalPanel #battleCharge {
+    display: none;
+  }
+  /* Respect the left-handed preference: action controls move left and the
+     orbit dock follows that hand, not the joystick on the opposite side. */
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    left: auto;
+    right: calc(max(14px, env(safe-area-inset-right, 0px)) + 280px);
+    width: 68px;
+    min-height: 0;
+    grid-template-columns: 60px;
+    grid-template-rows: repeat(2, 60px);
+    justify-items: center;
+    gap: 6px;
+    padding: 3px;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 1;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    display: none;
+  }
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: calc(max(14px, env(safe-area-inset-left, 0px)) + 280px);
+    right: auto;
+  }
+}
+#orbitControls[hidden] {
+  display: none !important;
+}
+
     </style>
   </head>
   <body>
