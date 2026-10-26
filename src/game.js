@@ -79,6 +79,7 @@ import {
   subbossMotion,
   subbossCooldown,
   subbossWindup,
+  firstSubbossDeparture,
 } from './subboss-tactics.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
@@ -2535,6 +2536,25 @@ export function createGame({
         e.o.rotation.z = motion.bank;
         e.attackGlow.visible = e.cd <= 0.55 && e.cd > 0 && e.o.position.z < -15;
         e.attackGlow.scale.setScalar(6 + Math.sin(e.age * 20) * 2);
+      }
+      // First-sector subbosses retreat after a real combat window if not defeated.
+      // They do not award kills/XP and must not block the orbital boss indefinitely.
+      const departure =
+        dynamicFlight && sectorIndex === 0 && e.kind === 'subboss'
+          ? firstSubbossDeparture(sectorIndex, e.age)
+          : null;
+      if (departure?.complete) {
+        dispose(e.o);
+        e.dead = true;
+        $('subHUD').hidden = true;
+        music?.start(sectorIndex);
+        message('SUBCHEFE RECUOU / PERSEGUIÇÃO ORBITAL LIBERADA');
+        continue;
+      }
+      if (departure?.retreating) {
+        if (e.attackGlow) e.attackGlow.visible = false;
+        $('subState').textContent = 'SUBCHEFE EM RETIRADA';
+        continue;
       }
       if (e.kind === 'subboss') {
         $('subHealth').style.width = Math.max(0, (e.life / e.maxLife) * 100) + '%';
