@@ -54,6 +54,7 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { drawCampaignMap } from './campaign-map.js';
 import {
   createGroundEnemy,
   animateGroundEnemy,
@@ -279,6 +280,8 @@ export function createGame({
     lives = 3,
     credits = 0,
     weapon = 0,
+    volley = 0,
+    rapid = 0,
     armor = 0,
     podCount = 0,
     blueRings = 0,
@@ -622,6 +625,9 @@ export function createGame({
       sector: next,
       credits,
       weapon,
+      volley,
+      rapid,
+      bombs,
       armor,
       pods: podCount,
       score,
@@ -685,16 +691,33 @@ export function createGame({
     $('shop').hidden = false;
     $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
     $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
+    $('campaignMap').hidden = true;
     renderShop();
     saveCheckpoint(sectorIndex + 1);
   }
   function renderShop() {
-    $('shopCredits').textContent = credits + ' CR · ' + score + ' ACERTOS';
+    $('shopCredits').textContent =
+      credits + ' CR · ' + score + ' ACERTOS · ' + bombs + ' BOMBAS';
     renderSkins();
     for (const k of Object.keys(SHOP)) {
-      const level = k === 'weapon' ? weapon : k === 'armor' ? armor : k === 'pods' ? podCount : 0;
+      const level =
+        k === 'weapon'
+          ? weapon
+          : k === 'volley'
+            ? volley
+            : k === 'rapid'
+              ? rapid
+              : k === 'armor'
+                ? armor
+                : k === 'pods'
+                  ? podCount
+                  : 0;
       const full =
-        k === 'repair' ? hp >= maxHp() : k === 'bomb' ? bombs >= 5 : level >= SHOP[k].max;
+        k === 'repair'
+          ? hp >= maxHp()
+          : k === 'bomb' || k === 'bombPack'
+            ? bombs >= 8
+            : level >= SHOP[k].max;
       const price = shopPrice(k, level);
       $('buy' + k).textContent = SHOP[k].label + ' · ' + (full ? 'MÁXIMO' : price + ' CR');
       $('buy' + k).disabled = full || credits < price;
@@ -702,15 +725,30 @@ export function createGame({
   }
   function buy(k) {
     if (state !== 'shop' || !SHOP[k]) return false;
-    const n = k === 'weapon' ? weapon : k === 'armor' ? armor : k === 'pods' ? podCount : 0,
+    const n =
+        k === 'weapon'
+          ? weapon
+          : k === 'volley'
+            ? volley
+            : k === 'rapid'
+              ? rapid
+              : k === 'armor'
+                ? armor
+                : k === 'pods'
+                  ? podCount
+                  : 0,
       price = shopPrice(k, n);
-    if (
-      credits < price ||
-      (k === 'repair' ? hp >= maxHp() : k === 'bomb' ? bombs >= 5 : n >= SHOP[k].max)
-    )
-      return false;
+    const full =
+      k === 'repair'
+        ? hp >= maxHp()
+        : k === 'bomb' || k === 'bombPack'
+          ? bombs >= 8
+          : n >= SHOP[k].max;
+    if (credits < price || full) return false;
     credits -= price;
     if (k === 'weapon') weapon++;
+    if (k === 'volley') volley++;
+    if (k === 'rapid') rapid++;
     if (k === 'armor') {
       armor++;
       hp = Math.min(maxHp(), hp + 25);
@@ -721,12 +759,28 @@ export function createGame({
     }
     if (k === 'repair') hp = maxHp();
     if (k === 'bomb') bombs++;
+    if (k === 'bombPack') bombs = Math.min(8, bombs + 3);
     renderShop();
     saveCheckpoint(sectorIndex + 1);
     return true;
   }
-  function nextSector() {
+  function showCampaignMap() {
     if (state !== 'shop' || !appActive) return;
+    state = 'map';
+    $('shop').hidden = true;
+    drawCampaignMap(document, SECTORS, sectorIndex + 1);
+    $('campaignMap').hidden = false;
+  }
+  function backToShop() {
+    if (state !== 'map') return;
+    state = 'shop';
+    $('campaignMap').hidden = true;
+    $('shop').hidden = false;
+    renderShop();
+  }
+  function nextSector() {
+    if (!['shop', 'map'].includes(state) || !appActive) return;
+    $('campaignMap').hidden = true;
     resumeAudio();
     sectorIndex++;
     enterSector();
@@ -785,7 +839,7 @@ export function createGame({
     invuln = 3;
     energy = 100;
     hp = Math.min(maxHp(), hp + 30);
-    bombs = Math.min(5, bombs + 1);
+    bombs = Math.min(dynamicFlight ? 8 : 5, bombs + 1);
     releaseControls();
     touchFire = touchBoost = false;
     roll = 0;
@@ -797,6 +851,7 @@ export function createGame({
     flightCamera.reset(player.position);
     state = 'playing';
     $('shop').hidden = true;
+    $('campaignMap').hidden = true;
     $('result').hidden = true;
     $('bossHUD').hidden = true;
     $('subHUD').hidden = true;
@@ -824,6 +879,9 @@ export function createGame({
       sector: sectorIndex,
       credits,
       weapon,
+      volley,
+      rapid,
+      bombs,
       armor,
       pods: podCount,
       score,
@@ -1132,7 +1190,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    const count = SHOT_COUNTS[weapon];
+    const count = SHOT_COUNTS[weapon] + (dynamicFlight ? volley : 0);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
       launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
@@ -1145,7 +1203,9 @@ export function createGame({
     }
     if (dynamicFlight) cue('shot');
     else sound(900 + weapon * 110);
-    shotCd = dynamicFlight ? selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035) : 0.135;
+    shotCd = dynamicFlight
+      ? (selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035)) * (1 - rapid * 0.12)
+      : 0.135;
   }
   function enemy(kind = 'fighter') {
     const airborneRobot = kind === 'hover-walker';
@@ -1489,6 +1549,8 @@ export function createGame({
     sectorIndex = checkpoint?.sector ?? 0;
     credits = checkpoint?.credits ?? 0;
     weapon = checkpoint?.weapon ?? 0;
+    volley = checkpoint?.volley ?? 0;
+    rapid = checkpoint?.rapid ?? 0;
     pilotLoadout = dynamicFlight
       ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
       : readPilotLoadout(null);
@@ -1516,7 +1578,7 @@ export function createGame({
     cosmetics = readCosmetics(checkpoint?.cosmetics);
     applySkin();
     hp = maxHp();
-    bombs = 3;
+    bombs = checkpoint?.bombs ?? 2;
     energy = 100;
     shotCd = 0;
     spawnCd = 2;
@@ -1552,7 +1614,6 @@ export function createGame({
     unlockAudio();
     menuThemePlaying = false;
     enterSector();
-    bombs = 3;
   }
   function pause() {
     if (!appActive) return;
@@ -1840,7 +1901,9 @@ export function createGame({
     };
   }
   applySettings();
-  $('nextSector').onclick = nextSector;
+  $('nextSector').onclick = showCampaignMap;
+  $('mapBack').onclick = backToShop;
+  $('mapLaunch').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
   $('music').onclick = () => {
     musicOn = !musicOn;
@@ -3282,6 +3345,8 @@ export function createGame({
       lives,
       credits,
       weapon: weapon + 1,
+      volley,
+      rapid,
       pods: podCount,
       armor,
       charge,
