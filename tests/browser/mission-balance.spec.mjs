@@ -106,9 +106,12 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
     return window.fixture.game.snapshot();
   });
   expect(escaped.encounterKinds).not.toContain('subboss');
-  // The fixture replenishes shield 16 times during retreat; each pickup grants
-  // 15 credits. No additional 90-credit subboss kill reward may be granted.
-  expect(escaped.credits - engaged.credits).toBe(16 * 15);
+  // Sixteen explicit shield pickups grant 240 credits. Autonomous blue/shield
+  // rings may grant extra 15-credit pickups, but an escaped subboss must not
+  // grant the separate 90-credit elite defeat reward.
+  const incidentalCredits = escaped.credits - engaged.credits - 16 * 15;
+  expect(incidentalCredits, 'pickup earnings cannot become an elite kill reward').toBeGreaterThanOrEqual(0);
+  expect(incidentalCredits, 'subboss retreat must never pay 90 defeat credits').toBeLessThan(90);
   expect(escaped.boss).toBe(false);
   await expect(page.locator('#subHUD')).toBeHidden();
 
