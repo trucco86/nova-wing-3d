@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.8 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.7 — Obstáculos espaciais somente após a subida orbital (DEV)
 
 - O percurso por BOOST e os 38 segundos de travessia atmosférica deixam de gerar obstáculos que cruzam a câmera.

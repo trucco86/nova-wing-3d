@@ -103,13 +103,16 @@ export const SUBBOSS_TACTICS = [
   },
 ];
 
-// The first urban subboss cannot remain in the player's camera lane indefinitely. 
+// The first urban subboss cannot remain in the player's camera lane indefinitely.
 // A timed retreat preserves the chance to defeat it while allowing the orbital chase.
 export const FIRST_SUBBOSS_RETREAT = Object.freeze({ startAge: 22, duration: 4 });
 export function firstSubbossDeparture(index, age) {
   const eligible = index === 0 && Number.isFinite(age) && age >= FIRST_SUBBOSS_RETREAT.startAge;
   const progress = eligible
-    ? Math.min(1, Math.max(0, (age - FIRST_SUBBOSS_RETREAT.startAge) / FIRST_SUBBOSS_RETREAT.duration))
+    ? Math.min(
+        1,
+        Math.max(0, (age - FIRST_SUBBOSS_RETREAT.startAge) / FIRST_SUBBOSS_RETREAT.duration),
+      )
     : 0;
   return { retreating: eligible, complete: eligible && progress >= 1, progress };
 }
