@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.9 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.8 — Candidata: controles mobile e naves espaciais detalhadas (DEV)
 
 - Controle de órbita reposicionado para o canto inferior junto ao analógico, fora da nave e do retículo.
