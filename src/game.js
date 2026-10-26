@@ -697,8 +697,7 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
   }
   function renderShop() {
-    $('shopCredits').textContent =
-      credits + ' CR · ' + score + ' ACERTOS · ' + bombs + ' BOMBAS';
+    $('shopCredits').textContent = credits + ' CR · ' + score + ' ACERTOS · ' + bombs + ' BOMBAS';
     renderSkins();
     for (const k of Object.keys(SHOP)) {
       const level =

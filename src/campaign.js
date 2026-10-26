@@ -117,7 +117,9 @@ export const WEAPONS = [
 export const SHOT_COUNTS = [2, 2, 3, 4, 6, 8];
 export const WEAPON_COLORS = ['#64ffe4', '#4cecff', '#64c8ff', '#8d91ff', '#d37bff', '#ff60d2'];
 export function projectileCount(tier, extraVolley = 0, web = true) {
-  return SHOT_COUNTS[Math.min(5, Math.max(0, tier))] + (web ? Math.min(2, Math.max(0, extraVolley)) : 0);
+  return (
+    SHOT_COUNTS[Math.min(5, Math.max(0, tier))] + (web ? Math.min(2, Math.max(0, extraVolley)) : 0)
+  );
 }
 export function firingCooldown(cadence, level = 0) {
   return cadence * (1 - Math.min(2, Math.max(0, level)) * 0.12);

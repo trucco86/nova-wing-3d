@@ -14,18 +14,21 @@ import { campaignMapSteps, drawCampaignMap } from '../src/campaign-map.js';
 test('campaign route shows ten real levels with completed/current/future progress', () => {
   const map = campaignMapSteps(SECTORS, 4);
   assert.equal(map.length, 10);
-  assert.deepEqual(map.map((m) => m.status), [
-    'completed',
-    'completed',
-    'completed',
-    'completed',
-    'next',
-    'locked',
-    'locked',
-    'locked',
-    'locked',
-    'locked',
-  ]);
+  assert.deepEqual(
+    map.map((m) => m.status),
+    [
+      'completed',
+      'completed',
+      'completed',
+      'completed',
+      'next',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+    ],
+  );
   assert.equal(map[4].name, 'TEMPESTADE DE DADOS');
   assert.equal(map[4].boss, SECTORS[4].boss);
   assert.ok(map[4].brief.length > 10);
@@ -79,11 +82,21 @@ test('campaign briefing renders safe, navigable cards and actual next-sector int
   function el() {
     return {
       children: [],
-      style: { setProperty(key, value) { this[key] = value; } },
+      style: {
+        setProperty(key, value) {
+          this[key] = value;
+        },
+      },
       textContent: '',
-      setAttribute(key, value) { this[key] = value; },
-      append(...kids) { this.children.push(...kids); },
-      replaceChildren(...kids) { this.children = [...kids]; },
+      setAttribute(key, value) {
+        this[key] = value;
+      },
+      append(...kids) {
+        this.children.push(...kids);
+      },
+      replaceChildren(...kids) {
+        this.children = [...kids];
+      },
     };
   }
   const document = {

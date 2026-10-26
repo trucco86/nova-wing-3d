@@ -4145,7 +4145,6 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   display: none;
 }
 
-
 /* Intermission: a tactical hangar followed by an explicit campaign route screen. */
 #shop .shop-grid {
   grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
@@ -4176,8 +4175,7 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   touch-action: pan-y;
   background:
     radial-gradient(circle at 70% 12%, #13415a66, transparent 48%),
-    radial-gradient(circle at 20% 80%, #68365f33, transparent 44%),
-    #03101bf5;
+    radial-gradient(circle at 20% 80%, #68365f33, transparent 44%), #03101bf5;
 }
 #campaignMap[hidden] {
   display: none;
@@ -4226,7 +4224,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 .campaign-node.next {
   border: 2px solid var(--sector-accent, #a8ffe3);
-  box-shadow: 0 0 18px #5efedc33, inset 0 0 22px #87ffe90a;
+  box-shadow:
+    0 0 18px #5efedc33,
+    inset 0 0 22px #87ffe90a;
   color: #fff;
 }
 .campaign-node.locked {
