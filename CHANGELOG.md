@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.7 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
 - Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
