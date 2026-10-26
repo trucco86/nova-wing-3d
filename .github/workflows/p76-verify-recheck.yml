@@ -1,0 +1,35 @@
+name: Verify mobile ship candidate v1.24.8 and sync build
+on:
+  push:
+    branches: [feat/p0-mobile-boss-thumb-ship-details-20261025]
+    paths: ['.github/workflows/p76-verify-recheck.yml']
+permissions:
+  contents: write
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated website and cleanup
+        run: |
+          git rm .github/workflows/p76-verify-recheck.yml
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'build(v1.24.8): sync validated mobile ship and collision assets'
+          git push origin HEAD:refs/heads/feat/p0-mobile-boss-thumb-ship-details-20261025
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: v1248-quality-regression
+          path: artifacts/
