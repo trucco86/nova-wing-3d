@@ -39,7 +39,8 @@ import {
   SECTORS,
   PILOTS,
   WEAPONS,
-  SHOT_COUNTS,
+  projectileCount,
+  firingCooldown,
   WEAPON_COLORS,
   SHOP,
   shopPrice,
@@ -1190,7 +1191,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    const count = SHOT_COUNTS[weapon] + (dynamicFlight ? volley : 0);
+    const count = projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
       launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
@@ -1204,7 +1205,7 @@ export function createGame({
     if (dynamicFlight) cue('shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight
-      ? (selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035)) * (1 - rapid * 0.12)
+      ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid)
       : 0.135;
   }
   function enemy(kind = 'fighter') {
