@@ -4696,3 +4696,35 @@ body.in-mission #tacticalPanel {
     margin: 0;
   }
 }
+
+
+/* Landscape/desktop pause: controls visible beside actions without hiding Resume. */
+@media (min-width: 700px) {
+  #pauseMenu .nw-modal-card {
+    display: grid;
+    grid-template-columns: minmax(205px, .72fr) minmax(0, 1.28fr);
+    align-items: start;
+    gap: 7px 16px;
+  }
+  #pauseMenu .nw-modal-card > :is(.eyebrow, #pauseTitle, #pauseCare) {
+    grid-column: 1 / -1;
+    margin: 0;
+  }
+  #pauseMenu #pauseActions {
+    grid-column: 1;
+    grid-row: 4;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+  #pauseMenu #pauseControlGuide {
+    grid-column: 2;
+    grid-row: 4;
+    margin: 0;
+    max-height: min(48vh, 340px);
+    overflow: auto;
+  }
+  #pauseMenu #pauseConfirmPanel {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+}
