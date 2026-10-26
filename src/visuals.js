@@ -341,6 +341,15 @@ export function createShipModule(model = 'nova7') {
   } else {
     for (const side of [-1, 1]) g.add(box(0.22, 0.25, 2.8, mint, side * 3.45, 0.04, -0.15));
   }
+  // Distinct angular light signatures on every playable ship module.
+  for (const side of [-1, 1]) {
+    const rail = box(0.14, 0.12, 2.65, cyan, side * 2.75, 0.17, 0.2);
+    rail.name = 'ship-neon-rail';
+    g.add(rail);
+    const vent = box(0.55, 0.09, 1.1, navy, side * 1.8, 0.22, 1.15);
+    vent.rotation.y = side * 0.28;
+    g.add(vent);
+  }
   return g;
 }
 const variants = new Map();
