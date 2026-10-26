@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.24.11 — Candidata em preparação
+## 1.24.11 — Retirada do subchefe urbano e HUD periférico (DEV)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Integra a correção P0 da PR #76 com o HUD v1.24.10: subchefe urbano recua após 22 segundos, foge em 4 segundos e não concede prêmio indevido.
+- Retirada libera o chefe orbital e elimina o bloqueio de gameplay, sem ignorar ascensão por BOOST.
+- Nove subchefes restantes preservados; alertas, barra de vida e impacto continuam nas bordas.
+- CI, revisão visual e FPS mobile em hardware real são requisitos antes de HML/PROD.
 
 ## 1.24.10 — HUD periférico de impactos e subchefe (DEV)
 
