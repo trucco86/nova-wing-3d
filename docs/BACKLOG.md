@@ -1,5 +1,32 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Situação rastreada — 26/10/2026 (nova referência de acompanhamento)
+
+Este quadro atualiza as referências históricas abaixo sem apagá-las. **Commit em branch, aprovação de CI, deploy de preview e homologação de gameplay são estados diferentes.** Acompanhar cada entrega com PR/SHA, gate e aceite de responsável.
+
+| Frente | Evidência GitHub | Estado registrado | Próximo gate |
+| --- | --- | --- | --- |
+| NW-24 — Transformação nave/robô | [PR #52](https://github.com/trucco86/nova-wing-3d/pull/52) | Merge em `main` confirmado; evolução estética NÃO homologada | Revisão comparativa do mecha |
+| NW-24 / #66 — Mecha e Fighter 2.0 | [PR #69](https://github.com/trucco86/nova-wing-3d/pull/69), [PR #87](https://github.com/trucco86/nova-wing-3d/pull/87) | Duas candidatas draft encadeadas; a #87 adiciona gimbal articulado à base #69 | CI completo no SHA final, capturas traseiras, FPS e aceite visual |
+| NW-24 — Itens concorrentes | [PR #54](https://github.com/trucco86/nova-wing-3d/pull/54), [PR #67](https://github.com/trucco86/nova-wing-3d/pull/67), [PR #68](https://github.com/trucco86/nova-wing-3d/pull/68) | PRs ainda abertas; código parcial ou alternativo, **não somar versões por merge cego** | Reconciliação de diffs, sem perda de funcionalidades |
+| NW-03 — HUD, órbita e ergonomia mobile | [PR #78](https://github.com/trucco86/nova-wing-3d/pull/78), [PR #81](https://github.com/trucco86/nova-wing-3d/pull/81), [PR #82](https://github.com/trucco86/nova-wing-3d/pull/82), [PR #83](https://github.com/trucco86/nova-wing-3d/pull/83), [PR #85](https://github.com/trucco86/nova-wing-3d/pull/85), [PR #86](https://github.com/trucco86/nova-wing-3d/pull/86) | Drafts encadeados; **não considerar todos integrados em DEV** | Integrar commit consistente, smoke desktop/mobile, screenshots sem sobreposição |
+| NW-03 — Stick ampliado | [PR #46](https://github.com/trucco86/nova-wing-3d/pull/46) | Aberta; gates anteriores com falha. Dimensões-alvo já identificadas no CSS atual, mas a equivalência funcional requer teste | Comparar CSS por breakpoint, corrigir gate ou justificar encerramento por supersessão |
+| NW-29 — Paletas por setor | [PR #51](https://github.com/trucco86/nova-wing-3d/pull/51) | Aberta; formatação falhou em execução anterior | Corrigir formatação, CI e revisar contraste/FPS antes de integrar |
+| NW-22 — Login Google | [PR #59](https://github.com/trucco86/nova-wing-3d/pull/59), [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) | Merge em DEV; **OAuth real e logout de visitante não homologados** | Teste em origem autorizada com conta de teste e consentimento |
+| NW-21/NW-23 — Ranking/D1 | [PR #65](https://github.com/trucco86/nova-wing-3d/pull/65) | Merge em DEV; **sem evidência de Worker/D1 provisionados e acessíveis** | Infraestrutura, integridade do placar e política de privacidade |
+| NW-16 — Loja/mapa | [PR #80](https://github.com/trucco86/nova-wing-3d/pull/80), [issue #84](https://github.com/trucco86/nova-wing-3d/issues/84) | Candidata draft e backlog de armas avançadas | QA de transição de fase, economia e controles mobile |
+| NW-10/NW-11 — Áudio/harness | Backlog histórico abaixo | Sem nova entrega ou homologação comprovada nesta atualização | Planejar e registrar evidências por PR |
+
+### Critérios de promoção
+
+1. **DEV:** integrar somente depois de reconciliar variantes e obter qualidade, build e testes unitários no SHA integrado.
+2. **HML:** CI completo, quatro shards de navegador, preview reproduzível e registro dos critérios de experiência; sem promoção automática a PROD.
+3. **PROD (GitHub Pages):** homologação explícita do mantenedor, rollback verificado e ambiente/release identificados.
+4. **Status:** manter como **pendente/não validado** qualquer comportamento sem teste funcional ou visual; não confundir workflow verde com aprovação do usuário.
+5. **Consolidação de branches:** observar que as PRs #78–#86 têm bases encadeadas, e não compartilham necessariamente a mesma base da #69; usar integração de commits controlada.
+
+---
+
 ## Atualização de plataforma — 25/10/2026 (UTC)
 
 - Firebase Authentication (PR #59): integrado em DEV, sem homologação OAuth real.
