@@ -5078,3 +5078,56 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     min-width: 0;
   }
 }
+
+
+/* FPS report and keyboard guide share one right-hand pane: preserve visibility
+   of RESUME in compact landscape while making physical-device QA discoverable. */
+#pausePanelTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+}
+#pausePanelTabs button {
+  min-height: 44px;
+  min-width: 0;
+  padding: 7px 6px;
+  border: 1px solid #58aeb4a6;
+  border-radius: 8px;
+  background: #0c2432;
+  color: #bfdee1;
+  font: 800 10px/1.3 monospace;
+  letter-spacing: 0;
+  touch-action: manipulation;
+}
+#pausePanelTabs button[aria-pressed='true'] {
+  background: #165057;
+  border-color: #90f4d4;
+  color: #e5fff6;
+}
+#pauseMenu #pauseFrameAudit[hidden],
+#pauseMenu #pauseControlGuide[hidden] {
+  display: none !important;
+}
+@media (min-width: 700px) {
+  #pauseMenu #pauseActions {
+    grid-row: 4 / span 2;
+    align-self: start;
+  }
+  #pauseMenu #pausePanelTabs {
+    grid-column: 2;
+    grid-row: 4;
+    margin: 0;
+  }
+  #pauseMenu #pauseControlGuide,
+  #pauseMenu #pauseFrameAudit {
+    grid-column: 2;
+    grid-row: 5;
+    margin: 0;
+    max-height: min(42vh, 290px);
+    overflow: auto;
+  }
+  #pauseMenu #pauseConfirmPanel {
+    grid-row: 4 / span 2;
+  }
+}
