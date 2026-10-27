@@ -36,6 +36,12 @@ test('scatter cannon is bought/equipped in hangar and fires a real close-range c
     await expect(page.locator('#loadout')).toBeHidden();
     await page.screenshot({ path: info.outputPath('next-sector-briefing-no-weapon-overlap.png') });
     await page.evaluate(() => window.fixture.advance(3.2));
+    await expect(page.locator('body')).not.toHaveClass(/stage-intro/);
+    // The tactical drawer independently suppresses this label to avoid
+    // overlaps. Closing the drawer allows the loadout rail to return.
+    await page.locator('#strategyDrawer').evaluate((drawer) => {
+      drawer.open = false;
+    });
     await expect(page.locator('#loadout')).toBeVisible();
   }
   await page.evaluate(() => window.fixture.game.fire());
