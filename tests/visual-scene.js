@@ -49,16 +49,21 @@ if (mode === 'mecha-review') {
   animateMechPower(mecha, 1.25, true, tier);
   setFighterEvolution(ship, tier);
   scene.add(mecha, ship);
+  // Fighter and mecha face -Z: the front camera must be forward (-Z),
+  // while the aft camera inspects the positive-Z thruster side.
   if (view === 'rear') {
-    camera.position.set(0, 17, -72);
+    camera.position.set(0, 17, -20);
     camera.lookAt(0, 13, -46);
   } else if (view === 'side') {
     camera.position.set(-24, 18, -31);
     camera.lookAt(0, 13, -46);
   } else {
-    camera.position.set(0, 17, -20);
+    camera.position.set(0, 17, -72);
     camera.lookAt(0, 13, -46);
   }
+  // Camera metadata is computed from positions, not inferred from the view label.
+  document.body.dataset.reviewHemisphere =
+    camera.position.z < mecha.position.z ? 'forward' : 'aft';
   // Expose deterministic render metadata so screenshot validation catches wrong frames.
   document.body.dataset.reviewView = view;
   document.body.dataset.reviewTier = String(tier);
