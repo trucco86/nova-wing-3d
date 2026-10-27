@@ -1,0 +1,41 @@
+# Mecha v1.25.0 — critérios de homologação visual
+
+Status: **candidata em DEV / PR #69; NÃO HOMOLOGADA**. Nenhuma promoção para HML/PROD.
+
+## Escopo isolado
+
+- Asas do mecha e da nave reutilizam o mesmo perfil geométrico, com escala-base controlada.
+- Armadura facetada, canhões articulados e movimento alternado de braços/pernas.
+- Rotor dorsal de cinco pás, com rotação dependente do tempo e chama responsiva ao boost.
+- Neons adicionais no mecha e na nave por evolução nos níveis 0, 3 e 6.
+
+## Evidências necessárias antes do merge
+
+1. Capturas frontal, traseira e lateral do mecha em voo; comparar silhueta, detalhes, proporção das asas e posição da turbina com o conceito.
+2. Capturas de nave e mecha nos níveis 0, 3 e 6; confirmar que os detalhes crescem sem prejudicar a leitura dos alvos.
+3. Vídeo curto de transformação e disparo, com boost ligado/desligado; conferir braço, canhões, rotor e resposta da chama em movimento.
+4. Desktop e mobile: verificar obstrução por HUD, visibilidade da mira, queda de FPS, taxa de quadros e controle por toque.
+5. Regressão de nave e da campanha após transformação, incluindo pods e pintura selecionada.
+
+## Gates automáticos
+
+- `npm run validate` e `npm run build:check`; suíte unitária de rig/rotor/progressão.
+- Playwright com captura de transformação e disparo, além dos shards regressivos.
+- Conferência da versão `1.25.0` em pacote, lockfile, release notes, build web e projeto iOS.
+
+O CI não substitui aprovação visual. **Aceite explícito do mantenedor** é obrigatório antes de integrar esta candidata ao DEV.
+
+## Segunda revisão visual da candidata
+
+As capturas antigas da PR estavam vazias porque o player piscava durante a invulnerabilidade inicial. O browser test agora avança além desse período e exige `playerVisible=true` antes de fotografar transformação e disparo. As novas capturas tornaram evidente que a primeira versão tinha placas retangulares demais. A revisão adicionou placas 3D chanfradas, capacete com crista, reforços de ombro, canhões e pernas, além de iluminação visível na traseira da turbina. **Os detalhes precisam ser comparados novamente com a prancha conceitual após CI e captura atualizada; não estão homologados.**
+
+## Complemento v1.25.1 — turbina articulada (PR #87 incorporada à #69)
+
+- A carcaça dorsal é fixa nos ombros; o bocal gira e inclina separadamente conforme direção do analógico/teclado e boost.
+- O rotor, a chama, o núcleo e o halo acompanham o conjunto articulado. Um teste unitário confere rotação, inclinação e limites mecânicos.
+- **Teste visual adicional:** fotografar traseira no voo normal, guinada esquerda/direita e boost, e comparar a posição da turbina com a arte aprovada.
+- **Pendência:** aferir FPS e responsividade em aparelho físico; o CI e o deploy de preview não substituem homologação.
+
+## Correção de orientação das capturas — 26/10/2026
+
+A revisão dos artefatos do CI anterior revelou que os nomes **frontal** e **traseira** estavam invertidos: o robô dispara em `-Z`, mas o teste anterior fotografava a turbina pela câmera rotulada `front`. A fixture foi corrigida para capturar a frente a partir de `-Z` e a traseira a partir de `+Z`, com asserções sobre o hemisfério físico da câmera. **Descartar os rótulos anteriores e utilizar apenas as novas imagens após CI verde**; o teste automatizado não representa aceite visual.

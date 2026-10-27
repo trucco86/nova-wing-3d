@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.25.1 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.25.0 — Candidata Mecha Flight Dynamics (somente DEV/preview)
+
+- Carenagem angular do robô, asas com geometria compartilhada com nave e canhões articulados.
+- Turbina dorsal com rotor animado e chama responsiva ao boost; movimento de braços e pernas.
+- Neons adicionais desbloqueados com evoluções de nave e robô.
+- Revisão visual de gameplay e desempenho ainda pendente; sem promoção HML/PROD.
+
 ## 1.24.3 — Candidata em preparação
 
 - Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
