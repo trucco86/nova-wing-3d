@@ -24,3 +24,24 @@ test('sector transitions update the actual scene background, not just HUD accent
     assert.equal(scene.background.getHexString(), expected.getHexString(), sector.name);
   }
 });
+
+test('urban districts and orbital globe never render together during ascent', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  const globe = scene.getObjectByName('world-orbital-globe');
+  const city = scene.getObjectByName('world-urban-city');
+  const cityFar = scene.getObjectByName('world-urban-city-far');
+  assert.ok(globe);
+  assert.ok(city);
+  assert.ok(cityFar);
+  for (const sector of [SECTORS[0], SECTORS[1]]) {
+    world.setSector(sector);
+    assert.equal(globe.visible, false, 'globe is hidden during urban gameplay');
+    assert.equal(city.visible, true, 'urban scenery remains visible');
+  }
+  world.setSector(SECTORS[2]);
+  world.setAscent(0.5, true);
+  assert.equal(city.visible, false);
+  assert.equal(cityFar.visible, false);
+  assert.equal(globe.visible, true, 'orbit reveals the globe after the city is gone');
+});
