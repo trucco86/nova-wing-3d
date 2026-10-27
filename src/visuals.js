@@ -342,7 +342,7 @@ const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;retu
 export function createWorld(scene, random = Math.random, dynamicFlight = false) {
   const existing = new Set(scene.children);
   const rnd = (a, b) => a + random() * (b - a);
-  scene.background = new T.Color('#030914');
+  scene.background = new T.Color('#142a46');
   scene.fog = new T.FogExp2('#071c23', 0.0014);
   scene.add(new T.HemisphereLight('#9fcdec', '#09293a', 1.6));
   const key = new T.DirectionalLight('#b8dcff', 3.2);
@@ -351,16 +351,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const rim = new T.DirectionalLight('#38ffd0', 3);
   rim.position.set(60, 30, -110);
   scene.add(rim);
-  const purple = new T.DirectionalLight('#7f78ff', 0.7);
+  const purple = new T.DirectionalLight('#7f78ff', 1.1);
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
-    uniforms: { tint: { value: new T.Color('#ffffff') } },
+    uniforms: {
+      tint: { value: new T.Color('#ffffff') },
+      ambient: { value: new T.Color('#223b65') },
+    },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c*tint,1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c*tint*1.7+ambient*(.24+.38*band+.3*pow(cloud,2.)),1.);}`,
   });
   scene.add(new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat));
   const starPos = [],
@@ -395,6 +398,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     fragmentShader: `varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float crack=1.-smoothstep(.007,.016,abs(N.x+.14*sin(N.y*13.)+.035*sin(N.y*55.)));c=c*(.05+lit*.95)+vec3(.95,.27,.035)*crack*.7;gl_FragColor=vec4(c,1.);}`,
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
+  moon.name = 'world-orbital-globe';
   moon.position.set(480, 280, -1000);
   scene.add(moon);
   const atmosphere = new T.Mesh(
@@ -425,6 +429,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   ground.position.set(0, -7, -1000);
   scene.add(ground);
   const city = new T.Group();
+  city.name = 'world-urban-city';
   scene.add(city);
   const unit = new T.BoxGeometry(1, 1, 1),
     bodyMat = metal('#122e39', 0.55, 0.5),
@@ -473,6 +478,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   city.userData.loop = 1900;
   const cityFar = city.clone();
+  cityFar.name = 'world-urban-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const near = [];
@@ -599,11 +605,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
-      moon.visible = atmosphere.visible = !['void', 'throne', 'sun'].includes(sceneryTheme);
+      // Never display the orbital globe while the player is still within the city/port.
+      // The third-sector ascent explicitly enables it after the urban scenery is gone.
+      moon.visible = atmosphere.visible = !['void', 'throne', 'sun', 'city', 'ocean'].includes(
+        sceneryTheme,
+      );
       rim.color.set(sector.accent);
+      key.color.set(sector.theme === 'sun' ? '#ffe4b0' : '#e3eeff');
+      purple.color.set(sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
+      scene.background.set(sector.sky);
+      skyMat.uniforms.ambient.value.set(sector.sky);
       scene.fog.color.set(sector.sky);
       scene.fog.density = land ? 0.0014 : 0.00045;
-      skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.6);
+      skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       dust.material.color.set(sector.accent);
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
