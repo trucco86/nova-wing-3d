@@ -110,6 +110,10 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  mechArmPitch,
+  animateMechPower,
+  resetMechPower,
+  setFighterEvolution,
   createShipModule,
   createWorld,
   postProcessor,
@@ -225,13 +229,16 @@ export function createGame({
   let robotMode = false;
   let robotCooldown = 0;
   let robotTransition = 0;
+  let robotFireKick = 0;
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
-    robotTransition = 0.35;
+    robotTransition = 0.7;
     robotMode = !robotMode;
     robot.visible = robotMode;
+    shipModule.visible = !robotMode;
+    if (evolution) evolution.visible = !robotMode;
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
@@ -366,6 +373,8 @@ export function createGame({
     if (evolution) player.remove(evolution);
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
+    evolution.visible = !robotMode;
+    setFighterEvolution(shipModule, evolutionStage);
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
   }
   function gainXP(amount) {
@@ -485,6 +494,9 @@ export function createGame({
     shipModule.traverse((o) => {
       if (o.material?.userData.paintModule) o.material.color.set(palette.color);
     });
+    robot.userData.mechPaint.primary.color.set(palette.color);
+    robot.userData.mechPaint.accent.color.set(palette.accent);
+    $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
@@ -496,6 +508,10 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.visible = !robotMode;
+    setFighterEvolution(shipModule, Math.max(0, evolutionStage));
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
@@ -802,7 +818,11 @@ export function createGame({
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    resetMechPower(robot);
+    robotFireKick = 0;
     robotMode = false;
+    shipModule.visible = true;
+    if (evolution) evolution.visible = true;
     robotCooldown = 0;
     robotTransition = 0;
     $('robotTouch').ariaPressed = 'false';
@@ -1206,6 +1226,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
+    if (robotMode) robotFireKick = 0.18;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
@@ -2228,10 +2249,7 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
-    if (robot.visible) {
-      robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
-    }
+    robotFireKick = Math.max(0, robotFireKick - dt);
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -2248,6 +2266,32 @@ export function createGame({
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
+    const unfoldProgress = robotTransition / 0.7;
+    if (robot.visible) {
+      const rig = robot.userData.mechRig;
+      const motion = elapsed * 5;
+      const boostMotion = 1 + rig.propulsionPower * 0.4;
+      for (let i = 0; i < 2; i++) {
+        const side = i === 0 ? -1 : 1;
+        rig.arms[i].rotation.x = mechArmPitch(motion, i, boostMotion, robotFireKick);
+        rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
+        rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
+        rig.legs[i].rotation.z = side * 0.035;
+      }
+      const width =
+        pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
+      const unfold = 1 + Math.sin(unfoldProgress * Math.PI) * 0.16;
+      robot.rotation.y =
+        Math.sin(elapsed * 1.7) * 0.035 +
+        Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.65;
+      robot.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.18;
+      robot.scale.set(width * unfold, 1.05 * unfold, 1.05 * unfold);
+    } else if (robotTransition > 0) {
+      shipModule.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.22;
+    } else {
+      shipModule.rotation.z = 0;
+    }
     const energyBeforeBoost = energy;
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     if (dynamicFlight && sectorIndex === 0) {
@@ -2327,8 +2371,15 @@ export function createGame({
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
     }
+    // Preserve damage invulnerability while keeping the alternate form
+    // fully readable during transform and mech flight.
     player.visible =
-      cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
+      cameraMode !== 'cockpit' &&
+      (robotMode ||
+        robotTransition > 0 ||
+        boosting ||
+        invuln <= 0 ||
+        Math.floor(invuln * 12) % 2 === 0);
     flightCamera.update(
       dt,
       player.position,
