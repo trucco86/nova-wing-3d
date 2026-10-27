@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.26.0 — Trilha grave e efeitos mecânicos imersivos
+
+- Arranjos originais com andamento mais contido, pads sustentados, percussão de ruído filtrado, tambores graves e mixagem estéreo.
+- Transformação e retorno com servo/travas/impacto, turbina contínua responsiva ao robô e BOOST, ignição, impactos na nave e explosões com textura própria.
+- Buffers reutilizados, vozes limitadas, prioridade para alertas/impactos, pausa e controles de volume preservados; renderização real de áudio em CI para análise e audição.
+- Candidata conjunta de Mecha/armas/paletas/áudio; métricas técnicas não equivalem a homologação estética ou audição humana.
+
 ## 1.25.0 — Mecha 2.0: integração limpa para validação
 
 - Candidata sem homologação visual: armadura angular, asas, turbina dorsal articulada e pintura por nave.
