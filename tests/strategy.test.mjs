@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { reachSectorBoss, waitForArmoredFront, aimAtFirstGenerator } from './mission-scenarios.mjs';
 import {
   readStrategy,
   elementalDamage,
@@ -77,7 +78,7 @@ test('checkpoint persists RPG progress and equipped choices through actual hanga
   for (let i = 0; i < 24; i++) h.game.collect('blue');
   h.game.cycleArsenal();
   h.game.cycleSpecial();
-  h.advance(65.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   assert.equal(h.game.snapshot().state, 'shop');
   const next = setup(t, { storage });
@@ -156,18 +157,21 @@ test('docked pods amplify actual shots and deployed pods pursue moving targets',
 test('orbital flanks reject frontal damage, accept exposed generator hits and remain time based', (t) => {
   for (const dt of [1 / 30, 1 / 60]) {
     const h = setup(t);
-    h.advance(68.1);
+    reachSectorBoss(h, { bossAge: 5 });
+    waitForArmoredFront(h, { dt });
     const initial = h.game.snapshot().bossTargets.map((p) => p.hp);
-    h.game.damageBoss(10000);
+    assert.equal(h.game.damageBoss(10000), 0, 'armored front must reject direct damage');
     assert.deepEqual(
       h.game.snapshot().bossTargets.map((p) => p.hp),
       initial,
     );
-    h.game.orbit(-1);
-    h.advance(Math.PI / 3 / 0.8, dt);
-    h.game.orbit(0);
-    assert.ok(Math.abs(h.game.snapshot().strategy.orbitAngle + Math.PI / 3) < 1e-6);
-    const targets = h.game.snapshot().bossTargets;
+    const exposed = aimAtFirstGenerator(h, { dt });
+    const targets = exposed.bossTargets;
+    const alignment = Math.atan2(
+      Math.sin(targets[0].angle - exposed.strategy.orbitAngle),
+      Math.cos(targets[0].angle - exposed.strategy.orbitAngle),
+    );
+    assert.ok(Math.abs(alignment) < 0.35, 'orbital control tracks the moving weak point');
     assert.equal(targets[0].open, true);
     assert.equal(targets[1].open, false);
     h.game.damageBoss(10000, new T.Vector3(...targets[0].position));
@@ -181,7 +185,7 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
   const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 22; i++) {
+  for (let i = 0; i < 35; i++) {
     h.game.collect('shield');
     h.advance(1);
   }
@@ -301,7 +305,7 @@ test('five pilots and three ships validate selection, alter real stats and persi
   assert.equal(h.game.snapshot().loadout.ship, 'aegis');
   assert.equal(h.game.snapshot().loadout.color, 'gold');
   assert.equal(h.game.snapshot().strategy.specialty, 'spirit');
-  h.advance(65.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   const restored = harness({ storage });
   t.after(() => restored.close());

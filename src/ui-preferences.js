@@ -1,6 +1,7 @@
 export const SETTINGS_KEY = 'nova-wing-preferences-v1';
 export const DEFAULT_SETTINGS = Object.freeze({
   language: 'pt',
+  difficulty: 'normal',
   master: 0.85,
   music: 0.7,
   sfx: 0.75,
@@ -16,6 +17,7 @@ export function readSettings(raw) {
   const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
   const result = { ...DEFAULT_SETTINGS };
   if (['pt', 'en', 'es'].includes(source.language)) result.language = source.language;
+  if (['easy', 'normal', 'hard'].includes(source.difficulty)) result.difficulty = source.difficulty;
   for (const key of ['master', 'music', 'sfx', 'sensitivity', 'opacity']) {
     if (typeof source[key] === 'number' && Number.isFinite(source[key]))
       result[key] = clamp(
@@ -30,14 +32,20 @@ export function readSettings(raw) {
 }
 export function loadSettings(storage) {
   try {
-    return readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null'));
+    // Difficulty is session-only: each app launch starts on NORMAL.
+    return {
+      ...readSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null')),
+      difficulty: 'normal',
+    };
   } catch {
     return readSettings(null);
   }
 }
 export function storeSettings(storage, settings) {
   try {
-    storage?.setItem(SETTINGS_KEY, JSON.stringify(readSettings(settings)));
+    const persistent = readSettings(settings);
+    delete persistent.difficulty;
+    storage?.setItem(SETTINGS_KEY, JSON.stringify(persistent));
     return !!storage;
   } catch {
     return false;
@@ -59,11 +67,45 @@ export const UI_COPY = {
     confirm: 'CONFIRMAR',
     audio: 'ÁUDIO',
     controls: 'CONTROLES',
+    shieldLow: 'ATENÇÃO · ESCUDO BAIXO',
+    helpTab: 'CONTROLES',
+    auditTab: 'FPS / DESEMPENHO',
+    auditTitle: 'DIAGNÓSTICO DE FPS · DISPOSITIVO',
+    auditHint:
+      'Inicie, continue jogando por pelo menos 30 segundos e pause. Só mede durante o gameplay; nada é enviado.',
+    auditStart: 'INICIAR MEDIÇÃO',
+    auditStop: 'ENCERRAR',
+    auditCopy: 'COPIAR RELATÓRIO',
+    auditCopied: 'RELATÓRIO COPIADO',
+    auditCopyFail: 'CÓPIA INDISPONÍVEL NO NAVEGADOR',
+    helpTitle: 'CONTROLES · TECLADO E CELULAR',
+    helpKeyboard: 'TECLADO / PC',
+    helpTouch: 'CELULAR / TOQUE',
+    helpMove: 'Mover nave',
+    helpFire: 'Atirar / carregar plasma',
+    helpBoost: 'Impulso / BOOST',
+    helpRobot: 'Alternar nave e robô',
+    helpPods: 'Acoplar / liberar PODS',
+    helpBomb: 'Lançar bomba',
+    helpRoll: 'Giro defensivo',
+    helpOrbit: 'Orbitar o chefe',
+    helpCamera: 'Alternar câmera',
+    helpArsenal: 'Trocar arma',
+    helpSpecial: 'Escolher / ativar especial',
+    helpScan: 'Escanear ponto fraco',
+    helpPrecision: 'Tiro de precisão',
+    helpRepair: 'Reparo tático',
+    helpBarrage: 'Rajada teleguiada',
+    helpPause: 'Pausar / retomar',
     game: 'JOGO',
     master: 'VOLUME GERAL',
     music: 'MÚSICA',
     effects: 'EFEITOS',
     language: 'IDIOMA',
+    difficulty: 'DIFICULDADE',
+    easy: 'FÁCIL',
+    normal: 'NORMAL',
+    hard: 'DIFÍCIL',
     sensitivity: 'SENSIBILIDADE',
     opacity: 'OPACIDADE DOS CONTROLES',
     subtitles: 'LEGENDAS',
@@ -92,11 +134,45 @@ export const UI_COPY = {
     confirm: 'CONFIRM',
     audio: 'AUDIO',
     controls: 'CONTROLS',
+    shieldLow: 'WARNING · LOW SHIELD',
+    helpTab: 'CONTROLS',
+    auditTab: 'FPS / PERFORMANCE',
+    auditTitle: 'FPS DIAGNOSTICS · DEVICE',
+    auditHint:
+      'Start, play for at least 30 seconds, then pause. Only gameplay is measured; nothing is uploaded.',
+    auditStart: 'START MEASURING',
+    auditStop: 'STOP',
+    auditCopy: 'COPY REPORT',
+    auditCopied: 'REPORT COPIED',
+    auditCopyFail: 'BROWSER CLIPBOARD UNAVAILABLE',
+    helpTitle: 'CONTROLS · KEYBOARD & MOBILE',
+    helpKeyboard: 'KEYBOARD / PC',
+    helpTouch: 'PHONE / TOUCH',
+    helpMove: 'Move ship',
+    helpFire: 'Fire / charge plasma',
+    helpBoost: 'Boost',
+    helpRobot: 'Switch ship and robot',
+    helpPods: 'Attach / release pods',
+    helpBomb: 'Launch bomb',
+    helpRoll: 'Defensive roll',
+    helpOrbit: 'Orbit the boss',
+    helpCamera: 'Change camera',
+    helpArsenal: 'Switch weapon',
+    helpSpecial: 'Choose / activate special',
+    helpScan: 'Scan weak point',
+    helpPrecision: 'Precision shot',
+    helpRepair: 'Tactical repair',
+    helpBarrage: 'Homing barrage',
+    helpPause: 'Pause / resume',
     game: 'GAME',
     master: 'MASTER VOLUME',
     music: 'MUSIC',
     effects: 'SOUND EFFECTS',
     language: 'LANGUAGE',
+    difficulty: 'DIFFICULTY',
+    easy: 'EASY',
+    normal: 'NORMAL',
+    hard: 'HARD',
     sensitivity: 'SENSITIVITY',
     opacity: 'CONTROL OPACITY',
     subtitles: 'SUBTITLES',
@@ -125,11 +201,45 @@ export const UI_COPY = {
     confirm: 'CONFIRMAR',
     audio: 'AUDIO',
     controls: 'CONTROLES',
+    shieldLow: 'ATENCIÓN · ESCUDO BAJO',
+    helpTab: 'CONTROLES',
+    auditTab: 'FPS / RENDIMIENTO',
+    auditTitle: 'DIAGNÓSTICO DE FPS · DISPOSITIVO',
+    auditHint:
+      'Inicia, juega al menos 30 segundos y pausa. Solo se mide durante el juego; no se envían datos.',
+    auditStart: 'INICIAR MEDICIÓN',
+    auditStop: 'FINALIZAR',
+    auditCopy: 'COPIAR INFORME',
+    auditCopied: 'INFORME COPIADO',
+    auditCopyFail: 'PORTAPAPELES NO DISPONIBLE',
+    helpTitle: 'CONTROLES · TECLADO Y MÓVIL',
+    helpKeyboard: 'TECLADO / PC',
+    helpTouch: 'MÓVIL / TOQUE',
+    helpMove: 'Mover nave',
+    helpFire: 'Disparar / cargar plasma',
+    helpBoost: 'Impulso / BOOST',
+    helpRobot: 'Alternar nave y robot',
+    helpPods: 'Acoplar / soltar PODS',
+    helpBomb: 'Lanzar bomba',
+    helpRoll: 'Giro defensivo',
+    helpOrbit: 'Orbitar al jefe',
+    helpCamera: 'Cambiar cámara',
+    helpArsenal: 'Cambiar arma',
+    helpSpecial: 'Elegir / activar especial',
+    helpScan: 'Escanear punto débil',
+    helpPrecision: 'Disparo de precisión',
+    helpRepair: 'Reparación táctica',
+    helpBarrage: 'Ráfaga guiada',
+    helpPause: 'Pausar / reanudar',
     game: 'JUEGO',
     master: 'VOLUMEN GENERAL',
     music: 'MÚSICA',
     effects: 'EFECTOS',
     language: 'IDIOMA',
+    difficulty: 'DIFICULTAD',
+    easy: 'FÁCIL',
+    normal: 'NORMAL',
+    hard: 'DIFÍCIL',
     sensitivity: 'SENSIBILIDAD',
     opacity: 'OPACIDAD DE CONTROLES',
     subtitles: 'SUBTÍTULOS',

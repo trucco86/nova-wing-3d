@@ -216,6 +216,86 @@ export function createObstacle(kind = 'gantry') {
         arrow.position.set(gap, 30, z + 3);
         g.add(arrow);
       }
+    } else if (kind === 'carrier') {
+      // Derelict ship: hull, bridge and two wings with escapable upper corridor.
+      solid(36, 11, 42, 0, 14, 0, armor);
+      solid(14, 9, 13, 0, 22, -8, dark);
+      for (const side of [-1, 1]) {
+        solid(18, 4, 25, side * 26, 13, 4, dark);
+        g.add(box(14, 0.8, 17, cyan, side * 26, 15.6, 5));
+        g.add(box(5, 3, 4, red, side * 8, 13, 22));
+      }
+      g.add(box(14, 1, 28, cyan, 0, 20, 3));
+      // Heavy escort carrier: plated command deck, hangar, visible engines and guns.
+      // Functional protrusions are added to solids; thin lights remain decorative.
+      const bridge = box(10, 0.6, 9, cyan, 0, 27, -8);
+      bridge.name = 'carrier-command-windows';
+      g.add(bridge);
+      const hangar = box(17, 6, 0.8, joint, 0, 13, 21.6);
+      hangar.name = 'carrier-hangar-gate';
+      g.add(hangar);
+      for (const side of [-1, 1]) {
+        solid(6, 5, 8, side * 13, 14, 18, dark);
+        const thruster = new T.Mesh(new T.TorusGeometry(2.45, 0.55, 6, 14), cyan);
+        thruster.position.set(side * 13, 14, 22.2);
+        thruster.name = 'carrier-engine-nozzle';
+        g.add(thruster);
+        g.add(box(14, 0.8, 14, armor, side * 26, 16, 4));
+        for (let i = 0; i < 3; i++) g.add(box(2.5, 0.35, 1.4, cyan, side * 26, 16.6, -2 + i * 6));
+        solid(4, 2, 6, side * 12, 22, -16, armor);
+        const cannon = box(1.3, 1.3, 8, joint, side * 12, 22.6, -21);
+        cannon.name = 'carrier-defense-cannon';
+        g.add(cannon);
+      }
+      for (let i = 0; i < 5; i++) {
+        g.add(box(3, 0.7, 1.3, dark, 0, 20.8, -12 + i * 6));
+        g.add(box(1.5, 0.2, 0.7, red, 0, 21.3, -12 + i * 6));
+      }
+    } else if (kind === 'satellite') {
+      solid(8, 9, 10, 0, 14, 0, armor);
+      solid(2, 9, 2, 0, 22, 0, joint);
+      const antenna = ball(3.6, cyan);
+      antenna.position.y = 28;
+      g.add(antenna);
+      for (const side of [-1, 1]) {
+        solid(19, 1.5, 14, side * 15, 15, 0, dark);
+        for (const z of [-5, 0, 5]) g.add(box(18, 0.2, 0.35, cyan, side * 15, 16, z));
+        for (let i = -3; i <= 3; i += 2)
+          g.add(box(0.32, 0.18, 12, joint, side * 15 + i * 2.2, 16, 0));
+        const panel = box(3, 0.35, 10, armor, side * 23, 16.4, 0);
+        panel.name = 'satellite-array-rib';
+        g.add(panel);
+      }
+      const uplink = new T.Mesh(new T.TorusGeometry(2.6, 0.35, 6, 12), cyan);
+      uplink.name = 'satellite-telemetry-ring';
+      uplink.position.set(0, 27.7, 0);
+      g.add(uplink);
+      g.add(box(4, 0.4, 7, red, 0, 18.7, 0));
+    } else if (kind === 'debris') {
+      solid(14, 12, 16, 0, 18, 0, dark);
+      for (const side of [-1, 1]) {
+        const shard = box(8, 2, 12, armor, side * 8, 21, -3);
+        shard.rotation.z = side * 0.35;
+        g.add(shard);
+        // Physical debris fins: include the rotated shard's conservative AABB,
+        // so the ship and projectiles cannot pass through visible wreckage.
+        solids.push({
+          center: new T.Vector3(side * 8, 21, -3),
+          half: new T.Vector3(5, 3, 6),
+        });
+      }
+      g.add(box(6, 2, 4, red, 0, 18, 9));
+      // Debris must read as a destroyed ship, not an anonymous floating box.
+      for (const side of [-1, 1]) {
+        const brokenFin = box(4, 1, 11, armor, side * 5, 22, -2);
+        brokenFin.rotation.y = side * 0.2;
+        brokenFin.name = 'debris-broken-ship-fin';
+        g.add(brokenFin);
+        g.add(box(1.2, 0.6, 5, red, side * 5, 23, 0));
+      }
+      const hullMarking = box(10, 0.6, 3, joint, 0, 24.1, -4);
+      hullMarking.name = 'debris-hull-marking';
+      g.add(hullMarking);
     } else if (kind === 'gantry') {
       for (const s of [-1, 1]) {
         solid(7, 38, 10, s * 28, 12, 0);
@@ -235,7 +315,7 @@ export function createObstacle(kind = 'gantry') {
       }
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
-    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : 18 };
+    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
     templates.set(kind, g);
   }
   const template = templates.get(kind),

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { launchOrbitReady } from './flight.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -320,6 +321,8 @@ function enemyDetails(variant) {
           red,
         );
         g.add(blade, box(0.25, 0.4, 3, pink, side * 3.8, 0, -1.8));
+        g.add(box(0.28, 0.22, 3.8, glowMaterial('#ff547b', 2), side * 4.2, 0.3, -1.2));
+        g.add(box(0.65, 0.55, 2.6, black, side * 2.3, 0.55, -1.6));
       } else if (variant === 1) {
         g.add(box(1.2, 0.8, 4, navy, side * 2, 0, 0));
         for (let j = 0; j < 3; j++)
@@ -327,13 +330,18 @@ function enemyDetails(variant) {
         const dome = new T.Mesh(new T.SphereGeometry(0.7, 12, 8), pink);
         dome.position.set(side * 2, 0.4, 0.5);
         g.add(dome);
+        g.add(box(0.4, 0.3, 4.8, glowMaterial('#ffb36b', 2.1), side * 2.7, 0.52, 0));
+        g.add(box(1.4, 0.35, 1.6, black, side * 2.4, 0.85, -0.9));
       } else {
         const ring = new T.Mesh(new T.TorusGeometry(1.2, 0.25, 8, 16), steel);
         ring.position.set(side * 3.2, 0, 1);
         g.add(ring);
         g.add(box(0.3, 0.3, 5, pink, side * 3.2, 0, -1.5));
+        g.add(box(0.45, 0.45, 3.5, glowMaterial('#a76bff', 2.3), side * 2.3, 0.5, -1.6));
+        g.add(box(0.9, 0.4, 1.5, steel, side * 4, 0.5, 1));
       }
     }
+    if (variant === 2) g.add(box(1.2, 0.24, 5.8, glowMaterial('#a76bff', 2.2), 0, 0.9, -0.8));
     variants.set(variant, g);
   }
   return variants.get(variant).clone(true);
@@ -355,14 +363,34 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
-    uniforms: { tint: { value: new T.Color('#ffffff') } },
+    uniforms: { tint: { value: new T.Color('#ffffff') }, launchHaze: { value: 0 } },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);gl_FragColor=vec4(c*tint,1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform float launchHaze;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);gl_FragColor=vec4(c*tint+launchHaze*haze,1.);}`,
   });
-  scene.add(new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat));
+  const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
+  skyDome.name = 'launch-sky-dome';
+  scene.add(skyDome);
+  // An Earth-like horizon appears as the first sector leaves the city.
+  // This is a background-only visual; collision coordinates do not change.
+  const earthMat = new T.ShaderMaterial({
+    uniforms: { fade: { value: 0 } },
+    transparent: true,
+    depthWrite: false,
+    vertexShader:
+      'varying vec3 planetNormal;void main(){planetNormal=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader: `uniform float fade;varying vec3 planetNormal;${noise}void main(){vec3 n=normalize(planetNormal);float land=fbm(n*9.);vec3 ocean=vec3(.018,.17,.29);vec3 continent=mix(vec3(.06,.20,.14),vec3(.30,.39,.19),fbm(n*25.));vec3 c=mix(ocean,continent,smoothstep(.46,.61,land));float lit=.4+.6*max(0.,dot(n,normalize(vec3(-.5,.8,1.))));float rim=pow(1.-abs(n.z),3.);gl_FragColor=vec4(c*lit+vec3(.03,.16,.27)*rim,fade);}`,
+  });
+  const earthHorizon = new T.Mesh(new T.SphereGeometry(680, 48, 28), earthMat);
+  earthHorizon.name = 'launch-earth-horizon';
+  earthHorizon.position.set(0, -760, -1450);
+  earthHorizon.visible = false;
+  earthHorizon.userData.fixedSky = true;
+  scene.add(earthHorizon);
+  const launchSkyTint = new T.Color();
+  const launchSpaceTint = new T.Color('#192a55');
   const starPos = [],
     starCol = [];
   for (let i = 0; i < 2000; i++) {
@@ -376,19 +404,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const starsG = new T.BufferGeometry();
   starsG.setAttribute('position', new T.Float32BufferAttribute(starPos, 3));
   starsG.setAttribute('color', new T.Float32BufferAttribute(starCol, 3));
-  scene.add(
-    new T.Points(
-      starsG,
-      new T.PointsMaterial({
-        size: 1.6,
-        sizeAttenuation: false,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.75,
-        fog: false,
-      }),
-    ),
+  const starfield = new T.Points(
+    starsG,
+    new T.PointsMaterial({
+      size: 1.6,
+      sizeAttenuation: false,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.75,
+      fog: false,
+    }),
   );
+  scene.add(starfield);
   const moonMat = new T.ShaderMaterial({
     vertexShader:
       'varying vec3 p;varying vec3 n;void main(){p=position;n=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
@@ -423,8 +450,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   );
   ground.rotation.x = -Math.PI / 2;
   ground.position.set(0, -7, -1000);
+  ground.name = 'launch-ground';
   scene.add(ground);
   const city = new T.Group();
+  city.name = 'launch-city';
   scene.add(city);
   const unit = new T.BoxGeometry(1, 1, 1),
     bodyMat = metal('#122e39', 0.55, 0.5),
@@ -473,6 +502,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   city.userData.loop = 1900;
   const cityFar = city.clone();
+  cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const near = [];
@@ -494,14 +524,37 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   // The Devastador is a distant narrative landmark; the actual boss retains its combat behavior.
   const carrier = new T.Group();
+  carrier.name = 'distant-orbital-flagship';
   carrier.add(box(95, 10, 30, navy));
   carrier.add(box(35, 20, 25, black, 0, 9, -4));
+  const dorsalArmor = box(72, 2, 26, steel, 0, 6, 0);
+  dorsalArmor.name = 'flagship-dorsal-armor';
+  carrier.add(dorsalArmor);
+  const bridge = box(19, 5, 11, steel, 0, 21, -8);
+  bridge.name = 'flagship-command-bridge';
+  carrier.add(bridge);
+  carrier.add(box(17, 0.8, 1.4, cyan, 0, 22.5, -2));
+  carrier.add(box(24, 6, 1, black, 0, -0.5, 16));
+  for (let i = -3; i <= 3; i++) {
+    carrier.add(box(3, 0.5, 16, navy, i * 9, 7.3, 0));
+    carrier.add(box(3, 0.3, 1.2, cyan, i * 9, 7.7, -8));
+  }
   for (let s of [-1, 1]) {
     carrier.add(box(35, 6, 50, steel, s * 54, 0, 0));
     carrier.add(box(1, 1, 70, pink, s * 55, -3, 0));
     for (let i = 0; i < 5; i++) {
       carrier.add(box(3, 1, 2, pink, s * (5 + i * 8), -2, 16));
     }
+    // Silhouette: paired engine pods, illuminated deck plating and defense towers.
+    carrier.add(box(8, 7, 14, navy, s * 44, -1, 13));
+    const engine = new T.Mesh(new T.TorusGeometry(3.2, 0.55, 6, 16), mint);
+    engine.name = 'flagship-engine-ring';
+    engine.position.set(s * 44, -1, 20.5);
+    carrier.add(engine);
+    carrier.add(box(24, 1.2, 32, navy, s * 54, 4.2, 0));
+    for (let i = 0; i < 4; i++) carrier.add(box(2.2, 0.5, 2, cyan, s * 54, 5.1, -12 + i * 8));
+    carrier.add(box(4, 7, 5, steel, s * 30, 9, -12));
+    carrier.add(box(1.2, 1.2, 13, black, s * 30, 13, -17));
   }
   carrier.position.set(0, 62, -700);
   scene.add(carrier);
@@ -579,6 +632,38 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         scene.fog.density = 0.00045 - amount * 0.0003;
       }
     },
+    setLaunchAscent(amount, enabled) {
+      if (!dynamicFlight || sceneryTheme !== 'city' || !enabled) return;
+      const progress = T.MathUtils.clamp(amount, 0, 1);
+      const t = progress * progress * (3 - 2 * progress);
+      // Continuous altitude parallax: the last visible buildings have already
+      // fallen below the camera long before the city meshes are hidden.
+      const retreat = 780 * t * t + 180 * t;
+      city.position.y = cityFar.position.y = -retreat;
+      near.forEach((o) => (o.position.y = -retreat * 0.92));
+      ground.position.y = -7 - retreat * 1.18;
+      const scale = 1 - t * 0.26;
+      city.scale.setScalar(scale);
+      cityFar.scale.setScalar(scale);
+      // Mutually exclusive urban and planetary stages: never draw the city
+      // together with a globe. The planet fades in through the upper atmosphere.
+      const orbital = launchOrbitReady(progress);
+      ground.visible = !orbital;
+      city.visible = cityFar.visible = !orbital;
+      near.forEach((o) => (o.visible = !orbital));
+      rain.visible = !orbital && t < 0.6;
+      moon.visible = atmosphere.visible = false;
+      scene.fog.density = 0.0014 - 0.0012 * t;
+      skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
+      starfield.material.opacity = 0.16 + 0.59 * t;
+      // A luminous cloud band bridges the city and the planetary horizon.
+      // It peaks midway through the 38-second coast instead of a blank starfield.
+      skyMat.uniforms.launchHaze.value = 1.4 * Math.sin(Math.PI * t) ** 2;
+      earthHorizon.position.y = -940 + t * 180;
+      earthHorizon.visible = orbital;
+      const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
+      earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -593,6 +678,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      city.position.y = cityFar.position.y = 0;
+      city.scale.setScalar(1);
+      cityFar.scale.setScalar(1);
+      near.forEach((o) => (o.position.y = 0));
+      ground.position.y = -7;
+      earthHorizon.visible = false;
+      earthMat.uniforms.fade.value = 0;
+      skyMat.uniforms.launchHaze.value = 0;
+      starfield.material.opacity = 0.75;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
       ground.visible = land;
@@ -604,6 +698,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.fog.color.set(sector.sky);
       scene.fog.density = land ? 0.0014 : 0.00045;
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.6);
+      launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
@@ -756,9 +851,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         orbitalFrame.rotation.set(0, 0, 0);
       }
       travel = 0;
-      city.position.z = 0;
-      cityFar.position.z = -1900;
-      near.forEach((g, i) => (g.position.z = -i * 65));
+      city.position.set(0, 0, 0);
+      cityFar.position.set(0, 0, -1900);
+      city.scale.setScalar(1);
+      cityFar.scale.setScalar(1);
+      ground.position.y = -7;
+      earthHorizon.visible = false;
+      earthMat.uniforms.fade.value = 0;
+      skyMat.uniforms.launchHaze.value = 0;
+      near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };
 }

@@ -1,23 +1,55 @@
 import * as T from 'three';
 
-// Logical collisions remain in rail coordinates. Every projected world vertex uses
-// the same smooth bend, so ships, walls and projectiles follow the visible route.
-export function routeAt(sector, seconds, duration, boss = false) {
-  const smooth = (x) => {
-    x = T.MathUtils.clamp(x, 0, 1);
-    return x * x * (3 - 2 * x);
-  };
-  const envelope = smooth(seconds / 5) * (1 - smooth((seconds - duration + 12) / 10));
-  const turn = boss || envelope === 0 ? 0 : Math.sin(seconds * 0.105 + sector * 0.8) * envelope;
+// Curves are authored per environment, not applied as a universal sine wave.
+// Windows are normalized to the sector duration; smooth edges avoid sudden bends.
+const ROUTE_WINDOWS = {
+  0: [{ from: 0.18, to: 0.48, direction: 0.7 }],
+  1: [{ from: 0.3, to: 0.64, direction: -0.65 }],
+  2: [], // Asteroid belt: read as a climb and obstacle field, not a city road.
+  3: [{ from: 0.2, to: 0.49, direction: 0.5 }],
+  4: [], // Plasma storm: straight corridor emphasizes hazards.
+  5: [{ from: 0.27, to: 0.58, direction: -0.6 }],
+  6: [{ from: 0.18, to: 0.43, direction: 0.55 }],
+  7: [], // Fleet approach stays straight for clear targeting.
+  8: [{ from: 0.28, to: 0.62, direction: -0.45 }],
+  9: [], // Final approach to Marvin is direct.
+};
+
+const smooth = (value) => {
+  const x = T.MathUtils.clamp(value, 0, 1);
+  return x * x * (3 - 2 * x);
+};
+
+function curveWindow(progress, { from, to, direction }) {
+  const span = to - from;
+  const edge = Math.min(0.11, span / 3);
+  return direction * smooth((progress - from) / edge) * (1 - smooth((progress - to + edge) / edge));
+}
+
+export function routeAt(sector, seconds, duration, boss = false, launchProgress = 0) {
+  if (!Number.isFinite(duration) || duration <= 0) {
+    return { turn: 0, ascent: 0, bank: 0, label: 'ROTA DE APROXIMAÇÃO' };
+  }
+  const progress = T.MathUtils.clamp(seconds / duration, 0, 1);
+  const turn = boss
+    ? 0
+    : (ROUTE_WINDOWS[sector] ?? []).reduce(
+        (total, window) => total + curveWindow(progress, window),
+        0,
+      );
+  // Sector 1 ascends only after its BOOST-powered state machine progresses.
+  // The asteroid-belt route retains its independent orbital movement.
   const ascent = boss
     ? 0
-    : (sector === 2
-        ? Math.sin(Math.PI * Math.min(seconds / duration, 1))
-        : 0.22 * Math.sin(seconds * 0.09)) * envelope;
+    : sector === 0
+      ? 1.15 * T.MathUtils.clamp(launchProgress, 0, 1)
+      : sector === 2
+        ? Math.sin(Math.PI * progress)
+        : 0;
   return {
     turn,
     ascent,
-    bank: -turn * 0.13,
+    bank: turn === 0 ? 0 : -turn * 0.13,
     label:
       ascent > 0.35
         ? 'ASCENSÃO ORBITAL'

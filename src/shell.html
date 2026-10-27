@@ -62,12 +62,26 @@
       <span id="tacticState"></span><span id="battleCharge" aria-label="Reservas de ação"></span>
     </aside>
     <div id="aimReticle" hidden aria-label="Direção dos disparos" aria-hidden="true"><i></i></div>
-    <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
-    <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
-    <div id="criticalWarning" hidden role="alert">⚠ INTEGRIDADE CRÍTICA — BUSQUE REPARO</div>
     <div id="petCareHud" hidden aria-label="Itens resgatados para cuidar dos gatos"></div>
     <div id="vignette"></div>
     <div id="flash"></div>
+    <div id="hudNotices" aria-label="Avisos e comunicação da missão">
+      <div id="criticalWarning" hidden role="alert">⚠ INTEGRIDADE CRÍTICA — BUSQUE REPARO</div>
+      <div id="shieldWarning" hidden role="status" aria-live="polite">
+        ⚠ ESCUDO BAIXO · BUSQUE REPARO
+      </div>
+      <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
+      <div id="attackWarning" role="status"></div>
+      <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
+      <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
+      <div id="comms">
+        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
+        <div>
+          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
+          <p id="message" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
     <div id="interface">
       <header id="hud">
         <div class="status">
@@ -107,19 +121,10 @@
         <span>SUBCHEFE <b id="subState">CRUZADOR DE INTERCEPTAÇÃO</b></span>
         <div class="bar"><i id="subHealth"></i></div>
       </div>
-      <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
-      <div id="attackWarning" role="status"></div>
       <div id="loadout">
         <span id="pilotName">BIA / 3 VIDAS</span><strong id="weaponLabel">PULSO MK-I</strong>
         <div class="bar"><i id="chargeBar"></i></div>
         <small>SEGURE E SOLTE O TIRO PARA LANÇAR PLASMA</small>
-      </div>
-      <div id="comms">
-        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
-        <div>
-          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
-          <p id="message" aria-live="polite"></p>
-        </div>
       </div>
       <div id="bottom">
         <div class="ordnance">
@@ -362,6 +367,115 @@
             <button class="secondary" id="pauseOptions">⚙ OPÇÕES</button>
             <button class="secondary" id="pauseExit">SAIR PARA O MENU</button>
           </div>
+          <div id="pausePanelTabs" role="group" aria-label="Ajuda de jogo e diagnóstico">
+            <button id="pauseTabControls" type="button" aria-pressed="true" data-help-key="helpTab">
+              CONTROLES
+            </button>
+            <button id="pauseTabFps" type="button" aria-pressed="false" data-help-key="auditTab">
+              FPS / DESEMPENHO
+            </button>
+          </div>
+          <details id="pauseControlGuide" open>
+            <summary data-help-key="helpTitle">CONTROLES · TECLADO E CELULAR</summary>
+            <div class="nw-control-guide">
+              <section class="nw-help-keyboard" aria-label="Teclado">
+                <h3 data-help-key="helpKeyboard">TECLADO / PC</h3>
+                <div class="nw-keymap">
+                  <div class="nw-control-row">
+                    <kbd>W A S D / ↑ ← ↓ →</kbd><span data-help-key="helpMove"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ESPAÇO</kbd><span data-help-key="helpFire"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>SHIFT</kbd><span data-help-key="helpBoost"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>T</kbd><span data-help-key="helpRobot"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>V</kbd><span data-help-key="helpPods"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>B / X</kbd><span data-help-key="helpBomb"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>Q / E / Z</kbd><span data-help-key="helpRoll"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>J / L</kbd><span data-help-key="helpOrbit"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>C</kbd><span data-help-key="helpCamera"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>F</kbd><span data-help-key="helpArsenal"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>H / G</kbd><span data-help-key="helpSpecial"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>I</kbd><span data-help-key="helpScan"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>K</kbd><span data-help-key="helpPrecision"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>R</kbd><span data-help-key="helpRepair"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>U</kbd><span data-help-key="helpBarrage"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>P / ESC</kbd><span data-help-key="helpPause"></span>
+                  </div>
+                </div>
+              </section>
+              <section class="nw-help-mobile" aria-label="Celular">
+                <h3 data-help-key="helpTouch">CELULAR / TOQUE</h3>
+                <div class="nw-keymap">
+                  <div class="nw-control-row">
+                    <kbd>ANALÓGICO</kbd><span data-help-key="helpMove"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>TIRO</kbd><span data-help-key="helpFire"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>BOOST</kbd><span data-help-key="helpBoost"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ROBÔ</kbd><span data-help-key="helpRobot"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>PODS</kbd><span data-help-key="helpPods"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>BOMBA</kbd><span data-help-key="helpBomb"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>GIRO</kbd><span data-help-key="helpRoll"></span>
+                  </div>
+                  <div class="nw-control-row">
+                    <kbd>ÓRBITA ↶ ↷</kbd><span data-help-key="helpOrbit"></span>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </details>
+          <details id="pauseFrameAudit" hidden>
+            <summary data-help-key="auditTitle">DIAGNÓSTICO DE FPS</summary>
+            <p data-help-key="auditHint">Meça durante o gameplay e pause para consultar.</p>
+            <div class="nw-audit-actions">
+              <button type="button" id="auditStart" data-help-key="auditStart">
+                INICIAR MEDIÇÃO
+              </button>
+              <button type="button" id="auditStop" data-help-key="auditStop">ENCERRAR</button>
+              <button type="button" id="auditCopy" data-help-key="auditCopy">
+                COPIAR RELATÓRIO
+              </button>
+            </div>
+            <output id="auditReadout" aria-live="polite" aria-atomic="true"></output>
+          </details>
           <div id="pauseConfirmPanel" hidden>
             <p id="pauseConfirmText"></p>
             <div class="nw-confirm-actions">
@@ -388,6 +502,14 @@
                 <option value="pt">Português</option>
                 <option value="en">English</option>
                 <option value="es">Español</option>
+              </select></label
+            >
+            <label
+              ><span id="labelDifficulty">DIFICULDADE</span>
+              <select id="settingDifficulty">
+                <option value="easy">FÁCIL</option>
+                <option value="normal" selected>NORMAL</option>
+                <option value="hard">DIFÍCIL</option>
               </select></label
             >
             <label
@@ -477,6 +599,17 @@
         </div>
       </section>
     </div>
+    <details id="novaAuth" aria-label="Conta do piloto">
+      <summary>CONTA · PILOTO</summary>
+      <div class="nova-auth-content">
+        <strong data-auth-name>Piloto visitante</strong>
+        <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
+        <button type="button" data-auth-login disabled>Entrar com Google</button>
+        <button type="button" data-auth-logout hidden>Sair da conta</button>
+        <button type="button" data-auth-guest>Continuar como visitante</button>
+        <small>O login é opcional. Ranking online ainda não está disponível.</small>
+      </div>
+    </details>
     <script>
       /* BUILD:GAME */
     </script>

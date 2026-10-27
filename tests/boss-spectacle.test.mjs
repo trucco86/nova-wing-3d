@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import { defeatBoss, aimOrbit } from './combat-helper.mjs';
 import { createPod, createPickup, PICKUP_COLORS } from '../src/equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse } from '../src/finale.js';
@@ -13,7 +14,7 @@ function setup(t, opts) {
 }
 test('boss armor sustains combat across three stages even against extreme damage', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  reachSectorBoss(h, { bossAge: 0.15, dt: 0.1 });
   h.game.damageBoss(1e6);
   assert.equal(h.game.snapshot().bossParts, 2, 'arrival shields active');
   const phases = new Set();
@@ -97,7 +98,7 @@ test('pods evolve through three armored forms and reset formation on restart', (
 });
 test('reactor collapse freezes on blur, rejects damage and rewards only after eight seconds', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
   defeatBoss(h, { stopAtCollapse: true });
   const initial = h.game.snapshot();
   assert.equal(initial.state, 'collapsing');
@@ -151,7 +152,7 @@ test('Marvin finale alone reveals the three recovered-supply rings', () => {
 
 test('web victory flyby accepts movement and fire, pauses, then rewards once', (t) => {
   const h = setup(t);
-  h.advance(65.05, 0.1);
+  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
   defeatBoss(h, { stopAtCollapse: true });
   const initial = h.game.snapshot();
   h.key('KeyD');
@@ -175,7 +176,7 @@ test('web victory flyby accepts movement and fire, pauses, then rewards once', (
 
 test('boss approaches from the horizon without an instant arena teleport', (t) => {
   const h = setup(t);
-  h.advance(65.01, 0.01);
+  reachSectorBoss(h, { bossAge: 0.05, dt: 0.01 });
   const arrival = h.game.snapshot();
   assert.ok(arrival.bossZ < -220);
   h.advance(1);

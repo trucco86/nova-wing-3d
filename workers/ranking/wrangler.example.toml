@@ -1,0 +1,16 @@
+# Copy to wrangler.toml only AFTER creating a dedicated DEV Worker and D1 database.
+# This file deliberately contains placeholders; it is not deployable as-is.
+name = "nova-wing-ranking-dev"
+main = "src/index.js"
+compatibility_date = "2026-10-24"
+workers_dev = false
+
+[vars]
+FIREBASE_PROJECT_ID = "nova-wing-dev"
+ALLOWED_ORIGINS = "https://dev.nova-wing-preview.pages.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nova-wing-ranking-dev"
+database_id = "REPLACE_WITH_DEV_D1_DATABASE_ID"
+migrations_dir = "migrations"

@@ -1,5 +1,92 @@
 # Histórico
 
+## 1.24.16 — Consolidação P0 mobile
+
+- Unifica analógico responsivo de até 128 px, órbita pelo polegar direito, radar compacto, HUD
+  periférico, pausa acessível e auditoria opcional de FPS.
+- Reserva a faixa superior para os comandos rápidos do RPG, sem ocultá-los ao abrir
+  os detalhes táticos e sem ocupar o corredor central do combate.
+- Mantém dificuldade, missão estendida, ascensão por BOOST e retirada do subchefe;
+  aceite do mantenedor recebido, promoção condicionada aos gates técnicos finais.
+
+## 1.24.14 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.24.13 — Medição local de FPS na pausa (DEV)
+
+- Novo diagnóstico opt-in de cadência de frames em celular/PC: FPS médio, p95, quadros lentos e tempo válido.
+- Não coloca overlays durante jogo, não envia nem salva dados; relatório é copiado somente após gesto do jogador.
+- Desconsidera pausa e suspensão do SO, mantém buffer limitado e informa que não mede o tempo da GPU.
+- Interface PT/EN/ES; homologação no aparelho real, Playwright e revisão das dependências pendentes.
+
+## 1.24.12 — Controles orbitais à direita + radar no topo (DEV)
+
+- Botões ORBITAR 60×60px no rodapé junto ao polegar direito, acima das ações em portrait e adjacentes em landscape.
+- Radar do chefe compacto e separado da vida/vulnerabilidades no canto superior direito; HUD textual fica fora do gameplay.
+- Modo canhoto espelhado, SCAN desbloqueado no RPG aberto, regressões mobile e toque real.
+- Integração experimental em PR isolada, requer CI completo e aceite físico antes de HML/PROD.
+
+## 1.24.11 — Retirada do subchefe urbano e HUD periférico (DEV)
+
+- Integra a correção P0 da PR #76 com o HUD v1.24.10: subchefe urbano recua após 22 segundos, foge em 4 segundos e não concede prêmio indevido.
+- Retirada libera o chefe orbital e elimina o bloqueio de gameplay, sem ignorar ascensão por BOOST.
+- Nove subchefes restantes preservados; alertas, barra de vida e impacto continuam nas bordas.
+- CI, revisão visual e FPS mobile em hardware real são requisitos antes de HML/PROD.
+
+## 1.24.10 — HUD periférico de impactos e subchefe (DEV)
+
+- Confirmações textuais de colisão passam para o rail superior; centelha de contato permanece na cena.
+- HP do subchefe reposicionado em cartão lateral superior no celular, sem atravessar a mira ou controles RPG.
+- Testes Playwright com colisões reais e capturas de 320×568, 390×844 e 844×390.
+- CI, revisão visual e aceite em hardware são gates obrigatórios antes de homologação.
+
+## 1.24.9 — HUD superior e manual de controles na pausa (DEV)
+
+- Mensagens de missão e avisos migram para uma faixa superior, preservando a mira e o centro do gameplay.
+- Escudo baixo e aproximação de chefe piscam em amarelo; vida crítica e ataques iminentes piscam em vermelho; redução de movimento desliga as piscadas.
+- Pausa passa a ensinar atalhos reais do PC e ações mobile, em português, inglês e espanhol.
+- Corrigido conflito de toque das setas orbitais com o scanner no painel RPG expandido.
+- CI, capturas e homologação em aparelhos reais continuam obrigatórios; sem publicação em HML ou produção.
+
+## 1.24.8 — Candidata: controles mobile e naves espaciais detalhadas (DEV)
+
+- Controle de órbita reposicionado para o canto inferior junto ao analógico, fora da nave e do retículo.
+- Grade de combate à direita reorganizada para o polegar, com TIRO e BOOST destacados; inclui telas pequenas, landscape e canhotos.
+- Cargueiras, capitânia, satélites e destroços com estruturas mais detalhadas e volumes de colisão preservados.
+- CI, screenshots e homologação visual pendentes; preview isolado, sem promoção.
+
+## 1.24.7 — Obstáculos espaciais somente após a subida orbital (DEV)
+
+- O percurso por BOOST e os 38 segundos de travessia atmosférica deixam de gerar obstáculos que cruzam a câmera.
+- Novos satélites, cargueiras e destroços só aparecem quando a fase orbital está completa.
+- Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
+- Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
+
+## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+
+- Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
+- Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.
+- No primeiro subchefe, janelas sem novas ondas de caças/obstáculos e abertura com tiros menos densos.
+- Revisar testes, WebGL, controles desktop/mobile e ritmo de combate. **Sem homologação visual ou promoção.**
+
+## 1.24.5 — Candidata de voo por setor e lançamento orbital (DEV)
+
+- Rotas determinísticas com curvas localizadas por fase; corredores retos para setores 3, 5, 8 e 10.
+- Primeira fase ganha ascensão gradual da cidade ao espaço com horizonte terrestre, atmosfera e estrelas.
+- Chefe mantém arena sem curva; regressão com testes por setor e screenshots browser.
+- Sem aprovação visual nem promoção para HML/PROD.
+
+## 1.24.3 — Candidata em preparação
+
+- Firebase Authentication: transição para modo visitante aguarda signOut e mantém status fiel; validação OAuth real pendente.
+
+## 1.24.2 — Autenticação em DEV/HML
+
+- Login Google com Firebase restrito aos ambientes fixos de desenvolvimento.
+- Pré-visualizações de PR sem dependência de novos domínios OAuth.
+- Candidata sujeita a CI e homologação.
+
 ## 1.24.1 — Protótipo de transformação robô para testes web
 
 - Transformação entre nave e robô voador durante a partida, com controle por teclado e toque.

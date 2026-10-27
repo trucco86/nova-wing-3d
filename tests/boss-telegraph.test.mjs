@@ -16,13 +16,14 @@ test('subboss, tunnel and non-finite timing never cause false warnings', () => {
 });
 
 import { harness } from './harness.mjs';
+import { approachFirstBoss } from './mission-scenarios.mjs';
 test('real game announces boss before arrival, once, without freezing flight', (t) => {
   const h = harness();
   t.after(() => h.close());
   h.game.start();
-  h.advance(54);
+  approachFirstBoss(h, { secondsBefore: 12 });
   assert.equal(h.elements.get('bossIncoming').hidden, true);
-  h.advance(3);
+  h.advance(4);
   assert.equal(h.elements.get('bossIncoming').hidden, false);
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.game.snapshot().boss, false);

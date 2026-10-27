@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { createGame } from '../src/game.js';
 import { defeatBoss } from './combat-helper.mjs';
+import { SECTORS } from '../src/campaign.js';
 const params = new URLSearchParams(location.search);
 const sector = Number(params.get('sector') ?? 0);
 localStorage.setItem(
@@ -40,7 +41,31 @@ window.fixture = {
   advance,
   hangar() {
     capture = false;
-    advance(91);
+    // Exercise the first-sector launch with the same keyboard controls as the
+    // player. A timed wait alone must never bypass BOOST exhaustion.
+    if (sector === 0) {
+      advance(23);
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          code: 'ShiftLeft',
+          key: 'Shift',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      advance(3.6);
+      window.dispatchEvent(
+        new KeyboardEvent('keyup', {
+          code: 'ShiftLeft',
+          key: 'Shift',
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      advance(38.3);
+    }
+    const duration = SECTORS[sector].duration;
+    advance(Math.max(0, duration + 6 - game.snapshot().seconds));
     defeatBoss({ game, advance });
     capture = rendering = true;
     game.step(0);
