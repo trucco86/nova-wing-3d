@@ -1,11 +1,15 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Integração Arsenal / mapa — v1.24.18
+
+- Escopo de Arsenal/Mapa das PRs #80/#85 portado sobre produção v1.24.17, preservando órbita à esquerda acima do direcional.
+- Multitiro, núcleo rápido, pacote de bombas e mapa da campanha em validação; publicação depende dos gates no SHA final.
+- Próxima frente: Mecha/Fighter (#69/#91) e iluminação/paletas (#90), após esta entrega.
+
 ## Continuação P0 — v1.24.17
 
 - v1.24.16 consolidada e publicada pelas PRs #93/#94.
-- Próximo P0: portar a correção de briefing/comunicação da #95 sobre a base
-  publicada, preservar a duração real do rádio e mover ORBITAR para a esquerda,
-  imediatamente acima do direcional, conforme pedido atualizado do mantenedor.
+- v1.24.17 publicada pelas PRs #96/#97: briefing e rádio alternados, duração real preservada e ORBITAR à esquerda imediatamente acima do direcional. Posicionamento aprovado pelo mantenedor.
 - Depois: Arsenal/Hangar/Mapa (#80/#85), então Mecha/Fighter e paletas dos setores.
 - Liberações do mantenedor recebidas; CI, revisão e deploy continuam verificáveis
   por commit. Não confundir a autorização com medições físicas não fornecidas.

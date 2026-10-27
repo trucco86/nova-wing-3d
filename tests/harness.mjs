@@ -19,7 +19,21 @@ function element() {
   const classes = new Set();
   return {
     ...target(),
-    style: {},
+    style: {
+      setProperty(key, value) {
+        this[key] = value;
+      },
+    },
+    children: [],
+    setAttribute(key, value) {
+      this[key] = value;
+    },
+    append(...nodes) {
+      this.children.push(...nodes);
+    },
+    replaceChildren(...nodes) {
+      this.children = nodes;
+    },
     hidden: false,
     disabled: false,
     textContent: '',
@@ -58,6 +72,7 @@ export function harness({
     ...target(),
     hidden: false,
     body: element(),
+    createElement: element,
     getElementById(id) {
       if (!elements.has(id)) throw new Error('Missing DOM id ' + id);
       return elements.get(id);

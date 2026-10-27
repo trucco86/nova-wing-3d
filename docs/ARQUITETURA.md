@@ -48,7 +48,9 @@ Node 24 é a referência de desenvolvimento. `npm ci` utiliza o lockfile. Atuali
 
 `src/campaign.js` mantém os dez setores, preços e contratos de checkpoint. `src/bosses.js` constrói silhuetas procedurais com duas partes destrutíveis e núcleo. Todos os caminhos de dano passam por `damageBoss`; partes protegem o núcleo até serem destruídas. A câmera mantém os chefes distantes da nave, ocupando grande parte do horizonte.
 
-Os estados incluem `respawning` e `shop`: respawn preserva posição e concede invulnerabilidade; o hangar congela combate e permite compras com saldo verificado. A progressão não permite saltar além do setor final.
+Os estados incluem `respawning`, `shop` e `map`: respawn preserva posição e concede invulnerabilidade; o hangar congela combate e permite compras com saldo verificado. Na web, `campaign-map.js` apresenta a rota antes de lançar a próxima fase; o mapa permite retornar ao hangar e não seleciona setores bloqueados. A progressão não permite saltar além do setor final.
+
+O checkpoint v1 aceita `volley`, `rapid` e `bombs` opcionais validados. O save do hangar já inclui a bomba de abastecimento da próxima partida; entrar pelo checkpoint não repete esse bônus. `sectorStart` registra o inventário de entrada para o reinício. Multitiro e cadência se aplicam ao tiro web; o caminho nativo conserva o armamento e a transição direta anteriores.
 
 ## Extensões futuras
 

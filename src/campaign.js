@@ -116,12 +116,24 @@ export const WEAPONS = [
 ];
 export const SHOT_COUNTS = [2, 2, 3, 4, 6, 8];
 export const WEAPON_COLORS = ['#64ffe4', '#4cecff', '#64c8ff', '#8d91ff', '#d37bff', '#ff60d2'];
+export function projectileCount(tier, extraVolley = 0, web = true) {
+  return (
+    SHOT_COUNTS[Math.min(5, Math.max(0, tier))] + (web ? Math.min(2, Math.max(0, extraVolley)) : 0)
+  );
+}
+export function firingCooldown(cadence, level = 0) {
+  return cadence * (1 - Math.min(2, Math.max(0, level)) * 0.12);
+}
+
 export const SHOP = {
-  weapon: { label: 'CANHÃO', base: 180, max: 5 },
+  weapon: { label: 'CANHÃO · PRÓXIMA CLASSE', base: 180, max: 5 },
+  volley: { label: 'MULTITIRO · +1 PROJÉTIL', base: 260, max: 2 },
+  rapid: { label: 'NÚCLEO RÁPIDO · CADÊNCIA +', base: 230, max: 2 },
   armor: { label: 'BLINDAGEM', base: 120, max: 4 },
   pods: { label: 'POD ORBITAL', base: 220, max: 3 },
   repair: { label: 'REPARAR ESCUDO', base: 70, max: 99 },
-  bomb: { label: 'BOMBA', base: 90, max: 5 },
+  bomb: { label: 'BOMBA ×1', base: 90, max: 8 },
+  bombPack: { label: 'PACOTE BOMBAS ×3', base: 230, max: 8 },
 };
 export function shopPrice(kind, level = 0) {
   return SHOP[kind] ? SHOP[kind].base * (1 + level) : Infinity;
@@ -150,6 +162,9 @@ export function readSave(storage) {
       ...(d.cosmetics ? { cosmetics: readCosmetics(d.cosmetics) } : {}),
       ...(d.petCare ? { petCare: readPetCare(d.petCare) } : {}),
       ...(d.loadout ? { loadout: readPilotLoadout(d.loadout) } : {}),
+      ...(integer(d.volley, 0, 2) ? { volley: d.volley } : {}),
+      ...(integer(d.rapid, 0, 2) ? { rapid: d.rapid } : {}),
+      ...(integer(d.bombs, 0, 8) ? { bombs: d.bombs } : {}),
       ...(integer(d.score, 0, 10000000) ? { score: d.score } : {}),
     };
   } catch {

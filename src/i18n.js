@@ -1,6 +1,92 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['CANHÃO · PRÓXIMA CLASSE', 'CANNON · NEXT CLASS', 'CAÑÓN · SIGUIENTE CLASE'],
+  ['MULTITIRO · +1 PROJÉTIL', 'MULTISHOT · +1 PROJECTILE', 'MULTIDISPARO · +1 PROYECTIL'],
+  ['NÚCLEO RÁPIDO · CADÊNCIA +', 'RAPID CORE · FIRE RATE +', 'NÚCLEO RÁPIDO · CADENCIA +'],
+  ['PACOTE BOMBAS ×3', 'BOMB PACK ×3', 'PAQUETE BOMBAS ×3'],
+  ['PRECISA DE 3 VAGAS', 'NEEDS 3 FREE SLOTS', 'NECESITA 3 ESPACIOS LIBRES'],
+  ['BOMBAS', 'BOMBS', 'BOMBAS'],
+  ['MULTITIRO', 'MULTISHOT', 'MULTIDISPARO'],
+  ['NÚCLEO RÁPIDO', 'RAPID CORE', 'NÚCLEO RÁPIDO'],
+  [
+    'VER MAPA E PREPARAR A PRÓXIMA MISSÃO ↗',
+    'VIEW MAP AND PREPARE NEXT MISSION ↗',
+    'VER MAPA Y PREPARAR LA SIGUIENTE MISIÓN ↗',
+  ],
+  ['Mapa de progresso da campanha', 'Campaign progress map', 'Mapa de progreso de campaña'],
+  [
+    'FIVE CATS / ROTA DE PERSEGUIÇÃO',
+    'FIVE CATS / PURSUIT ROUTE',
+    'FIVE CATS / RUTA DE PERSECUCIÓN',
+  ],
+  ['MAPA DA GALÁXIA', 'GALAXY MAP', 'MAPA DE LA GALAXIA'],
+  ['Progresso dos dez setores', 'Progress through ten sectors', 'Progreso de los diez sectores'],
+  [
+    'INTELIGÊNCIA DA PRÓXIMA MISSÃO',
+    'NEXT MISSION INTELLIGENCE',
+    'INFORMACIÓN DE LA SIGUIENTE MISIÓN',
+  ],
+  ['VOLTAR AO HANGAR', 'BACK TO HANGAR', 'VOLVER AL HANGAR'],
+  ['INICIAR PRÓXIMA FASE ↗', 'LAUNCH NEXT STAGE ↗', 'INICIAR SIGUIENTE FASE ↗'],
+  ['CONCLUÍDO', 'COMPLETED', 'COMPLETADO'],
+  ['PRÓXIMA MISSÃO', 'NEXT MISSION', 'SIGUIENTE MISIÓN'],
+  ['ROTA A SEGUIR', 'ROUTE AHEAD', 'RUTA POR SEGUIR'],
+  ['AMEAÇAS:', 'THREATS:', 'AMENAZAS:'],
+  ['ALVO PRIORITÁRIO:', 'PRIORITY TARGET:', 'OBJETIVO PRIORITARIO:'],
+  ['SETORES CONCLUÍDOS', 'SECTORS COMPLETED', 'SECTORES COMPLETADOS'],
+  ['Setor', 'Sector', 'Sector'],
+  [
+    'Torres, sentinelas e caças de interceptação',
+    'Towers, sentries and interceptor fighters',
+    'Torres, centinelas y cazas de intercepción',
+  ],
+  [
+    'Defesas costeiras e máquinas submarinas',
+    'Coastal defenses and underwater machines',
+    'Defensas costeras y máquinas submarinas',
+  ],
+  [
+    'Detritos em alta velocidade e perfuradores',
+    'High-speed debris and drillers',
+    'Escombros a alta velocidad y perforadores',
+  ],
+  [
+    'Geradores externos e baterias orbitais',
+    'External generators and orbital batteries',
+    'Generadores externos y baterías orbitales',
+  ],
+  [
+    'Rajadas de plasma e instabilidade térmica',
+    'Plasma bursts and thermal instability',
+    'Ráfagas de plasma e inestabilidad térmica',
+  ],
+  [
+    'Blindados e disparos congelantes',
+    'Armored units and freezing shots',
+    'Blindados y disparos congelantes',
+  ],
+  [
+    'Organismos hostis e ataques em múltiplas direções',
+    'Hostile organisms and multidirectional attacks',
+    'Organismos hostiles y ataques en múltiples direcciones',
+  ],
+  [
+    'Formações pesadas e barragens de mísseis',
+    'Heavy formations and missile barrages',
+    'Formaciones pesadas y andanadas de misiles',
+  ],
+  [
+    'Gravidade anômala e escuridão espacial',
+    'Anomalous gravity and space darkness',
+    'Gravedad anómala y oscuridad espacial',
+  ],
+  [
+    'Fortaleza final e a frota de Marvin',
+    "Final fortress and Marvin's fleet",
+    'Fortaleza final y la flota de Marvin',
+  ],
+  ['Ameaças desconhecidas', 'Unknown threats', 'Amenazas desconocidas'],
   [
     'WASD / SETAS · ESPAÇO / TIRO · DOURADO = CRÉDITOS',
     'WASD / ARROWS · SPACE / FIRE · GOLD = CREDITS',
