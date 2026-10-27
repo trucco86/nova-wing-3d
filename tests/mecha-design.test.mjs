@@ -260,10 +260,10 @@ test('newly transformed mech stays visible throughout invulnerability without re
   t.after(() => h.close());
   h.game.start();
   h.key('KeyT');
+  let previous = 0;
   for (const time of [0.08, 0.35, 0.85, 1.25]) {
-    const dt = time - (h.__lastFrame ?? 0);
-    h.advance(dt, 0.02);
-    h.__lastFrame = time;
+    h.advance(time - previous, 0.02);
+    previous = time;
     assert.ok(robot?.visible, 'mecha rig stays enabled at ' + time + 's');
     assert.equal(robot.parent.visible, true, 'parent fighter cannot blink away the mech');
   }
