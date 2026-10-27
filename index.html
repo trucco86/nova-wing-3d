@@ -5868,6 +5868,15 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
 }
 
+/* During the short next-sector briefing, defer the weapon name and charge
+   track rather than painting them over the route text in mobile portrait. */
+@media (pointer: coarse) {
+  body.in-mission.stage-intro #loadout {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
     </style>
   </head>
   <body>
