@@ -37,10 +37,8 @@ test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight
         Object.entries(buttons).map(([id, bounds]) => [
           id,
           bounds
-            ? document.elementFromPoint(
-                bounds.x + bounds.width / 2,
-                bounds.y + bounds.height / 2,
-              )?.id
+            ? document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
+                ?.id
             : null,
         ]),
       );
@@ -59,9 +57,10 @@ test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight
     expect(geo.strategy).not.toBeNull();
     expect(geo.drawer).not.toBeNull();
     expect(geo.quick).not.toBeNull();
-    expect(geo.strategy.y + geo.strategy.height, 'RPG must stay above central combat lane').toBeLessThan(
-      viewport.height * (viewport.width > viewport.height ? 0.4 : 0.34),
-    );
+    expect(
+      geo.strategy.y + geo.strategy.height,
+      'RPG must stay above central combat lane',
+    ).toBeLessThan(viewport.height * (viewport.width > viewport.height ? 0.4 : 0.34));
     expect(geo.strategy.x).toBeGreaterThanOrEqual(0);
     expect(geo.strategy.x + geo.strategy.width).toBeLessThanOrEqual(viewport.width);
     expect(overlaps(geo.strategy, geo.notices), 'warnings must have a separate top lane').toBe(

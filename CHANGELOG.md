@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.15 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.14 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
