@@ -46,7 +46,10 @@ if (mode === 'mecha-review') {
   ship.position.set(7.2, 13, -46);
   mecha.name = 'review-mecha';
   ship.name = 'review-ship';
-  animateMechPower(mecha, 1.25, true, tier);
+  // Warm up the real delta-driven propulsion so the review captures full boost.
+  for (let frame = 1; frame <= 75; frame++) {
+    animateMechPower(mecha, frame / 60, true, tier, {}, 1 / 60);
+  }
   setFighterEvolution(ship, tier);
   scene.add(mecha, ship);
   // Fighter and mecha face -Z: the front camera must be forward (-Z),

@@ -86,6 +86,7 @@ import {
   createFlyingRobot,
   mechArmPitch,
   animateMechPower,
+  resetMechPower,
   setFighterEvolution,
   createShipModule,
   createWorld,
@@ -756,6 +757,7 @@ export function createGame({
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    resetMechPower(robot);
     robotMode = false;
     robotCooldown = 0;
     robotTransition = 0;
@@ -2056,12 +2058,28 @@ export function createGame({
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
     robotFireKick = Math.max(0, robotFireKick - dt);
+    let dx =
+        (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
+        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
+        stick.x,
+      dy =
+        (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
+        (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
+        stick.y;
+    const boostHeld = boostRequested();
+    if (!boostHeld) boostNeedsRelease = false;
+    if (boostHeld && energy <= 5 && !boostNeedsRelease) {
+      boostNeedsRelease = true;
+      message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
+    }
+    boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const transformProgress = robotTransition / 0.7;
     if (robot.visible) {
       for (const mount of mechPodMounts) mount.visible = !podsDetached;
       const rig = robot.userData.mechRig;
       const motion = elapsed * 5;
-      const boostMotion = keys.has('ShiftLeft') || keys.has('ShiftRight') ? 1.4 : 1;
+      const boostMotion = 1 + rig.propulsionPower * 0.4;
       for (let i = 0; i < 2; i++) {
         const side = i === 0 ? -1 : 1;
         // Elevate the cannon arms without exposing the shoulder joints to overrotation.
@@ -2084,22 +2102,6 @@ export function createGame({
     } else {
       shipModule.rotation.z = 0;
     }
-    let dx =
-        (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
-        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
-        stick.x,
-      dy =
-        (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
-        (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
-        stick.y;
-    const boostHeld = boostRequested();
-    if (!boostHeld) boostNeedsRelease = false;
-    if (boostHeld && energy <= 5 && !boostNeedsRelease) {
-      boostNeedsRelease = true;
-      message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
-    }
-    boosting = boostHeld && !boostNeedsRelease && energy > 5;
-    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy });
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed *

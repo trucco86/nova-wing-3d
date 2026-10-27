@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
+import { harness } from './harness.mjs';
 import {
   animateMechPower,
   createFlyingRobot,
@@ -127,4 +128,124 @@ test('back nozzle gimbal reacts to steering and boost without moving the fixed h
   assert.deepEqual(housing.position.toArray(), fixedHousing.toArray());
   assert.ok(Math.abs(gimbal.rotation.y) < 0.25);
   assert.ok(Math.abs(gimbal.rotation.x) < 0.25);
+});
+
+test('boost never jumps rotor phase after a long mission and releases smoothly', () => {
+  const robot = createFlyingRobot();
+  const rig = robot.userData.mechRig;
+  animateMechPower(robot, 137.45, false, 0, {}, 1 / 60);
+  let last = rig.turbineRotor.rotation.z;
+  for (const boosting of [true, true, false, false, true, false]) {
+    const beforePower = rig.propulsionPower;
+    animateMechPower(robot, 137.45, boosting, 0, {}, 1 / 60);
+    const distance = (rig.turbineRotor.rotation.z - last + Math.PI * 2) % (Math.PI * 2);
+    assert.ok(distance >= 10 / 60 - 1e-10 && distance <= 24 / 60 + 1e-10);
+    assert.ok(Math.abs(rig.propulsionPower - beforePower) < 0.2, 'no instant ignition/cutoff');
+    last = rig.turbineRotor.rotation.z;
+  }
+});
+
+test('propulsion keeps equivalent phase at 30/60/120 Hz and anchors exhaust at each nozzle', () => {
+  const results = [30, 60, 120].map((fps) => {
+    const robot = createFlyingRobot();
+    const rig = robot.userData.mechRig;
+    let elapsed = 0;
+    for (const boosting of [false, true, false]) {
+      for (let frame = 0; frame < fps; frame++) {
+        elapsed += 1 / fps;
+        animateMechPower(robot, elapsed, boosting, 0, { x: 1, y: -1 }, 1 / fps);
+        assert.ok(
+          Math.abs(rig.turbineFlame.position.z - (1.75 * rig.turbineFlame.scale.y) / 2 - 0.725) <
+            1e-10,
+        );
+        for (const plume of rig.sidePlumes) {
+          assert.ok(Math.abs(plume.position.z - (1.4 * plume.scale.y) / 2 - 2.2) < 1e-10);
+        }
+      }
+    }
+    return [
+      rig.turbineRotor.rotation.z,
+      rig.propulsionPower,
+      rig.turbineGimbal.rotation.x,
+      rig.turbineGimbal.rotation.y,
+    ];
+  });
+  for (const result of results.slice(1)) {
+    result.forEach((value, index) => assert.ok(Math.abs(value - results[0][index]) < 1e-9));
+  }
+});
+
+test('zero simulation delta freezes propulsion and steering reversals interpolate within limits', () => {
+  const robot = createFlyingRobot();
+  const rig = robot.userData.mechRig;
+  animateMechPower(robot, 1, true, 0, { x: -1, y: -1 }, 0.05);
+  const before = [
+    rig.turbineRotor.rotation.z,
+    rig.turbineGimbal.rotation.x,
+    rig.turbineGimbal.rotation.y,
+    rig.turbineFlame.scale.y,
+  ];
+  animateMechPower(robot, 900, false, 0, { x: 1, y: 1 }, 0);
+  assert.deepEqual(
+    [
+      rig.turbineRotor.rotation.z,
+      rig.turbineGimbal.rotation.x,
+      rig.turbineGimbal.rotation.y,
+      rig.turbineFlame.scale.y,
+    ],
+    before,
+  );
+  animateMechPower(robot, 1.05, true, 0, { x: 1, y: 1 }, 0.05);
+  assert.ok(
+    Math.abs(rig.turbineGimbal.rotation.y - before[2]) < 0.19,
+    'direction change is damped',
+  );
+  assert.ok(Math.abs(rig.turbineGimbal.rotation.x) <= 0.21);
+});
+
+test('real touch and keyboard boost share mech pose, pause and energy-exhaustion behavior', (t) => {
+  const runs = ['keyboard', 'touch'].map((input) => {
+    let robot;
+    const h = harness({
+      observeScene: (scene) => {
+        robot = scene.getObjectByName('five-cats-flight-mech') ?? robot;
+      },
+    });
+    t.after(() => h.close());
+    h.game.start();
+    h.key('KeyT');
+    h.advance(1);
+    assert.ok(robot?.visible);
+    if (input === 'keyboard') h.key('ShiftLeft');
+    else h.elements.get('boostTouch').onpointerdown({ pointerId: 12, preventDefault() {} });
+    h.advance(0.4);
+    const rig = robot.userData.mechRig;
+    assert.ok(rig.propulsionPower > 0.9, 'the input must actually engage propulsion');
+    const poweredPose = [
+      rig.propulsionPower,
+      ...rig.arms.map((arm) => arm.rotation.x),
+      ...rig.legs.map((leg) => leg.rotation.x),
+    ];
+    h.game.pause();
+    const phase = rig.turbineRotor.rotation.z;
+    h.advance(2);
+    assert.equal(rig.turbineRotor.rotation.z, phase, 'pause freezes propulsion');
+    h.game.pause();
+    // Pause releases both input sources. Reapply a fresh boost and drain it.
+    if (input === 'keyboard') h.key('ShiftLeft');
+    else h.elements.get('boostTouch').onpointerdown({ pointerId: 13, preventDefault() {} });
+    h.advance(5);
+    assert.ok(
+      rig.propulsionPower < 0.01,
+      'held input cannot animate boost after energy exhaustion',
+    );
+    h.game.start();
+    assert.equal(rig.propulsionPower, 0, 'restart clears propulsion intensity');
+    assert.equal(rig.turbineRotor.rotation.z, 0, 'restart clears rotor phase');
+    h.key('KeyT');
+    h.advance(0.2);
+    assert.equal(rig.propulsionPower, 0, 'fresh mission starts without boost');
+    return poweredPose;
+  });
+  assert.deepEqual(runs[0], runs[1], 'touch must animate the same pose as keyboard');
 });
