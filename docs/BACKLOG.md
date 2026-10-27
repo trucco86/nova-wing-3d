@@ -1,5 +1,18 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Estado vigente — 27/10/2026 (substitui prioridades desatualizadas abaixo)
+
+- **Mobile v1.24.17:** release nas PRs [#96](https://github.com/trucco86/nova-wing-3d/pull/96)/[#97](https://github.com/trucco86/nova-wing-3d/pull/97), com quality/4 shards/Pages aprovados; **homologação funcional em celular confirmada pelo mantenedor em 27/10**. Esta confirmação não é medição instrumentada de FPS/bateria/temperatura.
+- **Arsenal e mapa v1.24.18:** escopo das antigas #80/#85 consolidado nas [#98](https://github.com/trucco86/nova-wing-3d/pull/98) (HML) e [#99](https://github.com/trucco86/nova-wing-3d/pull/99) (main), com merge confirmado e versões main/dev/hml em v1.24.18. Multitiro, cadência, bombas e mapa foram incluídos. **Aceite visual específico da v1.24.18 não inferido** da aprovação mobile anterior.
+- **Arma diferenciada (#84):** [#100](https://github.com/trucco86/nova-wing-3d/pull/100) candidata draft v1.24.19: dispersão comprável/equipável, cone de cinco projéteis, dano por alcance, salva/recarrega progresso. CI e balanceamento específicos obrigatórios; mísseis, feixe e bombas especializadas seguem pendentes.
+- **Mecha/Fighter (#66):** a [#91](https://github.com/trucco86/nova-wing-3d/pull/91), com CI verde, foi integrada **somente à branch candidata da #69**, incluindo correções de propulsão e boost touch. Reconciliar #69 com a base atual antes de criar candidato DEV; validação estética/animada segue pendente.
+- **Paletas/cidade-órbita:** [#90](https://github.com/trucco86/nova-wing-3d/pull/90) mantém CI verde no SHA original; requer rebase, revisão visual de todos os setores e aceitação antes de DEV/HML.
+- **Identidade/ranking/áudio:** [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) (logout de convidado), Workers/D1 e efeitos/trilha cinematográfica seguem frentes P1 sem homologação de infraestrutura/áudio nesta onda.
+
+**Sequência para novas funcionalidades:** branch isolada → CI completo no SHA final → DEV → preview e QA visual → HML → aceite humano da nova release → produção. Os snapshots anteriores abaixo são históricos.
+
+---
+
 ## Integração Arsenal / mapa — v1.24.18
 
 - Escopo de Arsenal/Mapa das PRs #80/#85 portado sobre produção v1.24.17, preservando órbita à esquerda acima do direcional.
