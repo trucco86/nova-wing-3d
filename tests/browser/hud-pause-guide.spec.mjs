@@ -18,6 +18,9 @@ test('shields, attacks and ordinary communications stay in the top information r
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  // Touch briefing temporarily owns the radio lane; wait using game time and
+  // verify the genuine pilot message instead of injecting a synthetic cue.
+  if (info.project.name === 'mobile') await page.evaluate(() => window.fixture.advance(3.1));
 
   const rail = page.locator('#hudNotices');
   await expect(rail).toBeVisible();

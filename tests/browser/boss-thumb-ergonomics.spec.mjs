@@ -7,7 +7,7 @@ const intersects = (a, b) =>
   a.y < b.y + b.height - 2 &&
   a.y + a.height > b.y + 2;
 
-test('mobile boss orbit stays with right thumb, clear of fire, boost and stick', async ({
+test('mobile boss orbit stays above left steering, clear of fire, boost and stick', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'mobile');
@@ -47,12 +47,15 @@ test('mobile boss orbit stays with right thumb, clear of fire, boost and stick',
     expect(g.orbit.y, 'orbital controls must stay in the lower half').toBeGreaterThan(
       viewport.height * 0.5,
     );
-    expect(g.orbit.x, 'orbit dock belongs to the right thumb lane').toBeGreaterThan(
-      viewport.width * 0.25,
+    expect(g.orbit.x + g.orbit.width, 'orbit dock belongs to the left steering lane').toBeLessThan(
+      viewport.width * 0.5,
     );
-    expect(g.left.x, 'left orbit button must not cover center ship').toBeGreaterThan(
-      viewport.width * 0.52,
-    );
+    expect(
+      g.stick.y - (g.orbit.y + g.orbit.height),
+      'orbit is immediately above steering',
+    ).toBeGreaterThanOrEqual(8);
+    expect(g.stick.y - (g.orbit.y + g.orbit.height)).toBeLessThanOrEqual(24);
+    expect(intersects(g.orbit, g.reticle), 'orbit must not cover the aiming reticle').toBe(false);
     expect(intersects(g.orbit, g.stick), 'orbit must not obscure steering').toBe(false);
     expect(intersects(g.orbit, g.actions), 'orbit must not obscure right thumb').toBe(false);
     expect(intersects(g.left, g.right)).toBe(false);
