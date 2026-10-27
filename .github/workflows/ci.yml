@@ -26,6 +26,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      # Verify the checked-in distribution before a build can overwrite it.
+      - run: npm run build:check
       - run: npm run build
       - run: npm run validate
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -56,8 +58,9 @@ jobs:
       # Keep the browser gate strict; avoid repeating apt dependency installation on each
       # hosted runner. Missing runtime libraries still fail the real Playwright tests.
       - run: npx playwright install chromium
-      # Fresh runners do not contain generated index.html for the bumped version.
-      # Match the quality job: always rebuild before running the version gate.
+      - run: npm run build:check
+      # Reproduce only after checking the committed artifact matches the sources.
+      # Pages deploys this same committed HTML from a fresh checkout.
       - run: npm run build
       - run: npm run validate -- --browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -30,6 +30,8 @@ jobs:
       - name: Install
         run: npm ci
       - name: Build web
+        run: npm run build:check
+      - name: Reproduce verified web build
         run: npm run build
       - name: Validate source and generated output
         run: npm run validate

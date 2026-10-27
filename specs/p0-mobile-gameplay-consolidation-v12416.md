@@ -35,6 +35,8 @@ ranking services or enable Google authentication on GitHub Pages.
    all identify v1.24.16.
 6. Source validation, four browser shards and the isolated HML deployment use the
    same final SHA.
+7. Quality, browser and Cloudflare deploy must reject a stale committed HTML before
+   any build step can overwrite it. Pages must receive the verified committed file.
 
 ## Human gate
 
