@@ -1,11 +1,6 @@
-// Web-only Firebase Authentication adapter. The Google SDK is loaded on demand so
-// offline gameplay and native shells remain independent of the login provider.
-const config = Object.freeze({
-  apiKey: 'AIzaSyDtoNkvfeFPflcTIi4i6PsopXvkl6M-rME',
-  authDomain: 'nova-wing-dev.firebaseapp.com',
-  projectId: 'nova-wing-dev',
-  appId: '1:402269620588:web:0ed643d7a712f7e9118b49',
-});
+// Web-only Firebase adapter: production uses its own runtime configuration.
+// Native/offline and PR previews never load the Google SDK.
+import { novaEnvironment, loadPublicConfig } from './runtime-config.js';
 const SDK_VERSION = '11.10.0';
 const APP_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebase-app.js';
 const AUTH_URL = 'https://www.gstatic.com/firebasejs/' + SDK_VERSION + '/firebase-auth.js';
@@ -30,18 +25,15 @@ export async function signOutToGuest({ auth, authSdk, setUser, setStatus, closeP
 export function installGoogleLogin({
   loadSdks = () =>
     Promise.all([import(/* @vite-ignore */ APP_URL), import(/* @vite-ignore */ AUTH_URL)]),
+  loadConfig = loadPublicConfig,
+  onAuthChange = () => {},
+  onRuntimeConfig = () => {},
 } = {}) {
   const panel = document.getElementById('novaAuth');
   if (!panel) return () => {};
-  // Never load Firebase on PR previews, offline/native shells or automated visual tests.
-  // Local OAuth is opt-in (?auth=1); fixed DEV/HML hosts opt in automatically.
-  const allowedHosts = new Set([
-    'dev.nova-wing-preview.pages.dev',
-    'hml.nova-wing-preview.pages.dev',
-  ]);
-  const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const localOptIn = isLocal && new URLSearchParams(window.location.search).get('auth') === '1';
-  if (!allowedHosts.has(window.location.hostname) && !localOptIn) {
+  // Only exact, approved hosts can start OAuth. Hostnames are NOT backend authorization.
+  const environment = novaEnvironment(window.location.hostname, window.location.search);
+  if (!environment) {
     panel.hidden = true;
     return () => {};
   }
@@ -81,6 +73,7 @@ export function installGoogleLogin({
     login.hidden = !!user;
     logout.hidden = !user;
     setStatus(user ? 'Sessão Google ativa' : 'Modo visitante · progresso local');
+    onAuthChange(user);
   };
   login.addEventListener('click', async () => {
     if (!auth || !authSdk) return;
@@ -130,6 +123,11 @@ export function installGoogleLogin({
     try {
       await initialization;
       if (disposed) return;
+      if (environment === 'prod' && !auth) {
+        setUser(null);
+        panel.open = false;
+        return;
+      }
       await signOutToGuest({
         auth,
         authSdk,
@@ -145,10 +143,20 @@ export function installGoogleLogin({
   });
   (async () => {
     try {
+      const runtimeConfig = await loadConfig(environment);
+      if (disposed) return;
+      if (!runtimeConfig) {
+        setStatus('Login de produção ainda não configurado. Jogue como visitante.');
+        return;
+      }
+      onRuntimeConfig(runtimeConfig);
       const [appSdk, loadedAuthSdk] = await loadSdks();
       authSdk = loadedAuthSdk;
       if (disposed) return;
-      const app = appSdk.getApps().length ? appSdk.getApp() : appSdk.initializeApp(config);
+      const appName = 'nova-wing-' + environment;
+      const app = appSdk.getApps().some((item) => item.name === appName)
+        ? appSdk.getApp(appName)
+        : appSdk.initializeApp(runtimeConfig.firebase, appName);
       auth = authSdk.getAuth(app);
       provider = new authSdk.GoogleAuthProvider();
       await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
