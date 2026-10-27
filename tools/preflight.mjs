@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 
 // Local fail-fast gate: repair generated assets before validating the commit.
 const fix = process.argv.includes('--fix');
-const commands = fix ? ['format', 'build', 'validate'] : ['validate'];
+const commands = fix ? ['format', 'build', 'validate'] : ['build:check', 'validate'];
 for (const command of commands) {
   console.log(`[preflight] npm run ${command}`);
   const result = spawnSync('npm', ['run', command], { stdio: 'inherit' });

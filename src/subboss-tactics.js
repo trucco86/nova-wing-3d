@@ -103,6 +103,20 @@ export const SUBBOSS_TACTICS = [
   },
 ];
 
+// The first urban subboss cannot remain in the player's camera lane indefinitely.
+// A timed retreat preserves the chance to defeat it while allowing the orbital chase.
+export const FIRST_SUBBOSS_RETREAT = Object.freeze({ startAge: 22, duration: 4 });
+export function firstSubbossDeparture(index, age) {
+  const eligible = index === 0 && Number.isFinite(age) && age >= FIRST_SUBBOSS_RETREAT.startAge;
+  const progress = eligible
+    ? Math.min(
+        1,
+        Math.max(0, (age - FIRST_SUBBOSS_RETREAT.startAge) / FIRST_SUBBOSS_RETREAT.duration),
+      )
+    : 0;
+  return { retreating: eligible, complete: eligible && progress >= 1, progress };
+}
+
 export function subbossProfile(index = 0) {
   return SUBBOSS_TACTICS[
     ((index % SUBBOSS_TACTICS.length) + SUBBOSS_TACTICS.length) % SUBBOSS_TACTICS.length
@@ -171,11 +185,13 @@ export function subbossMotion(index, age, phase = 1, originX = 0, originY = 10) 
       bank = Math.sin(t * 1.9) * 0.2;
   }
   const approach = Math.exp(-profile.approach * t);
+  const retreat = firstSubbossDeparture(index, t);
+  const glide = retreat.progress * retreat.progress * (3 - 2 * retreat.progress);
   return {
-    x: originX + x * pressure,
-    y: originY + y * pressure,
-    z: profile.anchorZ + (-200 - profile.anchorZ) * approach + lunge,
-    bank,
+    x: originX + x * pressure + glide * 18,
+    y: originY + y * pressure + glide * 32,
+    z: profile.anchorZ + (-200 - profile.anchorZ) * approach + lunge - glide * 280,
+    bank: bank + glide * 0.22,
   };
 }
 

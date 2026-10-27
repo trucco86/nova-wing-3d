@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { reachBrowserBoss } from './orbital-journey.mjs';
 
 const overlaps = (a, b, tolerance = 2) =>
   Boolean(a && b) &&
@@ -19,7 +20,7 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     await page.setViewportSize(viewport);
     await page.goto('/__dynamic.html?sector=0&xp=740');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    await page.evaluate(() => window.fixture.advance(68.1));
+    await reachBrowserBoss(page, { bossAge: 6 });
     await expect(page.locator('#bossHUD')).toBeVisible();
     await expect(page.locator('#quickRpg')).toBeVisible();
     await expect(page.locator('#touch')).toBeVisible();
@@ -37,22 +38,29 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
         controls: box('#strategyControls'),
         boss: box('#bossHUD'),
         touch: box('#touch'),
+        stick: box('#stick'),
+        actions: box('#touch .actions'),
         orbit: box('#orbitControls'),
         score: box('.score'),
         status: box('.status'),
         buttons: Object.fromEntries(
-          ['podsTouch', 'rollTouch', 'bombTouch', 'boostTouch', 'fireTouch'].map((id) => [
-            id,
-            box('#' + id),
-          ]),
+          ['podsTouch', 'rollTouch', 'bombTouch', 'robotTouch', 'boostTouch', 'fireTouch'].map(
+            (id) => [id, box('#' + id)],
+          ),
         ),
       };
     });
 
     expect(overlaps(geometry.controls, geometry.boss), 'RPG vs. boss HUD').toBe(false);
+    expect(geometry.boss.x, 'boss HP must stay at the right information edge').toBeGreaterThan(
+      viewport.width * 0.6,
+    );
     expect(overlaps(geometry.controls, geometry.touch), 'RPG vs. touch controls').toBe(false);
     expect(overlaps(geometry.boss, geometry.touch), 'boss HUD vs. touch').toBe(false);
-    expect(overlaps(geometry.orbit, geometry.touch), 'orbit vs. touch').toBe(false);
+    // The touch wrapper deliberately covers the full footer but receives no input.
+    // Only its actual interactive children must stay clear of the boss orbit controls.
+    expect(overlaps(geometry.orbit, geometry.stick), 'orbit vs. stick').toBe(false);
+    expect(overlaps(geometry.orbit, geometry.actions), 'orbit vs. thumb actions').toBe(false);
     expect(overlaps(geometry.status, geometry.score), 'HP vs. score').toBe(false);
     for (const [id, button] of Object.entries(geometry.buttons)) {
       expect(button, id + ' must remain visible').not.toBeNull();

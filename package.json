@@ -1,6 +1,6 @@
 {
   "name": "nova-wing-3d",
-  "version": "1.24.1",
+  "version": "1.24.16",
   "private": true,
   "description": "Rail shooter WebGL Five Cats com harness de desenvolvimento assistido por agentes",
   "type": "module",
@@ -21,6 +21,7 @@
     "validate": "node tools/validate.mjs",
     "preflight": "node tools/preflight.mjs",
     "preflight:fix": "node tools/preflight.mjs --fix",
+    "release:prepare": "node tools/release-prepare.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
     "agent:context": "node tools/context.mjs",
     "agent:new": "node tools/task.mjs",

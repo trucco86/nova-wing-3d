@@ -6,6 +6,8 @@ import {
   subbossMotion,
   subbossCooldown,
   subbossWindup,
+  FIRST_SUBBOSS_RETREAT,
+  firstSubbossDeparture,
 } from '../src/subboss-tactics.js';
 
 test('ten subboss profiles expose distinct readable tactics', () => {
@@ -42,4 +44,28 @@ test('later phases shorten cooldown while keeping a visible windup', () => {
     assert.ok(subbossWindup(index, 1) > subbossWindup(index, 3));
     assert.ok(subbossWindup(index, 3) >= 0.42);
   }
+});
+
+test('first urban subboss has finite combat and a visible departure, others keep their tactics', () => {
+  assert.deepEqual(firstSubbossDeparture(0, 18), {
+    retreating: false,
+    complete: false,
+    progress: 0,
+  });
+  const before = subbossMotion(0, FIRST_SUBBOSS_RETREAT.startAge - 0.1);
+  const escaping = firstSubbossDeparture(0, FIRST_SUBBOSS_RETREAT.startAge + 2);
+  const inFlight = subbossMotion(0, FIRST_SUBBOSS_RETREAT.startAge + 2);
+  const final = subbossMotion(0, FIRST_SUBBOSS_RETREAT.startAge + FIRST_SUBBOSS_RETREAT.duration);
+  assert.equal(escaping.retreating, true);
+  assert.equal(escaping.complete, false);
+  assert.ok(inFlight.z < before.z - 90, 'withdrawal opens the forward view gradually');
+  assert.ok(inFlight.y > before.y, 'the subboss visibly climbs during departure');
+  assert.ok(final.z < -340, 'retreat ends safely beyond the enemy camera lane');
+  assert.equal(
+    firstSubbossDeparture(0, FIRST_SUBBOSS_RETREAT.startAge + FIRST_SUBBOSS_RETREAT.duration)
+      .complete,
+    true,
+  );
+  assert.equal(firstSubbossDeparture(1, 400).retreating, false);
+  assert.ok(subbossMotion(1, 400).z > -100, 'later missions keep their full subboss fight');
 });

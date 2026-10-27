@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
+import { reachSectorBoss } from './mission-scenarios.mjs';
 import { routeAt } from '../src/route.js';
 import { createArcade } from '../src/arcade.js';
 import { readCosmetics, skinPurchase } from '../src/customization.js';
@@ -16,15 +17,27 @@ function storageFor(sector = 2) {
   ]);
   return { getItem: (k) => map.get(k), setItem: (k, v) => map.set(k, v) };
 }
-test('route starts and ends straight, turns both ways and ascends in orbit', () => {
+test('sector-specific route windows keep straight sectors straight and ascend from the city', () => {
   for (let sector = 0; sector < 10; sector++) {
     assert.equal(routeAt(sector, 0, 70).turn, 0);
-    assert.equal(Math.abs(routeAt(sector, 70, 70).turn), 0);
+    assert.equal(routeAt(sector, 70, 70).turn, 0);
     assert.equal(routeAt(sector, 22, 70, true).ascent, 0);
+    assert.equal(routeAt(sector, 22, 70, true).turn, 0);
   }
-  assert.ok(routeAt(0, 12, 65).turn > 0.5);
-  assert.ok(routeAt(0, 40, 65).turn < -0.5);
+  assert.ok(routeAt(0, 22, 65).turn > 0.5);
+  assert.ok(routeAt(1, 30, 70).turn < -0.5);
+  for (const sector of [2, 4, 7, 9]) {
+    for (const second of [10, 25, 45, 60]) {
+      assert.equal(routeAt(sector, second, 70).turn, 0);
+    }
+  }
+  assert.equal(routeAt(0, 10, 65).ascent, 0);
+  assert.equal(routeAt(0, 55, 65).ascent, 0);
+  assert.ok(routeAt(0, 55, 65, false, 0.85).ascent > 0.8);
+  assert.equal(routeAt(0, 55, 65, false, 0.85).label, 'ASCENSÃO ORBITAL');
   assert.ok(routeAt(2, 30, 70).ascent > 0.8);
+  assert.equal(routeAt(4, 30, 75).ascent, 0);
+  assert.equal(routeAt(0, 30, 0).turn, 0);
 });
 test('bonus is bounded, pays for actual hits and cannot accumulate after completion', () => {
   const a = createArcade(3);
@@ -91,7 +104,7 @@ test('hangar paint purchases persist ownership, score and selected paint across 
   t.after(() => h.close());
   h.game.start(true);
   assert.equal(h.game.buySkin('ember'), false);
-  h.advance(65.1);
+  reachSectorBoss(h, { bossAge: 20 });
   defeatBoss(h);
   const before = h.game.snapshot();
   assert.equal(h.game.buySkin('ember'), true);

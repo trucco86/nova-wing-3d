@@ -1,4 +1,10 @@
 import { test, expect } from '@playwright/test';
+import {
+  reachBrowserBoss,
+  waitForBrowserArmoredFront,
+  aimAtBrowserFirstGenerator,
+  fireBrowserPrecision,
+} from './orbital-journey.mjs';
 
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
@@ -41,15 +47,16 @@ test('web route, orbital ascent and final black hole render without shader error
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
-  for (const [sector, time] of [
-    [0, 12],
-    [2, 30],
-    [9, 10],
+  for (const [sector, time, expected] of [
+    [0, 28, 'SEGURE BOOST'],
+    [1, 30, 'CURVA'],
+    [2, 30, 'ASCENSÃO'],
+    [9, 10, 'ROTA DE APROXIMAÇÃO'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await page.evaluate((time) => window.fixture.advance(time), time);
-    await expect(page.locator('#routeLabel')).toContainText(sector === 2 ? 'ASCENSÃO' : 'CURVA');
+    await expect(page.locator('#routeLabel')).toContainText(expected);
     await page.screenshot({ path: info.outputPath('route-' + sector + '.png') });
   }
   expect(errors).toEqual([]);
@@ -216,7 +223,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.game.snapshot().shotDirections.length),
   ).toBeGreaterThan(0);
   await page.screenshot({ path: info.outputPath('nova-radial.png') });
-  await page.evaluate(() => window.fixture.advance(58));
+  await reachBrowserBoss(page, { bossAge: 6 });
   await expect(page.locator('#orbitControls')).toBeVisible();
   await page.screenshot({ path: info.outputPath('arena-front.png') });
   if (info.project.name === 'mobile') {
@@ -245,7 +252,13 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
     const bossBounds = await page.locator('#bossHUD').boundingBox();
-    expect(bounds.y + bounds.height).toBeLessThanOrEqual(bossBounds.y);
+    expect(
+      bounds.x + bounds.width <= bossBounds.x ||
+        bossBounds.x + bossBounds.width <= bounds.x ||
+        bounds.y + bounds.height <= bossBounds.y ||
+        bossBounds.y + bossBounds.height <= bounds.y,
+      'RPG and boss HP must occupy disjoint screen regions',
+    ).toBe(true);
     await expect(page.locator('.mission')).toBeHidden();
     await expect(page.locator('#pilotHudAvatar')).toBeVisible();
     await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bia');
@@ -258,8 +271,18 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
       expect(button.height).toBeGreaterThanOrEqual(60);
     }
     const orbitBounds = await page.locator('#orbitControls').boundingBox();
-    const touchBounds = await page.locator('#touch').boundingBox();
-    expect(orbitBounds.y + orbitBounds.height).toBeLessThanOrEqual(touchBounds.y);
+    const stickBounds = await page.locator('#stick').boundingBox();
+    const actionBounds = await page.locator('#touch .actions').boundingBox();
+    // The touch wrapper spans the footer but is non-interactive; orbit may
+    // occupy its empty area. It must be above the actual steering/action targets.
+    expect(orbitBounds.x, 'orbit belongs within right thumb reach').toBeGreaterThan(390 * 0.25);
+    const overlap = (a, b) =>
+      a.x < b.x + b.width - 2 &&
+      a.x + a.width > b.x + 2 &&
+      a.y < b.y + b.height - 2 &&
+      a.y + a.height > b.y + 2;
+    expect(overlap(orbitBounds, stickBounds), 'orbit cannot cover joystick').toBe(false);
+    expect(overlap(orbitBounds, actionBounds), 'orbit cannot cover action pad').toBe(false);
     await page.screenshot({ path: info.outputPath('strategy-portrait.png') });
     await page.setViewportSize({ width: 320, height: 568 });
     await page.evaluate(() => window.fixture.advance(0.1));
@@ -297,7 +320,7 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  await page.evaluate(() => window.fixture.advance(74));
+  await reachBrowserBoss(page, { bossAge: 29 });
   await expect(page.locator('#tacticalPanel')).toBeVisible();
   await expect(page.locator('#tacticState')).toContainText('BATERIA');
   await page.locator('#strategyDrawer summary').click();
@@ -315,46 +338,47 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.evaluate(() => window.fixture.advance(3));
   await page.screenshot({ path: info.outputPath('tactical-motion.png') });
   await page.goto('/__dynamic.html?sector=0');
-  await page.evaluate(() => {
-    window.fixture.advance(68.1);
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.65);
-  });
+  await reachBrowserBoss(page, { bossAge: 5 });
+  await waitForBrowserArmoredFront(page);
+  const blocked = await fireBrowserPrecision(page);
+  expect(blocked.event.type).toBe('blocked');
+  expect(blocked.after.bossTargets[0].hp).toBe(blocked.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
   await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
   const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
   expect(blockedFeedback.width).toBeLessThanOrEqual(24);
   expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  expect(
+    blockedFeedback.y + blockedFeedback.height,
+    'Impact labels stay above the center',
+  ).toBeLessThan(page.viewportSize().height * 0.49);
+  expect(await page.locator('#hitFeedback').evaluate((el) => el.parentElement.id)).toBe(
+    'hudNotices',
+  );
   await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    await page.evaluate(() => {
-      window.fixture.advance(68.1);
-      window.fixture.game.tacticalAction('precision');
-      window.fixture.advance(0.65);
-    });
+    await reachBrowserBoss(page, { bossAge: 5 });
+    await waitForBrowserArmoredFront(page);
+    const portraitBlocked = await fireBrowserPrecision(page);
+    expect(portraitBlocked.event.type).toBe('blocked');
+    expect(portraitBlocked.after.bossTargets[0].hp).toBe(portraitBlocked.before.bossTargets[0].hp);
     await expect(page.locator('#game')).toBeVisible();
     await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
     await expect(page.locator('#hitFeedback')).toBeVisible();
     await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
-  await page.evaluate(() => {
-    window.fixture.advance(68.1);
-    window.fixture.game.orbit(-1);
-    window.fixture.advance(1.3);
-    window.fixture.game.orbit(0);
-    window.fixture.game.tacticalAction('precision');
-    window.fixture.advance(0.35);
-  });
+  await reachBrowserBoss(page, { bossAge: 5 });
+  await aimAtBrowserFirstGenerator(page);
+  const confirmed = await fireBrowserPrecision(page);
+  expect(['boss', 'weak']).toContain(confirmed.event.type);
+  expect(confirmed.after.bossTargets[0].hp).toBeLessThan(confirmed.before.bossTargets[0].hp);
   await expect(page.locator('#hitFeedback')).toBeVisible();
   await expect(page.locator('#hitFeedback')).toContainText(/ACERTO|PONTO FRACO/);
-  expect(await page.evaluate(() => window.fixture.game.snapshot().bossTargets[0].hp)).toBeLessThan(
-    180,
-  );
   await page.screenshot({ path: info.outputPath('confirmed-impact.png') });
   expect(errors).toEqual([]);
 });
