@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.25.0 — Mecha 2.0: integração limpa para validação
+
+- Candidata sem homologação visual: armadura angular, asas, turbina dorsal articulada e pintura por nave.
+- Propulsão contínua por dt, boost touch e movimentação de braços/pernas.
+- Testes automatizados de rig e preview separados de mudanças do HUD e arsenal.
+- **Não publicar em produção sem QA visual e desempenho.**
+
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
 - Hangar com dois níveis de multitiro e cadência, bombas individuais e pacote ×3 com teto de oito na web.
