@@ -89,10 +89,10 @@ test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight
     expect(opened.y).toBeLessThan(viewport.height * 0.45);
     expect(opened.height).toBeLessThanOrEqual(Math.min(viewport.height * 0.19, 110) + 2);
     const cast = await page.locator('#specialCast').boundingBox();
-    const activeTarget = await page.evaluate(
-      ({ x, y }) => document.elementFromPoint(x, y)?.id,
-      { x: cast.x + cast.width / 2, y: cast.y + cast.height / 2 },
-    );
+    const activeTarget = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, {
+      x: cast.x + cast.width / 2,
+      y: cast.y + cast.height / 2,
+    });
     expect(activeTarget, 'cast button stays clickable while details are open').toBe('specialCast');
     await page.locator('#strategyDrawer summary').click();
     await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
