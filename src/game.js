@@ -62,6 +62,7 @@ import {
 } from './encounters.js';
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
+import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
   difficultyProfile,
   fighterInterval,
@@ -121,6 +122,8 @@ export function createGame({
   nativeLifecycle = false,
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
+  const frameAudit = createFrameAudit();
+  let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
   const cleanups = [];
   let running = true;
@@ -1541,6 +1544,8 @@ export function createGame({
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
+    frameAudit.clear();
+    pausePanel = 'controls';
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
     $('game').focus?.({ preventScroll: true });
@@ -1570,10 +1575,12 @@ export function createGame({
       $('pauseConfirmPanel').hidden = true;
       $('pauseActions').hidden = false;
       confirmation = null;
+      showPausePanel(pausePanel);
       $('pause').textContent = '▶';
       $('pauseCare').textContent = PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(
         ' · ',
       );
+      renderFrameAudit();
       $('pauseResume').focus?.({ preventScroll: true });
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
@@ -1645,6 +1652,30 @@ export function createGame({
           : null,
       );
   }
+  function showPausePanel(which) {
+    pausePanel = which === 'fps' ? 'fps' : 'controls';
+    const fps = pausePanel === 'fps';
+    $('pauseControlGuide').hidden = fps;
+    $('pauseFrameAudit').hidden = !fps;
+    $('pauseTabControls').setAttribute?.('aria-pressed', String(!fps));
+    $('pauseTabFps').setAttribute?.('aria-pressed', String(fps));
+    if (fps) {
+      $('pauseFrameAudit').open = true;
+      renderFrameAudit();
+    }
+  }
+  function renderFrameAudit() {
+    const result = frameAudit.report();
+    $('auditReadout').textContent = formatFrameAudit(result, {
+      language: settings.language,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      dpr: window.devicePixelRatio ?? 1,
+    });
+    $('auditStart').disabled = result.active;
+    $('auditStop').disabled = !result.active;
+    $('auditCopy').disabled = result.frames === 0;
+  }
   function applySettings() {
     const label = (id, key) => {
       $(id).textContent = uiText(settings.language, key);
@@ -1707,6 +1738,7 @@ export function createGame({
     music?.setVolume(settings.master * settings.music);
     audioCues?.setVolume(settings.master * settings.sfx);
     localization.setLanguage(settings.language);
+    renderFrameAudit();
   }
   function openSettings() {
     if (state !== 'menu' && state !== 'paused') return;
@@ -1807,6 +1839,34 @@ export function createGame({
   $('cinematicSkip').onclick = finishCinematic;
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
+  $('pauseTabControls').onclick = () => showPausePanel('controls');
+  $('pauseTabFps').onclick = () => showPausePanel('fps');
+  $('auditStart').onclick = () => {
+    if (state !== 'paused') return;
+    frameAudit.start();
+    renderFrameAudit();
+  };
+  $('auditStop').onclick = () => {
+    if (state !== 'paused') return;
+    frameAudit.stop();
+    renderFrameAudit();
+  };
+  $('auditCopy').onclick = () => {
+    if (state !== 'paused' || frameAudit.report().frames === 0) return;
+    const text = $('auditReadout').textContent;
+    const clipboard = window.navigator?.clipboard;
+    if (!clipboard?.writeText) {
+      $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\n' + text;
+      return;
+    }
+    Promise.resolve(clipboard.writeText(text))
+      .then(() => {
+        $('auditReadout').textContent = uiText(settings.language, 'auditCopied') + '\n' + text;
+      })
+      .catch(() => {
+        $('auditReadout').textContent = uiText(settings.language, 'auditCopyFail') + '\n' + text;
+      });
+  };
   $('settingsClose').onclick = closeSettings;
   $('pauseResume').onclick = pause;
   $('pauseRestart').onclick = () => requestPauseAction('restart');
@@ -3209,6 +3269,7 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
+    frameAudit.sample(time, appActive && !document.hidden && state === 'playing');
     const dt = Math.min((time - last) / 1000, 0.035);
     last = time;
     tick(dt, time);
@@ -3373,6 +3434,7 @@ export function createGame({
     }),
     destroy() {
       running = false;
+      frameAudit.clear();
       document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;

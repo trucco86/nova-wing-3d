@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.24.14 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.24.13 — Medição local de FPS na pausa (DEV)
+
+- Novo diagnóstico opt-in de cadência de frames em celular/PC: FPS médio, p95, quadros lentos e tempo válido.
+- Não coloca overlays durante jogo, não envia nem salva dados; relatório é copiado somente após gesto do jogador.
+- Desconsidera pausa e suspensão do SO, mantém buffer limitado e informa que não mede o tempo da GPU.
+- Interface PT/EN/ES; homologação no aparelho real, Playwright e revisão das dependências pendentes.
+
 ## 1.24.12 — Controles orbitais à direita + radar no topo (DEV)
 
 - Botões ORBITAR 60×60px no rodapé junto ao polegar direito, acima das ações em portrait e adjacentes em landscape.
