@@ -4,6 +4,12 @@ import { UI_COPY, uiText } from '../src/ui-preferences.js';
 
 const pauseCommands = [
   'helpTitle',
+  'helpTab',
+  'auditTab',
+  'auditTitle',
+  'auditStart',
+  'auditStop',
+  'auditCopy',
   'helpKeyboard',
   'helpTouch',
   'helpMove',
