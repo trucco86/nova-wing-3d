@@ -75,13 +75,26 @@ export function createRankingClient({
       'Sem partidas concluídas neste dispositivo.',
     );
   }
-  async function request(path, { method = 'GET', payload, authorized = false } = {}) {
+  async function request(
+    path,
+    { method = 'GET', payload, authorized = false, sessionEpoch = null, requireConsent = false } = {},
+  ) {
     if (!apiBase) throw new Error('RANKING_API_UNAVAILABLE');
     const headers = { accept: 'application/json' };
     if (payload !== undefined) headers['content-type'] = 'application/json';
+    const requestingUser = user;
     if (authorized) {
-      if (!user?.getIdToken) throw new Error('AUTH_REQUIRED');
-      headers.authorization = 'Bearer ' + (await user.getIdToken());
+      if (!requestingUser?.getIdToken) throw new Error('AUTH_REQUIRED');
+      headers.authorization = 'Bearer ' + (await requestingUser.getIdToken());
+    }
+    // A token can resolve after logout, account switch, consent withdrawal or destroy.
+    // Do not send a queued mutation under another player's identity or preferences.
+    if (
+      closed ||
+      (sessionEpoch !== null && sessionEpoch !== identityEpoch) ||
+      (requireConsent && (!consent?.checked || requestingUser !== user))
+    ) {
+      throw new Error('RANKING_SESSION_CHANGED');
     }
     const response = await fetcher(apiBase + path, {
       method,
@@ -168,6 +181,8 @@ export function createRankingClient({
     current.remote = request('/v1/runs/start', {
       method: 'POST',
       authorized: true,
+      sessionEpoch: current.epoch,
+      requireConsent: true,
       payload: { nickname: nick, consent: true, sector, build },
     }).catch(() => null);
   }
@@ -184,7 +199,13 @@ export function createRankingClient({
     refreshLocal();
     const run = activeRun;
     activeRun = null;
-    if (!run || run.sector !== sector || run.epoch !== identityEpoch || !run.remote) {
+    if (
+      !run ||
+      run.sector !== sector ||
+      run.epoch !== identityEpoch ||
+      !run.remote ||
+      !consent?.checked
+    ) {
       say(
         'Pontuação guardada neste navegador. Entre com Google e aceite o ranking para registrar partidas futuras.',
       );
@@ -192,13 +213,15 @@ export function createRankingClient({
     }
     try {
       const started = await run.remote;
-      if (!started || run.epoch !== identityEpoch || !user?.getIdToken) {
+      if (!started || run.epoch !== identityEpoch || !user?.getIdToken || !consent?.checked) {
         say('Pontuação local preservada. Envio remoto não disponível.');
         return;
       }
       const done = await request('/v1/runs/finish', {
         method: 'POST',
         authorized: true,
+        sessionEpoch: run.epoch,
+        requireConsent: true,
         payload: {
           runId: started.runId,
           nonce: started.nonce,
@@ -207,12 +230,13 @@ export function createRankingClient({
           durationMs: Math.max(30000, entry.durationMs),
         },
       });
-      if (done.recorded && !closed) {
+      if (done.recorded && !closed && run.epoch === identityEpoch && consent?.checked) {
         say('Pontuação armazenada no ranking experimental (não verificada).');
         void refreshOnline();
       }
     } catch {
-      say('Histórico local salvo. Não foi possível gravar esta partida no servidor.');
+      if (!closed && run.epoch === identityEpoch)
+        say('Histórico local salvo. Não foi possível gravar esta partida no servidor.');
     }
   }
 
@@ -220,6 +244,17 @@ export function createRankingClient({
     if (user !== nextUser) {
       identityEpoch++;
       activeRun = null;
+      // Browser autofill and an earlier Firebase account are NOT consent.
+      if (consent) consent.checked = false;
+      if (nickname) nickname.value = '';
+      // Hide private rows synchronously, before any async history request.
+      fill(
+        listCloud,
+        [],
+        nextUser
+          ? 'Consulte o histórico desta conta.'
+          : 'Entre com Google para consultar seu histórico na nuvem.',
+      );
     }
     user = nextUser;
     if (el('identity'))
@@ -235,6 +270,18 @@ export function createRankingClient({
     if (apiBase) void refreshOnline();
     else say('Histórico local ativo. API de ranking ainda não configurada neste ambiente.');
   }
+  // A revoked consent invalidates in-flight score requests and all pending runs.
+  // Re-enabling it during a stage does not silently re-enroll that stage.
+  addListener(consent, 'change', () => {
+    if (!consent.checked) {
+      identityEpoch++;
+      activeRun = null;
+      say('Participação no ranking desativada. Seus resultados locais continuam salvos.');
+    }
+  });
+  // Never trust HTML default state or restored form values at startup.
+  if (consent) consent.checked = false;
+  if (nickname) nickname.value = '';
   addListener(el('refresh'), 'click', () => {
     refreshLocal();
     void refreshOnline();
