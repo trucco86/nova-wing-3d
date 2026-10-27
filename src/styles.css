@@ -5424,7 +5424,18 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     grid-row: 1;
   }
   body.in-mission #orbitControls:not([hidden])::before {
+    display: none;
+  }
+  body.in-mission #orbitControls span {
+    position: absolute;
     display: block;
+    left: 7px;
+    bottom: calc(100% + 4px);
+    margin: 0;
+    color: #a3fff0;
+    font: 700 9px/1.2 monospace;
+    letter-spacing: 0.15em;
+    pointer-events: none;
   }
   body.left-handed.in-mission #orbitControls:not([hidden]) {
     left: auto;
