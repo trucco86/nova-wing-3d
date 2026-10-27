@@ -275,8 +275,14 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     const actionBounds = await page.locator('#touch .actions').boundingBox();
     // The touch wrapper spans the footer but is non-interactive; orbit may
     // occupy its empty area. It must be above the actual steering/action targets.
-    expect(orbitBounds.y + orbitBounds.height).toBeLessThanOrEqual(stickBounds.y + 2);
-    expect(orbitBounds.x + orbitBounds.width).toBeLessThanOrEqual(actionBounds.x);
+    expect(orbitBounds.x, 'orbit belongs within right thumb reach').toBeGreaterThan(390 * 0.25);
+    const overlap = (a, b) =>
+      a.x < b.x + b.width - 2 &&
+      a.x + a.width > b.x + 2 &&
+      a.y < b.y + b.height - 2 &&
+      a.y + a.height > b.y + 2;
+    expect(overlap(orbitBounds, stickBounds), 'orbit cannot cover joystick').toBe(false);
+    expect(overlap(orbitBounds, actionBounds), 'orbit cannot cover action pad').toBe(false);
     await page.screenshot({ path: info.outputPath('strategy-portrait.png') });
     await page.setViewportSize({ width: 320, height: 568 });
     await page.evaluate(() => window.fixture.advance(0.1));

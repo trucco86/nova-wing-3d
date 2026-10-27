@@ -367,6 +367,14 @@
             <button class="secondary" id="pauseOptions">⚙ OPÇÕES</button>
             <button class="secondary" id="pauseExit">SAIR PARA O MENU</button>
           </div>
+          <div id="pausePanelTabs" role="group" aria-label="Ajuda de jogo e diagnóstico">
+            <button id="pauseTabControls" type="button" aria-pressed="true" data-help-key="helpTab">
+              CONTROLES
+            </button>
+            <button id="pauseTabFps" type="button" aria-pressed="false" data-help-key="auditTab">
+              FPS / DESEMPENHO
+            </button>
+          </div>
           <details id="pauseControlGuide" open>
             <summary data-help-key="helpTitle">CONTROLES · TECLADO E CELULAR</summary>
             <div class="nw-control-guide">
@@ -453,6 +461,20 @@
                 </div>
               </section>
             </div>
+          </details>
+          <details id="pauseFrameAudit" hidden>
+            <summary data-help-key="auditTitle">DIAGNÓSTICO DE FPS</summary>
+            <p data-help-key="auditHint">Meça durante o gameplay e pause para consultar.</p>
+            <div class="nw-audit-actions">
+              <button type="button" id="auditStart" data-help-key="auditStart">
+                INICIAR MEDIÇÃO
+              </button>
+              <button type="button" id="auditStop" data-help-key="auditStop">ENCERRAR</button>
+              <button type="button" id="auditCopy" data-help-key="auditCopy">
+                COPIAR RELATÓRIO
+              </button>
+            </div>
+            <output id="auditReadout" aria-live="polite" aria-atomic="true"></output>
           </details>
           <div id="pauseConfirmPanel" hidden>
             <p id="pauseConfirmText"></p>

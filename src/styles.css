@@ -3835,15 +3835,15 @@ body.left-handed #touch {
     align-items: end;
   }
   #stick {
-    width: 112px;
-    height: 112px;
+    width: 128px;
+    height: 128px;
     border-width: 2px;
     background: radial-gradient(circle, #77ffe31a, #06162444 68%);
     box-shadow: 0 0 0 7px #06111c33;
   }
   #nub {
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-width: 2px;
   }
   .actions {
@@ -4877,5 +4877,430 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
   body.in-mission:has(#bossHUD:not([hidden])) #subHUD {
     visibility: hidden;
+  }
+}
+
+/* v1.24.12 — integrate P0 right-thumb ORBIT and radar from #79 with the
+   v1.24.10+ clean HUD. Main fire/boost remain in the lower-right action grid. */
+@media (pointer: coarse) {
+  body.in-mission #orbitControls:not([hidden]) {
+    position: fixed;
+    inset: auto max(14px, env(safe-area-inset-right, 0px))
+      calc(max(15px, env(safe-area-inset-bottom, 0px)) + 196px) auto;
+    z-index: 36;
+    display: grid;
+    grid-template-columns: 60px minmax(0, 1fr) 60px;
+    align-items: center;
+    gap: 4px;
+    width: 202px;
+    min-height: 62px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3px;
+    border: 1px solid #64cabe88;
+    border-radius: 15px;
+    background: #061522e8;
+    box-shadow: 0 5px 20px #01081166;
+    pointer-events: auto;
+    touch-action: none;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    bottom: calc(100% + 2px);
+  }
+  body.in-mission #orbitLeft {
+    grid-column: 1;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 3;
+  }
+  body.in-mission #orbitControls button {
+    min-width: 60px;
+    min-height: 60px;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border-radius: 12px;
+    font-size: 0 !important;
+    touch-action: none;
+  }
+  body.in-mission #tacticalPanel:not([hidden]) {
+    top: max(98px, calc(env(safe-area-inset-top, 0px) + 84px));
+    right: max(12px, env(safe-area-inset-right, 0px));
+    width: 60px;
+    z-index: 26;
+  }
+  body.in-mission #battleRadar {
+    width: 48px;
+    height: 48px;
+  }
+  body.in-mission #battleRadar b {
+    left: 18px;
+    top: 16px;
+  }
+  /* All textual encounter telemetry remains in the boss HP/status; the radar
+     is a compact visual instrument to avoid covering the boss health card. */
+  body.in-mission #tacticalPanel #tacticState,
+  body.in-mission #tacticalPanel #battleCharge {
+    display: none;
+  }
+  /* Respect the left-handed preference: action controls move left and the
+     orbit dock follows that hand, not the joystick on the opposite side. */
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 550px) {
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    left: auto;
+    right: calc(max(14px, env(safe-area-inset-right, 0px)) + 280px);
+    width: 68px;
+    min-height: 0;
+    grid-template-columns: 60px;
+    grid-template-rows: repeat(2, 60px);
+    justify-items: center;
+    gap: 6px;
+    padding: 3px;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 1;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    display: none;
+  }
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: calc(max(14px, env(safe-area-inset-left, 0px)) + 280px);
+    right: auto;
+  }
+}
+#orbitControls[hidden] {
+  display: none !important;
+}
+
+/* QA of 320px/390px screenshots: keep orbital arrows to the RIGHT of
+   the ship's central silhouette and avoid warning labels over the RPG drawer. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body {
+    --nw-portrait-alert-top: max(100px, calc(env(safe-area-inset-top, 0px) + 84px));
+  }
+  #hudNotices {
+    top: var(--nw-portrait-alert-top);
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: calc(100vw - 92px);
+    max-height: 64px;
+    align-items: flex-start;
+  }
+  body.in-mission #strategyControls {
+    top: calc(var(--nw-portrait-alert-top) + 70px);
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    width: 134px;
+    grid-template-columns: 60px 60px;
+    column-gap: 6px;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 2;
+  }
+}
+
+/* Device-only QA: performance report belongs exclusively in PAUSE, never HUD. */
+#pauseFrameAudit {
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid #4c9e9b77;
+  border-radius: 9px;
+  background: #081925d9;
+  color: #d3f1ec;
+}
+#pauseFrameAudit summary {
+  cursor: pointer;
+  min-height: 28px;
+  color: #b8f4df;
+  font: 800 12px/1.4 monospace;
+}
+#pauseFrameAudit p {
+  margin: 7px 0 9px;
+  color: #c5d9e1;
+  font: 11px/1.5 monospace;
+}
+#pauseFrameAudit .nw-audit-actions {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+#pauseFrameAudit button {
+  min-height: 44px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: #16394c;
+  color: #e3fffc;
+  border: 1px solid #7bcbbb88;
+  font: 700 10px/1.2 monospace;
+  touch-action: manipulation;
+}
+#pauseFrameAudit button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+#pauseFrameAudit output {
+  display: block;
+  margin-top: 10px;
+  padding: 10px 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid #628f8a55;
+  border-radius: 6px;
+  background: #06121f;
+  font: 11px/1.55 monospace;
+  color: #c9efdf;
+  user-select: text;
+}
+#pauseMenu:has(#pauseConfirmPanel:not([hidden])) #pauseFrameAudit {
+  display: none;
+}
+@media (min-width: 700px) {
+  #pauseMenu #pauseFrameAudit {
+    grid-column: 2;
+    grid-row: 5;
+    margin-top: 0;
+  }
+}
+@media (max-width: 550px) {
+  #pauseFrameAudit .nw-audit-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #pauseFrameAudit .nw-audit-actions button {
+    min-width: 0;
+  }
+}
+
+/* FPS report and keyboard guide share one right-hand pane: preserve visibility
+   of RESUME in compact landscape while making physical-device QA discoverable. */
+#pausePanelTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 9px;
+}
+#pausePanelTabs button {
+  min-height: 44px;
+  min-width: 0;
+  padding: 7px 6px;
+  border: 1px solid #58aeb4a6;
+  border-radius: 8px;
+  background: #0c2432;
+  color: #bfdee1;
+  font: 800 10px/1.3 monospace;
+  letter-spacing: 0;
+  touch-action: manipulation;
+}
+#pausePanelTabs button[aria-pressed='true'] {
+  background: #165057;
+  border-color: #90f4d4;
+  color: #e5fff6;
+}
+#pauseMenu #pauseFrameAudit[hidden],
+#pauseMenu #pauseControlGuide[hidden] {
+  display: none !important;
+}
+@media (min-width: 700px) {
+  #pauseMenu #pauseActions {
+    grid-row: 4 / span 2;
+    align-self: start;
+  }
+  #pauseMenu #pausePanelTabs {
+    grid-column: 2;
+    grid-row: 4;
+    margin: 0;
+  }
+  #pauseMenu #pauseControlGuide,
+  #pauseMenu #pauseFrameAudit {
+    grid-column: 2;
+    grid-row: 5;
+    margin: 0;
+    max-height: min(42vh, 290px);
+    overflow: auto;
+  }
+  #pauseMenu #pauseConfirmPanel {
+    grid-row: 4 / span 2;
+  }
+}
+
+/* Compact pause: four primary actions must remain within the screen.
+   A legacy 1fr 1fr grid used content-based minimums that crushed EXIT/RESTART. */
+@media (max-width: 600px) {
+  #pauseMenu #pauseActions {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  #pauseMenu #pauseActions > button {
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 10px 4px;
+    font: 800 10px/1.3 monospace;
+    letter-spacing: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+}
+
+/* P0 RPG top rail: the permanent combat commands belong to the upper HUD, never
+   the reticle/player corridor. The expanded details panel is opt-in and scrollable. */
+@media (pointer: coarse) {
+  body.in-mission #strategyControls {
+    position: fixed;
+    top: max(87px, calc(env(safe-area-inset-top, 0px) + 70px));
+    bottom: auto;
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    align-items: stretch;
+    gap: 4px;
+    width: min(238px, calc(100vw - 106px));
+    max-width: none;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    z-index: 37;
+    pointer-events: auto;
+  }
+  body.in-mission #strategyControls #strategyDrawer {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    box-sizing: border-box;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1px;
+    box-sizing: border-box;
+    min-height: 46px;
+    margin: 0;
+    padding: 1px;
+    font-size: 9px;
+    line-height: 1.1;
+    text-align: center;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary b {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+  body.in-mission #strategyControls #quickRpg {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    min-width: 0;
+    min-height: 54px;
+    gap: 3px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  body.in-mission #strategyControls #quickRpg button {
+    display: block;
+    grid-column: auto;
+    min-width: 0;
+    width: 100%;
+    min-height: 46px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2px 1px;
+    font: 700 8px/1.12 monospace;
+    letter-spacing: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    touch-action: manipulation;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 2;
+    width: min(238px, calc(100vw - 106px));
+    max-height: min(19dvh, 110px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 6px 18px #010811aa;
+  }
+  /* Quick tactical actions must remain actionable while the details drawer is open. */
+  body.in-mission #strategyControls:has(#strategyDrawer[open]) #quickRpg {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+/* Portrait: reserve separate compact rows for RPG actions and priority alerts.
+   This prevents the previous 170px+ RPG position from covering the combat field. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #strategyControls {
+    top: max(89px, calc(env(safe-area-inset-top, 0px) + 73px));
+  }
+  body.in-mission #hudNotices {
+    top: max(150px, calc(env(safe-area-inset-top, 0px) + 133px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: min(238px, calc(100vw - 92px));
+    max-height: 48px;
+    align-items: flex-start;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #strategyControls {
+    top: max(104px, calc(env(safe-area-inset-top, 0px) + 88px));
+    grid-template-columns: 60px minmax(0, 1fr);
+    width: min(206px, calc(100vw - 106px));
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    width: min(206px, calc(100vw - 106px));
+  }
+  body.in-mission #strategyControls #quickRpg button {
+    font-size: 7.5px;
+  }
+  body.in-mission #hudNotices {
+    top: max(166px, calc(env(safe-area-inset-top, 0px) + 150px));
+    max-height: 38px;
+  }
+}
+
+/* Landscape: the RPG dock uses the left top edge; warnings occupy a separate
+   upper lane, while orbit/FIRE/BOOST remain controlled from the lower edge. */
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #strategyControls {
+    top: max(86px, calc(env(safe-area-inset-top, 0px) + 69px));
+    width: 230px;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    width: 230px;
+  }
+  body.in-mission #hudNotices {
+    left: max(246px, calc(env(safe-area-inset-left, 0px) + 242px));
+    right: max(85px, env(safe-area-inset-right, 0px));
+    transform: none;
+    width: auto;
+    max-height: min(17vh, 65px);
   }
 }
