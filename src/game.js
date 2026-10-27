@@ -1129,6 +1129,7 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  const scatterShotMaterial = glowMaterial('#ffba70', 3);
   function impact(position, dealt = 1, { bossHit = false, weak = false } = {}) {
     if (!dynamicFlight) return;
     const feedback = combatFeedback(dealt, { boss: bossHit, weak });
@@ -1171,13 +1172,13 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false) {
+  function launchShot(x, damage = 2, charged = false, scatter = false) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
-      dynamicFlight ? shotMaterials[strategy.arsenal] : green,
+      scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
     );
     o.add(
-      halo(dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
+      halo(scatter ? '#ffba70' : dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
     );
     o.rotation.x = Math.PI / 2;
     o.position.copy(player.position);
@@ -1203,7 +1204,7 @@ export function createGame({
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot(scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
+      launchShot(scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, scatter);
       const b = shots.at(-1);
       if (dynamicFlight) {
         b.homing = !scatter && strategy.arsenal === 3;
@@ -3546,6 +3547,7 @@ export function createGame({
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
+      scatterShotMaterial.dispose();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
