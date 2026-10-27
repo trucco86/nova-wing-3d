@@ -5816,3 +5816,46 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     --nw-orbit-stick-bottom: max(14px, env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* P1 — alternative gun is selected in the hangar, never by a mid-screen HUD button. */
+.scatter-loadout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #62d7cc66;
+  border-radius: 10px;
+  background: #071a28dd;
+}
+.scatter-loadout[hidden] {
+  display: none;
+}
+.scatter-loadout strong {
+  flex: 1 1 190px;
+  color: #95e9d8;
+  font: 700 11px/1.4 monospace;
+}
+.scatter-loadout button {
+  flex: 0 1 auto;
+  min-width: 145px;
+  min-height: 44px;
+  touch-action: manipulation;
+}
+@media (max-width: 550px) {
+  .scatter-loadout button {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* During the short next-sector briefing, defer the weapon name and charge
+   track rather than painting them over the route text in mobile portrait. */
+@media (pointer: coarse) {
+  body.in-mission.stage-intro #loadout {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}

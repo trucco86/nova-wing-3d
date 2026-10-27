@@ -1,4 +1,4 @@
-# Mecha 2.0 — Integração limpa sobre DEV v1.24.18
+# Mecha 2.0 — Integração sobre DEV v1.24.20
 
 ## Contexto
 
@@ -6,10 +6,12 @@ A candidata histórica #69 acumulou diferenças com a DEV atual; evitar merge br
 
 ## Comportamento esperado
 
+- Integrar a candidata #102 à DEV atual (0b296a3), preservando canhão de dispersão e persistência (#100), paletas dos dez setores e exclusividade cidade/Terra (#103).
+- Preservar a visibilidade do robô desde o primeiro frame de transformação, inclusive durante invulnerabilidade inicial, sem alterar a proteção de dano.
 - Robô angular com armadura facetada, casco, asas com geometria compartilhada com o caça, canhões articulados, pernas animadas e turbina **dorsal** (não na cintura).
 - Rotor de cinco pás, bocal com gimbal reativo ao joystick e ao boost; propulsão contínua com amortecimento, sem saltos de fase quando a energia muda.
 - Transformação em combate, retorno à nave, progressão dos neons por níveis e cores do personagem escolhidas no hangar.
-- Preservar o mapa da campanha, novas armas e HUD da DEV v1.24.18; não portar arquivos de versão, workflows antigos ou CSS de controles de branches defasadas.
+- Preservar o mapa da campanha, arsenal e HUD atuais; órbita à esquerda acima do direcional. Não restaurar versões ou controles defasados.
 
 ## QA obrigatório antes de DEV/HML
 

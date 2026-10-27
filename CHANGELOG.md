@@ -7,6 +7,14 @@
 - Testes automatizados de rig e preview separados de mudanças do HUD e arsenal.
 - **Não publicar em produção sem QA visual e desempenho.**
 
+## 1.24.20 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.24.19 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
 - Hangar com dois níveis de multitiro e cadência, bombas individuais e pacote ×3 com teto de oito na web.

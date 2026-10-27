@@ -87,3 +87,15 @@ test('language switching restores original source and changes document language'
   assert.equal(lang, 'pt-BR');
   l.destroy();
 });
+
+test('scatter loadout purchase and equipped mode translate in EN and ES', () => {
+  assert.equal(
+    translateText('CANHÃO DE DISPERSÃO · CURTO ALCANCE · 420 CR', 'en'),
+    'SCATTER CANNON · CLOSE RANGE · 420 CR',
+  );
+  assert.equal(translateText('EQUIPAR DISPERSÃO', 'es'), 'EQUIPAR DISPERSIÓN');
+  assert.equal(
+    translateText('DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE', 'en'),
+    'EQUIPPED: SCATTER · CLOSE RANGE',
+  );
+});
