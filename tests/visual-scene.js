@@ -62,8 +62,7 @@ if (mode === 'mecha-review') {
     camera.lookAt(0, 13, -46);
   }
   // Camera metadata is computed from positions, not inferred from the view label.
-  document.body.dataset.reviewHemisphere =
-    camera.position.z < mecha.position.z ? 'forward' : 'aft';
+  document.body.dataset.reviewHemisphere = camera.position.z < mecha.position.z ? 'forward' : 'aft';
   // Expose deterministic render metadata so screenshot validation catches wrong frames.
   document.body.dataset.reviewView = view;
   document.body.dataset.reviewTier = String(tier);
