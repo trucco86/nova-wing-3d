@@ -60,6 +60,7 @@ export function harness({
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  observeScene = () => {},
 } = {}) {
   const elements = new Map(
     [
@@ -126,8 +127,9 @@ export function harness({
     getPixelRatio: () => 1,
     setSize() {},
     setRenderTarget() {},
-    render() {
+    render(scene) {
       calls.renders++;
+      observeScene(scene);
     },
     dispose() {},
   };
