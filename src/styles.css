@@ -5816,3 +5816,74 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     --nw-orbit-stick-bottom: max(14px, env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Account/ranking live outside the flight surface. All gameplay remains clear. */
+#novaRanking {
+  position: fixed;
+  z-index: 109;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  color: #e1f4f7;
+  font: 600 13px/1.5 Arial, sans-serif;
+}
+#novaRanking[open] {
+  width: min(355px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+#novaRanking summary {
+  cursor: pointer;
+  display: inline-block;
+  border: 1px solid #69a9e8;
+  border-radius: 9px;
+  background: #071b2de8;
+  padding: 9px 13px;
+}
+#novaRanking .nova-rank-content {
+  display: grid;
+  gap: 8px;
+  margin-top: 5px;
+  padding: 13px;
+  border: 1px solid #69a9e8;
+  border-radius: 10px;
+  background: #071b2df5;
+}
+#novaRanking .nova-rank-content p,
+#novaRanking .nova-rank-content small {
+  margin: 0;
+  color: #b3d3dc;
+}
+#novaRanking .nova-rank-content label { display: grid; gap: 4px; }
+#novaRanking .nova-rank-content input[type="text"] {
+  width: 100%;
+  min-height: 40px;
+  padding: 7px;
+  border: 1px solid #69a9e8;
+  background: #061326;
+  border-radius: 6px;
+  color: #f1fcff;
+}
+#novaRanking .nova-rank-consent {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  font-weight: 400;
+}
+#novaRanking .nova-rank-content button {
+  min-height: 40px;
+  cursor: pointer;
+}
+#novaRanking .nova-rank-content ol {
+  overflow: auto;
+  max-height: 110px;
+  margin: 0;
+  padding-left: 26px;
+  font-variant-numeric: tabular-nums;
+}
+body:not(.menu):not(.ranking-intermission) #novaRanking { display: none !important; }
+@media (max-width: 550px) {
+  #novaRanking[open] { max-height: calc(100dvh - 32px); }
+  body.ranking-intermission #novaRanking[open] { top: 8px; }
+}
