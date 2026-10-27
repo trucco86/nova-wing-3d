@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.14 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.13 — Medição local de FPS na pausa (DEV)
 
 - Novo diagnóstico opt-in de cadência de frames em celular/PC: FPS médio, p95, quadros lentos e tempo válido.
