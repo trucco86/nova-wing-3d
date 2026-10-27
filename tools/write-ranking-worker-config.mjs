@@ -15,9 +15,8 @@ export function workerDeploymentConfig({
   if (target === 'prod' && firebaseProjectId === 'nova-wing-dev')
     throw new Error('Production cannot trust Firebase DEV tokens');
   if (!/^[a-z0-9][a-z0-9-]{0,39}$/.test(season)) throw new Error('Invalid season');
-  const origin = target === 'prod'
-    ? 'https://trucco86.github.io'
-    : 'https://hml.nova-wing-preview.pages.dev';
+  const origin =
+    target === 'prod' ? 'https://trucco86.github.io' : 'https://hml.nova-wing-preview.pages.dev';
   return [
     'name = "nova-wing-ranking-' + target + '"',
     'main = "src/index.js"',
@@ -48,6 +47,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     enableWrites: process.env.NOVA_RANKING_ENABLE_WRITES === 'true',
   });
   writeFileSync('workers/ranking/wrangler.toml', config);
-  console.log('Generated ' + process.env.NOVA_RANKING_TARGET +
-    ' Worker config with separate Firebase, D1 and write gate.');
+  console.log(
+    'Generated ' +
+      process.env.NOVA_RANKING_TARGET +
+      ' Worker config with separate Firebase, D1 and write gate.',
+  );
 }

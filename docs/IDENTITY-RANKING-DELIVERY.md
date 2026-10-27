@@ -14,13 +14,13 @@
 
 ## Separação de ambientes
 
-| Ambiente | Site | Identidade | Ranking |
-| --- | --- | --- | --- |
-| DEV | `https://dev.nova-wing-preview.pages.dev` | Firebase DEV `nova-wing-dev`; autorizado externamente | Worker/D1 DEV independente, quando provisionado |
-| HML | `https://hml.nova-wing-preview.pages.dev` | Firebase HML específico se informado; na ausência usa DEV (sem contaminar PROD) | Worker/D1 HML independente |
-| PROD | `https://trucco86.github.io/nova-wing-3d/` | **Firebase PROD separado obrigatório**. Falta de configuração desabilita SDK e login | Worker/D1 PROD independente |
-| Previews de PR | `https://pr-N.nova-wing-preview.pages.dev` | SDK Google desativado intencionalmente | somente histórico local, sem credenciais PROD |
-| Native/offline | Android/iOS | SDK Web desativado | histórico local e gameplay sem rede |
+| Ambiente       | Site                                       | Identidade                                                                           | Ranking                                         |
+| -------------- | ------------------------------------------ | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| DEV            | `https://dev.nova-wing-preview.pages.dev`  | Firebase DEV `nova-wing-dev`; autorizado externamente                                | Worker/D1 DEV independente, quando provisionado |
+| HML            | `https://hml.nova-wing-preview.pages.dev`  | Firebase HML específico se informado; na ausência usa DEV (sem contaminar PROD)      | Worker/D1 HML independente                      |
+| PROD           | `https://trucco86.github.io/nova-wing-3d/` | **Firebase PROD separado obrigatório**. Falta de configuração desabilita SDK e login | Worker/D1 PROD independente                     |
+| Previews de PR | `https://pr-N.nova-wing-preview.pages.dev` | SDK Google desativado intencionalmente                                               | somente histórico local, sem credenciais PROD   |
+| Native/offline | Android/iOS                                | SDK Web desativado                                                                   | histórico local e gameplay sem rede             |
 
 O hostname controla apenas se o cliente renderiza OAuth. **Não é autorização**. Worker valida o Firebase ID token e usa `FIREBASE_PROJECT_ID` do próprio ambiente.
 

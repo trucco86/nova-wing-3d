@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { DEV_FIREBASE, novaEnvironment, parsePublicConfig, loadPublicConfig } from '../src/runtime-config.js';
+import {
+  DEV_FIREBASE,
+  novaEnvironment,
+  parsePublicConfig,
+  loadPublicConfig,
+} from '../src/runtime-config.js';
 import { generatePublicConfig } from '../tools/write-public-config.mjs';
 
 const PROD = {
@@ -21,16 +26,34 @@ test('only precise DEV/HML/PROD/local opt-in hosts can initialize Google', () =>
 });
 
 test('production never falls back to development Firebase project or wrong environment', async () => {
-  const offline = async () => { throw new Error('offline'); };
+  const offline = async () => {
+    throw new Error('offline');
+  };
   assert.equal(await loadPublicConfig('prod', { fetchConfig: offline }), null);
-  assert.equal((await loadPublicConfig('hml', { fetchConfig: offline })).firebase.projectId,
-    DEV_FIREBASE.projectId);
-  assert.equal(parsePublicConfig({
-    environment: 'prod', firebase: DEV_FIREBASE,
-  }, 'prod'), null);
-  assert.equal(parsePublicConfig({
-    environment: 'hml', firebase: PROD,
-  }, 'prod'), null);
+  assert.equal(
+    (await loadPublicConfig('hml', { fetchConfig: offline })).firebase.projectId,
+    DEV_FIREBASE.projectId,
+  );
+  assert.equal(
+    parsePublicConfig(
+      {
+        environment: 'prod',
+        firebase: DEV_FIREBASE,
+      },
+      'prod',
+    ),
+    null,
+  );
+  assert.equal(
+    parsePublicConfig(
+      {
+        environment: 'hml',
+        firebase: PROD,
+      },
+      'prod',
+    ),
+    null,
+  );
   assert.equal(generatePublicConfig({ environment: 'prod' }), null);
 });
 
@@ -41,23 +64,45 @@ test('PROD loads separately configured Firebase and HTTPS API without exposing s
     rankingApiUrl: 'https://nova-ranking-prod.example.net/',
   });
   assert.equal(publicConfig.firebase.projectId, 'nova-wing-prod');
-  assert.equal((await loadPublicConfig('prod', {
-    fetchConfig: async () => ({ ok: true, json: async () => publicConfig }),
-  })).rankingApiUrl, 'https://nova-ranking-prod.example.net');
-  assert.equal(parsePublicConfig({
-    ...publicConfig,
-    rankingApiUrl: 'http://insecure.example.com',
-  }, 'prod'), null);
-  assert.equal(parsePublicConfig({
-    ...publicConfig,
-    rankingApiUrl: 'https://example.com/private/path',
-  }, 'prod'), null);
+  assert.equal(
+    (
+      await loadPublicConfig('prod', {
+        fetchConfig: async () => ({ ok: true, json: async () => publicConfig }),
+      })
+    ).rankingApiUrl,
+    'https://nova-ranking-prod.example.net',
+  );
+  assert.equal(
+    parsePublicConfig(
+      {
+        ...publicConfig,
+        rankingApiUrl: 'http://insecure.example.com',
+      },
+      'prod',
+    ),
+    null,
+  );
+  assert.equal(
+    parsePublicConfig(
+      {
+        ...publicConfig,
+        rankingApiUrl: 'https://example.com/private/path',
+      },
+      'prod',
+    ),
+    null,
+  );
 });
 
 test('DEV/HML generator uses isolated environment labels, never PR preview', () => {
   assert.equal(generatePublicConfig({ environment: 'preview' }), null);
   assert.equal(generatePublicConfig({ environment: 'hml' }).environment, 'hml');
-  assert.throws(() => generatePublicConfig({
-    environment: 'prod', firebaseJson: '{invalid',
-  }), /Invalid Firebase/);
+  assert.throws(
+    () =>
+      generatePublicConfig({
+        environment: 'prod',
+        firebaseJson: '{invalid',
+      }),
+    /Invalid Firebase/,
+  );
 });

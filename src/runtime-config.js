@@ -14,16 +14,20 @@ export function novaEnvironment(hostname, search = '') {
   if (
     ['127.0.0.1', 'localhost'].includes(hostname) &&
     new URLSearchParams(search).get('auth') === '1'
-  ) return 'local';
+  )
+    return 'local';
   return null;
 }
 
 function firebaseIsValid(value, environment) {
   if (!value || typeof value !== 'object') return false;
-  if (!['apiKey', 'authDomain', 'projectId', 'appId'].every(
-    (field) => typeof value[field] === 'string' && value[field].length > 3 &&
-      value[field].length < 200
-  )) return false;
+  if (
+    !['apiKey', 'authDomain', 'projectId', 'appId'].every(
+      (field) =>
+        typeof value[field] === 'string' && value[field].length > 3 && value[field].length < 200,
+    )
+  )
+    return false;
   if (!/^[a-z0-9][a-z0-9-]{4,60}$/.test(value.projectId)) return false;
   if (environment === 'prod' && value.projectId === DEV_FIREBASE.projectId) return false;
   return true;
@@ -36,8 +40,15 @@ export function parsePublicConfig(json, environment) {
   if (json.rankingApiUrl) {
     try {
       const url = new URL(json.rankingApiUrl);
-      if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash ||
-          (url.pathname !== '/' && url.pathname !== '')) return null;
+      if (
+        url.protocol !== 'https:' ||
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        (url.pathname !== '/' && url.pathname !== '')
+      )
+        return null;
       rankingApiUrl = url.origin;
     } catch {
       return null;
@@ -46,9 +57,10 @@ export function parsePublicConfig(json, environment) {
   return { environment, firebase: json.firebase, rankingApiUrl };
 }
 
-export async function loadPublicConfig(environment, {
-  fetchConfig = (url) => fetch(url, { cache: 'no-store' }),
-} = {}) {
+export async function loadPublicConfig(
+  environment,
+  { fetchConfig = (url) => fetch(url, { cache: 'no-store' }) } = {},
+) {
   if (!environment) return null;
   try {
     const response = await fetchConfig('nova-config.json');

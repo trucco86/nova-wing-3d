@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { HISTORY_STORAGE_KEY, readLocalHistory, recordLocalResult, localScoreSummary } from '../src/score-history.js';
+import {
+  HISTORY_STORAGE_KEY,
+  readLocalHistory,
+  recordLocalResult,
+  localScoreSummary,
+} from '../src/score-history.js';
 
 function fakeStorage() {
   const map = new Map();
@@ -11,7 +16,11 @@ function fakeStorage() {
   };
 }
 const entry = (id, points = 12) => ({
-  id, sector: 3, points, durationMs: 132000, completedAt: '2026-10-27T18:30:00.000Z',
+  id,
+  sector: 3,
+  points,
+  durationMs: 132000,
+  completedAt: '2026-10-27T18:30:00.000Z',
 });
 
 test('every completed level is preserved independently of the campaign checkpoint', () => {
@@ -20,7 +29,10 @@ test('every completed level is preserved independently of the campaign checkpoin
   assert.equal(recordLocalResult(storage, entry('one')), true);
   assert.equal(recordLocalResult(storage, entry('two', 35)), true);
   assert.equal(recordLocalResult(storage, entry('two', 35)), true);
-  assert.deepEqual(readLocalHistory(storage).map((v) => v.id), ['two', 'one']);
+  assert.deepEqual(
+    readLocalHistory(storage).map((v) => v.id),
+    ['two', 'one'],
+  );
   assert.deepEqual(localScoreSummary(storage), { count: 2, best: 35, total: 47 });
   assert.equal(JSON.parse(storage.getItem('nova-wing-3d-v1')).sector, 3);
 });
@@ -30,13 +42,32 @@ test('corrupted input and blocked storage do not crash gameplay', () => {
   storage.setItem(HISTORY_STORAGE_KEY, '{bad');
   assert.deepEqual(readLocalHistory(storage), []);
   assert.equal(recordLocalResult(storage, { ...entry('invalid'), sector: 12 }), false);
-  assert.equal(recordLocalResult({ getItem: () => null, setItem: () => { throw Error('blocked'); } }, entry('first')), false);
-  assert.deepEqual(readLocalHistory({ getItem: () => { throw Error('blocked'); } }), []);
+  assert.equal(
+    recordLocalResult(
+      {
+        getItem: () => null,
+        setItem: () => {
+          throw Error('blocked');
+        },
+      },
+      entry('first'),
+    ),
+    false,
+  );
+  assert.deepEqual(
+    readLocalHistory({
+      getItem: () => {
+        throw Error('blocked');
+      },
+    }),
+    [],
+  );
 });
 
 test('history is bounded to the latest 100 recorded games', () => {
   const storage = fakeStorage();
-  for (let i = 0; i < 110; i++) assert.equal(recordLocalResult(storage, entry('run-' + i, i)), true);
+  for (let i = 0; i < 110; i++)
+    assert.equal(recordLocalResult(storage, entry('run-' + i, i)), true);
   const history = readLocalHistory(storage);
   assert.equal(history.length, 100);
   assert.equal(history[0].id, 'run-109');

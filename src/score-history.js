@@ -7,15 +7,24 @@ export function readLocalHistory(storage) {
   try {
     const value = JSON.parse(storage?.getItem(HISTORY_STORAGE_KEY) || '[]');
     if (!Array.isArray(value)) return [];
-    return value.filter((entry) =>
-      typeof entry.id === 'string' && entry.id.length < 100 &&
-      Number.isInteger(entry.sector) && entry.sector >= 1 && entry.sector <= 10 &&
-      Number.isInteger(entry.points) && entry.points >= 0 && entry.points <= 1000000 &&
-      Number.isInteger(entry.durationMs) && entry.durationMs >= 0 &&
-      entry.durationMs <= 7200000 &&
-      typeof entry.completedAt === 'string' &&
-      Number.isFinite(Date.parse(entry.completedAt))
-    ).slice(0, MAX_ENTRIES);
+    return value
+      .filter(
+        (entry) =>
+          typeof entry.id === 'string' &&
+          entry.id.length < 100 &&
+          Number.isInteger(entry.sector) &&
+          entry.sector >= 1 &&
+          entry.sector <= 10 &&
+          Number.isInteger(entry.points) &&
+          entry.points >= 0 &&
+          entry.points <= 1000000 &&
+          Number.isInteger(entry.durationMs) &&
+          entry.durationMs >= 0 &&
+          entry.durationMs <= 7200000 &&
+          typeof entry.completedAt === 'string' &&
+          Number.isFinite(Date.parse(entry.completedAt)),
+      )
+      .slice(0, MAX_ENTRIES);
   } catch {
     return [];
   }
@@ -33,7 +42,10 @@ export function recordLocalResult(storage, entry) {
   try {
     const previous = readLocalHistory(storage);
     if (previous.some((item) => item.id === candidate.id)) return true;
-    storage?.setItem(HISTORY_STORAGE_KEY, JSON.stringify([candidate, ...previous].slice(0, MAX_ENTRIES)));
+    storage?.setItem(
+      HISTORY_STORAGE_KEY,
+      JSON.stringify([candidate, ...previous].slice(0, MAX_ENTRIES)),
+    );
     return !!storage;
   } catch {
     return false;

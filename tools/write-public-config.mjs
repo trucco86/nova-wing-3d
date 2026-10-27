@@ -3,11 +3,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DEV_FIREBASE, parsePublicConfig } from '../src/runtime-config.js';
 
-export function generatePublicConfig({
-  environment,
-  firebaseJson = '',
-  rankingApiUrl = '',
-} = {}) {
+export function generatePublicConfig({ environment, firebaseJson = '', rankingApiUrl = '' } = {}) {
   if (!['dev', 'hml', 'prod'].includes(environment)) return null;
   let firebase = null;
   if (firebaseJson) {

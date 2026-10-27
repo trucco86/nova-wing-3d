@@ -693,12 +693,14 @@ export function createGame({
     if (!dynamicFlight || stageResultSent) return;
     stageResultSent = true;
     try {
-      Promise.resolve(onStageFinished({
-        sector: sectorIndex + 1,
-        points: Math.max(0, score - stageScoreStart),
-        durationMs: Math.max(0, Math.round(elapsed * 1000)),
-        totalPoints: score,
-      })).catch(() => {});
+      Promise.resolve(
+        onStageFinished({
+          sector: sectorIndex + 1,
+          points: Math.max(0, score - stageScoreStart),
+          durationMs: Math.max(0, Math.round(elapsed * 1000)),
+          totalPoints: score,
+        }),
+      ).catch(() => {});
     } catch {
       // Optional ranking must never interrupt a completed mission.
     }
@@ -3516,7 +3518,12 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
-      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed', 'ranking-intermission');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'left-handed',
+        'ranking-intermission',
+      );
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;
       music?.destroy();

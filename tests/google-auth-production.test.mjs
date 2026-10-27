@@ -4,27 +4,31 @@ import { installGoogleLogin } from '../src/google-auth.js';
 
 function fakeUi(hostname) {
   const elements = new Map();
-  for (const field of ['login','logout','guest','name','status']) {
+  for (const field of ['login', 'logout', 'guest', 'name', 'status']) {
     const listeners = new Map();
     elements.set(field, {
-      disabled: field === 'login', hidden: false, textContent: '',
+      disabled: field === 'login',
+      hidden: false,
+      textContent: '',
       addEventListener: (name, callback) => listeners.set(name, callback),
       listeners,
     });
   }
   const panel = {
-    open: false, hidden: false,
+    open: false,
+    hidden: false,
     querySelector: (selector) => elements.get(selector.match(/data-auth-([a-z]+)/)?.[1]),
   };
   const original = { document: globalThis.document, window: globalThis.window };
   globalThis.document = {
-    getElementById: (id) => id === 'novaAuth' ? panel : null,
+    getElementById: (id) => (id === 'novaAuth' ? panel : null),
     createElement: () => ({ textContent: '', remove() {} }),
     head: { append() {} },
   };
   globalThis.window = { location: { hostname, search: '' } };
   return {
-    panel, elements,
+    panel,
+    elements,
     restore() {
       if (original.document === undefined) delete globalThis.document;
       else globalThis.document = original.document;
@@ -40,7 +44,10 @@ test('production never initializes Firebase with missing config', async () => {
   try {
     const close = installGoogleLogin({
       loadConfig: async () => null,
-      loadSdks: () => { sdkLoads++; throw Error('Must not load'); },
+      loadSdks: () => {
+        sdkLoads++;
+        throw Error('Must not load');
+      },
     });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(sdkLoads, 0);
@@ -86,16 +93,23 @@ test('production uses its own Firebase project and passes current user through c
           GoogleAuthProvider: class {},
           setPersistence: async () => {},
           browserLocalPersistence: {},
-          onAuthStateChanged: (_, fn) => { fn({ uid: 'test', displayName: 'Teste' }); return () => {}; },
+          onAuthStateChanged: (_, fn) => {
+            fn({ uid: 'test', displayName: 'Teste' });
+            return () => {};
+          },
           getRedirectResult: async () => null,
         },
       ],
-      onAuthChange: (user) => { observedUser = user; },
+      onAuthChange: (user) => {
+        observedUser = user;
+      },
     });
     await new Promise((resolve) => setImmediate(resolve));
     assert.equal(projectId, 'nova-wing-prod');
     assert.equal(observedUser.uid, 'test');
     assert.equal(ui.elements.get('login').hidden, true);
     close();
-  } finally { ui.restore(); }
+  } finally {
+    ui.restore();
+  }
 });

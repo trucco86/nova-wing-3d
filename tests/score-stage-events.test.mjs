@@ -6,9 +6,15 @@ import { defeatBoss } from './combat-helper.mjs';
 
 function saveSector(sector) {
   const save = JSON.stringify({
-    version: 1, sector, credits: 250, weapon: 0, armor: 0, pods: 0, score: 15,
+    version: 1,
+    sector,
+    credits: 250,
+    weapon: 0,
+    armor: 0,
+    pods: 0,
+    score: 15,
   });
-  return { getItem: (key) => key === 'nova-wing-3d-v1' ? save : null, setItem() {} };
+  return { getItem: (key) => (key === 'nova-wing-3d-v1' ? save : null), setItem() {} };
 }
 
 test('completed sectors emit exactly one ranking event with positive score delta', (t) => {
@@ -39,8 +45,12 @@ test('completed sectors emit exactly one ranking event with positive score delta
 
 test('ranking callback errors are isolated from the actual flight', (t) => {
   const h = harness({
-    onStageStarted: () => { throw new Error('offline'); },
-    onStageFinished: () => { throw new Error('network'); },
+    onStageStarted: () => {
+      throw new Error('offline');
+    },
+    onStageFinished: () => {
+      throw new Error('network');
+    },
   });
   t.after(() => h.close());
   h.game.start();

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.24.21 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
 - Hangar com dois níveis de multitiro e cadência, bombas individuais e pacote ×3 com teto de oito na web.
