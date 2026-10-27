@@ -29,7 +29,7 @@ function fakeElement() {
   };
 }
 
-function setup() {
+function setup({ prefilled = false } = {}) {
   const fields = new Map();
   for (const name of [
     'nickname',
@@ -44,10 +44,15 @@ function setup() {
   ])
     fields.set(name, fakeElement());
 
+  if (prefilled) {
+    fields.get('consent').checked = true;
+    fields.get('nickname').value = 'Restored Other Player';
+  }
+
   const panel = {
     ...fakeElement(),
     querySelector(selector) {
-      return fields.get(selector.match(/^\\[data-rank-([a-z]+)\\]$/)?.[1]) || null;
+      return fields.get(selector.match(/^\[data-rank-([a-z]+)\]$/)?.[1]) || null;
     },
   };
   const document = {
@@ -112,7 +117,7 @@ const finish = { sector: 1, points: 120, durationMs: 98000 };
 const settle = () => new Promise((resolve) => setImmediate(resolve));
 
 test('browser-restored consent and nickname are cleared even before Firebase initializes', () => {
-  const app = setup();
+  const app = setup({ prefilled: true });
   assert.equal(app.field('consent').checked, false);
   assert.equal(app.field('nickname').value, '');
   app.client.destroy();
