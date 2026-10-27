@@ -57,6 +57,13 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
+  SCATTER_CADENCE_FACTOR,
+  SCATTER_LIFETIME,
+  readScatterLoadout,
+  scatterDamageFactor,
+  scatterPellets,
+} from './scatter-cannon.js';
+import {
   createGroundEnemy,
   animateGroundEnemy,
   createObstacle,
@@ -281,6 +288,8 @@ export function createGame({
     visualTime = 0,
     shake = 0,
     lastStage = -1;
+  let scatterOwned = false;
+  let fireMode = 'pulse';
   let sectorIndex = 0,
     lives = 3,
     credits = 0,
@@ -632,6 +641,7 @@ export function createGame({
       weapon,
       volley,
       rapid,
+      ...(dynamicFlight ? { scatterOwned, fireMode } : {}),
       bombs: next > sectorIndex ? Math.min(dynamicFlight ? 8 : 5, bombs + 1) : bombs,
       armor,
       pods: podCount,
@@ -701,7 +711,7 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
   }
   function shopLevel(k) {
-    return { weapon, volley, rapid, armor, pods: podCount }[k] ?? 0;
+    return { weapon, volley, rapid, scatter: Number(scatterOwned), armor, pods: podCount }[k] ?? 0;
   }
   function shopFull(k) {
     if (k === 'repair') return hp >= maxHp();
@@ -715,22 +725,37 @@ export function createGame({
     for (const k of Object.keys(SHOP)) {
       const level = shopLevel(k);
       const full = shopFull(k);
-      $('buy' + k).hidden = !dynamicFlight && ['volley', 'rapid', 'bombPack'].includes(k);
+      $('buy' + k).hidden = !dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k);
       const price = shopPrice(k, level);
       const status = full ? (k === 'bombPack' ? 'PRECISA DE 3 VAGAS' : 'MÁXIMO') : price + ' CR';
       $('buy' + k).textContent = SHOP[k].label + ' · ' + status;
       $('buy' + k).disabled = full || credits < price;
     }
+    $('equipScatter').hidden = !dynamicFlight;
+    $('equipScatter').disabled = !scatterOwned || !dynamicFlight;
+    $('equipScatter').textContent = fireMode === 'scatter' ? 'EQUIPAR PULSO' : 'EQUIPAR DISPERSÃO';
+    $('scatterInfo').textContent = fireMode === 'scatter'
+      ? 'DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE'
+      : 'DISPARO EQUIPADO: PULSO · ALCANCE LONGO';
+    $('scatterInfo').hidden = !dynamicFlight;
+  }
+  function equipScatter() {
+    if (state !== 'shop' || !dynamicFlight || !scatterOwned) return false;
+    fireMode = fireMode === 'scatter' ? 'pulse' : 'scatter';
+    renderShop();
+    saveCheckpoint(sectorIndex + 1);
+    return true;
   }
   function buy(k) {
     if (state !== 'shop' || !SHOP[k]) return false;
-    if (!dynamicFlight && ['volley', 'rapid', 'bombPack'].includes(k)) return false;
+    if (!dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k)) return false;
     const price = shopPrice(k, shopLevel(k));
     if (credits < price || shopFull(k)) return false;
     credits -= price;
     if (k === 'weapon') weapon++;
     if (k === 'volley') volley++;
     if (k === 'rapid') rapid++;
+    if (k === 'scatter') scatterOwned = true;
     if (k === 'armor') {
       armor++;
       hp = Math.min(maxHp(), hp + 25);
@@ -863,6 +888,7 @@ export function createGame({
       weapon,
       volley,
       rapid,
+      ...(dynamicFlight ? { scatterOwned, fireMode } : {}),
       bombs,
       armor,
       pods: podCount,
@@ -1172,21 +1198,31 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    const count = projectileCount(weapon, volley, dynamicFlight);
+    const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
+    const pellets = scatter ? scatterPellets() : null;
+    const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
+      launchShot(scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
       const b = shots.at(-1);
       if (dynamicFlight) {
-        b.homing = strategy.arsenal === 3;
-        b.spread = strategy.arsenal === 2 ? (i - (count - 1) / 2) * 7 : 0;
+        b.homing = !scatter && strategy.arsenal === 3;
+        b.spread = scatter ? pellets[i].drift : strategy.arsenal === 2 ? (i - (count - 1) / 2) * 7 : 0;
+        if (scatter) {
+          b.scatter = true;
+          b.travelled = 0;
+          b.life = SCATTER_LIFETIME;
+        }
         b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
       }
     }
     if (dynamicFlight) cue('shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight
-      ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid)
+      ? firingCooldown(
+          selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035),
+          rapid,
+        ) * (scatter ? SCATTER_CADENCE_FACTOR : 1)
       : 0.135;
   }
   function enemy(kind = 'fighter') {
@@ -1535,6 +1571,9 @@ export function createGame({
     weapon = checkpoint?.weapon ?? 0;
     volley = checkpoint?.volley ?? 0;
     rapid = checkpoint?.rapid ?? 0;
+    const scatterLoadout = readScatterLoadout(checkpoint);
+    scatterOwned = dynamicFlight && scatterLoadout.owned;
+    fireMode = dynamicFlight ? scatterLoadout.mode : 'pulse';
     pilotLoadout = dynamicFlight
       ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
       : readPilotLoadout(null);
@@ -1953,6 +1992,7 @@ export function createGame({
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
+  $('equipScatter').onclick = equipScatter;
   $('music').onclick = () => {
     musicOn = !musicOn;
     music?.setEnabled(musicOn);
@@ -2917,6 +2957,7 @@ export function createGame({
         }
       }
       b.o.position.x += (b.spread ?? 0) * dt;
+      if (b.scatter) b.travelled += dt * 190;
       if (b.v) b.o.position.addScaledVector(b.v, dt);
       else b.o.position.z -= dt * 190;
       b.life -= dt;
@@ -2944,7 +2985,8 @@ export function createGame({
               Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y)
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
-          const dealt = damageEnemy(e, (b.damage ?? 2) * (weak ? 2 : 1), b.element);
+          const effective = (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1);
+          const dealt = damageEnemy(e, effective * (weak ? 2 : 1), b.element);
           impact(
             impactPoint(
               previousShot,
@@ -2982,7 +3024,12 @@ export function createGame({
         for (const mesh of targets) {
           const center = mesh.getWorldPosition(new T.Vector3());
           if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
-            const dealt = damageBoss(b.damage ?? 2, center, b.element, b.charged);
+            const dealt = damageBoss(
+              (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
+              center,
+              b.element,
+              b.charged,
+            );
             impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
               bossHit: true,
               weak: dealt > 0,
@@ -3367,6 +3414,7 @@ export function createGame({
     damageBoss,
     collect,
     buy,
+    equipScatter,
     buySkin,
     selectPilot,
     selectShip,
@@ -3400,6 +3448,8 @@ export function createGame({
       weapon: weapon + 1,
       volley,
       rapid,
+      scatterOwned,
+      fireMode,
       pods: podCount,
       armor,
       charge,
