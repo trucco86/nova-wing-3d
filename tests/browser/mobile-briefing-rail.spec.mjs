@@ -61,7 +61,14 @@ test('P0 mobile stage introduction and pilot radio never compete for the upper H
       path: info.outputPath('intro-top-rail-' + size.width + 'x' + size.height + '.png'),
     });
 
-    await page.evaluate(() => window.fixture.advance(3.3));
+    await page.evaluate(() => {
+      window.fixture.advance(3.3);
+      // Real radio cues expire with simulation time. Inject an active cue only
+      // to inspect the upper-HUD geometry after the sector briefing ends.
+      const radio = document.querySelector('#comms');
+      radio.classList.add('active');
+      document.querySelector('#message').textContent = 'BIA: ALVO IDENTIFICADO';
+    });
     await expect(page.locator('body')).not.toHaveClass(/stage-intro/);
     await expect(page.locator('#hud .mission')).toBeHidden();
     await expect(page.locator('#comms')).toBeVisible();
