@@ -725,7 +725,8 @@ export function createGame({
     for (const k of Object.keys(SHOP)) {
       const level = shopLevel(k);
       const full = shopFull(k);
-      $('buy' + k).hidden = !dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k);
+      $('buy' + k).hidden =
+        !dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k);
       const price = shopPrice(k, level);
       const status = full ? (k === 'bombPack' ? 'PRECISA DE 3 VAGAS' : 'MÁXIMO') : price + ' CR';
       $('buy' + k).textContent = SHOP[k].label + ' · ' + status;
@@ -735,9 +736,10 @@ export function createGame({
     $('equipScatter').hidden = !dynamicFlight;
     $('equipScatter').disabled = !scatterOwned || !dynamicFlight;
     $('equipScatter').textContent = fireMode === 'scatter' ? 'EQUIPAR PULSO' : 'EQUIPAR DISPERSÃO';
-    $('scatterInfo').textContent = fireMode === 'scatter'
-      ? 'DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE'
-      : 'DISPARO EQUIPADO: PULSO · ALCANCE LONGO';
+    $('scatterInfo').textContent =
+      fireMode === 'scatter'
+        ? 'DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE'
+        : 'DISPARO EQUIPADO: PULSO · ALCANCE LONGO';
     $('scatterInfo').hidden = !dynamicFlight;
   }
   function equipScatter() {
@@ -1179,7 +1181,11 @@ export function createGame({
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
     );
     o.add(
-      halo(scatter ? '#ffba70' : dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
+      halo(
+        scatter ? '#ffba70' : dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon],
+        charged ? 6 : 1.8,
+        0.5,
+      ),
     );
     o.rotation.x = Math.PI / 2;
     o.position.copy(player.position);
@@ -1205,11 +1211,20 @@ export function createGame({
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot(scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, scatter);
+      launchShot(
+        scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9,
+        (2 + weapon) * power,
+        false,
+        scatter,
+      );
       const b = shots.at(-1);
       if (dynamicFlight) {
         b.homing = !scatter && strategy.arsenal === 3;
-        b.spread = scatter ? pellets[i].drift : strategy.arsenal === 2 ? (i - (count - 1) / 2) * 7 : 0;
+        b.spread = scatter
+          ? pellets[i].drift
+          : strategy.arsenal === 2
+            ? (i - (count - 1) / 2) * 7
+            : 0;
         if (scatter) {
           b.scatter = true;
           b.travelled = 0;
@@ -1221,10 +1236,8 @@ export function createGame({
     if (dynamicFlight) cue('shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight
-      ? firingCooldown(
-          selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035),
-          rapid,
-        ) * (scatter ? SCATTER_CADENCE_FACTOR : 1)
+      ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
+        (scatter ? SCATTER_CADENCE_FACTOR : 1)
       : 0.135;
   }
   function enemy(kind = 'fighter') {
@@ -2987,7 +3000,8 @@ export function createGame({
               Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y)
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
-          const effective = (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1);
+          const effective =
+            (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1);
           const dealt = damageEnemy(e, effective * (weak ? 2 : 1), b.element);
           impact(
             impactPoint(

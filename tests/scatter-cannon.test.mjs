@@ -13,8 +13,14 @@ import {
 test('scatter cannon emits five distinct symmetric trajectories', () => {
   const pellets = scatterPellets();
   assert.equal(pellets.length, SCATTER_PELLETS);
-  assert.deepEqual(pellets.map((p) => p.drift), [-24, -12, 0, 12, 24]);
-  assert.deepEqual(pellets.map((p) => p.offset), [-1.1, -0.55, 0, 0.55, 1.1]);
+  assert.deepEqual(
+    pellets.map((p) => p.drift),
+    [-24, -12, 0, 12, 24],
+  );
+  assert.deepEqual(
+    pellets.map((p) => p.offset),
+    [-1.1, -0.55, 0, 0.55, 1.1],
+  );
   assert.ok(SCATTER_LIFETIME < 1);
   assert.ok(SCATTER_CADENCE_FACTOR > 1);
   assert.equal(SCATTER_PRICE, 420);

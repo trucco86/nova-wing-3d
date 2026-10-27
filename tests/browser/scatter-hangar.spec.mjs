@@ -23,9 +23,7 @@ test('scatter cannon is bought/equipped in hangar and fires a real close-range c
   await expect(page.locator('#scatterInfo')).toContainText('DISPERSÃO');
   await page.screenshot({ path: info.outputPath('scatter-equipped-hangar.png') });
 
-  const persisted = await page.evaluate(
-    () => JSON.parse(localStorage.getItem('nova-wing-3d-v1')),
-  );
+  const persisted = await page.evaluate(() => JSON.parse(localStorage.getItem('nova-wing-3d-v1')));
   expect(persisted.scatterOwned).toBe(true);
   expect(persisted.fireMode).toBe('scatter');
 

@@ -126,7 +126,6 @@ export function firingCooldown(cadence, level = 0) {
   return cadence * (1 - Math.min(2, Math.max(0, level)) * 0.12);
 }
 
-
 export const SHOP = {
   weapon: { label: 'CANHÃO · PRÓXIMA CLASSE', base: 180, max: 5 },
   volley: { label: 'MULTITIRO · +1 PROJÉTIL', base: 260, max: 2 },
