@@ -31,7 +31,7 @@ jobs:
           npm run validate
       - name: Commit candidate source, tests and generated public web
         run: |
-          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.24.21.md index.html src tools tests specs docs workers .github
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.24.21.md index.html src tools tests specs docs workers
           if git diff --cached --quiet; then
             echo 'Distribution and source are synchronized.'
             exit 0
