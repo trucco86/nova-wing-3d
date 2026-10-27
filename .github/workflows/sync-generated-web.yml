@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - fix/ranking-account-consent-isolation-20261027
 permissions:
   contents: write
   actions: write
@@ -24,20 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Commit P0 source formatting and generated HTML on isolated branch
-        if: github.ref == 'refs/heads/fix/ranking-account-consent-isolation-20261027'
-        run: |
-          git add -- index.html src/ranking-client.js tests/ranking-account-consent.test.mjs specs/ranking-account-consent-p0.md
-          if git diff --cached --quiet; then
-            echo 'P0 bundle and source already synchronized.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'build(web): sync ranking consent bundle and formatted tests'
-          git push origin HEAD:fix/ranking-account-consent-isolation-20261027
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -46,7 +32,7 @@ jobs:
             exit 0
           fi
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github-actions[bot].com'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
           git commit -m 'build(web): sync generated index for v1.23.0'
           git push origin HEAD:feat/nw09-cinematic-3d
