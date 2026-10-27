@@ -18,6 +18,7 @@ export function createRankingClient({
   const el = (name) => panel?.querySelector('[data-rank-' + name + ']');
   const listLocal = el('local');
   const listGlobal = el('global');
+  const listCloud = el('cloud');
   const nickname = el('nickname');
   const consent = el('consent');
   const status = el('status');
@@ -82,6 +83,7 @@ export function createRankingClient({
   async function refreshOnline() {
     if (closed || !apiBase) {
       fill(listGlobal, [], 'Ranking online indisponível.');
+      fill(listCloud, [], 'Histórico remoto indisponível.');
       return;
     }
     const epoch = identityEpoch;
@@ -92,6 +94,19 @@ export function createRankingClient({
         (index + 1) + 'º · ' + String(entry.nickname).slice(0, 24) +
         ' · ' + entry.points + ' pts · Setor ' + entry.sector
       ), 'Ranking experimental ainda sem pontuações.');
+      if (user?.getIdToken) {
+        try {
+          const history = await request('/v1/me/history', { authorized: true });
+          if (!closed && epoch === identityEpoch)
+            fill(listCloud, (history.entries || []).slice(0, 8).map((entry) =>
+              'Setor ' + entry.sector + ' · ' + entry.points + ' pts · ' +
+              new Date(entry.completedAt).toLocaleDateString('pt-BR')
+            ), 'Sem partidas remotas registradas.');
+        } catch {
+          if (!closed && epoch === identityEpoch)
+            fill(listCloud, [], 'Histórico remoto temporariamente indisponível.');
+        }
+      } else fill(listCloud, [], 'Entre com Google para consultar seu histórico na nuvem.');
       say('Ranking experimental · pontuações ainda não verificadas por anticheat.');
     } catch {
       if (!closed) say('Ranking remoto indisponível. Seu histórico local foi preservado.');
