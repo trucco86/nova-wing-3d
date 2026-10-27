@@ -336,6 +336,7 @@ export function createFlyingRobot() {
   const arms = [];
   const legs = [];
   const armMuzzles = [];
+  const sidePlumes = [];
   for (const side of [-1, 1]) {
     const arm = new T.Group();
     arm.position.set(side * 1.65, 2.55, 0);
@@ -389,6 +390,7 @@ export function createFlyingRobot() {
     plume.rotation.x = Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
+    sidePlumes.push(plume);
   }
   // The exact same mesh profile as the ship, rotated into the mecha back plane.
   // No independent enlarged mecha wing geometry: transformation preserves identity.
@@ -479,6 +481,8 @@ export function createFlyingRobot() {
     turbineRotor,
     turbineGimbal,
     turbineFlame,
+    sidePlumes,
+    propulsionPower: 0,
     progressionNeons,
   };
   robot.userData.mechPaint = { primary: armor, accent };
@@ -570,20 +574,59 @@ export function setFighterEvolution(ship, level = 0) {
 }
 
 /** Flight animation is frame-driven, so it works at variable FPS without timers. */
-export function animateMechPower(robot, elapsed, boosting = false, level = 0, steering = {}) {
+export function resetMechPower(robot) {
+  const rig = robot.userData.mechRig;
+  if (!rig) return;
+  rig.propulsionPower = 0;
+  rig.turbineRotor.rotation.z = 0;
+  rig.turbineGimbal.rotation.set(0, 0, 0);
+  rig.turbineFlame.scale.y = 1;
+  rig.turbineFlame.position.z = 1.6;
+  rig.turbineFlame.material.opacity = 0.78;
+  for (const plume of rig.sidePlumes) {
+    plume.scale.y = 1;
+    plume.position.z = 2.9;
+  }
+}
+
+export function animateMechPower(
+  robot,
+  elapsed,
+  boosting = false,
+  level = 0,
+  steering = {},
+  dt = 1 / 60,
+) {
   const rig = robot.userData.mechRig;
   if (!rig?.turbineRotor) return;
-  rig.turbineRotor.rotation.z = elapsed * (boosting ? 24 : 10);
-  const turn = T.MathUtils.clamp(steering.x ?? 0, -1, 1);
-  const climb = T.MathUtils.clamp(steering.y ?? 0, -1, 1);
-  // Yaw follows steering; pitch compensates for climbs and boost.
-  rig.turbineGimbal.rotation.y = turn * 0.19 + Math.sin(elapsed * 1.8) * 0.025;
-  rig.turbineGimbal.rotation.x = -climb * 0.11 - (boosting ? 0.1 : 0.015);
-
-  rig.turbineFlame.scale.y = (boosting ? 1.75 : 1) * (0.9 + Math.sin(elapsed * 16) * 0.1);
-  rig.turbineFlame.material.opacity = boosting ? 0.96 : 0.78;
   for (const { mesh, threshold } of rig.progressionNeons) {
     mesh.visible = level >= threshold;
+  }
+  if (!Number.isFinite(dt) || dt <= 0) return;
+  const delta = Math.min(dt, 0.05);
+  const target = boosting ? 1 : 0;
+  const previous = rig.propulsionPower;
+  const response = 1 - Math.exp(-10 * delta);
+  rig.propulsionPower += (target - previous) * response;
+  // Integrate angular velocity, including the exact exponential acceleration.
+  // Multiplying mission time by the current speed makes BOOST jump rotor phase.
+  const poweredTime = target * delta + ((previous - target) * response) / 10;
+  rig.turbineRotor.rotation.z =
+    (rig.turbineRotor.rotation.z + 10 * delta + 14 * poweredTime) % (Math.PI * 2);
+  const turn = T.MathUtils.clamp(steering.x ?? 0, -1, 1);
+  const climb = T.MathUtils.clamp(steering.y ?? 0, -1, 1);
+  const steeringResponse = 1 - Math.exp(-12 * delta);
+  rig.turbineGimbal.rotation.y += (turn * 0.19 - rig.turbineGimbal.rotation.y) * steeringResponse;
+  rig.turbineGimbal.rotation.x +=
+    (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
+
+  const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
+  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
+  rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
+  rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
+  for (const plume of rig.sidePlumes) {
+    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
+    plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
   }
 }
 const variants = new Map();

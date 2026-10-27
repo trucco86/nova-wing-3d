@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.25.2 — Candidata de propulsão contínua do mecha
+
+- Rotor com aceleração/desaceleração contínua e bocal com direção suavizada.
+- Chamas principal e secundárias ancoradas no bocal durante boost.
+- Pose responde ao impulso efetivo de teclado e toque; pausa/reinício preservados.
+- Sem homologação visual/mobile físico ou promoção para DEV/HML/PROD.
+
 ## 1.25.1 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
