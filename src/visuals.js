@@ -398,6 +398,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     fragmentShader: `varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float crack=1.-smoothstep(.007,.016,abs(N.x+.14*sin(N.y*13.)+.035*sin(N.y*55.)));c=c*(.05+lit*.95)+vec3(.95,.27,.035)*crack*.7;gl_FragColor=vec4(c,1.);}`,
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
+  moon.name = 'world-orbital-globe';
   moon.position.set(480, 280, -1000);
   scene.add(moon);
   const atmosphere = new T.Mesh(
@@ -602,7 +603,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
-      moon.visible = atmosphere.visible = !['void', 'throne', 'sun'].includes(sceneryTheme);
+      // Never display the orbital globe while the player is still within the city/port.
+      // The third-sector ascent explicitly enables it after the urban scenery is gone.
+      moon.visible = atmosphere.visible = !['void', 'throne', 'sun', 'city', 'ocean'].includes(
+        sceneryTheme,
+      );
       rim.color.set(sector.accent);
       key.color.set(sector.theme === 'sun' ? '#ffe4b0' : '#e3eeff');
       purple.color.set(sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
