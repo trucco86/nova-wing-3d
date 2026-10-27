@@ -125,10 +125,12 @@ export function firingCooldown(cadence, level = 0) {
   return cadence * (1 - Math.min(2, Math.max(0, level)) * 0.12);
 }
 
+import { SCATTER_PRICE } from './scatter-cannon.js';
+
 export const SHOP = {
   weapon: { label: 'CANHÃO · PRÓXIMA CLASSE', base: 180, max: 5 },
   volley: { label: 'MULTITIRO · +1 PROJÉTIL', base: 260, max: 2 },
-  scatter: { label: 'CANHÃO DE DISPERSÃO · CURTO ALCANCE', base: 420, max: 1 },
+  scatter: { label: 'CANHÃO DE DISPERSÃO · CURTO ALCANCE', base: SCATTER_PRICE, max: 1 },
   rapid: { label: 'NÚCLEO RÁPIDO · CADÊNCIA +', base: 230, max: 2 },
   armor: { label: 'BLINDAGEM', base: 120, max: 4 },
   pods: { label: 'POD ORBITAL', base: 220, max: 3 },
