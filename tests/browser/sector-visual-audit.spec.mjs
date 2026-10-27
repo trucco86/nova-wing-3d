@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('record distinct sky/lighting for ten sectors in desktop and mobile', async ({ page }, info) => {
+test('record distinct sky/lighting for ten sectors in desktop and mobile', async ({
+  page,
+}, info) => {
   test.setTimeout(180000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
