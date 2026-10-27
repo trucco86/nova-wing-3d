@@ -1,0 +1,36 @@
+name: Prepare P0 top-briefing candidate
+on:
+  push:
+    branches:
+      - fix/p0-mobile-top-briefing-no-overlap-20261026
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Build versioned preview v1.24.16
+        run: npm run release:prepare -- 1.24.16
+      - name: Format sources and tests
+        run: npm run format
+      - name: Validate version and generated assets
+        run: npm run validate
+      - name: Commit reproducible candidate
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json CHANGELOG.md releases/v1.24.16.md index.html ios/App/App.xcodeproj/project.pbxproj src/styles.css tests/browser/mobile-briefing-rail.spec.mjs tests/browser/hud-pause-guide.spec.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'build(hud): prepare v1.24.16 mobile briefing separation'
+            git push origin HEAD:fix/p0-mobile-top-briefing-no-overlap-20261026
+          fi
