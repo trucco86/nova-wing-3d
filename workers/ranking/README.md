@@ -1,27 +1,24 @@
-# Nova Wing Ranking Worker — código preparatório
+# Nova Wing — Worker de ranking experimental
 
-**Não publicado.** Esta pasta contém uma implementação inicial e intencionalmente somente de leitura da API Cloudflare, sem endpoints de escrita de score. Não confundir com o Cloudflare **Pages** do jogo, que já está publicado em DEV/HML.
+**Status atual:** implementação de autenticação, histórico e leaderboard experimental em PR candidata. **Sem Worker/D1 remotos provisionados ou OAuth PROD homologado.** As rotas de escrita continuam devolvendo HTTP 501 até a variável de ambiente `SCORE_WRITE_ENABLED=true` ser explicitamente definida **no Worker**.
 
-## Módulos
+- `GET /v1/health`: estado da API (o flag reflete a implementação e não implica score oficial).
+- `GET /v1/leaderboard`: somente registros oficiais `verified` (sem mudanças na regra original).
+- `GET /v1/leaderboard?mode=experimental`: melhores scores **não verificados** por nickname.
+- `GET /v1/me`: perfil autenticado sem UID/e-mail público.
+- `GET /v1/me/history`: últimas 30 partidas remotas da pessoa autenticada.
+- `POST /v1/runs/start`: login + consentimento/nickname, nonce e TTL de 2 h, com rate limit.
+- `POST /v1/runs/finish`: usa nonce hash, verificação de identidade, tempo/score de plausibilidade e SQL condicional anti-replay; registra apenas resultados experimentais.
+- `DELETE /v1/me`: exclui dados da conta no ranking, respeitando FK/cascata do D1.
 
-- `src/index.js`: rotas `/v1/health`, `/v1/leaderboard`, `/v1/me` e respostas fechadas para `/v1/runs/*`.
-- `src/firebase-jwt.js`: valida assinatura RS256 do Firebase ID token contra chaves públicas Google, projeto, emissor e limites temporais.
-- `migrations/0001_initial.sql`: esquema relacional inicial para jogadores, temporadas, runs, resultados e leaderboard.
-- `wrangler.example.toml`: template **não funcional** até registrar conta, criar banco DEV, inserir ID real e decidir o hostname da API.
-- `../../tests/ranking-worker.test.mjs`: testes Node sem recurso Cloudflare e sem chamadas reais ao Google.
+Os resultados produzidos no browser NÃO constituem pontuação competitiva oficial. Futuro: reproduzir eventos/simulação autoritativa de score e combater contas múltiplas.
 
-## Rodar o teste local
+Arquivos: `src/index.js`, `src/provisional.js`, `src/firebase-jwt.js`, `migrations/0001_initial.sql`, `migrations/0002_provisional_history.sql`, `wrangler.hml.example.toml`, `wrangler.prod.example.toml`.
+
+Execução local dos testes:
 
 ```sh
-node --test tests/ranking-worker.test.mjs
+node --test tests/ranking-worker.test.mjs tests/provisional-ranking.test.mjs
 ```
 
-## Habilitação futura de DEV — não executar antes de segurança e revisão de custos
-
-1. Criar um Worker dedicado e um banco D1 DEV na conta Cloudflare; não reutilizar os projetos de produção.
-2. Copiar o template para uma configuração específica de DEV, preencher exclusivamente o identificador do D1 e aplicar migrations primeiro no D1 local; avaliar constraints e índices.
-3. Reproduzir os testes de JWT, falha externa, SQL parametrizado, isolamento de contas, abuso e confidencialidade. Adicionar rate limit, auditoria e moderacão de nickname.
-4. Só publicar Worker quando for segura a autenticação e a observabilidade do serviço. Não abrir `runs/start` ou `runs/finish` até concluir verificação autoritativa.
-5. Integrar opcionalmente o frontend sem bloquear gameplay/offline. Configurar `FIREBASE_PROJECT_ID` e `ALLOWED_ORIGINS` por ambiente.
-
-**Não registrar secrets nem tokens** em `wrangler.example.toml`, documentação ou frontend. Configurações prod e DB prod devem ser independentes.
+A configuração operacional, domínios OAuth, variáveis GitHub/Cloudflare, autorização de deploy, migrations, testes de segurança e LGPD estão descritos no runbook [Identidade e Ranking](../../docs/IDENTITY-RANKING-DELIVERY.md). **Não aplicar migrations em PROD a partir de PR.**
