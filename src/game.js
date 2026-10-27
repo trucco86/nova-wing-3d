@@ -242,6 +242,7 @@ export function createGame({
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
+    cue(robotMode ? 'transformRobot' : 'transformShip');
     message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
@@ -939,6 +940,7 @@ export function createGame({
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
+      audioCues.setEnabled(!muted);
       return true;
     } catch {
       return false;
@@ -1072,7 +1074,8 @@ export function createGame({
     invuln = 1.1;
     $('flash').style.opacity = '.3';
     setTimeout(() => ($('flash').style.opacity = '0'), 150);
-    sound(60, 0.25);
+    if (dynamicFlight) cue('shipImpact');
+    else sound(60, 0.25);
     if (hp <= 0) {
       lives--;
       if (lives <= 0) finish(false);
@@ -2068,6 +2071,7 @@ export function createGame({
   $('pause').onclick = pause;
   $('sound').onclick = () => {
     muted = !muted;
+    audioCues?.setEnabled(!muted);
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
   const visibilityHandler = () => {
@@ -2138,6 +2142,7 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    audioCues?.silence();
     orbitTouch = 0;
     boosting = false;
     boostNeedsRelease = false;
@@ -2265,7 +2270,9 @@ export function createGame({
       if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
+    const wasBoosting = boosting;
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / 0.7;
     if (robot.visible) {
@@ -3397,6 +3404,11 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
+    audioCues?.setFlight({
+      active: dynamicFlight && !muted && ['playing', 'collapsing'].includes(state),
+      boosting,
+      robot: robotMode,
+    });
     const inside =
       cameraMode === 'cockpit' &&
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
@@ -3522,6 +3534,7 @@ export function createGame({
       armor,
       charge,
       music: music?.snapshot() ?? null,
+      audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
