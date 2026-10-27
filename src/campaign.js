@@ -2,6 +2,7 @@ import { readStrategy } from './strategy.js';
 import { readCosmetics } from './customization.js';
 import { readPilotLoadout } from './pilots.js';
 import { readPetCare } from './pet-collectibles.js';
+import { SCATTER_PRICE } from './scatter-cannon.js';
 // Names and narrative adapted from Cristian Trucco's Nova Wing (MIT).
 export const SECTORS = [
   {
@@ -128,6 +129,7 @@ export function firingCooldown(cadence, level = 0) {
 export const SHOP = {
   weapon: { label: 'CANHÃO · PRÓXIMA CLASSE', base: 180, max: 5 },
   volley: { label: 'MULTITIRO · +1 PROJÉTIL', base: 260, max: 2 },
+  scatter: { label: 'CANHÃO DE DISPERSÃO · CURTO ALCANCE', base: SCATTER_PRICE, max: 1 },
   rapid: { label: 'NÚCLEO RÁPIDO · CADÊNCIA +', base: 230, max: 2 },
   armor: { label: 'BLINDAGEM', base: 120, max: 4 },
   pods: { label: 'POD ORBITAL', base: 220, max: 3 },
@@ -164,6 +166,8 @@ export function readSave(storage) {
       ...(d.loadout ? { loadout: readPilotLoadout(d.loadout) } : {}),
       ...(integer(d.volley, 0, 2) ? { volley: d.volley } : {}),
       ...(integer(d.rapid, 0, 2) ? { rapid: d.rapid } : {}),
+      ...(typeof d.scatterOwned === 'boolean' ? { scatterOwned: d.scatterOwned } : {}),
+      ...(['pulse', 'scatter'].includes(d.fireMode) ? { fireMode: d.fireMode } : {}),
       ...(integer(d.bombs, 0, 8) ? { bombs: d.bombs } : {}),
       ...(integer(d.score, 0, 10000000) ? { score: d.score } : {}),
     };

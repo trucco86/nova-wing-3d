@@ -119,3 +119,55 @@ test('insufficient credits reject purchases without altering upgrades or invento
   assert.equal(h.game.snapshot().credits, before.credits);
   assert.equal(h.game.snapshot().rapid, before.rapid);
 });
+
+test('scatter cannon purchase, explicit equip and checkpoint survive the sector transition', (t) => {
+  const h = setup(t, { scatterOwned: false, fireMode: 'pulse' });
+  reachSectorBoss(h, { bossAge: 0.15, dt: 0.1 });
+  defeatBoss(h);
+  assert.equal(h.game.snapshot().state, 'shop');
+  const credits = h.game.snapshot().credits;
+  assert.equal(h.game.equipScatter(), false, 'cannot equip an unpurchased gun');
+  assert.equal(h.game.buy('scatter'), true);
+  assert.equal(h.game.snapshot().credits, credits - 420);
+  assert.equal(h.game.snapshot().fireMode, 'pulse', 'purchase alone does not equip');
+  assert.equal(h.game.buy('scatter'), false, 'no duplicate purchases');
+  assert.equal(h.game.equipScatter(), true);
+  assert.equal(h.game.snapshot().fireMode, 'scatter');
+  assert.equal(h.elements.get('equipScatter').textContent, 'EQUIPAR PULSO');
+  const saved = readSave(h.storage);
+  assert.equal(saved.scatterOwned, true);
+  assert.equal(saved.fireMode, 'scatter');
+
+  h.elements.get('nextSector').onclick();
+  h.elements.get('mapLaunch').onclick();
+  h.game.fire();
+  assert.equal(h.game.snapshot().entities.shots, 5, 'five physical shots in the cone');
+  assert.equal(h.game.snapshot().fireMode, 'scatter');
+  h.game.start(true);
+  assert.equal(h.game.snapshot().fireMode, 'scatter');
+  assert.equal(h.game.snapshot().scatterOwned, true);
+  h.game.fire();
+  assert.equal(h.game.snapshot().entities.shots, 5);
+
+  // UI mode switch remains an explicit hangar action, not another mobile HUD overlay.
+  h.game.pause();
+  assert.equal(h.game.equipScatter(), false);
+});
+
+test('legacy save loads pulse mode and native gameplay ignores Web scatter ownership', (t) => {
+  const legacy = setup(t, { fireMode: 'scatter' });
+  assert.equal(legacy.game.snapshot().scatterOwned, false);
+  assert.equal(legacy.game.snapshot().fireMode, 'pulse');
+  legacy.game.fire();
+  assert.equal(legacy.game.snapshot().entities.shots, 2);
+
+  const native = setup(t, {
+    scatterOwned: true,
+    fireMode: 'scatter',
+    nativeLifecycle: true,
+  });
+  assert.equal(native.game.snapshot().fireMode, 'pulse');
+  assert.equal(native.game.snapshot().scatterOwned, false);
+  native.game.fire();
+  assert.equal(native.game.snapshot().entities.shots, 2);
+});
