@@ -54,6 +54,11 @@ test('mecha design review renders frontal side and rear wing parity plus neon ti
     await page.goto(`/__visual.html?mode=mecha-review&view=${view}&tier=${tier}`);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await expect(page.locator('body')).toHaveAttribute('data-review-view', view);
+    // The scene faces -Z; 'front' must capture the face, not the back-mounted turbine.
+    if (view === 'front')
+      await expect(page.locator('body')).toHaveAttribute('data-review-hemisphere', 'forward');
+    if (view === 'rear')
+      await expect(page.locator('body')).toHaveAttribute('data-review-hemisphere', 'aft');
     await expect(page.locator('body')).toHaveAttribute('data-review-tier', String(tier));
     const canvas = page.locator('canvas');
     await expect(canvas).toBeVisible();
