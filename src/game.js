@@ -125,13 +125,14 @@ export function createGame({
   const frameAudit = createFrameAudit();
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
+  const coarsePointer = matchMedia('(pointer:coarse)');
   const cleanups = [];
   let running = true;
   const addEventListener = (type, fn) => {
     window.addEventListener(type, fn);
     cleanups.push(() => window.removeEventListener(type, fn));
   };
-  const pixelLimit = matchMedia('(pointer:coarse)').matches ? 1.25 : 1.7;
+  const pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
@@ -2368,7 +2369,9 @@ export function createGame({
     }
     invuln -= dt;
     rollCd -= dt;
-    msgTime -= dt;
+    // Touch briefing owns the radio lane; retain the pending real message until
+    // it can be shown. Desktop and native keep their existing timer contract.
+    if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
     spawnCd -= dt;

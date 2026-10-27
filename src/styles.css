@@ -5303,3 +5303,94 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     max-height: min(17vh, 65px);
   }
 }
+
+/* P0: stage briefing and pilot communications are mutually exclusive within
+   the upper HUD. Never place either label on top of the active flight lane. */
+@media (pointer: coarse) {
+  body.in-mission:has(#strategyControls:not([hidden])) #hud .mission {
+    display: none;
+  }
+
+  /* A sector intro is a short compact notice, not a permanent second HUD. */
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission {
+    position: fixed;
+    display: block;
+    box-sizing: border-box;
+    top: max(150px, calc(env(safe-area-inset-top, 0px) + 133px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    bottom: auto;
+    width: min(238px, calc(100vw - 92px));
+    max-width: none;
+    margin: 0;
+    padding: 5px 8px;
+    transform: none;
+    border: 1px solid #62d7cc70;
+    border-radius: 8px;
+    background: #061522eb;
+    text-align: left;
+    pointer-events: none;
+  }
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission .eyebrow {
+    display: block;
+    margin: 0;
+    font: 700 8px/1.2 monospace;
+    letter-spacing: 0.04em;
+  }
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission strong {
+    display: block;
+    margin-top: 2px;
+    font: 800 10px/1.2 monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission .route,
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission #routeLabel {
+    display: none;
+  }
+  /* Intro uses the information rail; radio resumes after the intro. */
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hudNotices > #comms {
+    display: none !important;
+  }
+  /* Danger always takes precedence over a sector intro. */
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro:has(
+      #criticalWarning:not([hidden])
+    )
+    #hud
+    .mission,
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro:has(#shieldWarning:not([hidden]))
+    #hud
+    .mission,
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro:has(#bossIncoming:not([hidden]))
+    #hud
+    .mission {
+    display: none;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission {
+    top: max(166px, calc(env(safe-area-inset-top, 0px) + 150px));
+    width: min(206px, calc(100vw - 106px));
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission:has(#strategyControls:not([hidden])).stage-intro #hud .mission {
+    top: max(86px, calc(env(safe-area-inset-top, 0px) + 69px));
+    left: max(248px, calc(env(safe-area-inset-left, 0px) + 244px));
+    width: min(235px, calc(100vw - 390px));
+    padding: 4px 7px;
+  }
+  body.in-mission:has(#strategyControls:not([hidden])) #hudNotices {
+    max-width: min(330px, calc(100vw - 390px));
+  }
+  body.in-mission:has(#strategyControls:not([hidden])) #hudNotices > #comms {
+    max-width: 100%;
+    min-width: 0;
+  }
+  body.in-mission:has(#strategyControls:not([hidden])) #hudNotices #message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

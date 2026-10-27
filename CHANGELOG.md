@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.17 — Briefing e rádio sem colisão no mobile
+
+- Briefing de setor e comunicação da piloto alternam na faixa superior.
+- O rádio retém a mensagem real até poder ser exibida, sem consumir seu tempo
+  durante o briefing; pausa, reinício, desktop e nativos preservados.
+- Avisos críticos têm precedência e o centro do voo permanece livre.
+
 ## 1.24.16 — Consolidação P0 mobile
 
 - Unifica analógico responsivo de até 128 px, órbita pelo polegar direito, radar compacto, HUD

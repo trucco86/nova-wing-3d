@@ -45,6 +45,7 @@ export function harness({
   seed = 42,
   storage,
   nativeLifecycle = false,
+  coarsePointer = false,
 } = {}) {
   const elements = new Map(
     [
@@ -98,7 +99,9 @@ export function harness({
     innerWidth: 1280,
     innerHeight: 720,
     devicePixelRatio: 1,
-    matchMedia: () => ({ matches: false }),
+    matchMedia: (query) => ({
+      matches: coarsePointer && query.replaceAll(' ', '') === '(pointer:coarse)',
+    }),
     AudioContext,
     localStorage: storage,
   };
