@@ -68,33 +68,24 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
     );
     expect(overlaps(geo.orbit, geo.stick), 'orbit must not obstruct joystick').toBe(false);
     if (viewport.width < 551) {
-      expect(geo.left.x, 'both arrows must remain right of the central ship').toBeGreaterThan(
-        viewport.width * 0.52,
-      );
       expect(overlaps(geo.notices, geo.rpg), 'top alerts must not cover RPG buttons').toBe(false);
       expect(overlaps(geo.notices, geo.radar), 'top alerts must not cover boss radar').toBe(false);
     }
-    expect(geo.orbit.x, 'orbit belongs to the right thumb area').toBeGreaterThan(
-      viewport.width * 0.25,
+    expect(geo.orbit.x + geo.orbit.width, 'orbit stays in the left steering lane').toBeLessThan(
+      viewport.width * 0.5,
     );
-    if (viewport.width > viewport.height) {
-      expect(
-        geo.orbit.x + geo.orbit.width,
-        'landscape orbit dock stays directly left of action pad',
-      ).toBeLessThanOrEqual(geo.actions.x);
-      expect(
-        Math.abs(geo.orbit.y + geo.orbit.height - (geo.actions.y + geo.actions.height)),
-        'landscape orbit dock shares the lower action lane',
-      ).toBeLessThanOrEqual(28);
+    expect(
+      Math.abs(geo.orbit.x - geo.stick.x),
+      'orbit aligns with joystick edge',
+    ).toBeLessThanOrEqual(8);
+    const steeringGap = geo.stick.y - (geo.orbit.y + geo.orbit.height);
+    expect(steeringGap, 'orbit stays above steering without overlap').toBeGreaterThanOrEqual(8);
+    expect(steeringGap, 'orbit remains within left-thumb reach').toBeLessThanOrEqual(24);
+    if (viewport.width <= 350) {
+      expect(geo.left.x, 'narrow layout stacks orbit buttons').toBe(geo.right.x);
+      expect(geo.right.y).toBeGreaterThanOrEqual(geo.left.y + geo.left.height + 4);
     } else {
-      expect(
-        geo.actions.y - (geo.orbit.y + geo.orbit.height),
-        'portrait orbit stays immediately above actions',
-      ).toBeGreaterThanOrEqual(0);
-      expect(
-        geo.actions.y - (geo.orbit.y + geo.orbit.height),
-        'portrait orbit stays close to actions',
-      ).toBeLessThanOrEqual(48);
+      expect(geo.left.y, 'wide layout keeps orbit buttons on one row').toBe(geo.right.y);
     }
     for (const id of ['boss', 'rpg', 'camera', 'status', 'score', 'orbit', 'actions']) {
       expect(overlaps(geo.radar, geo[id]), 'radar must not overlap ' + id).toBe(false);
@@ -136,6 +127,42 @@ test('P0 touch orbit dock remains thumb-reachable and radar has a separate telem
     expect(returned, 'holding right orbit must turn the ship back').toBeGreaterThan(after + 0.35);
     await page.screenshot({
       path: info.outputPath('orbit-thumb-dock-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
+    // Use the actual preference handler; the mirrored dock must follow the
+    // steering joystick rather than the FIRE/BOOST pad.
+    await page.evaluate(() => {
+      const setting = document.querySelector('#settingLeftHanded');
+      setting.checked = true;
+      setting.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await expect(page.locator('body')).toHaveClass(/left-handed/);
+    const mirroredOrbit = await page.locator('#orbitControls').boundingBox();
+    const mirroredStick = await page.locator('#stick').boundingBox();
+    const mirroredActions = await page.locator('#touch .actions').boundingBox();
+    expect(mirroredStick.x, 'left-handed preference mirrors steering').toBeGreaterThan(
+      viewport.width / 2,
+    );
+    expect(
+      Math.abs(mirroredOrbit.x + mirroredOrbit.width - (mirroredStick.x + mirroredStick.width)),
+    ).toBeLessThanOrEqual(8);
+    expect(mirroredStick.y - (mirroredOrbit.y + mirroredOrbit.height)).toBeGreaterThanOrEqual(8);
+    expect(mirroredStick.y - (mirroredOrbit.y + mirroredOrbit.height)).toBeLessThanOrEqual(24);
+    expect(overlaps(mirroredOrbit, mirroredActions), 'mirrored orbit avoids actions').toBe(false);
+    for (const id of ['orbitLeft', 'orbitRight']) {
+      const b = await page.locator('#' + id).boundingBox();
+      expect(
+        await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, center(b)),
+      ).toBe(id);
+    }
+    await page.screenshot({
+      path: info.outputPath(
+        'orbit-steering-mirrored-' + viewport.width + 'x' + viewport.height + '.png',
+      ),
+    });
+    await page.evaluate(() => {
+      const setting = document.querySelector('#settingLeftHanded');
+      setting.checked = false;
+      setting.dispatchEvent(new Event('input', { bubbles: true }));
     });
   }
   expect(errors).toEqual([]);

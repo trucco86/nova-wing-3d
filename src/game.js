@@ -1589,7 +1589,8 @@ export function createGame({
       $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
       $('pause').textContent = 'Ⅱ';
-      message('Missão retomada.');
+      if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0 && msgTime > 0))
+        message('Missão retomada.');
       music?.resume();
       $('game').focus?.({ preventScroll: true });
     }

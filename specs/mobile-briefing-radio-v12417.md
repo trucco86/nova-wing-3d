@@ -1,5 +1,20 @@
 # P0 mobile briefing and radio — v1.24.17
 
+## Updated steering requirement
+
+The maintainer changed the default orbit placement: both boss-orbit actions belong
+on the LEFT, immediately ABOVE the steering joystick, for the left thumb. This
+supersedes the historical right-thumb orbit requirements in v1.24.12.
+
+- Keep both touch targets at least 60x60 px and 8–24 px above the joystick.
+- At 390x844 and 844x390, use a horizontal pair. At 320x568, stack the pair in a
+  narrow 68 px dock so the right-hand FIRE/BOOST/action pad stays unobstructed.
+- Dock and joystick share the same left safe-area inset. Mirror the dock for the
+  existing left-handed preference, keeping the steering-side intent.
+- Keep the central reticle, all right-hand actions, RPG, radar and pause clear.
+- Existing real sustained-touch tests must continue to change the boss orbit angle
+  in both directions; screenshot all three layouts.
+
 ## Behavior
 
 - For touch gameplay, the three-second sector briefing occupies a compact upper

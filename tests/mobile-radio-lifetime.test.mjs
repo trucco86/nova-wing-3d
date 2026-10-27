@@ -21,14 +21,17 @@ test('touch briefing and pending radio freeze during pause and reset on sector r
   const h = harness({ coarsePointer: true });
   t.after(() => h.close());
   h.game.start();
+  const initial = h.elements.get('message').textContent;
   h.advance(1);
   h.game.pause();
   h.advance(10);
   assert.equal(h.document.body.classList.contains('stage-intro'), true);
   assert.equal(h.elements.get('comms').classList.contains('active'), true);
   h.elements.get('pauseResume').onclick();
+  assert.equal(h.elements.get('message').textContent, initial, 'resume preserves the pending cue');
   h.advance(2.3);
   assert.equal(h.document.body.classList.contains('stage-intro'), false);
+  assert.equal(h.elements.get('message').textContent, initial);
   assert.equal(h.elements.get('comms').classList.contains('active'), true);
   h.game.pause();
   h.elements.get('pauseRestart').onclick();

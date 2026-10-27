@@ -4,7 +4,8 @@
 
 - v1.24.16 consolidada e publicada pelas PRs #93/#94.
 - Próximo P0: portar a correção de briefing/comunicação da #95 sobre a base
-  publicada, preservar a duração real do rádio e validar retrato/paisagem.
+  publicada, preservar a duração real do rádio e mover ORBITAR para a esquerda,
+  imediatamente acima do direcional, conforme pedido atualizado do mantenedor.
 - Depois: Arsenal/Hangar/Mapa (#80/#85), então Mecha/Fighter e paletas dos setores.
 - Liberações do mantenedor recebidas; CI, revisão e deploy continuam verificáveis
   por commit. Não confundir a autorização com medições físicas não fornecidas.

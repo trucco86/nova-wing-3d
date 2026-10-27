@@ -6,6 +6,8 @@
 - O rádio retém a mensagem real até poder ser exibida, sem consumir seu tempo
   durante o briefing; pausa, reinício, desktop e nativos preservados.
 - Avisos críticos têm precedência e o centro do voo permanece livre.
+- Órbita do chefe no lado esquerdo, imediatamente acima do direcional, com
+  composição compacta em telas de 320 px.
 
 ## 1.24.16 — Consolidação P0 mobile
 

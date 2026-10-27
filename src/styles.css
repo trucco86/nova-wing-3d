@@ -5394,3 +5394,78 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     text-overflow: ellipsis;
   }
 }
+
+/* v1.24.17: the left thumb owns steering and boss orbit. Keep orbit immediately
+   above the joystick, with compact vertical arrows where the action pad is wide. */
+@media (pointer: coarse) {
+  body.in-mission {
+    --nw-orbit-stick-size: 115px;
+    --nw-orbit-stick-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    right: auto;
+    bottom: calc(var(--nw-orbit-stick-bottom) + var(--nw-orbit-stick-size) + 12px);
+    left: max(14px, env(safe-area-inset-left, 0px));
+    width: 134px;
+    min-height: 68px;
+    grid-template-columns: repeat(2, 60px);
+    grid-template-rows: 60px;
+    gap: 6px;
+    padding: 3px;
+    transform: none;
+  }
+  body.in-mission #orbitLeft {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  body.in-mission #orbitRight {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  body.in-mission #orbitControls:not([hidden])::before {
+    display: block;
+  }
+  body.left-handed.in-mission #orbitControls:not([hidden]) {
+    left: auto;
+    right: max(14px, env(safe-area-inset-right, 0px));
+  }
+  /* row-reverse already mirrors the two children; a negative action order
+     would reverse them a second time and leave the joystick on the left. */
+  body.left-handed.in-mission #touch .actions {
+    order: 0;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission {
+    --nw-orbit-stick-size: 128px;
+    --nw-orbit-stick-bottom: max(15px, env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (pointer: coarse) and (max-width: 390px) {
+  body.in-mission {
+    --nw-orbit-stick-size: 102px;
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission {
+    --nw-orbit-stick-size: 88px;
+  }
+}
+@media (pointer: coarse) and (max-width: 350px) {
+  body.in-mission #orbitControls:not([hidden]) {
+    width: 68px;
+    grid-template-columns: 60px;
+    grid-template-rows: repeat(2, 60px);
+  }
+  body.in-mission #orbitRight {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission {
+    --nw-orbit-stick-size: 91px;
+    --nw-orbit-stick-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  }
+}
