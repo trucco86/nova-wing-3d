@@ -18,6 +18,8 @@ test('shields, attacks and ordinary communications stay in the top information r
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  // On touch screens the sector intro temporarily owns the radio lane.
+  if (info.project.name === 'mobile') await page.evaluate(() => window.fixture.advance(3.1));
 
   const rail = page.locator('#hudNotices');
   await expect(rail).toBeVisible();
