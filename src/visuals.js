@@ -664,6 +664,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
       earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
     },
+    setAsteroidInterior(active) {
+      if (!dynamicFlight || sceneryTheme !== 'asteroids') return;
+      // Remove the open-space backdrop when the player enters the rock shell.
+      sectorScenery.visible = !active;
+      starfield.visible = !active;
+      moon.visible = atmosphere.visible = !active;
+      scene.fog.density = active ? 0.0015 : 0.00045;
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -678,6 +686,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      sectorScenery.visible = true;
+      starfield.visible = true;
       city.position.y = cityFar.position.y = 0;
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
