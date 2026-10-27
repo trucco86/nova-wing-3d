@@ -38,6 +38,17 @@ export function advanceJourney(state, event) {
   return next ? { ...state, phase: next } : state;
 }
 
+/** Time gates are intentionally capped before the boss; defeating the boss is an explicit event. */
+export function journeyPhaseAt(elapsedSeconds, stageDuration) {
+  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0) throw new RangeError('Invalid elapsed time');
+  if (!Number.isFinite(stageDuration) || stageDuration <= 0) throw new RangeError('Invalid stage duration');
+  const progress = Math.min(1, elapsedSeconds / stageDuration);
+  if (progress < 0.2) return 'approach';
+  if (progress < 0.35) return 'transition';
+  if (progress < 0.78) return 'interior';
+  return 'boss';
+}
+
 export function initialJourney(sectorIndex) {
   return { sectorIndex, destination: journeyForSector(sectorIndex).destination, phase: 'approach' };
 }
