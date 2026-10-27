@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { STAGE_JOURNEYS, initialJourney, advanceJourney, journeyForSector } from '../src/stage-journey.js';
+import { STAGE_JOURNEYS, initialJourney, advanceJourney, journeyForSector, journeyPhaseAt } from '../src/stage-journey.js';
 
 test('all ten sectors have distinct destinations and playable transition profiles', () => {
   assert.equal(STAGE_JOURNEYS.length, 10);
@@ -28,4 +28,14 @@ test('invalid sectors and phases are rejected', () => {
   assert.throws(() => initialJourney(-1), RangeError);
   assert.throws(() => journeyForSector(10), RangeError);
   assert.throws(() => advanceJourney({ phase: 'unknown' }, 'arenaReached'), TypeError);
+});
+
+test('journey pacing keeps the boss gate locked regardless of elapsed time', () => {
+  assert.equal(journeyPhaseAt(0, 100), 'approach');
+  assert.equal(journeyPhaseAt(20, 100), 'transition');
+  assert.equal(journeyPhaseAt(35, 100), 'interior');
+  assert.equal(journeyPhaseAt(78, 100), 'boss');
+  assert.equal(journeyPhaseAt(200, 100), 'boss');
+  assert.throws(() => journeyPhaseAt(-1, 100), RangeError);
+  assert.throws(() => journeyPhaseAt(0, 0), RangeError);
 });
