@@ -5178,6 +5178,8 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     pointer-events: auto;
   }
   body.in-mission #strategyControls #strategyDrawer {
+    grid-column: 1;
+    grid-row: 1;
     min-width: 0;
     width: auto;
     height: auto;
@@ -5204,6 +5206,8 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     line-height: 1.1;
   }
   body.in-mission #strategyControls #quickRpg {
+    grid-column: 2;
+    grid-row: 1;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: stretch;
@@ -5232,18 +5236,19 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
   }
   body.in-mission #strategyControls #strategyDrawer[open] {
     position: absolute;
-    top: 0;
+    top: calc(100% + 4px);
     left: 0;
     z-index: 2;
     width: min(238px, calc(100vw - 106px));
-    max-height: min(28dvh, 186px);
+    max-height: min(19dvh, 110px);
     overflow-y: auto;
     overscroll-behavior: contain;
     box-shadow: 0 6px 18px #010811aa;
   }
+  /* Quick tactical actions must remain actionable while the details drawer is open. */
   body.in-mission #strategyControls:has(#strategyDrawer[open]) #quickRpg {
-    visibility: hidden;
-    pointer-events: none;
+    visibility: visible;
+    pointer-events: auto;
   }
 }
 
