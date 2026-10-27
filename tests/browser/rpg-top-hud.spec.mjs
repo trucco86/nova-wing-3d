@@ -83,10 +83,17 @@ test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight
     // without pushing the permanent RPG shortcuts into the middle of the screen.
     await page.locator('#strategyDrawer summary').click();
     await expect(page.locator('#strategyDrawer')).toHaveAttribute('open');
-    await expect(page.locator('#quickRpg')).toHaveCSS('visibility', 'hidden');
+    await expect(page.locator('#quickRpg')).toHaveCSS('visibility', 'visible');
+    await expect(page.locator('#specialCast')).toBeVisible();
     const opened = await page.locator('#strategyDrawer').boundingBox();
-    expect(opened.y).toBeLessThan(viewport.height * 0.34);
-    expect(opened.height).toBeLessThanOrEqual(Math.min(viewport.height * 0.28, 186) + 2);
+    expect(opened.y).toBeLessThan(viewport.height * 0.45);
+    expect(opened.height).toBeLessThanOrEqual(Math.min(viewport.height * 0.19, 110) + 2);
+    const cast = await page.locator('#specialCast').boundingBox();
+    const activeTarget = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.id,
+      { x: cast.x + cast.width / 2, y: cast.y + cast.height / 2 },
+    );
+    expect(activeTarget, 'cast button stays clickable while details are open').toBe('specialCast');
     await page.locator('#strategyDrawer summary').click();
     await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
   }
