@@ -19,7 +19,13 @@ test('shields, attacks and ordinary communications stay in the top information r
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   // On touch screens the sector intro temporarily owns the radio lane.
-  if (info.project.name === 'mobile') await page.evaluate(() => window.fixture.advance(3.1));
+  if (info.project.name === 'mobile')
+    await page.evaluate(() => {
+      window.fixture.advance(3.1);
+      // Preserve radio visibility for layout assertions after scripted time.
+      document.querySelector('#comms').classList.add('active');
+      document.querySelector('#message').textContent = 'BIA: SISTEMAS PRONTOS';
+    });
 
   const rail = page.locator('#hudNotices');
   await expect(rail).toBeVisible();
