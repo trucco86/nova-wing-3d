@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.16 — Consolidação P0 mobile
+
+- Unifica analógico responsivo de até 128 px, órbita pelo polegar direito, radar compacto, HUD
+  periférico, pausa acessível e auditoria opcional de FPS.
+- Reserva a faixa superior para os comandos rápidos do RPG, sem ocultá-los ao abrir
+  os detalhes táticos e sem ocupar o corredor central do combate.
+- Mantém dificuldade, missão estendida, ascensão por BOOST e retirada do subchefe;
+  aceite do mantenedor recebido, promoção condicionada aos gates técnicos finais.
+
 ## 1.24.14 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.

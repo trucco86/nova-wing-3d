@@ -5171,6 +5171,155 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
     text-align: center;
   }
 }
+/* P0 RPG top rail: the permanent combat commands belong to the upper HUD, never
+   the reticle/player corridor. The expanded details panel is opt-in and scrollable. */
+@media (pointer: coarse) {
+  body.in-mission #strategyControls {
+    position: fixed;
+    top: max(87px, calc(env(safe-area-inset-top, 0px) + 70px));
+    bottom: auto;
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    display: grid;
+    grid-template-columns: 66px minmax(0, 1fr);
+    align-items: stretch;
+    gap: 4px;
+    width: min(238px, calc(100vw - 106px));
+    max-width: none;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    z-index: 37;
+    pointer-events: auto;
+  }
+  body.in-mission #strategyControls #strategyDrawer {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    box-sizing: border-box;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1px;
+    box-sizing: border-box;
+    min-height: 46px;
+    margin: 0;
+    padding: 1px;
+    font-size: 9px;
+    line-height: 1.1;
+    text-align: center;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary b {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+  body.in-mission #strategyControls #quickRpg {
+    grid-column: 2;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: stretch;
+    min-width: 0;
+    min-height: 54px;
+    gap: 3px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3px;
+    border-radius: 9px;
+  }
+  body.in-mission #strategyControls #quickRpg button {
+    display: block;
+    grid-column: auto;
+    min-width: 0;
+    width: 100%;
+    min-height: 46px;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 2px 1px;
+    font: 700 8px/1.12 monospace;
+    letter-spacing: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    touch-action: manipulation;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 2;
+    width: min(238px, calc(100vw - 106px));
+    max-height: min(19dvh, 110px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 6px 18px #010811aa;
+  }
+  /* Quick tactical actions must remain actionable while the details drawer is open. */
+  body.in-mission #strategyControls:has(#strategyDrawer[open]) #quickRpg {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
+/* Portrait: reserve separate compact rows for RPG actions and priority alerts.
+   This prevents the previous 170px+ RPG position from covering the combat field. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #strategyControls {
+    top: max(89px, calc(env(safe-area-inset-top, 0px) + 73px));
+  }
+  body.in-mission #hudNotices {
+    top: max(150px, calc(env(safe-area-inset-top, 0px) + 133px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: min(238px, calc(100vw - 92px));
+    max-height: 48px;
+    align-items: flex-start;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #strategyControls {
+    top: max(104px, calc(env(safe-area-inset-top, 0px) + 88px));
+    grid-template-columns: 60px minmax(0, 1fr);
+    width: min(206px, calc(100vw - 106px));
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    width: min(206px, calc(100vw - 106px));
+  }
+  body.in-mission #strategyControls #quickRpg button {
+    font-size: 7.5px;
+  }
+  body.in-mission #hudNotices {
+    top: max(166px, calc(env(safe-area-inset-top, 0px) + 150px));
+    max-height: 38px;
+  }
+}
+
+/* Landscape: the RPG dock uses the left top edge; warnings occupy a separate
+   upper lane, while orbit/FIRE/BOOST remain controlled from the lower edge. */
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #strategyControls {
+    top: max(86px, calc(env(safe-area-inset-top, 0px) + 69px));
+    width: 230px;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    width: 230px;
+  }
+  body.in-mission #hudNotices {
+    left: max(246px, calc(env(safe-area-inset-left, 0px) + 242px));
+    right: max(85px, env(safe-area-inset-right, 0px));
+    transform: none;
+    width: auto;
+    max-height: min(17vh, 65px);
+  }
+}
 
     </style>
   </head>
@@ -5479,7 +5628,7 @@ body.in-mission #hudNotices > #hitFeedback[data-impact='blocked']::after {
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
-        <span id="gameVersion">v1.24.14</span>
+        <span id="gameVersion">v1.24.16</span>
       </section>
       <section
         id="cinematic"
