@@ -131,16 +131,28 @@ export function createAsteroidInterior(scene) {
         : { collided: false, x: position.x, y: position.y };
     },
     projectileBlocked(from, to) {
-      return (phase === 'transition' || phase === 'interior' || phase === 'escape') &&
-        crossesCavernWall(from, to);
+      return (
+        (phase === 'transition' || phase === 'interior' || phase === 'escape') &&
+        crossesCavernWall(from, to)
+      );
     },
     snapshot() {
-      return { phase, cavernVisible: tunnel.visible, entranceVisible: mouth.visible,
-        arenaVisible: arena.visible, rings: rings.length };
+      return {
+        phase,
+        cavernVisible: tunnel.visible,
+        entranceVisible: mouth.visible,
+        arenaVisible: arena.visible,
+        rings: rings.length,
+      };
     },
     destroy() {
       scene.remove(mouth, tunnel, arena);
-      for (const mesh of [outerShell, portal, ...rings.flatMap((r) => r.children), ...arena.children]) {
+      for (const mesh of [
+        outerShell,
+        portal,
+        ...rings.flatMap((r) => r.children),
+        ...arena.children,
+      ]) {
         mesh.geometry?.dispose();
       }
       rockGeometry.dispose();

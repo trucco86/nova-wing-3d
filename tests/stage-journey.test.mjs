@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { STAGE_JOURNEYS, initialJourney, advanceJourney, journeyForSector, journeyPhaseAt } from '../src/stage-journey.js';
+import {
+  STAGE_JOURNEYS,
+  initialJourney,
+  advanceJourney,
+  journeyForSector,
+  journeyPhaseAt,
+} from '../src/stage-journey.js';
 
 test('all ten sectors have distinct destinations and playable transition profiles', () => {
   assert.equal(STAGE_JOURNEYS.length, 10);

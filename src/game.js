@@ -2388,13 +2388,14 @@ export function createGame({
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
       if (sectorIndex === 2) {
         world.setAsteroidInterior(journey.phase !== 'approach' && journey.phase !== 'complete');
-        route.label = ({
-          approach: 'APROXIMAÇÃO · MEGA-ASTEROIDE',
-          transition: 'ENTRADA · CAVERNA',
-          interior: 'COMBATE · INTERIOR DO ASTEROIDE',
-          boss: 'NÚCLEO · PERFURADOR',
-          escape: 'FUGA · COLAPSO DO ASTEROIDE',
-        })[journey.phase] ?? route.label;
+        route.label =
+          {
+            approach: 'APROXIMAÇÃO · MEGA-ASTEROIDE',
+            transition: 'ENTRADA · CAVERNA',
+            interior: 'COMBATE · INTERIOR DO ASTEROIDE',
+            boss: 'NÚCLEO · PERFURADOR',
+            escape: 'FUGA · COLAPSO DO ASTEROIDE',
+          }[journey.phase] ?? route.label;
       }
       $('routeLabel').textContent = route.label;
     }
@@ -3266,9 +3267,7 @@ export function createGame({
       const scenerySpeed =
         (boosting ? 90 : 48) *
         (1 + Math.min(30, stage()) * 0.02) *
-        (dynamicFlight
-          ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
-          : 1);
+        (dynamicFlight ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) : 1);
       const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
         (dynamicFlight && state === 'collapsing');
