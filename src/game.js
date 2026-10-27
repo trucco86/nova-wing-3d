@@ -705,6 +705,7 @@ export function createGame({
   }
   function showShop() {
     recordStageCompletion();
+    document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
     keys.clear();
@@ -788,6 +789,7 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
     arcade = null;
     arcadeDone = false;
@@ -1516,6 +1518,7 @@ export function createGame({
 
   function finish(win) {
     if (win) recordStageCompletion();
+    document.body.classList.add('ranking-intermission');
     releaseControls();
     if (win) music?.start(sectorIndex, 'victory');
     else music?.pause();
@@ -3513,7 +3516,7 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
-      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
+      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed', 'ranking-intermission');
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;
       music?.destroy();
