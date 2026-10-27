@@ -5,7 +5,9 @@ test('mobile steering target is enlarged without overriding compact viewport rul
 }, info) => {
   test.skip(info.project.name !== 'mobile', 'Touch controls require mobile context');
   for (const { width, height, expected } of [
-    { width: 844, height: 390, expected: 128 },
+    { width: 430, height: 932, expected: 128 },
+    // Compact landscape uses the dedicated max-height: 550px rule.
+    { width: 844, height: 390, expected: 91 },
     { width: 390, height: 844, expected: 102 },
     { width: 320, height: 568, expected: 88 },
   ]) {
