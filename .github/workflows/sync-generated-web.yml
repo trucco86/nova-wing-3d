@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - fix/ranking-account-consent-isolation-20261027
 permissions:
   contents: write
   actions: write
@@ -24,20 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Synchronize versioned Web P0 candidate only on isolated branch
-        if: github.ref == 'refs/heads/fix/ranking-account-consent-isolation-20261027'
-        run: |
-          git add -- index.html src/ranking-client.js tests/ranking-account-consent.test.mjs specs/ranking-account-consent-p0.md
-          if git diff --cached --quiet; then
-            echo 'HTML and source already synchronized.'
-          else
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(web): regenerate v1.24.22 consent isolation distribution'
-            git push origin HEAD:fix/ranking-account-consent-isolation-20261027
-          fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
