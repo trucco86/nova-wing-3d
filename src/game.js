@@ -731,6 +731,7 @@ export function createGame({
       $('buy' + k).textContent = SHOP[k].label + ' · ' + status;
       $('buy' + k).disabled = full || credits < price;
     }
+    $('scatterLoadout').hidden = !dynamicFlight;
     $('equipScatter').hidden = !dynamicFlight;
     $('equipScatter').disabled = !scatterOwned || !dynamicFlight;
     $('equipScatter').textContent = fireMode === 'scatter' ? 'EQUIPAR PULSO' : 'EQUIPAR DISPERSÃO';
