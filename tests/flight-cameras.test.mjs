@@ -65,7 +65,7 @@ test('web camera selection preserves combat and pause, resets on restart, and is
 test('pausing a 2D rift keeps the cockpit hidden and restores it only on return to flight', (t) => {
   const storage = {
     getItem: () =>
-      JSON.stringify({ version: 1, sector: 2, credits: 0, weapon: 0, armor: 0, pods: 0 }),
+      JSON.stringify({ version: 1, sector: 6, credits: 0, weapon: 0, armor: 0, pods: 0 }),
     setItem() {},
   };
   const h = harness({ storage, spawnEncounters: true });
