@@ -571,9 +571,10 @@
             Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
           </p>
           <div class="shop-grid">
-            <button id="buyweapon">CANHÃO</button><button id="buyarmor">BLINDAGEM</button
+            <button id="buyweapon">CANHÃO</button><button id="buyvolley">MULTITIRO</button
+            ><button id="buyrapid">NÚCLEO RÁPIDO</button><button id="buyarmor">BLINDAGEM</button
             ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
-            ><button id="buybomb">BOMBA</button>
+            ><button id="buybomb">BOMBA</button><button id="buybombPack">BOMBAS ×3</button>
           </div>
           <details id="customization">
             <summary>PINTURAS DA NOVA-7</summary>
@@ -584,10 +585,33 @@
               ><button id="skin-solar">SOLAR</button>
             </div>
           </details>
-          <button class="primary" id="nextSector">SALTAR PARA O PRÓXIMO SETOR ↗</button
+          <button class="primary" id="nextSector">VER MAPA E PREPARAR A PRÓXIMA MISSÃO ↗</button
           ><small
             >Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small
           >
+        </div>
+      </section>
+      <section id="campaignMap" hidden aria-label="Mapa de progresso da campanha">
+        <div class="campaign-map-card">
+          <div class="eyebrow">FIVE CATS / ROTA DE PERSEGUIÇÃO</div>
+          <h2>MAPA DA GALÁXIA</h2>
+          <p id="mapProgress"></p>
+          <div
+            id="campaignRoute"
+            class="campaign-route-map"
+            aria-label="Progresso dos dez setores"
+          ></div>
+          <div class="campaign-brief">
+            <span class="eyebrow">INTELIGÊNCIA DA PRÓXIMA MISSÃO</span>
+            <h3 id="mapSectorTitle"></h3>
+            <p id="mapSectorBrief"></p>
+            <p id="mapSectorThreat"></p>
+            <strong id="mapSectorBoss"></strong>
+          </div>
+          <div class="campaign-map-actions">
+            <button id="mapBack">VOLTAR AO HANGAR</button>
+            <button class="primary" id="mapLaunch">INICIAR PRÓXIMA FASE ↗</button>
+          </div>
         </div>
       </section>
       <section id="result" hidden>

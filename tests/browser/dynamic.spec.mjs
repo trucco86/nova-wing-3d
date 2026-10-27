@@ -116,6 +116,9 @@ test('hangar equips purchased paint and preserves it on reload', async ({ page }
   await expect(page.locator('#skin-ember')).toContainText('EQUIPADA');
   await page.screenshot({ path: info.outputPath('paint-shop.png') });
   await page.locator('#nextSector').click();
+  await expect(page.locator('#campaignMap')).toBeVisible();
+  await page.locator('#mapLaunch').click();
+  expect(await page.evaluate(() => window.fixture.game.snapshot().sector)).toBe(2);
   await page.evaluate(() => window.fixture.advance(0.1));
   await page.screenshot({ path: info.outputPath('paint-equipped.png') });
   await page.goto('/');

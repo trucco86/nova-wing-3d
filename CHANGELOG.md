@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.18 — Arsenal do hangar e rota da campanha
+
+- Hangar com dois níveis de multitiro e cadência, bombas individuais e pacote ×3 com teto de oito na web.
+- Mapa de progresso entre fases, briefing da próxima missão e retorno ao hangar antes de lançar.
+- Checkpoint v1 preservado, sem duplicar reabastecimento ao retomar; textos novos em PT/EN/ES.
+- Preserva a órbita acima do direcional esquerdo da v1.24.17.
+
 ## 1.24.17 — Briefing e rádio sem colisão no mobile
 
 - Briefing de setor e comunicação da piloto alternam na faixa superior.

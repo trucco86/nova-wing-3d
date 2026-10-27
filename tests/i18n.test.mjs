@@ -41,6 +41,22 @@ test('defaults, proper names and spacing are preserved', () => {
   assert.equal(translateText('MARVIN / NOVA-7', 'en'), 'MARVIN / NOVA-7');
   assert.equal(translateText('CIDADE DAS MÁQUINAS', 'xx'), 'CIDADE DAS MÁQUINAS');
 });
+test('armory purchases and campaign intelligence localize with numeric progress intact', () => {
+  assert.equal(
+    translateText('MULTITIRO · +1 PROJÉTIL · 260 CR', 'en'),
+    'MULTISHOT · +1 PROJECTILE · 260 CR',
+  );
+  assert.equal(translateText('2 / 10 SETORES CONCLUÍDOS', 'es'), '2 / 10 SECTORES COMPLETADOS');
+  assert.equal(
+    translateText('PACOTE BOMBAS ×3 · PRECISA DE 3 VAGAS', 'en'),
+    'BOMB PACK ×3 · NEEDS 3 FREE SLOTS',
+  );
+  assert.equal(
+    translateText('AMEAÇAS: Defesas costeiras e máquinas submarinas', 'en'),
+    'THREATS: Coastal defenses and underwater machines',
+  );
+  assert.equal(translateText('Setor 2: DISTRITO PORTUÁRIO', 'es'), 'Sector 2: DISTRITO PORTUARIO');
+});
 test('language switching restores original source and changes document language', () => {
   const node = { nodeType: 3, nodeValue: 'CIDADE DAS MÁQUINAS' };
   const body = {
