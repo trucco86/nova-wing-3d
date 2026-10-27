@@ -10,10 +10,15 @@ test('ten campaign sectors use distinct sky and accent palettes without altering
     assert.match(sky, /^#[0-9a-f]{6}$/i);
     assert.match(accent, /^#[0-9a-f]{6}$/i);
     assert.notEqual(sky.toLowerCase(), accent.toLowerCase());
-    assert.ok(duration >= 120, 'keep the approved longer mission pacing');
+    assert.ok(duration >= 80, 'do not restore obsolete 65–90-second stage pacing');
     return sky + ':' + accent;
   });
   assert.equal(new Set(signatures).size, 10);
+  assert.deepEqual(
+    SECTORS.map(({ duration }) => duration),
+    [145, 80, 82, 88, 88, 92, 92, 98, 98, 104],
+    'preserve the existing v1.24.19 mission durations exactly',
+  );
 });
 
 test('sector lighting really changes background, not just the HUD color', () => {
