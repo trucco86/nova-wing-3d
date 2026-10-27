@@ -24,6 +24,11 @@ test('mecha geometry remains within the chase camera at each first transformatio
     h.advance(time - last, 0.02);
     last = time;
     assert.ok(robot?.visible, 'mecha rig must be visible at ' + time + 's');
+    assert.equal(
+      robot.parent.visible,
+      true,
+      'invulnerability must never hide the full robot at ' + time + 's',
+    );
     assert.ok(camera?.isPerspectiveCamera, 'render camera must be available');
     robot.updateWorldMatrix(true, true);
     camera.updateWorldMatrix(true, false);
