@@ -63,6 +63,21 @@ function wing(points, m) {
   g.rotateX(Math.PI / 2);
   return new T.Mesh(g, m);
 }
+// Single canonical wing profile shared by all fighter models and the Mecha 2.0.
+const SHARED_FIGHTER_WING = [
+  [1.3, -1.15],
+  [4.65, 0.8],
+  [4.12, 1.65],
+  [1.73, 0.82],
+];
+function sharedFighterWing(side, material) {
+  const mesh = wing(
+    SHARED_FIGHTER_WING.map(([x, z]) => [side * x, z]),
+    material,
+  );
+  mesh.userData.sharedWingProfile = 'fighter-v1';
+  return mesh;
+}
 function line(points, color = '#4bf6d8') {
   return new T.Line(
     new T.BufferGeometry().setFromPoints(points.map((p) => new T.Vector3(...p))),
