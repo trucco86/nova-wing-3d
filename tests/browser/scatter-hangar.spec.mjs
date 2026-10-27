@@ -37,12 +37,16 @@ test('scatter cannon is bought/equipped in hangar and fires a real close-range c
     await page.screenshot({ path: info.outputPath('next-sector-briefing-no-weapon-overlap.png') });
     await page.evaluate(() => window.fixture.advance(3.2));
     await expect(page.locator('body')).not.toHaveClass(/stage-intro/);
-    // The tactical drawer independently suppresses this label to avoid
-    // overlaps. Closing the drawer allows the loadout rail to return.
+    // The compact mobile HUD deliberately hides the loadout's children while
+    // the tactical shortcuts occupy that rail, leaving zero-size parent layout.
+    // Assert the temporary stage-intro CSS lock releases, not the size of a
+    // deliberately empty element.
     await page.locator('#strategyDrawer').evaluate((drawer) => {
       drawer.open = false;
     });
-    await expect(page.locator('#loadout')).toBeVisible();
+    await expect
+      .poll(() => page.locator('#loadout').evaluate((node) => getComputedStyle(node).visibility))
+      .toBe('visible');
   }
   await page.evaluate(() => window.fixture.game.fire());
   const shot = await page.evaluate(() => window.fixture.game.snapshot());
