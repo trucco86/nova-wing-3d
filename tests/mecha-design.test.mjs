@@ -249,3 +249,24 @@ test('real touch and keyboard boost share mech pose, pause and energy-exhaustion
   });
   assert.deepEqual(runs[0], runs[1], 'touch must animate the same pose as keyboard');
 });
+
+test('newly transformed mech stays visible throughout invulnerability without relying on BOOST', (t) => {
+  let robot;
+  const h = harness({
+    observeScene(scene) {
+      robot = scene.getObjectByName('five-cats-flight-mech') ?? robot;
+    },
+  });
+  t.after(() => h.close());
+  h.game.start();
+  h.key('KeyT');
+  for (const time of [0.08, 0.35, 0.85, 1.25]) {
+    const dt = time - (h.__lastFrame ?? 0);
+    h.advance(dt, 0.02);
+    h.__lastFrame = time;
+    assert.ok(robot?.visible, 'mecha rig stays enabled at ' + time + 's');
+    assert.equal(robot.parent.visible, true, 'parent fighter cannot blink away the mech');
+  }
+  h.advance(1.6);
+  assert.equal(robot.parent.visible, true);
+});
