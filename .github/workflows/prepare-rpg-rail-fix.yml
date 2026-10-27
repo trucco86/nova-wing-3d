@@ -1,0 +1,36 @@
+name: Refresh RPG top HUD candidate build after regression fix
+on:
+  push:
+    branches:
+      - fix/p0-rpg-top-rail-20261026
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Refresh generated web build
+        run: npm run release:prepare -- 1.24.15
+      - name: Format
+        run: npm run format
+      - name: Validate
+        run: npm run validate
+      - name: Commit versioned candidate
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json CHANGELOG.md releases/v1.24.15.md index.html ios/App/App.xcodeproj/project.pbxproj src/styles.css tests/browser/rpg-top-hud.spec.mjs specs/rpg-top-hud-v12415.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'build(mobile): refresh v1.24.15 RPG HUD after interaction repair'
+            git push origin HEAD:fix/p0-rpg-top-rail-20261026
+          fi
