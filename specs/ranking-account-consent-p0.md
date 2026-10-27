@@ -1,6 +1,7 @@
 # P0 — Isolamento de consentimento e apelido entre contas Google (#110)
 
 ## Risco
+
 Na candidata #107, o formulário de participação e o nickname eram compartilhados
 pelo navegador mesmo quando o Firebase mudava de A para visitante ou B.
 Um upload de pontuação iniciado antes da troca poderia obter token depois da
@@ -8,6 +9,7 @@ troca e prosseguir sem consentimento da identidade atual. A UI ainda podia
 exibir linhas do histórico privado da conta anterior enquanto aguardava API.
 
 ## Contratos de aceite
+
 - Apelido e checkbox de ranking começam **sempre vazios/desmarcados**, mesmo
   após navegador restaurar formulário automaticamente.
 - A cada troca de objeto de sessão Google (incluindo logout), limpar campos,
@@ -25,7 +27,8 @@ exibir linhas do histórico privado da conta anterior enquanto aguardava API.
   oficiais (resultados com prova autoritativa).
 
 ## Evidências exigidas
-- `tests/ranking-account-consent.test.mjs`: troca A→visitante→B, 
+
+- `tests/ranking-account-consent.test.mjs`: troca A→visitante→B,
   revogação antes do finish, resolução tardia de JWT, erro da API, histórico
   local e limpeza síncrona de conteúdo privado.
 - `npm run validate` e testes de navegador da CI no **commit final**.

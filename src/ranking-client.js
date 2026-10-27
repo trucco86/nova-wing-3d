@@ -77,7 +77,13 @@ export function createRankingClient({
   }
   async function request(
     path,
-    { method = 'GET', payload, authorized = false, sessionEpoch = null, requireConsent = false } = {},
+    {
+      method = 'GET',
+      payload,
+      authorized = false,
+      sessionEpoch = null,
+      requireConsent = false,
+    } = {},
   ) {
     if (!apiBase) throw new Error('RANKING_API_UNAVAILABLE');
     const headers = { accept: 'application/json' };
