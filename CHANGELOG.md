@@ -1,8 +1,10 @@
 # Histórico
 
-## 1.24.15 — Candidata em preparação
+## 1.24.15 — Candidata mobile com RPG na faixa superior
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Move os comandos persistentes de RPG para o topo esquerdo em telas touch, liberando o corredor central do combate.
+- Mantém a gaveta detalhada opt-in e os controles inferiores preservados.
+- Validação física e aceite visual ainda pendentes; sem promoção automática.
 
 ## 1.24.14 — Candidata em preparação
 
