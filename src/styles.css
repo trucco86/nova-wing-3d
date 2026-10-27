@@ -4146,6 +4146,20 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 
 /* Intermission: a tactical hangar followed by an explicit campaign route screen. */
+#shop {
+  padding: max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px))
+    max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+#shop .hangar-card {
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 390px) {
+  #shop .hangar-card {
+    padding: 16px;
+  }
+}
 #shop .shop-grid {
   grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
   gap: 9px;

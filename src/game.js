@@ -1949,6 +1949,7 @@ export function createGame({
   }
   applySettings();
   $('nextSector').onclick = dynamicFlight ? showCampaignMap : nextSector;
+  if (!dynamicFlight) $('nextSector').textContent = 'SALTAR PARA O PRÓXIMO SETOR ↗';
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);

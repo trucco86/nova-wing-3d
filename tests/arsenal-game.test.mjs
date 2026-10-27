@@ -50,6 +50,7 @@ test('multishot and rapid upgrades affect actual shots, with native fire preserv
   assert.equal(base.game.snapshot().entities.shots, 2);
   assert.equal(upgraded.game.snapshot().entities.shots, 4);
   assert.equal(native.game.snapshot().entities.shots, 2);
+  assert.equal(native.elements.get('nextSector').textContent, 'SALTAR PARA O PRÓXIMO SETOR ↗');
   base.advance(0.11);
   upgraded.advance(0.11);
   base.game.fire();

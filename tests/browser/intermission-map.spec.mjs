@@ -70,6 +70,9 @@ test('localized hangar and galaxy map remain reachable in a narrow viewport', as
     await page.locator('#settingsClose').click();
     await page.locator('#pauseResume').click();
     await page.evaluate(() => window.fixture.hangar());
+    const hangarBounds = await page.locator('#shop .hangar-card').boundingBox();
+    expect(hangarBounds.y).toBeGreaterThanOrEqual(0);
+    expect(hangarBounds.y + hangarBounds.height).toBeLessThanOrEqual(page.viewportSize().height);
     await expect(page.locator('#buyvolley')).toContainText(
       translateText('MULTITIRO · +1 PROJÉTIL', lang),
     );
