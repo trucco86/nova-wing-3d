@@ -429,6 +429,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   ground.position.set(0, -7, -1000);
   scene.add(ground);
   const city = new T.Group();
+  city.name = 'world-urban-city';
   scene.add(city);
   const unit = new T.BoxGeometry(1, 1, 1),
     bodyMat = metal('#122e39', 0.55, 0.5),
@@ -477,6 +478,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   city.userData.loop = 1900;
   const cityFar = city.clone();
+  cityFar.name = 'world-urban-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const near = [];
