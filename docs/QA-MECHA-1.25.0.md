@@ -35,3 +35,7 @@ As capturas antigas da PR estavam vazias porque o player piscava durante a invul
 - O rotor, a chama, o núcleo e o halo acompanham o conjunto articulado. Um teste unitário confere rotação, inclinação e limites mecânicos.
 - **Teste visual adicional:** fotografar traseira no voo normal, guinada esquerda/direita e boost, e comparar a posição da turbina com a arte aprovada.
 - **Pendência:** aferir FPS e responsividade em aparelho físico; o CI e o deploy de preview não substituem homologação.
+
+## Correção de orientação das capturas — 26/10/2026
+
+A revisão dos artefatos do CI anterior revelou que os nomes **frontal** e **traseira** estavam invertidos: o robô dispara em `-Z`, mas o teste anterior fotografava a turbina pela câmera rotulada `front`. A fixture foi corrigida para capturar a frente a partir de `-Z` e a traseira a partir de `+Z`, com asserções sobre o hemisfério físico da câmera. **Descartar os rótulos anteriores e utilizar apenas as novas imagens após CI verde**; o teste automatizado não representa aceite visual.
