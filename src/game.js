@@ -501,7 +501,8 @@ export function createGame({
     player.add(shipModule);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
-    robot.scale.x = pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
@@ -2223,9 +2224,11 @@ export function createGame({
         rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
         rig.legs[i].rotation.z = side * 0.035;
       }
-      const width = pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
+      const width =
+        pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
       const unfold = 1 + Math.sin(unfoldProgress * Math.PI) * 0.16;
-      robot.rotation.y = Math.sin(elapsed * 1.7) * 0.035 +
+      robot.rotation.y =
+        Math.sin(elapsed * 1.7) * 0.035 +
         Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.65;
       robot.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.18;
       robot.scale.set(width * unfold, 1.05 * unfold, 1.05 * unfold);
