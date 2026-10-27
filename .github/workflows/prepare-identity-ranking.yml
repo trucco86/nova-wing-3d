@@ -1,0 +1,42 @@
+name: Prepare identity ranking candidate (temporary)
+on:
+  push:
+    branches:
+      - feat/identity-ranking-hml-prod-20261027
+permissions:
+  contents: write
+concurrency:
+  group: prepare-identity-ranking-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare versioned distribution and quality gates
+        run: |
+          npm run release:prepare -- 1.24.21
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit candidate source, tests and generated public web
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.24.21.md index.html src tools tests specs docs workers .github
+          if git diff --cached --quiet; then
+            echo 'Distribution and source are synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'release(web): prepare v1.24.21 Google login and score history candidate'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
