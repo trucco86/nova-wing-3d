@@ -127,9 +127,9 @@ export function harness({
     getPixelRatio: () => 1,
     setSize() {},
     setRenderTarget() {},
-    render(scene) {
+    render(scene, camera) {
       calls.renders++;
-      observeScene(scene);
+      observeScene(scene, camera);
     },
     dispose() {},
   };
