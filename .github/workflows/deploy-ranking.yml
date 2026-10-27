@@ -4,18 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: "Isolated target environment"
+        description: 'Isolated target environment'
         type: choice
         options:
           - hml
           - prod
         required: true
       confirm:
-        description: "Enter DEPLOY-HML or DEPLOY-PROD exactly; affects a remote D1 database"
+        description: 'Enter DEPLOY-HML or DEPLOY-PROD exactly; affects a remote D1 database'
         type: string
         required: true
       enable_experimental_writes:
-        description: "Allow consented, unverified score submissions"
+        description: 'Allow consented, unverified score submissions'
         type: boolean
         default: false
 
