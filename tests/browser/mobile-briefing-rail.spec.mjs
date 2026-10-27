@@ -50,9 +50,10 @@ test('P0 mobile stage introduction and pilot radio never compete for the upper H
     const intro = await positions(page);
     expect(intro.briefing).not.toBeNull();
     expect(intro.rpg).not.toBeNull();
-    expect(intro.briefing.y + intro.briefing.height, 'briefing stays in upper safe zone').toBeLessThan(
-      size.height * (size.width > size.height ? 0.42 : 0.40),
-    );
+    expect(
+      intro.briefing.y + intro.briefing.height,
+      'briefing stays in upper safe zone',
+    ).toBeLessThan(size.height * (size.width > size.height ? 0.42 : 0.4));
     for (const key of ['rpg', 'score', 'shield', 'radar']) {
       expect(intersects(intro.briefing, intro[key]), 'briefing must avoid ' + key).toBe(false);
     }
