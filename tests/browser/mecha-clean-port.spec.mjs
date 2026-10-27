@@ -17,7 +17,7 @@ test('new mecha chassis transforms and maintains propulsion under live flight in
   }
   await expect(page.locator('#robotTouch')).toHaveAttribute('aria-pressed', 'true');
   await page.evaluate(() => window.fixture.advance(0.85));
-  await page.screenshot({ path: info.outputPath('mecha-front-flight.png') });
+  await page.screenshot({ path: info.outputPath('mecha-chase-flight.png') });
 
   await page.keyboard.down('ShiftLeft');
   await page.evaluate(() => window.fixture.advance(0.4));

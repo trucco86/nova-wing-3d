@@ -15,6 +15,7 @@ A candidata histórica #69 acumulou diferenças com a DEV atual; evitar merge br
 
 ## QA obrigatório antes de DEV/HML
 
+- As vistas frontal/perfil/traseira usam a geometria real de `createFlyingRobot` na fixture visual estática, com câmera dedicada e corpo inteiro no frustum. As capturas de transformação/voo/chefe continuam no jogo real com HUD; não confundir essas duas evidências nem chamar a câmera chase de frontal.
 - CI quality, testes unitários de geometria, ângulos, variações 30/60/120 Hz, pausa, reinício e fontes teclado/toque.
 - Playwright desktop e mobile: transformação, boost, retorno ao caça, capturas frontal/perfil/traseira, gameplay real com chefe e queda de FPS.
 - Comparação da proporção de asas e robô com arte aprovada; verificar turbinas nas **costas**, braços e pernas estilizados.

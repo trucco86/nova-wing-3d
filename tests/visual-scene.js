@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { createWorld, postProcessor, fighter } from '../src/visuals.js';
+import { createWorld, postProcessor, fighter, createFlyingRobot } from '../src/visuals.js';
 import { createBossModel, createSubboss, SUBBOSS_NAMES } from '../src/bosses.js';
 import { createGroundEnemy, createObstacle } from '../src/encounters.js';
 import { createFlightCamera } from '../src/flight.js';
@@ -23,7 +23,35 @@ const world = createWorld(scene);
 world.setSector(SECTORS[index]);
 const mode = new URLSearchParams(location.search).get('mode');
 const variant = Number(new URLSearchParams(location.search).get('variant') ?? -1);
-if (mode === 'tunnel' || mode === 'ground') {
+if (mode === 'mecha') {
+  // Static inspection of the actual production geometry, separate from gameplay captures.
+  for (const child of scene.children) if (!child.isLight) child.visible = false;
+  scene.background = new T.Color('#07121e');
+  scene.fog = null;
+  const robot = createFlyingRobot();
+  scene.add(robot);
+  robot.updateWorldMatrix(true, true);
+  const bounds = new T.Box3().setFromObject(robot);
+  const radius = bounds.getBoundingSphere(new T.Sphere()).radius;
+  const center = bounds.getCenter(new T.Vector3());
+  const views = { front: [0, 0, -1], profile: [1, 0, 0], rear: [0, 0, 1] };
+  const requested = new URLSearchParams(location.search).get('view');
+  const view = Object.hasOwn(views, requested) ? requested : 'front';
+  camera.fov = 45;
+  camera.updateProjectionMatrix();
+  const verticalHalfAngle = T.MathUtils.degToRad(camera.fov / 2);
+  const horizontalHalfAngle = Math.atan(Math.tan(verticalHalfAngle) * camera.aspect);
+  const distance = (radius / Math.sin(Math.min(verticalHalfAngle, horizontalHalfAngle))) * 1.12;
+  camera.position.copy(center).addScaledVector(new T.Vector3(...views[view]), distance);
+  camera.lookAt(center);
+  camera.updateMatrixWorld(true);
+  const projected = [];
+  for (const x of [bounds.min.x, bounds.max.x])
+    for (const y of [bounds.min.y, bounds.max.y])
+      for (const z of [bounds.min.z, bounds.max.z])
+        projected.push(new T.Vector3(x, y, z).project(camera).toArray());
+  window.modelInspection = { view, projected };
+} else if (mode === 'tunnel' || mode === 'ground') {
   const tunnel = createObstacle(mode === 'tunnel' ? 'tunnel' : 'gantry');
   tunnel.position.z = mode === 'tunnel' ? 90 : -150;
   scene.add(tunnel);
@@ -73,29 +101,32 @@ if (mode === 'tunnel' || mode === 'ground') {
 }
 const player = fighter();
 player.position.set(0, 6, 9);
-scene.add(player);
+if (mode !== 'mecha') scene.add(player);
 const lateral = Number(new URLSearchParams(location.search).get('lateral') ?? 0);
-if (Number.isFinite(lateral) && Math.abs(lateral) <= 25) {
+if (mode !== 'mecha' && Number.isFinite(lateral) && Math.abs(lateral) <= 25) {
   player.position.x = lateral;
   const rig = createFlightCamera(camera);
   rig.reset(player.position);
 }
 const post = postProcessor(renderer, scene, camera);
 post.resize(innerWidth, innerHeight);
-world.update(0, 1, 48, false);
+if (mode !== 'mecha') world.update(0, 1, 48, false);
 post.render();
 document.querySelector('h1').textContent =
-  mode === 'tunnel'
-    ? 'TÚNEL INDUSTRIAL / DEFESA TERRESTRE'
-    : mode === 'ground'
-      ? 'CIDADE / TANQUES E SENTINELAS'
-      : mode === 'equipment'
-        ? 'PODS I / II / III · VERDE: VIDA · AZUL: ARMA'
-        : mode === 'subboss'
-          ? SUBBOSS_NAMES[index]
-          : mode === 'collapse'
-            ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
-            : mode === 'marvin-finale'
-              ? 'MARVIN DERROTADO / SUPRIMENTOS RECUPERADOS'
-              : SECTORS[index].boss;
+  mode === 'mecha'
+    ? 'MECHA / ' +
+      { front: 'FRENTE', profile: 'PERFIL', rear: 'COSTAS' }[window.modelInspection.view]
+    : mode === 'tunnel'
+      ? 'TÚNEL INDUSTRIAL / DEFESA TERRESTRE'
+      : mode === 'ground'
+        ? 'CIDADE / TANQUES E SENTINELAS'
+        : mode === 'equipment'
+          ? 'PODS I / II / III · VERDE: VIDA · AZUL: ARMA'
+          : mode === 'subboss'
+            ? SUBBOSS_NAMES[index]
+            : mode === 'collapse'
+              ? 'COLAPSO / ONDA DE CHOQUE E DESTROÇOS'
+              : mode === 'marvin-finale'
+                ? 'MARVIN DERROTADO / SUPRIMENTOS RECUPERADOS'
+                : SECTORS[index].boss;
 document.body.dataset.ready = 'true';
