@@ -42,10 +42,16 @@ function scenario(body, headers = {}) {
   });
   return {
     invoke: () =>
-      handleProvisional(request, env, new URL(endpoint), {}, {
-        verifyToken: async () => ({ uid: 'player-1' }),
-        now: () => Date.UTC(2026, 9, 27),
-      }),
+      handleProvisional(
+        request,
+        env,
+        new URL(endpoint),
+        {},
+        {
+          verifyToken: async () => ({ uid: 'player-1' }),
+          now: () => Date.UTC(2026, 9, 27),
+        },
+      ),
     queries: () => databaseQueries,
   };
 }
