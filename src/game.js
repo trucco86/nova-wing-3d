@@ -2316,8 +2316,16 @@ export function createGame({
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
     }
+    // Keep transformation and flight-mech readable even during the initial
+    // invulnerability flicker. Damage protection is unchanged; ordinary ship
+    // mode retains the original blink feedback when invulnerable.
     player.visible =
-      cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
+      cameraMode !== 'cockpit' &&
+      (robotMode ||
+        robotTransition > 0 ||
+        boosting ||
+        invuln <= 0 ||
+        Math.floor(invuln * 12) % 2 === 0);
     flightCamera.update(
       dt,
       player.position,
