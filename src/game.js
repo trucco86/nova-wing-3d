@@ -279,6 +279,7 @@ export function createGame({
         formationStatus: $('squadFormationStatus'),
       })
     : null;
+  let skipSquadIntro = false;
   let robotMode = false;
   let robotCooldown = 0;
   let robotTransition = 0;
@@ -878,7 +879,8 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
-    squad?.begin(sectorIndex === 0 && enableSquadIntro);
+    squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
+    skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
@@ -1628,7 +1630,8 @@ export function createGame({
     }
     boss = null;
   }
-  function start(resume = false, restart = null) {
+  function start(resume = false, restart = null, skipSquad = false) {
+    skipSquadIntro = skipSquad;
     if (!appActive) return;
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
@@ -1923,14 +1926,14 @@ export function createGame({
     $('cinematicProgress').style.width =
       (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
   }
-  function finishCinematic() {
+  function finishCinematic(skipSquad = false) {
     if (!cinematic) return;
     const playMission = cinematic.playMission;
     cinematic = null;
     cinematicStage?.destroy();
     cinematicStage = null;
     $('cinematic').hidden = true;
-    if (playMission) start();
+    if (playMission) start(false, null, skipSquad);
     else $('menu').hidden = false;
   }
   function advanceCinematic(dt) {
@@ -1984,7 +1987,7 @@ export function createGame({
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
-  $('cinematicSkip').onclick = finishCinematic;
+  $('cinematicSkip').onclick = () => finishCinematic(true);
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
   $('pauseTabControls').onclick = () => showPausePanel('controls');
@@ -2118,7 +2121,7 @@ export function createGame({
     if (cinematic) {
       if (['Enter', 'Space', 'Escape'].includes(e.code)) {
         e.preventDefault?.();
-        finishCinematic();
+        finishCinematic(true);
       }
       return;
     }
