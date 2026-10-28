@@ -984,6 +984,43 @@ const RANKING_TRANSLATIONS = [
 ];
 for (const [pt, en, es] of RANKING_TRANSLATIONS) MAP.set(pt, { en, es });
 
+const COMPACT_RANK_AND_LAUNCH = [
+  ['⚠ SAÍDA DA TERRA', '⚠ LEAVING EARTH', '⚠ SALIENDO DE LA TIERRA'],
+  ['SUBA E SEGURE SHIFT / BOOST ATÉ ESGOTAR O IMPULSO',
+    'CLIMB AND HOLD SHIFT / BOOST UNTIL ENERGY RUNS OUT',
+    'ASCIENDE Y MANTÉN SHIFT / BOOST HASTA AGOTAR EL IMPULSO'],
+  ['⚠ NAVE-MÃE ABRINDO HANGAR · CHEFE SAINDO',
+    '⚠ MOTHERSHIP HANGAR OPENING · BOSS LAUNCHING',
+    '⚠ NAVE NODRIZA ABRIENDO HANGAR · JEFE DESPEGANDO'],
+  ['◈ RANK', '◈ RANK', '◈ CLASIFICACIÓN'],
+  ['◉ PILOTO', '◉ PILOT', '◉ PILOTO'],
+  ['Abrir ranking Five Cats', 'Open Five Cats rankings', 'Abrir la clasificación de Five Cats'],
+  ['Informações do ranking', 'Ranking information', 'Información de la clasificación'],
+  ['RANKING GALÁCTICO', 'GALACTIC RANKING', 'CLASIFICACIÓN GALÁCTICA'],
+  ['COMO FUNCIONA', 'HOW IT WORKS', 'CÓMO FUNCIONA'],
+  ['O ranking online é experimental e as pontuações ainda não são verificadas.',
+    'Online scores are experimental and not yet verified.',
+    'Las puntuaciones online son experimentales y aún no están verificadas.'],
+  ['Entre com Google e ative a participação para salvar próximas partidas. Visitantes continuam jogando; seu histórico local não sincroniza.',
+    'Sign in with Google and opt in to save future matches. Guests can keep playing; local history does not sync.',
+    'Inicia sesión con Google y acepta para guardar próximas partidas. Los invitados pueden jugar; el historial local no se sincroniza.'],
+  ['Excluir os dados remotos preserva o progresso local, mas bloqueia nova inscrição desta conta até existir um processo seguro de reinscrição.',
+    'Deleting cloud data preserves local progress but blocks rejoining until a secure enrollment process is available.',
+    'Eliminar los datos en la nube conserva el progreso local, pero impide volver hasta que exista un proceso seguro de inscripción.'],
+  ['MEU DESEMPENHO', 'MY STATS', 'MIS ESTADÍSTICAS'],
+  ['MINHAS PARTIDAS', 'MY MATCHES', 'MIS PARTIDAS'],
+  ['NA NUVEM', 'IN THE CLOUD', 'EN LA NUBE'],
+  ['NESTE DISPOSITIVO', 'ON THIS DEVICE', 'EN ESTE DISPOSITIVO'],
+  ['PARTICIPAR / PRIVACIDADE', 'JOIN / PRIVACY', 'PARTICIPAR / PRIVACIDAD'],
+  ['Exclui suas pontuações remotas após confirmação, sem apagar sua conta Google ou seu progresso local. A mesma conta só poderá participar novamente após existir um novo processo de inscrição.',
+    'After confirmation, deletes cloud scores without deleting your Google account or local progress. Rejoining with the same account requires a new enrollment process.',
+    'Tras confirmar, elimina puntuaciones en la nube sin borrar tu cuenta de Google ni el progreso local. Volver con la misma cuenta requiere un nuevo proceso de inscripción.'],
+  ['O login Google é opcional. O ranking pode ser ativado no painel RANK.',
+    'Google sign-in is optional. Enable ranking participation in the RANK panel.',
+    'Iniciar sesión con Google es opcional. Activa la clasificación en el panel RANK.'],
+  ['Atualizar ranking', 'Refresh ranking', 'Actualizar clasificación'],
+];
+for (const [pt, en, es] of COMPACT_RANK_AND_LAUNCH) MAP.set(pt, { en, es });
 const TOKEN_KEYS = [...MAP.keys()].filter((s) => s.length >= 4).sort((a, b) => b.length - a.length);
 const escapePattern = (s) =>
   [...s].map((c) => ('.?*+^$[]{}()|\\'.includes(c) ? '\\' + c : c)).join('');
