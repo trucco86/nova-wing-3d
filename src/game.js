@@ -118,6 +118,7 @@ import {
   fighter,
   createFlyingRobot,
   animateMechPower,
+  resetMechPower,
   setFighterEvolution,
   createShipModule,
   createWorld,
@@ -945,6 +946,7 @@ export function createGame({
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    resetMechPower(robot);
     robotFireKick = 0;
     robotMode = false;
     shipModule.visible = true;
@@ -3853,6 +3855,13 @@ export function createGame({
       rapid,
       scatterOwned,
       fireMode,
+      mecha: {
+        active: robotMode,
+        lockEnabled,
+        lockProgress,
+        thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
+        motor: mechaEngine?.snapshot() ?? { amplitude: 0, velocity: 0, voices: 0 },
+      },
       pods: podCount,
       armor,
       charge,
