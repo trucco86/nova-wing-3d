@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/ranking-data-deletion-control-20261027
 permissions:
   contents: write
   actions: write
@@ -24,20 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Synchronize versioned Web privacy candidate only on isolated branch
-        if: github.ref == 'refs/heads/feat/ranking-data-deletion-control-20261027'
-        run: |
-          git add -- index.html src/ranking-client.js src/shell.html tests/ranking-data-deletion.test.mjs specs/ranking-data-deletion-p0.md
-          if git diff --cached --quiet; then
-            echo 'HTML and source already synchronized.'
-          else
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(web): sync v1.24.23 ranking deletion distribution'
-            git push origin HEAD:feat/ranking-data-deletion-control-20261027
-          fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
