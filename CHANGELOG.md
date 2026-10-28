@@ -6,7 +6,6 @@
 - Novos testes de progressão e save independente. Ainda não existe exploração visual nesta candidata.
 - Release da branch isolada; não promovida à DEV, HML ou produção.
 
-
 ## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
 
 - Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.
