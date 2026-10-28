@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.22 — Consentimento por sessão e proteção do ranking (candidata)
+
+- Redefine apelido e autorização opt-in ao trocar de conta Google ou voltar ao visitante.
+- Oculta histórico privado anterior imediatamente e cancela uploads de pontuação após revogação.
+- Bloqueia requisições de pontuação após resolução tardia de um token de outra sessão.
+- Preserva resultados locais, campanha e modo visitante sem depender da API.
+- Testes de regressão de troca de conta, consentimento, concorrência e indisponibilidade.
+- Candidata sem homologação OAuth/D1 real: não publicar PROD.
+
 ## 1.24.21 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
