@@ -1,0 +1,38 @@
+name: Prepare Nova Wing v1.27.8 final boss signatures
+on:
+  push:
+    branches: [feat/remaining-boss-signatures-v1278]
+    paths: [.github/workflows/prepare-bosses-ten.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.8
+      - name: Format new implementations
+        run: |
+          npx prettier --write src/boss-signature.js src/bosses.js tests/boss-signature.test.mjs tests/boss-signature-scene.test.mjs docs/design/BOSSES-TEN-SIGNATURES.md releases/v1.27.8.md CHANGELOG.md
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit generated bundle, native version and formatted code
+        run: |
+          if git diff --quiet; then
+            echo "All generated files synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/boss-signature.js src/bosses.js tests/boss-signature.test.mjs tests/boss-signature-scene.test.mjs docs/design/BOSSES-TEN-SIGNATURES.md releases/v1.27.8.md CHANGELOG.md package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj
+          git commit -m "build(dev): prepare v1.27.8 ten-boss signature candidate"
+          git push origin HEAD:feat/remaining-boss-signatures-v1278
