@@ -464,6 +464,7 @@ export function createGame({
     bossIntent = null,
     reactorGridSeconds = 0,
     reactorGridCompleted = false,
+    reactorGridWave = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
@@ -1008,6 +1009,7 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
+    reactorGridWave = 0;
     specialCd = barrier = stasis = 0;
     podsDetached = false;
     podMode = 'docked';
@@ -3898,6 +3900,19 @@ export function createGame({
       if (r.o.position.z > 40) r.life = 0;
     }
     obstacleCd -= dt;
+    if (
+      dynamicFlight && sectorIndex === 3 && reactorGridSeconds > 0 &&
+      spawnEncounters && reactorGridWave < 4 &&
+      reactorGridSeconds < 15.8 - reactorGridWave * 3.5
+    ) {
+      // Playable reactor-grid hazards only during the top-down X/Z section;
+      // their physical collision volume matches their visible station props.
+      const gate = createObstacle('reactor');
+      gate.position.set([-17, 18, -12, 13][reactorGridWave], 8, player.position.z - 82);
+      scene.add(gate);
+      obstacles.push({ o: gate, life: 1 });
+      reactorGridWave++;
+    }
     // Preserve a clear view during BOOST ascent and the atmospheric crossing.
     // Orbital debris/carriers enter only once the player has reached real orbit.
     const launchTransit =
@@ -3907,6 +3922,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !launchTransit &&
+      reactorGridSeconds <= 0 &&
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
@@ -4198,6 +4214,7 @@ export function createGame({
       stageTitleVisible: stageIntroTime > 0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       missionCameraSeconds: reactorGridSeconds,
+      missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
