@@ -1,4 +1,5 @@
 import { readLocalHistory, recordLocalResult, localScoreSummary } from './score-history.js';
+import { translateText } from './i18n.js';
 
 const MAX_REMOTE_ROWS = 20;
 function validNickname(value) {
@@ -24,6 +25,10 @@ export function createRankingClient({
   const consent = el('consent');
   const deleteRemote = el('delete');
   const status = el('status');
+  const locale = () => {
+    const lang = document?.documentElement?.lang?.slice(0, 2);
+    return lang === 'en' ? 'en-US' : lang === 'es' ? 'es-ES' : 'pt-BR';
+  };
   let apiBase = null;
   let user = null;
   let identityEpoch = 0;
@@ -76,7 +81,7 @@ export function createRankingClient({
             ' · ' +
             entry.points +
             ' pts · ' +
-            new Date(entry.completedAt).toLocaleDateString('pt-BR'),
+            new Date(entry.completedAt).toLocaleDateString(locale()),
         ),
       'Sem partidas concluídas neste dispositivo.',
     );
@@ -159,7 +164,7 @@ export function createRankingClient({
                     ' · ' +
                     entry.points +
                     ' pts · ' +
-                    new Date(entry.completedAt).toLocaleDateString('pt-BR'),
+                    new Date(entry.completedAt).toLocaleDateString(locale()),
                 ),
               'Sem partidas remotas registradas.',
             );
@@ -301,8 +306,12 @@ export function createRankingClient({
   addListener(deleteRemote, 'click', async () => {
     if (closed || deleteInProgress || !apiBase || !user?.getIdToken) return;
     const confirmed = confirmDeletion(
-      'Excluir permanentemente seu apelido e histórico de pontuação na nuvem? ' +
-        'O progresso e as partidas neste dispositivo serão mantidos.',
+      translateText(
+        'Excluir permanentemente seu apelido e histórico de pontuação na nuvem? ' +
+          'O progresso e as partidas neste dispositivo serão mantidos. ' +
+          'Esta conta não poderá enviar novas pontuações até existir um novo processo de inscrição.',
+        locale().slice(0, 2),
+      ),
     );
     if (!confirmed || closed) return;
     // A player cannot finish a remote run or carry forward old consent while deleting.
