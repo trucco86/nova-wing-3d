@@ -21,7 +21,7 @@ test('mechanical effects and turbine mix render audibly with exact mute and paus
   expect(metrics.afterDestroy.engineActive).toBe(false);
   expect(metrics.afterDestroy.destroyed).toBe(true);
   const pending = page.waitForEvent('download');
-  await page.locator('#effectsDownload').click();
+  await page.locator('#effectsDownload').evaluate((anchor) => anchor.click());
   await (await pending).saveAs(info.outputPath('nova-wing-immersive-effects.wav'));
   await info.attach('effects-mix-metrics', {
     body: JSON.stringify(metrics),
