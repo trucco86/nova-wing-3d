@@ -1,5 +1,5 @@
 /** Deterministic emergence path: mothership hangar (-680) -> tactical boss arena. */
-export const BOSS_DEPARTURE_SECONDS = 4.6;
+export const BOSS_DEPARTURE_SECONDS = 3;
 
 export function bossDepartureAt(age, tactics, approach) {
   const t = Math.max(0, Math.min(1, Number.isFinite(age) ? age / BOSS_DEPARTURE_SECONDS : 0));
