@@ -84,7 +84,7 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     // Armored hull now receives small noncritical damage. Keep its confirmation
     // in the upper information lane, never over the center or thumb controls.
     await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'boss');
-    await expect(page.locator('#hitFeedback')).toContainText(/ACERTO \\+\\d+/);
+    await expect(page.locator('#hitFeedback')).toContainText(/ACERTO \+\d+/);
     const marker = await page.locator('#hitFeedback').boundingBox();
     expect(marker).not.toBeNull();
     expect(marker.width).toBeLessThanOrEqual(125);
