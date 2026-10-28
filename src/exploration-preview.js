@@ -344,9 +344,29 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
       listen(button, event, () => held.delete(direction));
   }
 
+  // Developer-only teleport/inspection API supports deterministic browser QA.
+  // It grants no rank, save, mission victory or privileged backend actions.
+  window.__novaExploreQA = Object.freeze({
+    moveTo(x, z) {
+      if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
+      playerX = T.MathUtils.clamp(x, -18, 18);
+      playerZ = T.MathUtils.clamp(z, -91, 13);
+      updateUI();
+      return true;
+    },
+    snapshot() {
+      return {
+        active,
+        player: { x: playerX, z: playerZ },
+        quest: createExplorationState(state),
+      };
+    },
+  });
+
   return {
     destroy() {
       close();
+      if (window.__novaExploreQA) delete window.__novaExploreQA;
       for (const [el, name, handler, opts] of listeners) el.removeEventListener(name, handler, opts);
       launch.hidden = true;
     },
