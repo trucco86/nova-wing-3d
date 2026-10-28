@@ -9,11 +9,11 @@
 - `GET /v1/me/history`: últimas 30 partidas remotas da pessoa autenticada.
 - `POST /v1/runs/start`: login + consentimento/nickname, nonce e TTL de 2 h, com rate limit.
 - `POST /v1/runs/finish`: usa nonce hash, verificação de identidade, tempo/score de plausibilidade e SQL condicional anti-replay; registra apenas resultados experimentais.
-- `DELETE /v1/me`: exclui dados da conta no ranking, respeitando FK/cascata do D1.
+- `DELETE /v1/me`: grava tombstone privado e exclui dados da conta no ranking, em transação D1 (FK/cascata); bloqueia POSTs antigos que poderiam recriar o perfil. **Até existir protocolo específico de reinscrição, o mesmo UID não pode voltar a participar do ranking após exclusão.**
 
 Os resultados produzidos no browser NÃO constituem pontuação competitiva oficial. Futuro: reproduzir eventos/simulação autoritativa de score e combater contas múltiplas.
 
-Arquivos: `src/index.js`, `src/provisional.js`, `src/firebase-jwt.js`, `migrations/0001_initial.sql`, `migrations/0002_provisional_history.sql`, `wrangler.hml.example.toml`, `wrangler.prod.example.toml`.
+Arquivos: `src/index.js`, `src/provisional.js`, `src/firebase-jwt.js`, `migrations/0001_initial.sql`, `migrations/0002_provisional_history.sql`, `migrations/0003_account_deletion_tombstones.sql`, `wrangler.hml.example.toml`, `wrangler.prod.example.toml`.
 
 Execução local dos testes:
 
