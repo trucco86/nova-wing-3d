@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.11 — Preview integrado de campanha e exploração (candidata QA)
+
+- Reúne as mudanças de cenário/câmera da v1.27.6 e os dez padrões de chefes das candidatas v1.27.7/v1.27.8.
+- Adiciona o protótipo de investigação da Órbita-9 da v1.27.10 com domínio de quest v1.27.9, limitado a Developer/QA.
+- Branch de integração experimental; progresso da campanha, ranking, HML e produção preservados.
+
+
 ## 1.27.8 — Dez chefes com assinaturas de combate (candidata isolada)
 
 - Rok, Ferrão, Fortaleza Órbita, Fênix, Ômega e Bastião ganham ataque posicional próprio, animação de peça e reação à destruição de baterias.
