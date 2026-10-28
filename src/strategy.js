@@ -2,7 +2,7 @@ export const XP_STAGES = [0, 8, 24, 52, 96, 160, 250, 370, 530, 740];
 export const ARSENAL = [
   { name: 'PULSO', element: 'kinetic', color: '#62ffe0', stage: 0, cadence: 0.135, damage: 1 },
   { name: 'GEADA', element: 'ice', color: '#82dfff', stage: 2, cadence: 0.22, damage: 1.2 },
-  { name: 'PLASMA', element: 'fire', color: '#ff994a', stage: 4, cadence: 0.25, damage: 1.6 },
+  { name: 'PLASMA', element: 'fire', color: '#ff994a', stage: 4, cadence: 0.25, damage: 2.4 },
   { name: 'ARCANO', element: 'arcane', color: '#c57bff', stage: 6, cadence: 0.3, damage: 1.3 },
   { name: 'VAZIO', element: 'void', color: '#f15aca', stage: 8, cadence: 0.36, damage: 2.2 },
 ];
