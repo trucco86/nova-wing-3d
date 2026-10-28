@@ -69,13 +69,18 @@ for (const viewport of [
       });
 
       // Open/close sign-in without moving or masking the menu actions.
-      const initial = await page.locator('#start').boundingBox();
+      const startLayoutY = () =>
+        page.locator('#start').evaluate((button) => {
+          const menu = document.getElementById('menu');
+          return button.getBoundingClientRect().top + menu.scrollTop + window.scrollY;
+        });
+      const initial = await startLayoutY();
       await auth.locator(':scope > summary').click();
       await expect(auth).not.toHaveAttribute('open', '');
       await auth.locator(':scope > summary').click();
       await expect(auth).toHaveAttribute('open', '');
-      const after = await page.locator('#start').boundingBox();
-      expect(Math.abs(after.y - initial.y)).toBeLessThan(2);
+      const after = await startLayoutY();
+      expect(Math.abs(after - initial)).toBeLessThan(2);
       await page.locator('#start').scrollIntoViewIfNeeded();
       const hit = await page.locator('#start').evaluate((button) => {
         const r = button.getBoundingClientRect();
