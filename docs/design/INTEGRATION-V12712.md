@@ -29,3 +29,5 @@ O fluxo `.github/workflows/integration-compile.yml` regenera exclusivamente `ind
 - O commit automático `366ced0` contém o `index.html` reconstruído.
 - As execuções da CI da PR após o commit do bot foram marcadas `action_required`, **sem jobs iniciados**. Isso não é teste aprovado; o gate precisa ser executado no novo SHA e revisado.
 - A homologação de gameplay/mobile permanece pendente; nenhum deploy em DEV, HML ou produção foi autorizado.
+- Versão 1.27.12 preparada com consistência entre pacote, lockfile, projeto iOS, histórico e notas; rebuild final do bundle v1.27.12 confirmado no workflow [40787143711](https://github.com/trucco86/nova-wing-3d/actions/runs/40787143711).
+- Próximo gate obrigatório: CI completa (quality, Playwright desktop/mobile, source repair) no commit final com execução iniciada por mantenedor.
