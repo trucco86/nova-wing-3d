@@ -1401,9 +1401,13 @@ export function createGame({
   }
   function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
     if (
-      state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0 ||
+      state !== 'playing' ||
+      !boss ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
       (dynamicFlight && bossCombat?.age < 3)
-    ) return 0;
+    )
+      return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
     const openPart = (p) =>

@@ -1,6 +1,7 @@
 # Nova Wing v1.24.25 — UX orbital, entrada do chefe e ranking compacto
 
 ## Requisitos da rodada
+
 - **Órbita**: satélite grande e reconhecível ao lado da Terra após início da transição orbital; corpo, painéis solares, antena, luz de navegação, com presença consistente mesmo sem spawn de obstáculos. Inexistente antes da subida, oculto em outros setores.
 - **Naves**: casco, painéis, aletas, luzes, sistemas de propulsão e armas mais trabalhados sem alterar colisão, balanço ou controles.
 - **Chefe**: deve partir visualmente da doca da nave-mãe em perspectiva, não nascer diretamente na frente do jogador. Durante a saída, sinalização na faixa superior e sem ataque/dano até estar na arena; preservar comportamento do chefe depois.
@@ -11,4 +12,5 @@
 - **Não subir PROD**: primeiro preview de PR HML e screenshot real/revisão mobile 390x844/844x390 antes de publicar.
 
 ## Evidências
+
 Testes unitários de telemetria, satélite, spawn e nomenclatura; `npm run validate` e browser-shards no SHA final. Homologação visual humana e Firebase/D1 reais permanecem independentes.
