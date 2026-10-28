@@ -5,6 +5,7 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
   let age = 0,
     budget = 0,
     chargeBudget = 0,
+    specialBudget = 0,
     hp = max;
   return {
     max,
@@ -12,6 +13,9 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
       age += dt;
       chargeBudget = Math.min(rate * 2, chargeBudget + dt * rate * 0.3);
       budget = Math.min(rate * burstSeconds, budget + dt * rate);
+      // Independent, metered squad super budget. These attacks must not be
+      // swallowed by ordinary rapid-fire spending in the same second.
+      specialBudget = Math.min(rate * 1.35, specialBudget + dt * rate * 3.4);
     },
     spend(amount, charged = false) {
       if (age < 3 || !Number.isFinite(amount) || amount <= 0) return 0;
@@ -23,6 +27,12 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
       const dealt = Math.min(amount, budget);
       budget -= dealt;
       return dealt;
+    },
+    spendSquadSpecial(amount) {
+      if (age < 3 || !Number.isFinite(amount) || amount <= 0) return 0;
+      const spent = Math.min(amount, specialBudget);
+      specialBudget -= spent;
+      return spent;
     },
     damage(amount) {
       hp = Math.max(0, hp - amount);

@@ -217,9 +217,17 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   );
   await page.locator('#pauseResume').click();
   await page.evaluate(() => {
-    window.fixture.advance(8);
+    // Wait for the configured cooldown instead of assuming the old 8s value.
+    // This exercises the longer-lived RPG shield without weakening the assertion.
+    const cooldown = window.fixture.game.snapshot().strategy.specialCd;
+    if (!Number.isFinite(cooldown) || cooldown <= 0) {
+      throw new Error('Expected an active cooldown after casting BARREIRA');
+    }
+    window.fixture.advance(cooldown + 0.15);
     window.fixture.game.cycleSpecial();
-    window.fixture.game.castSpecial();
+    if (!window.fixture.game.castSpecial()) {
+      throw new Error('NOVA should be castable after BARREIRA cooldown');
+    }
     window.fixture.advance(0.15);
   });
   expect(

@@ -137,22 +137,29 @@ export function createFiveCatsSquad({
     status.hidden = plasmaTime <= 0 && overdriveTime <= 0;
     if (plasmaTime > 0) {
       plasmaTime = Math.max(0, plasmaTime - dt);
-      status.textContent = 'PLASMA TITAN · ENERGIA CONCENTRADA';
-      const length = Math.max(5, Math.min(150, obstacleRange?.() ?? 150));
+      status.textContent = 'PLASMA TITAN · ENERGIA CONCENTRADA · ' + Math.ceil(plasmaTime) + 's';
+      const origin = player.position.clone().add(new T.Vector3(0, 0, -3));
+      const lockedTarget = opponent();
+      const forward = lockedTarget ? lockedTarget.clone().sub(origin) : new T.Vector3(0, 0, -200);
+      const length = Math.max(5, Math.min(forward.length(), obstacleRange?.() ?? 150, 180));
+      const direction = forward.normalize();
       for (const [i, mesh] of beam.entries()) {
         mesh.scale.y = length;
-        mesh.position.set(player.position.x, player.position.y, player.position.z - length / 2);
+        mesh.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), direction);
+        mesh.position.copy(origin).addScaledVector(direction, length / 2);
         mesh.material.opacity = (i ? 0.77 : 0.27) + Math.sin(elapsed * 26) * 0.05;
       }
       plasmaClock -= dt;
       if (plasmaClock <= 0) {
         // Damage goes through the standard shot collision/occlusion path.
         fireFrom(
-          player.position.clone().add(new T.Vector3(0, 0, -3)),
-          new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
-          14 * power,
+          origin,
+          lockedTarget ??
+            new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
+          66 * power,
           'fire',
           true,
+          'squad-plasma',
         );
         plasmaClock = SQUAD_SPECIALS.plasma.pulseInterval;
       }
@@ -160,7 +167,8 @@ export function createFiveCatsSquad({
     }
     if (overdriveTime > 0) {
       overdriveTime = Math.max(0, overdriveTime - dt);
-      status.textContent = 'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO';
+      status.textContent =
+        'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO · ' + Math.ceil(overdriveTime) + 's';
       overdriveClock -= dt;
       wings.forEach(({ pilot: p, mesh }) => {
         mesh.visible = p.id !== pilot;
@@ -178,7 +186,14 @@ export function createFiveCatsSquad({
         if (enemy)
           for (const { pilot: p, mesh } of wings) {
             if (p.id !== pilot)
-              fireFrom(mesh.position.clone(), enemy.clone(), 8 * power, 'arcane', false);
+              fireFrom(
+                mesh.position.clone(),
+                enemy.clone(),
+                48 * power,
+                'arcane',
+                false,
+                'squad-overdrive',
+              );
           }
         overdriveClock = SQUAD_SPECIALS.overdrive.pulseInterval;
       }
@@ -204,7 +219,7 @@ export function createFiveCatsSquad({
         supportClock -= dt;
         if (supportClock <= 0) {
           const wing = wings.find(({ pilot: p }) => p.id === sortie.pilot.id);
-          fireFrom(wing.mesh.position.clone(), opponent(), 4, 'kinetic', false);
+          fireFrom(wing.mesh.position.clone(), opponent(), 4, 'kinetic', false, 'squad-support');
           supportClock = 0.6;
         }
       } else supportClock = 0;

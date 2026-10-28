@@ -119,5 +119,7 @@ test('O launches Five Cats overdrive with actual wingman meshes and cooldown', (
   h.advance(0.1);
   assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
   h.advance(3.6);
-  assert.ok(h.game.snapshot().fiveCats.overdriveTime === 0);
+  assert.ok(h.game.snapshot().fiveCats.overdriveTime > 5, 'the team attack now lasts ten seconds');
+  h.advance(6.7);
+  assert.equal(h.game.snapshot().fiveCats.overdriveTime, 0);
 });
