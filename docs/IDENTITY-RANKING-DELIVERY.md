@@ -49,7 +49,7 @@ O hostname controla apenas se o cliente renderiza OAuth. **Não é autorização
 
 - Criar bancos D1 **distintos** `nova-wing-ranking-hml` e `nova-wing-ranking-prod`; preservar cada UUID no GitHub Actions Variable correspondente: `NOVA_RANKING_HML_D1_ID`, `NOVA_RANKING_PROD_D1_ID`. Para PROD, registrar também `NOVA_RANKING_PROD_FIREBASE_PROJECT_ID`; para HML, `NOVA_RANKING_HML_FIREBASE_PROJECT_ID` (usar `nova-wing-dev` apenas se HML compartilhar identidade de testes).
 - Conceder no Cloudflare token usado no GitHub os escopos mínimos para **Workers Scripts + D1**; as credenciais `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID` são **GitHub secrets**, nunca código.
-- Revisar migrations `workers/ranking/migrations/0001_initial.sql` e `0002_provisional_history.sql`. Aplicar somente contra banco correto. A migration não popula temporadas nem promove resultados não verificados ao ranking oficial.
+- Revisar migrations `workers/ranking/migrations/0001_initial.sql` e `0002_provisional_history.sql` e `0003_account_deletion_tombstones.sql`. Aplicar somente contra banco correto. A migration não popula temporadas nem promove resultados não verificados ao ranking oficial.
 - Após integração/revisão, utilizar o workflow manual `Deploy ranking Worker and D1 migrations (manual approval)`, escolher HML, escrever `DEPLOY-HML`, manter/desabilitar `enable_experimental_writes` até aprovação. O fluxo aplica migrations localmente e depois remotamente, e publica o Worker. Configurar proteções de aprovação na environment `nova-ranking-hml`.
 - Em produção, escolher PROD, escrever `DEPLOY-PROD`, e exigir **aprovadores de produção** na environment `nova-ranking-prod`. O workflow falha fechado se não houver ID/projeto/token.
 - Copiar a URL base HTTPS real do Worker nas variáveis `NOVA_RANKING_HML_API_URL` e `NOVA_RANKING_PROD_API_URL`. Quando ausentes, o frontend continua salvando scores **apenas localmente**. Para testes DEV configurar `NOVA_RANKING_DEV_API_URL` somente se um Worker DEV separado realmente existir.
@@ -68,7 +68,9 @@ O hostname controla apenas se o cliente renderiza OAuth. **Não é autorização
 ## Segurança, confiança e LGPD
 
 - O consentimento remoto é explicitamente opt-in e o nickname é informado pelo jogador; Google displayName não é publicado automaticamente.
-- O histórico local fica no dispositivo. O Worker não possui acesso ao checkpoint ou ao e-mail, e `DELETE /v1/me` exclui o perfil e dados vinculados ao jogador autenticado. A interface ainda precisa de controles explícitos para solicitar exclusão, e uma política de retenção pública antes de PROD.
+- O histórico local fica no dispositivo. `DELETE /v1/me` exige confirmação no painel, grava tombstone privado e exclui o perfil/partidas remotamente em transação, preservando checkpoint e dados locais.
+- A tombstone conserva o UID Firebase e data de exclusão para impedir reconstrução por requisições antigas. **A reinscrição do mesmo UID permanece bloqueada (HTTP 410)** até projeto e homologação de uma nova prova explícita de consentimento; documentar essa limitação para o jogador antes de disponibilizar a função em HML com escrita.
+- Definir retenção, bases legais, resposta a solicitações de titulares, eliminação em backup/logs e endpoint de reinscrição, com revisão LGPD antes de PROD.
 - A verificação autoritativa de eventos/replay e proteção robusta contra múltiplas contas são **pendências** para transformar o ranking experimental em oficial.
 - Não considerar arquivo de configuração público segredo: Firebase API key de app Web identifica projeto, mas autorização real depende das regras de Firebase Auth e da verificação do token no backend.
 
