@@ -984,6 +984,40 @@ const RANKING_TRANSLATIONS = [
 ];
 for (const [pt, en, es] of RANKING_TRANSLATIONS) MAP.set(pt, { en, es });
 
+const FIVE_CATS_TRANSLATIONS = [
+  [
+    'FIVE CATS · BIA NO COMANDO · FORMAÇÃO EM V',
+    'FIVE CATS · BIA IN COMMAND · V FORMATION',
+    'FIVE CATS · BIA AL MANDO · FORMACIÓN EN V',
+  ],
+  [
+    'FIVE CATS · FORMAÇÃO DESFEITA · INICIAR MISSÃO',
+    'FIVE CATS · FORMATION BREAK · START MISSION',
+    'FIVE CATS · FORMACIÓN DISUELTA · INICIAR MISIÓN',
+  ],
+  [
+    'PLASMA TITAN · SUPERFEIXE INICIADO',
+    'PLASMA TITAN · ENERGY BEAM ACTIVATED',
+    'PLASMA TITAN · RAYO DE ENERGÍA ACTIVADO',
+  ],
+  [
+    'FIVE CATS OVERDRIVE · TODOS ÀS ARMAS',
+    'FIVE CATS OVERDRIVE · ALL WEAPONS ACTIVE',
+    'FIVE CATS OVERDRIVE · TODAS LAS ARMAS ACTIVADAS',
+  ],
+  [
+    'PLASMA TITAN · ENERGIA CONCENTRADA',
+    'PLASMA TITAN · CONCENTRATED ENERGY',
+    'PLASMA TITAN · ENERGÍA CONCENTRADA',
+  ],
+  [
+    'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO',
+    'FIVE CATS OVERDRIVE · FORMATION ATTACK',
+    'FIVE CATS OVERDRIVE · ATAQUE EN FORMACIÓN',
+  ],
+];
+for (const [pt, en, es] of FIVE_CATS_TRANSLATIONS) MAP.set(pt, { en, es });
+
 const TOKEN_KEYS = [...MAP.keys()].filter((s) => s.length >= 4).sort((a, b) => b.length - a.length);
 const escapePattern = (s) =>
   [...s].map((c) => ('.?*+^$[]{}()|\\'.includes(c) ? '\\' + c : c)).join('');
