@@ -1,12 +1,11 @@
 # Histórico
 
-## 1.24.25 — Histórico de vitórias e derrotas (candidata)
+## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
 
-- Registro local de cada fase concluída e de partidas encerradas por derrota, com resultado explícito, pontuação e duração.
-- Migração retrocompatível de histórico: entradas anteriores continuam representando vitórias.
-- Painel com quantidade de partidas, estado CONCLUÍDO/DERROTA e rótulos traduzíveis para PT/EN/ES.
-- Derrotas não entram no ranking remoto experimental; checkpoints e progresso da campanha preservados.
-- HML permanece em v1.24.24 até promoção aprovada; Worker/D1, OAuth e score remoto ainda exigem validação externa.
+- Aviso de vida crítica prevalece sobre ataque iminente, escudo baixo, aproximação de chefe, coleta e rádio em telas touch.
+- Informações de menor prioridade voltam automaticamente quando o risco principal termina, preservando os estados internos.
+- Teste de estresse Playwright cobre 320×568, 390×844 e 844×390, segurança da área central e acesso aos botões de ataque, impulso, bomba e robô.
+- Sem alterações de gameplay, ranking, autenticação, produção ou salvamento; candidata requer CI completa e homologação visual.
 
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
