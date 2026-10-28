@@ -117,6 +117,7 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  animateMechPower,
   setFighterEvolution,
   createShipModule,
   createWorld,
@@ -2540,6 +2541,7 @@ export function createGame({
     const wasBoosting = boosting;
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / 0.7;
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
