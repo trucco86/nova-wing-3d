@@ -1,0 +1,37 @@
+name: Format portfolio documentation candidate
+on:
+  push:
+    branches:
+      - docs/portfolio-ai-sdlc-showcase-20261028
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format portfolio markdown
+        run: |
+          npx prettier --write README.md docs/README.md docs/GAMEPLAY-GUIDE.md docs/DIAGRAMAS.md docs/PORTFOLIO-AI-SDLC.md docs/ARCHITECTURE-PLATFORM.md docs/DEPLOY-ENVIRONMENTS.md docs/case/README.md docs/case/CASE-STUDY.md docs/case/EVIDENCIAS.md docs/case/REPRODUZIR.md docs/case/CICLO-REAL-OUTUBRO-2026.md docs/case/TEMPLATE-EVIDENCIA-ENTREGA.md
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit formatted documentation only
+        run: |
+          if git diff --quiet; then
+            echo "Docs already formatted"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs
+          git commit -m "docs(portfolio): format evidence-based portfolio guides"
+          git push origin HEAD:docs/portfolio-ai-sdlc-showcase-20261028
