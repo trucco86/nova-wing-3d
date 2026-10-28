@@ -75,4 +75,4 @@ A integração Google da PR #59 está implantada em DEV. SDK carrega somente nos
 
 ## Candidata de autenticação e ranking (27/10/2026)
 
-A feature de Firebase PROD independente, telas de ranking/histórico e Worker D1 experimental está **em desenvolvimento, sem promoção**. O procedimento, variáveis de configuração pública por ambiente e aprovações estão em [Identity Ranking Delivery](IDENTITY-RANKING-DELIVERY.md). As informações históricas de deploy desta página não comprovam que login OAuth ou score remoto foram validados nos ambientes reais.
+A feature de Firebase PROD independente, telas de ranking/histórico e Worker D1 experimental está **em desenvolvimento, sem promoção**. O procedimento, variáveis de configuração pública por ambiente e aprovações estão em [Ranking Cloudflare](RANKING-CLOUDFLARE.md). As informações históricas de deploy desta página não comprovam que login OAuth ou score remoto foram validados nos ambientes reais.
