@@ -1,0 +1,42 @@
+name: Prepare Bosses 3.0 signature candidate
+on:
+  push:
+    branches: [feat/boss-signature-encounters-d3]
+    paths:
+      - .github/workflows/prepare-boss-signatures.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.ref_name == 'feat/boss-signature-encounters-d3'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare v1.27.7 across web and native versions
+        run: npm run release:prepare -- 1.27.7
+      - name: Format authored changes
+        run: |
+          npx prettier --write src/boss-signature.js src/bosses.js src/game.js tests/boss-signature.test.mjs tests/boss-signature-scene.test.mjs docs/design/BOSS-SIGNATURES.md CHANGELOG.md releases/v1.27.7.md
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit only the generated and formatted candidate changes
+        run: |
+          if git diff --quiet; then
+            echo "No generated drift"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/boss-signature.js src/bosses.js src/game.js tests/boss-signature.test.mjs tests/boss-signature-scene.test.mjs docs/design/BOSS-SIGNATURES.md CHANGELOG.md releases/v1.27.7.md
+          git commit -m "build(dev): prepare verified v1.27.7 boss signature candidate"
+          git push origin HEAD:feat/boss-signature-encounters-d3
