@@ -4296,6 +4296,7 @@ export function createGame({
       })),
       rolling: roll > 0,
       player: { x: player.position.x, y: player.position.y },
+      playerDepth: player.position.z,
       camera: {
         x: camera.position.x,
         y: camera.position.y,
