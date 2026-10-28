@@ -5898,3 +5898,55 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
     top: 8px;
   }
 }
+
+/* Five Cats: original three-slot quick RPG rail is never enlarged. Supers live
+   inside the existing scrollable tactical drawer, opened deliberately by user. */
+.squadSuperActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 5px;
+  padding-top: 5px;
+  border-top: 1px solid #64bde744;
+}
+.squadSuperActions button {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 5px 2px;
+  border-radius: 7px;
+  font: 700 9px/1.2 monospace;
+}
+#plasmaTitan {
+  border: 1px solid #ff9956;
+  background: #4b251cee;
+  color: #ffdfc2;
+}
+#fiveCatsOverdrive {
+  border: 1px solid #73e9ff;
+  background: #18394cee;
+  color: #d3f8ff;
+}
+#plasmaTitan:disabled,
+#fiveCatsOverdrive:disabled {
+  opacity: 0.43;
+}
+#squadFormationStatus,
+#squadSuperStatus {
+  font: 700 9px/1.25 monospace;
+  color: #dcfaff;
+  background: #0c2840ec;
+  border: 1px solid #6ad7eb;
+  border-radius: 8px;
+  padding: 4px 8px;
+  pointer-events: none;
+  max-width: min(270px, calc(100vw - 32px));
+}
+#squadFormationStatus[hidden],
+#squadSuperStatus[hidden] {
+  display: none !important;
+}
+#squadSuperStatus {
+  border-color: #ffad75;
+  color: #ffe2b7;
+}

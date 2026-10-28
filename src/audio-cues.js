@@ -1,6 +1,20 @@
 // Synthesized, low-fatigue SFX for the next web release. No downloads or samples.
 // Envelopes are deliberately short; continuous loops must not obscure the music.
 export const AUDIO_CUES = {
+  plasmaTitan: {
+    cooldown: 1,
+    tones: [
+      { from: 130, to: 40, duration: 0.9, gain: 0.048, wave: 'sawtooth' },
+      { from: 540, to: 120, duration: 0.48, gain: 0.035, wave: 'triangle' },
+    ],
+  },
+  fiveCatsOverdrive: {
+    cooldown: 1,
+    tones: [
+      { from: 110, to: 260, duration: 0.45, gain: 0.028, wave: 'triangle' },
+      { from: 370, to: 150, delay: 0.2, duration: 0.55, gain: 0.034, wave: 'sine' },
+    ],
+  },
   shot: {
     cooldown: 0.07,
     tones: [{ from: 440, to: 250, duration: 0.09, gain: 0.017, wave: 'triangle' }],

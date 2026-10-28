@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.26 — Five Cats: formação e superespeciais (candidata)
+
+- Introdução de cinco naves em V antes da primeira fase: Bia lidera no centro, Jenifer, Bob, Christopher e Calvinho nas alas.
+- Quatro entradas de aliados em segmentos distintos da primeira fase, com tiros físicos de suporte.
+- PLASMA TITAN: feixe de energia original, projéteis com colisão real, custo arcano 75, 2,5s, recarga 15s.
+- FIVE CATS OVERDRIVE: formação de ataque e projéteis convergentes, custo 90, 3,5s, recarga 30s.
+- Contratos de teste isolam a abertura cinematográfica das regressões já existentes, mantendo cobertura própria de abertura.
+- Novos avisos PT/EN/ES, atalhos Y/O e botões no HUD superior; preservação de HML e produção até homologação visual.
+
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
 - Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
