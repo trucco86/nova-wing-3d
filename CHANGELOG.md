@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.0 — Candidata em preparação
+## 1.27.0 — Integração unificada DEV (candidata)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- HUD mobile P0, prioridade de avisos e controles protegidos; satélite orbital, chegada do chefe pela nave-mãe e melhoria visual dos caças.
+- Mecha angular com asa compartilhada, neon progressivo, turbinas animadas e som reativo, duas mãos independentes, lock-on e recoil.
+- Formação de cinco naves liderada por Bia, aliados, plasma e especial Five Cats Overdrive.
+- Trilha e efeitos cinematográficos originais; transições de fase, caverna 3D e boss gate do mega-asteroide no setor 3.
+- Histórico local de vitórias e derrotas, sem dependência de Firebase/D1; nenhuma gravação remota do ranking habilitada.
+- Integração passou em 286 testes unitários, lint, formato e build reproduzível. Testes de navegador e aceite mobile ainda requeridos; versão não publicada em HML/PROD.
 
 ## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
 
