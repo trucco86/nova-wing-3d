@@ -1711,6 +1711,7 @@ export function createGame({
     element = 'kinetic',
     charged = false,
     hitZone = 'weak',
+    source = 'weapon',
   ) {
     if (
       state !== 'playing' ||
@@ -1722,11 +1723,15 @@ export function createGame({
       return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    const spendDamage = (value, chargedShot) =>
+      source === 'squad-plasma' || source === 'squad-overdrive'
+        ? bossCombat.spendSquadSpecial(value)
+        : bossCombat.spend(value, chargedShot);
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
       const chip =
-        bossCombat.spend(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
+        spendDamage(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
       const floor = bossCombat.max * (parts.length > 0 ? 0.72 : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
       bossCombat.damage(dealt);
@@ -1751,7 +1756,7 @@ export function createGame({
       : parts.find(openPart);
     if (parts.length) {
       if (!part || !openPart(part)) return 0;
-      const dealt = bossCombat.spend(amount, dynamicFlight && charged);
+      const dealt = spendDamage(amount, dynamicFlight && charged);
       part.hp = Math.max(
         0,
         part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
@@ -1776,7 +1781,7 @@ export function createGame({
     )
       return 0;
     if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(relativeOrbit()))) return 0;
-    const spent = bossCombat.spend(amount, dynamicFlight && charged);
+    const spent = spendDamage(amount, dynamicFlight && charged);
     const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
 
@@ -3696,6 +3701,8 @@ export function createGame({
               center,
               b.element,
               b.charged,
+              'weak',
+              b.source,
             );
             impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
               bossHit: true,
@@ -3715,6 +3722,7 @@ export function createGame({
             b.element,
             b.charged,
             'hull',
+            b.source,
           );
           impact(impactPoint(previousShot, b.o.position, boss.position, hull), dealt, {
             bossHit: true,
