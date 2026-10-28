@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.10 — Primeira investigação 3D dos Five Cats (candidata QA)
+
+- Protótipo de corredor explorável na Órbita-9 com controles desktop/mobile, três pistas, sobrevivente e rota que libera combate em Developer/QA.
+- Sem gravação de progresso nem envio ao ranking; captura real de navegador e testes de UI pendentes.
+- Baseado no motor de quests v1.27.9, ainda não representa mundo aberto completo nem release homologada.
+
+
 ## 1.27.9 — Base de quests Five Cats Universe (candidata isolada)
 
 - Domínio puro para pistas, NPC, escolha, gate de rota e recompensa segura.
