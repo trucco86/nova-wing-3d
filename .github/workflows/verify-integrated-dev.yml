@@ -1,4 +1,5 @@
 name: Verify consolidated Nova Wing DEV candidate (temporary)
+# Integration rerun after reconciling keyboard lock-on and squad special hotkeys.
 on:
   push:
     branches:
