@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
+      - feat/hml-postdeploy-smoke-20261027
 permissions:
   contents: write
   actions: write
@@ -23,7 +24,18 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
+      - name: Synchronize formatted HML smoke tests and spec only on isolated branch
+        if: github.ref == 'refs/heads/feat/hml-postdeploy-smoke-20261027'
+        run: |
+          git add -- tools/verify-hml-deploy.mjs tests/hml-postdeploy-smoke.test.mjs specs/hml-postdeploy-smoke.md
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'style(ci): format HML post-deploy smoke and tests'
+            git push origin HEAD:feat/hml-postdeploy-smoke-20261027
+          fi
       - name: Commit only generated web artifact
+        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
