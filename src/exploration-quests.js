@@ -5,16 +5,48 @@ export const EXPLORATION_SAVE_KEY = 'nova-wing-3d-exploration-v1';
 export const EXPLORATION_SCHEMA = 1;
 
 export const GALAXY_GRAPH = Object.freeze([
-  Object.freeze({ id: 'five-cats-base', name: 'Nave-mãe Five Cats', kind: 'hub', unlock: 'always' }),
-  Object.freeze({ id: 'orbit-9-ruins', name: 'Ruínas de Órbita-9', kind: 'exploration', unlock: 'always' }),
-  Object.freeze({ id: 'orion-ghost-route', name: 'Rota Fantasma de Órion', kind: 'combat', unlock: 'three-clues-and-npc' }),
-  Object.freeze({ id: 'hidden-planet', name: 'Planeta dos Arquivos', kind: 'planet', unlock: 'completed-orion-mission' }),
+  Object.freeze({
+    id: 'five-cats-base',
+    name: 'Nave-mãe Five Cats',
+    kind: 'hub',
+    unlock: 'always',
+  }),
+  Object.freeze({
+    id: 'orbit-9-ruins',
+    name: 'Ruínas de Órbita-9',
+    kind: 'exploration',
+    unlock: 'always',
+  }),
+  Object.freeze({
+    id: 'orion-ghost-route',
+    name: 'Rota Fantasma de Órion',
+    kind: 'combat',
+    unlock: 'three-clues-and-npc',
+  }),
+  Object.freeze({
+    id: 'hidden-planet',
+    name: 'Planeta dos Arquivos',
+    kind: 'planet',
+    unlock: 'completed-orion-mission',
+  }),
 ]);
 
 export const ORBIT9_EVIDENCE = Object.freeze([
-  Object.freeze({ id: 'transmission-a', label: 'Transmissão de socorro', detail: 'Uma frequência de fuga codificada' }),
-  Object.freeze({ id: 'reactor-map', label: 'Mapa do reator', detail: 'Coordenadas do corredor oculto' }),
-  Object.freeze({ id: 'broken-beacon', label: 'Baliza danificada', detail: 'A chave de ativação de uma rota' }),
+  Object.freeze({
+    id: 'transmission-a',
+    label: 'Transmissão de socorro',
+    detail: 'Uma frequência de fuga codificada',
+  }),
+  Object.freeze({
+    id: 'reactor-map',
+    label: 'Mapa do reator',
+    detail: 'Coordenadas do corredor oculto',
+  }),
+  Object.freeze({
+    id: 'broken-beacon',
+    label: 'Baliza danificada',
+    detail: 'A chave de ativação de uma rota',
+  }),
 ]);
 export const ORBIT9_CHOICES = Object.freeze(['restore-power', 'hidden-route']);
 const clueIds = new Set(ORBIT9_EVIDENCE.map(({ id }) => id));
@@ -38,10 +70,8 @@ export function createExplorationState(saved) {
     state.clues = [...new Set(saved.clues.filter((clue) => clueIds.has(clue)))].sort();
   if (choiceIds.has(saved.conversation) && state.clues.length === ORBIT9_EVIDENCE.length)
     state.conversation = saved.conversation;
-  if (saved.missionCompleted === true && state.conversation)
-    state.missionCompleted = true;
-  if (saved.rewardClaimed === true && state.missionCompleted)
-    state.rewardClaimed = true;
+  if (saved.missionCompleted === true && state.conversation) state.missionCompleted = true;
+  if (saved.rewardClaimed === true && state.missionCompleted) state.rewardClaimed = true;
   if (!canTravel(state, state.location)) state.location = 'five-cats-base';
   return state;
 }
@@ -78,7 +108,8 @@ export function travelTo(state, destination) {
 
 export function inspectEvidence(state, clueId) {
   const s = createExplorationState(state);
-  if (s.location !== 'orbit-9-ruins') return { state: s, accepted: false, reason: 'wrong-location' };
+  if (s.location !== 'orbit-9-ruins')
+    return { state: s, accepted: false, reason: 'wrong-location' };
   if (!clueIds.has(clueId)) return { state: s, accepted: false, reason: 'unknown-evidence' };
   if (s.clues.includes(clueId)) return { state: s, accepted: false, reason: 'already-collected' };
   return { state: { ...s, clues: [...s.clues, clueId].sort() }, accepted: true };
@@ -86,8 +117,10 @@ export function inspectEvidence(state, clueId) {
 
 export function talkToSurvivor(state, choice) {
   const s = createExplorationState(state);
-  if (s.location !== 'orbit-9-ruins') return { state: s, accepted: false, reason: 'wrong-location' };
-  if (s.clues.length !== ORBIT9_EVIDENCE.length) return { state: s, accepted: false, reason: 'missing-evidence' };
+  if (s.location !== 'orbit-9-ruins')
+    return { state: s, accepted: false, reason: 'wrong-location' };
+  if (s.clues.length !== ORBIT9_EVIDENCE.length)
+    return { state: s, accepted: false, reason: 'missing-evidence' };
   if (!choiceIds.has(choice)) return { state: s, accepted: false, reason: 'unknown-choice' };
   if (s.conversation) return { state: s, accepted: false, reason: 'choice-final' };
   return { state: { ...s, conversation: choice }, accepted: true };
@@ -106,7 +139,11 @@ export function claimExplorationReward(state) {
   const s = createExplorationState(state);
   if (!s.missionCompleted || s.rewardClaimed)
     return { state: s, accepted: false, reason: 'reward-unavailable' };
-  return { state: { ...s, rewardClaimed: true }, accepted: true, reward: { credits: 300, artifact: 'orion-key' } };
+  return {
+    state: { ...s, rewardClaimed: true },
+    accepted: true,
+    reward: { credits: 300, artifact: 'orion-key' },
+  };
 }
 
 // Exploration persistence is a separate key. No code here writes to the

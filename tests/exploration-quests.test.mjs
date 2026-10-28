@@ -1,17 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  EXPLORATION_SAVE_KEY, GALAXY_GRAPH, ORBIT9_EVIDENCE,
-  createExplorationState, questStatus, canTravel, travelTo, inspectEvidence,
-  talkToSurvivor, completeExplorationMission, claimExplorationReward,
-  loadExploration, saveExploration,
+  EXPLORATION_SAVE_KEY,
+  GALAXY_GRAPH,
+  ORBIT9_EVIDENCE,
+  createExplorationState,
+  questStatus,
+  canTravel,
+  travelTo,
+  inspectEvidence,
+  talkToSurvivor,
+  completeExplorationMission,
+  claimExplorationReward,
+  loadExploration,
+  saveExploration,
 } from '../src/exploration-quests.js';
 
 function readyInvestigation() {
   let s = createExplorationState();
   s = travelTo(s, 'orbit-9-ruins').state;
-  for (const evidence of ORBIT9_EVIDENCE)
-    s = inspectEvidence(s, evidence.id).state;
+  for (const evidence of ORBIT9_EVIDENCE) s = inspectEvidence(s, evidence.id).state;
   return s;
 }
 
@@ -23,8 +31,12 @@ test('galaxy exploration begins at the Five Cats base with story route locked', 
   assert.equal(canTravel(s, 'orion-ghost-route'), false);
   assert.equal(canTravel(s, 'hidden-planet'), false);
   assert.deepEqual(questStatus(s), {
-    found: 0, required: 3, survivorSpokenTo: false,
-    missionUnlocked: false, planetUnlocked: false, complete: false,
+    found: 0,
+    required: 3,
+    survivorSpokenTo: false,
+    missionUnlocked: false,
+    planetUnlocked: false,
+    complete: false,
   });
   assert.equal(travelTo(s, 'orion-ghost-route').reason, 'route-locked');
 });
@@ -37,8 +49,7 @@ test('clues are unique, contextual and validated before survivor dialogue', () =
   assert.equal(talkToSurvivor(s, 'restore-power').reason, 'missing-evidence');
   s = inspectEvidence(s, 'transmission-a').state;
   assert.equal(inspectEvidence(s, 'transmission-a').reason, 'already-collected');
-  for (const evidence of ORBIT9_EVIDENCE.slice(1))
-    s = inspectEvidence(s, evidence.id).state;
+  for (const evidence of ORBIT9_EVIDENCE.slice(1)) s = inspectEvidence(s, evidence.id).state;
   assert.equal(questStatus(s).found, 3);
   assert.equal(talkToSurvivor(s, 'invalid').reason, 'unknown-choice');
 });
@@ -64,8 +75,13 @@ test('save uses an independent key and never overwrites the existing campaign ch
   const oldSave = '{"version":1,"sector":4,"credits":200}';
   const map = new Map([['nova-wing-3d-v1', oldSave]]);
   const storage = {
-    getItem(k) { return map.get(k) ?? null; },
-    setItem(k, v) { writes.push(k); map.set(k, v); },
+    getItem(k) {
+      return map.get(k) ?? null;
+    },
+    setItem(k, v) {
+      writes.push(k);
+      map.set(k, v);
+    },
   };
   let s = readyInvestigation();
   s = talkToSurvivor(s, 'hidden-route').state;
@@ -79,16 +95,39 @@ test('save uses an independent key and never overwrites the existing campaign ch
 
 test('corrupt, forged and outdated saves fail closed without campaign data loss', () => {
   const invalid = createExplorationState({
-    version: 1, location: 'hidden-planet',
+    version: 1,
+    location: 'hidden-planet',
     clues: ['transmission-a', 'fake', 'transmission-a'],
-    conversation: 'hidden-route', missionCompleted: true, rewardClaimed: true,
+    conversation: 'hidden-route',
+    missionCompleted: true,
+    rewardClaimed: true,
   });
   assert.equal(invalid.location, 'five-cats-base');
   assert.deepEqual(invalid.clues, ['transmission-a']);
   assert.equal(invalid.conversation, null);
   assert.equal(invalid.missionCompleted, false);
   assert.equal(invalid.rewardClaimed, false);
-  assert.deepEqual(createExplorationState({ version: 99, clues: ORBIT9_EVIDENCE.map(e=>e.id) }), createExplorationState());
-  assert.deepEqual(loadExploration({ getItem() { return '{not-json'; } }), createExplorationState());
-  assert.equal(saveExploration({ setItem() { throw new Error('quota exceeded'); } }, invalid), false);
+  assert.deepEqual(
+    createExplorationState({ version: 99, clues: ORBIT9_EVIDENCE.map((e) => e.id) }),
+    createExplorationState(),
+  );
+  assert.deepEqual(
+    loadExploration({
+      getItem() {
+        return '{not-json';
+      },
+    }),
+    createExplorationState(),
+  );
+  assert.equal(
+    saveExploration(
+      {
+        setItem() {
+          throw new Error('quota exceeded');
+        },
+      },
+      invalid,
+    ),
+    false,
+  );
 });
