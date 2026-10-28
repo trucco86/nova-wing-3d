@@ -45,6 +45,22 @@ test('squad supers remain active for their full advertised gameplay duration', (
   assert.equal(h.game.snapshot().state, 'playing');
 });
 
+test('Five Cats formation still attacks armored boss hull when no weak generator is exposed', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(9, 'boss'), true);
+  h.advance(4.1, 0.1);
+  const before = h.game.snapshot();
+  assert.equal(before.bossParts, 2);
+  h.key('KeyO');
+  assert.equal(h.game.snapshot().fiveCats.overdriveTime, 10);
+  h.key('KeyO', false);
+  h.advance(2.4, 0.1);
+  const after = h.game.snapshot();
+  assert.ok(after.bossHp < before.bossHp, 'team should chip the armored body, not fire at null');
+  assert.equal(after.bossParts, 2, 'ordinary hull damage must not bypass generators');
+});
+
 test('reactor top-down is a playable X/Z navigation objective, never an automatic scenic cut', (t) => {
   const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
   t.after(() => h.close());
