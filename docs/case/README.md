@@ -47,13 +47,13 @@ flowchart LR
 
 ### Cinco pilares documentados
 
-| Pilar | Artefato | Por que importa |
-| :--- | :--- | :--- |
-| **Contexto explícito** | [AGENTS.md](../../AGENTS.md) + [skills](../../skills/) | Agentes e humanos encontram premissas, limites e critérios |
-| **Intenção verificável** | [specs](../../specs/) | Requisito deixa de ser somente uma conversa |
-| **Harness reprodutível** | [tests/harness.mjs](../../tests/harness.mjs) | Regressões de estado e lógica sem obrigar GPU real |
-| **Validação de experiência** | [Playwright](../../tests/browser/) | Browser real cobre clique, layout, cenas e controles |
-| **Release rastreável** | [CI/CD](../../.github/workflows/ci.yml) + [changelog](../../CHANGELOG.md) | Cada decisão pode ser relacionada a PR, SHA, execução e ambiente |
+| Pilar                        | Artefato                                                                  | Por que importa                                                  |
+| :--------------------------- | :------------------------------------------------------------------------ | :--------------------------------------------------------------- |
+| **Contexto explícito**       | [AGENTS.md](../../AGENTS.md) + [skills](../../skills/)                    | Agentes e humanos encontram premissas, limites e critérios       |
+| **Intenção verificável**     | [specs](../../specs/)                                                     | Requisito deixa de ser somente uma conversa                      |
+| **Harness reprodutível**     | [tests/harness.mjs](../../tests/harness.mjs)                              | Regressões de estado e lógica sem obrigar GPU real               |
+| **Validação de experiência** | [Playwright](../../tests/browser/)                                        | Browser real cobre clique, layout, cenas e controles             |
+| **Release rastreável**       | [CI/CD](../../.github/workflows/ci.yml) + [changelog](../../CHANGELOG.md) | Cada decisão pode ser relacionada a PR, SHA, execução e ambiente |
 
 ## Case concreto: uma mudança de menu atravessa o pipeline
 
@@ -65,18 +65,18 @@ Esses problemas levaram a correções incrementalmente entregues nas versões 1.
 
 ## Escolha como explorar o estudo
 
-| Trilha | Documento | Leitura |
-| :--- | :--- | :--- |
-| **Narrativa executiva** | [CASE-STUDY.md](CASE-STUDY.md) | Problema, decisões, implicações e aprendizados |
-| **Uma entrega auditável** | [Ciclo real de outubro](CICLO-REAL-OUTUBRO-2026.md) | PRs, falhas, CI e deploy |
-| **Arquitetura do processo** | [ARQUITETURA-DO-CASE.md](ARQUITETURA-DO-CASE.md) | Ciclo e fronteiras de qualidade |
-| **Papel dos agentes** | [PAPEIS-E-HANDOFFS.md](PAPEIS-E-HANDOFFS.md) | Modelo futuro de handoffs, sem alegar automação existente |
-| **Evidência e limites** | [EVIDENCIAS.md](EVIDENCIAS.md) | Fatos, rastreabilidade e o que não se pode afirmar |
-| **Decisões** | [DECISOES.md](DECISOES.md) | Trade-offs e riscos |
-| **Métricas** | [METRICAS.md](METRICAS.md) | Como medir produtividade, qualidade e DORA |
-| **Reproduzir** | [REPRODUZIR.md](REPRODUZIR.md) | Rodar, inspecionar e verificar |
-| **Evidência em novas entregas** | [TEMPLATE-EVIDENCIA-ENTREGA.md](TEMPLATE-EVIDENCIA-ENTREGA.md) | Registro de SHA, gates, validação humana e limites |
-| **Apresentação** | [DECK.md](DECK.md) / [VIDEO.md](VIDEO.md) | Roteiros para contar a história |
+| Trilha                          | Documento                                                      | Leitura                                                   |
+| :------------------------------ | :------------------------------------------------------------- | :-------------------------------------------------------- |
+| **Narrativa executiva**         | [CASE-STUDY.md](CASE-STUDY.md)                                 | Problema, decisões, implicações e aprendizados            |
+| **Uma entrega auditável**       | [Ciclo real de outubro](CICLO-REAL-OUTUBRO-2026.md)            | PRs, falhas, CI e deploy                                  |
+| **Arquitetura do processo**     | [ARQUITETURA-DO-CASE.md](ARQUITETURA-DO-CASE.md)               | Ciclo e fronteiras de qualidade                           |
+| **Papel dos agentes**           | [PAPEIS-E-HANDOFFS.md](PAPEIS-E-HANDOFFS.md)                   | Modelo futuro de handoffs, sem alegar automação existente |
+| **Evidência e limites**         | [EVIDENCIAS.md](EVIDENCIAS.md)                                 | Fatos, rastreabilidade e o que não se pode afirmar        |
+| **Decisões**                    | [DECISOES.md](DECISOES.md)                                     | Trade-offs e riscos                                       |
+| **Métricas**                    | [METRICAS.md](METRICAS.md)                                     | Como medir produtividade, qualidade e DORA                |
+| **Reproduzir**                  | [REPRODUZIR.md](REPRODUZIR.md)                                 | Rodar, inspecionar e verificar                            |
+| **Evidência em novas entregas** | [TEMPLATE-EVIDENCIA-ENTREGA.md](TEMPLATE-EVIDENCIA-ENTREGA.md) | Registro de SHA, gates, validação humana e limites        |
+| **Apresentação**                | [DECK.md](DECK.md) / [VIDEO.md](VIDEO.md)                      | Roteiros para contar a história                           |
 
 ### O que foi desenvolvido e o que é proposta
 

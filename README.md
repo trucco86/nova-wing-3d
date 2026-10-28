@@ -30,12 +30,12 @@ Mas há uma segunda história: **como usar IA na engenharia de software para tra
 
 É esse o case. O jogo torna os problemas concretos: um botão que fica sobre a nave, um chefe inacessível, um áudio cansativo ou um build divergente. As correções passam por especificação, alteração de fonte, harness, testes, revisão e deploy.
 
-| Explore o produto | Explore o processo |
-| :--- | :--- |
-| [Jogar no navegador](https://trucco86.github.io/nova-wing-3d/) | [Case de engenharia assistida por IA](docs/case/README.md) |
-| [Guia do jogo e das mecânicas](docs/GAMEPLAY-GUIDE.md) | [Mapa visual do AI SDLC](docs/PORTFOLIO-AI-SDLC.md) |
-| [Dez setores e seus chefes](src/campaign.js) | [Evidências, commits, PRs e gates](docs/case/EVIDENCIAS.md) |
-| [Versões e evolução](CHANGELOG.md) | [Como reproduzir o experimento](docs/case/REPRODUZIR.md) |
+| Explore o produto                                              | Explore o processo                                          |
+| :------------------------------------------------------------- | :---------------------------------------------------------- |
+| [Jogar no navegador](https://trucco86.github.io/nova-wing-3d/) | [Case de engenharia assistida por IA](docs/case/README.md)  |
+| [Guia do jogo e das mecânicas](docs/GAMEPLAY-GUIDE.md)         | [Mapa visual do AI SDLC](docs/PORTFOLIO-AI-SDLC.md)         |
+| [Dez setores e seus chefes](src/campaign.js)                   | [Evidências, commits, PRs e gates](docs/case/EVIDENCIAS.md) |
+| [Versões e evolução](CHANGELOG.md)                             | [Como reproduzir o experimento](docs/case/REPRODUZIR.md)    |
 
 ## O case: da intenção à evidência
 
@@ -56,13 +56,13 @@ flowchart LR
 
 **O diferencial não é gerar código automaticamente.** É aproximar descoberta, implementação, verificação e decisão de release em um ciclo que deixa rastros no repositório.
 
-| Pilar | Implementação inspecionável | O que ainda não significa |
-| :--- | :--- | :--- |
-| **Context engineering** | [AGENTS.md](AGENTS.md), [skills](skills/README.md), [specs](specs/README.md) | Que cada agente siga instruções sem falhas |
-| **Harness determinístico** | [tests/harness.mjs](tests/harness.mjs), [src/game.js](src/game.js) | Que mocks substituam o WebGL real |
-| **Qualidade em camadas** | [Node + Playwright](docs/TESTES.md), [CI](.github/workflows/ci.yml) | Que CI verde seja homologação em celular |
-| **Entrega rastreável** | [PRs](https://github.com/trucco86/nova-wing-3d/pulls), [releases](releases/), [deploys](docs/DEPLOY-ENVIRONMENTS.md) | Que um preview aprovado esteja em produção |
-| **Aprendizado contínuo** | [ADRs](docs/adr/), [case](docs/case/CASE-STUDY.md), [métricas](docs/case/METRICAS.md) | Que ROI ou produtividade já tenham baseline confiável |
+| Pilar                      | Implementação inspecionável                                                                                          | O que ainda não significa                             |
+| :------------------------- | :------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------- |
+| **Context engineering**    | [AGENTS.md](AGENTS.md), [skills](skills/README.md), [specs](specs/README.md)                                         | Que cada agente siga instruções sem falhas            |
+| **Harness determinístico** | [tests/harness.mjs](tests/harness.mjs), [src/game.js](src/game.js)                                                   | Que mocks substituam o WebGL real                     |
+| **Qualidade em camadas**   | [Node + Playwright](docs/TESTES.md), [CI](.github/workflows/ci.yml)                                                  | Que CI verde seja homologação em celular              |
+| **Entrega rastreável**     | [PRs](https://github.com/trucco86/nova-wing-3d/pulls), [releases](releases/), [deploys](docs/DEPLOY-ENVIRONMENTS.md) | Que um preview aprovado esteja em produção            |
+| **Aprendizado contínuo**   | [ADRs](docs/adr/), [case](docs/case/CASE-STUDY.md), [métricas](docs/case/METRICAS.md)                                | Que ROI ou produtividade já tenham baseline confiável |
 
 > [!IMPORTANT]
 > **Transparência técnica:** o projeto demonstra desenvolvimento **assistido por IA**, com instruções, skills e controles reais. A orquestração autônoma de agentes independentes, com handoffs instrumentados, é uma **evolução proposta**, não uma capacidade já comprovada. Não apresentamos percentuais de produtividade sem medições comparáveis.
@@ -109,12 +109,12 @@ As linhas pontilhadas indicam integrações condicionais ou dependentes de confi
 
 ### Ambientes e políticas
 
-| Ambiente | Acesso | Papel |
-| :--- | :--- | :--- |
-| **PROD** | [Jogar](https://trucco86.github.io/nova-wing-3d/) | Release pública proveniente de `main` |
-| **DEV** | [Testar](https://dev.nova-wing-preview.pages.dev/) | Integração rápida e validação visual/funcional |
-| **HML** | [Homologar](https://hml.nova-wing-preview.pages.dev/) | Candidata estável, distinta de DEV |
-| **PR preview** | URL `pr-N` quando publicada | Revisão isolada de uma alteração |
+| Ambiente       | Acesso                                                | Papel                                          |
+| :------------- | :---------------------------------------------------- | :--------------------------------------------- |
+| **PROD**       | [Jogar](https://trucco86.github.io/nova-wing-3d/)     | Release pública proveniente de `main`          |
+| **DEV**        | [Testar](https://dev.nova-wing-preview.pages.dev/)    | Integração rápida e validação visual/funcional |
+| **HML**        | [Homologar](https://hml.nova-wing-preview.pages.dev/) | Candidata estável, distinta de DEV             |
+| **PR preview** | URL `pr-N` quando publicada                           | Revisão isolada de uma alteração               |
 
 > [!NOTE]
 > As versões podem variar entre ambientes. Um deploy bem-sucedido comprova publicação de um artefato específico, não aceite funcional. Consulte sempre o [registro de ambiente e o SHA](docs/DEPLOY-ENVIRONMENTS.md).
@@ -144,16 +144,16 @@ npm run validate -- --browser
 
 ### Onde começar a ler
 
-| Interesse | Leitura recomendada |
-| :--- | :--- |
-| **Visão executiva / portfólio** | [Vitrine AI SDLC](docs/PORTFOLIO-AI-SDLC.md) |
-| **Case completo** | [Case de desenvolvimento](docs/case/README.md) |
-| **Arquitetura técnica** | [Stack / ambientes](docs/ARCHITECTURE-PLATFORM.md) |
+| Interesse                        | Leitura recomendada                                           |
+| :------------------------------- | :------------------------------------------------------------ |
+| **Visão executiva / portfólio**  | [Vitrine AI SDLC](docs/PORTFOLIO-AI-SDLC.md)                  |
+| **Case completo**                | [Case de desenvolvimento](docs/case/README.md)                |
+| **Arquitetura técnica**          | [Stack / ambientes](docs/ARCHITECTURE-PLATFORM.md)            |
 | **Responsabilidades de agentes** | [Papéis e handoffs propostos](docs/case/PAPEIS-E-HANDOFFS.md) |
-| **Métricas e DORA** | [Plano de instrumentação](docs/case/METRICAS.md) |
-| **Evidência e limitações** | [Matriz de evidências](docs/case/EVIDENCIAS.md) |
-| **Rodar / reproduzir** | [Guia de reprodução](docs/case/REPRODUZIR.md) |
-| **Catálogo de documentos** | [Índice da documentação](docs/README.md) |
+| **Métricas e DORA**              | [Plano de instrumentação](docs/case/METRICAS.md)              |
+| **Evidência e limitações**       | [Matriz de evidências](docs/case/EVIDENCIAS.md)               |
+| **Rodar / reproduzir**           | [Guia de reprodução](docs/case/REPRODUZIR.md)                 |
+| **Catálogo de documentos**       | [Índice da documentação](docs/README.md)                      |
 
 <details>
 <summary><strong>Executive abstract · English</strong></summary>

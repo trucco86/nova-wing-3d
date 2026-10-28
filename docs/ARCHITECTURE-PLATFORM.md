@@ -6,11 +6,11 @@
 
 > Esta seção atualiza o panorama de versões sem apagar a matriz histórica abaixo. Para o status de um recurso específico, consulte o SHA correspondente e os gates do próprio ambiente.
 
-| Branch | Versão na consulta | Uso / evidência |
-| :--- | :--- | :--- |
-| `dev` | **1.27.4** | [Cloudflare DEV](https://dev.nova-wing-preview.pages.dev/) · [deploy](https://github.com/trucco86/nova-wing-3d/actions/runs/40744797302) |
-| `hml` | **1.24.24** | [Cloudflare HML](https://hml.nova-wing-preview.pages.dev/) |
-| `main` | **1.24.18** | [GitHub Pages PROD](https://trucco86.github.io/nova-wing-3d/) |
+| Branch | Versão na consulta | Uso / evidência                                                                                                                          |
+| :----- | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev`  | **1.27.4**         | [Cloudflare DEV](https://dev.nova-wing-preview.pages.dev/) · [deploy](https://github.com/trucco86/nova-wing-3d/actions/runs/40744797302) |
+| `hml`  | **1.24.24**        | [Cloudflare HML](https://hml.nova-wing-preview.pages.dev/)                                                                               |
+| `main` | **1.24.18**        | [GitHub Pages PROD](https://trucco86.github.io/nova-wing-3d/)                                                                            |
 
 A candidata [PR #135](https://github.com/trucco86/nova-wing-3d/pull/135) introduz cenário de Developer/QA e nova hierarquia de piloto na missão, **sem pressupor publicação definitiva em DEV**. A API de ranking possui módulos no repositório, mas a existência da fonte não comprova D1 provisionado ou serviço operacional.
 

@@ -14,14 +14,14 @@
 
 ## O que este case procura demonstrar
 
-| Dimensão | Antes de estruturar o processo | Prática adotada no repositório |
-| :--- | :--- | :--- |
-| **Contexto** | Requisitos ficam dispersos em pedidos e conversas | `AGENTS.md`, skills, specs e ADRs versionados |
-| **Feedback** | Problemas de UX relatados informalmente | Descrição do desvio, critério de aceite e teste |
+| Dimensão          | Antes de estruturar o processo                     | Prática adotada no repositório                     |
+| :---------------- | :------------------------------------------------- | :------------------------------------------------- |
+| **Contexto**      | Requisitos ficam dispersos em pedidos e conversas  | `AGENTS.md`, skills, specs e ADRs versionados      |
+| **Feedback**      | Problemas de UX relatados informalmente            | Descrição do desvio, critério de aceite e teste    |
 | **Implementação** | Mudanças pontuais podem gerar regressões indiretas | Fonte modular, diff revisável e build reproduzível |
-| **Verificação** | Testar manualmente somente o caminho feliz | Harness determinístico + Playwright real |
-| **Entrega** | Dificuldade de saber qual versão foi testada | PR, SHA, ambiente e execução de CI associados |
-| **Aprendizado** | Correções sem memória técnica permanente | Changelog, evidências, revisão de regras e backlog |
+| **Verificação**   | Testar manualmente somente o caminho feliz         | Harness determinístico + Playwright real           |
+| **Entrega**       | Dificuldade de saber qual versão foi testada       | PR, SHA, ambiente e execução de CI associados      |
+| **Aprendizado**   | Correções sem memória técnica permanente           | Changelog, evidências, revisão de regras e backlog |
 
 Esta tabela descreve o **modelo e mecanismos existentes**, não comprova redução de tempo ou custo. O [plano de métricas](case/METRICAS.md) apresenta como medir esses efeitos com rigor.
 
@@ -81,14 +81,14 @@ Os componentes de implementação, testes e entrega são [inspecionáveis](../sr
 
 ## Arquitetura e controles
 
-| Fronteira | Solução atual | Risco que reduz |
-| :--- | :--- | :--- |
-| Runtime | Three.js/WebGL + Web Audio + armazenamento local | Separar renderização, áudio e estado |
-| Build | `src/` → `tools/build.mjs` → `index.html` | Deriva entre fonte e artefato |
-| QA | Harness em JS real + Playwright | Regressões funcionais e de navegação |
-| Deploy | Branches `dev`, `hml`, `main` e previews Cloudflare | Misturar protótipo não aprovado com release |
-| Identidade | Firebase Google Auth no fluxo web habilitado por ambiente | Acoplar identidade de teste ao modo visitante |
-| Ranking | Cliente experimental e backend Worker/D1 em evolução | Confundir UI de leaderboard com serviço validado |
+| Fronteira  | Solução atual                                             | Risco que reduz                                  |
+| :--------- | :-------------------------------------------------------- | :----------------------------------------------- |
+| Runtime    | Three.js/WebGL + Web Audio + armazenamento local          | Separar renderização, áudio e estado             |
+| Build      | `src/` → `tools/build.mjs` → `index.html`                 | Deriva entre fonte e artefato                    |
+| QA         | Harness em JS real + Playwright                           | Regressões funcionais e de navegação             |
+| Deploy     | Branches `dev`, `hml`, `main` e previews Cloudflare       | Misturar protótipo não aprovado com release      |
+| Identidade | Firebase Google Auth no fluxo web habilitado por ambiente | Acoplar identidade de teste ao modo visitante    |
+| Ranking    | Cliente experimental e backend Worker/D1 em evolução      | Confundir UI de leaderboard com serviço validado |
 
 [Arquitetura de plataforma](ARCHITECTURE-PLATFORM.md) · [Ambientes](DEPLOY-ENVIRONMENTS.md) · [Segurança e consentimento do ranking](RANKING-CLOUDFLARE.md).
 

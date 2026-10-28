@@ -4,37 +4,37 @@ Este modelo documenta uma entrega rastreável. **Não preencha um campo como apr
 
 ## 1. Contexto e hipótese
 
-| Campo | Preencher |
-| :--- | :--- |
-| Identificador da demanda | `TASK-ID` |
-| Feedback / problema observável | A descrever |
-| Hipótese de solução | A descrever |
+| Campo                                  | Preencher   |
+| :------------------------------------- | :---------- |
+| Identificador da demanda               | `TASK-ID`   |
+| Feedback / problema observável         | A descrever |
+| Hipótese de solução                    | A descrever |
 | Restrições de escopo e compatibilidade | A descrever |
-| Spec / ADR / skill relevante | Links |
-| Responsável pela validação humana | A informar |
+| Spec / ADR / skill relevante           | Links       |
+| Responsável pela validação humana      | A informar  |
 
 ## 2. Implementação
 
-| Campo | Evidência |
-| :--- | :--- |
-| Branch / PR | URL |
-| Commit SHA testado | SHA completo |
-| Arquivos de fonte alterados | Links |
-| Critério de aceite #1 | Regra e teste correspondente |
-| Critério de aceite #2 | Regra e teste correspondente |
-| Decisões de arquitetura | ADR ou justificativa |
+| Campo                       | Evidência                    |
+| :-------------------------- | :--------------------------- |
+| Branch / PR                 | URL                          |
+| Commit SHA testado          | SHA completo                 |
+| Arquivos de fonte alterados | Links                        |
+| Critério de aceite #1       | Regra e teste correspondente |
+| Critério de aceite #2       | Regra e teste correspondente |
+| Decisões de arquitetura     | ADR ou justificativa         |
 
 ## 3. Gates por SHA
 
-| Gate | Resultado | Execução / artefato | Limitação |
-| :--- | :--- | :--- | :--- |
-| Formatação / lint | Pendente | URL | — |
-| Build reproduzível | Pendente | URL | — |
-| Testes unitários | Pendente | URL | — |
-| Playwright desktop | Pendente | URL | Emulação/SwiftShader |
-| Playwright mobile | Pendente | URL | Não substitui dispositivo físico |
-| Inspeção visual | Pendente | Capturas + ambiente | Precisa de revisão humana |
-| Inspeção de áudio | Não aplicável / Pendente | Gravação / dispositivo | Preferência subjetiva |
+| Gate               | Resultado                | Execução / artefato    | Limitação                        |
+| :----------------- | :----------------------- | :--------------------- | :------------------------------- |
+| Formatação / lint  | Pendente                 | URL                    | —                                |
+| Build reproduzível | Pendente                 | URL                    | —                                |
+| Testes unitários   | Pendente                 | URL                    | —                                |
+| Playwright desktop | Pendente                 | URL                    | Emulação/SwiftShader             |
+| Playwright mobile  | Pendente                 | URL                    | Não substitui dispositivo físico |
+| Inspeção visual    | Pendente                 | Capturas + ambiente    | Precisa de revisão humana        |
+| Inspeção de áudio  | Não aplicável / Pendente | Gravação / dispositivo | Preferência subjetiva            |
 
 ## 4. Publicação e aceite
 

@@ -69,12 +69,12 @@ As skills de domínio não são agentes residentes. O desenho de vários papéis
 
 ## 4 · Ambientes sem ambiguidade
 
-| Ambiente | Branch | Hospedagem | Papel |
-| :--- | :--- | :--- | :--- |
+| Ambiente   | Branch       | Hospedagem       | Papel                        |
+| :--------- | :----------- | :--------------- | :--------------------------- |
 | PR preview | Branch da PR | Cloudflare Pages | Avaliação de mudança isolada |
-| DEV | `dev` | Cloudflare Pages | Integração e feedback rápido |
-| HML | `hml` | Cloudflare Pages | Homologação controlada |
-| PROD | `main` | GitHub Pages | Release pública |
+| DEV        | `dev`        | Cloudflare Pages | Integração e feedback rápido |
+| HML        | `hml`        | Cloudflare Pages | Homologação controlada       |
+| PROD       | `main`       | GitHub Pages     | Release pública              |
 
 O estado por versão e a evidência de cada deploy estão em [Ambientes](DEPLOY-ENVIRONMENTS.md). **Publicado ≠ testado ≠ homologado**.
 

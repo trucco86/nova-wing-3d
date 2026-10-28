@@ -8,20 +8,20 @@
 
 ## Comece pelo seu objetivo
 
-| Quero entender... | Documento | Conteúdo |
-| :--- | :--- | :--- |
-| **O valor do case** | [Portfólio / visão executiva](PORTFOLIO-AI-SDLC.md) | Problema, abordagem, ganhos qualitativos e limites |
-| **O ciclo completo** | [Case de AI SDLC](case/README.md) | História, princípios, agentes propostos e documentação |
-| **Uma entrega concreta** | [Ciclo de outubro de 2026](case/CICLO-REAL-OUTUBRO-2026.md) | Feedback, correção, falhas, gates, PRs e deploy |
-| **O produto** | [Guia do jogo](GAMEPLAY-GUIDE.md) | Mecânicas, campanha, controles e desafios |
-| **A arquitetura** | [Plataforma](ARCHITECTURE-PLATFORM.md) | WebGL, fontes, identidade, ranking e ambientes |
-| **Os ambientes** | [DEV / HML / PROD](DEPLOY-ENVIRONMENTS.md) | Preview, promoção, evidências e rollback |
-| **O QA** | [Testes](TESTES.md) / [Harness](HARNESS.md) | Testes determinísticos e navegação real |
-| **As regras dos agentes** | [AGENTS.md](../AGENTS.md) / [skills](../skills/README.md) | Contexto, responsabilidades, limites e procedimentos |
-| **Métricas** | [Plano de mensuração](case/METRICAS.md) | Lead time, DORA, retrabalho, custo e validade metodológica |
-| **O que é comprovado** | [Matriz de evidências](case/EVIDENCIAS.md) | Fonte, SHA, ambiente e limitação |
-| **Como registrar novas entregas** | [Template de evidência](case/TEMPLATE-EVIDENCIA-ENTREGA.md) | Contratos, CI, aceite, deploy e rollback |
-| **Como reproduzir** | [Guia de reprodução](case/REPRODUZIR.md) | Instalação, build, CI e Playwright |
+| Quero entender...                 | Documento                                                   | Conteúdo                                                   |
+| :-------------------------------- | :---------------------------------------------------------- | :--------------------------------------------------------- |
+| **O valor do case**               | [Portfólio / visão executiva](PORTFOLIO-AI-SDLC.md)         | Problema, abordagem, ganhos qualitativos e limites         |
+| **O ciclo completo**              | [Case de AI SDLC](case/README.md)                           | História, princípios, agentes propostos e documentação     |
+| **Uma entrega concreta**          | [Ciclo de outubro de 2026](case/CICLO-REAL-OUTUBRO-2026.md) | Feedback, correção, falhas, gates, PRs e deploy            |
+| **O produto**                     | [Guia do jogo](GAMEPLAY-GUIDE.md)                           | Mecânicas, campanha, controles e desafios                  |
+| **A arquitetura**                 | [Plataforma](ARCHITECTURE-PLATFORM.md)                      | WebGL, fontes, identidade, ranking e ambientes             |
+| **Os ambientes**                  | [DEV / HML / PROD](DEPLOY-ENVIRONMENTS.md)                  | Preview, promoção, evidências e rollback                   |
+| **O QA**                          | [Testes](TESTES.md) / [Harness](HARNESS.md)                 | Testes determinísticos e navegação real                    |
+| **As regras dos agentes**         | [AGENTS.md](../AGENTS.md) / [skills](../skills/README.md)   | Contexto, responsabilidades, limites e procedimentos       |
+| **Métricas**                      | [Plano de mensuração](case/METRICAS.md)                     | Lead time, DORA, retrabalho, custo e validade metodológica |
+| **O que é comprovado**            | [Matriz de evidências](case/EVIDENCIAS.md)                  | Fonte, SHA, ambiente e limitação                           |
+| **Como registrar novas entregas** | [Template de evidência](case/TEMPLATE-EVIDENCIA-ENTREGA.md) | Contratos, CI, aceite, deploy e rollback                   |
+| **Como reproduzir**               | [Guia de reprodução](case/REPRODUZIR.md)                    | Instalação, build, CI e Playwright                         |
 
 ## Três trilhas de leitura
 
