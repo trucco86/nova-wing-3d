@@ -17,6 +17,9 @@ function scenario(body, headers = {}) {
     RANKING_SEASON: 'current',
     SCORE_WRITE_ENABLED: 'true',
     DB: {
+      async batch(statements) {
+        return Promise.all(statements.map((statement) => statement.run()));
+      },
       prepare() {
         databaseQueries += 1;
         return {
