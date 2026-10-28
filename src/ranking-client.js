@@ -69,13 +69,14 @@ export function createRankingClient({
     const heading = el('summary');
     if (heading)
       heading.textContent =
-        summary.count + ' fases · recorde ' + summary.best + ' pts · total ' + summary.total;
+        summary.count + ' partidas · recorde ' + summary.best + ' pts · total ' + summary.total;
     fill(
       listLocal,
       local
         .slice(0, 8)
         .map(
           (entry) =>
+            (entry.outcome === 'defeated' ? 'DERROTA · ' : 'CONCLUÍDO · ') +
             'Setor ' +
             entry.sector +
             ' · ' +
@@ -83,7 +84,7 @@ export function createRankingClient({
             ' pts · ' +
             new Date(entry.completedAt).toLocaleDateString(locale()),
         ),
-      'Sem partidas concluídas neste dispositivo.',
+      'Nenhuma partida registrada neste dispositivo.',
     );
   }
   async function request(
@@ -204,18 +205,24 @@ export function createRankingClient({
     }).catch(() => null);
   }
 
-  async function onStageFinished({ sector, points, durationMs }) {
+  async function onStageFinished({ sector, points, durationMs, outcome = 'cleared' }) {
     const entry = {
       id: newLocalId(),
       sector,
       points: Math.max(0, Math.round(points)),
       durationMs: Math.max(0, Math.round(durationMs)),
+      outcome,
       completedAt: new Date().toISOString(),
     };
     recordLocalResult(storage, entry);
     refreshLocal();
     const run = activeRun;
     activeRun = null;
+    // A defeated mission belongs to the local history, not to the remote leaderboard.
+    if (outcome !== 'cleared') {
+      say('Derrota registrada no histórico deste navegador.');
+      return;
+    }
     if (
       !run ||
       run.sector !== sector ||

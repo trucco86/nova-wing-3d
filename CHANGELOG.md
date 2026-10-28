@@ -1,13 +1,12 @@
 # Histórico
 
-## 1.24.26 — Five Cats: formação e superespeciais (candidata)
+## 1.24.25 — Histórico de vitórias e derrotas (candidata)
 
-- Introdução de cinco naves em V antes da primeira fase: Bia lidera no centro, Jenifer, Bob, Christopher e Calvinho nas alas.
-- Quatro entradas de aliados em segmentos distintos da primeira fase, com tiros físicos de suporte.
-- PLASMA TITAN: feixe de energia original, projéteis com colisão real, custo arcano 75, 2,5s, recarga 15s.
-- FIVE CATS OVERDRIVE: formação de ataque e projéteis convergentes, custo 90, 3,5s, recarga 30s.
-- Contratos de teste isolam a abertura cinematográfica das regressões já existentes, mantendo cobertura própria de abertura.
-- Novos avisos PT/EN/ES, atalhos Y/O e botões no HUD superior; preservação de HML e produção até homologação visual.
+- Registro local de cada fase concluída e de partidas encerradas por derrota, com resultado explícito, pontuação e duração.
+- Migração retrocompatível de histórico: entradas anteriores continuam representando vitórias.
+- Painel com quantidade de partidas, estado CONCLUÍDO/DERROTA e rótulos traduzíveis para PT/EN/ES.
+- Derrotas não entram no ranking remoto experimental; checkpoints e progresso da campanha preservados.
+- HML permanece em v1.24.24 até promoção aprovada; Worker/D1, OAuth e score remoto ainda exigem validação externa.
 
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 

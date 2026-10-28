@@ -33,6 +33,7 @@ test('completed sectors emit exactly one ranking event with positive score delta
   assert.equal(h.game.snapshot().state, 'shop');
   assert.equal(completed.length, 1);
   assert.equal(completed[0].sector, 2);
+  assert.equal(completed[0].outcome, 'cleared');
   assert.ok(completed[0].points >= 50);
   assert.ok(completed[0].durationMs >= 80000);
   assert.ok(completed[0].totalPoints >= 65);
@@ -55,4 +56,26 @@ test('ranking callback errors are isolated from the actual flight', (t) => {
   t.after(() => h.close());
   h.game.start();
   assert.equal(h.game.snapshot().state, 'playing');
+});
+
+test('game over stores one defeated attempt without awarding a cleared stage', (t) => {
+  const finished = [];
+  const h = harness({
+    storage: saveSector(1),
+    onStageFinished: (result) => finished.push(result),
+  });
+  t.after(() => h.close());
+  h.game.start(true);
+  // Respawn grants a protective window; only attempt a hit when gameplay resumes.
+  for (let i = 0; i < 12 && h.game.snapshot().state !== 'lost'; i++) {
+    h.advance(4, 0.1);
+    if (h.game.snapshot().state === 'playing') h.game.damage(100000);
+  }
+  assert.equal(h.game.snapshot().state, 'lost');
+  assert.equal(finished.length, 1);
+  assert.equal(finished[0].sector, 2);
+  assert.equal(finished[0].outcome, 'defeated');
+  assert.ok(finished[0].durationMs > 0);
+  h.advance(1);
+  assert.equal(finished.length, 1, 'game-over event remains once-only');
 });
