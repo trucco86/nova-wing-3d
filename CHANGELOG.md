@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.2 — Menu centralizado e ranking após Como jogar (candidata DEV)
+
+- Botões da tela inicial centralizados e padronizados em altura, largura e espaçamento, com alvos touch consistentes.
+- Ranking integrado abaixo de Como jogar, mantendo histórico local, ranking experimental e controles de privacidade.
+- Login social Google e trilha de ação energizada da v1.27.1 preservados, sem mudanças nas configurações Firebase/D1.
+- Build reproduzível e regressões de menu para celular e desktop; testes de navegador e aceite humano obrigatórios antes de homologação.
+- Candidata somente para DEV; HML e produção permanecem inalterados.
+
 ## 1.27.1 — Login social Google no menu e trilha com adrenalina (candidata DEV)
 
 - Login social Google integrado ao fluxo do menu, abaixo de Iniciar/Opções/Trilha/Abertura, sem overlay fixo ou colisões com o RANK.
