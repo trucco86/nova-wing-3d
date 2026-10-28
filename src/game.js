@@ -55,6 +55,8 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
@@ -113,9 +115,6 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
-  mechArmPitch,
-  animateMechPower,
-  resetMechPower,
   setFighterEvolution,
   createShipModule,
   createWorld,
@@ -942,7 +941,6 @@ export function createGame({
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
-    resetMechPower(robot);
     robotFireKick = 0;
     robotMode = false;
     shipModule.visible = true;
@@ -1451,7 +1449,9 @@ export function createGame({
       firing: touchFire || keys.has('Space'),
       targetWorld: position,
       transforming: robotTransition,
+      recoil: robotFireKick,
     });
+    robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
     if (lockEnabled)
@@ -2537,27 +2537,13 @@ export function createGame({
     const wasBoosting = boosting;
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
-    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / 0.7;
     if (robot.visible) {
-      const rig = robot.userData.mechRig;
-      const motion = elapsed * 5;
-      const boostMotion = 1 + rig.propulsionPower * 0.4;
-      for (let i = 0; i < 2; i++) {
-        const side = i === 0 ? -1 : 1;
-        rig.arms[i].rotation.x = mechArmPitch(motion, i, boostMotion, robotFireKick);
-        rig.arms[i].rotation.z = side * (0.12 + Math.sin(motion * 0.6) * 0.06);
-        rig.legs[i].rotation.x = Math.sin(motion + i * Math.PI) * 0.21 * boostMotion;
-        rig.legs[i].rotation.z = side * 0.035;
-      }
-      const width =
-        pilotLoadout.ship === 'aegis' ? 1.12 : pilotLoadout.ship === 'specter' ? 0.94 : 1.02;
-      const unfold = 1 + Math.sin(unfoldProgress * Math.PI) * 0.16;
+      // The independently aimed wrists and dual dorsal gimbals belong to
+      // updateMechaPose(). Do not overwrite their animation with a legacy rig.
       robot.rotation.y =
         Math.sin(elapsed * 1.7) * 0.035 +
-        Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.65;
-      robot.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.18;
-      robot.scale.set(width * unfold, 1.05 * unfold, 1.05 * unfold);
+        Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.32;
     } else if (robotTransition > 0) {
       shipModule.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.22;
     } else {
