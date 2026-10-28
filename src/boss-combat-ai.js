@@ -1,9 +1,15 @@
 // Utility-driven boss combat. Tactics use the pilot's actual movement and
 // orbit rather than random bullets, and telegraph a dodgeable targeted attack.
 const MELEE = Object.freeze({
+  0: ['claw-swipe', 'tentacle-sweep'],
+  1: ['tentacle-grab', 'claw-swipe'],
   2: ['drill-ram', 'claw-swipe'],
+  3: ['hammer-slam', 'tentacle-sweep'],
+  4: ['drill-ram', 'claw-swipe'],
   5: ['hammer-slam', 'claw-swipe'],
   6: ['tentacle-grab', 'tentacle-sweep'],
+  7: ['claw-swipe', 'hammer-slam'],
+  8: ['tentacle-sweep', 'tentacle-grab'],
   9: ['bite', 'claw-swipe', 'tentacle-grab'],
 });
 const LABEL = Object.freeze({
@@ -40,7 +46,8 @@ export function chooseBossIntent({
       kind = boosting ? 'tentacle-grab' : flank || robot ? 'claw-swipe' : 'bite';
     } else if (sector === 6) kind = boosting || flank ? 'tentacle-grab' : 'tentacle-sweep';
     else if (sector === 5) kind = robot || healthy === 0 ? 'hammer-slam' : 'claw-swipe';
-    else kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
+    else if (sector === 2) kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
+    else kind = options[(cycle + (boosting ? 1 : 0) + (robot ? 1 : 0)) % options.length];
     // Every third cycle retains a readable ranged counterplay window instead
     // of an endless stream of area attacks.
     if (cycle > 0 && cycle % 4 === 0) kind = 'barrage';
@@ -72,7 +79,7 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   const r = intent.dodgeRadius;
   if (intent.kind === 'tentacle-sweep') return dy < r && dx < r * 2.4;
   if (intent.kind === 'claw-swipe') {
-    const flank = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.45;
+    const flank = intent.sector !== 9 || Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.45;
     return flank && dx < r * 1.7 && dy < r;
   }
   if (intent.kind === 'tentacle-grab') return Math.hypot(dx * 0.7, dy) < r;
@@ -86,7 +93,7 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const windup = state === 'windup' ? Math.min(1, phaseAge / intent.warning) : 0;
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
-    lunge: strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 30 : 12),
+    lunge: strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 72 : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw: intent.kind === 'claw-swipe' || intent.kind === 'hammer-slam' ? windup * 0.3 + strike * 0.85 : 0,
     tentacle: intent.kind.startsWith('tentacle') ? windup * 0.2 + strike * 0.75 : 0,
