@@ -5,9 +5,6 @@ on:
       - integration/dev-all-priorities-20261028
     paths:
       - .github/workflows/verify-integrated-dev.yml
-      - src/game.js
-      - tests/harness.mjs
-      - src/visuals.js
 permissions:
   contents: write
 concurrency:
@@ -32,6 +29,8 @@ jobs:
           npm run release:prepare -- 1.27.0
           npm run format
           npm run build
+      - name: Validate integrated source, build and all node tests
+        run: npm run validate
       - name: Push exact reproducible candidate to integration branch ONLY
         run: |
           git add -- src tests tools specs docs package.json package-lock.json CHANGELOG.md releases/v1.27.0.md ios/App/App.xcodeproj/project.pbxproj index.html
@@ -41,5 +40,3 @@ jobs:
             git commit -m 'release(dev): synchronize integrated v1.27.0 browser candidate'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
-      - name: Validate integrated source, build and all node tests
-        run: npm run validate
