@@ -28,6 +28,7 @@ jobs:
           npx prettier --write src/boss-signature.js src/bosses.js src/game.js tests/boss-signature.test.mjs tests/boss-signature-scene.test.mjs docs/design/BOSS-SIGNATURES.md CHANGELOG.md releases/v1.27.7.md
       - run: npm run build
       - run: npm run build:check
+      - run: npm run lint
       - run: npm run validate
       - name: Commit only the generated and formatted candidate changes
         run: |
