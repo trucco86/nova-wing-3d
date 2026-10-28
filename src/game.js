@@ -279,7 +279,10 @@ export function createGame({
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
             if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
-            return null;
+            // The full Five Cats formation must never stop firing just because
+            // the flank generators are armored. Aim at the visible hull; its
+            // damage is low until the pilot exposes a generator.
+            return boss.position.clone().add(new T.Vector3(0, 0, 4));
           }
           const target = enemies.find((e) => !e.dead);
           return target ? target.o.position.clone().add(new T.Vector3(0, target.hitY, 0)) : null;
