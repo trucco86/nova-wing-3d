@@ -316,7 +316,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
       for (const side of [-1, 1]) {
         const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
         chevron.position.set(side * (radius + 3), 0, 0.2);
-        chevron.rotation.z = side * Math.PI / 2;
+        chevron.rotation.z = (side * Math.PI) / 2;
         marker.add(chevron);
       }
       marker.visible = false;

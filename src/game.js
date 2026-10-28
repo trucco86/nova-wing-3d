@@ -1685,7 +1685,13 @@ export function createGame({
         : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
-  function damageBoss(amount, target = null, element = 'kinetic', charged = false, hitZone = 'weak') {
+  function damageBoss(
+    amount,
+    target = null,
+    element = 'kinetic',
+    charged = false,
+    hitZone = 'weak',
+  ) {
     if (
       state !== 'playing' ||
       !boss ||
@@ -1699,7 +1705,8 @@ export function createGame({
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
-      const chip = bossCombat.spend(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
+      const chip =
+        bossCombat.spend(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
       const floor = bossCombat.max * (parts.length > 0 ? 0.72 : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
       bossCombat.damage(dealt);
@@ -1725,7 +1732,10 @@ export function createGame({
     if (parts.length) {
       if (!part || !openPart(part)) return 0;
       const dealt = bossCombat.spend(amount, dynamicFlight && charged);
-      part.hp = Math.max(0, part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1));
+      part.hp = Math.max(
+        0,
+        part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
+      );
 
       if (part.hp === 0) {
         part.mesh.visible = false;
@@ -3286,7 +3296,9 @@ export function createGame({
                 ? [-5, 5]
                 : [0])
           bullet(
-            e.o.position.clone().add(new T.Vector3(e.kind === 'walker' ? offset : 0, e.hitY, e.ground ? 8 : 0)),
+            e.o.position
+              .clone()
+              .add(new T.Vector3(e.kind === 'walker' ? offset : 0, e.hitY, e.ground ? 8 : 0)),
             player.position.clone().add(new T.Vector3(offset, 0, 0)),
             e.subbossTactic?.spell ?? '',
           );
@@ -3473,10 +3485,18 @@ export function createGame({
           // Bosses fire from their own batteries/heads, not the same central barrel.
           for (const [sourceIndex, source] of program.sources.entries()) {
             const origin = boss.position.clone().add(new T.Vector3(source.x, source.y, 22));
-            const targets = encounterPattern(sectorIndex, source.volley, player.position, combatPhase);
+            const targets = encounterPattern(
+              sectorIndex,
+              source.volley,
+              player.position,
+              combatPhase,
+            );
             for (const [targetIndex, target] of targets.entries()) {
               // Keep a disciplined mobile projectile budget despite multi-origin volleys.
-              if (program.sources.length > 1 && targetIndex % program.sources.length !== sourceIndex)
+              if (
+                program.sources.length > 1 &&
+                targetIndex % program.sources.length !== sourceIndex
+              )
                 continue;
               bullet(origin, target, program.type);
             }
@@ -3484,7 +3504,12 @@ export function createGame({
           bossCd = program.cadence;
         } else {
           const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
-          for (const target of encounterPattern(sectorIndex, bossVolley, player.position, combatPhase))
+          for (const target of encounterPattern(
+            sectorIndex,
+            bossVolley,
+            player.position,
+            combatPhase,
+          ))
             bullet(origin, target, '');
           bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
         }

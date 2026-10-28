@@ -9,7 +9,6 @@
 - Projeto de exploração RPG/mundo aberto Five Cats Universe documentado; ainda não implementado.
 - Candidata isolada, sem homologação humana; HML/PROD inalterados.
 
-
 ## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
 
 - Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.

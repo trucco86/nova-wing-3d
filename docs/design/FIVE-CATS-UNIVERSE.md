@@ -19,18 +19,18 @@ Referência criativa: o combate estratégico e a exploração de **Panzer Dragoo
 
 ## Contraste de mundos · dez setores
 
-| Setor | Silhueta e atmosfera | Perspectiva / ação | Assinatura de combate |
-| :--- | :--- | :--- | :--- |
-| 01 · Ascensão orbital | Cidade e horizonte da Terra exclusivos da decolagem | Câmera lateral no corredor urbano e subida | Interceptação sob torres |
-| 02 · Porto submerso | Docas e spires subaquáticos; sem lua | Vista superior no mergulho | Escolta contra ferrões laterais |
-| 03 · Cinturão de destroços | Rochas, lua rachada **somente aqui**, cavernas | Plano aberto e corte lateral na entrada | Perfurador em investida |
-| 04 · Órbita-9 | Docas, anéis industriais e reator | Vista superior de geometria da estação | Sabotagem de módulos |
-| 05 · Tempestade de plasma | Arcos solares e nuvens carregadas | Vista lateral entre correntes | Mergulhos de fogo |
-| 06 · Lua congelada | Horizonte azulado **sem rachaduras** e fissuras de gelo | Superior para evitar colosso | Passos sísmicos e canhões nos braços |
-| 07 · Colmeia viva | Espinhos orgânicos, membranas e nódulos | Lateral em túnel vivo | Hidra atacando de várias cabeças |
-| 08 · Frota de Marvin | Fragatas quebradas e baterias laterais | Plano aberto e superior entre couraçados | Broadside coordenado |
-| 09 · Abismo de Órion | Lentes gravitacionais e vazio, sem Terra | Lateral na anomalia | Pulsos gravitacionais |
-| 10 · Trono de Marvin | Portões industriais, fortaleza e buraco negro | Plano amplo na aproximação final | Ataques combinados e fases de eclipse |
+| Setor                      | Silhueta e atmosfera                                    | Perspectiva / ação                         | Assinatura de combate                 |
+| :------------------------- | :------------------------------------------------------ | :----------------------------------------- | :------------------------------------ |
+| 01 · Ascensão orbital      | Cidade e horizonte da Terra exclusivos da decolagem     | Câmera lateral no corredor urbano e subida | Interceptação sob torres              |
+| 02 · Porto submerso        | Docas e spires subaquáticos; sem lua                    | Vista superior no mergulho                 | Escolta contra ferrões laterais       |
+| 03 · Cinturão de destroços | Rochas, lua rachada **somente aqui**, cavernas          | Plano aberto e corte lateral na entrada    | Perfurador em investida               |
+| 04 · Órbita-9              | Docas, anéis industriais e reator                       | Vista superior de geometria da estação     | Sabotagem de módulos                  |
+| 05 · Tempestade de plasma  | Arcos solares e nuvens carregadas                       | Vista lateral entre correntes              | Mergulhos de fogo                     |
+| 06 · Lua congelada         | Horizonte azulado **sem rachaduras** e fissuras de gelo | Superior para evitar colosso               | Passos sísmicos e canhões nos braços  |
+| 07 · Colmeia viva          | Espinhos orgânicos, membranas e nódulos                 | Lateral em túnel vivo                      | Hidra atacando de várias cabeças      |
+| 08 · Frota de Marvin       | Fragatas quebradas e baterias laterais                  | Plano aberto e superior entre couraçados   | Broadside coordenado                  |
+| 09 · Abismo de Órion       | Lentes gravitacionais e vazio, sem Terra                | Lateral na anomalia                        | Pulsos gravitacionais                 |
+| 10 · Trono de Marvin       | Portões industriais, fortaleza e buraco negro           | Plano amplo na aproximação final           | Ataques combinados e fases de eclipse |
 
 A v1.27.6 usa formas procedurais existentes; assets premium, áudio e animação sofisticada seguem como evolução de produção. Novos elementos de fundo não devem gerar hitboxes invisíveis.
 
@@ -38,12 +38,12 @@ A v1.27.6 usa formas procedurais existentes; assets premium, áudio e animação
 
 ### Regiões de dano
 
-| Zona | Comportamento pretendido |
-| :--- | :--- |
-| **Blindagem selada / escudo ativo** | Dano nulo, feedback audiovisual de bloqueio |
-| **Corpo comum / carcaça** | Dano pequeno; o jogador percebe desgaste, mas não ignora mecânicas |
-| **Gerador, membro ou arma vulnerável** | Dano alto, resposta de cor, estado e destruição de módulo |
-| **Núcleo crítico exposto** | Multiplicador elevado, encerramento do combate possível |
+| Zona                                   | Comportamento pretendido                                           |
+| :------------------------------------- | :----------------------------------------------------------------- |
+| **Blindagem selada / escudo ativo**    | Dano nulo, feedback audiovisual de bloqueio                        |
+| **Corpo comum / carcaça**              | Dano pequeno; o jogador percebe desgaste, mas não ignora mecânicas |
+| **Gerador, membro ou arma vulnerável** | Dano alto, resposta de cor, estado e destruição de módulo          |
+| **Núcleo crítico exposto**             | Multiplicador elevado, encerramento do combate possível            |
 
 Os anéis amarelo-claros de alvo devem pulsar, indicar direção no radar e ficar no topo de prioridade de informação, sem colocar texto sobre o meio da tela. Fazer o chefe passar de fase por **HP e pelo estado dos módulos**, não só por cronômetro. Estudar futuramente resistência por arma: plasma, cinético, arcano e bombas.
 
@@ -111,13 +111,13 @@ A fonte de verdade deve ficar em módulos próprios; não misturar a máquina de
 
 ## Roadmap proposto
 
-| Onda | Prioridade | Escopo | Prova necessária |
-| :--- | :--- | :--- | :--- |
-| **D1 — Diversidade e câmera** | P0 | Corrigir fundos repetidos, set dressing, janelas laterais/superiores e robôs articulados | Testes por setor + screenshots mobile/desktop |
-| **D2 — Bosses 2.0** | P0 | Dano de carcaça x ponto fraco, HP, origens de ataques diferenciadas, marcadores | Testes de dano, cadência, fases e gameplay |
-| **D3 — Mecânicas especiais** | P1 | Efeitos exclusivos de pelo menos três chefes, arenas e colisões especiais | QA por chefe + balanceamento |
-| **D4 — Vertical slice de exploração** | P1 | Hub, mini mapa, pistas, diálogo, gate de missão e save de quest | Fluxo end-to-end com checkpoint |
-| **D5 — Galáxia conectada** | P2 | Zonas e planetas adicionais, NPCs, facções, mistérios, escolhas e eventos | Métricas de diversão, retenção e tempo de exploração |
+| Onda                                  | Prioridade | Escopo                                                                                   | Prova necessária                                     |
+| :------------------------------------ | :--------- | :--------------------------------------------------------------------------------------- | :--------------------------------------------------- |
+| **D1 — Diversidade e câmera**         | P0         | Corrigir fundos repetidos, set dressing, janelas laterais/superiores e robôs articulados | Testes por setor + screenshots mobile/desktop        |
+| **D2 — Bosses 2.0**                   | P0         | Dano de carcaça x ponto fraco, HP, origens de ataques diferenciadas, marcadores          | Testes de dano, cadência, fases e gameplay           |
+| **D3 — Mecânicas especiais**          | P1         | Efeitos exclusivos de pelo menos três chefes, arenas e colisões especiais                | QA por chefe + balanceamento                         |
+| **D4 — Vertical slice de exploração** | P1         | Hub, mini mapa, pistas, diálogo, gate de missão e save de quest                          | Fluxo end-to-end com checkpoint                      |
+| **D5 — Galáxia conectada**            | P2         | Zonas e planetas adicionais, NPCs, facções, mistérios, escolhas e eventos                | Métricas de diversão, retenção e tempo de exploração |
 
 ## Métricas e aceite
 

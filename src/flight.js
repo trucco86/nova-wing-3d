@@ -39,7 +39,8 @@ export function createFlightCamera(camera, wideFlight = false) {
   }
   return {
     setShot(value) {
-      if (wideFlight && ['chase', 'combat', 'side', 'overhead'].includes(value)) directedShot = value;
+      if (wideFlight && ['chase', 'combat', 'side', 'overhead'].includes(value))
+        directedShot = value;
     },
     getShot() {
       return mode === 'chase' ? directedShot : mode;
@@ -80,15 +81,19 @@ export function createFlightCamera(camera, wideFlight = false) {
         // Limit lag relative to the ship so fast input cannot leave a narrow screen.
         if (mode !== 'cockpit') {
           const maxOffset =
-            shot === 'side' ? 39 :
-            shot === 'overhead' ? 10 :
-            Math.min(shot === 'combat' ? 29 : 19, camera.aspect * (shot === 'combat' ? 20 : 10));
+            shot === 'side'
+              ? 39
+              : shot === 'overhead'
+                ? 10
+                : Math.min(
+                    shot === 'combat' ? 29 : 19,
+                    camera.aspect * (shot === 'combat' ? 20 : 10),
+                  );
           eye.x = T.MathUtils.clamp(eye.x, player.x - maxOffset, player.x + maxOffset);
         }
-        const targetBank =
-          ['cockpit', 'side', 'overhead'].includes(shot)
-            ? 0
-            : -steering * 0.025 + route.bank * 0.45;
+        const targetBank = ['cockpit', 'side', 'overhead'].includes(shot)
+          ? 0
+          : -steering * 0.025 + route.bank * 0.45;
         bank += (targetBank - bank) * (1 - Math.exp(-3 * dt));
         camera.position.copy(eye);
         camera.lookAt(aim);

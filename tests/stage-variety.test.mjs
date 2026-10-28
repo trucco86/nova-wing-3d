@@ -16,8 +16,8 @@ test('ten visually independent destinations, Earth only at launch and no univers
 test('sector-directed perspective changes are bounded and preserve boss readability', () => {
   const signatures = new Set();
   for (let i = 0; i < 10; i++) {
-    const sequence = [0.05, 0.18, 0.26, 0.35, 0.46, 0.56, 0.68, 0.85, 0.99].map(
-      (part) => stagePerspectiveAt(i, part * 100, 100),
+    const sequence = [0.05, 0.18, 0.26, 0.35, 0.46, 0.56, 0.68, 0.85, 0.99].map((part) =>
+      stagePerspectiveAt(i, part * 100, 100),
     );
     signatures.add(sequence.join(','));
     assert.equal(stagePerspectiveAt(i, 0, 100), 'chase');

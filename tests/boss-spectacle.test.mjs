@@ -28,7 +28,10 @@ test('boss armor sustains combat across three stages even against extreme damage
     phases.add(h.game.snapshot().bossPhase);
   }
   assert.equal(h.game.snapshot().state, 'collapsing');
-  assert.ok(combatSeconds > 40 && combatSeconds < 90, 'bounded sustained encounter: ' + combatSeconds.toFixed(1) + 's');
+  assert.ok(
+    combatSeconds > 40 && combatSeconds < 90,
+    'bounded sustained encounter: ' + combatSeconds.toFixed(1) + 's',
+  );
   assert.deepEqual([...phases], [1, 2, 3]);
 });
 test('native subboss retains previous two-bomb balance and tunnel sequencing', (t) => {

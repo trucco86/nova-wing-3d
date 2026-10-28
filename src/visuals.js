@@ -1125,10 +1125,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     setSector(sector, sectorIndex = -1) {
       clearScenery();
-      const resolvedIndex = sectorIndex >= 0 ? sectorIndex : [
-        'carrier', 'stingray', 'drill', 'station', 'phoenix',
-        'mech', 'hydra', 'dreadnought', 'orbital', 'emperor',
-      ].indexOf(sector.kind);
+      const resolvedIndex =
+        sectorIndex >= 0
+          ? sectorIndex
+          : [
+              'carrier',
+              'stingray',
+              'drill',
+              'station',
+              'phoenix',
+              'mech',
+              'hydra',
+              'dreadnought',
+              'orbital',
+              'emperor',
+            ].indexOf(sector.kind);
       const signature = stageVisualAt(resolvedIndex);
       moon.position.set(480, 280, -1000);
       moon.scale.setScalar(1);
@@ -1156,9 +1167,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       rain.visible = land;
       // Show the orbital globe only after the last city/port buildings are gone.
       // The first-sector Earth horizon is handled separately by setLaunchAscent.
-      moon.visible = atmosphere.visible = ['fractured-moon', 'ice-world'].includes(
-        signature.globe,
-      );
+      moon.visible = atmosphere.visible = ['fractured-moon', 'ice-world'].includes(signature.globe);
       if (signature.globe === 'ice-world') {
         moon.position.set(-420, 250, -1150);
         moon.scale.setScalar(0.85);
@@ -1298,7 +1307,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         for (let i = 0; i < 12; i++) {
           const root = new T.Group();
           root.name = 'bio-nebula-spire';
-          const stalk = new T.Mesh(new T.ConeGeometry(12 + i % 4 * 3, 85 + i % 3 * 24, 5), mat);
+          const stalk = new T.Mesh(new T.ConeGeometry(12 + (i % 4) * 3, 85 + (i % 3) * 24, 5), mat);
           stalk.rotation.z = (i % 2 ? 1 : -1) * 0.4;
           root.add(stalk);
           for (let j = 0; j < 3; j++) {
@@ -1312,7 +1321,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       if (dynamicFlight && sceneryTheme === 'sun') {
         for (let i = 0; i < 10; i++) {
-          const plasma = new T.Mesh(new T.TorusGeometry(55 + i % 3 * 14, 3, 7, 32, Math.PI * 1.1), light);
+          const plasma = new T.Mesh(
+            new T.TorusGeometry(55 + (i % 3) * 14, 3, 7, 32, Math.PI * 1.1),
+            light,
+          );
           plasma.name = 'solar-plasma-arc';
           plasma.rotation.set(i * 0.12, 0.4 + i * 0.2, i * 0.31);
           plasma.position.set((i % 2 ? 1 : -1) * 84, 42 + i * 8, -180 - i * 130);
