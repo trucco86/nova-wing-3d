@@ -23,6 +23,7 @@ import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
+import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -255,7 +256,7 @@ export function createGame({
           wing.scale.setScalar(1.1);
           return wing;
         },
-        fireFrom(origin, target, damage, element, charged) {
+        fireFrom(origin, target, damage, element, charged, source = 'squad-support') {
           launchShot(0, damage, charged, origin);
           const shot = shots.at(-1);
           shot.v = target
@@ -265,8 +266,8 @@ export function createGame({
             .multiplyScalar(charged ? 250 : 195);
           shot.element = element;
           shot.homing = false;
-          shot.source = 'five-cats';
-          shot.life = 1.5;
+          shot.source = source;
+          shot.life = 2.2;
           if (charged) shot.o.scale.setScalar(5);
         },
         opponent() {
@@ -457,6 +458,12 @@ export function createGame({
     impactTime = 0,
     impactConfirmed = false,
     lastSpecialCycle = -1,
+    lastRangedCycle = -1,
+    bossIntentCycle = -1,
+    bossMeleeResolved = false,
+    bossIntent = null,
+    reactorGridSeconds = 0,
+    reactorGridCompleted = false,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
@@ -518,9 +525,11 @@ export function createGame({
       return false;
     }
     arcana -= spell.cost;
-    specialCd = dynamicFlight ? Math.max(3, 8 / (1 + rank('spirit') * 0.025)) : 8;
-    if (strategy.special === 0) barrier = 4 + rank('defense') * 0.08;
-    if (strategy.special === 2) stasis = 5;
+    specialCd = dynamicFlight
+      ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025))
+      : 8;
+    if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
+    if (strategy.special === 2) stasis = spell.duration;
     if (strategy.special === 1) {
       for (let i = 0; i < 9; i++) {
         const angle = (i * Math.PI * 2) / 9;
@@ -994,6 +1003,11 @@ export function createGame({
     tacticEnergy = scanTime = impactTime = 0;
     impactConfirmed = false;
     lastSpecialCycle = -1;
+    lastRangedCycle = bossIntentCycle = -1;
+    bossMeleeResolved = false;
+    bossIntent = null;
+    reactorGridSeconds = 0;
+    reactorGridCompleted = false;
     specialCd = barrier = stasis = 0;
     podsDetached = false;
     podMode = 'docked';
@@ -1662,6 +1676,10 @@ export function createGame({
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
+    lastRangedCycle = bossIntentCycle = -1;
+    bossMeleeResolved = false;
+    bossIntent = null;
+    reactorGridSeconds = 0;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
@@ -2752,11 +2770,19 @@ export function createGame({
       -flightLimit(),
       flightLimit(),
     );
-    player.position.y = clamp(
-      player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
-      -1,
-      dynamicFlight ? 46 : 23,
-    );
+    const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
+    if (overheadControls) {
+      // UP/DOWN become depth movement for a real, playable tactical corridor.
+      player.position.z = clamp(player.position.z - dy * dt * 34 * profileSpeed, -44, 29);
+      player.position.y = T.MathUtils.damp(player.position.y, 10, 4, dt);
+    } else {
+      player.position.z = T.MathUtils.damp(player.position.z, 9, 4, dt);
+      player.position.y = clamp(
+        player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        -1,
+        dynamicFlight ? 46 : 23,
+      );
+    }
     asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
     if (dynamicFlight && sectorIndex === 2) {
       const wall = asteroidInterior.constrain(player.position);
@@ -2893,11 +2919,31 @@ export function createGame({
                 : 'ROTA DE APROXIMAÇÃO';
       }
       // Authored short perspectives, while pilot cockpit/combat selection retains priority.
-      const directedShot = stagePerspectiveAt(sectorIndex, elapsed, current().duration, !!boss);
+      // The camera changes only for an authored reactor-grid mission beat,
+      // with a matching playable depth-control mode. Never for elapsed time
+      // alone or while fighting a boss.
+      if (
+        sectorIndex === 3 &&
+        !boss &&
+        !reactorGridCompleted &&
+        elapsed >= current().duration * 0.35
+      ) {
+        reactorGridCompleted = true;
+        reactorGridSeconds = 17;
+        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL');
+      }
+      if (reactorGridSeconds > 0)
+        reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
+      const directedShot = stagePerspectiveAt(
+        sectorIndex,
+        elapsed,
+        current().duration,
+        !!boss,
+        { mission: reactorGridSeconds > 0 ? 'reactor-grid' : '' },
+      );
       flightCamera.setShot(directedShot);
-      if (directedShot === 'side') route.label += ' · VISTA LATERAL';
-      if (directedShot === 'overhead') route.label += ' · VISÃO SUPERIOR';
-      if (directedShot === 'combat') route.label += ' · PLANO ABERTO';
+      if (directedShot === 'overhead')
+        route.label = 'REATOR ÓRBITA-9 · DESVIE EM X/Z · W/S PROFUNDIDADE';
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
@@ -2996,7 +3042,11 @@ export function createGame({
         '% · ARCANA +' +
         benefits.arcana +
         '%' +
-        (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
+        (barrier > 0
+          ? ' · BARREIRA ' + Math.ceil(barrier) + 's'
+          : stasis > 0
+            ? ' · ESTASE ' + Math.ceil(stasis) + 's'
+            : '');
     }
     invuln -= dt;
     rollCd -= dt;
@@ -4061,6 +4111,8 @@ export function createGame({
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
+      missionCameraSeconds: reactorGridSeconds,
+      bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
       shotPower: shots[0]?.damage ?? 0,
