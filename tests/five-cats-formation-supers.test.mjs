@@ -47,7 +47,7 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
 });
 
 test('new mission shows Bia-led formation before gameplay clock starts', (t) => {
-  const h = harness({ spawnEncounters: false });
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   assert.ok(h.game.snapshot().fiveCats.intro > 0);
@@ -65,7 +65,7 @@ test('new mission shows Bia-led formation before gameplay clock starts', (t) => 
 });
 
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
-  const h = harness({ spawnEncounters: false });
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   h.advance(5.1);
@@ -81,7 +81,7 @@ test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immed
 });
 
 test('O launches Five Cats overdrive with actual wingman meshes and cooldown', (t) => {
-  const h = harness({ spawnEncounters: false });
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   h.advance(5.1);
