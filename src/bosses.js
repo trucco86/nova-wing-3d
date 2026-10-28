@@ -453,6 +453,32 @@ export function createBossModel(sector, index = 0, tactical = false) {
     nose.position.set(0, -2, 13);
     nose.scale.set(1.4, 0.7, 0.65);
     face.add(nose);
+    const biteJaw = new T.Group();
+    biteJaw.name = 'marvin-bite-jaw';
+    biteJaw.position.set(0, -8, 7);
+    const lowerJaw = sphere(8, bone, 1);
+    lowerJaw.scale.set(1.2, 0.35, 0.7);
+    biteJaw.add(lowerJaw);
+    for (const side of [-1, 1]) {
+      const fang = new T.Mesh(new T.ConeGeometry(1.25, 6, 5), bone);
+      fang.position.set(side * 5.5, 2, 5);
+      fang.rotation.x = Math.PI;
+      biteJaw.add(fang);
+    }
+    face.add(biteJaw);
+    for (const side of [-1, 1]) {
+      const claw = new T.Group();
+      claw.name = side < 0 ? 'marvin-left-claw' : 'marvin-right-claw';
+      claw.position.set(side * 41, -11, 19);
+      claw.add(box(7, 17, 13, armor));
+      for (let digit = -1; digit <= 1; digit++) {
+        const talon = new T.Mesh(new T.ConeGeometry(2.2, 14, 5), bone);
+        talon.rotation.x = Math.PI / 2;
+        talon.position.set(digit * 5.5, -11, 10);
+        claw.add(talon);
+      }
+      g.add(claw);
+    }
     g.add(face);
   }
   g.userData = {

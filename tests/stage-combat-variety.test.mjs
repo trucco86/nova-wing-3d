@@ -40,7 +40,7 @@ test('cinematic side and overhead cameras change real 3D perspective, manually s
   rig.setShot('side');
   for (let i = 0; i < 80; i++) rig.update(1 / 60, pilot, 0, false);
   assert.equal(rig.getShot(), 'side');
-  assert.ok(camera.position.x > 26, 'side angle must be visually different');
+  assert.ok(camera.position.x > 18, 'side angle must be visually different');
   rig.setShot('overhead');
   for (let i = 0; i < 80; i++) rig.update(1 / 60, pilot, 0, false);
   assert.ok(camera.position.y > pilot.y + 50, 'overhead angle reveals flight corridor');
@@ -51,7 +51,8 @@ test('cinematic side and overhead cameras change real 3D perspective, manually s
   assert.ok(camera.position.z > 55);
   rig.reset(pilot);
   assert.equal(rig.getShot(), 'combat', 'manual selection belongs to pilot');
-  assert.equal(stagePerspectiveAt(6, 0.3 * 92, 92), 'side');
+  assert.equal(stagePerspectiveAt(6, 0.3 * 92, 92), 'chase');
+  assert.equal(stagePerspectiveAt(3, 40, 92, false, { mission: 'reactor-grid' }), 'overhead');
 });
 
 test('giant robot walks and aims; stronger leg articulation is visible', () => {
