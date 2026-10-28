@@ -679,6 +679,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    showCarrierForBoss() {
+      carrier.visible = true;
+    },
     setAscent(amount, enabled) {
       if (!dynamicFlight) return;
       if (enabled) {
