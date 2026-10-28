@@ -235,38 +235,73 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
-/** Lightweight flying mech built from reusable primitives; forward fire axis remains -Z. */
+/** Rigged flying mech. Its shoulder-mounted thrusters and weapon wrists are independent pivots. */
 export function createFlyingRobot() {
   const robot = new T.Group();
   robot.name = 'five-cats-flight-mech';
-  const armor = metal('#d9e6f0', 0.7, 0.3);
-  const dark = metal('#21365c', 0.68, 0.36);
+  const armor = metal('#c6dbe8', 0.7, 0.25);
+  const dark = metal('#1d304d', 0.68, 0.36);
   const trim = metal('#ffb36b', 0.6, 0.28);
   const light = glowMaterial('#62eaff', 2.4);
-  robot.add(box(2.7, 3.2, 1.65, armor, 0, 1.2, 0));
-  robot.add(box(2.2, 1.15, 1.8, dark, 0, 1.55, -0.4));
-  robot.add(box(1.15, 1.25, 1.25, armor, 0, 3.65, -0.12));
-  robot.add(box(0.8, 0.42, 0.16, light, 0, 3.7, -0.82));
-  robot.add(box(1.4, 0.23, 0.15, trim, 0, 2.4, -0.94));
+  const core = metal('#415c71', 0.68, 0.33);
+  robot.add(box(2.8, 3.1, 1.45, armor, 0, 1.25, 0));
+  robot.add(box(2.15, 1.25, 1.8, dark, 0, 1.5, -0.4));
+  robot.add(box(1.6, 0.35, 1.8, light, 0, 1.7, -0.91));
+  robot.add(box(1.15, 1.25, 1.22, armor, 0, 3.5, -0.13));
+  robot.add(box(0.88, 0.38, 0.2, light, 0, 3.57, -0.78));
+  robot.add(box(1.2, 0.38, 1.0, dark, 0, -0.48, 0.1));
+  const arms = {};
+  const thrusters = [];
   for (const side of [-1, 1]) {
-    robot.add(box(1.2, 1, 1.6, trim, side * 2, 2.55, 0));
-    robot.add(box(0.8, 2.6, 1, armor, side * 2.15, 0.85, -0.1));
-    robot.add(box(0.95, 0.85, 1.7, dark, side * 2.15, -0.5, -0.7));
-    robot.add(box(1.1, 2.5, 1.3, armor, side * 0.83, -2.2, 0.1));
-    robot.add(box(1.25, 0.7, 2.2, dark, side * 0.83, -3.6, -0.6));
-    robot.add(box(0.5, 0.6, 1.7, light, side * 2.1, -0.6, -1.65));
-    const thruster = new T.Mesh(new T.CylinderGeometry(0.52, 0.65, 2.2, 12), dark);
-    thruster.rotation.x = Math.PI / 2;
-    thruster.position.set(side * 1.12, 0.8, 1.65);
-    robot.add(thruster);
+    const isRight = side === 1;
+    const shoulder = new T.Group();
+    shoulder.name = isRight ? 'mecha-right-shoulder' : 'mecha-left-shoulder';
+    shoulder.position.set(side * 1.83, 2.36, -0.12);
+    shoulder.add(box(1.38, 1.0, 1.48, trim, side * 0.18, 0, 0));
+    shoulder.add(box(0.72, 1.65, 0.85, armor, side * 0.29, -0.93, -0.18));
+    const elbow = new T.Group();
+    elbow.name = isRight ? 'mecha-right-elbow' : 'mecha-left-elbow';
+    elbow.position.set(side * 0.25, -1.63, -0.22);
+    elbow.add(box(0.8, 0.75, 1.08, core));
+    elbow.add(box(0.82, 1.55, 1.17, armor, 0, -0.8, -0.25));
+    elbow.add(box(0.53, 0.55, 1.1, dark, 0, -1.48, -0.65));
+    elbow.add(box(0.33, 0.28, 0.9, light, 0, -1.45, -1.2));
+    const muzzle = new T.Object3D();
+    muzzle.name = isRight ? 'mecha-right-muzzle' : 'mecha-left-muzzle';
+    muzzle.position.set(0, -1.46, -1.66);
+    elbow.add(muzzle);
+    shoulder.add(elbow);
+    robot.add(shoulder);
+    arms[isRight ? 'right' : 'left'] = { shoulder, elbow, muzzle };
+    // The nozzle is fixed to the upper back, not the hip. Gimbal follows strafing.
+    const nozzle = new T.Group();
+    nozzle.name = isRight ? 'mecha-right-dorsal-gimbal' : 'mecha-left-dorsal-gimbal';
+    nozzle.position.set(side * 1.18, 2.05, 1.29);
+    nozzle.add(box(1.1, 1.35, 1.25, dark, 0, 0, 0));
+    nozzle.add(box(0.9, 0.9, 0.65, trim, 0, -0.16, 0.85));
+    const collar = new T.Mesh(new T.CylinderGeometry(0.66, 0.79, 1.6, 12), core);
+    collar.rotation.x = Math.PI / 2;
+    collar.position.z = 1.45;
+    nozzle.add(collar);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.42, 2.6, 12),
-      new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
+      new T.ConeGeometry(0.48, 2.45, 12),
+      new T.MeshBasicMaterial({ color: '#4dcbff', transparent: true, opacity: 0.7 }),
     );
+    plume.name = isRight ? 'mecha-right-jet-plume' : 'mecha-left-jet-plume';
     plume.rotation.x = Math.PI / 2;
-    plume.position.set(side * 1.12, 0.8, 3.4);
-    robot.add(plume);
+    plume.position.z = 3;
+    nozzle.add(plume);
+    const exhaustCore = new T.Mesh(new T.ConeGeometry(0.25, 1.7, 12), light);
+    exhaustCore.rotation.x = Math.PI / 2;
+    exhaustCore.position.z = 2.6;
+    nozzle.add(exhaustCore);
+    robot.add(nozzle);
+    thrusters.push({ nozzle, plume, exhaustCore });
+    robot.add(box(1.0, 2.1, 1.1, armor, side * 0.92, -2.4, 0.15));
+    robot.add(box(1.22, 0.7, 2.0, dark, side * 0.95, -3.7, -0.55));
+    robot.add(box(0.22, 1.6, 0.22, light, side * 1.24, -2.4, -0.38));
   }
+  robot.userData.mecha = { arms, thrusters, baseScale: 0.88 };
   robot.scale.setScalar(0.88);
   return robot;
 }
