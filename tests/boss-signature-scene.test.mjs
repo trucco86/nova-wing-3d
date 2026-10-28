@@ -31,7 +31,10 @@ test('colossus changes both cannon arms independently without moving generator h
   const windup = left.rotation.x;
   animateBossSignature(boss, 5, 2, 3, 'attack');
   assert.notEqual(left.rotation.x, windup);
-  assert.deepEqual(boss.userData.parts.map((part) => part.mesh.position.toArray()), positions);
+  assert.deepEqual(
+    boss.userData.parts.map((part) => part.mesh.position.toArray()),
+    positions,
+  );
   disposeBoss(boss);
 });
 

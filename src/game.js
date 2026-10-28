@@ -3411,9 +3411,9 @@ export function createGame({
             for (const emission of signature.shots) {
               const origin = boss.localToWorld(new T.Vector3(...emission.origin));
               const spread = dangerous ? 0.72 : 1.15;
-              const destination = player.position.clone().add(
-                new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0),
-              );
+              const destination = player.position
+                .clone()
+                .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
               bullet(origin, destination, emission.element);
             }
           } else {
@@ -3493,11 +3493,10 @@ export function createGame({
               boss.userData.parts.map((part) => part.hp > 0),
             )?.name
           : null;
-      $('attackWarning').textContent =
-        signatureWarning
-          ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
-          : bossCd < 0.65
-            ? '⚠ ' +
+      $('attackWarning').textContent = signatureWarning
+        ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+        : bossCd < 0.65
+          ? '⚠ ' +
             [
               'LEQUE DUPLO',
               'PINÇAS',

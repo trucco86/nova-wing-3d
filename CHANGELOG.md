@@ -7,7 +7,6 @@
 - Testes de assinatura, animação, intensidade por fase e simulação real.
 - Scope limitado aos quatro chefes; mundo aberto e danos por membros individuais continuam no backlog.
 
-
 ## 1.27.6 — Cenários, perspectiva e chefes diferenciados (candidata DEV)
 
 - Terra e satélite contextualizados na ascensão; lua rachada exclusiva do cinturão de destroços, lua de gelo sem fissuras; ambientação temática de plasma, nebulosa, frota, vazio e fortaleza.

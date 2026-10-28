@@ -12,7 +12,10 @@ test('four signature bosses have distinct spatial attacks, more than renaming th
     const origins = new Set(attack.shots.map((s) => s.origin.join(':')));
     assert.ok(origins.size > 2, 'shots must launch from different real body parts');
     signatures.add(JSON.stringify(attack.shots));
-    assert.notDeepEqual(bossSignaturePose(boss, 2, 2, 'windup'), bossSignaturePose(boss, 2, 2, 'attack'));
+    assert.notDeepEqual(
+      bossSignaturePose(boss, 2, 2, 'windup'),
+      bossSignaturePose(boss, 2, 2, 'attack'),
+    );
   }
   assert.equal(signatures.size, SIGNATURE_BOSSES.length);
   assert.equal(bossSignatureVolley(0), null, 'other encounters keep their verified behavior');

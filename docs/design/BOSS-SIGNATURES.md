@@ -8,12 +8,12 @@ Antes, os dez chefes tinham silhuetas e padrões de tiros variados, mas a maior 
 
 Esta onda acrescenta **quatro arquétipos jogáveis realmente diferentes** e mantém a campanha existente sem regressão deliberada:
 
-| Setor | Chefe | Mecânica exclusiva | Reação à destruição |
-| --- | --- | --- | --- |
-| 03 | Perfurador | Broca avançando durante investida e ataque helicoidal disparado de pontos do anel | Geradores continuam obrigatórios para expor núcleo |
-| 06 | Colosso glacial | Dois braços articulados, salvas independentes e movimento de impacto | Destruir um gerador elimina a bateria correspondente; ambos destruídos, resta canhão de núcleo |
-| 07 | Colmeia viva | Sete cabeças animadas, disparos de origens distribuídas e orientação variável | Cabeças da região cujo gerador foi desativado deixam de disparar |
-| 10 | Marvin | Coroa pulsante, janela de eclipse e salvas curvas a partir da armadura | Perda de baterias laterais força ataque concentrado no núcleo |
+| Setor | Chefe           | Mecânica exclusiva                                                                | Reação à destruição                                                                            |
+| ----- | --------------- | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 03    | Perfurador      | Broca avançando durante investida e ataque helicoidal disparado de pontos do anel | Geradores continuam obrigatórios para expor núcleo                                             |
+| 06    | Colosso glacial | Dois braços articulados, salvas independentes e movimento de impacto              | Destruir um gerador elimina a bateria correspondente; ambos destruídos, resta canhão de núcleo |
+| 07    | Colmeia viva    | Sete cabeças animadas, disparos de origens distribuídas e orientação variável     | Cabeças da região cujo gerador foi desativado deixam de disparar                               |
+| 10    | Marvin          | Coroa pulsante, janela de eclipse e salvas curvas a partir da armadura            | Perda de baterias laterais força ataque concentrado no núcleo                                  |
 
 ### Contratos
 
