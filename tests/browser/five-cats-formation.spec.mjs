@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('Five Cats intro shows five readable wingmen with Bia leading, then releases flight', async ({ page }, info) => {
+test('Five Cats intro shows five readable wingmen with Bia leading, then releases flight', async ({
+  page,
+}, info) => {
   test.setTimeout(90000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?sector=0&intro=1');
@@ -19,7 +21,9 @@ test('Five Cats intro shows five readable wingmen with Bia leading, then release
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
 });
 
-test('Plasma Titan and Five Cats Overdrive fire physical shots without covering center HUD', async ({ page }, info) => {
+test('Plasma Titan and Five Cats Overdrive fire physical shots without covering center HUD', async ({
+  page,
+}, info) => {
   test.setTimeout(100000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?sector=0');

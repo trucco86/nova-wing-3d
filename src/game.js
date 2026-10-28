@@ -2406,7 +2406,12 @@ export function createGame({
   function update(dt) {
     if (state !== 'playing') return;
     if (squad?.snapshot().intro > 0) {
-      squad.update(dt, { sector: sectorIndex, elapsed, pilot: pilotLoadout.pilot, aspect: camera.aspect });
+      squad.update(dt, {
+        sector: sectorIndex,
+        elapsed,
+        pilot: pilotLoadout.pilot,
+        aspect: camera.aspect,
+      });
       return;
     }
     elapsed += dt;
