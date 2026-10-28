@@ -1,0 +1,42 @@
+name: Prepare Nova Wing v1.27.8 tactical combat candidate
+on:
+  push:
+    branches:
+      - fix/contextual-camera-boss-ai-rpg-v1278
+    paths:
+      - .github/workflows/prepare-tactical-boss-rpg.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize release version across web and native
+        run: npm run release:prepare -- 1.27.8
+      - name: Format authored source, specs and regression tests
+        run: |
+          npx prettier --write src/game.js src/boss-combat-ai.js src/bosses.js src/tactics.js src/flight.js src/stage-variety.js src/combat.js src/strategy.js src/five-cats-runtime.js src/five-cats-squad.js tests/boss-combat-ai.test.mjs tests/boss-rpg-camera-v1278.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/five-cats-formation-supers.test.mjs tests/strategy.test.mjs docs/design/TACTICAL-BOSS-CAMERA-V1278.md releases/v1.27.8.md CHANGELOG.md
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit synchronized release and format fixes
+        run: |
+          if git diff --quiet; then
+            echo "Release source already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/ tests/ docs/design/TACTICAL-BOSS-CAMERA-V1278.md releases/v1.27.8.md CHANGELOG.md
+          git commit -m "build(dev): synchronize v1.27.8 tactical combat and RPG candidate"
+          git push origin HEAD:fix/contextual-camera-boss-ai-rpg-v1278
