@@ -689,7 +689,7 @@ export function createGame({
     credits += 15;
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
-  function recordStageCompletion() {
+  function recordStageResult(outcome = 'cleared') {
     if (!dynamicFlight || stageResultSent) return;
     stageResultSent = true;
     try {
@@ -699,14 +699,15 @@ export function createGame({
           points: Math.max(0, score - stageScoreStart),
           durationMs: Math.max(0, Math.round(elapsed * 1000)),
           totalPoints: score,
+          outcome,
         }),
       ).catch(() => {});
     } catch {
-      // Optional ranking must never interrupt a completed mission.
+      // Optional ranking must never interrupt a finished mission.
     }
   }
   function showShop() {
-    recordStageCompletion();
+    recordStageResult('cleared');
     document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
@@ -1519,7 +1520,7 @@ export function createGame({
   }
 
   function finish(win) {
-    if (win) recordStageCompletion();
+    recordStageResult(win ? 'cleared' : 'defeated');
     document.body.classList.add('ranking-intermission');
     releaseControls();
     if (win) music?.start(sectorIndex, 'victory');
