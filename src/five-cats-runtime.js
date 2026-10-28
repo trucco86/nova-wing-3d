@@ -75,7 +75,7 @@ export function createFiveCatsSquad({
     }
     return SQUAD_SPECIALS[kind].cost;
   }
-  function update(dt, { sector, elapsed, pilot, energy, power = 1, playing = true }) {
+  function update(dt, { sector, elapsed, pilot, power = 1, playing = true }) {
     if (!playing) return { intro: intro > 0, energySpent: 0 };
     plasmaCooldown = Math.max(0, plasmaCooldown - dt);
     overdriveCooldown = Math.max(0, overdriveCooldown - dt);
