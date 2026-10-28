@@ -5924,7 +5924,9 @@ body.in-mission #touch .actions #lockTouch[aria-pressed='true'] {
   pointer-events: none;
 }
 #mechaLockStatus[hidden],
-#mechaLockReticle[hidden] { display: none !important; }
+#mechaLockReticle[hidden] {
+  display: none !important;
+}
 #mechaLockReticle {
   position: fixed;
   z-index: 14;
@@ -5942,8 +5944,18 @@ body.in-mission #touch .actions #lockTouch[aria-pressed='true'] {
   position: absolute;
   background: #72eefa;
 }
-#mechaLockReticle::before { width: 2px; height: 8px; top: -5px; left: 11px; }
-#mechaLockReticle::after { height: 2px; width: 8px; top: 11px; right: -5px; }
+#mechaLockReticle::before {
+  width: 2px;
+  height: 8px;
+  top: -5px;
+  left: 11px;
+}
+#mechaLockReticle::after {
+  height: 2px;
+  width: 8px;
+  top: 11px;
+  right: -5px;
+}
 @media (pointer: coarse) and (max-width: 550px) {
   body.in-mission #touch .actions {
     grid-template-areas:
@@ -5970,5 +5982,7 @@ body.in-mission #touch .actions #lockTouch[aria-pressed='true'] {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  #mechaLockReticle { animation: none; }
+  #mechaLockReticle {
+    animation: none;
+  }
 }

@@ -24,12 +24,13 @@ export function createMechaThrusterAudio(context) {
     const target = enabled ? clamp(boosting ? 1 : 0.36 + Math.abs(accelerating) * 0.3, 0, 1) : 0;
     const speed = 1 - Math.exp(-clamp(dt, 0, 1) * (target > velocity ? 6 : 13));
     velocity += (target - velocity) * speed;
-    amplitude += (velocity * clamp(volume, 0, 1) - amplitude) *
-      (1 - Math.exp(-clamp(dt, 0, 1) * 15));
+    amplitude +=
+      (velocity * clamp(volume, 0, 1) - amplitude) * (1 - Math.exp(-clamp(dt, 0, 1) * 15));
     output.gain.value = clamp(amplitude, 0, 1);
     const now = context.currentTime;
     [62 + 42 * velocity, 126 + 100 * velocity].forEach((hz, i) =>
-      tones[i].frequency.setValueAtTime(hz, now));
+      tones[i].frequency.setValueAtTime(hz, now),
+    );
   }
   function silence() {
     amplitude = 0;
@@ -41,14 +42,20 @@ export function createMechaThrusterAudio(context) {
     silence();
     destroyed = true;
     tones.forEach((tone) => {
-      try { tone.stop(); } catch { /* already stopped */ }
+      try {
+        tone.stop();
+      } catch {
+        /* already stopped */
+      }
       tone.disconnect();
     });
     gains.forEach((gain) => gain.disconnect());
     output.disconnect();
   }
   return {
-    update, silence, destroy,
+    update,
+    silence,
+    destroy,
     snapshot: () => ({ destroyed, amplitude, velocity, voices: destroyed ? 0 : 2 }),
   };
 }

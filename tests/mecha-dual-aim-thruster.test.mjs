@@ -18,9 +18,21 @@ function soundContext() {
     },
     createOscillator() {
       return {
-        frequency: { value: 0, setValueAtTime(v) { this.value = v; } },
-        type: 'sine', connect() {}, disconnect() {},
-        start() { running++; }, stop() { stopped++; },
+        frequency: {
+          value: 0,
+          setValueAtTime(v) {
+            this.value = v;
+          },
+        },
+        type: 'sine',
+        connect() {},
+        disconnect() {},
+        start() {
+          running++;
+        },
+        stop() {
+          stopped++;
+        },
       };
     },
   };
@@ -35,16 +47,24 @@ test('two independently articulated shoulders and two dorsal gimbals remain fini
   assert.equal(rig.thrusters.length, 2);
   assert.ok(rig.thrusters.every(({ nozzle }) => nozzle.position.y > 1.6));
   robot.position.set(0, 5, 9);
-  for (let i = 0; i < 80; i++) updateMechaPose(robot, {
-    dt: 0.05, time: i * 0.05, strafe: 0.6, boosting: i >= 40,
-    firing: i % 3 === 0, targetWorld: new T.Vector3(16, 12, -90),
-  });
+  for (let i = 0; i < 80; i++)
+    updateMechaPose(robot, {
+      dt: 0.05,
+      time: i * 0.05,
+      strafe: 0.6,
+      boosting: i >= 40,
+      firing: i % 3 === 0,
+      targetWorld: new T.Vector3(16, 12, -90),
+    });
   assert.ok(Math.abs(rig.arms.right.shoulder.rotation.y) < 0.01);
   assert.ok(Math.abs(rig.arms.left.shoulder.rotation.y) > 0.02);
   assert.notEqual(rig.arms.left.shoulder.rotation.x, rig.arms.right.shoulder.rotation.x);
-  assert.ok(rig.thrusters.every(({ plume, nozzle }) =>
-    Number.isFinite(plume.scale.y) && plume.scale.y > 0.4 &&
-    Number.isFinite(nozzle.rotation.y)));
+  assert.ok(
+    rig.thrusters.every(
+      ({ plume, nozzle }) =>
+        Number.isFinite(plume.scale.y) && plume.scale.y > 0.4 && Number.isFinite(nozzle.rotation.y),
+    ),
+  );
   assert.ok(robot.getObjectByName('mecha-right-muzzle'));
   assert.ok(robot.getObjectByName('mecha-left-muzzle'));
 });
@@ -56,9 +76,12 @@ test('lock target requires front cone, line of sight and weak-point preference',
   const behind = { id: 3, position: new T.Vector3(0, 0, 30) };
   const outside = { id: 4, position: new T.Vector3(200, 0, -40) };
   assert.equal(selectMechaTarget(origin, [near, weak, outside, behind]), weak);
-  assert.equal(selectMechaTarget(origin, [near, weak], {
-    visible: (_, candidate) => candidate !== weak.position,
-  }), near);
+  assert.equal(
+    selectMechaTarget(origin, [near, weak], {
+      visible: (_, candidate) => candidate !== weak.position,
+    }),
+    near,
+  );
   assert.equal(selectMechaTarget(origin, [behind, outside]), null);
 });
 

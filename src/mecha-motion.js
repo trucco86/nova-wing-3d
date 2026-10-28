@@ -5,8 +5,17 @@ const ease = (current, target, dt, speed) =>
 /** Position and fire-control can drive each arm independently at a stable dt. */
 export function updateMechaPose(
   robot,
-  { dt = 0, time = 0, boosting = false, strafe = 0, vertical = 0, firing = false,
-    targetWorld = null, transforming = 0, recoil = 0 } = {},
+  {
+    dt = 0,
+    time = 0,
+    boosting = false,
+    strafe = 0,
+    vertical = 0,
+    firing = false,
+    targetWorld = null,
+    transforming = 0,
+    recoil = 0,
+  } = {},
 ) {
   const rig = robot.userData.mecha;
   if (!rig) return;
@@ -17,8 +26,12 @@ export function updateMechaPose(
     const side = i === 0 ? -1 : 1;
     nozzle.rotation.y = ease(nozzle.rotation.y, -s * 0.26, dt, 6);
     nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.19 + (boosting ? -0.14 : 0), dt, 6);
-    plume.scale.y = ease(plume.scale.y, 0.53 + thrust * 1.1 +
-      Math.sin(time * (boosting ? 27 : 12) + side) * 0.08, dt, 8);
+    plume.scale.y = ease(
+      plume.scale.y,
+      0.53 + thrust * 1.1 + Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
+      dt,
+      8,
+    );
     plume.scale.x = ease(plume.scale.x, 0.72 + thrust * 0.5, dt, 8);
     plume.scale.z = plume.scale.x;
     plume.material.opacity = 0.38 + thrust * 0.55;
@@ -53,7 +66,11 @@ export function updateMechaPose(
 }
 
 /** Lock-on requires an unobstructed, alive target in front of the player. */
-export function selectMechaTarget(origin, candidates, { visible = () => true, maxDistance = 250 } = {}) {
+export function selectMechaTarget(
+  origin,
+  candidates,
+  { visible = () => true, maxDistance = 250 } = {},
+) {
   let best = null;
   let score = Infinity;
   for (const candidate of candidates) {
@@ -65,7 +82,10 @@ export function selectMechaTarget(origin, candidates, { visible = () => true, ma
     const angle = Math.atan2(Math.hypot(dx, dy), forward);
     if (angle > 0.48 || !visible(origin, candidate.position)) continue;
     const priority = angle * 200 + forward * 0.2 - (candidate.weak ? 20 : 0);
-    if (priority < score) { best = candidate; score = priority; }
+    if (priority < score) {
+      best = candidate;
+      score = priority;
+    }
   }
   return best;
 }

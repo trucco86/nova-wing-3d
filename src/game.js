@@ -1269,19 +1269,28 @@ export function createGame({
                 ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
                 : [],
             ),
-            ...(bossCombat?.coreOpen && boss.userData.parts.every((part) => part.hp <= 0) &&
-              weakPointOpen(relativeOrbit())
-              ? [{ id: boss.userData.core, position: boss.userData.core.getWorldPosition(new T.Vector3()), weak: true }]
+            ...(bossCombat?.coreOpen &&
+            boss.userData.parts.every((part) => part.hp <= 0) &&
+            weakPointOpen(relativeOrbit())
+              ? [
+                  {
+                    id: boss.userData.core,
+                    position: boss.userData.core.getWorldPosition(new T.Vector3()),
+                    weak: true,
+                  },
+                ]
               : []),
           ]
-        : enemies.filter((enemy) => !enemy.dead).map((enemy) => ({
-            id: enemy,
-            position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
-            weak: enemy.kind === 'subboss',
-          }));
+        : enemies
+            .filter((enemy) => !enemy.dead)
+            .map((enemy) => ({
+              id: enemy,
+              position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
+              weak: enemy.kind === 'subboss',
+            }));
       selected = selectMechaTarget(player.position, candidates, {
-        visible: (from, to) => !obstacles.some(({ o }) =>
-          projectileHitsApproachingObstacle(from, to, o, 0)),
+        visible: (from, to) =>
+          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
       });
     }
     if (selected?.id !== lockedId) {
@@ -1290,23 +1299,38 @@ export function createGame({
     } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
     const position = selected?.position ?? null;
     updateMechaPose(robot, {
-      dt, time: visualTime, boosting, strafe: dx, vertical: dy,
-      firing: touchFire || keys.has('Space'), targetWorld: position,
+      dt,
+      time: visualTime,
+      boosting,
+      strafe: dx,
+      vertical: dy,
+      firing: touchFire || keys.has('Space'),
+      targetWorld: position,
       transforming: robotTransition,
     });
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
-    if (lockEnabled) status.textContent = !selected ? 'MIRA · SEM ALVO'
-      : lockProgress < 0.8 ? 'MIRA · ' + Math.round(lockProgress / 0.8 * 100) + '%'
-        : precisionCd > 0 ? 'MIRA · RECARGA' : 'MIRA · FIXADA';
+    if (lockEnabled)
+      status.textContent = !selected
+        ? 'MIRA · SEM ALVO'
+        : lockProgress < 0.8
+          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+          : precisionCd > 0
+            ? 'MIRA · RECARGA'
+            : 'MIRA · FIXADA';
     const marker = $('mechaLockReticle');
     marker.hidden = true;
     if (position) {
       const projected = position.clone().project(camera);
-      if (projected.z > -1 && projected.z < 1 && Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1) {
+      if (
+        projected.z > -1 &&
+        projected.z < 1 &&
+        Math.abs(projected.x) <= 1 &&
+        Math.abs(projected.y) <= 1
+      ) {
         marker.hidden = false;
-        marker.style.left = ((projected.x + 1) * window.innerWidth / 2) + 'px';
-        marker.style.top = ((1 - projected.y) * window.innerHeight / 2) + 'px';
+        marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+        marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
       }
     }
     if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
@@ -2423,8 +2447,10 @@ export function createGame({
     );
     if (robotMode) updateMechaLock(dt, dx, dy);
     mechaEngine?.update({
-      dt, active: robotMode && state === 'playing' && !muted && appActive,
-      boosting, accelerating: Math.max(Math.abs(dx), Math.abs(dy)),
+      dt,
+      active: robotMode && state === 'playing' && !muted && appActive,
+      boosting,
+      accelerating: Math.max(Math.abs(dx), Math.abs(dy)),
       volume: settings.master * settings.sfx,
     });
     reticle.position.set(player.position.x, player.position.y, -60);
@@ -3578,7 +3604,10 @@ export function createGame({
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
       mecha: {
-        active: robotMode, lockEnabled, lockProgress, precisionCd,
+        active: robotMode,
+        lockEnabled,
+        lockProgress,
+        precisionCd,
         targetLocked: !!lockedId && lockProgress >= 0.8,
         motor: mechaEngine?.snapshot() ?? null,
         leftYaw: robot.userData.mecha.arms.left.shoulder.rotation.y,
