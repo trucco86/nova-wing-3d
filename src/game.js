@@ -1993,6 +1993,11 @@ export function createGame({
         music?.start(sectorIndex, 'subboss');
       } else {
         elapsed = current().duration + 0.1;
+        if (sectorIndex === 2) {
+          // The asteroid boss lives inside the cavern; prepare the actual journey phases.
+          journey = advanceJourney(journey, 'destinationReached');
+          journey = advanceJourney(journey, 'entryCompleted');
+        }
         makeBoss();
       }
     }
