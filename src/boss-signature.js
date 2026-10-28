@@ -69,14 +69,17 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * TAU + cycle * 0.45;
       const radius = 19 + level * 4;
+      const x = Math.cos(angle) * radius;
+      if (!(x < 0 ? left : right)) continue;
       shots.push(
         shot(
-          [Math.cos(angle) * radius, Math.sin(angle) * radius, 22],
+          [x, Math.sin(angle) * radius, 22],
           [Math.sin(angle) * (9 + level * 3), Math.cos(angle) * (9 + level * 3), 0],
           'fire',
         ),
       );
     }
+    if (!shots.length) shots.push(shot([0, 0, 28], [0, 0, 0], 'fire'));
   }
   if (index === 3) {
     // Orbit-9 sends rotating reactor pulses from its concentric station ring.
