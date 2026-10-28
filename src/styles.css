@@ -5898,3 +5898,32 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
     top: 8px;
   }
 }
+
+/* P0: Mobile alert arbitration.
+   Emergency and attack warnings must never be clipped behind low-priority
+   communications inside the fixed-height top rail. Only one priority lane
+   owns the rail at a time; no DOM content or alert state is discarded. */
+@media (pointer: coarse) {
+  body.in-mission:has(#criticalWarning:not([hidden]))
+    #hudNotices
+    > :is(#shieldWarning, #attackWarning, #bossIncoming, #pickupFlash, #comms) {
+    display: none !important;
+  }
+  body.in-mission:has(#attackWarning:not(:empty):not([data-severity='info'])):not(
+      :has(#criticalWarning:not([hidden]))
+    )
+    #hudNotices
+    > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms) {
+    display: none !important;
+  }
+  body.in-mission:has(#shieldWarning:not([hidden]))
+    #hudNotices
+    > :is(#attackWarning[data-severity='info'], #bossIncoming, #pickupFlash, #comms) {
+    display: none !important;
+  }
+  body.in-mission:has(#bossIncoming:not([hidden]))
+    #hudNotices
+    > :is(#attackWarning[data-severity='info'], #pickupFlash, #comms) {
+    display: none !important;
+  }
+}

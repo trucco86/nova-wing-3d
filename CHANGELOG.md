@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
+
+- Aviso de vida crítica prevalece sobre ataque iminente, escudo baixo, aproximação de chefe, coleta e rádio em telas touch.
+- Informações de menor prioridade voltam automaticamente quando o risco principal termina, preservando os estados internos.
+- Teste de estresse Playwright cobre 320×568, 390×844 e 844×390, segurança da área central e acesso aos botões de ataque, impulso, bomba e robô.
+- Sem alterações de gameplay, ranking, autenticação, produção ou salvamento; candidata requer CI completa e homologação visual.
+
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
 - Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
