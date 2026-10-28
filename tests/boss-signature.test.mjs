@@ -48,3 +48,16 @@ test('combat choreography is time-driven, finite and unique across ten bosses', 
     assert.ok(Object.values(b).every(Number.isFinite));
   }
 });
+
+test('drill loses the disabled half of its rotating helix and retains a weak center attack', () => {
+  const full = bossSignatureVolley(2, 2, 3, [true, true]);
+  const left = bossSignatureVolley(2, 2, 3, [true, false]);
+  const right = bossSignatureVolley(2, 2, 3, [false, true]);
+  const core = bossSignatureVolley(2, 2, 3, [false, false]);
+  assert.ok(full.shots.length >= 6);
+  assert.ok(left.shots.length < full.shots.length && right.shots.length < full.shots.length);
+  assert.ok(left.shots.every((projectile) => projectile.origin[0] < 0));
+  assert.ok(right.shots.every((projectile) => projectile.origin[0] >= 0));
+  assert.equal(core.shots.length, 1);
+  assert.deepEqual(core.shots[0].origin, [0, 0, 28]);
+});
