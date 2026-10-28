@@ -29,9 +29,10 @@ test('guest ranking shows victories and defeats locally without showing over gam
   });
   await page.goto('/');
   const ranking = page.locator('#novaRanking');
-  await expect(ranking.locator('summary')).toBeVisible();
-  await ranking.locator('summary').click();
+  await expect(ranking.locator(':scope > summary')).toBeVisible();
+  await ranking.locator(':scope > summary').click();
   await expect(ranking.locator('[data-rank-summary]')).toContainText('2 partidas');
+  await ranking.locator('.rank-expansion summary').first().click();
   const rows = ranking.locator('[data-rank-local] li');
   await expect(rows).toHaveCount(2);
   await expect(rows.nth(0)).toContainText('DERROTA');
@@ -42,7 +43,7 @@ test('guest ranking shows victories and defeats locally without showing over gam
 
   // The expanded ranking panel is an interactive menu surface. Dismiss it
   // before starting gameplay, then assert that live combat hides all account UI.
-  await ranking.locator('summary').click();
+  await ranking.locator(':scope > summary').click();
   await expect(ranking).not.toHaveAttribute('open', '');
   await page.locator('#start').click();
   await page.locator('#cinematicSkip').click();
