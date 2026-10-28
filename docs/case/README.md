@@ -75,6 +75,7 @@ Esses problemas levaram a correções incrementalmente entregues nas versões 1.
 | **Decisões** | [DECISOES.md](DECISOES.md) | Trade-offs e riscos |
 | **Métricas** | [METRICAS.md](METRICAS.md) | Como medir produtividade, qualidade e DORA |
 | **Reproduzir** | [REPRODUZIR.md](REPRODUZIR.md) | Rodar, inspecionar e verificar |
+| **Evidência em novas entregas** | [TEMPLATE-EVIDENCIA-ENTREGA.md](TEMPLATE-EVIDENCIA-ENTREGA.md) | Registro de SHA, gates, validação humana e limites |
 | **Apresentação** | [DECK.md](DECK.md) / [VIDEO.md](VIDEO.md) | Roteiros para contar a história |
 
 ### O que foi desenvolvido e o que é proposta
