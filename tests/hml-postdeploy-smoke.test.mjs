@@ -47,16 +47,36 @@ test('accept only the published HML SHA, branch and actual game HTML', () => {
   assert.equal(report.environment, 'hml');
   assert.equal(report.firebaseUsesDevProject, true);
   assert.equal(report.rankingApiConfigured, false);
-  assert.throws(() => verifyHmlSnapshot({
-    expectedSha: 'b'.repeat(40), buildText, indexText, publicConfig: config,
-  }), /HML_DEPLOYED_SHA_MISMATCH/);
-  assert.throws(() => verifyHmlSnapshot({
-    expectedSha: sha, buildText: `sha=${sha}\nref=refs/heads/main\n`,
-    indexText, publicConfig: config,
-  }), /HML_DEPLOYED_SHA_MISMATCH/);
-  assert.throws(() => verifyHmlSnapshot({
-    expectedSha: sha, buildText, indexText: '<html>error</html>', publicConfig: config,
-  }), /HML_GAME_ARTIFACT_INVALID/);
+  assert.throws(
+    () =>
+      verifyHmlSnapshot({
+        expectedSha: 'b'.repeat(40),
+        buildText,
+        indexText,
+        publicConfig: config,
+      }),
+    /HML_DEPLOYED_SHA_MISMATCH/,
+  );
+  assert.throws(
+    () =>
+      verifyHmlSnapshot({
+        expectedSha: sha,
+        buildText: `sha=${sha}\nref=refs/heads/main\n`,
+        indexText,
+        publicConfig: config,
+      }),
+    /HML_DEPLOYED_SHA_MISMATCH/,
+  );
+  assert.throws(
+    () =>
+      verifyHmlSnapshot({
+        expectedSha: sha,
+        buildText,
+        indexText: '<html>error</html>',
+        publicConfig: config,
+      }),
+    /HML_GAME_ARTIFACT_INVALID/,
+  );
 });
 
 test('read-only smoke warns about absent score API; never invokes authenticated mutation', async () => {
@@ -83,18 +103,33 @@ test('ranking health is probed only when HTTPS API is configured', async () => {
 
 test('invalid or production public configuration fails closed', async () => {
   const prod = fixture({ publicConfig: { ...config, environment: 'prod' } });
-  await assert.rejects(() => checkHmlDeployment({
-    expectedSha: sha, fetcher: prod.fetcher,
-  }), /HML_PUBLIC_CONFIG_INVALID/);
+  await assert.rejects(
+    () =>
+      checkHmlDeployment({
+        expectedSha: sha,
+        fetcher: prod.fetcher,
+      }),
+    /HML_PUBLIC_CONFIG_INVALID/,
+  );
   const badUrl = fixture({ publicConfig: { ...config, rankingApiUrl: 'http://127.0.0.1' } });
-  await assert.rejects(() => checkHmlDeployment({
-    expectedSha: sha, fetcher: badUrl.fetcher,
-  }), /HML_PUBLIC_CONFIG_INVALID/);
+  await assert.rejects(
+    () =>
+      checkHmlDeployment({
+        expectedSha: sha,
+        fetcher: badUrl.fetcher,
+      }),
+    /HML_PUBLIC_CONFIG_INVALID/,
+  );
   const invalidOrigin = fixture();
-  await assert.rejects(() => checkHmlDeployment({
-    expectedSha: sha, fetcher: invalidOrigin.fetcher,
-    origin: 'https://random.example.org',
-  }), /HML_ORIGIN_INVALID/);
+  await assert.rejects(
+    () =>
+      checkHmlDeployment({
+        expectedSha: sha,
+        fetcher: invalidOrigin.fetcher,
+        origin: 'https://random.example.org',
+      }),
+    /HML_ORIGIN_INVALID/,
+  );
 });
 
 test('bounded CDN retries accept the correct deployment only after stale response recovers', async () => {
@@ -108,7 +143,10 @@ test('bounded CDN retries accept the correct deployment only after stale respons
     return f.fetcher(url, options);
   };
   const report = await retryHmlDeployment({
-    expectedSha: sha, fetcher: slowFetch, attempts: 2, pauseMs: 0,
+    expectedSha: sha,
+    fetcher: slowFetch,
+    attempts: 2,
+    pauseMs: 0,
   });
   assert.equal(report.buildMatches, true);
   assert.equal(buildFetches, 2);

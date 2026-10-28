@@ -1,11 +1,13 @@
 # HML — smoke test pós-deploy de Cloudflare Pages
 
 ## Objetivo
+
 Depois da publicação de `hml`, garantir automaticamente que os arquivos
 públicos vistos no hostname fixo pertencem ao commit liberado e que a
 configuração de leitura é consistente, sem autenticação nem alteração de dados.
 
 ## Critérios
+
 - Consultar **somente** `https://hml.nova-wing-preview.pages.dev`, por HTTPS.
 - Checar `BUILD.txt` com `sha=GITHUB_SHA` e `ref=refs/heads/hml`.
 - Garantir documento HTML do jogo, `nova-config.json` JSON válido para HML
@@ -22,6 +24,7 @@ configuração de leitura é consistente, sem autenticação nem alteração de 
 - Testes de contrato com respostas simuladas e falhas de SHA, HTML e config.
 
 ## Limites
+
 Esse smoke **não** testa login real, OAuth, consentimento, tabelas D1, exclusão,
 escrita habilitada, mobile ou desempenho do jogo. Esses testes pertencem à
 homologação com pessoas e ambientes reais (#119). Sem upgrade em `main`.

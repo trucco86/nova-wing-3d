@@ -84,7 +84,12 @@ export async function checkHmlDeployment({
   return report;
 }
 
-export async function retryHmlDeployment({ expectedSha, attempts = 8, pauseMs = 5000, ...options }) {
+export async function retryHmlDeployment({
+  expectedSha,
+  attempts = 8,
+  pauseMs = 5000,
+  ...options
+}) {
   let lastError;
   for (let n = 1; n <= attempts; n++) {
     try {
@@ -102,15 +107,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     .then((report) => {
       // Only booleans and build status. Never log Firebase keys, UID or tokens.
       console.log('HML deployment SHA verified; environment=hml');
-      console.log('Firebase configuration present=true; separate HML project=' +
-        !report.firebaseUsesDevProject);
+      console.log(
+        'Firebase configuration present=true; separate HML project=' +
+          !report.firebaseUsesDevProject,
+      );
       console.log('Ranking API configured=' + report.rankingApiConfigured);
       console.log('Ranking health reachable=' + report.rankingHealthReachable);
       if (!report.rankingApiConfigured)
         console.log('::warning::HML ranking API URL is absent; local scores remain available.');
       if (report.firebaseUsesDevProject)
         console.log('::warning::HML uses the DEV Firebase project; real OAuth was not tested.');
-      console.log('OAuth, authenticated scoring, data deletion and D1 were NOT tested by this smoke.');
+      console.log(
+        'OAuth, authenticated scoring, data deletion and D1 were NOT tested by this smoke.',
+      );
     })
     .catch((error) => {
       console.error('::error::HML post-deploy smoke failed:', error?.message || 'UNKNOWN');
