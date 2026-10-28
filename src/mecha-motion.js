@@ -39,7 +39,7 @@ export function updateMechaPose(
   });
   const { left, right } = rig.arms;
   const firingRecoil = firing ? 0.05 + Math.sin(time * 32) * 0.045 : 0;
-  right.shoulder.rotation.x = ease(right.shoulder.rotation.x, 1.07 + firingRecoil, dt, 11);
+  right.shoulder.rotation.x = ease(right.shoulder.rotation.x, 1.07 + firingRecoil + recoil * 0.65, dt, 11);
   right.shoulder.rotation.z = ease(right.shoulder.rotation.z, -0.05 + s * 0.08, dt, 8);
   right.elbow.rotation.x = ease(right.elbow.rotation.x, -0.13 - recoil * 0.22, dt, 14);
 
@@ -55,7 +55,7 @@ export function updateMechaPose(
     leftX = clamp(1.03 - elevation, 0.5, 1.55);
     leftZ = clamp(-yaw * 0.38, -0.27, 0.27);
   }
-  left.shoulder.rotation.x = ease(left.shoulder.rotation.x, leftX, dt, 7);
+  left.shoulder.rotation.x = ease(left.shoulder.rotation.x, leftX + recoil * 0.42, dt, 7);
   left.shoulder.rotation.y = ease(left.shoulder.rotation.y, leftY, dt, 7);
   left.shoulder.rotation.z = ease(left.shoulder.rotation.z, leftZ, dt, 7);
   left.elbow.rotation.x = ease(left.elbow.rotation.x, -0.2 + recoil * 0.08, dt, 10);
