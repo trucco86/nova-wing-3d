@@ -102,6 +102,7 @@ import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
+import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
 import {
@@ -183,6 +184,7 @@ export function createGame({
   camera.lookAt(0, 7, -50);
   const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
+  const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
   scene.add(camera);
   const cockpit = dynamicFlight ? createCockpit(camera) : null;
@@ -298,6 +300,8 @@ export function createGame({
       })
     : null;
   let skipSquadIntro = false;
+  let developerSession = false;
+  let developerScenario = null;
   let robotMode = false;
   let robotFireKick = 0;
   let robotCooldown = 0;
@@ -755,6 +759,7 @@ export function createGame({
   const current = () =>
     nativeLifecycle && sectorIndex === 0 ? nativeLaunchSector : SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
+    if (developerSession) return; // QA flights never overwrite campaign checkpoints.
     writeSave(storage, {
       sector: next,
       credits,
@@ -816,7 +821,7 @@ export function createGame({
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
   function recordStageResult(outcome = 'cleared') {
-    if (!dynamicFlight || stageResultSent) return;
+    if (!dynamicFlight || developerSession || stageResultSent) return;
     stageResultSent = true;
     try {
       Promise.resolve(
@@ -1060,7 +1065,7 @@ export function createGame({
     };
     stageScoreStart = score;
     stageResultSent = false;
-    if (dynamicFlight) {
+    if (dynamicFlight && !developerSession) {
       try {
         Promise.resolve(onStageStarted({ sector: sectorIndex + 1 })).catch(() => {});
       } catch {
@@ -1858,9 +1863,13 @@ export function createGame({
     }
     boss = null;
   }
-  function start(resume = false, restart = null, skipSquad = false) {
+  function start(resume = false, restart = null, skipSquad = false, developerRun = false) {
     skipSquadIntro = skipSquad;
     if (!appActive) return;
+    developerSession = developerAvailable && developerRun;
+    if (!developerSession) developerScenario = null;
+    $('developerSessionTag').hidden = !developerSession;
+    document.body.classList[developerSession ? 'add' : 'remove']('developer-session');
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
     cameraMode = 'chase';
@@ -1942,6 +1951,82 @@ export function createGame({
     menuThemePlaying = false;
     enterSector(false);
   }
+  function startDeveloperScenario(sector, encounter, fromRestart = false) {
+    if (!developerAvailable || (!fromRestart && state !== 'menu')) return false;
+    const scenario = parseDeveloperScenario(sector, encounter, SECTORS.length);
+    if (!scenario) return false;
+    developerScenario = scenario;
+    // This is an isolated, disposable QA run. The user's real save is never loaded or updated.
+    start(
+      false,
+      {
+        sector: scenario.sector,
+        loadout: { ...pilotLoadout },
+        strategy: { specialty: activePilot().specialty },
+        weapon: 2,
+        armor: 2,
+        pods: 2,
+        bombs: 8,
+        credits: 0,
+        score: 0,
+        cosmetics: { ...cosmetics, owned: [...cosmetics.owned] },
+        petCare: { ...petCare },
+      },
+      true,
+      true,
+    );
+    if (!developerSession) return false;
+    if (scenario.encounter !== 'stage') {
+      if (scenario.sector === 0) {
+        // Advance the genuine orbital state machine, never bypass the main campaign gate.
+        orbitalLaunchSequence.advance({
+          seconds: 23,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 100,
+          chargeAfter: 40,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 25,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 40,
+          chargeAfter: 0,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 26,
+          dt: 40,
+          boosting: false,
+          chargeBefore: 0,
+          chargeAfter: 0,
+        });
+      }
+      // Keep the test focused on its selected encounter, not ambient enemies/pickups.
+      subDone = rivalDone = baseDone = tunnelDone = arcadeDone = true;
+      spawnCd = groundCd = obstacleCd = ringCd = petCd = Infinity;
+      if (scenario.encounter === 'subboss') {
+        elapsed = current().duration * 0.25;
+        enemy('subboss');
+        $('subHUD').hidden = false;
+        music?.start(sectorIndex, 'subboss');
+      } else {
+        elapsed = current().duration + 0.1;
+        if (sectorIndex === 2) {
+          // The asteroid boss lives inside the cavern; prepare the actual journey phases.
+          journey = advanceJourney(journey, 'destinationReached');
+          journey = advanceJourney(journey, 'entryCompleted');
+        }
+        makeBoss();
+      }
+    }
+    $('developerSessionTag').textContent =
+      'QA · SETOR ' +
+      String(scenario.sector + 1).padStart(2, '0') +
+      ' · ' +
+      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE' }[scenario.encounter] +
+      ' · SEM RANK';
+    return true;
+  }
   function pause() {
     if (!appActive) return;
     if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) {
@@ -1991,6 +2076,10 @@ export function createGame({
     music?.pause();
     clearWorld();
     state = 'menu';
+    developerSession = false;
+    developerScenario = null;
+    $('developerSessionTag').hidden = true;
+    document.body.classList.remove('developer-session');
     menuThemePlaying = false;
     confirmation = null;
     settingsOpen = false;
@@ -2021,6 +2110,8 @@ export function createGame({
     confirmation = null;
     $('pauseConfirmPanel').hidden = true;
     if (action === 'exit') exitToMenu();
+    else if (developerSession && developerScenario)
+      startDeveloperScenario(developerScenario.sector, developerScenario.encounter, true);
     else
       start(
         false,
@@ -2214,6 +2305,18 @@ export function createGame({
       menuThemePlaying = true;
     }
     $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
+  }
+  $('developerPanel').hidden = !developerAvailable;
+  $('developerSessionTag').hidden = true;
+  if (developerAvailable) {
+    for (const [index, sector] of SECTORS.entries()) {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = String(index + 1).padStart(2, '0') + ' · ' + sector.name;
+      $('developerSector').append(option);
+    }
+    $('developerLaunch').onclick = () =>
+      startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
   }
   $('start').onclick = () => (settings.intro ? beginCinematic() : start());
   $('continue').onclick = () => start(true);
@@ -3840,8 +3943,12 @@ export function createGame({
     selectShip,
     selectShipColor,
     nextSector,
+    startDeveloperScenario,
     snapshot: () => ({
       state,
+      developerAvailable,
+      developerSession,
+      developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,

@@ -113,6 +113,7 @@
           <div class="status-caption">NOVA-7 <span>● SISTEMAS ONLINE</span></div>
         </div>
         <div class="mission">
+          <span id="developerSessionTag" hidden>QA · SEM RANK</span>
           <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
           ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
           <div class="route"><i id="progress"></i></div>
@@ -312,10 +313,13 @@
             </details>
           </section>
           <div class="title-actions">
-            <button class="secondary" id="prepareSquad" aria-expanded="false">
-              PILOTO E NAVE <span>＋</span>
-            </button>
-            <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+            <div class="mission-entry" role="group" aria-label="Preparação da missão">
+              <span class="mission-entry-heading">MISSÃO PRINCIPAL</span>
+              <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+              <button class="secondary" id="prepareSquad" aria-expanded="false">
+                ESCOLHER PILOTO E NAVE <span>＋</span>
+              </button>
+            </div>
             <button class="secondary" id="optionsFromMenu">⚙ OPÇÕES</button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
           </div>
@@ -459,6 +463,27 @@
                   >
                 </div>
               </details>
+            </div>
+          </details>
+          <details id="developerPanel" hidden aria-label="Ferramentas de teste Developer QA">
+            <summary>DEVELOPER / QA · TESTAR CENÁRIOS</summary>
+            <div class="developer-panel-content">
+              <p>
+                Disponível apenas em DEV. Testes isolados: sem ranking, sem salvamento e sem afetar
+                a campanha.
+              </p>
+              <label for="developerSector">FASE / SETOR</label>
+              <select id="developerSector" aria-label="Escolher fase para teste"></select>
+              <label for="developerEncounter">PONTO DE ENTRADA</label>
+              <select id="developerEncounter" aria-label="Escolher encontro para teste">
+                <option value="stage">COMEÇO DA FASE</option>
+                <option value="subboss">SUBCHEFE</option>
+                <option value="boss">CHEFE PRINCIPAL</option>
+              </select>
+              <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
+              <small
+                >QA · Sem pontuação no ranking. Para voltar, use Pausar → Sair → Confirmar.</small
+              >
             </div>
           </details>
         </div>

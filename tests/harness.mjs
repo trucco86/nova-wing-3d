@@ -61,6 +61,7 @@ export function harness({
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  hostname,
   observeScene = () => {},
   onStageStarted = () => {},
   onStageFinished = () => {},
@@ -122,6 +123,7 @@ export function harness({
       matches: coarsePointer && query.replaceAll(' ', '') === '(pointer:coarse)',
     }),
     AudioContext,
+    location: hostname ? { hostname } : undefined,
     localStorage: storage,
   };
   const renderer = {
