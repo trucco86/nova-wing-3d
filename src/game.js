@@ -775,6 +775,7 @@ export function createGame({
     }
   }
   function showShop() {
+    squad?.reset();
     recordStageCompletion();
     document.body.classList.add('ranking-intermission');
     state = 'shop';
@@ -1589,6 +1590,7 @@ export function createGame({
   }
 
   function finish(win) {
+    squad?.reset();
     if (win) recordStageCompletion();
     document.body.classList.add('ranking-intermission');
     releaseControls();
