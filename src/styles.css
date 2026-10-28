@@ -6235,10 +6235,12 @@ body.ranking-intermission #novaRanking {
   gap: 8px;
   min-width: 0;
   width: 100%;
-  padding: 10px;
-  border: 1px solid #4f859457;
-  border-radius: 16px;
-  background: linear-gradient(145deg, #071d2baa, #030b17aa);
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  outline: 1px solid #4f859457;
+  outline-offset: 4px;
+  background: transparent;
 }
 #menu.title-screen .mission-entry-heading {
   color: #90d4db;
