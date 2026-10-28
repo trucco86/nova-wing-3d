@@ -23,14 +23,37 @@ function respond(data, status, cors) {
 async function readBody(request) {
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || ''))
     return null;
-  if (Number(request.headers.get('content-length')) > MAX_BODY) return null;
+
+  // Never trust Content-Length: chunked requests can omit or forge the header.
+  // Enforce the cap on actual UTF-8 bytes before parsing or retaining the body.
+  const declared = request.headers.get('content-length');
+  if (declared !== null && (!/^[0-9]+$/.test(declared) || Number(declared) > MAX_BODY))
+    return null;
+  if (!request.body) return null;
+
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let bytes = 0;
+  let text = '';
   try {
-    const text = await request.text();
-    if (text.length > MAX_BODY) return null;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > MAX_BODY) {
+        // Abort uploads immediately; never buffer an unbounded request.
+        void reader.cancel().catch(() => {});
+        return null;
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+    text += decoder.decode();
     const value = JSON.parse(text);
     return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
   } catch {
     return null;
+  } finally {
+    reader.releaseLock();
   }
 }
 
