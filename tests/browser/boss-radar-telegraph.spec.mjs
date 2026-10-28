@@ -8,9 +8,9 @@ test('physical boss warning shows actual danger, attack origin and a reachable s
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=9');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  expect(
-    await page.evaluate(() => window.fixture.game.startDeveloperScenario(9, 'boss')),
-  ).toBe(true);
+  expect(await page.evaluate(() => window.fixture.game.startDeveloperScenario(9, 'boss'))).toBe(
+    true,
+  );
   await page.evaluate(() => window.fixture.advance(9.2));
   const radar = page.locator('#battleRadar');
   await expect(radar).toHaveAttribute('data-mode', 'physical');

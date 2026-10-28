@@ -35,10 +35,7 @@ test('Marvin claw becomes safe after moving into a protected orbital flank', () 
 
 test('radar has no phantom safe-zone for ranged barrages or missing intent', () => {
   assert.equal(bossRadarPlan(null, { x: 0, y: 10 }), null);
-  assert.equal(
-    bossRadarPlan(chooseBossIntent({ sector: 9, cycle: 4 }), { x: 0, y: 10 }),
-    null,
-  );
+  assert.equal(bossRadarPlan(chooseBossIntent({ sector: 9, cycle: 4 }), { x: 0, y: 10 }), null);
 });
 
 test('a distant player is shown safe even if the boss aims at the original location', () => {

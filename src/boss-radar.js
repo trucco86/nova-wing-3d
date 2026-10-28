@@ -51,10 +51,7 @@ function findSafePoint(intent, x, y, orbit) {
   return chosen;
 }
 
-export function bossRadarPlan(
-  intent,
-  { x, y, orbit = 0, originX = 0, originY = 12 },
-) {
+export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 12 }) {
   if (!intent || intent.kind === 'barrage') return null;
   const centerX = clamp(intent.targetX, MIN_X + 40, MAX_X - 40);
   const left = centerX - 40;
@@ -65,7 +62,14 @@ export function bossRadarPlan(
   });
   const r = intent.dodgeRadius;
   const rect = intent.kind === 'tentacle-sweep' || intent.kind === 'claw-swipe';
-  const halfX = intent.kind === 'tentacle-sweep' ? r * 2.4 : intent.kind === 'claw-swipe' ? r * 1.7 : intent.kind === 'tentacle-grab' ? r / 0.7 : r;
+  const halfX =
+    intent.kind === 'tentacle-sweep'
+      ? r * 2.4
+      : intent.kind === 'claw-swipe'
+        ? r * 1.7
+        : intent.kind === 'tentacle-grab'
+          ? r / 0.7
+          : r;
   const halfY = r;
   const dangerActive = bossMeleeHit(intent, {
     x: intent.targetX,
@@ -156,7 +160,8 @@ export function renderBossRadar(document, plan) {
     ['y1', plan.origin.y],
     ['x2', shape.center.x],
     ['y2', shape.center.y],
-  ]) vector.setAttribute(attr, n);
+  ])
+    vector.setAttribute(attr, n);
   const markers = [
     ['radarAttackOrigin', plan.origin],
     ['radarSafePoint', plan.exit],
@@ -170,8 +175,7 @@ export function renderBossRadar(document, plan) {
       node.setAttribute('cy', point.y);
     }
   }
-  document.getElementById('radarShipPoint').setAttribute(
-    'fill',
-    plan.threatened ? '#fff4c9' : '#88ffbc',
-  );
+  document
+    .getElementById('radarShipPoint')
+    .setAttribute('fill', plan.threatened ? '#fff4c9' : '#88ffbc');
 }
