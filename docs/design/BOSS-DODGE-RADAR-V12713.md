@@ -14,3 +14,10 @@
 Cobertura unitária de área de risco vs colisão, direções, segurança por flanco e ausência de falsas promessas contra salvas. Playwright verifica radar, esquiva real no browser, legibilidade e limites de tela portrait/landscape.
 
 **Status:** candidata isolada, não homologada. Não promover para DEV/HML/PROD sem CI e validação humana.
+
+## Verificação humana sugerida
+
+1. Abrir o cenário do Marvin no menu Developer/QA, observar a mordida e mover a nave para fora do vermelho antes do contato.
+2. Manter a nave na região segura e confirmar a ausência de dano físico; repetir com garras e tentáculos.
+3. Verificar que o ponto de origem permanece distinguível e que a orientação funciona em retrato e paisagem.
+4. Confirmar que as salvas de projéteis não exibem uma falsa zona verde de imunidade.
