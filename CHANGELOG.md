@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.24.25 — Órbita cinematográfica, BOOST e interfaces mobile (candidata)
+
+- Satélite de comunicações permanente na órbita terrestre, painéis solares, antena e sinalizadores visíveis durante a ascensão.
+- Nave-mãe com hangar iluminado e chefe entrando no combate por trajetória cinematográfica a partir da doca, sem salto repentino.
+- Naves com painéis 3D, mísseis e iluminação extra; nenhuma mudança intencional em colisão ou balanceamento.
+- Aviso superior persistente de SHIFT/BOOST obrigatório na primeira fase, destacando controle mobile e saindo após esgotar o impulso.
+- Capa integral em mobile retrato e controles alcançáveis; menu de conta sci-fi e ranking compacto com informações, adesão e privacidade em painéis expansíveis.
+- Tradução PT/EN/ES dos novos componentes, contrato/testes para satélite, boost e trajetória.
+- Release candidata de HML; **não homologada visualmente em dispositivos reais e não publicada em PROD**.
+
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
 - Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
@@ -109,7 +119,7 @@
 - Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
 - Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
 
-## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+## 1.23 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
 - Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
 - Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.
