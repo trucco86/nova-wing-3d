@@ -201,6 +201,17 @@ export function fighter(enemy = false, variant = -1) {
       const aura = halo(enemy ? '#ff3468' : '#39bfff', 3.6, 0.75);
       aura.position.set(s * 1.04, -0.13, 2.9);
       g.add(aura);
+      const ridge = box(1.3, 0.44, 2.8, accent, s * 2.15, 0.21, 0.3);
+      ridge.name = 'fighter-wing-raised-armor';
+      g.add(ridge);
+      g.add(box(0.38, 0.3, 2.6, light, s * 2.3, 0.48, 0.34));
+      g.add(box(0.8, 0.35, 1.7, armor, s * 3.35, -0.22, 1.05));
+      g.add(box(0.26, 0.2, 1.6, light, s * 3.38, -0.02, 0.95));
+      const missile = new T.Mesh(new T.ConeGeometry(0.43, 1.9, 8), accent);
+      missile.rotation.x = -Math.PI / 2;
+      missile.name = 'fighter-underwing-missile';
+      missile.position.set(s * 2.5, -0.46, -0.8);
+      g.add(missile);
       g.add(box(0.2, 0.21, 2.5, black, s * 3.1, -0.06, 0.1));
       g.add(box(0.14, 0.13, 0.5, light, s * 3.1, -0.06, -1.3));
       g.add(box(0.15, 0.18, 0.7, copper, s * outer, 0, 1.5));
@@ -347,6 +358,40 @@ function enemyDetails(variant) {
   return variants.get(variant).clone(true);
 }
 const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+5.;a*=.5;}return s;}`;
+/** Orbital scene landmark, independent of randomized obstacle spawning. */
+export function createOrbitalSatellite() {
+  const group = new T.Group();
+  group.name = 'orbital-earth-communications-satellite';
+  const frame = metal('#90acbb', 0.75, 0.3);
+  const dark = metal('#142a40');
+  const panels = metal('#24508c', 0.65, 0.22);
+  const lit = glowMaterial('#64e8ff', 2);
+  group.add(box(10, 7, 13, frame), box(6, 4, 15, dark, 0, 1.7, 0));
+  for (const side of [-1, 1]) {
+    group.add(box(27, 0.4, 13, panels, side * 22, 0.6, 0));
+    group.add(box(0.7, 0.8, 13.4, frame, side * 22, 1, 0));
+    for (let n = 0; n < 4; n++) {
+      group.add(box(0.25, 0.5, 13, lit, side * (13 + n * 6), 1, 0));
+    }
+    group.add(box(3, 4, 5, dark, side * 6, -1, 5));
+    group.add(box(1.4, 1.2, 1, lit, side * 6, 0.6, 8));
+  }
+  const dish = new T.Mesh(new T.ConeGeometry(6, 3, 16), frame);
+  dish.rotation.x = -Math.PI / 2;
+  dish.name = 'orbital-satellite-antenna';
+  dish.position.set(0, 9, -4);
+  group.add(dish);
+  group.add(box(0.8, 5.8, 0.8, frame, 0, 6, -4));
+  const beacon = new T.Mesh(new T.SphereGeometry(1.3, 10, 8), lit);
+  beacon.name = 'orbital-satellite-beacon';
+  beacon.position.set(0, 11, 0);
+  group.add(beacon);
+  group.position.set(72, 26, -265);
+  group.rotation.set(-0.12, 0.31, 0.14);
+  group.visible = false;
+  return group;
+}
+
 export function createWorld(scene, random = Math.random, dynamicFlight = false) {
   const existing = new Set(scene.children);
   const rnd = (a, b) => a + random() * (b - a);
@@ -556,8 +601,22 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     carrier.add(box(4, 7, 5, steel, s * 30, 9, -12));
     carrier.add(box(1.2, 1.2, 13, black, s * 30, 13, -17));
   }
+  // Large illuminated launch bay links the boss emergence to the mother ship.
+  const bay = new T.Group();
+  bay.name = 'flagship-boss-launch-hangar';
+  bay.add(box(37, 2, 4, cyan, 0, 3, 19));
+  bay.add(box(37, 2, 4, cyan, 0, -13, 19));
+  for (const side of [-1, 1]) {
+    bay.add(box(2.5, 17, 5, steel, side * 18, -5, 19));
+    bay.add(box(1.1, 12, 2, pink, side * 17, -5, 22));
+  }
+  bay.add(box(30, 12, 0.7, black, 0, -5, 19));
+  bay.add(box(25, 0.7, 2, mint, 0, -5, 21));
+  carrier.add(bay);
   carrier.position.set(0, 62, -700);
   scene.add(carrier);
+  const orbitalSatellite = dynamicFlight ? createOrbitalSatellite() : null;
+  if (orbitalSatellite) scene.add(orbitalSatellite);
   const dustGeo = new T.BufferGeometry(),
     dustPos = new Float32Array(240 * 3);
   for (let i = 0; i < 240; i++) {
@@ -663,6 +722,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       earthHorizon.visible = orbital;
       const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
       earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
+      carrier.visible = orbital && t > 0.7;
+      if (orbitalSatellite) {
+        orbitalSatellite.visible = orbital && t > 0.74;
+        orbitalSatellite.rotation.y = 0.31 + progress * 0.65;
+      }
     },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
@@ -678,6 +742,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      carrier.visible = ['fleet', 'station', 'asteroids', 'void', 'throne'].includes(sceneryTheme);
+      if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
