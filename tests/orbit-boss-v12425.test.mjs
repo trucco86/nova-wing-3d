@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createOrbitalSatellite, createWorld } from '../src/visuals.js';
+import { createWorld } from '../src/visuals.js';
 import { BOSS_DEPARTURE_SECONDS, bossDepartureAt } from '../src/boss-departure.js';
 import { SECTORS } from '../src/campaign.js';
 
