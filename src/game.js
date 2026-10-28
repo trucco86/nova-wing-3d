@@ -55,7 +55,7 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
-import { initialJourney, advanceJourney } from './stage-journey.js';
+import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -965,6 +965,9 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
+    journey = initialJourney(sectorIndex);
+    asteroidInterior?.reset(sectorIndex === 2);
+    asteroidWallCooldown = 0;
     squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
     skipSquadIntro = false;
     lastStage = -1;
@@ -2704,6 +2707,19 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    if (dynamicFlight && sectorIndex === 2) {
+      const planned = journeyPhaseAt(elapsed, current().duration);
+      if (journey.phase === 'approach' && planned !== 'approach') {
+        journey = advanceJourney(journey, 'destinationReached');
+        asteroidInterior.setPhase(journey.phase);
+        message('MEGA-ASTEROIDE À FRENTE · ENCONTRE A ABERTURA');
+      }
+      if (journey.phase === 'transition' && ['interior', 'boss'].includes(planned)) {
+        journey = advanceJourney(journey, 'entryCompleted');
+        asteroidInterior.setPhase(journey.phase);
+        message('DENTRO DO ASTEROIDE · EVITE AS PAREDES');
+      }
+    }
     squad?.update(dt, {
       sector: sectorIndex,
       elapsed,
