@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.12 — Candidata integrada Boss AI e Órbita-9 (QA)
+
+- Código combinado: dez chefes com assinatura visual, IA de golpes físicos telegráficos e esquiva real.
+- RPG: Plasma Titan 8 s, Five Cats Overdrive 10 s, Barreira 12 s, Estase 11 s, dano metrado separadamente.
+- Câmera superior contextual com controles X/Z, missão Reator Órbita-9 e exploração 3D experimental com três pistas e NPC.
+- Mobile: canvas e botões em camadas distintas, testes reais de hit-testing de controles.
+- CI e homologação humana pendentes na candidata; DEV, HML e produção permanecem intactos.
+
 ## 1.27.11 — Preview integrado de campanha e exploração (candidata QA)
 
 - Reúne as mudanças de cenário/câmera da v1.27.6 e os dez padrões de chefes das candidatas v1.27.7/v1.27.8.
