@@ -7,7 +7,6 @@
 - Testes de emissões, duração, número de projéteis e movimento de peças visuais.
 - Não inclui mundo aberto nem ataques físicos de arena; HML/PROD inalterados.
 
-
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.

@@ -36,8 +36,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (const side of [-1, 1]) {
       if (live && !(side < 0 ? left : right)) continue;
       for (let i = 0; i < 3 + (level === 3 ? 1 : 0); i++) {
-        shots.push(shot([side * (30 + i * 5), 7, 22],
-          [side * ((cycle % 2 ? -1 : 1) * (16 - i * 6)), -8 + i * 7, 0], 'fire'));
+        shots.push(
+          shot(
+            [side * (30 + i * 5), 7, 22],
+            [side * ((cycle % 2 ? -1 : 1) * (16 - i * 6)), -8 + i * 7, 0],
+            'fire',
+          ),
+        );
       }
     }
   }
@@ -46,19 +51,29 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < 4 + level; i++) {
       const side = i % 2 ? 1 : -1;
       if (live && !(side < 0 ? left : right)) continue;
-      shots.push(shot([side * 28, -16 + (i % 3) * 7, 27],
-        [side * (20 - i * 3), (cycle % 2 ? 1 : -1) * (15 - i * 4), 0], 'arcane'));
+      shots.push(
+        shot(
+          [side * 28, -16 + (i % 3) * 7, 27],
+          [side * (20 - i * 3), (cycle % 2 ? 1 : -1) * (15 - i * 4), 0],
+          'arcane',
+        ),
+      );
     }
   }
   // Station: closing reactor spokes, each generator protects half the iris.
   if (index === 3) {
     const count = 4 + level;
     for (let i = 0; i < count; i++) {
-      const angle = i / count * TAU + cycle * 0.36;
+      const angle = (i / count) * TAU + cycle * 0.36;
       const side = Math.cos(angle) < 0 ? 0 : 1;
       if (live && !generators[side]) continue;
-      shots.push(shot([Math.cos(angle) * 36, Math.sin(angle) * 25, 26],
-        [Math.cos(angle + Math.PI / 4) * 21, Math.sin(angle + Math.PI / 4) * 14, 0], 'arcane'));
+      shots.push(
+        shot(
+          [Math.cos(angle) * 36, Math.sin(angle) * 25, 26],
+          [Math.cos(angle + Math.PI / 4) * 21, Math.sin(angle + Math.PI / 4) * 14, 0],
+          'arcane',
+        ),
+      );
     }
   }
   // Phoenix: alternating fire wings and descending feather trajectories.
@@ -66,8 +81,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < 4 + level; i++) {
       const side = i % 2 ? 1 : -1;
       if (live && !(side < 0 ? left : right)) continue;
-      shots.push(shot([side * (28 + i * 4), 12 + i * 3, 23],
-        [side * (8 + i * 3), (cycle % 2 ? 1 : -1) * 18 + (i - 3) * 7, 0], 'fire'));
+      shots.push(
+        shot(
+          [side * (28 + i * 4), 12 + i * 3, 23],
+          [side * (8 + i * 3), (cycle % 2 ? 1 : -1) * 18 + (i - 3) * 7, 0],
+          'fire',
+        ),
+      );
     }
   }
   if (index === 2) {
@@ -128,8 +148,9 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (const side of [-1, 1]) {
       if (live && !(side < 0 ? left : right)) continue;
       for (let i = 0; i < 3 + (level === 3 ? 1 : 0); i++) {
-        shots.push(shot([side * 45, 17 + i * 3, 29],
-          [side * (28 - i * 6), (i - 2) * 9, 0], 'fire'));
+        shots.push(
+          shot([side * 45, 17 + i * 3, 29], [side * (28 - i * 6), (i - 2) * 9, 0], 'fire'),
+        );
       }
     }
   }
@@ -139,9 +160,14 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < count; i++) {
       const side = i % 2 ? 1 : -1;
       if (live && !(side < 0 ? left : right)) continue;
-      const angle = i / count * Math.PI + cycle * 0.28;
-      shots.push(shot([side * (18 + i * 5), Math.sin(angle) * 28, 25],
-        [side * (8 + level * 3), Math.cos(angle) * (20 + level * 5), 0], 'arcane'));
+      const angle = (i / count) * Math.PI + cycle * 0.28;
+      shots.push(
+        shot(
+          [side * (18 + i * 5), Math.sin(angle) * 28, 25],
+          [side * (8 + level * 3), Math.cos(angle) * (20 + level * 5), 0],
+          'arcane',
+        ),
+      );
     }
   }
   if (index === 9) {
@@ -191,11 +217,15 @@ export function bossSignaturePose(index, time, phase = 1, attackState = 'maneuve
   if (index === 1)
     return { tail: Math.sin(t * (2 + intensity)) * 0.28 + (charging ? 0.45 : firing ? -0.5 : 0) };
   if (index === 3)
-    return { iris: t * (0.8 + intensity) + (charging ? 0.4 : 0),
-      aperture: firing ? 1.3 : charging ? 0.75 : 1 };
+    return {
+      iris: t * (0.8 + intensity) + (charging ? 0.4 : 0),
+      aperture: firing ? 1.3 : charging ? 0.75 : 1,
+    };
   if (index === 4)
-    return { wingLeft: Math.sin(t * 2.1) * 0.2 + (charging ? 0.42 : firing ? -0.3 : 0),
-      wingRight: Math.sin(t * 2.1 + Math.PI) * 0.2 + (charging ? -0.42 : firing ? 0.3 : 0) };
+    return {
+      wingLeft: Math.sin(t * 2.1) * 0.2 + (charging ? 0.42 : firing ? -0.3 : 0),
+      wingRight: Math.sin(t * 2.1 + Math.PI) * 0.2 + (charging ? -0.42 : firing ? 0.3 : 0),
+    };
   if (index === 2)
     return { spin: t * (2.4 + intensity * 2.5), extension: charging ? 8 : firing ? 13 : 0 };
   if (index === 5)

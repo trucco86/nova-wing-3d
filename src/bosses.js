@@ -135,10 +135,10 @@ export function createBossModel(sector, index = 0, tactical = false) {
   if (index === 0 || index === 7) {
     for (const side of [-1, 1]) {
       const bank = new T.Group();
-      bank.name = (index === 0 ? 'signature-rok' : 'signature-omega') + (side < 0 ? '-left' : '-right');
+      bank.name =
+        (index === 0 ? 'signature-rok' : 'signature-omega') + (side < 0 ? '-left' : '-right');
       bank.add(box(13, 7, 19, armor, side * 4, 0, 0));
-      for (let i = 0; i < 3; i++)
-        bank.add(box(2, 2, 16, hot, side * (i * 5 - 4), 3, 10));
+      for (let i = 0; i < 3; i++) bank.add(box(2, 2, 16, hot, side * (i * 5 - 4), 3, 10));
       add(bank, side * (index === 7 ? 45 : 31), index === 7 ? 17 : 7, 22);
     }
   }
@@ -155,8 +155,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
     iris.add(new T.Mesh(new T.TorusGeometry(28, 2.2, 7, 48), edge));
     for (let i = 0; i < 4; i++) {
       const spoke = box(22, 2, 4, armor);
-      spoke.rotation.z = i * Math.PI / 2;
-      spoke.position.set(Math.cos(i * Math.PI / 2) * 12, Math.sin(i * Math.PI / 2) * 12, 0);
+      spoke.rotation.z = (i * Math.PI) / 2;
+      spoke.position.set(Math.cos((i * Math.PI) / 2) * 12, Math.sin((i * Math.PI) / 2) * 12, 0);
       iris.add(spoke);
     }
     add(iris, 0, 0, 25);

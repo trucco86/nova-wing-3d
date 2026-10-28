@@ -55,10 +55,22 @@ test('six additional encounters lose a flank battery after generator destruction
     const left = bossSignatureVolley(index, 3, 3, [true, false]);
     const right = bossSignatureVolley(index, 3, 3, [false, true]);
     const core = bossSignatureVolley(index, 3, 3, [false, false]);
-    assert.ok(both.shots.length > left.shots.length, 'left-side battery removal reduces fire ' + index);
-    assert.ok(both.shots.length > right.shots.length, 'right-side battery removal reduces fire ' + index);
-    assert.ok(left.shots.every((s) => s.origin[0] <= 0), 'left battery source ' + index);
-    assert.ok(right.shots.every((s) => s.origin[0] >= 0), 'right battery source ' + index);
+    assert.ok(
+      both.shots.length > left.shots.length,
+      'left-side battery removal reduces fire ' + index,
+    );
+    assert.ok(
+      both.shots.length > right.shots.length,
+      'right-side battery removal reduces fire ' + index,
+    );
+    assert.ok(
+      left.shots.every((s) => s.origin[0] <= 0),
+      'left battery source ' + index,
+    );
+    assert.ok(
+      right.shots.every((s) => s.origin[0] >= 0),
+      'right battery source ' + index,
+    );
     assert.ok(core.shots.length >= 1 && core.shots.length <= 10);
     assert.ok(both.shots.length <= 10);
   }

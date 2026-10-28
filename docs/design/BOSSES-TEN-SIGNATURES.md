@@ -4,14 +4,14 @@
 
 O objetivo é evoluir a campanha para confrontos que exigem leituras espaciais distintas. A primeira onda (PR #140) introduziu Perfurador, Colosso, Hidra e Marvin. Esta onda cobre **Rok, Ferrão, Fortaleza Órbita, Fênix, Couraçado Ômega e Núcleo Bastião**.
 
-| Setor | O que muda visualmente | Leitura tática | Efeito de quebrar gerador |
-| --- | --- | --- | --- |
-| **01 · Caça-líder Rok** | Baterias laterais articuladas | Pinça que converge e inverte a abertura | Um flanco para de disparar |
-| **02 · Nave-Ferrão** | Cauda independente em movimento | Varredura alta/baixa alternada | Perde metade das rajadas |
-| **04 · Fortaleza Órbita** | Íris do reator abre/fecha | Cruz orbital que altera ângulo | Fechamento de metade dos raios |
-| **05 · Fênix de Plasma** | Asas de fogo com carga própria | Feixes alternados em mergulho | Asa avariada interrompe seu ataque |
-| **08 · Couraçado Ômega** | Canhões de bordo móveis | Broadside lateral concentrado | Bateria do bordo é desativada |
-| **09 · Núcleo Bastião** | Lente gravitacional pulsa e gira | Linhas focais em altura variável | Perde emissão de um dos hemisférios |
+| Setor                     | O que muda visualmente           | Leitura tática                          | Efeito de quebrar gerador           |
+| ------------------------- | -------------------------------- | --------------------------------------- | ----------------------------------- |
+| **01 · Caça-líder Rok**   | Baterias laterais articuladas    | Pinça que converge e inverte a abertura | Um flanco para de disparar          |
+| **02 · Nave-Ferrão**      | Cauda independente em movimento  | Varredura alta/baixa alternada          | Perde metade das rajadas            |
+| **04 · Fortaleza Órbita** | Íris do reator abre/fecha        | Cruz orbital que altera ângulo          | Fechamento de metade dos raios      |
+| **05 · Fênix de Plasma**  | Asas de fogo com carga própria   | Feixes alternados em mergulho           | Asa avariada interrompe seu ataque  |
+| **08 · Couraçado Ômega**  | Canhões de bordo móveis          | Broadside lateral concentrado           | Bateria do bordo é desativada       |
+| **09 · Núcleo Bastião**   | Lente gravitacional pulsa e gira | Linhas focais em altura variável        | Perde emissão de um dos hemisférios |
 
 ## Regras que não mudam
 

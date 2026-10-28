@@ -95,7 +95,10 @@ test('six remaining chiefs have visible, independent authored attack parts witho
     animateBossSignature(boss, index, 1, 2, 'attack');
     const attack = parts.map((p) => p.rotation.toArray().concat(p.scale.toArray()));
     assert.notDeepEqual(charging, attack, 'choreography must change for boss ' + index);
-    assert.deepEqual(boss.userData.parts.map((p) => p.mesh.position.toArray()), originalTargets);
+    assert.deepEqual(
+      boss.userData.parts.map((p) => p.mesh.position.toArray()),
+      originalTargets,
+    );
     disposeBoss(boss);
   }
 });
