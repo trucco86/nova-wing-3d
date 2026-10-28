@@ -22,6 +22,7 @@ import {
 import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
+import { stagePerspectiveAt } from './stage-variety.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -969,7 +970,7 @@ export function createGame({
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
-    world.setSector(current());
+    world.setSector(current(), sectorIndex);
     journey = initialJourney(sectorIndex);
     asteroidInterior?.reset(sectorIndex === 2);
     asteroidWallCooldown = 0;
@@ -2867,6 +2868,12 @@ export function createGame({
                 ? 'ÓRBITA TERRESTRE'
                 : 'ROTA DE APROXIMAÇÃO';
       }
+      // Authored short perspectives, while pilot cockpit/combat selection retains priority.
+      const directedShot = stagePerspectiveAt(sectorIndex, elapsed, current().duration, !!boss);
+      flightCamera.setShot(directedShot);
+      if (directedShot === 'side') route.label += ' · VISTA LATERAL';
+      if (directedShot === 'overhead') route.label += ' · VISÃO SUPERIOR';
+      if (directedShot === 'combat') route.label += ' · PLANO ABERTO';
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
@@ -3961,6 +3968,7 @@ export function createGame({
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
       cameraMode,
+      directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
       route: { ...route },
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
