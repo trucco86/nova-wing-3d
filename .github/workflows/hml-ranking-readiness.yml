@@ -1,0 +1,30 @@
+name: HML ranking configuration readiness (read-only)
+on:
+  push:
+    branches:
+      - ops/hml-ranking-readiness-20261028
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report prerequisite presence, never values
+        env:
+          NOVA_FIREBASE_HML_CONFIG_JSON: ${{ vars.NOVA_FIREBASE_HML_CONFIG_JSON }}
+          NOVA_RANKING_HML_D1_ID: ${{ vars.NOVA_RANKING_HML_D1_ID }}
+          NOVA_RANKING_HML_FIREBASE_PROJECT_ID: ${{ vars.NOVA_RANKING_HML_FIREBASE_PROJECT_ID }}
+          NOVA_RANKING_HML_API_URL: ${{ vars.NOVA_RANKING_HML_API_URL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          printf 'HML ranking readiness (configuration presence only; NO secret values):\n'
+          for key in NOVA_FIREBASE_HML_CONFIG_JSON NOVA_RANKING_HML_D1_ID NOVA_RANKING_HML_FIREBASE_PROJECT_ID NOVA_RANKING_HML_API_URL CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
+            if [[ -n "${!key}" ]]; then
+              echo "${key}: CONFIGURED"
+            else
+              echo "${key}: MISSING"
+            fi
+          done
+          echo 'OAuth domain authorization, D1 existence, permissions and real score writes are NOT verified.'
