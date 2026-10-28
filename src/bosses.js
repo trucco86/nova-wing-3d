@@ -130,10 +130,51 @@ export function createBossModel(sector, index = 0, tactical = false) {
       break;
     }
   }
+  // Small authored moving assemblies give the six new attack families a
+  // visible telegraph without changing generator hitboxes.
+  if (index === 0 || index === 7) {
+    for (const side of [-1, 1]) {
+      const bank = new T.Group();
+      bank.name = (index === 0 ? 'signature-rok' : 'signature-omega') + (side < 0 ? '-left' : '-right');
+      bank.add(box(13, 7, 19, armor, side * 4, 0, 0));
+      for (let i = 0; i < 3; i++)
+        bank.add(box(2, 2, 16, hot, side * (i * 5 - 4), 3, 10));
+      add(bank, side * (index === 7 ? 45 : 31), index === 7 ? 17 : 7, 22);
+    }
+  }
+  if (index === 1) {
+    const tail = new T.Group();
+    tail.name = 'signature-stingray-tail';
+    tail.add(new T.Mesh(new T.ConeGeometry(5, 36, 5), armor));
+    tail.add(box(14, 2, 20, edge, 0, -14, 10));
+    add(tail, 0, -14, -18);
+  }
+  if (index === 3) {
+    const iris = new T.Group();
+    iris.name = 'signature-orbit-iris';
+    iris.add(new T.Mesh(new T.TorusGeometry(28, 2.2, 7, 48), edge));
+    for (let i = 0; i < 4; i++) {
+      const spoke = box(22, 2, 4, armor);
+      spoke.rotation.z = i * Math.PI / 2;
+      spoke.position.set(Math.cos(i * Math.PI / 2) * 12, Math.sin(i * Math.PI / 2) * 12, 0);
+      iris.add(spoke);
+    }
+    add(iris, 0, 0, 25);
+  }
+  if (index === 8) {
+    const lens = new T.Group();
+    lens.name = 'signature-orion-lens';
+    lens.add(new T.Mesh(new T.TorusGeometry(37, 2.3, 8, 48), edge));
+    const inner = new T.Mesh(new T.TorusGeometry(24, 1.5, 8, 40), hot);
+    inner.rotation.y = 0.3;
+    lens.add(inner);
+    add(lens, 0, 0, 25);
+  }
   if (sector.kind === 'phoenix') {
     for (const side of [-1, 1]) {
       const flame = new T.Mesh(new T.ConeGeometry(9, 40, 6), edge);
       flame.rotation.z = side * 0.4;
+      flame.name = side < 0 ? 'signature-phoenix-left-wing' : 'signature-phoenix-right-wing';
       add(flame, side * 40, 15, -24);
     }
     add(sphere(12, edge), 0, 0, -15);
@@ -433,7 +474,34 @@ export function createBossModel(sector, index = 0, tactical = false) {
 export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
-  if (index === 2) {
+  if (index === 0 || index === 7) {
+    const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
+    const left = g.getObjectByName(prefix + '-left');
+    const right = g.getObjectByName(prefix + '-right');
+    const angle = index === 0 ? pose.pincer : pose.broadside;
+    if (left) left.rotation.y = angle;
+    if (right) right.rotation.y = -angle;
+  } else if (index === 1) {
+    const tail = g.getObjectByName('signature-stingray-tail');
+    if (tail) tail.rotation.z = pose.tail;
+  } else if (index === 3) {
+    const iris = g.getObjectByName('signature-orbit-iris');
+    if (iris) {
+      iris.rotation.z = pose.iris;
+      iris.scale.setScalar(pose.aperture);
+    }
+  } else if (index === 4) {
+    const left = g.getObjectByName('signature-phoenix-left-wing');
+    const right = g.getObjectByName('signature-phoenix-right-wing');
+    if (left) left.rotation.z = pose.wingLeft;
+    if (right) right.rotation.z = pose.wingRight;
+  } else if (index === 8) {
+    const lens = g.getObjectByName('signature-orion-lens');
+    if (lens) {
+      lens.rotation.z = pose.lens;
+      lens.scale.setScalar(pose.pulse);
+    }
+  } else if (index === 2) {
     const bit = g.getObjectByName('signature-drill-bit');
     if (bit) {
       bit.rotation.z = pose.spin;
