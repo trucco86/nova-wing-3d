@@ -66,7 +66,9 @@ test('signature bosses launch different projectiles through the actual DEV encou
     assert.equal(h.game.startDeveloperScenario(index, 'boss'), true);
     // No script-only shortcuts: advance actual simulation clock into the first tactical attack.
     let observed = false;
-    for (let i = 0; i < 130; i++) {
+    // Ranged fire is now deliberately limited to the maneuver window;
+    // the preceding windup/attack uses physical strikes instead of bullet spam.
+    for (let i = 0; i < 195; i++) {
       h.advance(0.1, 0.1);
       const state = h.game.snapshot();
       if (state.entities.hostile > 0) observed = true;
