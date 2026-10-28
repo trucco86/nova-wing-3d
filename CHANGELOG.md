@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.6 — Cenários, perspectiva e chefes diferenciados (candidata DEV)
+
+- Terra e satélite contextualizados na ascensão; lua rachada exclusiva do cinturão de destroços, lua de gelo sem fissuras; ambientação temática de plasma, nebulosa, frota, vazio e fortaleza.
+- Mudanças curtas de câmera lateral, superior e plano aberto por fase, sem substituir escolha manual.
+- Chefes mais resistentes, carcaça com dano reduzido, marcadores fracos visíveis e multiplicadores para gerador/núcleo.
+- Dez perfis de ataque com origens e cadência diversas por fase; robôs gigantes articulados e móveis.
+- Projeto de exploração RPG/mundo aberto Five Cats Universe documentado; ainda não implementado.
+- Candidata isolada, sem homologação humana; HML/PROD inalterados.
+
+
 ## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
 
 - Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.
