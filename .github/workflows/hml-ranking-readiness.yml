@@ -27,4 +27,39 @@ jobs:
               echo "${key}: MISSING"
             fi
           done
-          echo 'OAuth domain authorization, D1 existence, permissions and real score writes are NOT verified.'
+          echo 'OAuth domain authorization and real score writes are NOT verified.'
+      - name: Verify exact HML D1 ID points to the intended database (read-only)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NOVA_RANKING_HML_D1_ID: ${{ vars.NOVA_RANKING_HML_D1_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$NOVA_RANKING_HML_D1_ID" =~ ^[0-9a-fA-F-]{36}$ ]]; then
+            echo "::error::HML_D1_ID missing or invalid UUID; no database was changed."
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Cloudflare credentials unavailable; no database was changed."
+            exit 1
+          fi
+          file="$RUNNER_TEMP/nova-hml-d1-list.json"
+          if ! npx --yes wrangler@4 d1 list --json > "$file" 2> "$RUNNER_TEMP/nova-d1-stderr.txt"; then
+            echo "::error::Could not list D1 databases with the configured Cloudflare token. Check D1 permissions; no database was changed."
+            exit 1
+          fi
+          node -e '
+            const fs = require("node:fs");
+            const output = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const dbs = Array.isArray(output) ? output : output.result;
+            if (!Array.isArray(dbs)) throw new Error("Unexpected D1 list response");
+            const matching = dbs.filter((db) => db.name === "nova-wing-ranking-hml");
+            if (matching.length !== 1) throw new Error("Expected exactly one HML D1 database in the Cloudflare account");
+            if (matching[0].uuid !== process.env.NOVA_RANKING_HML_D1_ID &&
+                matching[0].id !== process.env.NOVA_RANKING_HML_D1_ID)
+              throw new Error("HML D1 ID does not match the database name. No mutations made.");
+            console.log("VERIFIED: nova-wing-ranking-hml exists and GitHub variable matches exactly.");
+            console.log("READ-ONLY: No D1 migrations, Worker deploys or writes were performed.");
+          ' "$file"
+
