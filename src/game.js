@@ -1402,7 +1402,7 @@ export function createGame({
   function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
     if (
       state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0 ||
-      (dynamicFlight && bossCombat?.age < 4.6)
+      (dynamicFlight && bossCombat?.age < 3)
     ) return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
@@ -2826,7 +2826,7 @@ export function createGame({
       if (dynamicFlight) {
         const t = tactics();
         const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
-        // Cinematic 4.6 s launch: boss exits the ship's central bay in the
+        // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
         boss.position.set(launchPose.x, launchPose.y, launchPose.z);
@@ -2845,7 +2845,7 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (bossCombat.age >= 4.6 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
           for (let n = 0; n < (dangerous ? 3 : 1); n++) {
