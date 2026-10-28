@@ -2386,6 +2386,7 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
+    if (e.code === 'KeyN') toggleMechaLock();
     if (e.code === 'KeyY') castSquadSpecial('plasma');
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
