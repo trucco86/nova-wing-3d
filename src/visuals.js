@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
+import { stageVisualAt } from './stage-variety.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -833,9 +834,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   );
   scene.add(starfield);
   const moonMat = new T.ShaderMaterial({
+    uniforms: {
+      crackIntensity: { value: 1 },
+      bodyTint: { value: new T.Color('#ffffff') },
+    },
     vertexShader:
       'varying vec3 p;varying vec3 n;void main(){p=position;n=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float crack=1.-smoothstep(.007,.016,abs(N.x+.14*sin(N.y*13.)+.035*sin(N.y*55.)));c=c*(.05+lit*.95)+vec3(.95,.27,.035)*crack*.7;gl_FragColor=vec4(c,1.);}`,
+    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float crack=1.-smoothstep(.007,.016,abs(N.x+.14*sin(N.y*13.)+.035*sin(N.y*55.)));c=c*bodyTint*(.05+lit*.95)+vec3(.95,.27,.035)*crack*.7*crackIntensity;gl_FragColor=vec4(c,1.);}`,
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
   moon.name = 'world-orbital-globe';
@@ -1056,7 +1061,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     setAscent(amount, enabled) {
       if (!dynamicFlight) return;
-      if (enabled && sceneryTheme !== 'city' && sceneryTheme !== 'ocean') {
+      if (enabled && sceneryTheme === 'asteroids') {
         moon.visible = atmosphere.visible = true;
         moon.position.set(0, -260 - amount * 180, -1000);
         moon.scale.setScalar(2.6 - amount * 0.8);
@@ -1118,14 +1123,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         .copy(center)
         .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), angle));
     },
-    setSector(sector) {
+    setSector(sector, sectorIndex = -1) {
       clearScenery();
+      const resolvedIndex = sectorIndex >= 0 ? sectorIndex : [
+        'carrier', 'stingray', 'drill', 'station', 'phoenix',
+        'mech', 'hydra', 'dreadnought', 'orbital', 'emperor',
+      ].indexOf(sector.kind);
+      const signature = stageVisualAt(resolvedIndex);
       moon.position.set(480, 280, -1000);
       moon.scale.setScalar(1);
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
-      carrier.visible = ['fleet', 'station', 'asteroids', 'void', 'throne'].includes(sceneryTheme);
+      carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
+      moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
+      moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
       city.scale.setScalar(1);
@@ -1144,9 +1156,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       rain.visible = land;
       // Show the orbital globe only after the last city/port buildings are gone.
       // The first-sector Earth horizon is handled separately by setLaunchAscent.
-      moon.visible = atmosphere.visible = !['void', 'throne', 'sun', 'city', 'ocean'].includes(
-        sceneryTheme,
+      moon.visible = atmosphere.visible = ['fractured-moon', 'ice-world'].includes(
+        signature.globe,
       );
+      if (signature.globe === 'ice-world') {
+        moon.position.set(-420, 250, -1150);
+        moon.scale.setScalar(0.85);
+        atmosphere.position.copy(moon.position);
+        atmosphere.scale.copy(moon.scale);
+      }
       rim.color.set(sector.accent);
       key.color.set(sector.theme === 'sun' ? '#ffe4b0' : '#e3eeff');
       purple.color.set(sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
@@ -1174,7 +1192,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           sectorScenery.add(o);
         }
       }
-      if (['station', 'fleet'].includes(sceneryTheme))
+      if (sceneryTheme === 'station')
         for (let i = 0; i < 10; i++) {
           const g = new T.Group();
           const ring = new T.Mesh(new T.TorusGeometry(78, 2.2, 6, 8), mat);
@@ -1253,13 +1271,77 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
-      if (dynamicFlight && !land) {
-        for (let i = 0; i < 22; i++) {
+      if (dynamicFlight && sceneryTheme === 'station') {
+        for (let i = 0; i < 7; i++) {
           const ring = new T.Mesh(new T.TorusGeometry(43, 1.5, 6, 24), mat);
           ring.add(new T.Mesh(new T.TorusGeometry(40.5, 0.32, 4, 48), light));
           ring.position.set(0, 10, -800 - i * 22);
           ring.userData.conduit = true;
           sectorScenery.add(ring);
+        }
+      }
+      // Each non-Earth location has a different silhouette, palette and traversal
+      // grammar. No universal orbital torus corridor or broken moon in every stage.
+      if (dynamicFlight && sceneryTheme === 'fleet') {
+        for (let i = 0; i < 7; i++) {
+          const wreck = new T.Group();
+          wreck.name = 'fleet-destroyed-frigate';
+          wreck.add(box(35, 7, 80, mat));
+          wreck.add(box(12, 4, 45, light, -13, 5, -8));
+          wreck.add(box(18, 1, 50, mat, 20, -6, 12));
+          wreck.position.set((i % 2 ? 1 : -1) * (78 + (i % 3) * 25), 35 + i * 12, -170 - i * 185);
+          wreck.rotation.set(i * 0.15, i * 0.4, i * 0.2);
+          sectorScenery.add(wreck);
+        }
+      }
+      if (dynamicFlight && sceneryTheme === 'nebula') {
+        for (let i = 0; i < 12; i++) {
+          const root = new T.Group();
+          root.name = 'bio-nebula-spire';
+          const stalk = new T.Mesh(new T.ConeGeometry(12 + i % 4 * 3, 85 + i % 3 * 24, 5), mat);
+          stalk.rotation.z = (i % 2 ? 1 : -1) * 0.4;
+          root.add(stalk);
+          for (let j = 0; j < 3; j++) {
+            const node = new T.Mesh(new T.IcosahedronGeometry(6 + j * 2, 1), light);
+            node.position.set(j * 8 - 8, 16 + j * 23, 0);
+            root.add(node);
+          }
+          root.position.set((i % 2 ? 1 : -1) * (90 + (i % 3) * 28), 25, -130 - i * 105);
+          sectorScenery.add(root);
+        }
+      }
+      if (dynamicFlight && sceneryTheme === 'sun') {
+        for (let i = 0; i < 10; i++) {
+          const plasma = new T.Mesh(new T.TorusGeometry(55 + i % 3 * 14, 3, 7, 32, Math.PI * 1.1), light);
+          plasma.name = 'solar-plasma-arc';
+          plasma.rotation.set(i * 0.12, 0.4 + i * 0.2, i * 0.31);
+          plasma.position.set((i % 2 ? 1 : -1) * 84, 42 + i * 8, -180 - i * 130);
+          sectorScenery.add(plasma);
+        }
+      }
+      if (dynamicFlight && sceneryTheme === 'void') {
+        for (let i = 0; i < 9; i++) {
+          const lens = new T.Group();
+          lens.name = 'orion-gravitational-lens';
+          const outer = new T.Mesh(new T.TorusGeometry(35 + i * 2, 2, 8, 60), light);
+          outer.rotation.y = (i % 2 ? -1 : 1) * 0.9;
+          lens.add(outer);
+          lens.add(new T.Mesh(new T.IcosahedronGeometry(13, 1), mat));
+          lens.position.set((i % 2 ? 1 : -1) * (85 + i * 3), 45, -160 - i * 155);
+          sectorScenery.add(lens);
+        }
+      }
+      if (dynamicFlight && sceneryTheme === 'throne') {
+        for (let i = 0; i < 7; i++) {
+          const gate = new T.Group();
+          gate.name = 'marvin-fortress-gate';
+          for (const side of [-1, 1]) {
+            gate.add(box(14, 100 + i * 8, 20, mat, side * 95, 40, 0));
+            gate.add(box(3, 72, 25, light, side * 96, 43, 12));
+          }
+          gate.add(box(200, 12, 30, mat, 0, 97 + i * 4, 0));
+          gate.position.z = -220 - i * 195;
+          sectorScenery.add(gate);
         }
       }
       // Materials unused by a theme are disposed immediately.
