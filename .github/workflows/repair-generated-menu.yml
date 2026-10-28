@@ -1,5 +1,8 @@
-name: Repair generated web bundle (manual)
+name: Repair generated web bundle
 on:
+  push:
+    branches:
+      - fix/menu-uniform-ranking-bottom-20261028
   workflow_dispatch:
 
 permissions:
