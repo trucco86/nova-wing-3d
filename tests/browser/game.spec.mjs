@@ -297,7 +297,9 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect.poll(() => page.evaluate(() => window.innerWidth)).toBe(390);
-    await expect(page.locator('#start')).toHaveCSS('width', '300px');
+    const startWidth = await page.locator('#start').boundingBox();
+    const optionsWidth = await page.locator('#optionsFromMenu').boundingBox();
+    expect(Math.abs(startWidth.width - optionsWidth.width)).toBeLessThan(2);
     await expect(page.locator('#start')).toBeInViewport();
     await page.screenshot({ path: info.outputPath('title-portrait.png') });
   }

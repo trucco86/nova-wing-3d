@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.3 — Correção do menu em paisagem (candidata DEV)
+
+- Corrige rolagem vertical e acesso à preparação do esquadrão em modo paisagem de baixa altura.
+- Substitui expectativa de botão de 300px por igualdade de largura responsiva entre ações.
+- Acrescenta regressão de alcance e clique no botão de preparação em 844×390.
+- Preserva ranking, Google login, trilha de ação e os demais recursos da v1.27.2.
+- Candidata ainda não homologada; não altera HML nem produção.
+
 ## 1.27.2 — Menu centralizado e ranking após Como jogar (candidata DEV)
 
 - Botões da tela inicial centralizados e padronizados em altura, largura e espaçamento, com alvos touch consistentes.
