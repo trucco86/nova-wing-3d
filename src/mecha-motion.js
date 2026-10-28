@@ -1,5 +1,3 @@
-import * as T from 'three';
-
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const ease = (current, target, dt, speed) =>
   current + (target - current) * (1 - Math.exp(-Math.max(0, dt) * speed));
