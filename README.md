@@ -1,393 +1,170 @@
-# 🚀 Nova Wing 3D — Five Cats
+<div align="center">
 
-[![CI](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/trucco86/nova-wing-3d?label=release)](https://github.com/trucco86/nova-wing-3d/releases)
-[![License: MIT](https://img.shields.io/github/license/trucco86/nova-wing-3d)](LICENSE)
+# NOVA WING 3D
+
+### FIVE CATS · Um jogo jogável. Um laboratório real de AI SDLC.
+
+**Da ideia ao gameplay, do feedback ao código testado.**
+
+[![CI · main](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml)
 [![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white)](package.json)
-[![Playwright](https://img.shields.io/badge/tests-Playwright-2EAD33?logo=playwright&logoColor=white)](tests/)
-[![Code quality](https://img.shields.io/badge/SonarQube%20Cloud-setup%20pending-lightgrey?logo=sonarqubecloud)](docs/SONARQUBE.md)
+[![Three.js](https://img.shields.io/badge/3D-Three.js-111111?logo=threedotjs&logoColor=white)](src/visuals.js)
+[![Playwright](https://img.shields.io/badge/QA-Playwright-45ba4b?logo=playwright&logoColor=white)](tests/browser/)
+[![License MIT](https://img.shields.io/github/license/trucco86/nova-wing-3d)](LICENSE)
 
-**Uma nave. Dez setores. A última chance da Terra.**
+**[JOGAR · PRODUÇÃO](https://trucco86.github.io/nova-wing-3d/)** &nbsp;·&nbsp; **[TESTAR · DEV](https://dev.nova-wing-preview.pages.dev/)** &nbsp;·&nbsp; **[EXPLORAR O CASE DE AI SDLC](docs/case/README.md)**
 
-Pilote a NOVA-7 com o esquadrão Five Cats em uma campanha de combate aéreo: cidades neon, instalações industriais, asteroides e fortalezas orbitais até o confronto com Marvin. Abra no navegador, escolha iniciar e jogue com teclado ou toque.
+<img src="docs/images/boost.png" alt="Captura real do Nova Wing 3D em WebGL, com nave usando boost durante uma missão" width="880" />
 
-**[▶ Jogar agora](https://trucco86.github.io/nova-wing-3d/)** · [Como desenvolver](#desenvolvimento) · [Mapa do repositório](docs/REPOSITORIO.md) · [Harness](docs/HARNESS.md) · [Histórico](CHANGELOG.md) · [Backlog](docs/BACKLOG.md)
+<sub>Captura real em WebGL · A imagem não é uma renderização conceitual. Produção e DEV podem estar em versões diferentes.</sub>
 
-## Case de engenharia: Nova Wing além do jogo
+</div>
 
-O projeto também é um laboratório público de **validação rápida de ideias e engenharia de software assistida por IA**. A documentação mostra como a hipótese virou protótipo, quais regressões apareceram durante as iterações e como specs, contexto de agentes, harness, testes de navegador e CI/CD passaram a orientar a evolução. O foco é o **processo verificável**, não alegar ganhos de produtividade que ainda não foram medidos.
+---
 
-**[Ler o case completo](docs/case/README.md)** · [Narrativa executiva](docs/case/CASE-STUDY.md) · [Agentes e handoffs](docs/case/PAPEIS-E-HANDOFFS.md) · [Evidências](docs/case/EVIDENCIAS.md) · [Roteiro do vídeo](docs/case/VIDEO.md) · [Deck executivo](docs/case/DECK.md) · [Como gravar gameplay](docs/case/CAPTURA.md)
+## O que é este projeto?
 
-_Nota metodológica: habilidades e procedimentos especializados não são prova de uma orquestração automática de agentes independentes. A arquitetura de múltiplos papéis é uma proposta de evolução, descrita separadamente das capacidades existentes._
+O **Nova Wing 3D** é um rail shooter 3D desenvolvido como hobby, com uma campanha de dez setores, os pilotos Five Cats, naves transformáveis, chefes, combates estratégicos e controles para desktop e celular.
 
-![NOVA-7 em impulso na Cidade das Máquinas — captura real em WebGL](docs/images/boost.png)
+Mas há uma segunda história: **como usar IA na engenharia de software para transformar ideias e feedback em mudanças verificáveis, sem perder rastreabilidade, qualidade e capacidade de voltar atrás?**
 
-_Captura real do jogo em teste de navegador. Os diagramas abaixo explicam a arquitetura; não são imagens de gameplay._
+É esse o case. O jogo torna os problemas concretos: um botão que fica sobre a nave, um chefe inacessível, um áudio cansativo ou um build divergente. As correções passam por especificação, alteração de fonte, harness, testes, revisão e deploy.
 
-## 🎮 O jogo
+| Explore o produto | Explore o processo |
+| :--- | :--- |
+| [Jogar no navegador](https://trucco86.github.io/nova-wing-3d/) | [Case de engenharia assistida por IA](docs/case/README.md) |
+| [Guia do jogo e das mecânicas](docs/GAMEPLAY-GUIDE.md) | [Mapa visual do AI SDLC](docs/PORTFOLIO-AI-SDLC.md) |
+| [Dez setores e seus chefes](src/campaign.js) | [Evidências, commits, PRs e gates](docs/case/EVIDENCIAS.md) |
+| [Versões e evolução](CHANGELOG.md) | [Como reproduzir o experimento](docs/case/REPRODUZIR.md) |
 
-Na web, Bia, Jenifer, Christopher, Bob e Calvinho enfrentam a frota de máquinas de Marvin; escolha seu piloto antes da campanha. Cada partida começa com três vidas. A nave avança automaticamente; você controla a posição, desvia dos obstáculos, administra o impulso e escolhe quando carregar plasma, lançar pods ou gastar uma bomba.
-
-- **Dez setores**, cada um com ambiente, chefe e subchefe próprios.
-- **Chefes biomecânicos** com dois geradores destrutíveis, núcleo protegido e três etapas de combate.
-- **Combate terrestre** com tanques, sentinelas gigantes e passagens de túnel nos ambientes compatíveis.
-- **Seis níveis de armamento**, plasma carregado e pods com três evoluções.
-- **Hangar entre setores**, créditos, compras e checkpoint local.
-- **Trilha sintetizada** que acompanha fase, subchefe, chefe, fúria, colapso e vitória.
-
-É uma edição WebGL inspirada na temática do [Nova Wing original](https://github.com/trucco86/nova-wing), construída com assistência do Codex. Esta versão usa Three.js; o original usa projeção própria em Canvas 2D. Os motores e as regras não são idênticos.
-
-## Controles
-
-| Ação                     | Computador                            | Celular               |
-| ------------------------ | ------------------------------------- | --------------------- |
-| Pilotar                  | WASD ou setas                         | Joystick esquerdo     |
-| Atirar / carregar plasma | Segurar Espaço; soltar libera a carga | Segurar e soltar TIRO |
-| Impulso                  | Shift                                 | BOOST                 |
-| Giro defensivo           | Q, E ou Z                             | GIRO                  |
-| Bomba                    | B ou X                                | BOMBA                 |
-| Lançar / recolher pods   | V                                     | LANÇAR / VOLTAR       |
-| Pausar / retomar         | P ou Esc; botão de pausa              | Botão de pausa        |
-| Música / efeitos         | Botões ♪ e SOM                        | Botões ♪ e SOM        |
-
-No celular, prefira a horizontal. O navegador precisa de WebGL e aceleração gráfica. Não é necessário instalar Node, Java ou aplicativo para jogar. A tela inicial oferece ajuda recolhida em **Como jogar**. Áudio é desbloqueado ao iniciar a missão.
-
-## Mecânicas
-
-### Escudo, vidas e impulso
-
-Você começa com três vidas, 100 de escudo e três bombas. Ao perder uma nave, o próximo piloto assume na mesma posição, com proteção temporária. O giro também protege por um intervalo curto. O boost consome energia e acelera o cenário; soltar permite recuperar energia. Ao esgotar a reserva, o impulso encerra e a energia recarrega; solte Shift ou BOOST e pressione novamente para reativar. A chama alaranjada e os rastros indicam que o impulso está ativo.
-
-### Anéis e armamento
-
-| Item                | Efeito                                                                    |
-| ------------------- | ------------------------------------------------------------------------- |
-| **Verde, com cruz** | Recupera até 25 de escudo, limitado pela blindagem atual                  |
-| **Azul, com setas** | Evolui a arma; a cada três coletados, aumenta o conjunto de pods até três |
-
-Anéis surgem dentro do alcance horizontal da nave, inclusive após redimensionar a tela. A aproximação possui atração de curta distância; a coleta considera o cruzamento em profundidade, inclusive no boost.
-
-| Nível | Arma           | Disparos por rajada | Cor principal |
-| ----- | -------------- | ------------------: | ------------- |
-| I     | Pulso MK-I     |                   2 | Verde-água    |
-| II    | Gêmeo MK-II    |                   2 | Ciano         |
-| III   | Tríade MK-III  |                   3 | Azul          |
-| IV    | Plasma Vórtice |                   4 | Violeta       |
-| V     | Plasma Nova    |                   6 | Roxo          |
-| VI    | Aniquilador Ω  |                   8 | Magenta       |
-
-A potência também aumenta o dano. Segurar o tiro mantém as rajadas e acumula plasma; soltá-lo após carga suficiente lança um projétil mais forte.
-
-### Pods: lançamento e retorno
-
-Inspirados no conceito de módulos destacáveis dos shoot 'em ups, os pods possuem núcleo, carcaça e animação próprios. Cada evolução muda a forma e a cadência.
-
-| Estado     | Comportamento                                                          |
-| ---------- | ---------------------------------------------------------------------- |
-| Acoplado   | Acompanha a nave e dispara com o jogador                               |
-| Lançando   | Avança continuamente até a posição de combate                          |
-| Destacado  | Mantém posição lateral independente e dispara automaticamente em leque |
-| Retornando | Recolhe até a nave sem teletransporte                                  |
-
-No nível III, os disparos usam perseguição de alvos, incluindo o ponto elevado de tanques e robôs. Os pods interceptam projéteis comuns que atravessam seu volume; isso não torna a nave imune nem protege contra colisões com cenário. Evoluir com a formação lançada preserva a posição dos pods existentes.
-
-### Chefes, subchefes e destruição
-
-O subchefe permanece na arena até ser derrotado. O túnel aguarda sua eliminação, e o chefe final do setor aguarda a saída do túnel. Cada encontro tem assinatura de ataque própria.
-
-Nos chefes, elimine os geradores e aproveite as janelas de exposição do núcleo. A batalha passa por três etapas e acelera conforme a vida diminui. Um orçamento de dano por tempo evita eliminar um chefe instantaneamente com armas máximas. A derrota termina numa sequência de oito segundos com explosões, destroços e onda de choque; a recompensa é concedida uma vez ao final.
-
-### Campanha
-
-| Setor | Região                | Subchefe           | Chefe            |
-| ----- | --------------------- | ------------------ | ---------------- |
-| 01    | Cidade das Máquinas   | Cruzador ROK       | Caça-líder ROK   |
-| 02    | Distrito Portuário    | Arraia Abissal     | Nave-Ferrão      |
-| 03    | Cinturão de Destroços | Broca Sentinela    | Perfurador       |
-| 04    | Estação Órbita-9      | Satélite Cruzado   | Fortaleza Órbita |
-| 05    | Tempestade de Dados   | Ave Solar          | Fênix de Plasma  |
-| 06    | Setor Congelado       | Caranguejo Glacial | Colosso Glacial  |
-| 07    | Núcleo Púrpura        | Medusa Viva        | Colmeia Viva     |
-| 08    | Grade de Batalha      | Fortim Ômega       | Couraçado Ômega  |
-| 09    | Abismo de Órion       | Prisma do Vazio    | Núcleo Bastião   |
-| 10    | Trono de Marvin       | Guardião da Coroa  | Imperador Marvin |
-
-```mermaid
-flowchart TD
-  A[Ondas e obstáculos] --> B[Subchefe persistente]
-  B --> C[Travessia e combate]
-  C --> D[Chefe em três etapas]
-  D --> E[Colapso e recompensa]
-  E --> F{Último setor?}
-  F -->|Não| G[Hangar e próximo setor]
-  G --> A
-  F -->|Sim| H[Vitória]
-```
-
-O hangar vende canhões, blindagem, pods, reparos e bombas. O checkpoint guarda setor, créditos e melhorias no armazenamento deste navegador. Continuar recupera a campanha com três vidas e suprimentos básicos; não sincroniza entre aparelhos.
-
-## Tecnologia
-
-| Camada       | Implementação                                             |
-| ------------ | --------------------------------------------------------- |
-| Linguagem    | JavaScript em módulos ES                                  |
-| Renderização | Three.js 0.170.0 / WebGL, cenário procedural e bloom      |
-| Interface    | HTML e CSS responsivos                                    |
-| Áudio        | Web Audio; osciladores, sequenciador, filtro e compressor |
-| Persistência | localStorage com validação e fallback                     |
-| Build        | esbuild incorpora código, CSS e retrato em um HTML        |
-| Testes       | Node test runner + Playwright/Chromium                    |
-| Entrega      | GitHub Actions → GitHub Pages                             |
-
-Geometrias compartilhadas, instâncias e limites de entidades reduzem trabalho de renderização. O pixel ratio é limitado por categoria de dispositivo. Não existe aqui o ajuste automático por FPS descrito no projeto original, nem promessa de desempenho uniforme em todo aparelho.
-
-## Arquitetura da stack e pipeline
-
-Os diagramas são renderizados pelo GitHub a partir de Mermaid e representam os componentes reais do repositório. A análise SonarQube Cloud é **planejada, ainda não ativa**; o selo cinza não representa uma aprovação.
-
-### Stack de execução
+## O case: da intenção à evidência
 
 ```mermaid
 flowchart LR
-  A[Jogador: desktop ou celular] --> B[HTML + CSS responsivo]
-  B --> C[JavaScript ES Modules]
-  C --> D[Three.js 0.170.0]
-  D --> E[WebGL / GPU]
-  C --> F[Web Audio API]
-  C --> G[localStorage: progresso]
-  H[esbuild] --> I[index.html distribuído]
-  I --> B
-  I --> J[GitHub Pages: web]
-  I --> K[Capacitor 8]
-  K --> L[Android WebView]
-  K --> M[iOS WKWebView]
+  A["Ideia e feedback real"] --> B["Spec + critérios de aceite"]
+  B --> C["Contexto versionado: AGENTS + skills"]
+  C --> D["Implementação assistida por IA"]
+  D --> E["Harness + testes Node"]
+  E --> F["Playwright / WebGL"]
+  F --> G{"Gate de qualidade"}
+  G -->|Falha| B
+  G -->|Passou| H["PR + revisão"]
+  H --> I["DEV → avaliação humana"]
+  I --> J["HML / produção mediante aceite"]
+  I -->|Novo feedback| A
 ```
 
-### CI/CD e gates de publicação
+**O diferencial não é gerar código automaticamente.** É aproximar descoberta, implementação, verificação e decisão de release em um ciclo que deixa rastros no repositório.
+
+| Pilar | Implementação inspecionável | O que ainda não significa |
+| :--- | :--- | :--- |
+| **Context engineering** | [AGENTS.md](AGENTS.md), [skills](skills/README.md), [specs](specs/README.md) | Que cada agente siga instruções sem falhas |
+| **Harness determinístico** | [tests/harness.mjs](tests/harness.mjs), [src/game.js](src/game.js) | Que mocks substituam o WebGL real |
+| **Qualidade em camadas** | [Node + Playwright](docs/TESTES.md), [CI](.github/workflows/ci.yml) | Que CI verde seja homologação em celular |
+| **Entrega rastreável** | [PRs](https://github.com/trucco86/nova-wing-3d/pulls), [releases](releases/), [deploys](docs/DEPLOY-ENVIRONMENTS.md) | Que um preview aprovado esteja em produção |
+| **Aprendizado contínuo** | [ADRs](docs/adr/), [case](docs/case/CASE-STUDY.md), [métricas](docs/case/METRICAS.md) | Que ROI ou produtividade já tenham baseline confiável |
+
+> [!IMPORTANT]
+> **Transparência técnica:** o projeto demonstra desenvolvimento **assistido por IA**, com instruções, skills e controles reais. A orquestração autônoma de agentes independentes, com handoffs instrumentados, é uma **evolução proposta**, não uma capacidade já comprovada. Não apresentamos percentuais de produtividade sem medições comparáveis.
+
+### Uma evolução documentada, com falhas reais
+
+No ciclo de outubro de 2026, as mudanças de menu, login e áudio exigiram sincronização do HTML gerado, correções de formatação e atualização coordenada de versão. A suíte de navegador encontrou ainda uma falha no menu em **paisagem mobile**, corrigida em uma release posterior. Isso oferece um exemplo concreto de como o feedback e o CI detectam problemas que não aparecem em uma demonstração estática.
+
+**[Leia o ciclo completo, com PRs e execuções](docs/case/CICLO-REAL-OUTUBRO-2026.md).**
+
+## O jogo em poucas linhas
+
+- **Cinco pilotos** com perfis próprios: Bia, Jenifer, Christopher, Bob e Calvinho.
+- **Dez setores** com ambientação, subchefes e chefes específicos, até Marvin.
+- **Nave e robô** com comportamentos distintos, boost, pods e disparos especiais.
+- **Progressão** com arsenal, melhorias, créditos, checkpoints e mapa da campanha.
+- **Web first:** teclado, toque, paisagem mobile, áudio procedural e renderização Three.js/WebGL.
+
+O [guia completo](docs/GAMEPLAY-GUIDE.md) descreve controles e mecânicas. Este repositório é uma evolução 3D do [Nova Wing original](https://github.com/trucco86/nova-wing), com implementação própria baseada em Three.js.
+
+## Arquitetura de produto e entrega
 
 ```mermaid
 flowchart TD
-  A[Push ou Pull Request] --> B[GitHub Actions CI]
-  B --> C[quality: npm ci + npm run validate]
-  C -->|Falha| X[CI vermelha: corrigir código]
-  C -->|Sucesso| D[Playwright Chromium: 4 shards]
-  D -->|Falha| X
-  D -->|Sucesso| E[browser: gate agregado]
-  E --> F{Branch main?}
-  F -->|Não: PR| G[Revisão e merge após checks verdes]
-  F -->|Sim| H[Deploy GitHub Pages]
-  H -->|Sucesso| I[Release versionada]
-  H -->|Falha| X
-  C -.-> N[Android + iOS: opt-in NOVA_BUILD_NATIVE]
-  N -.-> I
+  U["Jogador / navegador"] --> UI["HTML + CSS / JavaScript"]
+  UI --> GAME["Motor 3D · Three.js / WebGL"]
+  UI --> AUDIO["Web Audio"]
+  UI --> LOCAL["Checkpoint local"]
+  UI -.-> AUTH["Firebase Authentication · Google"]
+  UI -.-> API["API de ranking · Cloudflare Workers"]
+  API -.-> D1[("Cloudflare D1")]
+  CODE["src/ + specs/"] --> BUILD["esbuild + build:check"]
+  BUILD --> BUNDLE["index.html gerado"]
+  BUNDLE --> DEV["Cloudflare Pages · DEV / PR"]
+  BUNDLE --> HML["Cloudflare Pages · HML"]
+  BUNDLE --> PROD["GitHub Pages · PROD"]
+  CODE --> UNIT["Harness + testes Node"]
+  BUNDLE --> BROWSER["Playwright · Chromium"]
+  UNIT --> CI{"GitHub Actions"}
+  BROWSER --> CI
 ```
 
-**Detalhes:** [diagramas e contratos](docs/DIAGRAMAS.md) · [integração SonarQube Cloud](docs/SONARQUBE.md) · [harness](docs/HARNESS.md). Os testes nativos são opcionais e só integram o gate de release quando habilitados.
+As linhas pontilhadas indicam integrações condicionais ou dependentes de configuração e homologação. **A existência de código para identidade/ranking não comprova que todos os serviços remotos estejam provisionados.** Veja [arquitetura de plataforma](docs/ARCHITECTURE-PLATFORM.md), [ambientes](docs/DEPLOY-ENVIRONMENTS.md) e [ranking](docs/RANKING-CLOUDFLARE.md).
 
-## Desenvolvimento
+### Ambientes e políticas
 
-### Android
+| Ambiente | Acesso | Papel |
+| :--- | :--- | :--- |
+| **PROD** | [Jogar](https://trucco86.github.io/nova-wing-3d/) | Release pública proveniente de `main` |
+| **DEV** | [Testar](https://dev.nova-wing-preview.pages.dev/) | Integração rápida e validação visual/funcional |
+| **HML** | [Homologar](https://hml.nova-wing-preview.pages.dev/) | Candidata estável, distinta de DEV |
+| **PR preview** | URL `pr-N` quando publicada | Revisão isolada de uma alteração |
 
-O projeto Capacitor em `android/` inclui o jogo offline, com compile/target SDK 36. Use `npm run android:sync`, `npm run android:apk` ou `npm run android:aab`; os dois builds já recompõem os assets. A CI gera APK debug instalável e AAB release sem assinatura no artefato `android-builds`. Requer JDK 21, SDK 36 e WebView atualizado com WebGL2. Veja [instalação, comandos e checklist físico](docs/ANDROID.md).
+> [!NOTE]
+> As versões podem variar entre ambientes. Um deploy bem-sucedido comprova publicação de um artefato específico, não aceite funcional. Consulte sempre o [registro de ambiente e o SHA](docs/DEPLOY-ENVIRONMENTS.md).
 
-Ao retornar de Home/bloqueio, toque ▶ para retomar a missão. Voltar pausa primeiro e depois minimiza. O aplicativo preserva o formato dos checkpoints e usa armazenamento independente do site.
+## Engenharia reproduzível
 
-Use **Node.js 24**. Python 3 é opcional para os atalhos legados em `tools/`.
+**Pré-requisito:** Node.js 24 e npm. O jogo pode ser executado sem backend remoto; login e ranking online dependem de configuração separada.
 
-```sh
+```bash
+git clone https://github.com/trucco86/nova-wing-3d.git
+cd nova-wing-3d
 npm ci
 npm run build
 npm run dev
 ```
 
-Abra `http://127.0.0.1:4173`. O servidor entrega o HTML gerado: depois de editar `src/`, execute o build e recarregue. Para os testes de navegador:
+Abra `http://127.0.0.1:4173`. Para inspecionar os gates:
 
-```sh
-npx playwright install --with-deps chromium
-npm run format
-npm run build
-npm run validate -- --browser
-```
-
-> **Fonte → build → entrega.** Edite `src/`, nunca `index.html`. O build é unidirecional; não há comando de extração que sobrescreva a fonte a partir do HTML.
-
-## 📁 Organização do repositório
-
-A separação segue a proposta do Nova Wing original: fonte, ferramentas, testes, skills e documentação. Nesta edição, os subsistemas são módulos próprios.
-
-| Caminho                                                            | Responsabilidade                                        |
-| ------------------------------------------------------------------ | ------------------------------------------------------- |
-| [src/main.js](src/main.js)                                         | Entrada da aplicação                                    |
-| [src/game.js](src/game.js)                                         | Orquestração de estado, combate e interface             |
-| [src/input.js](src/input.js)                                       | Teclas do jogo e proteção contra gestos do navegador    |
-| [src/campaign.js](src/campaign.js)                                 | Setores, armas, loja e checkpoint                       |
-| [src/flight.js](src/flight.js)                                     | Câmera de perseguição e colisão varrida                 |
-| [src/encounters.js](src/encounters.js)                             | Tanques, robôs, obstáculos e túnel                      |
-| [src/bosses.js](src/bosses.js)                                     | Modelos e assinaturas de ataque de chefes/subchefes     |
-| [src/combat.js](src/combat.js)                                     | Vida, fases, blindagem e orçamento de dano do chefe     |
-| [src/equipment.js](src/equipment.js)                               | Modelos compartilhados de anéis e pods                  |
-| [src/finale.js](src/finale.js)                                     | Colapso, choque e destroços                             |
-| [src/visuals.js](src/visuals.js)                                   | Nave, mundo, materiais e pós-processamento              |
-| [src/audio.js](src/audio.js)                                       | Sequenciador e estados musicais                         |
-| [src/shell.html](src/shell.html), [src/styles.css](src/styles.css) | Capa, HUD, menus e toque                                |
-| `src/assets/`                                                      | Recursos incorporados no build                          |
-| `index.html`                                                       | Artefato gerado e versionado para distribuição          |
-| `tools/`                                                           | Build, leitura de contexto, criação de spec e validação |
-| `tests/`                                                           | Harness de simulação, testes de domínio e fixtures      |
-| `tests/browser/`                                                   | Fluxos reais de navegador e capturas WebGL              |
-| [specs/](specs/README.md)                                          | Contratos e critérios de aceite por alteração           |
-| [skills/](skills/README.md)                                        | Procedimentos reutilizáveis por domínio                 |
-| `.agents/skills/`                                                  | Links para descoberta das mesmas skills                 |
-| [docs/](docs/REPOSITORIO.md)                                       | Arquitetura, operação, testes e aprendizado             |
-| `.github/`                                                         | CI, revisão, templates e responsáveis                   |
-
-Veja [onde editar e como os módulos se relacionam](docs/REPOSITORIO.md). O `game.js` ainda concentra a orquestração; extrair um subsistema exige preservar testes e interfaces, não apenas mover arquivos.
-
-## 🧠 Harness: desenvolvimento verificável com agentes
-
-O harness deste projeto reúne **contexto versionado, procedimentos, ferramentas, testes e controles de entrega**. Ele apoia o agente que você estiver usando; não é um serviço residente chamando modelos.
-
-```mermaid
-flowchart TD
-  A[Pedido e spec] --> B[Contexto e skill de domínio]
-  B --> C[Alteração em branch]
-  C --> D[Build e validação local]
-  D --> E[PR e CI independente]
-  E --> F{Gates e revisão aprovados?}
-  F -->|Não| C
-  F -->|Sim| G[Merge e publicação]
-  G --> H[Verificação e feedback do jogador]
-  H --> A
-```
-
-| Camada                           | Orienta ou executa?      | Papel                                                           |
-| -------------------------------- | ------------------------ | --------------------------------------------------------------- |
-| [AGENTS.md](AGENTS.md)           | Orientação               | Mapa, comandos e limites de trabalho                            |
-| Specs                            | Contrato versionado      | Define resultado e evidência esperada                           |
-| Skills                           | Orientação especializada | Procedimento para física, dinâmica, gráficos, áudio e entrega   |
-| `tools/context.mjs`              | Ferramenta               | Localiza módulos e trechos sem carregar o bundle                |
-| `tools/validate.mjs`             | Verificação executável   | Executa gates, interrompe na falha e registra evidências        |
-| Testes e invariantes             | Verificação executável   | Exercitam o código real e contratos de estrutura                |
-| CI + proteção de branch          | Controle externo         | Validação do commit e requisitos para integração                |
-| Revisão visual e aparelho físico | Avaliação                | Legibilidade, ergonomia e comportamento que mocks não comprovam |
-
-### Fluxo recomendado
-
-```sh
-npm run agent:context -- --mapa
-npm run agent:context -- input
-npm run agent:new -- minha-alteracao
-# Leia AGENTS.md, a spec e a skill pertinente; implemente em branch.
-npm run format
-npm run build
+```bash
+npm run build:check
 npm run validate
+npx playwright install chromium
 npm run validate -- --browser
 ```
 
-A validação padrão executa formatação, ESLint, testes de domínio, invariantes e sincronização da entrega. `--browser` acrescenta WebGL, teclado/toque, capturas e síntese real de áudio. `artifacts/validation.json` registra commit, digest da fonte, comandos, duração, resultado e erros; logs e imagens ficam nos artefatos da CI.
+**Nunca edite `index.html` manualmente.** O código-fonte está em `src/`, e o build deve reproduzir o artefato entregue.
 
-**Não publique com gate vermelho.** Corrija a causa, execute novamente no commit final e confira o resultado do Pages. Passar nos testes não prova que a estética ficou boa ou que todos os gestos nativos do iPhone foram cobertos.
+### Onde começar a ler
 
-Detalhes: [harness e responsabilidades](docs/HARNESS.md) · [matriz de specs](specs/README.md) · [testes e limites](docs/TESTES.md).
+| Interesse | Leitura recomendada |
+| :--- | :--- |
+| **Visão executiva / portfólio** | [Vitrine AI SDLC](docs/PORTFOLIO-AI-SDLC.md) |
+| **Case completo** | [Case de desenvolvimento](docs/case/README.md) |
+| **Arquitetura técnica** | [Stack / ambientes](docs/ARCHITECTURE-PLATFORM.md) |
+| **Responsabilidades de agentes** | [Papéis e handoffs propostos](docs/case/PAPEIS-E-HANDOFFS.md) |
+| **Métricas e DORA** | [Plano de instrumentação](docs/case/METRICAS.md) |
+| **Evidência e limitações** | [Matriz de evidências](docs/case/EVIDENCIAS.md) |
+| **Rodar / reproduzir** | [Guia de reprodução](docs/case/REPRODUZIR.md) |
+| **Catálogo de documentos** | [Índice da documentação](docs/README.md) |
 
-## Comandos úteis
+<details>
+<summary><strong>Executive abstract · English</strong></summary>
 
-| Comando                                | Resultado                                         |
-| -------------------------------------- | ------------------------------------------------- |
-| `npm run dev`                          | Servidor local na porta 4173                      |
-| `npm run build`                        | Gera `index.html`                                 |
-| `npm run build:check`                  | Confirma correspondência exata entre fonte e HTML |
-| `npm run format`                       | Formata código e documentação                     |
-| `npm run lint`                         | Analisa JavaScript                                |
-| `npm test`                             | Testes determinísticos sem GPU                    |
-| `npm run test:browser`                 | Suíte Playwright; requer Chromium                 |
-| `npm run check:repo`                   | Estrutura, links, IDs, skills e workflow          |
-| `npm run validate`                     | Gates locais com relatório                        |
-| `npm run validate -- --browser`        | Gates locais e navegador                          |
-| `npm run agent:context -- --mapa`      | Mapa para leitura dirigida                        |
-| `npm run agent:new -- nome-da-mudanca` | Nova spec sem sobrescrever arquivo existente      |
+Nova Wing 3D is a playable WebGL space shooter and a documented AI-assisted software delivery experiment. The goal is to shorten the loop from idea to validated change using versioned context, domain skills, specifications, deterministic tests, browser checks and traceable CI/CD. It is an engineering case study with real code, PRs and deploy evidence—not a claim of proven autonomous agents or measured productivity gains.
 
-## Versionamento
+</details>
 
-O jogo usa **SemVer** (`MAJOR.MINOR.PATCH`) e mostra a versão na capa. Cada release tem notas em `releases/`, tag `vX.Y.Z` e commit correspondente. O gate exige incremento para alterações distribuídas. A GitHub Release é criada automaticamente após sucesso do Pages. Veja [política e passo a passo](docs/VERSIONAMENTO.md).
+---
 
-## Publicação e recuperação
-
-O Pages usa **GitHub Actions**. A sequência é `quality` → `browser` → `pages`; PRs validam, mas apenas a branch principal publica. São enviados HTML e licenças, sem fixtures ou ferramentas de teste. As regras de branch são configuração remota: o arquivo YAML não as ativa sozinho.
-
-Para desfazer uma entrega, reverta o commit, gere novamente o HTML e passe pelos mesmos gates. Instruções em [PUBLICACAO.md](docs/PUBLICACAO.md).
-
-## Documentação e créditos
-
-- [Arquitetura e estados](docs/ARQUITETURA.md)
-- [Mapa do repositório e onde editar](docs/REPOSITORIO.md)
-- [Harness, gates e evidências](docs/HARNESS.md)
-- [Testes e limitações](docs/TESTES.md)
-- [Aprendizados](docs/APRENDIZADOS.md)
-- [Histórico de versões](CHANGELOG.md)
-- [Licenças e referência original](THIRD_PARTY_NOTICES.md)
-
-MIT, conforme [LICENSE](LICENSE). Nomes e bases musicais foram adaptados do Nova Wing de Cristian Trucco; Three.js mantém sua licença. O retrato de Bia foi gerado para este protótipo. Google Fonts é opcional, com fallback local. Star Fox e R-Type servem como referências de gênero e mecânica; este projeto não é um produto oficial dessas franquias.
-
-## iPhone e iPad
-
-Projeto iOS e comandos de sincronização/compilação preparados. Consulte [iOS e App Store](docs/IOS.md). O CI produz um app de simulador; a publicação na loja exige assinatura da equipe Apple Developer.
-
-### Validação web: voo dinâmico
-
-A versão web incorpora curvas e subida orbital, conduítes espaciais e um buraco negro estilizado no setor final. O voo continua guiado; os controles de movimento e combate são os mesmos. Nos setores 3 e 7, a entrada da fenda abre um desafio lateral 2D de 18 segundos: atire nos alvos, recolha créditos dourados e evite colisões para preservar seu prêmio. Pausa e toque funcionam também nesse trecho.
-
-No hangar, abra **Pinturas da NOVA-7**: Polar é gratuita; Brasa e Aurora usam créditos; Nebulosa e Solar também exigem acertos da campanha. A pintura é cosmética e acompanha o checkpoint local. Uma nova campanha reinicia suas compras junto com os demais recursos. Aplicativos nativos mantêm o voo anterior até a validação desta experiência web.
-
-### Câmeras e navegação (web v1.7)
-
-Use **C** ou o botão de câmera para alternar **perseguição**, **cockpit** e **combate distante** durante o voo. A nave pode cruzar uma área maior da missão; a câmera deixa espaço para manobrar na tela e acompanha o deslocamento pelo cenário. O cockpit inclui painel e canhões sincronizados com o tiro. A campanha ainda avança por uma rota guiada. Pausa e fendas 2D suspendem a troca de perspectiva. Reiniciar retorna à perseguição. Os apps preservam a câmera e os limites anteriores até validação da web.
-
-### Combate estratégico web — v1.8.0
-
-Ganhe XP com anéis e abates para dez estágios de evolução visual e agilidade.
-**F** troca arma; **H** escolhe especial; **G** ativa. Gelo retarda inimigos,
-plasma queima, arcano busca e vazio perfura. Energia arcana é separada do impulso.
-Pods acoplados reforçam o tiro; **V** lança os pods para perseguir alvos.
-Nos chefes, **J/L** orbitam: procure geradores nos flancos (±60°) e núcleo na
-frente (0°). Todos esses comandos têm botões de toque. Veja
-[contratos de combate](specs/strategic-combat.md). Apps aguardam validação web.
-
-### Web 1.9.0
-
-Escolha Ataque, Defesa ou Espiritual no início. Abra **NAVE** na lateral para
-trocar arma/especial; F/H/G continuam ativos com o menu fechado. XP continua após
-o nível 10. O cockpit tem instrumentos iluminados e o setor 3 acentua a ascensão.
-Veja [notas 1.9.0](releases/v1.9.0.md).
-
-### Web 1.10.0 — combate orbital tático
-
-Chefes móveis, radar de risco e scanner. Na gaveta NAVE: **I** analisa, **K** dispara
-precisão, **R** repara e **U** lança rajada guiada. As três reservas recarregam mais
-devagar durante órbita. Clarão branco confirma dano; âmbar indica bloqueio.
-Veja [notas 1.10.0](releases/v1.10.0.md).
-
-### Web 1.11.0 — esquadrão Five Cats
-
-Antes de uma nova campanha, escolha entre **Bia, Jenifer, Christopher, Bob e Calvinho**.
-Cada piloto mostra ataque, defesa, agilidade, força, vida e espírito, além de um bônus
-de especialidade aplicado ao combate. Também é possível combinar três chassis —
-NOVA-7, SPECTER-X e AEGIS-R — com cinco cores-base. A galeria da tela apresenta as
-famílias de tiro, armaduras, bombas e especiais antes do voo. A escolha acompanha o
-checkpoint local. Veja [notas 1.11.0](releases/v1.11.0.md).
-
-### Web 1.12.0 — Five Cats: capa e voo de vitória
-
-Capa ilustrada com os cinco gatos e Marvin, sem a ficha de configuração sobre a arte.
-**PILOTO E NAVE** abre a seleção de personagem, modelo e cor. INICIAR MISSÃO permite
-voar imediatamente com a configuração atual. Christopher assume o perfil pesado;
-Jenifer é a interceptadora cinza e Calvinho mantém seu perfil espiritual.
-
-Chefes se aproximam durante três segundos. Na web, continue pilotando, usando boost
-e atirando durante o colapso; após oito segundos o hangar abre normalmente. Marvin
-permanece no setor dez, com rosto de pitbull integrado à fortaleza.
-
-## Arquitetura atual e decisões de plataforma
-
-O jogo mantém produção estática no GitHub Pages. DEV e HML possuem Cloudflare Pages, e o login Google via Firebase Authentication está integrado **apenas em DEV**, com homologação OAuth real pendente. Ranking com Cloudflare Workers + D1 é **proposto e não está publicado**. Consulte [arquitetura de plataforma](docs/ARCHITECTURE-PLATFORM.md), [autenticação Firebase](docs/AUTH-FIREBASE.md), [ambientes e deploy](docs/DEPLOY-ENVIRONMENTS.md), [contrato de ranking](docs/RANKING-CLOUDFLARE.md) e [direção visual do robô e naves](docs/DESIGN-MECHA-STARFIGHTER.md).
+<div align="center">
+  <strong>Build the idea. Test the behavior. Keep the evidence.</strong><br/>
+  <sub>Nova Wing 3D · Five Cats · MIT License · <a href="THIRD_PARTY_NOTICES.md">Third-party notices</a></sub>
+</div>
