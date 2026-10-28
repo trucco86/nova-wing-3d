@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/p0-orbit-boss-cover-rank-ui-v12425-20261027
 permissions:
   contents: write
   actions: write
@@ -24,18 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Sync orbital HUD and boss-warning bundle v1.24.25
-        if: github.ref == 'refs/heads/feat/p0-orbit-boss-cover-rank-ui-v12425-20261027'
-        run: |
-          git add -- index.html src/game.js src/i18n.js src/styles.css src/shell.html src/visuals.js src/boss-departure.js tests/browser/orbit-cover-rank-v12425.spec.mjs
-          if ! git diff --cached --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(web): sync P0 orbit, boost and boss-warning v1.24.25'
-            git push origin HEAD:feat/p0-orbit-boss-cover-rank-ui-v12425-20261027
-          fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
