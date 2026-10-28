@@ -1,6 +1,20 @@
 // Synthesized, low-fatigue SFX for the next web release. No downloads or samples.
 // Envelopes are deliberately short; continuous loops must not obscure the music.
 export const AUDIO_CUES = {
+  mechaTransform: {
+    cooldown: 0.5,
+    tones: [
+      { from: 165, to: 60, duration: 0.32, gain: 0.032, wave: 'sawtooth' },
+      { from: 280, to: 510, delay: 0.15, duration: 0.27, gain: 0.018, wave: 'triangle' },
+    ],
+  },
+  mechaPrecision: {
+    cooldown: 0.25,
+    tones: [
+      { from: 760, to: 240, duration: 0.21, gain: 0.038, wave: 'triangle' },
+      { from: 110, to: 57, duration: 0.23, gain: 0.03, wave: 'sine' },
+    ],
+  },
   shot: {
     cooldown: 0.07,
     tones: [{ from: 440, to: 250, duration: 0.09, gain: 0.017, wave: 'triangle' }],
