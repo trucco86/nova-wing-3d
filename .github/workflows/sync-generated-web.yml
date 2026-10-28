@@ -4,7 +4,6 @@ on:
     branches:
       - feat/nw09-cinematic-3d
       - feat/mecha-thruster-dual-aim-20261027
-      - feat/mecha-thruster-dual-aim-20261027
 permissions:
   contents: write
   actions: write
@@ -25,28 +24,17 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Sync formatted mecha source, browser and generated index
-        if: github.ref == 'refs/heads/feat/mecha-thruster-dual-aim-20261027'
-        run: |
-          git add -- index.html src/visuals.js src/game.js src/shell.html src/styles.css src/audio-cues.js src/mecha-motion.js src/mecha-thruster-audio.js tests/mecha-dual-aim-thruster.test.mjs specs/mecha-dual-aim-thruster.md
-          if ! git diff --cached --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(mecha): format and regenerate dual-aim preview'
-            git push origin HEAD:feat/mecha-thruster-dual-aim-20261027
-          fi
-      - name: Synchronize v1.24.27 mecha bundle and quality gate
+      - name: Synchronize v1.24.27 Mecha candidate
         if: github.ref == 'refs/heads/feat/mecha-thruster-dual-aim-20261027'
         run: |
           git add -- index.html src/visuals.js src/game.js src/mecha-motion.js src/mecha-thruster-audio.js src/shell.html src/styles.css src/audio-cues.js tests/mecha-dual-aim-thruster.test.mjs specs/mecha-dual-aim-thruster.md package.json package-lock.json CHANGELOG.md releases/v1.24.27.md
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(mecha): sync generated v1.24.27 and tests'
+            git commit -m 'build(mecha): format and bundle v1.24.27 candidate'
             git push origin HEAD:feat/mecha-thruster-dual-aim-20261027
           fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
