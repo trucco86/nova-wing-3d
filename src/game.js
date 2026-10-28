@@ -55,7 +55,7 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
-import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { initialJourney, advanceJourney } from './stage-journey.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -84,6 +84,8 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
+import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
+import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
@@ -295,6 +297,7 @@ export function createGame({
     : null;
   let skipSquadIntro = false;
   let robotMode = false;
+  let robotFireKick = 0;
   let robotCooldown = 0;
   let robotTransition = 0;
   let mechaEngine = null;
@@ -1334,7 +1337,7 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false, origin = null) {
+  function launchShot(x, damage = 2, charged = false, origin = null, scatter = false) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
@@ -1374,7 +1377,7 @@ export function createGame({
       const rightHand = robotMode
         ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
         : null;
-      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, rightHand);
+      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, rightHand, scatter);
       const b = shots.at(-1);
       if (dynamicFlight) {
         b.homing = !scatter && strategy.arsenal === 3;
