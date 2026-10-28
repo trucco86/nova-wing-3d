@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.27 — Robô Dual Aim e turbinas reativas (candidata)
+
+- Braços articulados e origem de tiro independente por mão; direita frontal, esquerda com LOCK tático e pulso de precisão.
+- Turbinas dorsais orientáveis com chama reativa a movimento e BOOST.
+- Motor sintetizado de duas camadas no AudioContext já existente, silenciado em pausa/mute e liberado no destroy.
+- LOCK por N ou botão mobile, aquisição em linha de visão e cooldown, sem dano remoto instantâneo.
+- Testes unitários de geometria, lock e lifecycle áudio; demanda homologação visual, sonora e FPS reais.
+- Candidata em branch isolada, sem merge para HML nem PROD.
+
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
 - Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
