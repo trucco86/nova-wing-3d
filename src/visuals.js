@@ -328,6 +328,9 @@ export function createFlyingRobot() {
     robot.add(box(0.22, 1.6, 0.22, light, side * 1.24, -2.4, -0.38));
   }
   robot.userData.mecha = { arms, thrusters, baseScale: 0.88 };
+  // Preserve the shared fighter/Mecha paint contract while using the new
+  // independently articulated rig. Both materials update in-place on selection.
+  robot.userData.mechPaint = { primary: armor, accent: trim };
   robot.scale.setScalar(0.88);
   return robot;
 }
