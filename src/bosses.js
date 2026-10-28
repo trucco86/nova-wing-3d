@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { box, metal, glowMaterial, halo } from './visuals.js';
+import { bossSignaturePose } from './boss-signature.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -47,9 +48,13 @@ export function createBossModel(sector, index = 0, tactical = false) {
       break;
     }
     case 'drill': {
+      // Independent rotating bit gives the player a readable charge windup.
+      const drillPivot = new T.Group();
+      drillPivot.name = 'signature-drill-bit';
       const drill = new T.Mesh(new T.ConeGeometry(13, 40, 8), armor);
       drill.rotation.x = Math.PI / 2;
-      add(drill, 0, 0, -8);
+      drillPivot.add(drill);
+      add(drillPivot, 0, 0, -8);
       for (let i = 0; i < 4; i++) {
         const q = ring(15 + i * 3);
         add(q, 0, 0, -i * 7);
@@ -77,11 +82,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
     case 'mech': {
       add(box(20, 25, 16, armor), 0, -2);
       add(sphere(8, edge), 0, 18, 0);
-      for (const s of [-1, 1]) {
-        add(box(12, 30, 14, armor), s * 21, -4);
-        add(box(11, 25, 15, dark), s * 12, -28);
-        add(box(12, 6, 23, armor), s * 12, -42, 5);
-        add(box(6, 6, 22, edge), s * 23, -13, 12);
+      for (const side of [-1, 1]) {
+        // The Colossus aims with two independently animated cannons.
+        const shoulder = new T.Group();
+        shoulder.name = side < 0 ? 'signature-mech-left-arm' : 'signature-mech-right-arm';
+        shoulder.add(box(12, 30, 14, armor, 0, -7, 0));
+        shoulder.add(box(6, 6, 22, edge, side * 2, -15, 12));
+        add(shoulder, side * 21, 4, 0);
+        add(box(11, 25, 15, dark), side * 12, -28);
+        add(box(12, 6, 23, armor), side * 12, -42, 5);
       }
       break;
     }
@@ -89,6 +98,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
       for (let i = 0; i < 7; i++) {
         const a = (i * Math.PI * 2) / 7,
           arm = new T.Group();
+        arm.name = 'signature-hydra-head-' + i;
         for (let j = 1; j < 6; j++) {
           let p = sphere(4 - j * 0.35, armor);
           p.position.set(Math.cos(a) * j * 8, Math.sin(a) * j * 5, -j * 2);
@@ -114,6 +124,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
         add(box(30, 1, 47, edge), s * 33, 4, -10);
       }
       const crown = ring(24, 2);
+      crown.name = 'signature-marvin-eclipse';
       add(crown, 0, 4, -10);
       rotors.push(crown);
       break;
@@ -417,6 +428,45 @@ export function createBossModel(sector, index = 0, tactical = false) {
   };
   return g;
 }
+/** Boss-only procedural choreography. Reuses authored geometry and freezes
+ * with the simulation clock; never moves the actual generator hit volumes. */
+export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
+  const pose = bossSignaturePose(index, time, phase, attackState);
+  if (!pose || !g) return null;
+  if (index === 2) {
+    const bit = g.getObjectByName('signature-drill-bit');
+    if (bit) {
+      bit.rotation.z = pose.spin;
+      bit.position.z = -8 + pose.extension;
+    }
+  } else if (index === 5) {
+    const left = g.getObjectByName('signature-mech-left-arm');
+    const right = g.getObjectByName('signature-mech-right-arm');
+    if (left) {
+      left.rotation.x = pose.armLeft;
+      left.rotation.z = -pose.stomp;
+    }
+    if (right) {
+      right.rotation.x = pose.armRight;
+      right.rotation.z = pose.stomp;
+    }
+  } else if (index === 6) {
+    for (let i = 0; i < 7; i++) {
+      const head = g.getObjectByName('signature-hydra-head-' + i);
+      if (!head) continue;
+      head.rotation.z = pose.headSwing * Math.sin(time * 0.6 + i * 1.1);
+      head.scale.setScalar(pose.headPulse);
+    }
+  } else if (index === 9) {
+    const crown = g.getObjectByName('signature-marvin-eclipse');
+    if (crown) {
+      crown.scale.setScalar(pose.eclipse);
+      crown.rotation.z = pose.twist;
+    }
+  }
+  return pose;
+}
+
 export function disposeBoss(g) {
   const geos = new Set();
   g.traverse((o) => {
