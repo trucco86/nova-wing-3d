@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.24.25 — Órbita cinematográfica, BOOST e interfaces mobile (candidata)
+
+- Satélite de comunicações permanente na órbita terrestre, painéis solares, antena e sinalizadores visíveis durante a ascensão.
+- Nave-mãe com hangar iluminado e chefe entrando no combate por trajetória cinematográfica a partir da doca, sem salto repentino.
+- Naves com painéis 3D, mísseis e iluminação extra; nenhuma mudança intencional em colisão ou balanceamento.
+- Aviso superior persistente de SHIFT/BOOST obrigatório na primeira fase, destacando controle mobile e saindo após esgotar o impulso.
+- Capa integral em mobile retrato e controles alcançáveis; menu de conta sci-fi e ranking compacto com informações, adesão e privacidade em painéis expansíveis.
+- Tradução PT/EN/ES dos novos componentes, contrato/testes para satélite, boost e trajetória.
+- Release candidata de HML; **não homologada visualmente em dispositivos reais e não publicada em PROD**.
+
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
 - Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
