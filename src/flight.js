@@ -7,6 +7,7 @@ export function createFlightCamera(camera, wideFlight = false) {
   let mode = 'chase';
   let directedShot = 'chase';
   const anchor = new T.Vector2(0, 6);
+  const overheadAnchor = new T.Vector2(0, 9);
   const previousPlayer = new T.Vector3(0, 6, 9);
   const targetEye = new T.Vector3(),
     targetAim = new T.Vector3();
@@ -14,19 +15,22 @@ export function createFlightCamera(camera, wideFlight = false) {
     const shot = mode === 'chase' ? directedShot : mode;
     if (shot === 'side') {
       // Oblique cinematic chase: retains the ship, reticle and the actual flight corridor.
-      targetEye.set(player.x + 33, player.y + 13, player.z + 30);
-      targetAim.set(player.x, player.y + 3 + route.ascent * 10, -70);
+      targetEye.set(player.x + 25, player.y + 11, player.z + 39);
+      targetAim.set(player.x, player.y + 3 + route.ascent * 10, player.z - 72);
       return;
     }
     if (shot === 'overhead') {
-      // Top-down tactical reveal: shorter than a full-level camera override.
-      targetEye.set(player.x, player.y + 75, player.z + 28);
-      targetAim.set(player.x, player.y + route.ascent * 9, -74);
+      // Playable mission camera, not a scenic shot. Its X/Z dead-zone allows
+      // the ship to move across the screen while the camera follows at edges.
+      overheadAnchor.x = T.MathUtils.clamp(overheadAnchor.x, player.x - 19, player.x + 19);
+      overheadAnchor.y = T.MathUtils.clamp(overheadAnchor.y, player.z - 19, player.z + 19);
+      targetEye.set(overheadAnchor.x, player.y + 106, overheadAnchor.y + 28);
+      targetAim.set(overheadAnchor.x, player.y, overheadAnchor.y - 8);
       return;
     }
     if (shot === 'cockpit') {
       targetEye.set(player.x, player.y + 1.4, player.z + 2);
-      targetAim.set(player.x, player.y + 1.4 + route.ascent * 22, -100);
+      targetAim.set(player.x, player.y + 1.4 + route.ascent * 22, player.z - 109);
       return;
     }
     const distant = shot === 'combat';
@@ -34,8 +38,8 @@ export function createFlightCamera(camera, wideFlight = false) {
     const vertical = distant ? 12 : 7;
     anchor.x = T.MathUtils.clamp(anchor.x, player.x - horizontal, player.x + horizontal);
     anchor.y = T.MathUtils.clamp(anchor.y, player.y - vertical, player.y + vertical);
-    targetEye.set(anchor.x, anchor.y + (distant ? 12 : 6), distant ? 62 : 43);
-    targetAim.set(anchor.x, anchor.y + 1 + route.ascent * 22, -90);
+    targetEye.set(anchor.x, anchor.y + (distant ? 12 : 6), player.z + (distant ? 53 : 34));
+    targetAim.set(anchor.x, anchor.y + 1 + route.ascent * 22, player.z - 99);
   }
   return {
     setShot(value) {
@@ -50,6 +54,7 @@ export function createFlightCamera(camera, wideFlight = false) {
     },
     reset(player) {
       anchor.set(player.x, player.y);
+      overheadAnchor.set(player.x, player.z);
       previousPlayer.copy(player);
       eye.set(player.x * 1.18, 6 + player.y * 0.72, 32);
       aim.set(player.x * 0.28, player.y * 0.5 + 3, -70);
@@ -84,7 +89,7 @@ export function createFlightCamera(camera, wideFlight = false) {
             shot === 'side'
               ? 39
               : shot === 'overhead'
-                ? 10
+                ? 25
                 : Math.min(
                     shot === 'combat' ? 29 : 19,
                     camera.aspect * (shot === 'combat' ? 20 : 10),
@@ -99,7 +104,7 @@ export function createFlightCamera(camera, wideFlight = false) {
         camera.lookAt(aim);
         camera.rotateZ(bank);
         const fov =
-          shot === 'combat' ? 78 : shot === 'cockpit' ? 74 : shot === 'overhead' ? 67 : 64;
+          shot === 'combat' ? 78 : shot === 'cockpit' ? 74 : shot === 'overhead' ? 65 : 64;
         camera.fov += (fov + (boosting ? 6 : 0) - camera.fov) * a;
         camera.updateProjectionMatrix();
         return;
