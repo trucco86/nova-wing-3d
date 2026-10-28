@@ -874,7 +874,7 @@ export function translateText(text, lang = 'pt') {
   if (lang === 'pt' || !['en', 'es'].includes(lang) || typeof text !== 'string') return text;
   const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(text);
   if (!match || !match[2]) return text;
-  const exact = MAP.get(match[2]) || MAP.get(match[2].replace(/\\s+/g, ' ').trim());
+  const exact = MAP.get(match[2]) || MAP.get(match[2].replace(/\s+/g, ' ').trim());
   if (exact) return match[1] + exact[lang] + match[3];
   // Interpolated statuses are translated by domain tokens, preserving IDs and numbers.
   const patched = match[2].replace(TOKEN_RE, (token) => MAP.get(token)?.[lang] ?? token);
