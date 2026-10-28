@@ -35,8 +35,10 @@ test('multiline text nodes translate without replacing dynamic values or languag
     'Quero participar do ranking experimental e salvar minhas próximas pontuações na minha\n          conta.';
   assert.match(translateText(source, 'en'), /join the experimental ranking/);
   assert.match(translateText(source, 'es'), /participar en la clasificación/);
-  assert.equal(translateText('3 fases · recorde 180 pts · total 290', 'en'),
-    '3 stages · best 180 pts · total 290');
+  assert.equal(
+    translateText('3 fases · recorde 180 pts · total 290', 'en'),
+    '3 stages · best 180 pts · total 290',
+  );
   assert.equal(translateText('Setor 3 · 140 pts', 'es'), 'Sector 3 · 140 pts');
   assert.equal(translateText('Entrar com Google', 'pt'), 'Entrar com Google');
 });
@@ -44,18 +46,43 @@ test('multiline text nodes translate without replacing dynamic values or languag
 function element() {
   const handlers = new Map();
   return {
-    textContent: '', checked: false, disabled: false, value: '',
-    children: [], append(child) { this.children.push(child); },
-    replaceChildren() { this.children = []; },
-    addEventListener(name, fn) { handlers.set(name, fn); },
-    removeEventListener(name) { handlers.delete(name); },
-    click() { return handlers.get('click')?.(); },
+    textContent: '',
+    checked: false,
+    disabled: false,
+    value: '',
+    children: [],
+    append(child) {
+      this.children.push(child);
+    },
+    replaceChildren() {
+      this.children = [];
+    },
+    addEventListener(name, fn) {
+      handlers.set(name, fn);
+    },
+    removeEventListener(name) {
+      handlers.delete(name);
+    },
+    click() {
+      return handlers.get('click')?.();
+    },
   };
 }
 function setup(lang = 'en') {
   const fields = new Map();
-  for (const key of ['nickname', 'consent', 'status', 'summary', 'identity',
-    'local', 'global', 'cloud', 'delete', 'refresh']) fields.set(key, element());
+  for (const key of [
+    'nickname',
+    'consent',
+    'status',
+    'summary',
+    'identity',
+    'local',
+    'global',
+    'cloud',
+    'delete',
+    'refresh',
+  ])
+    fields.set(key, element());
   const panel = {
     ...element(),
     querySelector(selector) {
@@ -64,7 +91,7 @@ function setup(lang = 'en') {
   };
   const document = {
     documentElement: { lang },
-    getElementById: (id) => id === 'novaRanking' ? panel : { textContent: 'v1.24.24' },
+    getElementById: (id) => (id === 'novaRanking' ? panel : { textContent: 'v1.24.24' }),
     createElement: () => element(),
   };
   const values = new Map();
@@ -73,17 +100,25 @@ function setup(lang = 'en') {
     setItem: (k, v) => values.set(k, v),
   };
   recordLocalResult(storage, {
-    id: 'run1', sector: 1, points: 80, durationMs: 100000,
+    id: 'run1',
+    sector: 1,
+    points: 80,
+    durationMs: 100000,
     completedAt: '2026-10-27T15:00:00.000Z',
   });
   let confirmPrompt = '';
   const client = createRankingClient({
-    document, storage,
-    confirmDeletion: (value) => { confirmPrompt = value; return false; },
+    document,
+    storage,
+    confirmDeletion: (value) => {
+      confirmPrompt = value;
+      return false;
+    },
     fetcher: async () => ({ ok: true, json: async () => ({ entries: [] }) }),
   });
   return {
-    client, document,
+    client,
+    document,
     field: (name) => fields.get(name),
     confirmPrompt: () => confirmPrompt,
   };
