@@ -828,6 +828,7 @@ export function createGame({
     robotMode = false;
     robotCooldown = 0;
     robotTransition = 0;
+    precisionCd = 0;
     mechaEngine?.silence();
     resetMechaLock();
     $('lockTouch').hidden = true;
