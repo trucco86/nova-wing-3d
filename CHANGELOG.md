@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.27.8 — Dez chefes com identidades de combate próprias (candidata)
+
+- Rok alterna baterias nas asas e realiza interceptações; a Nave-Ferrão cria varreduras laterais com cauda e nadadeiras móveis.
+- Fortaleza Órbita libera pulsos concêntricos do reator; Fênix faz salvas de plasma em mergulho.
+- Couraçado Ômega dispara bordadas laterais com baterias articuladas; Núcleo Bastião gira a íris e lança salvas assimétricas do anel.
+- Os seis encontros respeitam destruição de geradores; quando ambos são destruídos, permanece apenas disparo residual do núcleo.
+- Perfurador, Colosso, Hidra e Marvin preservam o diferencial implementado na candidata 1.27.7, com correção de baterias desativadas.
+- Testes abrangem as dez assinaturas, posições reais de disparo, animações e invariantes de hitboxes.
+- Candidata isolada sobre a PR #140; sem homologação visual/física e sem promoção a DEV/HML/PROD.
+
+
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
