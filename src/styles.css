@@ -5917,10 +5917,22 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   border-radius: 7px;
   font: 700 9px/1.2 monospace;
 }
-#plasmaTitan { border: 1px solid #ff9956; background: #4b251cee; color: #ffdfc2; }
-#fiveCatsOverdrive { border: 1px solid #73e9ff; background: #18394cee; color: #d3f8ff; }
-#plasmaTitan:disabled, #fiveCatsOverdrive:disabled { opacity: 0.43; }
-#squadFormationStatus, #squadSuperStatus {
+#plasmaTitan {
+  border: 1px solid #ff9956;
+  background: #4b251cee;
+  color: #ffdfc2;
+}
+#fiveCatsOverdrive {
+  border: 1px solid #73e9ff;
+  background: #18394cee;
+  color: #d3f8ff;
+}
+#plasmaTitan:disabled,
+#fiveCatsOverdrive:disabled {
+  opacity: 0.43;
+}
+#squadFormationStatus,
+#squadSuperStatus {
   font: 700 9px/1.25 monospace;
   color: #dcfaff;
   background: #0c2840ec;
@@ -5930,5 +5942,11 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   pointer-events: none;
   max-width: min(270px, calc(100vw - 32px));
 }
-#squadFormationStatus[hidden], #squadSuperStatus[hidden] { display: none !important; }
-#squadSuperStatus { border-color: #ffad75; color: #ffe2b7; }
+#squadFormationStatus[hidden],
+#squadSuperStatus[hidden] {
+  display: none !important;
+}
+#squadSuperStatus {
+  border-color: #ffad75;
+  color: #ffe2b7;
+}
