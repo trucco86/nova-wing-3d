@@ -6230,6 +6230,7 @@ body.ranking-intermission #novaRanking {
 
 /* A single mission group owns the launch action and its pilot/ship sub-action. */
 #menu.title-screen .mission-entry {
+  box-sizing: border-box;
   display: grid;
   gap: 8px;
   min-width: 0;
