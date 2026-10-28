@@ -40,7 +40,10 @@ test('guest ranking shows victories and defeats locally without showing over gam
   await expect(page.locator('#novaAuth')).toBeHidden();
   await page.screenshot({ path: info.outputPath('guest-historical-rank.png') });
 
-  // Ranking and authentication are never permitted to obstruct live combat.
+  // The expanded ranking panel is an interactive menu surface. Dismiss it
+  // before starting gameplay, then assert that live combat hides all account UI.
+  await ranking.locator('summary').click();
+  await expect(ranking).not.toHaveAttribute('open', '');
   await page.locator('#start').click();
   await page.locator('#cinematicSkip').click();
   await expect(ranking).toBeHidden();
