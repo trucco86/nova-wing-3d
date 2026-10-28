@@ -6329,7 +6329,6 @@ body.ranking-intermission #novaRanking {
 }
 @media (max-height: 560px) and (min-aspect-ratio: 1/1) {
   #menu.title-screen .mission-entry {
-    padding: 6px;
     gap: 5px;
   }
 }
