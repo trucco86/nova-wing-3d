@@ -119,7 +119,7 @@
 - Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
 - Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
 
-## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+## 1.23 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
 - Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
 - Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.
