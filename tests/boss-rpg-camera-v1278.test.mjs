@@ -18,6 +18,8 @@ test('team plasma and Five Cats Overdrive have meaningful duration and independe
   assert.equal(combat.spend(100, false), 0, 'ordinary-fire damage cap is exhausted');
   const special = combat.spendSquadSpecial(100);
   assert.ok(special > 50, 'squad super must have independent meaningful budget');
+  const reserveRemainder = combat.spendSquadSpecial(100);
+  assert.ok(reserveRemainder > 0 && reserveRemainder < 25, 'special reserve is capped, not infinite');
   assert.equal(combat.spendSquadSpecial(100), 0);
   combat.update(1);
   assert.ok(combat.spendSquadSpecial(200) > 90);
