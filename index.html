@@ -6232,6 +6232,19 @@ body.ranking-intermission #novaRanking {
   }
 }
 
+/* Compact landscape must scroll from the first menu action to the ranking. */
+@media (max-height: 560px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen:not(.selecting) {
+    align-items: flex-start;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
+  #menu.title-screen:not(.selecting) .title-content {
+    flex: 0 0 auto;
+  }
+}
+
     </style>
   </head>
   <body>
@@ -6680,7 +6693,7 @@ body.ranking-intermission #novaRanking {
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
-        <span id="gameVersion">v1.27.2</span>
+        <span id="gameVersion">v1.27.3</span>
       </section>
       <section
         id="cinematic"
