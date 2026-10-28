@@ -1,0 +1,36 @@
+name: Verify v1.27.8 Five Cats armored boss target
+on:
+  push:
+    branches: [fix/contextual-camera-boss-ai-rpg-v1278]
+    paths:
+      - .github/workflows/verify-overdrive-v1278.yml
+permissions:
+  contents: write
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write src/game.js tests/boss-rpg-camera-v1278.test.mjs
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Save verified source and bundle
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game.js tests/boss-rpg-camera-v1278.test.mjs index.html
+          git commit -m "build(dev): verify Five Cats armored hull damage and synchronize browser bundle"
+          git push origin HEAD:fix/contextual-camera-boss-ai-rpg-v1278
