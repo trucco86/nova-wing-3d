@@ -67,6 +67,8 @@ jobs:
           merge_one release/hml-score-history-v12425-20261028
           merge_one fix/p0-mobile-alert-priority-20261028
           git log --oneline -9
+      - name: Persist merged tree for review before source repair
+        run: git push origin "HEAD:${GITHUB_REF_NAME}"
       - name: Prepare one integrated 1.27.0 game build
         run: |
           npm ci
