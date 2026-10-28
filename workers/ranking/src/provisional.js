@@ -138,16 +138,29 @@ async function start(db, uid, data, env, currentTime, cors) {
   const nonce = randomNonce();
   const runId = crypto.randomUUID();
   const expiresAt = currentTime + TTL_MS;
-  // Pseudonym is explicitly chosen, never derived from the player's Google name.
-  await db.prepare(
-    'INSERT INTO players (uid,nickname,consent_at,created_at) VALUES (?,?,?,?) ' +
-    'ON CONFLICT(uid) DO UPDATE SET nickname = excluded.nickname, consent_at = excluded.consent_at',
-  ).bind(uid, nickname, new Date(currentTime).toISOString(), new Date(currentTime).toISOString()).run();
-  await db.prepare(
-    'INSERT INTO provisional_runs ' +
-    '(run_id,uid,season_id,nonce_hash,started_at,expires_at,sector,build_sha) ' +
-    'VALUES (?,?,?,?,?,?,?,?)',
-  ).bind(runId, uid, season, await sha256(nonce), currentTime, expiresAt, data.sector, data.build).run();
+  // A deletion tombstone is permanent unless a new, separately authorized
+  // re-enrollment protocol is introduced. Old queued starts cannot resurrect
+  // the player's profile, even when they race with deletion in another Worker.
+  // D1 batch executes these statements as a single transaction.
+  const stamp = new Date(currentTime).toISOString();
+  const [playerWrite, runWrite] = await db.batch([
+    db.prepare(
+      'INSERT INTO players (uid,nickname,consent_at,created_at) ' +
+        'SELECT ?,?,?,? WHERE NOT EXISTS ' +
+        '(SELECT 1 FROM deleted_player_uids WHERE uid = ?) ' +
+        'ON CONFLICT(uid) DO UPDATE SET nickname = excluded.nickname, consent_at = excluded.consent_at',
+    ).bind(uid, nickname, stamp, stamp, uid),
+    db.prepare(
+      'INSERT INTO provisional_runs ' +
+        '(run_id,uid,season_id,nonce_hash,started_at,expires_at,sector,build_sha) ' +
+        'SELECT ?,?,?,?,?,?,?,? WHERE EXISTS ' +
+        '(SELECT 1 FROM players WHERE uid = ?) AND NOT EXISTS ' +
+        '(SELECT 1 FROM deleted_player_uids WHERE uid = ?)',
+    ).bind(runId, uid, season, await sha256(nonce), currentTime, expiresAt,
+      data.sector, data.build, uid, uid),
+  ]);
+  if (playerWrite?.meta?.changes !== 1 || runWrite?.meta?.changes !== 1)
+    return respond({ error: 'ACCOUNT_DELETED' }, 410, cors);
   return respond({ runId, nonce, expiresAt, verified: false }, 201, cors);
 }
 
@@ -223,7 +236,15 @@ export async function handleProvisional(request, env, url, cors = {}, {
   try {
     if (history) return await getHistory(env.DB, uid, cors);
     if (deleteAccount) {
-      await env.DB.prepare('DELETE FROM players WHERE uid = ?').bind(uid).run();
+      // Tombstone then cascade-delete must commit atomically: a start that
+      // reaches D1 before this transaction is also removed; a later start
+      // cannot re-create the player. Idempotent across retries/devices.
+      await env.DB.batch([
+        env.DB.prepare(
+          'INSERT OR IGNORE INTO deleted_player_uids (uid,deleted_at) VALUES (?,?)',
+        ).bind(uid, new Date(now()).toISOString()),
+        env.DB.prepare('DELETE FROM players WHERE uid = ?').bind(uid),
+      ]);
       return respond({ deleted: true }, 200, cors);
     }
     const data = await readBody(request);
