@@ -20,6 +20,7 @@
 | **As regras dos agentes** | [AGENTS.md](../AGENTS.md) / [skills](../skills/README.md) | Contexto, responsabilidades, limites e procedimentos |
 | **Métricas** | [Plano de mensuração](case/METRICAS.md) | Lead time, DORA, retrabalho, custo e validade metodológica |
 | **O que é comprovado** | [Matriz de evidências](case/EVIDENCIAS.md) | Fonte, SHA, ambiente e limitação |
+| **Como registrar novas entregas** | [Template de evidência](case/TEMPLATE-EVIDENCIA-ENTREGA.md) | Contratos, CI, aceite, deploy e rollback |
 | **Como reproduzir** | [Guia de reprodução](case/REPRODUZIR.md) | Instalação, build, CI e Playwright |
 
 ## Três trilhas de leitura
