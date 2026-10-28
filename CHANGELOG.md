@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
+
+- Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.
+- Guardrails por hostname: ativo somente em DEV, preview de PR e localhost; nativo, HML e produção não exibem ferramentas de QA.
+- Sessões QA isoladas: bloqueiam salvamento de checkpoint e envio de pontuação ao ranking.
+- Piloto e nave agrupados dentro da ação de missão na capa, preservando hangar e jogabilidade.
+- Testes de scenario jump, proteção de dados, seleção mobile/desktop e fluxo de reinício; exige homologação visual/funcional humana.
+- HML e produção não alterados.
+
+
 ## 1.27.4 — Som da turbina do robô mais discreto (candidata DEV)
 
 - Substitui o zumbido serrilhado contínuo por uma base mais grave e suave, quase silenciosa em voo normal.
