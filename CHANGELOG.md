@@ -8,7 +8,6 @@
 - Preserva a música, os outros efeitos, os controles, a jogabilidade e as evoluções anteriores.
 - Candidata DEV sem homologação auditiva em smartphone; HML e produção não alterados.
 
-
 ## 1.27.3 — Correção do menu em paisagem (candidata DEV)
 
 - Corrige rolagem vertical e acesso à preparação do esquadrão em modo paisagem de baixa altura.
