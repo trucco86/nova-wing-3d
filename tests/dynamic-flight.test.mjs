@@ -8,7 +8,7 @@ import { readCosmetics, skinPurchase } from '../src/customization.js';
 import { readSave } from '../src/campaign.js';
 import { defeatBoss } from './combat-helper.mjs';
 
-function storageFor(sector = 2) {
+function storageFor(sector = 6) {
   const map = new Map([
     [
       'nova-wing-3d-v1',

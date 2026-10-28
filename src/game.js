@@ -55,6 +55,8 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { createAsteroidInterior } from './asteroid-interior.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   SCATTER_CADENCE_FACTOR,
@@ -193,6 +195,9 @@ export function createGame({
   const world = createWorld(scene, random, dynamicFlight),
     post = postProcessor(renderer, scene, camera);
   post.resize(innerWidth, innerHeight);
+  const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
+  let journey = initialJourney(0);
+  let asteroidWallCooldown = 0;
   const buildingMat = metal('#173344');
   const green = glowMaterial('#64ffe4', 4),
     enemyOrbMat = glowMaterial('#ff5065', 3);
@@ -836,6 +841,9 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
+    journey = initialJourney(sectorIndex);
+    asteroidInterior?.reset(sectorIndex === 2);
+    asteroidWallCooldown = 0;
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
@@ -1416,6 +1424,10 @@ export function createGame({
     });
   }
   function makeBoss() {
+    if (dynamicFlight && sectorIndex === 2) {
+      journey = advanceJourney(journey, 'arenaReached');
+      asteroidInterior.setPhase(journey.phase);
+    }
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
@@ -1493,6 +1505,11 @@ export function createGame({
 
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'bossDefeated');
+        asteroidInterior.setPhase(journey.phase);
+        message('NÚCLEO DESTRUÍDO · FUJA DO ASTEROIDE!');
+      }
       gainXP(30);
       state = 'collapsing';
       if (!dynamicFlight) releaseControls();
@@ -1563,6 +1580,11 @@ export function createGame({
       collapse = null;
       score += 50;
       credits += 250 + sectorIndex * 40;
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'exitReached');
+        asteroidInterior.setPhase(journey.phase);
+        world.setAsteroidInterior(false);
+      }
       $('attackWarning').textContent = '';
       if (sectorIndex === SECTORS.length - 1) finish(true);
       else showShop();
@@ -2346,6 +2368,19 @@ export function createGame({
       -1,
       dynamicFlight ? 46 : 23,
     );
+    asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
+    if (dynamicFlight && sectorIndex === 2) {
+      const wall = asteroidInterior.constrain(player.position);
+      if (wall.collided) {
+        player.position.x = wall.x;
+        player.position.y = wall.y;
+        if (asteroidWallCooldown <= 0) {
+          asteroidWallCooldown = 1.25;
+          hit(12);
+          cue('armorHit');
+        }
+      }
+    }
     player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
@@ -2386,6 +2421,19 @@ export function createGame({
     if (state !== 'playing') return;
     elapsed += dt;
     totalTime += dt;
+    if (dynamicFlight && sectorIndex === 2) {
+      const planned = journeyPhaseAt(elapsed, current().duration);
+      if (journey.phase === 'approach' && planned !== 'approach') {
+        journey = advanceJourney(journey, 'destinationReached');
+        asteroidInterior.setPhase(journey.phase);
+        message('MEGA-ASTEROIDE À FRENTE · ENCONTRE A ABERTURA');
+      }
+      if (journey.phase === 'transition' && ['interior', 'boss'].includes(planned)) {
+        journey = advanceJourney(journey, 'entryCompleted');
+        asteroidInterior.setPhase(journey.phase);
+        message('DENTRO DO ASTEROIDE · EVITE AS PAREDES');
+      }
+    }
     // The first boss cannot begin while the pilot remains in the city or
     // inside the long post-boost climb. Keep the flight playable meanwhile.
     if (dynamicFlight && sectorIndex === 0 && !orbitalLaunchSequence.snapshot().complete)
@@ -2394,7 +2442,7 @@ export function createGame({
       dynamicFlight &&
       spawnEncounters &&
       !arcadeDone &&
-      [2, 6].includes(sectorIndex) &&
+      [6].includes(sectorIndex) &&
       elapsed >= 8
     ) {
       arcadeDone = true;
@@ -2427,6 +2475,17 @@ export function createGame({
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
+      if (sectorIndex === 2) {
+        world.setAsteroidInterior(journey.phase !== 'approach' && journey.phase !== 'complete');
+        route.label =
+          {
+            approach: 'APROXIMAÇÃO · MEGA-ASTEROIDE',
+            transition: 'ENTRADA · CAVERNA',
+            interior: 'COMBATE · INTERIOR DO ASTEROIDE',
+            boss: 'NÚCLEO · PERFURADOR',
+            escape: 'FUGA · COLAPSO DO ASTEROIDE',
+          }[journey.phase] ?? route.label;
+      }
       $('routeLabel').textContent = route.label;
     }
     const orbitalLaunch =
@@ -2987,7 +3046,8 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt));
+      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
       b.previousPosition = previousShot;
@@ -3200,6 +3260,7 @@ export function createGame({
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
       !quietFirstSubboss &&
+      !(dynamicFlight && sectorIndex === 2 && journey.phase !== 'approach') &&
       !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration)) &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
@@ -3300,17 +3361,16 @@ export function createGame({
     }
     if (state !== 'paused' && state !== 'arcade') {
       visualTime += dt;
-      world.update(
-        dt,
-        visualTime,
+      const scenerySpeed =
         (boosting ? 90 : 48) *
-          (1 + Math.min(30, stage()) * 0.02) *
-          (dynamicFlight
-            ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
-            : 1),
+        (1 + Math.min(30, stage()) * 0.02) *
+        (dynamicFlight ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) : 1);
+      const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
-          (dynamicFlight && state === 'collapsing'),
-      );
+        (dynamicFlight && state === 'collapsing');
+      world.update(dt, visualTime, scenerySpeed, sceneryMoving);
+      if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
+        asteroidInterior.update(dt, scenerySpeed);
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
@@ -3487,6 +3547,8 @@ export function createGame({
       playerVisible: player.visible,
       route: { ...route },
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
+      journey: { ...journey },
+      asteroidInterior: asteroidInterior?.snapshot() ?? null,
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
@@ -3605,6 +3667,7 @@ export function createGame({
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
+      asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
         o.geometry?.dispose();

@@ -1,32 +1,6 @@
 # Histórico
 
-## 1.24.24 — Conta e ranking multilíngues (candidata)
-
-- Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
-- Mensagens dinâmicas e labels acessíveis seguem idioma de Options, com datas locais por idioma.
-- A exclusão informa a restrição de reinscrição até existir novo protocolo autenticado.
-- Testes de cobertura de tradução, datas e confirmação destrutiva localizada.
-- Candidata sem homologação Firebase/Cloudflare real e sem publicação em produção.
-
-## 1.24.23 — Exclusão de dados de ranking (candidata)
-
-- Controle de exclusão do apelido e pontuações remotas somente para conta Google autenticada.
-- Confirmação explícita, prevenção de solicitações duplicadas e bloqueio de tokens de sessão anterior.
-- Revoga consentimento de partidas futuras ao solicitar remoção; mantém checkpoints e histórico local.
-- Mensagens de sucesso e falha sem afirmar exclusão quando a API não confirma.
-- Testes automatizados da jornada e registro de limitações operacionais de LGPD.
-- Não homologada em Firebase real nem Cloudflare D1; sem publicação em produção.
-
-## 1.24.22 — Consentimento por sessão e proteção do ranking (candidata)
-
-- Redefine apelido e autorização opt-in ao trocar de conta Google ou voltar ao visitante.
-- Oculta histórico privado anterior imediatamente e cancela uploads de pontuação após revogação.
-- Bloqueia requisições de pontuação após resolução tardia de um token de outra sessão.
-- Preserva resultados locais, campanha e modo visitante sem depender da API.
-- Testes de regressão de troca de conta, consentimento, concorrência e indisponibilidade.
-- Candidata sem homologação OAuth/D1 real: não publicar PROD.
-
-## 1.24.21 — Candidata em preparação
+## 1.24.20 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
 
