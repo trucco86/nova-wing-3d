@@ -55,6 +55,7 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   createGroundEnemy,
@@ -2826,13 +2827,8 @@ export function createGame({
         const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
         // Cinematic 4.6 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
-        const exit = T.MathUtils.clamp(bossCombat.age / 4.6, 0, 1);
-        const departure = exit * exit * (3 - 2 * exit);
-        boss.position.set(
-          t.x * departure,
-          57 + (10 + (t.y - 10) * approach - 57) * departure,
-          -680 + (-230 + (t.z + 230) * approach + 680) * departure,
-        );
+        const launchPose = bossDepartureAt(bossCombat.age, t, approach);
+        boss.position.set(launchPose.x, launchPose.y, launchPose.z);
         boss.rotation.z = t.bank;
         $('battleRadar').style.background = radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
