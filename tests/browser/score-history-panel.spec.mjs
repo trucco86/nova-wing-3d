@@ -8,10 +8,22 @@ test('guest ranking shows victories and defeats locally without showing over gam
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(() => {
     const history = [
-      { id: 'cleared-run', sector: 2, points: 42, durationMs: 61000,
-        outcome: 'cleared', completedAt: '2026-10-27T18:10:00.000Z' },
-      { id: 'defeated-run', sector: 3, points: 16, durationMs: 54000,
-        outcome: 'defeated', completedAt: '2026-10-27T18:20:00.000Z' },
+      {
+        id: 'cleared-run',
+        sector: 2,
+        points: 42,
+        durationMs: 61000,
+        outcome: 'cleared',
+        completedAt: '2026-10-27T18:10:00.000Z',
+      },
+      {
+        id: 'defeated-run',
+        sector: 3,
+        points: 16,
+        durationMs: 54000,
+        outcome: 'defeated',
+        completedAt: '2026-10-27T18:20:00.000Z',
+      },
     ];
     localStorage.setItem('nova-wing-score-history-v1', JSON.stringify(history));
   });
