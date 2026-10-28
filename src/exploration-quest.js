@@ -5,7 +5,11 @@ export const EXPLORATION_SAVE_KEY = 'nova-wing-exploration-v1';
 
 export const WORLD_NODES = Object.freeze({
   hub: Object.freeze({ name: 'BASE FIVE CATS', kind: 'hub', exits: ['orbit9'] }),
-  orbit9: Object.freeze({ name: 'RUÍNAS DA ÓRBITA-9', kind: 'exploration', exits: ['hub', 'orion'] }),
+  orbit9: Object.freeze({
+    name: 'RUÍNAS DA ÓRBITA-9',
+    kind: 'exploration',
+    exits: ['hub', 'orion'],
+  }),
   orion: Object.freeze({ name: 'PORTAL DE ÓRION', kind: 'planet', exits: ['orbit9'] }),
 });
 
@@ -74,7 +78,8 @@ export function readExplorationSave(storage) {
 
 export function createExplorationQuest({ storage = null, qa = false, initialState = null } = {}) {
   // QA starts from supplied memory state but is strictly read-only on storage.
-  let state = validateExplorationState(initialState) ??
+  let state =
+    validateExplorationState(initialState) ??
     (qa ? null : readExplorationSave(storage)) ??
     freshState();
 
@@ -122,25 +127,24 @@ export function createExplorationQuest({ storage = null, qa = false, initialStat
     },
     choose(choice) {
       return apply((s) => {
-        if (s.location !== 'orbit9' || s.choice !== null || s.mission !== 'locked')
-          return null;
-        if (!ORBIT9_CHOICES.includes(choice) || s.clues.length !== ORBIT9_CLUES.length)
-          return null;
+        if (s.location !== 'orbit9' || s.choice !== null || s.mission !== 'locked') return null;
+        if (!ORBIT9_CHOICES.includes(choice) || s.clues.length !== ORBIT9_CLUES.length) return null;
         return { ...s, choice, mission: 'ready' };
       });
     },
-    nextMission: () => (state.mission === 'ready' || state.mission === 'active'
-      ? missionFor(state.choice)
-      : null),
+    nextMission: () =>
+      state.mission === 'ready' || state.mission === 'active' ? missionFor(state.choice) : null,
     launchMission() {
-      return apply((s) => s.location === 'orbit9' && s.mission === 'ready'
-        ? { ...s, mission: 'active' }
-        : null);
+      return apply((s) =>
+        s.location === 'orbit9' && s.mission === 'ready' ? { ...s, mission: 'active' } : null,
+      );
     },
     completeMission(missionId) {
-      return apply((s) => s.mission === 'active' && missionId === missionFor(s.choice)
-        ? { ...s, mission: 'done', completedMission: missionId }
-        : null);
+      return apply((s) =>
+        s.mission === 'active' && missionId === missionFor(s.choice)
+          ? { ...s, mission: 'done', completedMission: missionId }
+          : null,
+      );
     },
     save,
   };

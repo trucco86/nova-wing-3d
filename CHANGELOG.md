@@ -8,7 +8,6 @@
 - **Sem UI de exploração 3D:** etapa arquitetural, sem jogabilidade nova diretamente acessível.
 - Candidata empilhada sobre v1.27.8; DEV/HML/PROD permanecem inalterados.
 
-
 ## 1.27.8 — Dez chefes com identidades de combate próprias (candidata)
 
 - Rok alterna baterias nas asas e realiza interceptações; a Nave-Ferrão cria varreduras laterais com cauda e nadadeiras móveis.

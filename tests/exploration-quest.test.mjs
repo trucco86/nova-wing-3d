@@ -1,17 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createExplorationQuest, EXPLORATION_SAVE_KEY, readExplorationSave,
-  validateExplorationState, ORBIT9_CLUES, WORLD_NODES,
+  createExplorationQuest,
+  EXPLORATION_SAVE_KEY,
+  readExplorationSave,
+  validateExplorationState,
+  ORBIT9_CLUES,
+  WORLD_NODES,
 } from '../src/exploration-quest.js';
 
 function memoryStore(seed = {}) {
   const data = new Map(Object.entries(seed));
   const writes = [];
   return {
-    data, writes,
+    data,
+    writes,
     getItem: (key) => data.get(key) ?? null,
-    setItem(key, value) { writes.push(key); data.set(key, value); },
+    setItem(key, value) {
+      writes.push(key);
+      data.set(key, value);
+    },
   };
 }
 
@@ -65,10 +73,17 @@ test('QA scenario is isolated, can simulate progress but never writes local or r
 });
 
 test('corrupted or forged checkpoints do not expose locked planets or clobber campaign', () => {
-  const storage = memoryStore({ [EXPLORATION_SAVE_KEY]: JSON.stringify({
-    version: 1, location: 'orion', visited: ['hub', 'orion'],
-    clues: [], choice: null, mission: 'locked', completedMission: null,
-  }) });
+  const storage = memoryStore({
+    [EXPLORATION_SAVE_KEY]: JSON.stringify({
+      version: 1,
+      location: 'orion',
+      visited: ['hub', 'orion'],
+      clues: [],
+      choice: null,
+      mission: 'locked',
+      completedMission: null,
+    }),
+  });
   assert.equal(readExplorationSave(storage), null);
   const q = createExplorationQuest({ storage });
   assert.equal(q.snapshot().location, 'hub');
@@ -80,7 +95,14 @@ test('corrupted or forged checkpoints do not expose locked planets or clobber ca
 
 test('save failures are nonfatal and snapshots cannot mutate internal progression', () => {
   const q = createExplorationQuest({
-    storage: { getItem() { throw Error('denied'); }, setItem() { throw Error('denied'); } },
+    storage: {
+      getItem() {
+        throw Error('denied');
+      },
+      setItem() {
+        throw Error('denied');
+      },
+    },
   });
   assert.equal(q.travel('orbit9'), true);
   assert.equal(q.save(), false);
