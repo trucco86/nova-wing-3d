@@ -25,6 +25,7 @@ export function readLocalHistory(storage) {
           typeof entry.completedAt === 'string' &&
           Number.isFinite(Date.parse(entry.completedAt)),
       )
+      .sort((a, b) => Date.parse(b.completedAt) - Date.parse(a.completedAt))
       .slice(0, MAX_ENTRIES)
       .map((entry) => ({ ...entry, outcome: entry.outcome ?? 'cleared' }));
   } catch {
