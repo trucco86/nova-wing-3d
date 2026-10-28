@@ -177,6 +177,12 @@ jobs:
         run: |
           mkdir public-site
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
+      - name: Public PROD Firebase and ranking config (fail closed if unavailable)
+        env:
+          NOVA_ENV: prod
+          NOVA_FIREBASE_CONFIG_JSON: ${{ vars.NOVA_FIREBASE_PROD_CONFIG_JSON }}
+          NOVA_RANKING_API_URL: ${{ vars.NOVA_RANKING_PROD_API_URL }}
+        run: node tools/write-public-config.mjs public-site/nova-config.json
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: public-site

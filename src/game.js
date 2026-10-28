@@ -122,6 +122,8 @@ export function createGame({
   autoLoop = true,
   spawnEncounters = true,
   nativeLifecycle = false,
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
@@ -322,6 +324,8 @@ export function createGame({
     settingsOpen = false,
     bossWarned = false,
     bossWarningTime = 0;
+  let stageScoreStart = 0,
+    stageResultSent = false;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -685,7 +689,26 @@ export function createGame({
     credits += 15;
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
+  function recordStageResult(outcome = 'cleared') {
+    if (!dynamicFlight || stageResultSent) return;
+    stageResultSent = true;
+    try {
+      Promise.resolve(
+        onStageFinished({
+          sector: sectorIndex + 1,
+          points: Math.max(0, score - stageScoreStart),
+          durationMs: Math.max(0, Math.round(elapsed * 1000)),
+          totalPoints: score,
+          outcome,
+        }),
+      ).catch(() => {});
+    } catch {
+      // Optional ranking must never interrupt a finished mission.
+    }
+  }
   function showShop() {
+    recordStageResult('cleared');
+    document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
     keys.clear();
@@ -769,6 +792,7 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
     arcade = null;
     arcadeDone = false;
@@ -872,6 +896,15 @@ export function createGame({
       strategy: { ...strategy },
       petCare: { ...petCare },
     };
+    stageScoreStart = score;
+    stageResultSent = false;
+    if (dynamicFlight) {
+      try {
+        Promise.resolve(onStageStarted({ sector: sectorIndex + 1 })).catch(() => {});
+      } catch {
+        // Offline progression always continues if the ranking API is unavailable.
+      }
+    }
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
   }
@@ -1487,6 +1520,8 @@ export function createGame({
   }
 
   function finish(win) {
+    recordStageResult(win ? 'cleared' : 'defeated');
+    document.body.classList.add('ranking-intermission');
     releaseControls();
     if (win) music?.start(sectorIndex, 'victory');
     else music?.pause();
@@ -3484,7 +3519,12 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
-      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'left-handed',
+        'ranking-intermission',
+      );
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;
       music?.destroy();

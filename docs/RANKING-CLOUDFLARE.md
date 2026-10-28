@@ -1,6 +1,6 @@
 # Ranking competitivo — Cloudflare Workers + D1 e Firebase Auth
 
-> **ESTADO: API WORKER SOMENTE DE LEITURA EM BRANCH DE FEATURE; NÃO PUBLICADO.** Cloudflare Pages já hospeda o HTML nos ambientes de teste, mas a implementação inicial do Worker em `workers/ranking/` ainda não foi implantada. Não existe D1 provisionado, backend de score, endpoints públicos operacionais ou integração do frontend com ranking. O Firebase Auth de DEV não torna o ranking funcional.
+> **ATUALIZAÇÃO 27/10/2026:** o Worker agora possui código para histórico e classificação **experimental**, com rotas de escrita protegidas por `SCORE_WRITE_ENABLED`. A API não foi provisionada nem publicada; a classificação oficial continua restrita a scores verificados. O texto de fundação abaixo é histórico. Procedimento atual: [Runbook de Identidade e Ranking](IDENTITY-RANKING-DELIVERY.md).
 
 ## 1. Decisão e responsabilidades
 

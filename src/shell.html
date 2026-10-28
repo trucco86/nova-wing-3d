@@ -623,6 +623,56 @@
         </div>
       </section>
     </div>
+    <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
+      <summary>RANK · HISTÓRICO</summary>
+      <div class="nova-rank-content">
+        <strong>RANKING FIVE CATS</strong>
+        <p data-rank-identity>Visitante · resultados locais</p>
+        <p data-rank-summary>0 fases · recorde 0 pts · total 0</p>
+        <label
+          >Apelido público
+          <input
+            data-rank-nickname
+            type="text"
+            maxlength="24"
+            value="Piloto"
+            autocomplete="nickname"
+          />
+        </label>
+        <label class="nova-rank-consent">
+          <input data-rank-consent type="checkbox" />
+          Quero participar do ranking experimental e salvar minhas próximas pontuações na minha
+          conta.
+        </label>
+        <button type="button" data-rank-refresh>ATUALIZAR RANK</button>
+        <button type="button" data-rank-delete disabled>EXCLUIR MEUS DADOS NA NUVEM</button>
+        <small
+          >Após excluir os dados, esta conta não poderá voltar ao ranking até existir um novo
+          processo de inscrição.</small
+        >
+        <small
+          >Exclui seu apelido e as pontuações remotas, após confirmação. Não exclui sua conta
+          Google, o progresso ou as partidas deste dispositivo.</small
+        >
+        <p data-rank-status role="status" aria-live="polite"></p>
+        <strong>RANK GLOBAL · EXPERIMENTAL</strong>
+        <ol data-rank-global>
+          <li>Ranking online ainda não configurado.</li>
+        </ol>
+        <strong>MEU HISTÓRICO · NA NUVEM</strong>
+        <ol data-rank-cloud>
+          <li>Entre com Google para consultar.</li>
+        </ol>
+        <strong>MINHAS PARTIDAS · NESTE DISPOSITIVO</strong>
+        <ol data-rank-local>
+          <li>Sem partidas concluídas.</li>
+        </ol>
+        <small
+          >Visitantes jogam normalmente. O histórico local não sincroniza entre aparelhos.
+          Pontuações online são experimentais, sem verificação antifraude definitiva.</small
+        >
+      </div>
+    </details>
     <details id="novaAuth" aria-label="Conta do piloto">
       <summary>CONTA · PILOTO</summary>
       <div class="nova-auth-content">
@@ -631,7 +681,9 @@
         <button type="button" data-auth-login disabled>Entrar com Google</button>
         <button type="button" data-auth-logout hidden>Sair da conta</button>
         <button type="button" data-auth-guest>Continuar como visitante</button>
-        <small>O login é opcional. Ranking online ainda não está disponível.</small>
+        <small
+          >O login é opcional. Para competir, abra RANK e aceite o registro de pontuações.</small
+        >
       </div>
     </details>
     <script>

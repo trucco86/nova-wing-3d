@@ -1,6 +1,6 @@
 # Deploy de DEV, HML e PR Preview — Cloudflare Pages
 
-**Estado atualizado (25/10/2026 UTC): Cloudflare Pages operacional para DEV, HML e previews independentes.** Este documento substitui a orientação anterior que indicava deploy ainda não configurado. Os deploys abaixo foram confirmados nos logs do Wrangler/GitHub Actions; testes manuais de jogabilidade e OAuth continuam separados.
+**Estado de referência (25/10/2026 UTC): Cloudflare Pages operacional para DEV, HML e previews independentes.** Este documento substitui a orientação anterior que indicava deploy ainda não configurado. Os deploys abaixo foram confirmados nos logs do Wrangler/GitHub Actions; testes manuais de jogabilidade e OAuth continuam separados.
 
 ## Ambientes e evidências de implantação
 
@@ -57,3 +57,7 @@ A integração Google da PR #59 está implantada em DEV. SDK carrega somente nos
 - [ ] Expiração/limpeza automática de previews, proteção opcional Cloudflare Access, budgets e limites de deploy.
 - [ ] Comparação visual automatizada por SHA, FPS real mobile e testes de áudio.
 - [ ] Ajustar o processo de promoção HML para exigir explicitamente resultado `quality`/`browser` do mesmo SHA.
+
+## Candidata de autenticação e ranking (27/10/2026)
+
+A feature de Firebase PROD independente, telas de ranking/histórico e Worker D1 experimental está **em desenvolvimento, sem promoção**. O procedimento, variáveis de configuração pública por ambiente e aprovações estão em [Identity Ranking Delivery](IDENTITY-RANKING-DELIVERY.md). As informações históricas de deploy desta página não comprovam que login OAuth ou score remoto foram validados nos ambientes reais.
