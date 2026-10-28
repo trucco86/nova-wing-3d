@@ -8,6 +8,16 @@ const schema = readFileSync(
   'utf8',
 );
 
+
+const provisionalSchema = readFileSync(
+  new URL('../workers/ranking/migrations/0002_provisional_history.sql', import.meta.url),
+  'utf8',
+);
+const deletionSchema = readFileSync(
+  new URL('../workers/ranking/migrations/0003_account_deletion_tombstones.sql', import.meta.url),
+  'utf8',
+);
+
 test('D1 candidate schema creates all tables and leaderboard query index', () => {
   const db = new DatabaseSync(':memory:');
   try {
@@ -63,6 +73,60 @@ test('D1 candidate schema deletes player-linked ranking rows and rejects replay 
     for (const name of ['players', 'runs', 'scores', 'leaderboard_entries']) {
       assert.equal(db.prepare(`SELECT COUNT(*) AS n FROM ${name}`).get().n, 0, `orphaned ${name}`);
     }
+  } finally {
+    db.close();
+  }
+});
+
+test('SQLite D1 schema prevents score resurrection after DELETE while preserving other users', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(schema);
+    db.exec(provisionalSchema);
+    db.exec(deletionSchema);
+    const uid = 'player-a';
+    const nick = 'Alpha';
+    const stamp = '2026-10-27';
+    const playerSql =
+      'INSERT INTO players (uid,nickname,consent_at,created_at) ' +
+      'SELECT ?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM deleted_player_uids WHERE uid = ?) ' +
+      'ON CONFLICT(uid) DO UPDATE SET nickname = excluded.nickname, consent_at = excluded.consent_at';
+    const runSql =
+      'INSERT INTO provisional_runs (run_id,uid,season_id,nonce_hash,started_at,expires_at,sector,build_sha) ' +
+      'SELECT ?,?,?,?,?,?,?,? WHERE EXISTS (SELECT 1 FROM players WHERE uid = ?) ' +
+      'AND NOT EXISTS (SELECT 1 FROM deleted_player_uids WHERE uid = ?)';
+    function start(user, id) {
+      db.exec('BEGIN');
+      try {
+        const first = db.prepare(playerSql).run(user, nick, stamp, stamp, user);
+        const second = db.prepare(runSql).run(id, user, 'current', 'hash-' + id,
+          1800000000000, 1800000100000, 1, '1.24.23', user, user);
+        db.exec('COMMIT');
+        return [first.changes, second.changes];
+      } catch (error) {
+        db.exec('ROLLBACK');
+        throw error;
+      }
+    }
+    assert.deepEqual(start(uid, 'run-first'), [1, 1]);
+    db.exec('BEGIN');
+    db.prepare('INSERT OR IGNORE INTO deleted_player_uids (uid,deleted_at) VALUES (?,?)')
+      .run(uid, stamp);
+    db.prepare('DELETE FROM players WHERE uid = ?').run(uid);
+    db.exec('COMMIT');
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM provisional_runs').get().n, 0);
+
+    // Previously queued starts and repetitions cannot bring the profile back.
+    assert.deepEqual(start(uid, 'run-late'), [0, 0]);
+    assert.deepEqual(start(uid, 'run-retry'), [0, 0]);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM players').get().n, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM provisional_runs').get().n, 0);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM deleted_player_uids').get().n, 1);
+
+    // Account deletion is scoped strictly to its original Firebase UID.
+    assert.deepEqual(start('player-b', 'run-other'), [1, 1]);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM players').get().n, 1);
+    assert.equal(db.prepare('SELECT COUNT(*) AS n FROM provisional_runs').get().n, 1);
   } finally {
     db.close();
   }
