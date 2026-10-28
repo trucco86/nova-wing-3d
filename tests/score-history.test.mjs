@@ -79,13 +79,24 @@ test('defeated attempts are saved and legacy victories remain readable', () => {
   const original = entry('legacy', 27);
   storage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([original]));
   assert.equal(readLocalHistory(storage)[0].outcome, 'cleared');
-  assert.equal(recordLocalResult(storage, {
-    ...entry('defeat', 9), outcome: 'defeated',
-  }), true);
+  assert.equal(
+    recordLocalResult(storage, {
+      ...entry('defeat', 9),
+      outcome: 'defeated',
+    }),
+    true,
+  );
   const history = readLocalHistory(storage);
-  assert.deepEqual(history.map((row) => row.outcome), ['defeated', 'cleared']);
+  assert.deepEqual(
+    history.map((row) => row.outcome),
+    ['defeated', 'cleared'],
+  );
   assert.deepEqual(localScoreSummary(storage), { count: 2, best: 27, total: 36 });
-  assert.equal(recordLocalResult(storage, {
-    ...entry('invalid', 11), outcome: 'unknown',
-  }), false);
+  assert.equal(
+    recordLocalResult(storage, {
+      ...entry('invalid', 11),
+      outcome: 'unknown',
+    }),
+    false,
+  );
 });
