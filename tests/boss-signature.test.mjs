@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bossSignatureVolley, bossSignaturePose, SIGNATURE_BOSSES } from '../src/boss-signature.js';
 
-test('four signature bosses have distinct spatial attacks, more than renaming the same projectiles', () => {
-  assert.deepEqual(SIGNATURE_BOSSES, [2, 5, 6, 9]);
+test('all ten bosses have distinct spatial attacks, not just renamed projectile patterns', () => {
+  assert.deepEqual(SIGNATURE_BOSSES, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   const signatures = new Set();
   for (const boss of SIGNATURE_BOSSES) {
     const attack = bossSignatureVolley(boss, 4, 2);
@@ -18,7 +18,7 @@ test('four signature bosses have distinct spatial attacks, more than renaming th
     );
   }
   assert.equal(signatures.size, SIGNATURE_BOSSES.length);
-  assert.equal(bossSignatureVolley(0), null, 'other encounters keep their verified behavior');
+  assert.equal(bossSignatureVolley(10), null, 'invalid sectors have no signature');
 });
 test('destroying a glacial generator disables its matching cannon without skipping core phase', () => {
   const both = bossSignatureVolley(5, 1, 3, [true, true]);
@@ -39,7 +39,7 @@ test('hydra and Marvin reconfigure active attack modules instead of using dead g
     assert.ok(bossSignatureVolley(id, 2, 3, [false, false]).shots.length >= 1);
   }
 });
-test('combat choreography is time-driven, finite and unique across four bosses', () => {
+test('combat choreography is time-driven, finite and unique across ten bosses', () => {
   for (const id of SIGNATURE_BOSSES) {
     const a = bossSignaturePose(id, 1, 1, 'windup');
     const b = bossSignaturePose(id, 3, 3, 'attack');
@@ -47,4 +47,17 @@ test('combat choreography is time-driven, finite and unique across four bosses',
     assert.ok(Object.values(a).every(Number.isFinite));
     assert.ok(Object.values(b).every(Number.isFinite));
   }
+});
+
+test('drill loses the disabled half of its rotating helix and retains a weak center attack', () => {
+  const full = bossSignatureVolley(2, 2, 3, [true, true]);
+  const left = bossSignatureVolley(2, 2, 3, [true, false]);
+  const right = bossSignatureVolley(2, 2, 3, [false, true]);
+  const core = bossSignatureVolley(2, 2, 3, [false, false]);
+  assert.ok(full.shots.length >= 6);
+  assert.ok(left.shots.length < full.shots.length && right.shots.length < full.shots.length);
+  assert.ok(left.shots.every((projectile) => projectile.origin[0] < 0));
+  assert.ok(right.shots.every((projectile) => projectile.origin[0] >= 0));
+  assert.equal(core.shots.length, 1);
+  assert.deepEqual(core.shots[0].origin, [0, 0, 28]);
 });

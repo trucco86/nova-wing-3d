@@ -145,6 +145,63 @@ export function createBossModel(sector, index = 0, tactical = false) {
     add(haloRing, 0, 0, -18);
     rotors.push(haloRing);
   }
+  // Bosses 3.0: additional animated geometry is cosmetic and deliberately
+  // separate from the existing generator meshes and collision volumes.
+  if (index === 0) {
+    for (const side of [-1, 1]) {
+      const wing = new T.Group();
+      wing.name = side < 0 ? 'signature-rok-left-wing' : 'signature-rok-right-wing';
+      wing.add(box(26, 2, 42, armor));
+      wing.add(box(21, 0.7, 35, edge, 0, 2, 0));
+      add(wing, side * 47, 3, -6);
+    }
+  }
+  if (index === 1) {
+    for (const side of [-1, 1]) {
+      const fin = new T.Group();
+      fin.name = side < 0 ? 'signature-stingray-left-fin' : 'signature-stingray-right-fin';
+      const tip = new T.Mesh(new T.ConeGeometry(5, 32, 4), edge);
+      tip.rotation.z = side * -0.52;
+      fin.add(tip);
+      add(fin, side * 47, -8, -10);
+    }
+    const tail = new T.Group();
+    tail.name = 'signature-stingray-tail';
+    tail.add(new T.Mesh(new T.ConeGeometry(5, 30, 5), armor));
+    add(tail, 0, -26, -6);
+  }
+  if (index === 3) {
+    const reactor = new T.Group();
+    reactor.name = 'signature-station-reactor';
+    reactor.add(ring(32, 1.5));
+    reactor.add(ring(22, 0.7));
+    add(reactor, 0, 0, -4);
+  }
+  if (index === 4) {
+    for (const side of [-1, 1]) {
+      const flare = new T.Group();
+      flare.name = side < 0 ? 'signature-phoenix-left-flare' : 'signature-phoenix-right-flare';
+      flare.add(new T.Mesh(new T.ConeGeometry(7, 34, 5), edge));
+      flare.add(box(9, 1.3, 24, hot, 0, 7, 0));
+      add(flare, side * 42, 15, -20);
+    }
+  }
+  if (index === 7) {
+    for (const side of [-1, 1]) {
+      const battery = new T.Group();
+      battery.name = side < 0 ? 'signature-omega-left-battery' : 'signature-omega-right-battery';
+      battery.add(box(12, 12, 25, armor));
+      for (let i = 0; i < 3; i++) battery.add(box(2, 2, 15, edge, (i - 1) * 4, 7, 8));
+      add(battery, side * 45, 17, 2);
+    }
+  }
+  if (index === 8) {
+    const lens = new T.Group();
+    lens.name = 'signature-bastion-iris';
+    lens.add(ring(42, 1.6));
+    lens.add(ring(29, 0.9));
+    add(lens, 0, 0, -12);
+  }
   const organicStart = g.children.length;
   // Living tissue grafted onto the existing ten mechanical silhouettes.
   const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
@@ -433,11 +490,43 @@ export function createBossModel(sector, index = 0, tactical = false) {
 export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
-  if (index === 2) {
+  if (index === 0) {
+    for (const side of [-1, 1]) {
+      const wing = g.getObjectByName(
+        side < 0 ? 'signature-rok-left-wing' : 'signature-rok-right-wing',
+      );
+      if (wing) wing.rotation.z = side * pose.wingLift;
+    }
+  } else if (index === 1) {
+    for (const side of [-1, 1]) {
+      const fin = g.getObjectByName(
+        side < 0 ? 'signature-stingray-left-fin' : 'signature-stingray-right-fin',
+      );
+      if (fin) fin.rotation.z = side * pose.finFold;
+    }
+    const tail = g.getObjectByName('signature-stingray-tail');
+    if (tail) tail.rotation.z = pose.tailSweep;
+  } else if (index === 2) {
     const bit = g.getObjectByName('signature-drill-bit');
     if (bit) {
       bit.rotation.z = pose.spin;
       bit.position.z = -8 + pose.extension;
+    }
+  } else if (index === 3) {
+    const reactor = g.getObjectByName('signature-station-reactor');
+    if (reactor) {
+      reactor.rotation.z = pose.reactorSpin;
+      reactor.scale.setScalar(pose.reactorPulse);
+    }
+  } else if (index === 4) {
+    for (const side of [-1, 1]) {
+      const flare = g.getObjectByName(
+        side < 0 ? 'signature-phoenix-left-flare' : 'signature-phoenix-right-flare',
+      );
+      if (flare) {
+        flare.rotation.z = side * pose.flameSweep;
+        flare.rotation.x = pose.solarDive;
+      }
     }
   } else if (index === 5) {
     const left = g.getObjectByName('signature-mech-left-arm');
@@ -456,6 +545,17 @@ export function animateBossSignature(g, index, time, phase = 1, attackState = 'm
       if (!head) continue;
       head.rotation.z = pose.headSwing * Math.sin(time * 0.6 + i * 1.1);
       head.scale.setScalar(pose.headPulse);
+    }
+  } else if (index === 7) {
+    const left = g.getObjectByName('signature-omega-left-battery');
+    const right = g.getObjectByName('signature-omega-right-battery');
+    if (left) left.rotation.x = pose.broadsideLeft;
+    if (right) right.rotation.x = pose.broadsideRight;
+  } else if (index === 8) {
+    const iris = g.getObjectByName('signature-bastion-iris');
+    if (iris) {
+      iris.rotation.z = pose.irisSpin;
+      iris.rotation.x = pose.irisTilt;
     }
   } else if (index === 9) {
     const crown = g.getObjectByName('signature-marvin-eclipse');
