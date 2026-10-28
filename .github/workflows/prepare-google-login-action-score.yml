@@ -1,0 +1,43 @@
+name: Prepare Google sign-in layout and action score (temporary)
+on:
+  push:
+    branches:
+      - fix/dev-google-login-menu-and-adrenaline-mix-20261028
+    paths:
+      - .github/workflows/prepare-google-login-action-score.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prepare-google-login-action-score-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Release, format, build and validate
+        run: |
+          npm run release:prepare -- 1.27.1
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit reproducible DEV candidate; never alter workflows
+        run: |
+          git add -- src tests tools specs docs package.json package-lock.json CHANGELOG.md releases/v1.27.1.md ios/App/App.xcodeproj/project.pbxproj index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'release(dev): prepare v1.27.1 social Google menu and adrenaline audio'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
