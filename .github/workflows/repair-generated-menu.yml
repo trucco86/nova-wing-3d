@@ -1,0 +1,38 @@
+name: Repair generated web bundle (manual)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    if: github.ref_name == 'fix/menu-uniform-ranking-bottom-20261028'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Generate bundled index
+        run: npm run build
+      - name: Check reproducibility
+        run: npm run build:check
+      - name: Validate project
+        run: npm run validate
+      - name: Commit generated index
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Generated index already synchronized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "build: synchronize generated index after menu changes"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
