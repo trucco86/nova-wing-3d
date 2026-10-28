@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { bossSignatureVolley, bossSignaturePose, SIGNATURE_BOSSES } from '../src/boss-signature.js';
 
-test('four signature bosses have distinct spatial attacks, more than renaming the same projectiles', () => {
-  assert.deepEqual(SIGNATURE_BOSSES, [2, 5, 6, 9]);
+test('all ten signature bosses have distinct spatial attacks, more than renaming the same projectiles', () => {
+  assert.deepEqual(SIGNATURE_BOSSES, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   const signatures = new Set();
   for (const boss of SIGNATURE_BOSSES) {
     const attack = bossSignatureVolley(boss, 4, 2);
@@ -18,7 +18,7 @@ test('four signature bosses have distinct spatial attacks, more than renaming th
     );
   }
   assert.equal(signatures.size, SIGNATURE_BOSSES.length);
-  assert.equal(bossSignatureVolley(0), null, 'other encounters keep their verified behavior');
+  assert.equal(bossSignatureVolley(10), null, 'nonexistent sectors have no special attacks');
 });
 test('destroying a glacial generator disables its matching cannon without skipping core phase', () => {
   const both = bossSignatureVolley(5, 1, 3, [true, true]);
@@ -39,12 +39,27 @@ test('hydra and Marvin reconfigure active attack modules instead of using dead g
     assert.ok(bossSignatureVolley(id, 2, 3, [false, false]).shots.length >= 1);
   }
 });
-test('combat choreography is time-driven, finite and unique across four bosses', () => {
+test('combat choreography is time-driven, finite and unique across ten bosses', () => {
   for (const id of SIGNATURE_BOSSES) {
     const a = bossSignaturePose(id, 1, 1, 'windup');
     const b = bossSignaturePose(id, 3, 3, 'attack');
     assert.notDeepEqual(a, b);
     assert.ok(Object.values(a).every(Number.isFinite));
     assert.ok(Object.values(b).every(Number.isFinite));
+  }
+});
+
+test('six additional encounters lose a flank battery after generator destruction', () => {
+  for (const index of [0, 1, 3, 4, 7, 8]) {
+    const both = bossSignatureVolley(index, 3, 3, [true, true]);
+    const left = bossSignatureVolley(index, 3, 3, [true, false]);
+    const right = bossSignatureVolley(index, 3, 3, [false, true]);
+    const core = bossSignatureVolley(index, 3, 3, [false, false]);
+    assert.ok(both.shots.length > left.shots.length, 'left-side battery removal reduces fire ' + index);
+    assert.ok(both.shots.length > right.shots.length, 'right-side battery removal reduces fire ' + index);
+    assert.ok(left.shots.every((s) => s.origin[0] <= 0), 'left battery source ' + index);
+    assert.ok(right.shots.every((s) => s.origin[0] >= 0), 'right battery source ' + index);
+    assert.ok(core.shots.length >= 1 && core.shots.length <= 10);
+    assert.ok(both.shots.length <= 10);
   }
 });
