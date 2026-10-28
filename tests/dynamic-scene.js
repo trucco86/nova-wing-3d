@@ -20,6 +20,9 @@ let rendering = true,
   capture = true;
 const game = createGame({
   autoLoop: false,
+  // Existing gameplay probes skip the pre-mission film; opt in with ?intro=1
+  // for dedicated browser assertions of the real Five Cats opening.
+  enableSquadIntro: params.get('intro') === '1',
   spawnEncounters: params.get('arcade') === '1' || params.get('encounters') === '1',
   rendererFactory(options) {
     const renderer = new T.WebGLRenderer(options);
