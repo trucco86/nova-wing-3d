@@ -1,6 +1,7 @@
 # P0 — Arbitragem de avisos no HUD mobile (v1.24.26 candidata)
 
 ## Problema
+
 O trilho de comunicação superior tem altura fixa (38px em 320px portrait).
 Quando vida crítica, ataque iminente, escudo baixo, aproximação do chefe,
 item coletado e rádio ficam simultaneamente visíveis, os últimos avisos podem
@@ -8,6 +9,7 @@ ser cortados por `overflow: hidden`. Uma emergência real não pode disputar
 espaço com mensagens rotineiras nem invadir a área central de mira.
 
 ## Solução
+
 Apenas durante missão em dispositivos com ponteiro coarse, a apresentação
 obedece à seguinte prioridade:
 
@@ -23,6 +25,7 @@ prioridade superior desaparece, o próximo aviso volta automaticamente.
 A política não altera a interface desktop.
 
 ## Testes de aceite
+
 - Chromium touch em **320×568, 390×844 e 844×390** com combate real contra chefe.
 - Simular simultaneamente seis avisos para confirmar a precedência
   vermelho > amarelo > informativo.
@@ -35,6 +38,7 @@ A política não altera a interface desktop.
   manter release isolada em PR, sem deploy HML/produção automático.
 
 ## Revisão humana
+
 Inspecionar em Safari iPhone e Chrome Android com áudio, vibração e animação
 real; considerar duração dos alertas e legibilidade à luz do dia. A CI
 aprovada não equivale à homologação de experiência em aparelho físico.

@@ -5909,9 +5909,9 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
     > :is(#shieldWarning, #attackWarning, #bossIncoming, #pickupFlash, #comms) {
     display: none !important;
   }
-  body.in-mission:has(
-      #attackWarning:not(:empty):not([data-severity='info'])
-    ):not(:has(#criticalWarning:not([hidden])))
+  body.in-mission:has(#attackWarning:not(:empty):not([data-severity='info'])):not(
+      :has(#criticalWarning:not([hidden]))
+    )
     #hudNotices
     > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms) {
     display: none !important;
