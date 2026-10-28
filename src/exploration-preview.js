@@ -83,7 +83,7 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     scanButton.disabled = !closeClue;
     talkButton.disabled = !stats.found || stats.found < stats.required || !near(...SURVIVOR) || stats.survivorSpokenTo;
     launchCombat.hidden = !stats.missionUnlocked;
-    choicePanel.hidden = true;
+    if (stats.survivorSpokenTo) choicePanel.hidden = true;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
