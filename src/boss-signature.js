@@ -50,7 +50,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     // to change lane instead of remaining behind a single straight barrel.
     for (let i = 0; i < 4 + level; i++) {
       const side = (i + Math.floor(cycle)) % 2 ? 1 : -1;
-      if (live > 0 && !(side < 0 ? left : right)) continue;
+      if (!(side < 0 ? left : right)) continue;
       shots.push(shot(
         [side * (35 - i % 3 * 4), -8 + i * 3, 25],
         [side * (16 - i * 3), -17 + i * 7 + Math.sin(cycle) * 3, 0],
@@ -81,7 +81,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * TAU + cycle * 0.23;
       const x = Math.cos(angle) * 29;
-      if (live > 0 && !(x < 0 ? left : right)) continue;
+      if (!(x < 0 ? left : right)) continue;
       shots.push(shot(
         [x, Math.sin(angle) * 29, 24],
         [Math.cos(angle + 0.5) * (9 + level * 3), Math.sin(angle + 0.5) * (9 + level * 3), 0],
@@ -93,7 +93,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
   if (index === 4) {
     // Phoenix dives across the pilot's lane in alternating plasma crescents.
     for (const side of [-1, 1]) {
-      if (live > 0 && !(side < 0 ? left : right)) continue;
+      if (!(side < 0 ? left : right)) continue;
       for (let i = 0; i < 3 + (level === 3 ? 1 : 0); i++) {
         shots.push(shot(
           [side * 40, 15 - i * 4, 23],
@@ -126,7 +126,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
       const head = (i + Math.floor(cycle)) % 7;
       const angle = (head / 7) * TAU;
       const side = Math.cos(angle) < 0 ? 0 : 1;
-      if (live > 0 && !generators[side]) continue;
+      if (!generators[side]) continue;
       shots.push(
         shot(
           [Math.cos(angle) * 44, Math.sin(angle) * 28, 15],
@@ -145,7 +145,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     // Omega broadsides use actual port/starboard battery assemblies. Losing
     // one generator removes half the broadside; the core retains a weak shot.
     for (const side of [-1, 1]) {
-      if (live > 0 && !(side < 0 ? left : right)) continue;
+      if (!(side < 0 ? left : right)) continue;
       for (let i = 0; i < 4; i++) {
         shots.push(shot(
           [side * 45, 17 + i * 3, 29],
@@ -164,7 +164,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * TAU - cycle * 0.35;
       const x = Math.cos(angle) * 43;
-      if (live > 0 && !(x < 0 ? left : right)) continue;
+      if (!(x < 0 ? left : right)) continue;
       shots.push(shot(
         [x, Math.sin(angle) * 29, 23],
         [Math.cos(angle * 1.5) * (11 + level * 4), Math.sin(angle * 1.5) * (11 + level * 4), 0],
@@ -179,7 +179,7 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < count; i++) {
       const angle = (i / count) * TAU + (cycle % 2) * 0.32;
       const side = Math.cos(angle) < 0 ? 0 : 1;
-      if (live > 0 && !generators[side]) continue;
+      if (!generators[side]) continue;
       shots.push(
         shot(
           [Math.cos(angle) * 37, 15 + Math.sin(angle) * 24, 25],
