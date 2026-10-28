@@ -9,7 +9,6 @@
 - Testes de scenario jump, proteção de dados, seleção mobile/desktop e fluxo de reinício; exige homologação visual/funcional humana.
 - HML e produção não alterados.
 
-
 ## 1.27.4 — Som da turbina do robô mais discreto (candidata DEV)
 
 - Substitui o zumbido serrilhado contínuo por uma base mais grave e suave, quase silenciosa em voo normal.

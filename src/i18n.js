@@ -189,7 +189,11 @@ const ROWS = [
   ['PILOTO E NAVE', 'PILOT & SHIP', 'PILOTO Y NAVE'],
   ['MISSÃO PRINCIPAL', 'MAIN MISSION', 'MISIÓN PRINCIPAL'],
   ['ESCOLHER PILOTO E NAVE', 'CHOOSE PILOT & SHIP', 'ELEGIR PILOTO Y NAVE'],
-  ['DEVELOPER / QA · TESTAR CENÁRIOS', 'DEVELOPER / QA · TEST SCENARIOS', 'DEVELOPER / QA · PROBAR ESCENARIOS'],
+  [
+    'DEVELOPER / QA · TESTAR CENÁRIOS',
+    'DEVELOPER / QA · TEST SCENARIOS',
+    'DEVELOPER / QA · PROBAR ESCENARIOS',
+  ],
   [
     'Disponível apenas em DEV. Testes isolados: sem ranking, sem salvamento e sem afetar a campanha.',
     'DEV only. Isolated tests: no leaderboard, no saves and no campaign progress.',

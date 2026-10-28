@@ -1979,9 +1979,27 @@ export function createGame({
     if (scenario.encounter !== 'stage') {
       if (scenario.sector === 0) {
         // Advance the genuine orbital state machine, never bypass the main campaign gate.
-        orbitalLaunchSequence.advance({ seconds: 23, dt: 2, boosting: true, chargeBefore: 100, chargeAfter: 40 });
-        orbitalLaunchSequence.advance({ seconds: 25, dt: 2, boosting: true, chargeBefore: 40, chargeAfter: 0 });
-        orbitalLaunchSequence.advance({ seconds: 26, dt: 40, boosting: false, chargeBefore: 0, chargeAfter: 0 });
+        orbitalLaunchSequence.advance({
+          seconds: 23,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 100,
+          chargeAfter: 40,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 25,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 40,
+          chargeAfter: 0,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 26,
+          dt: 40,
+          boosting: false,
+          chargeBefore: 0,
+          chargeAfter: 0,
+        });
       }
       // Keep the test focused on its selected encounter, not ambient enemies/pickups.
       subDone = rivalDone = baseDone = tunnelDone = arcadeDone = true;
@@ -2002,8 +2020,10 @@ export function createGame({
       }
     }
     $('developerSessionTag').textContent =
-      'QA · SETOR ' + String(scenario.sector + 1).padStart(2, '0') +
-      ' · ' + ({ stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE' })[scenario.encounter] +
+      'QA · SETOR ' +
+      String(scenario.sector + 1).padStart(2, '0') +
+      ' · ' +
+      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE' }[scenario.encounter] +
       ' · SEM RANK';
     return true;
   }
