@@ -2568,7 +2568,7 @@ export function createGame({
       bossWarned = true;
       bossWarningTime = 3.5;
       world.showCarrierForBoss?.();
-      $('bossIncoming').textContent = '⚠ NAVE-MÃE ABRINDO HANGAR · CHEFE SAINDO';
+      $('bossIncoming').textContent = '⚠ CHEFE SE APROXIMANDO · SAINDO DA NAVE-MÃE';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
