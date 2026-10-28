@@ -1,0 +1,35 @@
+name: Regenerate QA mission layout
+on:
+  push:
+    branches:
+      - feat/dev-qa-scenarios-mission-menu-20261028
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write src/styles.css
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Synchronize generated artifact
+        run: |
+          if git diff --quiet -- index.html; then
+            echo "Generated bundle already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/styles.css index.html
+          git commit -m "build(dev): sync QA mission layout full-width alignment"
+          git push origin HEAD:feat/dev-qa-scenarios-mission-menu-20261028
