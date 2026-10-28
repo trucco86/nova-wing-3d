@@ -104,6 +104,19 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
       expect(rect.y).toBeGreaterThanOrEqual(-1);
       expect(rect.bottom).toBeLessThanOrEqual(viewport.height + 1);
     }
+    // Bounding boxes can be inside the viewport while the WebGL canvas
+    // still intercepts the touch. Assert the real element at the target center.
+    for (const id of ['exploreExit', 'exploreMoveUp', 'exploreMoveRight', 'exploreScan']) {
+      const isTopmost = await page.locator('#' + id).evaluate((button) => {
+        const rect = button.getBoundingClientRect();
+        const target = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
+        return button === target || button.contains(target);
+      });
+      expect(isTopmost, id + ' must not be covered by the 3D canvas').toBe(true);
+    }
     await page.evaluate(() => window.__novaExploreQA.moveTo(-12, -15));
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('1/3');
