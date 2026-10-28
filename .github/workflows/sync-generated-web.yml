@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/five-cats-formation-plasma-overdrive-20261028
 permissions:
   contents: write
   actions: write
@@ -24,18 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Sync final Five Cats mobile source and generated web
-        if: github.ref == 'refs/heads/feat/five-cats-formation-plasma-overdrive-20261028'
-        run: |
-          git add -- index.html src/game.js src/five-cats-squad.js src/five-cats-runtime.js src/i18n.js src/shell.html src/styles.css src/audio-cues.js tests/harness.mjs tests/dynamic-scene.js tests/five-cats-formation-supers.test.mjs tests/browser/five-cats-formation.spec.mjs specs/five-cats-formation-overdrive.md
-          if ! git diff --cached --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(web): sync final Five Cats mobile formation and specials'
-            git push origin HEAD:feat/five-cats-formation-plasma-overdrive-20261028
-          fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
