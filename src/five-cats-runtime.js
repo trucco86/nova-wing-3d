@@ -102,7 +102,7 @@ export function createFiveCatsSquad({
     }
     return SQUAD_SPECIALS[kind].cost;
   }
-  function update(dt, { sector, elapsed, pilot, power = 1, playing = true }) {
+  function update(dt, { sector, elapsed, pilot, aspect = 1.7, power = 1, playing = true }) {
     if (!playing) return { intro: intro > 0, energySpent: 0 };
     plasmaCooldown = Math.max(0, plasmaCooldown - dt);
     overdriveCooldown = Math.max(0, overdriveCooldown - dt);
@@ -111,7 +111,13 @@ export function createFiveCatsSquad({
       wings.forEach(({ pilot: p, mesh }) => {
         const pose = formationPose(p.slot, t);
         mesh.visible = true;
-        mesh.position.set(player.position.x + pose.x, pose.y, player.position.z + pose.z);
+        const portrait = aspect < 0.75;
+        mesh.scale.setScalar(portrait ? 0.93 : 1.1);
+        mesh.position.set(
+          player.position.x + pose.x * (portrait ? 0.53 : 1),
+          pose.y,
+          player.position.z + pose.z - (portrait ? 12 : 0),
+        );
         mesh.rotation.z = pose.bank;
       });
       player.visible = false;
