@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/p0-orbit-boss-cover-rank-ui-v12425-20261027
 permissions:
   contents: write
   actions: write
@@ -24,18 +23,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
-      - name: Sync final localized v1.24.25 candidate and browser QA
-        if: github.ref == 'refs/heads/feat/p0-orbit-boss-cover-rank-ui-v12425-20261027'
-        run: |
-          git add -- index.html src/i18n.js tests/browser/orbit-cover-rank-v12425.spec.mjs
-          if ! git diff --cached --quiet; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'build(web): sync final localized v1.24.25 and mobile browser tests'
-            git push origin HEAD:feat/p0-orbit-boss-cover-rank-ui-v12425-20261027
-          fi
       - name: Commit only generated web artifact
-        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
