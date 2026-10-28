@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from 'three';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 import { SECTORS } from '../src/campaign.js';
 import { harness } from './harness.mjs';
