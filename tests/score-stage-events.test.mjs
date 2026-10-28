@@ -66,9 +66,10 @@ test('game over stores one defeated attempt without awarding a cleared stage', (
   });
   t.after(() => h.close());
   h.game.start(true);
-  for (let i = 0; i < 3; i++) {
+  // Respawn grants a protective window; only attempt a hit when gameplay resumes.
+  for (let i = 0; i < 12 && h.game.snapshot().state !== 'lost'; i++) {
     h.advance(4, 0.1);
-    h.game.damage(100000);
+    if (h.game.snapshot().state === 'playing') h.game.damage(100000);
   }
   assert.equal(h.game.snapshot().state, 'lost');
   assert.equal(finished.length, 1);
