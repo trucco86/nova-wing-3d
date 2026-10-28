@@ -1,0 +1,39 @@
+name: Prepare Five Cats Universe quest foundation
+on:
+  push:
+    branches: [feat/five-cats-universe-quest-foundation-v1279]
+    paths:
+      - .github/workflows/prepare-universe-foundation.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.9
+      - name: Format quest state machine, tests and documents
+        run: |
+          npx prettier --write src/exploration-quest.js tests/exploration-quest.test.mjs docs/design/FIVE-CATS-UNIVERSE.md releases/v1.27.9.md CHANGELOG.md
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit formatted source and release
+        run: |
+          if git diff --quiet; then
+            echo "Reproducible candidate already synchronized"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/exploration-quest.js tests/exploration-quest.test.mjs docs/design/FIVE-CATS-UNIVERSE.md releases/v1.27.9.md CHANGELOG.md
+          git commit -m "build(dev): prepare Five Cats Universe quest foundation v1.27.9"
+          git push origin HEAD:feat/five-cats-universe-quest-foundation-v1279
