@@ -23,6 +23,8 @@
 | **Como registrar novas entregas** | [Template de evidência](case/TEMPLATE-EVIDENCIA-ENTREGA.md) | Contratos, CI, aceite, deploy e rollback                   |
 | **Como reproduzir**               | [Guia de reprodução](case/REPRODUZIR.md)                    | Instalação, build, CI e Playwright                         |
 
+> **Nova visão do jogo:** [Five Cats Universe — mundos, perspectivas, bosses e proposta de exploração](design/FIVE-CATS-UNIVERSE.md). A v1.27.6 cobre diversidade e combate; a exploração RPG é uma vertical slice futura.
+
 ## Três trilhas de leitura
 
 ### Para executivos · 5 minutos

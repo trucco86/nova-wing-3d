@@ -1,6 +1,6 @@
 // Damage budget applies to all weapons, including bombs, and is measured in seconds.
 export function createBossCombat(index = 0, burstSeconds = 0.3) {
-  const max = 1400 + index * 170,
+  const max = 2100 + index * 260,
     rate = 50 + index * 4;
   let age = 0,
     budget = 0,

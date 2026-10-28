@@ -308,6 +308,17 @@ export function createBossModel(sector, index = 0, tactical = false) {
         tick.rotation.z = -angle;
         marker.add(tick);
       }
+      // Two nested rotating frames plus chevrons make the exposed hitbox readable
+      // against highly detailed bosses even at phone resolution.
+      const inner = new T.Mesh(new T.TorusGeometry(radius * 0.7, 0.35, 6, 30), markerMaterial);
+      inner.name = 'weak-point-inner-reticle';
+      marker.add(inner);
+      for (const side of [-1, 1]) {
+        const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
+        chevron.position.set(side * (radius + 3), 0, 0.2);
+        chevron.rotation.z = (side * Math.PI) / 2;
+        marker.add(chevron);
+      }
       marker.visible = false;
       return marker;
     },
