@@ -3616,7 +3616,7 @@ export function createGame({
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
-      shotMaterials.forEach((m) => m.dispose();
+      shotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
