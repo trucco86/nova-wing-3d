@@ -8,7 +8,6 @@ const schema = readFileSync(
   'utf8',
 );
 
-
 const provisionalSchema = readFileSync(
   new URL('../workers/ranking/migrations/0002_provisional_history.sql', import.meta.url),
   'utf8',
@@ -99,8 +98,20 @@ test('SQLite D1 schema prevents score resurrection after DELETE while preserving
       db.exec('BEGIN');
       try {
         const first = db.prepare(playerSql).run(user, nick, stamp, stamp, user);
-        const second = db.prepare(runSql).run(id, user, 'current', 'hash-' + id,
-          1800000000000, 1800000100000, 1, '1.24.23', user, user);
+        const second = db
+          .prepare(runSql)
+          .run(
+            id,
+            user,
+            'current',
+            'hash-' + id,
+            1800000000000,
+            1800000100000,
+            1,
+            '1.24.23',
+            user,
+            user,
+          );
         db.exec('COMMIT');
         return [first.changes, second.changes];
       } catch (error) {
@@ -110,8 +121,10 @@ test('SQLite D1 schema prevents score resurrection after DELETE while preserving
     }
     assert.deepEqual(start(uid, 'run-first'), [1, 1]);
     db.exec('BEGIN');
-    db.prepare('INSERT OR IGNORE INTO deleted_player_uids (uid,deleted_at) VALUES (?,?)')
-      .run(uid, stamp);
+    db.prepare('INSERT OR IGNORE INTO deleted_player_uids (uid,deleted_at) VALUES (?,?)').run(
+      uid,
+      stamp,
+    );
     db.prepare('DELETE FROM players WHERE uid = ?').run(uid);
     db.exec('COMMIT');
     assert.equal(db.prepare('SELECT COUNT(*) AS n FROM provisional_runs').get().n, 0);

@@ -98,8 +98,7 @@ function fakeD1() {
                   sector,
                   build_sha,
                 ] = args;
-                if (tombstones.has(uid) || !players.has(uid))
-                  return { meta: { changes: 0 } };
+                if (tombstones.has(uid) || !players.has(uid)) return { meta: { changes: 0 } };
                 runs.set(run_id, {
                   run_id,
                   uid,
@@ -382,7 +381,9 @@ test('late or retried POST cannot resurrect deleted profile and delete is idempo
   const h = harness();
   const signup = { nickname: 'Pilot A', consent: true, sector: 1, build: '1.24.23' };
   const before = await h.invoke('/v1/runs/start', {
-    method: 'POST', token: h.validA, body: signup,
+    method: 'POST',
+    token: h.validA,
+    body: signup,
   });
   assert.equal(before.status, 201);
   const oldRun = await before.json();
@@ -395,13 +396,20 @@ test('late or retried POST cannot resurrect deleted profile and delete is idempo
 
   for (let i = 0; i < 3; i++) {
     const lateStart = await h.invoke('/v1/runs/start', {
-      method: 'POST', token: h.validA, body: signup,
+      method: 'POST',
+      token: h.validA,
+      body: signup,
     });
     assert.equal(lateStart.status, 410);
     const lateFinish = await h.invoke('/v1/runs/finish', {
-      method: 'POST', token: h.validA, body: {
-        runId: oldRun.runId, nonce: oldRun.nonce, sector: 1,
-        points: 25, durationMs: 60000,
+      method: 'POST',
+      token: h.validA,
+      body: {
+        runId: oldRun.runId,
+        nonce: oldRun.nonce,
+        sector: 1,
+        points: 25,
+        durationMs: 60000,
       },
     });
     assert.equal(lateFinish.status, 404);
@@ -409,13 +417,12 @@ test('late or retried POST cannot resurrect deleted profile and delete is idempo
     assert.equal(h.db.runs.size, 0);
   }
 
-  assert.equal(
-    (await h.invoke('/v1/me', { method: 'DELETE', token: h.validA })).status,
-    200,
-  );
+  assert.equal((await h.invoke('/v1/me', { method: 'DELETE', token: h.validA })).status, 200);
   assert.equal(h.db.tombstones.size, 1);
   const other = await h.invoke('/v1/runs/start', {
-    method: 'POST', token: h.validB, body: { ...signup, nickname: 'Pilot B' },
+    method: 'POST',
+    token: h.validB,
+    body: { ...signup, nickname: 'Pilot B' },
   });
   assert.equal(other.status, 201);
   assert.equal(h.db.players.has('player-b'), true);

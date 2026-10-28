@@ -1,12 +1,14 @@
 # P0 — Deletion race e integridade do ranking remoto (#114)
 
 ## Falha corrigida em candidato
+
 Uma requisição de início de run iniciada antes de `DELETE /v1/me` podia
 recriar `players` e uma pontuação depois que o usuário tivesse recebido
 confirmação de exclusão. Apenas anular uma Promise no browser não resolve
 requisições que já chegaram ao Worker.
 
 ## Contrato do backend
+
 - Migration 0003 cria `deleted_player_uids`, tabela privada de tombstones
   por Firebase UID, com timestamp. Nunca aparece em endpoints públicos.
 - `DELETE /v1/me` usa **D1 batch transacional**: inserir tombstone
@@ -26,6 +28,7 @@ requisições que já chegaram ao Worker.
   backup e solicitação de eliminação antes de produção.
 
 ## Evidências
+
 - `tests/provisional-ranking.test.mjs` com backend simulado valida
   rejeição de post-delete, exclusão idempotente e isolamento por UID.
 - `tests/ranking-d1-schema.test.mjs` aplica migrations e executa SQL
