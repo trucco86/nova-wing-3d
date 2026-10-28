@@ -1,6 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { chooseBossIntent, bossMeleeHit, bossMeleePose, BOSS_MELEE } from '../src/boss-combat-ai.js';
+import {
+  chooseBossIntent,
+  bossMeleeHit,
+  bossMeleePose,
+  BOSS_MELEE,
+} from '../src/boss-combat-ai.js';
 
 test('four signature bosses select physical moves in response to pilot state and orbit', () => {
   assert.deepEqual(BOSS_MELEE, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);

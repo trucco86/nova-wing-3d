@@ -10,7 +10,6 @@
 - Testes de comportamento, buffs, HUD, câmera e fluxo real em Developer/QA.
 - Sem homologação humana, sem publicação em DEV/HML/PROD.
 
-
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.

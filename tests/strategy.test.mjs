@@ -103,7 +103,11 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   h.game.pause();
   h.advance(4.6);
   h.game.damage(30);
-  assert.equal(h.game.snapshot().shield, shield, 'barrier must remain active after several seconds');
+  assert.equal(
+    h.game.snapshot().shield,
+    shield,
+    'barrier must remain active after several seconds',
+  );
   h.advance(8);
   h.game.damage(30);
   assert.ok(h.game.snapshot().shield < shield, 'barrier expires after twelve seconds');

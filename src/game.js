@@ -526,9 +526,7 @@ export function createGame({
       return false;
     }
     arcana -= spell.cost;
-    specialCd = dynamicFlight
-      ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025))
-      : 8;
+    specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
     if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
     if (strategy.special === 2) stasis = spell.duration;
     if (strategy.special === 1) {
@@ -2941,13 +2939,9 @@ export function createGame({
       }
       if (reactorGridSeconds > 0)
         reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
-      const directedShot = stagePerspectiveAt(
-        sectorIndex,
-        elapsed,
-        current().duration,
-        !!boss,
-        { mission: reactorGridSeconds > 0 ? 'reactor-grid' : '' },
-      );
+      const directedShot = stagePerspectiveAt(sectorIndex, elapsed, current().duration, !!boss, {
+        mission: reactorGridSeconds > 0 ? 'reactor-grid' : '',
+      });
       flightCamera.setShot(directedShot);
       if (directedShot === 'overhead')
         route.label = 'REATOR ÓRBITA-9 · DESVIE EM X/Z · W/S PROFUNDIDADE';
@@ -3467,11 +3461,13 @@ export function createGame({
           attackAge >= 2.72
         ) {
           bossMeleeResolved = true;
-          if (bossMeleeHit(bossIntent, {
-            x: player.position.x,
-            y: player.position.y,
-            orbit: relativeOrbit(),
-          })) {
+          if (
+            bossMeleeHit(bossIntent, {
+              x: player.position.x,
+              y: player.position.y,
+              orbit: relativeOrbit(),
+            })
+          ) {
             hit(bossIntent.damage);
             explode(player.position.clone(), 8, 0xff8060);
             cue('armorHit');
@@ -3546,14 +3542,16 @@ export function createGame({
         t?.state === 'attack' ? poseAge - 2.2 : poseAge,
       );
       boss.userData.organic?.forEach((o, i) => {
-        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1 +
-          melee.tentacle * (i % 2 ? -1 : 1);
+        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1 + melee.tentacle * (i % 2 ? -1 : 1);
         o.rotation.x = melee.tentacle * 0.32;
       });
       boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12 + melee.jaw;
       const biteJaw = boss.getObjectByName('marvin-bite-jaw');
       if (biteJaw) biteJaw.rotation.x = melee.jaw;
-      for (const [name, side] of [['marvin-left-claw', -1], ['marvin-right-claw', 1]]) {
+      for (const [name, side] of [
+        ['marvin-left-claw', -1],
+        ['marvin-right-claw', 1],
+      ]) {
         const claw = boss.getObjectByName(name);
         if (claw) {
           claw.rotation.z = side * melee.claw;
@@ -3606,7 +3604,8 @@ export function createGame({
       bossCd -= dt;
       $('attackWarning').setAttribute?.('data-severity', 'danger');
       const physicalWarning =
-        dynamicFlight && bossIntent &&
+        dynamicFlight &&
+        bossIntent &&
         ['windup', 'attack'].includes(tactics().state) &&
         bossIntent.kind !== 'barrage'
           ? bossIntent.label
@@ -3625,28 +3624,27 @@ export function createGame({
         : signatureWarning
           ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
           : bossCd < 0.65
-          ? '⚠ ' +
-            [
-              'LEQUE DUPLO',
-              'PINÇAS',
-              'HÉLICE',
-              'CRUZ ORBITAL',
-              'ASAS DE FOGO',
-              'MARTELO',
-              'CABEÇAS DA HIDRA',
-              'BATERIAS',
-              'ANEL DO VAZIO',
-              'COROA IMPERIAL',
-            ][sectorIndex]
-          : '';
+            ? '⚠ ' +
+              [
+                'LEQUE DUPLO',
+                'PINÇAS',
+                'HÉLICE',
+                'CRUZ ORBITAL',
+                'ASAS DE FOGO',
+                'MARTELO',
+                'CABEÇAS DA HIDRA',
+                'BATERIAS',
+                'ANEL DO VAZIO',
+                'COROA IMPERIAL',
+              ][sectorIndex]
+            : '';
       if (dynamicFlight && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
       // Only one targeted volley per maneuver; never spray generic bullets
       // over the physical strike window.
       const allowRanged =
-        !dynamicFlight ||
-        (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
+        !dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
       if (bossCd <= 0 && bossCombat.age >= 3 && allowRanged) {
         lastRangedCycle = tactics().cycle;
         bossVolley++;
@@ -3901,8 +3899,11 @@ export function createGame({
     }
     obstacleCd -= dt;
     if (
-      dynamicFlight && sectorIndex === 3 && reactorGridSeconds > 0 &&
-      spawnEncounters && reactorGridWave < 4 &&
+      dynamicFlight &&
+      sectorIndex === 3 &&
+      reactorGridSeconds > 0 &&
+      spawnEncounters &&
+      reactorGridWave < 4 &&
       reactorGridSeconds < 15.8 - reactorGridWave * 3.5
     ) {
       // Playable reactor-grid hazards only during the top-down X/Z section;

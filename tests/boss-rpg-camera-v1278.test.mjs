@@ -19,7 +19,10 @@ test('team plasma and Five Cats Overdrive have meaningful duration and independe
   const special = combat.spendSquadSpecial(100);
   assert.ok(special > 50, 'squad super must have independent meaningful budget');
   const reserveRemainder = combat.spendSquadSpecial(100);
-  assert.ok(reserveRemainder > 0 && reserveRemainder < 25, 'special reserve is capped, not infinite');
+  assert.ok(
+    reserveRemainder > 0 && reserveRemainder < 25,
+    'special reserve is capped, not infinite',
+  );
   assert.equal(combat.spendSquadSpecial(100), 0);
   combat.update(1);
   assert.ok(combat.spendSquadSpecial(200) > 90);
@@ -58,11 +61,18 @@ test('reactor top-down is a playable X/Z navigation objective, never an automati
   h.key('KeyW', false);
   h.key('KeyD');
   h.advance(0.6, 0.1);
-  assert.ok(h.game.snapshot().player.x > started.player.x + 8, 'RIGHT moves across tactical screen');
+  assert.ok(
+    h.game.snapshot().player.x > started.player.x + 8,
+    'RIGHT moves across tactical screen',
+  );
   h.key('KeyD', false);
   h.game.cycleCamera();
   h.advance(0.1);
-  assert.equal(h.game.snapshot().directedShot, 'cockpit', 'manual cockpit overrides mission camera');
+  assert.equal(
+    h.game.snapshot().directedShot,
+    'cockpit',
+    'manual cockpit overrides mission camera',
+  );
   h.advance(18, 0.1);
   assert.equal(h.game.snapshot().directedShot, 'cockpit');
   h.game.cycleCamera();
@@ -78,7 +88,12 @@ test('overhead flight camera keeps the ship inside even narrow mobile viewport',
     const player = new T.Vector3(0, 10, 9);
     rig.reset(player);
     rig.setShot('overhead');
-    for (const [x, z] of [[18, -26], [-18, 26], [0, -44], [15, -15]]) {
+    for (const [x, z] of [
+      [18, -26],
+      [-18, 26],
+      [0, -44],
+      [15, -15],
+    ]) {
       player.set(x, 10, z);
       for (let i = 0; i < 90; i++) rig.update(1 / 60, player, 0, false);
       camera.updateMatrixWorld();

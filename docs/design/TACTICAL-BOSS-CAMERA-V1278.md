@@ -26,14 +26,14 @@ As entradas da decisão são o estado do boost, o robô, a posição e flanco at
 
 ## 3. Vocabulário de combate
 
-| Ataque | Ameaça | Contra-medida |
-| :--- | :--- | :--- |
-| Mordida | Investida na posição assinalada | Deslocamento lateral ou vertical durante aviso |
-| Garra | Varre o flanco de aproximação | Reposicionar a nave e orbitar |
-| Tentáculo | Agarrão rastreado | Sair da área demarcada |
-| Varredura | Área horizontal extensa | Trocar altura |
-| Martelo | Impacto concentrado | Escapar da área de impacto |
-| Broca | Avanço veloz | Esquiva da trajetória e contra-ataque no gerador |
+| Ataque    | Ameaça                          | Contra-medida                                    |
+| :-------- | :------------------------------ | :----------------------------------------------- |
+| Mordida   | Investida na posição assinalada | Deslocamento lateral ou vertical durante aviso   |
+| Garra     | Varre o flanco de aproximação   | Reposicionar a nave e orbitar                    |
+| Tentáculo | Agarrão rastreado               | Sair da área demarcada                           |
+| Varredura | Área horizontal extensa         | Trocar altura                                    |
+| Martelo   | Impacto concentrado             | Escapar da área de impacto                       |
+| Broca     | Avanço veloz                    | Esquiva da trajetória e contra-ataque no gerador |
 
 **Compatibilidade:** o dano da carcaça continua limitado, o núcleo não fica vulnerável sem destruir geradores e a proteção por Barreira/rolamento continua válida.
 
