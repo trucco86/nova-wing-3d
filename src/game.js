@@ -112,7 +112,9 @@ import {
   disposeBoss,
   encounterPattern,
   SUBBOSS_NAMES,
+  animateBossSignature,
 } from './bosses.js';
+import { bossSignatureVolley } from './boss-signature.js';
 import { createBossCombat } from './combat.js';
 import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
@@ -3396,15 +3398,35 @@ export function createGame({
         if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
-          for (let n = 0; n < (dangerous ? 3 : 1); n++) {
-            const origin = boss.position.clone().add(new T.Vector3((n - 1) * 16, 0, 18));
-            for (const target of encounterPattern(
-              sectorIndex,
-              t.cycle + n,
-              player.position,
-              dangerous ? 3 : 1,
-            ))
-              bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+          const signature = bossSignatureVolley(
+            sectorIndex,
+            t.cycle,
+            combatPhase,
+            boss.userData.parts.map((part) => part.hp > 0),
+          );
+          if (signature) {
+            // Projectiles originate from actual robot arms, drill ring, hydra
+            // heads or Marvin's crown. Broken generators disable side batteries.
+            boss.updateMatrixWorld(true);
+            for (const emission of signature.shots) {
+              const origin = boss.localToWorld(new T.Vector3(...emission.origin));
+              const spread = dangerous ? 0.72 : 1.15;
+              const destination = player.position
+                .clone()
+                .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
+              bullet(origin, destination, emission.element);
+            }
+          } else {
+            for (let n = 0; n < (dangerous ? 3 : 1); n++) {
+              const origin = boss.position.clone().add(new T.Vector3((n - 1) * 16, 0, 18));
+              for (const target of encounterPattern(
+                sectorIndex,
+                t.cycle + n,
+                player.position,
+                dangerous ? 3 : 1,
+              ))
+                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+            }
           }
         }
       } else {
@@ -3417,6 +3439,9 @@ export function createGame({
         o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1;
       });
       boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
+      if (dynamicFlight) {
+        animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
+      }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const openGenerator = boss.userData.parts.findIndex(
@@ -3459,8 +3484,18 @@ export function createGame({
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
       $('attackWarning').setAttribute?.('data-severity', 'danger');
-      $('attackWarning').textContent =
-        bossCd < 0.65
+      const signatureWarning =
+        dynamicFlight && tactics().state === 'windup'
+          ? bossSignatureVolley(
+              sectorIndex,
+              tactics().cycle,
+              combatPhase,
+              boss.userData.parts.map((part) => part.hp > 0),
+            )?.name
+          : null;
+      $('attackWarning').textContent = signatureWarning
+        ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+        : bossCd < 0.65
           ? '⚠ ' +
             [
               'LEQUE DUPLO',

@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
+
+- Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
+- Ataques partem de peças visuais da nave/robô e os avisos permanecem na faixa superior do HUD.
+- Testes de assinatura, animação, intensidade por fase e simulação real.
+- Scope limitado aos quatro chefes; mundo aberto e danos por membros individuais continuam no backlog.
+
 ## 1.27.6 — Cenários, perspectiva e chefes diferenciados (candidata DEV)
 
 - Terra e satélite contextualizados na ascensão; lua rachada exclusiva do cinturão de destroços, lua de gelo sem fissuras; ambientação temática de plasma, nebulosa, frota, vazio e fortaleza.
