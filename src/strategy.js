@@ -7,9 +7,9 @@ export const ARSENAL = [
   { name: 'VAZIO', element: 'void', color: '#f15aca', stage: 8, cadence: 0.36, damage: 2.2 },
 ];
 export const SPECIALS = [
-  { name: 'BARREIRA', stage: 0, cost: 30 },
-  { name: 'NOVA', stage: 3, cost: 55 },
-  { name: 'ESTASE', stage: 5, cost: 65 },
+  { name: 'BARREIRA', stage: 0, cost: 30, duration: 12, cooldown: 16 },
+  { name: 'NOVA', stage: 3, cost: 55, duration: 0, cooldown: 14 },
+  { name: 'ESTASE', stage: 5, cost: 65, duration: 11, cooldown: 19 },
 ];
 export const xpForStage = (n) => (n < 10 ? XP_STAGES[n] : 740 + 250 * (n - 9) + 30 * (n - 9) ** 2);
 export const stageAt = (xp) =>
