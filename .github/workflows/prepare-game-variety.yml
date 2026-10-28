@@ -24,7 +24,7 @@ jobs:
         run: npm run release:prepare -- 1.27.6
       - name: Format implementation and documentation
         run: |
-          npx prettier --write src/stage-variety.js src/boss-director.js src/visuals.js src/flight.js src/game.js src/combat.js src/bosses.js src/encounters.js tests/stage-variety.test.mjs tests/boss-director.test.mjs tests/stage-combat-variety.test.mjs docs/design/FIVE-CATS-UNIVERSE.md CHANGELOG.md releases/v1.27.6.md
+          npx prettier --write src/stage-variety.js src/boss-director.js src/visuals.js src/flight.js src/game.js src/combat.js src/bosses.js src/encounters.js tests/stage-variety.test.mjs tests/boss-director.test.mjs tests/stage-combat-variety.test.mjs tests/tactics.test.mjs tests/boss-spectacle.test.mjs docs/design/FIVE-CATS-UNIVERSE.md CHANGELOG.md releases/v1.27.6.md
       - run: npm run build
       - run: npm run build:check
       - run: npm run validate
@@ -36,6 +36,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj src tests/stage-variety.test.mjs tests/boss-director.test.mjs tests/stage-combat-variety.test.mjs docs/design/FIVE-CATS-UNIVERSE.md CHANGELOG.md releases/v1.27.6.md index.html
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj src tests/stage-variety.test.mjs tests/boss-director.test.mjs tests/stage-combat-variety.test.mjs tests/tactics.test.mjs tests/boss-spectacle.test.mjs docs/design/FIVE-CATS-UNIVERSE.md CHANGELOG.md releases/v1.27.6.md index.html
           git commit -m "build(dev): verify v1.27.6 authored worlds and boss combat"
           git push origin HEAD:feat/stage-diversity-boss-combat-v1276
