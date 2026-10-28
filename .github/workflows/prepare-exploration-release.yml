@@ -1,0 +1,35 @@
+name: Prepare isolated v1.27.9 exploration foundation
+on:
+  push:
+    branches: [feat/five-cats-exploration-core]
+    paths: [.github/workflows/prepare-exploration-release.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.9
+      - run: npx prettier --write CHANGELOG.md releases/v1.27.9.md
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit versioned candidate
+        run: |
+          if git diff --quiet; then
+            echo "No drift"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.9.md
+          git commit -m "build(explore): version isolated quest foundation v1.27.9"
+          git push origin HEAD:feat/five-cats-exploration-core
