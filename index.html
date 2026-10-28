@@ -6161,20 +6161,76 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
 }
 
 /* Menu UX: consistent centered action column, ranking after How to Play. */
-#menu.title-screen .title-content { width: min(100%, 420px); margin-inline: auto; }
+#menu.title-screen .title-content {
+  width: min(100%, 420px);
+  margin-inline: auto;
+}
 #menu.title-screen .title-actions,
-#menu.title-screen .title-extras { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; width: 100%; max-width: 420px; margin-inline: auto; }
+#menu.title-screen .title-extras {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
+}
 #menu.title-screen .title-actions button,
-#menu.title-screen .title-extras button { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px 16px; border-radius: 12px; text-align: center; justify-content: center; font-weight: 700; letter-spacing: .055em; }
-#menu.title-screen .title-actions .primary { min-height: 54px; }
+#menu.title-screen .title-extras button {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-align: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+}
+#menu.title-screen .title-actions .primary {
+  min-height: 54px;
+}
 #menu.title-screen #novaAuth,
 #menu.title-screen .title-help,
-#menu.title-screen #novaRanking { box-sizing: border-box; width: 100%; max-width: 420px; margin: 10px auto 0; }
-body.menu #menu #novaRanking { position: relative; inset: auto; z-index: 3; color: #e1f4f7; }
-body.menu #menu #novaRanking > summary { display: flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; width: 100%; min-height: 48px; border-radius: 12px; text-align: center; }
-body.menu #menu #novaRanking[open] { max-height: none; overflow: visible; }
-body.ranking-intermission #novaRanking { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); width: min(355px, calc(100vw - 24px)); z-index: 109; }
-@media (max-width: 600px) { #menu.title-screen .title-actions, #menu.title-screen .title-extras { gap: 8px; } }
+#menu.title-screen #novaRanking {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  margin: 10px auto 0;
+}
+body.menu #menu #novaRanking {
+  position: relative;
+  inset: auto;
+  z-index: 3;
+  color: #e1f4f7;
+}
+body.menu #menu #novaRanking > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  text-align: center;
+}
+body.menu #menu #novaRanking[open] {
+  max-height: none;
+  overflow: visible;
+}
+body.ranking-intermission #novaRanking {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  width: min(355px, calc(100vw - 24px));
+  z-index: 109;
+}
+@media (max-width: 600px) {
+  #menu.title-screen .title-actions,
+  #menu.title-screen .title-extras {
+    gap: 8px;
+  }
+}
 
     </style>
   </head>
@@ -6531,90 +6587,96 @@ body.ranking-intermission #novaRanking { position: fixed; top: max(12px, env(saf
             </p>
           </details>
           <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
-          <summary aria-label="Abrir ranking Five Cats">
-          ◈ RANK <span class="rank-pill">TOP 20</span>
-          </summary>
-          <div class="nova-rank-content">
-          <div class="rank-headline">
-          <div>
-          <span class="rank-overline">FIVE CATS · PILOT BOARD</span>
-          <strong>RANKING GALÁCTICO</strong>
-          </div>
-          <details class="rank-info">
-          <summary aria-label="Informações do ranking" title="Informações do ranking">i</summary>
-          <div class="rank-help">
-          <strong>COMO FUNCIONA</strong>
-          <p>O ranking online é experimental e as pontuações ainda não são verificadas.</p>
-          <p>
-          Entre com Google e ative a participação para salvar próximas partidas. Visitantes
-          continuam jogando; seu histórico local não sincroniza.
-          </p>
-          <p>
-          Excluir os dados remotos preserva o progresso local, mas bloqueia nova inscrição
-          desta conta até existir um processo seguro de reinscrição.
-          </p>
-          </div>
-          </details>
-          </div>
-          <div class="rank-identity-line">
-          <span data-rank-identity>Visitante · resultados locais</span>
-          <button
-          type="button"
-          data-rank-refresh
-          aria-label="Atualizar ranking"
-          title="Atualizar ranking"
-          >
-          ↻
-          </button>
-          </div>
-          <ol data-rank-global class="rank-leaderboard">
-          <li>Ranking online ainda não configurado.</li>
-          </ol>
-          <p class="rank-inline-status" data-rank-status role="status" aria-live="polite"></p>
-          <div class="rank-local-best">
-          <span>MEU DESEMPENHO</span>
-          <strong data-rank-summary>0 fases · recorde 0 pts · total 0</strong>
-          </div>
-          <details class="rank-expansion">
-          <summary>MINHAS PARTIDAS</summary>
-          <div class="rank-history">
-          <strong>NA NUVEM</strong>
-          <ol data-rank-cloud>
-          <li>Entre com Google para consultar.</li>
-          </ol>
-          <strong>NESTE DISPOSITIVO</strong>
-          <ol data-rank-local>
-          <li>Sem partidas concluídas.</li>
-          </ol>
-          </div>
-          </details>
-          <details class="rank-expansion rank-enroll">
-          <summary>PARTICIPAR / PRIVACIDADE</summary>
-          <div class="rank-enrollment">
-          <label
-          >Apelido público
-          <input
-          data-rank-nickname
-          type="text"
-          maxlength="24"
-          value="Piloto"
-          autocomplete="nickname"
-          />
-          </label>
-          <label class="nova-rank-consent">
-          <input data-rank-consent type="checkbox" />
-          Quero participar do ranking experimental e salvar minhas próximas pontuações na minha
-          conta.
-          </label>
-          <button type="button" data-rank-delete disabled>EXCLUIR MEUS DADOS NA NUVEM</button>
-          <small
-          >Exclui suas pontuações remotas após confirmação, sem apagar sua conta Google ou seu
-          progresso local. A mesma conta só poderá participar novamente após existir um novo
-          processo de inscrição.</small
-          >
-          </div>
-          </details>
-          </div>
+            <summary aria-label="Abrir ranking Five Cats">
+              ◈ RANK <span class="rank-pill">TOP 20</span>
+            </summary>
+            <div class="nova-rank-content">
+              <div class="rank-headline">
+                <div>
+                  <span class="rank-overline">FIVE CATS · PILOT BOARD</span>
+                  <strong>RANKING GALÁCTICO</strong>
+                </div>
+                <details class="rank-info">
+                  <summary aria-label="Informações do ranking" title="Informações do ranking">
+                    i
+                  </summary>
+                  <div class="rank-help">
+                    <strong>COMO FUNCIONA</strong>
+                    <p>
+                      O ranking online é experimental e as pontuações ainda não são verificadas.
+                    </p>
+                    <p>
+                      Entre com Google e ative a participação para salvar próximas partidas.
+                      Visitantes continuam jogando; seu histórico local não sincroniza.
+                    </p>
+                    <p>
+                      Excluir os dados remotos preserva o progresso local, mas bloqueia nova
+                      inscrição desta conta até existir um processo seguro de reinscrição.
+                    </p>
+                  </div>
+                </details>
+              </div>
+              <div class="rank-identity-line">
+                <span data-rank-identity>Visitante · resultados locais</span>
+                <button
+                  type="button"
+                  data-rank-refresh
+                  aria-label="Atualizar ranking"
+                  title="Atualizar ranking"
+                >
+                  ↻
+                </button>
+              </div>
+              <ol data-rank-global class="rank-leaderboard">
+                <li>Ranking online ainda não configurado.</li>
+              </ol>
+              <p class="rank-inline-status" data-rank-status role="status" aria-live="polite"></p>
+              <div class="rank-local-best">
+                <span>MEU DESEMPENHO</span>
+                <strong data-rank-summary>0 fases · recorde 0 pts · total 0</strong>
+              </div>
+              <details class="rank-expansion">
+                <summary>MINHAS PARTIDAS</summary>
+                <div class="rank-history">
+                  <strong>NA NUVEM</strong>
+                  <ol data-rank-cloud>
+                    <li>Entre com Google para consultar.</li>
+                  </ol>
+                  <strong>NESTE DISPOSITIVO</strong>
+                  <ol data-rank-local>
+                    <li>Sem partidas concluídas.</li>
+                  </ol>
+                </div>
+              </details>
+              <details class="rank-expansion rank-enroll">
+                <summary>PARTICIPAR / PRIVACIDADE</summary>
+                <div class="rank-enrollment">
+                  <label
+                    >Apelido público
+                    <input
+                      data-rank-nickname
+                      type="text"
+                      maxlength="24"
+                      value="Piloto"
+                      autocomplete="nickname"
+                    />
+                  </label>
+                  <label class="nova-rank-consent">
+                    <input data-rank-consent type="checkbox" />
+                    Quero participar do ranking experimental e salvar minhas próximas pontuações na
+                    minha conta.
+                  </label>
+                  <button type="button" data-rank-delete disabled>
+                    EXCLUIR MEUS DADOS NA NUVEM
+                  </button>
+                  <small
+                    >Exclui suas pontuações remotas após confirmação, sem apagar sua conta Google ou
+                    seu progresso local. A mesma conta só poderá participar novamente após existir
+                    um novo processo de inscrição.</small
+                  >
+                </div>
+              </details>
+            </div>
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>

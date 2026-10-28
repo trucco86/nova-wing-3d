@@ -6144,17 +6144,73 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
 }
 
 /* Menu UX: consistent centered action column, ranking after How to Play. */
-#menu.title-screen .title-content { width: min(100%, 420px); margin-inline: auto; }
+#menu.title-screen .title-content {
+  width: min(100%, 420px);
+  margin-inline: auto;
+}
 #menu.title-screen .title-actions,
-#menu.title-screen .title-extras { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; width: 100%; max-width: 420px; margin-inline: auto; }
+#menu.title-screen .title-extras {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  margin-inline: auto;
+}
 #menu.title-screen .title-actions button,
-#menu.title-screen .title-extras button { box-sizing: border-box; width: 100%; min-height: 48px; padding: 12px 16px; border-radius: 12px; text-align: center; justify-content: center; font-weight: 700; letter-spacing: .055em; }
-#menu.title-screen .title-actions .primary { min-height: 54px; }
+#menu.title-screen .title-extras button {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-align: center;
+  justify-content: center;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+}
+#menu.title-screen .title-actions .primary {
+  min-height: 54px;
+}
 #menu.title-screen #novaAuth,
 #menu.title-screen .title-help,
-#menu.title-screen #novaRanking { box-sizing: border-box; width: 100%; max-width: 420px; margin: 10px auto 0; }
-body.menu #menu #novaRanking { position: relative; inset: auto; z-index: 3; color: #e1f4f7; }
-body.menu #menu #novaRanking > summary { display: flex; align-items: center; justify-content: center; gap: 10px; box-sizing: border-box; width: 100%; min-height: 48px; border-radius: 12px; text-align: center; }
-body.menu #menu #novaRanking[open] { max-height: none; overflow: visible; }
-body.ranking-intermission #novaRanking { position: fixed; top: max(12px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); width: min(355px, calc(100vw - 24px)); z-index: 109; }
-@media (max-width: 600px) { #menu.title-screen .title-actions, #menu.title-screen .title-extras { gap: 8px; } }
+#menu.title-screen #novaRanking {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  margin: 10px auto 0;
+}
+body.menu #menu #novaRanking {
+  position: relative;
+  inset: auto;
+  z-index: 3;
+  color: #e1f4f7;
+}
+body.menu #menu #novaRanking > summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  border-radius: 12px;
+  text-align: center;
+}
+body.menu #menu #novaRanking[open] {
+  max-height: none;
+  overflow: visible;
+}
+body.ranking-intermission #novaRanking {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  width: min(355px, calc(100vw - 24px));
+  z-index: 109;
+}
+@media (max-width: 600px) {
+  #menu.title-screen .title-actions,
+  #menu.title-screen .title-extras {
+    gap: 8px;
+  }
+}
