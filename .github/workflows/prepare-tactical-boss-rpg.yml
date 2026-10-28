@@ -25,7 +25,7 @@ jobs:
         run: npm run release:prepare -- 1.27.8
       - name: Format authored source, specs and regression tests
         run: |
-          npx prettier --write src/game.js src/boss-combat-ai.js src/bosses.js src/tactics.js src/flight.js src/stage-variety.js src/combat.js src/strategy.js src/five-cats-runtime.js src/five-cats-squad.js tests/boss-combat-ai.test.mjs tests/boss-rpg-camera-v1278.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/five-cats-formation-supers.test.mjs tests/strategy.test.mjs docs/design/TACTICAL-BOSS-CAMERA-V1278.md releases/v1.27.8.md CHANGELOG.md
+          npx prettier --write src/game.js src/boss-combat-ai.js src/bosses.js src/tactics.js src/flight.js src/stage-variety.js src/combat.js src/strategy.js src/five-cats-runtime.js src/five-cats-squad.js tests/boss-combat-ai.test.mjs tests/boss-rpg-camera-v1278.test.mjs tests/boss-signature-scene.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/five-cats-formation-supers.test.mjs tests/strategy.test.mjs docs/design/TACTICAL-BOSS-CAMERA-V1278.md releases/v1.27.8.md CHANGELOG.md
       - run: npm run build
       - run: npm run build:check
       - run: npm run validate
