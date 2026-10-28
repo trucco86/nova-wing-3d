@@ -218,7 +218,9 @@ test('evolving pods, distinct rings, cruiser and reactor collapse render', async
   }
   expect(errors).toEqual([]);
 });
-test('six music states render finite audible audio without clipping', async ({ page }, info) => {
+test('menu and six music states render stereo bass with finite audio and no clipping', async ({
+  page,
+}, info) => {
   test.setTimeout(90000);
   await page.goto('/__audio.html');
   await page.getByRole('button', { name: 'Renderizar trilha' }).click();
@@ -227,6 +229,7 @@ test('six music states render finite audible audio without clipping', async ({ p
   });
   const metrics = JSON.parse(await page.locator('pre').textContent());
   expect(metrics.map((m) => m.mode)).toEqual([
+    'menu',
     'sector',
     'subboss',
     'boss',
@@ -238,6 +241,9 @@ test('six music states render finite audible audio without clipping', async ({ p
     expect(m.finite).toBe(true);
     expect(m.rms).toBeGreaterThan(0.005);
     expect(m.peak).toBeLessThan(0.98);
+    expect(m.bassRms).toBeGreaterThan(0.003);
+    expect(m.bassFraction).toBeGreaterThan(0.15);
+    expect(m.stereoRms).toBeGreaterThan(0.0001);
   }
   const download = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Baixar demonstração' }).click();
