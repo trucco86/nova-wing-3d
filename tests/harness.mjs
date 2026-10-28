@@ -62,6 +62,8 @@ export function harness({
   nativeLifecycle = false,
   coarsePointer = false,
   observeScene = () => {},
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const elements = new Map(
     [
