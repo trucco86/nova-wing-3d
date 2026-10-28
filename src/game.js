@@ -82,6 +82,8 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
+import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
+import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
@@ -235,16 +237,37 @@ export function createGame({
   let robotMode = false;
   let robotCooldown = 0;
   let robotTransition = 0;
-  let robotFireKick = 0;
+  let mechaEngine = null;
+  let lockEnabled = false;
+  let lockedId = null;
+  let lockProgress = 0;
+  let precisionCd = 0;
+  function resetMechaLock() {
+    lockEnabled = false;
+    lockedId = null;
+    lockProgress = 0;
+    $('lockTouch').ariaPressed = 'false';
+    $('mechaLockStatus').hidden = true;
+    $('mechaLockReticle').hidden = true;
+  }
+  function toggleMechaLock() {
+    if (!robotMode || state !== 'playing') return;
+    lockEnabled = !lockEnabled;
+    if (!lockEnabled) resetMechaLock();
+    else $('lockTouch').ariaPressed = 'true';
+  }
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = 0.7;
     robotMode = !robotMode;
+    if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
-    shipModule.visible = !robotMode;
-    if (evolution) evolution.visible = !robotMode;
+    $('lockTouch').hidden = !robotMode;
+    unlockAudio();
+    if (!mechaEngine && audioCtx && robotMode) mechaEngine = createMechaThrusterAudio(audioCtx);
+    cue('mechaTransform');
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
@@ -741,6 +764,8 @@ export function createGame({
     document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
+    mechaEngine?.silence();
+    resetMechaLock();
     keys.clear();
     touchFire = touchBoost = false;
     charge = 0;
@@ -855,6 +880,10 @@ export function createGame({
     if (evolution) evolution.visible = true;
     robotCooldown = 0;
     robotTransition = 0;
+    precisionCd = 0;
+    mechaEngine?.silence();
+    resetMechaLock();
+    $('lockTouch').hidden = true;
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
@@ -1239,7 +1268,7 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false, scatter = false) {
+  function launchShot(x, damage = 2, charged = false, origin = null) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
@@ -1252,9 +1281,9 @@ export function createGame({
       ),
     );
     o.rotation.x = Math.PI / 2;
-    o.position.copy(player.position);
+    o.position.copy(origin ?? player.position);
     o.position.x += x;
-    o.position.z -= 3;
+    if (!origin) o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
     scene.add(o);
     shots.push({
@@ -1276,12 +1305,10 @@ export function createGame({
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot(
-        scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9,
-        (2 + weapon) * power,
-        false,
-        scatter,
-      );
+      const rightHand = robotMode
+        ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
+        : null;
+      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, rightHand);
       const b = shots.at(-1);
       if (dynamicFlight) {
         b.homing = !scatter && strategy.arsenal === 3;
@@ -1304,6 +1331,96 @@ export function createGame({
       ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
         (scatter ? SCATTER_CADENCE_FACTOR : 1)
       : 0.135;
+  }
+
+  /** Right wrist maintains frontal pressure. Left wrist requires LOS lock for precision. */
+  function updateMechaLock(dt, dx, dy) {
+    let selected = null;
+    if (lockEnabled) {
+      if (boss) boss.updateMatrixWorld(true);
+      const candidates = boss
+        ? [
+            ...boss.userData.parts.flatMap((part, i) =>
+              part.hp > 0 && weakPointOpen(relativeOrbit(), i)
+                ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
+                : [],
+            ),
+            ...(bossCombat?.coreOpen &&
+            boss.userData.parts.every((part) => part.hp <= 0) &&
+            weakPointOpen(relativeOrbit())
+              ? [
+                  {
+                    id: boss.userData.core,
+                    position: boss.userData.core.getWorldPosition(new T.Vector3()),
+                    weak: true,
+                  },
+                ]
+              : []),
+          ]
+        : enemies
+            .filter((enemy) => !enemy.dead)
+            .map((enemy) => ({
+              id: enemy,
+              position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
+              weak: enemy.kind === 'subboss',
+            }));
+      selected = selectMechaTarget(player.position, candidates, {
+        visible: (from, to) =>
+          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
+      });
+    }
+    if (selected?.id !== lockedId) {
+      lockedId = selected?.id ?? null;
+      lockProgress = 0;
+    } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
+    const position = selected?.position ?? null;
+    updateMechaPose(robot, {
+      dt,
+      time: visualTime,
+      boosting,
+      strafe: dx,
+      vertical: dy,
+      firing: touchFire || keys.has('Space'),
+      targetWorld: position,
+      transforming: robotTransition,
+    });
+    const status = $('mechaLockStatus');
+    status.hidden = !lockEnabled;
+    if (lockEnabled)
+      status.textContent = !selected
+        ? 'MIRA · SEM ALVO'
+        : lockProgress < 0.8
+          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+          : precisionCd > 0
+            ? 'MIRA · RECARGA'
+            : 'MIRA · FIXADA';
+    const marker = $('mechaLockReticle');
+    marker.hidden = true;
+    if (position) {
+      const projected = position.clone().project(camera);
+      if (
+        projected.z > -1 &&
+        projected.z < 1 &&
+        Math.abs(projected.x) <= 1 &&
+        Math.abs(projected.y) <= 1
+      ) {
+        marker.hidden = false;
+        marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+        marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
+      }
+    }
+    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
+      robot.updateMatrixWorld(true);
+      const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
+      launchShot(0, weaponPower() * 5, false, muzzle);
+      const shot = shots.at(-1);
+      shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
+      shot.homing = false;
+      energy -= 10;
+      precisionCd = 2;
+      lockProgress = 0;
+      cue('mechaPrecision');
+    }
   }
   function enemy(kind = 'fighter') {
     const airborneRobot = kind === 'hover-walker';
@@ -1755,6 +1872,7 @@ export function createGame({
       state = 'paused';
       $('bossIncoming').hidden = true;
       music?.pause();
+      mechaEngine?.silence();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
       $('pauseConfirmPanel').hidden = true;
@@ -2191,6 +2309,7 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
+    if (e.code === 'KeyN') toggleMechaLock();
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -2228,6 +2347,7 @@ export function createGame({
     heldPointers.clear();
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
+    mechaEngine?.silence();
   }
   addEventListener('blur', () => {
     releaseControls();
@@ -2314,6 +2434,10 @@ export function createGame({
     e.preventDefault?.();
     toggleRobot();
   };
+  $('lockTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    toggleMechaLock();
+  };
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -2321,7 +2445,8 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
-    robotFireKick = Math.max(0, robotFireKick - dt);
+    if (robot.visible) robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
+    precisionCd = Math.max(0, precisionCd - dt);
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -2480,6 +2605,14 @@ export function createGame({
       boosting,
       dynamicFlight ? route : undefined,
     );
+    if (robotMode) updateMechaLock(dt, dx, dy);
+    mechaEngine?.update({
+      dt,
+      active: robotMode && state === 'playing' && !muted && appActive,
+      boosting,
+      accelerating: Math.max(Math.abs(dx), Math.abs(dy)),
+      volume: settings.master * settings.sfx,
+    });
     reticle.position.set(player.position.x, player.position.y, -60);
     // Keep legacy/native 3D sight; use clearer projected HUD for the web.
     reticle.visible = !dynamicFlight;
@@ -3674,6 +3807,16 @@ export function createGame({
       podMode,
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
+      mecha: {
+        active: robotMode,
+        lockEnabled,
+        lockProgress,
+        precisionCd,
+        targetLocked: !!lockedId && lockProgress >= 0.8,
+        motor: mechaEngine?.snapshot() ?? null,
+        leftYaw: robot.userData.mecha.arms.left.shoulder.rotation.y,
+        thrustLength: robot.userData.mecha.thrusters[0].plume.scale.y,
+      },
       boostVisual: {
         color: player.userData.flames[0].material.color.getHex(),
         length: player.userData.flames[0].scale.y,
@@ -3737,6 +3880,7 @@ export function createGame({
       $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
+      mechaEngine?.destroy();
       cinematicStage?.destroy();
       localization.destroy();
       cleanups.forEach((fn) => fn());
