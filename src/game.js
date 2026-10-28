@@ -123,6 +123,7 @@ export function createGame({
   random = Math.random,
   autoLoop = true,
   spawnEncounters = true,
+  enableSquadIntro = true,
   nativeLifecycle = false,
   onStageStarted = () => {},
   onStageFinished = () => {},
@@ -867,7 +868,7 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
-    squad?.begin(sectorIndex === 0);
+    squad?.begin(sectorIndex === 0 && enableSquadIntro);
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
