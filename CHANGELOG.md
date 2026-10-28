@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.24.24 — Conta e ranking multilíngues (candidata)
+
+- Tradução PT/EN/ES do login Google, modo visitante, opt-in, leaderboard, histórico remoto e exclusão.
+- Mensagens dinâmicas e labels acessíveis seguem idioma de Options, com datas locais por idioma.
+- A exclusão informa a restrição de reinscrição até existir novo protocolo autenticado.
+- Testes de cobertura de tradução, datas e confirmação destrutiva localizada.
+- Candidata sem homologação Firebase/Cloudflare real e sem publicação em produção.
+
 ## 1.24.23 — Exclusão de dados de ranking (candidata)
 
 - Controle de exclusão do apelido e pontuações remotas somente para conta Google autenticada.
