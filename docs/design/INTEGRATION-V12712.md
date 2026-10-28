@@ -18,3 +18,10 @@ O fluxo `.github/workflows/integration-compile.yml` regenera exclusivamente `ind
 3. Câmera: controle, visibilidade da nave e transição apenas com propósito tático.
 4. Órbita-9: SAIR, scanner, três pistas, escolha com NPC e combate; nenhum save/ranking remoto.
 5. Playwright mobile retrato/paisagem, performance WebGL, source repair, CI completa e avaliação humana antes de DEV.
+
+## Evidência de integração (2026-10-28)
+- Código-fonte combinado no commit `dcdaefb`: IA física, 10 chefes, RPG estendido e investigação 3D.
+- Bundle compilado e com commit pelo workflow isolado: execução [40786736890](https://github.com/trucco86/nova-wing-3d/actions/runs/40786736890), resultado **success**.
+- O commit automático `366ced0` contém o `index.html` reconstruído.
+- As execuções da CI da PR após o commit do bot foram marcadas `action_required`, **sem jobs iniciados**. Isso não é teste aprovado; o gate precisa ser executado no novo SHA e revisado.
+- A homologação de gameplay/mobile permanece pendente; nenhum deploy em DEV, HML ou produção foi autorizado.
