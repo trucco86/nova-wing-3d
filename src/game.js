@@ -793,6 +793,8 @@ export function createGame({
   function enterSector(resupply = true) {
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    $('launchBoostNotice').hidden = true;
+    $('boostTouch').classList.remove('launch-required');
     arcade = null;
     arcadeDone = false;
     $('arcadePanel').hidden = true;
@@ -1377,8 +1379,11 @@ export function createGame({
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
-    boss.position.set(0, 10, -230);
+    // Enter through the illuminated hangar of the mother ship in the distance.
+    // No instant pop-in to the combat position.
+    boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight) {
+      world.showCarrierForBoss?.();
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
       message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
@@ -1394,7 +1399,10 @@ export function createGame({
     );
   }
   function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
-    if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return 0;
+    if (
+      state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0 ||
+      (dynamicFlight && bossCombat?.age < 4.6)
+    ) return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
     const openPart = (p) =>
@@ -2238,6 +2246,10 @@ export function createGame({
         chargeBefore: energyBeforeBoost,
         chargeAfter: energy,
       });
+      const boostGuide = $('launchBoostNotice');
+      const needsBoost = launchState.phase === 'boost' && state === 'playing';
+      boostGuide.hidden = !needsBoost;
+      $('boostTouch').classList.toggle('launch-required', needsBoost);
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
           message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
@@ -2549,7 +2561,8 @@ export function createGame({
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;
-      $('bossIncoming').textContent = '⚠ ALERTA · CHEFE SE APROXIMANDO';
+      world.showCarrierForBoss?.();
+      $('bossIncoming').textContent = '⚠ NAVE-MÃE ABRINDO HANGAR · CHEFE SAINDO';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
@@ -2811,10 +2824,14 @@ export function createGame({
       if (dynamicFlight) {
         const t = tactics();
         const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
+        // Cinematic 4.6 s launch: boss exits the ship's central bay in the
+        // background before following its existing tactic trajectory.
+        const exit = T.MathUtils.clamp(bossCombat.age / 4.6, 0, 1);
+        const departure = exit * exit * (3 - 2 * exit);
         boss.position.set(
-          t.x * approach,
-          10 + (t.y - 10) * approach,
-          -230 + (t.z + 230) * approach,
+          t.x * departure,
+          57 + (10 + (t.y - 10) * approach - 57) * departure,
+          -680 + (-230 + (t.z + 230) * approach + 680) * departure,
         );
         boss.rotation.z = t.bank;
         $('battleRadar').style.background = radarGradient(t);
@@ -2831,7 +2848,7 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        if (bossCombat.age >= 4.6 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
           for (let n = 0; n < (dangerous ? 3 : 1); n++) {
