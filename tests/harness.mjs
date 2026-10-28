@@ -56,10 +56,14 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableSquadIntro = false,
   seed = 42,
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  observeScene = () => {},
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const elements = new Map(
     [
@@ -126,8 +130,9 @@ export function harness({
     getPixelRatio: () => 1,
     setSize() {},
     setRenderTarget() {},
-    render() {
+    render(scene, camera) {
       calls.renders++;
+      observeScene(scene, camera);
     },
     dispose() {},
   };
@@ -144,7 +149,10 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableSquadIntro,
     nativeLifecycle,
+    onStageStarted,
+    onStageFinished,
   });
   return {
     game,

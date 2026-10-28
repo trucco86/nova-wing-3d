@@ -57,6 +57,11 @@ test('shields, attacks and ordinary communications stay in the top information r
     node.textContent = '⚠ ATAQUE IMINENTE';
     node.dataset.severity = 'danger';
   });
+  // Critical integrity must visually preempt even a later attack message.
+  if (info.project.name === 'mobile') {
+    await expect(page.locator('#attackWarning')).toBeHidden();
+    await page.evaluate(() => (document.querySelector('#criticalWarning').hidden = true));
+  }
   await expect(page.locator('#attackWarning')).toHaveCSS('animation-name', 'nw-top-danger-blink');
   await withinTopZone(page.locator('#attackWarning'), page);
   expect(errors).toEqual([]);

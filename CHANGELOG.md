@@ -1,10 +1,36 @@
 # Histórico
 
+## 1.27.0 — Integração unificada DEV (candidata)
+
+- HUD mobile P0, prioridade de avisos e controles protegidos; satélite orbital, chegada do chefe pela nave-mãe e melhoria visual dos caças.
+- Mecha angular com asa compartilhada, neon progressivo, turbinas animadas e som reativo, duas mãos independentes, lock-on e recoil.
+- Formação de cinco naves liderada por Bia, aliados, plasma e especial Five Cats Overdrive.
+- Trilha e efeitos cinematográficos originais; transições de fase, caverna 3D e boss gate do mega-asteroide no setor 3.
+- Histórico local de vitórias e derrotas, sem dependência de Firebase/D1; nenhuma gravação remota do ranking habilitada.
+- Integração passou em 286 testes unitários, lint, formato e build reproduzível. Testes de navegador e aceite mobile ainda requeridos; versão não publicada em HML/PROD.
+
+## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
+
+- Aviso de vida crítica prevalece sobre ataque iminente, escudo baixo, aproximação de chefe, coleta e rádio em telas touch.
+- Informações de menor prioridade voltam automaticamente quando o risco principal termina, preservando os estados internos.
+- Teste de estresse Playwright cobre 320×568, 390×844 e 844×390, segurança da área central e acesso aos botões de ataque, impulso, bomba e robô.
+- Sem alterações de gameplay, ranking, autenticação, produção ou salvamento; candidata requer CI completa e homologação visual.
+
+## 1.24.24 — Conta e ranking multilíngues (candidata)
+
+- Arranjos originais com andamento mais contido, pads sustentados, percussão de ruído filtrado, tambores graves e mixagem estéreo.
+- Transformação e retorno com servo/travas/impacto, turbina contínua responsiva ao robô e BOOST, ignição, impactos na nave e explosões com textura própria.
+- Buffers reutilizados, vozes limitadas, prioridade para alertas/impactos, pausa e controles de volume preservados; renderização real de áudio em CI para análise e audição.
+- Candidata conjunta de Mecha/armas/paletas/áudio; métricas técnicas não equivalem a homologação estética ou audição humana.
+
+## 1.25.0 — Mecha 2.0: integração limpa para validação
+
+- Candidata sem homologação visual: armadura angular, asas, turbina dorsal articulada e pintura por nave.
+- Propulsão contínua por dt, boost touch e movimentação de braços/pernas.
+- Testes automatizados de rig e preview separados de mudanças do HUD e arsenal.
+- **Não publicar em produção sem QA visual e desempenho.**
+
 ## 1.24.20 — Candidata em preparação
-
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
-
-## 1.24.19 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
 
@@ -87,7 +113,7 @@
 - Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
 - Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
 
-## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+## 1.23 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
 - Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
 - Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.

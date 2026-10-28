@@ -55,6 +55,9 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { createAsteroidInterior } from './asteroid-interior.js';
+import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   SCATTER_CADENCE_FACTOR,
@@ -81,6 +84,10 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
+import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
+import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { createFiveCatsSquad } from './five-cats-runtime.js';
+import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
@@ -110,6 +117,9 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  animateMechPower,
+  resetMechPower,
+  setFighterEvolution,
   createShipModule,
   createWorld,
   postProcessor,
@@ -128,7 +138,10 @@ export function createGame({
   random = Math.random,
   autoLoop = true,
   spawnEncounters = true,
+  enableSquadIntro = true,
   nativeLifecycle = false,
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
@@ -191,6 +204,9 @@ export function createGame({
   const world = createWorld(scene, random, dynamicFlight),
     post = postProcessor(renderer, scene, camera);
   post.resize(innerWidth, innerHeight);
+  const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
+  let journey = initialJourney(0);
+  let asteroidWallCooldown = 0;
   const buildingMat = metal('#173344');
   const green = glowMaterial('#64ffe4', 4),
     enemyOrbMat = glowMaterial('#ff5065', 3);
@@ -222,19 +238,105 @@ export function createGame({
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  const squad = dynamicFlight
+    ? createFiveCatsSquad({
+        scene,
+        player,
+        createWing(pilot) {
+          const wing = fighter();
+          wing.name = 'five-cats-wingman-' + pilot.id;
+          wing.userData.paint?.forEach((material) => material.color.set(pilot.color));
+          wing.scale.setScalar(1.1);
+          return wing;
+        },
+        fireFrom(origin, target, damage, element, charged) {
+          launchShot(0, damage, charged, origin);
+          const shot = shots.at(-1);
+          shot.v = target
+            .clone()
+            .sub(origin)
+            .normalize()
+            .multiplyScalar(charged ? 250 : 195);
+          shot.element = element;
+          shot.homing = false;
+          shot.source = 'five-cats';
+          shot.life = 1.5;
+          if (charged) shot.o.scale.setScalar(5);
+        },
+        opponent() {
+          if (boss) {
+            boss.updateMatrixWorld(true);
+            const weak = boss.userData.parts.find(
+              (p, i) => p.hp > 0 && weakPointOpen(relativeOrbit(), i),
+            );
+            if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
+            if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
+              return boss.userData.core.getWorldPosition(new T.Vector3());
+            return null;
+          }
+          const target = enemies.find((e) => !e.dead);
+          return target ? target.o.position.clone().add(new T.Vector3(0, target.hitY, 0)) : null;
+        },
+        obstacleRange() {
+          const nearest = obstacles
+            .filter(
+              ({ o }) =>
+                o.position.z < player.position.z &&
+                Math.abs(o.position.x - player.position.x) < 6 &&
+                Math.abs(o.position.y - player.position.y) < 6,
+            )
+            .reduce(
+              (distance, { o }) => Math.min(distance, player.position.z - o.position.z - 6),
+              150,
+            );
+          return Math.max(5, nearest);
+        },
+        notify: (text) => message(text),
+        cue: (sound) => cue(sound),
+        status: $('squadSuperStatus'),
+        formationStatus: $('squadFormationStatus'),
+      })
+    : null;
+  let skipSquadIntro = false;
   let robotMode = false;
+  let robotFireKick = 0;
   let robotCooldown = 0;
   let robotTransition = 0;
+  let mechaEngine = null;
+  let lockEnabled = false;
+  let lockedId = null;
+  let lockProgress = 0;
+  let precisionCd = 0;
+  function resetMechaLock() {
+    lockEnabled = false;
+    lockedId = null;
+    lockProgress = 0;
+    $('lockTouch').ariaPressed = 'false';
+    $('mechaLockStatus').hidden = true;
+    $('mechaLockReticle').hidden = true;
+  }
+  function toggleMechaLock() {
+    if (!robotMode || state !== 'playing') return;
+    lockEnabled = !lockEnabled;
+    if (!lockEnabled) resetMechaLock();
+    else $('lockTouch').ariaPressed = 'true';
+  }
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
-    robotTransition = 0.35;
+    robotTransition = 0.7;
     robotMode = !robotMode;
+    if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
+    $('lockTouch').hidden = !robotMode;
+    unlockAudio();
+    if (!mechaEngine && audioCtx && robotMode) mechaEngine = createMechaThrusterAudio(audioCtx);
+    cue('mechaTransform');
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
+    cue(robotMode ? 'transformRobot' : 'transformShip');
     message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
@@ -331,6 +433,8 @@ export function createGame({
     settingsOpen = false,
     bossWarned = false,
     bossWarningTime = 0;
+  let stageScoreStart = 0,
+    stageResultSent = false;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -366,6 +470,8 @@ export function createGame({
     if (evolution) player.remove(evolution);
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
+    evolution.visible = !robotMode;
+    setFighterEvolution(shipModule, evolutionStage);
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
   }
   function gainXP(amount) {
@@ -388,6 +494,13 @@ export function createGame({
   function cycleSpecial() {
     if (!dynamicFlight || state !== 'playing') return;
     strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
+  }
+  function castSquadSpecial(kind) {
+    if (!dynamicFlight || state !== 'playing' || !squad) return false;
+    const spent = squad.activate(kind, arcana);
+    if (!spent) return false;
+    arcana -= spent;
+    return true;
   }
   function castSpecial() {
     if (!dynamicFlight || state !== 'playing' || specialCd > 0) return false;
@@ -485,6 +598,9 @@ export function createGame({
     shipModule.traverse((o) => {
       if (o.material?.userData.paintModule) o.material.color.set(palette.color);
     });
+    robot.userData.mechPaint.primary.color.set(palette.color);
+    robot.userData.mechPaint.accent.color.set(palette.accent);
+    $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
@@ -496,6 +612,10 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.visible = !robotMode;
+    setFighterEvolution(shipModule, Math.max(0, evolutionStage));
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
   }
   const statLabels = {
@@ -695,9 +815,30 @@ export function createGame({
     credits += 15;
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
+  function recordStageResult(outcome = 'cleared') {
+    if (!dynamicFlight || stageResultSent) return;
+    stageResultSent = true;
+    try {
+      Promise.resolve(
+        onStageFinished({
+          sector: sectorIndex + 1,
+          points: Math.max(0, score - stageScoreStart),
+          durationMs: Math.max(0, Math.round(elapsed * 1000)),
+          totalPoints: score,
+          outcome,
+        }),
+      ).catch(() => {});
+    } catch {
+      // Optional ranking must never interrupt a finished mission.
+    }
+  }
   function showShop() {
+    recordStageResult('cleared');
+    document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
+    mechaEngine?.silence();
+    resetMechaLock();
     keys.clear();
     touchFire = touchBoost = false;
     charge = 0;
@@ -797,14 +938,25 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    $('launchBoostNotice').hidden = true;
+    $('boostTouch').classList.remove('launch-required');
     arcade = null;
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    resetMechPower(robot);
+    robotFireKick = 0;
     robotMode = false;
+    shipModule.visible = true;
+    if (evolution) evolution.visible = true;
     robotCooldown = 0;
     robotTransition = 0;
+    precisionCd = 0;
+    mechaEngine?.silence();
+    resetMechaLock();
+    $('lockTouch').hidden = true;
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
@@ -813,6 +965,11 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
+    journey = initialJourney(sectorIndex);
+    asteroidInterior?.reset(sectorIndex === 2);
+    asteroidWallCooldown = 0;
+    squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
+    skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
@@ -901,6 +1058,15 @@ export function createGame({
       strategy: { ...strategy },
       petCare: { ...petCare },
     };
+    stageScoreStart = score;
+    stageResultSent = false;
+    if (dynamicFlight) {
+      try {
+        Promise.resolve(onStageStarted({ sector: sectorIndex + 1 })).catch(() => {});
+      } catch {
+        // Offline progression always continues if the ranking API is unavailable.
+      }
+    }
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
   }
@@ -919,6 +1085,7 @@ export function createGame({
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
+      audioCues.setEnabled(!muted);
       return true;
     } catch {
       return false;
@@ -1052,7 +1219,8 @@ export function createGame({
     invuln = 1.1;
     $('flash').style.opacity = '.3';
     setTimeout(() => ($('flash').style.opacity = '0'), 150);
-    sound(60, 0.25);
+    if (dynamicFlight) cue('shipImpact');
+    else sound(60, 0.25);
     if (hp <= 0) {
       lives--;
       if (lives <= 0) finish(false);
@@ -1175,7 +1343,7 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false, scatter = false) {
+  function launchShot(x, damage = 2, charged = false, origin = null, scatter = false) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
@@ -1188,9 +1356,9 @@ export function createGame({
       ),
     );
     o.rotation.x = Math.PI / 2;
-    o.position.copy(player.position);
+    o.position.copy(origin ?? player.position);
     o.position.x += x;
-    o.position.z -= 3;
+    if (!origin) o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
     scene.add(o);
     shots.push({
@@ -1206,17 +1374,16 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
+    if (robotMode) robotFireKick = 0.18;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
       const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot(
-        scatter ? pellets[i].offset : (i - (count - 1) / 2) * 0.9,
-        (2 + weapon) * power,
-        false,
-        scatter,
-      );
+      const rightHand = robotMode
+        ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
+        : null;
+      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, rightHand, scatter);
       const b = shots.at(-1);
       if (dynamicFlight) {
         b.homing = !scatter && strategy.arsenal === 3;
@@ -1239,6 +1406,98 @@ export function createGame({
       ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
         (scatter ? SCATTER_CADENCE_FACTOR : 1)
       : 0.135;
+  }
+
+  /** Right wrist maintains frontal pressure. Left wrist requires LOS lock for precision. */
+  function updateMechaLock(dt, dx, dy) {
+    let selected = null;
+    if (lockEnabled) {
+      if (boss) boss.updateMatrixWorld(true);
+      const candidates = boss
+        ? [
+            ...boss.userData.parts.flatMap((part, i) =>
+              part.hp > 0 && weakPointOpen(relativeOrbit(), i)
+                ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
+                : [],
+            ),
+            ...(bossCombat?.coreOpen &&
+            boss.userData.parts.every((part) => part.hp <= 0) &&
+            weakPointOpen(relativeOrbit())
+              ? [
+                  {
+                    id: boss.userData.core,
+                    position: boss.userData.core.getWorldPosition(new T.Vector3()),
+                    weak: true,
+                  },
+                ]
+              : []),
+          ]
+        : enemies
+            .filter((enemy) => !enemy.dead)
+            .map((enemy) => ({
+              id: enemy,
+              position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
+              weak: enemy.kind === 'subboss',
+            }));
+      selected = selectMechaTarget(player.position, candidates, {
+        visible: (from, to) =>
+          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
+      });
+    }
+    if (selected?.id !== lockedId) {
+      lockedId = selected?.id ?? null;
+      lockProgress = 0;
+    } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
+    const position = selected?.position ?? null;
+    updateMechaPose(robot, {
+      dt,
+      time: visualTime,
+      boosting,
+      strafe: dx,
+      vertical: dy,
+      firing: touchFire || keys.has('Space'),
+      targetWorld: position,
+      transforming: robotTransition,
+      recoil: robotFireKick,
+    });
+    robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
+    const status = $('mechaLockStatus');
+    status.hidden = !lockEnabled;
+    if (lockEnabled)
+      status.textContent = !selected
+        ? 'MIRA · SEM ALVO'
+        : lockProgress < 0.8
+          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+          : precisionCd > 0
+            ? 'MIRA · RECARGA'
+            : 'MIRA · FIXADA';
+    const marker = $('mechaLockReticle');
+    marker.hidden = true;
+    if (position) {
+      const projected = position.clone().project(camera);
+      if (
+        projected.z > -1 &&
+        projected.z < 1 &&
+        Math.abs(projected.x) <= 1 &&
+        Math.abs(projected.y) <= 1
+      ) {
+        marker.hidden = false;
+        marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+        marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
+      }
+    }
+    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
+      robot.updateMatrixWorld(true);
+      const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
+      launchShot(0, weaponPower() * 5, false, muzzle);
+      const shot = shots.at(-1);
+      shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
+      shot.homing = false;
+      energy -= 10;
+      precisionCd = 2;
+      lockProgress = 0;
+      cue('mechaPrecision');
+    }
   }
   function enemy(kind = 'fighter') {
     const airborneRobot = kind === 'hover-walker';
@@ -1384,6 +1643,10 @@ export function createGame({
     });
   }
   function makeBoss() {
+    if (dynamicFlight && sectorIndex === 2) {
+      journey = advanceJourney(journey, 'arenaReached');
+      asteroidInterior.setPhase(journey.phase);
+    }
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
@@ -1396,8 +1659,11 @@ export function createGame({
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
-    boss.position.set(0, 10, -230);
+    // Enter through the illuminated hangar of the mother ship in the distance.
+    // No instant pop-in to the combat position.
+    boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight) {
+      world.showCarrierForBoss?.();
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
       message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
@@ -1413,7 +1679,14 @@ export function createGame({
     );
   }
   function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
-    if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return 0;
+    if (
+      state !== 'playing' ||
+      !boss ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      (dynamicFlight && bossCombat?.age < 3)
+    )
+      return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
     const openPart = (p) =>
@@ -1461,6 +1734,11 @@ export function createGame({
 
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'bossDefeated');
+        asteroidInterior.setPhase(journey.phase);
+        message('NÚCLEO DESTRUÍDO · FUJA DO ASTEROIDE!');
+      }
       gainXP(30);
       state = 'collapsing';
       if (!dynamicFlight) releaseControls();
@@ -1531,6 +1809,11 @@ export function createGame({
       collapse = null;
       score += 50;
       credits += 250 + sectorIndex * 40;
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'exitReached');
+        asteroidInterior.setPhase(journey.phase);
+        world.setAsteroidInterior(false);
+      }
       $('attackWarning').textContent = '';
       if (sectorIndex === SECTORS.length - 1) finish(true);
       else showShop();
@@ -1538,6 +1821,8 @@ export function createGame({
   }
 
   function finish(win) {
+    recordStageResult(win ? 'cleared' : 'defeated');
+    document.body.classList.add('ranking-intermission');
     releaseControls();
     if (win) music?.start(sectorIndex, 'victory');
     else music?.pause();
@@ -1573,7 +1858,8 @@ export function createGame({
     }
     boss = null;
   }
-  function start(resume = false, restart = null) {
+  function start(resume = false, restart = null, skipSquad = false) {
+    skipSquadIntro = skipSquad;
     if (!appActive) return;
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
@@ -1664,6 +1950,7 @@ export function createGame({
       state = 'paused';
       $('bossIncoming').hidden = true;
       music?.pause();
+      mechaEngine?.silence();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
       $('pauseConfirmPanel').hidden = true;
@@ -1871,14 +2158,14 @@ export function createGame({
     $('cinematicProgress').style.width =
       (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
   }
-  function finishCinematic() {
+  function finishCinematic(skipSquad = false) {
     if (!cinematic) return;
     const playMission = cinematic.playMission;
     cinematic = null;
     cinematicStage?.destroy();
     cinematicStage = null;
     $('cinematic').hidden = true;
-    if (playMission) start();
+    if (playMission) start(false, null, skipSquad);
     else $('menu').hidden = false;
   }
   function advanceCinematic(dt) {
@@ -1932,7 +2219,7 @@ export function createGame({
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
-  $('cinematicSkip').onclick = finishCinematic;
+  $('cinematicSkip').onclick = () => finishCinematic(true);
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
   $('pauseTabControls').onclick = () => showPausePanel('controls');
@@ -2016,6 +2303,8 @@ export function createGame({
   $('arsenalSwitch').onclick = cycleArsenal;
   $('specialSwitch').onclick = cycleSpecial;
   $('specialCast').onclick = castSpecial;
+  $('plasmaTitan').onclick = () => castSquadSpecial('plasma');
+  $('fiveCatsOverdrive').onclick = () => castSquadSpecial('overdrive');
   $('scanBoss').onclick = scanBoss;
   $('precisionShot').onclick = () => tacticalAction('precision');
   $('repairPulse').onclick = () => tacticalAction('repair');
@@ -2047,6 +2336,7 @@ export function createGame({
   $('pause').onclick = pause;
   $('sound').onclick = () => {
     muted = !muted;
+    audioCues?.setEnabled(!muted);
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
   const visibilityHandler = () => {
@@ -2065,7 +2355,7 @@ export function createGame({
     if (cinematic) {
       if (['Enter', 'Space', 'Escape'].includes(e.code)) {
         e.preventDefault?.();
-        finishCinematic();
+        finishCinematic(true);
       }
       return;
     }
@@ -2099,6 +2389,9 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
+    if (e.code === 'KeyN') toggleMechaLock();
+    if (e.code === 'KeyY') castSquadSpecial('plasma');
+    if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -2117,6 +2410,7 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    audioCues?.silence();
     orbitTouch = 0;
     boosting = false;
     boostNeedsRelease = false;
@@ -2135,6 +2429,7 @@ export function createGame({
     heldPointers.clear();
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
+    mechaEngine?.silence();
   }
   addEventListener('blur', () => {
     releaseControls();
@@ -2221,6 +2516,10 @@ export function createGame({
     e.preventDefault?.();
     toggleRobot();
   };
+  $('lockTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    toggleMechaLock();
+  };
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -2228,10 +2527,8 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
-    if (robot.visible) {
-      robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
-    }
+    if (robot.visible) robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
+    precisionCd = Math.max(0, precisionCd - dt);
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -2247,7 +2544,22 @@ export function createGame({
       if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
+    const wasBoosting = boosting;
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
+    const unfoldProgress = robotTransition / 0.7;
+    if (robot.visible) {
+      // The independently aimed wrists and dual dorsal gimbals belong to
+      // updateMechaPose(). Do not overwrite their animation with a legacy rig.
+      robot.rotation.y =
+        Math.sin(elapsed * 1.7) * 0.035 +
+        Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.32;
+    } else if (robotTransition > 0) {
+      shipModule.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.22;
+    } else {
+      shipModule.rotation.z = 0;
+    }
     const energyBeforeBoost = energy;
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     if (dynamicFlight && sectorIndex === 0) {
@@ -2259,6 +2571,11 @@ export function createGame({
         chargeBefore: energyBeforeBoost,
         chargeAfter: energy,
       });
+      const boostGuide = $('launchBoostNotice');
+      const needsBoost = launchState.phase === 'boost' && state === 'playing';
+      boostGuide.hidden = !needsBoost;
+      if (needsBoost) $('boostTouch').classList.add('launch-required');
+      else $('boostTouch').classList.remove('launch-required');
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
           message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
@@ -2312,6 +2629,19 @@ export function createGame({
       -1,
       dynamicFlight ? 46 : 23,
     );
+    asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
+    if (dynamicFlight && sectorIndex === 2) {
+      const wall = asteroidInterior.constrain(player.position);
+      if (wall.collided) {
+        player.position.x = wall.x;
+        player.position.y = wall.y;
+        if (asteroidWallCooldown <= 0) {
+          asteroidWallCooldown = 1.25;
+          hit(12);
+          cue('armorHit');
+        }
+      }
+    }
     player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
@@ -2327,8 +2657,16 @@ export function createGame({
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
     }
+    // Keep transformation and flight-mech readable even during the initial
+    // invulnerability flicker. Damage protection is unchanged; ordinary ship
+    // mode retains the original blink feedback when invulnerable.
     player.visible =
-      cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
+      cameraMode !== 'cockpit' &&
+      (robotMode ||
+        robotTransition > 0 ||
+        boosting ||
+        invuln <= 0 ||
+        Math.floor(invuln * 12) % 2 === 0);
     flightCamera.update(
       dt,
       player.position,
@@ -2336,6 +2674,14 @@ export function createGame({
       boosting,
       dynamicFlight ? route : undefined,
     );
+    if (robotMode) updateMechaLock(dt, dx, dy);
+    mechaEngine?.update({
+      dt,
+      active: robotMode && state === 'playing' && !muted && appActive,
+      boosting,
+      accelerating: Math.max(Math.abs(dx), Math.abs(dy)),
+      volume: settings.master * settings.sfx,
+    });
     reticle.position.set(player.position.x, player.position.y, -60);
     // Keep legacy/native 3D sight; use clearer projected HUD for the web.
     reticle.visible = !dynamicFlight;
@@ -2350,8 +2696,36 @@ export function createGame({
   }
   function update(dt) {
     if (state !== 'playing') return;
+    if (squad?.snapshot().intro > 0) {
+      squad.update(dt, {
+        sector: sectorIndex,
+        elapsed,
+        pilot: pilotLoadout.pilot,
+        aspect: camera.aspect,
+      });
+      return;
+    }
     elapsed += dt;
     totalTime += dt;
+    if (dynamicFlight && sectorIndex === 2) {
+      const planned = journeyPhaseAt(elapsed, current().duration);
+      if (journey.phase === 'approach' && planned !== 'approach') {
+        journey = advanceJourney(journey, 'destinationReached');
+        asteroidInterior.setPhase(journey.phase);
+        message('MEGA-ASTEROIDE À FRENTE · ENCONTRE A ABERTURA');
+      }
+      if (journey.phase === 'transition' && ['interior', 'boss'].includes(planned)) {
+        journey = advanceJourney(journey, 'entryCompleted');
+        asteroidInterior.setPhase(journey.phase);
+        message('DENTRO DO ASTEROIDE · EVITE AS PAREDES');
+      }
+    }
+    squad?.update(dt, {
+      sector: sectorIndex,
+      elapsed,
+      pilot: pilotLoadout.pilot,
+      power: weaponPower(),
+    });
     // The first boss cannot begin while the pilot remains in the city or
     // inside the long post-boost climb. Keep the flight playable meanwhile.
     if (dynamicFlight && sectorIndex === 0 && !orbitalLaunchSequence.snapshot().complete)
@@ -2360,7 +2734,7 @@ export function createGame({
       dynamicFlight &&
       spawnEncounters &&
       !arcadeDone &&
-      [2, 6].includes(sectorIndex) &&
+      [6].includes(sectorIndex) &&
       elapsed >= 8
     ) {
       arcadeDone = true;
@@ -2393,6 +2767,17 @@ export function createGame({
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
+      if (sectorIndex === 2) {
+        world.setAsteroidInterior(journey.phase !== 'approach' && journey.phase !== 'complete');
+        route.label =
+          {
+            approach: 'APROXIMAÇÃO · MEGA-ASTEROIDE',
+            transition: 'ENTRADA · CAVERNA',
+            interior: 'COMBATE · INTERIOR DO ASTEROIDE',
+            boss: 'NÚCLEO · PERFURADOR',
+            escape: 'FUGA · COLAPSO DO ASTEROIDE',
+          }[journey.phase] ?? route.label;
+      }
       $('routeLabel').textContent = route.label;
     }
     const orbitalLaunch =
@@ -2426,6 +2811,19 @@ export function createGame({
             activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      const team = squad?.snapshot();
+      $('plasmaTitan').disabled =
+        !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
+      $('fiveCatsOverdrive').disabled =
+        !!team && (team.overdriveCooldown > 0 || arcana < SQUAD_SPECIALS.overdrive.cost);
+      $('plasmaTitan').textContent =
+        team?.plasmaCooldown > 0
+          ? 'Y · PLASMA ' + Math.ceil(team.plasmaCooldown) + 's'
+          : 'Y · PLASMA';
+      $('fiveCatsOverdrive').textContent =
+        team?.overdriveCooldown > 0
+          ? 'O · FIVE CATS ' + Math.ceil(team.overdriveCooldown) + 's'
+          : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
       $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
@@ -2570,7 +2968,8 @@ export function createGame({
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;
-      $('bossIncoming').textContent = '⚠ ALERTA · CHEFE SE APROXIMANDO';
+      world.showCarrierForBoss?.();
+      $('bossIncoming').textContent = '⚠ CHEFE SE APROXIMANDO · SAINDO DA NAVE-MÃE';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
@@ -2832,11 +3231,10 @@ export function createGame({
       if (dynamicFlight) {
         const t = tactics();
         const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
-        boss.position.set(
-          t.x * approach,
-          10 + (t.y - 10) * approach,
-          -230 + (t.z + 230) * approach,
-        );
+        // Cinematic 3 s launch: boss exits the ship's central bay in the
+        // background before following its existing tactic trajectory.
+        const launchPose = bossDepartureAt(bossCombat.age, t, approach);
+        boss.position.set(launchPose.x, launchPose.y, launchPose.z);
         boss.rotation.z = t.bank;
         $('battleRadar').style.background = radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
@@ -2852,7 +3250,7 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
           for (let n = 0; n < (dangerous ? 3 : 1); n++) {
@@ -2953,7 +3351,8 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt));
+      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
       b.previousPosition = previousShot;
@@ -3166,6 +3565,7 @@ export function createGame({
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
       !quietFirstSubboss &&
+      !(dynamicFlight && sectorIndex === 2 && journey.phase !== 'approach') &&
       !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration)) &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
@@ -3266,17 +3666,16 @@ export function createGame({
     }
     if (state !== 'paused' && state !== 'arcade') {
       visualTime += dt;
-      world.update(
-        dt,
-        visualTime,
+      const scenerySpeed =
         (boosting ? 90 : 48) *
-          (1 + Math.min(30, stage()) * 0.02) *
-          (dynamicFlight
-            ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
-            : 1),
+        (1 + Math.min(30, stage()) * 0.02) *
+        (dynamicFlight ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) : 1);
+      const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
-          (dynamicFlight && state === 'collapsing'),
-      );
+        (dynamicFlight && state === 'collapsing');
+      world.update(dt, visualTime, scenerySpeed, sceneryMoving);
+      if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
+        asteroidInterior.update(dt, scenerySpeed);
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
@@ -3345,6 +3744,11 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
+    audioCues?.setFlight({
+      active: dynamicFlight && !muted && ['playing', 'collapsing'].includes(state),
+      boosting,
+      robot: robotMode,
+    });
     const inside =
       cameraMode === 'cockpit' &&
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
@@ -3453,6 +3857,8 @@ export function createGame({
       playerVisible: player.visible,
       route: { ...route },
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
+      journey: { ...journey },
+      asteroidInterior: asteroidInterior?.snapshot() ?? null,
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
@@ -3466,10 +3872,18 @@ export function createGame({
       rapid,
       scatterOwned,
       fireMode,
+      mecha: {
+        active: robotMode,
+        lockEnabled,
+        lockProgress,
+        thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
+        motor: mechaEngine?.snapshot() ?? { amplitude: 0, velocity: 0, voices: 0 },
+      },
       pods: podCount,
       armor,
       charge,
       music: music?.snapshot() ?? null,
+      audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
@@ -3497,6 +3911,7 @@ export function createGame({
       podMode,
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
+      fiveCats: squad?.snapshot() ?? null,
       boostVisual: {
         color: player.userData.flames[0].material.color.getHex(),
         length: player.userData.flames[0].scale.y,
@@ -3550,11 +3965,17 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
-      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'left-handed',
+        'ranking-intermission',
+      );
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
+      mechaEngine?.destroy();
       cinematicStage?.destroy();
       localization.destroy();
       cleanups.forEach((fn) => fn());
@@ -3562,10 +3983,11 @@ export function createGame({
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
-      scatterShotMaterial.dispose();
+      squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
+      asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
         o.geometry?.dispose();

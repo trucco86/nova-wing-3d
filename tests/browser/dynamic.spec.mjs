@@ -50,7 +50,7 @@ test('web route, orbital ascent and final black hole render without shader error
   for (const [sector, time, expected] of [
     [0, 28, 'SEGURE BOOST'],
     [1, 30, 'CURVA'],
-    [2, 30, 'ASCENSÃO'],
+    [2, 30, 'MEGA-ASTEROIDE'],
     [9, 10, 'ROTA DE APROXIMAÇÃO'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
@@ -67,7 +67,7 @@ test('2D perspective supports controls, pause and return to the same mission', a
   test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/__dynamic.html?sector=2&arcade=1');
+  await page.goto('/__dynamic.html?sector=6&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
   await expect(page.locator('#arcadePanel')).toHaveCSS('opacity', '1');

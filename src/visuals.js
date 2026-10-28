@@ -63,6 +63,21 @@ function wing(points, m) {
   g.rotateX(Math.PI / 2);
   return new T.Mesh(g, m);
 }
+// Single canonical wing profile shared by all fighter models and the Mecha 2.0.
+const SHARED_FIGHTER_WING = [
+  [1.3, -1.15],
+  [4.65, 0.8],
+  [4.12, 1.65],
+  [1.73, 0.82],
+];
+function sharedFighterWing(side, material) {
+  const mesh = wing(
+    SHARED_FIGHTER_WING.map(([x, z]) => [side * x, z]),
+    material,
+  );
+  mesh.userData.sharedWingProfile = 'fighter-v1';
+  return mesh;
+}
 function line(points, color = '#4bf6d8') {
   return new T.Line(
     new T.BufferGeometry().setFromPoints(points.map((p) => new T.Vector3(...p))),
@@ -201,6 +216,17 @@ export function fighter(enemy = false, variant = -1) {
       const aura = halo(enemy ? '#ff3468' : '#39bfff', 3.6, 0.75);
       aura.position.set(s * 1.04, -0.13, 2.9);
       g.add(aura);
+      const ridge = box(1.3, 0.44, 2.8, accent, s * 2.15, 0.21, 0.3);
+      ridge.name = 'fighter-wing-raised-armor';
+      g.add(ridge);
+      g.add(box(0.38, 0.3, 2.6, light, s * 2.3, 0.48, 0.34));
+      g.add(box(0.8, 0.35, 1.7, armor, s * 3.35, -0.22, 1.05));
+      g.add(box(0.26, 0.2, 1.6, light, s * 3.38, -0.02, 0.95));
+      const missile = new T.Mesh(new T.ConeGeometry(0.43, 1.9, 8), accent);
+      missile.rotation.x = -Math.PI / 2;
+      missile.name = 'fighter-underwing-missile';
+      missile.position.set(s * 2.5, -0.46, -0.8);
+      g.add(missile);
       g.add(box(0.2, 0.21, 2.5, black, s * 3.1, -0.06, 0.1));
       g.add(box(0.14, 0.13, 0.5, light, s * 3.1, -0.06, -1.3));
       g.add(box(0.15, 0.18, 0.7, copper, s * outer, 0, 1.5));
@@ -235,39 +261,286 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
-/** Lightweight flying mech built from reusable primitives; forward fire axis remains -Z. */
+/** Rigged flying mech. Its shoulder-mounted thrusters and weapon wrists are independent pivots. */
+export function mechArmPitch(motion, armIndex, boostMotion, fireKick) {
+  return T.MathUtils.clamp(
+    0.63 + Math.sin(motion + armIndex * Math.PI) * 0.09 * boostMotion + fireKick * 0.75,
+    0.35,
+    1.45,
+  );
+}
+
+/** Flight-mech shares the ship's forward axis, paint palette and upgrade identity. */
 export function createFlyingRobot() {
   const robot = new T.Group();
   robot.name = 'five-cats-flight-mech';
-  const armor = metal('#d9e6f0', 0.7, 0.3);
-  const dark = metal('#21365c', 0.68, 0.36);
-  const trim = metal('#ffb36b', 0.6, 0.28);
-  const light = glowMaterial('#62eaff', 2.4);
-  robot.add(box(2.7, 3.2, 1.65, armor, 0, 1.2, 0));
-  robot.add(box(2.2, 1.15, 1.8, dark, 0, 1.55, -0.4));
-  robot.add(box(1.15, 1.25, 1.25, armor, 0, 3.65, -0.12));
-  robot.add(box(0.8, 0.42, 0.16, light, 0, 3.7, -0.82));
-  robot.add(box(1.4, 0.23, 0.15, trim, 0, 2.4, -0.94));
+  const armor = metal('#a9c8d7', 0.78, 0.25);
+  armor.userData.mechPaint = 'primary';
+  const graphite = metal('#172944', 0.8, 0.3);
+  const accent = metal('#ffb36b', 0.75, 0.25);
+  accent.userData.mechPaint = 'accent';
+  const luminous = glowMaterial('#62eaff', 2.4);
+  const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
+    const width = radius * 1.6;
+    const height = radius * 1.7;
+    const depth = radius * 1.55;
+    const bevel = Math.min(width, height) * 0.18;
+    // Chamfered, extruded armor panels preserve the lightweight rig while
+    // replacing the rectangular toy-like torso and limbs with facets.
+    const outline = new T.Shape();
+    outline.moveTo(-width / 2 + bevel, -height / 2);
+    outline.lineTo(width / 2 - bevel, -height / 2);
+    outline.lineTo(width / 2, -height / 2 + bevel);
+    outline.lineTo(width / 2, height / 2 - bevel);
+    outline.lineTo(width / 2 - bevel, height / 2);
+    outline.lineTo(-width / 2 + bevel, height / 2);
+    outline.lineTo(-width / 2, height / 2 - bevel);
+    outline.lineTo(-width / 2, -height / 2 + bevel);
+    outline.closePath();
+    const geometry = new T.ExtrudeGeometry(outline, {
+      depth,
+      bevelEnabled: true,
+      bevelSize: 0.055,
+      bevelThickness: 0.055,
+      bevelSegments: 1,
+      steps: 1,
+    });
+    geometry.translate(0, 0, -depth / 2);
+    const part = new T.Mesh(geometry, material);
+    part.position.set(x, y, z);
+    part.scale.set(sx, sy, sz);
+    robot.add(part);
+    return part;
+  };
+  // Sharper, layered hard-surface panels: no soft spherical hero silhouette.
+  const spine = box(0.3, 2.9, 0.2, graphite, 0, 1.72, 0.92);
+  spine.name = 'mech-mechanical-spine';
+  robot.add(spine);
   for (const side of [-1, 1]) {
-    robot.add(box(1.2, 1, 1.6, trim, side * 2, 2.55, 0));
-    robot.add(box(0.8, 2.6, 1, armor, side * 2.15, 0.85, -0.1));
-    robot.add(box(0.95, 0.85, 1.7, dark, side * 2.15, -0.5, -0.7));
-    robot.add(box(1.1, 2.5, 1.3, armor, side * 0.83, -2.2, 0.1));
-    robot.add(box(1.25, 0.7, 2.2, dark, side * 0.83, -3.6, -0.6));
-    robot.add(box(0.5, 0.6, 1.7, light, side * 2.1, -0.6, -1.65));
-    const thruster = new T.Mesh(new T.CylinderGeometry(0.52, 0.65, 2.2, 12), dark);
-    thruster.rotation.x = Math.PI / 2;
-    thruster.position.set(side * 1.12, 0.8, 1.65);
-    robot.add(thruster);
+    const chestCut = box(0.15, 1.2, 0.16, luminous, side * 0.83, 1.36, -0.92);
+    chestCut.rotation.z = side * 0.35;
+    robot.add(chestCut);
+    const collar = box(0.54, 0.22, 0.72, armor, side * 0.93, 2.63, -0.24);
+    collar.rotation.z = side * 0.28;
+    robot.add(collar);
+  }
+  // Angular fighter-style chest, layered breastplate and recessed reactor.
+  const backArmor = plating(1.4, 0, 1.48, 1.08, 1.02, 1.08, 0.38, graphite);
+  backArmor.name = 'mech-rear-armor-facets';
+  const cranialCrest = new T.Mesh(new T.ConeGeometry(0.34, 1.25, 4), accent);
+  cranialCrest.name = 'mech-cranial-crest';
+  cranialCrest.position.set(0, 4.16, -0.13);
+  cranialCrest.rotation.y = Math.PI / 4;
+  robot.add(cranialCrest);
+  robot.add(box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02));
+  for (const side of [-1, 1]) {
+    const rearRidge = box(0.16, 1.73, 0.19, luminous, side * 0.92, 1.65, 1.65);
+    rearRidge.rotation.z = side * 0.18;
+    robot.add(rearRidge);
+    const sidePlating = plating(0.76, side * 1.19, 1.57, 1.02, 0.42, 1.0, 0.51);
+    sidePlating.rotation.z = side * 0.2;
+  }
+  plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
+  plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
+  plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
+  plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite);
+  plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous);
+  plating(0.85, 0, 0, 0.18, 0.78, 0.72, 0.58, graphite);
+  const arms = [];
+  const legs = [];
+  const armMuzzles = [];
+  const sidePlumes = [];
+  for (const side of [-1, 1]) {
+    const arm = new T.Group();
+    arm.position.set(side * 1.65, 2.55, 0);
+    robot.add(arm);
+    arms.push(arm);
+    const leg = new T.Group();
+    leg.position.set(side * 0.73, -0.9, 0);
+    robot.add(leg);
+    legs.push(leg);
+    // Swept shoulder wings and layered gauntlet armor, not rectangular limbs.
+    const shoulder = plating(0.95, side * 1.65, 2.55, 0.05, 1.12, 0.72, 1.05);
+    shoulder.rotation.z = side * 0.28;
+    const fin = plating(0.9, side * 2.45, 3.08, 0.62, 1.1, 0.22, 1.35, accent);
+    fin.rotation.z = side * 0.36;
+    const shoulderBlade = new T.Mesh(new T.ConeGeometry(0.48, 1.6, 4), armor);
+    shoulderBlade.rotation.z = -side * 0.34;
+    shoulderBlade.rotation.y = Math.PI / 4;
+    shoulderBlade.position.set(side * 2.55, 3.85, 0.84);
+    robot.add(shoulderBlade);
+    const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
+    arm.attach(upperArm);
+    const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
+    arm.attach(gauntlet);
+    const cannonFin = box(0.32, 0.95, 0.65, armor, side * 2.14, -0.37, -0.84);
+    cannonFin.rotation.z = side * 0.24;
+    arm.attach(cannonFin);
+    const forearmRail = box(0.16, 1.08, 0.14, accent, side * 1.9, -0.23, -1.23);
+    arm.attach(forearmRail);
+    const muzzle = plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
+    arm.attach(muzzle);
+    armMuzzles.push(muzzle);
+    const thigh = plating(0.9, side * 0.73, -1.75, 0.15, 0.6, 1.8, 0.72);
+    leg.attach(thigh);
+    const shin = plating(0.7, side * 0.75, -3.5, -0.65, 0.72, 0.58, 1.25, graphite);
+    leg.attach(shin);
+    const shinLight = box(0.16, 1.35, 0.17, luminous, side * 0.75, -3.25, 0.54);
+    leg.attach(shinLight);
+    const calfFin = plating(0.69, side * 1.13, -3.34, 0.4, 0.36, 1.1, 0.46, armor);
+    calfFin.rotation.z = side * 0.25;
+    leg.attach(calfFin);
+    const knee = plating(0.48, side * 0.75, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
+    leg.attach(knee);
+    const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
+    nozzle.rotation.x = Math.PI / 2;
+    nozzle.position.set(side * 1.4, 2.23, 1.85);
+    robot.add(nozzle);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.42, 2.6, 12),
+      new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
     plume.rotation.x = Math.PI / 2;
-    plume.position.set(side * 1.12, 0.8, 3.4);
+    plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
+    sidePlumes.push(plume);
   }
-  robot.scale.setScalar(0.88);
+  // The exact same mesh profile as the ship, rotated into the mecha back plane.
+  // No independent enlarged mecha wing geometry: transformation preserves identity.
+  for (const side of [-1, 1]) {
+    const panel = sharedFighterWing(side, armor);
+    panel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
+    panel.rotation.x = -Math.PI / 2;
+    panel.position.set(0, 2.2, 1.36);
+    robot.add(panel);
+    const trim = line(
+      [
+        [side * 1.65, 1.5, 1.65],
+        [side * 3.2, 2.45, 1.65],
+        [side * 4.1, 2.87, 1.65],
+      ],
+      '#66ebff',
+    );
+    robot.add(trim);
+  }
+  // Main turbine sits between the shoulder blades rather than low at the hips.
+  const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
+  turbineHousing.rotation.x = Math.PI / 2;
+  turbineHousing.name = 'mech-back-turbine';
+  turbineHousing.position.set(0, 3.05, 1.9);
+  robot.add(turbineHousing);
+  // The shoulder-mounted housing remains fixed; the nozzle assembly gimbals
+  // independently to react to flight direction and propulsion load.
+  const turbineGimbal = new T.Group();
+  turbineGimbal.name = 'mech-turbine-gimbal';
+  turbineGimbal.position.set(0, 3.05, 2.05);
+  robot.add(turbineGimbal);
+  for (const side of [-1, 1]) {
+    robot.add(box(0.17, 0.22, 1.15, accent, side * 0.52, 3.05, 1.83));
+  }
+  const turbineRing = new T.Mesh(new T.TorusGeometry(0.58, 0.12, 10, 24), accent);
+  turbineRing.position.set(0, 0, 0.5);
+  turbineGimbal.add(turbineRing);
+  const turbineHalo = halo('#56eaff', 2.1, 0.73);
+  turbineHalo.name = 'mech-turbine-halo';
+  turbineHalo.position.set(0, 0, 0.99);
+  turbineGimbal.add(turbineHalo);
+  const turbineCore = new T.Mesh(new T.CylinderGeometry(0.35, 0.4, 0.18, 20), luminous);
+  turbineCore.rotation.x = Math.PI / 2;
+  turbineCore.position.set(0, 0, 0.57);
+  turbineGimbal.add(turbineCore);
+  const turbineFlame = new T.Mesh(
+    new T.ConeGeometry(0.43, 1.75, 20),
+    new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
+  );
+  turbineFlame.rotation.x = Math.PI / 2;
+  turbineFlame.position.set(0, 0, 1.6);
+  turbineGimbal.add(turbineFlame);
+  // Exposed mechanical fan blades make the turbine visibly rotate during flight.
+  const turbineRotor = new T.Group();
+  turbineRotor.name = 'mech-turbine-rotor';
+  turbineRotor.position.set(0, 0, 0.71);
+  for (let bladeIndex = 0; bladeIndex < 5; bladeIndex++) {
+    const bladePivot = new T.Group();
+    bladePivot.rotation.z = (bladeIndex * Math.PI * 2) / 5;
+    const blade = box(0.14, 0.44, 0.12, bladeIndex % 2 ? accent : luminous, 0, 0.23, 0);
+    blade.rotation.z = -0.42;
+    bladePivot.add(blade);
+    turbineRotor.add(bladePivot);
+  }
+  turbineGimbal.add(turbineRotor);
+  const progressionNeons = [];
+  for (let tier = 0; tier < 3; tier++) {
+    for (const side of [-1, 1]) {
+      const strip = box(
+        0.14 + tier * 0.07,
+        0.18 + tier * 0.06,
+        0.72 + tier * 0.38,
+        luminous,
+        side * (1.62 + tier * 0.42),
+        2.45 - tier * 1.7,
+        -1.03 - tier * 0.08,
+      );
+      strip.name = `mech-evolution-neon-${tier}-${side}`;
+      strip.visible = tier === 0;
+      robot.add(strip);
+      progressionNeons.push({ mesh: strip, threshold: tier * 3 });
+    }
+  }
+  robot.userData.mechRig = {
+    arms,
+    legs,
+    armMuzzles,
+    turbineRotor,
+    turbineGimbal,
+    turbineFlame,
+    sidePlumes,
+    propulsionPower: 0,
+    progressionNeons,
+  };
+  robot.userData.mechPaint = { primary: armor, accent };
+  // Reconcile the original angular flight-mech and its animated rotor with
+  // the independent two-hand / dual dorsal-nozzle targeting rig.
+  // Keep the original rig as the visual and progression source of truth.
+  const articulatedArms = {};
+  for (let i = 0; i < 2; i++) {
+    const side = i === 0 ? 'left' : 'right';
+    const shoulder = arms[i];
+    shoulder.name = 'mecha-' + side + '-shoulder';
+    const elbow = new T.Group();
+    elbow.name = 'mecha-' + side + '-elbow';
+    elbow.position.set(0, -1.45, -0.34);
+    shoulder.add(elbow);
+    const muzzle = armMuzzles[i];
+    muzzle.name = 'mecha-' + side + '-muzzle';
+    articulatedArms[side] = { shoulder, elbow, muzzle };
+  }
+  const independentThrusters = [-1, 1].map((side) => {
+    const nozzle = new T.Group();
+    nozzle.name = side < 0 ? 'mecha-left-dorsal-gimbal' : 'mecha-right-dorsal-gimbal';
+    nozzle.position.set(side * 1.38, 2.51, 1.95);
+    const casing = new T.Mesh(new T.CylinderGeometry(0.37, 0.44, 0.58, 12), graphite);
+    casing.rotation.x = Math.PI / 2;
+    nozzle.add(casing);
+    const exhaustCore = new T.Mesh(new T.SphereGeometry(0.28, 10, 8), luminous);
+    exhaustCore.position.z = 0.47;
+    nozzle.add(exhaustCore);
+    const plume = new T.Mesh(
+      new T.ConeGeometry(0.31, 1.35, 12),
+      new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.46 }),
+    );
+    plume.rotation.x = Math.PI / 2;
+    plume.position.z = 1.1;
+    nozzle.add(plume);
+    robot.add(nozzle);
+    return { nozzle, plume, exhaustCore };
+  });
+  robot.userData.mecha = {
+    arms: articulatedArms,
+    thrusters: independentThrusters,
+    baseScale: 0.94,
+  };
+  robot.scale.setScalar(0.94);
   return robot;
 }
 
@@ -303,7 +576,112 @@ export function createShipModule(model = 'nova7') {
   } else {
     for (const side of [-1, 1]) g.add(box(0.22, 0.25, 2.8, mint, side * 3.45, 0.04, -0.15));
   }
+  // Shared angular starfighter design language: recognizable aero-mecha geometry
+  // while preserving each pilot's independent chassis and selected paint.
+  for (const side of [-1, 1]) {
+    const strake = sharedFighterWing(side, shell);
+    strake.position.y = 0.21;
+    g.add(strake);
+    const vent = box(0.32, 0.15, 1.28, navy, side * 1.85, 0.35, 0.26);
+    vent.rotation.y = side * 0.21;
+    g.add(vent);
+    const trim = line(
+      [
+        [side * 1.65, 0.35, -0.7],
+        [side * 3.2, 0.35, 0.25],
+        [side * 4.1, 0.35, 0.67],
+      ],
+      '#66ebff',
+    );
+    g.add(trim);
+  }
+  const keel = box(0.34, 0.18, 3.6, navy, 0, 0.27, 0.18);
+  keel.name = 'ship-mechanical-keel';
+  g.add(keel);
+  const progressionNeons = [];
+  for (let tier = 0; tier < 3; tier++) {
+    for (const side of [-1, 1]) {
+      const strip = box(
+        0.15 + tier * 0.05,
+        0.12,
+        0.8 + tier * 0.42,
+        cyan,
+        side * (1.95 + tier * 0.65),
+        0.42,
+        0.32 + tier * 0.13,
+      );
+      strip.name = `ship-evolution-neon-${tier}-${side}`;
+      strip.visible = tier === 0;
+      g.add(strip);
+      progressionNeons.push({ mesh: strip, threshold: tier * 3 });
+    }
+  }
+  g.userData.progressionNeons = progressionNeons;
   return g;
+}
+
+/** Activate larger luminous upgrade details as the player's ship gains levels. */
+export function setFighterEvolution(ship, level = 0) {
+  for (const { mesh, threshold } of ship.userData.progressionNeons ?? []) {
+    mesh.visible = level >= threshold;
+  }
+}
+
+/** Flight animation is frame-driven, so it works at variable FPS without timers. */
+export function resetMechPower(robot) {
+  const rig = robot.userData.mechRig;
+  if (!rig) return;
+  rig.propulsionPower = 0;
+  rig.turbineRotor.rotation.z = 0;
+  rig.turbineGimbal.rotation.set(0, 0, 0);
+  rig.turbineFlame.scale.y = 1;
+  rig.turbineFlame.position.z = 1.6;
+  rig.turbineFlame.material.opacity = 0.78;
+  for (const plume of rig.sidePlumes) {
+    plume.scale.y = 1;
+    plume.position.z = 2.9;
+  }
+}
+
+export function animateMechPower(
+  robot,
+  elapsed,
+  boosting = false,
+  level = 0,
+  steering = {},
+  dt = 1 / 60,
+) {
+  const rig = robot.userData.mechRig;
+  if (!rig?.turbineRotor) return;
+  for (const { mesh, threshold } of rig.progressionNeons) {
+    mesh.visible = level >= threshold;
+  }
+  if (!Number.isFinite(dt) || dt <= 0) return;
+  const delta = Math.min(dt, 0.05);
+  const target = boosting ? 1 : 0;
+  const previous = rig.propulsionPower;
+  const response = 1 - Math.exp(-10 * delta);
+  rig.propulsionPower += (target - previous) * response;
+  // Integrate angular velocity, including the exact exponential acceleration.
+  // Multiplying mission time by the current speed makes BOOST jump rotor phase.
+  const poweredTime = target * delta + ((previous - target) * response) / 10;
+  rig.turbineRotor.rotation.z =
+    (rig.turbineRotor.rotation.z + 10 * delta + 14 * poweredTime) % (Math.PI * 2);
+  const turn = T.MathUtils.clamp(steering.x ?? 0, -1, 1);
+  const climb = T.MathUtils.clamp(steering.y ?? 0, -1, 1);
+  const steeringResponse = 1 - Math.exp(-12 * delta);
+  rig.turbineGimbal.rotation.y += (turn * 0.19 - rig.turbineGimbal.rotation.y) * steeringResponse;
+  rig.turbineGimbal.rotation.x +=
+    (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
+
+  const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
+  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
+  rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
+  rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
+  for (const plume of rig.sidePlumes) {
+    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
+    plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
+  }
 }
 const variants = new Map();
 function enemyDetails(variant) {
@@ -347,6 +725,40 @@ function enemyDetails(variant) {
   return variants.get(variant).clone(true);
 }
 const noise = `float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*noise(p);p=p*2.03+5.;a*=.5;}return s;}`;
+/** Orbital scene landmark, independent of randomized obstacle spawning. */
+export function createOrbitalSatellite() {
+  const group = new T.Group();
+  group.name = 'orbital-earth-communications-satellite';
+  const frame = metal('#90acbb', 0.75, 0.3);
+  const dark = metal('#142a40');
+  const panels = metal('#24508c', 0.65, 0.22);
+  const lit = glowMaterial('#64e8ff', 2);
+  group.add(box(10, 7, 13, frame), box(6, 4, 15, dark, 0, 1.7, 0));
+  for (const side of [-1, 1]) {
+    group.add(box(27, 0.4, 13, panels, side * 22, 0.6, 0));
+    group.add(box(0.7, 0.8, 13.4, frame, side * 22, 1, 0));
+    for (let n = 0; n < 4; n++) {
+      group.add(box(0.25, 0.5, 13, lit, side * (13 + n * 6), 1, 0));
+    }
+    group.add(box(3, 4, 5, dark, side * 6, -1, 5));
+    group.add(box(1.4, 1.2, 1, lit, side * 6, 0.6, 8));
+  }
+  const dish = new T.Mesh(new T.ConeGeometry(6, 3, 16), frame);
+  dish.rotation.x = -Math.PI / 2;
+  dish.name = 'orbital-satellite-antenna';
+  dish.position.set(0, 9, -4);
+  group.add(dish);
+  group.add(box(0.8, 5.8, 0.8, frame, 0, 6, -4));
+  const beacon = new T.Mesh(new T.SphereGeometry(1.3, 10, 8), lit);
+  beacon.name = 'orbital-satellite-beacon';
+  beacon.position.set(0, 11, 0);
+  group.add(beacon);
+  group.position.set(72, 26, -265);
+  group.rotation.set(-0.12, 0.31, 0.14);
+  group.visible = false;
+  return group;
+}
+
 export function createWorld(scene, random = Math.random, dynamicFlight = false) {
   const existing = new Set(scene.children);
   const rnd = (a, b) => a + random() * (b - a);
@@ -561,8 +973,22 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     carrier.add(box(4, 7, 5, steel, s * 30, 9, -12));
     carrier.add(box(1.2, 1.2, 13, black, s * 30, 13, -17));
   }
+  // Large illuminated launch bay links the boss emergence to the mother ship.
+  const bay = new T.Group();
+  bay.name = 'flagship-boss-launch-hangar';
+  bay.add(box(37, 2, 4, cyan, 0, 3, 19));
+  bay.add(box(37, 2, 4, cyan, 0, -13, 19));
+  for (const side of [-1, 1]) {
+    bay.add(box(2.5, 17, 5, steel, side * 18, -5, 19));
+    bay.add(box(1.1, 12, 2, pink, side * 17, -5, 22));
+  }
+  bay.add(box(30, 12, 0.7, black, 0, -5, 19));
+  bay.add(box(25, 0.7, 2, mint, 0, -5, 21));
+  carrier.add(bay);
   carrier.position.set(0, 62, -700);
   scene.add(carrier);
+  const orbitalSatellite = dynamicFlight ? createOrbitalSatellite() : null;
+  if (orbitalSatellite) scene.add(orbitalSatellite);
   const dustGeo = new T.BufferGeometry(),
     dustPos = new Float32Array(240 * 3);
   for (let i = 0; i < 240; i++) {
@@ -625,6 +1051,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    showCarrierForBoss() {
+      carrier.visible = true;
+    },
     setAscent(amount, enabled) {
       if (!dynamicFlight) return;
       if (enabled && sceneryTheme !== 'city' && sceneryTheme !== 'ocean') {
@@ -668,6 +1097,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       earthHorizon.visible = orbital;
       const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
       earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
+      carrier.visible = orbital && t > 0.7;
+      if (orbitalSatellite) {
+        orbitalSatellite.visible = orbital && t > 0.74;
+        orbitalSatellite.rotation.y = 0.31 + progress * 0.65;
+      }
+    },
+    setAsteroidInterior(active) {
+      if (!dynamicFlight || sceneryTheme !== 'asteroids') return;
+      // Remove the open-space backdrop when the player enters the rock shell.
+      sectorScenery.visible = !active;
+      starfield.visible = !active;
+      moon.visible = atmosphere.visible = !active;
+      scene.fog.density = active ? 0.0015 : 0.00045;
     },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
@@ -683,6 +1125,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      carrier.visible = ['fleet', 'station', 'asteroids', 'void', 'throne'].includes(sceneryTheme);
+      if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
