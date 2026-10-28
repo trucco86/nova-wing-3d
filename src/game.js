@@ -114,6 +114,7 @@ import {
   SUBBOSS_NAMES,
 } from './bosses.js';
 import { createBossCombat } from './combat.js';
+import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import {
@@ -1684,7 +1685,7 @@ export function createGame({
         : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
-  function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
+  function damageBoss(amount, target = null, element = 'kinetic', charged = false, hitZone = 'weak') {
     if (
       state !== 'playing' ||
       !boss ||
@@ -1695,6 +1696,16 @@ export function createGame({
       return 0;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    if (hitZone === 'hull' && dynamicFlight) {
+      // Hull plating absorbs most damage but does not make ordinary hits meaningless.
+      // Generators must still be destroyed and the exposed core gets the final blow.
+      const chip = bossCombat.spend(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
+      const floor = bossCombat.max * (parts.length > 0 ? 0.72 : 0.12);
+      const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
+      bossCombat.damage(dealt);
+      bossHp = bossCombat.hp;
+      return dealt;
+    }
     const openPart = (p) =>
       !dynamicFlight || weakPointOpen(relativeOrbit(), boss.userData.parts.indexOf(p));
     if (dynamicFlight)
@@ -1714,7 +1725,7 @@ export function createGame({
     if (parts.length) {
       if (!part || !openPart(part)) return 0;
       const dealt = bossCombat.spend(amount, dynamicFlight && charged);
-      part.hp = Math.max(0, part.hp - dealt);
+      part.hp = Math.max(0, part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1));
 
       if (part.hp === 0) {
         part.mesh.visible = false;
@@ -1735,7 +1746,8 @@ export function createGame({
     )
       return 0;
     if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(relativeOrbit()))) return 0;
-    const dealt = bossCombat.spend(amount, dynamicFlight && charged);
+    const spent = bossCombat.spend(amount, dynamicFlight && charged);
+    const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
 
     bossHp = bossCombat.hp;
@@ -3407,7 +3419,7 @@ export function createGame({
           : remaining
             ? openGenerator >= 0
               ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
-              : 'BLINDAGEM · ORBITE PARA O FLANCO'
+              : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
@@ -3415,7 +3427,7 @@ export function createGame({
                 ? 'ALVO VULNERÁVEL · NÚCLEO'
                 : bossCombat.coreOpen
                   ? 'ORBITE PARA A FRENTE'
-                  : 'BLINDAGEM ATIVA');
+                  : 'BLINDAGEM · DANO REDUZIDO');
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
@@ -3447,15 +3459,26 @@ export function createGame({
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
       if (bossCd <= 0 && bossCombat.age >= 3) {
         bossVolley++;
-        const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
-        for (const target of encounterPattern(
-          sectorIndex,
-          bossVolley,
-          player.position,
-          combatPhase,
-        ))
-          bullet(origin, target, dynamicFlight ? (bossVolley % 3 === 0 ? 'arcane' : 'fire') : '');
-        bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
+        const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
+        if (dynamicFlight) {
+          // Bosses fire from their own batteries/heads, not the same central barrel.
+          for (const [sourceIndex, source] of program.sources.entries()) {
+            const origin = boss.position.clone().add(new T.Vector3(source.x, source.y, 22));
+            const targets = encounterPattern(sectorIndex, source.volley, player.position, combatPhase);
+            for (const [targetIndex, target] of targets.entries()) {
+              // Keep a disciplined mobile projectile budget despite multi-origin volleys.
+              if (program.sources.length > 1 && targetIndex % program.sources.length !== sourceIndex)
+                continue;
+              bullet(origin, target, program.type);
+            }
+          }
+          bossCd = program.cadence;
+        } else {
+          const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
+          for (const target of encounterPattern(sectorIndex, bossVolley, player.position, combatPhase))
+            bullet(origin, target, '');
+          bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
+        }
       }
     } else $('attackWarning').textContent = '';
     // Resolve walls before damage. At this point obstacles are still at their
@@ -3567,8 +3590,16 @@ export function createGame({
         // Hull catches missed/armored shots behind the forward weak-point volumes.
         const hull = new T.Vector3(45, 20, 4);
         if (b.life > 0 && crossesSolid(previousShot, b.o.position, boss.position, hull, 0.2)) {
-          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0, {
+          const dealt = damageBoss(
+            (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
+            boss.position,
+            b.element,
+            b.charged,
+            'hull',
+          );
+          impact(impactPoint(previousShot, b.o.position, boss.position, hull), dealt, {
             bossHit: true,
+            weak: false,
           });
           b.life = 0;
         }
