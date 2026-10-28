@@ -1,18 +1,18 @@
 import { createVoicePool, noiseBuffer } from './audio-synth.js';
 // Original procedural mechanical effects; no runtime downloads or licensed recordings.
 export const AUDIO_CUES = {
-  mechaTransform: {
-    cooldown: 0.5,
+  plasmaTitan: {
+    cooldown: 1,
     tones: [
-      { from: 165, to: 60, duration: 0.32, gain: 0.032, wave: 'sawtooth' },
-      { from: 280, to: 510, delay: 0.15, duration: 0.27, gain: 0.018, wave: 'triangle' },
+      { from: 130, to: 40, duration: 0.9, gain: 0.048, wave: 'sawtooth' },
+      { from: 540, to: 120, duration: 0.48, gain: 0.035, wave: 'triangle' },
     ],
   },
-  mechaPrecision: {
-    cooldown: 0.25,
+  fiveCatsOverdrive: {
+    cooldown: 1,
     tones: [
-      { from: 760, to: 240, duration: 0.21, gain: 0.038, wave: 'triangle' },
-      { from: 110, to: 57, duration: 0.23, gain: 0.03, wave: 'sine' },
+      { from: 110, to: 260, duration: 0.45, gain: 0.028, wave: 'triangle' },
+      { from: 370, to: 150, delay: 0.2, duration: 0.55, gain: 0.034, wave: 'sine' },
     ],
   },
   shot: {

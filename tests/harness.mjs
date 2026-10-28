@@ -56,6 +56,7 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableSquadIntro = false,
   seed = 42,
   storage,
   nativeLifecycle = false,
@@ -146,6 +147,7 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableSquadIntro,
     nativeLifecycle,
     onStageStarted,
     onStageFinished,
