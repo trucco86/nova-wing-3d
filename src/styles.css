@@ -5960,7 +5960,9 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   }
 }
 @media (max-width: 600px) and (max-height: 720px) and (orientation: portrait) {
-  .showroom-web #menu.title-screen:not(.selecting) { padding-top: 30dvh; }
+  .showroom-web #menu.title-screen:not(.selecting) {
+    padding-top: 30dvh;
+  }
 }
 @media (pointer: coarse) {
   body.in-mission.stage-intro #loadout {

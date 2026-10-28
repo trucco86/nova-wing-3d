@@ -5945,6 +5945,49 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   }
 }
 
+/* Integrated DEV 1.27: restore mobile cover fitting and launch-card priority
+   after combining the arsenal, orbital and Mecha visual branches. */
+@media (max-width: 600px) and (orientation: portrait) {
+  .showroom-web #menu.title-screen:not(.selecting)::before {
+    inset: 0;
+    background:
+      linear-gradient(180deg, #030b1605 0%, #030b1622 44%, #030b16e8 82%, #030b16 100%),
+      var(--cover-art) center top / contain no-repeat;
+    animation: none;
+  }
+  .showroom-web #menu.title-screen:not(.selecting) {
+    display: flex;
+    align-items: flex-end;
+    padding: max(210px, 38dvh) 6vw max(22px, env(safe-area-inset-bottom, 0px));
+    min-height: 100dvh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    touch-action: pan-y;
+  }
+  .showroom-web #menu.title-screen:not(.selecting) .title-content {
+    width: min(100%, 420px);
+    flex-shrink: 0;
+  }
+  .showroom-web #menu.title-screen:not(.selecting) .title-actions button {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .showroom-web #menu.title-screen:not(.selecting) .title-footer {
+    display: none;
+  }
+}
+@media (max-width: 600px) and (max-height: 720px) and (orientation: portrait) {
+  .showroom-web #menu.title-screen:not(.selecting) {
+    padding-top: 30dvh;
+  }
+}
+@media (pointer: coarse) {
+  body.in-mission.stage-intro #loadout {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
     </style>
   </head>
   <body>
