@@ -41,6 +41,12 @@ jobs:
           cp index.html dist/index.html
           touch dist/.nojekyll
           printf 'sha=%s\nref=%s\n' "$GITHUB_SHA" "$GITHUB_REF" > dist/BUILD.txt
+      - name: Prepare environment-specific public Firebase and ranking config
+        env:
+          NOVA_ENV: ${{ github.event_name == 'pull_request' && 'preview' || github.ref_name }}
+          NOVA_FIREBASE_CONFIG_JSON: ${{ github.ref_name == 'hml' && vars.NOVA_FIREBASE_HML_CONFIG_JSON || vars.NOVA_FIREBASE_DEV_CONFIG_JSON }}
+          NOVA_RANKING_API_URL: ${{ github.ref_name == 'hml' && vars.NOVA_RANKING_HML_API_URL || vars.NOVA_RANKING_DEV_API_URL }}
+        run: node tools/write-public-config.mjs dist/nova-config.json
       - name: Check Cloudflare credentials
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -729,6 +729,261 @@ const ADDITIONAL = [
   ['CIDADE', 'CITY', 'CIUDAD'],
 ];
 for (const [pt, en, es] of ADDITIONAL) MAP.set(pt, { en, es });
+const RANKING_TRANSLATIONS = [
+  // Google login, guest mode, settings and accessible labels.
+  ['Conta do piloto', 'Pilot account', 'Cuenta del piloto'],
+  ['CONTA · PILOTO', 'ACCOUNT · PILOT', 'CUENTA · PILOTO'],
+  ['Piloto visitante', 'Guest pilot', 'Piloto invitado'],
+  ['Piloto Google', 'Google pilot', 'Piloto Google'],
+  ['Preparando autenticação...', 'Preparing authentication...', 'Preparando autenticación...'],
+  ['Entrar com Google', 'Sign in with Google', 'Iniciar sesión con Google'],
+  ['Sair da conta', 'Sign out', 'Cerrar sesión'],
+  ['Continuar como visitante', 'Continue as guest', 'Continuar como invitado'],
+  [
+    'O login é opcional. Para competir, abra RANK e aceite o registro de pontuações.',
+    'Signing in is optional. To compete, open RANK and opt in to score recording.',
+    'El inicio de sesión es opcional. Para competir, abre RANK y acepta registrar puntuaciones.',
+  ],
+  ['Sessão Google ativa', 'Google session active', 'Sesión de Google activa'],
+  [
+    'Modo visitante · progresso local',
+    'Guest mode · local progress',
+    'Modo invitado · progreso local',
+  ],
+  ['Conectando ao Google...', 'Connecting to Google...', 'Conectando con Google...'],
+  [
+    'Não foi possível verificar a sessão Google. Tente novamente.',
+    'Could not verify your Google session. Try again.',
+    'No se pudo verificar tu sesión de Google. Inténtalo de nuevo.',
+  ],
+  [
+    'Não foi possível sair do Google. Sua sessão continua ativa.',
+    'Could not sign out of Google. Your session remains active.',
+    'No se pudo cerrar sesión de Google. Tu sesión sigue activa.',
+  ],
+  [
+    'Não foi possível abrir o login. Tente novamente.',
+    'Could not open sign-in. Try again.',
+    'No se pudo abrir el inicio de sesión. Inténtalo de nuevo.',
+  ],
+  [
+    'Login cancelado · modo visitante',
+    'Sign-in cancelled · guest mode',
+    'Inicio de sesión cancelado · modo invitado',
+  ],
+  [
+    'Falha no login Google. Confira os domínios autorizados.',
+    'Google sign-in failed. Check authorized domains.',
+    'Error al iniciar sesión con Google. Revisa los dominios autorizados.',
+  ],
+  ['Não foi possível sair da conta.', 'Could not sign out.', 'No se pudo cerrar sesión.'],
+  ['Verificando sessão Google...', 'Checking Google session...', 'Verificando sesión de Google...'],
+  [
+    'Login de produção ainda não configurado. Jogue como visitante.',
+    'Production sign-in is not configured yet. Play as a guest.',
+    'El acceso de producción aún no está configurado. Juega como invitado.',
+  ],
+  [
+    'Sessão indisponível. Jogue como visitante.',
+    'Session unavailable. Play as a guest.',
+    'Sesión no disponible. Juega como invitado.',
+  ],
+  [
+    'Não foi possível concluir o login Google.',
+    'Could not complete Google sign-in.',
+    'No se pudo completar el inicio de sesión con Google.',
+  ],
+  [
+    'Login indisponível. Você pode jogar como visitante.',
+    'Sign-in unavailable. You can play as a guest.',
+    'Inicio de sesión no disponible. Puedes jugar como invitado.',
+  ],
+
+  // Ranking, opt-in, local/cloud histories and data deletion.
+  [
+    'Ranking e histórico de pontuação',
+    'Ranking and score history',
+    'Clasificación e historial de puntuaciones',
+  ],
+  ['RANK · HISTÓRICO', 'RANK · HISTORY', 'CLASIFICACIÓN · HISTORIAL'],
+  ['RANKING FIVE CATS', 'FIVE CATS RANKING', 'CLASIFICACIÓN FIVE CATS'],
+  ['Visitante · resultados locais', 'Guest · local scores', 'Invitado · puntuaciones locales'],
+  [
+    'Google conectado · competição opcional',
+    'Google connected · optional competition',
+    'Google conectado · competición opcional',
+  ],
+  [
+    '0 fases · recorde 0 pts · total 0',
+    '0 stages · best 0 pts · total 0',
+    '0 fases · récord 0 pts · total 0',
+  ],
+  ['fases', 'stages', 'fases'],
+  ['recorde', 'best', 'récord'],
+  ['Apelido público', 'Public nickname', 'Apodo público'],
+  [
+    'Quero participar do ranking experimental e salvar minhas próximas pontuações na minha conta.',
+    'I want to join the experimental ranking and save future scores to my account.',
+    'Quiero participar en la clasificación experimental y guardar futuras puntuaciones en mi cuenta.',
+  ],
+  ['ATUALIZAR RANK', 'REFRESH RANKING', 'ACTUALIZAR CLASIFICACIÓN'],
+  ['EXCLUIR MEUS DADOS NA NUVEM', 'DELETE MY CLOUD DATA', 'ELIMINAR MIS DATOS EN LA NUBE'],
+  [
+    'Exclui seu apelido e as pontuações remotas, após confirmação. Não exclui sua conta Google, o progresso ou as partidas deste dispositivo.',
+    'After confirmation, deletes your cloud nickname and scores. Does not delete your Google account, progress or matches on this device.',
+    'Tras la confirmación, elimina tu apodo y puntuaciones en la nube. No elimina tu cuenta de Google, progreso ni partidas en este dispositivo.',
+  ],
+  ['RANK GLOBAL · EXPERIMENTAL', 'GLOBAL RANK · EXPERIMENTAL', 'RANKING GLOBAL · EXPERIMENTAL'],
+  [
+    'Ranking online ainda não configurado.',
+    'Online ranking not configured yet.',
+    'La clasificación en línea aún no está configurada.',
+  ],
+  ['MEU HISTÓRICO · NA NUVEM', 'MY HISTORY · CLOUD', 'MI HISTORIAL · NUBE'],
+  [
+    'Entre com Google para consultar.',
+    'Sign in with Google to view.',
+    'Inicia sesión con Google para consultar.',
+  ],
+  [
+    'MINHAS PARTIDAS · NESTE DISPOSITIVO',
+    'MY MATCHES · THIS DEVICE',
+    'MIS PARTIDAS · ESTE DISPOSITIVO',
+  ],
+  ['Sem partidas concluídas.', 'No completed matches.', 'No hay partidas completadas.'],
+  [
+    'Visitantes jogam normalmente. O histórico local não sincroniza entre aparelhos. Pontuações online são experimentais, sem verificação antifraude definitiva.',
+    'Guests can play normally. Local history does not sync across devices. Online scores are experimental and not yet fully protected against cheating.',
+    'Los invitados pueden jugar normalmente. El historial local no se sincroniza entre dispositivos. Las puntuaciones en línea son experimentales y aún no cuentan con verificación antifraude definitiva.',
+  ],
+  [
+    'Sem partidas concluídas neste dispositivo.',
+    'No completed stages on this device.',
+    'No hay fases completadas en este dispositivo.',
+  ],
+  [
+    'Ranking online indisponível.',
+    'Online ranking unavailable.',
+    'Clasificación en línea no disponible.',
+  ],
+  [
+    'Histórico remoto indisponível.',
+    'Cloud history unavailable.',
+    'Historial en la nube no disponible.',
+  ],
+  [
+    'Ranking experimental ainda sem pontuações.',
+    'No experimental scores yet.',
+    'Todavía no hay puntuaciones experimentales.',
+  ],
+  [
+    'Sem partidas remotas registradas.',
+    'No cloud matches recorded.',
+    'No hay partidas registradas en la nube.',
+  ],
+  [
+    'Histórico remoto temporariamente indisponível.',
+    'Cloud history temporarily unavailable.',
+    'Historial en la nube temporalmente no disponible.',
+  ],
+  [
+    'Entre com Google para consultar seu histórico na nuvem.',
+    'Sign in with Google to see your cloud history.',
+    'Inicia sesión con Google para consultar tu historial en la nube.',
+  ],
+  [
+    'Ranking experimental · pontuações ainda não verificadas por anticheat.',
+    'Experimental ranking · scores are not yet anti-cheat verified.',
+    'Clasificación experimental · puntuaciones aún no verificadas contra trampas.',
+  ],
+  [
+    'Ranking remoto indisponível. Seu histórico local foi preservado.',
+    'Cloud ranking unavailable. Your local history was preserved.',
+    'Clasificación en la nube no disponible. Se conservó tu historial local.',
+  ],
+  [
+    'Pontuação guardada neste navegador. Entre com Google e aceite o ranking para registrar partidas futuras.',
+    'Score saved in this browser. Sign in with Google and opt in to record future matches.',
+    'Puntuación guardada en este navegador. Inicia sesión con Google y acepta la clasificación para guardar futuras partidas.',
+  ],
+  [
+    'Pontuação local preservada. Envio remoto não disponível.',
+    'Local score preserved. Cloud upload unavailable.',
+    'Puntuación local conservada. Envío a la nube no disponible.',
+  ],
+  [
+    'Pontuação armazenada no ranking experimental (não verificada).',
+    'Score saved in the experimental ranking (unverified).',
+    'Puntuación guardada en la clasificación experimental (sin verificar).',
+  ],
+  [
+    'Histórico local salvo. Não foi possível gravar esta partida no servidor.',
+    'Local history saved. Could not save this match on the server.',
+    'Historial local guardado. No se pudo registrar esta partida en el servidor.',
+  ],
+  [
+    'Consulte o histórico desta conta.',
+    'View this account’s history.',
+    'Consulta el historial de esta cuenta.',
+  ],
+  [
+    'Histórico local ativo. API de ranking ainda não configurada neste ambiente.',
+    'Local history enabled. Ranking API not yet configured in this environment.',
+    'Historial local activo. La API de clasificación aún no está configurada en este entorno.',
+  ],
+  [
+    'Participação no ranking desativada. Seus resultados locais continuam salvos.',
+    'Ranking participation disabled. Your local scores remain saved.',
+    'Participación en la clasificación desactivada. Tus puntuaciones locales siguen guardadas.',
+  ],
+  [
+    'Pontuações locais habilitadas; ranking remoto depende da API do ambiente.',
+    'Local scores enabled; cloud ranking requires the environment API.',
+    'Puntuaciones locales activas; la clasificación en la nube requiere la API del entorno.',
+  ],
+  [
+    'Solicitando exclusão dos dados na nuvem...',
+    'Requesting cloud data deletion...',
+    'Solicitando eliminación de los datos en la nube...',
+  ],
+  [
+    'Seu histórico remoto foi excluído.',
+    'Your cloud history was deleted.',
+    'Se eliminó tu historial en la nube.',
+  ],
+  [
+    'Atualize para consultar o ranking.',
+    'Refresh to view the ranking.',
+    'Actualiza para consultar la clasificación.',
+  ],
+  [
+    'Dados remotos excluídos. Suas partidas e progresso locais foram mantidos.',
+    'Cloud data deleted. Your local matches and progress were kept.',
+    'Datos de la nube eliminados. Se conservaron tus partidas y progreso local.',
+  ],
+  [
+    'Não foi possível confirmar a exclusão remota. Tente novamente.',
+    'Could not confirm cloud data deletion. Try again.',
+    'No se pudo confirmar la eliminación de datos en la nube. Inténtalo de nuevo.',
+  ],
+  [
+    'Excluir permanentemente seu apelido e histórico de pontuação na nuvem? O progresso e as partidas neste dispositivo serão mantidos.',
+    'Permanently delete your cloud nickname and score history? Progress and matches on this device will be kept.',
+    '¿Eliminar permanentemente tu apodo e historial de puntuaciones en la nube? Se conservarán el progreso y las partidas de este dispositivo.',
+  ],
+  [
+    'Excluir permanentemente seu apelido e histórico de pontuação na nuvem? O progresso e as partidas neste dispositivo serão mantidos. Esta conta não poderá enviar novas pontuações até existir um novo processo de inscrição.',
+    'Permanently delete your cloud nickname and score history? Progress and matches on this device will be kept. This account cannot upload new scores until a new enrollment process is available.',
+    '¿Eliminar permanentemente tu apodo e historial de puntuaciones en la nube? Se conservarán el progreso y las partidas de este dispositivo. Esta cuenta no podrá enviar nuevas puntuaciones hasta que exista un nuevo proceso de inscripción.',
+  ],
+  [
+    'Após excluir os dados, esta conta não poderá voltar ao ranking até existir um novo processo de inscrição.',
+    'After deleting data, this account cannot rejoin the ranking until a new enrollment process is available.',
+    'Tras eliminar los datos, esta cuenta no podrá volver a la clasificación hasta que exista un nuevo proceso de inscripción.',
+  ],
+];
+for (const [pt, en, es] of RANKING_TRANSLATIONS) MAP.set(pt, { en, es });
+
 const TOKEN_KEYS = [...MAP.keys()].filter((s) => s.length >= 4).sort((a, b) => b.length - a.length);
 const escapePattern = (s) =>
   [...s].map((c) => ('.?*+^$[]{}()|\\'.includes(c) ? '\\' + c : c)).join('');
@@ -740,7 +995,7 @@ export function translateText(text, lang = 'pt') {
   if (lang === 'pt' || !['en', 'es'].includes(lang) || typeof text !== 'string') return text;
   const match = /^(\s*)([\s\S]*?)(\s*)$/.exec(text);
   if (!match || !match[2]) return text;
-  const exact = MAP.get(match[2]);
+  const exact = MAP.get(match[2]) || MAP.get(match[2].replace(/\s+/g, ' ').trim());
   if (exact) return match[1] + exact[lang] + match[3];
   // Interpolated statuses are translated by domain tokens, preserving IDs and numbers.
   const patched = match[2].replace(TOKEN_RE, (token) => MAP.get(token)?.[lang] ?? token);

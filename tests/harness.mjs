@@ -60,6 +60,8 @@ export function harness({
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const elements = new Map(
     [
@@ -145,6 +147,8 @@ export function harness({
     random,
     spawnEncounters,
     nativeLifecycle,
+    onStageStarted,
+    onStageFinished,
   });
   return {
     game,
