@@ -103,8 +103,11 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   h.game.pause();
   h.advance(4.6);
   h.game.damage(30);
-  assert.ok(h.game.snapshot().shield < shield);
-  h.advance(4);
+  assert.equal(h.game.snapshot().shield, shield, 'barrier must remain active after several seconds');
+  h.advance(8);
+  h.game.damage(30);
+  assert.ok(h.game.snapshot().shield < shield, 'barrier expires after twelve seconds');
+  h.advance(9);
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);
   assert.equal(h.game.snapshot().entities.shots, 9);
@@ -113,10 +116,10 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   assert.ok(directions.some((v) => v[2] > 100) && directions.some((v) => v[2] < -100));
   assert.ok(directions.some((v) => v[0] > 100) && directions.some((v) => v[0] < -100));
   assert.ok(directions.every((v) => Math.abs(Math.hypot(...v) - 130) < 1e-8));
-  h.advance(8);
+  h.advance(15);
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);
-  assert.equal(h.game.snapshot().strategy.stasis, 5);
+  assert.equal(h.game.snapshot().strategy.stasis, 11);
 });
 test('docked pods amplify actual shots and deployed pods pursue moving targets', (t) => {
   const a = setup(t, { storage: save({ xp: 24, arsenal: 0, special: 0 }) });
