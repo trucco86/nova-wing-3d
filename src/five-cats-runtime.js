@@ -1,13 +1,25 @@
 import * as T from 'three';
 import {
-  SQUAD_PILOTS, SQUAD_INTRO_DURATION, SQUAD_SPECIALS,
-  formationPose, allySortieAt, canActivateSquadSpecial,
+  SQUAD_PILOTS,
+  SQUAD_INTRO_DURATION,
+  SQUAD_SPECIALS,
+  formationPose,
+  allySortieAt,
+  canActivateSquadSpecial,
 } from './five-cats-squad.js';
 
 /** Isolated, disposable Five Cats cinematic and physical-projectile supers. */
 export function createFiveCatsSquad({
-  scene, player, createWing, fireFrom, opponent, obstacleRange, notify, cue,
-  status, formationStatus,
+  scene,
+  player,
+  createWing,
+  fireFrom,
+  opponent,
+  obstacleRange,
+  notify,
+  cue,
+  status,
+  formationStatus,
 }) {
   const wings = SQUAD_PILOTS.map((pilot) => {
     const mesh = createWing(pilot);
@@ -16,8 +28,13 @@ export function createFiveCatsSquad({
     return { pilot, mesh };
   });
   let intro = 0;
-  let plasmaTime = 0, overdriveTime = 0, plasmaCooldown = 0, overdriveCooldown = 0;
-  let plasmaClock = 0, overdriveClock = 0, supportClock = 0;
+  let plasmaTime = 0,
+    overdriveTime = 0,
+    plasmaCooldown = 0,
+    overdriveCooldown = 0;
+  let plasmaClock = 0,
+    overdriveClock = 0,
+    supportClock = 0;
   let beam = null;
   function stopBeam() {
     if (!beam) return;
@@ -33,7 +50,9 @@ export function createFiveCatsSquad({
     plasmaTime = overdriveTime = plasmaCooldown = overdriveCooldown = 0;
     plasmaClock = overdriveClock = supportClock = 0;
     stopBeam();
-    wings.forEach(({ mesh }) => { mesh.visible = false; });
+    wings.forEach(({ mesh }) => {
+      mesh.visible = false;
+    });
     status.hidden = true;
     formationStatus.hidden = true;
   }
@@ -44,9 +63,15 @@ export function createFiveCatsSquad({
   }
   function activate(kind, energy) {
     const cooldown = kind === 'plasma' ? plasmaCooldown : overdriveCooldown;
-    if (!canActivateSquadSpecial(kind, {
-      playing: true, intro: intro > 0, energy, cooldown,
-    })) return false;
+    if (
+      !canActivateSquadSpecial(kind, {
+        playing: true,
+        intro: intro > 0,
+        energy,
+        cooldown,
+      })
+    )
+      return false;
     if (kind === 'plasma') {
       plasmaTime = SQUAD_SPECIALS.plasma.duration;
       plasmaCooldown = SQUAD_SPECIALS.plasma.cooldown;
@@ -56,8 +81,10 @@ export function createFiveCatsSquad({
           new T.CylinderGeometry(radius, radius, 1, 14),
           new T.MeshBasicMaterial({
             color: i ? '#caffff' : '#ff7739',
-            transparent: true, opacity: i ? 0.78 : 0.3,
-            blending: T.AdditiveBlending, depthWrite: false,
+            transparent: true,
+            opacity: i ? 0.78 : 0.3,
+            blending: T.AdditiveBlending,
+            depthWrite: false,
           }),
         );
         mesh.rotation.x = Math.PI / 2;
@@ -93,7 +120,9 @@ export function createFiveCatsSquad({
       if (intro === 0) {
         player.visible = true;
         formationStatus.hidden = true;
-        wings.forEach(({ mesh }) => { mesh.visible = false; });
+        wings.forEach(({ mesh }) => {
+          mesh.visible = false;
+        });
         notify('FIVE CATS · FORMAÇÃO DESFEITA · INICIAR MISSÃO');
       }
       return { intro: true, energySpent: 0 };
@@ -112,9 +141,13 @@ export function createFiveCatsSquad({
       plasmaClock -= dt;
       if (plasmaClock <= 0) {
         // Damage goes through the standard shot collision/occlusion path.
-        fireFrom(player.position.clone().add(new T.Vector3(0, 0, -3)),
+        fireFrom(
+          player.position.clone().add(new T.Vector3(0, 0, -3)),
           new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
-          14 * power, 'fire', true);
+          14 * power,
+          'fire',
+          true,
+        );
         plasmaClock = SQUAD_SPECIALS.plasma.pulseInterval;
       }
       if (plasmaTime === 0) stopBeam();
@@ -127,27 +160,37 @@ export function createFiveCatsSquad({
         mesh.visible = p.id !== pilot;
         if (!mesh.visible) return;
         const pose = formationPose(p.slot, SQUAD_INTRO_DURATION);
-        mesh.position.set(player.position.x + pose.x * 0.8,
-          player.position.y + pose.y - 7, player.position.z + pose.z + 12);
+        mesh.position.set(
+          player.position.x + pose.x * 0.8,
+          player.position.y + pose.y - 7,
+          player.position.z + pose.z + 12,
+        );
         mesh.rotation.z = pose.bank;
       });
       if (overdriveClock <= 0) {
         const enemy = opponent();
-        if (enemy) for (const { pilot: p, mesh } of wings) {
-          if (p.id !== pilot) fireFrom(mesh.position.clone(), enemy.clone(),
-            8 * power, 'arcane', false);
-        }
+        if (enemy)
+          for (const { pilot: p, mesh } of wings) {
+            if (p.id !== pilot)
+              fireFrom(mesh.position.clone(), enemy.clone(), 8 * power, 'arcane', false);
+          }
         overdriveClock = SQUAD_SPECIALS.overdrive.pulseInterval;
       }
-      if (overdriveTime === 0) wings.forEach(({ mesh }) => { mesh.visible = false; });
+      if (overdriveTime === 0)
+        wings.forEach(({ mesh }) => {
+          mesh.visible = false;
+        });
     } else {
       const sortie = sector === 0 ? allySortieAt(elapsed, pilot) : null;
       wings.forEach(({ pilot: p, mesh }) => {
         mesh.visible = !!sortie && sortie.pilot.id === p.id;
         if (mesh.visible) {
           const direction = sortie.section % 2 ? 1 : -1;
-          mesh.position.set(player.position.x + direction * 16,
-            player.position.y + 3, player.position.z - 10 - sortie.seconds * 2);
+          mesh.position.set(
+            player.position.x + direction * 16,
+            player.position.y + 3,
+            player.position.z - 10 - sortie.seconds * 2,
+          );
           mesh.rotation.z = -direction * 0.12;
         }
       });
@@ -163,11 +206,25 @@ export function createFiveCatsSquad({
     return { intro: false, energySpent: 0 };
   }
   return {
-    begin, reset, activate, update, stopBeam,
+    begin,
+    reset,
+    activate,
+    update,
+    stopBeam,
     snapshot: () => ({
-      intro, plasmaTime, overdriveTime, plasmaCooldown, overdriveCooldown,
-      visible: wings.filter(({ mesh }) => mesh.visible).map(({ pilot: p, mesh }) =>
-        ({ pilot: p.id, x: mesh.position.x, y: mesh.position.y, z: mesh.position.z })),
+      intro,
+      plasmaTime,
+      overdriveTime,
+      plasmaCooldown,
+      overdriveCooldown,
+      visible: wings
+        .filter(({ mesh }) => mesh.visible)
+        .map(({ pilot: p, mesh }) => ({
+          pilot: p.id,
+          x: mesh.position.x,
+          y: mesh.position.y,
+          z: mesh.position.z,
+        })),
     }),
     destroy() {
       reset();

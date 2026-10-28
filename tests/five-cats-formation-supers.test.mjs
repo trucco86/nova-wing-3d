@@ -1,14 +1,23 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SQUAD_PILOTS, SQUAD_INTRO_DURATION, SQUAD_SPECIALS,
-  formationPose, allySortieAt, canActivateSquadSpecial,
+  SQUAD_PILOTS,
+  SQUAD_INTRO_DURATION,
+  SQUAD_SPECIALS,
+  formationPose,
+  allySortieAt,
+  canActivateSquadSpecial,
 } from '../src/five-cats-squad.js';
 import { harness } from './harness.mjs';
 
 test('opening has all five Five Cats; Bia is centered and leading', () => {
-  assert.deepEqual(SQUAD_PILOTS.map((p) => p.id).sort(),
-    ['bia', 'bob', 'calvin', 'christopher', 'jenifer']);
+  assert.deepEqual(SQUAD_PILOTS.map((p) => p.id).sort(), [
+    'bia',
+    'bob',
+    'calvin',
+    'christopher',
+    'jenifer',
+  ]);
   assert.equal(SQUAD_PILOTS.find((p) => p.id === 'bia').slot, 0);
   const center = formationPose(0, 0);
   for (const wing of [-2, -1, 1, 2]) {
@@ -17,8 +26,10 @@ test('opening has all five Five Cats; Bia is centered and leading', () => {
     assert.ok(pose.z > center.z, 'leader must fly ahead of all wingmates');
     assert.ok(Number.isFinite(pose.bank));
   }
-  assert.equal(formationPose(-1, SQUAD_INTRO_DURATION).x,
-    -formationPose(1, SQUAD_INTRO_DURATION).x);
+  assert.equal(
+    formationPose(-1, SQUAD_INTRO_DURATION).x,
+    -formationPose(1, SQUAD_INTRO_DURATION).x,
+  );
 });
 
 test('four allies enter separate segments of phase one and exclude selected pilot', () => {
@@ -34,15 +45,33 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
   for (const kind of ['plasma', 'overdrive']) {
     const spec = SQUAD_SPECIALS[kind];
     assert.ok(spec.cost > 0 && spec.cooldown > spec.duration);
-    assert.equal(canActivateSquadSpecial(kind, {
-      playing: true, intro: false, energy: spec.cost, cooldown: 0,
-    }), true);
-    assert.equal(canActivateSquadSpecial(kind, {
-      playing: true, intro: true, energy: 100, cooldown: 0,
-    }), false);
-    assert.equal(canActivateSquadSpecial(kind, {
-      playing: true, intro: false, energy: spec.cost - 1, cooldown: 0,
-    }), false);
+    assert.equal(
+      canActivateSquadSpecial(kind, {
+        playing: true,
+        intro: false,
+        energy: spec.cost,
+        cooldown: 0,
+      }),
+      true,
+    );
+    assert.equal(
+      canActivateSquadSpecial(kind, {
+        playing: true,
+        intro: true,
+        energy: 100,
+        cooldown: 0,
+      }),
+      false,
+    );
+    assert.equal(
+      canActivateSquadSpecial(kind, {
+        playing: true,
+        intro: false,
+        energy: spec.cost - 1,
+        cooldown: 0,
+      }),
+      false,
+    );
   }
 });
 

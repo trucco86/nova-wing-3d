@@ -13,9 +13,11 @@ A primeira fase começa com uma **cena jogável de 5 s**: Bia lidera no centro, 
 Som: efeitos originais sintetizados, sem copiar música ou animação de franquias comerciais.
 
 ### Validação e limites
+
 - **Automatizado:** identidade dos 5, Bia central/adiante, quatro janelas, dupla capacidade, custos e cooldown, projéteis e término de estados.
 - **Pendente:** avaliação visual real em 390x844/844x390, clipping e ângulo de câmera, áudio em celular, balanceamento dos efeitos, interseção com alerta de BOOST e desempenho móvel.
 - Integração exclusiva por PR na branch `hml`, **sem merge ou publicação em main/produção** sem aprovação visual e gates. PR #122 (órbita, capa/ranking) e #125 (mecha) permanecem isoladas.
 
 ### Evidências
+
 PR e SHA versionados, logs de quality e browser 1–4; arquivos gerados em `index.html` pela CI antes do preview. A documentação não equivale à homologação.

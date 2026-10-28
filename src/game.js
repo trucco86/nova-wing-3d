@@ -234,7 +234,11 @@ export function createGame({
         fireFrom(origin, target, damage, element, charged) {
           launchShot(0, damage, charged, origin);
           const shot = shots.at(-1);
-          shot.v = target.clone().sub(origin).normalize().multiplyScalar(charged ? 250 : 195);
+          shot.v = target
+            .clone()
+            .sub(origin)
+            .normalize()
+            .multiplyScalar(charged ? 250 : 195);
           shot.element = element;
           shot.homing = false;
           shot.source = 'five-cats';
@@ -244,8 +248,9 @@ export function createGame({
         opponent() {
           if (boss) {
             boss.updateMatrixWorld(true);
-            const weak = boss.userData.parts.find((p, i) =>
-              p.hp > 0 && weakPointOpen(relativeOrbit(), i));
+            const weak = boss.userData.parts.find(
+              (p, i) => p.hp > 0 && weakPointOpen(relativeOrbit(), i),
+            );
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
             if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
@@ -256,12 +261,16 @@ export function createGame({
         },
         obstacleRange() {
           const nearest = obstacles
-            .filter(({ o }) =>
-              o.position.z < player.position.z &&
-              Math.abs(o.position.x - player.position.x) < 6 &&
-              Math.abs(o.position.y - player.position.y) < 6)
-            .reduce((distance, { o }) =>
-              Math.min(distance, player.position.z - o.position.z - 6), 150);
+            .filter(
+              ({ o }) =>
+                o.position.z < player.position.z &&
+                Math.abs(o.position.x - player.position.x) < 6 &&
+                Math.abs(o.position.y - player.position.y) < 6,
+            )
+            .reduce(
+              (distance, { o }) => Math.min(distance, player.position.z - o.position.z - 6),
+              150,
+            );
           return Math.max(5, nearest);
         },
         notify: (text) => message(text),
@@ -2401,7 +2410,9 @@ export function createGame({
     elapsed += dt;
     totalTime += dt;
     squad?.update(dt, {
-      sector: sectorIndex, elapsed, pilot: pilotLoadout.pilot,
+      sector: sectorIndex,
+      elapsed,
+      pilot: pilotLoadout.pilot,
       power: weaponPower(),
     });
     // The first boss cannot begin while the pilot remains in the city or
@@ -2479,14 +2490,18 @@ export function createGame({
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
       const team = squad?.snapshot();
-      $('plasmaTitan').disabled = !!team && (
-        team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
-      $('fiveCatsOverdrive').disabled = !!team && (
-        team.overdriveCooldown > 0 || arcana < SQUAD_SPECIALS.overdrive.cost);
-      $('plasmaTitan').textContent = team?.plasmaCooldown > 0
-        ? 'Y · PLASMA ' + Math.ceil(team.plasmaCooldown) + 's' : 'Y · PLASMA';
-      $('fiveCatsOverdrive').textContent = team?.overdriveCooldown > 0
-        ? 'O · FIVE CATS ' + Math.ceil(team.overdriveCooldown) + 's' : 'O · FIVE CATS';
+      $('plasmaTitan').disabled =
+        !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
+      $('fiveCatsOverdrive').disabled =
+        !!team && (team.overdriveCooldown > 0 || arcana < SQUAD_SPECIALS.overdrive.cost);
+      $('plasmaTitan').textContent =
+        team?.plasmaCooldown > 0
+          ? 'Y · PLASMA ' + Math.ceil(team.plasmaCooldown) + 's'
+          : 'Y · PLASMA';
+      $('fiveCatsOverdrive').textContent =
+        team?.overdriveCooldown > 0
+          ? 'O · FIVE CATS ' + Math.ceil(team.overdriveCooldown) + 's'
+          : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
       $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
