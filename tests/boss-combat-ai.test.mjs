@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose, BOSS_MELEE } from '../src/boss-combat-ai.js';
 
 test('four signature bosses select physical moves in response to pilot state and orbit', () => {
-  assert.deepEqual(BOSS_MELEE, [2, 5, 6, 9]);
+  assert.deepEqual(BOSS_MELEE, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   const base = { cycle: 1, phase: 2, playerX: 10, playerY: 15, generators: [true, true] };
   assert.equal(chooseBossIntent({ ...base, sector: 9 }).kind, 'bite');
   assert.equal(chooseBossIntent({ ...base, sector: 9, orbit: 1.2 }).kind, 'claw-swipe');
@@ -21,7 +21,7 @@ test('melee attacks can be avoided by leaving marked area, and do not trigger du
   assert.equal(bossMeleeHit(intent, { x: 28, y: 8 }), false);
   assert.equal(bossMeleeHit(intent, { x: 10, y: 27 }), false);
   assert.equal(bossMeleePose(intent, 'windup', 1).lunge, 0);
-  assert.equal(bossMeleePose(intent, 'attack', 0.7).lunge, 30);
+  assert.equal(bossMeleePose(intent, 'attack', 0.7).lunge, 72);
   assert.ok(bossMeleePose(intent, 'windup', 1).jaw > 0);
   assert.ok(bossMeleePose(intent, 'attack', 0.7).jaw > 0);
   assert.equal(bossMeleePose(null, 'attack', 1).lunge, 0);
