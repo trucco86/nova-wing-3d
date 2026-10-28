@@ -9,6 +9,7 @@ import { harness } from './harness.mjs';
 function soundContext() {
   let running = 0;
   let stopped = 0;
+  const oscillators = [];
   const ctx = {
     currentTime: 0,
     destination: {},
@@ -17,7 +18,7 @@ function soundContext() {
       return { gain: { value: 0 }, connect() {}, disconnect() {} };
     },
     createOscillator() {
-      return {
+      const oscillator = {
         frequency: {
           value: 0,
           setValueAtTime(v) {
@@ -34,9 +35,11 @@ function soundContext() {
           stopped++;
         },
       };
+      oscillators.push(oscillator);
+      return oscillator;
     },
   };
-  return { ctx, counts: () => ({ running, stopped }) };
+  return { ctx, oscillators, counts: () => ({ running, stopped }) };
 }
 
 test('two independently articulated shoulders and two dorsal gimbals remain finite', () => {
@@ -85,16 +88,29 @@ test('lock target requires front cone, line of sight and weak-point preference',
   assert.equal(selectMechaTarget(origin, [behind, outside]), null);
 });
 
-test('motor uses two voices only, scales power and silences on pause or shutdown', () => {
-  const { ctx, counts } = soundContext();
+test('mecha turbine stays unobtrusive at idle, grows with boost and mutes immediately', () => {
+  const { ctx, counts, oscillators } = soundContext();
   const motor = createMechaThrusterAudio(ctx);
   assert.equal(counts().running, 2);
-  motor.update({ dt: 0.4, active: true, boosting: false });
-  const cruise = motor.snapshot().amplitude;
-  motor.update({ dt: 0.4, active: true, boosting: true });
-  assert.ok(motor.snapshot().amplitude > cruise);
-  motor.silence();
-  assert.equal(motor.snapshot().amplitude, 0);
+  assert.deepEqual(
+    oscillators.map((oscillator) => oscillator.type),
+    ['sine', 'triangle'],
+    'smooth voices replace the harsh sawtooth drone',
+  );
+  motor.update({ dt: 0.5, active: true, boosting: false });
+  const idle = motor.snapshot().amplitude;
+  assert.ok(idle > 0 && idle < 0.16, 'idle engine must stay quiet');
+  motor.update({ dt: 0.5, active: true, accelerating: 1 });
+  const maneuver = motor.snapshot().amplitude;
+  assert.ok(maneuver > idle, 'maneuvers should add some engine presence');
+  motor.update({ dt: 0.5, active: true, boosting: true });
+  assert.ok(motor.snapshot().amplitude > maneuver + 0.25, 'boost should be clearly stronger');
+  ctx.state = 'suspended';
+  motor.update({ dt: 0.1, active: true, boosting: true });
+  assert.equal(motor.snapshot().amplitude, 0, 'pause must silence immediately');
+  ctx.state = 'running';
+  motor.update({ dt: 0.3, active: true, boosting: true, volume: 0 });
+  assert.equal(motor.snapshot().amplitude, 0, 'SFX mute must silence immediately');
   motor.update({ dt: 0.3, active: false });
   assert.equal(motor.snapshot().amplitude, 0);
   motor.destroy();

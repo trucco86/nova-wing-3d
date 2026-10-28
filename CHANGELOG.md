@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.4 — Som da turbina do robô mais discreto (candidata DEV)
+
+- Substitui o zumbido serrilhado contínuo por uma base mais grave e suave, quase silenciosa em voo normal.
+- Reage às manobras e ao BOOST, que mantém presença sonora sem competir com a trilha do jogo.
+- Pausa, alternância de nave e mudo de efeitos desligam imediatamente o som contínuo.
+- Preserva a música, os outros efeitos, os controles, a jogabilidade e as evoluções anteriores.
+- Candidata DEV sem homologação auditiva em smartphone; HML e produção não alterados.
+
 ## 1.27.3 — Correção do menu em paisagem (candidata DEV)
 
 - Corrige rolagem vertical e acesso à preparação do esquadrão em modo paisagem de baixa altura.

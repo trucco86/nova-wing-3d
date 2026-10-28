@@ -1,6 +1,6 @@
 const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
 
-/** A bounded continuous synthetic engine sound using the game's AudioContext. */
+/** Low-profile mecha propulsion: soft idle, stronger boost, no constant sawtooth buzz. */
 export function createMechaThrusterAudio(context) {
   const output = context.createGain();
   output.gain.value = 0;
@@ -8,9 +8,9 @@ export function createMechaThrusterAudio(context) {
   const tones = [context.createOscillator(), context.createOscillator()];
   const gains = tones.map(() => context.createGain());
   tones.forEach((tone, i) => {
-    tone.type = i === 0 ? 'sawtooth' : 'triangle';
-    tone.frequency.value = i === 0 ? 62 : 126;
-    gains[i].gain.value = i === 0 ? 0.042 : 0.013;
+    tone.type = i === 0 ? 'sine' : 'triangle';
+    tone.frequency.value = i === 0 ? 55 : 106;
+    gains[i].gain.value = i === 0 ? 0.027 : 0.008;
     tone.connect(gains[i]);
     gains[i].connect(output);
     tone.start();
@@ -20,15 +20,20 @@ export function createMechaThrusterAudio(context) {
   let velocity = 0;
   function update({ dt = 0, active = false, boosting = false, accelerating = 0, volume = 1 } = {}) {
     if (destroyed) return;
-    const enabled = active && context.state !== 'suspended' && volume > 0;
-    const target = enabled ? clamp(boosting ? 1 : 0.36 + Math.abs(accelerating) * 0.3, 0, 1) : 0;
-    const speed = 1 - Math.exp(-clamp(dt, 0, 1) * (target > velocity ? 6 : 13));
+    const enabled = active && context.state === 'running' && volume > 0;
+    if (!enabled) {
+      silence();
+      return;
+    }
+    // Suppress the monotonous idle drone; let real maneuvers/BOOST add weight.
+    const target = clamp(boosting ? 0.92 : 0.115 + Math.abs(accelerating) * 0.21, 0, 1);
+    const speed = 1 - Math.exp(-clamp(dt, 0, 1) * (target > velocity ? 4.5 : 12));
     velocity += (target - velocity) * speed;
     amplitude +=
       (velocity * clamp(volume, 0, 1) - amplitude) * (1 - Math.exp(-clamp(dt, 0, 1) * 15));
     output.gain.value = clamp(amplitude, 0, 1);
     const now = context.currentTime;
-    [62 + 42 * velocity, 126 + 100 * velocity].forEach((hz, i) =>
+    [55 + 25 * velocity, 106 + 48 * velocity].forEach((hz, i) =>
       tones[i].frequency.setValueAtTime(hz, now),
     );
   }
