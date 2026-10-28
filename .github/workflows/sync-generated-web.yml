@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
+      - feat/ranking-i18n-pt-en-es-20261027
 permissions:
   contents: write
   actions: write
@@ -23,7 +24,18 @@ jobs:
       - run: npm run format
       - run: npm run build
       - run: npm run validate
+      - name: Sync localized v1.24.24 candidate on isolated branch
+        if: github.ref == 'refs/heads/feat/ranking-i18n-pt-en-es-20261027'
+        run: |
+          git add -- index.html src/i18n.js src/ranking-client.js src/shell.html tests/ranking-i18n.test.mjs
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(web): format and sync localized v1.24.24 candidate'
+            git push origin HEAD:feat/ranking-i18n-pt-en-es-20261027
+          fi
       - name: Commit only generated web artifact
+        if: github.ref == 'refs/heads/feat/nw09-cinematic-3d'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
