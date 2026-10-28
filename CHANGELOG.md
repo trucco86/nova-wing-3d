@@ -10,7 +10,6 @@
 - Testes abrangem as dez assinaturas, posições reais de disparo, animações e invariantes de hitboxes.
 - Candidata isolada sobre a PR #140; sem homologação visual/física e sem promoção a DEV/HML/PROD.
 
-
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.

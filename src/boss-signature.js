@@ -36,11 +36,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (const side of [-1, 1]) {
       if (!(side < 0 ? left : right)) continue;
       for (let i = 0; i < 3 + (level === 3 ? 1 : 0); i++) {
-        shots.push(shot(
-          [side * (28 + i * 3), 5 + i * 2, 25],
-          [side * (18 - i * 4) + Math.sin(cycle * 0.5) * 5, (i - 1) * 7, 0],
-          'fire',
-        ));
+        shots.push(
+          shot(
+            [side * (28 + i * 3), 5 + i * 2, 25],
+            [side * (18 - i * 4) + Math.sin(cycle * 0.5) * 5, (i - 1) * 7, 0],
+            'fire',
+          ),
+        );
       }
     }
     if (!live) shots.push(shot([0, 13, 27], [Math.sin(cycle * 0.5) * 8, 0, 0], 'fire'));
@@ -51,11 +53,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (let i = 0; i < 4 + level; i++) {
       const side = (i + Math.floor(cycle)) % 2 ? 1 : -1;
       if (!(side < 0 ? left : right)) continue;
-      shots.push(shot(
-        [side * (35 - i % 3 * 4), -8 + i * 3, 25],
-        [side * (16 - i * 3), -17 + i * 7 + Math.sin(cycle) * 3, 0],
-        'arcane',
-      ));
+      shots.push(
+        shot(
+          [side * (35 - (i % 3) * 4), -8 + i * 3, 25],
+          [side * (16 - i * 3), -17 + i * 7 + Math.sin(cycle) * 3, 0],
+          'arcane',
+        ),
+      );
     }
     if (!shots.length) shots.push(shot([0, -16, 27], [0, -12, 0], 'arcane'));
   }
@@ -82,11 +86,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
       const angle = (i / count) * TAU + cycle * 0.23;
       const x = Math.cos(angle) * 29;
       if (!(x < 0 ? left : right)) continue;
-      shots.push(shot(
-        [x, Math.sin(angle) * 29, 24],
-        [Math.cos(angle + 0.5) * (9 + level * 3), Math.sin(angle + 0.5) * (9 + level * 3), 0],
-        'arcane',
-      ));
+      shots.push(
+        shot(
+          [x, Math.sin(angle) * 29, 24],
+          [Math.cos(angle + 0.5) * (9 + level * 3), Math.sin(angle + 0.5) * (9 + level * 3), 0],
+          'arcane',
+        ),
+      );
     }
     if (!shots.length) shots.push(shot([0, 0, 28], [0, 0, 0], 'arcane'));
   }
@@ -95,11 +101,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (const side of [-1, 1]) {
       if (!(side < 0 ? left : right)) continue;
       for (let i = 0; i < 3 + (level === 3 ? 1 : 0); i++) {
-        shots.push(shot(
-          [side * 40, 15 - i * 4, 23],
-          [side * (21 - i * 5), -21 + i * 11 + Math.sin(cycle * 0.5) * 6, 0],
-          'fire',
-        ));
+        shots.push(
+          shot(
+            [side * 40, 15 - i * 4, 23],
+            [side * (21 - i * 5), -21 + i * 11 + Math.sin(cycle * 0.5) * 6, 0],
+            'fire',
+          ),
+        );
       }
     }
     if (!shots.length) shots.push(shot([0, 0, 28], [0, -16, 0], 'fire'));
@@ -147,11 +155,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
     for (const side of [-1, 1]) {
       if (!(side < 0 ? left : right)) continue;
       for (let i = 0; i < 4; i++) {
-        shots.push(shot(
-          [side * 45, 17 + i * 3, 29],
-          [side * (22 - i * 5), (i - 1.5) * (7 + level * 2), 0],
-          'fire',
-        ));
+        shots.push(
+          shot(
+            [side * 45, 17 + i * 3, 29],
+            [side * (22 - i * 5), (i - 1.5) * (7 + level * 2), 0],
+            'fire',
+          ),
+        );
       }
     }
     if (!live) shots.push(shot([0, 12, 28], [0, 0, 0], 'fire'));
@@ -165,11 +175,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
       const angle = (i / count) * TAU - cycle * 0.35;
       const x = Math.cos(angle) * 43;
       if (!(x < 0 ? left : right)) continue;
-      shots.push(shot(
-        [x, Math.sin(angle) * 29, 23],
-        [Math.cos(angle * 1.5) * (11 + level * 4), Math.sin(angle * 1.5) * (11 + level * 4), 0],
-        'arcane',
-      ));
+      shots.push(
+        shot(
+          [x, Math.sin(angle) * 29, 23],
+          [Math.cos(angle * 1.5) * (11 + level * 4), Math.sin(angle * 1.5) * (11 + level * 4), 0],
+          'arcane',
+        ),
+      );
     }
     if (!shots.length) shots.push(shot([0, 0, 27], [0, 0, 0], 'arcane'));
   }
