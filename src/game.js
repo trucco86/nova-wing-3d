@@ -3430,12 +3430,53 @@ export function createGame({
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       if (dynamicFlight) {
         const t = tactics();
+        if (t.state === 'windup' && bossIntentCycle !== t.cycle) {
+          bossIntent = chooseBossIntent({
+            sector: sectorIndex,
+            cycle: t.cycle,
+            phase: combatPhase,
+            playerX: player.position.x,
+            playerY: player.position.y,
+            orbit: relativeOrbit(),
+            boosting,
+            robot: robotMode,
+            generators: boss.userData.parts.map((part) => part.hp > 0),
+          });
+          bossIntentCycle = t.cycle;
+          bossMeleeResolved = false;
+        }
+        const attackAge = Math.max(0, bossCombat.age - 8) % t.period;
+        const meleePose = bossMeleePose(
+          bossIntent,
+          t.state,
+          t.state === 'attack' ? attackAge - 2.2 : attackAge,
+        );
         const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
         // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
-        boss.position.set(launchPose.x, launchPose.y, launchPose.z);
+        boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
         boss.rotation.z = t.bank;
+        if (
+          t.state === 'attack' &&
+          bossIntent &&
+          bossIntent.kind !== 'barrage' &&
+          !bossMeleeResolved &&
+          attackAge >= 2.72
+        ) {
+          bossMeleeResolved = true;
+          if (bossMeleeHit(bossIntent, {
+            x: player.position.x,
+            y: player.position.y,
+            orbit: relativeOrbit(),
+          })) {
+            hit(bossIntent.damage);
+            explode(player.position.clone(), 8, 0xff8060);
+            cue('armorHit');
+          } else {
+            message('ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO');
+          }
+        }
         $('battleRadar').style.background = radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
         $('tacticState').textContent =
@@ -3450,7 +3491,12 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        if (
+          bossCombat.age >= 3 &&
+          t.state === 'attack' &&
+          t.cycle !== lastSpecialCycle &&
+          (bossIntent?.kind === 'barrage' || !bossIntent)
+        ) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
           const signature = bossSignatureVolley(
@@ -3490,10 +3536,28 @@ export function createGame({
         boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
       }
       boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      const t = dynamicFlight ? tactics() : null;
+      const poseAge = t ? Math.max(0, bossCombat.age - 8) % t.period : 0;
+      const melee = bossMeleePose(
+        bossIntent,
+        t?.state,
+        t?.state === 'attack' ? poseAge - 2.2 : poseAge,
+      );
       boss.userData.organic?.forEach((o, i) => {
-        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1;
+        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1 +
+          melee.tentacle * (i % 2 ? -1 : 1);
+        o.rotation.x = melee.tentacle * 0.32;
       });
-      boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
+      boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12 + melee.jaw;
+      const biteJaw = boss.getObjectByName('marvin-bite-jaw');
+      if (biteJaw) biteJaw.rotation.x = melee.jaw;
+      for (const [name, side] of [['marvin-left-claw', -1], ['marvin-right-claw', 1]]) {
+        const claw = boss.getObjectByName(name);
+        if (claw) {
+          claw.rotation.z = side * melee.claw;
+          claw.rotation.x = melee.claw * 0.4;
+        }
+      }
       if (dynamicFlight) {
         animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
       }
@@ -3539,8 +3603,14 @@ export function createGame({
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
       $('attackWarning').setAttribute?.('data-severity', 'danger');
+      const physicalWarning =
+        dynamicFlight && bossIntent &&
+        ['windup', 'attack'].includes(tactics().state) &&
+        bossIntent.kind !== 'barrage'
+          ? bossIntent.label
+          : null;
       const signatureWarning =
-        dynamicFlight && tactics().state === 'windup'
+        dynamicFlight && tactics().state === 'windup' && bossIntent?.kind === 'barrage'
           ? bossSignatureVolley(
               sectorIndex,
               tactics().cycle,
@@ -3548,9 +3618,11 @@ export function createGame({
               boss.userData.parts.map((part) => part.hp > 0),
             )?.name
           : null;
-      $('attackWarning').textContent = signatureWarning
-        ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
-        : bossCd < 0.65
+      $('attackWarning').textContent = physicalWarning
+        ? '⚠ ' + physicalWarning
+        : signatureWarning
+          ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+          : bossCd < 0.65
           ? '⚠ ' +
             [
               'LEQUE DUPLO',
@@ -3565,10 +3637,16 @@ export function createGame({
               'COROA IMPERIAL',
             ][sectorIndex]
           : '';
-      if (dynamicFlight && bossCd < 0.65)
+      if (dynamicFlight && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
-      if (bossCd <= 0 && bossCombat.age >= 3) {
+      // Only one targeted volley per maneuver; never spray generic bullets
+      // over the physical strike window.
+      const allowRanged =
+        !dynamicFlight ||
+        (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
+      if (bossCd <= 0 && bossCombat.age >= 3 && allowRanged) {
+        lastRangedCycle = tactics().cycle;
         bossVolley++;
         const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
         if (dynamicFlight) {
