@@ -1,6 +1,6 @@
 # Five Cats Universe — Fundação de exploração e missões
 
-**Status: domínio versionado e testável, ainda sem interface jogável.** Esta branch é independente de #138 / #140 / #142 e parte da DEV homologada 1.27.5, sem alterar o runtime atual.
+**Status da PR de implementação:** primeiro protótipo 3D jogável **exclusivo do modo Developer/QA**; aguardando build, Playwright e avaliação humana. A PR de domínio #143 contém apenas os contratos de quest e persiste sem interface. Esta PR está empilhada sobre #143, sem alterar a DEV homologada.
 
 ## O primeiro mistério: Sinais de Órbita-9
 
@@ -26,9 +26,18 @@ flowchart LR
   PLANET --> REWARD["Recompensa única"]
 ```
 
-## Ainda **não** existe nesta branch
+## Vertical slice 3D implementada nesta candidata
 
-Interface de exploração livre 3D, deslocamento no mundo, scanner visual, NPC animado, mapa, tela de diálogo ou transição para combate. O módulo é **foundation de domínio** e seus contratos. Não comunicar como “mundo aberto entregue”.
+- **Acesso:** Developer/QA → _EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D_, somente DEV e URLs de preview.
+- **Ambiente:** corredor de estação orbital em Three.js, com iluminação, avatar felino provisório, três sinais identificáveis e holograma do sobrevivente.
+- **Movimento:** WASD, setas e direcional mobile; câmera acompanha o personagem.
+- **Investigação:** procurar três terminais luminosos e usar SCAN/E quando próximo. O painel superior apresenta o progresso.
+- **Diálogo:** encontrar o sobrevivente e escolher restaurar energia ou rota clandestina.
+- **Transição:** a escolha libera um chefe da Órbita-9 pelo sistema Developer/QA do jogo existente.
+- **Isolamento:** o protótipo não grava em localStorage, não autentica e não publica resultados de ranking. Fechar e reabrir reinicia as pistas.
+- **Qualidade:** testes Playwright desktop/mobile foram criados para pistas, conversa, gate e controles, mas precisam de execução com evidência.
+
+**Ainda não implementado:** mundo aberto planetário, múltiplos cenários exploráveis, combate físico fora da nave, NPC com IA, modelos 3D premium, recompensa após retornar de uma missão, save persistente de exploração ou integração da campanha narrativa. Estes tópicos continuam no épico #139.
 
 ## Próxima entrega funcional do vertical slice
 
