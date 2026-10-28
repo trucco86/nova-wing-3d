@@ -36,8 +36,7 @@ export function createRankingClient({
     if (!closed && status) status.textContent = value;
   };
   const updateDeleteAccess = () => {
-    if (deleteRemote)
-      deleteRemote.disabled = deleteInProgress || !apiBase || !user?.getIdToken;
+    if (deleteRemote) deleteRemote.disabled = deleteInProgress || !apiBase || !user?.getIdToken;
   };
   const addListener = (element, event, handler) => {
     if (!element) return;

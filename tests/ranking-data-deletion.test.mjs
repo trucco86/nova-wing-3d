@@ -42,7 +42,8 @@ function setup({ approve = true } = {}) {
     'global',
     'cloud',
     'refresh',
-  ]) fields.set(name, control());
+  ])
+    fields.set(name, control());
   const panel = {
     ...control(),
     querySelector(selector) {
@@ -89,7 +90,10 @@ function setup({ approve = true } = {}) {
     },
   });
   return {
-    client, storage, calls, responses,
+    client,
+    storage,
+    calls,
+    responses,
     field: (name) => fields.get(name),
     clicks: () => confirmationCount,
     setApi: () => client.setRuntimeConfig({ rankingApiUrl: 'https://ranking.example.org' }),
@@ -120,7 +124,10 @@ test('cancelling confirmation never sends delete or alters consent', async () =>
   app.field('nickname').value = 'Alpha';
   await app.clickDelete();
   assert.equal(app.clicks(), 1);
-  assert.equal(app.calls.some((r) => r.path === '/v1/me'), false);
+  assert.equal(
+    app.calls.some((r) => r.path === '/v1/me'),
+    false,
+  );
   assert.equal(app.field('consent').checked, true);
   assert.equal(app.field('nickname').value, 'Alpha');
   app.client.destroy();
@@ -169,7 +176,9 @@ test('failed delete does not claim remote removal or destroy local results', asy
 
 test('late JWT from A cannot delete data using B session', async () => {
   let release;
-  const delayedToken = new Promise((resolve) => { release = resolve; });
+  const delayedToken = new Promise((resolve) => {
+    release = resolve;
+  });
   const app = setup();
   app.setApi();
   app.client.setUser(player('A', () => delayedToken));
@@ -185,7 +194,9 @@ test('late JWT from A cannot delete data using B session', async () => {
 
 test('a duplicate delete click is ignored while the request is in flight', async () => {
   let resolveApi;
-  const pendingResponse = new Promise((resolve) => { resolveApi = resolve; });
+  const pendingResponse = new Promise((resolve) => {
+    resolveApi = resolve;
+  });
   const app = setup();
   app.setApi();
   app.client.setUser(player('A'));

@@ -3,6 +3,7 @@
 **Status:** implementação candidata sobre #107, sem uso de Firebase real ou D1 em HML/PROD.
 
 ## Jornada
+
 - Em RANK, **EXCLUIR MEUS DADOS NA NUVEM** aparece desabilitado para visitantes
   e quando não existe API remota no ambiente.
 - Autenticado: confirmação específica esclarece que somente nickname e resultados
@@ -19,6 +20,7 @@
 - Ao enviar dados novamente, exigir novo nickname e novo opt-in.
 
 ## Evidência necessária
+
 - `tests/ranking-data-deletion.test.mjs`: sessão A→B com JWT tardio,
   confirmação cancelada, duplo clique, falha de API, botão de visitante,
   feedback e integridade local.
