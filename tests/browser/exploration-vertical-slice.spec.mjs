@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with no save writes', async ({ page }, info) => {
+test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with no save writes', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -16,8 +18,15 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   await expect(page.locator('#exploreLaunchCombat')).toBeHidden();
   await expect(page.locator('#exploreScan')).toBeDisabled();
 
-  for (const [x, z] of [[-12, -15], [13, -37], [-8, -59]]) {
-    const accepted = await page.evaluate(([px, pz]) => window.__novaExploreQA.moveTo(px, pz), [x, z]);
+  for (const [x, z] of [
+    [-12, -15],
+    [13, -37],
+    [-8, -59],
+  ]) {
+    const accepted = await page.evaluate(
+      ([px, pz]) => window.__novaExploreQA.moveTo(px, pz),
+      [x, z],
+    );
     expect(accepted).toBe(true);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
@@ -41,7 +50,9 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   const persisted = await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'));
   expect(persisted).toBeNull();
 
-  await page.screenshot({ path: info.outputPath('orbit9-three-clues-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('orbit9-three-clues-' + info.project.name + '.png'),
+  });
   await page.locator('#exploreLaunchCombat').click();
   await expect(overlay).toBeHidden();
   await expect(page.locator('#bossHUD')).toBeVisible();
@@ -50,7 +61,9 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   expect(errors).toEqual([]);
 });
 
-test('Orbit-9 QA exploration resets on exit and controls remain reachable on phones', async ({ page }, info) => {
+test('Orbit-9 QA exploration resets on exit and controls remain reachable on phones', async ({
+  page,
+}, info) => {
   test.setTimeout(90000);
   await page.goto('/');
   await page.locator('#developerPanel summary').click();
@@ -64,10 +77,24 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
     const sizes = await page.evaluate(() => {
       const get = (id) => {
         const rect = document.getElementById(id).getBoundingClientRect();
-        return { x: rect.x, y: rect.y, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height };
+        return {
+          x: rect.x,
+          y: rect.y,
+          right: rect.right,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+        };
       };
-      return ['explorationViewport', 'exploreMoveUp', 'exploreMoveDown',
-        'exploreMoveLeft', 'exploreMoveRight', 'exploreExit', 'exploreScan'].map(get);
+      return [
+        'explorationViewport',
+        'exploreMoveUp',
+        'exploreMoveDown',
+        'exploreMoveLeft',
+        'exploreMoveRight',
+        'exploreExit',
+        'exploreScan',
+      ].map(get);
     });
     for (const rect of sizes) {
       expect(rect.width).toBeGreaterThan(32);
@@ -80,7 +107,9 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
     await page.evaluate(() => window.__novaExploreQA.moveTo(-12, -15));
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('1/3');
-    await page.screenshot({ path: info.outputPath('orbit9-' + viewport.width + 'x' + viewport.height + '.png') });
+    await page.screenshot({
+      path: info.outputPath('orbit9-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
     await page.locator('#exploreExit').click();
     await expect(page.locator('#explorationOverlay')).toBeHidden();
     await expect(page.locator('#developerExplore')).toBeVisible();

@@ -6333,7 +6333,6 @@ body.ranking-intermission #novaRanking {
   }
 }
 
-
 /* Five Cats Universe QA vertical slice: gameplay remains central, while
    mission instructions stay in the top rail and thumb controls in the footer. */
 #explorationOverlay[hidden],
@@ -6350,7 +6349,9 @@ body.ranking-intermission #novaRanking {
   overflow: hidden;
   background: #030b1a;
   color: #e5faff;
-  font: 700 12px/1.3 Arial, sans-serif;
+  font:
+    700 12px/1.3 Arial,
+    sans-serif;
 }
 .exploration-toprail {
   display: flex;
@@ -6365,7 +6366,9 @@ body.ranking-intermission #novaRanking {
 }
 .exploration-toprail h2 {
   margin: 2px 0;
-  font: 900 clamp(15px, 2.6vw, 22px)/1.2 Arial, sans-serif;
+  font:
+    900 clamp(15px, 2.6vw, 22px)/1.2 Arial,
+    sans-serif;
   color: #bafbf4;
 }
 .exploration-toprail p {
@@ -6387,7 +6390,9 @@ body.ranking-intermission #novaRanking {
   background: #124252;
   color: #edffff;
   border-radius: 9px;
-  font: 800 11px Arial, sans-serif;
+  font:
+    800 11px Arial,
+    sans-serif;
   touch-action: manipulation;
   cursor: pointer;
 }
@@ -6438,7 +6443,9 @@ body.ranking-intermission #novaRanking {
   background: #071b2bf2;
   box-shadow: 0 3px 22px #000b;
 }
-.exploration-choices strong { color: #ffdd91; }
+.exploration-choices strong {
+  color: #ffdd91;
+}
 .exploration-controls {
   flex: 0 0 auto;
   display: flex;
@@ -6469,10 +6476,22 @@ body.ranking-intermission #novaRanking {
   touch-action: none;
   user-select: none;
 }
-#exploreMoveUp { grid-column: 2; grid-row: 1; }
-#exploreMoveLeft { grid-column: 1; grid-row: 2; }
-#exploreMoveDown { grid-column: 2; grid-row: 2; }
-#exploreMoveRight { grid-column: 3; grid-row: 2; }
+#exploreMoveUp {
+  grid-column: 2;
+  grid-row: 1;
+}
+#exploreMoveLeft {
+  grid-column: 1;
+  grid-row: 2;
+}
+#exploreMoveDown {
+  grid-column: 2;
+  grid-row: 2;
+}
+#exploreMoveRight {
+  grid-column: 3;
+  grid-row: 2;
+}
 .exploration-actions {
   display: flex;
   gap: 8px;
@@ -6490,20 +6509,58 @@ body.ranking-intermission #novaRanking {
   border-color: #a3ffd6;
 }
 @media (max-width: 800px), (max-height: 500px) {
-  .exploration-toprail { min-height: 50px; gap: 6px; padding: 4px 9px; }
-  .exploration-toprail h2 { font-size: 14px; }
-  .exploration-toprail p { font-size: 9px; }
-  .exploration-toprail strong { font-size: 9px; padding: 4px; }
-  .exploration-overlay button { min-height: 40px; font-size: 10px; padding: 5px 7px; }
-  .exploration-controls { gap: 7px; padding: 5px 8px; }
-  .exploration-controls small { display: none; }
-  .exploration-directional { grid-template-columns: repeat(3, 47px); grid-template-rows: 39px 39px; }
-  .exploration-actions { gap: 5px; }
-  .exploration-actions button { min-width: 88px; }
+  .exploration-toprail {
+    min-height: 50px;
+    gap: 6px;
+    padding: 4px 9px;
+  }
+  .exploration-toprail h2 {
+    font-size: 14px;
+  }
+  .exploration-toprail p {
+    font-size: 9px;
+  }
+  .exploration-toprail strong {
+    font-size: 9px;
+    padding: 4px;
+  }
+  .exploration-overlay button {
+    min-height: 40px;
+    font-size: 10px;
+    padding: 5px 7px;
+  }
+  .exploration-controls {
+    gap: 7px;
+    padding: 5px 8px;
+  }
+  .exploration-controls small {
+    display: none;
+  }
+  .exploration-directional {
+    grid-template-columns: repeat(3, 47px);
+    grid-template-rows: 39px 39px;
+  }
+  .exploration-actions {
+    gap: 5px;
+  }
+  .exploration-actions button {
+    min-width: 88px;
+  }
 }
 @media (max-width: 420px) {
-  .exploration-toprail { flex-wrap: wrap; }
-  .exploration-toprail p { max-width: 180px; }
-  .exploration-choices { left: 10px; right: auto; top: 103px; }
-  .exploration-actions button { min-width: 78px; max-width: 116px; }
+  .exploration-toprail {
+    flex-wrap: wrap;
+  }
+  .exploration-toprail p {
+    max-width: 180px;
+  }
+  .exploration-choices {
+    left: 10px;
+    right: auto;
+    top: 103px;
+  }
+  .exploration-actions button {
+    min-width: 78px;
+    max-width: 116px;
+  }
 }

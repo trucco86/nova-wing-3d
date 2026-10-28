@@ -28,7 +28,7 @@ flowchart LR
 
 ## Vertical slice 3D implementada nesta candidata
 
-- **Acesso:** Developer/QA → *EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D*, somente DEV e URLs de preview.
+- **Acesso:** Developer/QA → _EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D_, somente DEV e URLs de preview.
 - **Ambiente:** corredor de estação orbital em Three.js, com iluminação, avatar felino provisório, três sinais identificáveis e holograma do sobrevivente.
 - **Movimento:** WASD, setas e direcional mobile; câmera acompanha o personagem.
 - **Investigação:** procurar três terminais luminosos e usar SCAN/E quando próximo. O painel superior apresenta o progresso.

@@ -1,8 +1,12 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import {
-  ORBIT9_EVIDENCE, createExplorationState, travelTo, inspectEvidence,
-  talkToSurvivor, questStatus,
+  ORBIT9_EVIDENCE,
+  createExplorationState,
+  travelTo,
+  inspectEvidence,
+  talkToSurvivor,
+  questStatus,
 } from './exploration-quests.js';
 
 // Small, independently disposable 3D exploration vertical slice. It is exposed
@@ -17,7 +21,10 @@ const CLUE_POSITIONS = Object.freeze([
 const SURVIVOR = Object.freeze([8, -77]);
 const $ = (id) => document.getElementById(id);
 
-export function installOrbit9ExplorationPreview(game, { hostname = window.location.hostname } = {}) {
+export function installOrbit9ExplorationPreview(
+  game,
+  { hostname = window.location.hostname } = {},
+) {
   const launch = $('developerExplore');
   const root = $('explorationOverlay');
   if (!launch || !root || !developerToolsAllowed(hostname)) return { destroy() {} };
@@ -81,7 +88,8 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
         : 'ENCONTRE O SOBREVIVENTE NO FINAL DO CORREDOR';
     }
     scanButton.disabled = !closeClue;
-    talkButton.disabled = !stats.found || stats.found < stats.required || !near(...SURVIVOR) || stats.survivorSpokenTo;
+    talkButton.disabled =
+      !stats.found || stats.found < stats.required || !near(...SURVIVOR) || stats.survivorSpokenTo;
     launchCombat.hidden = !stats.missionUnlocked;
     if (stats.survivorSpokenTo) choicePanel.hidden = true;
     beacons.forEach((beacon, i) => {
@@ -92,16 +100,20 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
   }
 
   function scan() {
-    const idx = ORBIT9_EVIDENCE.findIndex(({ id }, i) => !state.clues.includes(id) && near(...CLUE_POSITIONS[i]));
+    const idx = ORBIT9_EVIDENCE.findIndex(
+      ({ id }, i) => !state.clues.includes(id) && near(...CLUE_POSITIONS[i]),
+    );
     if (idx < 0) {
       notification('Aproxime-se de uma transmissão luminosa.');
       return;
     }
     const result = inspectEvidence(state, ORBIT9_EVIDENCE[idx].id);
     state = result.state;
-    notification(result.accepted
-      ? 'PISTA RECUPERADA · ' + ORBIT9_EVIDENCE[idx].label.toUpperCase()
-      : 'A TRANSMISSÃO JÁ FOI RECUPERADA.');
+    notification(
+      result.accepted
+        ? 'PISTA RECUPERADA · ' + ORBIT9_EVIDENCE[idx].label.toUpperCase()
+        : 'A TRANSMISSÃO JÁ FOI RECUPERADA.',
+    );
     updateUI();
   }
 
@@ -112,7 +124,9 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     }
     if (!state.conversation) {
       choicePanel.hidden = false;
-      notification('SOBREVIVENTE: A rota está trancada. Restauramos energia ou abrimos a passagem oculta?');
+      notification(
+        'SOBREVIVENTE: A rota está trancada. Restauramos energia ou abrimos a passagem oculta?',
+      );
     }
   }
 
@@ -120,9 +134,11 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     const result = talkToSurvivor(state, choice);
     if (result.accepted) {
       state = result.state;
-      notification(choice === 'restore-power'
-        ? 'ENERGIA RESTAURADA · ROTA FANTASMA ATIVA'
-        : 'ROTA CLANDESTINA DETECTADA · MISSÃO LIBERADA');
+      notification(
+        choice === 'restore-power'
+          ? 'ENERGIA RESTAURADA · ROTA FANTASMA ATIVA'
+          : 'ROTA CLANDESTINA DETECTADA · MISSÃO LIBERADA',
+      );
     }
     updateUI();
   }
@@ -132,7 +148,11 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     scene.background = new T.Color('#030b1a');
     scene.fog = new T.FogExp2('#030b1a', 0.0075);
     camera = new T.PerspectiveCamera(65, 1, 0.1, 300);
-    renderer = new T.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'low-power' });
+    renderer = new T.WebGLRenderer({
+      antialias: false,
+      alpha: false,
+      powerPreference: 'low-power',
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
     renderer.domElement.setAttribute('aria-label', 'Exploração 3D da estação Órbita-9');
     viewport.appendChild(renderer.domElement);
@@ -142,7 +162,8 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     scene.add(key);
     const mat = (color, emissive = '#000000') =>
       new T.MeshStandardMaterial({ color, roughness: 0.45, metalness: 0.56, emissive });
-    const steel = mat('#27384c'), dark = mat('#0c1b2b');
+    const steel = mat('#27384c'),
+      dark = mat('#0c1b2b');
     const line = mat('#14617f', '#0a344d');
     const makeBox = (w, h, d, material, x, y, z, parent = scene) => {
       const mesh = new T.Mesh(new T.BoxGeometry(w, h, d), material);
@@ -182,9 +203,16 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
       return { core, ring };
     });
     npc = new T.Group();
-    const hologram = new T.Mesh(new T.CylinderGeometry(2.2, 2, 8, 10, 1, true),
-      new T.MeshStandardMaterial({ color: '#65f8d4', emissive: '#237a70',
-        opacity: 0.6, transparent: true, side: T.DoubleSide }));
+    const hologram = new T.Mesh(
+      new T.CylinderGeometry(2.2, 2, 8, 10, 1, true),
+      new T.MeshStandardMaterial({
+        color: '#65f8d4',
+        emissive: '#237a70',
+        opacity: 0.6,
+        transparent: true,
+        side: T.DoubleSide,
+      }),
+    );
     hologram.position.y = 5;
     npc.add(hologram);
     const head = new T.Mesh(new T.IcosahedronGeometry(2, 1), mat('#d2fff6', '#247a68'));
@@ -223,8 +251,8 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     const moveX = Number(held.has('right')) - Number(held.has('left'));
     const moveZ = Number(held.has('down')) - Number(held.has('up'));
     const len = Math.max(1, Math.hypot(moveX, moveZ));
-    playerX = T.MathUtils.clamp(playerX + moveX * WALK_SPEED * dt / len, -18, 18);
-    playerZ = T.MathUtils.clamp(playerZ + moveZ * WALK_SPEED * dt / len, -91, 13);
+    playerX = T.MathUtils.clamp(playerX + (moveX * WALK_SPEED * dt) / len, -18, 18);
+    playerZ = T.MathUtils.clamp(playerZ + (moveZ * WALK_SPEED * dt) / len, -91, 13);
     pilot.position.set(playerX, 0, playerZ);
     if (moveX || moveZ) pilot.rotation.y = Math.atan2(-moveX, -moveZ);
     camera.position.lerp(new T.Vector3(playerX + 12, 19, playerZ + 22), Math.min(1, dt * 6));
@@ -301,8 +329,16 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
 
   function keyDown(e) {
     if (!active) return;
-    const direction = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
-      KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right' }[e.code];
+    const direction = {
+      KeyW: 'up',
+      ArrowUp: 'up',
+      KeyS: 'down',
+      ArrowDown: 'down',
+      KeyA: 'left',
+      ArrowLeft: 'left',
+      KeyD: 'right',
+      ArrowRight: 'right',
+    }[e.code];
     if (direction) {
       held.add(direction);
       e.preventDefault();
@@ -317,8 +353,16 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
   }
 
   function keyUp(e) {
-    const direction = { KeyW: 'up', ArrowUp: 'up', KeyS: 'down', ArrowDown: 'down',
-      KeyA: 'left', ArrowLeft: 'left', KeyD: 'right', ArrowRight: 'right' }[e.code];
+    const direction = {
+      KeyW: 'up',
+      ArrowUp: 'up',
+      KeyS: 'down',
+      ArrowDown: 'down',
+      KeyA: 'left',
+      ArrowLeft: 'left',
+      KeyD: 'right',
+      ArrowRight: 'right',
+    }[e.code];
     if (direction) held.delete(direction);
   }
 
@@ -367,7 +411,8 @@ export function installOrbit9ExplorationPreview(game, { hostname = window.locati
     destroy() {
       close();
       if (window.__novaExploreQA) delete window.__novaExploreQA;
-      for (const [el, name, handler, opts] of listeners) el.removeEventListener(name, handler, opts);
+      for (const [el, name, handler, opts] of listeners)
+        el.removeEventListener(name, handler, opts);
       launch.hidden = true;
     },
   };
