@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.24.25 — Candidata em preparação
+## 1.24.25 — Histórico de vitórias e derrotas (candidata)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Registro local de cada fase concluída e de partidas encerradas por derrota, com resultado explícito, pontuação e duração.
+- Migração retrocompatível de histórico: entradas anteriores continuam representando vitórias.
+- Painel com quantidade de partidas, estado CONCLUÍDO/DERROTA e rótulos traduzíveis para PT/EN/ES.
+- Derrotas não entram no ranking remoto experimental; checkpoints e progresso da campanha preservados.
+- HML permanece em v1.24.24 até promoção aprovada; Worker/D1, OAuth e score remoto ainda exigem validação externa.
 
 ## 1.24.24 — Conta e ranking multilíngues (candidata)
 
