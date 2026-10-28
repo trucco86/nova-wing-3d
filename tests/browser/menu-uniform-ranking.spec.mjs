@@ -70,7 +70,9 @@ for (const viewport of [
   );
 }
 
-test('landscape menu scrolls to squad preparation without unreachable controls', async ({ page }) => {
+test(
+  'landscape menu scrolls to squad preparation without unreachable controls',
+  async ({ page }) => {
   await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/');
   const prepare = page.locator('#prepareSquad');
@@ -78,4 +80,5 @@ test('landscape menu scrolls to squad preparation without unreachable controls',
   await expect(prepare).toBeInViewport();
   await prepare.click();
   await expect(page.locator('#squadSelection')).toBeVisible();
-});
+  },
+);
