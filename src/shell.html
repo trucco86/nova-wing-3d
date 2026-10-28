@@ -70,6 +70,10 @@
       <div id="shieldWarning" hidden role="status" aria-live="polite">
         ⚠ ESCUDO BAIXO · BUSQUE REPARO
       </div>
+      <div id="launchBoostNotice" hidden role="alert" aria-live="assertive">
+        <strong>⚠ SAÍDA DA TERRA</strong>
+        <span>SUBA E SEGURE <b>SHIFT / BOOST</b> ATÉ ESGOTAR O IMPULSO</span>
+      </div>
       <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
       <div id="attackWarning" role="status"></div>
       <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
@@ -624,66 +628,67 @@
       </section>
     </div>
     <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
-      <summary>RANK · HISTÓRICO</summary>
+      <summary aria-label="Abrir ranking Five Cats">◈ RANK <span class="rank-pill">TOP 20</span></summary>
       <div class="nova-rank-content">
-        <strong>RANKING FIVE CATS</strong>
-        <p data-rank-identity>Visitante · resultados locais</p>
-        <p data-rank-summary>0 fases · recorde 0 pts · total 0</p>
-        <label
-          >Apelido público
-          <input
-            data-rank-nickname
-            type="text"
-            maxlength="24"
-            value="Piloto"
-            autocomplete="nickname"
-          />
-        </label>
-        <label class="nova-rank-consent">
-          <input data-rank-consent type="checkbox" />
-          Quero participar do ranking experimental e salvar minhas próximas pontuações na minha
-          conta.
-        </label>
-        <button type="button" data-rank-refresh>ATUALIZAR RANK</button>
-        <button type="button" data-rank-delete disabled>EXCLUIR MEUS DADOS NA NUVEM</button>
-        <small
-          >Após excluir os dados, esta conta não poderá voltar ao ranking até existir um novo
-          processo de inscrição.</small
-        >
-        <small
-          >Exclui seu apelido e as pontuações remotas, após confirmação. Não exclui sua conta
-          Google, o progresso ou as partidas deste dispositivo.</small
-        >
-        <p data-rank-status role="status" aria-live="polite"></p>
-        <strong>RANK GLOBAL · EXPERIMENTAL</strong>
-        <ol data-rank-global>
+        <div class="rank-headline">
+          <div><span class="rank-overline">FIVE CATS · PILOT BOARD</span>
+            <strong>RANKING GALÁCTICO</strong></div>
+          <details class="rank-info">
+            <summary aria-label="Informações do ranking" title="Informações do ranking">i</summary>
+            <div class="rank-help">
+              <strong>COMO FUNCIONA</strong>
+              <p>O ranking online é experimental e as pontuações ainda não são verificadas.</p>
+              <p>Entre com Google e ative a participação para salvar próximas partidas.
+              Visitantes continuam jogando; seu histórico local não sincroniza.</p>
+              <p>Excluir os dados remotos preserva o progresso local, mas bloqueia
+              nova inscrição desta conta até existir um processo seguro de reinscrição.</p>
+            </div>
+          </details>
+        </div>
+        <div class="rank-identity-line"><span data-rank-identity>Visitante · resultados locais</span>
+          <button type="button" data-rank-refresh aria-label="Atualizar ranking" title="Atualizar ranking">↻</button>
+        </div>
+        <ol data-rank-global class="rank-leaderboard">
           <li>Ranking online ainda não configurado.</li>
         </ol>
-        <strong>MEU HISTÓRICO · NA NUVEM</strong>
-        <ol data-rank-cloud>
-          <li>Entre com Google para consultar.</li>
-        </ol>
-        <strong>MINHAS PARTIDAS · NESTE DISPOSITIVO</strong>
-        <ol data-rank-local>
-          <li>Sem partidas concluídas.</li>
-        </ol>
-        <small
-          >Visitantes jogam normalmente. O histórico local não sincroniza entre aparelhos.
-          Pontuações online são experimentais, sem verificação antifraude definitiva.</small
-        >
+        <p class="rank-inline-status" data-rank-status role="status" aria-live="polite"></p>
+        <div class="rank-local-best"><span>MEU DESEMPENHO</span>
+          <strong data-rank-summary>0 fases · recorde 0 pts · total 0</strong></div>
+        <details class="rank-expansion">
+          <summary>MINHAS PARTIDAS</summary>
+          <div class="rank-history">
+            <strong>NA NUVEM</strong>
+            <ol data-rank-cloud><li>Entre com Google para consultar.</li></ol>
+            <strong>NESTE DISPOSITIVO</strong>
+            <ol data-rank-local><li>Sem partidas concluídas.</li></ol>
+          </div>
+        </details>
+        <details class="rank-expansion rank-enroll">
+          <summary>PARTICIPAR / PRIVACIDADE</summary>
+          <div class="rank-enrollment">
+            <label>Apelido público
+              <input data-rank-nickname type="text" maxlength="24" value="Piloto" autocomplete="nickname" />
+            </label>
+            <label class="nova-rank-consent">
+              <input data-rank-consent type="checkbox" />
+              Quero participar do ranking experimental e salvar minhas próximas pontuações na minha conta.
+            </label>
+            <button type="button" data-rank-delete disabled>EXCLUIR MEUS DADOS NA NUVEM</button>
+            <small>Exclui suas pontuações remotas após confirmação, sem apagar sua conta Google ou seu progresso local.
+            A mesma conta só poderá participar novamente após existir um novo processo de inscrição.</small>
+          </div>
+        </details>
       </div>
     </details>
     <details id="novaAuth" aria-label="Conta do piloto">
-      <summary>CONTA · PILOTO</summary>
+      <summary aria-label="Conta do piloto">◉ PILOTO</summary>
       <div class="nova-auth-content">
         <strong data-auth-name>Piloto visitante</strong>
         <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
         <button type="button" data-auth-login disabled>Entrar com Google</button>
         <button type="button" data-auth-logout hidden>Sair da conta</button>
         <button type="button" data-auth-guest>Continuar como visitante</button>
-        <small
-          >O login é opcional. Para competir, abra RANK e aceite o registro de pontuações.</small
-        >
+        <small>O login Google é opcional. O ranking pode ser ativado no painel RANK.</small>
       </div>
     </details>
     <script>
