@@ -1,6 +1,7 @@
 import { createRankingClient } from './ranking-client.js';
 import { installGoogleLogin } from './google-auth.js';
 import { installShowroom } from './showroom.js';
+import { installOrbit9ExplorationPreview } from './exploration-preview.js';
 import { createGame } from './game.js';
 import { installNativeShell } from './native.js';
 import { Capacitor } from '@capacitor/core';
@@ -19,11 +20,13 @@ if (!Capacitor.isNativePlatform()) {
     onRuntimeConfig: (config) => ranking?.setRuntimeConfig(config),
   });
   const showroom = installShowroom();
+  const exploration = installOrbit9ExplorationPreview(game);
   const destroy = game.destroy.bind(game);
   game.destroy = () => {
     destroyAuth();
     ranking?.destroy();
     showroom.destroy();
+    exploration.destroy();
     destroy();
   };
 }
