@@ -5,6 +5,8 @@ on:
       - integration/dev-all-priorities-20261028
     paths:
       - .github/workflows/verify-integrated-dev.yml
+      - src/game.js
+      - tests/harness.mjs
 permissions:
   contents: write
 concurrency:
