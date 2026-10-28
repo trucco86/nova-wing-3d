@@ -56,12 +56,11 @@ jobs:
             const configured = process.env.NOVA_RANKING_HML_D1_ID;
             if (!configured) {
               console.log("GITHUB_REPOSITORY_VARIABLE: MISSING. Add NOVA_RANKING_HML_D1_ID to repository Actions Variables.");
-              console.log("No remote migrations or writes were performed.");
-              return;
+            } else {
+              if (!/^[0-9a-fA-F-]{36}$/.test(configured) ||
+                  (matching[0].uuid !== configured && matching[0].id !== configured))
+                throw new Error("Configured HML D1 ID does not match the named Cloudflare database");
+              console.log("GITHUB_REPOSITORY_VARIABLE: VERIFIED (matches HML database UUID).");
             }
-            if (!/^[0-9a-fA-F-]{36}$/.test(configured) ||
-                (matching[0].uuid !== configured && matching[0].id !== configured))
-              throw new Error("Configured HML D1 ID does not match the named Cloudflare database");
-            console.log("GITHUB_REPOSITORY_VARIABLE: VERIFIED (matches HML database UUID).");
             console.log("No remote migrations or writes were performed.");
           ' "$output"
