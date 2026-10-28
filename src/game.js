@@ -3266,6 +3266,11 @@ export function createGame({
               (e.age % 6 < 1.5 ? ' · ESCUDO' : '')
             : SUBBOSS_NAMES[sectorIndex];
       }
+      if (e.kind === 'walker' || e.airborneRobot) {
+        // Heavy mechs pace laterally, forcing real tracking instead of static target practice.
+        e.o.position.x = e.x + Math.sin(e.age * (0.58 + e.variant * 0.05)) * 6.5;
+        if (e.airborneRobot) e.o.position.y = e.y + Math.sin(e.age * 1.2) * 2.8;
+      }
       if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
       e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
@@ -3277,9 +3282,11 @@ export function createGame({
             ? fighterAimOffsets(e.role)
             : e.subbossTactic
               ? e.subbossTactic.aim
-              : [0])
+              : e.kind === 'walker'
+                ? [-5, 5]
+                : [0])
           bullet(
-            e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+            e.o.position.clone().add(new T.Vector3(e.kind === 'walker' ? offset : 0, e.hitY, e.ground ? 8 : 0)),
             player.position.clone().add(new T.Vector3(offset, 0, 0)),
             e.subbossTactic?.spell ?? '',
           );
@@ -3303,7 +3310,9 @@ export function createGame({
               : 1.5
             : e.role
               ? 1.8
-              : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
+              : e.kind === 'walker'
+                ? 3.3 - (e.variant % 3) * 0.25
+                : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
         crossesSolid(
