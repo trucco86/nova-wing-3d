@@ -13,6 +13,7 @@ export function createRankingClient({
   document = globalThis.document,
   storage = globalThis.localStorage,
   fetcher = (...args) => fetch(...args),
+  confirmDeletion = (message) => globalThis.confirm?.(message) === true,
 } = {}) {
   const panel = document?.getElementById('novaRanking');
   const el = (name) => panel?.querySelector('[data-rank-' + name + ']');
@@ -21,16 +22,22 @@ export function createRankingClient({
   const listCloud = el('cloud');
   const nickname = el('nickname');
   const consent = el('consent');
+  const deleteRemote = el('delete');
   const status = el('status');
   let apiBase = null;
   let user = null;
   let identityEpoch = 0;
   let activeRun = null;
+  let deleteInProgress = false;
   let closed = false;
   const unsubscribers = [];
 
   const say = (value) => {
     if (!closed && status) status.textContent = value;
+  };
+  const updateDeleteAccess = () => {
+    if (deleteRemote)
+      deleteRemote.disabled = deleteInProgress || !apiBase || !user?.getIdToken;
   };
   const addListener = (element, event, handler) => {
     if (!element) return;
@@ -263,6 +270,7 @@ export function createRankingClient({
       );
     }
     user = nextUser;
+    updateDeleteAccess();
     if (el('identity'))
       el('identity').textContent = user
         ? 'Google conectado · competição opcional'
@@ -273,6 +281,7 @@ export function createRankingClient({
 
   function setRuntimeConfig(runtimeConfig) {
     apiBase = runtimeConfig?.rankingApiUrl || null;
+    updateDeleteAccess();
     if (apiBase) void refreshOnline();
     else say('Histórico local ativo. API de ranking ainda não configurada neste ambiente.');
   }
@@ -288,6 +297,44 @@ export function createRankingClient({
   // Never trust HTML default state or restored form values at startup.
   if (consent) consent.checked = false;
   if (nickname) nickname.value = '';
+  // Deletion affects only the authenticated remote player profile and scores.
+  // Local scores/checkpoints are never touched, even if the API is unavailable.
+  addListener(deleteRemote, 'click', async () => {
+    if (closed || deleteInProgress || !apiBase || !user?.getIdToken) return;
+    const confirmed = confirmDeletion(
+      'Excluir permanentemente seu apelido e histórico de pontuação na nuvem? ' +
+        'O progresso e as partidas neste dispositivo serão mantidos.',
+    );
+    if (!confirmed || closed) return;
+    // A player cannot finish a remote run or carry forward old consent while deleting.
+    identityEpoch++;
+    activeRun = null;
+    if (consent) consent.checked = false;
+    if (nickname) nickname.value = '';
+    const epoch = identityEpoch;
+    deleteInProgress = true;
+    updateDeleteAccess();
+    say('Solicitando exclusão dos dados na nuvem...');
+    try {
+      const response = await request('/v1/me', {
+        method: 'DELETE',
+        authorized: true,
+        sessionEpoch: epoch,
+      });
+      if (closed || epoch !== identityEpoch) return;
+      if (response.deleted !== true) throw new Error('DELETE_NOT_CONFIRMED');
+      fill(listCloud, [], 'Seu histórico remoto foi excluído.');
+      // Clear the old global snapshot so deleted scores are not shown as current.
+      fill(listGlobal, [], 'Atualize para consultar o ranking.');
+      say('Dados remotos excluídos. Suas partidas e progresso locais foram mantidos.');
+    } catch {
+      if (!closed && epoch === identityEpoch)
+        say('Não foi possível confirmar a exclusão remota. Tente novamente.');
+    } finally {
+      deleteInProgress = false;
+      updateDeleteAccess();
+    }
+  });
   addListener(el('refresh'), 'click', () => {
     refreshLocal();
     void refreshOnline();
@@ -299,6 +346,7 @@ export function createRankingClient({
     }
   });
   refreshLocal();
+  updateDeleteAccess();
   say('Pontuações locais habilitadas; ranking remoto depende da API do ambiente.');
 
   return {
