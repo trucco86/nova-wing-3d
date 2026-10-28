@@ -5970,3 +5970,139 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
     pointer-events: none;
   }
 }
+
+/* Responsive Google social sign-in is part of the title menu, not a floating
+   overlay. Expanding or logging in cannot shift the game actions or block RANK. */
+#menu #novaAuth {
+  position: relative;
+  z-index: 3;
+  display: block;
+  grid-column: 1;
+  width: min(100%, 380px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 13px 0 0;
+  box-sizing: border-box;
+  color: #e6f3f7;
+  font: 600 12px/1.4 Arial, sans-serif;
+}
+#menu #novaAuth[hidden] { display: none !important; }
+#menu #novaAuth summary {
+  display: flex;
+  box-sizing: border-box;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 13px;
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid #77b5e3a0;
+  border-radius: 9px;
+  background: linear-gradient(115deg, #0a2636f2, #0d192bde);
+  color: #f3f8ff;
+  font-size: 11px;
+  letter-spacing: 1.1px;
+  text-align: left;
+  touch-action: manipulation;
+}
+#menu #novaAuth summary::-webkit-details-marker { display: none; }
+#menu #novaAuth summary:focus-visible,
+#menu #novaAuth .nova-auth-content button:focus-visible {
+  outline: 2px solid #8beeff;
+  outline-offset: 3px;
+}
+#menu #novaAuth .google-brand-mark {
+  display: grid;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 50%;
+  background: #f8fbff;
+  color: #4285f4;
+  font: 800 19px/1 Arial, sans-serif;
+  text-shadow: 1px 1px #34a853a8, -1px -1px #ea4335a8;
+  letter-spacing: -2px;
+}
+#menu #novaAuth .social-login-chevron {
+  margin-left: auto;
+  color: #a9cad9;
+  transition: transform 0.16s ease;
+}
+#menu #novaAuth[open] .social-login-chevron { transform: rotate(180deg); }
+#menu #novaAuth .nova-auth-content {
+  position: static;
+  display: grid;
+  box-sizing: border-box;
+  gap: 9px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 12px;
+  margin-top: 4px;
+  border: 1px solid #5888a588;
+  border-radius: 10px;
+  background: #071927f2;
+  box-shadow: 0 10px 26px #0005;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+#menu #novaAuth:not([open]) .nova-auth-content { display: none; }
+#menu #novaAuth .nova-auth-content p,
+#menu #novaAuth .nova-auth-content small {
+  margin: 0;
+  font: 400 11px/1.45 Arial, sans-serif;
+  color: #b8d5df;
+}
+#menu #novaAuth .nova-auth-content strong {
+  color: #e6f6f8;
+  font-size: 12px;
+}
+#menu #novaAuth .nova-auth-content button {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  min-height: 43px;
+  padding: 8px 12px;
+  border: 1px solid #527b8e;
+  border-radius: 8px;
+  background: #112936;
+  color: #d5f0fc;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: normal;
+  clip-path: none;
+}
+#menu #novaAuth .nova-auth-content button[hidden] { display: none !important; }
+#menu #novaAuth .nova-auth-content button:disabled { cursor: wait; opacity: 0.62; }
+#menu #novaAuth .nova-auth-content .google-login-button {
+  background: #fff;
+  color: #263238;
+  border: 1px solid #dbe4ea;
+  font-weight: 700;
+}
+#menu #novaAuth .google-login-button .google-brand-mark { background: #fff; }
+#menu #novaAuth .social-login-meta { display: grid; gap: 3px; }
+#menu #novaAuth .social-login-utilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#menu #novaAuth .social-login-utilities button {
+  flex: 1 1 135px;
+  width: auto;
+}
+#menu.title-screen.selecting #novaAuth { grid-column: 1; }
+@media (max-aspect-ratio: 1/1) {
+  #menu #novaAuth { margin: 13px auto 0; }
+  #menu.title-screen.selecting #novaAuth { margin-left: 0; }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu #novaAuth summary { min-height: 46px; }
+  #menu #novaAuth .nova-auth-content button { min-height: 44px; }
+}
