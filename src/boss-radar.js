@@ -111,7 +111,7 @@ export function renderBossRadar(document, plan) {
   const guide = document.getElementById('radarGuide');
   if (!plan) {
     radar.setAttribute('data-mode', 'orbital');
-    overlay.hidden = true;
+    overlay.style.display = 'none';
     guide.hidden = true;
     radar.setAttribute('aria-label', 'Radar orbital');
     return;
@@ -127,17 +127,17 @@ export function renderBossRadar(document, plan) {
       (plan.threatened ? 'Nave na área vermelha. ' : 'Nave fora da área vermelha. ') +
       plan.guide,
   );
-  overlay.hidden = false;
+  overlay.style.display = 'block';
   guide.hidden = false;
   guide.textContent = plan.guide;
   guide.setAttribute('data-danger', plan.threatened ? 'true' : 'false');
   const danger = document.getElementById('radarThreatRect');
   const ellipse = document.getElementById('radarThreatEllipse');
   const shape = plan.shape;
-  danger.hidden = ellipse.hidden = true;
+  danger.style.display = ellipse.style.display = 'none';
   if (plan.dangerActive) {
     const node = shape.type === 'rect' ? danger : ellipse;
-    node.hidden = false;
+    node.style.display = 'block';
     if (shape.type === 'rect') {
       node.setAttribute('x', shape.center.x - shape.rx);
       node.setAttribute('y', shape.center.y - shape.ry);

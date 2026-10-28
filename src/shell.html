@@ -66,14 +66,14 @@
     <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
       <div id="battleRadar" role="img" aria-label="Radar orbital">
         <i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b>
-        <svg id="radarThreatMap" viewBox="0 0 100 100" preserveAspectRatio="none" hidden aria-hidden="true">
+        <svg id="radarThreatMap" viewBox="0 0 100 100" preserveAspectRatio="none" style="display: none" aria-hidden="true">
           <defs>
             <marker id="radarArrowhead" markerWidth="5" markerHeight="5" refX="4" refY="2.5" orient="auto">
               <path d="M0,0 L5,2.5 L0,5 Z" fill="#ff8066"></path>
             </marker>
           </defs>
-          <rect id="radarThreatRect" hidden fill="#fa574977" stroke="#ff8066" stroke-width="2"></rect>
-          <ellipse id="radarThreatEllipse" hidden fill="#fa574977" stroke="#ff8066" stroke-width="2"></ellipse>
+          <rect id="radarThreatRect" style="display: none" fill="#fa574977" stroke="#ff8066" stroke-width="2"></rect>
+          <ellipse id="radarThreatEllipse" style="display: none" fill="#fa574977" stroke="#ff8066" stroke-width="2"></ellipse>
           <line id="radarAttackVector" stroke="#ff8066" stroke-width="2.6" stroke-dasharray="4 2" marker-end="url(#radarArrowhead)"></line>
           <circle id="radarAttackOrigin" r="5" fill="#ff5d51" stroke="#fff5e6" stroke-width="1.5"></circle>
           <circle id="radarSafePoint" r="6" fill="#45ffa044" stroke="#5affac" stroke-width="2.7"></circle>
