@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.27.8 — Boss AI, RPG e câmeras contextuais (candidata isolada)
+
+- Chefes selecionam garras, mordida, agarrão, varredura, broca ou martelo com base em posição/flanco, boost, robô e módulos ativos; ataques físicos telegráficos e evitáveis.
+- Rotação contínua reduzida durante o ataque; tiros genéricos limitados a janelas de manobra.
+- Plasma Titan 8 s e Five Cats Overdrive 10 s, dano por tiro ampliado e orçamento especial de dano separado dos disparos normais; Plasma do arsenal 2,4x.
+- Barreira 12 s + defesa e Estase 11 s; cooldowns proporcionais e contagem de tempo visível.
+- Câmera superior restrita ao trecho jogável Reator Órbita-9 com controle em X/Z e nave enquadrada; removidas as trocas automáticas por percentual de fase.
+- Testes de comportamento, buffs, HUD, câmera e fluxo real em Developer/QA.
+- Sem homologação humana, sem publicação em DEV/HML/PROD.
+
+
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
