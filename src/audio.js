@@ -166,7 +166,11 @@ export function createMusic(context) {
       drum(heavy || backbeat, s % 8 ? 0.1 : -0.1);
     }
     if (s === 4 || s === 12 || (heavy && s === 15)) {
-      note(175, 0.19, 'sine', 0.09 * intensity, { to: 77, attack: 0.005, pan: s === 4 ? -0.2 : 0.2 });
+      note(175, 0.19, 'sine', 0.09 * intensity, {
+        to: 77,
+        attack: 0.005,
+        pan: s === 4 ? -0.2 : 0.2,
+      });
       pool.noise({
         color: 'white',
         duration: 0.11,
@@ -187,7 +191,7 @@ export function createMusic(context) {
         filterType: 'bandpass',
         filter: heavy ? 3600 : 3000,
         q: 0.72,
-        pan: (s % 4 - 1.5) * 0.2,
+        pan: ((s % 4) - 1.5) * 0.2,
       });
     }
 
@@ -208,12 +212,17 @@ export function createMusic(context) {
     const foreground = mode === 'menu' ? [0, 8].includes(s) : [0, 3, 6, 8, 11, 14].includes(s);
     if (melody !== null && foreground) {
       const tone = mode === 'victory' ? [0, 4, 7, 12][Math.floor(s / 4)] : root + melody;
-      note(f(1, tone + (heavy ? 12 : 7)), d * (mode === 'menu' ? 4 : 2.4), 'triangle',
-        (mode === 'menu' ? 0.062 : 0.064) * intensity, {
+      note(
+        f(1, tone + (heavy ? 12 : 7)),
+        d * (mode === 'menu' ? 4 : 2.4),
+        'triangle',
+        (mode === 'menu' ? 0.062 : 0.064) * intensity,
+        {
           attack: 0.028,
           filter: heavy ? 3050 : 2600,
           pan: s < 8 ? -0.28 : 0.28,
-        });
+        },
+      );
       note(f(1, tone), d * 2.6, 'sine', 0.017 * intensity, {
         delay: d * 0.48,
         attack: 0.02,

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.1 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.0 — Integração unificada DEV (candidata)
 
 - HUD mobile P0, prioridade de avisos e controles protegidos; satélite orbital, chegada do chefe pela nave-mãe e melhoria visual dos caças.

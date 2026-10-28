@@ -7,13 +7,25 @@ function offlineMusicContext() {
   const events = [];
   const param = () => ({
     value: 0,
-    setValueAtTime(value) { this.value = value; },
-    exponentialRampToValueAtTime(value) { this.value = value; },
+    setValueAtTime(value) {
+      this.value = value;
+    },
+    exponentialRampToValueAtTime(value) {
+      this.value = value;
+    },
   });
   const node = () => ({
-    gain: param(), frequency: param(), Q: param(), pan: param(),
-    threshold: param(), knee: param(), ratio: param(), attack: param(), release: param(),
-    connect() {}, disconnect() {},
+    gain: param(),
+    frequency: param(),
+    Q: param(),
+    pan: param(),
+    threshold: param(),
+    knee: param(),
+    ratio: param(),
+    attack: param(),
+    release: param(),
+    connect() {},
+    disconnect() {},
   });
   const context = {
     currentTime: 0,
@@ -26,17 +38,35 @@ function offlineMusicContext() {
     createBuffer: (_channels, length) => ({ getChannelData: () => new Float32Array(length) }),
     createOscillator() {
       const source = {
-        ...node(), type: 'sine', onended: null,
-        start() { events.push({ kind: 'note', time: context.currentTime, type: this.type, frequency: this.frequency.value }); },
-        stop(at = context.currentTime) { this.endAt = at; sources.add(this); },
+        ...node(),
+        type: 'sine',
+        onended: null,
+        start() {
+          events.push({
+            kind: 'note',
+            time: context.currentTime,
+            type: this.type,
+            frequency: this.frequency.value,
+          });
+        },
+        stop(at = context.currentTime) {
+          this.endAt = at;
+          sources.add(this);
+        },
       };
       return source;
     },
     createBufferSource() {
       const source = {
-        ...node(), onended: null,
-        start() { events.push({ kind: 'noise', time: context.currentTime }); },
-        stop(at = context.currentTime) { this.endAt = at; sources.add(this); },
+        ...node(),
+        onended: null,
+        start() {
+          events.push({ kind: 'noise', time: context.currentTime });
+        },
+        stop(at = context.currentTime) {
+          this.endAt = at;
+          sources.add(this);
+        },
       };
       return source;
     },
@@ -77,14 +107,22 @@ test('driving soundtrack adds articulated melodic mids and percussion while reta
   const from = audio.events.length;
   audio.advance(6, music);
   const combatEvents = audio.events.slice(from);
-  assert.ok(combatEvents.length > menuEvents * 1.25,
-    'combat must sound denser and more energetic than the menu theme');
-  assert.ok(combatEvents.filter((event) => event.kind === 'noise').length >= 30,
-    'sustained rhythmic high percussion accompanies kick and snare');
-  assert.ok(combatEvents.some((event) => event.kind === 'note' && event.frequency < 80),
-    'retain real sub-bass frequencies');
-  assert.ok(combatEvents.some((event) => event.kind === 'note' && event.frequency > 400),
-    'lead melody has presence beyond low rumble on smaller speakers');
+  assert.ok(
+    combatEvents.length > menuEvents * 1.25,
+    'combat must sound denser and more energetic than the menu theme',
+  );
+  assert.ok(
+    combatEvents.filter((event) => event.kind === 'noise').length >= 30,
+    'sustained rhythmic high percussion accompanies kick and snare',
+  );
+  assert.ok(
+    combatEvents.some((event) => event.kind === 'note' && event.frequency < 80),
+    'retain real sub-bass frequencies',
+  );
+  assert.ok(
+    combatEvents.some((event) => event.kind === 'note' && event.frequency > 400),
+    'lead melody has presence beyond low rumble on smaller speakers',
+  );
   assert.ok(music.snapshot().bpm >= 130);
   music.start(0, 'boss');
   assert.ok(music.snapshot().bpm >= 150);
