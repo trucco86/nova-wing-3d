@@ -2,6 +2,21 @@
 
 **Estado de referência (25/10/2026 UTC): Cloudflare Pages operacional para DEV, HML e previews independentes.** Este documento substitui a orientação anterior que indicava deploy ainda não configurado. Os deploys abaixo foram confirmados nos logs do Wrangler/GitHub Actions; testes manuais de jogabilidade e OAuth continuam separados.
 
+## Atualização auditada — 28/10/2026
+
+O quadro abaixo supera os snapshots de 25/10 quando houver divergência de versão. O teste funcional e a revisão visual continuam independentes do sucesso da publicação.
+
+| Ambiente      | Versão no arquivo `package.json` | Fonte                                                        | Evidência recente                                                                                                        |
+| :------------ | :------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------- |
+| **DEV**       | 1.27.4                           | `dev`                                                        | [Cloudflare Actions #40744797302](https://github.com/trucco86/nova-wing-3d/actions/runs/40744797302), deployment success |
+| **HML**       | 1.24.24                          | `hml`                                                        | Alias publicado; nenhuma promoção da v1.27.x foi comprovada nesta consulta                                               |
+| **PROD**      | 1.24.18                          | `main`                                                       | GitHub Pages; v1.27.x não promovida                                                                                      |
+| **QA por PR** | Candidata 1.27.5                 | [PR #135](https://github.com/trucco86/nova-wing-3d/pull/135) | Isolada, sujeita a quality/browser e revisão                                                                             |
+
+**Atenção ao ranking:** o repositório já contém código de Worker, cliente e especificações. **Não declarar serviço remoto ativo** sem conferir bindings, D1 e endpoints reais. Ambientes `pages.dev` são acessíveis publicamente por padrão e não constituem autenticação administrativa.
+
+[Visão executiva](PORTFOLIO-AI-SDLC.md) · [Evidências por SHA](case/EVIDENCIAS.md)
+
 ## Ambientes e evidências de implantação
 
 | Finalidade                 | Branch de origem                                             | URL alias                                 | Último deploy documentado                                                                                    |
