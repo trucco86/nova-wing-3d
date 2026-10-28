@@ -70,3 +70,6 @@ jobs:
       - name: Confirm deployment attempt
         if: steps.credentials.outputs.configured == 'true'
         run: echo 'Cloudflare deploy step completed for this SHA.'
+      - name: Read-only HML deployment smoke
+        if: github.event_name == 'push' && github.ref == 'refs/heads/hml' && steps.credentials.outputs.configured == 'true'
+        run: node tools/verify-hml-deploy.mjs
