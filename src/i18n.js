@@ -860,6 +860,12 @@ const RANKING_TRANSLATIONS = [
   ['Excluir permanentemente seu apelido e histórico de pontuação na nuvem? O progresso e as partidas neste dispositivo serão mantidos.',
     'Permanently delete your cloud nickname and score history? Progress and matches on this device will be kept.',
     '¿Eliminar permanentemente tu apodo e historial de puntuaciones en la nube? Se conservarán el progreso y las partidas de este dispositivo.'],
+  ['Excluir permanentemente seu apelido e histórico de pontuação na nuvem? O progresso e as partidas neste dispositivo serão mantidos. Esta conta não poderá enviar novas pontuações até existir um novo processo de inscrição.',
+    'Permanently delete your cloud nickname and score history? Progress and matches on this device will be kept. This account cannot upload new scores until a new enrollment process is available.',
+    '¿Eliminar permanentemente tu apodo e historial de puntuaciones en la nube? Se conservarán el progreso y las partidas de este dispositivo. Esta cuenta no podrá enviar nuevas puntuaciones hasta que exista un nuevo proceso de inscripción.'],
+  ['Após excluir os dados, esta conta não poderá voltar ao ranking até existir um novo processo de inscrição.',
+    'After deleting data, this account cannot rejoin the ranking until a new enrollment process is available.',
+    'Tras eliminar los datos, esta cuenta no podrá volver a la clasificación hasta que exista un nuevo proceso de inscripción.'],
 ];
 for (const [pt, en, es] of RANKING_TRANSLATIONS) MAP.set(pt, { en, es });
 
