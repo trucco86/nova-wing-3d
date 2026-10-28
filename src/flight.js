@@ -5,17 +5,31 @@ export function createFlightCamera(camera, wideFlight = false) {
     aim = new T.Vector3(0, 8, -70);
   let bank = 0;
   let mode = 'chase';
+  let directedShot = 'chase';
   const anchor = new T.Vector2(0, 6);
   const previousPlayer = new T.Vector3(0, 6, 9);
   const targetEye = new T.Vector3(),
     targetAim = new T.Vector3();
   function targets(player, route) {
-    if (mode === 'cockpit') {
+    const shot = mode === 'chase' ? directedShot : mode;
+    if (shot === 'side') {
+      // Oblique cinematic chase: retains the ship, reticle and the actual flight corridor.
+      targetEye.set(player.x + 33, player.y + 13, player.z + 30);
+      targetAim.set(player.x, player.y + 3 + route.ascent * 10, -70);
+      return;
+    }
+    if (shot === 'overhead') {
+      // Top-down tactical reveal: shorter than a full-level camera override.
+      targetEye.set(player.x, player.y + 75, player.z + 28);
+      targetAim.set(player.x, player.y + route.ascent * 9, -74);
+      return;
+    }
+    if (shot === 'cockpit') {
       targetEye.set(player.x, player.y + 1.4, player.z + 2);
       targetAim.set(player.x, player.y + 1.4 + route.ascent * 22, -100);
       return;
     }
-    const distant = mode === 'combat';
+    const distant = shot === 'combat';
     const horizontal = Math.min(distant ? 22 : 14, camera.aspect * (distant ? 14 : 7));
     const vertical = distant ? 12 : 7;
     anchor.x = T.MathUtils.clamp(anchor.x, player.x - horizontal, player.x + horizontal);
@@ -24,6 +38,12 @@ export function createFlightCamera(camera, wideFlight = false) {
     targetAim.set(anchor.x, anchor.y + 1 + route.ascent * 22, -90);
   }
   return {
+    setShot(value) {
+      if (wideFlight && ['chase', 'combat', 'side', 'overhead'].includes(value)) directedShot = value;
+    },
+    getShot() {
+      return mode === 'chase' ? directedShot : mode;
+    },
     setMode(value) {
       if (wideFlight && ['chase', 'cockpit', 'combat'].includes(value)) mode = value;
     },
@@ -33,6 +53,7 @@ export function createFlightCamera(camera, wideFlight = false) {
       eye.set(player.x * 1.18, 6 + player.y * 0.72, 32);
       aim.set(player.x * 0.28, player.y * 0.5 + 3, -70);
       bank = 0;
+      directedShot = 'chase';
       if (wideFlight) {
         targets(player, { ascent: 0 });
         eye.copy(targetEye);
@@ -46,6 +67,7 @@ export function createFlightCamera(camera, wideFlight = false) {
     update(dt, player, steering, boosting, route = { bank: 0, ascent: 0 }) {
       const a = 1 - Math.exp(-4 * dt);
       if (wideFlight) {
+        const shot = mode === 'chase' ? directedShot : mode;
         if (mode === 'cockpit') {
           const delta = player.clone().sub(previousPlayer);
           eye.add(delta);
@@ -57,18 +79,22 @@ export function createFlightCamera(camera, wideFlight = false) {
         aim.lerp(targetAim, a);
         // Limit lag relative to the ship so fast input cannot leave a narrow screen.
         if (mode !== 'cockpit') {
-          const maxOffset = Math.min(
-            mode === 'combat' ? 29 : 19,
-            camera.aspect * (mode === 'combat' ? 20 : 10),
-          );
+          const maxOffset =
+            shot === 'side' ? 39 :
+            shot === 'overhead' ? 10 :
+            Math.min(shot === 'combat' ? 29 : 19, camera.aspect * (shot === 'combat' ? 20 : 10));
           eye.x = T.MathUtils.clamp(eye.x, player.x - maxOffset, player.x + maxOffset);
         }
-        const targetBank = mode === 'cockpit' ? 0 : -steering * 0.025 + route.bank * 0.45;
+        const targetBank =
+          ['cockpit', 'side', 'overhead'].includes(shot)
+            ? 0
+            : -steering * 0.025 + route.bank * 0.45;
         bank += (targetBank - bank) * (1 - Math.exp(-3 * dt));
         camera.position.copy(eye);
         camera.lookAt(aim);
         camera.rotateZ(bank);
-        const fov = mode === 'combat' ? 78 : mode === 'cockpit' ? 74 : 64;
+        const fov =
+          shot === 'combat' ? 78 : shot === 'cockpit' ? 74 : shot === 'overhead' ? 67 : 64;
         camera.fov += (fov + (boosting ? 6 : 0) - camera.fov) * a;
         camera.updateProjectionMatrix();
         return;
