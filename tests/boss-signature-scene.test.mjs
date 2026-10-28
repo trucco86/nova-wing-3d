@@ -75,3 +75,30 @@ test('signature bosses launch different projectiles through the actual DEV encou
     assert.ok(observed, 'boss sector ' + index + ' produced offensive projectiles');
   }
 });
+
+test('six remaining chiefs have visible, independent authored attack parts without moving weak-point hitboxes', () => {
+  const signatures = [
+    [0, ['signature-rok-left', 'signature-rok-right']],
+    [1, ['signature-stingray-tail']],
+    [3, ['signature-orbit-iris']],
+    [4, ['signature-phoenix-left-wing', 'signature-phoenix-right-wing']],
+    [7, ['signature-omega-left', 'signature-omega-right']],
+    [8, ['signature-orion-lens']],
+  ];
+  for (const [index, names] of signatures) {
+    const boss = createBossModel(SECTORS[index], index, true);
+    const parts = names.map((name) => boss.getObjectByName(name));
+    assert.ok(parts.every(Boolean), 'missing moving part on sector ' + index);
+    const originalTargets = boss.userData.parts.map((p) => p.mesh.position.toArray());
+    animateBossSignature(boss, index, 1, 2, 'windup');
+    const charging = parts.map((p) => p.rotation.toArray().concat(p.scale.toArray()));
+    animateBossSignature(boss, index, 1, 2, 'attack');
+    const attack = parts.map((p) => p.rotation.toArray().concat(p.scale.toArray()));
+    assert.notDeepEqual(charging, attack, 'choreography must change for boss ' + index);
+    assert.deepEqual(
+      boss.userData.parts.map((p) => p.mesh.position.toArray()),
+      originalTargets,
+    );
+    disposeBoss(boss);
+  }
+});

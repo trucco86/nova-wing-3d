@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.8 — Dez chefes com assinaturas de combate (candidata isolada)
+
+- Rok, Ferrão, Fortaleza Órbita, Fênix, Ômega e Bastião ganham ataque posicional próprio, animação de peça e reação à destruição de baterias.
+- Combinados à v1.27.7, todos os dez chefes têm padrão especial de ataque, sem retirar a mecânica de flancos e núcleos.
+- Testes de emissões, duração, número de projéteis e movimento de peças visuais.
+- Não inclui mundo aberto nem ataques físicos de arena; HML/PROD inalterados.
+
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
