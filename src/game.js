@@ -2250,7 +2250,8 @@ export function createGame({
       const boostGuide = $('launchBoostNotice');
       const needsBoost = launchState.phase === 'boost' && state === 'playing';
       boostGuide.hidden = !needsBoost;
-      $('boostTouch').classList.toggle('launch-required', needsBoost);
+      if (needsBoost) $('boostTouch').classList.add('launch-required');
+      else $('boostTouch').classList.remove('launch-required');
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
           message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
