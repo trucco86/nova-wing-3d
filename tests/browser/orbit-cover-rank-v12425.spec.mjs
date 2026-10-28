@@ -29,7 +29,7 @@ test('ranking prioritizes scores, with consent and explanations behind collapsib
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   const ranking = page.locator('#novaRanking');
-  await ranking.locator('> summary').click();
+  await ranking.locator(':scope > summary').click();
   await expect(ranking).toHaveAttribute('open', '');
   await expect(ranking.locator('.rank-leaderboard')).toBeVisible();
   const infoPanel = ranking.locator('.rank-info');
