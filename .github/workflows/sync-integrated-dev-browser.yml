@@ -1,0 +1,39 @@
+name: Sync integrated DEV build after browser regression fixes
+on:
+  push:
+    branches:
+      - integration/dev-all-priorities-20261028
+    paths:
+      - .github/workflows/sync-integrated-dev-browser.yml
+permissions:
+  contents: write
+concurrency:
+  group: sync-integrated-dev-browser-final
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Generate one 1.27.0 build and validate
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit only regenerated source and web artifact to integration branch
+        run: |
+          git add -- src tests tools specs docs package.json package-lock.json CHANGELOG.md releases/v1.27.0.md ios/App/App.xcodeproj/project.pbxproj index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(dev): sync integrated 1.27.0 with browser regressions fixed'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
