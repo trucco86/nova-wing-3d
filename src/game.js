@@ -74,6 +74,8 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
+import { createFiveCatsSquad } from './five-cats-runtime.js';
+import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
@@ -217,6 +219,56 @@ export function createGame({
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  const squad = dynamicFlight
+    ? createFiveCatsSquad({
+        scene,
+        player,
+        createWing(pilot) {
+          const wing = fighter();
+          wing.name = 'five-cats-wingman-' + pilot.id;
+          wing.userData.paint?.forEach((material) => material.color.set(pilot.color));
+          wing.scale.setScalar(1.1);
+          return wing;
+        },
+        fireFrom(origin, target, damage, element, charged) {
+          launchShot(0, damage, charged, origin);
+          const shot = shots.at(-1);
+          shot.v = target.clone().sub(origin).normalize().multiplyScalar(charged ? 250 : 195);
+          shot.element = element;
+          shot.homing = false;
+          shot.source = 'five-cats';
+          shot.life = 1.5;
+          if (charged) shot.o.scale.setScalar(5);
+        },
+        opponent() {
+          if (boss) {
+            boss.updateMatrixWorld(true);
+            const weak = boss.userData.parts.find((p, i) =>
+              p.hp > 0 && weakPointOpen(relativeOrbit(), i));
+            if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
+            if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
+              return boss.userData.core.getWorldPosition(new T.Vector3());
+            return null;
+          }
+          const target = enemies.find((e) => !e.dead);
+          return target ? target.o.position.clone().add(new T.Vector3(0, target.hitY, 0)) : null;
+        },
+        obstacleRange() {
+          const nearest = obstacles
+            .filter(({ o }) =>
+              o.position.z < player.position.z &&
+              Math.abs(o.position.x - player.position.x) < 6 &&
+              Math.abs(o.position.y - player.position.y) < 6)
+            .reduce((distance, { o }) =>
+              Math.min(distance, player.position.z - o.position.z - 6), 150);
+          return Math.max(5, nearest);
+        },
+        notify: (text) => message(text),
+        cue: (sound) => cue(sound),
+        status: $('squadSuperStatus'),
+        formationStatus: $('squadFormationStatus'),
+      })
+    : null;
   let robotMode = false;
   let robotCooldown = 0;
   let robotTransition = 0;
@@ -383,6 +435,13 @@ export function createGame({
   function cycleSpecial() {
     if (!dynamicFlight || state !== 'playing') return;
     strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
+  }
+  function castSquadSpecial(kind) {
+    if (!dynamicFlight || state !== 'playing' || !squad) return false;
+    const spent = squad.activate(kind, arcana);
+    if (!spent) return false;
+    arcana -= spent;
+    return true;
   }
   function castSpecial() {
     if (!dynamicFlight || state !== 'playing' || specialCd > 0) return false;
@@ -808,6 +867,7 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current());
+    squad?.begin(sectorIndex === 0);
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
@@ -1177,7 +1237,7 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false) {
+  function launchShot(x, damage = 2, charged = false, origin = null) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
       dynamicFlight ? shotMaterials[strategy.arsenal] : green,
@@ -1186,9 +1246,9 @@ export function createGame({
       halo(dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
     );
     o.rotation.x = Math.PI / 2;
-    o.position.copy(player.position);
+    o.position.copy(origin ?? player.position);
     o.position.x += x;
-    o.position.z -= 3;
+    if (!origin) o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
     scene.add(o);
     shots.push({
@@ -1995,6 +2055,8 @@ export function createGame({
   $('arsenalSwitch').onclick = cycleArsenal;
   $('specialSwitch').onclick = cycleSpecial;
   $('specialCast').onclick = castSpecial;
+  $('plasmaTitan').onclick = () => castSquadSpecial('plasma');
+  $('fiveCatsOverdrive').onclick = () => castSquadSpecial('overdrive');
   $('scanBoss').onclick = scanBoss;
   $('precisionShot').onclick = () => tacticalAction('precision');
   $('repairPulse').onclick = () => tacticalAction('repair');
@@ -2078,6 +2140,8 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
+    if (e.code === 'KeyY') castSquadSpecial('plasma');
+    if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -2329,8 +2393,16 @@ export function createGame({
   }
   function update(dt) {
     if (state !== 'playing') return;
+    if (squad?.snapshot().intro > 0) {
+      squad.update(dt, { sector: sectorIndex, elapsed, pilot: pilotLoadout.pilot });
+      return;
+    }
     elapsed += dt;
     totalTime += dt;
+    squad?.update(dt, {
+      sector: sectorIndex, elapsed, pilot: pilotLoadout.pilot,
+      power: weaponPower(),
+    });
     // The first boss cannot begin while the pilot remains in the city or
     // inside the long post-boost climb. Keep the flight playable meanwhile.
     if (dynamicFlight && sectorIndex === 0 && !orbitalLaunchSequence.snapshot().complete)
@@ -2405,6 +2477,15 @@ export function createGame({
             activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      const team = squad?.snapshot();
+      $('plasmaTitan').disabled = !!team && (
+        team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
+      $('fiveCatsOverdrive').disabled = !!team && (
+        team.overdriveCooldown > 0 || arcana < SQUAD_SPECIALS.overdrive.cost);
+      $('plasmaTitan').textContent = team?.plasmaCooldown > 0
+        ? 'Y · PLASMA ' + Math.ceil(team.plasmaCooldown) + 's' : 'Y · PLASMA';
+      $('fiveCatsOverdrive').textContent = team?.overdriveCooldown > 0
+        ? 'O · FIVE CATS ' + Math.ceil(team.overdriveCooldown) + 's' : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
       $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
@@ -3465,6 +3546,7 @@ export function createGame({
       podMode,
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
+      fiveCats: squad?.snapshot() ?? null,
       boostVisual: {
         color: player.userData.flames[0].material.color.getHex(),
         length: player.userData.flames[0].scale.y,
@@ -3534,7 +3616,8 @@ export function createGame({
       clearWorld();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
-      shotMaterials.forEach((m) => m.dispose());
+      shotMaterials.forEach((m) => m.dispose();
+      squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
