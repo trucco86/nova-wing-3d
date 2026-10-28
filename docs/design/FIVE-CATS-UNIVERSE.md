@@ -59,6 +59,30 @@ Os anéis amarelo-claros de alvo devem pulsar, indicar direção no radar e fica
 
 **Regra de qualidade:** cada chefe precisa de ao menos um ataque novo de efeito perceptível, uma decisão espacial e uma vulnerabilidade com feedback visual inequívoco. A v1.27.6 inicia essa diferenciação por origens, sequências, cadência e multiplicadores; **destruição funcional de membros e novas arenas completas são entregas seguintes**.
 
+## Implementação incremental: motor de missões (candidata v1.27.9)
+
+O repositório contém agora **`src/exploration-quest.js`**, uma máquina de estado independente do renderizador para iniciar o vertical slice sem misturar exploração com `src/game.js`.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Hub
+  Hub --> Orbit9: viajar
+  Orbit9 --> Investigar: localizar relé, arquivos e sobrevivente
+  Investigar --> Escolha: 3 pistas reunidas
+  Escolha --> Defender: restaurar energia
+  Escolha --> Interceptar: seguir rota clandestina
+  Defender --> Portal: vencer missão
+  Interceptar --> Portal: vencer missão
+  Portal --> [*]
+```
+
+- **Persistência:** chave isolada `nova-wing-exploration-v1`; nunca sobrescreve `nova-wing-3d-v1`.
+- **QA:** simula viagens, pistas, decisões e desbloqueios inteiramente em memória, sem ranking ou escrita.
+- **Contratos:** pistas coletadas somente no local correto, decisões únicas, batalha bloqueada até pré-requisitos e Portal de Órion inacessível antes da conclusão.
+- **Estado real:** motor de quests implementado, mas ainda **não conectado à cena 3D ou ao menu**. A próxima entrega é o protótipo navegável, não uma alegação de mundo aberto já funcional.
+
+[Release candidata](../../releases/v1.27.9.md).
+
 ## Proposta: Five Cats Universe · exploração RPG
 
 ### Estrutura
