@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.24.23 — Exclusão de dados de ranking (candidata)
+
+- Controle de exclusão do apelido e pontuações remotas somente para conta Google autenticada.
+- Confirmação explícita, prevenção de solicitações duplicadas e bloqueio de tokens de sessão anterior.
+- Revoga consentimento de partidas futuras ao solicitar remoção; mantém checkpoints e histórico local.
+- Mensagens de sucesso e falha sem afirmar exclusão quando a API não confirma.
+- Testes automatizados da jornada e registro de limitações operacionais de LGPD.
+- Não homologada em Firebase real nem Cloudflare D1; sem publicação em produção.
+
 ## 1.24.22 — Consentimento por sessão e proteção do ranking (candidata)
 
 - Redefine apelido e autorização opt-in ao trocar de conta Google ou voltar ao visitante.
