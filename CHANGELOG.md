@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.1 — Login social Google no menu e trilha com adrenalina (candidata DEV)
+
+- Login social Google integrado ao fluxo do menu, abaixo de Iniciar/Opções/Trilha/Abertura, sem overlay fixo ou colisões com o RANK.
+- Botão de autenticação identificado, estado de conta visível e textos traduzidos em PT/EN/ES, mantendo modo visitante.
+- Setores acelerados a 130–154 BPM; boss 150, enraged 164 e colapso 168, com novo ritmo de bateria, ostinatos e frases melódicas mais presentes, preservando subgrave e volume ajustável.
+- 289 testes unitários aprovados e build reproduzível; regressão de posicionamento em três resoluções para Playwright.
+- Candidata DEV sem alteração de Firebase/D1, HML ou PROD; exige CI browser completa e avaliação auditiva/visual humana.
+
 ## 1.27.0 — Integração unificada DEV (candidata)
 
 - HUD mobile P0, prioridade de avisos e controles protegidos; satélite orbital, chegada do chefe pela nave-mãe e melhoria visual dos caças.

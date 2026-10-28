@@ -749,6 +749,19 @@ const ADDITIONAL = [
 for (const [pt, en, es] of ADDITIONAL) MAP.set(pt, { en, es });
 const RANKING_TRANSLATIONS = [
   // Google login, guest mode, settings and accessible labels.
+  ['Login social do Google', 'Google social sign-in', 'Inicio de sesión social con Google'],
+  ['LOGIN SOCIAL · GOOGLE', 'SOCIAL SIGN-IN · GOOGLE', 'ACCESO SOCIAL · GOOGLE'],
+  ['GOOGLE · CONECTADO', 'GOOGLE · CONNECTED', 'GOOGLE · CONECTADO'],
+  [
+    'Use sua conta Google para identificar seu piloto e participar do ranking quando estiver disponível.',
+    'Use your Google account to identify your pilot and join the ranking when it becomes available.',
+    'Usa tu cuenta de Google para identificar a tu piloto y participar en la clasificación cuando esté disponible.',
+  ],
+  [
+    'Login opcional. Você pode jogar sem entrar no Google.',
+    'Signing in is optional. You can play without a Google account.',
+    'El inicio de sesión es opcional. Puedes jugar sin entrar con Google.',
+  ],
   ['Conta do piloto', 'Pilot account', 'Cuenta del piloto'],
   ['CONTA · PILOTO', 'ACCOUNT · PILOT', 'CUENTA · PILOTO'],
   ['Piloto visitante', 'Guest pilot', 'Piloto invitado'],

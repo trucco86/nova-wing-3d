@@ -327,6 +327,32 @@
               ▶ VER ABERTURA
             </button>
           </div>
+          <details id="novaAuth" class="social-login" open aria-label="Login social do Google">
+            <summary aria-label="Login social do Google">
+              <span class="google-brand-mark" aria-hidden="true">G</span>
+              <span data-auth-summary>LOGIN SOCIAL · GOOGLE</span>
+              <span class="social-login-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="nova-auth-content">
+              <p class="social-login-intro">
+                Use sua conta Google para identificar seu piloto e participar do ranking quando
+                estiver disponível.
+              </p>
+              <button type="button" class="google-login-button" data-auth-login disabled>
+                <span class="google-brand-mark" aria-hidden="true">G</span>
+                <span>Entrar com Google</span>
+              </button>
+              <div class="social-login-meta">
+                <strong data-auth-name>Piloto visitante</strong>
+                <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
+              </div>
+              <div class="social-login-utilities">
+                <button type="button" data-auth-logout hidden>Sair da conta</button>
+                <button type="button" data-auth-guest>Continuar como visitante</button>
+              </div>
+              <small>Login opcional. Você pode jogar sem entrar no Google.</small>
+            </div>
+          </details>
           <details class="title-help">
             <summary>Como jogar</summary>
             <div class="help-panel">
@@ -735,17 +761,6 @@
             >
           </div>
         </details>
-      </div>
-    </details>
-    <details id="novaAuth" aria-label="Conta do piloto">
-      <summary aria-label="Conta do piloto">◉ PILOTO</summary>
-      <div class="nova-auth-content">
-        <strong data-auth-name>Piloto visitante</strong>
-        <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
-        <button type="button" data-auth-login disabled>Entrar com Google</button>
-        <button type="button" data-auth-logout hidden>Sair da conta</button>
-        <button type="button" data-auth-guest>Continuar como visitante</button>
-        <small>O login Google é opcional. O ranking pode ser ativado no painel RANK.</small>
       </div>
     </details>
     <script>
