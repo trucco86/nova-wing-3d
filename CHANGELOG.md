@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.13 — Radar de esquiva com hitbox real (candidata isolada)
+
+- Radar dos chefes mostra origem do golpe, área vermelha de colisão física e rota até uma posição segura.
+- Aviso contextual não acompanha a nave após fixar o alvo, permitindo desviar ou manter uma posição fora do golpe.
+- Radar de projéteis permanece angular; nenhum falso indicador de segurança para disparos não determinísticos.
+- Guia acessível no HUD superior direito, sem bloquear o gameplay, com regressão mobile retrato/paisagem.
+- PR integrada sem mudanças em DEV, HML ou produção, aguardando CI e homologação humana.
+
 ## 1.27.12 — Candidata integrada Boss AI e Órbita-9 (QA)
 
 - Código combinado: dez chefes com assinatura visual, IA de golpes físicos telegráficos e esquiva real.

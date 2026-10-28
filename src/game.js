@@ -24,6 +24,7 @@ import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
+import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -1008,6 +1009,7 @@ export function createGame({
     lastRangedCycle = bossIntentCycle = -1;
     bossMeleeResolved = false;
     bossIntent = null;
+    renderBossRadar(document, null);
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
     reactorGridWave = 0;
@@ -3427,6 +3429,7 @@ export function createGame({
       const combatPhase = bossCombat.phase;
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
+      let radarPlan = null;
       if (dynamicFlight) {
         const t = tactics();
         if (t.state === 'windup' && bossIntentCycle !== t.cycle) {
@@ -3478,7 +3481,18 @@ export function createGame({
             message('ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO');
           }
         }
-        $('battleRadar').style.background = radarGradient(t);
+        radarPlan =
+          ['windup', 'attack'].includes(t.state) && bossIntent
+            ? bossRadarPlan(bossIntent, {
+                x: player.position.x,
+                y: player.position.y,
+                orbit: relativeOrbit(),
+                originX: boss.position.x,
+                originY: boss.position.y,
+              })
+            : null;
+        renderBossRadar(document, radarPlan);
+        $('battleRadar').style.background = radarPlan ? '#071b20' : radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
         $('tacticState').textContent =
           t.state === 'windup'
@@ -3605,7 +3619,10 @@ export function createGame({
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= dt;
-      $('attackWarning').setAttribute?.('data-severity', 'danger');
+      $('attackWarning').setAttribute?.(
+        'data-severity',
+        radarPlan?.threatened === false ? 'info' : 'danger',
+      );
       const physicalWarning =
         dynamicFlight &&
         bossIntent &&
@@ -3623,7 +3640,9 @@ export function createGame({
             )?.name
           : null;
       $('attackWarning').textContent = physicalWarning
-        ? '⚠ ' + physicalWarning
+        ? '⚠ ' +
+          physicalWarning +
+          (radarPlan?.threatened ? ' · SIGA A ZONA VERDE DO RADAR' : ' · POSIÇÃO SEGURA')
         : signatureWarning
           ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
           : bossCd < 0.65
