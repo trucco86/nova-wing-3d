@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.0 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
 
 - Aviso de vida crítica prevalece sobre ataque iminente, escudo baixo, aproximação de chefe, coleta e rádio em telas touch.
