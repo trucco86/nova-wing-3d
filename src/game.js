@@ -23,7 +23,11 @@ import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
-import { sectorObjectiveAt, initialSectorObjective, advanceSectorObjective } from './sector-objectives.js';
+import {
+  sectorObjectiveAt,
+  initialSectorObjective,
+  advanceSectorObjective,
+} from './sector-objectives.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
@@ -4311,7 +4315,12 @@ export function createGame({
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       missionCameraSeconds: reactorGridSeconds,
       sectorObjective: sectorObjectivePlan
-        ? { ...sectorObjectiveState, id: sectorObjectivePlan.id, targetX: sectorObjectivePlan.x, targetY: sectorObjectivePlan.y }
+        ? {
+            ...sectorObjectiveState,
+            id: sectorObjectivePlan.id,
+            targetX: sectorObjectivePlan.x,
+            targetY: sectorObjectivePlan.y,
+          }
         : null,
       missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,

@@ -26,18 +26,37 @@ test('target lane rewards require sustained pilot movement, not elapsed time alo
   assert.equal(step.event, 'started');
   assert.equal(step.state.hold, 0);
   for (let i = 0; i < 20; i++) {
-    step = advanceSectorObjective(step.state, mission, 29 + i * 0.1, 80, { x: mission.x, y: mission.y }, 0.1);
+    step = advanceSectorObjective(
+      step.state,
+      mission,
+      29 + i * 0.1,
+      80,
+      { x: mission.x, y: mission.y },
+      0.1,
+    );
   }
   assert.equal(step.state.status, 'active');
   assert.ok(step.state.hold >= 1.9 && step.state.hold < 2.1);
   step = advanceSectorObjective(step.state, mission, 31.1, 80, { x: -55, y: 6 }, 0.1);
   assert.ok(step.state.hold < 2);
+  let completionEvents = 0;
   for (let i = 0; i < 14; i++) {
-    step = advanceSectorObjective(step.state, mission, 31.2 + i * 0.1, 80, { x: mission.x, y: mission.y }, 0.1);
+    step = advanceSectorObjective(
+      step.state,
+      mission,
+      31.2 + i * 0.1,
+      80,
+      { x: mission.x, y: mission.y },
+      0.1,
+    );
+    if (step.event === 'completed') completionEvents++;
   }
   assert.equal(step.state.status, 'completed');
-  assert.equal(step.event, 'completed');
-  assert.equal(advanceSectorObjective(step.state, mission, 35, 80, { x: mission.x, y: mission.y }, 1).event, null);
+  assert.equal(completionEvents, 1);
+  assert.equal(
+    advanceSectorObjective(step.state, mission, 35, 80, { x: mission.x, y: mission.y }, 1).event,
+    null,
+  );
 });
 
 test('mission expiry never damages player or unlocks a boss prematurely', () => {
@@ -46,6 +65,9 @@ test('mission expiry never damages player or unlocks a boss prematurely', () => 
   const result = advanceSectorObjective(state, plan, 60, 92, { x: 0, y: 6 }, 0.1);
   assert.equal(result.state.status, 'missed');
   assert.equal(result.event, 'missed');
-  assert.equal(advanceSectorObjective(result.state, plan, 70, 92, { x: plan.x, y: plan.y }, 3).state.status, 'missed');
+  assert.equal(
+    advanceSectorObjective(result.state, plan, 70, 92, { x: plan.x, y: plan.y }, 3).state.status,
+    'missed',
+  );
   assert.throws(() => advanceSectorObjective(state, plan, 30, 92, { x: 0, y: 6 }, -1), RangeError);
 });
