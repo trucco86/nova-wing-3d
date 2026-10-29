@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
+
+- Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
+- Medalhas felinas e insígnias em formato de gato com origens verificáveis nas missões.
+- Hall da Patrulha com cinco fichas, graduação coletiva e evolução de uniforme 3D no hangar.
+- Notificação pós-fase de promoções/medalhas; no gameplay normal, não altera dano, velocidade nem ranking.
+- Baseada na PR de troféus #159; HML e produção não alterados.
+
 ## 1.27.19 — Troféus Five Cats (candidata em QA)
 
 - 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.
