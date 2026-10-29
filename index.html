@@ -6660,8 +6660,20 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 /* Optional route objective: retain the primary route/turn instructions. */
 #sectorObjectiveGuide {
   display: block;
-  margin-top: 3px;
+  position: fixed;
+  top: max(77px, calc(env(safe-area-inset-top, 0px) + 66px));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(74vw, 310px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
   color: #a6ffd6;
+  background: #061925ed;
+  border: 1px solid #5aa79270;
+  border-radius: 5px;
+  padding: 3px 6px;
   font: 700 9px/1.2 monospace;
   letter-spacing: 0.25px;
 }
@@ -6843,8 +6855,8 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
           ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
           <div class="route"><i id="progress"></i></div>
           <small id="routeLabel"></small>
-          <small id="sectorObjectiveGuide" aria-live="off" hidden></small>
         </div>
+        <small id="sectorObjectiveGuide" aria-live="off" hidden></small>
         <div class="rightHUD">
           <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
           <div class="utilities">
