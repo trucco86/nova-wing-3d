@@ -3,6 +3,7 @@ import { installGoogleLogin } from './google-auth.js';
 import { installShowroom } from './showroom.js';
 import { installOrbit9ExplorationPreview } from './exploration-preview.js';
 import { createGame } from './game.js';
+import { installCompactMenu } from './compact-menu.js';
 import { createTrophySystem, readTrophies } from './trophy-system.js';
 import { createCatService } from './cat-service.js';
 import { createCatRankUI } from './cat-rank-ui.js';
@@ -48,6 +49,7 @@ const game = createGame({
   },
 });
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });
+const compactMenu = installCompactMenu();
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -64,6 +66,7 @@ if (!Capacitor.isNativePlatform()) {
     ranking?.destroy();
     trophyUI.destroy();
     catRankUI?.destroy();
+    compactMenu.destroy();
     showroom.destroy();
     exploration.destroy();
     destroy();
