@@ -1250,7 +1250,7 @@ const PROGRESSION_TRANSLATIONS = [
   [
     "Escudo Felino",
     "Feline Shield",
-    "Escudo Felino"
+    "Escudo del Gato"
   ],
   [
     "Pata de Titânio",
@@ -1270,7 +1270,7 @@ const PROGRESSION_TRANSLATIONS = [
   [
     "Sombra de Marvin",
     "Marvin's Shadow",
-    "Sombra de Marvin"
+    "La Sombra de Marvin"
   ],
   [
     "Derrote seu primeiro chefe.",
@@ -1405,7 +1405,7 @@ const PROGRESSION_TRANSLATIONS = [
   [
     "Duelo de Pilotos",
     "Pilot Duel",
-    "Duelo de Pilotos"
+    "Duelo entre Pilotos"
   ],
   [
     "Marvin no Braço",
@@ -1475,12 +1475,12 @@ const PROGRESSION_TRANSLATIONS = [
   [
     "Fantasma de Marvin",
     "Marvin's Ghost",
-    "Fantasma de Marvin"
+    "Espectro de Marvin"
   ],
   [
     "Metal Contra Metal",
     "Metal Against Metal",
-    "Metal Contra Metal"
+    "Choque de Metales"
   ],
   [
     "Lendas dos Five Cats",
