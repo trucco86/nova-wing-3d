@@ -72,3 +72,11 @@ test('uniform preview rotates cosmetic 3D grades without granting points or meda
   await expect(selection).toHaveAttribute('data-uniform-grade', '0');
   await expect(page.locator('#profileName')).toHaveText('BOB');
 });
+
+test('reward debrief remains hidden until a real mission is recorded', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#shopServiceSummary')).toBeHidden();
+  await expect(page.locator('#resultServiceSummary')).toBeHidden();
+  await page.locator('#prepareSquad').click();
+  await expect(page.locator('#pilotRankProgress')).toContainText('0 / 120 PS');
+});

@@ -7034,3 +7034,28 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   color: #edcb87;
   font: 10px/1.4 monospace;
 }
+
+/* Persistent post-mission service debrief (not gameplay-center HUD). */
+.cat-service-result {
+  box-sizing: border-box;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #87c6b48a;
+  border-left: 3px solid #e6c079;
+  border-radius: 8px;
+  background: linear-gradient(120deg,#0d2832e8,#142239ed);
+  color: #d7f4ed;
+  text-align: left;
+}
+.cat-service-result[hidden] { display: none !important; }
+.cat-service-result strong { display: block; color: #f6d693; font: 700 12px/1.4 monospace; }
+.cat-service-result p { margin: 5px 0; font: 11px/1.5 monospace; }
+.cat-service-result small { display: block; color: #9bdddf; font: 10px/1.4 monospace; }
+.cat-earned-ribbons { display: flex; flex-wrap: wrap; gap: 5px; margin: 7px 0; }
+.cat-earned-ribbon {
+  border: 1px solid #b9955a; border-radius: 16px;
+  padding: 4px 8px; color: #ffe3a6;
+  background: #3f3425aa; font: 700 9px/1.2 monospace;
+}
+.cat-earned-ribbon[data-grade='silver'] { border-color: #afc1d0; color: #e0e9f7; }
+.cat-earned-ribbon[data-grade='gold'] { border-color: #f1c65f; color: #ffe4a0; }

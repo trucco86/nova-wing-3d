@@ -44,7 +44,7 @@ const game = createGame({
       newRecord,
       trophiesUnlocked: unlocked.length,
     });
-    catRankUI?.refresh(reward);
+    catRankUI?.refresh(reward, unlocked);
   },
 });
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });

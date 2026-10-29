@@ -63,6 +63,10 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
   const roster = document?.querySelector('.pilot-roster');
   const previewButton = document?.getElementById('pilotUniformPreview');
   const previewStatus = document?.getElementById('pilotUniformPreviewStatus');
+  const rewardPanels = [
+    document?.getElementById('shopServiceSummary'),
+    document?.getElementById('resultServiceSummary'),
+  ].filter(Boolean);
   if (!panel || !cards || !squad || !service) return { refresh() {}, destroy() {} };
   let timer = null,
     toast = null;
@@ -173,8 +177,36 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     renderProfile();
   }
 
-  function refresh(reward = null) {
+  function refresh(reward = null, newTrophies = []) {
     renderCards();
+    for (const rewardPanel of rewardPanels) {
+      rewardPanel.replaceChildren();
+      if (!reward?.accepted) {
+        rewardPanel.hidden = true;
+        continue;
+      }
+      const pilot = PILOT_PROFILES.find((p) => p.id === reward.id);
+      rewardPanel.hidden = false;
+      rewardPanel.append(
+        text(document, 'strong', pilot.name + ' · +' + reward.points + ' PONTOS DE SERVIÇO'),
+        text(document, 'p', reward.promotion
+          ? 'PROMOVIDO: ' + reward.promotion.previous.title + ' → ' + reward.promotion.current.title
+          : 'Patente atual: ' + reward.rank.title),
+      );
+      if (reward.medals.length) {
+        const earned = text(document, 'div', '', 'cat-earned-ribbons');
+        for (const medal of reward.medals) {
+          const node = text(document, 'span', medal.title, 'cat-earned-ribbon');
+          node.dataset.grade = medal.grade;
+          earned.append(node);
+        }
+        rewardPanel.append(earned);
+      }
+      if (newTrophies.length) {
+        rewardPanel.append(text(document, 'small',
+          'TROFÉUS DESBLOQUEADOS: ' + newTrophies.map((t) => t.title).join(' · ')));
+      }
+    }
     if (reward?.accepted && (reward.promotion || reward.medals.length)) {
       if (!toast) {
         toast = text(document, 'div', '', 'cat-rank-toast');
