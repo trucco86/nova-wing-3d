@@ -66,7 +66,8 @@ export function fighterWaveAt(sector, cycle, count) {
   const slots = SLOTS[rhythm].slice(0, count).map(([x, y, role], i) => ({
     x: x * mirror,
     y,
-    role: FIGHTER_ROLES[role],
+    // The lead role keeps the established pursuer → interceptor → bomber cadence.
+    role: i === 0 ? FIGHTER_ROLES[cycle % FIGHTER_ROLES.length] : FIGHTER_ROLES[role],
     phase: (cycle % 4) * 0.6 + i * 0.36,
   }));
   return { name: program.name, rhythm, cycle, slots };
