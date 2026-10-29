@@ -1,0 +1,35 @@
+name: Compile isolated enemy mecha bundle
+on:
+  push:
+    branches: ['feat/nova-wing-mecha-combat-v12717']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nova-mecha-combat-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-bundle:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/feat/nova-wing-mecha-combat-v12717'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-mecha-combat-v12717
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - name: Commit formatted sources and generated WebGL
+        run: |
+          git add src/game.js src/encounters.js src/visuals.js src/mecha-motion.js src/enemy-mecha-behavior.js tests/mecha-combat-v12717.test.mjs CHANGELOG.md index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(mecha): format and regenerate standalone v1.27.17'
+          git push origin HEAD:refs/heads/feat/nova-wing-mecha-combat-v12717
