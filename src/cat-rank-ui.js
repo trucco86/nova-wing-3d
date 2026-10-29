@@ -61,9 +61,14 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
   const profileProgress = document?.getElementById('pilotRankProgress');
   const profileMedals = document?.getElementById('pilotRankMedals');
   const roster = document?.querySelector('.pilot-roster');
+  const previewButton = document?.getElementById('pilotUniformPreview');
+  const previewStatus = document?.getElementById('pilotUniformPreviewStatus');
   if (!panel || !cards || !squad || !service) return { refresh() {}, destroy() {} };
   let timer = null,
     toast = null;
+  // Non-persistent visual inspection only; never changes a pilot's rank,
+  // service points, medals, save, ship stats or the actual earned uniform.
+  let previewGrade = null;
   const selectedPilot = () =>
     document?.getElementById('squadSelection')?.getAttribute('data-pilot') ?? 'bia';
 
@@ -83,15 +88,28 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     if (!view || !currentRank || !uniform || !profileProgress || !profileMedals) return;
     currentRank.textContent = view.rank.title + ' · ' + view.rank.alias;
     currentRank.dataset.rank = String(view.rank.index + 1);
-    uniform.dataset.grade = String(view.uniform);
+    const shownGrade = previewGrade ?? view.uniform;
+    uniform.dataset.grade = String(shownGrade);
+    if (previewStatus)
+      previewStatus.textContent = previewGrade === null
+        ? 'Uniforme conquistado: Mk-' + (view.uniform + 1)
+        : 'APENAS PRÉVIA · Mk-' + (shownGrade + 1) + ' (não desbloqueado)';
+    if (previewButton)
+      previewButton.textContent = previewGrade === null
+        ? 'VISUALIZAR UNIFORMES'
+        : 'PRÓXIMA PRÉVIA / VOLTAR AO REAL';
     const selection = document.getElementById('squadSelection');
     if (selection) {
-      selection.setAttribute('data-uniform-grade', String(view.uniform));
-      selection.setAttribute('data-medals-count', String(view.medalsEarned.length));
+      selection.setAttribute('data-uniform-grade', String(shownGrade));
+      selection.setAttribute(
+        'data-medals-count',
+        String(previewGrade === null ? view.medalsEarned.length : Math.min(3, shownGrade)),
+      );
     }
     uniform.setAttribute(
       'aria-label',
-      'Uniforme ' + (view.uniform + 1) + ' de 5 · ' + view.rank.title,
+      (previewGrade === null ? 'Conquistado: ' : 'Prévia visual não desbloqueada: ') +
+        'uniforme ' + (shownGrade + 1) + ' de 5 · ' + view.rank.title,
     );
     const progressLabel = view.nextRank
       ? view.points + ' / ' + view.nextRank.threshold + ' PS · Faltam ' + view.untilNext
@@ -176,7 +194,21 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
       }, 4600);
     }
   }
-  const onSelect = () => renderProfile();
+  const onSelect = () => {
+    previewGrade = null;
+    renderProfile();
+  };
+  const onPreview = () => {
+    const ownedGrade = service.pilotView(selectedPilot())?.uniform ?? 0;
+    // Tour order: subsequent grades, then the earned grade. At top rank,
+    // circle through all five designs so every pilot remains inspectable.
+    previewGrade = previewGrade === null
+      ? (ownedGrade + 1) % 5
+      : (previewGrade + 1) % 5;
+    if (previewGrade === ownedGrade) previewGrade = null;
+    renderProfile();
+  };
+  previewButton?.addEventListener('click', onPreview);
   const onOpen = () => {
     if (panel.open) renderCards();
   };
@@ -188,6 +220,7 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     destroy() {
       clearTimeout(timer);
       roster?.removeEventListener('click', onSelect);
+      previewButton?.removeEventListener('click', onPreview);
       panel.removeEventListener('toggle', onOpen);
       toast?.remove();
       toast = null;

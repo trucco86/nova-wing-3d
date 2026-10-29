@@ -10,9 +10,13 @@ import { createTrophyUI } from './trophy-ui.js';
 import { installNativeShell } from './native.js';
 import { Capacitor } from '@capacitor/core';
 let ranking;
-const trophies = createTrophySystem({ storage: globalThis.localStorage });
+// Private/embedded browsers may reject even reading the localStorage property.
+const progressStorage = (() => {
+  try { return globalThis.localStorage; } catch { return null; }
+})();
+const trophies = createTrophySystem({ storage: progressStorage });
 const trophyUI = createTrophyUI({ document: globalThis.document, trophies });
-const catService = createCatService({ storage: globalThis.localStorage });
+const catService = createCatService({ storage: progressStorage });
 let catRankUI;
 const sessionId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
 let runIndex = 0;
@@ -25,7 +29,7 @@ const game = createGame({
   },
   onStageFinished: (event) => {
     ranking?.onStageFinished(event);
-    const previousBest = readTrophies(globalThis.localStorage).stats.bestScores[event.sector] ?? 0;
+    const previousBest = readTrophies(progressStorage).stats.bestScores[event.sector] ?? 0;
     const newRecord = previousBest > 0 && event.points > previousBest;
     const unlocked = trophies.record({ ...event, type: 'stage-finished', runId: activeRunId });
     trophyUI.refresh(unlocked);

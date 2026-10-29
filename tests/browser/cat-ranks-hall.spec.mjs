@@ -49,3 +49,24 @@ test('hall remains scrollable and within mobile viewport at 320px', async ({ pag
     .evaluate((node) => node.scrollHeight > node.clientHeight);
   expect(scrolls).toBe(true);
 });
+
+test('uniform preview rotates cosmetic 3D grades without granting points or medals', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#prepareSquad').click();
+  await page.locator('#hangarPilot').click();
+  const selection = page.locator('#squadSelection');
+  await expect(page.locator('#pilotUniformPreviewStatus')).toContainText('conquistado');
+  await expect(selection).toHaveAttribute('data-uniform-grade', '0');
+  await page.locator('#pilotUniformPreview').click();
+  await expect(selection).toHaveAttribute('data-uniform-grade', '1');
+  await expect(page.locator('#pilotUniformPreviewStatus')).toContainText('APENAS PRÉVIA');
+  await expect(page.locator('#pilotRankProgress')).toContainText('0 / 120 PS');
+  await expect(page.locator('#catSquadRank')).toContainText('0 PS');
+  for (let i = 0; i < 4; i++) await page.locator('#pilotUniformPreview').click();
+  await expect(selection).toHaveAttribute('data-uniform-grade', '0');
+  await expect(page.locator('#pilotUniformPreviewStatus')).toContainText('conquistado');
+  await page.locator('#pilotUniformPreview').click();
+  await page.locator('#pilot-bob').click();
+  await expect(selection).toHaveAttribute('data-uniform-grade', '0');
+  await expect(page.locator('#profileName')).toHaveText('BOB');
+});
