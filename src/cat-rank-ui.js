@@ -72,6 +72,11 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     currentRank.textContent = view.rank.title + ' · ' + view.rank.alias;
     currentRank.dataset.rank = String(view.rank.index + 1);
     uniform.dataset.grade = String(view.uniform);
+    const selection = document.getElementById('squadSelection');
+    if (selection) {
+      selection.setAttribute('data-uniform-grade', String(view.uniform));
+      selection.setAttribute('data-medals-count', String(view.medalsEarned.length));
+    }
     uniform.setAttribute('aria-label', 'Uniforme ' + (view.uniform + 1) + ' de 5 · ' + view.rank.title);
     const progressLabel = view.nextRank
       ? view.points + ' / ' + view.nextRank.threshold + ' PS · Faltam ' + view.untilNext
