@@ -1021,8 +1021,9 @@ export function createGame({
     sectorObjectivePlan = dynamicFlight ? sectorObjectiveAt(sectorIndex) : null;
     sectorObjectiveState = initialSectorObjective(sectorIndex);
     missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
     if (sectorObjectivePlan)
-      missionBeacon.position.set(sectorObjectivePlan.x, sectorObjectivePlan.y, -105);
+      missionBeacon.position.set(sectorObjectivePlan.x, sectorObjectivePlan.y, -45);
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -1713,6 +1714,7 @@ export function createGame({
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
@@ -3107,10 +3109,13 @@ export function createGame({
       );
       sectorObjectiveState = step.state;
       missionBeacon.visible = sectorObjectiveState.status === 'active';
+      const objectiveGuide = $('sectorObjectiveGuide');
+      objectiveGuide.hidden = !missionBeacon.visible;
       if (missionBeacon.visible) {
+        missionBeacon.position.z = player.position.z - 50;
         missionBeacon.rotation.z += dt * 0.55;
         missionBeacon.scale.setScalar(1 + Math.sin(elapsed * 6) * 0.055);
-        $('routeLabel').textContent =
+        objectiveGuide.textContent =
           sectorObjectivePlan.label +
           ' · SEGURE POSIÇÃO ' +
           Math.ceil(sectorObjectivePlan.requiredSeconds - sectorObjectiveState.hold) +
