@@ -3619,7 +3619,8 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ALVO VULNERÁVEL · GERADOR ' + bossGeneratorLocation(sectorIndex, openGenerator).label
+              ? 'ALVO VULNERÁVEL · GERADOR ' +
+                bossGeneratorLocation(sectorIndex, openGenerator).label
               : 'BLINDAGEM · DANO REDUZIDO · ORBITE PARA FLANCO OU TRASEIRA'
             : 'FASE ' +
               combatPhase +
