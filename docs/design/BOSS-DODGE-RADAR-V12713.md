@@ -21,3 +21,9 @@ Cobertura unitária de área de risco vs colisão, direções, segurança por fl
 2. Manter a nave na região segura e confirmar a ausência de dano físico; repetir com garras e tentáculos.
 3. Verificar que o ponto de origem permanece distinguível e que a orientação funciona em retrato e paisagem.
 4. Confirmar que as salvas de projéteis não exibem uma falsa zona verde de imunidade.
+
+## Aceite visual e pendências
+
+- **Aprovado pelo usuário em 28/10/2026:** radar de origem do ataque, zona de perigo e orientação para esquivar ou ficar em posição segura na candidata publicada.
+- **Correção de regressão automatizada:** inicialização QA do boss no menu do fixture e visibilidade do scanner de pontos fracos em simultâneo com o radar físico.
+- **Não equivale à homologação integral da campanha:** validar os quatro shards Playwright, todos os chefes, FPS e gameplay antes de promover qualquer ambiente.
