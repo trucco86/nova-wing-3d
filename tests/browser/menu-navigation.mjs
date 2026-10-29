@@ -11,16 +11,24 @@ export async function openMenu(page, destination = 'home') {
     screen = 'home';
   }
   if (destination !== 'home' && screen === 'home') {
-    await page.locator({
-      play: '#menuPlay',
-      hangar: '#menuHangar',
-      central: '#menuHub',
-    }[destination]).click();
+    await page
+      .locator(
+        {
+          play: '#menuPlay',
+          hangar: '#menuHangar',
+          central: '#menuHub',
+        }[destination],
+      )
+      .click();
   }
 }
 export async function clickMenu(page, selector, mode = 'click') {
-  const destination = selector === '#prepareSquad' ? 'hangar'
-    : ['#start', '#continue', '#watchIntro'].includes(selector) ? 'play' : 'central';
+  const destination =
+    selector === '#prepareSquad'
+      ? 'hangar'
+      : ['#start', '#continue', '#watchIntro'].includes(selector)
+        ? 'play'
+        : 'central';
   await openMenu(page, destination);
   if (selector !== '#prepareSquad') await page.locator(selector)[mode]();
 }

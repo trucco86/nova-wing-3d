@@ -1,11 +1,13 @@
 # Nova Wing v1.27.21 — Start screen / Console-style navigation
 
 ## Problem
+
 The web cover currently shows START, hangar, language, music, intro, account/login,
 trophies, cat military ranks and ranking all together. The original approved
 Five Cats poster is obscured; mobile displays require long scrolling.
 
 ## UX contract
+
 1. `splash`: keep the original embedded artwork **centered and uncropped** (CSS `contain`).
    Only `PRESS START` appears, in the lower safe zone; Enter activates it; touch target >=62px.
 2. `home`: three main choices `JOGAR`, `HANGAR`, `CENTRAL`.
@@ -21,6 +23,7 @@ Five Cats poster is obscured; mobile displays require long scrolling.
    cat ranks, save checkpoints and account opt-in remain accessible.
 
 ## Engineering
+
 - Native HTML gate and CSS data-screen view. `src/compact-menu.js` handles
   view state and keyboard routing only. It does not own game start, auth or save.
 - Existing `src/game.js` owns launch/continue, 360 model selection,
@@ -29,6 +32,7 @@ Five Cats poster is obscured; mobile displays require long scrolling.
 - Progressive menus live on the title screen; all gameplay HUD constraints remain.
 
 ## QA
+
 - Browser tests assert 390x844, 844x390, 1366x768: artwork `contain`,
   centered pressStart, exactly three choices, central sign-in,
   hangar inspections, launch, Enter, Escape and mobile scroll.

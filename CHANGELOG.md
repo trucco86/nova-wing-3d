@@ -9,7 +9,6 @@
 - Interface responsiva, touch target >=44px, sem duplicar lógica de save/ranking/autenticação.
 - Isolada sobre PR #160; revisão visual e Playwright obrigatórios antes de DEV/HML/PROD.
 
-
 ## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
 
 - Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
