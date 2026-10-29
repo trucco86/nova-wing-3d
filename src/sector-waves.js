@@ -17,12 +17,42 @@ export const SECTOR_WAVE_PROGRAMS = Object.freeze(
   ].map(([name, ...rhythms]) => Object.freeze({ name, rhythms: Object.freeze(rhythms) })),
 );
 const SLOTS = Object.freeze({
-  stagger: [[-16, 24, 0], [18, 15, 1], [0, 34, 2], [-34, 22, 0]],
-  vee: [[0, 26, 1], [-23, 18, 0], [23, 18, 2], [0, 11, 1]],
-  pincer: [[-30, 16, 1], [30, 16, 1], [-9, 31, 2], [9, 31, 0]],
-  escort: [[-13, 20, 0], [13, 20, 2], [30, 28, 1], [-30, 28, 0]],
-  'high-low': [[-21, 31, 2], [21, 9, 1], [0, 20, 0], [33, 32, 2]],
-  wall: [[-30, 12, 2], [0, 31, 1], [30, 12, 2], [-3, 18, 0]],
+  stagger: [
+    [-16, 24, 0],
+    [18, 15, 1],
+    [0, 34, 2],
+    [-34, 22, 0],
+  ],
+  vee: [
+    [0, 26, 1],
+    [-23, 18, 0],
+    [23, 18, 2],
+    [0, 11, 1],
+  ],
+  pincer: [
+    [-30, 16, 1],
+    [30, 16, 1],
+    [-9, 31, 2],
+    [9, 31, 0],
+  ],
+  escort: [
+    [-13, 20, 0],
+    [13, 20, 2],
+    [30, 28, 1],
+    [-30, 28, 0],
+  ],
+  'high-low': [
+    [-21, 31, 2],
+    [21, 9, 1],
+    [0, 20, 0],
+    [33, 32, 2],
+  ],
+  wall: [
+    [-30, 12, 2],
+    [0, 31, 1],
+    [30, 12, 2],
+    [-3, 18, 0],
+  ],
 });
 export function fighterWaveAt(sector, cycle, count) {
   if (!Number.isInteger(sector) || sector < 0 || sector >= SECTOR_WAVE_PROGRAMS.length)
