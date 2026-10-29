@@ -53,10 +53,7 @@ test('hero mech has six wing LEDs and softer independent leg articulation', () =
   const wings = robot.userData.mechRig.wingLeds;
   assert.equal(wings.length, 6);
   assert.ok(wings.every((mesh) => mesh.name.startsWith('mech-wing-led-')));
-  assert.equal(
-    robot.getObjectByName('mech-wing-left').userData.sharedWingProfile,
-    'fighter-v1',
-  );
+  assert.equal(robot.getObjectByName('mech-wing-left').userData.sharedWingProfile, 'fighter-v1');
   for (let i = 0; i < 80; i++) {
     updateMechaPose(robot, {
       dt: 0.04,

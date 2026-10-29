@@ -3144,7 +3144,13 @@ export function createGame({
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
-      enemy(dynamicFlight ? groundMechaKind(sectorIndex, groundWave) : groundWave % 2 ? 'tank' : 'walker');
+      enemy(
+        dynamicFlight
+          ? groundMechaKind(sectorIndex, groundWave)
+          : groundWave % 2
+            ? 'tank'
+            : 'walker',
+      );
       groundCd = 6;
     }
     if (
@@ -3357,7 +3363,12 @@ export function createGame({
       if (e.kind === 'walker' || e.airborneRobot) {
         if (e.airborneRobot) {
           const chase = hoverMechaMotion(
-            e.age, e.x, e.y, player.position.x, player.position.y, e.phase,
+            e.age,
+            e.x,
+            e.y,
+            player.position.x,
+            player.position.y,
+            e.phase,
           );
           e.o.position.x = chase.x;
           e.o.position.y = chase.y;

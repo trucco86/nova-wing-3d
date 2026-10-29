@@ -186,10 +186,17 @@ export function createGroundEnemy(kind, variant = -1) {
   model.userData = { turret: model.getObjectByName('turret'), kind, variant };
   return model;
 }
-export function animateGroundEnemy(model, time, target, { dt = 1 / 60, airborne = false, charging = false } = {}) {
+export function animateGroundEnemy(
+  model,
+  time,
+  target,
+  { dt = 1 / 60, airborne = false, charging = false } = {},
+) {
   const turret = model.userData.turret;
   const steering = T.MathUtils.clamp(
-    Math.atan2(target.x - model.position.x, target.z - model.position.z), -0.7, 0.7,
+    Math.atan2(target.x - model.position.x, target.z - model.position.z),
+    -0.7,
+    0.7,
   );
   const response = 1 - Math.exp(-Math.max(0, dt) * 7);
   turret.rotation.y += (steering - turret.rotation.y) * response;
@@ -201,21 +208,20 @@ export function animateGroundEnemy(model, time, target, { dt = 1 / 60, airborne 
         ? -0.3 + side * 0.11
         : Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.32;
       leg.rotation.x += (swing - leg.rotation.x) * response;
-      leg.rotation.z += (
-        (airborne ? side * 0.17 : Math.sin(stride * 0.5 + side) * 0.08) - leg.rotation.z
-      ) * response;
+      leg.rotation.z +=
+        ((airborne ? side * 0.17 : Math.sin(stride * 0.5 + side) * 0.08) - leg.rotation.z) *
+        response;
       const arm = model.getObjectByName(side < 0 ? 'walker-arm-left' : 'walker-arm-right');
       const sweep = Math.sin(time * (airborne ? 2.7 : 1.9) + (side > 0 ? Math.PI : 0));
       const aim = -0.45 - Math.min(0.3, Math.abs(target.y - (model.position.y + 17)) * 0.009);
       arm.rotation.x += (aim + sweep * (airborne ? 0.26 : 0.16) - arm.rotation.x) * response;
-      arm.rotation.y += ((steering * 0.42 + side * 0.04) - arm.rotation.y) * response;
-      arm.rotation.z += ((side * 0.12 + sweep * 0.12) - arm.rotation.z) * response;
+      arm.rotation.y += (steering * 0.42 + side * 0.04 - arm.rotation.y) * response;
+      arm.rotation.z += (side * 0.12 + sweep * 0.12 - arm.rotation.z) * response;
       const muzzle = arm.getObjectByName(side < 0 ? 'walker-muzzle-left' : 'walker-muzzle-right');
       if (muzzle) muzzle.scale.setScalar(charging ? 1.3 + Math.sin(time * 19) * 0.08 : 1);
     }
-    turret.rotation.x += (
-      (-0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12) - turret.rotation.x
-    ) * response;
+    turret.rotation.x +=
+      (-0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12 - turret.rotation.x) * response;
     turret.rotation.z += (Math.sin(stride * 0.55) * 0.1 - turret.rotation.z) * response;
   }
 }
