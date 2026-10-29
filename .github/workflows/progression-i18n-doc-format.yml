@@ -1,0 +1,33 @@
+name: Format staged progression i18n documentation
+on:
+  push:
+    branches: ['feat/nova-wing-trophy-rank-i18n-v12721']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cat-i18n-doc-format-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  format-doc:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-trophy-rank-i18n-v12721
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write docs/design/TROPHY-RANK-I18N-V12721.md
+      - name: Commit Markdown layout
+        run: |
+          git add docs/design/TROPHY-RANK-I18N-V12721.md
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'docs(i18n): format language QA notes'
+          git push origin HEAD:refs/heads/feat/nova-wing-trophy-rank-i18n-v12721
