@@ -6579,8 +6579,15 @@ body.ranking-intermission #novaRanking {
   border: 2px solid #b8e9d3;
   box-shadow: 0 0 0 3px #061522cc;
 }
-#battleRadar[data-mode='physical'] > :is(i, b) {
+#battleRadar[data-mode='physical'] > :is(#radarPlayer, b) {
   display: none;
+}
+/* Scanner weak-point indicator retains its own layer above the danger map. */
+#battleRadar[data-mode='physical'] > #radarWeak:not([hidden]) {
+  display: block;
+  z-index: 4;
+  color: #ffef85;
+  text-shadow: 0 0 5px #081722;
 }
 #radarThreatMap {
   display: block;
