@@ -19,6 +19,10 @@ test('ten sectors have distinctive, deterministic and bounded fighter formations
   assert.throws(() => fighterWaveAt(0, 0, 5), RangeError);
   assert.equal(fighterWaveAt(0, 0, 1).slots.length, 1);
   assert.equal(fighterWaveAt(0, 0, 2).slots.length, 2);
+  assert.deepEqual(
+    [0, 1, 2].map((cycle) => fighterWaveAt(0, cycle, 1).slots[0].role),
+    ['pursuer', 'interceptor', 'bomber'],
+  );
 });
 
 test('a running mission spawns the authored fleet pattern while preserving the boss gate', (t) => {
