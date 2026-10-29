@@ -6657,6 +6657,24 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   }
 }
 
+/* Optional route objective: retain the primary route/turn instructions. */
+#sectorObjectiveGuide {
+  display: block;
+  margin-top: 3px;
+  color: #a6ffd6;
+  font: 700 9px/1.2 monospace;
+  letter-spacing: 0.25px;
+}
+#sectorObjectiveGuide[hidden] {
+  display: none !important;
+}
+@media (max-height: 500px) {
+  #sectorObjectiveGuide {
+    font-size: 8px;
+    margin-top: 2px;
+  }
+}
+
     </style>
   </head>
   <body>
