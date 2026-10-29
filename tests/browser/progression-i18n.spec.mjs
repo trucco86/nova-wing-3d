@@ -19,8 +19,10 @@ for (const lang of ['en', 'es']) {
 
     const medals = page.locator('#catRankCards .cat-medal-chip');
     await expect(medals).toHaveCount(60);
-    await expect(medals.first()).toHaveAttribute('aria-label',
-      lang === 'en' ? /Bronze Claw/ : /Garra de Bronce/);
+    await expect(medals.first()).toHaveAttribute(
+      'aria-label',
+      lang === 'en' ? /Bronze Claw/ : /Garra de Bronce/,
+    );
     await expect(page.locator('#catRankCards .cat-service-title').first()).toContainText(
       lang === 'en' ? 'Recruit' : 'Recluta',
     );

@@ -1087,736 +1087,320 @@ for (const [pt, en, es] of FIVE_CATS_TRANSLATIONS) MAP.set(pt, { en, es });
 
 // Progression and service-hall UI translations. Canonical IDs/saves stay in PT.
 const PROGRESSION_TRANSLATIONS = [
+  ['Recruta', 'Recruit', 'Recluta'],
+  ['Cadete', 'Cadet', 'Cadete'],
+  ['Aspirante', 'Ensign', 'Aspirante'],
+  ['Tenente', 'Lieutenant', 'Teniente'],
+  ['Capitão', 'Captain', 'Capitán'],
+  ['Major', 'Major', 'Mayor'],
+  ['Comandante', 'Commander', 'Comandante'],
+  ['Coronel Estelar', 'Star Colonel', 'Coronel Estelar'],
+  ['General de Esquadra', 'Squadron General', 'General de Escuadrón'],
+  ['Lenda Five Cats', 'Five Cats Legend', 'Leyenda Five Cats'],
+  ['Primeira Patrulha', 'First Patrol', 'Primera Patrulla'],
+  ['Bigodes em Formação', 'Whiskers in Training', 'Bigotes en Formación'],
+  ['Primeira Garra', 'First Claw', 'Primera Garra'],
+  ['Asas de Órion', 'Wings of Orion', 'Alas de Orión'],
+  ['Guardião das Nove Vidas', 'Guardian of Nine Lives', 'Guardián de las Nueve Vidas'],
+  ['Sentinela das Estrelas', 'Sentinel of the Stars', 'Centinela de las Estrellas'],
+  ['Líder da Patrulha', 'Patrol Leader', 'Líder de Patrulla'],
+  ['Garra de Órion', 'Claw of Orion', 'Garra de Orión'],
+  ['Nove Galáxias', 'Nine Galaxies', 'Nueve Galaxias'],
+  ['Constelação Imortal', 'Immortal Constellation', 'Constelación Inmortal'],
+  ['Patrulha Orbital', 'Orbital Patrol', 'Patrulla Orbital'],
+  ['Esquadrão de Guarda', 'Guardian Squadron', 'Escuadrón de Guardia'],
+  ['Força Five Cats', 'Five Cats Force', 'Fuerza Five Cats'],
+  ['Guardiões da Galáxia', 'Guardians of the Galaxy', 'Guardianes de la Galaxia'],
+  ['Lendas Five Cats', 'Five Cats Legends', 'Leyendas Five Cats'],
+  ['Garra de Bronze', 'Bronze Claw', 'Garra de Bronce'],
+  ['Garra de Prata', 'Silver Claw', 'Garra de Plata'],
+  ['Garra de Ouro', 'Gold Claw', 'Garra de Oro'],
+  ['Olho de Gato', "Cat's Eye", 'Ojo de Gato'],
+  ['Nove Vidas', 'Nine Lives', 'Nueve Vidas'],
+  ['Bigode de Aço', 'Steel Whisker', 'Bigote de Acero'],
+  ['Cauda Relâmpago', 'Lightning Tail', 'Cola Relámpago'],
+  ['Escudo Felino', 'Feline Shield', 'Escudo del Gato'],
+  ['Pata de Titânio', 'Titanium Paw', 'Pata de Titanio'],
+  ['Coração de Esquadrão', 'Squadron Heart', 'Corazón de Escuadrón'],
+  ['Constelação Felina', 'Feline Constellation', 'Constelación Felina'],
+  ['Sombra de Marvin', "Marvin's Shadow", 'La Sombra de Marvin'],
+  ['Derrote seu primeiro chefe.', 'Defeat your first boss.', 'Derrota a tu primer jefe.'],
+  [
+    'Derrote cinco chefes diferentes.',
+    'Defeat five different bosses.',
+    'Derrota a cinco jefes diferentes.',
+  ],
+  [
+    'Derrote os dez chefes diferentes.',
+    'Defeat all ten different bosses.',
+    'Derrota a los diez jefes diferentes.',
+  ],
+  [
+    'Derrote um chefe usando somente a arma principal.',
+    'Defeat a boss using only the primary weapon.',
+    'Derrota a un jefe usando solo el arma principal.',
+  ],
+  [
+    'Conclua uma fase sem receber dano.',
+    'Clear a stage without taking damage.',
+    'Completa una fase sin recibir daño.',
+  ],
+  [
+    'Supere seu próprio recorde de fase.',
+    'Beat your own stage record.',
+    'Supera tu propio récord de fase.',
+  ],
+  [
+    'Conclua uma fase dentro do tempo-alvo.',
+    'Clear a stage within the target time.',
+    'Completa una fase dentro del tiempo objetivo.',
+  ],
+  ['Conclua uma fase no Difícil.', 'Clear a stage on Hard.', 'Completa una fase en Difícil.'],
+  [
+    'Finalize um chefe transformado em robô.',
+    'Finish a boss while transformed into a robot.',
+    'Derrota a un jefe transformado en robot.',
+  ],
+  [
+    'Use um especial Five Cats numa fase concluída.',
+    'Use a Five Cats special in a completed stage.',
+    'Usa un especial Five Cats en una fase completada.',
+  ],
+  [
+    'Vença cinco setores diferentes com o mesmo piloto.',
+    'Win five different sectors with the same pilot.',
+    'Gana cinco sectores distintos con el mismo piloto.',
+  ],
+  [
+    'Derrote Marvin com este piloto.',
+    'Defeat Marvin with this pilot.',
+    'Derrota a Marvin con este piloto.',
+  ],
+  ['Primeiro Voo', 'First Flight', 'Primer Vuelo'],
+  ['Metade da Galáxia', 'Half the Galaxy', 'Mitad de la Galaxia'],
+  ['Salvadores da Galáxia', 'Saviors of the Galaxy', 'Salvadores de la Galaxia'],
+  ['Pontaria de Elite', 'Elite Marksmanship', 'Puntería de Élite'],
+  ['Ás da Esquadra', 'Squadron Ace', 'As del Escuadrón'],
+  ['Lenda dos Céus', 'Legend of the Skies', 'Leyenda de los Cielos'],
+  ['Primeira Esquadrilha', 'First Squadron', 'Primer Escuadrón'],
+  ['Caçador Incansável', 'Relentless Hunter', 'Cazador Incansable'],
+  ['Tempestade de Aço', 'Steel Storm', 'Tormenta de Acero'],
+  ['Novo Recorde', 'New Record', 'Nuevo Récord'],
+  ['Recordista Five Cats', 'Five Cats Record Breaker', 'Récord Five Cats'],
+  ['Blindagem Impecável', 'Flawless Armor', 'Blindaje Impecable'],
+  ['Intocável', 'Untouchable', 'Intocable'],
+  ['Só na Bala', 'Primary Weapons Only', 'Solo con Armas Primarias'],
+  ['Duelo de Pilotos', 'Pilot Duel', 'Duelo entre Pilotos'],
+  ['Marvin no Braço', 'Marvin, No Specials', 'Marvin Sin Especiales'],
+  ['Sem Atalhos', 'No Shortcuts', 'Sin Atajos'],
+  ['Mãos Limpas', 'Clean Hands', 'Manos Limpias'],
+  ['Rota Relâmpago', 'Lightning Route', 'Ruta Relámpago'],
+  ['Hipervelocidade', 'Hyperspeed', 'Hipervelocidad'],
+  ['Sem Medo', 'Fearless', 'Sin Miedo'],
+  ['Veterano Implacável', 'Relentless Veteran', 'Veterano Implacable'],
+  ['Titã de Metal', 'Metal Titan', 'Titán de Metal'],
+  ['Transformação Perfeita', 'Perfect Transformation', 'Transformación Perfecta'],
+  ['Cinco Gatos, Uma Força', 'Five Cats, One Force', 'Cinco Gatos, Una Fuerza'],
+  ['Explorador do Espaço', 'Space Explorer', 'Explorador Espacial'],
+  ['Senhor das Rotas', 'Master of the Routes', 'Señor de las Rutas'],
+  ['Equipe Completa', 'Full Squad', 'Equipo Completo'],
+  ['Fantasma de Marvin', "Marvin's Ghost", 'Espectro de Marvin'],
+  ['Metal Contra Metal', 'Metal Against Metal', 'Choque de Metales'],
+  ['Lendas dos Five Cats', 'Five Cats Legends', 'Leyendas de los Five Cats'],
+  ['Caçador de Chefes', 'Boss Hunter', 'Cazador de Jefes'],
+  ['O Último Imperador', 'The Last Emperor', 'El Último Emperador'],
+  ['Derrote', 'Defeat', 'Derrota'],
+  ['no setor', 'in sector', 'en el sector'],
+  ['Conclua seu primeiro setor.', 'Clear your first sector.', 'Completa tu primer sector.'],
   [
-    "Recruta",
-    "Recruit",
-    "Recluta"
+    'Conclua cinco setores diferentes.',
+    'Clear five different sectors.',
+    'Completa cinco sectores diferentes.',
   ],
+  ['Conclua todos os dez setores.', 'Clear all ten sectors.', 'Completa los diez sectores.'],
   [
-    "Cadete",
-    "Cadet",
-    "Cadete"
+    'Acumule 150 pontos de fase em partidas concluídas.',
+    'Earn 150 stage points in completed runs.',
+    'Acumula 150 puntos de fase en partidas completadas.',
   ],
   [
-    "Aspirante",
-    "Ensign",
-    "Aspirante"
+    'Acumule 500 pontos de fase em partidas concluídas.',
+    'Earn 500 stage points in completed runs.',
+    'Acumula 500 puntos de fase en partidas completadas.',
   ],
   [
-    "Tenente",
-    "Lieutenant",
-    "Teniente"
+    'Acumule 1.500 pontos de fase em partidas concluídas.',
+    'Earn 1,500 stage points in completed runs.',
+    'Acumula 1500 puntos de fase en partidas completadas.',
   ],
   [
-    "Capitão",
-    "Captain",
-    "Capitán"
+    'Destrua 30 inimigos em partidas concluídas.',
+    'Destroy 30 enemies in completed runs.',
+    'Destruye 30 enemigos en partidas completadas.',
   ],
   [
-    "Major",
-    "Major",
-    "Mayor"
+    'Destrua 100 inimigos em partidas concluídas.',
+    'Destroy 100 enemies in completed runs.',
+    'Destruye 100 enemigos en partidas completadas.',
   ],
   [
-    "Comandante",
-    "Commander",
-    "Comandante"
+    'Destrua 500 inimigos em partidas concluídas.',
+    'Destroy 500 enemies in completed runs.',
+    'Destruye 500 enemigos en partidas completadas.',
   ],
   [
-    "Coronel Estelar",
-    "Star Colonel",
-    "Coronel Estelar"
+    'Supere seu recorde anterior de pontuação em um setor.',
+    'Beat your previous score in a sector.',
+    'Supera tu récord anterior de puntuación en un sector.',
   ],
   [
-    "General de Esquadra",
-    "Squadron General",
-    "General de Escuadrón"
+    'Bata cinco recordes pessoais de fase.',
+    'Beat five personal stage records.',
+    'Bate cinco récords personales de fase.',
   ],
   [
-    "Lenda Five Cats",
-    "Five Cats Legend",
-    "Leyenda Five Cats"
+    'Conclua um setor sem perder pontos de escudo.',
+    'Clear a sector without losing shield points.',
+    'Completa un sector sin perder puntos de escudo.',
   ],
   [
-    "Primeira Patrulha",
-    "First Patrol",
-    "Primera Patrulla"
+    'Conclua três setores sem sofrer dano.',
+    'Clear three sectors without taking damage.',
+    'Completa tres sectores sin recibir daño.',
   ],
   [
-    "Bigodes em Formação",
-    "Whiskers in Training",
-    "Bigotes en Formación"
+    'Derrote um chefe usando apenas tiros primários, sem pods, bombas ou especiais.',
+    'Defeat a boss with primary shots only, no pods, bombs or specials.',
+    'Derrota a un jefe solo con disparos primarios, sin pods, bombas ni especiales.',
   ],
   [
-    "Primeira Garra",
-    "First Claw",
-    "Primera Garra"
+    'Derrote três chefes só com armas primárias.',
+    'Defeat three bosses using primary weapons only.',
+    'Derrota a tres jefes solo con armas primarias.',
   ],
   [
-    "Asas de Órion",
-    "Wings of Orion",
-    "Alas de Orión"
+    'Derrote Marvin apenas com disparos primários.',
+    'Defeat Marvin using only primary shots.',
+    'Derrota a Marvin solo con disparos primarios.',
   ],
   [
-    "Guardião das Nove Vidas",
-    "Guardian of Nine Lives",
-    "Guardián de las Nueve Vidas"
+    'Conclua um setor sem usar bombas.',
+    'Clear a sector without using bombs.',
+    'Completa un sector sin usar bombas.',
   ],
   [
-    "Sentinela das Estrelas",
-    "Sentinel of the Stars",
-    "Centinela de las Estrellas"
+    'Conclua cinco setores sem usar bombas.',
+    'Clear five sectors without using bombs.',
+    'Completa cinco sectores sin usar bombas.',
   ],
   [
-    "Líder da Patrulha",
-    "Patrol Leader",
-    "Líder de Patrulla"
+    'Conclua um setor em até 140% de seu tempo-base.',
+    'Clear a sector within 140% of its base time.',
+    'Completa un sector en un 140% de su tiempo base.',
   ],
   [
-    "Garra de Órion",
-    "Claw of Orion",
-    "Garra de Orión"
+    'Conclua três setores dentro do tempo-alvo.',
+    'Clear three sectors within the target time.',
+    'Completa tres sectores dentro del tiempo objetivo.',
   ],
   [
-    "Nove Galáxias",
-    "Nine Galaxies",
-    "Nueve Galaxias"
+    'Termine um setor na dificuldade Difícil.',
+    'Finish a sector on Hard difficulty.',
+    'Termina un sector en dificultad Difícil.',
   ],
   [
-    "Constelação Imortal",
-    "Immortal Constellation",
-    "Constelación Inmortal"
+    'Conclua os dez setores na dificuldade Difícil.',
+    'Clear all ten sectors on Hard difficulty.',
+    'Completa los diez sectores en dificultad Difícil.',
   ],
   [
-    "Patrulha Orbital",
-    "Orbital Patrol",
-    "Patrulla Orbital"
+    'Dê o golpe final em um chefe no modo robô.',
+    'Deal the final blow to a boss in robot mode.',
+    'Da el golpe final a un jefe en modo robot.',
   ],
   [
-    "Esquadrão de Guarda",
-    "Guardian Squadron",
-    "Escuadrón de Guardia"
+    'Finalize três chefes pilotando o robô.',
+    'Defeat three bosses while piloting the robot.',
+    'Derrota a tres jefes pilotando el robot.',
   ],
   [
-    "Força Five Cats",
-    "Five Cats Force",
-    "Fuerza Five Cats"
+    'Use um especial Five Cats durante um setor concluído.',
+    'Use a Five Cats special during a completed sector.',
+    'Usa un especial Five Cats durante un sector completado.',
   ],
   [
-    "Guardiões da Galáxia",
-    "Guardians of the Galaxy",
-    "Guardianes de la Galaxia"
+    'Colete 25 anéis em partidas concluídas.',
+    'Collect 25 rings in completed runs.',
+    'Recoge 25 anillos en partidas completadas.',
   ],
   [
-    "Lendas Five Cats",
-    "Five Cats Legends",
-    "Leyendas Five Cats"
+    'Colete 100 anéis em partidas concluídas.',
+    'Collect 100 rings in completed runs.',
+    'Recoge 100 anillos en partidas completadas.',
   ],
   [
-    "Garra de Bronze",
-    "Bronze Claw",
-    "Garra de Bronce"
+    'Conclua missões jogando com os cinco pilotos.',
+    'Clear missions playing as all five pilots.',
+    'Completa misiones jugando con los cinco pilotos.',
   ],
   [
-    "Garra de Prata",
-    "Silver Claw",
-    "Garra de Plata"
+    'Conclua um setor no Difícil sem sofrer dano.',
+    'Clear a sector on Hard without taking damage.',
+    'Completa un sector en Difícil sin recibir daño.',
   ],
   [
-    "Garra de Ouro",
-    "Gold Claw",
-    "Garra de Oro"
+    'Derrote um chefe no Difícil com tiros primários exclusivamente.',
+    'Defeat a boss on Hard using primary shots only.',
+    'Derrota a un jefe en Difícil solo con disparos primarios.',
   ],
   [
-    "Olho de Gato",
-    "Cat's Eye",
-    "Ojo de Gato"
+    'Ganhe todos os troféus principais (os secretos são opcionais).',
+    'Earn every main trophy (secret trophies are optional).',
+    'Consigue todos los trofeos principales (los secretos son opcionales).',
   ],
+  ['Troféu secreto', 'Secret trophy', 'Trofeo secreto'],
   [
-    "Nove Vidas",
-    "Nine Lives",
-    "Nueve Vidas"
+    'Desbloqueie para revelar o desafio.',
+    'Unlock to reveal the challenge.',
+    'Desbloquea para revelar el desafío.',
   ],
+  ['CONQUISTADO', 'UNLOCKED', 'CONSEGUIDO'],
+  ['TROFÉU DESBLOQUEADO', 'TROPHY UNLOCKED', 'TROFEO DESBLOQUEADO'],
+  ['pontos de troféu', 'trophy points', 'puntos de trofeo'],
+  ['concluído', 'complete', 'completado'],
+  ['conquistas', 'achievements', 'logros'],
+  ['HALL DA PATRULHA', 'SERVICE HALL', 'SALÓN DE PATRULLA'],
+  ['PATRULHA ORBITAL', 'ORBITAL PATROL', 'PATRULLA ORBITAL'],
+  ['PONTOS DE SERVIÇO', 'SERVICE POINTS', 'PUNTOS DE SERVICIO'],
+  ['PS DO ESQUADRÃO', 'SQUAD PS', 'PS DEL ESCUADRÓN'],
+  ['medalhas', 'medals', 'medallas'],
+  ['medalha', 'medal', 'medalla'],
   [
-    "Bigode de Aço",
-    "Steel Whisker",
-    "Bigote de Acero"
+    'Conquiste medalhas em missões reais.',
+    'Earn medals in real missions.',
+    'Consigue medallas en misiones reales.',
   ],
+  ['Faltam', 'Remaining', 'Faltan'],
+  ['PATENTE MÁXIMA', 'MAX RANK', 'RANGO MÁXIMO'],
+  ['Uniforme conquistado', 'Earned uniform', 'Uniforme conseguido'],
+  ['APENAS PRÉVIA', 'PREVIEW ONLY', 'SOLO VISTA PREVIA'],
+  ['não desbloqueado', 'not unlocked', 'no desbloqueado'],
+  ['VISUALIZAR UNIFORMES', 'PREVIEW UNIFORMS', 'VER UNIFORMES'],
   [
-    "Cauda Relâmpago",
-    "Lightning Tail",
-    "Cola Relámpago"
+    'PRÓXIMA PRÉVIA / VOLTAR AO REAL',
+    'NEXT PREVIEW / RETURN TO EARNED',
+    'SIGUIENTE VISTA / VOLVER AL CONSEGUIDO',
   ],
-  [
-    "Escudo Felino",
-    "Feline Shield",
-    "Escudo del Gato"
-  ],
-  [
-    "Pata de Titânio",
-    "Titanium Paw",
-    "Pata de Titanio"
-  ],
-  [
-    "Coração de Esquadrão",
-    "Squadron Heart",
-    "Corazón de Escuadrón"
-  ],
-  [
-    "Constelação Felina",
-    "Feline Constellation",
-    "Constelación Felina"
-  ],
-  [
-    "Sombra de Marvin",
-    "Marvin's Shadow",
-    "La Sombra de Marvin"
-  ],
-  [
-    "Derrote seu primeiro chefe.",
-    "Defeat your first boss.",
-    "Derrota a tu primer jefe."
-  ],
-  [
-    "Derrote cinco chefes diferentes.",
-    "Defeat five different bosses.",
-    "Derrota a cinco jefes diferentes."
-  ],
-  [
-    "Derrote os dez chefes diferentes.",
-    "Defeat all ten different bosses.",
-    "Derrota a los diez jefes diferentes."
-  ],
-  [
-    "Derrote um chefe usando somente a arma principal.",
-    "Defeat a boss using only the primary weapon.",
-    "Derrota a un jefe usando solo el arma principal."
-  ],
-  [
-    "Conclua uma fase sem receber dano.",
-    "Clear a stage without taking damage.",
-    "Completa una fase sin recibir daño."
-  ],
-  [
-    "Supere seu próprio recorde de fase.",
-    "Beat your own stage record.",
-    "Supera tu propio récord de fase."
-  ],
-  [
-    "Conclua uma fase dentro do tempo-alvo.",
-    "Clear a stage within the target time.",
-    "Completa una fase dentro del tiempo objetivo."
-  ],
-  [
-    "Conclua uma fase no Difícil.",
-    "Clear a stage on Hard.",
-    "Completa una fase en Difícil."
-  ],
-  [
-    "Finalize um chefe transformado em robô.",
-    "Finish a boss while transformed into a robot.",
-    "Derrota a un jefe transformado en robot."
-  ],
-  [
-    "Use um especial Five Cats numa fase concluída.",
-    "Use a Five Cats special in a completed stage.",
-    "Usa un especial Five Cats en una fase completada."
-  ],
-  [
-    "Vença cinco setores diferentes com o mesmo piloto.",
-    "Win five different sectors with the same pilot.",
-    "Gana cinco sectores distintos con el mismo piloto."
-  ],
-  [
-    "Derrote Marvin com este piloto.",
-    "Defeat Marvin with this pilot.",
-    "Derrota a Marvin con este piloto."
-  ],
-  [
-    "Primeiro Voo",
-    "First Flight",
-    "Primer Vuelo"
-  ],
-  [
-    "Metade da Galáxia",
-    "Half the Galaxy",
-    "Mitad de la Galaxia"
-  ],
-  [
-    "Salvadores da Galáxia",
-    "Saviors of the Galaxy",
-    "Salvadores de la Galaxia"
-  ],
-  [
-    "Pontaria de Elite",
-    "Elite Marksmanship",
-    "Puntería de Élite"
-  ],
-  [
-    "Ás da Esquadra",
-    "Squadron Ace",
-    "As del Escuadrón"
-  ],
-  [
-    "Lenda dos Céus",
-    "Legend of the Skies",
-    "Leyenda de los Cielos"
-  ],
-  [
-    "Primeira Esquadrilha",
-    "First Squadron",
-    "Primer Escuadrón"
-  ],
-  [
-    "Caçador Incansável",
-    "Relentless Hunter",
-    "Cazador Incansable"
-  ],
-  [
-    "Tempestade de Aço",
-    "Steel Storm",
-    "Tormenta de Acero"
-  ],
-  [
-    "Novo Recorde",
-    "New Record",
-    "Nuevo Récord"
-  ],
-  [
-    "Recordista Five Cats",
-    "Five Cats Record Breaker",
-    "Récord Five Cats"
-  ],
-  [
-    "Blindagem Impecável",
-    "Flawless Armor",
-    "Blindaje Impecable"
-  ],
-  [
-    "Intocável",
-    "Untouchable",
-    "Intocable"
-  ],
-  [
-    "Só na Bala",
-    "Primary Weapons Only",
-    "Solo con Armas Primarias"
-  ],
-  [
-    "Duelo de Pilotos",
-    "Pilot Duel",
-    "Duelo entre Pilotos"
-  ],
-  [
-    "Marvin no Braço",
-    "Marvin, No Specials",
-    "Marvin Sin Especiales"
-  ],
-  [
-    "Sem Atalhos",
-    "No Shortcuts",
-    "Sin Atajos"
-  ],
-  [
-    "Mãos Limpas",
-    "Clean Hands",
-    "Manos Limpias"
-  ],
-  [
-    "Rota Relâmpago",
-    "Lightning Route",
-    "Ruta Relámpago"
-  ],
-  [
-    "Hipervelocidade",
-    "Hyperspeed",
-    "Hipervelocidad"
-  ],
-  [
-    "Sem Medo",
-    "Fearless",
-    "Sin Miedo"
-  ],
-  [
-    "Veterano Implacável",
-    "Relentless Veteran",
-    "Veterano Implacable"
-  ],
-  [
-    "Titã de Metal",
-    "Metal Titan",
-    "Titán de Metal"
-  ],
-  [
-    "Transformação Perfeita",
-    "Perfect Transformation",
-    "Transformación Perfecta"
-  ],
-  [
-    "Cinco Gatos, Uma Força",
-    "Five Cats, One Force",
-    "Cinco Gatos, Una Fuerza"
-  ],
-  [
-    "Explorador do Espaço",
-    "Space Explorer",
-    "Explorador Espacial"
-  ],
-  [
-    "Senhor das Rotas",
-    "Master of the Routes",
-    "Señor de las Rutas"
-  ],
-  [
-    "Equipe Completa",
-    "Full Squad",
-    "Equipo Completo"
-  ],
-  [
-    "Fantasma de Marvin",
-    "Marvin's Ghost",
-    "Espectro de Marvin"
-  ],
-  [
-    "Metal Contra Metal",
-    "Metal Against Metal",
-    "Choque de Metales"
-  ],
-  [
-    "Lendas dos Five Cats",
-    "Five Cats Legends",
-    "Leyendas de los Five Cats"
-  ],
-  [
-    "Caçador de Chefes",
-    "Boss Hunter",
-    "Cazador de Jefes"
-  ],
-  [
-    "O Último Imperador",
-    "The Last Emperor",
-    "El Último Emperador"
-  ],
-  [
-    "Derrote",
-    "Defeat",
-    "Derrota"
-  ],
-  [
-    "no setor",
-    "in sector",
-    "en el sector"
-  ],
-  [
-    "Conclua seu primeiro setor.",
-    "Clear your first sector.",
-    "Completa tu primer sector."
-  ],
-  [
-    "Conclua cinco setores diferentes.",
-    "Clear five different sectors.",
-    "Completa cinco sectores diferentes."
-  ],
-  [
-    "Conclua todos os dez setores.",
-    "Clear all ten sectors.",
-    "Completa los diez sectores."
-  ],
-  [
-    "Acumule 150 pontos de fase em partidas concluídas.",
-    "Earn 150 stage points in completed runs.",
-    "Acumula 150 puntos de fase en partidas completadas."
-  ],
-  [
-    "Acumule 500 pontos de fase em partidas concluídas.",
-    "Earn 500 stage points in completed runs.",
-    "Acumula 500 puntos de fase en partidas completadas."
-  ],
-  [
-    "Acumule 1.500 pontos de fase em partidas concluídas.",
-    "Earn 1,500 stage points in completed runs.",
-    "Acumula 1500 puntos de fase en partidas completadas."
-  ],
-  [
-    "Destrua 30 inimigos em partidas concluídas.",
-    "Destroy 30 enemies in completed runs.",
-    "Destruye 30 enemigos en partidas completadas."
-  ],
-  [
-    "Destrua 100 inimigos em partidas concluídas.",
-    "Destroy 100 enemies in completed runs.",
-    "Destruye 100 enemigos en partidas completadas."
-  ],
-  [
-    "Destrua 500 inimigos em partidas concluídas.",
-    "Destroy 500 enemies in completed runs.",
-    "Destruye 500 enemigos en partidas completadas."
-  ],
-  [
-    "Supere seu recorde anterior de pontuação em um setor.",
-    "Beat your previous score in a sector.",
-    "Supera tu récord anterior de puntuación en un sector."
-  ],
-  [
-    "Bata cinco recordes pessoais de fase.",
-    "Beat five personal stage records.",
-    "Bate cinco récords personales de fase."
-  ],
-  [
-    "Conclua um setor sem perder pontos de escudo.",
-    "Clear a sector without losing shield points.",
-    "Completa un sector sin perder puntos de escudo."
-  ],
-  [
-    "Conclua três setores sem sofrer dano.",
-    "Clear three sectors without taking damage.",
-    "Completa tres sectores sin recibir daño."
-  ],
-  [
-    "Derrote um chefe usando apenas tiros primários, sem pods, bombas ou especiais.",
-    "Defeat a boss with primary shots only, no pods, bombs or specials.",
-    "Derrota a un jefe solo con disparos primarios, sin pods, bombas ni especiales."
-  ],
-  [
-    "Derrote três chefes só com armas primárias.",
-    "Defeat three bosses using primary weapons only.",
-    "Derrota a tres jefes solo con armas primarias."
-  ],
-  [
-    "Derrote Marvin apenas com disparos primários.",
-    "Defeat Marvin using only primary shots.",
-    "Derrota a Marvin solo con disparos primarios."
-  ],
-  [
-    "Conclua um setor sem usar bombas.",
-    "Clear a sector without using bombs.",
-    "Completa un sector sin usar bombas."
-  ],
-  [
-    "Conclua cinco setores sem usar bombas.",
-    "Clear five sectors without using bombs.",
-    "Completa cinco sectores sin usar bombas."
-  ],
-  [
-    "Conclua um setor em até 140% de seu tempo-base.",
-    "Clear a sector within 140% of its base time.",
-    "Completa un sector en un 140% de su tiempo base."
-  ],
-  [
-    "Conclua três setores dentro do tempo-alvo.",
-    "Clear three sectors within the target time.",
-    "Completa tres sectores dentro del tiempo objetivo."
-  ],
-  [
-    "Termine um setor na dificuldade Difícil.",
-    "Finish a sector on Hard difficulty.",
-    "Termina un sector en dificultad Difícil."
-  ],
-  [
-    "Conclua os dez setores na dificuldade Difícil.",
-    "Clear all ten sectors on Hard difficulty.",
-    "Completa los diez sectores en dificultad Difícil."
-  ],
-  [
-    "Dê o golpe final em um chefe no modo robô.",
-    "Deal the final blow to a boss in robot mode.",
-    "Da el golpe final a un jefe en modo robot."
-  ],
-  [
-    "Finalize três chefes pilotando o robô.",
-    "Defeat three bosses while piloting the robot.",
-    "Derrota a tres jefes pilotando el robot."
-  ],
-  [
-    "Use um especial Five Cats durante um setor concluído.",
-    "Use a Five Cats special during a completed sector.",
-    "Usa un especial Five Cats durante un sector completado."
-  ],
-  [
-    "Colete 25 anéis em partidas concluídas.",
-    "Collect 25 rings in completed runs.",
-    "Recoge 25 anillos en partidas completadas."
-  ],
-  [
-    "Colete 100 anéis em partidas concluídas.",
-    "Collect 100 rings in completed runs.",
-    "Recoge 100 anillos en partidas completadas."
-  ],
-  [
-    "Conclua missões jogando com os cinco pilotos.",
-    "Clear missions playing as all five pilots.",
-    "Completa misiones jugando con los cinco pilotos."
-  ],
-  [
-    "Conclua um setor no Difícil sem sofrer dano.",
-    "Clear a sector on Hard without taking damage.",
-    "Completa un sector en Difícil sin recibir daño."
-  ],
-  [
-    "Derrote um chefe no Difícil com tiros primários exclusivamente.",
-    "Defeat a boss on Hard using primary shots only.",
-    "Derrota a un jefe en Difícil solo con disparos primarios."
-  ],
-  [
-    "Ganhe todos os troféus principais (os secretos são opcionais).",
-    "Earn every main trophy (secret trophies are optional).",
-    "Consigue todos los trofeos principales (los secretos son opcionales)."
-  ],
-  [
-    "Troféu secreto",
-    "Secret trophy",
-    "Trofeo secreto"
-  ],
-  [
-    "Desbloqueie para revelar o desafio.",
-    "Unlock to reveal the challenge.",
-    "Desbloquea para revelar el desafío."
-  ],
-  [
-    "CONQUISTADO",
-    "UNLOCKED",
-    "CONSEGUIDO"
-  ],
-  [
-    "TROFÉU DESBLOQUEADO",
-    "TROPHY UNLOCKED",
-    "TROFEO DESBLOQUEADO"
-  ],
-  [
-    "pontos de troféu",
-    "trophy points",
-    "puntos de trofeo"
-  ],
-  [
-    "concluído",
-    "complete",
-    "completado"
-  ],
-  [
-    "conquistas",
-    "achievements",
-    "logros"
-  ],
-  [
-    "HALL DA PATRULHA",
-    "SERVICE HALL",
-    "SALÓN DE PATRULLA"
-  ],
-  [
-    "PATRULHA ORBITAL",
-    "ORBITAL PATROL",
-    "PATRULLA ORBITAL"
-  ],
-  [
-    "PONTOS DE SERVIÇO",
-    "SERVICE POINTS",
-    "PUNTOS DE SERVICIO"
-  ],
-  [
-    "PS DO ESQUADRÃO",
-    "SQUAD PS",
-    "PS DEL ESCUADRÓN"
-  ],
-  [
-    "medalhas",
-    "medals",
-    "medallas"
-  ],
-  [
-    "medalha",
-    "medal",
-    "medalla"
-  ],
-  [
-    "Conquiste medalhas em missões reais.",
-    "Earn medals in real missions.",
-    "Consigue medallas en misiones reales."
-  ],
-  [
-    "Faltam",
-    "Remaining",
-    "Faltan"
-  ],
-  [
-    "PATENTE MÁXIMA",
-    "MAX RANK",
-    "RANGO MÁXIMO"
-  ],
-  [
-    "Uniforme conquistado",
-    "Earned uniform",
-    "Uniforme conseguido"
-  ],
-  [
-    "APENAS PRÉVIA",
-    "PREVIEW ONLY",
-    "SOLO VISTA PREVIA"
-  ],
-  [
-    "não desbloqueado",
-    "not unlocked",
-    "no desbloqueado"
-  ],
-  [
-    "VISUALIZAR UNIFORMES",
-    "PREVIEW UNIFORMS",
-    "VER UNIFORMES"
-  ],
-  [
-    "PRÓXIMA PRÉVIA / VOLTAR AO REAL",
-    "NEXT PREVIEW / RETURN TO EARNED",
-    "SIGUIENTE VISTA / VOLVER AL CONSEGUIDO"
-  ],
-  [
-    "Conquistada",
-    "Earned",
-    "Conseguida"
-  ],
-  [
-    "Bloqueada",
-    "Locked",
-    "Bloqueada"
-  ],
-  [
-    "PRÉVIA",
-    "PREVIEW",
-    "VISTA PREVIA"
-  ],
-  [
-    "PROMOÇÃO",
-    "PROMOTION",
-    "ASCENSO"
-  ],
-  [
-    "PROMOVIDO",
-    "PROMOTED",
-    "ASCENDIDO"
-  ],
-  [
-    "NOVAS MEDALHAS",
-    "NEW MEDALS",
-    "NUEVAS MEDALLAS"
-  ],
-  [
-    "Patente atual",
-    "Current rank",
-    "Rango actual"
-  ],
-  [
-    "TROFÉUS DESBLOQUEADOS",
-    "TROPHIES UNLOCKED",
-    "TROFEOS DESBLOQUEADOS"
-  ],
-  [
-    "Uniforme",
-    "Uniform",
-    "Uniforme"
-  ],
-  [
-    "de 5",
-    "of 5",
-    "de 5"
-  ]
+  ['Conquistada', 'Earned', 'Conseguida'],
+  ['Bloqueada', 'Locked', 'Bloqueada'],
+  ['PRÉVIA', 'PREVIEW', 'VISTA PREVIA'],
+  ['PROMOÇÃO', 'PROMOTION', 'ASCENSO'],
+  ['PROMOVIDO', 'PROMOTED', 'ASCENDIDO'],
+  ['NOVAS MEDALHAS', 'NEW MEDALS', 'NUEVAS MEDALLAS'],
+  ['Patente atual', 'Current rank', 'Rango actual'],
+  ['TROFÉUS DESBLOQUEADOS', 'TROPHIES UNLOCKED', 'TROFEOS DESBLOQUEADOS'],
+  ['Uniforme', 'Uniform', 'Uniforme'],
+  ['de 5', 'of 5', 'de 5'],
 ];
 for (const [pt, en, es] of PROGRESSION_TRANSLATIONS) MAP.set(pt, { en, es });
 
