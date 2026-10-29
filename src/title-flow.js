@@ -12,7 +12,8 @@ export function installTitleFlow(doc = document) {
   css.id = 'nova-title-flow-styles';
   css.textContent = `
     #menu.nova-title-flow { position:relative; isolation:isolate; }
-    #menu.nova-title-flow.nova-gate-open { overflow:hidden; display:flex; justify-content:center; }
+    #menu.nova-title-flow.nova-gate-open { overflow:hidden; display:flex; justify-content:center; background:#030b16 var(--cover-art) center / contain no-repeat !important; }
+    .showroom-web #menu.nova-title-flow.nova-gate-open::before { background:var(--cover-art) center / contain no-repeat !important; transform:none !important; animation:none !important; }
     #menu.nova-title-flow.nova-gate-open .title-content,
     #menu.nova-title-flow.nova-gate-open .title-brand,
     #menu.nova-title-flow.nova-gate-open .title-footer { display:none !important; }
@@ -152,11 +153,5 @@ export function installTitleFlow(doc = document) {
     }
   };
   doc.addEventListener('keydown', onKey);
-  const observer = new MutationObserver(()=>{
-    if (doc.body.classList.contains('menu') && !menu.classList.contains('nova-gate-open') && current !== 'main') {
-      // Existing game code may toggle menu visibility; preserve submenu in-session.
-    }
-  });
-  observer.observe(doc.body,{attributes:true,attributeFilter:['class']});
-  return () => { doc.removeEventListener('keydown',onKey); observer.disconnect(); css.remove(); gate.remove(); nav.remove(); back.remove(); heading.remove(); };
+  return () => { doc.removeEventListener('keydown',onKey); css.remove(); gate.remove(); nav.remove(); back.remove(); heading.remove(); menu.classList.remove('nova-title-flow','nova-gate-open',...sections.map(item => 'nova-section-' + item)); };
 }
