@@ -81,15 +81,21 @@ test('reward debrief remains hidden until a real mission is recorded', async ({ 
   await expect(page.locator('#pilotRankProgress')).toContainText('0 / 120 PS');
 });
 
-test('medals display distinct feline award motifs instead of identical badges', async ({ page }) => {
+test('medals display distinct feline award motifs instead of identical badges', async ({
+  page,
+}) => {
   await page.goto('/');
   const panel = page.locator('#catRanks');
   await panel.scrollIntoViewIfNeeded();
   await panel.locator(':scope > summary').click();
-  const motifs = await page.locator('#catRankCards article').first()
-    .locator('.cat-medal-chip svg').evaluateAll((icons) =>
+  const motifs = await page
+    .locator('#catRankCards article')
+    .first()
+    .locator('.cat-medal-chip svg')
+    .evaluateAll((icons) =>
       icons.map((svg) => ({
-        id: svg.dataset.medal, motif: svg.dataset.motif,
+        id: svg.dataset.medal,
+        motif: svg.dataset.motif,
         mark: svg.querySelector('[data-medal-mark]')?.outerHTML ?? '',
       })),
     );
@@ -109,7 +115,11 @@ test('tapping a medal on touch screens shows its name, status and real unlock co
   const panel = page.locator('#catRanks');
   await panel.scrollIntoViewIfNeeded();
   await panel.locator(':scope > summary').click();
-  const medal = panel.locator('article').first().locator('.cat-medal-chip[data-earned="false"]').first();
+  const medal = panel
+    .locator('article')
+    .first()
+    .locator('.cat-medal-chip[data-earned="false"]')
+    .first();
   await medal.click();
   await expect(page.locator('#catMedalDetails')).toContainText('BLOQUEADA');
   await expect(page.locator('#catMedalDetails')).toContainText('Derrote seu primeiro chefe');

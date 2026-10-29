@@ -45,13 +45,20 @@ export function catCrest(document, label = 'Insígnia felina') {
   return svg;
 }
 
-
 /** Original feline emblems: shared cat ears/whiskers with distinct achievement motifs. */
 export const CAT_MEDAL_MOTIFS = Object.freeze({
-  'bronze-claw': 'claw', 'silver-claw': 'claw', 'gold-claw': 'claw',
-  'cat-eye': 'eye', 'nine-lives': 'nine-lives', 'steel-whisker': 'whiskers',
-  'lightning-tail': 'lightning', 'feline-shield': 'shield', 'metal-paw': 'paw',
-  'squad-heart': 'heart', constellation: 'constellation', 'marvin-shadow': 'eclipse',
+  'bronze-claw': 'claw',
+  'silver-claw': 'claw',
+  'gold-claw': 'claw',
+  'cat-eye': 'eye',
+  'nine-lives': 'nine-lives',
+  'steel-whisker': 'whiskers',
+  'lightning-tail': 'lightning',
+  'feline-shield': 'shield',
+  'metal-paw': 'paw',
+  'squad-heart': 'heart',
+  constellation: 'constellation',
+  'marvin-shadow': 'eclipse',
 });
 
 export function catMedalCrest(document, medal) {
@@ -60,12 +67,15 @@ export function catMedalCrest(document, medal) {
   svg.dataset.medal = medal.id;
   svg.dataset.motif = motif;
   const marking = tags(document, 'g', {
-    'data-medal-mark': motif, fill: 'none', stroke: 'currentColor',
-    'stroke-width': 2.6, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
+    'data-medal-mark': motif,
+    fill: 'none',
+    stroke: 'currentColor',
+    'stroke-width': 2.6,
+    'stroke-linecap': 'round',
+    'stroke-linejoin': 'round',
   });
   const path = (d) => marking.append(tags(document, 'path', { d }));
-  const dot = (cx, cy, r = 1.6) =>
-    marking.append(tags(document, 'circle', { cx, cy, r }));
+  const dot = (cx, cy, r = 1.6) => marking.append(tags(document, 'circle', { cx, cy, r }));
   if (motif === 'claw') {
     path('M30 20 L27 30 M39 18 L36 30 M48 20 L45 30');
   } else if (motif === 'eye') {
@@ -81,12 +91,24 @@ export function catMedalCrest(document, medal) {
     path('M38 16 L50 20 V26 Q48 32 38 35 Q28 32 26 26 V20 Z');
   } else if (motif === 'paw') {
     path('M31 31 Q29 24 38 24 Q47 24 45 31 Q40 35 38 32 Q34 35 31 31 Z');
-    for (const [x,y] of [[27,23],[34,20],[42,20],[49,23]]) dot(x,y,1.7);
+    for (const [x, y] of [
+      [27, 23],
+      [34, 20],
+      [42, 20],
+      [49, 23],
+    ])
+      dot(x, y, 1.7);
   } else if (motif === 'heart') {
     path('M38 34 Q23 27 27 21 Q30 16 38 22 Q46 16 49 21 Q53 27 38 34 Z');
   } else if (motif === 'constellation') {
     path('M28 29 L35 20 L42 25 L49 18');
-    for (const [x,y] of [[28,29],[35,20],[42,25],[49,18]]) dot(x,y,2);
+    for (const [x, y] of [
+      [28, 29],
+      [35, 20],
+      [42, 25],
+      [49, 18],
+    ])
+      dot(x, y, 2);
   } else if (motif === 'eclipse') {
     path('M43 16 A11 11 0 1 0 46 32 A9 9 0 0 1 43 16 Z');
     path('M49 17 L53 14 M51 22 H56');

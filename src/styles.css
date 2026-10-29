@@ -7110,7 +7110,14 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   outline: 2px solid #f0da95;
   outline-offset: 2px;
 }
-.cat-service-medals .cat-medal-chip:hover { background: #23506b; }
+.cat-service-medals .cat-medal-chip:hover {
+  background: #23506b;
+}
 @media (pointer: coarse) {
-  .cat-service-medals .cat-medal-chip { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  .cat-service-medals .cat-medal-chip {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
