@@ -50,7 +50,10 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   const profile = pilotAt(id),
     g = new T.Group();
   const grade = Math.min(4, Math.max(0, Number.isFinite(uniform) ? Math.floor(uniform) : 0));
-  const medalCount = Math.min(3, Math.max(0, Number.isFinite(earnedMedals) ? Math.floor(earnedMedals) : 0));
+  const medalCount = Math.min(
+    3,
+    Math.max(0, Number.isFinite(earnedMedals) ? Math.floor(earnedMedals) : 0),
+  );
   const suitPalettes = [
     ['#2b414a', '#a6b5bd'],
     ['#244d60', '#82c5e6'],
@@ -115,7 +118,7 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   if (grade >= 1) {
     for (const side of [-1, 1]) {
       for (let stripe = 0; stripe < Math.min(3, grade); stripe++) {
-        const bar = plate(trim, side * 0.69, 0.89 - stripe * 0.10, 0.30, 0.25, 0.035, 0.04);
+        const bar = plate(trim, side * 0.69, 0.89 - stripe * 0.1, 0.3, 0.25, 0.035, 0.04);
         bar.name = 'pilot-cat-service-stripe';
         bar.rotation.z = side * 0.24;
       }

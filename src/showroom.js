@@ -125,8 +125,12 @@ export function installShowroom({
     }
     if (!initialize()) return;
     const next = [
-      mode, root.dataset.pilot, root.dataset.ship, root.dataset.shipColor,
-      root.dataset.uniformGrade ?? '0', root.dataset.medalsCount ?? '0',
+      mode,
+      root.dataset.pilot,
+      root.dataset.ship,
+      root.dataset.shipColor,
+      root.dataset.uniformGrade ?? '0',
+      root.dataset.medalsCount ?? '0',
     ].join(':');
     if (next !== signature) {
       signature = next;
@@ -263,8 +267,12 @@ export function installShowroom({
   observer.observe(root, {
     attributes: true,
     attributeFilter: [
-      'hidden', 'data-pilot', 'data-ship', 'data-ship-color',
-      'data-uniform-grade', 'data-medals-count',
+      'hidden',
+      'data-pilot',
+      'data-ship',
+      'data-ship-color',
+      'data-uniform-grade',
+      'data-medals-count',
     ],
   });
   observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });

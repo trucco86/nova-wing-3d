@@ -1,18 +1,43 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CAT_RANKS, CAT_MEDALS, PILOT_IDS, catRankForPoints, catUniformForRank } from '../src/cat-rank-catalog.js';
-import { createCatService, readCatService, servicePoints, CAT_SERVICE_STORAGE_KEY } from '../src/cat-service.js';
+import {
+  CAT_RANKS,
+  CAT_MEDALS,
+  PILOT_IDS,
+  catRankForPoints,
+  catUniformForRank,
+} from '../src/cat-rank-catalog.js';
+import {
+  createCatService,
+  readCatService,
+  servicePoints,
+  CAT_SERVICE_STORAGE_KEY,
+} from '../src/cat-service.js';
 
 const memory = () => {
   const data = new Map();
   return { getItem: (k) => data.get(k) ?? null, setItem: (k, v) => data.set(k, v) };
 };
 const clear = (runId, values = {}) => ({
-  type: 'stage-finished', runId, sector: 1, outcome: 'cleared',
-  pilot: 'bia', points: 160, kills: 20, rings: 4, durationMs: 175000,
-  difficulty: 'normal', bossDefeated: true, damageTaken: false, bombsUsed: false,
-  primaryOnly: true, mechaFinisher: false, squadSpecialUsed: false,
-  newRecord: false, trophiesUnlocked: 0, ...values,
+  type: 'stage-finished',
+  runId,
+  sector: 1,
+  outcome: 'cleared',
+  pilot: 'bia',
+  points: 160,
+  kills: 20,
+  rings: 4,
+  durationMs: 175000,
+  difficulty: 'normal',
+  bossDefeated: true,
+  damageTaken: false,
+  bombsUsed: false,
+  primaryOnly: true,
+  mechaFinisher: false,
+  squadSpecialUsed: false,
+  newRecord: false,
+  trophiesUnlocked: 0,
+  ...values,
 });
 
 test('ten titles and five visual uniform tiers preserve all five real cat IDs', () => {
@@ -44,8 +69,7 @@ test('valid mission grants service points only to its pilot, medals and promotio
 
 test('five unique boss sectors required for silver claw; repeats do not inflate unique boss count', () => {
   const service = createCatService({ storage: memory() });
-  for (let i = 1; i <= 5; i++)
-    service.record(clear('boss-' + i, { sector: i, pilot: 'jenifer' }));
+  for (let i = 1; i <= 5; i++) service.record(clear('boss-' + i, { sector: i, pilot: 'jenifer' }));
   assert.equal(service.pilotView('jenifer').bossSectors.length, 5);
   assert.ok(service.pilotView('jenifer').medals.includes('silver-claw'));
   service.record(clear('repeat', { sector: 5, pilot: 'jenifer' }));
@@ -54,13 +78,23 @@ test('five unique boss sectors required for silver claw; repeats do not inflate 
 });
 
 test('pilot specialty bonuses vary with real gameplay, not XP multipliers', () => {
-  const shared = clear('special', { bossDefeated: false, damageTaken: true, squadSpecialUsed: false });
-  assert.ok(servicePoints({ ...shared, pilot: 'bob', damageTaken: false }) >
-    servicePoints({ ...shared, pilot: 'bob', damageTaken: true }));
-  assert.ok(servicePoints({ ...shared, pilot: 'calvin', squadSpecialUsed: true }) >
-    servicePoints({ ...shared, pilot: 'calvin', squadSpecialUsed: false }));
-  assert.ok(servicePoints({ ...shared, pilot: 'jenifer', newRecord: true }) >
-    servicePoints({ ...shared, pilot: 'jenifer', newRecord: false }));
+  const shared = clear('special', {
+    bossDefeated: false,
+    damageTaken: true,
+    squadSpecialUsed: false,
+  });
+  assert.ok(
+    servicePoints({ ...shared, pilot: 'bob', damageTaken: false }) >
+      servicePoints({ ...shared, pilot: 'bob', damageTaken: true }),
+  );
+  assert.ok(
+    servicePoints({ ...shared, pilot: 'calvin', squadSpecialUsed: true }) >
+      servicePoints({ ...shared, pilot: 'calvin', squadSpecialUsed: false }),
+  );
+  assert.ok(
+    servicePoints({ ...shared, pilot: 'jenifer', newRecord: true }) >
+      servicePoints({ ...shared, pilot: 'jenifer', newRecord: false }),
+  );
 });
 
 test('invalid, defeated, practice and replayed runs never promote cats', () => {
@@ -71,18 +105,24 @@ test('invalid, defeated, practice and replayed runs never promote cats', () => {
     clear('broken', { sector: 11 }),
     clear('invalid', { pilot: 'marvin' }),
     clear(''),
-  ]) assert.equal(service.record(e).accepted, false);
+  ])
+    assert.equal(service.record(e).accepted, false);
   assert.equal(service.squad().points, 0);
   service.record(clear('legit'));
   assert.equal(service.record(clear('legit')).accepted, false);
 });
 
 test('Marvin medal, hard medal, trophy bonus and corrupt storage recovery', () => {
-  const storage = memory(), service = createCatService({ storage });
-  const reward = service.record(clear('marvin', {
-    sector: 10, pilot: 'calvin', difficulty: 'hard',
-    trophiesUnlocked: 2,
-  }));
+  const storage = memory(),
+    service = createCatService({ storage });
+  const reward = service.record(
+    clear('marvin', {
+      sector: 10,
+      pilot: 'calvin',
+      difficulty: 'hard',
+      trophiesUnlocked: 2,
+    }),
+  );
   assert.ok(reward.medals.some((m) => m.id === 'marvin-shadow'));
   assert.ok(reward.medals.some((m) => m.id === 'feline-shield'));
   assert.ok(service.squad().points > 0);

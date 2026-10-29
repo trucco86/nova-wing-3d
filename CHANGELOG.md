@@ -8,7 +8,6 @@
 - Notificação pós-fase de promoções/medalhas; no gameplay normal, não altera dano, velocidade nem ranking.
 - Baseada na PR de troféus #159; HML e produção não alterados.
 
-
 ## 1.27.19 — Troféus Five Cats (candidata em QA)
 
 - 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.

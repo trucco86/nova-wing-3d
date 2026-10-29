@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('the Five Cats hall shows five officer records and cat-head medals', async ({ page }, info) => {
+test('the Five Cats hall shows five officer records and cat-head medals', async ({
+  page,
+}, info) => {
   await page.goto('/');
   const panel = page.locator('#catRanks');
   await expect(panel).toBeVisible();
@@ -15,7 +17,9 @@ test('the Five Cats hall shows five officer records and cat-head medals', async 
   await page.screenshot({ path: info.outputPath('five-cats-service-hall.png') });
 });
 
-test('pilot selection exposes uniform badge and rank progress without losing existing cat selection', async ({ page }) => {
+test('pilot selection exposes uniform badge and rank progress without losing existing cat selection', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.locator('#prepareSquad').click();
   await expect(page.locator('#squadSelection')).toBeVisible();
@@ -40,8 +44,8 @@ test('hall remains scrollable and within mobile viewport at 320px', async ({ pag
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(-1);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(321);
-  const scrolls = await page.locator('#catRankCards').evaluate(
-    (node) => node.scrollHeight > node.clientHeight,
-  );
+  const scrolls = await page
+    .locator('#catRankCards')
+    .evaluate((node) => node.scrollHeight > node.clientHeight);
   expect(scrolls).toBe(true);
 });

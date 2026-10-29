@@ -30,8 +30,11 @@ const game = createGame({
     const unlocked = trophies.record({ ...event, type: 'stage-finished', runId: activeRunId });
     trophyUI.refresh(unlocked);
     const reward = catService.record({
-      ...event, type: 'stage-finished', runId: activeRunId,
-      newRecord, trophiesUnlocked: unlocked.length,
+      ...event,
+      type: 'stage-finished',
+      runId: activeRunId,
+      newRecord,
+      trophiesUnlocked: unlocked.length,
     });
     catRankUI?.refresh(reward);
   },
