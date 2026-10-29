@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.15 — Missões opcionais de navegação por setor (candidata)
+
+- Cinco objetivos inéditos de corredor de voo, com anel 3D, recompensa opcional e HUD superior.
+- Segurar a posição por três segundos concede créditos/XP; falha não causa dano nem trava o chefe.
+- Fases 1, 3, 4, 7 e 10 preservam suas dinâmicas anteriores. Sem alteração de câmeras, IA ou dificuldade.
+- Candidata isolada, ainda não aprovada para DEV, HML ou produção.
+
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
