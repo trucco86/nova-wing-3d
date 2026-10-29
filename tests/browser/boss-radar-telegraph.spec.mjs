@@ -8,10 +8,12 @@ test('physical boss warning shows actual danger, attack origin and a reachable s
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=9&qaBoss=9');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  expect(await page.evaluate(() => window.fixture.game.snapshot().developerScenario)).toMatchObject({
-    sector: 9,
-    encounter: 'boss',
-  });
+  expect(await page.evaluate(() => window.fixture.game.snapshot().developerScenario)).toMatchObject(
+    {
+      sector: 9,
+      encounter: 'boss',
+    },
+  );
   await page.evaluate(() => window.fixture.advance(9.2));
   const radar = page.locator('#battleRadar');
   await expect(radar).toHaveAttribute('data-mode', 'physical');
