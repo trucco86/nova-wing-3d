@@ -28,7 +28,7 @@ jobs:
       - run: npm run test
       - name: Save formatted sources and generated playable WebGL
         run: |
-          git add src/main.js src/shell.html src/styles.css src/showroom.js src/showroom-models.js src/cat-rank-catalog.js src/cat-service.js src/cat-rank-ui.js tests/cat-service-v12720.test.mjs tests/cat-showroom-uniform-v12720.test.mjs tests/browser/cat-ranks-hall.spec.mjs docs/design/CAT-RANKS-V12720.md CHANGELOG.md index.html
+          git add src/main.js src/shell.html src/styles.css src/showroom.js src/showroom-models.js src/cat-rank-catalog.js src/cat-service.js src/cat-rank-ui.js tests/cat-service-v12720.test.mjs tests/cat-showroom-uniform-v12720.test.mjs tests/browser/cat-ranks-hall.spec.mjs tests/browser/google-social-menu.spec.mjs docs/design/CAT-RANKS-V12720.md CHANGELOG.md index.html
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
