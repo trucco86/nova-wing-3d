@@ -1111,8 +1111,13 @@ export function createGame({
     stageScoreStart = score;
     stageResultSent = false;
     stagePerformance = {
-      damageTaken: false, bombsUsed: false, kills: 0, rings: 0,
-      bossDefeated: false, primaryOnly: true, mechaFinisher: false,
+      damageTaken: false,
+      bombsUsed: false,
+      kills: 0,
+      rings: 0,
+      bossDefeated: false,
+      primaryOnly: true,
+      mechaFinisher: false,
       squadSpecialUsed: false,
     };
     if (dynamicFlight && !developerSession) {

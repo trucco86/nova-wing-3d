@@ -6656,8 +6656,15 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   font: 700 12px/1.4 monospace;
   letter-spacing: 0.08em;
 }
-#novaTrophyCounter { float: right; color: #a4d5d9; }
-#novaTrophyPoints { font-size: 11px; color: #91d8cf; margin: 8px 0; }
+#novaTrophyCounter {
+  float: right;
+  color: #a4d5d9;
+}
+#novaTrophyPoints {
+  font-size: 11px;
+  color: #91d8cf;
+  margin: 8px 0;
+}
 #novaTrophyList {
   padding: 0;
   margin: 8px 0 0;
@@ -6678,15 +6685,37 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   font-size: 19px;
   line-height: 1.2;
 }
-#novaTrophyList li[data-tier='bronze'] .trophy-mark { color: #bf8755; }
-#novaTrophyList li[data-tier='silver'] .trophy-mark { color: #c1d3dc; }
-#novaTrophyList li[data-tier='gold'] .trophy-mark { color: #ffcf5c; }
-#novaTrophyList li[data-tier='platinum'] .trophy-mark { color: #70e3ff; }
-#novaTrophyList li:not([data-earned='true']) { opacity: 0.73; }
-#novaTrophyList li .trophy-copy { min-width: 0; }
-#novaTrophyList li strong { font: 700 11px/1.4 monospace; color: inherit; }
-#novaTrophyList li p { font: 10px/1.4 sans-serif; margin: 2px 0; color: #b5cfdd; }
-#novaTrophyList li small { font: 10px/1.3 monospace; color: #a2eadc; }
+#novaTrophyList li[data-tier='bronze'] .trophy-mark {
+  color: #bf8755;
+}
+#novaTrophyList li[data-tier='silver'] .trophy-mark {
+  color: #c1d3dc;
+}
+#novaTrophyList li[data-tier='gold'] .trophy-mark {
+  color: #ffcf5c;
+}
+#novaTrophyList li[data-tier='platinum'] .trophy-mark {
+  color: #70e3ff;
+}
+#novaTrophyList li:not([data-earned='true']) {
+  opacity: 0.73;
+}
+#novaTrophyList li .trophy-copy {
+  min-width: 0;
+}
+#novaTrophyList li strong {
+  font: 700 11px/1.4 monospace;
+  color: inherit;
+}
+#novaTrophyList li p {
+  font: 10px/1.4 sans-serif;
+  margin: 2px 0;
+  color: #b5cfdd;
+}
+#novaTrophyList li small {
+  font: 10px/1.3 monospace;
+  color: #a2eadc;
+}
 #novaTrophyToast {
   position: fixed;
   z-index: 80;
@@ -6704,4 +6733,6 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   font: 700 12px/1.4 monospace;
   pointer-events: none;
 }
-#novaTrophyToast[hidden] { display: none; }
+#novaTrophyToast[hidden] {
+  display: none;
+}
