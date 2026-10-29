@@ -13,7 +13,7 @@
     "build": "node tools/build.mjs",
     "build:check": "node tools/build.mjs --check",
     "format": "prettier --write src tools tests specs docs skills .github *.md *.json *.mjs",
-    "format:check": "echo __BEGIN_PRETTIER__ && prettier src/title-flow.js && echo __END_PRETTIER__ && prettier --check src tools tests specs docs skills .github *.md *.json *.mjs",
+    "format:check": "prettier --check src tools tests specs docs skills .github *.md *.json *.mjs",
     "lint": "eslint src tools tests playwright.config.mjs eslint.config.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "playwright test",
