@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.21 — Localização do Hall de Troféus e Patentes (candidata)
+
+- Traduz 41 troféus, 12 medalhas felinas, patentes e mensagens dinâmicas de progressão para português, inglês e espanhol.
+- Mantém IDs, progresso salvo, nomes de personagens, características dos gatos e balanceamento sem alterações.
+- Inclui testes unitários de cobertura do catálogo e testes de troca de idioma na interface móvel.
+- Candidata isolada dependente das PRs #159 e #160; sem promoção para DEV, HML ou produção.
+
 ## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
 
 - Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
