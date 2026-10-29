@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 

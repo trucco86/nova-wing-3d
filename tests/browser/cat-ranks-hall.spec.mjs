@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('the Five Cats hall shows five officer records and cat-head medals', async ({

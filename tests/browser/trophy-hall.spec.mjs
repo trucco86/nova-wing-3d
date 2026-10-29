@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('Hall da Fama opens in the menu and shows all forty-one trophy cards', async ({

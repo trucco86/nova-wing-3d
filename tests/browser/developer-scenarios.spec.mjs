@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('mission and hangar are separate clear actions in the compact menu', async ({ page }) => {

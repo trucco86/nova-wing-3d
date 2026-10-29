@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('portrait cover keeps full artwork fit and menu actions inside a phone viewport', async ({
