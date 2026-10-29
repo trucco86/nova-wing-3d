@@ -176,9 +176,18 @@ export function animateGroundEnemy(model, time, target) {
     -0.7,
     0.7,
   );
-  if (model.userData.kind === 'walker')
-    for (const s of [-1, 1])
-      model.getObjectByName('leg' + s).rotation.x = Math.sin(time * 2.5 + s) * 0.07;
+  if (model.userData.kind === 'walker') {
+    // Giant robot has articulated alternating strides and aims its upper turret
+    // independently; changes stay visual and do not alter the tested hitboxes.
+    const stride = time * (1.75 + model.userData.variant * 0.14);
+    for (const side of [-1, 1]) {
+      const leg = model.getObjectByName('leg' + side);
+      leg.rotation.x = Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.24;
+      leg.rotation.z = Math.sin(stride * 0.5 + side) * 0.075;
+    }
+    turret.rotation.x = -0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12;
+    turret.rotation.z = Math.sin(stride * 0.55) * 0.11;
+  }
 }
 /** Geometry and collision boxes are built together. No invisible solid opening. */
 export function createObstacle(kind = 'gantry') {

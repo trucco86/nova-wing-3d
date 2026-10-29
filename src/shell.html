@@ -64,7 +64,72 @@
     </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
     <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
-      <div id="battleRadar"><i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b></div>
+      <div id="battleRadar" role="img" aria-label="Radar orbital">
+        <i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b>
+        <svg
+          id="radarThreatMap"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style="display: none"
+          aria-hidden="true"
+        >
+          <defs>
+            <marker
+              id="radarArrowhead"
+              markerWidth="5"
+              markerHeight="5"
+              refX="4"
+              refY="2.5"
+              orient="auto"
+            >
+              <path d="M0,0 L5,2.5 L0,5 Z" fill="#ff8066"></path>
+            </marker>
+          </defs>
+          <rect
+            id="radarThreatRect"
+            style="display: none"
+            fill="#fa574977"
+            stroke="#ff8066"
+            stroke-width="2"
+          ></rect>
+          <ellipse
+            id="radarThreatEllipse"
+            style="display: none"
+            fill="#fa574977"
+            stroke="#ff8066"
+            stroke-width="2"
+          ></ellipse>
+          <line
+            id="radarAttackVector"
+            stroke="#ff8066"
+            stroke-width="2.6"
+            stroke-dasharray="4 2"
+            marker-end="url(#radarArrowhead)"
+          ></line>
+          <circle
+            id="radarAttackOrigin"
+            r="5"
+            fill="#ff5d51"
+            stroke="#fff5e6"
+            stroke-width="1.5"
+          ></circle>
+          <circle
+            id="radarSafePoint"
+            r="6"
+            fill="#45ffa044"
+            stroke="#5affac"
+            stroke-width="2.7"
+          ></circle>
+          <circle
+            id="radarShipPoint"
+            r="4.5"
+            fill="#88ffbc"
+            stroke="#ffffff"
+            stroke-width="1.9"
+          ></circle>
+        </svg>
+      </div>
+      <span id="radarGuide" hidden role="status" aria-live="off"></span>
       <span id="tacticState"></span><span id="battleCharge" aria-label="Reservas de ação"></span>
     </aside>
     <div id="aimReticle" hidden aria-label="Direção dos disparos" aria-hidden="true"><i></i></div>
@@ -481,6 +546,9 @@
                 <option value="boss">CHEFE PRINCIPAL</option>
               </select>
               <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
+              <button id="developerExplore" type="button" hidden>
+                EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D
+              </button>
               <small
                 >QA · Sem pontuação no ranking. Para voltar, use Pausar → Sair → Confirmar.</small
               >
@@ -794,6 +862,58 @@
         </div>
       </section>
     </div>
+    <section
+      id="explorationOverlay"
+      class="exploration-overlay"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-label="Exploração da estação Órbita-9, protótipo Developer QA"
+    >
+      <header class="exploration-toprail">
+        <div>
+          <span class="eyebrow">FIVE CATS UNIVERSE · DEV / QA</span>
+          <h2>SINAIS DE ÓRBITA-9</h2>
+          <p id="explorationObjective">INVESTIGUE OS SINAIS MISTERIOSOS</p>
+        </div>
+        <strong id="explorationProgress">ÓRBITA-9 · PISTAS 0/3</strong>
+        <button id="exploreExit" type="button">SAIR / VOLTAR</button>
+      </header>
+      <div
+        id="explorationViewport"
+        class="exploration-viewport"
+        aria-label="Cena 3D explorável"
+      ></div>
+      <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
+      <div
+        id="explorationChoices"
+        hidden
+        class="exploration-choices"
+        aria-label="Escolha da missão"
+      >
+        <strong>SOBREVIVENTE: QUAL CAMINHO SEGUIR?</strong>
+        <button id="exploreChoiceRestore" type="button">RESTAURAR A ENERGIA</button>
+        <button id="exploreChoiceHidden" type="button">ABRIR ROTA CLANDESTINA</button>
+      </div>
+      <footer class="exploration-controls">
+        <div class="exploration-directional" aria-label="Controles de deslocamento">
+          <button id="exploreMoveUp" type="button" aria-label="Avançar">▲</button>
+          <button id="exploreMoveLeft" type="button" aria-label="Ir à esquerda">◀</button>
+          <button id="exploreMoveDown" type="button" aria-label="Recuar">▼</button>
+          <button id="exploreMoveRight" type="button" aria-label="Ir à direita">▶</button>
+        </div>
+        <div class="exploration-actions">
+          <button id="exploreScan" type="button" disabled>SCAN · PISTA</button>
+          <button id="exploreTalk" type="button" disabled>INTERAGIR · NPC</button>
+          <button id="exploreLaunchCombat" type="button" hidden>
+            INICIAR COMBATE DESBLOQUEADO ↗
+          </button>
+        </div>
+        <small
+          >WASD / SETAS PARA ANDAR · E PARA INVESTIGAR · ESC PARA SAIR · QA SEM SAVE/RANKING</small
+        >
+      </footer>
+    </section>
     <script>
       /* BUILD:GAME */
     </script>

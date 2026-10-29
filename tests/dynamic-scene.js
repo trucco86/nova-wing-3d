@@ -74,6 +74,12 @@ window.fixture = {
     game.step(0);
   },
 };
-game.start(true);
+// The QA query must be launched while still in the menu; developer sessions
+// never load or overwrite a player's campaign checkpoint.
+const qaSector = params.get('qaBoss');
+if (qaSector !== null) {
+  if (!game.startDeveloperScenario(Number(qaSector), 'boss'))
+    throw new Error('Developer/QA boss fixture unavailable');
+} else game.start(true);
 game.step(0);
 document.body.dataset.ready = 'true';

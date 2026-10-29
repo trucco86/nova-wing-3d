@@ -1,5 +1,50 @@
 # Histórico
 
+## 1.27.13 — Radar de esquiva com hitbox real (candidata isolada)
+
+- Radar dos chefes mostra origem do golpe, área vermelha de colisão física e rota até uma posição segura.
+- Aviso contextual não acompanha a nave após fixar o alvo, permitindo desviar ou manter uma posição fora do golpe.
+- Radar de projéteis permanece angular; nenhum falso indicador de segurança para disparos não determinísticos.
+- Guia acessível no HUD superior direito, sem bloquear o gameplay, com regressão mobile retrato/paisagem.
+- PR integrada sem mudanças em DEV, HML ou produção, aguardando CI e homologação humana.
+
+## 1.27.12 — Candidata integrada Boss AI e Órbita-9 (QA)
+
+- Código combinado: dez chefes com assinatura visual, IA de golpes físicos telegráficos e esquiva real.
+- RPG: Plasma Titan 8 s, Five Cats Overdrive 10 s, Barreira 12 s, Estase 11 s, dano metrado separadamente.
+- Câmera superior contextual com controles X/Z, missão Reator Órbita-9 e exploração 3D experimental com três pistas e NPC.
+- Mobile: canvas e botões em camadas distintas, testes reais de hit-testing de controles.
+- CI e homologação humana pendentes na candidata; DEV, HML e produção permanecem intactos.
+
+## 1.27.11 — Preview integrado de campanha e exploração (candidata QA)
+
+- Reúne as mudanças de cenário/câmera da v1.27.6 e os dez padrões de chefes das candidatas v1.27.7/v1.27.8.
+- Adiciona o protótipo de investigação da Órbita-9 da v1.27.10 com domínio de quest v1.27.9, limitado a Developer/QA.
+- Branch de integração experimental; progresso da campanha, ranking, HML e produção preservados.
+
+## 1.27.8 — Dez chefes com assinaturas de combate (candidata isolada)
+
+- Rok, Ferrão, Fortaleza Órbita, Fênix, Ômega e Bastião ganham ataque posicional próprio, animação de peça e reação à destruição de baterias.
+- Combinados à v1.27.7, todos os dez chefes têm padrão especial de ataque, sem retirar a mecânica de flancos e núcleos.
+- Testes de emissões, duração, número de projéteis e movimento de peças visuais.
+- Não inclui mundo aberto nem ataques físicos de arena; HML/PROD inalterados.
+
+## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
+
+- Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
+- Ataques partem de peças visuais da nave/robô e os avisos permanecem na faixa superior do HUD.
+- Testes de assinatura, animação, intensidade por fase e simulação real.
+- Scope limitado aos quatro chefes; mundo aberto e danos por membros individuais continuam no backlog.
+
+## 1.27.6 — Cenários, perspectiva e chefes diferenciados (candidata DEV)
+
+- Terra e satélite contextualizados na ascensão; lua rachada exclusiva do cinturão de destroços, lua de gelo sem fissuras; ambientação temática de plasma, nebulosa, frota, vazio e fortaleza.
+- Mudanças curtas de câmera lateral, superior e plano aberto por fase, sem substituir escolha manual.
+- Chefes mais resistentes, carcaça com dano reduzido, marcadores fracos visíveis e multiplicadores para gerador/núcleo.
+- Dez perfis de ataque com origens e cadência diversas por fase; robôs gigantes articulados e móveis.
+- Projeto de exploração RPG/mundo aberto Five Cats Universe documentado; ainda não implementado.
+- Candidata isolada, sem homologação humana; HML/PROD inalterados.
+
 ## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
 
 - Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.

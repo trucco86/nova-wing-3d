@@ -217,9 +217,17 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   );
   await page.locator('#pauseResume').click();
   await page.evaluate(() => {
-    window.fixture.advance(8);
+    // Wait for the configured cooldown instead of assuming the old 8s value.
+    // This exercises the longer-lived RPG shield without weakening the assertion.
+    const cooldown = window.fixture.game.snapshot().strategy.specialCd;
+    if (!Number.isFinite(cooldown) || cooldown <= 0) {
+      throw new Error('Expected an active cooldown after casting BARREIRA');
+    }
+    window.fixture.advance(cooldown + 0.15);
     window.fixture.game.cycleSpecial();
-    window.fixture.game.castSpecial();
+    if (!window.fixture.game.castSpecial()) {
+      throw new Error('NOVA should be castable after BARREIRA cooldown');
+    }
     window.fixture.advance(0.15);
   });
   expect(
@@ -347,36 +355,38 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });
   await waitForBrowserArmoredFront(page);
-  const blocked = await fireBrowserPrecision(page);
-  expect(blocked.event.type).toBe('blocked');
-  expect(blocked.after.bossTargets[0].hp).toBe(blocked.before.bossTargets[0].hp);
+  const armored = await fireBrowserPrecision(page);
+  expect(armored.event.type).toBe('boss');
+  expect(armored.after.bossHp).toBeLessThan(armored.before.bossHp);
+  expect(armored.after.bossTargets[0].hp).toBe(armored.before.bossTargets[0].hp);
+  expect(armored.after.bossParts).toBe(2);
   await expect(page.locator('#hitFeedback')).toBeVisible();
-  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
-  await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
-  const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
-  expect(blockedFeedback.width).toBeLessThanOrEqual(24);
-  expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'boss');
+  await expect(page.locator('#hitFeedback')).toContainText(/ACERTO \+\d+/);
+  const armoredFeedback = await page.locator('#hitFeedback').boundingBox();
+  expect(armoredFeedback).not.toBeNull();
   expect(
-    blockedFeedback.y + blockedFeedback.height,
+    armoredFeedback.y + armoredFeedback.height,
     'Impact labels stay above the center',
   ).toBeLessThan(page.viewportSize().height * 0.49);
   expect(await page.locator('#hitFeedback').evaluate((el) => el.parentElement.id)).toBe(
     'hudNotices',
   );
-  await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
+  await page.screenshot({ path: info.outputPath('armored-impact-compact.png') });
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await reachBrowserBoss(page, { bossAge: 5 });
     await waitForBrowserArmoredFront(page);
-    const portraitBlocked = await fireBrowserPrecision(page);
-    expect(portraitBlocked.event.type).toBe('blocked');
-    expect(portraitBlocked.after.bossTargets[0].hp).toBe(portraitBlocked.before.bossTargets[0].hp);
+    const portraitArmored = await fireBrowserPrecision(page);
+    expect(portraitArmored.event.type).toBe('boss');
+    expect(portraitArmored.after.bossHp).toBeLessThan(portraitArmored.before.bossHp);
+    expect(portraitArmored.after.bossTargets[0].hp).toBe(portraitArmored.before.bossTargets[0].hp);
     await expect(page.locator('#game')).toBeVisible();
-    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
+    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'boss');
     await expect(page.locator('#hitFeedback')).toBeVisible();
-    await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
+    await page.screenshot({ path: info.outputPath('armored-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });
