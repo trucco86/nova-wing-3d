@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.14 — Dez formações táticas por setor (candidata)
+
+- Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
+- Preserva cadência, quantidade e dano dos inimigos e o controle contextual da câmera.
+- Candidata de QA isolada, sem promoção de DEV/HML/PROD.
+
 ## 1.27.13 — Radar de esquiva com hitbox real (candidata isolada)
 
 - Radar dos chefes mostra origem do golpe, área vermelha de colisão física e rota até uma posição segura.

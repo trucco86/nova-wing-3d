@@ -94,6 +94,7 @@ import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
+import { fighterWaveAt } from './sector-waves.js';
 import {
   subbossProfile,
   subbossMotion,
@@ -464,6 +465,8 @@ export function createGame({
     lastSpecialCycle = -1,
     lastRangedCycle = -1,
     bossIntentCycle = -1,
+    fighterWaveSerial = 0,
+    lastFighterWave = null,
     bossMeleeResolved = false,
     bossIntent = null,
     reactorGridSeconds = 0,
@@ -995,6 +998,8 @@ export function createGame({
     elapsed = 0;
     spawnCd = 2;
     fighterSerial = 0;
+    fighterWaveSerial = 0;
+    lastFighterWave = null;
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -1527,10 +1532,12 @@ export function createGame({
       cue('mechaPrecision');
     }
   }
-  function enemy(kind = 'fighter') {
+  function enemy(kind = 'fighter', assignedSlot = null) {
     const airborneRobot = kind === 'hover-walker';
     const ground = kind === 'tank' || kind === 'walker' || airborneRobot;
-    const roleIndex = (fighterSerial + sectorIndex) % 3;
+    const roleIndex = assignedSlot?.role
+      ? FIGHTER_ROLES.indexOf(assignedSlot.role)
+      : (fighterSerial + sectorIndex) % 3;
     const tacticalFighter = dynamicFlight && kind === 'fighter';
     const subbossTactic = dynamicFlight && kind === 'subboss' ? subbossProfile(sectorIndex) : null;
     if (tacticalFighter) fighterSerial++;
@@ -1561,16 +1568,20 @@ export function createGame({
       ground || kind === 'subboss' ? 1 : elite ? 1.6 : tacticalFighter ? 1.3 : 0.65,
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
-    const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
-      y = airborneRobot
-        ? rnd(9, 23)
-        : ground
-          ? -7
-          : kind === 'subboss'
-            ? 10
-            : dynamicFlight && sectorIndex === 0
-              ? rnd(12, 24)
-              : rnd(1, 19);
+    const x =
+        assignedSlot?.x ??
+        (ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24)),
+      y =
+        assignedSlot?.y ??
+        (airborneRobot
+          ? rnd(9, 23)
+          : ground
+            ? -7
+            : kind === 'subboss'
+              ? 10
+              : dynamicFlight && sectorIndex === 0
+                ? rnd(12, 24)
+                : rnd(1, 19));
     o.position.set(x, y, -200);
     if (airborneRobot) {
       const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
@@ -1599,7 +1610,7 @@ export function createGame({
       $('subHealth').style.background =
         'linear-gradient(90deg, ' + subbossTactic.color + ', #fff3c4)';
     }
-    const phase = rnd(0, 6);
+    const phase = assignedSlot?.phase ?? rnd(0, 6);
     const initialCooldown = rnd(1, 3);
     enemies.push({
       o,
@@ -3072,7 +3083,14 @@ export function createGame({
             ? 2
             : 1
           : 2 + Math.floor(sectorIndex / 4);
-      for (let i = 0; i < count; i++) enemy();
+      if (dynamicFlight) {
+        const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
+        lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
+        for (const slot of wave.slots) enemy('fighter', slot);
+        if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
+      } else {
+        for (let i = 0; i < count; i++) enemy();
+      }
       spawnCd = dynamicFlight
         ? fighterInterval(sectorIndex, settings.difficulty)
         : 3.4 - sectorIndex * 0.12;
@@ -4327,6 +4345,7 @@ export function createGame({
         fov: camera.fov,
         bank: camera.rotation.z,
       },
+      fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
