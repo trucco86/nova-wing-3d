@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.19 — Troféus Five Cats (candidata em QA)
+
+- 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.
+- Conquistas por chefe, recorde real, pontuação, dano, armas primárias, dificuldade, robô e equipe.
+- Hall da Fama no menu, pop-up de desbloqueio no HUD superior e progresso offline local versionado.
+- Sem recompensas em sessões de QA/dev; testes Playwright e localização obrigatórios antes de DEV.
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
