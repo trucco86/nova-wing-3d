@@ -1,3 +1,4 @@
+import { installTitleFlow } from './title-flow.js';
 import { createRankingClient } from './ranking-client.js';
 import { installGoogleLogin } from './google-auth.js';
 import { installShowroom } from './showroom.js';
@@ -11,6 +12,7 @@ const game = createGame({
   onStageStarted: (event) => ranking?.onStageStarted(event),
   onStageFinished: (event) => ranking?.onStageFinished(event),
 });
+const destroyTitleFlow = installTitleFlow();
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -23,6 +25,7 @@ if (!Capacitor.isNativePlatform()) {
   const exploration = installOrbit9ExplorationPreview(game);
   const destroy = game.destroy.bind(game);
   game.destroy = () => {
+    destroyTitleFlow();
     destroyAuth();
     ranking?.destroy();
     showroom.destroy();
