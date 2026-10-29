@@ -1,4 +1,19 @@
 import { test, expect } from '@playwright/test';
+
+test('optional sector objective keeps route-turn guidance and uses independent top HUD', async ({
+  page,
+}) => {
+  await page.goto('/__dynamic.html?sector=1');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.advance(30));
+  await expect(page.locator('#routeLabel')).toContainText('CURVA');
+  await expect(page.locator('#sectorObjectiveGuide')).toBeVisible();
+  await expect(page.locator('#sectorObjectiveGuide')).toContainText('ESCOLTA DO PORTO');
+  const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(snapshot.sectorObjective?.status).toBe('active');
+  expect(snapshot.sectorObjective?.hold).toBe(0);
+});
+
 import {
   reachBrowserBoss,
   waitForBrowserArmoredFront,
