@@ -23,7 +23,11 @@ import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
-import { sectorObjectiveAt, initialSectorObjective, advanceSectorObjective } from './sector-objectives.js';
+import {
+  sectorObjectiveAt,
+  initialSectorObjective,
+  advanceSectorObjective,
+} from './sector-objectives.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
@@ -1017,8 +1021,9 @@ export function createGame({
     sectorObjectivePlan = dynamicFlight ? sectorObjectiveAt(sectorIndex) : null;
     sectorObjectiveState = initialSectorObjective(sectorIndex);
     missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
     if (sectorObjectivePlan)
-      missionBeacon.position.set(sectorObjectivePlan.x, sectorObjectivePlan.y, -105);
+      missionBeacon.position.set(sectorObjectivePlan.x, sectorObjectivePlan.y, -45);
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -1709,6 +1714,7 @@ export function createGame({
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
@@ -3103,10 +3109,13 @@ export function createGame({
       );
       sectorObjectiveState = step.state;
       missionBeacon.visible = sectorObjectiveState.status === 'active';
+      const objectiveGuide = $('sectorObjectiveGuide');
+      objectiveGuide.hidden = !missionBeacon.visible;
       if (missionBeacon.visible) {
+        missionBeacon.position.z = player.position.z - 50;
         missionBeacon.rotation.z += dt * 0.55;
         missionBeacon.scale.setScalar(1 + Math.sin(elapsed * 6) * 0.055);
-        $('routeLabel').textContent =
+        objectiveGuide.textContent =
           sectorObjectivePlan.label +
           ' · SEGURE POSIÇÃO ' +
           Math.ceil(sectorObjectivePlan.requiredSeconds - sectorObjectiveState.hold) +
@@ -4311,7 +4320,12 @@ export function createGame({
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       missionCameraSeconds: reactorGridSeconds,
       sectorObjective: sectorObjectivePlan
-        ? { ...sectorObjectiveState, id: sectorObjectivePlan.id, targetX: sectorObjectivePlan.x, targetY: sectorObjectivePlan.y }
+        ? {
+            ...sectorObjectiveState,
+            id: sectorObjectivePlan.id,
+            targetX: sectorObjectivePlan.x,
+            targetY: sectorObjectivePlan.y,
+          }
         : null,
       missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,
