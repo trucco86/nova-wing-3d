@@ -7011,12 +7011,26 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 }
 
 /* Preview rank uniforms without claiming that cosmetic designs were earned. */
-.pilot-uniform-inspect { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; }
+.pilot-uniform-inspect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+  align-items: center;
+}
 #pilotUniformPreview {
-  flex: 0 0 auto; min-height: 34px; padding: 7px 11px;
-  border: 1px solid #689f9c; border-radius: 7px; color: #b5f2ed;
-  background: #0a2835; font: 700 9px/1.3 monospace; cursor: pointer;
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid #689f9c;
+  border-radius: 7px;
+  color: #b5f2ed;
+  background: #0a2835;
+  font: 700 9px/1.3 monospace;
+  cursor: pointer;
 }
 #pilotUniformPreviewStatus {
-  display: block; color: #edcb87; font: 10px/1.4 monospace;
+  display: block;
+  color: #edcb87;
+  font: 10px/1.4 monospace;
 }

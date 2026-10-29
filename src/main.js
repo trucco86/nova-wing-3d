@@ -12,7 +12,11 @@ import { Capacitor } from '@capacitor/core';
 let ranking;
 // Private/embedded browsers may reject even reading the localStorage property.
 const progressStorage = (() => {
-  try { return globalThis.localStorage; } catch { return null; }
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
 })();
 const trophies = createTrophySystem({ storage: progressStorage });
 const trophyUI = createTrophyUI({ document: globalThis.document, trophies });

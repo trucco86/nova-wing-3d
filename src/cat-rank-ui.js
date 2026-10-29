@@ -91,13 +91,13 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     const shownGrade = previewGrade ?? view.uniform;
     uniform.dataset.grade = String(shownGrade);
     if (previewStatus)
-      previewStatus.textContent = previewGrade === null
-        ? 'Uniforme conquistado: Mk-' + (view.uniform + 1)
-        : 'APENAS PRÉVIA · Mk-' + (shownGrade + 1) + ' (não desbloqueado)';
+      previewStatus.textContent =
+        previewGrade === null
+          ? 'Uniforme conquistado: Mk-' + (view.uniform + 1)
+          : 'APENAS PRÉVIA · Mk-' + (shownGrade + 1) + ' (não desbloqueado)';
     if (previewButton)
-      previewButton.textContent = previewGrade === null
-        ? 'VISUALIZAR UNIFORMES'
-        : 'PRÓXIMA PRÉVIA / VOLTAR AO REAL';
+      previewButton.textContent =
+        previewGrade === null ? 'VISUALIZAR UNIFORMES' : 'PRÓXIMA PRÉVIA / VOLTAR AO REAL';
     const selection = document.getElementById('squadSelection');
     if (selection) {
       selection.setAttribute('data-uniform-grade', String(shownGrade));
@@ -109,7 +109,10 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     uniform.setAttribute(
       'aria-label',
       (previewGrade === null ? 'Conquistado: ' : 'Prévia visual não desbloqueada: ') +
-        'uniforme ' + (shownGrade + 1) + ' de 5 · ' + view.rank.title,
+        'uniforme ' +
+        (shownGrade + 1) +
+        ' de 5 · ' +
+        view.rank.title,
     );
     const progressLabel = view.nextRank
       ? view.points + ' / ' + view.nextRank.threshold + ' PS · Faltam ' + view.untilNext
@@ -202,9 +205,7 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     const ownedGrade = service.pilotView(selectedPilot())?.uniform ?? 0;
     // Tour order: subsequent grades, then the earned grade. At top rank,
     // circle through all five designs so every pilot remains inspectable.
-    previewGrade = previewGrade === null
-      ? (ownedGrade + 1) % 5
-      : (previewGrade + 1) % 5;
+    previewGrade = previewGrade === null ? (ownedGrade + 1) % 5 : (previewGrade + 1) % 5;
     if (previewGrade === ownedGrade) previewGrade = null;
     renderProfile();
   };

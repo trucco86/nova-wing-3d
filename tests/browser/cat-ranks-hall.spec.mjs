@@ -50,7 +50,9 @@ test('hall remains scrollable and within mobile viewport at 320px', async ({ pag
   expect(scrolls).toBe(true);
 });
 
-test('uniform preview rotates cosmetic 3D grades without granting points or medals', async ({ page }) => {
+test('uniform preview rotates cosmetic 3D grades without granting points or medals', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.locator('#prepareSquad').click();
   await page.locator('#hangarPilot').click();
