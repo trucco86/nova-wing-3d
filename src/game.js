@@ -448,7 +448,8 @@ export function createGame({
     bossWarned = false,
     bossWarningTime = 0;
   let stageScoreStart = 0,
-    stageResultSent = false;
+    stageResultSent = false,
+    stagePerformance = null;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -522,6 +523,10 @@ export function createGame({
     if (!dynamicFlight || state !== 'playing' || !squad) return false;
     const spent = squad.activate(kind, arcana);
     if (!spent) return false;
+    if (stagePerformance) {
+      stagePerformance.squadSpecialUsed = true;
+      if (boss) stagePerformance.primaryOnly = false;
+    }
     arcana -= spent;
     return true;
   }
@@ -533,6 +538,7 @@ export function createGame({
       return false;
     }
     arcana -= spell.cost;
+    if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
     if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
     if (strategy.special === 2) stasis = spell.duration;
@@ -566,6 +572,7 @@ export function createGame({
     const cost = { precision: 1, repair: 2, barrage: 3 }[kind];
     if (!cost || tacticEnergy + 1e-8 < cost || (kind === 'repair' && hp >= maxHp())) return false;
     tacticEnergy = Math.max(0, tacticEnergy - cost);
+    if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     if (kind === 'repair') hp = Math.min(maxHp(), hp + 25 + rank('defense') * 2);
     else {
       const count = kind === 'precision' ? 1 : 7;
@@ -850,6 +857,16 @@ export function createGame({
           durationMs: Math.max(0, Math.round(elapsed * 1000)),
           totalPoints: score,
           outcome,
+          difficulty: settings.difficulty,
+          pilot: activePilot().id,
+          bossDefeated: stagePerformance?.bossDefeated === true,
+          primaryOnly: stagePerformance?.primaryOnly === true,
+          mechaFinisher: stagePerformance?.mechaFinisher === true,
+          damageTaken: stagePerformance?.damageTaken !== false,
+          bombsUsed: stagePerformance?.bombsUsed !== false,
+          kills: stagePerformance?.kills ?? 0,
+          rings: stagePerformance?.rings ?? 0,
+          squadSpecialUsed: stagePerformance?.squadSpecialUsed === true,
         }),
       ).catch(() => {});
     } catch {
@@ -1093,6 +1110,11 @@ export function createGame({
     };
     stageScoreStart = score;
     stageResultSent = false;
+    stagePerformance = {
+      damageTaken: false, bombsUsed: false, kills: 0, rings: 0,
+      bossDefeated: false, primaryOnly: true, mechaFinisher: false,
+      squadSpecialUsed: false,
+    };
     if (dynamicFlight && !developerSession) {
       try {
         Promise.resolve(onStageStarted({ sector: sectorIndex + 1 })).catch(() => {});
@@ -1243,6 +1265,7 @@ export function createGame({
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
+    if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
     if (settings.vibration) window.navigator?.vibrate?.(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
@@ -1280,6 +1303,7 @@ export function createGame({
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
     }
     score += e.elite ? 15 : 1;
+    if (stagePerformance) stagePerformance.kills++;
     gainXP(e.elite ? 8 : 1);
     credits += e.elite ? 90 : 12;
     if (e.kind === 'base') {
@@ -1300,6 +1324,10 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    if (stagePerformance) {
+      stagePerformance.bombsUsed = true;
+      if (boss) stagePerformance.primaryOnly = false;
+    }
     const bombPower = dynamicFlight ? activePilot().bonuses.bomb : 1;
     for (let e of enemies)
       if (!e.dead) {
@@ -1524,6 +1552,7 @@ export function createGame({
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
       launchShot(0, weaponPower() * 5, false, muzzle);
       const shot = shots.at(-1);
+      shot.source = 'mecha-precision';
       shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
       shot.homing = false;
       energy -= 10;
@@ -1737,6 +1766,8 @@ export function createGame({
       (dynamicFlight && bossCombat?.age < 3)
     )
       return 0;
+    if (stagePerformance && (source !== 'weapon' || (boss && stagePerformance.bombsUsed)))
+      stagePerformance.primaryOnly = false;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
     const spendDamage = (value, chargedShot) =>
@@ -1803,6 +1834,10 @@ export function createGame({
 
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
+      if (stagePerformance) {
+        stagePerformance.bossDefeated = true;
+        stagePerformance.mechaFinisher = robotMode;
+      }
       if (dynamicFlight && sectorIndex === 2) {
         journey = advanceJourney(journey, 'bossDefeated');
         asteroidInterior.setPhase(journey.phase);
@@ -3242,6 +3277,7 @@ export function createGame({
           launchShot(0, 3 + weapon);
           const shot = shots[shots.length - 1];
           shot.o.position.copy(p.position);
+          shot.source = 'pod';
           shot.spread = spread * (8 + podCount * 2);
           if (podCount === 3 || (dynamicFlight && podsDetached)) shot.homing = true;
         }
@@ -3929,6 +3965,7 @@ export function createGame({
       r.o.position.set(result.x, result.y, result.z);
       r.o.rotation.z += dt;
       if (result.collected) {
+        if (stagePerformance && !r.kind.startsWith('pet:')) stagePerformance.rings++;
         score += 3;
         r.life = 0;
         explode(r.o.position, 3, r.kind === 'blue' ? 0x61b9ff : 0x9affb5);
