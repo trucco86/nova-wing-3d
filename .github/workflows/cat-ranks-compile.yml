@@ -1,0 +1,36 @@
+name: Compile isolated Five Cats rank progression
+on:
+  push:
+    branches: ['feat/nova-wing-cat-ranks-v12720']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nova-cat-ranks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-bundle:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/feat/nova-wing-cat-ranks-v12720'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-cat-ranks-v12720
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run test
+      - name: Save formatted sources and generated playable WebGL
+        run: |
+          git add src/main.js src/shell.html src/styles.css src/showroom.js src/showroom-models.js src/cat-rank-catalog.js src/cat-service.js src/cat-rank-ui.js tests/cat-service-v12720.test.mjs tests/cat-showroom-uniform-v12720.test.mjs tests/browser/cat-ranks-hall.spec.mjs docs/design/CAT-RANKS-V12720.md CHANGELOG.md index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(five-cats): format and rebuild v1.27.20 uniform progression'
+          git push origin HEAD:refs/heads/feat/nova-wing-cat-ranks-v12720
