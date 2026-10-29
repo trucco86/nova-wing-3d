@@ -5957,7 +5957,10 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   }
   .showroom-web #menu.title-screen:not(.selecting) {
     display: flex;
-    align-items: flex-end;
+    /* A tall trophy + service menu cannot bottom-align an overflowed flex item:
+       its first actions become unreachable and a scrollIntoView may target
+       the wrong surface. Anchor at the scrollable top, retain cover spacing. */
+    align-items: flex-start;
     padding: max(210px, 38dvh) 6vw max(22px, env(safe-area-inset-bottom, 0px));
     min-height: 100dvh;
     max-height: 100dvh;
