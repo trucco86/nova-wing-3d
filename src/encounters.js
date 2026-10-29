@@ -190,7 +190,7 @@ export function animateGroundEnemy(
   model,
   time,
   target,
-  { dt = 1 / 60, airborne = false, charging = false } = {},
+  { dt = 0.28, airborne = false, charging = false } = {},
 ) {
   const turret = model.userData.turret;
   const steering = T.MathUtils.clamp(
