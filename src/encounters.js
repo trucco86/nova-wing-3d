@@ -162,6 +162,23 @@ export function createGroundEnemy(kind, variant = -1) {
         if (variant === 2) turret.add(beam([0, 2, 0], [0, 8, -1], 0.5, hazard));
       }
     }
+    if (kind === 'walker') {
+      // Animated shoulder-mounted gauntlets; their tips are real projectile muzzles.
+      for (const side of [-1, 1]) {
+        const arm = new T.Group();
+        arm.name = side < 0 ? 'walker-arm-left' : 'walker-arm-right';
+        arm.position.set(side * 9.2, 21.3, 0.8);
+        arm.add(box(3.5, 8.5, 4.2, armor, 0, -4.2, 1.4));
+        arm.add(box(4.6, 4.6, 5.7, dark, 0, -9, 3.8));
+        const hand = box(2.5, 2.7, 2.8, cyan, 0, -10.4, 7.1);
+        hand.name = side < 0 ? 'walker-muzzle-left' : 'walker-muzzle-right';
+        arm.add(hand);
+        const jointArmor = ball(2.5, hazard);
+        jointArmor.position.set(0, -1.3, 0);
+        arm.add(jointArmor);
+        g.add(arm);
+      }
+    }
     g.add(turret);
     templates.set(key, g);
   }
@@ -169,24 +186,43 @@ export function createGroundEnemy(kind, variant = -1) {
   model.userData = { turret: model.getObjectByName('turret'), kind, variant };
   return model;
 }
-export function animateGroundEnemy(model, time, target) {
+export function animateGroundEnemy(
+  model,
+  time,
+  target,
+  { dt = 0.28, airborne = false, charging = false } = {},
+) {
   const turret = model.userData.turret;
-  turret.rotation.y = T.MathUtils.clamp(
+  const steering = T.MathUtils.clamp(
     Math.atan2(target.x - model.position.x, target.z - model.position.z),
     -0.7,
     0.7,
   );
+  const response = 1 - Math.exp(-Math.max(0, dt) * 7);
+  turret.rotation.y += (steering - turret.rotation.y) * response;
   if (model.userData.kind === 'walker') {
-    // Giant robot has articulated alternating strides and aims its upper turret
-    // independently; changes stay visual and do not alter the tested hitboxes.
-    const stride = time * (1.75 + model.userData.variant * 0.14);
+    const stride = time * (airborne ? 2.8 : 1.75 + model.userData.variant * 0.14);
     for (const side of [-1, 1]) {
       const leg = model.getObjectByName('leg' + side);
-      leg.rotation.x = Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.24;
-      leg.rotation.z = Math.sin(stride * 0.5 + side) * 0.075;
+      const swing = airborne
+        ? -0.3 + side * 0.11
+        : Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.32;
+      leg.rotation.x += (swing - leg.rotation.x) * response;
+      leg.rotation.z +=
+        ((airborne ? side * 0.17 : Math.sin(stride * 0.5 + side) * 0.08) - leg.rotation.z) *
+        response;
+      const arm = model.getObjectByName(side < 0 ? 'walker-arm-left' : 'walker-arm-right');
+      const sweep = Math.sin(time * (airborne ? 2.7 : 1.9) + (side > 0 ? Math.PI : 0));
+      const aim = -0.45 - Math.min(0.3, Math.abs(target.y - (model.position.y + 17)) * 0.009);
+      arm.rotation.x += (aim + sweep * (airborne ? 0.26 : 0.16) - arm.rotation.x) * response;
+      arm.rotation.y += (steering * 0.42 + side * 0.04 - arm.rotation.y) * response;
+      arm.rotation.z += (side * 0.12 + sweep * 0.12 - arm.rotation.z) * response;
+      const muzzle = arm.getObjectByName(side < 0 ? 'walker-muzzle-left' : 'walker-muzzle-right');
+      if (muzzle) muzzle.scale.setScalar(charging ? 1.3 + Math.sin(time * 19) * 0.08 : 1);
     }
-    turret.rotation.x = -0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12;
-    turret.rotation.z = Math.sin(stride * 0.55) * 0.11;
+    turret.rotation.x +=
+      (-0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12 - turret.rotation.x) * response;
+    turret.rotation.z += (Math.sin(stride * 0.55) * 0.1 - turret.rotation.z) * response;
   }
 }
 /** Geometry and collision boxes are built together. No invisible solid opening. */

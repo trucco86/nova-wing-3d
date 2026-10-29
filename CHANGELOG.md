@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.17 — Sentinelas articuladas e mecha fluido (candidata)
+
+- Uma vaga de walker a cada quatro ondas terrestres dos setores posteriores vira sentinela aérea de perseguição.
+- Walkers terrestres e voadores miram e atiram pelas duas mãos articuladas.
+- Nosso robô recebe seis LEDs nas asas com o mesmo perfil da nave, postura e pernas com interpolação suave.
+- Volume e dano dos inimigos permanecem iguais; sem alteração em DEV, HML e produção.
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.

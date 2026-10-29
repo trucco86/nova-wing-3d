@@ -406,8 +406,8 @@ export function createFlyingRobot() {
     robot.add(plume);
     sidePlumes.push(plume);
   }
-  // The exact same mesh profile as the ship, rotated into the mecha back plane.
-  // No independent enlarged mecha wing geometry: transformation preserves identity.
+  // The same fighter wing geometry, with navigation LEDs on the armoured edges.
+  const wingLeds = [];
   for (const side of [-1, 1]) {
     const panel = sharedFighterWing(side, armor);
     panel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
@@ -423,6 +423,16 @@ export function createFlyingRobot() {
       '#66ebff',
     );
     robot.add(trim);
+    for (let diode = 0; diode < 3; diode++) {
+      const led = new T.Mesh(
+        new T.BoxGeometry(0.18, 0.17, 0.45),
+        new T.MeshBasicMaterial({ color: '#65ebff', transparent: true, opacity: 0.8 }),
+      );
+      led.name = 'mech-wing-led-' + (side < 0 ? 'left' : 'right') + '-' + diode;
+      led.position.set(side * (1.9 + diode * 1.05), 2.1 + diode * 0.34, 1.69);
+      robot.add(led);
+      wingLeds.push(led);
+    }
   }
   // Main turbine sits between the shoulder blades rather than low at the hips.
   const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
@@ -498,6 +508,7 @@ export function createFlyingRobot() {
     sidePlumes,
     propulsionPower: 0,
     progressionNeons,
+    wingLeds,
   };
   robot.userData.mechPaint = { primary: armor, accent };
   // Reconcile the original angular flight-mech and its animated rotor with
@@ -656,6 +667,10 @@ export function animateMechPower(
   if (!rig?.turbineRotor) return;
   for (const { mesh, threshold } of rig.progressionNeons) {
     mesh.visible = level >= threshold;
+  }
+  for (let i = 0; i < (rig.wingLeds?.length ?? 0); i++) {
+    const led = rig.wingLeds[i];
+    led.material.opacity = 0.62 + (boosting ? 0.28 : 0.1) + Math.sin(elapsed * 4 + i) * 0.05;
   }
   if (!Number.isFinite(dt) || dt <= 0) return;
   const delta = Math.min(dt, 0.05);
