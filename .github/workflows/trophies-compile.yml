@@ -1,0 +1,36 @@
+name: Compile isolated Five Cats trophies
+on:
+  push:
+    branches: ['feat/nova-wing-trophies-v12719']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nova-trophies-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-bundle:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/feat/nova-wing-trophies-v12719'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-trophies-v12719
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run test
+      - name: Commit formatted code and playable generated bundle
+        run: |
+          git add src/game.js src/main.js src/shell.html src/styles.css src/trophy-catalog.js src/trophy-system.js src/trophy-ui.js tests/trophy-system-v12719.test.mjs docs/design/TROPHIES-V12719.md CHANGELOG.md index.html
+          if git diff --cached --quiet; then echo 'Bundle synchronized.'; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(trophies): format and generate 1.27.19 WebGL preview'
+          git push origin HEAD:refs/heads/feat/nova-wing-trophies-v12719

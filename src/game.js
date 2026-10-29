@@ -1771,7 +1771,7 @@ export function createGame({
       (dynamicFlight && bossCombat?.age < 3)
     )
       return 0;
-    if (stagePerformance && (source !== 'weapon' || (boss && stagePerformance.bombsUsed)))
+    if (stagePerformance && source !== 'weapon')
       stagePerformance.primaryOnly = false;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
