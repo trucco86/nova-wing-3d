@@ -87,6 +87,21 @@ for (const viewport of [
         return document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)?.closest('button')
           ?.id;
       });
+      if (hit !== 'start') {
+        const diagnostic = await page.locator('#start').evaluate((button) => {
+          const r = button.getBoundingClientRect();
+          const center = { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+          const hit = document.elementFromPoint(center.x, center.y);
+          const menu = document.querySelector('#menu');
+          return {
+            center, actual: hit?.outerHTML?.slice(0, 350) ?? null,
+            button: { x: r.x, y: r.y, width: r.width, height: r.height },
+            menuScroll: menu.scrollTop, menuHeight: menu.scrollHeight,
+            viewport: { width: innerWidth, height: innerHeight },
+          };
+        });
+        console.error('MENU_START_OCCLUSION', JSON.stringify(diagnostic));
+      }
       expect(hit).toBe('start');
 
       // Reflow must also be stable in the detailed pilot and ship selector.

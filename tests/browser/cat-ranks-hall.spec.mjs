@@ -12,7 +12,7 @@ test('the Five Cats hall shows five officer records and cat-head medals', async 
   await expect(page.locator('#catRankCards article')).toHaveCount(5);
   await expect(page.locator('#catRankCards')).toContainText('BIA');
   await expect(page.locator('#catRankCards')).toContainText('JENIFER');
-  await expect(page.locator('#catRankCards')).toContainText('RECRUTA');
+  await expect(page.locator('#catRankCards')).toContainText('Recruta');
   await expect(page.locator('#catRankCards svg.cat-crest')).toHaveCount(5 * 13);
   await page.screenshot({ path: info.outputPath('five-cats-service-hall.png') });
 });
