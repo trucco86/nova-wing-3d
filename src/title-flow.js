@@ -100,13 +100,15 @@ export function installTitleFlow(doc = document) {
 
   const gate = doc.createElement('div');
   gate.className = 'nova-gate';
-  gate.innerHTML = '<strong class="nova-gate-heading">NOVA WING</strong><span class="nova-gate-subtitle">FIVE CATS · FLIGHT SQUADRON</span><button type="button" class="nova-gate-start" id="novaPressStart">PRESS START</button>';
+  gate.innerHTML =
+    '<strong class="nova-gate-heading">NOVA WING</strong><span class="nova-gate-subtitle">FIVE CATS · FLIGHT SQUADRON</span><button type="button" class="nova-gate-start" id="novaPressStart">PRESS START</button>';
   menu.append(gate);
 
   const nav = doc.createElement('nav');
   nav.className = 'nova-nav';
   nav.setAttribute('aria-label', 'Navegação principal');
-  nav.innerHTML = '<button type="button" data-nova-section="play">JOGAR</button><button type="button" data-nova-section="hangar">HANGAR</button><button type="button" data-nova-section="extras">EXTRAS</button>';
+  nav.innerHTML =
+    '<button type="button" data-nova-section="play">JOGAR</button><button type="button" data-nova-section="hangar">HANGAR</button><button type="button" data-nova-section="extras">EXTRAS</button>';
   const back = doc.createElement('button');
   back.type = 'button';
   back.className = 'nova-back';
@@ -121,37 +123,70 @@ export function installTitleFlow(doc = document) {
   let current = 'main';
   function select(section) {
     if (!sections.includes(section)) return;
-    if (current === 'hangar' && section !== 'hangar' && !doc.getElementById('squadSelection').hidden) oldSquad.click();
-    if (section === 'hangar' && doc.getElementById('squadSelection').hidden && !oldSquad.hidden) oldSquad.click();
+    if (
+      current === 'hangar' &&
+      section !== 'hangar' &&
+      !doc.getElementById('squadSelection').hidden
+    )
+      oldSquad.click();
+    if (
+      section === 'hangar' &&
+      doc.getElementById('squadSelection').hidden &&
+      !oldSquad.hidden
+    )
+      oldSquad.click();
     current = section;
-    for (const item of sections) menu.classList.toggle('nova-section-' + item, item === section);
-    heading.textContent = ({play:'CAMPANHA',hangar:'OS FIVE CATS · PILOTOS E NAVES',extras:'EXTRAS E CONFIGURAÇÕES'})[section] || '';
-    nav.querySelectorAll('[data-nova-section]').forEach(button => {
-      if (button.dataset.novaSection === section) button.setAttribute('aria-current','page');
+    for (const item of sections)
+      menu.classList.toggle('nova-section-' + item, item === section);
+    heading.textContent =
+      ({
+        play: 'CAMPANHA',
+        hangar: 'OS FIVE CATS · PILOTOS E NAVES',
+        extras: 'EXTRAS E CONFIGURAÇÕES',
+      })[section] || '';
+    nav.querySelectorAll('[data-nova-section]').forEach((button) => {
+      if (button.dataset.novaSection === section) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
     });
     menu.scrollTop = 0;
   }
-  menu.classList.add('nova-title-flow','nova-gate-open');
+  menu.classList.add('nova-title-flow', 'nova-gate-open');
   select('main');
   const press = gate.querySelector('button');
   function enter() {
     if (!menu.classList.contains('nova-gate-open')) return;
     menu.classList.remove('nova-gate-open');
-    nav.querySelector('button')?.focus({preventScroll:true});
+    nav.querySelector('button')?.focus({ preventScroll: true });
   }
   press.addEventListener('click', enter);
-  back.addEventListener('click',()=>select('main'));
-  nav.querySelectorAll('button').forEach(button=>button.addEventListener('click',()=>select(button.dataset.novaSection)));
+  back.addEventListener('click', () => select('main'));
+  nav
+    .querySelectorAll('button')
+    .forEach((button) =>
+      button.addEventListener('click', () => select(button.dataset.novaSection)),
+    );
   // Keyboard access is intentionally limited to the title state.
-  const onKey = event => {
+  const onKey = (event) => {
     if (!doc.body.classList.contains('menu') || !menu.classList.contains('nova-gate-open')) return;
     if (event.key === 'Enter' || event.key === ' ') {
       if (event.target === doc.body || event.target === press || event.target === menu) {
-        event.preventDefault(); enter();
+        event.preventDefault();
+        enter();
       }
     }
   };
   doc.addEventListener('keydown', onKey);
-  return () => { doc.removeEventListener('keydown',onKey); css.remove(); gate.remove(); nav.remove(); back.remove(); heading.remove(); menu.classList.remove('nova-title-flow','nova-gate-open',...sections.map(item => 'nova-section-' + item)); };
+  return () => {
+    doc.removeEventListener('keydown', onKey);
+    css.remove();
+    gate.remove();
+    nav.remove();
+    back.remove();
+    heading.remove();
+    menu.classList.remove(
+      'nova-title-flow',
+      'nova-gate-open',
+      ...sections.map((item) => 'nova-section-' + item),
+    );
+  };
 }
