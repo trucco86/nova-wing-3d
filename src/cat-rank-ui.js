@@ -106,6 +106,7 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
   const panel = document?.getElementById('catRanks');
   const cards = document?.getElementById('catRankCards');
   const squad = document?.getElementById('catSquadRank');
+  const medalDetails = document?.getElementById('catMedalDetails');
   const currentRank = document?.getElementById('pilotRankInsignia');
   const uniform = document?.getElementById('pilotUniform');
   const profileProgress = document?.getElementById('pilotRankProgress');
@@ -127,8 +128,14 @@ export function createCatRankUI({ document = globalThis.document, service } = {}
     document?.getElementById('squadSelection')?.getAttribute('data-pilot') ?? 'bia';
 
   const medalBadge = (medal, earned) => {
-    const badge = document.createElement('span');
+    const badge = document.createElement('button');
+    badge.type = 'button';
     badge.className = 'cat-medal-chip';
+    badge.onclick = () => {
+      if (!medalDetails) return;
+      const status = earned ? 'CONQUISTADA' : 'BLOQUEADA';
+      medalDetails.textContent = medal.title + ' · ' + status + ' · ' + medal.hint;
+    };
     badge.dataset.grade = medal.grade;
     badge.dataset.earned = String(earned);
     badge.title = medal.title + ' — ' + medal.hint;

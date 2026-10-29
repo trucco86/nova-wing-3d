@@ -100,3 +100,20 @@ test('medals display distinct feline award motifs instead of identical badges', 
   expect(motifs.find((m) => m.id === 'lightning-tail').motif).toBe('lightning');
   expect(motifs.find((m) => m.id === 'marvin-shadow').motif).toBe('eclipse');
 });
+
+test('tapping a medal on touch screens shows its name, status and real unlock condition', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const panel = page.locator('#catRanks');
+  await panel.scrollIntoViewIfNeeded();
+  await panel.locator(':scope > summary').click();
+  const medal = panel.locator('article').first().locator('.cat-medal-chip[data-earned="false"]').first();
+  await medal.click();
+  await expect(page.locator('#catMedalDetails')).toContainText('BLOQUEADA');
+  await expect(page.locator('#catMedalDetails')).toContainText('Derrote seu primeiro chefe');
+  const box = await medal.boundingBox();
+  expect(box.width).toBeGreaterThanOrEqual(38);
+  expect(box.height).toBeGreaterThanOrEqual(38);
+});
