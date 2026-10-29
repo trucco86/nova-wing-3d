@@ -80,3 +80,23 @@ test('reward debrief remains hidden until a real mission is recorded', async ({ 
   await page.locator('#prepareSquad').click();
   await expect(page.locator('#pilotRankProgress')).toContainText('0 / 120 PS');
 });
+
+test('medals display distinct feline award motifs instead of identical badges', async ({ page }) => {
+  await page.goto('/');
+  const panel = page.locator('#catRanks');
+  await panel.scrollIntoViewIfNeeded();
+  await panel.locator(':scope > summary').click();
+  const motifs = await page.locator('#catRankCards article').first()
+    .locator('.cat-medal-chip svg').evaluateAll((icons) =>
+      icons.map((svg) => ({
+        id: svg.dataset.medal, motif: svg.dataset.motif,
+        mark: svg.querySelector('[data-medal-mark]')?.outerHTML ?? '',
+      })),
+    );
+  expect(motifs).toHaveLength(12);
+  expect(new Set(motifs.map((medal) => medal.id)).size).toBe(12);
+  expect(new Set(motifs.map((medal) => medal.motif)).size).toBeGreaterThanOrEqual(9);
+  expect(motifs.every((medal) => medal.mark.length > 45)).toBe(true);
+  expect(motifs.find((m) => m.id === 'lightning-tail').motif).toBe('lightning');
+  expect(motifs.find((m) => m.id === 'marvin-shadow').motif).toBe('eclipse');
+});
