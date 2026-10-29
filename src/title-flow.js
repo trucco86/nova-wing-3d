@@ -129,21 +129,16 @@ export function installTitleFlow(doc = document) {
       !doc.getElementById('squadSelection').hidden
     )
       oldSquad.click();
-    if (
-      section === 'hangar' &&
-      doc.getElementById('squadSelection').hidden &&
-      !oldSquad.hidden
-    )
+    if (section === 'hangar' && doc.getElementById('squadSelection').hidden && !oldSquad.hidden)
       oldSquad.click();
     current = section;
-    for (const item of sections)
-      menu.classList.toggle('nova-section-' + item, item === section);
+    for (const item of sections) menu.classList.toggle('nova-section-' + item, item === section);
     heading.textContent =
-      ({
+      {
         play: 'CAMPANHA',
         hangar: 'OS FIVE CATS · PILOTOS E NAVES',
         extras: 'EXTRAS E CONFIGURAÇÕES',
-      })[section] || '';
+      }[section] || '';
     nav.querySelectorAll('[data-nova-section]').forEach((button) => {
       if (button.dataset.novaSection === section) button.setAttribute('aria-current', 'page');
       else button.removeAttribute('aria-current');
