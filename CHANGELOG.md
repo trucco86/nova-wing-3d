@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.16 — Geradores traseiros e flancos táticos (candidata)
+
+- Colosso, Colmeia, Bastião e Marvin: segunda bateria física atrás, exigindo órbita para acessar.
+- Scanner, dano, marcador visual e orientação de alvo compartilham o mesmo contrato.
+- Mantém dois geradores por boss, HP, dano, núcleo e radar de esquiva anteriores.
+- Versão isolada em QA, não homologada para DEV/HML/produção.
+
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
