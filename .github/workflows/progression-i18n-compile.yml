@@ -1,0 +1,36 @@
+name: Compile isolated Five Cats progression translations
+on:
+  push:
+    branches: ['feat/nova-wing-trophy-rank-i18n-v12721']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: fivecats-progression-i18n-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compile:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-trophy-rank-i18n-v12721
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run test
+      - name: Commit generated bundle and formatted tests
+        run: |
+          git add src/i18n.js tests/progression-i18n-v12721.test.mjs tests/browser/progression-i18n.spec.mjs index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(i18n): compile localized trophies and Five Cats ranks'
+          git push origin HEAD:refs/heads/feat/nova-wing-trophy-rank-i18n-v12721
