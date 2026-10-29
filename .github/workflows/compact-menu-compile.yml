@@ -1,0 +1,36 @@
+name: Compile isolated compact start menu
+on:
+  push:
+    branches: ['feat/nova-wing-compact-start-v12721']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: nova-compact-menu-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-bundle:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/feat/nova-wing-compact-start-v12721'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nova-wing-compact-start-v12721
+          fetch-depth: 1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run test
+      - name: Commit formatted sources and playable bundle
+        run: |
+          git add src/main.js src/shell.html src/styles.css src/compact-menu.js tests/browser/*.mjs docs/design/COMPACT-MENU-V12721.md CHANGELOG.md index.html
+          if git diff --cached --quiet; then echo 'Web bundle already synchronized'; exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(menu): format and compile 1.27.21 WebGL preview'
+          git push origin HEAD:refs/heads/feat/nova-wing-compact-start-v12721

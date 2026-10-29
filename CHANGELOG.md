@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.21 — Console Start & Three-Menu Hub (candidata QA)
+
+- Capa original Web centralizada, com PRESS START como único comando inicial e sem rolagem de configurações.
+- Segunda tela apresenta apenas JOGAR, HANGAR e CENTRAL; recursos antigos preservados e organizados em submenus.
+- JOGAR: início de missão, checkpoint e abertura; HANGAR: seleção e inspeção 360°; CENTRAL: opções, músicas, Google, patentes, troféus, ranking e QA.
+- Teclado Enter abre o primeiro menu em vez de pular a tela de título; Escape volta do submenu.
+- Interface responsiva, touch target >=44px, sem duplicar lógica de save/ranking/autenticação.
+- Isolada sobre PR #160; revisão visual e Playwright obrigatórios antes de DEV/HML/PROD.
+
+
 ## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
 
 - Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.

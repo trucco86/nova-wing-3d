@@ -7330,3 +7330,6 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 @media (prefers-reduced-motion: reduce) {
   #pressStart, .menu-primary button { animation: none !important; transition: none !important; }
 }
+
+/* Preserve contextual mission briefing only inside JOGAR, not on splash/home. */
+#menu[data-screen="play"] .title-content > #brief { display: block; margin: 0 auto 20px; }
