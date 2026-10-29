@@ -134,7 +134,7 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   for (let index = 0; index < medalCount; index++) {
     const miniature = new T.Mesh(new T.ShapeGeometry(chestCrestShape), trim);
     miniature.name = 'pilot-earned-cat-medal';
-    miniature.position.set(-0.31 + index * 0.19, 0.02, 0.435);
+    miniature.position.set(-0.31 + index * 0.19, 0.02, 0.58);
     miniature.scale.setScalar(0.33);
     g.add(miniature);
   }
