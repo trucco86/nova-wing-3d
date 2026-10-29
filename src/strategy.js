@@ -1,3 +1,4 @@
+import { bossGeneratorAngle } from './boss-weakpoints.js';
 export const XP_STAGES = [0, 8, 24, 52, 96, 160, 250, 370, 530, 740];
 export const ARSENAL = [
   { name: 'PULSO', element: 'kinetic', color: '#62ffe0', stage: 0, cadence: 0.135, damage: 1 },
@@ -60,9 +61,6 @@ export const elementalDamage = (amount, element, weakness) =>
   amount * (element === weakness ? 1.5 : 1);
 export const angleDistance = (a, b) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
 // The camera/player frame stays stable; orbit rotates the boss and existing projectiles.
-export function weakPointOpen(angle, index = -1) {
-  return (
-    angleDistance(angle, index < 0 ? 0 : index === 0 ? -Math.PI / 3 : Math.PI / 3) <
-    (index < 0 ? 0.85 : 0.8)
-  );
+export function weakPointOpen(angle, index = -1, sector = -1) {
+  return angleDistance(angle, bossGeneratorAngle(sector, index)) < (index < 0 ? 0.85 : 0.8);
 }

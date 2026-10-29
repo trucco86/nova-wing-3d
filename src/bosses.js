@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
+import { bossGeneratorLocation } from './boss-weakpoints.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -378,13 +379,21 @@ export function createBossModel(sector, index = 0, tactical = false) {
   coreMarker.position.set(0, 0, 21);
   g.add(coreMarker);
   const parts = [];
-  for (const s of [-1, 1]) {
-    const p = add(sphere(4, hot), s * 17, 4, 19);
-    add(ring(5), s * 17, 4, 18);
+  for (let slot = 0; slot < 2; slot++) {
+    const location = bossGeneratorLocation(index, slot);
+    const p = add(sphere(4, hot), location.x, location.y, location.z);
+    add(ring(5), location.x, location.y, location.z + (location.rear ? 1 : -1));
     const marker = targetMarker(6.5);
-    marker.position.set(s * 17, 4, 22);
+    marker.position.set(location.x, location.y, location.markerZ);
+    if (location.rear) marker.rotation.y = Math.PI;
     g.add(marker);
-    parts.push({ mesh: p, marker, hp: 180 + index * 25, max: 180 + index * 25 });
+    parts.push({
+      mesh: p,
+      marker,
+      hp: 180 + index * 25,
+      max: 180 + index * 25,
+      location,
+    });
   }
   if (tactical) {
     const proportions = [
