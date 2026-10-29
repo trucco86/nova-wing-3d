@@ -236,10 +236,28 @@
           ><button id="boostTouch">BOOST</button>
         </div>
       </div>
-      <section id="menu" class="title-screen" aria-label="Menu principal">
+      <section id="menu" class="title-screen" data-screen="splash" aria-label="Menu principal">
         <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
         <div class="title-content">
+          <div id="menuStartGate" class="menu-start-gate" aria-label="Tela de título">
+            <button
+              type="button"
+              id="pressStart"
+              class="press-start"
+              aria-label="Press start, abrir menu"
+            >
+              PRESS START <span aria-hidden="true">▶</span>
+            </button>
+            <small>FIVE CATS · NOVA WING</small>
+          </div>
           <h1>NOVA<span>WING</span></h1>
+          <nav id="menuPrimary" class="menu-primary" aria-label="Menu principal Nova Wing">
+            <button type="button" id="menuPlay">JOGAR <span aria-hidden="true">↗</span></button>
+            <button type="button" id="menuHangar">HANGAR <span aria-hidden="true">⌁</span></button>
+            <button type="button" id="menuHub">CENTRAL <span aria-hidden="true">◆</span></button>
+          </nav>
+          <button type="button" id="menuBack" class="menu-back">← VOLTAR AO MENU</button>
+          <p id="menuScreenLabel" class="menu-screen-label" aria-live="polite"></p>
           <p id="brief">Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.</p>
           <label id="specialtyChoice" hidden
             >ESPECIALIDADE
