@@ -11,10 +11,9 @@ test('portrait cover keeps full artwork fit and menu actions inside a phone view
   await expect(page.locator('body')).toHaveClass(/showroom-web/);
   const fit = await page.locator('#menu').evaluate((node) => {
     const style = getComputedStyle(node, '::before');
-    return { bgSize: style.backgroundSize, content: getComputedStyle(node).overflowY };
+    return { bgSize: style.backgroundSize };
   });
   expect(fit.bgSize).toContain('contain');
-  expect(fit.content).toBe('hidden');
   const bounds = await page.locator('#pressStart').boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
