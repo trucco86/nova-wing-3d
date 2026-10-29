@@ -1,9 +1,11 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('the Five Cats hall shows five officer records and cat-head medals', async ({
   page,
 }, info) => {
   await page.goto('/');
+  await openMenu(page, 'central');
   const panel = page.locator('#catRanks');
   await expect(panel).toBeVisible();
   await panel.scrollIntoViewIfNeeded();
@@ -21,7 +23,7 @@ test('pilot selection exposes uniform badge and rank progress without losing exi
   page,
 }) => {
   await page.goto('/');
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
   await expect(page.locator('#pilotRankInsignia')).toContainText('Recruta');
   await page.locator('#pilot-jenifer').click();
@@ -36,6 +38,7 @@ test('pilot selection exposes uniform badge and rank progress without losing exi
 test('hall remains scrollable and within mobile viewport at 320px', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto('/');
+  await openMenu(page, 'central');
   const panel = page.locator('#catRanks');
   await panel.scrollIntoViewIfNeeded();
   await panel.locator(':scope > summary').click();
@@ -54,7 +57,7 @@ test('uniform preview rotates cosmetic 3D grades without granting points or meda
   page,
 }) => {
   await page.goto('/');
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await page.locator('#hangarPilot').click();
   const selection = page.locator('#squadSelection');
   await expect(page.locator('#pilotUniformPreviewStatus')).toContainText('conquistado');
@@ -77,6 +80,6 @@ test('reward debrief remains hidden until a real mission is recorded', async ({ 
   await page.goto('/');
   await expect(page.locator('#shopServiceSummary')).toBeHidden();
   await expect(page.locator('#resultServiceSummary')).toBeHidden();
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#pilotRankProgress')).toContainText('0 / 120 PS');
 });

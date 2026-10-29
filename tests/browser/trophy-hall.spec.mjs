@@ -1,9 +1,11 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('Hall da Fama opens in the menu and shows all forty-one trophy cards', async ({
   page,
 }, info) => {
   await page.goto('/');
+  await openMenu(page, 'central');
   const panel = page.locator('#novaTrophies');
   await expect(panel).toBeVisible();
   await panel.scrollIntoViewIfNeeded();
@@ -22,6 +24,7 @@ test('narrow mobile trophy drawer stays inside the screen without covering comba
 }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto('/');
+  await openMenu(page, 'central');
   const panel = page.locator('#novaTrophies');
   await panel.scrollIntoViewIfNeeded();
   await panel.locator(':scope > summary').click();

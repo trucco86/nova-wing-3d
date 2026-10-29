@@ -1,18 +1,19 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
-test('mission menu groups pilot selection under the primary launch action', async ({ page }) => {
+test('mission and hangar are separate clear actions in the compact menu', async ({ page }) => {
   await page.goto('/');
-  const mission = page.locator('.mission-entry');
-  await expect(mission).toBeVisible();
-  await expect(mission.locator('#start')).toBeVisible();
-  await expect(mission.locator('#prepareSquad')).toBeVisible();
-  await mission.locator('#prepareSquad').click();
+  await openMenu(page, 'play');
+  await expect(page.locator('#start')).toBeVisible();
+  await page.locator('#menuBack').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
   await expect(page.locator('#pilot-jenifer')).toBeVisible();
 });
 
 test('DEV QA opens a chosen sector boss without any leaderboard action', async ({ page }) => {
   await page.goto('/');
+  await openMenu(page, 'central');
   const panel = page.locator('#developerPanel');
   await expect(panel).toBeVisible();
   await panel.locator(':scope > summary').click();
