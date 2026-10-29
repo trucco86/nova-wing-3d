@@ -94,9 +94,11 @@ for (const viewport of [
           const hit = document.elementFromPoint(center.x, center.y);
           const menu = document.querySelector('#menu');
           return {
-            center, actual: hit?.outerHTML?.slice(0, 350) ?? null,
+            center,
+            actual: hit?.outerHTML?.slice(0, 350) ?? null,
             button: { x: r.x, y: r.y, width: r.width, height: r.height },
-            menuScroll: menu.scrollTop, menuHeight: menu.scrollHeight,
+            menuScroll: menu.scrollTop,
+            menuHeight: menu.scrollHeight,
             viewport: { width: innerWidth, height: innerHeight },
           };
         });
