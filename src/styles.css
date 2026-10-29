@@ -6736,3 +6736,116 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #novaTrophyToast[hidden] {
   display: none;
 }
+
+/* Five Cats Service Corps. Cosmetic cat-head crests, collar and military ribbons. */
+.pilot-profile .profile-portrait { position: relative; min-height: 106px; }
+#pilotRankInsignia.pilot-rank-line {
+  margin-top: 4px; font: 700 10px/1.4 monospace;
+  letter-spacing: .06em; color: #f5dba0; text-wrap: balance;
+}
+#pilotRankProgress.pilot-rank-progress {
+  font: 700 9px/1.3 monospace; color: #a5c9d6; letter-spacing: .01em;
+}
+#pilotServiceMeter.pilot-service-meter,
+.cat-service-meter {
+  width: 100%; height: 7px; display: block;
+  accent-color: var(--profile-color, #67ffe0);
+}
+.cat-uniform {
+  position: absolute; width: 77px; height: 34px; bottom: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(128deg, #26394b, #132331 60%, #243e4d);
+  clip-path: polygon(12% 0, 28% 0, 50% 24%, 72% 0, 88% 0, 100% 100%, 0 100%);
+  border-bottom: 3px solid #5dd9c1;
+  isolation: isolate;
+}
+.cat-uniform:after {
+  content: ''; position: absolute; inset: auto 4px 2px;
+  height: 3px; background: linear-gradient(90deg, transparent, #adcedb, transparent);
+}
+.cat-uniform-collar {
+  position: absolute; top: 4px; width: 27px; height: 17px;
+  border-left: 3px solid #6bbcad; border-right: 3px solid #6bbcad;
+  transform: perspective(25px) rotateX(12deg);
+}
+.cat-uniform-crest {
+  position: absolute; width: 15px; height: 15px; left: 50%; top: 13px;
+  transform: translateX(-50%);
+  border: 2px solid #b2ced6; background: #132a33;
+  clip-path: polygon(5% 30%, 12% 0, 40% 18%, 60% 18%, 88% 0, 95% 30%, 96% 85%, 50% 100%, 4% 85%);
+}
+.cat-uniform-stripes {
+  position: absolute; width: 18px; height: 6px; top: 17px; left: 10px;
+  border-top: 2px solid #c1d5d9; border-bottom: 2px solid #c1d5d9;
+  transform: rotate(22deg); opacity: .72;
+}
+.cat-uniform[data-grade='1'] { border-color: #79c5ff; background: linear-gradient(135deg,#254c64,#132537); }
+.cat-uniform[data-grade='2'] { border-color: #cbd5e2; background: linear-gradient(135deg,#2d5363,#0f2f44); }
+.cat-uniform[data-grade='3'] { border-color: #ffc85a; background: linear-gradient(135deg,#3f4e6b,#0e283e); }
+.cat-uniform[data-grade='4'] {
+  border-color: #f7eab9; background: linear-gradient(135deg,#5368a0,#162b52);
+  box-shadow: 0 0 15px #b4f3ff60;
+}
+.cat-uniform[data-grade='3'] .cat-uniform-crest,
+.cat-uniform[data-grade='4'] .cat-uniform-crest { background: #e4ba5b; border-color: #fff1bc; }
+.pilot-rank-medals { display: flex; gap: 5px; align-items: center; margin-top: 3px; min-height: 25px; }
+.pilot-rank-medals small { font: 9px/1.3 monospace; color: #8cb2bb; }
+.cat-crest { width: 100%; height: 100%; display: block; }
+.cat-medal-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 4px; flex: 0 0 auto;
+  border: 1px solid #809aa1; border-radius: 50%;
+  color: #bd8451; background: radial-gradient(circle, #35516d, #0b1d2e);
+}
+.cat-medal-chip[data-grade='silver'] { color: #d3e1ec; }
+.cat-medal-chip[data-grade='gold'] { color: #f2c865; }
+.cat-medal-chip[data-earned='false'] { color: #557381; opacity: .35; filter: grayscale(1); }
+.cat-ranks-panel {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #778d9f88; border-radius: 10px;
+  margin-top: 9px; background: #071a2af0; color: #e4f6ff;
+  padding: 11px 13px;
+}
+.cat-ranks-panel summary { cursor: pointer; font: 700 12px/1.4 monospace; letter-spacing: .05em; }
+#catSquadRank { float: right; font: 700 9px/1.6 monospace; color: #d1c4a0; }
+.cat-ranks-intro { margin: 10px 0; font: 11px/1.5 sans-serif; color: #a0b7ca; }
+.cat-rank-cards { max-height: min(57vh,470px); overflow-y: auto; overscroll-behavior: contain; }
+.cat-service-card {
+  --pilot-color: #7be2c9;
+  display: flex; align-items: flex-start; gap: 10px; min-width: 0;
+  padding: 12px 3px; border-top: 1px solid #466b7b66;
+  border-left: 2px solid var(--pilot-color);
+}
+.cat-service-avatar {
+  width: 47px; height: 47px; padding: 7px;
+  flex: 0 0 auto; border: 1px solid var(--pilot-color);
+  border-radius: 8px; color: var(--pilot-color); background: #142a3b;
+}
+.cat-service-details { flex: 1; min-width: 0; }
+.cat-service-details > strong { display:block; font:700 13px monospace; color:var(--pilot-color); }
+.cat-service-title { display:block; font: 10px/1.4 monospace; color:#e0d3af; }
+.cat-service-meter { margin: 8px 0 5px; accent-color:var(--pilot-color); }
+.cat-service-details > small { display:block; font:10px/1.5 monospace; color:#9bbbc9; }
+.cat-service-medals { display:flex; gap: 5px; flex-wrap:wrap; margin-top:9px; }
+#catRankToast {
+  position: fixed; z-index: 82;
+  top: max(52px, calc(env(safe-area-inset-top, 0px) + 48px));
+  left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: min(90vw, 335px);
+  padding: 8px 12px; border: 1px solid #e8c573;
+  border-radius: 9px; background: #111d30fa;
+  color: #ffedb3; text-align:center;
+  font:700 11px/1.4 monospace; pointer-events:none;
+  box-shadow: 0 0 18px #d6ac6440;
+}
+#catRankToast[hidden] { display:none; }
+@media (max-width: 650px) {
+  #catSquadRank { float: none; display:block; margin-top: 4px; font-size: 8px; }
+  .cat-service-avatar { width: 35px; height: 35px; }
+  .cat-service-medals { gap: 4px; }
+  .cat-medal-chip { width: 24px; height: 24px; padding: 3px; }
+  .cat-uniform { width: 62px; height: 29px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #catRankToast, .cat-uniform, .cat-medal-chip { transition: none !important; animation: none !important; }
+}

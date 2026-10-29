@@ -299,12 +299,23 @@
               <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
             </section>
             <div class="pilot-profile">
-              <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
+              <div class="profile-portrait">
+                <i id="profileAvatar" class="cat-avatar">B</i>
+                <div id="pilotUniform" class="cat-uniform" data-grade="0" aria-label="Uniforme de recruta">
+                  <span class="cat-uniform-collar" aria-hidden="true"></span>
+                  <span class="cat-uniform-stripes" aria-hidden="true"></span>
+                  <span class="cat-uniform-crest" aria-hidden="true"></span>
+                </div>
+              </div>
               <div class="profile-copy">
                 <span id="profileRole">COMANDANTE VANGUARDA</span>
+                <div class="pilot-rank-line" id="pilotRankInsignia">RECRUTA · PRIMEIRA PATRULHA</div>
                 <h2 id="profileName">BIA</h2>
                 <strong id="profileSkill">SOBRECARGA</strong>
                 <p id="profileDescription"></p>
+                <meter id="pilotServiceMeter" class="pilot-service-meter" min="0" max="1" value="0" aria-label="Progresso de patente"></meter>
+                <div id="pilotRankProgress" class="pilot-rank-progress">0 / 120 PS</div>
+                <div id="pilotRankMedals" class="pilot-rank-medals" aria-label="Medalhas do piloto"></div>
               </div>
               <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
             </div>
@@ -437,6 +448,11 @@
               perfura. Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos
               ±60° para geradores e frente 0° para núcleo.
             </p>
+          </details>
+          <details id="catRanks" class="cat-ranks-panel" aria-label="Patentes e medalhas dos Five Cats">
+            <summary>✦ HALL DA PATRULHA <span id="catSquadRank">PATRULHA ORBITAL</span></summary>
+            <p class="cat-ranks-intro">Conclua missões para promover cada gato. Medalhas, uniformes e insígnias evoluem sem afetar os atributos de combate.</p>
+            <div id="catRankCards" class="cat-rank-cards" aria-label="Patentes individuais dos cinco pilotos"></div>
           </details>
           <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
             <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
