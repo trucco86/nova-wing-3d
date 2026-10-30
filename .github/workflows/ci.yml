@@ -12,34 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  sync-adaptive-boss-qa:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'feat/boss-adaptive-counterplay-v12723-qa' && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: ${{ github.head_ref }}
-          persist-credentials: true
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format boss counterplay and regenerate WebGL output
-        run: |
-          npx prettier --write src/boss-combat-ai.js tests/boss-combat-ai.test.mjs CHANGELOG.md releases/v1.27.23.md package.json package-lock.json
-          npm run build
-      - name: Commit reproducible compiled QA bundle
-        run: |
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/boss-combat-ai.js tests/boss-combat-ai.test.mjs CHANGELOG.md releases/v1.27.23.md package.json package-lock.json index.html
-            git commit -m "build(boss): compile v1.27.23 adaptive-counterplay QA candidate"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
