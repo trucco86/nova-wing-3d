@@ -5940,7 +5940,10 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   }
   .showroom-web #menu.title-screen:not(.selecting) {
     display: flex;
-    align-items: flex-end;
+    /* A tall trophy + service menu cannot bottom-align an overflowed flex item:
+       its first actions become unreachable and a scrollIntoView may target
+       the wrong surface. Anchor at the scrollable top, retain cover spacing. */
+    align-items: flex-start;
     padding: max(210px, 38dvh) 6vw max(22px, env(safe-area-inset-bottom, 0px));
     min-height: 100dvh;
     max-height: 100dvh;
@@ -6637,5 +6640,926 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   body.in-mission #radarGuide {
     max-width: 94px;
     font-size: 8px;
+  }
+}
+
+/* Nova Wing trophy panel: only the top rail may show toasts during combat. */
+.nova-trophies-panel {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #47778088;
+  background: #081c2fe9;
+  border-radius: 10px;
+  color: #d3f5ff;
+  padding: 11px 13px;
+  box-sizing: border-box;
+}
+.nova-trophies-panel summary {
+  cursor: pointer;
+  font: 700 12px/1.4 monospace;
+  letter-spacing: 0.08em;
+}
+#novaTrophyCounter {
+  float: right;
+  color: #a4d5d9;
+}
+#novaTrophyPoints {
+  font-size: 11px;
+  color: #91d8cf;
+  margin: 8px 0;
+}
+#novaTrophyList {
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+  max-height: min(48vh, 330px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#novaTrophyList li {
+  padding: 9px 3px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #5c819b48;
+  align-items: flex-start;
+}
+#novaTrophyList li .trophy-mark {
+  flex: 0 0 auto;
+  font-size: 19px;
+  line-height: 1.2;
+}
+#novaTrophyList li[data-tier='bronze'] .trophy-mark {
+  color: #bf8755;
+}
+#novaTrophyList li[data-tier='silver'] .trophy-mark {
+  color: #c1d3dc;
+}
+#novaTrophyList li[data-tier='gold'] .trophy-mark {
+  color: #ffcf5c;
+}
+#novaTrophyList li[data-tier='platinum'] .trophy-mark {
+  color: #70e3ff;
+}
+#novaTrophyList li:not([data-earned='true']) {
+  opacity: 0.73;
+}
+#novaTrophyList li .trophy-copy {
+  min-width: 0;
+}
+#novaTrophyList li strong {
+  font: 700 11px/1.4 monospace;
+  color: inherit;
+}
+#novaTrophyList li p {
+  font: 10px/1.4 sans-serif;
+  margin: 2px 0;
+  color: #b5cfdd;
+}
+#novaTrophyList li small {
+  font: 10px/1.3 monospace;
+  color: #a2eadc;
+}
+#novaTrophyToast {
+  position: fixed;
+  z-index: 80;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 340px);
+  padding: 9px 14px;
+  border: 1px solid #69b9b9;
+  border-radius: 10px;
+  background: #071d2ef5;
+  box-shadow: 0 0 18px #15acb825;
+  color: #fff3ba;
+  text-align: center;
+  font: 700 12px/1.4 monospace;
+  pointer-events: none;
+}
+#novaTrophyToast[hidden] {
+  display: none;
+}
+
+/* Five Cats Service Corps. Cosmetic cat-head crests, collar and military ribbons. */
+.pilot-profile .profile-portrait {
+  position: relative;
+  min-height: 106px;
+}
+#pilotRankInsignia.pilot-rank-line {
+  margin-top: 4px;
+  font: 700 10px/1.4 monospace;
+  letter-spacing: 0.06em;
+  color: #f5dba0;
+  text-wrap: balance;
+}
+#pilotRankProgress.pilot-rank-progress {
+  font: 700 9px/1.3 monospace;
+  color: #a5c9d6;
+  letter-spacing: 0.01em;
+}
+#pilotServiceMeter.pilot-service-meter,
+.cat-service-meter {
+  width: 100%;
+  height: 7px;
+  display: block;
+  accent-color: var(--profile-color, #67ffe0);
+}
+.cat-uniform {
+  position: absolute;
+  width: 77px;
+  height: 34px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(128deg, #26394b, #132331 60%, #243e4d);
+  clip-path: polygon(12% 0, 28% 0, 50% 24%, 72% 0, 88% 0, 100% 100%, 0 100%);
+  border-bottom: 3px solid #5dd9c1;
+  isolation: isolate;
+}
+.cat-uniform:after {
+  content: '';
+  position: absolute;
+  inset: auto 4px 2px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #adcedb, transparent);
+}
+.cat-uniform-collar {
+  position: absolute;
+  top: 4px;
+  width: 27px;
+  height: 17px;
+  border-left: 3px solid #6bbcad;
+  border-right: 3px solid #6bbcad;
+  transform: perspective(25px) rotateX(12deg);
+}
+.cat-uniform-crest {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 13px;
+  transform: translateX(-50%);
+  border: 2px solid #b2ced6;
+  background: #132a33;
+  clip-path: polygon(5% 30%, 12% 0, 40% 18%, 60% 18%, 88% 0, 95% 30%, 96% 85%, 50% 100%, 4% 85%);
+}
+.cat-uniform-stripes {
+  position: absolute;
+  width: 18px;
+  height: 6px;
+  top: 17px;
+  left: 10px;
+  border-top: 2px solid #c1d5d9;
+  border-bottom: 2px solid #c1d5d9;
+  transform: rotate(22deg);
+  opacity: 0.72;
+}
+.cat-uniform[data-grade='1'] {
+  border-color: #79c5ff;
+  background: linear-gradient(135deg, #254c64, #132537);
+}
+.cat-uniform[data-grade='2'] {
+  border-color: #cbd5e2;
+  background: linear-gradient(135deg, #2d5363, #0f2f44);
+}
+.cat-uniform[data-grade='3'] {
+  border-color: #ffc85a;
+  background: linear-gradient(135deg, #3f4e6b, #0e283e);
+}
+.cat-uniform[data-grade='4'] {
+  border-color: #f7eab9;
+  background: linear-gradient(135deg, #5368a0, #162b52);
+  box-shadow: 0 0 15px #b4f3ff60;
+}
+.cat-uniform[data-grade='3'] .cat-uniform-crest,
+.cat-uniform[data-grade='4'] .cat-uniform-crest {
+  background: #e4ba5b;
+  border-color: #fff1bc;
+}
+.pilot-rank-medals {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-top: 3px;
+  min-height: 25px;
+}
+.pilot-rank-medals small {
+  font: 9px/1.3 monospace;
+  color: #8cb2bb;
+}
+.cat-crest {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cat-medal-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  flex: 0 0 auto;
+  border: 1px solid #809aa1;
+  border-radius: 50%;
+  color: #bd8451;
+  background: radial-gradient(circle, #35516d, #0b1d2e);
+}
+.cat-medal-chip[data-grade='silver'] {
+  color: #d3e1ec;
+}
+.cat-medal-chip[data-grade='gold'] {
+  color: #f2c865;
+}
+.cat-medal-chip[data-earned='false'] {
+  color: #557381;
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.cat-ranks-panel {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #778d9f88;
+  border-radius: 10px;
+  margin-top: 9px;
+  background: #071a2af0;
+  color: #e4f6ff;
+  padding: 11px 13px;
+}
+.cat-ranks-panel summary {
+  cursor: pointer;
+  font: 700 12px/1.4 monospace;
+  letter-spacing: 0.05em;
+}
+#catSquadRank {
+  float: right;
+  font: 700 9px/1.6 monospace;
+  color: #d1c4a0;
+}
+.cat-ranks-intro {
+  margin: 10px 0;
+  font: 11px/1.5 sans-serif;
+  color: #a0b7ca;
+}
+.cat-rank-cards {
+  max-height: min(57vh, 470px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cat-service-card {
+  --pilot-color: #7be2c9;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 3px;
+  border-top: 1px solid #466b7b66;
+  border-left: 2px solid var(--pilot-color);
+}
+.cat-service-avatar {
+  width: 47px;
+  height: 47px;
+  padding: 7px;
+  flex: 0 0 auto;
+  border: 1px solid var(--pilot-color);
+  border-radius: 8px;
+  color: var(--pilot-color);
+  background: #142a3b;
+}
+.cat-service-details {
+  flex: 1;
+  min-width: 0;
+}
+.cat-service-details > strong {
+  display: block;
+  font: 700 13px monospace;
+  color: var(--pilot-color);
+}
+.cat-service-title {
+  display: block;
+  font: 10px/1.4 monospace;
+  color: #e0d3af;
+}
+.cat-service-meter {
+  margin: 8px 0 5px;
+  accent-color: var(--pilot-color);
+}
+.cat-service-details > small {
+  display: block;
+  font: 10px/1.5 monospace;
+  color: #9bbbc9;
+}
+.cat-service-medals {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+#catRankToast {
+  position: fixed;
+  z-index: 82;
+  top: max(52px, calc(env(safe-area-inset-top, 0px) + 48px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(90vw, 335px);
+  padding: 8px 12px;
+  border: 1px solid #e8c573;
+  border-radius: 9px;
+  background: #111d30fa;
+  color: #ffedb3;
+  text-align: center;
+  font: 700 11px/1.4 monospace;
+  pointer-events: none;
+  box-shadow: 0 0 18px #d6ac6440;
+}
+#catRankToast[hidden] {
+  display: none;
+}
+@media (max-width: 650px) {
+  #catSquadRank {
+    float: none;
+    display: block;
+    margin-top: 4px;
+    font-size: 8px;
+  }
+  .cat-service-avatar {
+    width: 35px;
+    height: 35px;
+  }
+  .cat-service-medals {
+    gap: 4px;
+  }
+  .cat-medal-chip {
+    width: 24px;
+    height: 24px;
+    padding: 3px;
+  }
+  .cat-uniform {
+    width: 62px;
+    height: 29px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #catRankToast,
+  .cat-uniform,
+  .cat-medal-chip {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Preview rank uniforms without claiming that cosmetic designs were earned. */
+.pilot-uniform-inspect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+  align-items: center;
+}
+#pilotUniformPreview {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid #689f9c;
+  border-radius: 7px;
+  color: #b5f2ed;
+  background: #0a2835;
+  font: 700 9px/1.3 monospace;
+  cursor: pointer;
+}
+#pilotUniformPreviewStatus {
+  display: block;
+  color: #edcb87;
+  font: 10px/1.4 monospace;
+}
+
+/* Persistent post-mission service debrief (not gameplay-center HUD). */
+.cat-service-result {
+  box-sizing: border-box;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #87c6b48a;
+  border-left: 3px solid #e6c079;
+  border-radius: 8px;
+  background: linear-gradient(120deg, #0d2832e8, #142239ed);
+  color: #d7f4ed;
+  text-align: left;
+}
+.cat-service-result[hidden] {
+  display: none !important;
+}
+.cat-service-result strong {
+  display: block;
+  color: #f6d693;
+  font: 700 12px/1.4 monospace;
+}
+.cat-service-result p {
+  margin: 5px 0;
+  font: 11px/1.5 monospace;
+}
+.cat-service-result small {
+  display: block;
+  color: #9bdddf;
+  font: 10px/1.4 monospace;
+}
+.cat-earned-ribbons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0;
+}
+.cat-earned-ribbon {
+  border: 1px solid #b9955a;
+  border-radius: 16px;
+  padding: 4px 8px;
+  color: #ffe3a6;
+  background: #3f3425aa;
+  font: 700 9px/1.2 monospace;
+}
+.cat-earned-ribbon[data-grade='silver'] {
+  border-color: #afc1d0;
+  color: #e0e9f7;
+}
+.cat-earned-ribbon[data-grade='gold'] {
+  border-color: #f1c65f;
+  color: #ffe4a0;
+}
+
+/* v1.27.21: Progressive console-style title / 3-button hub; keep original cover art. */
+#menu.title-screen[data-screen] {
+  background: #030b16;
+  isolation: isolate;
+  align-items: center;
+  justify-content: center;
+  padding: max(52px, 7dvh) 5vw max(34px, 6dvh);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  box-sizing: border-box;
+  touch-action: pan-y;
+}
+#menu.title-screen[data-screen]:not(.selecting)::before {
+  background:
+    linear-gradient(180deg, #030b1620 8%, #030b1612 42%, #030b16bd 90%),
+    var(--cover-art) center 46% / contain no-repeat;
+  inset: 0;
+  animation: none;
+}
+#menu.title-screen[data-screen]:not(.selecting)::after {
+  opacity: 0.65;
+  animation-duration: 28s;
+}
+#menu.title-screen[data-screen] .title-content {
+  width: min(100%, 470px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  flex: 0 0 auto;
+  text-align: center;
+  box-sizing: border-box;
+}
+#menu.title-screen[data-screen] h1 {
+  font-size: clamp(46px, 8vw, 80px);
+  line-height: 0.96;
+  text-align: center;
+  margin: 0 auto 22px;
+  text-shadow: 0 3px 28px #030b16c0;
+}
+#menu.title-screen[data-screen] .title-brand {
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 90%;
+  text-align: center;
+  font-size: 10px;
+}
+#menu.title-screen[data-screen] .title-brand span {
+  display: none;
+}
+#menu[data-screen='splash'] .title-content > :not(#menuStartGate):not(#menuHero),
+#menu[data-screen='home'] .title-content > :not(#menuHero):not(h1):not(#menuPrimary),
+#menu[data-screen='play']
+  .title-content
+  > :not(h1):not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras),
+#menu[data-screen='hangar']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#squadSelection),
+#menu[data-screen='central']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras):not(#novaAuth):not(
+    .title-help
+  ):not(#catRanks):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
+  display: none !important;
+}
+#menu.title-screen[data-screen='splash'] {
+  padding: max(20px, 4dvh) 5vw;
+  overflow: hidden;
+}
+#menu[data-screen='splash'] .title-brand,
+#menu[data-screen='splash'] .title-footer,
+#menu[data-screen='splash'] #gameVersion,
+#menu[data-screen='splash'] .title-content > h1 {
+  display: none !important;
+}
+#menu[data-screen='splash'] .title-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+#menuStartGate {
+  width: min(420px, 94%);
+  padding: 0 0 clamp(54px, 12dvh, 120px);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+#menuStartGate small {
+  color: #b7cbd9;
+  font: 700 10px/1.5 monospace;
+  letter-spacing: 0.23em;
+  text-shadow: 0 1px 8px #020913;
+}
+#pressStart.press-start {
+  width: min(320px, 85vw);
+  min-height: 62px;
+  padding: 14px 30px;
+  border: 1px solid #b5eced;
+  border-radius: 12px;
+  background: #051522d9;
+  color: #f2ffff;
+  font: 800 clamp(16px, 3vw, 22px)/1.3 monospace;
+  letter-spacing: 0.19em;
+  box-shadow:
+    0 0 28px #58bcd340,
+    inset 0 0 22px #356b7645;
+  cursor: pointer;
+  text-shadow: 0 0 15px #92efff77;
+  touch-action: manipulation;
+}
+#pressStart:focus-visible,
+#menuPrimary button:focus-visible,
+#menuBack:focus-visible {
+  outline: 3px solid #9deaff;
+  outline-offset: 4px;
+}
+#pressStart span {
+  margin-left: 8px;
+  color: #65e9dc;
+}
+.menu-primary {
+  width: min(100%, 360px);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+.menu-primary button,
+#menuBack.menu-back {
+  box-sizing: border-box;
+  border: 1px solid #82a6bb9a;
+  border-radius: 12px;
+  min-height: 56px;
+  width: 100%;
+  color: #eefaff;
+  background: #061c2ce8;
+  cursor: pointer;
+  font: 800 16px/1.3 monospace;
+  letter-spacing: 0.16em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 19px;
+  touch-action: manipulation;
+}
+.menu-primary button:first-child {
+  color: #eafffa;
+  border-color: #6be7ce;
+  background: linear-gradient(105deg, #10554ce8, #073342e8);
+}
+.menu-primary button span {
+  font-size: 17px;
+  color: #a6dadc;
+}
+#menuBack.menu-back {
+  font-size: 12px;
+  width: min(100%, 420px);
+  min-height: 45px;
+  margin: 0 auto 12px;
+  padding: 8px 12px;
+  justify-content: center;
+}
+#menuScreenLabel.menu-screen-label {
+  margin: 0 auto 22px;
+  font: 700 11px/1.4 monospace;
+  letter-spacing: 0.18em;
+  color: #b5d5e1;
+  text-transform: uppercase;
+}
+#menu[data-screen='play'] .mission-entry,
+#menu[data-screen='play'] .title-actions,
+#menu[data-screen='central'] .title-actions,
+#menu[data-screen='central'] .title-extras {
+  max-width: 420px;
+  width: 100%;
+}
+#menu[data-screen='play'] #prepareSquad,
+#menu[data-screen='play'] #optionsFromMenu,
+#menu[data-screen='play'] #menuMusic,
+#menu[data-screen='central'] .mission-entry,
+#menu[data-screen='central'] #continue,
+#menu[data-screen='central'] #start,
+#menu[data-screen='central'] #prepareSquad {
+  display: none !important;
+}
+#menu[data-screen='central'] #optionsFromMenu {
+  display: block !important;
+  width: 100%;
+  min-height: 50px;
+}
+#menu[data-screen='central'] .title-help,
+#menu[data-screen='central'] #novaAuth,
+#menu[data-screen='central'] #catRanks,
+#menu[data-screen='central'] #novaTrophies,
+#menu[data-screen='central'] #novaRanking,
+#menu[data-screen='central'] #developerPanel {
+  width: 100%;
+  max-width: 420px;
+  margin: 10px auto 0;
+  text-align: left;
+  box-sizing: border-box;
+}
+#menu[data-screen='central'] #novaRanking {
+  position: relative;
+  inset: auto;
+}
+#menu[data-screen='central'] .title-help {
+  width: 100%;
+  padding: 6px 12px;
+}
+#menu[data-screen='central'] .title-help > summary {
+  min-height: 44px;
+  text-align: left;
+}
+#menu[data-screen='central'] .title-extras {
+  margin-top: 10px;
+}
+#menu.title-screen[data-screen='hangar'].selecting {
+  display: block;
+  padding: max(40px, 5dvh) max(14px, 4vw) 40px;
+}
+#menu.title-screen[data-screen='hangar'].selecting .title-content {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  gap: 2px;
+  text-align: left;
+}
+#menu.title-screen[data-screen='hangar'].selecting #menuBack,
+#menu.title-screen[data-screen='hangar'].selecting #menuScreenLabel,
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection {
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  max-width: 100%;
+}
+#menu.title-screen[data-screen='hangar'].selecting #menuScreenLabel {
+  text-align: center;
+}
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+#menu.title-screen[data-screen='splash']::before,
+#menu.title-screen[data-screen='splash']::after {
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  #menu.title-screen[data-screen]:not(.selecting) {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    padding: max(74px, 12dvh) 5vw max(26px, env(safe-area-inset-bottom, 0px));
+    align-items: flex-start;
+  }
+  #menu.title-screen[data-screen='splash'] {
+    padding: max(12px, 2dvh) 3vw;
+    align-items: center;
+  }
+  #menu.title-screen[data-screen='splash']::before {
+    background:
+      linear-gradient(180deg, #030b160a 5%, #030b1620 55%, #030b16ac 95%),
+      var(--cover-art) center 42% / contain no-repeat;
+  }
+  #menu.title-screen[data-screen='home'] .title-content {
+    margin-top: max(16px, 2dvh);
+  }
+  #menu.title-screen[data-screen] .title-content {
+    width: min(100%, 420px);
+  }
+  .menu-primary button {
+    min-height: 54px;
+  }
+  #menu.title-screen[data-screen='hangar'].selecting {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    padding: max(46px, 6dvh) 3vw 25px;
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen[data-screen]:not(.selecting) {
+    align-items: flex-start;
+    padding: 36px 5vw 24px;
+  }
+  #menu.title-screen[data-screen='splash'] {
+    align-items: center;
+    padding: 10px 4vw;
+  }
+  #menuStartGate {
+    padding-bottom: 9vh;
+  }
+  #menu[data-screen='home'] h1 {
+    margin-bottom: 14px;
+  }
+  .menu-primary {
+    gap: 6px;
+  }
+  .menu-primary button {
+    min-height: 45px;
+    padding: 8px 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pressStart,
+  .menu-primary button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Preserve contextual mission briefing only inside JOGAR, not on splash/home. */
+#menu[data-screen='play'] .title-content > #brief {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+/* v1.27.21 QA visual revision: uncropped Five Cats artwork is the hero;
+   start/navigation remain below it, including small-screen landscape. */
+#menu.title-screen[data-screen='splash'],
+#menu.title-screen[data-screen='home'] {
+  justify-content: center;
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='splash'] .title-content,
+#menu.title-screen[data-screen='home'] .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(9px, 1.5dvh, 16px);
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+#menu.title-screen[data-screen='splash']::before,
+#menu.title-screen[data-screen='home']::before {
+  background:
+    linear-gradient(180deg, #030b1675 5%, #030b1699 100%),
+    var(--cover-art) center / contain no-repeat;
+  opacity: 0.24;
+  filter: blur(20px);
+  transform: scale(1.06);
+}
+#menu.title-screen[data-screen='splash'] .menu-cover-hero,
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  display: block;
+  flex: 0 0 auto;
+  width: min(100%, 110dvh, 1080px);
+  aspect-ratio: 1672 / 941;
+  background: var(--cover-art) center / contain no-repeat;
+  border: 1px solid #77d6c844;
+  border-radius: clamp(10px, 2vw, 18px);
+  box-shadow:
+    0 0 0 1px #07151bbb,
+    0 24px 62px #000b,
+    0 0 48px #29cad51a;
+  pointer-events: none;
+}
+#menu.title-screen[data-screen='splash'] #menuStartGate {
+  width: min(100%, 440px);
+  padding: 0;
+  margin: 0 auto;
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] h1 {
+  font-size: clamp(32px, 4.5vw, 56px);
+  margin: 0;
+  line-height: 1;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary {
+  width: min(100%, 470px);
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary button {
+  min-height: 49px;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    justify-content: flex-start;
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    width: 100%;
+    gap: 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(92vw, 420px);
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    padding: 8px 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    gap: 5px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: min(75vw, 68dvh);
+  }
+  #menu.title-screen[data-screen='home'] h1 {
+    font-size: 30px;
+    margin: 0;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(96vw, 650px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary button {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+}
+
+/* Final specificity: override older showroom portrait spacing without cropping the poster. */
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  align-items: center;
+  justify-content: center;
+}
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+    width: 100%;
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: 8px 12px;
+  }
+}
+
+/* P0 QA: keep all three home actions inside the first 1366x768 desktop viewport.
+   Splash artwork may remain larger; home reserves actual room for navigation. */
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(100%, 94dvh, 960px);
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
   }
 }

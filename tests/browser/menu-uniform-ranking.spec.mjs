@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMenu } from './menu-navigation.mjs';
 
 for (const viewport of [
   { width: 390, height: 844 },
@@ -6,78 +7,78 @@ for (const viewport of [
   { width: 1366, height: 768 },
 ]) {
   test(
-    'menu actions align and ranking follows how-to at ' + viewport.width + 'x' + viewport.height,
+    'cover centers original artwork and gates the interface behind PRESS START at ' +
+      viewport.width,
     async ({ page }, info) => {
       await page.setViewportSize(viewport);
       await page.goto('/');
-      const menu = page.locator('#menu');
-      await expect(menu).toBeVisible();
-      const ranking = menu.locator('#novaRanking');
-      const help = menu.locator('.title-help');
-      await expect(ranking).toBeVisible();
-      await expect(help).toBeVisible();
-      const geometry = await page.evaluate(() => {
-        const menu = document.querySelector('#menu');
-        const selectors = [
-          '#prepareSquad',
-          '#start',
-          '#optionsFromMenu',
-          '#menuMusic',
-          '#watchIntro',
-        ];
-        const buttons = selectors.map((selector) => {
-          const node = menu.querySelector(selector);
-          const r = node.getBoundingClientRect();
-          return { selector, left: r.left, right: r.right, width: r.width, height: r.height };
-        });
-        const help = menu.querySelector('.title-help').getBoundingClientRect();
-        const ranking = menu.querySelector('#novaRanking').getBoundingClientRect();
-        return {
-          buttons,
-          helpBottom: help.bottom,
-          rankTop: ranking.top,
-          rankLeft: ranking.left,
-          rankRight: ranking.right,
-          viewportWidth: innerWidth,
-          position: getComputedStyle(menu.querySelector('#novaRanking')).position,
-        };
-      });
-      const first = geometry.buttons[0];
-      for (const button of geometry.buttons) {
-        expect(
-          Math.abs(button.left - first.left),
-          button.selector + ' left alignment',
-        ).toBeLessThanOrEqual(2);
-        expect(
-          Math.abs(button.right - first.right),
-          button.selector + ' right alignment',
-        ).toBeLessThanOrEqual(2);
-        expect(button.height, button.selector + ' touch target').toBeGreaterThanOrEqual(44);
-      }
-      expect(geometry.rankTop).toBeGreaterThanOrEqual(geometry.helpBottom - 1);
-      expect(geometry.rankLeft).toBeGreaterThanOrEqual(-1);
-      expect(geometry.rankRight).toBeLessThanOrEqual(geometry.viewportWidth + 1);
-      expect(geometry.position).not.toBe('fixed');
-      await ranking.scrollIntoViewIfNeeded();
-      await ranking.locator(':scope > summary').click();
-      await expect(ranking).toHaveAttribute('open', '');
-      await expect(ranking.locator('.nova-rank-content')).toBeVisible();
+      await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'splash');
+      await expect(page.locator('#pressStart')).toBeVisible();
+      await expect(page.locator('#menuPrimary')).toBeHidden();
+      await expect(page.locator('#novaAuth')).toBeHidden();
+      await expect(page.locator('#novaRanking')).toBeHidden();
+      const art = await page.locator('#menu').evaluate((node) => ({
+        background: getComputedStyle(node, '::before').backgroundSize,
+        width: node.getBoundingClientRect().width,
+        scrollWidth: node.scrollWidth,
+      }));
+      expect(art.background).toContain('contain');
+      expect(art.scrollWidth).toBeLessThanOrEqual(art.width + 2);
+      const press = await page.locator('#pressStart').boundingBox();
+      expect(press.x).toBeGreaterThanOrEqual(-1);
+      expect(press.x + press.width).toBeLessThanOrEqual(viewport.width + 1);
       await page.screenshot({
-        path: info.outputPath('uniform-menu-' + viewport.width + 'x' + viewport.height + '.png'),
-        fullPage: true,
+        path: info.outputPath('cover-press-start-' + viewport.width + '.png'),
+      });
+
+      await page.locator('#pressStart').click();
+      await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'home');
+      const menu = page.locator('#menuPrimary');
+      await expect(menu.locator('button')).toHaveCount(3);
+      for (const name of ['JOGAR', 'HANGAR', 'CENTRAL']) await expect(menu).toContainText(name);
+      await expect(page.locator('#start')).toBeHidden();
+      await expect(page.locator('#novaRanking')).toBeHidden();
+      await page.screenshot({
+        path: info.outputPath('three-choice-menu-' + viewport.width + '.png'),
       });
     },
   );
 }
 
-test('landscape menu scrolls to squad preparation without unreachable controls', async ({
+test('JOGAR, HANGAR and CENTRAL expose existing actions without changing missions', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/');
-  const prepare = page.locator('#prepareSquad');
-  await prepare.scrollIntoViewIfNeeded();
-  await expect(prepare).toBeInViewport();
-  await prepare.click();
+  await openMenu(page, 'play');
+  await expect(page.locator('#start')).toBeVisible();
+  await expect(page.locator('#continue')).toBeHidden();
+  await page.locator('#menuBack').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
+  await expect(page.locator('#pilot-jenifer')).toBeVisible();
+  await page.locator('#pilot-jenifer').click();
+  await expect(page.locator('#profileName')).toHaveText('JENIFER');
+  await page.locator('#menuBack').click();
+  await openMenu(page, 'central');
+  await expect(page.locator('#novaRanking')).toBeVisible();
+  await expect(page.locator('#novaTrophies')).toBeVisible();
+  await expect(page.locator('#catRanks')).toBeVisible();
+  await expect(page.locator('#optionsFromMenu')).toBeVisible();
+  await page.locator('#menuBack').click();
+  await expect(page.locator('#menuPrimary')).toBeVisible();
+  await expect(page.locator('#squadSelection')).toBeHidden();
+});
+
+test('Enter opens initial splash, Escape returns from submenus without starting a mission', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'home');
+  await page.locator('#menuHub').click();
+  await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'central');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'home');
+  await expect(page.locator('#menu')).toBeVisible();
+  await expect(page.locator('#cinematic')).toBeHidden();
 });

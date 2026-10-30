@@ -1,3 +1,4 @@
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('portrait cover keeps full artwork fit and menu actions inside a phone viewport', async ({
@@ -10,11 +11,10 @@ test('portrait cover keeps full artwork fit and menu actions inside a phone view
   await expect(page.locator('body')).toHaveClass(/showroom-web/);
   const fit = await page.locator('#menu').evaluate((node) => {
     const style = getComputedStyle(node, '::before');
-    return { bgSize: style.backgroundSize, content: getComputedStyle(node).overflowY };
+    return { bgSize: style.backgroundSize };
   });
   expect(fit.bgSize).toContain('contain');
-  expect(fit.content).toBe('auto');
-  const bounds = await page.locator('#start').boundingBox();
+  const bounds = await page.locator('#pressStart').boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
@@ -28,6 +28,7 @@ test('ranking prioritizes scores, with consent and explanations behind collapsib
   test.setTimeout(90000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await openMenu(page, 'central');
   const ranking = page.locator('#novaRanking');
   await ranking.locator(':scope > summary').click();
   await expect(ranking).toHaveAttribute('open', '');

@@ -46,16 +46,30 @@ export function createShowroomShip(model, color) {
   return ship;
 }
 
-export function createShowroomPilot(id) {
+export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   const profile = pilotAt(id),
     g = new T.Group();
+  const grade = Math.min(4, Math.max(0, Number.isFinite(uniform) ? Math.floor(uniform) : 0));
+  const medalCount = Math.min(
+    3,
+    Math.max(0, Number.isFinite(earnedMedals) ? Math.floor(earnedMedals) : 0),
+  );
+  const suitPalettes = [
+    ['#2b414a', '#a6b5bd'],
+    ['#244d60', '#82c5e6'],
+    ['#344e5d', '#c1d2da'],
+    ['#323d5d', '#efc36d'],
+    ['#2f3b74', '#f5deb2'],
+  ];
+  g.userData.uniformGrade = grade;
+  g.userData.medalCount = medalCount;
   g.name = 'pilot-model-' + profile.id;
   const material = (color, metalness = 0.1, roughness = 0.65) =>
     new T.MeshStandardMaterial({ color, metalness, roughness });
   const fur = material(id === 'jenifer' ? '#707a86' : id === 'calvin' ? '#28252d' : '#161a23');
-  const armor = material('#2b414a', 0.7, 0.3),
+  const armor = material(suitPalettes[grade][0], 0.7, 0.3),
     dark = material('#101925', 0.5);
-  const trim = material('#a6b5bd', 0.8, 0.25),
+  const trim = material(suitPalettes[grade][1], 0.8, 0.25),
     pink = material('#b87586');
   const glow = new T.MeshStandardMaterial({
     color: profile.color,
@@ -86,6 +100,44 @@ export function createShowroomPilot(id) {
   plate(dark, 0, -0.38, 0, 1.13, 0.17, 0.8);
   plate(trim, 0, -0.38, 0.43, 0.26, 0.2, 0.08);
   plate(dark, 0, 0.35, -0.43, 0.7, 0.9, 0.23);
+  // Earned feline rank is real, lightweight showroom geometry, not an overlay
+  // detached from the cat pilot. Preserve all existing fur/eye/body proportions.
+  const chestCrestShape = new T.Shape();
+  chestCrestShape.moveTo(-0.18, 0.08);
+  chestCrestShape.lineTo(-0.15, 0.26);
+  chestCrestShape.lineTo(-0.06, 0.19);
+  chestCrestShape.lineTo(0.06, 0.19);
+  chestCrestShape.lineTo(0.15, 0.26);
+  chestCrestShape.lineTo(0.18, 0.08);
+  chestCrestShape.quadraticCurveTo(0.17, -0.15, 0, -0.18);
+  chestCrestShape.quadraticCurveTo(-0.17, -0.15, -0.18, 0.08);
+  const badge = new T.Mesh(new T.ShapeGeometry(chestCrestShape), trim);
+  badge.name = 'pilot-feline-rank-insignia';
+  badge.position.set(0, 0.32, 0.57);
+  g.add(badge);
+  if (grade >= 1) {
+    for (const side of [-1, 1]) {
+      for (let stripe = 0; stripe < Math.min(3, grade); stripe++) {
+        const bar = plate(trim, side * 0.69, 0.89 - stripe * 0.1, 0.3, 0.25, 0.035, 0.04);
+        bar.name = 'pilot-cat-service-stripe';
+        bar.rotation.z = side * 0.24;
+      }
+    }
+  }
+  if (grade >= 3) {
+    for (const side of [-1, 1]) {
+      const wingTrim = plate(glow, side * 0.31, 0.45, 0.52, 0.18, 0.035, 0.03);
+      wingTrim.name = 'pilot-command-wing';
+      wingTrim.rotation.z = side * -0.26;
+    }
+  }
+  for (let index = 0; index < medalCount; index++) {
+    const miniature = new T.Mesh(new T.ShapeGeometry(chestCrestShape), trim);
+    miniature.name = 'pilot-earned-cat-medal';
+    miniature.position.set(-0.31 + index * 0.19, 0.02, 0.58);
+    miniature.scale.setScalar(0.33);
+    g.add(miniature);
+  }
   for (const side of [-1, 1]) {
     ellipsoid(g, 'shoulder', trim, side * 0.76, 0.75, 0, 0.31, 0.3, 0.37);
     ellipsoid(g, 'arm', armor, side * 0.84, 0.12, 0, 0.23, 0.62, 0.25);

@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
@@ -16,12 +17,15 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await expect(page.locator('#gameVersion')).toHaveText(`v${version}`);
 
   const menuTheme = page.locator('#menuMusic');
-  await menuTheme.click();
+  await openMenu(page, 'central');
+  // Opening the title now starts the soundtrack after the player's gesture.
   await expect(menuTheme).toContainText('PAUSAR TEMA');
-  await menuTheme.click();
+  await clickMenu(page, '#menuMusic');
   await expect(menuTheme).toContainText('OUVIR TEMA');
+  await clickMenu(page, '#menuMusic');
+  await expect(menuTheme).toContainText('PAUSAR TEMA');
 
-  await page.locator('#watchIntro').click();
+  await clickMenu(page, '#watchIntro');
   await expect(page.locator('#cinematic')).toBeVisible();
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#cinematicCaption')).toContainText('paz dos Five Cats');
@@ -29,7 +33,7 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await expect(page.locator('#cinematic')).toBeHidden();
   await expect(page.locator('#menu')).toBeVisible();
 
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await expect(page.locator('#cinematic')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.locator('#cinematic')).toBeHidden();
