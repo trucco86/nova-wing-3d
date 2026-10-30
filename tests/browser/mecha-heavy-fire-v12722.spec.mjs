@@ -32,19 +32,17 @@ test('mecha enters heavy-fire mode, charges right-arm plasma and keeps game stab
     await page.keyboard.down('Space');
   }
   await expect
-    .poll(
-      () => page.locator('#chargeBar').evaluate((el) => Number.parseFloat(el.style.width)),
-      { timeout: 45000 },
-    )
+    .poll(() => page.locator('#chargeBar').evaluate((el) => Number.parseFloat(el.style.width)), {
+      timeout: 45000,
+    })
     .toBeGreaterThan(58);
   await page.screenshot({ path: info.outputPath(`mecha-heavy-charge-${info.project.name}.png`) });
   if (mobile) await page.mouse.up();
   else await page.keyboard.up('Space');
   await expect
-    .poll(
-      () => page.locator('#chargeBar').evaluate((el) => Number.parseFloat(el.style.width)),
-      { timeout: 20000 },
-    )
+    .poll(() => page.locator('#chargeBar').evaluate((el) => Number.parseFloat(el.style.width)), {
+      timeout: 20000,
+    })
     .toBeLessThan(2);
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#robotTouch')).toHaveAttribute('aria-pressed', 'true');
