@@ -7791,3 +7791,53 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
     margin: 2px 0 0;
   }
 }
+
+/* v1.27.25: actual Five Cats portraits in the remastered intro.
+   Portrait crops use the same approved cover as the in-game radio. */
+.cinematic-story .cinematic-speaker-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 56px;
+  margin-top: 8px;
+}
+.cinematic-story .cinematic-speaker-row strong {
+  margin: 0;
+}
+#cinematicPortrait {
+  display: block;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid #72f5d9;
+  border-radius: 12px;
+  background-image: var(--cover-art);
+  background-size: 836% auto;
+  background-position: 57.75% 40.5%;
+  box-shadow: 0 0 18px #48dcce45;
+}
+#cinematicPortrait[hidden] {
+  display: none !important;
+}
+#cinematicPortrait::before,
+#cinematicPortrait::after {
+  display: none;
+}
+#cinematicPortrait[data-pilot='christopher'] { background-position: 56.4% 13.5%; }
+#cinematicPortrait[data-pilot='bob'] { background-position: 74% 17.5%; }
+#cinematicPortrait[data-pilot='calvin'] { background-position: 44.2% 54%; }
+#cinematicPortrait[data-pilot='jenifer'] { background-position: 73.4% 41.8%; }
+#cinematic.hide-subtitles #cinematicPortrait {
+  display: none !important;
+}
+@media (max-width: 600px) {
+  .cinematic-story .cinematic-speaker-row {
+    min-height: 44px;
+    gap: 8px;
+  }
+  #cinematicPortrait {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+}
