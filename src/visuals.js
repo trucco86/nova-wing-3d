@@ -5,6 +5,7 @@ import { createBrushedMetalNormalMap } from './premium-materials.js';
 import { createPremiumCityLandmarks } from './premium-city-landmarks.js';
 import { createPremiumWetRoadFragment } from './premium-wet-road.js';
 import { createPremiumRoadDressing } from './premium-road-dressing.js';
+import { createHeroFacadeArchitecture } from './premium-hero-facades.js';
 import { setCinematicReflectionQuality } from './cinematic-reflections.js';
 import { createSculptedStarfighter } from './premium-starship-sculpt.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
@@ -1160,6 +1161,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     mesh.instanceMatrix.needsUpdate = true;
     cityNearDetail.add(mesh);
   }
+  // Architectural hero set: only the near High-LOD city tile draws these
+  // layered silhouettes and window patterns, never the far clone.
+  const heroFacades = createHeroFacadeArchitecture();
+  cityNearDetail.add(heroFacades);
   cityNearDetail.visible = false;
   cityHighDetails.add(cityNearDetail);
   for (const mesh of [landmarkCores, landmarkCrowns, skybridges]) {
@@ -1330,6 +1335,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
       cityNearDetail.visible = quality === 'high';
+      heroFacades.visible = quality === 'high' && sceneryTheme === 'city';
       if (farNearDetail) farNearDetail.visible = false;
       premiumCityLife.group.visible = quality === 'high';
       if (farCityLife) farCityLife.visible = false;
@@ -1426,6 +1432,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       sceneryTheme = sector.theme;
       terrainMat.uniforms.cityWet.value = sceneryTheme === 'city' ? 1 : 0;
       premiumRoadDressing.group.visible = visualQuality === 'high' && sceneryTheme === 'city';
+      heroFacades.visible = visualQuality === 'high' && sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
