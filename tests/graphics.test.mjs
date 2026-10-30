@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    28,
-    'two city loops have four base, three High and five premium draw calls; flagship has four',
+    31,
+    'two city loops have four base, three High and five premium draw calls; flagship has four legacy premium and three new cinematic instanced draws',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

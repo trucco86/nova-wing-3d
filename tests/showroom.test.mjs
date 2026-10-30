@@ -34,10 +34,18 @@ test('showroom pilots preserve relative size, fur and head differences in finite
 
 test('preview ship color and resource disposal cannot change the live fighter', () => {
   const live = fighter();
-  let disposed = 0;
+  let disposed = 0,
+    disposedGeometry = 0,
+    disposedMaterial = 0;
   live.traverse((o) => {
-    o.geometry?.addEventListener('dispose', () => disposed++);
-    o.material?.addEventListener('dispose', () => disposed++);
+    o.geometry?.addEventListener('dispose', () => {
+      disposed++;
+      disposedGeometry++;
+    });
+    o.material?.addEventListener('dispose', () => {
+      disposed++;
+      disposedMaterial++;
+    });
   });
   const original = live.children[0].material.color.getHex();
   for (const p of SHIP_MODELS) {
@@ -50,6 +58,10 @@ test('preview ship color and resource disposal cannot change the live fighter', 
     });
     disposeShowroomModel(ship);
   }
-  assert.equal(disposed, 0);
+  assert.equal(
+    disposed,
+    0,
+    `live fighter resources disposed: geometry=${disposedGeometry} material=${disposedMaterial}`,
+  );
   assert.equal(live.children[0].material.color.getHex(), original);
 });

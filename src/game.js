@@ -78,6 +78,8 @@ import {
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { installCinematicIbl } from './cinematic-lighting.js';
+import { animateCinematicExhaust } from './cinematic-exhaust.js';
 import { setHeroFighterVisuals } from './hero-visibility.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
@@ -191,6 +193,7 @@ export function createGame({
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new T.Scene();
+  const cinematicIbl = installCinematicIbl(renderer, scene);
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
@@ -651,8 +654,11 @@ export function createGame({
     if (shipModule) {
       player.remove(shipModule);
       shipModule.traverse((o) => {
-        o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        // THREE.Sprite uses one global geometry for every billboard. Never
+        // dispose it when changing fighter models or closing a mission.
+        if (!o.isSprite) o.geometry?.dispose();
+        if (o.material?.userData.paintModule || o.userData?.cinematicDisposable)
+          o.material?.dispose();
       });
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
@@ -2304,6 +2310,7 @@ export function createGame({
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
+    cinematicIbl.setQuality(visualQuality);
     post.setGraphicsQuality(visualQuality);
     post.resize(window.innerWidth, window.innerHeight);
     if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
@@ -2821,6 +2828,8 @@ export function createGame({
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
+    animateCinematicExhaust(shipModule, elapsed, boosting, graphicsQualityApplied);
+    animateCinematicExhaust(robot, elapsed, boosting, graphicsQualityApplied);
     const unfoldProgress = robotTransition / 0.7;
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
@@ -4528,9 +4537,13 @@ export function createGame({
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
-        o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        // THREE.Sprite uses one global geometry for every billboard. Never
+        // dispose it when changing fighter models or closing a mission.
+        if (!o.isSprite) o.geometry?.dispose();
+        if (o.material?.userData.paintModule || o.userData?.cinematicDisposable)
+          o.material?.dispose();
       });
+      cinematicIbl.dispose();
       renderer.dispose?.();
     },
   };

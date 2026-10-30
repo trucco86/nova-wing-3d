@@ -7,6 +7,8 @@ import {
   createPremiumCarrierDetails,
 } from './premium-graphics.js';
 import { createHeroFighter, createHeroMechaArmor } from './hero-ships.js';
+import { createCinematicFlagship, animateCinematicFlagship } from './cinematic-flagship.js';
+import { createCinematicExhaust } from './cinematic-exhaust.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -548,6 +550,7 @@ export function createFlyingRobot() {
     baseScale: 0.94,
   };
   robot.add(createHeroMechaArmor());
+  robot.add(createCinematicExhaust('mecha'));
   robot.scale.setScalar(0.94);
   return robot;
 }
@@ -627,6 +630,7 @@ export function createShipModule(model = 'nova7') {
   g.userData.progressionNeons = progressionNeons;
   g.add(createPremiumShipDetails(model));
   g.add(createHeroFighter(model));
+  g.add(createCinematicExhaust('fighter'));
   return g;
 }
 
@@ -1033,6 +1037,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   bay.add(box(30, 12, 0.7, black, 0, -5, 19));
   bay.add(box(25, 0.7, 2, mint, 0, -5, 21));
   carrier.add(bay);
+  // Replace the unconvincing legacy boxes on High; keep the boss-launch bay
+  // so encounter emergence still reads clearly at every graphics level.
+  const legacyFlagship = carrier.children.filter((part) => part !== bay);
+  const cinematicFlagship = createCinematicFlagship();
+  carrier.add(cinematicFlagship);
   const premiumCarrier = createPremiumCarrierDetails();
   carrier.add(premiumCarrier);
   carrier.position.set(0, 62, -700);
@@ -1107,6 +1116,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityPremiumDetails.visible = quality === 'high';
       if (farPremiumDetails) farPremiumDetails.visible = quality === 'high';
       premiumCarrier.visible = quality === 'high';
+      cinematicFlagship.visible = quality === 'high';
+      for (const part of legacyFlagship) part.visible = quality !== 'high';
+      key.intensity = quality === 'high' ? 3.55 : 3.2;
+      rim.intensity = quality === 'high' ? 3.35 : 3;
+      purple.intensity = quality === 'high' ? 1.4 : 1.1;
     },
     showCarrierForBoss() {
       carrier.visible = true;
@@ -1447,6 +1461,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         }
       rain.position.y = -((time * 12) % 90);
       carrier.position.y = 62 + Math.sin(time * 0.25) * 3;
+      animateCinematicFlagship(cinematicFlagship, time);
     },
     reset() {
       if (orbitalFrame) {
