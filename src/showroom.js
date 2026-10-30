@@ -5,6 +5,8 @@ import {
   disposeShowroomModel,
 } from './showroom-models.js';
 import { pilotAt, shipAt } from './pilots.js';
+import { loadSettings } from './ui-preferences.js';
+import { resolveGraphicsQuality } from './graphics-quality.js';
 
 export function installShowroom({
   document = globalThis.document,
@@ -124,8 +126,15 @@ export function installShowroom({
       return;
     }
     if (!initialize()) return;
+    let savedStorage = null;
+    try { savedStorage = window.localStorage; } catch { /* private browsing */ }
+    const graphics = resolveGraphicsQuality(loadSettings(savedStorage).graphics, {
+      coarsePointer: window.matchMedia('(pointer:coarse)').matches,
+      deviceMemory: window.navigator?.deviceMemory ?? null,
+    });
     const next = [
       mode,
+      graphics,
       root.dataset.pilot,
       root.dataset.ship,
       root.dataset.shipColor,
@@ -140,7 +149,7 @@ export function installShowroom({
       }
       model =
         mode === 'ship'
-          ? createShowroomShip(root.dataset.ship, root.dataset.shipColor)
+          ? createShowroomShip(root.dataset.ship, root.dataset.shipColor, graphics)
           : createShowroomPilot(
               root.dataset.pilot,
               Number(root.dataset.uniformGrade ?? 0),
