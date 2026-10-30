@@ -16,8 +16,8 @@ export function setHeroFighterVisuals(legacyParts, shipModule, quality, shipVisi
     if (part === shipModule || !part.parent) continue;
     const exhaust =
       part.name === 'flame' ||
-      part.isSprite ||
-      (part.isMesh && part.material?.isMeshBasicMaterial && part.position.z > 2.3);
+      part.isSprite === true ||
+      (part.isMesh === true && part.material?.isMeshBasicMaterial === true && part.position.z > 2.3);
     part.visible = shipVisible && (!high || exhaust);
   }
   // Preserve RPG progression neons at their actual upgrade tier, as managed
