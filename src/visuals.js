@@ -1008,7 +1008,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: createPremiumWetRoadFragment(noise),,
+    fragmentShader: createPremiumWetRoadFragment(noise),
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
