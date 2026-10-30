@@ -6,6 +6,7 @@ import {
   createPremiumShipDetails,
   createPremiumCarrierDetails,
 } from './premium-graphics.js';
+import { createHeroFighter, createHeroMechaArmor } from './hero-ships.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -546,6 +547,7 @@ export function createFlyingRobot() {
     thrusters: independentThrusters,
     baseScale: 0.94,
   };
+  robot.add(createHeroMechaArmor());
   robot.scale.setScalar(0.94);
   return robot;
 }
@@ -624,6 +626,7 @@ export function createShipModule(model = 'nova7') {
   }
   g.userData.progressionNeons = progressionNeons;
   g.add(createPremiumShipDetails(model));
+  g.add(createHeroFighter(model));
   return g;
 }
 
