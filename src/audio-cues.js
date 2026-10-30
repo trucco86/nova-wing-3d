@@ -95,9 +95,7 @@ Object.assign(AUDIO_CUES, {
       { from: 290, to: 96, duration: 0.145, gain: 0.052, wave: 'triangle', filter: 1350 },
       { from: 135, to: 65, duration: 0.12, gain: 0.021, wave: 'sine' },
     ],
-    noises: [
-      { duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 },
-    ],
+    noises: [{ duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 }],
   },
   plasmaCharge: {
     cooldown: 0.5,

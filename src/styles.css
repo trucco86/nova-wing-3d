@@ -7444,7 +7444,10 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   background: var(--cover-art) center / contain no-repeat;
   border: 1px solid #77d6c844;
   border-radius: clamp(10px, 2vw, 18px);
-  box-shadow: 0 0 0 1px #07151bbb, 0 24px 62px #000b, 0 0 48px #29cad51a;
+  box-shadow:
+    0 0 0 1px #07151bbb,
+    0 24px 62px #000b,
+    0 0 48px #29cad51a;
   pointer-events: none;
 }
 #menu.title-screen[data-screen='splash'] #menuStartGate {
