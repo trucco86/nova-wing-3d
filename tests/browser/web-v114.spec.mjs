@@ -1,4 +1,4 @@
-import { clickMenu } from './menu-navigation.mjs';
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
@@ -17,10 +17,13 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await expect(page.locator('#gameVersion')).toHaveText(`v${version}`);
 
   const menuTheme = page.locator('#menuMusic');
-  await clickMenu(page, '#menuMusic');
+  await openMenu(page, 'central');
+  // Opening the title now starts the soundtrack after the player's gesture.
   await expect(menuTheme).toContainText('PAUSAR TEMA');
   await clickMenu(page, '#menuMusic');
   await expect(menuTheme).toContainText('OUVIR TEMA');
+  await clickMenu(page, '#menuMusic');
+  await expect(menuTheme).toContainText('PAUSAR TEMA');
 
   await clickMenu(page, '#watchIntro');
   await expect(page.locator('#cinematic')).toBeVisible();
