@@ -4399,6 +4399,7 @@ export function createGame({
       petCare: { ...petCare },
       cinematic: cinematic ? { elapsed: cinematic.elapsed, duration: cinematic.duration } : null,
       loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
+      premiumAsset: shipModule.userData.heroGlbLoad?.status ?? 'base',
       sector: sectorIndex + 1,
       lives,
       credits,
