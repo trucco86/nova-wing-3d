@@ -8,7 +8,7 @@ test('all five ships form symmetric formation with Bia ahead in center', () => {
   assert.equal(CINEMATIC_FLEET.length, 5);
   assert.equal(new Set(CINEMATIC_FLEET.map((p) => p.id)).size, 5);
   assert.equal(CINEMATIC_FLEET.find((p) => p.slot === 0).id, 'bia');
-  assert.deepEqual(CINEMATIC_FLEET.map((p) => p.slot).sort(), [-2, -1, 0, 1, 2]);
+  assert.deepEqual(CINEMATIC_FLEET.map((p) => p.slot).sort((left, right) => left - right), [-2, -1, 0, 1, 2]);
   const center = cinematicFormationPosition(0, 6, 16 / 9);
   for (const slot of [1, 2]) {
     const left = cinematicFormationPosition(-slot, 6, 16 / 9);
