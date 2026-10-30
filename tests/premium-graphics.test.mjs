@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createPremiumCityDetails, createPremiumShipDetails } from '../src/premium-graphics.js';
+import { createPremiumCityDetails, createPremiumShipDetails, createPremiumCarrierDetails } from '../src/premium-graphics.js';
 import { createShipModule, createWorld } from '../src/visuals.js';
 
 function assertFiniteInstances(group) {
@@ -69,4 +69,20 @@ test('world High activates both city loops while Medium has no premium decoratio
   assert.equal(far.visible, true);
   world.setGraphicsQuality('medium');
   assert.equal(near.visible, false);
+});
+
+test('premium flagship geometry is cosmetic, finite and disappears in Medium', () => {
+  const layer = createPremiumCarrierDetails();
+  assert.equal(layer.visible, false);
+  assert.equal(layer.userData.drawCallBudget, 4);
+  assert.deepEqual(layer.children.map((mesh) => mesh.count), [28, 24, 16, 12]);
+  assertFiniteInstances(layer);
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.35, true);
+  const carrier = scene.getObjectByName('premium-flagship-details');
+  assert.ok(carrier);
+  world.setGraphicsQuality('high');
+  assert.equal(carrier.visible, true);
+  world.setGraphicsQuality('medium');
+  assert.equal(carrier.visible, false);
 });
