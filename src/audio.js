@@ -73,7 +73,7 @@ export function createMusic(context) {
     if (master) return;
     input = context.createGain();
     master = context.createGain();
-    master.gain.value = 0.56 * volume;
+    master.gain.value = 0.6 * volume;
     let tail = input;
     if (context.createBiquadFilter) {
       for (const [type, frequency, gain] of [
@@ -272,7 +272,7 @@ export function createMusic(context) {
     },
     setVolume(value) {
       volume = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 1;
-      if (master) master.gain.value = 0.48 * volume;
+      if (master) master.gain.value = 0.6 * volume;
     },
     setEnabled(value) {
       enabled = !!value;

@@ -1,3 +1,4 @@
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with no save writes', async ({
@@ -7,6 +8,7 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
+  await openMenu(page, 'central');
   const developer = page.locator('#developerPanel');
   await expect(developer).not.toHaveAttribute('hidden');
   await developer.locator('summary').click();
@@ -66,6 +68,7 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
 }, info) => {
   test.setTimeout(90000);
   await page.goto('/');
+  await openMenu(page, 'central');
   await page.locator('#developerPanel summary').click();
   for (const viewport of [
     { width: 390, height: 844 },

@@ -30,7 +30,8 @@ test('settings sanitize corrupt and out-of-range values without mutating default
     },
     { language: 'pt', master: 0.85, music: 0, sfx: 1, opacity: 0.4, sensitivity: 1.6, intro: true },
   );
-  assert.equal(DEFAULT_SETTINGS.music, 0.7);
+  assert.equal(DEFAULT_SETTINGS.music, 0.8);
+  assert.equal(DEFAULT_SETTINGS.sfx, 0.85);
 });
 test('settings persist when available and fall back when blocked', () => {
   let value = null;

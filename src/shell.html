@@ -236,10 +236,34 @@
           ><button id="boostTouch">BOOST</button>
         </div>
       </div>
-      <section id="menu" class="title-screen" aria-label="Menu principal">
+      <section id="menu" class="title-screen" data-screen="splash" aria-label="Menu principal">
         <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
         <div class="title-content">
+          <div
+            id="menuHero"
+            class="menu-cover-hero"
+            role="img"
+            aria-label="Capa original Nova Wing com os cinco gatos da esquadrilha"
+          ></div>
+          <div id="menuStartGate" class="menu-start-gate" aria-label="Tela de título">
+            <button
+              type="button"
+              id="pressStart"
+              class="press-start"
+              aria-label="Press start, abrir menu"
+            >
+              PRESS START <span aria-hidden="true">▶</span>
+            </button>
+            <small>FIVE CATS · NOVA WING</small>
+          </div>
           <h1>NOVA<span>WING</span></h1>
+          <nav id="menuPrimary" class="menu-primary" aria-label="Menu principal Nova Wing">
+            <button type="button" id="menuPlay">JOGAR <span aria-hidden="true">↗</span></button>
+            <button type="button" id="menuHangar">HANGAR <span aria-hidden="true">⌁</span></button>
+            <button type="button" id="menuHub">CENTRAL <span aria-hidden="true">◆</span></button>
+          </nav>
+          <button type="button" id="menuBack" class="menu-back">← VOLTAR AO MENU</button>
+          <p id="menuScreenLabel" class="menu-screen-label" aria-live="polite"></p>
           <p id="brief">Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.</p>
           <label id="specialtyChoice" hidden
             >ESPECIALIDADE
@@ -299,12 +323,45 @@
               <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
             </section>
             <div class="pilot-profile">
-              <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
+              <div class="profile-portrait">
+                <i id="profileAvatar" class="cat-avatar">B</i>
+                <div
+                  id="pilotUniform"
+                  class="cat-uniform"
+                  data-grade="0"
+                  aria-label="Uniforme de recruta"
+                >
+                  <span class="cat-uniform-collar" aria-hidden="true"></span>
+                  <span class="cat-uniform-stripes" aria-hidden="true"></span>
+                  <span class="cat-uniform-crest" aria-hidden="true"></span>
+                </div>
+              </div>
               <div class="profile-copy">
                 <span id="profileRole">COMANDANTE VANGUARDA</span>
+                <div class="pilot-rank-line" id="pilotRankInsignia">
+                  RECRUTA · PRIMEIRA PATRULHA
+                </div>
                 <h2 id="profileName">BIA</h2>
                 <strong id="profileSkill">SOBRECARGA</strong>
                 <p id="profileDescription"></p>
+                <meter
+                  id="pilotServiceMeter"
+                  class="pilot-service-meter"
+                  min="0"
+                  max="1"
+                  value="0"
+                  aria-label="Progresso de patente"
+                ></meter>
+                <div id="pilotRankProgress" class="pilot-rank-progress">0 / 120 PS</div>
+                <div
+                  id="pilotRankMedals"
+                  class="pilot-rank-medals"
+                  aria-label="Medalhas do piloto"
+                ></div>
+                <div class="pilot-uniform-inspect">
+                  <button type="button" id="pilotUniformPreview">VISUALIZAR UNIFORMES</button>
+                  <small id="pilotUniformPreviewStatus"> Uniforme conquistado: Mk-1 </small>
+                </div>
               </div>
               <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
             </div>
@@ -437,6 +494,30 @@
               perfura. Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos
               ±60° para geradores e frente 0° para núcleo.
             </p>
+          </details>
+          <details
+            id="catRanks"
+            class="cat-ranks-panel"
+            aria-label="Patentes e medalhas dos Five Cats"
+          >
+            <summary>✦ HALL DA PATRULHA <span id="catSquadRank">PATRULHA ORBITAL</span></summary>
+            <p class="cat-ranks-intro">
+              Conclua missões para promover cada gato. Medalhas, uniformes e insígnias evoluem sem
+              afetar os atributos de combate.
+            </p>
+            <p id="catMedalDetails" class="cat-medal-details" role="status" aria-live="polite">
+              Toque em uma medalha para consultar como conquistá-la.
+            </p>
+            <div
+              id="catRankCards"
+              class="cat-rank-cards"
+              aria-label="Patentes individuais dos cinco pilotos"
+            ></div>
+          </details>
+          <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
+            <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
+            <p id="novaTrophyPoints">0 pontos de troféu</p>
+            <ol id="novaTrophyList" aria-label="Lista de troféus e conquistas"></ol>
           </details>
           <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
             <summary aria-label="Abrir ranking Five Cats">
@@ -801,6 +882,12 @@
           <h2 id="shopTitle">SETOR LIBERTADO</h2>
           <p id="shopNext"></p>
           <strong id="shopCredits">0 CR</strong>
+          <div
+            id="shopServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Condecorações da missão"
+          ></div>
           <p>
             Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
           </p>
@@ -858,6 +945,12 @@
           <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>
           <h2 id="resultTitle"></h2>
           <p id="resultText"></p>
+          <div
+            id="resultServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Patentes e medalhas da missão"
+          ></div>
           <button class="primary" id="restart">VOAR NOVAMENTE ↗</button>
         </div>
       </section>
