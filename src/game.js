@@ -654,8 +654,11 @@ export function createGame({
     if (shipModule) {
       player.remove(shipModule);
       shipModule.traverse((o) => {
-        o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        // THREE.Sprite uses one global geometry for every billboard. Never
+        // dispose it when changing fighter models or closing a mission.
+        if (!o.isSprite) o.geometry?.dispose();
+        if (o.material?.userData.paintModule || o.userData?.cinematicDisposable)
+          o.material?.dispose();
       });
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
@@ -4534,8 +4537,11 @@ export function createGame({
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
-        o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        // THREE.Sprite uses one global geometry for every billboard. Never
+        // dispose it when changing fighter models or closing a mission.
+        if (!o.isSprite) o.geometry?.dispose();
+        if (o.material?.userData.paintModule || o.userData?.cinematicDisposable)
+          o.material?.dispose();
       });
       cinematicIbl.dispose();
       renderer.dispose?.();
