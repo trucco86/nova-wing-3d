@@ -8,7 +8,6 @@
 - Testes determinísticos validam seleção, altura, hitbox, esquiva, comportamento em robô e fase 3.
 - Isolado em QA sobre PR #168; sem mudanças em DEV oficial, HML ou produção. Home e retratos permanecem backlog separado.
 
-
 ## 1.27.22 — Mecha Heavy Fire (candidata isolada QA)
 
 - Nave mantém agilidade e a cadência original; robô recebe 2,35× no dano por disparo com intervalo 20% maior entre tiros (DPS ~1,96× na mesma arma).
