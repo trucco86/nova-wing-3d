@@ -2,6 +2,7 @@ import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createBrushedMetalNormalMap } from './premium-materials.js';
+import { createPremiumCityLandmarks } from './premium-city-landmarks.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -1156,6 +1157,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     detail.instanceMatrix.needsUpdate = true;
     cityHighDetails.add(detail);
   }
+  // A recognizable cinematic skyline — monumental spires, elevated transport,
+  // animated commuter craft — replaces the purely box-built impression.
+  const premiumCityLife = createPremiumCityLandmarks();
+  cityHighDetails.add(premiumCityLife.group);
   city.add(cityHighDetails);
   cityHighDetails.visible = false;
   city.userData.loop = 1900;
@@ -1165,6 +1170,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
   const farNearDetail = cityFar.getObjectByName('city-premium-near-lod');
+  const farCityLife = cityFar.getObjectByName('city-premium-cinematic-landmarks');
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1299,6 +1305,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (farHighDetails) farHighDetails.visible = quality === 'high';
       cityNearDetail.visible = quality === 'high';
       if (farNearDetail) farNearDetail.visible = false;
+      premiumCityLife.group.visible = quality === 'high';
+      if (farCityLife) farCityLife.visible = false;
     },
     showCarrierForBoss() {
       carrier.visible = true;
@@ -1608,6 +1616,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
+      if (playing && city.visible && premiumCityLife.group.visible) premiumCityLife.update(time);
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
@@ -1650,6 +1659,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityFar.position.set(0, 0, -1900);
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
+      premiumCityLife.update(0);
       ground.position.y = -7;
       earthHorizon.visible = false;
       earthMat.uniforms.fade.value = 0;
