@@ -63,17 +63,38 @@ export function createCityDistricts() {
       for (let lane = 0; lane < 4; lane++) {
         const x = side * (121 + lane * 43);
         const z = district.z - 54 + lane * 30;
-        const height =
-          district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
+        const height = district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
         const width =
-          district.name === 'industrial' ? 30 + lane * 3 : district.name === 'spaceport' ? 42 : 18 + lane * 3;
+          district.name === 'industrial'
+            ? 30 + lane * 3
+            : district.name === 'spaceport'
+              ? 42
+              : 18 + lane * 3;
         const topHeight = district.name === 'spaceport' ? 10 : 6;
         place(bodyMesh, 'bodies', x, height / 2 - 7, z, width, height, 29);
         place(trimMesh, 'trim', x, height - 7, z, width * 0.88, topHeight, 31);
         // Side-lit vertical features mark the district's identity without
         // duplicating the base city's many hundreds of windows.
-        place(lightMesh, 'lights', x - side * (width / 2 + 0.3), height * 0.47 - 7, z + 15.4, 0.7, height * 0.52, 0.7);
-        place(lightMesh, 'lights', x, height - topHeight / 2 - 6.6, z + 16.1, width * 0.7, 0.45, 0.5);
+        place(
+          lightMesh,
+          'lights',
+          x - side * (width / 2 + 0.3),
+          height * 0.47 - 7,
+          z + 15.4,
+          0.7,
+          height * 0.52,
+          0.7,
+        );
+        place(
+          lightMesh,
+          'lights',
+          x,
+          height - topHeight / 2 - 6.6,
+          z + 16.1,
+          width * 0.7,
+          0.45,
+          0.5,
+        );
         for (let row = 0; row < 5; row++) {
           const yy = height * (0.18 + row * 0.14) - 7;
           place(premiumWindows, 'windows', x, yy, z + 15.5, width * 0.62, 0.9, 0.5);
@@ -82,13 +103,31 @@ export function createCityDistricts() {
           place(premiumAccents, 'accents', x, height + 2, z + 13.2, width * 0.3, 1.7, 1.8);
         } else if (district.name === 'industrial') {
           place(trimMesh, 'trim', x + side * (width * 0.24), height + 9, z - 4, 5, 20, 5);
-          place(premiumAccents, 'accents', x + side * (width * 0.24), height + 20, z - 4, 5, 1.7, 5);
+          place(
+            premiumAccents,
+            'accents',
+            x + side * (width * 0.24),
+            height + 20,
+            z - 4,
+            5,
+            1.7,
+            5,
+          );
         } else {
           // Wide tiered launch platforms and raised fuel gantries remain outside
           // the gameplay corridor, not floating over the player.
           place(bodyMesh, 'bodies', x - side * 13, 9, z + 25, 47, 5, 49);
           place(lightMesh, 'lights', x - side * 13, 12.5, z + 25, 36, 0.6, 38);
-          place(premiumAccents, 'accents', x + side * (width * 0.28), height + 8, z - 8, 1.7, 16, 1.7);
+          place(
+            premiumAccents,
+            'accents',
+            x + side * (width * 0.28),
+            height + 8,
+            z - 8,
+            1.7,
+            16,
+            1.7,
+          );
         }
       }
     }

@@ -1,9 +1,11 @@
 # Cidade das Máquinas 2.4 — distritos urbanos e infraestrutura monumental
 
 ## Motivação e composição
+
 O cenário anterior ganhou um horizonte e veículos, mas edifícios repetitivos ainda podem transmitir a sensação de pista infinita. Esta etapa adiciona identidade a três zonas percorridas em sequência, com arquitetura assimétrica, pontos de referência e estação de monotrilho. Preserva a imagem de referência como direção criativa, sem alegar equivalência gráfica.
 
 ## Implementação
+
 - **Distrito comercial** (~z -300): torres altas, coroas estreitas, iluminação vertical e detalhe âmbar no topo.
 - **Distrito industrial** (~z -885): megablocos largos, chaminés/gantries e painéis contrastantes.
 - **Distrito espacial** (~z -1490): plataformas amplas, estruturas elevadas e marcação de hubs de lançamento.
@@ -14,6 +16,7 @@ O cenário anterior ganhou um horizonte e veículos, mas edifícios repetitivos 
 - **Transições:** estruturas no próprio bloco da cidade, acompanhando loop e desaparecendo na saída da cidade e no setor oceânico; reset reutiliza o cenário sem adicionar novos objetos.
 
 ## Critérios para aceitar
+
 1. Três zonas identificáveis no gameplay, sem parecer a mesma torre copiada infinitamente.
 2. Estação próxima da linha suspensa, com trem visível passando e altura de plataforma legível.
 3. Em Médio, cidade e estações permanecem presentes, sem remoção dos corrimãos anteriores.
@@ -23,6 +26,7 @@ O cenário anterior ganhou um horizonte e veículos, mas edifícios repetitivos 
 7. Não homologar nem integrar DEV/HML/produção com testes Playwright falhando. O último CI da Cidade 2.3 teve a etapa quality aprovada mas dois shards browser com falhas; regressões precisam ser discriminadas.
 
 ## Próximas ondas
+
 - Vagões e estação com sinalização e anúncio visual de chegada.
 - Variação de zonas durante a missão, incluindo parallax e skyline menos repetitivo.
 - Materiais PBR/glTF de qualidade, texturas comprimidas, reflexão localizada e LOD para monumentos e naves.
