@@ -22,20 +22,21 @@ jobs:
       - run: npm ci
       - name: Recreate bundle from source
         run: |
+          npm run format
           npm run build
           npm run build:check
           npm run validate
-      - name: Commit only regenerated index.html
+      - name: Commit formatted QA spec and generated index
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if git diff --quiet -- index.html; then
+          if git diff --quiet -- index.html specs/cinematic-realtime-qa-v12725.md; then
             echo 'Bundle already synchronized'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- index.html
+          git add -- index.html specs/cinematic-realtime-qa-v12725.md
           git commit -m 'build(qa): sync cinematic real-time bundle'
           git push origin HEAD:integration/five-cats-opening-v12725-qa-20261030
           gh workflow run ci.yml --ref integration/five-cats-opening-v12725-qa-20261030
