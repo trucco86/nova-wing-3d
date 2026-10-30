@@ -3,6 +3,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createBrushedMetalNormalMap } from './premium-materials.js';
 import { createPremiumCityLandmarks } from './premium-city-landmarks.js';
+import { createSculptedStarfighter } from './premium-starship-sculpt.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -722,6 +723,9 @@ export function createShipModule(model = 'nova7') {
   const dorsalSpine = box(0.28, 0.2, 3.1, shell, 0, 0.59, -0.13);
   dorsalSpine.name = 'ship-premium-spine';
   premium.add(dorsalSpine);
+  const sculpted = createSculptedStarfighter(model, shell);
+  premium.add(sculpted.group);
+  g.userData.sculptedRotors = sculpted.rotors;
   g.add(premium);
   g.userData.premiumPlumes = premiumPlumes;
   g.userData.premiumMaterials = [
@@ -729,6 +733,7 @@ export function createShipModule(model = 'nova7') {
     premiumGlow,
     premiumFlameMaterial,
     ...premiumPlumes.map((plume) => plume.material),
+    ...sculpted.materials,
   ];
   g.userData.progressionNeons = progressionNeons;
   return g;
@@ -738,6 +743,9 @@ export function createShipModule(model = 'nova7') {
 export function updatePremiumShipEffects(ship, boosting = false, elapsed = 0) {
   const details = ship?.getObjectByName('ship-premium-details');
   if (!details?.visible) return;
+  for (const rotor of ship.userData.sculptedRotors ?? []) {
+    rotor.rotation.z = elapsed * (boosting ? 16 : 6);
+  }
   for (const plume of ship.userData.premiumPlumes ?? []) {
     const flicker = Math.sin(elapsed * 25) * 0.06;
     plume.scale.set(
