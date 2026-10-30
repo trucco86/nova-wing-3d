@@ -51,7 +51,8 @@ function finish(group) {
  */
 export function createPremiumCityDetails(buildings) {
   if (!Array.isArray(buildings) || buildings.some((b) =>
-    !['x', 'z', 'h', 'w', 'depth'].every((k) => Number.isFinite(b[k]) && b[k] > 0))) {
+    !['x', 'z', 'h', 'w', 'depth'].every((k) => Number.isFinite(b[k])) ||
+    !['h', 'w', 'depth'].every((k) => b[k] > 0))) {
     throw new TypeError('Premium city requires positive, finite building dimensions');
   }
   const group = new T.Group();
