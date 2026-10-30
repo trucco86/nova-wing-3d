@@ -1567,7 +1567,12 @@ export function createGame({
     if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
-      launchShot(0, mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }), false, muzzle);
+      launchShot(
+        0,
+        mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }),
+        false,
+        muzzle,
+      );
       const shot = shots.at(-1);
       shot.source = 'mecha-precision';
       shot.o.scale.setScalar(2.2);

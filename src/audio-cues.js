@@ -105,9 +105,7 @@ Object.assign(AUDIO_CUES, {
       { from: 220, to: 62, duration: 0.24, gain: 0.082, wave: 'triangle', filter: 1100 },
       { from: 115, to: 47, duration: 0.22, gain: 0.052, wave: 'sine' },
     ],
-    noises: [
-      { duration: 0.12, gain: 0.075, filterType: 'bandpass', filter: 2100, filterEnd: 390 },
-    ],
+    noises: [{ duration: 0.12, gain: 0.075, filterType: 'bandpass', filter: 2100, filterEnd: 390 }],
   },
   mechaImpact: {
     cooldown: 0.18,
@@ -115,9 +113,7 @@ Object.assign(AUDIO_CUES, {
       { from: 170, to: 48, duration: 0.19, gain: 0.058, wave: 'triangle' },
       { from: 920, to: 260, duration: 0.085, gain: 0.022, wave: 'sawtooth', filter: 2400 },
     ],
-    noises: [
-      { duration: 0.13, gain: 0.09, filterType: 'bandpass', filter: 1700, filterEnd: 320 },
-    ],
+    noises: [{ duration: 0.13, gain: 0.09, filterType: 'bandpass', filter: 1700, filterEnd: 320 }],
   },
   mechaPrecision: {
     cooldown: 0.5,
@@ -126,9 +122,7 @@ Object.assign(AUDIO_CUES, {
       { from: 280, to: 52, duration: 0.34, gain: 0.092, wave: 'triangle', filter: 1600 },
       { from: 100, to: 38, duration: 0.4, gain: 0.072, wave: 'sine' },
     ],
-    noises: [
-      { duration: 0.25, gain: 0.11, filterType: 'bandpass', filter: 2350, filterEnd: 370 },
-    ],
+    noises: [{ duration: 0.25, gain: 0.11, filterType: 'bandpass', filter: 2350, filterEnd: 370 }],
   },
   mechaChargeRelease: {
     cooldown: 0.28,
@@ -137,9 +131,7 @@ Object.assign(AUDIO_CUES, {
       { from: 245, to: 48, duration: 0.46, gain: 0.095, wave: 'triangle', filter: 1200 },
       { from: 90, to: 32, duration: 0.48, gain: 0.082, wave: 'sine' },
     ],
-    noises: [
-      { duration: 0.34, gain: 0.12, filterType: 'bandpass', filter: 2600, filterEnd: 180 },
-    ],
+    noises: [{ duration: 0.34, gain: 0.12, filterType: 'bandpass', filter: 2600, filterEnd: 180 }],
   },
   plasmaCharge: {
     cooldown: 0.5,

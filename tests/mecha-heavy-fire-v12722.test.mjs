@@ -42,7 +42,10 @@ test('mecha audio has distinct layered cannon, charged, precision and impact cue
     assert.ok(cue, cueName);
     assert.ok(cue.tones.length >= 2, cueName);
     assert.ok(cue.noises.length >= 1, cueName);
-    assert.ok(cue.tones.every((tone) => tone.gain > 0 && tone.gain <= 0.1), cueName);
+    assert.ok(
+      cue.tones.every((tone) => tone.gain > 0 && tone.gain <= 0.1),
+      cueName,
+    );
   }
   assert.notDeepEqual(AUDIO_CUES.shot.tones, cannon.tones);
 });
