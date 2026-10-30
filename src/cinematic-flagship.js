@@ -50,7 +50,9 @@ function piece(group, geometry, material, name, x = 0, y = 0, z = 0) {
 }
 
 function seamlessHull(rings, sides = 10) {
-  const positions = [], uvs = [], indices = [];
+  const positions = [],
+    uvs = [],
+    indices = [];
   rings.forEach(({ z, x = 0, y = 0, width, height }, i) => {
     for (let edge = 0; edge < sides; edge++) {
       const angle = (edge * Math.PI * 2) / sides;
@@ -61,7 +63,8 @@ function seamlessHull(rings, sides = 10) {
   for (let i = 0; i < rings.length - 1; i++)
     for (let edge = 0; edge < sides; edge++) {
       const b = (edge + 1) % sides;
-      const a = i * sides + edge, next = (i + 1) * sides + edge;
+      const a = i * sides + edge,
+        next = (i + 1) * sides + edge;
       indices.push(a, next, i * sides + b, next, (i + 1) * sides + b, i * sides + b);
     }
   for (let j = 1; j < sides - 1; j++) {
@@ -81,17 +84,26 @@ function armoredFin(side, sweep = 1) {
   const s = side;
   const shape = new T.Shape();
   for (const [index, [x, z]] of [
-    [s * 13, -40], [s * 36, -31], [s * 91, -17],
-    [s * 107, 10 * sweep], [s * 91, 27], [s * 66, 15],
-    [s * 42, 39], [s * 18, 36],
+    [s * 13, -40],
+    [s * 36, -31],
+    [s * 91, -17],
+    [s * 107, 10 * sweep],
+    [s * 91, 27],
+    [s * 66, 15],
+    [s * 42, 39],
+    [s * 18, 36],
   ].entries()) {
     if (index === 0) shape.moveTo(x, z);
     else shape.lineTo(x, z);
   }
   shape.closePath();
   const mesh = new T.ExtrudeGeometry(shape, {
-    depth: 3.8, steps: 1, bevelEnabled: true,
-    bevelSize: 0.85, bevelThickness: 0.7, bevelSegments: 2,
+    depth: 3.8,
+    steps: 1,
+    bevelEnabled: true,
+    bevelSize: 0.85,
+    bevelThickness: 0.7,
+    bevelSegments: 2,
   });
   mesh.rotateX(Math.PI / 2);
   return mesh;
@@ -130,38 +142,80 @@ export function createCinematicFlagship() {
     { z: 48, width: 12, height: 5, y: 0 },
   ];
   piece(group, seamlessHull(spine, 12), armor, 'flagship-hero-sculpted-keel');
-  piece(group, seamlessHull([
-    { z: -28, width: 8, height: 2, y: 11 },
-    { z: -18, width: 13, height: 5, y: 14 },
-    { z: 4, width: 14, height: 7, y: 13 },
-    { z: 25, width: 8, height: 4, y: 11 },
-  ], 10), graphite, 'flagship-central-dorsal-armor');
-  piece(group, seamlessHull([
-    { z: -29, width: 3, height: 1, y: 21 },
-    { z: -21, width: 7, height: 4, y: 25 },
-    { z: -8, width: 7, height: 5, y: 26 },
-    { z: 1, width: 4, height: 2, y: 24 },
-  ], 12), glass, 'flagship-armored-command-cockpit');
+  piece(
+    group,
+    seamlessHull(
+      [
+        { z: -28, width: 8, height: 2, y: 11 },
+        { z: -18, width: 13, height: 5, y: 14 },
+        { z: 4, width: 14, height: 7, y: 13 },
+        { z: 25, width: 8, height: 4, y: 11 },
+      ],
+      10,
+    ),
+    graphite,
+    'flagship-central-dorsal-armor',
+  );
+  piece(
+    group,
+    seamlessHull(
+      [
+        { z: -29, width: 3, height: 1, y: 21 },
+        { z: -21, width: 7, height: 4, y: 25 },
+        { z: -8, width: 7, height: 5, y: 26 },
+        { z: 1, width: 4, height: 2, y: 24 },
+      ],
+      12,
+    ),
+    glass,
+    'flagship-armored-command-cockpit',
+  );
   for (const side of [-1, 1]) {
     piece(group, armoredFin(side), armor, 'flagship-swept-wing-' + side, 0, 3, 0);
-    const under = piece(group, armoredFin(side, 0.72), graphite, 'flagship-shadow-wing-' + side, 0, -1.6, 5);
+    const under = piece(
+      group,
+      armoredFin(side, 0.72),
+      graphite,
+      'flagship-shadow-wing-' + side,
+      0,
+      -1.6,
+      5,
+    );
     under.scale.set(0.94, 0.55, 0.82);
-    piece(group, seamlessHull([
-      { z: -41, x: side * 76, width: 0.6, height: 0.5 },
-      { z: -32, x: side * 75, width: 4.5, height: 4 },
-      { z: -8, x: side * 74, width: 6.2, height: 5 },
-      { z: 16, x: side * 72, width: 5.3, height: 4 },
-      { z: 40, x: side * 70, width: 4.8, height: 4 },
-    ], 10), titanium, 'flagship-hero-engine-pod-' + side);
-    const nozzle = piece(group,
+    piece(
+      group,
+      seamlessHull(
+        [
+          { z: -41, x: side * 76, width: 0.6, height: 0.5 },
+          { z: -32, x: side * 75, width: 4.5, height: 4 },
+          { z: -8, x: side * 74, width: 6.2, height: 5 },
+          { z: 16, x: side * 72, width: 5.3, height: 4 },
+          { z: 40, x: side * 70, width: 4.8, height: 4 },
+        ],
+        10,
+      ),
+      titanium,
+      'flagship-hero-engine-pod-' + side,
+    );
+    const nozzle = piece(
+      group,
       new T.TorusGeometry(4.7, 0.52, 8, 26),
-      neon, 'flagship-hero-engine-emitter-' + side,
-      side * 70, 0, 40.2);
+      neon,
+      'flagship-hero-engine-emitter-' + side,
+      side * 70,
+      0,
+      40.2,
+    );
     nozzle.userData.emitter = true;
-    piece(group,
+    piece(
+      group,
       new T.CylinderGeometry(2.8, 2.4, 1, 24),
-      glass, 'flagship-engine-core-' + side,
-      side * 70, 0, 40.7).rotation.x = Math.PI / 2;
+      glass,
+      'flagship-engine-core-' + side,
+      side * 70,
+      0,
+      40.7,
+    ).rotation.x = Math.PI / 2;
   }
   const dummy = new T.Object3D();
   const vents = instanced(group, 'flagship-hero-intake-arrays', 18, graphite);
@@ -185,12 +239,17 @@ export function createCinematicFlagship() {
       locate(armorPanels, n, side * (7.2 + i * 1.4), 12.5, -31 + i * 6.3, 2, 0.6, 5.5, dummy);
     }
   }
-  const hangar = piece(group,
+  const hangar = piece(
+    group,
     new T.TorusGeometry(18, 2.25, 8, 36),
-    warning, 'flagship-hero-launch-bay', 0, -5, 49);
+    warning,
+    'flagship-hero-launch-bay',
+    0,
+    -5,
+    49,
+  );
   hangar.scale.set(1.1, 0.55, 1);
-  for (const mesh of [vents, lightRails, armorPanels])
-    mesh.instanceMatrix.needsUpdate = true;
+  for (const mesh of [vents, lightRails, armorPanels]) mesh.instanceMatrix.needsUpdate = true;
   group.userData.drawCallBudget = 17;
   return group;
 }

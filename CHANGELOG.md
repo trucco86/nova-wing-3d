@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.30 — Cinematic Flagship, IBL and Boost VFX (QA)
+
+- Devastador com casco original, asas, motores e hangar de lançamento no perfil Alto.
+- PMREM com luzes de estúdio originais para reflexo PBR, calculado uma vez e desligado em Médio.
+- Boost de nave e robô com plasma e halo animados de acordo com o comando BOOST.
+- Hitboxes, boss emergence, menus, save e progressão sem alterações.
+- QA visual/FPS real ainda necessários, sem promoção DEV/HML/PROD.
+
 ## 1.27.29 — Premium PBR and single-silhouette (QA)
 
 - Visual Alto substitui casco legado pelo hero de #177, sem dupla geometria aparente.

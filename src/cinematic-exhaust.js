@@ -36,8 +36,12 @@ export function createCinematicExhaust(mode = 'fighter') {
     const core = new T.Mesh(
       new T.ConeGeometry(0.26, mode === 'mecha' ? 2.1 : 2.8, 12, 1, true),
       new T.MeshBasicMaterial({
-        color: '#d9ffff', transparent: true, opacity: 0.75,
-        side: T.DoubleSide, blending: T.AdditiveBlending, depthWrite: false,
+        color: '#d9ffff',
+        transparent: true,
+        opacity: 0.75,
+        side: T.DoubleSide,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
         toneMapped: false,
       }),
     );
@@ -49,8 +53,11 @@ export function createCinematicExhaust(mode = 'fighter') {
       new T.ConeGeometry(0.68, mode === 'mecha' ? 3.4 : 4.1, 14, 1, true),
       new T.MeshBasicMaterial({
         color: mode === 'mecha' ? '#55cfff' : '#45f4e1',
-        transparent: true, opacity: 0.34,
-        side: T.DoubleSide, blending: T.AdditiveBlending, depthWrite: false,
+        transparent: true,
+        opacity: 0.34,
+        side: T.DoubleSide,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
         toneMapped: false,
       }),
     );
@@ -58,13 +65,17 @@ export function createCinematicExhaust(mode = 'fighter') {
     flame.rotation.x = Math.PI / 2;
     flame.position.set(side * spread, height, nozzleZ + 2.1);
     group.add(flame);
-    const aura = new T.Sprite(new T.SpriteMaterial({
-      map: plumeTexture,
-      color: mode === 'mecha' ? '#7dbaff' : '#49f7eb',
-      opacity: 0.6, transparent: true,
-      blending: T.AdditiveBlending, depthWrite: false,
-      toneMapped: false,
-    }));
+    const aura = new T.Sprite(
+      new T.SpriteMaterial({
+        map: plumeTexture,
+        color: mode === 'mecha' ? '#7dbaff' : '#49f7eb',
+        opacity: 0.6,
+        transparent: true,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    );
     aura.name = 'cinematic-exhaust-bloom';
     aura.position.set(side * spread, height, nozzleZ + 0.75);
     aura.scale.set(2.1, 2.1, 1);
@@ -77,8 +88,9 @@ export function createCinematicExhaust(mode = 'fighter') {
 }
 
 export function animateCinematicExhaust(root, time, boosting, quality) {
-  const rig = root?.getObjectByName('cinematic-fighter-exhaust')
-    ?? root?.getObjectByName('cinematic-mecha-exhaust');
+  const rig =
+    root?.getObjectByName('cinematic-fighter-exhaust') ??
+    root?.getObjectByName('cinematic-mecha-exhaust');
   if (!rig) return false;
   if (quality !== 'high') {
     rig.visible = false;

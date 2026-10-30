@@ -8,7 +8,8 @@ import { createWorld, createShipModule, createFlyingRobot, fighter } from '../sr
 import { setHeroFighterVisuals } from '../src/hero-visibility.js';
 
 function meshGeometrySafe(object) {
-  let vertices = 0, meshes = 0;
+  let vertices = 0,
+    meshes = 0;
   object.traverse((part) => {
     if (!part.isMesh) return;
     meshes++;
@@ -67,7 +68,10 @@ test('world High switches mother ship and lights, Medium restores original boss 
 
 test('reflection studio is source-only, with four cards and a renderer-free fallback', () => {
   const studio = createCinematicReflectionStudio();
-  assert.equal(studio.children.filter((c) => c.name.startsWith('cinematic-reflection-softbox')).length, 4);
+  assert.equal(
+    studio.children.filter((c) => c.name.startsWith('cinematic-reflection-softbox')).length,
+    4,
+  );
   meshGeometrySafe(studio);
   const target = new T.Scene();
   const ibl = installCinematicIbl({}, target);
