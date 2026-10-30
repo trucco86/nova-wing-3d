@@ -884,6 +884,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, glowMaterial('#13b998', 1.4), 400),
     windows = new T.InstancedMesh(unit, glowMaterial('#3ec9c2', 1.25), 2800);
+  // Rich high-quality architecture in three additional GPU-instanced draw calls.
+  // Decoration stays outside the flight corridor and adds no collision volumes.
+  const cityHighDetails = new T.Group();
+  cityHighDetails.name = 'city-high-details';
+  const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
+  const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
+  const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
   let d = new T.Object3D(),
     wi = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {
@@ -903,6 +910,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
     inst(edges, i * 2 + 1, x + w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
+    // Facade ribs, illuminated ledges and aerial mast silhouettes.
+    inst(facadeRibs, i * 2, x - w * 0.36, h / 2 - 7, z + depth / 2 + 0.19, 0.35, h * 0.88, 0.33);
+    inst(facadeRibs, i * 2 + 1, x + w * 0.36, h / 2 - 7, z + depth / 2 + 0.19, 0.35, h * 0.88, 0.33);
+    inst(ledBands, i * 2, x, h * 0.33 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
+    inst(ledBands, i * 2 + 1, x, h * 0.68 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
+    inst(antennas, i, x + (i % 3 - 1) * w * 0.22, h + 1, z, 0.4, 13 + (i % 4) * 3, 0.4);
     for (let j = 0; j < 14; j++) {
       let row = Math.floor(j / 2),
         col = j % 2;
@@ -922,11 +935,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     o.instanceMatrix.needsUpdate = true;
     city.add(o);
   }
+  for (const detail of [facadeRibs, ledBands, antennas]) {
+    detail.instanceMatrix.needsUpdate = true;
+    cityHighDetails.add(detail);
+  }
+  city.add(cityHighDetails);
+  cityHighDetails.visible = false;
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
+  const farHighDetails = cityFar.getObjectByName('city-high-details');
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1056,6 +1076,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    setGraphicsQuality(quality) {
+      cityHighDetails.visible = quality === 'high';
+      if (farHighDetails) farHighDetails.visible = quality === 'high';
+    },
     showCarrierForBoss() {
       carrier.visible = true;
     },
@@ -1475,13 +1499,17 @@ export function postProcessor(renderer, scene, camera) {
   const quad = new T.Mesh(new T.PlaneGeometry(2, 2), blur);
   passScene.add(quad);
   let bw = 1,
-    bh = 1;
+    bh = 1,
+    bloomDivisor = 3;
   return {
+    setGraphicsQuality(quality) {
+      bloomDivisor = quality === 'high' ? 3 : 4;
+    },
     resize(w, h) {
       let pr = renderer.getPixelRatio();
       full.setSize(Math.round(w * pr), Math.round(h * pr));
-      bw = Math.max(1, Math.round((w * pr) / 3));
-      bh = Math.max(1, Math.round((h * pr) / 3));
+      bw = Math.max(1, Math.round((w * pr) / bloomDivisor));
+      bh = Math.max(1, Math.round((h * pr) / bloomDivisor));
       a.setSize(bw, bh);
       b.setSize(bw, bh);
     },
