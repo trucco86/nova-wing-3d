@@ -1,5 +1,21 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## P0 estratégico — Fidelidade gráfica premium (decisão do mantenedor em 30/10/2026)
+
+**Ordem vigente para novos trabalhos:** elevar a qualidade gráfica até a direção artística da imagem-conceito, sem perder o suporte WebGL/navegador. Novas mecânicas, loja e expansões não críticas ficam **abaixo deste P0**. Correções impeditivas de jogabilidade, segurança e CI continuam P0 operacional.
+
+| Prioridade | Vertical slice | Estado atual e evidência | Próximo gate |
+| --- | --- | --- | --- |
+| **P0-A** | Casco da nave principal e robô: nova silhueta, materiais PBR, eliminar geometria duplicada | [#177](https://github.com/trucco86/nova-wing-3d/pull/177) modelagem hero; [#178](https://github.com/trucco86/nova-wing-3d/pull/178) substituição real no Alto e normal/roughness maps (draft QA) | 4/4 Playwright, captura da nave em 3/4 no hangar, comparativo Alto/Médio em jogo e FPS 30s |
+| **P0-B** | Pipeline de **GLB/glTF autoral** (caça, mecha, nave-mãe, chefes) e três LODs por asset | Não implementado | Definir pivôs/escala, limites de triângulos e texturas, materiais originais, loading/fallback progressivo |
+| **P0-C** | Texturas físicas completas (base color, ORM, baked normal, emissive, decals, desgaste) | #178 implementa apenas detalhe PBR procedural inicial | Atlas UV e mapas autorais licenciados/gerados, comparar sob luz real em todos os ângulos |
+| **P0-D** | Iluminação de estúdio/cinematográfica, composição por cena, contrastes, HDR/IBL e VFX | Graph 2–4 têm iluminação de base; passe cinematográfico ainda pendente | Testar legibilidade, performance e pós-processamento Alto/Médio |
+| **P0-E** | Ambientes de campanha: biomas distintos, naves complexas, boss arenas e referências de escala | Cidade recebeu camadas High; demais cenários ainda repetitivos | Vertical slices por setor, revisão artística e eliminação de reutilização excessiva |
+| **P0-F** | QA perceptivo e desempenho físico | [checklist Graphics 4](docs/GRAPHICS-4-VALIDATION.md); não homologado fisicamente | Capturas 1366×768/844×390/390×844, 30 s FPS em Alto/Médio, aceite humano antes de merge |
+
+A **produção permanece em v1.24.18**; as versões v1.27.x são candidatas encadeadas, não homologadas por mera conclusão de testes. Não mesclar #178 em DEV/HML/PROD sem validar base completa #167→#178 e receber aceite visual.
+
+
 ## Estado de integração — 30/10/2026 (referência mais recente)
 
 **Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.
