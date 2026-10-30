@@ -1,0 +1,73 @@
+name: Graphics 5 P0 QA release preparation
+on:
+  pull_request:
+    branches:
+      - feat/graphics-4-hero-fighter-20261030
+permissions:
+  contents: write
+concurrency:
+  group: graphics-5-p0-qa-prepare
+  cancel-in-progress: true
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare v1.27.29, format, build and validate source
+        run: |
+          npm run release:prepare -- 1.27.29
+          npm run format
+          npm run build
+          npm run validate
+      - name: Record P0 release scope
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const nl = String.fromCharCode(10);
+          const changelog = 'CHANGELOG.md';
+          const old = readFileSync(changelog, 'utf8');
+          const placeholder = [
+            '## 1.27.29 — Candidata em preparação', '',
+            '- Candidata não homologada; preencher entregas e evidências antes da publicação.'
+          ].join(nl);
+          if (!old.includes(placeholder)) throw new Error('Expected changelog placeholder not found');
+          const replacement = [
+            '## 1.27.29 — Premium PBR and single-silhouette (QA)', '',
+            '- Visual Alto substitui casco legado pelo hero de #177, sem dupla geometria aparente.',
+            '- Texturas PBR procedurais compartilhadas: normal e roughness para armadura, cerâmica e titânio.',
+            '- Hangar 360 graus e gameplay preservam modo Médio e efeitos de propulsão.',
+            '- QA de Code/Playwright/Source Repair/FPS real e aceite perceptivo ainda obrigatórios.',
+            '- DEV/HML/produção não são alterados por esta candidata.'
+          ].join(nl);
+          writeFileSync(changelog, old.replace(placeholder, replacement));
+          const notes = [
+            '## Nova Wing 3D v1.27.29 — QA visual P0', '',
+            '- Perfil Alto: nave esculpida substitui carenagem low-poly sem sobreposição.',
+            '- Materiais físicos com normal map e mapa de rugosidade compartilhados entre os três caças e mecha.',
+            '- Médio mantém modelos anteriores, preserva simulação e efeitos do boost.',
+            '- Ainda pendentes GLBs autorais, texturas físicas completas, LOD, HDR/IBL e VFX cinematográficos.',
+            '- Não promover sem captura comparativa e FPS de 30 segundos em dispositivo real.',
+            ''
+          ].join(nl);
+          writeFileSync('releases/v1.27.29.md', notes);
+          NODE
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit bundle and remove one-time workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/graphics-5-prepare.yml
+          git add -A
+          git commit -m "chore(graphics5): prepare QA release 1.27.29 [p0-graphics-built]"
+          git push
