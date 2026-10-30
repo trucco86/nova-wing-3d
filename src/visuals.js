@@ -1089,7 +1089,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   transitTracks.count = transitParts;
 
-  for (let o of [bodies, caps, edges, windows, guardrailSteel, guardrailLamps]) {
+  for (let o of [bodies, caps, edges, windows, guardrailSteel, guardrailLamps, transitTracks]) {
     o.instanceMatrix.needsUpdate = true;
     city.add(o);
   }
@@ -1103,7 +1103,6 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     facadePanelModules,
     crossingSteel,
     crossingLights,
-    transitTracks,
   ]) {
     detail.instanceMatrix.needsUpdate = true;
     cityHighDetails.add(detail);
