@@ -8,7 +8,7 @@ export const RADIO_PILOTS = Object.freeze(
 );
 
 export function radioSpeaker(id) {
-  return RADIO_PILOTS[id] ?? RADIO_PILOTS.bia;
+  return Object.hasOwn(RADIO_PILOTS, id) ? RADIO_PILOTS[id] : RADIO_PILOTS.bia;
 }
 
 /**
