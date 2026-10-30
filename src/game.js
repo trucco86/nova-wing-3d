@@ -166,6 +166,7 @@ export function createGame({
     cleanups.push(() => window.removeEventListener(type, fn));
   };
   let pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
+  let graphicsQualityApplied = 'medium';
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
@@ -649,6 +650,8 @@ export function createGame({
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
     shipModule.visible = !robotMode;
+    const premiumShip = shipModule.getObjectByName('premium-ship-details');
+    if (premiumShip) premiumShip.visible = graphicsQualityApplied === 'high';
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
@@ -2282,6 +2285,9 @@ export function createGame({
       coarsePointer: coarsePointer.matches,
       deviceMemory: window.navigator?.deviceMemory ?? null,
     });
+    graphicsQualityApplied = visualQuality;
+    const premiumShip = shipModule.getObjectByName('premium-ship-details');
+    if (premiumShip) premiumShip.visible = visualQuality === 'high';
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
