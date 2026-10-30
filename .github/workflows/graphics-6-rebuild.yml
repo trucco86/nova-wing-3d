@@ -1,0 +1,37 @@
+name: Graphics 6 final QA rebuild
+on:
+  pull_request:
+    branches:
+      - feat/graphics-5-pbr-assets-p0-20261030
+permissions:
+  contents: write
+concurrency:
+  group: graphics-6-final-rebuild
+  cancel-in-progress: true
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format build and validate
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Remove one-time workflow and synchronize generated HTML
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/graphics-6-rebuild.yml
+          git add -A
+          git commit -m "chore(graphics6): verify final plasma cleanup and regenerate QA bundle"
+          git push
