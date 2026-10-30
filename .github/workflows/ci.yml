@@ -12,6 +12,34 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
+  sync-heavy-mecha-release:
+    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'feat/mecha-heavy-fire-v12722-qa' && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format metadata and compile playable game
+        run: |
+          npx prettier --write CHANGELOG.md releases/v1.27.22.md package.json package-lock.json
+          npm run build
+      - name: Commit deterministic versioned HTML
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG.md releases/v1.27.22.md package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html
+            git commit -m "build(mecha): compile v1.27.22 Heavy Fire QA release"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
