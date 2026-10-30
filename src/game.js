@@ -91,6 +91,7 @@ import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
+import { renderRadioSpeaker } from './radio-portraits.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
@@ -352,7 +353,10 @@ export function createGame({
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     cue(robotMode ? 'transformRobot' : 'transformShip');
-    message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
+    message(
+      robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA',
+      'christopher',
+    );
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
   const activeShip = () => shipAt(pilotLoadout.ship);
@@ -842,7 +846,7 @@ export function createGame({
       );
     } else {
       hp = Math.min(maxHp(), hp + 25);
-      message('ESCUDO +25');
+      message('ESCUDO +25', 'bob');
     }
     credits += 15;
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
@@ -1214,7 +1218,8 @@ export function createGame({
     pickupFeedbackTime = 1;
     if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
-  function message(t) {
+  function message(t, speakerId = 'bia') {
+    renderRadioSpeaker(document, speakerId);
     $('message').textContent = t;
     $('comms').classList.add('active');
     msgTime = 3;
@@ -2802,10 +2807,11 @@ export function createGame({
       else $('boostTouch').classList.remove('launch-required');
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
-          message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
+          message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
         else if (launchState.phase === 'atmosphere')
-          message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA');
-        else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA');
+          message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA', 'jenifer');
+        else if (launchState.phase === 'orbit')
+      message('ÓRBITA ALCANÇADA · TERRA À VISTA', 'bob');
       }
     }
     const profileSpeed = dynamicFlight
@@ -2989,7 +2995,7 @@ export function createGame({
       state = 'arcade';
       releaseControls();
       $('arcadePanel').hidden = false;
-      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS');
+      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS', 'calvin');
       return;
     }
     if (dynamicFlight) {
@@ -3023,7 +3029,7 @@ export function createGame({
       ) {
         reactorGridCompleted = true;
         reactorGridSeconds = 17;
-        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL');
+        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL', 'calvin');
       }
       if (reactorGridSeconds > 0)
         reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
@@ -3396,7 +3402,7 @@ export function createGame({
         e.dead = true;
         $('subHUD').hidden = true;
         music?.start(sectorIndex);
-        message('SUBCHEFE RECUOU / PERSEGUIÇÃO ORBITAL LIBERADA');
+        message('SUBCHEFE RECUOU / PERSEGUIÇÃO ORBITAL LIBERADA', 'christopher');
         continue;
       }
       if (departure?.retreating) {
