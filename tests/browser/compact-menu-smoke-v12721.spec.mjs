@@ -16,18 +16,32 @@ for (const viewport of viewports) {
     await expect(menu).toHaveAttribute('data-screen', 'splash');
     await expect(page.locator('#pressStart')).toBeVisible();
     await expect(page.locator('#menuPrimary')).toBeHidden();
+    await expect(page.locator('#menuHero')).toBeVisible();
 
     const cover = await menu.evaluate((node) => {
       const style = getComputedStyle(node, '::before');
       const button = node.querySelector('#pressStart').getBoundingClientRect();
+      const hero = node.querySelector('#menuHero');
+      const heroBounds = hero.getBoundingClientRect();
       return {
         image: style.backgroundImage.includes('data:image/webp;base64,'),
-        size: style.backgroundSize,
-        start: { left: button.left, right: button.right, bottom: button.bottom },
+        size: getComputedStyle(hero).backgroundSize,
+        hero: {
+          left: heroBounds.left,
+          right: heroBounds.right,
+          top: heroBounds.top,
+          bottom: heroBounds.bottom,
+          width: heroBounds.width,
+        },
+        start: { left: button.left, right: button.right, top: button.top, bottom: button.bottom },
       };
     });
     expect(cover.image).toBe(true);
     expect(cover.size).toContain('contain');
+    expect(cover.hero.left).toBeGreaterThanOrEqual(-1);
+    expect(cover.hero.right).toBeLessThanOrEqual(viewport.width + 1);
+    expect(cover.hero.width).toBeGreaterThan(170);
+    expect(cover.hero.bottom).toBeLessThanOrEqual(cover.start.top + 1);
     expect(cover.start.left).toBeGreaterThanOrEqual(-1);
     expect(cover.start.right).toBeLessThanOrEqual(viewport.width + 1);
     expect(cover.start.bottom).toBeLessThanOrEqual(viewport.height + 1);
@@ -36,6 +50,12 @@ for (const viewport of viewports) {
     await page.locator('#pressStart').click();
     await expect(menu).toHaveAttribute('data-screen', 'home');
     await expect(page.locator('#menuPrimary button:visible')).toHaveCount(3);
+    await expect(page.locator('#menuHero')).toBeVisible();
+    const placement = await page.evaluate(() => ({
+      artworkBottom: document.querySelector('#menuHero').getBoundingClientRect().bottom,
+      menuTop: document.querySelector('#menuPrimary').getBoundingClientRect().top,
+    }));
+    expect(placement.menuTop).toBeGreaterThanOrEqual(placement.artworkBottom - 1);
     await expect(page.locator('#novaRanking')).toBeHidden();
     await expect(page.locator('#novaAuth')).toBeHidden();
 
