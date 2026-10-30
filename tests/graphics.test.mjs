@@ -33,7 +33,7 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 14, 'premium detail adds three instanced meshes per city tile');
+  assert.equal(count, 20, 'premium detail adds three instanced meshes per city tile');
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');
