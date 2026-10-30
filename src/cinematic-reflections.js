@@ -21,7 +21,7 @@ export function getCinematicReflectionTexture() {
   };
   for (let y = 0; y < height; y++) {
     const v = y / (height - 1);
-    const horizon = Math.exp(-((v - 0.52) / 0.13) ** 2);
+    const horizon = Math.exp(-(((v - 0.52) / 0.13) ** 2));
     for (let x = 0; x < width; x++) {
       const u = x / (width - 1);
       const overhead = softbox(u, v, 0.26, 0.25, 0.14, 0.10);
