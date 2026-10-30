@@ -31,9 +31,10 @@ test('HIGH renders near micro-details while distant skyline uses cheaper LOD', (
   const nearLod = city.getObjectByName('city-premium-near-lod');
   const farLod = far.getObjectByName('city-premium-near-lod');
   assert.ok(nearLod && farLod);
-  assert.equal(nearLod.children.length, 4);
+  assert.equal(nearLod.children.length, 5, 'the high-only hero architecture extends near LOD');
+  assert.ok(nearLod.getObjectByName('city-hero-facade-architecture'));
   assert.deepEqual(
-    nearLod.children.map((x) => x.count),
+    nearLod.children.filter((x) => x.isInstancedMesh).map((x) => x.count),
     [24, 96, 24, 32],
   );
   for (const mode of ['medium', 'high', 'medium']) {
