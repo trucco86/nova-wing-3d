@@ -25,3 +25,18 @@ export function renderRadioSpeaker(document, id) {
   label.textContent = speaker.name;
   return speaker;
 }
+
+/** Cutscene speakers reuse the same approved cat crops as in-flight radio.
+ * Narrator remains caption-only; unknown speaker names never show the wrong cat.
+ */
+export function renderCinematicPortrait(document, speakerName) {
+  const portrait = document?.getElementById('cinematicPortrait');
+  const entry = PILOT_PROFILES.find(({ name }) => name === speakerName);
+  if (!portrait) return entry?.id ?? null;
+  portrait.hidden = !entry;
+  if (!entry || !portrait.dataset || typeof portrait.setAttribute !== 'function')
+    return entry?.id ?? null;
+  portrait.dataset.pilot = entry.id;
+  portrait.setAttribute('aria-label', entry.name + ', diálogo Five Cats');
+  return entry.id;
+}
