@@ -4,15 +4,15 @@
 
 **Ambientes:** branch isolada de Graphics 2.0, perfil Alto/Médio, **sem deploy em produção**. Manter compatibilidade WebGL/Three.js e preservar tiro, colisões, movimento, ranking e HUD.
 
-| Prioridade | Entrega | Impacto visual | Risco FPS | Aceite objetivo |
-| --- | --- | --- | --- | --- |
-| P0.1 | Janelas densas, padrão ciano/âmbar, paredes laterais, módulos salientes e ritmo vertical | Muito alto | Médio | Alto mostra claramente mais fachadas/janelas que Médio; ambas as cidades acompanham loop/reset; zero geometria de colisão nova |
-| P0.2 | Pontes, passarelas e ligações técnicas entre prédios | Muito alto | Médio | Pelo menos três tipos de estruturas com leitura de profundidade; vão livre sobre a rota de voo; evitar atravessar inimigos |
-| P0.3 | Chão da avenida com placas, frisos, ranhuras, brilho e laterais | Alto | Baixo–médio | Painéis e trilhos visíveis no primeiro plano, sem alterar colisão, trajetória ou leitura da nave |
-| P0.4 | Densificar skyline com torres secundárias, topos e silhuetas assimétricas | Alto | Médio | Três planos de profundidade distintos; reduzir padrão repetitivo por trecho |
-| P1.1 | Luz atmosférica, reflexos e volumetria aproximada | Muito alto | Alto | Sem excesso de bloom, HUD legível, frame-time aferido |
-| P1.2 | Tráfego aéreo, sinalização, fachadas animadas | Alto | Médio–alto | Elementos com propósito visual, sem ruído que prejudique mira ou narrativa |
-| P1.3 | Assets glTF/GLB PBR, texturas KTX2 e LOD para cidade e nave | Muito alto | Alto | LOD e memória medidos, fallback Médio, download inicial aceitável |
+| Prioridade | Entrega                                                                                  | Impacto visual | Risco FPS   | Aceite objetivo                                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------- | -------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| P0.1       | Janelas densas, padrão ciano/âmbar, paredes laterais, módulos salientes e ritmo vertical | Muito alto     | Médio       | Alto mostra claramente mais fachadas/janelas que Médio; ambas as cidades acompanham loop/reset; zero geometria de colisão nova |
+| P0.2       | Pontes, passarelas e ligações técnicas entre prédios                                     | Muito alto     | Médio       | Pelo menos três tipos de estruturas com leitura de profundidade; vão livre sobre a rota de voo; evitar atravessar inimigos     |
+| P0.3       | Chão da avenida com placas, frisos, ranhuras, brilho e laterais                          | Alto           | Baixo–médio | Painéis e trilhos visíveis no primeiro plano, sem alterar colisão, trajetória ou leitura da nave                               |
+| P0.4       | Densificar skyline com torres secundárias, topos e silhuetas assimétricas                | Alto           | Médio       | Três planos de profundidade distintos; reduzir padrão repetitivo por trecho                                                    |
+| P1.1       | Luz atmosférica, reflexos e volumetria aproximada                                        | Muito alto     | Alto        | Sem excesso de bloom, HUD legível, frame-time aferido                                                                          |
+| P1.2       | Tráfego aéreo, sinalização, fachadas animadas                                            | Alto           | Médio–alto  | Elementos com propósito visual, sem ruído que prejudique mira ou narrativa                                                     |
+| P1.3       | Assets glTF/GLB PBR, texturas KTX2 e LOD para cidade e nave                              | Muito alto     | Alto        | LOD e memória medidos, fallback Médio, download inicial aceitável                                                              |
 
 ## Implementação P0.1 — em desenvolvimento / candidata de QA
 
