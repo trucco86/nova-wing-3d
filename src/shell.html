@@ -155,10 +155,18 @@
       <div id="attackWarning" role="status"></div>
       <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
       <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
-      <div id="comms">
-        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
-        <div>
-          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
+      <div id="comms" aria-label="Rádio Five Cats">
+        <i
+          id="commsPortrait"
+          class="cat-avatar"
+          data-pilot="bia"
+          role="img"
+          aria-label="BIA, transmissão Five Cats"
+        ></i>
+        <div class="comms-copy">
+          <span class="eyebrow"
+            ><strong id="commsSpeaker">BIA</strong> <b>/ CANAL FIVE CATS</b></span
+          >
           <p id="message" aria-live="polite"></p>
         </div>
       </div>

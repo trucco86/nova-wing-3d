@@ -7598,3 +7598,212 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
     width: 100%;
   }
 }
+
+/* v1.27.24: original-art cinema surround. The sharp Five Cats artwork
+   remains complete (contain); only its enlarged atmospheric backdrop
+   extends edge to edge, avoiding distorted or cropped characters. */
+#menu.title-screen[data-screen='splash']:not(.selecting)::before,
+#menu.title-screen[data-screen='home']:not(.selecting)::before {
+  background:
+    linear-gradient(180deg, #030b1699 0%, #030b1620 29%, #030b16d1 96%),
+    var(--cover-art) center / cover no-repeat;
+  opacity: 0.64;
+  filter: blur(17px);
+  transform: scale(1.08);
+}
+#menu.title-screen[data-screen='splash'] .title-content,
+#menu.title-screen[data-screen='home'] .title-content {
+  position: relative;
+  z-index: 1;
+  width: min(100vw, 1350px);
+  gap: clamp(5px, 1dvh, 11px);
+}
+#menu.title-screen[data-screen='splash'] .menu-cover-hero,
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(99vw, 120dvh, 1260px);
+  background-size: contain;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 22px 32px #020913aa);
+}
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(99vw, 118dvh, 1220px);
+}
+@media (min-width: 700px), (orientation: landscape) {
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(94vw, 920px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary button {
+    min-height: 47px;
+  }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    background: radial-gradient(ellipse at 50% 42%, #173b4f, #030b16 72%);
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: min(92vw, 105dvh, 780px);
+  }
+  #menu.title-screen[data-screen='home'] .title-content {
+    gap: 5px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(94vw, 740px);
+  }
+}
+
+/* Cat radio portraits reuse the exact Five Cats poster crops already
+   used by the hangar. Never place text or alerts over the center aim lane. */
+#comms {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  border-radius: 9px;
+  background: linear-gradient(100deg, #041722ed, #072332dd);
+  box-shadow: 0 10px 25px #0009;
+}
+#comms .comms-copy {
+  min-width: 0;
+  flex: 1;
+}
+#comms #commsPortrait {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  display: block;
+  border: 1px solid #78d6d6;
+  border-radius: 8px;
+  background-image: var(--cover-art);
+  background-size: 836% auto;
+  background-position: 57.75% 40.5%;
+}
+#comms #commsPortrait::before,
+#comms #commsPortrait::after {
+  display: none;
+}
+#comms #commsPortrait[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+}
+#comms #commsPortrait[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+}
+#comms #commsPortrait[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+}
+#comms #commsPortrait[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+}
+
+#comms #commsSpeaker {
+  font: inherit;
+  color: #ebfffd;
+}
+#comms #message {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #comms {
+    width: min(370px, calc(100vw - 20px));
+    left: 10px;
+    bottom: max(141px, calc(env(safe-area-inset-bottom, 0px) + 125px));
+    padding: 7px;
+  }
+  #comms #commsPortrait {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  #comms {
+    top: 72px;
+    bottom: auto;
+    left: 8px;
+    width: min(300px, 42vw);
+    transform: none;
+    padding: 5px 7px;
+    gap: 8px;
+  }
+  #comms.active {
+    transform: none;
+  }
+  #comms #commsPortrait {
+    display: block;
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+  }
+  #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+  }
+  #comms #message {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+}
+
+/* v1.27.24 P0: the radio must not escape the upper info rail on 320px phones.
+   Use an identifiable compact portrait + name; clamp only low-priority chatter.
+   Dangerous alerts retain the existing higher-priority arbitration. */
+@media (pointer: coarse) and (max-width: 550px) {
+  #hudNotices > #comms {
+    width: min(100%, 340px);
+    min-height: 0;
+    max-height: 68px;
+    padding: 3px 6px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  #hudNotices > #comms #commsPortrait {
+    display: block;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+  }
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+  #hudNotices #comms #message {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: left;
+    font-size: 9px;
+    line-height: 1.2;
+    margin: 2px 0 0;
+  }
+}
+
+/* v1.27.24 QA: keep the speaking cat's name visible in portrait AND
+   landscape touch layouts; old HUD code concealed the entire eyebrow. */
+@media (pointer: coarse) {
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms #commsSpeaker {
+    display: inline;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+}

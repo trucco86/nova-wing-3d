@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.24 — Five Cats Original Cover & Radio Portraits (candidata QA)
+
+- Opção A, primeira etapa visual: reaproveita a capa original sem recortar nem distorcer os cinco gatos; uma camada atmosférica ampliada preenche o fundo da home e o pôster original permanece completo em primeiro plano.
+- Menu JOGAR/HANGAR/CENTRAL pode usar uma linha no desktop e celular paisagem, criando espaço para a arte dominante sem comprometer os botões.
+- Rádio de missão usa recortes da arte oficial dos cinco gatos e atribuição explícita de falas a Bia, Bob, Christopher, Calvinho e Jenifer; sem downloads externos.
+- Testes unitários garantem identities/fallback; Playwright verifica três viewports e portrait real após transformação para robô.
+- Expansão verdadeira do canvas/outpainting e reformulação da abertura ficam fora deste pacote e exigem homologação visual específica. DEV/HML/produção inalterados.
+
 ## 1.27.23 — Boss Adaptive Counterplay (candidata QA)
 
 - Marvin e Hidra passam a reagir à altura real de voo, boost e posição orbital do jogador no instante do telegraph.

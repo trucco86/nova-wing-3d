@@ -84,6 +84,10 @@ test('P0 mobile stage introduction and pilot radio never compete for the upper H
     const flight = await positions(page);
     expect(flight.briefing).toBeNull();
     expect(flight.comms).not.toBeNull();
+    const portrait = await page.locator('#commsPortrait').boundingBox();
+    expect(portrait, 'Five Cats radio portrait remains readable on mobile').not.toBeNull();
+    expect(portrait.width, 'compact portrait still identifiable').toBeGreaterThanOrEqual(28);
+    await expect(page.locator('#commsSpeaker')).toBeVisible();
     for (const key of ['rpg', 'score', 'shield', 'radar']) {
       expect(intersects(flight.comms, flight[key]), 'pilot radio must avoid ' + key).toBe(false);
     }
