@@ -46,6 +46,7 @@ export function createCinematicExhaust(mode = 'fighter') {
       }),
     );
     core.name = 'cinematic-exhaust-hot-core';
+    core.userData.cinematicDisposable = true;
     core.rotation.x = Math.PI / 2;
     core.position.set(side * spread, height, nozzleZ + 1.3);
     group.add(core);
@@ -62,6 +63,7 @@ export function createCinematicExhaust(mode = 'fighter') {
       }),
     );
     flame.name = 'cinematic-exhaust-envelope';
+    flame.userData.cinematicDisposable = true;
     flame.rotation.x = Math.PI / 2;
     flame.position.set(side * spread, height, nozzleZ + 2.1);
     group.add(flame);
@@ -77,6 +79,7 @@ export function createCinematicExhaust(mode = 'fighter') {
       }),
     );
     aura.name = 'cinematic-exhaust-bloom';
+    aura.userData.cinematicDisposable = true;
     aura.position.set(side * spread, height, nozzleZ + 0.75);
     aura.scale.set(2.1, 2.1, 1);
     group.add(aura);
