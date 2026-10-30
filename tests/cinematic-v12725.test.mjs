@@ -15,7 +15,7 @@ test('all five ships form symmetric formation with Bia ahead in center', () => {
     const right = cinematicFormationPosition(slot, 6, 16 / 9);
     assert.equal(left.x, -right.x);
     assert.equal(left.z, right.z);
-    assert.ok(center.z > right.z, 'Bia's lead ship is closest to camera');
+    assert.ok(center.z > right.z, 'Bia leads the formation closest to camera');
     const tall = cinematicFormationPosition(slot, 6, 390 / 844);
     assert.ok(Math.abs(tall.x) < Math.abs(right.x), 'portrait compresses fleet into view');
   }
