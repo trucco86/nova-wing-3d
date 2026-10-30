@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    32,
-    'City 2.2 adds railings and elevated transit in five GPU-instanced layers per tile',
+    36,
+    'City 2.3 includes four instanced skyline layers besides looping tiles',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
