@@ -10,7 +10,10 @@ export function createShowroomShip(model, color, graphics = 'high') {
   const module = createShipModule(model);
   const moduleGeometry = new Set();
   module.traverse((o) => {
-    if (o.geometry) moduleGeometry.add(o.geometry);
+    // THREE.Sprite shares one static geometry across the entire renderer.
+    // The cinematic exhaust adds new billboards to the module: disposing their
+    // original geometry would also invalidate live fighter engine halos.
+    if (o.geometry && !o.isSprite) moduleGeometry.add(o.geometry);
   });
   ship.add(module);
   setHeroFighterVisuals(legacyParts, module, graphics, true);
