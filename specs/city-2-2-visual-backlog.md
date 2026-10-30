@@ -14,7 +14,7 @@
 | P1.2       | Tráfego aéreo, sinalização, fachadas animadas                                            | Alto           | Médio–alto  | Elementos com propósito visual, sem ruído que prejudique mira ou narrativa                                                     |
 | P1.3       | Assets glTF/GLB PBR, texturas KTX2 e LOD para cidade e nave                              | Muito alto     | Alto        | LOD e memória medidos, fallback Médio, download inicial aceitável                                                              |
 
-## Implementação P0.1 — em desenvolvimento / candidata de QA
+## Implementação P0.1 — código pronto para QA (homologação visual pendente)
 
 - Preservar as janelas legadas no Médio; usar **quatro malhas instanciadas adicionais no Alto** (janelas frias, janelas âmbar, janelas de parede lateral e módulos blindados).
 - Distribuir iluminação com lacunas determinísticas: nada de todas as torres com grades idênticas.
@@ -22,6 +22,15 @@
 - Não adicionar colisores; não alterar trajetória, controles, tiro, Física ou balanceamento.
 - Geração preferencial em menos de 12 draw calls por tile, mesmo com milhares de detalhes; medir antes de elevar densidade.
 - Modos Médio e Alto devem ter identidade arquitetônica consistente; a diferença é densidade, não posição dos obstáculos.
+
+## Implementação P0.2 + P0.3 — candidata integrada para QA
+
+- **P0.2:** nove conexões aéreas com três perfis de ponte (skybridge, gantry e portal), dois corredores de trânsito suspenso nas laterais e suportes fora do corredor de jogo. Estruturas aéreas extras só em Alto; nunca geram colisão.
+- **P0.3:** corrimãos de cinco peças ao longo de ambos os lados da avenida, com friso ciano de orientação. Corrimãos permanecem em **Médio e Alto** — o cenário não deve perder elementos estruturais na otimização.
+- O piso usa shader de placas industriais 8×10, ranhuras, juntas e rebites com intensidade por qualidade; **Médio** mantém geometria/estética de pista, **Alto** adiciona textura fina e realces sem draw calls adicionais.
+- Todas as estruturas instanciadas acompanham o loop de 1900 unidades e saem junto com a cidade na subida para órbita. Nenhum colisor foi adicionado.
+- Critérios técnicos: verificações de instâncias por cidade, clearances de ponte e corrimão, alternância gráfica e integridade das duas cópias da cidade.
+- **Limitações atuais:** sem texturas PBR reais, performance real de GPU e paridade com imagem-conceito ainda exigem inspeção humana.
 
 ## Gates antes de promover
 
@@ -33,6 +42,6 @@
 
 ## Linha de execução
 
-- **Atual:** P0.1, facades e janelas, teste em preview isolado.
-- **Depois:** P0.2 (passarelas), P0.3 (solo), P0.4 (densidade), então iluminação/ativos premium.
+- **Atual:** P0.1 + P0.2 + P0.3 codificados em candidata integrada para preview e QA.
+- **Depois:** P0.4 (densidade/skyline), então iluminação, tráfego e assets premium, sujeitos ao aceite visual de P0.2/P0.3.
 - Não promover para DEV/HML/PROD até conclusão dos gates e aceite explícito.
