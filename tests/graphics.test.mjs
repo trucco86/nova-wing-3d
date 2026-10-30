@@ -33,7 +33,11 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 28, 'two city loops have four base, three High and five premium draw calls; flagship has four');
+  assert.equal(
+    count,
+    28,
+    'two city loops have four base, three High and five premium draw calls; flagship has four',
+  );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');

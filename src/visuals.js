@@ -1,7 +1,11 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
-import { createPremiumCityDetails, createPremiumShipDetails, createPremiumCarrierDetails } from './premium-graphics.js';
+import {
+  createPremiumCityDetails,
+  createPremiumShipDetails,
+  createPremiumCarrierDetails,
+} from './premium-graphics.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>

@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.27 — Graphics 3.0 Premium Detail (QA)
+
+- Alto: detalhes PBR e instanciados nas fachadas da cidade, nas três naves do jogador e na nave-mãe.
+- Médio mantém o orçamento anterior, e Automático continua a usar perfil adaptativo.
+- Visuais decorativos sem alterações em colisões, física, saves, ranking ou gameplay.
+- Etapa de arte procedural; validação de FPS e homologação humana ainda pendentes.
+
 ## 1.27.26 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
