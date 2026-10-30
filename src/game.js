@@ -78,6 +78,7 @@ import {
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { installCinematicIbl } from './cinematic-lighting.js';
 import { setHeroFighterVisuals } from './hero-visibility.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
@@ -191,6 +192,7 @@ export function createGame({
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new T.Scene();
+  const cinematicIbl = installCinematicIbl(renderer, scene);
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
@@ -2304,6 +2306,7 @@ export function createGame({
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
+    cinematicIbl.setQuality(visualQuality);
     post.setGraphicsQuality(visualQuality);
     post.resize(window.innerWidth, window.innerHeight);
     if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
@@ -4531,6 +4534,7 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      cinematicIbl.dispose();
       renderer.dispose?.();
     },
   };
