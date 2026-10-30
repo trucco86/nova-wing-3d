@@ -1,0 +1,43 @@
+name: City 2.2 QA - synchronize generated browser build
+on:
+  push:
+    branches:
+      - feat/graphics-2-city-high-medium-20261030
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: city-2-2-build
+  cancel-in-progress: true
+jobs:
+  build-preview-candidate:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Format changed City 2.2 files
+        run: npx prettier --write src/visuals.js tests/graphics.test.mjs tests/city-premium-facades.test.mjs specs/city-2-2-visual-backlog.md
+      - name: Generate browser bundle
+        run: npm run build
+      - name: Validate before preview
+        run: |
+          npm run lint
+          npm run validate
+      - name: Commit source formatting and generated HTML
+        run: |
+          git add src/visuals.js tests/graphics.test.mjs tests/city-premium-facades.test.mjs specs/city-2-2-visual-backlog.md index.html
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "build(graphics): sync City 2.2 browser candidate"
+            git push origin HEAD:feat/graphics-2-city-high-medium-20261030
+          fi
