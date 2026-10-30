@@ -19,10 +19,13 @@ for (const viewport of [
       await expect(page.locator('#novaRanking')).toBeHidden();
       const art = await page.locator('#menu').evaluate((node) => ({
         background: getComputedStyle(node, '::before').backgroundSize,
+        hero: getComputedStyle(node.querySelector('#menuHero')).backgroundSize,
         width: node.getBoundingClientRect().width,
         scrollWidth: node.scrollWidth,
       }));
-      expect(art.background).toContain('contain');
+      // Option A extends only the atmospheric background; original art stays uncut.
+      expect(art.background).toContain('cover');
+      expect(art.hero).toContain('contain');
       expect(art.scrollWidth).toBeLessThanOrEqual(art.width + 2);
       const press = await page.locator('#pressStart').boundingBox();
       expect(press.x).toBeGreaterThanOrEqual(-1);
