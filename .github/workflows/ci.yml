@@ -12,34 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  sync-qa-build:
-    if: ${{ github.event_name == 'pull_request' && github.head_ref == 'qa/compact-five-cats-dev-validation-20261029' && github.event.pull_request.head.repo.full_name == github.repository }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with:
-          ref: ${{ github.head_ref }}
-          persist-credentials: true
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format changed QA files and regenerate the web distribution
-        run: |
-          npx prettier --write src/shell.html src/styles.css src/audio.js src/audio-cues.js src/ui-preferences.js src/compact-menu.js tests/browser/compact-menu-smoke-v12721.spec.mjs tests/title-audio-mix-v12721.test.mjs
-          npm run build
-      - name: Commit format and generated artifact
-        run: |
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/shell.html src/styles.css src/audio.js src/audio-cues.js src/ui-preferences.js src/compact-menu.js tests/browser/compact-menu-smoke-v12721.spec.mjs tests/title-audio-mix-v12721.test.mjs index.html
-            git commit -m "build(qa): synchronize Five Cats cover and audio preview"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
