@@ -9,11 +9,14 @@ test('portrait cover keeps full artwork fit and menu actions inside a phone view
   await page.goto('/');
   await expect(page.locator('#menu')).toBeVisible();
   await expect(page.locator('body')).toHaveClass(/showroom-web/);
-  const fit = await page.locator('#menu').evaluate((node) => {
-    const style = getComputedStyle(node, '::before');
-    return { bgSize: style.backgroundSize };
-  });
-  expect(fit.bgSize).toContain('contain');
+  const fit = await page.locator('#menu').evaluate((node) => ({
+    atmosphere: getComputedStyle(node, '::before').backgroundSize,
+    original: getComputedStyle(node.querySelector('#menuHero')).backgroundSize,
+  }));
+  // The new full-screen scenery extends to the edges, while the sharp
+  // original poster remains uncut with all five cats visible.
+  expect(fit.atmosphere).toContain('cover');
+  expect(fit.original).toContain('contain');
   const bounds = await page.locator('#pressStart').boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
