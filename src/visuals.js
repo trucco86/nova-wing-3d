@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { createPremiumCityDetails, createPremiumShipDetails } from './premium-graphics.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -618,6 +619,7 @@ export function createShipModule(model = 'nova7') {
     }
   }
   g.userData.progressionNeons = progressionNeons;
+  g.add(createPremiumShipDetails(model));
   return g;
 }
 
@@ -888,6 +890,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Decoration stays outside the flight corridor and adds no collision volumes.
   const cityHighDetails = new T.Group();
   cityHighDetails.name = 'city-high-details';
+  const buildingPlacements = [];
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
   const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
@@ -906,6 +909,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       h = rnd(16, 105),
       w = rnd(7, 19),
       depth = rnd(8, 18);
+    buildingPlacements.push({ x, z, h, w, depth });
     inst(bodies, i, x, h / 2 - 7, z, w, h, depth);
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
@@ -949,6 +953,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     cityHighDetails.add(detail);
   }
   city.add(cityHighDetails);
+  const cityPremiumDetails = createPremiumCityDetails(buildingPlacements);
+  city.add(cityPremiumDetails);
   cityHighDetails.visible = false;
   city.userData.loop = 1900;
   const cityFar = city.clone();
@@ -956,6 +962,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
+  const farPremiumDetails = cityFar.getObjectByName('city-premium-details');
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1088,6 +1095,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
+      cityPremiumDetails.visible = quality === 'high';
+      if (farPremiumDetails) farPremiumDetails.visible = quality === 'high';
     },
     showCarrierForBoss() {
       carrier.visible = true;
