@@ -1110,12 +1110,151 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   city.add(cityHighDetails);
   cityHighDetails.visible = false;
+
+  // City 2.3: non-combat urban movement is attached to the looping tile.
+  // Vehicles have no colliders, damage, AI target, or gameplay hitboxes.
+  const urbanLife = new T.Group();
+  urbanLife.name = 'city-urban-life';
+  const maglevBody = metal('#557f91', 0.8, 0.32);
+  const maglevWindows = glowMaterial('#93eaff', 1.3);
+  const civicHull = metal('#86b8bc', 0.7, 0.36);
+  const civicEngine = glowMaterial('#ffd59b', 1.7);
+  for (const side of [-1, 1]) {
+    const train = new T.Group();
+    train.name = side < 0 ? 'city-maglev-west' : 'city-maglev-east';
+    train.userData.role = 'maglev';
+    train.userData.side = side;
+    train.userData.highOnly = side > 0;
+    train.add(box(7, 3.6, 36, maglevBody));
+    train.add(box(7.6, 0.55, 33, steel, 0, -1.8, 0));
+    train.add(box(6.4, 0.4, 35, maglevWindows, 0, 2, 0));
+    train.add(box(5.6, 1.15, 2.1, maglevWindows, 0, 0.15, -18.6));
+    train.add(box(5.6, 1.15, 2.1, maglevWindows, 0, 0.15, 18.6));
+    for (const flank of [-1, 1]) {
+      train.add(box(0.18, 1.2, 30, maglevWindows, flank * 3.59, 0.45, 0));
+      for (let window = 0; window < 5; window++) {
+        train.add(box(0.22, 1.3, 3.2, navy, flank * 3.72, 0.45, -12 + window * 6));
+      }
+    }
+    train.position.set(side * 80, 36, side < 0 ? -520 : -1200);
+    urbanLife.add(train);
+  }
+  for (let i = 0; i < 7; i++) {
+    const side = i % 2 ? 1 : -1;
+    const craft = new T.Group();
+    craft.name = 'city-evacuation-craft-' + i;
+    craft.userData.role = 'evacuation';
+    craft.userData.index = i;
+    craft.userData.highOnly = i >= 3;
+    craft.add(box(3.4, 1.4, 9.2, civicHull));
+    craft.add(box(10, 0.45, 3.1, civicHull, 0, -0.3, 0.8));
+    craft.add(box(1.4, 0.8, 2, maglevWindows, 0, 0.75, -2.5));
+    for (const flank of [-1, 1]) {
+      craft.add(box(1.4, 0.4, 1.1, civicEngine, flank * 1.3, 0, 5));
+      craft.add(box(1.1, 0.35, 7, maglevWindows, flank * 4.3, -0.2, 0.8));
+    }
+    craft.position.set(side * (120 + (i % 3) * 26), 38, -230 - i * 238);
+    urbanLife.add(craft);
+  }
+  city.add(urbanLife);
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
+
+  // A persistent, layered urban horizon gives the flight a destination instead
+  // of extending the avenue endlessly. Unlike road tiles this background stays
+  // ahead of the player and never gets close enough to behave like an obstacle.
+  const cityHorizon = new T.Group();
+  cityHorizon.name = 'city-distant-horizon';
+  const horizonCore = new T.InstancedMesh(unit, metal('#263b50', 0.46, 0.86), 110);
+  horizonCore.name = 'city-horizon-tower-mass';
+  const horizonCrown = new T.InstancedMesh(unit, metal('#426779', 0.62, 0.5), 110);
+  horizonCrown.name = 'city-horizon-rooflines';
+  const horizonPremium = new T.Group();
+  horizonPremium.name = 'city-horizon-high-details';
+  const horizonLit = new T.InstancedMesh(unit, glowMaterial('#5bd3d8', 0.86), 270);
+  horizonLit.name = 'city-horizon-window-bands';
+  const horizonFine = new T.InstancedMesh(unit, metal('#354d65', 0.65, 0.55), 90);
+  horizonFine.name = 'city-horizon-secondary-towers';
+  let horizonCount = 0;
+  let horizonWindows = 0;
+  let horizonSecondary = 0;
+  for (let tier = 0; tier < 3; tier++) {
+    for (let i = 0; i < 34; i++) {
+      const x = (i - 16.5) * (tier === 0 ? 29 : tier === 1 ? 25 : 20);
+      // The near and middle bands protect the line of sight in the flight lane.
+      if (Math.abs(x) < (tier === 0 ? 95 : tier === 1 ? 64 : 0)) continue;
+      const height = 31 + ((i * 11 + tier * 23) % 9) * 15;
+      const raised = tier === 2 && Math.abs(x) < 50 ? 58 : 0;
+      const z = -390 - tier * 255 - ((i * 7) % 4) * 12;
+      const width = 16 + ((i + tier) % 5) * 5;
+      inst(horizonCore, horizonCount, x, height / 2 - 7 + raised, z, width, height, 30);
+      inst(
+        horizonCrown,
+        horizonCount,
+        x,
+        height - 5 + raised,
+        z,
+        width * 0.77,
+        5 + (i % 3) * 3,
+        25,
+      );
+      for (let band = 0; band < 2; band++) {
+        inst(
+          horizonLit,
+          horizonWindows++,
+          x,
+          raised + height * (0.35 + band * 0.37) - 7,
+          z + 15.25,
+          width * 0.73,
+          0.65,
+          0.5,
+        );
+      }
+      if (i % 2 === 0) {
+        inst(
+          horizonFine,
+          horizonSecondary++,
+          x + width * 0.7,
+          raised + height * 0.54 - 7,
+          z - 20,
+          width * 0.26,
+          height * 1.08,
+          20,
+        );
+      }
+      horizonCount++;
+    }
+  }
+  horizonCore.count = horizonCount;
+  horizonCrown.count = horizonCount;
+  horizonLit.count = horizonWindows;
+  horizonFine.count = horizonSecondary;
+  for (const o of [horizonCore, horizonCrown]) {
+    o.instanceMatrix.needsUpdate = true;
+    cityHorizon.add(o);
+  }
+  for (const o of [horizonLit, horizonFine]) {
+    o.instanceMatrix.needsUpdate = true;
+    horizonPremium.add(o);
+  }
+  cityHorizon.add(horizonPremium);
+  // The central suspended city gate sits ABOVE the flight corridor: a distant
+  // landmark rather than a solid wall to fly through.
+  const skylineGate = new T.Group();
+  skylineGate.name = 'city-horizon-monument';
+  skylineGate.add(box(158, 14, 25, metal('#32566d', 0.75, 0.48), 0, 147, -830));
+  skylineGate.add(box(79, 34, 29, metal('#446d80', 0.72, 0.42), 0, 170, -830));
+  skylineGate.add(box(64, 2.5, 3.2, glowMaterial('#42ead8', 1.25), 0, 156, -814));
+  for (const side of [-1, 1]) {
+    skylineGate.add(box(19, 164, 31, metal('#233e52', 0.75, 0.48), side * 88, 75, -830));
+    skylineGate.add(box(4.5, 105, 4.5, glowMaterial('#56bace', 0.9), side * 88, 69, -810));
+  }
+  cityHorizon.add(skylineGate);
+  scene.add(cityHorizon);
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1246,9 +1385,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   return {
     setGraphicsQuality(quality) {
-      terrainMat.uniforms.detail.value = quality === 'high' ? 1 : 0.4;
-      cityHighDetails.visible = quality === 'high';
-      if (farHighDetails) farHighDetails.visible = quality === 'high';
+      const high = quality === 'high';
+      terrainMat.uniforms.detail.value = high ? 1 : 0.4;
+      cityHighDetails.visible = high;
+      if (farHighDetails) farHighDetails.visible = high;
+      horizonPremium.visible = high;
+      for (const tile of [city, cityFar]) {
+        const life = tile.getObjectByName('city-urban-life');
+        for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
+      }
     },
     showCarrierForBoss() {
       carrier.visible = true;
@@ -1273,6 +1418,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // fallen below the camera long before the city meshes are hidden.
       const retreat = 780 * t * t + 180 * t;
       city.position.y = cityFar.position.y = -retreat;
+      cityHorizon.position.y = -retreat * 0.86;
       near.forEach((o) => (o.position.y = -retreat * 0.92));
       ground.position.y = -7 - retreat * 1.18;
       const scale = 1 - t * 0.26;
@@ -1283,6 +1429,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const orbital = launchOrbitReady(progress);
       ground.visible = !orbital;
       city.visible = cityFar.visible = !orbital;
+      cityHorizon.visible = !orbital;
       near.forEach((o) => (o.visible = !orbital));
       rain.visible = !orbital && t < 0.6;
       moon.visible = atmosphere.visible = false;
@@ -1345,6 +1492,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
+      cityHorizon.position.set(0, 0, 0);
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
@@ -1358,6 +1506,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
       ground.visible = land;
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
+      cityHorizon.visible = sceneryTheme === 'city';
+      for (const tile of [city, cityFar])
+        tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
       // Show the orbital globe only after the last city/port buildings are gone.
@@ -1564,6 +1715,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         terrainMat.uniforms.travel.value = travel;
         city.position.z = travel % 1900;
         cityFar.position.z = city.position.z - 1900;
+        // Persistent skyline remains distant while roads and trains move at
+        // different speeds: multiple parallax rates reinforce urban scale.
+        cityHorizon.position.x = Math.sin(travel / 3400) * 9;
+        cityHorizon.position.z = -Math.min(85, travel * 0.012);
+        for (const tile of [city, cityFar]) {
+          for (const vehicle of tile.getObjectByName('city-urban-life').children) {
+            if (vehicle.userData.role === 'maglev') {
+              const side = vehicle.userData.side;
+              vehicle.position.z =
+                side < 0
+                  ? -120 - ((travel * 0.52 + 340) % 1660)
+                  : -1780 + ((travel * 0.7 + 730) % 1660);
+            } else {
+              const i = vehicle.userData.index;
+              const ascent = ((travel * 0.23 + i * 212) % 1700) / 1700;
+              const side = i % 2 ? 1 : -1;
+              vehicle.position.x = side * (120 + (i % 3) * 26 + ascent * 65);
+              vehicle.position.y = 32 + ascent * 245;
+              vehicle.position.z = -170 - i * 215 - ascent * 45;
+              vehicle.rotation.z = -side * (0.04 + ascent * 0.16);
+              vehicle.scale.setScalar(1 - ascent * 0.45);
+            }
+          }
+        }
         for (let g of near) {
           g.position.z += speed * dt;
           if (g.position.z > 50) g.position.z -= 1170;
@@ -1599,6 +1774,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
+      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
