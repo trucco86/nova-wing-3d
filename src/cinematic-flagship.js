@@ -80,12 +80,12 @@ function seamlessHull(rings, sides = 10) {
 function armoredFin(side, sweep = 1) {
   const s = side;
   const shape = new T.Shape();
-  for (const [x, z] of [
+  for (const [index, [x, z]] of [
     [s * 13, -40], [s * 36, -31], [s * 91, -17],
     [s * 107, 10 * sweep], [s * 91, 27], [s * 66, 15],
     [s * 42, 39], [s * 18, 36],
-  ]) {
-    if (!shape.curves.length) shape.moveTo(x, z);
+  ].entries()) {
+    if (index === 0) shape.moveTo(x, z);
     else shape.lineTo(x, z);
   }
   shape.closePath();
@@ -191,7 +191,7 @@ export function createCinematicFlagship() {
   hangar.scale.set(1.1, 0.55, 1);
   for (const mesh of [vents, lightRails, armorPanels])
     mesh.instanceMatrix.needsUpdate = true;
-  group.userData.drawCallBudget = 15;
+  group.userData.drawCallBudget = 17;
   return group;
 }
 
