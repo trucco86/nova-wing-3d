@@ -89,10 +89,14 @@ export const AUDIO_CUES = {
 // Physical transients and staged mechanical events replace electronic beeps.
 Object.assign(AUDIO_CUES, {
   shot: {
-    cooldown: 0.07,
-    tones: [{ from: 260, to: 105, duration: 0.105, gain: 0.025, wave: 'triangle', filter: 850 }],
+    cooldown: 0.085,
+    tones: [
+      { from: 1120, to: 320, duration: 0.075, gain: 0.029, wave: 'sawtooth', filter: 2900 },
+      { from: 290, to: 96, duration: 0.145, gain: 0.052, wave: 'triangle', filter: 1350 },
+      { from: 135, to: 65, duration: 0.12, gain: 0.021, wave: 'sine' },
+    ],
     noises: [
-      { duration: 0.055, gain: 0.045, filterType: 'bandpass', filter: 1650, filterEnd: 550 },
+      { duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 },
     ],
   },
   plasmaCharge: {
