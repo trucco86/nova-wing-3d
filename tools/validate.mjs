@@ -63,7 +63,9 @@ for (const command of commands) {
   const r = spawnSync('npm', args, {
     encoding: 'utf8',
     // The complete suite exceeded eight minutes on a software-rendered CI runner.
-    timeout: command === 'test:browser' ? 720000 : 180000,
+    // The second browser shard needs more than 12 minutes in software-rendered CI.
+    // Preserve every test and assertion; allow it to finish, not skip it.
+    timeout: command === 'test:browser' ? 900000 : 180000,
   });
   const output = (r.stdout ?? '') + (r.stderr ?? '');
   writeFileSync(`artifacts/${command.replaceAll(':', '-')}.log`, output);

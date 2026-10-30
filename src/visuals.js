@@ -3,6 +3,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createBrushedMetalNormalMap } from './premium-materials.js';
 import { createPremiumCityLandmarks } from './premium-city-landmarks.js';
+import { setCinematicReflectionQuality } from './cinematic-reflections.js';
 import { createSculptedStarfighter } from './premium-starship-sculpt.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
@@ -1309,6 +1310,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   return {
     setGraphicsQuality(quality) {
+      setCinematicReflectionQuality(scene, quality);
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
       cityNearDetail.visible = quality === 'high';
