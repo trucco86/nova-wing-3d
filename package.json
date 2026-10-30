@@ -10,6 +10,7 @@
   },
   "scripts": {
     "dev": "node tools/serve.mjs",
+    "assets:prepare": "node tools/generate-nova7-glb.mjs",
     "build": "node tools/build.mjs",
     "build:check": "node tools/build.mjs --check",
     "format": "prettier --write src tools tests specs docs skills .github *.md *.json *.mjs",
