@@ -891,8 +891,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
   const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
+  // City 2.2: layered facade details. One instanced draw call per material
+  // instead of thousands of independent meshes, only visible on High.
+  const facadeWindowsCool = new T.InstancedMesh(unit, glowMaterial('#7deffe', 1.35), 15000);
+  facadeWindowsCool.name = 'city-facade-windows-cool';
+  const facadeWindowsAmber = new T.InstancedMesh(unit, glowMaterial('#ffc884', 1.05), 3000);
+  facadeWindowsAmber.name = 'city-facade-windows-amber';
+  const facadeSideWindows = new T.InstancedMesh(unit, glowMaterial('#37cddc', 1.15), 6600);
+  facadeSideWindows.name = 'city-facade-side-windows';
+  const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
+  facadePanelModules.name = 'city-facade-panel-modules';
   let d = new T.Object3D(),
-    wi = 0;
+    wi = 0,
+    coolWindows = 0,
+    amberWindows = 0,
+    sideWindows = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {
     d.position.set(x, y, z);
     d.scale.set(sx, sy, sz);
@@ -939,12 +952,78 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         0.12,
       );
     }
+    // Extra illuminated floors on the camera-facing facade. Mix dense and
+    // sparse rows, plus amber accent rooms, to avoid repeating a flat grid.
+    const floorCount = Math.min(15, Math.max(4, Math.floor(h / 5.5)));
+    const columnCount = i % 4 === 0 ? 5 : 4;
+    for (let row = 0; row < floorCount; row++) {
+      for (let col = 0; col < columnCount; col++) {
+        if ((i * 11 + row * 7 + col * 3) % 13 === 0) continue;
+        const amber = (i * 3 + row * 5 + col * 7) % 11 === 0;
+        const target = amber ? facadeWindowsAmber : facadeWindowsCool;
+        const index = amber ? amberWindows++ : coolWindows++;
+        inst(
+          target,
+          index,
+          x + ((col + 0.5) / columnCount - 0.5) * w * 0.83,
+          -7 + ((row + 1) / (floorCount + 1)) * h,
+          z + depth / 2 + 0.12,
+          (w * 0.61) / columnCount,
+          0.36 + (i % 3) * 0.07,
+          0.16,
+        );
+      }
+    }
+    // Add windows on the wall facing the flight corridor. This makes the
+    // buildings feel three-dimensional during parallax instead of like cards.
+    const sideFloors = Math.min(11, floorCount);
+    for (let row = 0; row < sideFloors; row++) {
+      for (let col = 0; col < 3; col++) {
+        if ((i + row * 3 + col) % 8 === 0) continue;
+        inst(
+          facadeSideWindows,
+          sideWindows++,
+          x - s * (w / 2 + 0.1),
+          -7 + ((row + 1) / (sideFloors + 1)) * h,
+          z + ((col + 0.5) / 3 - 0.5) * depth * 0.74,
+          0.16,
+          0.37,
+          (depth * 0.48) / 3,
+        );
+      }
+    }
+    // Offset reinforced facade bays: silhouette and shading layers without
+    // adding colliders or obstructing the central flight corridor.
+    for (let bay = 0; bay < 4; bay++) {
+      const bayHeight = h * (0.11 + (bay % 2) * 0.07);
+      inst(
+        facadePanelModules,
+        i * 4 + bay,
+        x + (bay % 2 ? 0.3 : -0.3) * w,
+        -7 + h * (0.22 + Math.floor(bay / 2) * 0.48),
+        z + depth / 2 + 0.3,
+        w * 0.18,
+        bayHeight,
+        0.52,
+      );
+    }
   }
+  facadeWindowsCool.count = coolWindows;
+  facadeWindowsAmber.count = amberWindows;
+  facadeSideWindows.count = sideWindows;
   for (let o of [bodies, caps, edges, windows]) {
     o.instanceMatrix.needsUpdate = true;
     city.add(o);
   }
-  for (const detail of [facadeRibs, ledBands, antennas]) {
+  for (const detail of [
+    facadeRibs,
+    ledBands,
+    antennas,
+    facadeWindowsCool,
+    facadeWindowsAmber,
+    facadeSideWindows,
+    facadePanelModules,
+  ]) {
     detail.instanceMatrix.needsUpdate = true;
     cityHighDetails.add(detail);
   }
