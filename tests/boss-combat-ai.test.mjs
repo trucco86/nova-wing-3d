@@ -39,3 +39,37 @@ test('tentacle sweeps demand vertical dodge, claws demand flanking dodge', () =>
   assert.equal(bossMeleeHit(claw, { x: 4, y: 13, orbit: 1.2 }), true);
   assert.equal(bossMeleeHit(claw, { x: 4, y: 13, orbit: 0 }), false);
 });
+
+test('Marvin and Hydra counter player altitude without invisible retargeting', () => {
+  const neutral = { cycle: 1, phase: 2, playerX: 8, playerY: 12, orbit: 0 };
+  for (const sector of [6, 9]) {
+    const low = chooseBossIntent({ ...neutral, sector });
+    const high = chooseBossIntent({ ...neutral, sector, playerY: 35 });
+    assert.equal(high.kind, 'tentacle-grab');
+    assert.equal(high.counter, 'altitude');
+    assert.notEqual(low.kind, high.kind);
+    assert.equal(high.targetY, 35);
+    assert.equal(bossMeleeHit(high, { x: 8, y: 35 }), true);
+    assert.equal(bossMeleeHit(high, { x: 34, y: 35 }), false);
+    assert.equal(bossMeleeHit(high, { x: 8, y: 12 }), false);
+    assert.ok(Object.isFrozen(high), 'attack location must latch at windup');
+    const boost = chooseBossIntent({ ...neutral, sector, boosting: true });
+    assert.equal(boost.kind, 'tentacle-grab');
+    assert.equal(boost.counter, 'boost');
+  }
+});
+
+test('Marvin escalates aggression in final phase while keeping ranged counterplay and mecha reaction', () => {
+  const base = { sector: 9, phase: 3, playerX: 0, playerY: 12, orbit: 0 };
+  assert.equal(chooseBossIntent({ ...base, cycle: 3 }).kind, 'tentacle-grab');
+  assert.equal(chooseBossIntent({ ...base, cycle: 2 }).kind, 'bite');
+  assert.equal(chooseBossIntent({ ...base, cycle: 4 }).kind, 'barrage');
+  const flank = chooseBossIntent({ ...base, cycle: 1, orbit: 1.2 });
+  assert.equal(flank.kind, 'claw-swipe');
+  assert.equal(flank.counter, 'flank');
+  const mech = chooseBossIntent({ ...base, cycle: 1, robot: true });
+  assert.equal(mech.kind, 'claw-swipe');
+  assert.equal(mech.counter, 'mecha');
+  assert.equal(bossMeleePose(flank, 'windup', 1).lunge, 0);
+  assert.ok(bossMeleePose(flank, 'attack', 0.7).claw > 0.7);
+});
