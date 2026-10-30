@@ -73,6 +73,19 @@ export function createSculptedStarfighter(model = 'nova7', paintMaterial) {
       indices.push(a, b, c, c, b, d);
     }
   }
+  // Seal nose and aft cross sections to avoid transparent gaps from oblique cameras.
+  const frontCenter = positions.length / 3;
+  positions.push(0, 0.26, sections[0][0]);
+  uvs.push(0.5, 0);
+  const rearCenter = positions.length / 3;
+  positions.push(0, 0.26, sections.at(-1)[0]);
+  uvs.push(0.5, 1);
+  for (let j = 0; j < around; j++) {
+    const next = (j + 1) % around;
+    indices.push(frontCenter, j, next);
+    const base = (sections.length - 1) * around;
+    indices.push(rearCenter, base + next, base + j);
+  }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
   geometry.setAttribute('uv', new T.Float32BufferAttribute(uvs, 2));
