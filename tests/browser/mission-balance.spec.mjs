@@ -70,7 +70,9 @@ test('first subboss remains visible with a protected opening and quieter escort 
 test('undefeated city subboss visibly retreats without rewards or blocking the orbital boss', async ({
   page,
 }, info) => {
-  test.setTimeout(180000);
+  // Software-rendered browser CI took 192s on Graphics 2.5. Keep the complete
+  // orbital gameplay assertions and permit a 240s ceiling on slow runners.
+  test.setTimeout(240000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&encounters=1');
