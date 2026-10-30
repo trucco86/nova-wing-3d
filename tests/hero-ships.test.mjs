@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createHeroFighter, createHeroMechaArmor } from '../src/hero-ships.js';
+import { createHeroFighter } from '../src/hero-ships.js';
 import { createFlyingRobot, createShipModule } from '../src/visuals.js';
 import { createShowroomShip } from '../src/showroom-models.js';
 
