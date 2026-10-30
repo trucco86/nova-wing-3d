@@ -39,3 +39,10 @@ test('radio renderer updates portrait id, readable speaker name and accessibilit
   assert.equal(label.textContent, 'BIA');
   assert.equal(renderRadioSpeaker(null, 'bob').id, 'bob');
 });
+
+test('native/headless DOM element stubs do not crash mission start', () => {
+  const stub = { textContent: '', style: {} };
+  const document = { getElementById: () => stub };
+  assert.equal(renderRadioSpeaker(document, 'christopher').id, 'christopher');
+  assert.equal(renderRadioSpeaker(document, 'unknown').id, 'bia');
+});
