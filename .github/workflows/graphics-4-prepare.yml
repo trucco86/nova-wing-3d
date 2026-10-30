@@ -1,0 +1,78 @@
+name: Graphics 4 QA release preparation
+on:
+  pull_request:
+    branches:
+      - feat/graphics-3-premium-city-20261030
+permissions:
+  contents: write
+concurrency:
+  group: graphics-4-qa-prepare
+  cancel-in-progress: true
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare release, format, build and test all source
+        run: |
+          npm run release:prepare -- 1.27.28
+          npm run format
+          npm run build
+          npm run validate
+      - name: Record true QA feature scope
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const nl = String.fromCharCode(10);
+          const changelog = 'CHANGELOG.md';
+          const old = readFileSync(changelog, 'utf8');
+          const placeholder = [
+            '## 1.27.28 — Candidata em preparação',
+            '',
+            '- Candidata não homologada; preencher entregas e evidências antes da publicação.'
+          ].join(nl);
+          if (!old.includes(placeholder)) throw new Error('Expected 1.27.28 placeholder');
+          const replacement = [
+            '## 1.27.28 — Sculpted Hero Fighter (QA)',
+            '',
+            '- Três novas silhuetas hero de caça com fuselagem loft, asas chanfradas, canopy multifacetado e motores integrados.',
+            '- Mecha ganha nova camada de armadura sem deslocar articulações e origens de tiro.',
+            '- Modo Alto ativa modelos hero; Médio preserva o original; hangar usa a mesma geometria.',
+            '- Sem alteração em hitboxes, física, saves, armas, login ou ranking.',
+            '- CI, FPS real e homologação visual ainda são gates desta candidata.'
+          ].join(nl);
+          writeFileSync(changelog, old.replace(placeholder, replacement));
+          const note = [
+            '## Nova Wing 3D v1.27.28 — QA isolado',
+            '',
+            '- Novas silhuetas e materiais PBR para as naves NOVA-7, Specter e Aegis.',
+            '- Proteções e reator aprimorados para robô, preservando o rig original.',
+            '- Alternância Alto/Médio mantém a qualidade adaptativa.',
+            '- Ainda não equivale à fidelidade final da arte-conceito.',
+            '- Capturas reais, comparativo visual e FPS são obrigatórios antes da promoção.',
+            '',
+            '**Não publicar em DEV/HML/PROD sem aprovação.**',
+            ''
+          ].join(nl);
+          writeFileSync('releases/v1.27.28.md', note);
+          NODE
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit generated artifacts and remove single-use workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -f .github/workflows/graphics-4-prepare.yml
+          git add -A
+          git commit -m "chore(graphics4): release 1.27.28 build and format [graphics4-built]"
+          git push
