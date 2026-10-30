@@ -7809,6 +7809,22 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   }
 }
 
+/* v1.27.24 QA: keep the speaking cat's name visible in portrait AND
+   landscape touch layouts; old HUD code concealed the entire eyebrow. */
+@media (pointer: coarse) {
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms #commsSpeaker {
+    display: inline;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+}
+
     </style>
   </head>
   <body>
