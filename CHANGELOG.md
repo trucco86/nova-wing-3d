@@ -4,7 +4,7 @@
 
 - Nave mantém agilidade e a cadência original; robô recebe 2,35× no dano por disparo com intervalo 20% maior entre tiros (DPS ~1,96× na mesma arma).
 - Tiro carregado do robô recebe 2,1×; precisão do braço esquerdo aplica 7× dano base mantendo trava, custo de energia e cooldown.
-- Projétil pesado 1,6× maior, recuo e flash de saída, impactos mais evidentes e efeitos sonoros próprios para tiros, precisão e colisões.
+- Projétil pesado 1,6× maior, recuo e flash de saída, impactos mais evidentes e efeitos sonoros próprios para tiros, precisão e colisões. O disparo carregado nasce do canhão do punho direito (não do centro da nave), com escala reforçada e teste real de teclado/toque.
 - Respeita colisões e armadura/pontos fracos dos chefes; nenhuma alteração na pontuação, ranking, saves, login ou nave.
 - QA isolada baseada no PR #167; sem integração em DEV/HML/prod antes de CI e avaliação visual/sonora humana.
 
