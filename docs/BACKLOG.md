@@ -1,19 +1,18 @@
 # Backlog mestre — Nova Wing Five Cats
 
-
 ## Estado de integração — 30/10/2026 (referência mais recente)
 
 **Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.
 
-| Ordem | Frente | Candidata | Situação / próximo gate |
-| --- | --- | --- | --- |
-| P0.1 | Cinco Cats / menu com capa ampliada, medalhas e patentes | [#167](https://github.com/trucco86/nova-wing-3d/pull/167) | QA isolado, comparar layout e regressões; manter troféus e save |
-| P0.2 | Mecha Heavy Fire, braços, mira e áudio de canhão | [#168](https://github.com/trucco86/nova-wing-3d/pull/168) | Baseado na #167; homologar nave ágil vs robô potente e desempenho mobile |
-| P0.3 | Marvin / Hidra: combate reativo e esquiva | [#169](https://github.com/trucco86/nova-wing-3d/pull/169) | Baseado na #168; validar telegraph, golpes corpo a corpo, weak points, ritmo e dano |
-| P0.4 | Capa original fullscreen, portraits e diálogos | [#171](https://github.com/trucco86/nova-wing-3d/pull/171) | Baseado na #169; validar mobile retrato/paisagem e CTA sem cobrir a arte |
-| P0.5 | Abertura Five Cats em formação com Bia líder | [#173](https://github.com/trucco86/nova-wing-3d/pull/173) | Baseado na #171; texto no topo, portraits 2D coerentes, naves/mecha 3D; validar abertura e pular |
-| P0.6 | Graphics 2.0: Automático / Médio / Alto | [#175](https://github.com/trucco86/nova-wing-3d/pull/175) | Baseado na #173; `v1.27.26` vertical slice cidade em QA; corrigido teste que abria Opções em tela oculta; repetir 4 shards e medir frame-time |
-| P0.7 | Integração única DEV→HML→PROD | **Ainda não promovido** | Fazer uma candidata composta dos commits **sem duplicar features**; quality, browser, preview, diff, testes físicos e autorização humana |
+| Ordem | Frente                                                   | Candidata                                                 | Situação / próximo gate                                                                                                                       |
+| ----- | -------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0.1  | Cinco Cats / menu com capa ampliada, medalhas e patentes | [#167](https://github.com/trucco86/nova-wing-3d/pull/167) | QA isolado, comparar layout e regressões; manter troféus e save                                                                               |
+| P0.2  | Mecha Heavy Fire, braços, mira e áudio de canhão         | [#168](https://github.com/trucco86/nova-wing-3d/pull/168) | Baseado na #167; homologar nave ágil vs robô potente e desempenho mobile                                                                      |
+| P0.3  | Marvin / Hidra: combate reativo e esquiva                | [#169](https://github.com/trucco86/nova-wing-3d/pull/169) | Baseado na #168; validar telegraph, golpes corpo a corpo, weak points, ritmo e dano                                                           |
+| P0.4  | Capa original fullscreen, portraits e diálogos           | [#171](https://github.com/trucco86/nova-wing-3d/pull/171) | Baseado na #169; validar mobile retrato/paisagem e CTA sem cobrir a arte                                                                      |
+| P0.5  | Abertura Five Cats em formação com Bia líder             | [#173](https://github.com/trucco86/nova-wing-3d/pull/173) | Baseado na #171; texto no topo, portraits 2D coerentes, naves/mecha 3D; validar abertura e pular                                              |
+| P0.6  | Graphics 2.0: Automático / Médio / Alto                  | [#175](https://github.com/trucco86/nova-wing-3d/pull/175) | Baseado na #173; `v1.27.26` vertical slice cidade em QA; corrigido teste que abria Opções em tela oculta; repetir 4 shards e medir frame-time |
+| P0.7  | Integração única DEV→HML→PROD                            | **Ainda não promovido**                                   | Fazer uma candidata composta dos commits **sem duplicar features**; quality, browser, preview, diff, testes físicos e autorização humana      |
 
 ### Próximas ondas, ainda não concluídas
 
@@ -35,7 +34,6 @@
 - [ ] **Produção:** publicar um único commit validado, verificar Pages e manter plano de rollback.
 
 As seções seguintes documentam snapshots anteriores e **não substituem esta ordem atualizada**. A preview da [PR #175](https://pr-175.nova-wing-preview.pages.dev/) é laboratório, não HML/PROD.
-
 
 ## Estado vigente — 27/10/2026 (substitui prioridades desatualizadas abaixo)
 
