@@ -127,7 +127,11 @@ export function installShowroom({
     }
     if (!initialize()) return;
     let savedStorage = null;
-    try { savedStorage = window.localStorage; } catch { /* private browsing */ }
+    try {
+      savedStorage = window.localStorage;
+    } catch {
+      /* private browsing */
+    }
     const graphics = resolveGraphicsQuality(loadSettings(savedStorage).graphics, {
       coarsePointer: window.matchMedia('(pointer:coarse)').matches,
       deviceMemory: window.navigator?.deviceMemory ?? null,

@@ -7,7 +7,9 @@ import { createShowroomShip } from '../src/showroom-models.js';
 
 function auditGeometry(root) {
   const box = new T.Box3().setFromObject(root);
-  assert.ok([box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z].every(Number.isFinite));
+  assert.ok(
+    [box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z].every(Number.isFinite),
+  );
   let vertices = 0;
   root.traverse((part) => {
     if (!part.isMesh) return;
@@ -36,7 +38,9 @@ test('all three fighter hulls feature sculpted mass, beveled wings and facet can
     assert.ok(hero.getObjectByName('hero-multifaceted-canopy')?.isMesh);
     assert.ok(hero.getObjectByName('hero-swept-wing--1')?.isMesh);
     assert.ok(hero.getObjectByName('hero-swept-wing-1')?.isMesh);
-    assert.ok(hero.children.filter((c) => c.name.startsWith('hero-wing-running-light')).length === 2);
+    assert.ok(
+      hero.children.filter((c) => c.name.startsWith('hero-wing-running-light')).length === 2,
+    );
     const module = createShipModule(model);
     assert.equal(module.getObjectByName('hero-fighter-hull')?.visible, false);
     assert.equal(module.getObjectByName('premium-ship-details')?.visible, false);
