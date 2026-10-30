@@ -7823,10 +7823,18 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #cinematicPortrait::after {
   display: none;
 }
-#cinematicPortrait[data-pilot='christopher'] { background-position: 56.4% 13.5%; }
-#cinematicPortrait[data-pilot='bob'] { background-position: 74% 17.5%; }
-#cinematicPortrait[data-pilot='calvin'] { background-position: 44.2% 54%; }
-#cinematicPortrait[data-pilot='jenifer'] { background-position: 73.4% 41.8%; }
+#cinematicPortrait[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+}
+#cinematicPortrait[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+}
+#cinematicPortrait[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+}
+#cinematicPortrait[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+}
 #cinematic.hide-subtitles #cinematicPortrait {
   display: none !important;
 }

@@ -93,17 +93,27 @@ export function createCinematicStage(canvas) {
       const profile = CINEMATIC_FLEET[index];
       const pos = cinematicFormationPosition(profile.slot, elapsed, camera.aspect);
       ship.visible = shot !== 'squad' && !(mechaShot && profile.id === 'bia');
-      ship.scale.setScalar((profile.id === 'bia' ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1));
+      ship.scale.setScalar(
+        (profile.id === 'bia' ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1),
+      );
       ship.position.set(pos.x, pos.y, pos.z);
       ship.rotation.set(0.12, Math.PI + Math.sin(elapsed * 0.2 + index) * 0.09, pos.bank);
-      if (shot === 'escape') ship.position.x += Math.min(5, Math.max(0, elapsed - 4)) * 0.6 * Math.max(0.43, Math.min(1, camera.aspect));
+      if (shot === 'escape')
+        ship.position.x +=
+          Math.min(5, Math.max(0, elapsed - 4)) * 0.6 * Math.max(0.43, Math.min(1, camera.aspect));
       if (shot === 'pursuit') ship.position.z -= (elapsed - 16) * 0.35;
     });
     mecha.visible = mechaShot;
     if (mechaShot) {
       const lead = cinematicFormationPosition(0, elapsed, camera.aspect);
       mecha.position.set(lead.x, lead.y - 0.9, lead.z - 1);
-      updateMechaPose(mecha, { dt: 1 / 30, time: elapsed, boosting: true, firing: true, recoil: 0.22 });
+      updateMechaPose(mecha, {
+        dt: 1 / 30,
+        time: elapsed,
+        boosting: true,
+        firing: true,
+        recoil: 0.22,
+      });
       mecha.rotation.y = Math.PI;
     }
     cargo.visible = shot === 'arrival' || shot === 'escape';

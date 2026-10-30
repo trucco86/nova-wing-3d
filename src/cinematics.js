@@ -11,7 +11,11 @@ export const CINEMATICS = {
       speaker: 'NARRADOR',
       text: 'Marvin roubou os suprimentos dos gatos e fugiu para o espaço profundo.',
     },
-    { time: 8, speaker: 'BIA', text: 'Five Cats em formação! Minha NOVA-7 lidera. Protejam os flancos.' },
+    {
+      time: 8,
+      speaker: 'BIA',
+      text: 'Five Cats em formação! Minha NOVA-7 lidera. Protejam os flancos.',
+    },
     {
       time: 12,
       speaker: 'CALVINHO',
@@ -19,8 +23,16 @@ export const CINEMATICS = {
     },
   ],
   campaign: [
-    { time: 0, speaker: 'BIA', text: 'Cinco naves na mesma formação. Vamos recuperar nossos suprimentos!' },
-    { time: 4, speaker: 'CHRISTOPHER', text: 'Canhão pesado e forma robô prontos. Eu cuido da linha de frente.' },
+    {
+      time: 0,
+      speaker: 'BIA',
+      text: 'Cinco naves na mesma formação. Vamos recuperar nossos suprimentos!',
+    },
+    {
+      time: 4,
+      speaker: 'CHRISTOPHER',
+      text: 'Canhão pesado e forma robô prontos. Eu cuido da linha de frente.',
+    },
     { time: 6, speaker: 'BOB', text: 'Escudos preparados. Ninguém fica para trás!' },
     { time: 8, speaker: 'JENIFER', text: 'Alvo em fuga! Acelerem, Five Cats!' },
   ],

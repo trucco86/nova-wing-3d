@@ -10,9 +10,7 @@ const SHIPS = Object.freeze({
 
 /** Every playable cat has its own ship; Bia is the forward center leader. */
 export const CINEMATIC_FLEET = Object.freeze(
-  SQUAD_PILOTS.map(({ id, slot, name }) =>
-    Object.freeze({ id, slot, name, ...SHIPS[id] }),
-  ),
+  SQUAD_PILOTS.map(({ id, slot, name }) => Object.freeze({ id, slot, name, ...SHIPS[id] })),
 );
 
 /** Cinematic composition adapts to tall screens without hiding the wing cats. */

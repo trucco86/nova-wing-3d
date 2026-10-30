@@ -23,7 +23,8 @@ test('all five ships form symmetric formation with Bia ahead in center', () => {
 
 test('every Five Cats character speaks during the updated cinematic, with narrator caption-only', () => {
   const names = new Set([...CINEMATICS.intro, ...CINEMATICS.campaign].map((x) => x.speaker));
-  for (const name of ['BIA', 'BOB', 'JENIFER', 'CHRISTOPHER', 'CALVINHO']) assert.ok(names.has(name), name);
+  for (const name of ['BIA', 'BOB', 'JENIFER', 'CHRISTOPHER', 'CALVINHO'])
+    assert.ok(names.has(name), name);
   assert.equal(cinematicDuration(CINEMATICS.intro), 15);
   assert.equal(cinematicDuration(CINEMATICS.campaign), 11);
   assert.equal(cinematicBeat(CINEMATICS.intro, 8).speaker, 'BIA');

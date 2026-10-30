@@ -8,7 +8,6 @@
 - Entrada e botão de pular continuam funcionando; nenhum impacto em saves, ranking, login ou missão.
 - Candidata QA sobre PR #171, separada da homologação da home. HML, DEV oficial e produção inalterados.
 
-
 ## 1.27.24 — Five Cats Original Cover & Radio Portraits (candidata QA)
 
 - Opção A, primeira etapa visual: reaproveita a capa original sem recortar nem distorcer os cinco gatos; uma camada atmosférica ampliada preenche o fundo da home e o pôster original permanece completo em primeiro plano.
