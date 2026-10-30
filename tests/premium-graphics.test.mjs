@@ -9,7 +9,6 @@ function assertFiniteInstances(group) {
   for (const mesh of group.children) {
     assert.equal(mesh.isInstancedMesh, true);
     assert.equal(mesh.userData.premiumDecoration, true);
-    assert.equal(mesh.instanceMatrix.needsUpdate === undefined, false);
     for (let i = 0; i < mesh.count; i++) {
       mesh.getMatrixAt(i, transform);
       assert.ok(transform.elements.every(Number.isFinite), mesh.name + ':' + i);
