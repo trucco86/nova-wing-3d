@@ -861,10 +861,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   atmosphere.position.copy(moon.position);
   scene.add(atmosphere);
   const terrainMat = new T.ShaderMaterial({
-    uniforms: { time: { value: 0 }, travel: { value: 0 }, water: { value: 0 } },
+    uniforms: {
+      time: { value: 0 },
+      travel: { value: 0 },
+      water: { value: 0 },
+      urban: { value: 1 },
+      detail: { value: 0.4 },
+    },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,abs(mod(p.x+4.,8.)-4.)-3.78);float seamZ=1.-smoothstep(.05,.17,abs(mod(p.y+5.,10.)-5.)-4.73);float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.008,.024,.034)*plating+vec3(.012,.078,.092)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -901,6 +907,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   facadeSideWindows.name = 'city-facade-side-windows';
   const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
   facadePanelModules.name = 'city-facade-panel-modules';
+  // Restore the physical-looking safety rails along both edges of the avenue.
+  // They are visual-only and remain visible in Medium, unlike premium decoration.
+  const guardrailSteel = new T.InstancedMesh(unit, metal('#3c6570', 0.63, 0.7), 1100);
+  guardrailSteel.name = 'city-avenue-guardrail';
+  const guardrailLamps = new T.InstancedMesh(unit, glowMaterial('#47eedf', 1.35), 240);
+  guardrailLamps.name = 'city-avenue-guardrail-lights';
+  // Three silhouettes: elevated overpasses, illuminated bridge gantries,
+  // and side-running suspended transit beams. Only the High profile shows them.
+  const crossingSteel = new T.InstancedMesh(unit, metal('#3b5867', 0.69, 0.62), 190);
+  crossingSteel.name = 'city-elevated-crossings';
+  const crossingLights = new T.InstancedMesh(unit, glowMaterial('#65dbe9', 1.22), 100);
+  crossingLights.name = 'city-elevated-crossings-lights';
+  const transitTracks = new T.InstancedMesh(unit, metal('#547682', 0.64, 0.54), 180);
+  transitTracks.name = 'city-suspended-transit';
   let d = new T.Object3D(),
     wi = 0,
     coolWindows = 0,
@@ -1011,7 +1031,65 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   facadeWindowsCool.count = coolWindows;
   facadeWindowsAmber.count = amberWindows;
   facadeSideWindows.count = sideWindows;
-  for (let o of [bodies, caps, edges, windows]) {
+
+  // Roadside guardrails run with both looping city blocks. The 95 segments per
+  // side are just two instanced draw calls, rather than thousands of Mesh nodes.
+  const railX = dynamicFlight ? 47 : 38;
+  let railParts = 0;
+  let railLamps = 0;
+  for (const side of [-1, 1]) {
+    for (let segment = 0; segment < 95; segment++) {
+      const z = -10 - segment * 20;
+      const x = side * railX;
+      // Two vertical stanchions, upper and lower bars, armored curb.
+      inst(guardrailSteel, railParts++, x, -4.4, z, 0.75, 4.6, 0.75);
+      inst(guardrailSteel, railParts++, x, -4.4, z - 10, 0.75, 4.6, 0.75);
+      inst(guardrailSteel, railParts++, x, -2.3, z - 10, 0.72, 0.55, 19.4);
+      inst(guardrailSteel, railParts++, x, -4.1, z - 10, 0.5, 0.4, 19.4);
+      inst(guardrailSteel, railParts++, x, -6.5, z - 10, 1.8, 0.7, 19.4);
+      inst(guardrailLamps, railLamps++, x, -1.93, z - 10, 0.25, 0.16, 19);
+    }
+  }
+  guardrailSteel.count = railParts;
+  guardrailLamps.count = railLamps;
+
+  // Aerial crossings stand at least 47 units above street level so that they
+  // enrich the city silhouette without intruding into the player flight lane.
+  let crossingParts = 0;
+  let crossingGlow = 0;
+  for (let i = 0; i < 9; i++) {
+    const z = -160 - i * 204;
+    const y = 59 + (i % 3) * 7;
+    const beamDepth = i % 3 === 0 ? 13 : i % 3 === 1 ? 8 : 5;
+    // Distinct variants: heavy pedestrian skybridge, thin gantry, transit arch.
+    inst(crossingSteel, crossingParts++, 0, y, z, 142, i % 3 === 0 ? 6 : 3.5, beamDepth);
+    for (const side of [-1, 1]) {
+      // Support legs are outside the road and the protective rails.
+      inst(crossingSteel, crossingParts++, side * 70, (y - 7) / 2 - 7, z, 5, y + 7, 5);
+      inst(crossingSteel, crossingParts++, side * 60, y + 5, z, 1.4, 10, beamDepth * 0.65);
+      inst(crossingLights, crossingGlow++, side * 55, y - 2.3, z + beamDepth / 2, 26, 0.4, 0.6);
+    }
+    inst(crossingLights, crossingGlow++, 0, y + 2.5, z + beamDepth / 2, 32, 0.3, 0.4);
+    // Some bridges get an extra top spine, breaking up the repetitive roofline.
+    if (i % 3 === 0) {
+      inst(crossingSteel, crossingParts++, 0, y + 7, z, 75, 3, beamDepth * 0.5);
+    }
+  }
+  crossingSteel.count = crossingParts;
+  crossingLights.count = crossingGlow;
+  let transitParts = 0;
+  for (const side of [-1, 1]) {
+    for (let segment = 0; segment < 45; segment++) {
+      const z = -22 - segment * 42;
+      const x = side * 80;
+      const y = 31 + (segment % 3) * 1.1;
+      inst(transitTracks, transitParts++, x, y, z, 7, 2.4, 41.5);
+      inst(transitTracks, transitParts++, x - side * 4, y - 1.4, z, 0.65, 0.75, 41.5);
+    }
+  }
+  transitTracks.count = transitParts;
+
+  for (let o of [bodies, caps, edges, windows, guardrailSteel, guardrailLamps]) {
     o.instanceMatrix.needsUpdate = true;
     city.add(o);
   }
@@ -1023,6 +1101,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     facadeWindowsAmber,
     facadeSideWindows,
     facadePanelModules,
+    crossingSteel,
+    crossingLights,
+    transitTracks,
   ]) {
     detail.instanceMatrix.needsUpdate = true;
     cityHighDetails.add(detail);
@@ -1165,6 +1246,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   return {
     setGraphicsQuality(quality) {
+      terrainMat.uniforms.detail.value = quality === 'high' ? 1 : 0.4;
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
     },
@@ -1272,6 +1354,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.launchHaze.value = 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
+      terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
       ground.visible = land;
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
