@@ -7691,6 +7691,19 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #comms #commsPortrait::after {
   display: none;
 }
+#comms #commsPortrait[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+}
+#comms #commsPortrait[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+}
+#comms #commsPortrait[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+}
+#comms #commsPortrait[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+}
+
 #comms #commsSpeaker {
   font: inherit;
   color: #ebfffd;
