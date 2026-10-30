@@ -7430,7 +7430,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu.title-screen[data-screen='home']::before {
   background:
     linear-gradient(180deg, #030b1675 5%, #030b1699 100%),
-    var(--cover-art) center / cover no-repeat;
+    var(--cover-art) center / contain no-repeat;
   opacity: 0.24;
   filter: blur(20px);
   transform: scale(1.06);
