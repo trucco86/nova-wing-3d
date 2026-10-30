@@ -33,7 +33,7 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 28, 'two city tiles preserve instanced near/far LOD geometry');
+  assert.equal(count, 48, 'two city tiles include batched cinematic skyline and transit');
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');
