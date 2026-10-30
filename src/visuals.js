@@ -1037,7 +1037,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     24,
   );
   hologramGlass.name = 'city-near-holographic-panels';
-  const hologramFrames = new T.InstancedMesh(unit, glowMaterial('#64ecff', 1.7), 24);
+  const hologramFrames = new T.InstancedMesh(unit, glowMaterial('#64ecff', 1.7), 96);
   hologramFrames.name = 'city-near-holographic-frames';
   const rooftopBeacons = new T.InstancedMesh(unit, metal('#c09a65', 0.82, 0.27), 24);
   rooftopBeacons.name = 'city-near-rooftop-beacons';
@@ -1108,8 +1108,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       inst(landmarkCores, index, x, towerHeight / 2 - 7, z, 12, towerHeight, 14);
       inst(landmarkCrowns, index, x, towerHeight - 3, z, 15, 2.1, 16);
       inst(skybridges, index, x + side * 24, 60 + (i % 3) * 12, z - 10, 50, 2.2, 3);
-      inst(hologramGlass, index, x - side * 7.9, towerHeight * 0.67, z + 7.5, 0.65, 13, 8);
-      inst(hologramFrames, index, x - side * 8.35, towerHeight * 0.67, z + 7.5, 0.32, 14.6, 9.5);
+      const signY = towerHeight * 0.67;
+      const signX = x - side * 8.35;
+      const signZ = z + 7.5;
+      inst(hologramGlass, index, x - side * 7.9, signY, signZ, 0.65, 13, 8);
+      // Four luminous rails make a hollow sign frame, rather than an opaque slab.
+      inst(hologramFrames, index * 4, signX, signY, signZ - 4.2, 0.32, 14.6, 0.28);
+      inst(hologramFrames, index * 4 + 1, signX, signY, signZ + 4.2, 0.32, 14.6, 0.28);
+      inst(hologramFrames, index * 4 + 2, signX, signY - 7.2, signZ, 0.32, 0.28, 8.65);
+      inst(hologramFrames, index * 4 + 3, signX, signY + 7.2, signZ, 0.32, 0.28, 8.65);
       inst(rooftopBeacons, index, x, towerHeight + 5, z, 0.55, 13, 0.55);
     }
   }
