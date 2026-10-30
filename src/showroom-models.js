@@ -3,7 +3,7 @@ import { fighter, createShipModule } from './visuals.js';
 import { pilotAt, shipColorAt } from './pilots.js';
 
 // Preview resources are private: disposing them must never affect the live fighter.
-export function createShowroomShip(model, color) {
+export function createShowroomShip(model, color, graphics = 'high') {
   const ship = fighter();
   const module = createShipModule(model);
   const moduleGeometry = new Set();
@@ -11,6 +11,10 @@ export function createShowroomShip(model, color) {
     if (o.geometry) moduleGeometry.add(o.geometry);
   });
   ship.add(module);
+  for (const name of ['premium-ship-details', 'hero-fighter-hull']) {
+    const detail = module.getObjectByName(name);
+    if (detail) detail.visible = graphics === 'high';
+  }
   const privateMaterials = new Set([
     ...ship.userData.paint,
     ...ship.userData.flames.map((o) => o.material),
