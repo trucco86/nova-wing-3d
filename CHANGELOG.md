@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.28 — Sculpted Hero Fighter (QA)
+
+- Três novas silhuetas hero de caça com fuselagem loft, asas chanfradas, canopy multifacetado e motores integrados.
+- Mecha ganha nova camada de armadura sem deslocar articulações e origens de tiro.
+- Modo Alto ativa modelos hero; Médio preserva o original; hangar usa a mesma geometria.
+- Sem alteração em hitboxes, física, saves, armas, login ou ranking.
+- CI, FPS real e homologação visual ainda são gates desta candidata.
+
 ## 1.27.27 — Graphics 3.0 Premium Detail (QA)
 
 - Alto: detalhes PBR e instanciados nas fachadas da cidade, nas três naves do jogador e na nave-mãe.

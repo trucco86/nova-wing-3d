@@ -637,6 +637,9 @@ export function createGame({
     });
     robot.userData.mechPaint.primary.color.set(palette.color);
     robot.userData.mechPaint.accent.color.set(palette.accent);
+    robot.getObjectByName('hero-mecha-armor')?.traverse((o) => {
+      if (o.material?.userData.paintModule) o.material.color.set(palette.color);
+    });
     $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
@@ -652,6 +655,8 @@ export function createGame({
     shipModule.visible = !robotMode;
     const premiumShip = shipModule.getObjectByName('premium-ship-details');
     if (premiumShip) premiumShip.visible = graphicsQualityApplied === 'high';
+    const heroShip = shipModule.getObjectByName('hero-fighter-hull');
+    if (heroShip) heroShip.visible = graphicsQualityApplied === 'high';
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
@@ -2288,6 +2293,10 @@ export function createGame({
     graphicsQualityApplied = visualQuality;
     const premiumShip = shipModule.getObjectByName('premium-ship-details');
     if (premiumShip) premiumShip.visible = visualQuality === 'high';
+    const heroShip = shipModule.getObjectByName('hero-fighter-hull');
+    if (heroShip) heroShip.visible = visualQuality === 'high';
+    const heroMecha = robot.getObjectByName('hero-mecha-armor');
+    if (heroMecha) heroMecha.visible = visualQuality === 'high';
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
