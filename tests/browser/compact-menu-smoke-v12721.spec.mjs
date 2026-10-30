@@ -50,6 +50,16 @@ for (const viewport of viewports) {
     await page.locator('#pressStart').click();
     await expect(menu).toHaveAttribute('data-screen', 'home');
     await expect(page.locator('#menuPrimary button:visible')).toHaveCount(3);
+    const actionBounds = await page.locator('#menuPrimary button').evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const rect = button.getBoundingClientRect();
+        return { top: rect.top, bottom: rect.bottom };
+      }),
+    );
+    for (const bounds of actionBounds) {
+      expect(bounds.top).toBeGreaterThanOrEqual(-1);
+      expect(bounds.bottom).toBeLessThanOrEqual(viewport.height + 1);
+    }
     await expect(page.locator('#menuHero')).toBeVisible();
     const placement = await page.evaluate(() => ({
       artworkBottom: document.querySelector('#menuHero').getBoundingClientRect().bottom,
