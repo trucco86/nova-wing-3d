@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { createCityDistricts } from './city-districts.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -1156,6 +1157,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     urbanLife.add(craft);
   }
   city.add(urbanLife);
+  city.add(createCityDistricts());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
@@ -1392,6 +1394,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       for (const tile of [city, cityFar]) {
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
+        tile.getObjectByName('city-district-high-details').visible = high;
       }
     },
     showCarrierForBoss() {
@@ -1506,8 +1509,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.visible = land;
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       cityHorizon.visible = sceneryTheme === 'city';
-      for (const tile of [city, cityFar])
+      for (const tile of [city, cityFar]) {
         tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
+      }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
       // Show the orbital globe only after the last city/port buildings are gone.
