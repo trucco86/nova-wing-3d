@@ -19,7 +19,15 @@ export async function bundleGame() {
   const shell = await readFile(resolve(root, 'src/shell.html'), 'utf8');
   const css = await readFile(resolve(root, 'src/styles.css'), 'utf8');
   const cover = (await readFile(resolve(root, 'src/assets/cover.webp.base64'), 'utf8')).trim();
-  const js = result.outputFiles[0].text.replaceAll('</script', '<\\/script');
+  const glb = (await readFile(resolve(root, 'src/assets/nova7-hero.glb.base64'), 'utf8')).trim();
+  if (
+    !/^[A-Za-z0-9+/]+=*$/.test(glb) ||
+    Buffer.from(glb, 'base64').toString('ascii', 0, 4) !== 'glTF'
+  )
+    throw new Error('NOVA-7 GLB missing or invalid. Run npm run assets:prepare.');
+  const js = result.outputFiles[0].text
+    .replaceAll('__NOVA7_HERO_GLB_BASE64__', glb)
+    .replaceAll('</script', '<\\/script');
   for (const marker of ['/* BUILD:STYLES */', '/* BUILD:GAME */', 'BUILD:VERSION'])
     if (!shell.includes(marker)) throw new Error(`Missing build marker: ${marker}`);
   return (

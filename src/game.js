@@ -78,6 +78,7 @@ import {
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { ensurePremiumNova7Glb } from './premium-glb-runtime.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
   difficultyProfile,
@@ -641,10 +642,11 @@ export function createGame({
   }
   function applyShipModel() {
     if (shipModule) {
+      shipModule.userData.cancelPremiumGlb?.();
       player.remove(shipModule);
       shipModule.traverse((o) => {
         o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        if (o.material?.userData.paintModule || o.material?.userData.heroGlb) o.material.dispose();
       });
       shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
     }
@@ -663,6 +665,7 @@ export function createGame({
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
+    ensurePremiumNova7Glb(shipModule);
   }
   const statLabels = {
     attack: 'ATAQUE',
@@ -2297,6 +2300,7 @@ export function createGame({
     world.setGraphicsQuality(visualQuality);
     const premiumDetails = shipModule.getObjectByName('ship-premium-details');
     if (premiumDetails) premiumDetails.visible = visualQuality === 'high';
+    if (visualQuality === 'high') ensurePremiumNova7Glb(shipModule);
     post.setGraphicsQuality(visualQuality);
     post.resize(window.innerWidth, window.innerHeight);
     if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
@@ -4394,6 +4398,7 @@ export function createGame({
       petCare: { ...petCare },
       cinematic: cinematic ? { elapsed: cinematic.elapsed, duration: cinematic.duration } : null,
       loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
+      premiumAsset: shipModule.userData.heroGlbLoad?.status ?? 'base',
       sector: sectorIndex + 1,
       lives,
       credits,
@@ -4521,9 +4526,10 @@ export function createGame({
       routeRenderer?.destroy();
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
+      shipModule.userData.cancelPremiumGlb?.();
       shipModule.traverse((o) => {
         o.geometry?.dispose();
-        if (o.material?.userData.paintModule) o.material.dispose();
+        if (o.material?.userData.paintModule || o.material?.userData.heroGlb) o.material.dispose();
       });
       shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
       renderer.dispose?.();
