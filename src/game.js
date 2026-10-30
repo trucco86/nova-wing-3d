@@ -646,8 +646,7 @@ export function createGame({
       player.remove(shipModule);
       shipModule.traverse((o) => {
         o.geometry?.dispose();
-        if (o.material?.userData.paintModule || o.material?.userData.heroGlb)
-          o.material.dispose();
+        if (o.material?.userData.paintModule || o.material?.userData.heroGlb) o.material.dispose();
       });
       shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
     }
@@ -4530,8 +4529,7 @@ export function createGame({
       shipModule.userData.cancelPremiumGlb?.();
       shipModule.traverse((o) => {
         o.geometry?.dispose();
-        if (o.material?.userData.paintModule || o.material?.userData.heroGlb)
-          o.material.dispose();
+        if (o.material?.userData.paintModule || o.material?.userData.heroGlb) o.material.dispose();
       });
       shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
       renderer.dispose?.();

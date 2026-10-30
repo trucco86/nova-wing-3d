@@ -34,7 +34,9 @@ export function ensurePremiumNova7Glb(ship) {
   if (ship.userData.heroGlbLoad) return;
   const state = { cancelled: false, status: 'loading' };
   ship.userData.heroGlbLoad = state;
-  ship.userData.cancelPremiumGlb = () => { state.cancelled = true; };
+  ship.userData.cancelPremiumGlb = () => {
+    state.cancelled = true;
+  };
   try {
     new GLTFLoader().parse(
       decodedAsset(),
