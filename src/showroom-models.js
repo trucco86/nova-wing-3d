@@ -22,7 +22,8 @@ export function createShowroomShip(model, color, graphics = 'high') {
     ...ship.userData.flames.map((o) => o.material),
   ]);
   ship.traverse((o) => {
-    if (o.material?.userData.paintModule) privateMaterials.add(o.material);
+    if (o.material?.userData.paintModule || o.userData?.cinematicDisposable)
+      privateMaterials.add(o.material);
   });
   const geometry = new Map(),
     materials = new Map();
