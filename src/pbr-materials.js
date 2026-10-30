@@ -21,7 +21,7 @@ function panelHeight(x, y, kind) {
     ? Math.sin((y * Math.PI * 2) / 8) * 0.15
     : Math.sin((x * Math.PI * 2) / 16) * 0.09;
   const grain = (noise(x, y) - 0.5) * (brushed ? 0.17 : 0.13);
-  const rivet = (x % 32 === 7 && y % 32 === 7) ? 0.42 : 0;
+  const rivet = x % 32 === 7 && y % 32 === 7 ? 0.42 : 0;
   const crease = seam < 2 ? -0.48 : 0;
   return periodic + grain + rivet + crease;
 }
@@ -61,7 +61,9 @@ export function createPbrSurfaceMaps(kind = 'armor', size = PBR_MAP_SIZE) {
       const seam = x % 32 < 2 || y % 32 < 2;
       const grain = noise(x + 71, y + 43);
       const finish = kind === 'ceramic' ? 0.84 : kind === 'titanium' ? 0.7 : 0.78;
-      const r = Math.round(clamp((finish + (grain - 0.5) * 0.19 + (seam ? 0.13 : 0)) * 255, 0, 255));
+      const r = Math.round(
+        clamp((finish + (grain - 0.5) * 0.19 + (seam ? 0.13 : 0)) * 255, 0, 255),
+      );
       rough[i] = rough[i + 1] = rough[i + 2] = r;
       rough[i + 3] = 255;
     }

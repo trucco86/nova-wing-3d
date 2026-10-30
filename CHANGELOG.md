@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.29 — Premium PBR and single-silhouette (QA)
+
+- Visual Alto substitui casco legado pelo hero de #177, sem dupla geometria aparente.
+- Texturas PBR procedurais compartilhadas: normal e roughness para armadura, cerâmica e titânio.
+- Hangar 360 graus e gameplay preservam modo Médio e efeitos de propulsão.
+- QA de Code/Playwright/Source Repair/FPS real e aceite perceptivo ainda obrigatórios.
+- DEV/HML/produção não são alterados por esta candidata.
+
 ## 1.27.28 — Sculpted Hero Fighter (QA)
 
 - Três novas silhuetas hero de caça com fuselagem loft, asas chanfradas, canopy multifacetado e motores integrados.

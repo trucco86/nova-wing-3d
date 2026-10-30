@@ -39,7 +39,10 @@ test('High replaces old fighter fuselage; Medium restores original visible ship'
   assert.equal(high.getObjectByName('ship-fuselage').visible, false);
   assert.equal(medium.getObjectByName('hero-fighter-hull').visible, false);
   assert.equal(medium.getObjectByName('ship-fuselage').visible, true);
-  assert.ok(high.userData.flames.every((f) => f.visible), 'thruster effects survive High mode');
+  assert.ok(
+    high.userData.flames.every((f) => f.visible),
+    'thruster effects survive High mode',
+  );
   assert.equal(high.getObjectByName('premium-ship-details').visible, true);
   assert.equal(medium.getObjectByName('premium-ship-details').visible, false);
 });

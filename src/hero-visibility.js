@@ -17,14 +17,15 @@ export function setHeroFighterVisuals(legacyParts, shipModule, quality, shipVisi
     const exhaust =
       part.name === 'flame' ||
       part.isSprite === true ||
-      (part.isMesh === true && part.material?.isMeshBasicMaterial === true && part.position.z > 2.3);
+      (part.isMesh === true &&
+        part.material?.isMeshBasicMaterial === true &&
+        part.position.z > 2.3);
     part.visible = shipVisible && (!high || exhaust);
   }
   // Preserve RPG progression neons at their actual upgrade tier, as managed
   // by setFighterEvolution. The root shipModule hides everything in mecha mode.
   for (const part of shipModule.children) {
-    if (part === hero || part === premium || part.name.startsWith('ship-evolution-neon-'))
-      continue;
+    if (part === hero || part === premium || part.name.startsWith('ship-evolution-neon-')) continue;
     part.visible = !high;
   }
   return true;
