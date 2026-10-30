@@ -42,7 +42,11 @@ test('premium fighter geometry stays isolated to High profile and follows the se
     const sculpt = ship.getObjectByName('ship-sculpted-high-detail');
     assert.ok(sculpt);
     assert.ok(premium.getObjectByName('ship-sculpted-continuous-hull'));
-    assert.equal(premium.visible, false, 'Medium renders neither sculpted geometry nor premium details');
+    assert.equal(
+      premium.visible,
+      false,
+      'Medium renders neither sculpted geometry nor premium details',
+    );
     const paintMesh = sculpt.getObjectByName('ship-sculpted-continuous-hull');
     assert.equal(paintMesh.material.userData.paintModule, true, 'paint selects the hero plating');
     assert.equal(ship.userData.sculptedRotors.length, 2);

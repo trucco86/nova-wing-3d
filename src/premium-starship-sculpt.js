@@ -142,12 +142,19 @@ export function createSculptedStarfighter(model = 'nova7', paintMaterial) {
     main.position.y = 0.46;
     g.add(main);
 
-    const spine = new T.Mesh(buildWing([
-      [side * 1.7, -0.15],
-      [side * (wingspan - 0.65), 0.53],
-      [side * (wingspan - 1.38), 0.83],
-      [side * 2.0, 0.63],
-    ], 0.09, 0.026), dark);
+    const spine = new T.Mesh(
+      buildWing(
+        [
+          [side * 1.7, -0.15],
+          [side * (wingspan - 0.65), 0.53],
+          [side * (wingspan - 1.38), 0.83],
+          [side * 2.0, 0.63],
+        ],
+        0.09,
+        0.026,
+      ),
+      dark,
+    );
     spine.name = 'ship-sculpted-wing-recess';
     spine.position.y = 0.61;
     g.add(spine);
@@ -155,10 +162,7 @@ export function createSculptedStarfighter(model = 'nova7', paintMaterial) {
     // Mechanical articulated panel ribs; three per wing, not opaque boxes.
     for (let i = 0; i < 3; i++) {
       const x = side * (2.2 + i * 0.63);
-      const rib = new T.Mesh(
-        new T.CylinderGeometry(0.045, 0.075, 0.75 - i * 0.07, 8),
-        titanium,
-      );
+      const rib = new T.Mesh(new T.CylinderGeometry(0.045, 0.075, 0.75 - i * 0.07, 8), titanium);
       rib.rotation.x = Math.PI / 2;
       rib.rotation.z = side * 0.22;
       rib.position.set(x, 0.7, 0.34 + i * 0.1);
@@ -174,7 +178,10 @@ export function createSculptedStarfighter(model = 'nova7', paintMaterial) {
     nacelle.position.set(base, -0.22, 2.05);
     g.add(nacelle);
     for (const [k, radius] of [0.54, 0.49, 0.38].entries()) {
-      const ring = new T.Mesh(new T.TorusGeometry(radius, 0.052, 8, 28), k === 2 ? light : titanium);
+      const ring = new T.Mesh(
+        new T.TorusGeometry(radius, 0.052, 8, 28),
+        k === 2 ? light : titanium,
+      );
       ring.name = 'ship-sculpted-exhaust-ring';
       ring.position.set(base, -0.22, 2.82 + k * 0.15);
       g.add(ring);
