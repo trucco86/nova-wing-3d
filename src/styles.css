@@ -7139,8 +7139,8 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu.title-screen[data-screen] .title-brand span {
   display: none;
 }
-#menu[data-screen='splash'] .title-content > :not(#menuStartGate),
-#menu[data-screen='home'] .title-content > :not(h1):not(#menuPrimary),
+#menu[data-screen='splash'] .title-content > :not(#menuStartGate):not(#menuHero),
+#menu[data-screen='home'] .title-content > :not(#menuHero):not(h1):not(#menuPrimary),
 #menu[data-screen='play']
   .title-content
   > :not(h1):not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras),
@@ -7404,4 +7404,113 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu[data-screen='play'] .title-content > #brief {
   display: block;
   margin: 0 auto 20px;
+}
+
+/* v1.27.21 QA visual revision: uncropped Five Cats artwork is the hero;
+   start/navigation remain below it, including small-screen landscape. */
+#menu.title-screen[data-screen='splash'],
+#menu.title-screen[data-screen='home'] {
+  justify-content: center;
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='splash'] .title-content,
+#menu.title-screen[data-screen='home'] .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(9px, 1.5dvh, 16px);
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+#menu.title-screen[data-screen='splash']::before,
+#menu.title-screen[data-screen='home']::before {
+  background:
+    linear-gradient(180deg, #030b1675 5%, #030b1699 100%),
+    var(--cover-art) center / cover no-repeat;
+  opacity: 0.24;
+  filter: blur(20px);
+  transform: scale(1.06);
+}
+#menu.title-screen[data-screen='splash'] .menu-cover-hero,
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  display: block;
+  flex: 0 0 auto;
+  width: min(100%, 110dvh, 1080px);
+  aspect-ratio: 1672 / 941;
+  background: var(--cover-art) center / contain no-repeat;
+  border: 1px solid #77d6c844;
+  border-radius: clamp(10px, 2vw, 18px);
+  box-shadow: 0 0 0 1px #07151bbb, 0 24px 62px #000b, 0 0 48px #29cad51a;
+  pointer-events: none;
+}
+#menu.title-screen[data-screen='splash'] #menuStartGate {
+  width: min(100%, 440px);
+  padding: 0;
+  margin: 0 auto;
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] h1 {
+  font-size: clamp(32px, 4.5vw, 56px);
+  margin: 0;
+  line-height: 1;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary {
+  width: min(100%, 470px);
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary button {
+  min-height: 49px;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    justify-content: flex-start;
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    width: 100%;
+    gap: 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(92vw, 420px);
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    padding: 8px 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    gap: 5px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: min(75vw, 68dvh);
+  }
+  #menu.title-screen[data-screen='home'] h1 {
+    font-size: 30px;
+    margin: 0;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(96vw, 650px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary button {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
 }
