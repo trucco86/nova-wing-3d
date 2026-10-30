@@ -7,6 +7,7 @@ import {
 import { pilotAt, shipAt } from './pilots.js';
 import { loadSettings } from './ui-preferences.js';
 import { resolveGraphicsQuality } from './graphics-quality.js';
+import { installCinematicIbl } from './cinematic-lighting.js';
 
 export function installShowroom({
   document = globalThis.document,
@@ -20,6 +21,7 @@ export function installShowroom({
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let renderer,
     scene,
+    cinematicIbl,
     camera,
     mount,
     model,
@@ -65,6 +67,7 @@ export function installShowroom({
       renderer.toneMapping = T.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.35;
       scene = new T.Scene();
+      cinematicIbl = installCinematicIbl(renderer, scene);
       camera = new T.PerspectiveCamera(35, 1, 0.1, 100);
       scene.add(new T.HemisphereLight('#c8e8ff', '#18252e', 2.2));
       const key = new T.DirectionalLight('#fff0d1', 4);
@@ -136,6 +139,7 @@ export function installShowroom({
       coarsePointer: window.matchMedia('(pointer:coarse)').matches,
       deviceMemory: window.navigator?.deviceMemory ?? null,
     });
+    cinematicIbl?.setQuality(graphics);
     const next = [
       mode,
       graphics,
@@ -302,6 +306,7 @@ export function installShowroom({
       resize.disconnect();
       listeners.forEach((f) => f());
       disposeShowroomModel(model);
+      cinematicIbl?.dispose();
       renderer?.dispose();
       document.body.classList.remove('showroom-web');
     },
