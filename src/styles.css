@@ -7087,6 +7087,41 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   color: #ffe4a0;
 }
 
+/* Medal gallery: touch-accessible mission conditions and 40px targets. */
+.cat-medal-details {
+  margin: 7px 0 12px;
+  padding: 7px 9px;
+  font: 11px/1.5 sans-serif;
+  color: #d5e7e6;
+  border-left: 2px solid #d4b979;
+  background: #113049c9;
+}
+.cat-service-medals .cat-medal-chip {
+  cursor: pointer;
+  min-height: 38px;
+  min-width: 38px;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  appearance: none;
+  font: inherit;
+}
+.cat-service-medals .cat-medal-chip:focus-visible {
+  outline: 2px solid #f0da95;
+  outline-offset: 2px;
+}
+.cat-service-medals .cat-medal-chip:hover {
+  background: #23506b;
+}
+@media (pointer: coarse) {
+  .cat-service-medals .cat-medal-chip {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
 /* v1.27.21: Progressive console-style title / 3-button hub; keep original cover art. */
 #menu.title-screen[data-screen] {
   background: #030b16;
