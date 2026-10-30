@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createPbrSurfaceMaps } from './pbr-materials.js';
 
 // Sculpted hero geometry for the user's craft, separate from authoritative
 // flight hitboxes and the lighter model. No collision / simulation code here.
@@ -6,7 +7,9 @@ const paint = () => {
   const material = new T.MeshPhysicalMaterial({
     color: '#abcfe2',
     metalness: 0.74,
-    roughness: 0.25,
+    roughness: 0.32,
+    ...createPbrSurfaceMaps('armor'),
+    normalScale: new T.Vector2(0.55, 0.55),
     clearcoat: 0.82,
     clearcoatRoughness: 0.17,
   });
@@ -17,7 +20,9 @@ const ceramic = () =>
   new T.MeshPhysicalMaterial({
     color: '#152c42',
     metalness: 0.68,
-    roughness: 0.32,
+    roughness: 0.38,
+    ...createPbrSurfaceMaps('ceramic'),
+    normalScale: new T.Vector2(0.32, 0.32),
     clearcoat: 0.5,
     clearcoatRoughness: 0.2,
   });
@@ -25,7 +30,9 @@ const titanium = () =>
   new T.MeshStandardMaterial({
     color: '#6c90a5',
     metalness: 0.88,
-    roughness: 0.28,
+    roughness: 0.32,
+    ...createPbrSurfaceMaps('titanium'),
+    normalScale: new T.Vector2(0.43, 0.43),
   });
 const luminous = () =>
   new T.MeshBasicMaterial({
