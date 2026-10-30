@@ -7535,6 +7535,41 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   }
 }
 
+/* Final specificity: override older showroom portrait spacing without cropping the poster. */
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  align-items: center;
+  justify-content: center;
+}
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+    width: 100%;
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: 8px 12px;
+  }
+}
+
     </style>
   </head>
   <body>
