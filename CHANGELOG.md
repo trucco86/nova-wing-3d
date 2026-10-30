@@ -8,7 +8,6 @@
 - Testes unitários garantem identities/fallback; Playwright verifica três viewports e portrait real após transformação para robô.
 - Expansão verdadeira do canvas/outpainting e reformulação da abertura ficam fora deste pacote e exigem homologação visual específica. DEV/HML/produção inalterados.
 
-
 ## 1.27.23 — Boss Adaptive Counterplay (candidata QA)
 
 - Marvin e Hidra passam a reagir à altura real de voo, boost e posição orbital do jogador no instante do telegraph.

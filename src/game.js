@@ -2810,8 +2810,7 @@ export function createGame({
           message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
         else if (launchState.phase === 'atmosphere')
           message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA', 'jenifer');
-        else if (launchState.phase === 'orbit')
-      message('ÓRBITA ALCANÇADA · TERRA À VISTA', 'bob');
+        else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA', 'bob');
       }
     }
     const profileSpeed = dynamicFlight

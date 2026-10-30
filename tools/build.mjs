@@ -30,8 +30,8 @@ export async function bundleGame() {
         css.replaceAll('BUILD:COVER', 'data:image/webp;base64,' + cover),
       )
       .replace('/* BUILD:GAME */', () => js)
-      // The former Bia-only radio file is no longer embedded. The approved
-      // Five Cats cover now provides all five speaker portraits.
+    // The former Bia-only radio file is no longer embedded. The approved
+    // Five Cats cover now provides all five speaker portraits.
   );
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

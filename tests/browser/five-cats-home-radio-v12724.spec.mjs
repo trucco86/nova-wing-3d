@@ -1,9 +1,15 @@
 import { test, expect } from '@playwright/test';
 import { openMenu } from './menu-navigation.mjs';
 
-test('original art fills home atmosphere while Five Cats remain uncropped in three viewports', async ({ page }, info) => {
+test('original art fills home atmosphere while Five Cats remain uncropped in three viewports', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
-  for (const [width, height] of [[390, 844], [844, 390], [1366, 768]]) {
+  for (const [width, height] of [
+    [390, 844],
+    [844, 390],
+    [1366, 768],
+  ]) {
     await page.setViewportSize({ width, height });
     await page.goto('/');
     await openMenu(page, 'home');
@@ -24,11 +30,15 @@ test('original art fills home atmosphere while Five Cats remain uncropped in thr
       expect(box.x + box.width, selector).toBeLessThanOrEqual(width + 1);
       expect(box.y + box.height, selector).toBeLessThanOrEqual(height + 1);
     }
-    await page.screenshot({ path: info.outputPath(`home-original-expanded-${width}x${height}.png`) });
+    await page.screenshot({
+      path: info.outputPath(`home-original-expanded-${width}x${height}.png`),
+    });
   }
 });
 
-test('live mission radio shows the correct original Five Cats portrait after mecha transformation', async ({ page }, info) => {
+test('live mission radio shows the correct original Five Cats portrait after mecha transformation', async ({
+  page,
+}, info) => {
   test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
@@ -42,7 +52,9 @@ test('live mission radio shows the correct original Five Cats portrait after mec
   await expect(page.locator('#commsSpeaker')).toHaveText('CHRISTOPHER');
   await expect(page.locator('#commsPortrait')).toHaveAttribute('data-pilot', 'christopher');
   await expect(page.locator('#commsPortrait')).toHaveAttribute('aria-label', /CHRISTOPHER/);
-  const crop = await page.locator('#commsPortrait').evaluate((el) => getComputedStyle(el).backgroundImage);
+  const crop = await page
+    .locator('#commsPortrait')
+    .evaluate((el) => getComputedStyle(el).backgroundImage);
   expect(crop).not.toBe('none');
   await page.screenshot({ path: info.outputPath(`radio-christopher-${info.project.name}.png`) });
   expect(errors).toEqual([]);

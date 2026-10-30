@@ -2,9 +2,7 @@ import { PILOT_PROFILES } from './pilots.js';
 
 /** Shared, original-art radio identities. No external avatars or generic placeholders. */
 export const RADIO_PILOTS = Object.freeze(
-  Object.fromEntries(
-    PILOT_PROFILES.map(({ id, name }) => [id, Object.freeze({ id, name })]),
-  ),
+  Object.fromEntries(PILOT_PROFILES.map(({ id, name }) => [id, Object.freeze({ id, name })])),
 );
 
 export function radioSpeaker(id) {
