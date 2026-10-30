@@ -1033,7 +1033,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityNearDetail.name = 'city-premium-near-lod';
   const hologramGlass = new T.InstancedMesh(
     unit,
-    new T.MeshBasicMaterial({ color: '#226e90', transparent: true, opacity: 0.7, depthWrite: false }),
+    new T.MeshBasicMaterial({
+      color: '#226e90',
+      transparent: true,
+      opacity: 0.7,
+      depthWrite: false,
+    }),
     24,
   );
   hologramGlass.name = 'city-near-holographic-panels';
@@ -1122,8 +1127,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   for (let i = 0; i < 32; i++) {
     const side = i % 2 ? 1 : -1;
-    inst(airborneTraffic, i, side * (70 + (i % 4) * 11), 24 + (i % 5) * 10,
-      -55 - i * 54, 2.4, 0.75, 4.7);
+    inst(
+      airborneTraffic,
+      i,
+      side * (70 + (i % 4) * 11),
+      24 + (i % 5) * 10,
+      -55 - i * 54,
+      2.4,
+      0.75,
+      4.7,
+    );
   }
   for (const mesh of [hologramGlass, hologramFrames, rooftopBeacons, airborneTraffic]) {
     mesh.instanceMatrix.needsUpdate = true;

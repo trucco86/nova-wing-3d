@@ -13,9 +13,9 @@ export function createBrushedMetalNormalMap() {
       const ny = Math.cos(y * 0.7 + Math.cos(x * 0.47) * 0.5) * 0.07;
       const len = Math.hypot(nx, ny, 1);
       const pos = (y * size + x) * 4;
-      texels[pos] = Math.round((nx / len * 0.5 + 0.5) * 255);
-      texels[pos + 1] = Math.round((ny / len * 0.5 + 0.5) * 255);
-      texels[pos + 2] = Math.round((1 / len * 0.5 + 0.5) * 255);
+      texels[pos] = Math.round(((nx / len) * 0.5 + 0.5) * 255);
+      texels[pos + 1] = Math.round(((ny / len) * 0.5 + 0.5) * 255);
+      texels[pos + 2] = Math.round(((1 / len) * 0.5 + 0.5) * 255);
       texels[pos + 3] = 255;
     }
   }

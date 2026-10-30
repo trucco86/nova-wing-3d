@@ -32,14 +32,20 @@ test('HIGH renders near micro-details while distant skyline uses cheaper LOD', (
   const farLod = far.getObjectByName('city-premium-near-lod');
   assert.ok(nearLod && farLod);
   assert.equal(nearLod.children.length, 4);
-  assert.deepEqual(nearLod.children.map(x => x.count), [24, 96, 24, 32]);
+  assert.deepEqual(
+    nearLod.children.map((x) => x.count),
+    [24, 96, 24, 32],
+  );
   for (const mode of ['medium', 'high', 'medium']) {
     world.setGraphicsQuality(mode);
     assert.equal(nearLod.visible, mode === 'high');
     assert.equal(farLod.visible, false);
   }
   const traffic = nearLod.getObjectByName('city-near-airborne-traffic');
-  const matrix = new T.Matrix4(), pos = new T.Vector3(), q = new T.Quaternion(), scale = new T.Vector3();
+  const matrix = new T.Matrix4(),
+    pos = new T.Vector3(),
+    q = new T.Quaternion(),
+    scale = new T.Vector3();
   for (let i = 0; i < traffic.count; i++) {
     traffic.getMatrixAt(i, matrix);
     matrix.decompose(pos, q, scale);
