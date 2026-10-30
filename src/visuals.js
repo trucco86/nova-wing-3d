@@ -716,6 +716,12 @@ export function createShipModule(model = 'nova7') {
   premium.add(dorsalSpine);
   g.add(premium);
   g.userData.premiumPlumes = premiumPlumes;
+  g.userData.premiumMaterials = [
+    smokedMetal,
+    premiumGlow,
+    premiumFlameMaterial,
+    ...premiumPlumes.map((plume) => plume.material),
+  ];
   g.userData.progressionNeons = progressionNeons;
   return g;
 }
@@ -1011,6 +1017,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const landmarkCores = new T.InstancedMesh(unit, metal('#254653', 0.7, 0.29), 24);
   const landmarkCrowns = new T.InstancedMesh(unit, glowMaterial('#69dcff', 1.3), 24);
   const skybridges = new T.InstancedMesh(unit, metal('#416377', 0.68, 0.38), 24);
+  landmarkCores.name = 'city-landmark-cores';
+  landmarkCrowns.name = 'city-landmark-crowns';
+  skybridges.name = 'city-skyline-bridges';
   let d = new T.Object3D(),
     wi = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {

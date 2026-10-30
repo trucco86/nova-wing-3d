@@ -646,6 +646,7 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
@@ -2294,7 +2295,8 @@ export function createGame({
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
-    shipModule.getObjectByName('ship-premium-details').visible = visualQuality === 'high';
+    const premiumDetails = shipModule.getObjectByName('ship-premium-details');
+    if (premiumDetails) premiumDetails.visible = visualQuality === 'high';
     post.setGraphicsQuality(visualQuality);
     post.resize(window.innerWidth, window.innerHeight);
     if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
@@ -4523,6 +4525,7 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      shipModule.userData.premiumMaterials?.forEach((material) => material.dispose());
       renderer.dispose?.();
     },
   };
