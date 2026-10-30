@@ -48,6 +48,7 @@ export function ensurePremiumNova7Glb(ship) {
         const plating = ship.getObjectByName('ship-premium-wing-armor')?.material;
         scene.traverse((node) => {
           if (!node.isMesh) return;
+          node.material.userData.heroGlb = true;
           if (node.material?.name === 'NOVA7_PAINT') {
             // Keep player cosmetics on the new authored glTF meshes.
             node.material.userData.paintModule = true;
