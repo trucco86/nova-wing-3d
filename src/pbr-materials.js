@@ -13,7 +13,7 @@ const noise = (x, y) => {
   return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
 };
 
-function panelHeight(x, y, kind, size) {
+function panelHeight(x, y, kind) {
   // Toroidal texture: opposite edges match, preserving repeating UVs.
   const seam = Math.min(x % 32, 31 - (x % 32), y % 32, 31 - (y % 32));
   const brushed = kind === 'titanium';
@@ -48,10 +48,10 @@ export function createPbrSurfaceMaps(kind = 'armor', size = PBR_MAP_SIZE) {
   const rough = new Uint8Array(size * size * 4);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      const hx1 = panelHeight(wrap(x + 1, size), y, kind, size);
-      const hx0 = panelHeight(wrap(x - 1, size), y, kind, size);
-      const hy1 = panelHeight(x, wrap(y + 1, size), kind, size);
-      const hy0 = panelHeight(x, wrap(y - 1, size), kind, size);
+      const hx1 = panelHeight(wrap(x + 1, size), y, kind);
+      const hx0 = panelHeight(wrap(x - 1, size), y, kind);
+      const hy1 = panelHeight(x, wrap(y + 1, size), kind);
+      const hy0 = panelHeight(x, wrap(y - 1, size), kind);
       const v = new T.Vector3((hx0 - hx1) * 0.17, (hy0 - hy1) * 0.17, 1).normalize();
       const i = (y * size + x) * 4;
       normal[i] = Math.round((v.x * 0.5 + 0.5) * 255);
