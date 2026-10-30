@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
   getCinematicReflectionTexture,
-  setCinematicReflectionQuality,
 } from '../src/cinematic-reflections.js';
 import { createWorld } from '../src/visuals.js';
 
