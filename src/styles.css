@@ -7849,3 +7849,19 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
     height: 42px;
   }
 }
+
+/* Ensure cutscene branch inherits accessible landscape in-flight radio from
+   the approved QA composition; cat names are visible on touch devices. */
+@media (pointer: coarse) {
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms #commsSpeaker {
+    display: inline;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+}
