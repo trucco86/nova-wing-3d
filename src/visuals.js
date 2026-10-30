@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { createBrushedMetalNormalMap } from './premium-materials.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -554,6 +555,8 @@ export function createShipModule(model = 'nova7') {
     roughness: 0.25,
     clearcoat: 0.8,
     clearcoatRoughness: 0.18,
+    normalMap: createBrushedMetalNormalMap(),
+    normalScale: new T.Vector2(0.12, 0.12),
   });
   shell.userData.paintModule = true;
   if (model === 'specter') {
@@ -635,6 +638,8 @@ export function createShipModule(model = 'nova7') {
     roughness: 0.31,
     clearcoat: 0.55,
     clearcoatRoughness: 0.2,
+    normalMap: createBrushedMetalNormalMap(),
+    normalScale: new T.Vector2(0.16, 0.16),
   });
   const premiumGlow = new T.MeshBasicMaterial({
     color: '#4de0ff',
@@ -1022,6 +1027,26 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   landmarkCores.name = 'city-landmark-cores';
   landmarkCrowns.name = 'city-landmark-crowns';
   skybridges.name = 'city-skyline-bridges';
+  // Nearby details occupy a second LOD group. The repeating far tile
+  // keeps larger shapes but never draws these small decorative meshes.
+  const cityNearDetail = new T.Group();
+  cityNearDetail.name = 'city-premium-near-lod';
+  const hologramGlass = new T.InstancedMesh(
+    unit,
+    new T.MeshBasicMaterial({ color: '#226e90', transparent: true, opacity: 0.7, depthWrite: false }),
+    24,
+  );
+  hologramGlass.name = 'city-near-holographic-panels';
+  const hologramFrames = new T.InstancedMesh(unit, glowMaterial('#64ecff', 1.7), 24);
+  hologramFrames.name = 'city-near-holographic-frames';
+  const rooftopBeacons = new T.InstancedMesh(unit, metal('#c09a65', 0.82, 0.27), 24);
+  rooftopBeacons.name = 'city-near-rooftop-beacons';
+  const airborneTraffic = new T.InstancedMesh(
+    new T.OctahedronGeometry(1, 0),
+    glowMaterial('#fca65c', 1.35),
+    32,
+  );
+  airborneTraffic.name = 'city-near-airborne-traffic';
   let d = new T.Object3D(),
     wi = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {
@@ -1083,8 +1108,22 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       inst(landmarkCores, index, x, towerHeight / 2 - 7, z, 12, towerHeight, 14);
       inst(landmarkCrowns, index, x, towerHeight - 3, z, 15, 2.1, 16);
       inst(skybridges, index, x + side * 24, 60 + (i % 3) * 12, z - 10, 50, 2.2, 3);
+      inst(hologramGlass, index, x - side * 7.9, towerHeight * 0.67, z + 7.5, 0.65, 13, 8);
+      inst(hologramFrames, index, x - side * 8.35, towerHeight * 0.67, z + 7.5, 0.32, 14.6, 9.5);
+      inst(rooftopBeacons, index, x, towerHeight + 5, z, 0.55, 13, 0.55);
     }
   }
+  for (let i = 0; i < 32; i++) {
+    const side = i % 2 ? 1 : -1;
+    inst(airborneTraffic, i, side * (70 + (i % 4) * 11), 24 + (i % 5) * 10,
+      -55 - i * 54, 2.4, 0.75, 4.7);
+  }
+  for (const mesh of [hologramGlass, hologramFrames, rooftopBeacons, airborneTraffic]) {
+    mesh.instanceMatrix.needsUpdate = true;
+    cityNearDetail.add(mesh);
+  }
+  cityNearDetail.visible = false;
+  cityHighDetails.add(cityNearDetail);
   for (const mesh of [landmarkCores, landmarkCrowns, skybridges]) {
     mesh.instanceMatrix.needsUpdate = true;
     cityHighDetails.add(mesh);
@@ -1105,6 +1144,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityFar.position.z = -1900;
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
+  const farNearDetail = cityFar.getObjectByName('city-premium-near-lod');
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1237,6 +1277,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
+      cityNearDetail.visible = quality === 'high';
+      if (farNearDetail) farNearDetail.visible = false;
     },
     showCarrierForBoss() {
       carrier.visible = true;
