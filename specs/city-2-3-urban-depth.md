@@ -1,6 +1,7 @@
 # Cidade das Máquinas 2.3 — horizonte e cidade viva (QA)
 
 ## Problema visual observado
+
 A rota central parecia infinita e os prédios laterais pareciam uma pista de jogo antigo, sem profundidade, tráfego ou um destino arquitetônico frontal. A referência visual pede metrópole densa, estruturas elevadas, camadas urbanas, iluminação e vida em movimento.
 
 ## Escopo implementado

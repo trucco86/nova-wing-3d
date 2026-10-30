@@ -33,11 +33,7 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(
-    count,
-    36,
-    'City 2.3 includes four instanced skyline layers besides looping tiles',
-  );
+  assert.equal(count, 36, 'City 2.3 includes four instanced skyline layers besides looping tiles');
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');
