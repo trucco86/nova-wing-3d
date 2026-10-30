@@ -8,7 +8,6 @@
 - Respeita colisões e armadura/pontos fracos dos chefes; nenhuma alteração na pontuação, ranking, saves, login ou nave.
 - QA isolada baseada no PR #167; sem integração em DEV/HML/prod antes de CI e avaliação visual/sonora humana.
 
-
 ## 1.27.21 — Console Start & Three-Menu Hub (candidata QA)
 
 - Capa original Web centralizada, com PRESS START como único comando inicial e sem rolagem de configurações.
