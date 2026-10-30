@@ -78,6 +78,7 @@ import {
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { setHeroFighterVisuals } from './hero-visibility.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
   difficultyProfile,
@@ -248,6 +249,9 @@ export function createGame({
   player.add(shipModule);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
+  function refreshHeroFighter() {
+    setHeroFighterVisuals(shipParts, shipModule, graphicsQualityApplied, !robotMode);
+  }
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
@@ -352,6 +356,7 @@ export function createGame({
     if (!mechaEngine && audioCtx && robotMode) mechaEngine = createMechaThrusterAudio(audioCtx);
     cue('mechaTransform');
     for (const part of shipParts) part.visible = !robotMode;
+    refreshHeroFighter();
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     cue(robotMode ? 'transformRobot' : 'transformShip');
@@ -661,6 +666,7 @@ export function createGame({
     robot.scale.x =
       pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
     applySkin();
+    refreshHeroFighter();
   }
   const statLabels = {
     attack: 'ATAQUE',
@@ -1016,6 +1022,7 @@ export function createGame({
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
     for (const part of shipParts) part.visible = true;
+    refreshHeroFighter();
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
@@ -2291,10 +2298,7 @@ export function createGame({
       deviceMemory: window.navigator?.deviceMemory ?? null,
     });
     graphicsQualityApplied = visualQuality;
-    const premiumShip = shipModule.getObjectByName('premium-ship-details');
-    if (premiumShip) premiumShip.visible = visualQuality === 'high';
-    const heroShip = shipModule.getObjectByName('hero-fighter-hull');
-    if (heroShip) heroShip.visible = visualQuality === 'high';
+    refreshHeroFighter();
     const heroMecha = robot.getObjectByName('hero-mecha-armor');
     if (heroMecha) heroMecha.visible = visualQuality === 'high';
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
