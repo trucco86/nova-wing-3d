@@ -17,7 +17,10 @@ export function renderRadioSpeaker(document, id) {
   const speaker = radioSpeaker(id);
   const portrait = document?.getElementById('commsPortrait');
   const label = document?.getElementById('commsSpeaker');
-  if (!portrait || !label) return speaker;
+  // Native/headless gameplay harnesses may expose minimal element stubs
+  // without DOMStringMap or setAttribute. Radio visuals are optional there.
+  if (!portrait?.dataset || typeof portrait.setAttribute !== 'function' || !label)
+    return speaker;
   portrait.dataset.pilot = speaker.id;
   portrait.setAttribute('aria-label', speaker.name + ', transmissão Five Cats');
   label.textContent = speaker.name;
