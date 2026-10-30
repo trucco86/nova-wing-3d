@@ -25,6 +25,10 @@ export function setHeroFighterVisuals(legacyParts, shipModule, quality, shipVisi
   // Preserve RPG progression neons at their actual upgrade tier, as managed
   // by setFighterEvolution. The root shipModule hides everything in mecha mode.
   for (const part of shipModule.children) {
+    if (part.name === 'cinematic-fighter-exhaust') {
+      part.visible = high && shipVisible;
+      continue;
+    }
     if (part === hero || part === premium || part.name.startsWith('ship-evolution-neon-')) continue;
     part.visible = !high;
   }
