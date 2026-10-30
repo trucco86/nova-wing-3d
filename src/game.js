@@ -131,6 +131,7 @@ import {
   animateMechPower,
   resetMechPower,
   setFighterEvolution,
+  updatePremiumShipEffects,
   createShipModule,
   createWorld,
   postProcessor,
@@ -648,6 +649,14 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    const newPremium = shipModule.getObjectByName('ship-premium-details');
+    if (newPremium) {
+      const graphicsMode = resolveGraphicsQuality(settings.graphics, {
+        coarsePointer: coarsePointer.matches,
+        deviceMemory: window.navigator?.deviceMemory ?? null,
+      });
+      newPremium.visible = graphicsMode === 'high';
+    }
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
@@ -2285,6 +2294,7 @@ export function createGame({
     pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(visualQuality);
+    shipModule.getObjectByName('ship-premium-details').visible = visualQuality === 'high';
     post.setGraphicsQuality(visualQuality);
     post.resize(window.innerWidth, window.innerHeight);
     if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
@@ -4188,6 +4198,7 @@ export function createGame({
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
+      updatePremiumShipEffects(shipModule, boostVisible, visualTime);
       for (let f of player.userData.flames) {
         f.material.color.set(boostVisible ? '#ff9a35' : '#78eaff');
         f.scale.set(

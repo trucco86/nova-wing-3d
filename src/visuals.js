@@ -548,7 +548,13 @@ export function createFlyingRobot() {
 export function createShipModule(model = 'nova7') {
   const g = new T.Group();
   g.name = 'ship-model-' + model;
-  const shell = metal('#a9c8d7', 0.78, 0.25);
+  const shell = new T.MeshPhysicalMaterial({
+    color: '#a9c8d7',
+    metalness: 0.78,
+    roughness: 0.25,
+    clearcoat: 0.8,
+    clearcoatRoughness: 0.18,
+  });
   shell.userData.paintModule = true;
   if (model === 'specter') {
     for (const side of [-1, 1]) {
@@ -617,8 +623,118 @@ export function createShipModule(model = 'nova7') {
       progressionNeons.push({ mesh: strip, threshold: tier * 3 });
     }
   }
+
+  // Premium hard-surface module is only rendered in HIGH graphics mode.
+  // All details are cosmetic; the primary ship silhouette and hitbox remain unchanged.
+  const premium = new T.Group();
+  premium.name = 'ship-premium-details';
+  premium.visible = false;
+  const smokedMetal = new T.MeshPhysicalMaterial({
+    color: '#112b3a',
+    metalness: 0.76,
+    roughness: 0.31,
+    clearcoat: 0.55,
+    clearcoatRoughness: 0.2,
+  });
+  const premiumGlow = new T.MeshBasicMaterial({
+    color: '#4de0ff',
+    toneMapped: false,
+  });
+  const premiumFlameMaterial = new T.MeshBasicMaterial({
+    color: '#69daff',
+    transparent: true,
+    opacity: 0.68,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
+    side: T.DoubleSide,
+    toneMapped: false,
+  });
+  const premiumPlumes = [];
+  for (const side of [-1, 1]) {
+    // Layered tapered wing armor provides high-frequency shape and edge highlights.
+    const dorsalPlate = wing(
+      [
+        [side * 1.52, -0.94],
+        [side * 4.15, 0.73],
+        [side * 3.66, 1.17],
+        [side * 1.7, 0.2],
+      ],
+      shell,
+    );
+    dorsalPlate.name = 'ship-premium-wing-armor';
+    dorsalPlate.position.y = 0.51;
+    premium.add(dorsalPlate);
+    const inset = wing(
+      [
+        [side * 2.0, -0.26],
+        [side * 3.68, 0.93],
+        [side * 3.26, 1.07],
+        [side * 2.16, 0.49],
+      ],
+      smokedMetal,
+    );
+    inset.name = 'ship-premium-carbon-inlay';
+    inset.position.y = 0.62;
+    premium.add(inset);
+    for (let louver = 0; louver < 4; louver++) {
+      const intake = box(
+        0.19, 0.055, 0.43, smokedMetal,
+        side * (1.82 + louver * 0.19), 0.68, 0.46 + louver * 0.12,
+      );
+      intake.name = 'ship-premium-vent';
+      intake.rotation.y = side * 0.24;
+      premium.add(intake);
+    }
+    const edgeStrip = box(0.085, 0.09, 1.8, premiumGlow, side * 3.72, 0.55, 0.52);
+    edgeStrip.name = 'ship-premium-wing-led';
+    edgeStrip.rotation.y = side * 0.36;
+    premium.add(edgeStrip);
+    const engineCowl = new T.Mesh(
+      new T.CylinderGeometry(0.58, 0.71, 1.65, 12),
+      smokedMetal,
+    );
+    engineCowl.name = 'ship-premium-engine-cowl';
+    engineCowl.rotation.x = Math.PI / 2;
+    engineCowl.position.set(side * 1.12, -0.2, 2.13);
+    premium.add(engineCowl);
+    const ring = new T.Mesh(new T.TorusGeometry(0.44, 0.09, 8, 20), premiumGlow);
+    ring.name = 'ship-premium-engine-ring';
+    ring.position.set(side * 1.12, -0.2, 3.1);
+    premium.add(ring);
+    const plume = new T.Mesh(
+      new T.ConeGeometry(0.28, 2.15, 12, 1, true),
+      premiumFlameMaterial.clone(),
+    );
+    plume.name = 'ship-premium-boost-plume';
+    plume.rotation.x = Math.PI / 2;
+    plume.position.set(side * 1.12, -0.2, 4.0);
+    premium.add(plume);
+    premiumPlumes.push(plume);
+  }
+  const dorsalSpine = box(0.28, 0.2, 3.1, shell, 0, 0.59, -0.13);
+  dorsalSpine.name = 'ship-premium-spine';
+  premium.add(dorsalSpine);
+  g.add(premium);
+  g.userData.premiumPlumes = premiumPlumes;
   g.userData.progressionNeons = progressionNeons;
   return g;
+}
+
+/** Animate visual-only premium plasma. Flight damage and physics are unchanged. */
+export function updatePremiumShipEffects(ship, boosting = false, elapsed = 0) {
+  const details = ship?.getObjectByName('ship-premium-details');
+  if (!details?.visible) return;
+  for (const plume of ship.userData.premiumPlumes ?? []) {
+    const flicker = Math.sin(elapsed * 25) * 0.06;
+    plume.scale.set(
+      boosting ? 1.35 : 0.85,
+      (boosting ? 2.2 : 0.85) + flicker,
+      boosting ? 1.35 : 0.85,
+    );
+    plume.material.color.set(boosting ? '#ffae55' : '#69daff');
+    plume.material.opacity = boosting ? 0.9 : 0.62;
+    plume.position.z = boosting ? 5.0 : 4.0;
+  }
 }
 
 /** Activate larger luminous upgrade details as the player's ship gains levels. */
@@ -891,6 +1007,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
   const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
+  // Landmark architecture creates scale and silhouette variety without 1 mesh/draw call.
+  const landmarkCores = new T.InstancedMesh(unit, metal('#254653', 0.7, 0.29), 24);
+  const landmarkCrowns = new T.InstancedMesh(unit, glowMaterial('#69dcff', 1.3), 24);
+  const skybridges = new T.InstancedMesh(unit, metal('#416377', 0.68, 0.38), 24);
   let d = new T.Object3D(),
     wi = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {
@@ -939,6 +1059,24 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         0.12,
       );
     }
+  }
+  // Hero skyline towers and skybridges live beyond the flight corridor.
+  // Geometry is deterministic so the city looks intentional rather than random.
+  for (let i = 0; i < 12; i++) {
+    for (const side of [-1, 1]) {
+      const index = i * 2 + (side > 0 ? 1 : 0);
+      const distance = 125 + (i % 3) * 28;
+      const x = side * distance;
+      const z = -125 - i * 140;
+      const towerHeight = 112 + (i % 4) * 16;
+      inst(landmarkCores, index, x, towerHeight / 2 - 7, z, 12, towerHeight, 14);
+      inst(landmarkCrowns, index, x, towerHeight - 3, z, 15, 2.1, 16);
+      inst(skybridges, index, x + side * 24, 60 + (i % 3) * 12, z - 10, 50, 2.2, 3);
+    }
+  }
+  for (const mesh of [landmarkCores, landmarkCrowns, skybridges]) {
+    mesh.instanceMatrix.needsUpdate = true;
+    cityHighDetails.add(mesh);
   }
   for (let o of [bodies, caps, edges, windows]) {
     o.instanceMatrix.needsUpdate = true;
