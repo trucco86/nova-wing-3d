@@ -33,7 +33,7 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await expect(page.locator('#pause')).toHaveText('▶');
   await page.locator('#pauseOptions').click();
   await expect(page.locator('#settingsMenu')).toBeVisible();
-  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
+  await expect(page.locator('#settingMusic')).toHaveValue('0.8');
   await page.locator('#settingsClose').click();
   await expect(page.locator('#game')).toHaveJSProperty(
     'width',
@@ -116,8 +116,8 @@ test('checkpoint restores the final sector with independent music control', asyn
   await expect(page.locator('#weaponLabel')).toContainText('PLASMA VÓRTICE');
   await page.locator('#pause').click();
   await page.locator('#pauseOptions').click();
-  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
-  await expect(page.locator('#settingSfx')).toHaveValue('0.75');
+  await expect(page.locator('#settingMusic')).toHaveValue('0.8');
+  await expect(page.locator('#settingSfx')).toHaveValue('0.85');
   await page.locator('#settingsClose').click();
   await page.locator('#pauseResume').click();
   await expect(page.locator('#pauseMenu')).toBeHidden();
