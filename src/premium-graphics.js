@@ -122,3 +122,37 @@ export function createPremiumShipDetails(model = 'nova7') {
   group.userData.drawCallBudget = 4;
   return finish(group);
 }
+
+
+/** Flagship silhouette and launch-bay accents, also purely cosmetic. */
+export function createPremiumCarrierDetails() {
+  const group = new T.Group();
+  group.name = 'premium-flagship-details';
+  const armor = instanced(group, 'premium-flagship-armor', boxGeometry, chrome, 28);
+  const ribs = instanced(group, 'premium-flagship-ribs', boxGeometry, darkArmor, 24);
+  const lights = instanced(group, 'premium-launch-bay-beacons', boxGeometry, tealLight, 16);
+  const towers = instanced(group, 'premium-defense-silhouettes', boxGeometry, copper, 12);
+  const dummy = new T.Object3D();
+  for (let i = 0; i < 28; i++) {
+    const side = i % 2 ? 1 : -1;
+    matrix(armor, i, side * (30 + Math.floor(i / 2) * 3.3), 6.2,
+      -17 + i % 7 * 5.2, 2.3, 0.6, 3.8, dummy);
+  }
+  for (let i = 0; i < 24; i++) {
+    const side = i % 2 ? 1 : -1;
+    matrix(ribs, i, side * (38 + Math.floor(i / 2) * 2.4), 4.6,
+      -14 + i % 6 * 5.5, 0.6, 3, 2.3, dummy);
+  }
+  for (let i = 0; i < 16; i++) {
+    const side = i % 2 ? 1 : -1;
+    matrix(lights, i, side * (18.2 + Math.floor(i / 2) * 2), -5,
+      21.8, 0.35, 0.55 + i % 3 * 0.2, 0.4, dummy);
+  }
+  for (let i = 0; i < 12; i++) {
+    const side = i % 2 ? 1 : -1;
+    matrix(towers, i, side * (27 + Math.floor(i / 2) * 8),
+      11, -10 + i % 3 * 9, 2.4, 10, 2.4, dummy);
+  }
+  group.userData.drawCallBudget = 4;
+  return finish(group);
+}
