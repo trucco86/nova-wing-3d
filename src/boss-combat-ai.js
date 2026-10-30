@@ -41,10 +41,23 @@ export function chooseBossIntent({
   if (options) {
     const flank = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.8;
     if (sector === 9) {
-      // Marvin bites a stationary close approach, switches to claws at the
-      // flanks and intercepts a fleeing/boosting ship with tentacles.
-      kind = boosting ? 'tentacle-grab' : flank || robot ? 'claw-swipe' : 'bite';
-    } else if (sector === 6) kind = boosting || flank ? 'tentacle-grab' : 'tentacle-sweep';
+      // Marvin learns the pilot's approach at each *latched* attack window:
+      // climbing or boosting attracts a tentacle intercept, a flank or heavy
+      // mecha draws his claws, and a low/front approach risks his bite.
+      // Phase 3 mixes in an intercept after repeated frontal approaches.
+      const climbing = playerY >= 28;
+      kind =
+        boosting || climbing
+          ? 'tentacle-grab'
+          : flank || robot
+            ? 'claw-swipe'
+            : p === 3 && cycle % 3 === 0
+              ? 'tentacle-grab'
+              : 'bite';
+    } else if (sector === 6)
+      // The Hydra counters high flight, boost and orbiting with a focused grab;
+      // low/front flight must dodge a horizontal tentacle sweep vertically.
+      kind = boosting || flank || playerY >= 28 ? 'tentacle-grab' : 'tentacle-sweep';
     else if (sector === 5) kind = robot || healthy === 0 ? 'hammer-slam' : 'claw-swipe';
     else if (sector === 2)
       kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
@@ -64,6 +77,19 @@ export function chooseBossIntent({
     targetX,
     targetY,
     damage: (kind === 'bite' ? 25 : kind === 'hammer-slam' ? 22 : 16) + p * 3,
+    // Always commit once at windup: the boss cannot instantly retarget after
+    // the player starts dodging the telegraphed danger area.
+    counter:
+      boosting && (sector === 6 || sector === 9)
+        ? 'boost'
+        : playerY >= 28 && (sector === 6 || sector === 9)
+          ? 'altitude'
+          : (sector === 6 || sector === 9) &&
+              Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.8
+            ? 'flank'
+            : robot && sector === 9
+              ? 'mecha'
+              : 'approach',
     warning: 2.2,
     dodgeRadius: kind === 'tentacle-sweep' ? 11 : kind === 'hammer-slam' ? 14 : 9,
     origin: kind === 'bite' ? 'jaw' : kind.startsWith('tentacle') ? 'tentacles' : 'claws',
