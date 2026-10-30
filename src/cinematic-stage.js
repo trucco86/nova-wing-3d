@@ -1,4 +1,7 @@
 import * as T from 'three';
+import { CINEMATIC_FLEET, cinematicFormationPosition } from './cinematic-formation.js';
+import { createFlyingRobot } from './visuals.js';
+import { updateMechaPose } from './mecha-motion.js';
 import {
   createShowroomPilot,
   createShowroomShip,
@@ -12,7 +15,7 @@ const POSITIONS = [
   [2.4, -1.3, 0],
   [5, -1.3, 0],
 ];
-const PILOTS = ['bia', 'jenifer', 'christopher', 'bob', 'calvin'];
+const PILOTS = CINEMATIC_FLEET.map(({ id }) => id);
 export const cinematicShot = (elapsed) =>
   elapsed < 4 ? 'arrival' : elapsed < 8 ? 'escape' : elapsed < 16 ? 'squad' : 'pursuit';
 
@@ -46,14 +49,19 @@ export function createCinematicStage(canvas) {
     scene.add(model);
     return model;
   });
-  const shipModels = ['nova7', 'specter', 'aegis'];
-  const shipColors = ['mint', 'cobalt', 'gold'];
-  const ships = shipModels.map((modelId, index) => {
-    const model = createShowroomShip(modelId, shipColors[index]);
-    model.scale.setScalar(1.2);
+  const ships = CINEMATIC_FLEET.map(({ id, model: modelId, color }) => {
+    const model = createShowroomShip(modelId, color);
+    model.name = 'cinematic-ship-' + id;
+    model.scale.setScalar(id === 'bia' ? 1.12 : 0.96);
     scene.add(model);
     return model;
   });
+  // The actual in-game mecha asset replaces a generic opening placeholder.
+  // Only shown briefly in pursuit; all five ships remain the normal formation.
+  const mecha = createFlyingRobot();
+  mecha.name = 'cinematic-heavy-mecha';
+  mecha.visible = false;
+  scene.add(mecha);
   const cargo = new T.Group();
   const crateMaterial = new T.MeshStandardMaterial({
     color: '#eac17a',
@@ -80,13 +88,24 @@ export function createCinematicStage(canvas) {
       pilot.visible = shot === 'squad';
       pilot.rotation.y = Math.sin(elapsed * 0.35 + index * 0.6) * 0.12;
     });
+    const mechaShot = shot === 'pursuit' && elapsed >= 20 && elapsed < 24;
     ships.forEach((ship, index) => {
-      ship.visible = shot !== 'squad';
-      ship.position.set((index - 1) * 5, -1 + Math.sin(elapsed * 0.9 + index) * 0.4, -3);
-      ship.rotation.set(0.1, Math.PI + Math.sin(elapsed * 0.3) * 0.16, -0.05);
-      if (shot === 'escape') ship.position.x += elapsed * 1.15;
-      if (shot === 'pursuit') ship.position.z -= (elapsed - 16) * 0.5;
+      const profile = CINEMATIC_FLEET[index];
+      const pos = cinematicFormationPosition(profile.slot, elapsed, camera.aspect);
+      ship.visible = shot !== 'squad' && !(mechaShot && profile.id === 'bia');
+      ship.scale.setScalar((profile.id === 'bia' ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1));
+      ship.position.set(pos.x, pos.y, pos.z);
+      ship.rotation.set(0.12, Math.PI + Math.sin(elapsed * 0.2 + index) * 0.09, pos.bank);
+      if (shot === 'escape') ship.position.x += Math.min(5, Math.max(0, elapsed - 4)) * 0.6 * Math.max(0.43, Math.min(1, camera.aspect));
+      if (shot === 'pursuit') ship.position.z -= (elapsed - 16) * 0.35;
     });
+    mecha.visible = mechaShot;
+    if (mechaShot) {
+      const lead = cinematicFormationPosition(0, elapsed, camera.aspect);
+      mecha.position.set(lead.x, lead.y - 0.9, lead.z - 1);
+      updateMechaPose(mecha, { dt: 1 / 30, time: elapsed, boosting: true, firing: true, recoil: 0.22 });
+      mecha.rotation.y = Math.PI;
+    }
     cargo.visible = shot === 'arrival' || shot === 'escape';
     cargo.rotation.y = elapsed * 0.2;
     sphere.rotation.y = elapsed * 0.012;
@@ -99,7 +118,7 @@ export function createCinematicStage(canvas) {
     destroy() {
       if (disposed) return;
       disposed = true;
-      for (const model of [...pilots, ...ships]) disposeShowroomModel(model);
+      for (const model of [...pilots, ...ships, mecha]) disposeShowroomModel(model);
       sphere.geometry.dispose();
       sphere.material.dispose();
       cargo.children.forEach((mesh) => mesh.geometry.dispose());
