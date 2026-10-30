@@ -48,3 +48,7 @@ Cada **fase concluída, validada e identificada por runId** concede 70 pontos-ba
 
 A nova PR é **stacked sobre #159** (troféus) e não deve ser promovida a DEV enquanto o fluxo de resultado local do #159 estiver em revisão.
 Testar ganho uma única vez por run, troca de piloto, derrota, QA/dev, economia de pontos, cinco medalhas, responsividade 320px, modo paisagem, acesso no menu e progresso após reload. A PR não altera DEV, HML ou produção.
+
+## Insígnias felinas por conquista
+
+Os 12 troféus de serviço compartilham o contorno de cabeça de gato mas ganham símbolos próprios de garra, olho, nove vidas, bigodes, relâmpago, escudo, pata mecânica, coração, constelação ou eclipse. As Garras Bronze/Prata/Ouro usam o mesmo motivo e graduações metálicas distintas. SVG original, sem imagens licenciadas externas.
