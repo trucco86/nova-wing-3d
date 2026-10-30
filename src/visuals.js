@@ -912,10 +912,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     inst(edges, i * 2 + 1, x + w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
     // Facade ribs, illuminated ledges and aerial mast silhouettes.
     inst(facadeRibs, i * 2, x - w * 0.36, h / 2 - 7, z + depth / 2 + 0.19, 0.35, h * 0.88, 0.33);
-    inst(facadeRibs, i * 2 + 1, x + w * 0.36, h / 2 - 7, z + depth / 2 + 0.19, 0.35, h * 0.88, 0.33);
+    inst(
+      facadeRibs,
+      i * 2 + 1,
+      x + w * 0.36,
+      h / 2 - 7,
+      z + depth / 2 + 0.19,
+      0.35,
+      h * 0.88,
+      0.33,
+    );
     inst(ledBands, i * 2, x, h * 0.33 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
     inst(ledBands, i * 2 + 1, x, h * 0.68 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
-    inst(antennas, i, x + (i % 3 - 1) * w * 0.22, h + 1, z, 0.4, 13 + (i % 4) * 3, 0.4);
+    inst(antennas, i, x + ((i % 3) - 1) * w * 0.22, h + 1, z, 0.4, 13 + (i % 4) * 3, 0.4);
     for (let j = 0; j < 14; j++) {
       let row = Math.floor(j / 2),
         col = j % 2;

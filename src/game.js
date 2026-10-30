@@ -2333,7 +2333,9 @@ export function createGame({
       ['medium', 'graphicsMedium'],
       ['high', 'graphicsHigh'],
     ]) {
-      const option = Array.from($('settingGraphics').options ?? []).find((item) => item.value === mode);
+      const option = Array.from($('settingGraphics').options ?? []).find(
+        (item) => item.value === mode,
+      );
       if (option) option.textContent = uiText(settings.language, key);
     }
     for (const [key, id] of [

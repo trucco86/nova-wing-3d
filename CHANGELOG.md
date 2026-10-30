@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.26 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.25 — Abertura Five Cats remasterizada (candidata QA)
 
 - Cinemática passa a renderizar cinco naves distintas (Bia na liderança central, Jenifer e Bob nos flancos internos, Christopher e Calvinho nas laterais externas), respeitando telas retrato e paisagem.

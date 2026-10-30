@@ -1,6 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { GRAPHICS_OPTIONS, resolveGraphicsQuality, graphicsPixelRatioLimit } from '../src/graphics-quality.js';
+import {
+  GRAPHICS_OPTIONS,
+  resolveGraphicsQuality,
+  graphicsPixelRatioLimit,
+} from '../src/graphics-quality.js';
 import { readSettings, loadSettings, storeSettings, UI_COPY } from '../src/ui-preferences.js';
 
 test('graphics mode resolves conservatively on mobile and honors explicit choices', () => {
