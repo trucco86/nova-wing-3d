@@ -89,6 +89,7 @@ import {
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
@@ -1367,13 +1368,14 @@ export function createGame({
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
   const scatterShotMaterial = glowMaterial('#ffba70', 3);
-  function impact(position, dealt = 1, { bossHit = false, weak = false } = {}) {
+  function impact(position, dealt = 1, { bossHit = false, weak = false, heavy = false } = {}) {
     if (!dynamicFlight) return;
     const feedback = combatFeedback(dealt, { boss: bossHit, weak });
     const confirmed = feedback.type !== 'blocked';
     const color = feedback.color;
-    explode(position, 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
-    const flash = halo(color, confirmed ? (weak ? 11 : 8) : 5, 0.95);
+    explode(position, heavy ? 7 : 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
+    if (heavy && confirmed) cue('mechaImpact');
+    const flash = halo(color, confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5, 0.95);
     flash.material = flash.material.clone();
     flash.material.depthTest = false;
     flash.material.depthWrite = false;
@@ -1440,12 +1442,12 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    if (robotMode) robotFireKick = 0.18;
+    if (robotMode) robotFireKick = 0.29;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
     const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
-      const power = weaponPower() * (robotMode ? 1.45 : 1);
+      const power = mechaShotDamage(weaponPower(), { robot: robotMode });
       const rightHand = robotMode
         ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
         : null;
@@ -1463,14 +1465,24 @@ export function createGame({
           b.travelled = 0;
           b.life = SCATTER_LIFETIME;
         }
-        b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
+        b.o.scale.setScalar(mechaShotScale(podsDetached ? 1 : 1 + podCount * 0.22, robotMode));
+        if (robotMode) b.source = 'mecha-heavy';
       }
     }
-    if (dynamicFlight) cue('shot');
+    if (robotMode && dynamicFlight) {
+      const flash = halo('#a8faff', 3.8, 0.7);
+      flash.position.copy(robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()));
+      scene.add(flash);
+      particles.push({ o: flash, v: new T.Vector3(), life: 0.14, kind: 'flash' });
+    }
+    if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight
-      ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
-        (scatter ? SCATTER_CADENCE_FACTOR : 1)
+      ? mechaShotCooldown(
+          firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
+            (scatter ? SCATTER_CADENCE_FACTOR : 1),
+          robotMode,
+        )
       : 0.135;
   }
 
@@ -1555,9 +1567,10 @@ export function createGame({
     if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
-      launchShot(0, weaponPower() * 5, false, muzzle);
+      launchShot(0, mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }), false, muzzle);
       const shot = shots.at(-1);
       shot.source = 'mecha-precision';
+      shot.o.scale.setScalar(2.2);
       shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
       shot.homing = false;
       energy -= 10;
@@ -2805,11 +2818,18 @@ export function createGame({
       if (charge >= 0.8) {
         launchShot(
           0,
-          (20 + weapon * 12) * weaponPower() * (dynamicFlight ? 1 + charge / 1.5 : 1),
+          mechaShotDamage((20 + weapon * 12) * weaponPower(), {
+            robot: robotMode,
+            kind: 'charged',
+          }) * (dynamicFlight ? 1 + charge / 1.5 : 1),
           true,
         );
+        if (robotMode) {
+          shots.at(-1).source = 'mecha-charged';
+          robotFireKick = 0.4;
+        }
         cockpit?.fire();
-        if (dynamicFlight) cue('plasmaRelease');
+        if (dynamicFlight) cue(robotMode ? 'mechaChargeRelease' : 'plasmaRelease');
         else sound(160, 0.4, 'sawtooth', 0.06);
       }
       charge = 0;
@@ -3825,7 +3845,7 @@ export function createGame({
               e.half,
             ),
             dealt,
-            { weak: weak && dealt > 0 },
+            { weak: weak && dealt > 0, heavy: b.source?.startsWith('mecha-') },
           );
           b.pierced.add(e);
           if (b.element !== 'void') b.life = 0;
@@ -3865,6 +3885,7 @@ export function createGame({
             impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
               bossHit: true,
               weak: dealt > 0,
+              heavy: b.source?.startsWith('mecha-'),
             });
             b.life = 0;
 
@@ -3885,6 +3906,7 @@ export function createGame({
           impact(impactPoint(previousShot, b.o.position, boss.position, hull), dealt, {
             bossHit: true,
             weak: false,
+            heavy: b.source?.startsWith('mecha-'),
           });
           b.life = 0;
         }
