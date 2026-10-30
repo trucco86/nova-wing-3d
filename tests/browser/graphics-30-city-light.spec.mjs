@@ -1,11 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-test('Graphics 3.0 wet city captures real High and Medium browser frames', async ({ page }, info) => {
+test('Graphics 3.0 wet city captures real High and Medium browser frames', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   const runtimeErrors = [];
   page.on('pageerror', (error) => runtimeErrors.push(error.message));
   page.on('console', (message) => {
-    if (message.type() === 'error' && /WebGL|shader|GL_INVALID|THREE.WebGLProgram/i.test(message.text()))
+    if (
+      message.type() === 'error' &&
+      /WebGL|shader|GL_INVALID|THREE.WebGLProgram/i.test(message.text())
+    )
       runtimeErrors.push(message.text());
   });
   await page.goto('/__dynamic.html?sector=0');

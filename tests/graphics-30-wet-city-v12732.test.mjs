@@ -33,7 +33,8 @@ test('GPU-batched road decor stays beneath the player and outside the side fligh
   assert.equal(steamTexture.image.width, 32);
   assert.equal(steamTexture.image.height, 32);
   assert.equal(steamTexture.image.data.length, 4096);
-  const matrix = new T.Matrix4(), v = new T.Vector3();
+  const matrix = new T.Matrix4(),
+    v = new T.Vector3();
   for (const [name, count] of specs) {
     const mesh = group.getObjectByName(name);
     assert.ok(mesh?.isInstancedMesh, name);

@@ -13,7 +13,9 @@ export function createPremiumRoadDressing() {
   const cyan = new T.MeshBasicMaterial({ color: '#41e2f2', toneMapped: false });
   const amber = new T.MeshBasicMaterial({ color: '#f6aa6a', toneMapped: false });
   const darkMetal = new T.MeshStandardMaterial({
-    color: '#243b48', metalness: 0.82, roughness: 0.3,
+    color: '#243b48',
+    metalness: 0.82,
+    roughness: 0.3,
   });
   const createInstances = (name, geometry, material, count) => {
     const mesh = new T.InstancedMesh(geometry, material, count);
@@ -28,21 +30,30 @@ export function createPremiumRoadDressing() {
   const pillars = createInstances('premium-road-architectural-pillars', unit, darkMetal, 52);
   const lamps = createInstances('premium-road-beacon-lights', unit, cyan, 52);
   const steamPixels = new Uint8Array(32 * 32 * 4);
-  for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) {
-    const nx = (x - 15.5) / 15.5, ny = (y - 15.5) / 15.5;
-    const density = Math.exp(-4.7 * (nx * nx * 0.7 + ny * ny));
-    const p = (y * 32 + x) * 4;
-    steamPixels[p] = 183; steamPixels[p + 1] = 222; steamPixels[p + 2] = 226;
-    steamPixels[p + 3] = Math.round(density * 155);
-  }
+  for (let y = 0; y < 32; y++)
+    for (let x = 0; x < 32; x++) {
+      const nx = (x - 15.5) / 15.5,
+        ny = (y - 15.5) / 15.5;
+      const density = Math.exp(-4.7 * (nx * nx * 0.7 + ny * ny));
+      const p = (y * 32 + x) * 4;
+      steamPixels[p] = 183;
+      steamPixels[p + 1] = 222;
+      steamPixels[p + 2] = 226;
+      steamPixels[p + 3] = Math.round(density * 155);
+    }
   const steamTexture = new T.DataTexture(steamPixels, 32, 32, T.RGBAFormat);
   steamTexture.name = 'premium-road-steam-falloff';
   steamTexture.magFilter = T.LinearFilter;
   steamTexture.minFilter = T.LinearFilter;
   steamTexture.needsUpdate = true;
   const steamMaterial = new T.MeshBasicMaterial({
-    map: steamTexture, transparent: true, opacity: 0.34, depthWrite: false,
-    blending: T.AdditiveBlending, side: T.DoubleSide, toneMapped: false,
+    map: steamTexture,
+    transparent: true,
+    opacity: 0.34,
+    depthWrite: false,
+    blending: T.AdditiveBlending,
+    side: T.DoubleSide,
+    toneMapped: false,
   });
   const steam = createInstances('premium-road-steam', new T.PlaneGeometry(1, 1), steamMaterial, 44);
   const dummy = new T.Object3D();

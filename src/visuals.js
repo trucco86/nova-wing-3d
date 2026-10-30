@@ -1003,8 +1003,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(atmosphere);
   const terrainMat = new T.ShaderMaterial({
     uniforms: {
-      time: { value: 0 }, travel: { value: 0 }, water: { value: 0 },
-      cityWet: { value: 1 }, premiumWet: { value: 0 },
+      time: { value: 0 },
+      travel: { value: 0 },
+      water: { value: 0 },
+      cityWet: { value: 1 },
+      premiumWet: { value: 0 },
     },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
@@ -1644,7 +1647,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (playing && city.visible && premiumCityLife.group.visible) premiumCityLife.update(time);
       if (playing && premiumRoadDressing.group.visible) {
         const steam = premiumRoadDressing.group.getObjectByName('premium-road-steam');
-        if (steam) steam.position.y = Math.sin(time * .37) * .85;
+        if (steam) steam.position.y = Math.sin(time * 0.37) * 0.85;
       }
       if (playing) {
         travel += speed * dt;
