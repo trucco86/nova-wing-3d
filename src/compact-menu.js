@@ -50,7 +50,13 @@ export function installCompactMenu({
     }[screen];
     $(focusId)?.focus?.({ preventScroll: true });
   }
-  on(start, 'click', () => navigate('home'));
+  function enterTitle() {
+    navigate('home');
+    // Start the original menu score after an explicit user gesture (mobile audio policy).
+    const theme = $('menuMusic');
+    if (theme?.textContent?.includes('OUVIR TEMA')) theme.click();
+  }
+  on(start, 'click', enterTitle);
   on(back, 'click', () => navigate('home'));
   on(play, 'click', () => navigate('play'));
   on(hangar, 'click', () => navigate('hangar'));
@@ -83,7 +89,7 @@ export function installCompactMenu({
       event.stopImmediatePropagation?.();
       if (menu.dataset.screen === 'splash') {
         event.preventDefault();
-        navigate('home');
+        enterTitle();
       }
       // On menu controls leave browser's normal Enter->click behavior untouched.
     },
