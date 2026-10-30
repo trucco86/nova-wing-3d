@@ -10,17 +10,26 @@ export function createHeroFacadeArchitecture() {
   const group = new T.Group();
   group.name = 'city-hero-facade-architecture';
   const alloy = new T.MeshPhysicalMaterial({
-    color: '#294354', metalness: 0.78, roughness: 0.31,
-    clearcoat: 0.35, clearcoatRoughness: 0.22,
+    color: '#294354',
+    metalness: 0.78,
+    roughness: 0.31,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.22,
   });
   const graphite = new T.MeshStandardMaterial({
-    color: '#0d2230', metalness: 0.62, roughness: 0.41,
+    color: '#0d2230',
+    metalness: 0.62,
+    roughness: 0.41,
   });
   const cyan = new T.MeshBasicMaterial({ color: '#36dded', toneMapped: false });
   const amber = new T.MeshBasicMaterial({ color: '#f3ab5a', toneMapped: false });
   const sign = new T.MeshBasicMaterial({
-    color: '#167da4', side: T.DoubleSide, transparent: true,
-    opacity: 0.72, depthWrite: false, toneMapped: false,
+    color: '#167da4',
+    side: T.DoubleSide,
+    transparent: true,
+    opacity: 0.72,
+    depthWrite: false,
+    toneMapped: false,
   });
   const unit = new T.BoxGeometry(1, 1, 1);
   const entries = [
@@ -67,27 +76,35 @@ export function createHeroFacadeArchitecture() {
     place(crowns, i * 2, x, h - 6, z, 1, 4.3, 1, 0, yaw);
     place(crowns, i * 2 + 1, x, h + 3, z, 0.71, 6.2, 0.71, 0, yaw);
     for (let j = 0; j < 4; j++) {
-      const angle = yaw + j * Math.PI / 2 + Math.PI / 4;
-      const dx = Math.sin(angle), dz = Math.cos(angle);
+      const angle = yaw + (j * Math.PI) / 2 + Math.PI / 4;
+      const dx = Math.sin(angle),
+        dz = Math.cos(angle);
       const ribHeight = h * (j % 2 ? 0.64 : 0.83);
-      place(ribs, i * 4 + j, x + dx * 10.7, ribHeight / 2 - 7,
-        z + dz * 10.7, 0.75, ribHeight, 1.15, 0, angle);
+      place(
+        ribs,
+        i * 4 + j,
+        x + dx * 10.7,
+        ribHeight / 2 - 7,
+        z + dz * 10.7,
+        0.75,
+        ribHeight,
+        1.15,
+        0,
+        angle,
+      );
     }
     // six narrow light apertures give a vertical rhythm from the pilot view.
     for (let j = 0; j < 6; j++) {
-      const xFace = x - side * (9.75 + j % 2 * 0.12);
-      const level = 8 + j * (h - 20) / 6;
-      const zOffset = (j % 2 ? 2.5 : -2.5);
+      const xFace = x - side * (9.75 + (j % 2) * 0.12);
+      const level = 8 + (j * (h - 20)) / 6;
+      const zOffset = j % 2 ? 2.5 : -2.5;
       place(slits, i * 6 + j, xFace, level, z + zOffset, 0.25, 5.6, 1.1);
-      place(windows, i * 6 + j, xFace - side * 0.08,
-        level - 2.7, z + zOffset, 0.3, 0.35, 4.3);
+      place(windows, i * 6 + j, xFace - side * 0.08, level - 2.7, z + zOffset, 0.3, 0.35, 4.3);
     }
     // Giant segmented glass lightboxes read clearly at speed in High.
     // The panel faces the road, not a billboard in the central flight area.
-    place(panels, i, x - side * 11.45, h * .58, z,
-      11, 17, 1, 0, side * Math.PI / 2);
-    place(decks, i, x + side * 8.2, h * 0.58, z + 4.3,
-      1, 1.1, 1, 0, yaw);
+    place(panels, i, x - side * 11.45, h * 0.58, z, 11, 17, 1, 0, (side * Math.PI) / 2);
+    place(decks, i, x + side * 8.2, h * 0.58, z + 4.3, 1, 1.1, 1, 0, yaw);
   }
   for (const mesh of meshes) {
     mesh.instanceMatrix.needsUpdate = true;

@@ -18,7 +18,10 @@ test('authored towers add real bevelled silhouette and layered illuminated facad
     ['city-hero-skyport-decks', 20],
   ];
   assert.equal(group.children.length, expected.length);
-  const matrix = new T.Matrix4(), p = new T.Vector3(), q = new T.Quaternion(), size = new T.Vector3();
+  const matrix = new T.Matrix4(),
+    p = new T.Vector3(),
+    q = new T.Quaternion(),
+    size = new T.Vector3();
   for (const [name, count] of expected) {
     const mesh = group.getObjectByName(name);
     assert.ok(mesh?.isInstancedMesh, name);
@@ -27,7 +30,10 @@ test('authored towers add real bevelled silhouette and layered illuminated facad
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(p, q, size);
       assert.ok([p.x, p.y, p.z, size.x, size.y, size.z].every(Number.isFinite));
-      assert.ok(Math.abs(p.x) >= 105, 'architectural center must be far beyond the flight corridor');
+      assert.ok(
+        Math.abs(p.x) >= 105,
+        'architectural center must be far beyond the flight corridor',
+      );
       assert.ok(size.x > 0 && size.y > 0 && size.z > 0);
     }
   }
@@ -35,10 +41,15 @@ test('authored towers add real bevelled silhouette and layered illuminated facad
   assert.equal(shell.geometry.type, 'CylinderGeometry');
   assert.equal(shell.geometry.parameters.radialSegments, 8, 'towers must have octagonal geometry');
   const crown = group.getObjectByName('city-hero-tiered-crowns');
-  const first = new T.Matrix4(), second = new T.Matrix4();
+  const first = new T.Matrix4(),
+    second = new T.Matrix4();
   crown.getMatrixAt(0, first);
   crown.getMatrixAt(1, second);
-  assert.notDeepEqual(first.elements, second.elements, 'each megatower needs an actual stepped crown');
+  assert.notDeepEqual(
+    first.elements,
+    second.elements,
+    'each megatower needs an actual stepped crown',
+  );
 });
 
 test('High-only facades switch off in Medium and remain off on the distant city tile', () => {
