@@ -3,6 +3,8 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createBrushedMetalNormalMap } from './premium-materials.js';
 import { createPremiumCityLandmarks } from './premium-city-landmarks.js';
+import { createPremiumWetRoadFragment } from './premium-wet-road.js';
+import { createPremiumRoadDressing } from './premium-road-dressing.js';
 import { setCinematicReflectionQuality } from './cinematic-reflections.js';
 import { createSculptedStarfighter } from './premium-starship-sculpt.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
@@ -1000,10 +1002,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   atmosphere.position.copy(moon.position);
   scene.add(atmosphere);
   const terrainMat = new T.ShaderMaterial({
-    uniforms: { time: { value: 0 }, travel: { value: 0 }, water: { value: 0 } },
+    uniforms: {
+      time: { value: 0 }, travel: { value: 0 }, water: { value: 0 },
+      cityWet: { value: 1 }, premiumWet: { value: 0 },
+    },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
+    fragmentShader: createPremiumWetRoadFragment(noise),,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -1170,6 +1175,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // animated commuter craft — replaces the purely box-built impression.
   const premiumCityLife = createPremiumCityLandmarks();
   cityHighDetails.add(premiumCityLife.group);
+  const premiumRoadDressing = createPremiumRoadDressing();
+  cityHighDetails.add(premiumRoadDressing.group);
   city.add(cityHighDetails);
   cityHighDetails.visible = false;
   city.userData.loop = 1900;
@@ -1179,6 +1186,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
   const farNearDetail = cityFar.getObjectByName('city-premium-near-lod');
+  const farRoadDressing = cityFar.getObjectByName('premium-wet-road-dressing');
   const farCityLife = cityFar.getObjectByName('city-premium-cinematic-landmarks');
   const near = [];
   for (let i = 0; i < 18; i++) {
@@ -1302,6 +1310,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     sectorScenery.clear();
   }
   let travel = 0;
+  let visualQuality = 'medium';
   const orbitalFrame = dynamicFlight ? new T.Group() : null;
   if (orbitalFrame) {
     const nodes = scene.children.filter((o) => !existing.has(o));
@@ -1310,7 +1319,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   return {
     setGraphicsQuality(quality) {
+      visualQuality = quality;
       setCinematicReflectionQuality(scene, quality);
+      terrainMat.uniforms.premiumWet.value = quality === 'high' ? 1 : 0;
+      premiumRoadDressing.group.visible = quality === 'high' && sceneryTheme === 'city';
+      if (farRoadDressing) farRoadDressing.visible = false;
       cityHighDetails.visible = quality === 'high';
       if (farHighDetails) farHighDetails.visible = quality === 'high';
       cityNearDetail.visible = quality === 'high';
@@ -1408,6 +1421,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      terrainMat.uniforms.cityWet.value = sceneryTheme === 'city' ? 1 : 0;
+      premiumRoadDressing.group.visible = visualQuality === 'high' && sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
@@ -1627,6 +1642,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
       if (playing && city.visible && premiumCityLife.group.visible) premiumCityLife.update(time);
+      if (playing && premiumRoadDressing.group.visible) {
+        const steam = premiumRoadDressing.group.getObjectByName('premium-road-steam');
+        if (steam) steam.position.y = Math.sin(time * .37) * .85;
+      }
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
