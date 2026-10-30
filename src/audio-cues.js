@@ -97,6 +97,42 @@ Object.assign(AUDIO_CUES, {
     ],
     noises: [{ duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 }],
   },
+  // The mecha has a slower, heavier cannon, not the fighter's quick laser.
+  mechaShot: {
+    cooldown: 0.125,
+    tones: [
+      { from: 840, to: 175, duration: 0.14, gain: 0.044, wave: 'sawtooth', filter: 2800 },
+      { from: 220, to: 62, duration: 0.24, gain: 0.082, wave: 'triangle', filter: 1100 },
+      { from: 115, to: 47, duration: 0.22, gain: 0.052, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.12, gain: 0.075, filterType: 'bandpass', filter: 2100, filterEnd: 390 }],
+  },
+  mechaImpact: {
+    cooldown: 0.18,
+    tones: [
+      { from: 170, to: 48, duration: 0.19, gain: 0.058, wave: 'triangle' },
+      { from: 920, to: 260, duration: 0.085, gain: 0.022, wave: 'sawtooth', filter: 2400 },
+    ],
+    noises: [{ duration: 0.13, gain: 0.09, filterType: 'bandpass', filter: 1700, filterEnd: 320 }],
+  },
+  mechaPrecision: {
+    cooldown: 0.5,
+    tones: [
+      { from: 1350, to: 350, duration: 0.19, gain: 0.053, wave: 'sawtooth', filter: 3000 },
+      { from: 280, to: 52, duration: 0.34, gain: 0.092, wave: 'triangle', filter: 1600 },
+      { from: 100, to: 38, duration: 0.4, gain: 0.072, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.25, gain: 0.11, filterType: 'bandpass', filter: 2350, filterEnd: 370 }],
+  },
+  mechaChargeRelease: {
+    cooldown: 0.28,
+    tones: [
+      { from: 1250, to: 180, duration: 0.33, gain: 0.065, wave: 'sawtooth', filter: 2900 },
+      { from: 245, to: 48, duration: 0.46, gain: 0.095, wave: 'triangle', filter: 1200 },
+      { from: 90, to: 32, duration: 0.48, gain: 0.082, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.34, gain: 0.12, filterType: 'bandpass', filter: 2600, filterEnd: 180 }],
+  },
   plasmaCharge: {
     cooldown: 0.5,
     tones: [
