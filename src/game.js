@@ -79,6 +79,7 @@ import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { installCinematicIbl } from './cinematic-lighting.js';
+import { animateCinematicExhaust } from './cinematic-exhaust.js';
 import { setHeroFighterVisuals } from './hero-visibility.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
@@ -2824,6 +2825,8 @@ export function createGame({
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
+    animateCinematicExhaust(shipModule, elapsed, boosting, graphicsQualityApplied);
+    animateCinematicExhaust(robot, elapsed, boosting, graphicsQualityApplied);
     const unfoldProgress = robotTransition / 0.7;
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
