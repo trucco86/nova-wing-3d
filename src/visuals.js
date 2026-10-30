@@ -678,8 +678,13 @@ export function createShipModule(model = 'nova7') {
     premium.add(inset);
     for (let louver = 0; louver < 4; louver++) {
       const intake = box(
-        0.19, 0.055, 0.43, smokedMetal,
-        side * (1.82 + louver * 0.19), 0.68, 0.46 + louver * 0.12,
+        0.19,
+        0.055,
+        0.43,
+        smokedMetal,
+        side * (1.82 + louver * 0.19),
+        0.68,
+        0.46 + louver * 0.12,
       );
       intake.name = 'ship-premium-vent';
       intake.rotation.y = side * 0.24;
@@ -689,10 +694,7 @@ export function createShipModule(model = 'nova7') {
     edgeStrip.name = 'ship-premium-wing-led';
     edgeStrip.rotation.y = side * 0.36;
     premium.add(edgeStrip);
-    const engineCowl = new T.Mesh(
-      new T.CylinderGeometry(0.58, 0.71, 1.65, 12),
-      smokedMetal,
-    );
+    const engineCowl = new T.Mesh(new T.CylinderGeometry(0.58, 0.71, 1.65, 12), smokedMetal);
     engineCowl.name = 'ship-premium-engine-cowl';
     engineCowl.rotation.x = Math.PI / 2;
     engineCowl.position.set(side * 1.12, -0.2, 2.13);
