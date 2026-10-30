@@ -2821,6 +2821,12 @@ export function createGame({
       chargeLatch = true;
     } else if (chargeLatch) {
       if (charge >= 0.8) {
+        // The charged cannon must originate at the same articulated right wrist
+        // as the mecha's primary fire, never from the hidden ship's center.
+        if (robotMode) robot.updateMatrixWorld(true);
+        const chargedMuzzle = robotMode
+          ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
+          : null;
         launchShot(
           0,
           mechaShotDamage((20 + weapon * 12) * weaponPower(), {
@@ -2828,9 +2834,11 @@ export function createGame({
             kind: 'charged',
           }) * (dynamicFlight ? 1 + charge / 1.5 : 1),
           true,
+          chargedMuzzle,
         );
         if (robotMode) {
           shots.at(-1).source = 'mecha-charged';
+          shots.at(-1).o.scale.multiplyScalar(1.3);
           robotFireKick = 0.4;
         }
         cockpit?.fire();
