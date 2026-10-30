@@ -19,9 +19,15 @@ test('cinematic city introduces architecturally varied landmarks without flight 
     ['premium-commuter-window', 8],
   ];
   assert.equal(group.name, 'city-premium-cinematic-landmarks');
-  assert.equal(group.children.length, required.length, 'batched 3D geometry avoids per-building draws');
+  assert.equal(
+    group.children.length,
+    required.length,
+    'batched 3D geometry avoids per-building draws',
+  );
   const matrix = new T.Matrix4();
-  const translation = new T.Vector3(), quaternion = new T.Quaternion(), scale = new T.Vector3();
+  const translation = new T.Vector3(),
+    quaternion = new T.Quaternion(),
+    scale = new T.Vector3();
   for (const [name, count] of required) {
     const mesh = group.getObjectByName(name);
     assert.ok(mesh?.isInstancedMesh, name);
@@ -29,7 +35,10 @@ test('cinematic city introduces architecturally varied landmarks without flight 
     for (let i = 0; i < count; i++) {
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(translation, quaternion, scale);
-      assert.ok(Math.abs(translation.x) >= 70, 'decorative object must never overlap central route');
+      assert.ok(
+        Math.abs(translation.x) >= 70,
+        'decorative object must never overlap central route',
+      );
       assert.ok([translation.x, translation.y, translation.z].every(Number.isFinite));
     }
   }
@@ -38,7 +47,9 @@ test('cinematic city introduces architecturally varied landmarks without flight 
 test('commuter craft move independently of player progression and reset deterministically', () => {
   const env = createPremiumCityLandmarks();
   const train = env.group.getObjectByName('premium-animated-commuter-craft');
-  const matrix = new T.Matrix4(), start = new T.Vector3(), end = new T.Vector3();
+  const matrix = new T.Matrix4(),
+    start = new T.Vector3(),
+    end = new T.Vector3();
   train.getMatrixAt(0, matrix);
   start.setFromMatrixPosition(matrix);
   env.update(12.5);
