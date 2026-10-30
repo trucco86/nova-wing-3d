@@ -33,7 +33,7 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 48, 'two city tiles include batched cinematic skyline and transit');
+  assert.equal(count, 58, 'city tiles include five new wet street instancing batches each');
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');
