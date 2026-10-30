@@ -91,7 +91,7 @@ import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
-import { renderRadioSpeaker } from './radio-portraits.js';
+import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
@@ -2370,6 +2370,7 @@ export function createGame({
     if (!cinematic) return;
     const beat = cinematicBeat(cinematic.scenes, cinematic.elapsed);
     $('cinematicSpeaker').textContent = beat.speaker;
+    renderCinematicPortrait(document, beat.speaker);
     $('cinematicCaption').textContent = beat.text;
     cinematicStage?.update(cinematic.elapsed, window.innerWidth, window.innerHeight);
     $('cinematicProgress').style.width =
