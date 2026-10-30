@@ -7570,6 +7570,17 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   }
 }
 
+/* P0 QA: keep all three home actions inside the first 1366x768 desktop viewport.
+   Splash artwork may remain larger; home reserves actual room for navigation. */
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(100%, 94dvh, 960px);
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+}
+
     </style>
   </head>
   <body>
