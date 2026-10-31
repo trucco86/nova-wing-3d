@@ -246,7 +246,7 @@ export function createLaunchCelestials(scene) {
     for (const side of [-1, 1]) {
       const jet = new T.Mesh(new T.ConeGeometry(1.4, 13, 9), escapeFlame);
       jet.name = 'launch-escaping-ship-thruster';
-      jet.rotation.x = -Math.PI / 2;
+      jet.rotation.x = Math.PI / 2;
       jet.position.set(side * 2.3, -1.1, 13.4);
       ship.add(jet);
       plumes.push(jet);
