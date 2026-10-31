@@ -26,8 +26,15 @@ test('City 2.6 maglev has sculpted, finite aerodynamic noses and levitation chas
       assert.ok(nose.geometry.index.count >= 24, 'nose should be a real 3D surface');
       assert.equal(nose.userData.visualOnly, true);
     }
-    const chassis = train.children.filter((c) => c.name === 'city-maglev-levitation-chassis');
-    assert.equal(chassis.length, 3, 'each of the three carriages has its own chassis');
+    const chassis = train.getObjectByName('city-maglev-levitation-chassis');
+    assert.ok(chassis?.isInstancedMesh, 'levitation chassis should be GPU-instanced');
+    assert.equal(chassis.count, 3, 'each of the three carriages has its own chassis');
+    const batches = train.children.filter((c) => c.isInstancedMesh);
+    assert.ok(batches.length <= 7, 'carriage detail must use a bounded GPU draw budget');
+    assert.ok(
+      batches.reduce((sum, batch) => sum + batch.count, 0) > 55,
+      'draw-call optimization must keep physical trim and window detail',
+    );
     assert.ok(train.children.every((c) => !c.userData.hitbox));
     const bounds = new T.Box3().setFromObject(train);
     assert.ok(bounds.max.z - bounds.min.z >= 108, 'aeroshell extends beyond the boxy carriages');
