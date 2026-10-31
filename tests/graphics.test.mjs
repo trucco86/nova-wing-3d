@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    82,
-    'City 2.6 includes batched maglev livery across both near and far city tiles',
+    98,
+    'City 2.7 adds eight retail facade batches to each of the two city tiles',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
