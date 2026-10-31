@@ -8,6 +8,9 @@ import {
 } from '../src/city-premium.js';
 import { createWorld } from '../src/visuals.js';
 
+const colorDifference = (a, b) =>
+  Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
+
 test('City 2.6 maglev has sculpted, finite aerodynamic noses and levitation chassis', () => {
   for (const side of [-1, 1]) {
     const train = createMaglevTrain(side);
@@ -46,12 +49,12 @@ test('City 2.6 billboard beacons animate by travel without redrawing textures', 
   const firstColor = beacon.material.color.clone();
   animateCityBillboards(holder, 230);
   const nextColor = beacon.material.color.clone();
-  assert.ok(firstColor.distanceTo(nextColor) > 0.01, 'beacon changes brightness as city moves');
+  assert.ok(colorDifference(firstColor, nextColor) > 0.01, 'beacon changes brightness as city moves');
   assert.strictEqual(panel.material.map, originalTexture, 'canvas texture is reused');
   animateCityBillboards(holder, 230);
-  assert.ok(beacon.material.color.distanceTo(nextColor) < 1e-9, 'same travel is deterministic');
+  assert.ok(colorDifference(beacon.material.color, nextColor) < 1e-9, 'same travel is deterministic');
   animateCityBillboards(holder, NaN);
-  assert.ok(beacon.material.color.distanceTo(nextColor) < 1e-9, 'bad delta is ignored');
+  assert.ok(colorDifference(beacon.material.color, nextColor) < 1e-9, 'bad delta is ignored');
 });
 
 test('City 2.6 animated signage respects Pause and is absent from non-city scenery', () => {
@@ -63,9 +66,9 @@ test('City 2.6 animated signage respects Pause and is absent from non-city scene
   world.update(1, 1, 48, true);
   const beforePause = beacon.material.color.clone();
   world.update(1, 2, 48, false);
-  assert.ok(beacon.material.color.distanceTo(beforePause) < 1e-9);
+  assert.ok(colorDifference(beacon.material.color, beforePause) < 1e-9);
   world.update(1, 3, 48, true);
-  assert.ok(beacon.material.color.distanceTo(beforePause) > 0.0001);
+  assert.ok(colorDifference(beacon.material.color, beforePause) > 0.0001);
   world.setLaunchAscent(0.85, true);
   assert.equal(near.visible, false, 'the city leaves the orbital flight corridor');
 });
