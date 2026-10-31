@@ -1,5 +1,38 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Atualização operacional — 31/10/2026 (referência mais recente)
+
+> **Status não equivale a release.** Esta seção consolida prioridades e evidências rastreáveis. Se uma PR está em draft/QA, seus recursos não estão confirmados em DEV/HML/produção. Preservar os registros históricos abaixo.
+
+**Ambientes (última versão de jogo comprovada no histórico consultado):** PROD `v1.24.18` (main); DEV `v1.27.14` (branch dev, depois atualizada apenas por documentação); HML `v1.24.24`. Antes de anunciar qualquer versão nova, conferir SHA e `BUILD.txt` no host. Nenhuma candidata premium a seguir foi promovida.
+
+**P0 — Gate de release / experiência quebrada**
+1. **CI Graphics 3.8 / SUPER BOOST:** [PR #199](https://github.com/trucco86/nova-wing-3d/pull/199) tem qualidade e 410 unitários verdes, mas [workflow inicial](https://github.com/trucco86/nova-wing-3d/actions/runs/41224924556) falhou em shards 2/4 e 4/4 por expectativas antigas de texto `BOOST`. Ajustadas as duas assertions em `tests/browser/launch-orbit.spec.mjs` e `tests/browser/orbit-cover-rank-v12425.spec.mjs`, commit [b09bc2f](https://github.com/trucco86/nova-wing-3d/commit/b09bc2f678f935c0d1d83612bca3609654d84bb9) na própria branch #199. **Retestar 4/4 no SHA final; não declarar gates verdes antes da conclusão.**
+2. **Mobile BOOST / controles:** [#198](https://github.com/trucco86/nova-wing-3d/pull/198) corrige especificidade CSS e testa toque/posição; #199 atualiza meia-lua e SUPER BOOST. Validar no aparelho real (incluindo Galaxy S21): BOOST + LOCK + joystick + ORBITAR, portrait/landscape, safe areas, Arcade e Options. Não diminuir área de toque e não cobrir centro da tela.
+3. **Integração de cenários e gráficos:** reconciliar, por dependência, [#188](https://github.com/trucco86/nova-wing-3d/pull/188) → [#189](https://github.com/trucco86/nova-wing-3d/pull/189) → [#190](https://github.com/trucco86/nova-wing-3d/pull/190) → [#191](https://github.com/trucco86/nova-wing-3d/pull/191) → [#192](https://github.com/trucco86/nova-wing-3d/pull/192) → [#193](https://github.com/trucco86/nova-wing-3d/pull/193) → [#194](https://github.com/trucco86/nova-wing-3d/pull/194) → [#195](https://github.com/trucco86/nova-wing-3d/pull/195) → [#196](https://github.com/trucco86/nova-wing-3d/pull/196) → [#198](https://github.com/trucco86/nova-wing-3d/pull/198) → [#199](https://github.com/trucco86/nova-wing-3d/pull/199). Não mesclar PRs empilhadas cegamente; validar diferencial final sobre DEV e a ordem real de base das PRs.
+4. **Cidade premium, visibilidade e performance:** cenário com edifícios detalhados, pavimento físico, skyline real, passarelas, comércio/outdoors neon e maglev com trem visível; continuidade de progressão cidade → céu → órbita, sem horizonte/pista infinitos e sem gap. Medir FPS/draw calls/triângulos Alto/Médio, além de visibilidade em mobile; GLB/PBR autoral [#187](https://github.com/trucco86/nova-wing-3d/pull/187) permanece pilha alternativa, não integrada.
+5. **Menu/capa fullscreen e abertura:** [#166](https://github.com/trucco86/nova-wing-3d/issues/166), [#173](https://github.com/trucco86/nova-wing-3d/pull/173), [#170](https://github.com/trucco86/nova-wing-3d/issues/170); arte ocupando viewport 16:9/9:16 sem deformar/cortar personagens, PRESS START e menus fora da região dos gatos, Google login abaixo; cinemática e portraits coerentes e revisados.
+6. **Integração do gameplay existente:** mecha e NOVA-7 limpos/proporcionais (Graphics 3.4/3.7), canhão pesado, duas miras, bosses com ataques e partes fracas, aliados Five Cats, conclusão com rádio e warp, troféus, patentes e save; reconciliar candidatos [#155–#173](https://github.com/trucco86/nova-wing-3d/pulls?q=is%3Apr+is%3Aopen) antes de aceitar um preview único.
+7. **Gate de promoção:** CI quality, unitário, build reproduzível, Playwright desktop/mobile 4/4, smoke WebGL, screenshots comparativas, teste físico, logs e rollback; somente então DEV → HML → produção após aprovação explícita da versão.
+
+**P1 — Qualidade, combate e conteúdo, após estabilizar a candidata**
+- **Gráficos de personagem/veículos:** detalhe autoral da fuselagem, turbinas em movimento, efeitos de disparo no metal, pose/escala do mecha, drones/tráfego, GLB, materiais PBR, LOD e orçamentos GPU, sem perder estética limpa.
+- **Level design:** dez fases com identidade geográfica/visual, duração e dificuldade equilibradas, rotas com profundidade, mudanças de câmera apenas para mecânicas próprias, transições jogáveis, variedade de inimigos e bosses com estratégia, ataques de garras, mordida, tentáculos e cenário.
+- **Combate:** calibrar plasma, Five Cats especial, escudo e barra RPG (duração/dano), Reflex Boost, lock-on/duas mãos, área de efeito, feedback de pickup e de hit, combate e arena de chefe 360°.
+- **Áudio e narrativa:** trilha original mais intensa, grave e expressiva; SFX de tiros, boost/turbina, transformação, explosões e alertas; intro Five Cats, portraits, diálogos após chefe, saída em warp e história dos pets.
+- **Interface/idiomas:** HUD somente topo + controles na base, pausa explica teclas, i18n integral PT/EN/ES (login, ranking, conquistas), menu fullscreen, controles touch e acessibilidade.
+- **Ranking e dados:** Google Auth/visitante/logout correto; HML com Firebase e Cloudflare D1/Worker provisionados e autorizados; consentimento por usuário, antirreplay, exclusão LGPD, score privado até validação de escrita e leaderboard seguro.
+- **Progressão:** loja/economia, equipamento, mísseis e armas especializadas, conquistas, patentes, medalhas felinas, mapa de campanha, persistência e evolução de skins.
+
+**P2/P3 — Expansão e engenharia (não bloqueia P0)**
+- Five Cats Universe/Órbita-9 explorável, quests, NPC, scanner e pistas [#139](https://github.com/trucco86/nova-wing-3d/issues/139), [#149](https://github.com/trucco86/nova-wing-3d/issues/149).
+- Native Android/iOS apenas após web estável; performance medida, contas e distribuição nas lojas permanecem fora da próxima release.
+- AI SDLC/harness: SonarCloud/SonarQube, Quality Gate, evidências por SHA, skills/agentes, observabilidade, métricas DORA, READMEs, vídeo real de gameplay e case público [#21](https://github.com/trucco86/nova-wing-3d/issues/21).
+
+**Regra de corte da próxima release:** não adicionar novas mecânicas agora; primeiro resolver CI #199, homologar mobile e cena, consolidar PRs numa candidata integrada, revisar menu e promover com gates, evidência e aprovação. Backlog histórico abaixo tem prioridades datadas; a seção acima prevalece na ordem de execução.
+
+---
+
 ## Plano P0 — estabilização da próxima release (31/10/2026)
 
 > Planejamento; não constitui implementação, CI aprovada, deploy ou homologação.
