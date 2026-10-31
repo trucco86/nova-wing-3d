@@ -5,11 +5,22 @@ import * as T from 'three';
 // pause-safe: only elapsed mission seconds change the state.
 export const MARS_TOUCHDOWN_SECONDS = 27;
 const clamp = (v) => Math.max(0, Math.min(1, v));
-const smooth = (v) => { const t = clamp(v); return t * t * (3 - 2 * t); };
+const smooth = (v) => {
+  const t = clamp(v);
+  return t * t * (3 - 2 * t);
+};
 export function marsDescentAt(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Mars mission time');
-  const phase = seconds < 6 ? 'space' : seconds < 13 ? 'orbit'
-    : seconds < 20 ? 'entry' : seconds < MARS_TOUCHDOWN_SECONDS ? 'descent' : 'surface';
+  const phase =
+    seconds < 6
+      ? 'space'
+      : seconds < 13
+        ? 'orbit'
+        : seconds < 20
+          ? 'entry'
+          : seconds < MARS_TOUCHDOWN_SECONDS
+            ? 'descent'
+            : 'surface';
   const orbit = smooth((seconds - 6) / 7);
   const entry = smooth((seconds - 13) / 7);
   const surface = smooth((seconds - 16) / 11);
@@ -79,9 +90,13 @@ export function createMarsApproach() {
     new T.SphereGeometry(215, 48, 32),
     new T.ShaderMaterial({
       uniforms: { alpha: { value: 0.8 } },
-      transparent: true, depthWrite: false, blending: T.AdditiveBlending,
-      vertexShader: 'varying vec3 n;varying vec3 viewDir;void main(){n=normalize(normalMatrix*normal);vec4 pos=modelViewMatrix*vec4(position,1.);viewDir=normalize(-pos.xyz);gl_Position=projectionMatrix*pos;}',
-      fragmentShader: 'varying vec3 n;varying vec3 viewDir;uniform float alpha;void main(){float rim=pow(1.-abs(dot(normalize(n),normalize(viewDir))),3.);gl_FragColor=vec4(.9,.39,.12,alpha*rim*.95);}',
+      transparent: true,
+      depthWrite: false,
+      blending: T.AdditiveBlending,
+      vertexShader:
+        'varying vec3 n;varying vec3 viewDir;void main(){n=normalize(normalMatrix*normal);vec4 pos=modelViewMatrix*vec4(position,1.);viewDir=normalize(-pos.xyz);gl_Position=projectionMatrix*pos;}',
+      fragmentShader:
+        'varying vec3 n;varying vec3 viewDir;uniform float alpha;void main(){float rim=pow(1.-abs(dot(normalize(n),normalize(viewDir))),3.);gl_FragColor=vec4(.9,.39,.12,alpha*rim*.95);}',
     }),
   );
   edge.name = 'mars-orbit-atmospheric-rim';
@@ -91,8 +106,12 @@ export function createMarsApproach() {
   streaks.userData.visualOnly = true;
   const streakGeometry = new T.CylinderGeometry(0.28, 0.95, 1, 5);
   const streakMaterial = new T.MeshBasicMaterial({
-    color: '#ffc27f', transparent: true, opacity: 0.65,
-    depthWrite: false, blending: T.AdditiveBlending, toneMapped: false,
+    color: '#ffc27f',
+    transparent: true,
+    opacity: 0.65,
+    depthWrite: false,
+    blending: T.AdditiveBlending,
+    toneMapped: false,
   });
   const bolts = new T.InstancedMesh(streakGeometry, streakMaterial, 34);
   bolts.name = 'mars-atmosphere-ionized-trails';
@@ -103,7 +122,7 @@ export function createMarsApproach() {
     const radius = 18 + (i % 6) * 15;
     dummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, -120 - i * 3);
     dummy.rotation.set(-0.35, i * 0.3, 0.35 + Math.sin(a) * 0.22);
-    dummy.scale.set(0.6 + i % 3 * 0.3, 23 + i % 4 * 9, 0.8);
+    dummy.scale.set(0.6 + (i % 3) * 0.3, 23 + (i % 4) * 9, 0.8);
     dummy.updateMatrix();
     bolts.setMatrixAt(i, dummy.matrix);
   }

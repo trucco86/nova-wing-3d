@@ -3166,8 +3166,7 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
-    const marsArrival = dynamicFlight && sectorIndex === 1
-      ? world.setMarsDescent(elapsed) : null;
+    const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
@@ -3396,8 +3395,13 @@ export function createGame({
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
-    if (spawnEncounters && !marsTransit && elapsed < current().duration &&
-        spawnCd <= 0 && !quietFirstSubboss) {
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      elapsed < current().duration &&
+      spawnCd <= 0 &&
+      !quietFirstSubboss
+    ) {
       const count =
         dynamicFlight && sectorIndex === 0
           ? settings.difficulty === 'hard'
@@ -3416,20 +3420,30 @@ export function createGame({
         ? fighterInterval(sectorIndex, settings.difficulty)
         : 3.4 - sectorIndex * 0.12;
     }
-    if (spawnEncounters && !marsTransit && !subDone &&
-        elapsed > (sectorIndex === 1 && dynamicFlight
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      !subDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
           ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.22
-          : current().duration * 0.22)) {
+          : current().duration * 0.22)
+    ) {
       subDone = true;
       enemy('subboss');
       $('subHUD').hidden = false;
       music?.start(sectorIndex, 'subboss');
       message('SUBCHEFE / ' + SUBBOSS_NAMES[sectorIndex]);
     }
-    if (spawnEncounters && !marsTransit && !rivalDone &&
-        elapsed > (sectorIndex === 1 && dynamicFlight
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      !rivalDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
           ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.7
-          : current().duration * 0.7)) {
+          : current().duration * 0.7)
+    ) {
       rivalDone = true;
       enemy('rival');
       message('CAÇA RIVAL / NÃO DEIXE QUE ELE ENCERRE A MISSÃO');
@@ -4274,8 +4288,7 @@ export function createGame({
       }
     }
     ringCd -= dt;
-    if (spawnEncounters && !marsTransit && ringCd < 0 &&
-        elapsed < current().duration) {
+    if (spawnEncounters && !marsTransit && ringCd < 0 && elapsed < current().duration) {
       const kind = ringWave++ % 2 === 0 ? 'blue' : 'shield';
       const o = createPickup(kind);
       const extent = Math.max(0, flightLimit() - 2);
@@ -4291,8 +4304,7 @@ export function createGame({
       rings.push({ o, life: 10, kind });
       ringCd = 6;
     }
-    if (dynamicFlight && spawnEncounters && !marsTransit &&
-        elapsed < current().duration) {
+    if (dynamicFlight && spawnEncounters && !marsTransit && elapsed < current().duration) {
       petCd -= dt;
       if (petCd <= 0) {
         const id = PET_ITEMS[petWave++ % PET_ITEMS.length].id;

@@ -17,7 +17,11 @@ test('all ten missions are slightly longer, without changing the campaign size',
   const previous = [130, 70, 70, 75, 75, 80, 80, 85, 85, 90];
   SECTORS.forEach((sector, i) => {
     if (i === 1) {
-      assert.equal(sector.duration, 27 + 80, 'Mars has a separate 27s orbital entry before 80s ground combat');
+      assert.equal(
+        sector.duration,
+        27 + 80,
+        'Mars has a separate 27s orbital entry before 80s ground combat',
+      );
       return;
     }
     const ratio = sector.duration / previous[i];

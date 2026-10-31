@@ -9,8 +9,10 @@ import { STAGE_JOURNEYS } from '../src/stage-journey.js';
 
 test('stage two is the exact reverse of Earth: space then orbit, entry, descent, surface', () => {
   const phases = [0, 6, 13, 20, 27].map((sec) => marsDescentAt(sec));
-  assert.deepEqual(phases.map((x) => x.phase),
-    ['space', 'orbit', 'entry', 'descent', 'surface']);
+  assert.deepEqual(
+    phases.map((x) => x.phase),
+    ['space', 'orbit', 'entry', 'descent', 'surface'],
+  );
   assert.equal(MARS_TOUCHDOWN_SECONDS, 27);
   assert.equal(SECTORS[1].duration, 107, 'preserve 80 seconds of desert action after descent');
   assert.equal(STAGE_JOURNEYS[1].destination, 'mars-descent');
