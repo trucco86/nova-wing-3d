@@ -58,7 +58,11 @@ test('City 2.5 maglev is an articulated multi-car train with headlights rather t
   assert.equal(east.name, 'city-maglev-east');
   assert.equal(east.userData.highOnly, false);
   assert.equal(west.userData.highOnly, true);
-  assert.ok(east.children.length > 55, 'train has three full carriages with windows');
+  assert.ok(east.userData.instancedBoxCount > 55, 'three complete carriages retain their details');
+  assert.ok(
+    east.children.filter((child) => child.isInstancedMesh).length <= 7,
+    'many windows and rails are batched into a few GPU draw calls',
+  );
   assert.equal(east.userData.visualOnly, true);
   assert.equal(east.position.x, 80);
   assert.ok(east.position.z > -350, 'train is close enough for an opening cinematic pass');
