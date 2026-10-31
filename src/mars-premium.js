@@ -1,5 +1,7 @@
 import * as T from 'three';
 import { createMarsApproach, updateMarsApproach, marsDescentAt } from './mars-descent.js';
+import { createMarsMysteries } from './mars-mysteries.js';
+import { createMarsSandstorm, updateMarsSandstorm } from './mars-sandstorm.js';
 
 // Mars 4.0: authored desert surface and readable Curiosity-inspired rover.
 // Distant celestial bodies are deliberately larger for gameplay readability.
@@ -206,6 +208,8 @@ export function createMarsPremium() {
   surface.add(makeSurface());
   for (let i = 0; i < 10; i++) surface.add(makeRocks(i));
   for (let i = 0; i < 5; i++) surface.add(makeMesa(i));
+  surface.add(createMarsMysteries());
+  surface.add(createMarsSandstorm());
   surface.add(makeCuriosity());
   root.add(surface);
   // Both moons remain independent real-world objects: visible in orbit and
@@ -223,19 +227,24 @@ export function updateMarsArrival(root, seconds) {
   surface.visible = state.terrainVisible;
   surface.position.y = state.terrainLift;
   updateMarsApproach(root.getObjectByName('mars-orbital-approach'), state);
+  const wind = updateMarsSandstorm(surface.getObjectByName('mars-sandstorm'), seconds);
+  state.storm = wind;
   root.userData.arrivalPhase = state.phase;
   root.userData.combatReady = state.combatReady;
   return state;
 }
 export function updateMarsPremium(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
-  for (const child of root.getObjectByName('mars-surface-scene').children) {
+  const terrain = root.getObjectByName('mars-surface-scene');
+  const moving = [...terrain.children];
+  // Nested mysteries contain animated landmark groups; stationary Olympus
+  // stays in the distant horizon (never streams like roadside rocks).
+  const mysteries = terrain.getObjectByName('mars-mysteries-and-olympus');
+  if (mysteries) moving.push(...mysteries.children);
+  for (const child of moving) {
     if (!child.userData.marsChunk) continue;
     const base = Number.isFinite(child.userData.startZ)
-      ? child.userData.startZ
-      : (child.userData.startZ = child.position.z);
-    // Individual landmarks stream, with visible scene continuity and no
-    // Earth-city architecture ever slipping into the Mars stage.
+      ? child.userData.startZ : (child.userData.startZ = child.position.z);
     const z = base + travel;
     child.position.z = z > 100 ? z - Math.ceil((z - 100) / 3000) * 3000 : z;
   }
