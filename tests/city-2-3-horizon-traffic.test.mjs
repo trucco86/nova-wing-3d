@@ -44,8 +44,8 @@ test('maglev and evac shuttles animate independently and honor graphics, phases 
   const guideway = near.getObjectByName('city-suspended-transit');
   assert.ok(guideway?.isInstancedMesh);
   world.setGraphicsQuality('medium');
-  assert.equal(west.visible, true);
-  assert.equal(east.visible, false);
+  assert.equal(west.visible, false);
+  assert.equal(east.visible, true, 'introductory right-hand train must be visible in Medium');
   assert.equal(craft.visible, true);
   assert.equal(near.getObjectByName('city-evacuation-craft-6').visible, false);
   world.update(1, 2, 48, true);
@@ -56,6 +56,7 @@ test('maglev and evac shuttles animate independently and honor graphics, phases 
   world.update(2, 4, 48, false);
   assert.deepEqual([west.position.z, craft.position.y], snapshot, 'pause stops all urban motion');
   world.setGraphicsQuality('high');
+  assert.equal(west.visible, true);
   assert.equal(east.visible, true);
   assert.equal(near.getObjectByName('city-evacuation-craft-6').visible, true);
   world.setSector(SECTORS[0]);
