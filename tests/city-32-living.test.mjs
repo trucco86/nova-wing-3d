@@ -39,6 +39,9 @@ test('City 3.2 puts original branded signs on actual facade anchors with a fixed
     assert.ok(s.getObjectByName('city32-advertisement-panel').material.map?.isTexture);
     assert.equal(s.userData.visualOnly, true);
   }
+  const backplates = group.getObjectByName('city32-advertising-backplates');
+  assert.ok(backplates?.isInstancedMesh);
+  assert.equal(backplates.count, sign.children.length, 'billboard frames use one GPU batch');
   const lights = group.getObjectByName('city32-neon-billboard-frames');
   assert.ok(lights.isInstancedMesh);
   assert.ok(lights.instanceColor);
