@@ -1,4 +1,4 @@
-name: Prepare City 2.8 Adaptive Performance QA
+name: Prepare City 2.8 Adaptive Performance QA — validated
 on:
   push:
     branches:
