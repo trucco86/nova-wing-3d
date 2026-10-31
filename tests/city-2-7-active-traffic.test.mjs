@@ -43,7 +43,7 @@ test('moving city has detailed surface cars, aerial taxis and ascending escape s
     'ground vehicles run along the road',
   );
   assert.ok(
-    Math.abs(startingFlying.x) > 90 && startingFlying.y > 30,
+    Math.abs(startingFlying.x) > 60 && startingFlying.y > 60,
     'flying taxis use aerial routes',
   );
   assert.ok(startingEscape.y > 40, 'evacuation spacecraft already start ascending');
