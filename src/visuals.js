@@ -571,7 +571,8 @@ export function createFlyingRobot() {
     baseScale: 0.94,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
-  // Slightly more presence, without changing the player's collision size.\n  robot.scale.setScalar(0.99);
+  // Modest presence increase without changing player collider physics.
+  robot.scale.setScalar(1.04);
   return robot;
 }
 
