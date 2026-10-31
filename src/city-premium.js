@@ -97,10 +97,18 @@ function createAerodynamicNose(direction) {
   const positions = [];
   for (const ring of rings) {
     positions.push(
-      -ring.width, ring.floor, ring.z,
-      ring.width, ring.floor, ring.z,
-      ring.width, ring.roof, ring.z,
-      -ring.width, ring.roof, ring.z,
+      -ring.width,
+      ring.floor,
+      ring.z,
+      ring.width,
+      ring.floor,
+      ring.z,
+      ring.width,
+      ring.roof,
+      ring.z,
+      -ring.width,
+      ring.roof,
+      ring.z,
     );
   }
   const indices = [];
@@ -120,7 +128,8 @@ function createAerodynamicNose(direction) {
   const noseMaterial = railBody.clone();
   noseMaterial.side = T.DoubleSide;
   const nose = new T.Mesh(geometry, noseMaterial);
-  nose.name = direction > 0 ? 'city-maglev-aerodynamic-nose-front' : 'city-maglev-aerodynamic-nose-rear';
+  nose.name =
+    direction > 0 ? 'city-maglev-aerodynamic-nose-front' : 'city-maglev-aerodynamic-nose-rear';
   nose.userData.visualOnly = true;
   return nose;
 }
@@ -309,6 +318,8 @@ export function animateCityBillboards(cityTile, travel) {
     beacon.material.color.set('#ffffff').multiplyScalar(intensity);
     // Retain the brand color, but avoid clipping the emissive sign against the
     // dark architecture. No canvas repaint or texture upload per frame.
-    beacon.material.color.multiply(new T.Color(['#69e8ff', '#70d9ff', '#ffc88a', '#b6a0ff', '#78f7e7', '#ff9dc5'][i]));
+    beacon.material.color.multiply(
+      new T.Color(['#69e8ff', '#70d9ff', '#ffc88a', '#b6a0ff', '#78f7e7', '#ff9dc5'][i]),
+    );
   }
 }

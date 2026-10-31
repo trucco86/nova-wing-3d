@@ -8,8 +8,7 @@ import {
 } from '../src/city-premium.js';
 import { createWorld } from '../src/visuals.js';
 
-const colorDifference = (a, b) =>
-  Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
+const colorDifference = (a, b) => Math.abs(a.r - b.r) + Math.abs(a.g - b.g) + Math.abs(a.b - b.b);
 
 test('City 2.6 maglev has sculpted, finite aerodynamic noses and levitation chassis', () => {
   for (const side of [-1, 1]) {
@@ -49,10 +48,16 @@ test('City 2.6 billboard beacons animate by travel without redrawing textures', 
   const firstColor = beacon.material.color.clone();
   animateCityBillboards(holder, 230);
   const nextColor = beacon.material.color.clone();
-  assert.ok(colorDifference(firstColor, nextColor) > 0.01, 'beacon changes brightness as city moves');
+  assert.ok(
+    colorDifference(firstColor, nextColor) > 0.01,
+    'beacon changes brightness as city moves',
+  );
   assert.strictEqual(panel.material.map, originalTexture, 'canvas texture is reused');
   animateCityBillboards(holder, 230);
-  assert.ok(colorDifference(beacon.material.color, nextColor) < 1e-9, 'same travel is deterministic');
+  assert.ok(
+    colorDifference(beacon.material.color, nextColor) < 1e-9,
+    'same travel is deterministic',
+  );
   animateCityBillboards(holder, NaN);
   assert.ok(colorDifference(beacon.material.color, nextColor) < 1e-9, 'bad delta is ignored');
 });

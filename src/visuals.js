@@ -2,7 +2,11 @@ import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
-import { animateCityBillboards, createCityPremiumInfrastructure, createMaglevTrain } from './city-premium.js';
+import {
+  animateCityBillboards,
+  createCityPremiumInfrastructure,
+  createMaglevTrain,
+} from './city-premium.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
