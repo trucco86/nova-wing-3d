@@ -39,7 +39,7 @@ const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795
 const transform = new T.Object3D();
 const textureCache = new Map();
 
-function advertisingTexture(brand, subtitle, color) {
+export function advertisingTexture(brand, subtitle, color) {
   if (textureCache.has(brand)) return textureCache.get(brand);
   let texture;
   if (typeof document !== 'undefined' && document.createElement) {
