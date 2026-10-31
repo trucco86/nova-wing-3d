@@ -86,7 +86,7 @@ test('button becomes SUPER BOOST only during required orbital climb, then resets
   t.after(() => h.close());
   h.game.start();
   h.advance(24);
-  const boost = h.element('boostTouch');
+  const boost = h.elements.get('boostTouch');
   assert.equal(boost.textContent, 'SUPER BOOST');
   assert.equal(boost.classList.contains('launch-required'), true);
   h.key('ShiftLeft', true);
