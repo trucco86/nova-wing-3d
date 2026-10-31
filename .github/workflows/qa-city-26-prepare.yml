@@ -1,0 +1,40 @@
+name: City 2.6 isolated QA preparation
+on:
+  push:
+    branches:
+      - feat/city-2-6-maglev-sculpted-20261031
+    paths:
+      - .github/workflows/qa-city-26-prepare.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-2-6-maglev-sculpted-20261031
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - run: npm run build:check
+      - name: Commit isolated QA bundle and formatted sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/city-premium.js src/visuals.js tests/city-2-6-transit.test.mjs specs/city-2-6-transit-polish.md index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): synchronize 2.6 web bundle and source formatting"
+            git push origin HEAD:feat/city-2-6-maglev-sculpted-20261031
+          fi
