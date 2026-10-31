@@ -7865,3 +7865,23 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
     display: none;
   }
 }
+
+/* Graphics 3.6 — Reflex Boost status stays beside the BOOST control, never
+   in the central aiming lane. No canvas filter or extra GPU post-pass. */
+body.reflex-boost #boostTouch {
+  box-shadow: 0 0 0 2px #75faff, 0 0 16px #53dce877, inset 0 0 12px #3cbed477;
+}
+body.reflex-boost #boostTouch::after {
+  content: 'REFLEX';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  pointer-events: none;
+  color: #abfaff;
+  text-shadow: 0 0 8px #45ccef;
+}
