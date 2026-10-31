@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
+
+- Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.
+- Terra procedural, Lua e Sol com flare aditivo aparecem gradualmente após o BOOST, enquanto cidade e trilhos recuam no enquadramento; a travessia atmosférica permanece em 38 segundos.
+- Renderização otimizada com instancing e detalhes por perfil Médio/Alto. Testes de progressão, visibilidade, limites de corredor e isolamento de setores atualizados.
+- PR draft empilhada sobre #188, sem homologação visual/FPS nem promoção para DEV, HML ou produção.
+
+- Tráfego urbano agora inclui carros futuristas nas ruas, táxis voadores e naves que evacuam a cidade rumo ao espaço. Movimentação determinística por progresso da fase, com congelamento no Pause, sem colisores e em lotes GPU conforme qualidade Alto/Médio.
+- Piso urbano deixa de cortar a Terra durante a subida graças ao fade do terreno, mantendo o tempo da fase e a mecânica de BOOST.
+
 ## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
 
 - Trem maglev de três vagões com malhas aerodinâmicas nas duas pontas, chassis de levitação, luzes e acabamento lateral; colisões e trajeto preservados.

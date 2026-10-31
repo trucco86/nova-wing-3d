@@ -29,20 +29,35 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   world.setLaunchAscent(0.8, true);
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
-  assert.equal(city.visible, false, 'city should no longer occlude the orbital horizon');
-  assert.equal(ground.visible, false, 'flat ground must not extend into space');
+  assert.equal(city.visible, false, 'city is below the player before space appears');
+  assert.equal(ground.visible, false, 'ground plane cannot create a rigid line over Earth');
+  assert.equal(ground.material.uniforms.launchGroundAlpha.value, 0);
   assert.ok(scene.fog.density < 0.0006, 'launch reduces atmosphere fog');
-  assert.equal(earth.visible, true, 'planetary horizon becomes visible in orbit');
-  assert.equal(ground.visible, false, 'planet cannot coexist with city terrain');
+  assert.equal(earth.visible, true, 'Earth gradually enters the frame during the climb');
+  const orbitalFade = earth.material.uniforms.fade.value;
+  assert.ok(orbitalFade > 0.3);
   world.setLaunchAscent(0.45, true);
-  assert.equal(earth.visible, false, 'no planet during the city ascent');
+  assert.ok(
+    ground.material.uniforms.launchGroundAlpha.value > 0 &&
+      ground.material.uniforms.launchGroundAlpha.value < 1,
+    'the large terrain plane now fades progressively',
+  );
+  assert.equal(
+    earth.visible,
+    true,
+    'early Earth glow is visible before the last buildings disappear',
+  );
+  assert.ok(earth.material.uniforms.fade.value < orbitalFade);
   assert.equal(city.visible, true);
-  world.setLaunchAscent(0.8, true);
-  assert.ok(earth.material.uniforms.fade.value > 0.3);
+  world.setLaunchAscent(0.85, true);
+  assert.equal(city.visible, false, 'buildings are only hidden once physically below the view');
+  assert.equal(ground.visible, false, 'flat ground no longer extends into full orbit');
+  assert.ok(earth.material.uniforms.fade.value > orbitalFade);
   world.setSector(SECTORS[1]);
   assert.equal(city.position.y, 0, 'new sector resets city displacement');
   assert.equal(ground.position.y, -7);
   assert.equal(ground.visible, true, 'new ocean sector restores its ground');
+  assert.equal(ground.material.uniforms.launchGroundAlpha.value, 1);
   assert.equal(earth.visible, false, 'the launch horizon is exclusive to sector 1');
   assert.equal(earth.material.uniforms.fade.value, 0);
   assert.equal(skyDome.material.uniforms.launchHaze.value, 0, 'new sector has no launch haze');
