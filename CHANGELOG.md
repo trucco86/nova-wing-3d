@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
+
+- Corrigidos posicionamentos absolutos de BOOST e TIRO e consolidada a distribuição em meia-lua com hit targets mínimos 60×60px e LOCK do mecha sem sobreposição. Joystick responsivo (88/102/128/91px) e órbita 12px acima.
+- Arcade 2D volta a esconder BOOST quando desabilitado; testes WebGL aceitam resolução adaptativa sem cortar canvas. 405 testes unitários e 10 Playwright direcionados passaram. QA final em shards e aceite no S21 pendentes. PR #198 draft, produção intacta.
+
+## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
+
+- Corrigida disputa de especificidade entre CSS antigo (`position:relative` para BOOST/TIRO) e controles novos em meia-lua (`position:absolute`). Os botões permanecem em posições absolutas, com alvos clicáveis corretos e sem sobreposição.
+- Evidência: 405 unitários e 2 testes Playwright mobile, cobrindo BOOST com LOCK, posição computada absoluta, `elementFromPoint`, 320×568/390×844/844×390 e tela Options. Validação física no S21 e os shards completos ainda são pendências. PR #198 draft, sem promoção a produção.
+
 ## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
 
 - Corrigida visibilidade e captura de toque do BOOST no celular, inclusive no mecha com LOCK, mantendo alvos de 60px em portrait e transparência configurável sem ocultar botões críticos.

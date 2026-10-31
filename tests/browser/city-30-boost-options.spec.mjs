@@ -69,20 +69,37 @@ test('mobile BOOST always sits above HUD and receives touch with LOCK in the arc
     });
     const state = await page.evaluate(() => {
       const el = document.getElementById('boostTouch');
+      const fire = document.getElementById('fireTouch');
       const r = el.getBoundingClientRect();
+      const f = fire.getBoundingClientRect();
       const visible = getComputedStyle(el);
       const center = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      const overlap =
+        Math.max(0, Math.min(r.right, f.right) - Math.max(r.left, f.left)) *
+        Math.max(0, Math.min(r.bottom, f.bottom) - Math.max(r.top, f.top));
       return {
+        x: r.left,
+        y: r.top,
         w: r.width,
         h: r.height,
         right: r.right,
         bottom: r.bottom,
+        position: visible.position,
+        firePosition: getComputedStyle(fire).position,
         display: visible.display,
         visibility: visible.visibility,
         opacity: visible.opacity,
+        overlap,
         hit: center === el || el.contains(center),
       };
     });
+    // A CSS rule with two IDs used to force position:relative, leaving BOOST
+    // below FIRE in normal document flow despite its later top/left offsets.
+    expect(state.position, 'BOOST must be absolutely docked').toBe('absolute');
+    expect(state.firePosition, 'FIRE must not displace BOOST in normal flow').toBe('absolute');
+    expect(state.overlap, 'BOOST must not be obscured by FIRE').toBe(0);
+    expect(state.x).toBeGreaterThanOrEqual(0);
+    expect(state.y).toBeGreaterThanOrEqual(0);
     expect(state.display).not.toBe('none');
     expect(state.visibility).toBe('visible');
     expect(state.w).toBeGreaterThanOrEqual(52);
