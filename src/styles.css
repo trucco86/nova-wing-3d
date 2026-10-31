@@ -8473,7 +8473,11 @@ body.reflex-boost #boostTouch::after {
     pointer-events: auto !important;
     z-index: 8;
     color: #fff3d2;
-    text-shadow: 0 1px 4px #03131a, 0 0 7px #ffeab055;
+    text-shadow:
+      0 1px 4px #03131a,
+      0 0 7px #ffeab055;
   }
-  body.in-mission #touch .actions #fireTouch { z-index: 7; }
+  body.in-mission #touch .actions #fireTouch {
+    z-index: 7;
+  }
 }

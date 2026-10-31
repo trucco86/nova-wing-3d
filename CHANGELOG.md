@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.44 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
 
 - Corrigida visibilidade e captura de toque do BOOST no celular, inclusive no mecha com LOCK, mantendo alvos de 60px em portrait e transparência configurável sem ocultar botões críticos.

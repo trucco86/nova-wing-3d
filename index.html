@@ -8469,6 +8469,36 @@ body.reflex-boost #boostTouch::after {
   }
 }
 
+/* P0 mobile BOOST layout regression (3.0.1).
+   Legacy #touch #boostTouch/#fireTouch sets position:relative with TWO ID
+   selectors, outranking the new .actions button { position:absolute } rule.
+   When .actions became display:block this placed BOOST after FIRE in normal
+   flow, then displaced it with left/top offsets, often off-screen.
+   Explicitly restore absolute positioning at a higher specificity.
+   Keep the visual half-moon, original control ids and touch event listeners. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions #boostTouch,
+  body.in-mission #touch .actions #fireTouch {
+    position: absolute !important;
+    margin: 0 !important;
+    display: grid;
+    place-items: center;
+    transform-origin: center center;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 8;
+    color: #fff3d2;
+    text-shadow:
+      0 1px 4px #03131a,
+      0 0 7px #ffeab055;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    z-index: 7;
+  }
+}
+
     </style>
   </head>
   <body>
@@ -9099,7 +9129,7 @@ body.reflex-boost #boostTouch::after {
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
-        <span id="gameVersion">v1.27.43</span>
+        <span id="gameVersion">v1.27.44</span>
       </section>
       <section
         id="cinematic"
