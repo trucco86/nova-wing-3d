@@ -37,7 +37,7 @@ test('boost is mandatory; depletion triggers a long atmospheric ascent', (t) => 
   assert.equal(halfway.orbitalLaunch.phase, 'atmosphere');
   assert.ok(halfway.orbitalLaunch.amount > 0.5);
   assert.ok(halfway.orbitalLaunch.amount < 1);
-  h.advance(30);
+  h.advance(20);
   assert.equal(h.game.snapshot().orbitalLaunch.phase, 'orbit');
   assert.equal(h.game.snapshot().orbitalLaunch.complete, true);
   assert.equal(launchOrbitReady(h.game.snapshot().orbitalLaunch.amount), true);
