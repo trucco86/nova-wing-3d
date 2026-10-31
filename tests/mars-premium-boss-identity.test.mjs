@@ -20,7 +20,7 @@ test('Mars sector two has a red desert, two individual moons and Curiosity-style
   const rover = worldRoot.getObjectByName('mars-curiosity-rover');
   assert.ok(rover && rover.getObjectByName('curiosity-mastcam-stereo-head'));
   assert.equal(rover.children.filter((o) => o.name.startsWith('curiosity-wheel')).length, 6);
-  assert.equal(worldRoot.children.filter((o) => o.name.startsWith('mars-rock-field')).length, 10);
+  assert.equal(worldRoot.getObjectByName('mars-surface-scene').children.filter((o) => o.name.startsWith('mars-rock-field')).length, 10);
   for (const part of worldRoot.children) assert.notEqual(part.userData.hitbox, true);
 });
 
