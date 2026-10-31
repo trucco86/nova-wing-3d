@@ -128,6 +128,7 @@ import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } fro
 import {
   fighter,
   createFlyingRobot,
+  scaleFighterVisual,
   animateMechPower,
   resetMechPower,
   setFighterEvolution,
@@ -245,6 +246,8 @@ export function createGame({
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
+  // Grow the visible craft by 5%, but keep the original player root and hitbox.
+  scaleFighterVisual(player, 1.05);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
@@ -648,10 +651,11 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.scale.setScalar(1.05);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
-      pilotLoadout.ship === 'aegis' ? 1.03 : pilotLoadout.ship === 'specter' ? 0.8 : 0.88;
+      pilotLoadout.ship === 'aegis' ? 1.08 : pilotLoadout.ship === 'specter' ? 0.84 : 0.93;
     applySkin();
   }
   const statLabels = {
