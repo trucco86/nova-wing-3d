@@ -135,9 +135,13 @@ export function createCityDistricts() {
 
   // Maglev platforms sit parallel to (and on the OUTER side of) the ±80 rails.
   // Shared unit geometry, no gameplay hitboxes, and roof above train clearance.
-  function station(side, z) {
+  function station(side, z, opening = false) {
     const stationGroup = new T.Group();
-    stationGroup.name = side < 0 ? 'city-maglev-station-west' : 'city-maglev-station-east';
+    stationGroup.name = opening
+      ? 'city-maglev-opening-terminal'
+      : side < 0
+        ? 'city-maglev-station-west'
+        : 'city-maglev-station-east';
     stationGroup.position.set(side * 80, 0, z);
     stationGroup.userData.district = 'transit';
     const add = (material, x, y, zz, w, h, d) => {
@@ -158,6 +162,9 @@ export function createCityDistricts() {
     group.add(stationGroup);
     return stationGroup;
   }
+  // Player-visible near-side terminal aligns with the opening train pass.
+  // The two existing mid/late platforms remain in their original positions.
+  station(1, -215, true);
   station(-1, -585);
   station(1, -1315);
 
