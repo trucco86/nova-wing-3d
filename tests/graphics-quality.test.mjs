@@ -14,7 +14,10 @@ test('graphics mode resolves conservatively on mobile and honors explicit choice
   assert.equal(resolveGraphicsQuality('auto', { coarsePointer: false, deviceMemory: 8 }), 'high');
   assert.equal(resolveGraphicsQuality('high', { coarsePointer: true }), 'high');
   assert.equal(resolveGraphicsQuality('medium'), 'medium');
-  assert.equal(graphicsPixelRatioLimit('medium', { coarsePointer: true }), 0.98);
+  assert.equal(graphicsPixelRatioLimit('medium', { coarsePointer: true }), 1.1);
+  assert.equal(graphicsPixelRatioLimit('high', { coarsePointer: true }), 1.35);
+  assert.ok(graphicsPixelRatioLimit('medium', { coarsePointer: true }) > 1,
+    'mobile uses native antialiasing with enough resolution for architectural edges');
   assert.ok(graphicsPixelRatioLimit('high') > graphicsPixelRatioLimit('medium'));
 });
 
