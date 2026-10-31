@@ -14,7 +14,7 @@ test('graphics mode resolves conservatively on mobile and honors explicit choice
   assert.equal(resolveGraphicsQuality('auto', { coarsePointer: false, deviceMemory: 8 }), 'high');
   assert.equal(resolveGraphicsQuality('high', { coarsePointer: true }), 'high');
   assert.equal(resolveGraphicsQuality('medium'), 'medium');
-  assert.equal(graphicsPixelRatioLimit('medium', { coarsePointer: true }), 1.05);
+  assert.equal(graphicsPixelRatioLimit('medium', { coarsePointer: true }), 0.98);
   assert.ok(graphicsPixelRatioLimit('high') > graphicsPixelRatioLimit('medium'));
 });
 
