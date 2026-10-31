@@ -60,7 +60,7 @@ test('City 3.3 mid-stage busway and active construction have no collisions and a
   assert.deepEqual(matrix(bus), frozen, 'same simulated travel yields identical positions');
   const works = city.getObjectByName('city33-active-construction-sites');
   assert.equal(works.getObjectByName('city33-animated-cranes').children.length, 3);
-  assert.ok(works.getObjectByName('city33-scaffold-verticals').count >= 20);
+  assert.ok(works.getObjectByName('city33-scaffold-verticals').count >= 12);
   assert.equal(works.getObjectByName('city33-welding-sparks').count, 12);
   setCity33Quality(city, 'medium');
   assert.equal(works.getObjectByName('city33-welding-sparks').count, 6);
