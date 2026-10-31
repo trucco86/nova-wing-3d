@@ -1,4 +1,5 @@
 name: Prepare Mars 4.2 Sandstorm v1.27.55
+# Rerun after canonical zero-wind repair and 440/441 first-pass tests.
 on:
   push:
     branches:
