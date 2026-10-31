@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clickMenu, openMenu } from './menu-navigation.mjs';
+import { openMenu } from './menu-navigation.mjs';
 
 test('Options is one compact screen with immediately visible language selector', async ({ page }, info) => {
   test.skip(info.project.name !== 'mobile');
