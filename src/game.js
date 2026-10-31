@@ -3889,10 +3889,13 @@ export function createGame({
               bullet(origin, destination, emission.element);
               fired++;
             }
-            // When both batteries are gone, the boss retains only one weak
-            // center weapon, never invisible gunfire from destroyed flanks.
-            if (!fired && !generators.some(Boolean))
-              bullet(bossMuzzle(0), player.position.clone(), 'fire');
+            // Keep one readable fallback shot from the only live weapon.
+            // After both side modules are destroyed the emergency core is
+            // the ONLY valid origin; no invisible fire from destroyed guns.
+            if (!fired) {
+              const survivingSide = generators.some(Boolean) ? budget.sides[0] : 0;
+              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire');
+            }
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
               const side =
