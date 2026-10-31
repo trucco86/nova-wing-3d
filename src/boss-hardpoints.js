@@ -6,7 +6,7 @@ export const BOSS_BATTERY_SIDES = Object.freeze([-1, 1]);
 export function bossBatteryPlan(generators = [true, true], requested = 3) {
   const alive = BOSS_BATTERY_SIDES.filter((side, i) => generators[i] !== false);
   if (!alive.length) return { sides: [0], cadenceMultiplier: 1.85, suppressMelee: true };
-  const budget = Math.max(1, Math.min(10, Math.ceil(requested * alive.length / 2)));
+  const budget = Math.max(1, Math.min(10, Math.ceil((requested * alive.length) / 2)));
   const sides = Array.from({ length: budget }, (_, i) => alive[i % alive.length]);
   return {
     sides,
@@ -22,6 +22,9 @@ export function batteryForSignature(origin, generators = [true, true]) {
   return alive.includes(side) ? side : null;
 }
 export function sourceHardpointName(side) {
-  return side === 0 ? 'boss-core-muzzle' : side < 0
-    ? 'boss-battery-left-muzzle' : 'boss-battery-right-muzzle';
+  return side === 0
+    ? 'boss-core-muzzle'
+    : side < 0
+      ? 'boss-battery-left-muzzle'
+      : 'boss-battery-right-muzzle';
 }

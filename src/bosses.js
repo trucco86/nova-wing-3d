@@ -404,8 +404,11 @@ export function createBossModel(sector, index = 0, tactical = false) {
     marker.position.set(s * 17, 4, 22);
     g.add(marker);
     parts.push({
-      mesh: p, marker, battery: batteries[s < 0 ? 0 : 1],
-      hp: 180 + index * 25, max: 180 + index * 25,
+      mesh: p,
+      marker,
+      battery: batteries[s < 0 ? 0 : 1],
+      hp: 180 + index * 25,
+      max: 180 + index * 25,
     });
   }
   if (tactical) {

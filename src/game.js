@@ -1704,15 +1704,18 @@ export function createGame({
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
-      const mount = ground ? o.getObjectByName('turret') ?? o : o;
+      const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
       for (const side of [-1, 1]) {
         const muzzle = new T.Mesh(
           new T.SphereGeometry(0.8, 8, 6),
           new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false }),
         );
         muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
-        muzzle.position.set(side * (ground ? 1.8 : 2.7), ground ? 0.2 : 0,
-          ground ? 11.8 : kind === 'subboss' ? 13 : 3.7);
+        muzzle.position.set(
+          side * (ground ? 1.8 : 2.7),
+          ground ? 0.2 : 0,
+          ground ? 11.8 : kind === 'subboss' ? 13 : 3.7,
+        );
         mount.add(muzzle);
       }
     }
@@ -1796,7 +1799,9 @@ export function createGame({
   function bossMuzzle(side = 0) {
     if (!boss) return null;
     boss.updateMatrixWorld(true);
-    return boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null;
+    return (
+      boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null
+    );
   }
   function hostileMuzzles(e) {
     e.o.updateMatrixWorld(true);
@@ -3694,7 +3699,8 @@ export function createGame({
                 : [0])
             bullet(
               hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
-                hostileMuzzles(e)[0] ?? e.o.position.clone(),
+                hostileMuzzles(e)[0] ??
+                e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
               e.subbossTactic?.spell ?? '',
             );
@@ -3873,7 +3879,8 @@ export function createGame({
               const origin = bossMuzzle(side);
               if (!origin) continue;
               const spread = dangerous ? 0.72 : 1.15;
-              const destination = player.position.clone()
+              const destination = player.position
+                .clone()
                 .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
               bullet(origin, destination, emission.element);
               fired++;
@@ -3884,9 +3891,11 @@ export function createGame({
               bullet(bossMuzzle(0), player.position.clone(), 'fire');
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
-              const side = bossBatteryPlan(
-                boss.userData.parts.map((p) => p.hp > 0), 3,
-              ).sides[n] ?? 0;
+              const side =
+                bossBatteryPlan(
+                  boss.userData.parts.map((p) => p.hp > 0),
+                  3,
+                ).sides[n] ?? 0;
               const origin = bossMuzzle(side);
               for (const target of encounterPattern(
                 sectorIndex,
@@ -4027,7 +4036,8 @@ export function createGame({
         if (dynamicFlight) {
           // Bosses fire from their own batteries/heads, not the same central barrel.
           const batteryPlan = bossBatteryPlan(
-            boss.userData.parts.map((part) => part.hp > 0), program.sources.length,
+            boss.userData.parts.map((part) => part.hp > 0),
+            program.sources.length,
           );
           for (const [sourceIndex, side] of batteryPlan.sides.entries()) {
             const source = program.sources[sourceIndex % program.sources.length];

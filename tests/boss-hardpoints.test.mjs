@@ -5,7 +5,11 @@ import { SECTORS } from '../src/campaign.js';
 import { createBossModel, disposeBoss } from '../src/bosses.js';
 import { bossSignatureVolley } from '../src/boss-signature.js';
 import { bossAttackProgram } from '../src/boss-director.js';
-import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from '../src/boss-hardpoints.js';
+import {
+  bossBatteryPlan,
+  batteryForSignature,
+  sourceHardpointName,
+} from '../src/boss-hardpoints.js';
 import { createGroundEnemy, robotEyeMuzzles } from '../src/encounters.js';
 
 test('ten bosses have visible left and right physical cannon hardpoints powered by destroyable weak points', () => {
@@ -48,7 +52,9 @@ test('destroying cannon generators actually reduces attack volume and slows cade
     assert.ok(core.cadenceMultiplier > left.cadenceMultiplier);
     assert.ok(left.cadenceMultiplier > both.cadenceMultiplier);
     const signature = bossSignatureVolley(i, 3, 3, [true, true]);
-    assert.ok(signature.shots.every((shot) => batteryForSignature(shot.origin, [true, true]) !== null));
+    assert.ok(
+      signature.shots.every((shot) => batteryForSignature(shot.origin, [true, true]) !== null),
+    );
     for (const emission of signature.shots) {
       const side = batteryForSignature(emission.origin, [false, true]);
       assert.ok(side === null || side === 1);
