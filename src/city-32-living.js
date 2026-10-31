@@ -27,10 +27,6 @@ const beamMaterial = new T.MeshBasicMaterial({
   color: '#8ceaff', transparent: true, opacity: 0.12, side: T.DoubleSide,
   blending: T.AdditiveBlending, depthWrite: false, toneMapped: false,
 });
-const holoMaterial = new T.MeshBasicMaterial({
-  color: '#66ffff', transparent: true, opacity: 0.18, depthWrite: false,
-  side: T.DoubleSide, blending: T.AdditiveBlending, toneMapped: false,
-});
 const hull = new T.MeshStandardMaterial({ color: '#c5e5f0', metalness: 0.74, roughness: 0.24 });
 const engine = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795'].map((c) => new T.Color(c));
@@ -216,7 +212,12 @@ function holograms(parent) {
   group.name = 'city32-holographic-signs';
   group.userData.visualOnly = true;
   for (let i=0;i<5;i++) {
-    const sign = new T.Mesh(plane, holoMaterial);
+    const [brand, subtitle, color] = CITY32_ADS[(i * 2 + 1) % CITY32_ADS.length];
+    const sign = new T.Mesh(plane, new T.MeshBasicMaterial({
+      map: advertisingTexture(brand, subtitle, color),
+      transparent: true, opacity: 0.62, depthWrite: false, side: T.DoubleSide,
+      blending: T.AdditiveBlending, toneMapped: false,
+    }));
     sign.name = 'city32-hologram-' + i;
     sign.userData.visualOnly = true;
     sign.userData.index = i;
@@ -296,4 +297,28 @@ export function updateCity32Living(root, travel) {
     mesh.rotation.y = Math.sin(travel*0.004+i)*0.12;
     mesh.scale.x = 19+2*Math.sin(travel*0.007+i);
   });
+}
+
+export function createCity32Skyline() {
+  const root = new T.Group();
+  root.name = 'city32-distant-city-lights';
+  root.userData.visualOnly = true;
+  const bands = [];
+  const silhouettes = [];
+  for (let tier = 0; tier < 3; tier++) {
+    for (let i = 0; i < 32; i++) {
+      const x = (i - 15.5) * (tier === 0 ? 30 : tier === 1 ? 26 : 23);
+      if (tier < 2 && Math.abs(x) < 65) continue;
+      const z = -470 - tier * 260 - (i % 3) * 22;
+      const h = 38 + (i * 17 + tier * 29) % 110;
+      const w = 13 + (i + 2*tier) % 5 * 5;
+      silhouettes.push({x,y:h*0.5-7,z,w,h,d:19,tint:palette[(i+tier)%palette.length]});
+      for (let y=0;y<3;y++) {
+        bands.push({x,y:6+h*(y+1)/4,z:z+10.5,w:w*0.82,h:0.58,d:0.4,tint:palette[(i+3*y+tier)%palette.length]});
+      }
+    }
+  }
+  instanced('city32-skyline-secondary-towers', glass, silhouettes, root);
+  instanced('city32-skyline-illuminated-bands', neon, bands, root);
+  return root;
 }
