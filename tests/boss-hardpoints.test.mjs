@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
-import { createBossModel, disposeBossModel } from '../src/bosses.js';
+import { createBossModel, disposeBoss } from '../src/bosses.js';
 import { bossSignatureVolley } from '../src/boss-signature.js';
 import { bossAttackProgram } from '../src/boss-director.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from '../src/boss-hardpoints.js';
@@ -30,7 +30,7 @@ test('ten bosses have visible left and right physical cannon hardpoints powered 
     boss.userData.parts[0].hp = 0;
     boss.userData.parts[0].battery.visible = false;
     assert.equal(boss.getObjectByName(sourceHardpointName(-1)).parent.visible, false);
-    disposeBossModel(boss);
+    disposeBoss(boss);
   }
 });
 test('destroying cannon generators actually reduces attack volume and slows cadence', () => {
