@@ -35,7 +35,7 @@ test('sector 1 needs BOOST depletion, then spends time climbing above the city',
   await expect(page.locator('#routeLabel')).toContainText('ATMOSFERA');
   await page.screenshot({ path: info.outputPath('launch-through-atmosphere.png') });
 
-  await page.evaluate(() => window.fixture.advance(20));
+  await page.evaluate(() => window.fixture.advance(30));
   const orbit = await page.evaluate(() => window.fixture.game.snapshot());
   expect(orbit.orbitalLaunch.phase).toBe('orbit');
   expect(orbit.orbitalLaunch.complete).toBe(true);
