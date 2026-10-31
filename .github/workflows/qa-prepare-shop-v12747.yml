@@ -1,4 +1,5 @@
 name: Prepare isolated shop and premium city candidate v1.27.47
+# Retest v2 after DOM fake classList compatibility fix
 on:
   push:
     branches:
