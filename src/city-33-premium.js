@@ -34,7 +34,7 @@ function batch(parent, name, material, entries, premium = false) {
     renderObject.scale.set(part.w, part.h, part.d);
     renderObject.updateMatrix();
     mesh.setMatrixAt(index, renderObject.matrix);
-    if (part.color) mesh.setColorAt(index, part.color);
+    if (part.color) mesh.setColorAt(index, new T.Color(part.color));
   });
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
