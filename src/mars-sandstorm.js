@@ -17,7 +17,7 @@ export function marsSandstormAt(seconds) {
   // Slow crosswind reversals with short gusts. Max < pilot acceleration.
   const prevailing = Math.sin((seconds - MARS_STORM_START) * 0.48 + 0.9);
   const gust = Math.sin(seconds * 1.71) * Math.sin(seconds * 0.31 + 1.7);
-  const windX = intensity * (8.2 * prevailing + 3.7 * gust);
+  const windX = intensity === 0 ? 0 : intensity * (8.2 * prevailing + 3.7 * gust);
   const sway = intensity * (0.13 * Math.sin(seconds * 1.17) + 0.04 * Math.sin(seconds * 3.3));
   return {
     phase: prewarn ? 'warning' : intensity > 0.02 ? 'active' : 'clear',
