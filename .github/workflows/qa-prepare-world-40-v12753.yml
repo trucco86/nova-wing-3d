@@ -37,5 +37,7 @@ jobs:
           git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.53.md index.html src tests specs
           if ! git diff --cached --quiet; then
             git commit -m "build(qa): prepare World 4.0 Mars premium v1.27.53"
+            git fetch origin feat/world-40-mars-premium-boss-identity-20261031
+            git rebase origin/feat/world-40-mars-premium-boss-identity-20261031
             git push origin HEAD:feat/world-40-mars-premium-boss-identity-20261031
           fi
