@@ -7,6 +7,7 @@ test('city-first mobile mission uses brighter city-only stage grade', async ({ p
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('body')).toHaveClass(/city-bright/);
   await expect(page.locator('body')).toHaveClass(/in-mission/);
-  await expect(page.locator('#touch')).toBeVisible();
+  if (info.project.name === 'mobile') await expect(page.locator('#touch')).toBeVisible();
+  else await expect(page.locator('#touch')).toBeHidden();
   await page.screenshot({ path: info.outputPath('city-31-electric-twilight-portrait.png') });
 });
