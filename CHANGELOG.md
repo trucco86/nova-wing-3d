@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.42 — Graphics 3.7 / NOVA-7, mecha e controles em meia-lua (QA)
+
+- NOVA-7 visualmente maior (1,05→1,11), com 24 detalhes instanciados de carenagem rasa, frisos e LEDs, preservando a silhueta clean. Robô passa a 1,04 de escala (corrigida uma instrução antes comentada), com detalhes mecânicos de peito/pernas e acabamento articulado das duas armas.
+- Controles touchscreen com áreas em arcos inferiores, 55% opacos em repouso e 94% ao pressionar; sete botões acomodados inclusive o LOCK do robô, joystick esquerdo, TIRO/BOOST direitos, safe areas e alvos ≥48px.
+- 403 testes unitários passaram; browsers e homologação de ergonomia/FPS em Samsung Galaxy S21 pendentes. PR #195 draft, sem promoção a produção.
+
 ## 1.27.41 — Graphics 3.6 / Reflex Boost e tiro luminoso seletivo (QA)
 
 - Clarões de disparo e reflexos emissivos locais na fuselagem da NOVA-7 e nos canhões e peito do mecha, inclusive tiros carregados e de precisão. Mobile sem bloom pesado; desktop Alto pode usar uma luz pontual temporária.
