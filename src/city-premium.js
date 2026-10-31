@@ -4,8 +4,7 @@ import * as T from 'three';
 // textures, collisions, network access or animation dependencies.
 const darkMetal = (color, roughness = 0.37) =>
   new T.MeshStandardMaterial({ color, metalness: 0.79, roughness });
-const illuminated = (color) =>
-  new T.MeshBasicMaterial({ color, toneMapped: false });
+const illuminated = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
 const unit = new T.BoxGeometry(1, 1, 1);
 const railBody = darkMetal('#537e94', 0.28);
 const railTrim = darkMetal('#8cbace', 0.19);

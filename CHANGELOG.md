@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.47 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.46 — Graphics 3.8 / arco meia-lua, SUPER BOOST e revelação orbital (QA)
 
 - Arco anatômico mobile escalonado com botões não sobrepostos >=60px, FIRE maior e BOOST legível. Durante a saída orbital, botão muda para SUPER BOOST dourado com aviso, aceleração elevada e gasto de energia obrigatório; depois retorna ao normal.

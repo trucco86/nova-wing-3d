@@ -901,14 +901,26 @@ export function createGame({
   function setIntermissionUI(active) {
     document.body.classList[active ? 'add' : 'remove']('intermission-active');
     for (const id of [
-      'hud', 'hudNotices', 'touch', 'bottom', 'loadout', 'sectorTag',
-      'bossHUD', 'subHUD', 'petCareHud', 'orbitControls', 'strategyControls',
-      'cameraView', 'aimReticle', 'mechaLockReticle',
+      'hud',
+      'hudNotices',
+      'touch',
+      'bottom',
+      'loadout',
+      'sectorTag',
+      'bossHUD',
+      'subHUD',
+      'petCareHud',
+      'orbitControls',
+      'strategyControls',
+      'cameraView',
+      'aimReticle',
+      'mechaLockReticle',
     ]) {
       const node = document.getElementById(id);
       if (node) node.inert = active;
     }
-    if (active) document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
+    if (active)
+      document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
   }
   function showShop() {
     recordStageResult('cleared');
