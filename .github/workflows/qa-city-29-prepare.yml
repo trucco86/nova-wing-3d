@@ -1,0 +1,41 @@
+name: Prepare City 2.9 mobile GPU budget QA
+on:
+  push:
+    branches:
+      - feat/city-29-mobile-gpu-budget-20261031
+    paths:
+      - .github/workflows/qa-city-29-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-29-mobile-gpu-budget-20261031
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.40
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - run: npm run check:repo
+      - name: Commit synchronized QA build and formatted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/visuals.js src/game.js src/city-urban-drones.js tests/graphics-3-5-mobile-budget.test.mjs specs/city-2-9-mobile-gpu-and-drones.md CHANGELOG.md releases/v1.27.40.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): synchronize v1.27.40 mobile graphics and drones QA"
+            git push origin HEAD:feat/city-29-mobile-gpu-budget-20261031
+          fi
