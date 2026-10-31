@@ -2287,7 +2287,7 @@ export function createGame({
       width: window.innerWidth,
       height: window.innerHeight,
       dpr: window.devicePixelRatio ?? 1,
-    }) + '\\n' + detail + budget.quality.toUpperCase() +
+    }) + '\n' + detail + budget.quality.toUpperCase() +
       ' · ' + Math.round(budget.resolutionScale * 100) + '% ' +
       (budget.adaptive ? '(adaptativo)' : '');
     $('auditStart').disabled = result.active;
