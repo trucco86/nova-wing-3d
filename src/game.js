@@ -215,7 +215,8 @@ export function createGame({
   let arcade = null,
     arcadeDone = false;
   const world = createWorld(scene, random, dynamicFlight),
-    post = postProcessor(renderer, scene, camera);
+    post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
+  let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
   const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
   let journey = initialJourney(0);
@@ -2298,7 +2299,27 @@ export function createGame({
       ' · ' +
       Math.round(budget.resolutionScale * 100) +
       '% ' +
-      (budget.adaptive ? '(adaptativo)' : '');
+      (budget.adaptive ? '(adaptativo)' : '') +
+      (Number.isFinite(lastFrameCost.drawCalls)
+        ? '\n' +
+          (settings.language === 'en'
+            ? 'Scene draw calls'
+            : settings.language === 'es'
+              ? 'Llamadas de escena'
+              : 'Chamadas de cena') +
+          ': ' +
+          lastFrameCost.drawCalls +
+          ' · ' +
+          (settings.language === 'en'
+            ? 'triangles'
+            : settings.language === 'es'
+              ? 'triángulos'
+              : 'triângulos') +
+          ': ' +
+          (lastFrameCost.triangles ?? 0) +
+          ' · pós-passes: ' +
+          lastFrameCost.postPasses
+        : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
@@ -4317,7 +4338,7 @@ export function createGame({
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
-      post.render();
+      lastFrameCost = post.render() ?? lastFrameCost;
     }
   }
   function step(dt) {

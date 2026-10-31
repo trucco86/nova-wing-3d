@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.40 — City 2.9 / Orçamento de GPU mobile e drones detalhados (QA)
+
+- Dispositivos touch e desktop Médio renderizam a cena 3D diretamente, evitando três passes de bloom e buffers offscreen por frame. Desktop Alto preserva o visual cinematográfico.
+- Diagnóstico de FPS agora inclui chamadas de desenho, triângulos e passes de pós-processamento quando disponíveis no renderizador.
+- Drones de serviço com fuselagem, asas, propulsores e compartimento de carga mais detalhados, mantendo dois batches GPU instanciados por trecho.
+- 395 testes unitários passaram em workspace de QA; browser, FPS medido no S21 e homologação visual pendentes. PR #193 draft sobre #192.
+
 ## 1.27.39 — City 2.8 / FPS adaptativo e trânsito urbano realista (QA)
 
 - Proteção de desempenho medida durante o gameplay, com resolução renderizada ajustável, downgrade de Alto para Médio se necessário e limites iniciais mais econômicos em aparelhos touch como Galaxy S21; as escolhas salvas permanecem intactas.

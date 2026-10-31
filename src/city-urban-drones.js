@@ -1,10 +1,56 @@
 import * as T from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// Independent animated delivery, police and traffic-monitor drones. Their
-// routes are tied to world travel, not wall time, so pause freezes the city.
-const pods = new T.IcosahedronGeometry(2.5, 1);
+// Animated delivery, police and traffic-monitor drones stay GPU-instanced.
+// Give each drone a recognisable aircraft silhouette without extra draw calls.
+function serviceDroneHull() {
+  const parts = [];
+  const add = (geometry, color, x, y, z, sx = 1, sy = 1, sz = 1, rz = 0) => {
+    const copy = geometry.clone();
+    // IcosahedronGeometry is non-indexed while wings/engines are indexed.
+    // BufferGeometryUtils requires a consistent representation across parts.
+    if (!copy.index)
+      copy.setIndex(Array.from({ length: copy.getAttribute('position').count }, (_, i) => i));
+    const transform = new T.Matrix4().compose(
+      new T.Vector3(x, y, z),
+      new T.Quaternion().setFromEuler(new T.Euler(0, 0, rz)),
+      new T.Vector3(sx, sy, sz),
+    );
+    copy.applyMatrix4(transform);
+    const c = new T.Color(color);
+    const rgb = [];
+    for (let i = 0; i < copy.getAttribute('position').count; i++) rgb.push(c.r, c.g, c.b);
+    copy.setAttribute('color', new T.Float32BufferAttribute(rgb, 3));
+    parts.push(copy);
+  };
+  const cube = new T.BoxGeometry(1, 1, 1);
+  const fuselage = new T.IcosahedronGeometry(1, 1);
+  const thruster = new T.CylinderGeometry(0.5, 0.7, 1.3, 10);
+  add(fuselage, '#9fbdce', 0, 0, 0, 2.3, 0.56, 3.1);
+  add(cube, '#203b54', 0, 0.42, -0.7, 1.64, 0.24, 2.0);
+  add(cube, '#6e8c9f', 0, -0.45, 0.7, 1.3, 0.6, 1.6);
+  for (const side of [-1, 1]) {
+    add(cube, '#a6c1d0', side * 2.5, 0, 0.36, 3.5, 0.2, 1.3, side * 0.12);
+    add(cube, '#244457', side * 3.7, -0.13, 0.75, 0.5, 0.48, 1.8);
+    add(thruster, '#334b60', side * 2.7, -0.45, 1.05, 1.04, 0.9, 1.04);
+    add(cube, '#6bd6db', side * 2.8, 0.14, -0.55, 0.13, 0.1, 1.3);
+    add(cube, '#c1d6df', side * 1.2, 0.66, -1.35, 0.25, 0.18, 0.92);
+  }
+  add(cube, '#364c61', 0, 0.58, 0.55, 0.55, 0.15, 1.75);
+  const merged = mergeGeometries(parts, false);
+  if (!merged) throw new Error('service drone hull merge failed');
+  for (const part of parts) part.dispose();
+  merged.computeBoundingSphere();
+  return merged;
+}
+const pods = serviceDroneHull();
 const lights = new T.OctahedronGeometry(1.1, 0);
-const hull = new T.MeshStandardMaterial({ color: '#acc6d4', metalness: 0.72, roughness: 0.3 });
+const hull = new T.MeshStandardMaterial({
+  color: '#ffffff',
+  metalness: 0.72,
+  roughness: 0.3,
+  vertexColors: true,
+});
 const glow = new T.MeshBasicMaterial({ color: '#5cf1f0', toneMapped: false });
 const cursor = new T.Object3D();
 const count = 12;
@@ -54,7 +100,9 @@ export function animateCityUrbanDrones(group, travel) {
     cursor.updateMatrix();
     body.setMatrixAt(i, cursor.matrix);
     cursor.position.y -= 1.8;
-    cursor.scale.setScalar(0.82);
+    // Alternate courier and emergency-service beacons; no new geometry/pass.
+    const pulse = 0.73 + 0.27 * Math.sin(travel * 0.046 + i * 1.7);
+    cursor.scale.setScalar((i % 4 === 0 ? 1.12 : 0.76) * (0.88 + pulse * 0.25));
     cursor.updateMatrix();
     beacon.setMatrixAt(i, cursor.matrix);
   }
