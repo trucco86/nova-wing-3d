@@ -1,8 +1,9 @@
 # Histórico
 
-## 1.27.44 — Candidata em preparação
+## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Corrigida disputa de especificidade entre CSS antigo (`position:relative` para BOOST/TIRO) e controles novos em meia-lua (`position:absolute`). Os botões permanecem em posições absolutas, com alvos clicáveis corretos e sem sobreposição.
+- Evidência: 405 unitários e 2 testes Playwright mobile, cobrindo BOOST com LOCK, posição computada absoluta, `elementFromPoint`, 320×568/390×844/844×390 e tela Options. Validação física no S21 e os shards completos ainda são pendências. PR #198 draft, sem promoção a produção.
 
 ## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
 
