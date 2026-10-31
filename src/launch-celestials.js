@@ -173,6 +173,43 @@ export function createLaunchCelestials(scene) {
     sun.add(sprite);
     glow.push(sprite);
   }
+  // Camera-facing anamorphic gleam and two optical ghosts create a visible
+  // sunset cue without importing flare textures or overlaying the flight HUD.
+  const streakMaterial = new T.MeshBasicMaterial({
+    color: '#fff3cd',
+    transparent: true,
+    opacity: 0,
+    toneMapped: false,
+    fog: false,
+    depthTest: false,
+    depthWrite: false,
+    blending: T.AdditiveBlending,
+    side: T.DoubleSide,
+  });
+  const streak = new T.Mesh(new T.PlaneGeometry(260, 3.2), streakMaterial);
+  streak.name = 'launch-sun-anamorphic-streak';
+  streak.userData.visualOnly = true;
+  sun.add(streak);
+  const ghostSprites = [];
+  for (const [index, x, y, size] of [[0, 85, -70, 76], [1, 170, -138, 43]]) {
+    const ghost = new T.Sprite(
+      new T.SpriteMaterial({
+        map: texture,
+        color: index === 0 ? '#acdfff' : '#ffe3ac',
+        opacity: 0,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        blending: T.AdditiveBlending,
+      }),
+    );
+    ghost.name = 'launch-sun-lens-ghost-' + index;
+    ghost.position.set(x, y, 2);
+    ghost.scale.set(size, size, 1);
+    ghost.userData.visualOnly = true;
+    sun.add(ghost);
+    ghostSprites.push(ghost);
+  }
   scene.add(sun);
 
   let high = false;
@@ -196,11 +233,20 @@ export function createLaunchCelestials(scene) {
     limbMaterial.uniforms.fade.value = earthFade;
     clouds.visible = earth.visible && high;
     limb.visible = earth.visible && high;
+    // Atmospheric motion is deliberately subtle during the 38 s transition.
+    // In particular, the cloud layer does not snap to a new position as the
+    // city yields to Earth.
+    clouds.rotation.y = 0.16 + progress * 0.085;
     moon.visible = moonFade > 0;
     moonMaterial.uniforms.fade.value = moonFade * 0.93;
     sun.visible = sunFade > 0;
     discMaterial.opacity = sunFade;
     for (const sprite of glow) sprite.material.opacity = sunFade * sprite.userData.opacityScale;
+    streakMaterial.opacity = sunFade * (high ? 0.42 : 0.23);
+    for (const [i, sprite] of ghostSprites.entries()) {
+      sprite.visible = high;
+      sprite.material.opacity = sunFade * (i === 0 ? 0.24 : 0.13);
+    }
   }
   update(0);
   return { earth, clouds, limb, moon, sun, update, setGraphicsQuality, reset: () => update(0) };
