@@ -10,6 +10,7 @@ import {
   updateCity32Living,
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
+import { createMarsPremium, updateMarsPremium } from './mars-premium.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import {
@@ -836,13 +837,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       tint: { value: new T.Color('#ffffff') },
       launchHaze: { value: 0 },
       cityGlow: { value: 0 },
+      marsGlow: { value: 0 },
       ambient: { value: new T.Color('#223b65') },
     },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;uniform float cityGlow;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);vec3 nightSky=c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze;float horizon=1.-smoothstep(-.22,.55,n.y);vec3 citySky=mix(vec3(.055,.15,.31),vec3(.15,.255,.35),horizon);citySky+=vec3(.13,.055,.16)*pow(cloud,2.)*band+vec3(.018,.055,.12)*bandHaze;gl_FragColor=vec4(mix(nightSky,citySky,cityGlow),1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;uniform float cityGlow;uniform float marsGlow;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);vec3 nightSky=c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze;float horizon=1.-smoothstep(-.22,.55,n.y);vec3 citySky=mix(vec3(.055,.15,.31),vec3(.15,.255,.35),horizon);citySky+=vec3(.13,.055,.16)*pow(cloud,2.)*band+vec3(.018,.055,.12)*bandHaze;vec3 marsSky=mix(vec3(.93,.57,.34),vec3(.52,.24,.20),smoothstep(-.18,.6,n.y));marsSky+=vec3(.12,.075,.038)*pow(cloud,2.)*band;gl_FragColor=vec4(mix(mix(nightSky,citySky,cityGlow),marsSky,marsGlow),1.);}`,
   });
   const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
   skyDome.name = 'launch-sky-dome';
@@ -1626,12 +1628,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       skyMat.uniforms.cityGlow.value = sceneryTheme === 'city' ? 1 : 0;
+      skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.launchGroundAlpha.value = 1;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
-      const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
-      ground.visible = land;
+      const land = ['city', 'ocean', 'ice', 'mars'].includes(sceneryTheme);
+      ground.visible = land && sceneryTheme !== 'mars';
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       cityHorizon.visible = sceneryTheme === 'city';
       for (const tile of [city, cityFar]) {
@@ -1646,7 +1649,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city33-premium-urban-life').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
-      rain.visible = land;
+      rain.visible = land && sceneryTheme !== 'mars';
+      starfield.visible = sceneryTheme !== 'mars';
       // Show the orbital globe only after the last city/port buildings are gone.
       // The first-sector Earth horizon is handled separately by setLaunchAscent.
       moon.visible = atmosphere.visible = ['fractured-moon', 'ice-world'].includes(signature.globe);
@@ -1660,13 +1664,17 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // black ground. A vivid twilight ambient is cheap and survives Medium
       // mode on mobile without any bloom or additional geometry.
       const illuminatedCity = sceneryTheme === 'city';
-      hemisphere.color.set(illuminatedCity ? '#e4f4ff' : '#9fcdec');
-      hemisphere.groundColor.set(illuminatedCity ? '#567d9c' : '#09293a');
-      hemisphere.intensity = illuminatedCity ? 2.6 : 1.6;
+      hemisphere.color.set(
+        sceneryTheme === 'mars' ? '#ffdfb5' : illuminatedCity ? '#e4f4ff' : '#9fcdec',
+      );
+      hemisphere.groundColor.set(
+        sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#567d9c' : '#09293a',
+      );
+      hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.6 : 1.6;
       rim.color.set(illuminatedCity ? '#67ffe4' : sector.accent);
       rim.intensity = illuminatedCity ? 3.5 : 3;
-      key.color.set(sector.theme === 'sun' ? '#ffe4b0' : '#e3eeff');
-      key.intensity = illuminatedCity ? 3.8 : 3.2;
+      key.color.set(['mars', 'sun'].includes(sector.theme) ? '#ffdcaa' : '#e3eeff');
+      key.intensity = sceneryTheme === 'mars' ? 3.7 : illuminatedCity ? 3.8 : 3.2;
       purple.color.set(
         illuminatedCity ? '#ff82dc' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff',
       );
@@ -1674,10 +1682,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.background.set(sector.sky);
       skyMat.uniforms.ambient.value.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
-      scene.fog.density = illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
+      scene.fog.density =
+        sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
+      if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
       if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {
@@ -1921,6 +1931,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             continue;
           }
           if (o.userData.fixedSky) continue;
+          if (o.userData.marsPremium) {
+            updateMarsPremium(o, travel);
+            continue;
+          }
           if (['station', 'fleet', 'asteroids', 'ice'].includes(sceneryTheme)) {
             o.position.z += speed * dt;
             if (o.position.z > 100) o.position.z -= 1500;
@@ -1956,6 +1970,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       skyMat.uniforms.cityGlow.value = sceneryTheme === 'city' ? 1 : 0;
+      skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
+      updateMarsPremium(sectorScenery.getObjectByName('mars-premium-desert'), 0);
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };
@@ -1994,7 +2010,13 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
     ? T.HalfFloatType
     : T.UnsignedByteType;
-  const full = new T.WebGLRenderTarget(1, 1, { type: targetType, depthBuffer: true, samples: 2 });
+  // 4x MSAA on desktop mitigates shimmering roof edges and neon lines.
+  // Touch GPUs keep cheaper native canvas antialiasing plus a higher DPR.
+  const full = new T.WebGLRenderTarget(1, 1, {
+    type: targetType,
+    depthBuffer: true,
+    samples: coarsePointer ? 2 : 4,
+  });
   const a = new T.WebGLRenderTarget(1, 1, { type: targetType, depthBuffer: false }),
     b = a.clone();
   const passScene = new T.Scene(),

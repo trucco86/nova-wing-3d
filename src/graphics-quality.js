@@ -7,8 +7,10 @@ export function resolveGraphicsQuality(mode, { coarsePointer = false, deviceMemo
 export function graphicsPixelRatioLimit(quality, { coarsePointer = false } = {}) {
   // A high-DPI mobile panel can cost 2–3x the pixels of a laptop even at an
   // identical CSS size. Start conservatively; runtime adaptation may go lower.
-  if (quality === 'high') return coarsePointer ? 1.12 : 1.7;
-  return coarsePointer ? 0.98 : 1.2;
+  // Improved native MSAA coverage for illuminated thin geometry. The
+  // adaptive controller still lowers render scale under sustained pressure.
+  if (quality === 'high') return coarsePointer ? 1.35 : 1.7;
+  return coarsePointer ? 1.1 : 1.25;
 }
 
 /**

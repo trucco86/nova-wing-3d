@@ -50,7 +50,8 @@ test('electric city palette fades on orbital launch and never leaks to other sec
   assert.equal(sky.uniforms.cityGlow.value, 0);
   world.setSector(SECTORS[1]);
   assert.equal(sky.uniforms.cityGlow.value, 0);
-  assert.equal(scene.fog.density, 0.0014, 'ocean keeps authored fog');
+  assert.equal(scene.fog.density, 0.00095, 'Mars keeps its authored atmospheric haze');
+  assert.equal(sky.uniforms.marsGlow.value, 1, 'Mars receives its own dust-hazed sky');
   assert.equal(scene.getObjectByName('launch-ground').material.uniforms.urban.value, 0);
   world.setSector(SECTORS[0]);
   world.reset();

@@ -3,7 +3,12 @@
 export const STAGE_VISUALS = Object.freeze(
   [
     { location: 'earth-ascent', globe: 'earth', motif: 'city', encounter: 'intercept' },
-    { location: 'submerged-port', globe: 'none', motif: 'submerged-spires', encounter: 'escort' },
+    {
+      location: 'mars-dune-sea',
+      globe: 'none',
+      motif: 'phobos-deimos-curiosity',
+      encounter: 'dune-colossus',
+    },
     { location: 'asteroid-belt', globe: 'fractured-moon', motif: 'debris', encounter: 'drill' },
     { location: 'orbital-station', globe: 'none', motif: 'airlocks', encounter: 'reactor' },
     { location: 'plasma-storm', globe: 'sun', motif: 'plasma-streams', encounter: 'solar-dive' },

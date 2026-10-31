@@ -32,7 +32,7 @@ const matrix = (mesh, index = 0) => {
 test('mobile High protects FPS with measured dynamic render scale, never changing settings', () => {
   const adaptive = createAdaptiveGraphics({ mode: 'high', coarsePointer: true, deviceMemory: 8 });
   assert.equal(adaptive.current().quality, 'high');
-  assert.equal(graphicsPixelRatioLimit('high', { coarsePointer: true }), 1.12);
+  assert.equal(graphicsPixelRatioLimit('high', { coarsePointer: true }), 1.35);
   const decisions = feed(adaptive, { delta: 43, stop: 29000 });
   assert.ok(decisions.length > 0, 'sustained slow rendering triggers adaptation');
   assert.ok(decisions.some((state) => state.resolutionScale < 1));

@@ -59,7 +59,8 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   world.setSector(SECTORS[1]);
   assert.equal(city.position.y, 0, 'new sector resets city displacement');
   assert.equal(ground.position.y, -7);
-  assert.equal(ground.visible, true, 'new ocean sector restores its ground');
+  assert.equal(ground.visible, false, 'Mars replaces generic orbital ground with its desert mesh');
+  assert.ok(scene.getObjectByName('mars-premium-desert-floor'), 'Mars desert ground is visible');
   assert.equal(ground.material.uniforms.launchGroundAlpha.value, 1);
   assert.equal(earth.visible, false, 'the launch horizon is exclusive to sector 1');
   assert.equal(earth.material.uniforms.fade.value, 0);
