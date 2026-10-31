@@ -75,7 +75,7 @@ test('space obstacles arrive only after the BOOST-powered urban exit', async ({ 
   // while the pilot is still crossing the atmosphere, even at late ascent.
   let atmosphereSeen = false;
   let reachedOrbit = false;
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 52; i++) {
     const state = await page.evaluate(() => {
       window.fixture.game.collect('shield');
       window.fixture.advance(1);
