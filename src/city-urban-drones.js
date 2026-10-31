@@ -19,8 +19,7 @@ function serviceDroneHull() {
     copy.applyMatrix4(transform);
     const c = new T.Color(color);
     const rgb = [];
-    for (let i = 0; i < copy.getAttribute('position').count; i++)
-      rgb.push(c.r, c.g, c.b);
+    for (let i = 0; i < copy.getAttribute('position').count; i++) rgb.push(c.r, c.g, c.b);
     copy.setAttribute('color', new T.Float32BufferAttribute(rgb, 3));
     parts.push(copy);
   };
@@ -47,7 +46,10 @@ function serviceDroneHull() {
 const pods = serviceDroneHull();
 const lights = new T.OctahedronGeometry(1.1, 0);
 const hull = new T.MeshStandardMaterial({
-  color: '#ffffff', metalness: 0.72, roughness: 0.3, vertexColors: true,
+  color: '#ffffff',
+  metalness: 0.72,
+  roughness: 0.3,
+  vertexColors: true,
 });
 const glow = new T.MeshBasicMaterial({ color: '#5cf1f0', toneMapped: false });
 const cursor = new T.Object3D();

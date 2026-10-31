@@ -2301,13 +2301,24 @@ export function createGame({
       '% ' +
       (budget.adaptive ? '(adaptativo)' : '') +
       (Number.isFinite(lastFrameCost.drawCalls)
-        ? '\n' + (settings.language === 'en' ? 'Scene draw calls' :
-          settings.language === 'es' ? 'Llamadas de escena' : 'Chamadas de cena') +
-          ': ' + lastFrameCost.drawCalls +
-          ' · ' + (settings.language === 'en' ? 'triangles' :
-            settings.language === 'es' ? 'triángulos' : 'triângulos') +
-          ': ' + (lastFrameCost.triangles ?? 0) +
-          ' · pós-passes: ' + lastFrameCost.postPasses
+        ? '\n' +
+          (settings.language === 'en'
+            ? 'Scene draw calls'
+            : settings.language === 'es'
+              ? 'Llamadas de escena'
+              : 'Chamadas de cena') +
+          ': ' +
+          lastFrameCost.drawCalls +
+          ' · ' +
+          (settings.language === 'en'
+            ? 'triangles'
+            : settings.language === 'es'
+              ? 'triángulos'
+              : 'triângulos') +
+          ': ' +
+          (lastFrameCost.triangles ?? 0) +
+          ' · pós-passes: ' +
+          lastFrameCost.postPasses
         : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;

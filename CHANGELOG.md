@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.40 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.39 — City 2.8 / FPS adaptativo e trânsito urbano realista (QA)
 
 - Proteção de desempenho medida durante o gameplay, com resolução renderizada ajustável, downgrade de Alto para Médio se necessário e limites iniciais mais econômicos em aparelhos touch como Galaxy S21; as escolhas salvas permanecem intactas.

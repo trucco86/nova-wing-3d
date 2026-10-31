@@ -13,7 +13,9 @@ function rendererDouble(scene) {
   const renderer = {
     extensions: { has: () => false },
     info: { render: { calls: 0, triangles: 0 } },
-    setRenderTarget(value) { record.push({ operation: 'target', target: value }); },
+    setRenderTarget(value) {
+      record.push({ operation: 'target', target: value });
+    },
     getPixelRatio: () => 1,
     render(targetScene) {
       renderer.info.render.calls = targetScene === scene ? 109 : 1;
@@ -31,7 +33,10 @@ test('touch High bypasses costly full-screen bloom but preserves real 3D scene d
   post.setGraphicsQuality('high');
   post.resize(390, 844);
   const cost = post.render();
-  assert.deepEqual(record.filter((x) => x.operation === 'render').map((x) => x.scene), ['game']);
+  assert.deepEqual(
+    record.filter((x) => x.operation === 'render').map((x) => x.scene),
+    ['game'],
+  );
   assert.deepEqual(cost, { drawCalls: 109, triangles: 42700, postPasses: 0 });
   assert.deepEqual(post.getFrameCost(), cost);
   assert.ok(record.some((x) => x.operation === 'target' && x.target === null));
@@ -44,14 +49,19 @@ test('desktop High preserves cinematic bloom; desktop Medium uses direct path', 
   post.setGraphicsQuality('high');
   post.resize(1280, 720);
   const expensive = post.render();
-  assert.deepEqual(record.filter((x) => x.operation === 'render').map((x) => x.scene),
-    ['game', 'post', 'post', 'post']);
+  assert.deepEqual(
+    record.filter((x) => x.operation === 'render').map((x) => x.scene),
+    ['game', 'post', 'post', 'post'],
+  );
   assert.deepEqual(expensive, { drawCalls: 109, triangles: 42700, postPasses: 3 });
   record.length = 0;
   post.setGraphicsQuality('medium');
   post.resize(1280, 720);
   const lean = post.render();
-  assert.deepEqual(record.filter((x) => x.operation === 'render').map((x) => x.scene), ['game']);
+  assert.deepEqual(
+    record.filter((x) => x.operation === 'render').map((x) => x.scene),
+    ['game'],
+  );
   assert.equal(lean.postPasses, 0);
 });
 
@@ -62,7 +72,10 @@ test('new city drone is a detailed aircraft mesh but still two instanced batches
   const beacon = group.getObjectByName('city-moving-drone-beacons');
   assert.ok(body.isInstancedMesh && beacon.isInstancedMesh);
   assert.equal(body.material.vertexColors, true);
-  assert.ok(body.geometry.attributes.color.count > 180, 'wing, motors, cockpit and cargo make a 3D drone');
+  assert.ok(
+    body.geometry.attributes.color.count > 180,
+    'wing, motors, cockpit and cargo make a 3D drone',
+  );
   assert.ok(body.geometry.index?.count > 0, 'detail geometry has real triangulation');
   assert.ok(body.geometry.getAttribute('normal'));
   for (const value of body.geometry.attributes.position.array)
