@@ -111,7 +111,7 @@ export function createMarsApproach() {
   bolts.instanceMatrix.needsUpdate = true;
   streaks.add(bolts);
   root.add(streaks);
-  updateMarsApproach(root, 0);
+  updateMarsApproach(root, marsDescentAt(0));
   return root;
 }
 export function updateMarsApproach(root, state) {
