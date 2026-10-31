@@ -77,7 +77,7 @@ import {
 } from './encounters.js';
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
-import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
   difficultyProfile,
@@ -621,6 +621,13 @@ export function createGame({
   let cosmetics = readCosmetics(null);
   let petCare = readPetCare(null);
   let settings = loadSettings(storage);
+  const adaptiveGraphics = createAdaptiveGraphics({
+    mode: settings.graphics,
+    coarsePointer: coarsePointer.matches,
+    deviceMemory: window.navigator?.deviceMemory ?? null,
+    hardwareConcurrency: window.navigator?.hardwareConcurrency ?? null,
+  });
+  let activeGraphicsSetting = settings.graphics;
   const localization = createI18n(document, window);
   const saved = readSave(storage);
   if (saved) {
@@ -2271,27 +2278,41 @@ export function createGame({
   }
   function renderFrameAudit() {
     const result = frameAudit.report();
+    const budget = adaptiveGraphics.current();
+    const detail = settings.language === 'en'
+      ? 'Render: '
+      : settings.language === 'es' ? 'Renderizado: ' : 'Renderização: ';
     $('auditReadout').textContent = formatFrameAudit(result, {
       language: settings.language,
       width: window.innerWidth,
       height: window.innerHeight,
       dpr: window.devicePixelRatio ?? 1,
-    });
+    }) + '\\n' + detail + budget.quality.toUpperCase() +
+      ' · ' + Math.round(budget.resolutionScale * 100) + '% ' +
+      (budget.adaptive ? '(adaptativo)' : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
   }
-  function applySettings() {
-    const visualQuality = resolveGraphicsQuality(settings.graphics, {
+  function applyRenderBudget(budget) {
+    pixelLimit = graphicsPixelRatioLimit(budget.quality, {
       coarsePointer: coarsePointer.matches,
-      deviceMemory: window.navigator?.deviceMemory ?? null,
-    });
-    pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
+    }) * budget.resolutionScale;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
-    world.setGraphicsQuality(visualQuality);
-    post.setGraphicsQuality(visualQuality);
+    world.setGraphicsQuality(budget.quality);
+    post.setGraphicsQuality(budget.quality);
     post.resize(window.innerWidth, window.innerHeight);
-    if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
+    if (document.body.dataset) {
+      document.body.dataset.graphicsQuality = budget.quality;
+      document.body.dataset.graphicsAdaptive = String(budget.adaptive);
+    }
+  }
+  function applySettings() {
+    if (settings.graphics !== activeGraphicsSetting) {
+      activeGraphicsSetting = settings.graphics;
+      adaptiveGraphics.reset(settings.graphics);
+    }
+    applyRenderBudget(adaptiveGraphics.current());
     const label = (id, key) => {
       $(id).textContent = uiText(settings.language, key);
     };
@@ -4296,7 +4317,10 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
-    frameAudit.sample(time, appActive && !document.hidden && state === 'playing');
+    const renderingFlight = appActive && !document.hidden && state === 'playing';
+    frameAudit.sample(time, renderingFlight);
+    const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
+    if (nextBudget) applyRenderBudget(nextBudget);
     const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
     last = time;
     tick(dt, time);
