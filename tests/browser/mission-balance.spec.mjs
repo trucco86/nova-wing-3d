@@ -89,8 +89,12 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
     }
     const stalled = window.fixture.game.snapshot();
     throw new Error(
-      'Subboss approach stalled at ' + stalled.seconds.toFixed(1) +
-        's; state=' + stalled.state + '; orbital=' + stalled.orbitalLaunch.phase,
+      'Subboss approach stalled at ' +
+        stalled.seconds.toFixed(1) +
+        's; state=' +
+        stalled.state +
+        '; orbital=' +
+        stalled.orbitalLaunch.phase,
     );
   }, arrival + 20);
   expect(engaged.encounterKinds).toContain('subboss');
@@ -151,10 +155,16 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
     }
     const stalled = window.fixture.game.snapshot();
     throw new Error(
-      'Orbit completion stalled at ' + stalled.seconds.toFixed(1) +
-        's; state=' + stalled.state + '; orbital=' +
-        stalled.orbitalLaunch.phase + '; launchComplete=' +
-        stalled.orbitalLaunch.complete + '; boss=' + stalled.boss,
+      'Orbit completion stalled at ' +
+        stalled.seconds.toFixed(1) +
+        's; state=' +
+        stalled.state +
+        '; orbital=' +
+        stalled.orbitalLaunch.phase +
+        '; launchComplete=' +
+        stalled.orbitalLaunch.complete +
+        '; boss=' +
+        stalled.boss,
     );
   }, SECTORS[0].duration);
   expect(completed.orbitalLaunch.complete).toBe(true);

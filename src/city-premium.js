@@ -194,7 +194,8 @@ export function createMaglevTrain(side) {
   }
   for (const [key, batch] of batches) {
     const mesh = new T.InstancedMesh(unit, batch.material, batch.matrices.length);
-    mesh.name = key === 'chassis' ? 'city-maglev-levitation-chassis' : 'city-maglev-instanced-livery';
+    mesh.name =
+      key === 'chassis' ? 'city-maglev-levitation-chassis' : 'city-maglev-instanced-livery';
     mesh.userData.visualOnly = true;
     for (let i = 0; i < batch.matrices.length; i++) mesh.setMatrixAt(i, batch.matrices[i]);
     mesh.instanceMatrix.needsUpdate = true;
