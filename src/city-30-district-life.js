@@ -149,8 +149,6 @@ export function createCity30DistrictLife(buildings = []) {
   const thrusters = pack(taxis, 'city-matrix-taxi-thrusters', amber, engines,
     Math.min(5, engines.length));
   taxis.userData.origin = origin;
-  taxis.userData.cab = cab;
-  taxis.userData.thrusters = thrusters;
   taxis.userData.phase = 0;
   root.add(taxis);
   root.userData.anchors = buildings.length;
@@ -178,9 +176,9 @@ export function animateCity30(group, travel) {
     const progress = Math.sin(travel * (0.006 + i % 3 * 0.001) + phase + i * 1.7);
     const offset = 5 * progress;
     const lift = 1.7 * Math.sin(travel * 0.009 + i);
-    taxis.userData.cab.setMatrixAt(i, matrix(x + offset, y + lift, z,
+    taxis.getObjectByName('city-matrix-taxi-cabs').setMatrixAt(i, matrix(x + offset, y + lift, z,
       5.2, 2, 8.5, 0.2 * progress));
-    taxis.userData.thrusters.setMatrixAt(i, matrix(x + offset, y - 1.35 + lift,
+    taxis.getObjectByName('city-matrix-taxi-thrusters').setMatrixAt(i, matrix(x + offset, y - 1.35 + lift,
       z + 2.2, 4, 0.45, 1.4, 0.2 * progress));
   }
   for (const mesh of taxis.children) mesh.instanceMatrix.needsUpdate = true;
