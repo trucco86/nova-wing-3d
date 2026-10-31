@@ -5,10 +5,10 @@ import * as T from 'three';
 const darkMetal = (color, roughness = 0.37) =>
   new T.MeshStandardMaterial({ color, metalness: 0.79, roughness });
 const illuminated = (color) =>
-  new T.MeshBasicMaterial({ color: new T.Color(color).multiplyScalar(1.3) });
+  new T.MeshBasicMaterial({ color, toneMapped: false });
 const unit = new T.BoxGeometry(1, 1, 1);
-const railBody = darkMetal('#426474', 0.32);
-const railTrim = darkMetal('#7696a1', 0.26);
+const railBody = darkMetal('#537e94', 0.28);
+const railTrim = darkMetal('#8cbace', 0.19);
 const cyan = illuminated('#4fe0ed');
 const amber = illuminated('#ffbf78');
 
@@ -39,9 +39,9 @@ function billboardTexture(brand, caption, color) {
     return fallback;
   }
   const backdrop = ctx.createLinearGradient(0, 0, 512, 768);
-  backdrop.addColorStop(0, '#071323');
-  backdrop.addColorStop(0.6, '#15354c');
-  backdrop.addColorStop(1, '#030b1a');
+  backdrop.addColorStop(0, '#102f51');
+  backdrop.addColorStop(0.58, '#20516c');
+  backdrop.addColorStop(1, '#081b35');
   ctx.fillStyle = backdrop;
   ctx.fillRect(0, 0, 512, 768);
   ctx.strokeStyle = color;
@@ -295,12 +295,12 @@ export function createCityPremiumInfrastructure() {
   // Screen faces the player along +Z. Large advertisements are legible without
   // inventing real-world brands, and remain on both visual quality presets.
   const ads = [
-    ['AERORAIL', 'CONECTA CIDADES', '#69e8ff'],
-    ['NOVA GRID', 'ENERGIA DO FUTURO', '#70d9ff'],
-    ['SKYPORT', 'NOVOS HORIZONTES', '#ffc88a'],
-    ['ORBITAL', 'ALÉM DA TERRA', '#b6a0ff'],
-    ['NOVA WING', 'CINCO PILOTOS', '#78f7e7'],
-    ['HYPERLINK', 'A PRÓXIMA ERA', '#ff9dc5'],
+    ['AERORAIL', 'CONECTA CIDADES', '#58e9ff'],
+    ['NOVA GRID', 'ENERGIA DO FUTURO', '#61ffca'],
+    ['SKYPORT', 'NOVOS HORIZONTES', '#ffc46d'],
+    ['ORBITAL', 'ALÉM DA TERRA', '#b58fff'],
+    ['NOVA WING', 'CINCO PILOTOS', '#83ffe4'],
+    ['HYPERLINK', 'A PRÓXIMA ERA', '#ff75c9'],
   ];
   const signs = new T.Group();
   signs.name = 'city-commercial-billboards';
@@ -314,7 +314,7 @@ export function createCityPremiumInfrastructure() {
     const map = billboardTexture(...ads[i]);
     const screen = new T.Mesh(
       new T.PlaneGeometry(27, 43),
-      new T.MeshBasicMaterial({ map, side: T.DoubleSide, toneMapped: false }),
+      new T.MeshBasicMaterial({ map, side: T.DoubleSide, toneMapped: false, color: '#ffffff' }),
     );
     screen.name = 'advertising-panel';
     sign.add(screen);
@@ -348,7 +348,7 @@ export function animateCityBillboards(cityTile, travel) {
     // Retain the brand color, but avoid clipping the emissive sign against the
     // dark architecture. No canvas repaint or texture upload per frame.
     beacon.material.color.multiply(
-      new T.Color(['#69e8ff', '#70d9ff', '#ffc88a', '#b6a0ff', '#78f7e7', '#ff9dc5'][i]),
+      new T.Color(['#58e9ff', '#61ffca', '#ffc46d', '#b58fff', '#83ffe4', '#ff75c9'][i]),
     );
   }
 }
