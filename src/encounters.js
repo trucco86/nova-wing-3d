@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { addGroundEnemyDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
@@ -163,6 +164,7 @@ export function createGroundEnemy(kind, variant = -1) {
       }
     }
     g.add(turret);
+    addGroundEnemyDetail(g, { armor, dark, warning: red, kind });
     templates.set(key, g);
   }
   const model = templates.get(key).clone(true);
