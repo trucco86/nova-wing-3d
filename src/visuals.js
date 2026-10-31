@@ -811,7 +811,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const rnd = (a, b) => a + random() * (b - a);
   scene.background = new T.Color('#142a46');
   scene.fog = new T.FogExp2('#071c23', 0.0014);
-  scene.add(new T.HemisphereLight('#9fcdec', '#09293a', 1.6));
+  // City 3.1 lighting: stronger skylight/ground bounce only in the opening
+  // metropolis. Metal must read as illuminated surfaces, not dark silhouettes.
+  const hemisphere = new T.HemisphereLight('#9fcdec', '#09293a', 1.6);
+  scene.add(hemisphere);
   const key = new T.DirectionalLight('#b8dcff', 3.2);
   key.position.set(-80, 140, 80);
   scene.add(key);
@@ -825,13 +828,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     uniforms: {
       tint: { value: new T.Color('#ffffff') },
       launchHaze: { value: 0 },
+      cityGlow: { value: 0 },
       ambient: { value: new T.Color('#223b65') },
     },
     depthWrite: false,
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);gl_FragColor=vec4(c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze,1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;uniform float cityGlow;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);vec3 nightSky=c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze;float horizon=1.-smoothstep(-.22,.55,n.y);vec3 citySky=mix(vec3(.055,.15,.31),vec3(.15,.255,.35),horizon);citySky+=vec3(.13,.055,.16)*pow(cloud,2.)*band+vec3(.018,.055,.12)*bandHaze;gl_FragColor=vec4(mix(nightSky,citySky,cityGlow),1.);}`,
   });
   const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
   skyDome.name = 'launch-sky-dome';
@@ -906,7 +910,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     depthWrite: false,
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.008,.024,.034)*plating+vec3(.012,.078,.092)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),launchGroundAlpha);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -923,8 +927,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Medium, without extra geometry or mobile postprocessing passes.
   const cityNeon = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
   const unit = new T.BoxGeometry(1, 1, 1),
-    bodyMat = metal('#32627a', 0.71, 0.33),
-    roofMat = metal('#638aa2', 0.74, 0.29);
+    bodyMat = metal('#4f84a4', 0.67, 0.3),
+    roofMat = metal('#a1b8d0', 0.69, 0.27);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
@@ -1226,15 +1230,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // ahead of the player and never gets close enough to behave like an obstacle.
   const cityHorizon = new T.Group();
   cityHorizon.name = 'city-distant-horizon';
-  const horizonCore = new T.InstancedMesh(unit, metal('#263b50', 0.46, 0.86), 110);
+  const horizonCore = new T.InstancedMesh(unit, metal('#426d8b', 0.5, 0.59), 110);
   horizonCore.name = 'city-horizon-tower-mass';
-  const horizonCrown = new T.InstancedMesh(unit, metal('#426779', 0.62, 0.5), 110);
+  const horizonCrown = new T.InstancedMesh(unit, metal('#7b97ad', 0.67, 0.35), 110);
   horizonCrown.name = 'city-horizon-rooflines';
   const horizonPremium = new T.Group();
   horizonPremium.name = 'city-horizon-high-details';
   const horizonLit = new T.InstancedMesh(unit, cityNeon('#7ddcff'), 270);
   horizonLit.name = 'city-horizon-window-bands';
-  const horizonFine = new T.InstancedMesh(unit, metal('#354d65', 0.65, 0.55), 90);
+  const horizonFine = new T.InstancedMesh(unit, metal('#567f9d', 0.65, 0.45), 90);
   horizonFine.name = 'city-horizon-secondary-towers';
   let horizonCount = 0;
   let horizonWindows = 0;
@@ -1507,7 +1511,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moon.visible = atmosphere.visible = false;
       // Night begins only after the last towers have retreated. A dedicated
       // sky-only interval builds stars and thin haze before Earth appears.
-      scene.fog.density = T.MathUtils.lerp(0.0014, 0.00021, reveal.night);
+      scene.fog.density = T.MathUtils.lerp(0.00055, 0.00021, reveal.night);
+      skyMat.uniforms.cityGlow.value = 1 - T.MathUtils.smoothstep(progress, 0.22, 0.71);
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, reveal.night);
       starfield.material.opacity = 0.14 + 0.61 * reveal.stars;
       skyMat.uniforms.launchHaze.value = 1.55 * reveal.haze;
@@ -1569,6 +1574,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = -7;
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
+      skyMat.uniforms.cityGlow.value = sceneryTheme === 'city' ? 1 : 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.launchGroundAlpha.value = 1;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
@@ -1597,13 +1603,23 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         atmosphere.position.copy(moon.position);
         atmosphere.scale.copy(moon.scale);
       }
-      rim.color.set(sector.accent);
+      // The previous city rendered a near-black sky, navy fog and almost
+      // black ground. A vivid twilight ambient is cheap and survives Medium
+      // mode on mobile without any bloom or additional geometry.
+      const illuminatedCity = sceneryTheme === 'city';
+      hemisphere.color.set(illuminatedCity ? '#e4f4ff' : '#9fcdec');
+      hemisphere.groundColor.set(illuminatedCity ? '#567d9c' : '#09293a');
+      hemisphere.intensity = illuminatedCity ? 2.6 : 1.6;
+      rim.color.set(illuminatedCity ? '#67ffe4' : sector.accent);
+      rim.intensity = illuminatedCity ? 3.5 : 3;
       key.color.set(sector.theme === 'sun' ? '#ffe4b0' : '#e3eeff');
-      purple.color.set(sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
-      scene.background.set(sector.sky);
-      skyMat.uniforms.ambient.value.set(sector.sky);
-      scene.fog.color.set(sector.sky);
-      scene.fog.density = land ? 0.0014 : 0.00045;
+      key.intensity = illuminatedCity ? 3.8 : 3.2;
+      purple.color.set(illuminatedCity ? '#ff82dc' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
+      purple.intensity = illuminatedCity ? 1.8 : 0.75;
+      scene.background.set(illuminatedCity ? '#507d9e' : sector.sky);
+      skyMat.uniforms.ambient.value.set(illuminatedCity ? '#507d9e' : sector.sky);
+      scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
+      scene.fog.density = illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
@@ -1873,6 +1889,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       terrainMat.uniforms.launchGroundAlpha.value = 1;
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
+      skyMat.uniforms.cityGlow.value = sceneryTheme === 'city' ? 1 : 0;
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };
