@@ -7,18 +7,52 @@ const cube = new T.BoxGeometry(1, 1, 1);
 // Local +Z is the rear; the leading -Z end narrows down toward the road.
 function aerodynamicWedge(frontHeight = 0.15, backHeight = 0.45) {
   const v = [
-    [-0.34, -0.44, -0.5], [0.34, -0.44, -0.5],
-    [-0.34, frontHeight, -0.5], [0.34, frontHeight, -0.5],
-    [-0.5, -0.44, 0.5], [0.5, -0.44, 0.5],
-    [-0.5, backHeight, 0.5], [0.5, backHeight, 0.5],
+    [-0.34, -0.44, -0.5],
+    [0.34, -0.44, -0.5],
+    [-0.34, frontHeight, -0.5],
+    [0.34, frontHeight, -0.5],
+    [-0.5, -0.44, 0.5],
+    [0.5, -0.44, 0.5],
+    [-0.5, backHeight, 0.5],
+    [0.5, backHeight, 0.5],
   ].flat();
   const indices = [
-    0, 1, 3, 0, 3, 2, // nose
-    4, 6, 7, 4, 7, 5, // stern
-    2, 3, 7, 2, 7, 6, // beveled top
-    0, 4, 5, 0, 5, 1, // underside
-    0, 2, 6, 0, 6, 4, // port
-    1, 5, 7, 1, 7, 3, // starboard
+    0,
+    1,
+    3,
+    0,
+    3,
+    2, // nose
+    4,
+    6,
+    7,
+    4,
+    7,
+    5, // stern
+    2,
+    3,
+    7,
+    2,
+    7,
+    6, // beveled top
+    0,
+    4,
+    5,
+    0,
+    5,
+    1, // underside
+    0,
+    2,
+    6,
+    0,
+    6,
+    4, // port
+    1,
+    5,
+    7,
+    1,
+    7,
+    3, // starboard
   ];
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.Float32BufferAttribute(v, 3));
@@ -26,11 +60,16 @@ function aerodynamicWedge(frontHeight = 0.15, backHeight = 0.45) {
   geometry.computeVertexNormals();
   return geometry;
 }
-const aerodynamicHull = aerodynamicWedge(0.10, 0.46);
+const aerodynamicHull = aerodynamicWedge(0.1, 0.46);
 const panoramicGlass = aerodynamicWedge(0.08, 0.45);
 const materials = {
   hull: new T.MeshStandardMaterial({ color: '#77a9b9', metalness: 0.72, roughness: 0.27 }),
-  prow: new T.MeshPhysicalMaterial({ color: '#adc6d2', metalness: 0.8, roughness: 0.23, clearcoat: 0.65 }),
+  prow: new T.MeshPhysicalMaterial({
+    color: '#adc6d2',
+    metalness: 0.8,
+    roughness: 0.23,
+    clearcoat: 0.65,
+  }),
   taxi: new T.MeshStandardMaterial({ color: '#b9c2d1', metalness: 0.75, roughness: 0.26 }),
   escape: new T.MeshStandardMaterial({ color: '#6d86a4', metalness: 0.8, roughness: 0.28 }),
   glazing: new T.MeshStandardMaterial({ color: '#214c65', metalness: 0.43, roughness: 0.1 }),
@@ -136,7 +175,12 @@ export function createCityTraffic() {
     group.userData.mediumCount = p.medium;
     group.userData.totalCount = p.count;
     for (const [materialName, ...parameters] of p.parts) {
-      const geometry = materialName === 'prow' ? aerodynamicHull : materialName === 'glazing' ? panoramicGlass : cube;
+      const geometry =
+        materialName === 'prow'
+          ? aerodynamicHull
+          : materialName === 'glazing'
+            ? panoramicGlass
+            : cube;
       const mesh = new T.InstancedMesh(geometry, materials[materialName], p.count);
       mesh.name = 'city-traffic-' + p.role + '-' + materialName;
       mesh.frustumCulled = false; // Vehicles move independently within each tile.

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.37 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
 
 - Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.

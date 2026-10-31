@@ -39,7 +39,9 @@ test('NOVA-7 retains its aircraft fuselage and painted surfaces with actual rais
   noDecorativeColliders(kit);
   const hostile = fighter(true, 1);
   assert.ok(hostile.getObjectByName('enemy-premium-airframe'));
-  assert.ok(hostile.children.some((child) => child.userData.sharedWingProfile !== undefined) === false);
+  assert.ok(
+    hostile.children.some((child) => child.userData.sharedWingProfile !== undefined) === false,
+  );
 });
 
 test('transforming mecha keeps targeting pivots and has layered chest, actuator and wrist details', () => {
@@ -78,7 +80,9 @@ test('ground enemies retain turret articulation and existing collision solids', 
   for (const kind of ['tank', 'walker']) {
     for (const variant of [-1, 0, 1, 2]) {
       const g = createGroundEnemy(kind, variant);
-      const detail = g.getObjectByName(kind === 'tank' ? 'tank-premium-armor' : 'walker-premium-armor');
+      const detail = g.getObjectByName(
+        kind === 'tank' ? 'tank-premium-armor' : 'walker-premium-armor',
+      );
       assert.ok(detail);
       assert.ok(g.userData.turret?.isGroup);
       assert.equal(visualPieces(detail, 'ground-enemy-service-grille').length, 6);
