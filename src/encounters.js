@@ -73,8 +73,12 @@ export function createGroundEnemy(kind, variant = -1) {
         const ray = new T.Mesh(
           new T.CylinderGeometry(0.12, 0.26, 1, 8),
           new T.MeshBasicMaterial({
-            color: '#ff4055', transparent: true, opacity: 0.76,
-            depthWrite: false, blending: T.AdditiveBlending, toneMapped: false,
+            color: '#ff4055',
+            transparent: true,
+            opacity: 0.76,
+            depthWrite: false,
+            blending: T.AdditiveBlending,
+            toneMapped: false,
           }),
         );
         ray.name = side < 0 ? 'enemy-robot-eye-ray-left' : 'enemy-robot-eye-ray-right';
@@ -204,9 +208,11 @@ export function fireGroundRobotEyes(model, age) {
 export function robotEyeMuzzles(model) {
   if (model.userData.kind !== 'walker') return [];
   model.updateMatrixWorld(true);
-  return ['left', 'right'].map((side) =>
-    model.getObjectByName('enemy-robot-eye-' + side)?.getWorldPosition(new T.Vector3()),
-  ).filter(Boolean);
+  return ['left', 'right']
+    .map((side) =>
+      model.getObjectByName('enemy-robot-eye-' + side)?.getWorldPosition(new T.Vector3()),
+    )
+    .filter(Boolean);
 }
 
 export function animateGroundEnemy(model, time, target, age = time, charging = false) {

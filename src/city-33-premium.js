@@ -114,17 +114,27 @@ function architecturalDetail(root, buildings) {
       for (let col = 0; col < columns; col++) {
         if ((i * 13 + row * 7 + col * 11) % 23 === 0) continue;
         const px = b.x + ((col + 0.5) / columns - 0.5) * b.w * 0.81;
-        const width = b.w * 0.64 / columns;
-        const height = Math.max(1.55, b.h / (rows + 1) * 0.38);
+        const width = (b.w * 0.64) / columns;
+        const height = Math.max(1.55, (b.h / (rows + 1)) * 0.38);
         windowFrames.push(part(px, py, face + 1.03, width + 0.3, height + 0.35, 0.2));
-        glassPanes.push(part(px, py, face + 1.18, width - 0.12, height - 0.12, 0.09,
-          ['#76939d', '#b1c0be', '#547683', '#99abb0'][(i + row + col) % 4]));
+        glassPanes.push(
+          part(
+            px,
+            py,
+            face + 1.18,
+            width - 0.12,
+            height - 0.12,
+            0.09,
+            ['#76939d', '#b1c0be', '#547683', '#99abb0'][(i + row + col) % 4],
+          ),
+        );
         if ((i + row * 9 + col * 5) % 11 === 0)
           interiorLights.push(part(px, py, face + 1.29, width * 0.73, height * 0.66, 0.08));
       }
       if (row % 3 === 0)
-        floorCornices.push(part(b.x, py + b.h / (rows + 1) * 0.36, face + 0.99,
-          b.w * 0.86, 0.14, 0.34));
+        floorCornices.push(
+          part(b.x, py + (b.h / (rows + 1)) * 0.36, face + 0.99, b.w * 0.86, 0.14, 0.34),
+        );
     }
     crown.push(part(b.x, b.h - 6.5, b.z, b.w * 1.06, 1.2 + (i % 3), b.depth * 1.08, color));
     crown.push(part(b.x, b.h - 2.5 + (i % 3) * 0.5, b.z, b.w * 0.79, 2, b.depth * 0.68, color));

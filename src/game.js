@@ -3615,7 +3615,12 @@ export function createGame({
       }
       if (e.kind === 'walker' || e.airborneRobot) {
         const pose = robotAttackPose(
-          e.age, e.x, e.y, e.variant, player.position.x, e.airborneRobot,
+          e.age,
+          e.x,
+          e.y,
+          e.variant,
+          player.position.x,
+          e.airborneRobot,
         );
         e.o.position.x = pose.x;
         e.o.position.y = pose.y;
@@ -3624,35 +3629,43 @@ export function createGame({
       }
       if (e.ground)
         animateGroundEnemy(
-          e.o, elapsed, player.position, e.age,
+          e.o,
+          elapsed,
+          player.position,
+          e.age,
           (e.kind === 'walker' || e.airborneRobot) &&
-            e.age >= 1.9 && e.cd <= ROBOT_EYE_WARNING_SECONDS && e.cd > 0,
+            e.age >= 1.9 &&
+            e.cd <= ROBOT_EYE_WARNING_SECONDS &&
+            e.cd > 0,
         );
       e.cd -= hostileDt * (e.chilled > 0 ? 0.5 : 1);
-      if (e.cd <= 0 && e.o.position.z < -15 &&
-          (!(e.kind === 'walker' || e.airborneRobot) ||
-            robotEyeBurstReady(e.age, e.o.position.z, e.cd))) {
+      if (
+        e.cd <= 0 &&
+        e.o.position.z < -15 &&
+        (!(e.kind === 'walker' || e.airborneRobot) ||
+          robotEyeBurstReady(e.age, e.o.position.z, e.cd))
+      ) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
         if (e.kind === 'walker' || e.airborneRobot) {
           const eyes = robotEyeMuzzles(e.o);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
-          for (const eye of eyes)
-            bullet(eye, player.position.clone(), 'eye-ray');
+          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
           fireGroundRobotEyes(e.o, e.age);
-        } else for (const offset of introductorySubboss
-          ? [0]
-          : e.role
-            ? fighterAimOffsets(e.role)
-            : e.subbossTactic
-              ? e.subbossTactic.aim
-              : [0])
-          bullet(
-            e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
-            player.position.clone().add(new T.Vector3(offset, 0, 0)),
-            e.subbossTactic?.spell ?? '',
-          );
+        } else
+          for (const offset of introductorySubboss
+            ? [0]
+            : e.role
+              ? fighterAimOffsets(e.role)
+              : e.subbossTactic
+                ? e.subbossTactic.aim
+                : [0])
+            bullet(
+              e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+              player.position.clone().add(new T.Vector3(offset, 0, 0)),
+              e.subbossTactic?.spell ?? '',
+            );
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(

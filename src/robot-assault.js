@@ -14,7 +14,7 @@ export function robotAttackPose(age, x, y, variant, playerX, airborne = false) {
     x: x + sideApproach + strafe + tracking,
     y: airborne
       ? y + (1 - landed) * 17 + Math.sin(age * 1.65 + variant) * 3
-      : -7 + (1 - landed) * (27 + variant % 3 * 6),
+      : -7 + (1 - landed) * (27 + (variant % 3) * 6),
     bank: -flank * (1 - landed) * 0.24 + Math.sin(age * 1.3 + variant) * 0.07,
     deployed: age >= ROBOT_DEPLOY_SECONDS,
     windup: t >= 1 ? 1 : 0,

@@ -43,10 +43,15 @@ function iffTexture(name, locale = 'pt') {
   return texture;
 }
 export function addFiveCatsIffTag(mesh, pilot, locale = 'pt') {
-  const tag = new T.Sprite(new T.SpriteMaterial({
-    map: iffTexture(pilot.name, locale),
-    transparent: true, depthTest: false, depthWrite: false, toneMapped: false,
-  }));
+  const tag = new T.Sprite(
+    new T.SpriteMaterial({
+      map: iffTexture(pilot.name, locale),
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
   tag.name = 'five-cats-ally-tag-' + pilot.id;
   tag.userData.visualOnly = true;
   tag.userData.ally = true;
@@ -77,7 +82,6 @@ export function createFiveCatsSquad({
     const label = addFiveCatsIffTag(mesh, pilot);
     scene.add(mesh);
     return { pilot, mesh, label };
-  
   });
   let intro = 0;
   let plasmaTime = 0,
