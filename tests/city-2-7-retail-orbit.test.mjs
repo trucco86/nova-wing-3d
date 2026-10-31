@@ -14,6 +14,25 @@ test('City 2.7 has varied real shops, plazas and three mall buildings outside th
   const tags = retail.children.filter((c) => c.name.startsWith('city-shopping-center-'));
   assert.equal(tags.length, 3);
   assert.ok(tags.every((c) => Math.abs(c.position.x) >= 140 && c.userData.visualOnly));
+  assert.ok(retail.getObjectByName('city-mall-glass-dome')?.isMesh);
+  assert.equal(
+    retail.children.filter((c) => c.name.startsWith('city-mall-signature-')).length,
+    3,
+    'three shopping centers must have visibly differentiated 3D rooflines',
+  );
+  assert.equal(
+    retail.getObjectByName('city-mall-signature-1').children.filter(
+      (c) => c.name === 'city-mall-roof-fin',
+    ).length,
+    2,
+  );
+  assert.ok(retail.getObjectByName('city-mall-sky-arch')?.isMesh);
+  const station = retail.getObjectByName('city-maglev-market-station');
+  assert.ok(station?.isGroup);
+  assert.equal(station.position.x, 80, 'maglev station aligns with east-side train line');
+  assert.equal(station.children.filter((c) => c.name === 'city-maglev-platform').length, 2);
+  assert.equal(station.children.filter((c) => c.name === 'city-maglev-station-canopy').length, 2);
+  assert.ok(station.getObjectByName('city-maglev-station-sign')?.material.map?.isTexture);
   const signs = retail.children.filter((c) => c.name === 'city-mall-advertising-sign');
   assert.equal(signs.length, 3);
   assert.ok(signs.every((c) => c.material.map?.isTexture));
@@ -79,6 +98,13 @@ test('City 2.7 Earth has procedural clouds, a separate Moon and a distant Sun wi
   assert.equal(sky.moon.visible, true);
   assert.ok(sky.earth.material.uniforms.fade.value > partial);
   assert.ok(sky.sun.getObjectByName('launch-sun-halo-0').material.opacity > 0);
+  assert.ok(sky.sun.getObjectByName('launch-sun-anamorphic-streak').material.opacity > 0);
+  const ghost = sky.sun.getObjectByName('launch-sun-lens-ghost-0');
+  assert.ok(ghost?.isSprite && ghost.visible, 'cinematic lens ghosts belong only to High');
+  sky.setGraphicsQuality('medium');
+  sky.update(0.76);
+  assert.equal(ghost.visible, false, 'medium hides secondary lens ghosts');
+  assert.ok(sky.sun.getObjectByName('launch-sun-anamorphic-streak').material.opacity > 0);
   sky.reset();
   assert.equal(sky.earth.visible, false);
   assert.equal(sky.sun.visible, false);
