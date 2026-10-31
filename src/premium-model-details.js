@@ -61,67 +61,116 @@ function ring(parent, name, material, radius, x, y, z) {
   return part;
 }
 
+// Graphics 3.4: keep the proven NOVA-7 hull and fighter wing silhouette intact.
+// Etched seams and engine internals deliberately sit INSIDE the original outline.
+function trace(parent, name, material, points, radius = 0.035) {
+  const curve = new T.CatmullRomCurve3(points.map((v) => new T.Vector3(...v)));
+  const mesh = new T.Mesh(new T.TubeGeometry(curve, 12, radius, 5, false), material);
+  mesh.name = name;
+  mesh.userData.visualOnly = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+function detailRail(parent, name, material, x, y, z, w, h, d, yaw = 0) {
+  const mesh = new T.Mesh(new T.BoxGeometry(w, h, d), material);
+  mesh.name = name;
+  mesh.position.set(x, y, z);
+  mesh.rotation.y = yaw;
+  mesh.userData.visualOnly = true;
+  parent.add(mesh);
+  return mesh;
+}
+
 export function addFighterDetail(ship, { armor, accent, emission, enemy = false }) {
   const root = new T.Group();
   root.name = enemy ? 'enemy-premium-airframe' : 'nova7-premium-airframe';
   root.userData.visualOnly = true;
-  // Stepped side fairings, individually swept intakes and three vent ribs per
-  // side give a readable aircraft silhouette rather than a flat light bar.
+  // No bolt-on fairings, oversized pods or thick dorsal plate: retain the
+  // original clean fighter from City 2.7, and add controlled surface finishing.
   for (const side of [-1, 1]) {
-    const fairing = plate(
+    trace(
       root,
-      'airframe-swept-fairing',
-      armor,
-      1.9,
-      3.3,
-      0.4,
-      side * 1.23,
-      0.25,
-      -0.05,
-      side * -0.13,
+      'airframe-fuselage-micro-seam',
+      accent,
+      [
+        [side * 0.34, 0.46, -2.8],
+        [side * 0.49, 0.49, -2.2],
+        [side * 0.76, 0.3, -0.55],
+        [side * 0.84, 0.27, 0.36],
+      ],
+      0.028,
     );
-    fairing.rotation.x = -0.18;
-    plate(root, 'airframe-hull-armor', armor, 1.1, 2.0, 0.3, side * 0.55, 0.43, -1.85, -side * 0.1);
-    for (let n = 0; n < 3; n++) {
-      plate(
+    trace(
+      root,
+      'airframe-wing-panel-seam',
+      accent,
+      [
+        [side * 1.42, 0.24, -0.4],
+        [side * 2.12, 0.23, 0.07],
+        [side * 3.15, 0.22, 0.83],
+        [side * 3.42, 0.2, 1.17],
+      ],
+      0.032,
+    );
+    for (let i = 0; i < 3; i++) {
+      detailRail(
         root,
-        'airframe-intake-louver',
+        'airframe-low-profile-vent',
         accent,
-        0.45,
-        0.18,
-        0.12,
-        side * (1.55 + n * 0.34),
-        0.48,
-        0.65 + n * 0.27,
-        -side * 0.2,
+        side * (1.55 + i * 0.31),
+        0.26,
+        0.56 + i * 0.14,
+        0.13,
+        0.07,
+        0.53,
+        side * 0.12,
       );
     }
-    const hood = cylinder(
-      root,
-      'airframe-weapon-pod',
-      accent,
-      0.26,
-      2.15,
-      side * 2.58,
-      -0.24,
-      -0.55,
-    );
-    hood.rotation.y = side * 0.08;
-    ring(root, 'airframe-engine-turbine-ring', emission, 0.36, side * 1.04, -0.13, 2.54);
-    plate(
-      root,
-      'airframe-wing-control-surface',
-      armor,
-      1.15,
-      0.42,
-      0.2,
-      side * 3.1,
-      0.18,
-      1.1,
-      side * 0.24,
-    );
+    // Original nozzles already sit at x=±1.04, y=-0.13, z=2.48.
+    // Two rings, recessed blades and cool-hot inner core add perceived depth.
+    for (const [i, r, z] of [
+      [0, 0.49, 2.49],
+      [1, 0.41, 2.67],
+    ]) {
+      ring(
+        root,
+        'airframe-engine-precision-ring-' + i,
+        i === 0 ? armor : emission,
+        r,
+        side * 1.04,
+        -0.13,
+        z,
+      );
+    }
+    for (let vane = 0; vane < 6; vane++) {
+      const theta = (vane * Math.PI * 2) / 6;
+      const tab = detailRail(
+        root,
+        'airframe-engine-turbine-vane',
+        accent,
+        side * 1.04 + Math.cos(theta) * 0.29,
+        -0.13 + Math.sin(theta) * 0.29,
+        2.73,
+        0.09,
+        0.17,
+        0.075,
+      );
+      tab.rotation.z = theta - 0.36;
+    }
+    cylinder(root, 'airframe-engine-inner-core', emission, 0.16, 0.14, side * 1.04, -0.13, 2.77);
   }
-  plate(root, 'airframe-dorsal-spine', accent, 0.32, 2.7, 0.25, 0, 0.58, 0.35);
+  trace(
+    root,
+    'airframe-dorsal-contour',
+    armor,
+    [
+      [0, 0.79, -0.38],
+      [0, 0.68, 0.48],
+      [0, 0.54, 1.28],
+    ],
+    0.042,
+  );
   ship.add(root);
   return root;
 }
@@ -130,70 +179,69 @@ export function addMechDetail(robot, { armor, graphite, accent, emission }) {
   const root = new T.Group();
   root.name = 'mech-premium-mechanics';
   root.userData.visualOnly = true;
-  // The chest stays attached to the fixed torso, while wrist reinforcement
-  // joins the *actual* articulated arm pivots (not floating decoration).
+  // Preserve the already-approved shoulders, shared fighter wings and chest.
+  // Replace overlapping armor plates with seams, vents and machined turbines.
   for (const side of [-1, 1]) {
-    plate(
+    trace(
       root,
-      'mech-layered-chest-plate',
-      armor,
-      1.03,
-      1.02,
-      0.23,
-      side * 0.57,
-      1.76,
-      -1.2,
-      -side * 0.17,
+      'mech-chest-machined-seam',
+      accent,
+      [
+        [side * 0.37, 2.02, -1.1],
+        [side * 0.79, 1.8, -1.09],
+        [side * 0.94, 1.46, -1.03],
+      ],
+      0.045,
     );
-    plate(
-      root,
-      'mech-clavicle-guard',
-      graphite,
-      1.04,
-      0.3,
-      0.2,
-      side * 0.97,
-      2.6,
-      -0.81,
-      side * 0.25,
-    );
-    for (let n = 0; n < 3; n++) {
-      plate(
+    for (let i = 0; i < 3; i++)
+      detailRail(
         root,
-        'mech-rear-heatsink-fin',
-        armor,
-        0.24,
-        0.66,
-        0.17,
-        side * (0.54 + n * 0.22),
-        1.64 + n * 0.19,
-        1.74,
+        'mech-rear-cooling-slat',
+        graphite,
+        side * (0.65 + i * 0.2),
+        1.73 + i * 0.16,
+        1.76,
+        0.13,
+        0.5,
+        0.12,
       );
-    }
     cylinder(
       root,
-      'mech-shoulder-actuator',
+      'mech-shoulder-bearing',
       graphite,
-      0.31,
-      0.45,
-      side * 1.88,
+      0.29,
+      0.4,
+      side * 1.86,
       2.47,
       0.35,
       false,
     ).rotation.z = Math.PI / 2;
-    ring(root, 'mech-dorsal-nozzle-trim', emission, 0.37, side * 1.38, 2.51, 2.52);
-    plate(root, 'mech-knee-shield', accent, 0.45, 0.48, 0.22, side * 0.75, -2.09, -1.1);
+    ring(root, 'mech-dorsal-nozzle-ring', armor, 0.42, side * 1.38, 2.51, 2.52);
+    ring(root, 'mech-dorsal-ignition-ring', emission, 0.31, side * 1.38, 2.51, 2.57);
+    detailRail(root, 'mech-shin-inset', accent, side * 0.74, -3.2, -0.86, 0.14, 0.66, 0.14);
   }
-  ring(root, 'mech-central-reactor-rim', emission, 0.55, 0, 1.75, -1.33);
-  robot.add(root);
-  const rig = robot.userData.mechRig;
-  if (rig?.arms?.length === 2) {
-    for (let index = 0; index < rig.arms.length; index++) {
-      const arm = rig.arms[index];
-      const side = index === 0 ? -1 : 1;
-      plate(arm, 'mech-wrist-targeting-rail', accent, 0.24, 1.02, 0.16, side * 0.09, -2.05, -1.31);
-      cylinder(arm, 'mech-dual-arm-cannon-collar', emission, 0.26, 0.24, side * 0.15, -2.11, -1.57);
+  const gimbal = robot.getObjectByName('mech-turbine-gimbal');
+  if (gimbal) {
+    for (let blade = 0; blade < 6; blade++) {
+      const theta = (blade * Math.PI) / 3;
+      const part = detailRail(
+        gimbal,
+        'mech-main-turbine-stator',
+        armor,
+        Math.cos(theta) * 0.47,
+        Math.sin(theta) * 0.47,
+        0.72,
+        0.07,
+        0.23,
+        0.09,
+      );
+      part.rotation.z = theta - 0.35;
     }
+    ring(gimbal, 'mech-turbine-machined-ring', graphite, 0.52, 0, 0, 0.74);
+  }
+  robot.add(root);
+  for (const arm of robot.userData.mechRig?.arms ?? []) {
+    detailRail(arm, 'mech-wrist-targeting-trim', emission, 0, -2.03, -1.3, 0.13, 0.64, 0.11);
   }
   return root;
 }
