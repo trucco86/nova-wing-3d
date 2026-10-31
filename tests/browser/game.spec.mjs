@@ -35,10 +35,20 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await expect(page.locator('#settingsMenu')).toBeVisible();
   await expect(page.locator('#settingMusic')).toHaveValue('0.8');
   await page.locator('#settingsClose').click();
-  await expect(page.locator('#game')).toHaveJSProperty(
-    'width',
-    info.project.name === 'mobile' ? 844 : 1366,
-  );
+  // Adaptive mobile DPR is allowed to reduce the backing resolution to
+  // preserve FPS. The canvas must still occupy the complete CSS viewport.
+  const canvas = await page.locator('#game').evaluate((element) => ({
+    displayWidth: element.getBoundingClientRect().width,
+    displayHeight: element.getBoundingClientRect().height,
+    backingWidth: element.width,
+    backingHeight: element.height,
+  }));
+  const viewport = page.viewportSize();
+  expect(canvas.displayWidth).toBeCloseTo(viewport.width, 0);
+  expect(canvas.displayHeight).toBeCloseTo(viewport.height, 0);
+  expect(canvas.backingWidth).toBeGreaterThanOrEqual(viewport.width * 0.65);
+  expect(canvas.backingWidth).toBeLessThanOrEqual(viewport.width * 2.5);
+  expect(canvas.backingHeight).toBeGreaterThanOrEqual(viewport.height * 0.65);
   await page.screenshot({ path: test.info().outputPath('mission.png') });
   expect(errors).toEqual([]);
 });
