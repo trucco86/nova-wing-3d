@@ -244,7 +244,8 @@ export function updateMarsPremium(root, travel) {
   for (const child of moving) {
     if (!child.userData.marsChunk) continue;
     const base = Number.isFinite(child.userData.startZ)
-      ? child.userData.startZ : (child.userData.startZ = child.position.z);
+      ? child.userData.startZ
+      : (child.userData.startZ = child.position.z);
     const z = base + travel;
     child.position.z = z > 100 ? z - Math.ceil((z - 100) / 3000) * 3000 : z;
   }

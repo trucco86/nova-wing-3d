@@ -14,8 +14,10 @@ test('Mars turbulence pushes ship physically and respects pause/restart and play
   assert.ok(marsSandstormAt(60).warning);
   h.advance(5, 0.2);
   const during = h.game.snapshot();
-  assert.ok(Math.abs(during.player.x - before) > 0.15,
-    'actual player coordinates drift when storm wind hits, not only camera visuals');
+  assert.ok(
+    Math.abs(during.player.x - before) > 0.15,
+    'actual player coordinates drift when storm wind hits, not only camera visuals',
+  );
   assert.match(during.route.label, /TURBULÊNCIA MARCIANA/);
   h.game.pause();
   const paused = h.game.snapshot().player.x;

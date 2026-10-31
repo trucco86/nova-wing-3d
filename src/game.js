@@ -3071,8 +3071,8 @@ export function createGame({
     const gustX = storm?.windX ?? 0;
     player.position.x = clamp(
       player.position.x +
-        (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) *
-          profileSpeed + gustX) * dt,
+        (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed + gustX) *
+          dt,
       -flightLimit(),
       flightLimit(),
     );
@@ -3123,8 +3123,7 @@ export function createGame({
       rollAngle = 0;
       // Actual crosswind banks the spacecraft; manual directional inputs
       // remain fully responsive and can counter-steer against the gust.
-      if (storm?.active)
-        player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship

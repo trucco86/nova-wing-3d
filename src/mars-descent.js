@@ -108,13 +108,16 @@ export function createMarsApproach() {
   shock.name = 'mars-atmosphere-bow-shock';
   shock.userData.visualOnly = true;
   const material = new T.MeshBasicMaterial({
-    color: '#ffc18a', transparent: true, opacity: 0,
-    depthWrite: false, depthTest: false,
-    blending: T.AdditiveBlending, toneMapped: false,
+    color: '#ffc18a',
+    transparent: true,
+    opacity: 0,
+    depthWrite: false,
+    depthTest: false,
+    blending: T.AdditiveBlending,
+    toneMapped: false,
   });
   for (let i = 0; i < 2; i++) {
-    const halo = new T.Mesh(new T.TorusGeometry(50 + i * 20, 8 + i * 4, 12, 64),
-      material.clone());
+    const halo = new T.Mesh(new T.TorusGeometry(50 + i * 20, 8 + i * 4, 12, 64), material.clone());
     halo.name = 'mars-reentry-soft-plasma-halo-' + i;
     halo.position.set(0, 7, -135 - i * 20);
     halo.scale.set(1.3, 0.77, 1);

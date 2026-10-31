@@ -3,8 +3,11 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createMarsMysteries } from '../src/mars-mysteries.js';
 import {
-  MARS_STORM_START, MARS_STORM_END, marsSandstormAt,
-  createMarsSandstorm, updateMarsSandstorm,
+  MARS_STORM_START,
+  MARS_STORM_END,
+  marsSandstormAt,
+  createMarsSandstorm,
+  updateMarsSandstorm,
 } from '../src/mars-sandstorm.js';
 import { createMarsPremium, updateMarsArrival } from '../src/mars-premium.js';
 import { createWorld } from '../src/visuals.js';
@@ -25,8 +28,11 @@ test('Olympus Mons has a shield silhouette with summit caldera and rock face for
   assert.equal(landmarks.children.filter((m) => m.name.startsWith('mars-cydonia-')).length, 3);
   const ruins = landmarks.children.filter((m) => m.name.startsWith('mars-fictional-alien-ruins-'));
   assert.equal(ruins.length, 2);
-  assert.ok(ruins.every((site) =>
-    site.getObjectByName('mars-ancient-alien-half-arch') && site.userData.visualOnly));
+  assert.ok(
+    ruins.every(
+      (site) => site.getObjectByName('mars-ancient-alien-half-arch') && site.userData.visualOnly,
+    ),
+  );
   landmarks.traverse((part) => assert.notEqual(part.userData.hitbox, true));
 });
 
@@ -46,7 +52,10 @@ test('storm is centered in second half of the surface run with advance warning a
   assert.ok(Math.abs(high.windX) <= 12, 'side gust stays counter-steerable');
   const peak = [64, 67, 70, 74, 78].map((t) => marsSandstormAt(t));
   assert.ok(peak.some((v) => v.windX > 0));
-  assert.ok(peak.some((v) => v.windX < 0), 'wind direction changes');
+  assert.ok(
+    peak.some((v) => v.windX < 0),
+    'wind direction changes',
+  );
   assert.equal(marsSandstormAt(86).active, false);
   assert.equal(marsSandstormAt(86).windX, 0);
   assert.throws(() => marsSandstormAt(-1), RangeError);
@@ -58,7 +67,10 @@ test('storm visuals use batched sand particles and soft haze, not invisible hitb
   const cloud = root.getObjectByName('mars-sandstorm-particle-field');
   assert.ok(cloud.isPoints);
   assert.equal(cloud.geometry.getAttribute('position').count, 240);
-  assert.equal(root.children.filter((m) => m.name.startsWith('mars-rolling-sand-haze-bank')).length, 3);
+  assert.equal(
+    root.children.filter((m) => m.name.startsWith('mars-rolling-sand-haze-bank')).length,
+    3,
+  );
   updateMarsSandstorm(root, 71);
   assert.equal(root.visible, true);
   assert.ok(cloud.material.opacity > 0);

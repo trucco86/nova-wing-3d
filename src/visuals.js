@@ -1502,8 +1502,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     const sand = state.storm?.intensity ?? 0;
     // Dense ochre dust during the storm; clear weather restores the original
     // Martian horizon. Shared fog affects the whole visible stage coherently.
-    scene.fog.density = T.MathUtils.lerp(0.00017, 0.00095, state.skyMix) +
-      sand * 0.0034;
+    scene.fog.density = T.MathUtils.lerp(0.00017, 0.00095, state.skyMix) + sand * 0.0034;
     scene.fog.color.set('#251625').lerp(new T.Color('#a16b57'), state.skyMix);
     scene.fog.color.lerp(new T.Color('#c38a61'), sand * 0.8);
     return state;

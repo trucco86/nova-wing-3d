@@ -39,8 +39,11 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   assert.ok(globe.visible, 'planet visible from space at mission start');
   assert.equal(surface.visible, false);
   assert.equal(heat.visible, false);
-  assert.equal(planet.getObjectByName('mars-atmosphere-ionized-trails'), undefined,
-    'the distracting re-entry scratch meshes have been removed');
+  assert.equal(
+    planet.getObjectByName('mars-atmosphere-ionized-trails'),
+    undefined,
+    'the distracting re-entry scratch meshes have been removed',
+  );
   assert.ok(phobos.visible && deimos.visible);
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);

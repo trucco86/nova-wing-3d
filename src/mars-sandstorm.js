@@ -12,8 +12,8 @@ const smooth = (v) => {
 export function marsSandstormAt(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid storm time');
   const prewarn = seconds >= MARS_STORM_START - 4 && seconds < MARS_STORM_START;
-  const intensity = smooth((seconds - MARS_STORM_START) / 4) *
-    (1 - smooth((seconds - (MARS_STORM_END - 5)) / 5));
+  const intensity =
+    smooth((seconds - MARS_STORM_START) / 4) * (1 - smooth((seconds - (MARS_STORM_END - 5)) / 5));
   // Slow crosswind reversals with short gusts. Max < pilot acceleration.
   const prevailing = Math.sin((seconds - MARS_STORM_START) * 0.48 + 0.9);
   const gust = Math.sin(seconds * 1.71) * Math.sin(seconds * 0.31 + 1.7);
@@ -27,14 +27,22 @@ export function marsSandstormAt(seconds) {
     windX,
     roll: -windX * 0.022 + sway,
     visibility: 1 - intensity * 0.56,
-    label: prewarn ? 'TEMPESTADE DE AREIA À FRENTE · PREPARE-SE'
-      : intensity > 0.02 ? 'TURBULÊNCIA MARCIANA · COMPENSE O VENTO' : '',
+    label: prewarn
+      ? 'TEMPESTADE DE AREIA À FRENTE · PREPARE-SE'
+      : intensity > 0.02
+        ? 'TURBULÊNCIA MARCIANA · COMPENSE O VENTO'
+        : '',
   };
 }
 const particleCount = 240;
 const fogMat = new T.PointsMaterial({
-  color: '#f0b178', size: 4.1, sizeAttenuation: true, transparent: true,
-  opacity: 0, depthWrite: false, fog: false,
+  color: '#f0b178',
+  size: 4.1,
+  sizeAttenuation: true,
+  transparent: true,
+  opacity: 0,
+  depthWrite: false,
+  fog: false,
 });
 function sandParticles() {
   const buffer = new Float32Array(particleCount * 3);
@@ -64,15 +72,21 @@ export function createMarsSandstorm() {
   // Broad low-contrast haze banks, not screen scratches or sharp lines.
   const bankGeometry = new T.PlaneGeometry(220, 62);
   for (let i = 0; i < 3; i++) {
-    const bank = new T.Mesh(bankGeometry, new T.ShaderMaterial({
-      uniforms: { alpha: { value: 0 } },
-      transparent: true, depthWrite: false, side: T.DoubleSide,
-      vertexShader: 'varying vec2 uvCoords;void main(){uvCoords=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader: `varying vec2 uvCoords;uniform float alpha;
+    const bank = new T.Mesh(
+      bankGeometry,
+      new T.ShaderMaterial({
+        uniforms: { alpha: { value: 0 } },
+        transparent: true,
+        depthWrite: false,
+        side: T.DoubleSide,
+        vertexShader:
+          'varying vec2 uvCoords;void main(){uvCoords=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader: `varying vec2 uvCoords;uniform float alpha;
         void main(){vec2 p=uvCoords*2.-1.;
         float haze=exp(-dot(p,p)*3.2)*(0.75+0.25*sin(p.x*12.+p.y*3.));
         gl_FragColor=vec4(.68,.35,.19,alpha*haze);}`,
-    }));
+      }),
+    );
     bank.name = 'mars-rolling-sand-haze-bank-' + i;
     bank.position.set((i - 1) * 62, 8 + i * 5, -140 - i * 34);
     bank.rotation.z = i * 0.09;
