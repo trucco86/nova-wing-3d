@@ -47,6 +47,8 @@ test('Mars and asteroid interior never inherit urban meshes or each other', () =
   assert.equal(scene.getObjectByName('city-distant-horizon').visible, false);
   const mars = scene.getObjectByName('mars-premium-desert');
   assert.ok(mars);
+  assert.equal(scene.getObjectByName('launch-sky-dome').material.uniforms.marsGlow.value, 0);
+  world.setMarsDescent(27);
   assert.equal(scene.getObjectByName('launch-sky-dome').material.uniforms.marsGlow.value, 1);
   world.update(0.2, 0.2, 60, true);
   const rock = mars.getObjectByName('mars-rock-field-0');
