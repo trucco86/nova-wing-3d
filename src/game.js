@@ -895,8 +895,24 @@ export function createGame({
       // Optional ranking must never interrupt a finished mission.
     }
   }
+  // A completed mission is a distinct UI state. Inert blocks stray touch and
+  // keyboard focus in browsers that retain controls underneath the shop panel.
+  // CSS provides the visual fallback and always keeps the hangar in front.
+  function setIntermissionUI(active) {
+    document.body.classList.toggle('intermission-active', active);
+    for (const id of [
+      'hud', 'hudNotices', 'touch', 'bottom', 'loadout', 'sectorTag',
+      'bossHUD', 'subHUD', 'petCareHud', 'orbitControls', 'strategyControls',
+      'cameraView', 'aimReticle', 'mechaLockReticle',
+    ]) {
+      const node = document.getElementById(id);
+      if (node) node.inert = active;
+    }
+    if (active) document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
+  }
   function showShop() {
     recordStageResult('cleared');
+    setIntermissionUI(true);
     document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
@@ -1001,6 +1017,7 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    setIntermissionUI(false);
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
     reflexBoost.reset();
@@ -2236,6 +2253,7 @@ export function createGame({
     confirmation = null;
     settingsOpen = false;
     stageIntroTime = 0;
+    setIntermissionUI(false);
     document.body.classList.remove('in-mission', 'stage-intro');
     document.body.classList.add('menu');
     for (const id of [
