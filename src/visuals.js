@@ -862,10 +862,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       water: { value: 0 },
       urban: { value: 1 },
       detail: { value: 0.4 },
+      launchGroundAlpha: { value: 1 },
     },
+    transparent: true,
+    depthWrite: false,
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.008,.024,.034)*plating+vec3(.012,.078,.092)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.008,.024,.034)*plating+vec3(.012,.078,.092)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),launchGroundAlpha);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -1400,7 +1403,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // Retain the architectural silhouette while the craft climbs. Buildings,
       // rails and distant terminus physically sink below the camera instead of
       // disappearing at the early gameplay orbit-ready threshold.
-      const retreat = 1200 * t ** 2.8 + 100 * t;
+      const retreat = 1800 * t ** 2.4 + 100 * t;
       city.position.y = cityFar.position.y = -retreat;
       cityHorizon.position.y = -retreat * 0.94;
       near.forEach((o) => (o.position.y = -retreat * 0.98));
@@ -1408,8 +1411,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const scale = 1 - t * 0.29;
       city.scale.setScalar(scale);
       cityFar.scale.setScalar(scale);
-      const urbanVisible = progress < 0.84;
-      ground.visible = urbanVisible;
+      // The 4-km ground plane otherwise draws a hard horizontal silhouette
+      // across Earth (confirmed in the browser screenshot). Fade it out well
+      // before the planetary horizon fills the camera, then disable its draw.
+      const groundFade = 1 - T.MathUtils.smoothstep(progress, 0.31, 0.57);
+      terrainMat.uniforms.launchGroundAlpha.value = groundFade;
+      ground.visible = progress < 0.57;
+      const urbanVisible = progress < 0.73;
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
       near.forEach((o) => (o.visible = urbanVisible));
@@ -1481,6 +1489,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       starfield.material.opacity = 0.75;
+      terrainMat.uniforms.launchGroundAlpha.value = 1;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
@@ -1767,6 +1776,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
+      terrainMat.uniforms.launchGroundAlpha.value = 1;
       launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
