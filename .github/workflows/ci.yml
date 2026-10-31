@@ -229,3 +229,39 @@ jobs:
               gh release upload "$tag" "$artifact"
             fi
           done
+
+  # One-time QA preparation for City 3.0. Stays scoped to this exact PR head
+  # and is removed after the artifact is synchronized.
+  city30-prepare:
+    if: github.event_name == 'pull_request' && github.head_ref == 'feat/city-30-boost-options-matrix-20261031'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-30-boost-options-matrix-20261031
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.43
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - name: Commit generated web distribution and release files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/game.js src/visuals.js src/styles.css src/city-30-district-life.js tests/graphics.test.mjs tests/city-premium-facades.test.mjs tests/browser/mobile-thumb-arcs.spec.mjs tests/browser/city-30-boost-options.spec.mjs tests/city-3-0-urban-renewal.test.mjs specs/city-3-0-boost-options-matrix.md CHANGELOG.md releases/v1.27.43.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): prepare web 1.27.43 BOOST fix and Matrix urban QA"
+            git push origin HEAD:feat/city-30-boost-options-matrix-20261031
+          fi
