@@ -2005,7 +2005,11 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
     ? T.HalfFloatType
     : T.UnsignedByteType;
-  const full = new T.WebGLRenderTarget(1, 1, { type: targetType, depthBuffer: true, samples: 2 });
+  // 4x MSAA on desktop mitigates shimmering roof edges and neon lines.
+  // Touch GPUs keep cheaper native canvas antialiasing plus a higher DPR.
+  const full = new T.WebGLRenderTarget(1, 1, {
+    type: targetType, depthBuffer: true, samples: coarsePointer ? 2 : 4,
+  });
   const a = new T.WebGLRenderTarget(1, 1, { type: targetType, depthBuffer: false }),
     b = a.clone();
   const passScene = new T.Scene(),
