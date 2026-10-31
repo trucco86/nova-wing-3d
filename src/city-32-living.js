@@ -118,8 +118,9 @@ function facadeSigns(parent, buildings) {
   let count = 0;
   // Anchored to actual building geometry: do not create floating signs.
   // At least one in each near-Z band, on alternating sides of the route.
-  for (let i = 0; i < buildings.length && count < 18; i++) {
-    if (i % 5 !== 0 && i % 7 !== 1) continue;
+  // The first iteration previously exhausted its budget before the first
+  // district ended. Distribute all 18 signs along the entire 1900-unit tile.
+  for (let i = 1; i < buildings.length && count < 18; i += 11) {
     const b = buildings[i];
     if (Math.abs(b.x) < 94 || b.h < 29) continue;
     const [brand, caption, color] = CITY32_ADS[count % CITY32_ADS.length];
@@ -183,6 +184,59 @@ function facadeSigns(parent, buildings) {
   instanced('city32-illuminated-shopfronts', neon, shopfronts, parent);
   parent.add(signs);
   parent.userData.ads = count;
+}
+
+// Distinct neighbourhoods are necessary for the route to feel like a lived-in
+// megacity rather than a repeating wall of neon. Use batching for thousands of
+// facade/storefront light accents, not a point light for each window.
+function districtIdentity(parent) {
+  const districts = [
+    { name: 'corporate', z: -280, color: '#59dcff', secondary: '#a5b9ff', brands: [0, 9] },
+    { name: 'entertainment', z: -865, color: '#ff72d4', secondary: '#ae80ff', brands: [1, 7] },
+    { name: 'transport', z: -1450, color: '#ffca72', secondary: '#80ffa5', brands: [5, 6] },
+  ];
+  const bands = [];
+  const stores = [];
+  const vertical = [];
+  const identity = new T.Group();
+  identity.name = 'city32-commercial-districts';
+  identity.userData.visualOnly = true;
+  for (const district of districts) {
+    const zone = new T.Group();
+    zone.name = 'city32-district-' + district.name;
+    zone.userData.district = district.name;
+    zone.userData.visualOnly = true;
+    zone.position.z = district.z;
+    for (const side of [-1, 1]) {
+      const x = side * (123 + (district.name === 'transport' ? 18 : 5));
+      const [brand, tagline, color] = CITY32_ADS[district.brands[side < 0 ? 0 : 1]];
+      const panel = new T.Mesh(
+        plane,
+        new T.MeshBasicMaterial({
+          map: advertisingTexture(brand, tagline, color),
+          toneMapped: false, side: T.DoubleSide,
+        }),
+      );
+      panel.name = 'city32-district-' + district.name + '-billboard';
+      panel.userData.visualOnly = true;
+      panel.scale.set(20, 22, 1);
+      panel.position.set(x, 40, 28);
+      zone.add(panel);
+      for (let i = 0; i < 6; i++) {
+        const localZ = district.z - 48 + i * 19;
+        const localX = x + side * ((i % 2) * 17);
+        const tint = i % 3 ? district.color : district.secondary;
+        bands.push({ x: localX, y: 11 + (i % 3) * 9, z: localZ, w: 22, h: 0.6, d: 0.55, tint });
+        stores.push({ x: localX, y: -0.5, z: localZ + 2, w: 19, h: 4.8, d: 0.5, tint });
+        vertical.push({ x: localX - side * 10, y: 25, z: localZ + 2, w: 0.6, h: 25, d: 0.5, tint });
+      }
+    }
+    identity.add(zone);
+  }
+  instanced('city32-district-horizontal-neons', neon, bands, identity);
+  instanced('city32-district-lit-shopfronts', neon, stores, identity);
+  instanced('city32-district-vertical-signs', neon, vertical, identity);
+  parent.add(identity);
 }
 
 function searchlightNetwork(parent) {
@@ -285,6 +339,7 @@ export function createCity32Living(buildings = []) {
   root.userData.city32 = true;
   root.userData.phase = 0;
   facadeSigns(root, buildings);
+  districtIdentity(root);
   searchlightNetwork(root);
   aerialLanes(root);
   holograms(root);
