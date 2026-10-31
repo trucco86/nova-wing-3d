@@ -1,4 +1,5 @@
 name: Prepare Mars 4.1 Orbital Descent v1.27.54
+# Rerun with clean lint after removing an unused transition variable.
 on:
   push:
     branches:
