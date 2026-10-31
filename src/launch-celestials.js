@@ -124,7 +124,7 @@ export function createLaunchCelestials(scene) {
   });
   const moon = new T.Mesh(new T.SphereGeometry(112, 36, 22), moonMaterial);
   moon.name = 'launch-orbit-moon';
-  moon.position.set(375, 270, -1260);
+  moon.position.set(255, 255, -1260);
   moon.userData.fixedSky = true;
   moon.userData.visualOnly = true;
   moon.visible = false;
@@ -132,7 +132,7 @@ export function createLaunchCelestials(scene) {
 
   const sun = new T.Group();
   sun.name = 'launch-orbit-sun';
-  sun.position.set(-435, 285, -1170);
+  sun.position.set(-255, 275, -1170);
   sun.userData.fixedSky = true;
   sun.userData.visualOnly = true;
   const discMaterial = new T.MeshBasicMaterial({
