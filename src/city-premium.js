@@ -143,7 +143,8 @@ export function createCityPremiumInfrastructure() {
   const counts = { plates: 0, lights: 0, supports: 0, edges: 0, trackLight: 0, fine: 0 };
   function at(mesh, key, x, y, z, width, height, depth) {
     const n = counts[key]++;
-    if (n >= mesh.instanceMatrix.count) throw new Error('Premium infrastructure exceeds GPU buffer');
+    if (n >= mesh.instanceMatrix.count)
+      throw new Error('Premium infrastructure exceeds GPU buffer');
     transform.position.set(x, y, z);
     transform.scale.set(width, height, depth);
     transform.updateMatrix();
@@ -159,7 +160,7 @@ export function createCityPremiumInfrastructure() {
         roadPlates.setColorAt(counts.plates - 1, color);
       } else roadPlates.setColorAt(counts.plates - 1, new T.Color('#152431'));
       if ((column === 1 || column === 6) && segment % 2 === 0) {
-        at(roadFine, 'fine', x, -6.76, z + 4, 4.2, 0.10, 0.35);
+        at(roadFine, 'fine', x, -6.76, z + 4, 4.2, 0.1, 0.35);
       }
     }
     for (const x of [-28, -11, 11, 28]) {
@@ -233,10 +234,7 @@ export function createCityPremiumInfrastructure() {
     signs.add(sign);
   }
   g.add(signs);
-  high.add(new T.Mesh(
-    new T.BoxGeometry(0.5, 0.5, 0.5),
-    illuminated('#39bfd4'),
-  )); // tiny premium marker to keep high-only subgraph nonempty
+  high.add(new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.5), illuminated('#39bfd4'))); // tiny premium marker to keep high-only subgraph nonempty
   g.add(high);
   return g;
 }
