@@ -33,7 +33,11 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 58, 'City 2.5 includes six premium city infrastructure layers per tile');
+  assert.equal(
+    count,
+    82,
+    'City 2.6 includes batched maglev livery across both near and far city tiles',
+  );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
   const closeDetail = closeCity.getObjectByName('city-high-details');
