@@ -22,34 +22,32 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   assert.equal(earth.visible, false);
   assert.equal(skyDome.material.uniforms.launchHaze.value, 0);
   world.setLaunchAscent(0.5, true);
-  assert.ok(
-    skyDome.material.uniforms.launchHaze.value > 1,
-    'middle atmospheric phase has luminous cloud cover',
-  );
+  assert.equal(skyDome.material.uniforms.launchHaze.value, 0,
+    'early skyline must remain legible without a premature night/fog overlay');
   world.setLaunchAscent(0.8, true);
+  assert.ok(skyDome.material.uniforms.launchHaze.value > 0.5,
+    'night-sky and atmospheric haze bridge the empty sky before Earth');
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
   assert.equal(city.visible, false, 'city is below the player before space appears');
   assert.equal(ground.visible, false, 'ground plane cannot create a rigid line over Earth');
   assert.equal(ground.material.uniforms.launchGroundAlpha.value, 0);
   assert.ok(scene.fog.density < 0.0006, 'launch reduces atmosphere fog');
-  assert.equal(earth.visible, true, 'Earth gradually enters the frame during the climb');
+  assert.equal(earth.visible, false, 'at 0.8, only darkening sky, stars and haze are shown');
+  world.setLaunchAscent(0.94, true);
+  assert.equal(earth.visible, true, 'Earth arrives only when the sky is dark and city gone');
   const orbitalFade = earth.material.uniforms.fade.value;
-  assert.ok(orbitalFade > 0.3);
+  assert.ok(orbitalFade > 0 && orbitalFade < 1);
   world.setLaunchAscent(0.45, true);
   assert.ok(
     ground.material.uniforms.launchGroundAlpha.value > 0 &&
       ground.material.uniforms.launchGroundAlpha.value < 1,
     'the large terrain plane now fades progressively',
   );
-  assert.equal(
-    earth.visible,
-    true,
-    'early Earth glow is visible before the last buildings disappear',
-  );
+  assert.equal(earth.visible, false, 'the planet cannot appear over any city rooftops');
   assert.ok(earth.material.uniforms.fade.value < orbitalFade);
   assert.equal(city.visible, true);
-  world.setLaunchAscent(0.85, true);
+  world.setLaunchAscent(1, true);
   assert.equal(city.visible, false, 'buildings are only hidden once physically below the view');
   assert.equal(ground.visible, false, 'flat ground no longer extends into full orbit');
   assert.ok(earth.material.uniforms.fade.value > orbitalFade);
