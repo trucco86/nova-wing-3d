@@ -1,8 +1,9 @@
 # Histórico
 
-## 1.27.45 — Candidata em preparação
+## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Corrigidos posicionamentos absolutos de BOOST e TIRO e consolidada a distribuição em meia-lua com hit targets mínimos 60×60px e LOCK do mecha sem sobreposição. Joystick responsivo (88/102/128/91px) e órbita 12px acima.
+- Arcade 2D volta a esconder BOOST quando desabilitado; testes WebGL aceitam resolução adaptativa sem cortar canvas. 405 testes unitários e 10 Playwright direcionados passaram. QA final em shards e aceite no S21 pendentes. PR #198 draft, produção intacta.
 
 ## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
 
