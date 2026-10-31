@@ -13,7 +13,10 @@ test('city has lighter atmosphere, glossy road plates and chromatic LEDs in Medi
   assert.equal(sky.uniforms.cityGlow.value, 1);
   assert.ok(sky.fragmentShader.includes('citySky'), 'city has an independent bright sky');
   assert.ok(scene.fog.density <= 0.0006, 'far towers must stay readable');
-  const hemi = scene.children.find((node) => node.isHemisphereLight);
+  let hemi;
+  scene.traverse((node) => {
+    if (node.isHemisphereLight) hemi = node;
+  });
   assert.ok(hemi.intensity >= 2.5, 'metals receive enough indirect light');
   assert.equal(scene.getObjectByName('launch-ground').material.uniforms.urban.value, 1);
 
