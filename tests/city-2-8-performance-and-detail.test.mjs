@@ -68,6 +68,7 @@ test('urban ground cars, flying taxis and escape craft have real mechanical merg
     assert.ok(mesh.geometry.attributes.color, 'merged shell retains per-part vertex colours');
     assert.ok(mesh.geometry.attributes.normal.count > 100);
     assert.equal(mesh.userData.visualOnly, true);
+    animateCityTraffic(traffic, 0);
     const before = matrix(mesh);
     animateCityTraffic(traffic, 300);
     assert.notDeepEqual(matrix(mesh), before);
