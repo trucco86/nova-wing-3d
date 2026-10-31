@@ -899,7 +899,7 @@ export function createGame({
   // keyboard focus in browsers that retain controls underneath the shop panel.
   // CSS provides the visual fallback and always keeps the hangar in front.
   function setIntermissionUI(active) {
-    document.body.classList.toggle('intermission-active', active);
+    document.body.classList[active ? 'add' : 'remove']('intermission-active');
     for (const id of [
       'hud', 'hudNotices', 'touch', 'bottom', 'loadout', 'sectorTag',
       'bossHUD', 'subHUD', 'petCareHud', 'orbitControls', 'strategyControls',
