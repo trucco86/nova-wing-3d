@@ -1,4 +1,5 @@
 name: Prepare World 4.0 Mars Premium v1.27.53
+# Retest after legacy Mars expectations update and asteroid mining premium pass.
 on:
   push:
     branches:
