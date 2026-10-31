@@ -140,7 +140,7 @@ export function createCityCommerce() {
 
   for (const [name, transforms] of arrays) {
     const premium = name.startsWith('high-');
-    const type = name.slice(premium ? 5 : 5);
+    const type = name.slice(5);
     const mesh = new T.InstancedMesh(BOX, materials[type], transforms.length);
     mesh.name = 'city-commerce-' + name;
     mesh.userData.visualOnly = true;
