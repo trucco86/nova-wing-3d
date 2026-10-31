@@ -23,7 +23,7 @@ export function marsDescentAt(seconds) {
     atmosphere,
     terrainVisible: seconds >= 16,
     terrainReveal: surface,
-    terrainLift: -340 * (1 - surface),
+    terrainLift: surface >= 1 ? 0 : -340 * (1 - surface),
     skyMix: surface,
     starOpacity: 0.75 * (1 - smooth((seconds - 13) / 10)),
     cameraAscent: seconds >= 13 && seconds < 27 ? -0.38 * atmosphere : 0,
