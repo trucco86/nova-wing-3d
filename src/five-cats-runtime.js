@@ -8,6 +8,55 @@ import {
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
 
+// World-space IFF tags attach to the ally ships, never to enemy fighters and
+// never to the HUD center. Green and readable even in the city neon skyline.
+const iffTextures = new Map();
+function iffTexture(name, locale = 'pt') {
+  const key = locale + ':' + name;
+  if (iffTextures.has(key)) return iffTextures.get(key);
+  const title = locale === 'en' ? 'ALLY' : 'ALIADO';
+  let texture;
+  if (typeof document !== 'undefined' && document.createElement) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 384;
+    canvas.height = 80;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = 'rgba(7,34,31,.88)';
+      ctx.fillRect(0, 4, 384, 72);
+      ctx.strokeStyle = '#71ffc1';
+      ctx.lineWidth = 5;
+      ctx.strokeRect(3, 6, 378, 68);
+      ctx.fillStyle = '#a5ffd7';
+      ctx.font = 'bold 29px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('◆ ' + title + ' · ' + name, 192, 54, 359);
+      texture = new T.CanvasTexture(canvas);
+      texture.colorSpace = T.SRGBColorSpace;
+    }
+  }
+  if (!texture) {
+    texture = new T.DataTexture(new Uint8Array([92, 242, 171, 240]), 1, 1);
+    texture.needsUpdate = true;
+  }
+  iffTextures.set(key, texture);
+  return texture;
+}
+export function addFiveCatsIffTag(mesh, pilot, locale = 'pt') {
+  const tag = new T.Sprite(new T.SpriteMaterial({
+    map: iffTexture(pilot.name, locale),
+    transparent: true, depthTest: false, depthWrite: false, toneMapped: false,
+  }));
+  tag.name = 'five-cats-ally-tag-' + pilot.id;
+  tag.userData.visualOnly = true;
+  tag.userData.ally = true;
+  tag.userData.pilotId = pilot.id;
+  tag.userData.locale = locale;
+  tag.position.set(0, 5.7, 0);
+  tag.scale.set(13, 2.7, 1);
+  mesh.add(tag);
+  return tag;
+}
 /** Isolated, disposable Five Cats cinematic and physical-projectile supers. */
 export function createFiveCatsSquad({
   scene,
@@ -20,12 +69,15 @@ export function createFiveCatsSquad({
   cue,
   status,
   formationStatus,
+  getLanguage = () => 'pt',
 }) {
   const wings = SQUAD_PILOTS.map((pilot) => {
     const mesh = createWing(pilot);
     mesh.visible = false;
+    const label = addFiveCatsIffTag(mesh, pilot);
     scene.add(mesh);
-    return { pilot, mesh };
+    return { pilot, mesh, label };
+  
   });
   let intro = 0;
   let plasmaTime = 0,
@@ -104,6 +156,13 @@ export function createFiveCatsSquad({
   }
   function update(dt, { sector, elapsed, pilot, aspect = 1.7, power = 1, playing = true }) {
     if (!playing) return { intro: intro > 0, energySpent: 0 };
+    const lang = getLanguage();
+    for (const wing of wings) {
+      if (wing.label.userData.locale === lang) continue;
+      wing.label.material.map = iffTexture(wing.pilot.name, lang);
+      wing.label.userData.locale = lang;
+      wing.label.material.needsUpdate = true;
+    }
     plasmaCooldown = Math.max(0, plasmaCooldown - dt);
     overdriveCooldown = Math.max(0, overdriveCooldown - dt);
     if (intro > 0) {
