@@ -34,7 +34,11 @@ test('maglev and evac shuttles animate independently and honor graphics, phases 
   const horizon = scene.getObjectByName('city-distant-horizon');
   const life = near.getObjectByName('city-urban-life');
   assert.ok(life);
-  assert.equal(life.children.length, 11, '2 lateral maglevs, 1 overhead maglev, 1 guideway and 7 evacuation craft');
+  assert.equal(
+    life.children.length,
+    11,
+    '2 lateral maglevs, 1 overhead maglev, 1 guideway and 7 evacuation craft',
+  );
   assert.equal(far.getObjectByName('city-urban-life').children.length, 11);
   const west = near.getObjectByName('city-maglev-west');
   const east = near.getObjectByName('city-maglev-east');

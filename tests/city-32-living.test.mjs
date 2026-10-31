@@ -103,12 +103,14 @@ test('City 3.2 distant skyline uses instancing and city scenery does not leak in
   assert.equal(scene.getObjectByName('city-distant-horizon').visible, false);
 });
 
-
 test('City 3.2 fictional advertising spans the full route and commercial districts are visually distinct', () => {
   const living = createCity32Living(anchors);
   const signage = living.getObjectByName('city32-facade-advertisements').children;
   const depths = signage.map((sign) => sign.position.z);
-  assert.ok(Math.max(...depths) - Math.min(...depths) > 1350, 'ads remain visible beyond the opening district');
+  assert.ok(
+    Math.max(...depths) - Math.min(...depths) > 1350,
+    'ads remain visible beyond the opening district',
+  );
   const zones = living.getObjectByName('city32-commercial-districts');
   assert.ok(zones);
   assert.deepEqual(
@@ -147,7 +149,10 @@ test('opening maglev is visually aligned with a station and transverse pass cros
   assert.ok(main.getObjectByName('city-maglev-campaign-side-panel')?.material.map?.isTexture);
   assert.ok(bridge.getObjectByName('city32-maglev-crossing-guideway')?.isMesh);
   assert.ok(crossing.visible, 'the overhead maglev pass is available in Medium and portrait');
-  assert.ok(Math.abs(crossing.position.x) < 80, 'the transverse train overlaps the camera-forward view');
+  assert.ok(
+    Math.abs(crossing.position.x) < 80,
+    'the transverse train overlaps the camera-forward view',
+  );
   assert.ok(crossing.position.y > 60, 'train passes above instead of through the flight lane');
   assert.ok(bridge.userData.visualOnly && crossing.userData.visualOnly);
   assert.ok(near.getObjectByName('city-maglev-terminal-advertisement')?.material.map?.isTexture);
@@ -160,5 +165,9 @@ test('opening maglev is visually aligned with a station and transverse pass cros
   world.reset();
   assert.equal(crossing.position.x, -75);
   world.setSector(SECTORS[1]);
-  assert.equal(near.getObjectByName('city-urban-life').visible, false, 'city train group is invisible over ocean');
+  assert.equal(
+    near.getObjectByName('city-urban-life').visible,
+    false,
+    'city train group is invisible over ocean',
+  );
 });

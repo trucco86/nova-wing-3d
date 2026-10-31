@@ -214,7 +214,8 @@ function districtIdentity(parent) {
         plane,
         new T.MeshBasicMaterial({
           map: advertisingTexture(brand, tagline, color),
-          toneMapped: false, side: T.DoubleSide,
+          toneMapped: false,
+          side: T.DoubleSide,
         }),
       );
       panel.name = 'city32-district-' + district.name + '-billboard';

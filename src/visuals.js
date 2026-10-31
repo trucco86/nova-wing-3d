@@ -1207,9 +1207,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   crossNeon.name = 'city32-maglev-crossing-luminous-rail';
   maglevCrossing.add(crossBeam, crossNeon);
   for (const side of [-1, 1]) {
-    maglevCrossing.add(
-      box(7, 68, 9, metal('#6a94a5', 0.76, 0.38), side * 125, 25, -345),
-    );
+    maglevCrossing.add(box(7, 68, 9, metal('#6a94a5', 0.76, 0.38), side * 125, 25, -345));
   }
   urbanLife.add(maglevCrossing);
   const transverseTrain = createMaglevTrain(1);

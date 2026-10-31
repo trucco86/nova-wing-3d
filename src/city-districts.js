@@ -139,7 +139,9 @@ export function createCityDistricts() {
     const stationGroup = new T.Group();
     stationGroup.name = opening
       ? 'city-maglev-opening-terminal'
-      : side < 0 ? 'city-maglev-station-west' : 'city-maglev-station-east';
+      : side < 0
+        ? 'city-maglev-station-west'
+        : 'city-maglev-station-east';
     stationGroup.position.set(side * 80, 0, z);
     stationGroup.userData.district = 'transit';
     const add = (material, x, y, zz, w, h, d) => {

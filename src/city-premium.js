@@ -196,7 +196,7 @@ export function createMaglevTrain(side) {
   maglevAd.name = 'city-maglev-campaign-side-panel';
   maglevAd.userData.visualOnly = true;
   maglevAd.position.set(-side * 6.75, 0.5, 0);
-  maglevAd.rotation.y = -side * Math.PI / 2;
+  maglevAd.rotation.y = (-side * Math.PI) / 2;
   train.add(maglevAd);
   // Short inboard light strips keep the carriage readable during its early pass.
   for (const dz of [-30, 30]) {

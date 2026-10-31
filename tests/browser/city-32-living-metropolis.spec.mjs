@@ -24,13 +24,19 @@ test('City 3.2 living metropolis renders ads, aerial crossing, illuminated distr
   expect(stats.calls, 'City 3.2 must respect a bounded draw-call budget').toBeLessThan(1000);
   expect(stats.triangles).toBeGreaterThan(0);
   await info.attach('city32-webgl-render-budget.json', {
-    body: Buffer.from(JSON.stringify({
-      candidate: 'city-3.2',
-      project: info.project.name,
-      viewport: page.viewportSize(),
-      stats,
-      note: 'Software WebGL draw-call sample; not physical-device FPS',
-    }, null, 2)),
+    body: Buffer.from(
+      JSON.stringify(
+        {
+          candidate: 'city-3.2',
+          project: info.project.name,
+          viewport: page.viewportSize(),
+          stats,
+          note: 'Software WebGL draw-call sample; not physical-device FPS',
+        },
+        null,
+        2,
+      ),
+    ),
     contentType: 'application/json',
   });
   expect(runtimeErrors).toEqual([]);
