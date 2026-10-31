@@ -83,6 +83,7 @@ import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-qual
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
+import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
 import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
@@ -1700,6 +1701,21 @@ export function createGame({
                 ? rnd(12, 24)
                 : rnd(1, 19));
     o.position.set(x, y, -200);
+    // All enemy projectiles originate at visible physical sockets.
+    // Walker and hover walker reuse their two articulated eye emitters.
+    if (kind !== 'walker' && !airborneRobot) {
+      const mount = ground ? o.getObjectByName('turret') ?? o : o;
+      for (const side of [-1, 1]) {
+        const muzzle = new T.Mesh(
+          new T.SphereGeometry(0.8, 8, 6),
+          new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false }),
+        );
+        muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
+        muzzle.position.set(side * (ground ? 1.8 : 2.7), ground ? 0.2 : 0,
+          ground ? 11.8 : kind === 'subboss' ? 13 : 3.7);
+        mount.add(muzzle);
+      }
+    }
     if (kind === 'walker' || airborneRobot) o.userData.combatState = 'deploying';
     if (airborneRobot) {
       const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
@@ -1776,6 +1792,18 @@ export function createGame({
       elite,
       kind,
     });
+  }
+  function bossMuzzle(side = 0) {
+    if (!boss) return null;
+    boss.updateMatrixWorld(true);
+    return boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null;
+  }
+  function hostileMuzzles(e) {
+    e.o.updateMatrixWorld(true);
+    if (e.kind === 'walker' || e.airborneRobot) return robotEyeMuzzles(e.o);
+    return ['enemy-muzzle-left', 'enemy-muzzle-right']
+      .map((name) => e.o.getObjectByName(name)?.getWorldPosition(new T.Vector3()))
+      .filter(Boolean);
   }
   function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
@@ -1899,11 +1927,14 @@ export function createGame({
 
       if (part.hp === 0) {
         part.mesh.visible = false;
+        // Destroyed generators power a specific turret. The barrel physically
+        // disappears and attack planner drops that battery's shots.
+        if (part.battery) part.battery.visible = false;
         explode(part.mesh.getWorldPosition(new T.Vector3()), 24);
         credits += 35;
         message(
-          'GERADOR DESTRUÍDO · ' +
-            (parts.length === 1 ? 'NÚCLEO EXPOSTO' : 'MIRE NO OUTRO GERADOR'),
+          'BATERIA DESTRUÍDA · ' +
+            (parts.length === 1 ? 'NÚCLEO EXPOSTO · FOGO REDUZIDO' : 'MENOS TIROS · MIRE NA OUTRA'),
         );
       }
       return dealt;
@@ -3648,7 +3679,7 @@ export function createGame({
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
         if (e.kind === 'walker' || e.airborneRobot) {
-          const eyes = robotEyeMuzzles(e.o);
+          const eyes = hostileMuzzles(e);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
           for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
@@ -3662,7 +3693,8 @@ export function createGame({
                 ? e.subbossTactic.aim
                 : [0])
             bullet(
-              e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+              hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
+                hostileMuzzles(e)[0] ?? e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
               e.subbossTactic?.spell ?? '',
             );
@@ -3675,7 +3707,7 @@ export function createGame({
             e.combatPhase,
           ))
             bullet(
-              e.o.position.clone().add(new T.Vector3(0, 0, 10)),
+              hostileMuzzles(e)[0] ?? e.o.position.clone(),
               target,
               e.subbossTactic?.spell ?? '',
             );
