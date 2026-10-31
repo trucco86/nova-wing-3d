@@ -22,11 +22,16 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   assert.equal(earth.visible, false);
   assert.equal(skyDome.material.uniforms.launchHaze.value, 0);
   world.setLaunchAscent(0.5, true);
-  assert.equal(skyDome.material.uniforms.launchHaze.value, 0,
-    'early skyline must remain legible without a premature night/fog overlay');
+  assert.equal(
+    skyDome.material.uniforms.launchHaze.value,
+    0,
+    'early skyline must remain legible without a premature night/fog overlay',
+  );
   world.setLaunchAscent(0.8, true);
-  assert.ok(skyDome.material.uniforms.launchHaze.value > 0.5,
-    'night-sky and atmospheric haze bridge the empty sky before Earth');
+  assert.ok(
+    skyDome.material.uniforms.launchHaze.value > 0.5,
+    'night-sky and atmospheric haze bridge the empty sky before Earth',
+  );
   assert.ok(city.position.y < -150, 'buildings retreat beneath the player');
   assert.ok(ground.position.y < -150, 'terrain retreats with city');
   assert.equal(city.visible, false, 'city is below the player before space appears');

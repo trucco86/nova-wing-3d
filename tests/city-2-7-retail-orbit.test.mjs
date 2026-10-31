@@ -143,7 +143,7 @@ test('City 2.7 transition is continuous, leaves architecture below the player an
   assert.equal(city.visible, true, 'the city must exist alone, before Earth');
   assert.equal(early, 0);
   assert.equal(sun.visible, false);
-  world.setLaunchAscent(0.70, true);
+  world.setLaunchAscent(0.7, true);
   assert.ok(city.position.y < -300, 'city physically drops away during ascent');
   assert.equal(city.visible, true);
   assert.equal(earth.visible, false);
@@ -153,7 +153,7 @@ test('City 2.7 transition is continuous, leaves architecture below the player an
   assert.equal(horizon.visible, false);
   assert.equal(earth.visible, false, 'no globe during the atmospheric mist');
   assert.ok(scene.getObjectByName('launch-sky-dome').material.uniforms.launchHaze.value > 0);
-  world.setLaunchAscent(0.90, true);
+  world.setLaunchAscent(0.9, true);
   const middle = earth.material.uniforms.fade.value;
   assert.ok(middle > early && middle < 1, 'Earth fades in only after the sky clears');
   assert.equal(earth.visible, true);
