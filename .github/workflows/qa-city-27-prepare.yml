@@ -1,0 +1,44 @@
+name: City 2.7 isolated QA bundle preparation
+on:
+  push:
+    branches:
+      - feat/city-27-retail-orbit-20261031
+    paths:
+      - .github/workflows/qa-city-27-prepare.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NOVA_BASE_SHA: 8c33ce20201d71f4a200e69cdaf653f548a10939
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-27-retail-orbit-20261031
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.36
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - name: Commit isolated City 2.7 release package
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.36.md index.html src/visuals.js src/city-commerce.js src/launch-celestials.js src/orbital-launch.js tests/city-2-7-retail-orbit.test.mjs tests/orbital-launch.test.mjs tests/browser/launch-orbit.spec.mjs specs/city-2-7-premium-retail-and-orbit.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): prepare City 2.7 v1.27.36 web QA release"
+            git push origin HEAD:feat/city-27-retail-orbit-20261031
+          fi
