@@ -101,9 +101,13 @@ export function createAdaptiveGraphics({
       fastWindows = 0;
       if (resolutionScale > MIN_SCALE + 0.015)
         resolutionScale = Math.max(MIN_SCALE, Number((resolutionScale - 0.13).toFixed(2)));
-      else if (mode === 'auto' && quality === 'high') {
+      else if (quality === 'high' &&
+        (mode === 'auto' || currentFps < 34)) {
+        // Even the minimum resolution could not sustain smooth gameplay.
+        // This safety override also applies to manually selected High,
+        // while preserving that preference in Settings for later sessions.
         quality = 'medium';
-        resolutionScale = 1;
+        resolutionScale = 0.9;
       } else return null;
       cooldown = 7;
       return result();
@@ -114,8 +118,13 @@ export function createAdaptiveGraphics({
       fastWindows = 0;
       if (resolutionScale < 0.99) {
         resolutionScale = Math.min(1, Number((resolutionScale + 0.08).toFixed(2)));
-      } else if (mode === 'auto' && quality === 'medium' && !coarsePointer &&
-        !(Number.isFinite(deviceMemory) && deviceMemory <= 4)) {
+      } else if (mode === 'auto' && quality === 'medium' &&
+        !(Number.isFinite(deviceMemory) && deviceMemory <= 4) &&
+        (!coarsePointer || (
+          Number.isFinite(deviceMemory) && deviceMemory >= 8 &&
+          Number.isFinite(hardwareConcurrency) && hardwareConcurrency >= 8 &&
+          activeElapsed >= 30000
+        ))) {
         quality = 'high';
       } else return null;
       cooldown = 10;
