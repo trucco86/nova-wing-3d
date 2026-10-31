@@ -34,7 +34,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html src/city-premium.js tests/city-2-5-premium.test.mjs tests/city-2-6-transit.test.mjs tests/dynamic-scene.js tests/browser/mission-balance.spec.mjs releases/v1.27.35.md
+          git add index.html src/city-premium.js tests/city-2-5-premium.test.mjs tests/city-2-6-transit.test.mjs tests/graphics.test.mjs tests/dynamic-scene.js tests/browser/mission-balance.spec.mjs releases/v1.27.35.md
           if ! git diff --cached --quiet; then
             git commit -m "build(city): synchronize optimized maglev and diagnostic fixture"
             git push origin HEAD:feat/city-2-6-maglev-sculpted-20261031
