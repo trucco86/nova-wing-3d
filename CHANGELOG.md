@@ -1,8 +1,10 @@
 # Histórico
 
-## 1.27.38 — Candidata em preparação
+## 1.27.38 — Graphics 3.4 / NOVA-7 futurista clean e mecha (QA)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Revertido o excesso de carenagens e pods do fighter na 3.3, preservando a silhueta anterior. Frisos discretos na fuselagem, entradas de ar compactas e motores refinados com anéis, aletas e núcleos luminosos.
+- NOVA-7 principal com aumento visual de 5% sem alterar raiz física do jogador; mecha um pouco maior, com acabamento e turbinas mais elaboradas, sem modificar o rig de combate.
+- 386 testes unitários passaram na candidata; validação de navegador, FPS e homologação visual pendentes. PR #191 draft sobre #190.
 
 ## 1.27.37 — Graphics 3.3 / Fleet Detail Pass (QA)
 
