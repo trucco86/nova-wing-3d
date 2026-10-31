@@ -23,12 +23,12 @@ export function nearbyHostileThreats(hostile, position, { radiusX = 29, radiusY 
     const p = shot.o.position;
     const relZ = p.z - position.z;
     if (relZ < -ahead || relZ > 16) continue;
-    const timeToPlane = relZ / Math.min(-0.001, shot.v.z);
-    const canApproach = shot.v.z > 0 || (shot.v.z < 0 && relZ > 0);
-    // Count only shots moving towards the player's plane, not departing shots.
-    if (!canApproach || (shot.v.z < 0 && timeToPlane > 0)) continue;
     const x = p.x - position.x;
     const y = p.y - position.y;
+    // Relative velocity points towards the pilot; exclude shots already
+    // travelling away even if their absolute distance is small.
+    const approach = -x * shot.v.x - y * shot.v.y - relZ * shot.v.z;
+    if (approach <= 0) continue;
     if (Math.abs(x) <= radiusX && Math.abs(y) <= radiusY) threats++;
   }
   return threats;
