@@ -318,7 +318,7 @@ export function createCity32Skyline() {
       }
     }
   }
-  instanced('city32-skyline-secondary-towers', glass, silhouettes, root);
+  instanced('city32-skyline-secondary-towers', new T.MeshStandardMaterial({color:'#779abb',metalness:0.57,roughness:0.48}), silhouettes, root);
   instanced('city32-skyline-illuminated-bands', neon, bands, root);
   return root;
 }
