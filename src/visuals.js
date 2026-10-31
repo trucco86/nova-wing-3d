@@ -1616,7 +1616,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       key.intensity = illuminatedCity ? 3.8 : 3.2;
       purple.color.set(illuminatedCity ? '#ff82dc' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff');
       purple.intensity = illuminatedCity ? 1.8 : 0.75;
-      scene.background.set(illuminatedCity ? '#507d9e' : sector.sky);
+      scene.background.set(sector.sky);
       skyMat.uniforms.ambient.value.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.density = illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
