@@ -1,4 +1,4 @@
-name: Prepare City 3.0 Boost Options Matrix QA
+name: Prepare City 3.0 Boost Options Matrix QA — validated 405
 on:
   push:
     branches:
