@@ -7,7 +7,7 @@ export const ORBITAL_LAUNCH = Object.freeze({
   armAfterSeconds: 22,
   minimumBoostSeconds: 1.8,
   boostClimbSeconds: 3.4,
-  atmosphericSeconds: 38,
+  atmosphericSeconds: 48,
   boostClimbFraction: 0.24,
 });
 const smooth = (x) => {
