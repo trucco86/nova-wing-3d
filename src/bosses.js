@@ -2,6 +2,7 @@ import * as T from 'three';
 import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
+import { createBossVisualIdentity } from './boss-visual-identity.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -506,6 +507,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
     }
     g.add(face);
   }
+  g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   g.userData = {
     parts,
