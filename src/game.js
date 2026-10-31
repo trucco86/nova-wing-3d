@@ -2435,7 +2435,9 @@ export function createGame({
     settingsOpen = true;
     $('settingsMenu').hidden = false;
     applySettings();
-    $('settingLanguage').focus?.({ preventScroll: true });
+    // Keep the language selector visible but never auto-open a native mobile popup.
+    $('settingsTitle').setAttribute?.('tabindex', '-1');
+    $('settingsTitle').focus?.({ preventScroll: true });
   }
   function closeSettings() {
     settingsOpen = false;
