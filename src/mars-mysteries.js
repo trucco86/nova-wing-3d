@@ -3,7 +3,7 @@ import * as T from 'three';
 // Original science-fiction art inspired by real Martian pareidolia (Cydonia)
 // and Olympus Mons. Alien architecture is explicitly a fictional game element.
 const strata = new T.MeshStandardMaterial({
-  color: '#ab6b4a', metalness: 0.01, roughness: 0.97, flatShading: true, fog: false,
+  color: '#ab6b4a', metalness: 0.01, roughness: 0.97, flatShading: true, fog: true,
 });
 const rusty = new T.MeshStandardMaterial({
   color: '#8d5643', metalness: 0.04, roughness: 0.93, flatShading: true,
@@ -64,14 +64,14 @@ function olympusMons() {
   geo.computeVertexNormals();
   const mountain = new T.Mesh(geo, new T.MeshStandardMaterial({
     color: '#c18a67', vertexColors: true, roughness: 1,
-    flatShading: true, metalness: 0, fog: false, side: T.DoubleSide,
+    flatShading: true, metalness: 0, fog: true, side: T.DoubleSide,
   }));
   mountain.name = 'mars-olympus-shield-volcano';
   mountain.userData.visualOnly = true;
   landmark.add(mountain);
   const caldera = new T.Mesh(
     new T.CylinderGeometry(89, 89, 3, 50),
-    new T.MeshStandardMaterial({ color: '#693d37', roughness: 1, fog: false }),
+    new T.MeshStandardMaterial({ color: '#693d37', roughness: 1, fog: true }),
   );
   caldera.name = 'mars-olympus-summit-caldera';
   caldera.position.y = 132;
