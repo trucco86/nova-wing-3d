@@ -1,4 +1,5 @@
 name: Prepare City 3.3 Premium Architecture v1.27.51
+# Retest after Three.Color instance palette fix and City 3.3 browser captures.
 on:
   push:
     branches:
