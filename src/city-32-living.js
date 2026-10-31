@@ -39,7 +39,7 @@ const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795
 const transform = new T.Object3D();
 const textureCache = new Map();
 
-function advertisingTexture(brand, subtitle, color) {
+export function advertisingTexture(brand, subtitle, color) {
   if (textureCache.has(brand)) return textureCache.get(brand);
   let texture;
   if (typeof document !== 'undefined' && document.createElement) {
@@ -439,7 +439,8 @@ export function createCity32Skyline() {
         w,
         h,
         d: 19,
-        tint: palette[(i + tier) % palette.length],
+        // Architectural mass is stone/steel, not a neon-coloured solid.
+        tint: new T.Color(['#6c7c88', '#87959b', '#a0a9ac', '#7c8992', '#adb2ae'][(i + tier) % 5]),
       });
       for (let y = 0; y < 3; y++) {
         bands.push({

@@ -9,6 +9,7 @@ import {
   setCity32Quality,
   updateCity32Living,
 } from './city-32-living.js';
+import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import {
@@ -933,8 +934,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Medium, without extra geometry or mobile postprocessing passes.
   const cityNeon = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
   const unit = new T.BoxGeometry(1, 1, 1),
-    bodyMat = metal('#4f84a4', 0.67, 0.3),
-    roofMat = metal('#a1b8d0', 0.69, 0.27);
+    // City 3.3: brushed steel, slate, limestone and tempered glazing.
+    bodyMat = metal('#e7edf0', 0.65, 0.36),
+    roofMat = metal('#d9e1e4', 0.68, 0.31);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
@@ -990,6 +992,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       w = rnd(7, 19),
       depth = rnd(8, 18);
     buildingAnchors.push({ x, h, z, w, depth });
+    const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
+    bodies.setColorAt(
+      i,
+      new T.Color(architecturePalette[(i + Math.floor(i / 11)) % architecturePalette.length]),
+    );
+    caps.setColorAt(
+      i,
+      new T.Color(architecturePalette[(i + Math.floor(i / 7) + 2) % architecturePalette.length]),
+    );
     inst(bodies, i, x, h / 2 - 7, z, w, h, depth);
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
@@ -1096,6 +1107,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       );
     }
   }
+  bodies.instanceColor.needsUpdate = true;
+  caps.instanceColor.needsUpdate = true;
   windows.count = wi;
   facadeWindowsCool.count = coolWindows;
   facadeWindowsAmber.count = amberWindows;
@@ -1242,6 +1255,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCityUrbanDrones());
   city.add(createCity30DistrictLife(buildingAnchors));
   city.add(createCity32Living(buildingAnchors));
+  city.add(createCity33Premium(buildingAnchors));
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
@@ -1252,6 +1266,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   animateCityUrbanDrones(cityFar.getObjectByName('city-urban-drones'), 0);
   cityFar.getObjectByName('city-matrix-rooftop-taxis').userData.phase = 1.8;
   cityFar.getObjectByName('city32-living-metropolis').userData.phase = 2.8;
+  cityFar.getObjectByName('city33-premium-urban-life').userData.phase = 2.1;
+  updateCity33Premium(cityFar.getObjectByName('city33-premium-urban-life'), 0);
   updateCity32Living(cityFar.getObjectByName('city32-living-metropolis'), 0);
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
@@ -1497,6 +1513,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCityUrbanDronesQuality(tile.getObjectByName('city-urban-drones'), quality);
         setCity30Quality(tile.getObjectByName('city-matrix-streets'), quality);
         setCity32Quality(tile.getObjectByName('city32-living-metropolis'), quality);
+        setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
       }
     },
     showCarrierForBoss() {
@@ -1626,6 +1643,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-urban-drones').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-matrix-streets').visible = sceneryTheme === 'city';
         tile.getObjectByName('city32-living-metropolis').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city33-premium-urban-life').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
@@ -1856,6 +1874,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
             animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
+            updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
           }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev-infrastructure') continue;
@@ -1924,6 +1943,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), 0);
         animateCity30(tile.getObjectByName('city-matrix-streets'), 0);
         updateCity32Living(tile.getObjectByName('city32-living-metropolis'), 0);
+        updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), 0);
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
       }
