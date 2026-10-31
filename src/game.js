@@ -3966,7 +3966,7 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
+              ? 'ARMA VULNERÁVEL · BATERIA ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
               : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
