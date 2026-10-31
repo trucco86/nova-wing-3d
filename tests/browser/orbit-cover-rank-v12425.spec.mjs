@@ -59,7 +59,7 @@ test('first stage shows persistent boost instruction only in the upper HUD', asy
   await page.evaluate(() => window.fixture.advance(23));
   const notice = page.locator('#launchBoostNotice');
   await expect(notice).toBeVisible();
-  await expect(notice).toContainText('SHIFT / BOOST');
+  await expect(notice).toContainText('SHIFT / SUPER BOOST');
   const box = await notice.boundingBox();
   expect(box).not.toBeNull();
   expect(box.y + box.height).toBeLessThan(844 * 0.48);
