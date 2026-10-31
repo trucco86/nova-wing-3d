@@ -215,6 +215,48 @@ export function createLaunchCelestials(scene) {
   }
   scene.add(sun);
 
+  // A separate evacuation squad remains above the falling city during boost
+  // and atmospheric climb. These ships gradually shrink into the orbital sky
+  // instead of teleporting out with the urban tile.
+  const escapeGroup = new T.Group();
+  escapeGroup.name = 'launch-evacuation-convoy';
+  escapeGroup.userData.visualOnly = true;
+  const escapeHull = new T.MeshStandardMaterial({
+    color: '#8ea9c3', metalness: 0.76, roughness: 0.33,
+  });
+  const escapeCockpit = new T.MeshStandardMaterial({
+    color: '#1a4c69', metalness: 0.42, roughness: 0.17,
+  });
+  const escapeFlame = new T.MeshBasicMaterial({ color: '#ffa35a', toneMapped: false });
+  const convoyShips = [];
+  for (let i = 0; i < 4; i++) {
+    const ship = new T.Group();
+    ship.name = 'launch-escaping-ship-' + i;
+    ship.userData.visualOnly = true;
+    const core = new T.Mesh(new T.CapsuleGeometry(3.3, 13, 5, 9), escapeHull);
+    core.rotation.x = Math.PI / 2;
+    ship.add(core);
+    const cabin = new T.Mesh(new T.BoxGeometry(4.8, 2.3, 7), escapeCockpit);
+    cabin.position.set(0, 2.1, -5.2);
+    ship.add(cabin);
+    const wing = new T.Mesh(new T.BoxGeometry(19, 0.8, 5), escapeHull);
+    wing.position.set(0, -0.4, 2.4);
+    ship.add(wing);
+    const plumes = [];
+    for (const side of [-1, 1]) {
+      const jet = new T.Mesh(new T.ConeGeometry(1.4, 13, 9), escapeFlame);
+      jet.name = 'launch-escaping-ship-thruster';
+      jet.rotation.x = -Math.PI / 2;
+      jet.position.set(side * 2.3, -1.1, 13.4);
+      ship.add(jet);
+      plumes.push(jet);
+    }
+    ship.userData.plumes = plumes;
+    escapeGroup.add(ship);
+    convoyShips.push(ship);
+  }
+  scene.add(escapeGroup);
+
   let high = false;
   function setGraphicsQuality(quality) {
     high = quality === 'high';
@@ -249,6 +291,21 @@ export function createLaunchCelestials(scene) {
     for (const [i, sprite] of ghostSprites.entries()) {
       sprite.visible = high;
       sprite.material.opacity = sunFade * (i === 0 ? 0.24 : 0.13);
+    }
+    escapeGroup.visible = progress > 0.10 && progress < 0.995;
+    for (const [i, ship] of convoyShips.entries()) {
+      const side = i % 2 ? 1 : -1;
+      const climb = smooth(progress);
+      ship.position.set(
+        side * (90 + i * 28 + climb * 95),
+        -15 + climb * (500 + i * 32),
+        -600 - i * 195 - climb * 990,
+      );
+      ship.rotation.set(-0.28 - climb * 0.30, side * 0.08, side * (-0.03 - climb * 0.13));
+      ship.scale.setScalar(0.95 - climb * 0.78);
+      for (const plume of ship.userData.plumes) {
+        plume.scale.set(1, 1 + 0.16 * Math.sin(progress * 52 + i), 1);
+      }
     }
   }
   update(0);
