@@ -1101,6 +1101,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       );
     }
   }
+  bodies.instanceColor.needsUpdate = true;
+  caps.instanceColor.needsUpdate = true;
   windows.count = wi;
   facadeWindowsCool.count = coolWindows;
   facadeWindowsAmber.count = amberWindows;
