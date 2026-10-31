@@ -1,5 +1,6 @@
 name: Prepare City 3.4 Combat Hardpoints v1.27.52
 # Final clean-room rerun after forward-nose muzzle geometry and user-facing boss battery hints.
+# Retest after shared enemy muzzle GPU resource fix; no concurrent source writes.
 on:
   push:
     branches:
