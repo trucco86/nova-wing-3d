@@ -25,12 +25,18 @@ test('Mars is visibly a new planet with its own desert, two moons and rover', as
   expect(frame.calls).toBeLessThan(1100);
   expect(exceptions).toEqual([]);
   await info.attach('mars-webgl-sample.json', {
-    body: Buffer.from(JSON.stringify({
-      viewport: page.viewportSize(),
-      project: info.project.name,
-      measured: frame,
-      note: 'Browser WebGL sample, not measured physical iPhone GPU performance',
-    }, null, 2)),
+    body: Buffer.from(
+      JSON.stringify(
+        {
+          viewport: page.viewportSize(),
+          project: info.project.name,
+          measured: frame,
+          note: 'Browser WebGL sample, not measured physical iPhone GPU performance',
+        },
+        null,
+        2,
+      ),
+    ),
     contentType: 'application/json',
   });
 });

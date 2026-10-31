@@ -34,7 +34,11 @@ export function createAsteroidInterior(scene) {
   });
   const veinMaterial = new T.MeshBasicMaterial({ color: '#b98cfa', toneMapped: false });
   const oreMaterial = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-  const braceMaterial = new T.MeshStandardMaterial({color:'#77808c',metalness:0.7,roughness:0.43});
+  const braceMaterial = new T.MeshStandardMaterial({
+    color: '#77808c',
+    metalness: 0.7,
+    roughness: 0.43,
+  });
   const crystalGeo = new T.OctahedronGeometry(1, 0);
   const braceGeo = new T.BoxGeometry(1, 1, 1);
   const gateMaterial = new T.MeshStandardMaterial({
@@ -70,7 +74,7 @@ export function createAsteroidInterior(scene) {
       dummy.scale.set(12 + (j % 3) * 2, 14 + (j % 4) * 2, 26);
       dummy.updateMatrix();
       rocks.setMatrixAt(j, dummy.matrix);
-      rocks.setColorAt(j, new T.Color(['#6e5963', '#8a7082', '#53636d', '#8c6971'][(j+i)%4]));
+      rocks.setColorAt(j, new T.Color(['#6e5963', '#8a7082', '#53636d', '#8c6971'][(j + i) % 4]));
     }
     rocks.instanceMatrix.needsUpdate = true;
     rocks.instanceColor.needsUpdate = true;
@@ -80,29 +84,29 @@ export function createAsteroidInterior(scene) {
     // instancing, keep the radius >37 clear and cost two batches per ring.
     const ores = new T.InstancedMesh(crystalGeo, oreMaterial, 12);
     ores.name = 'asteroid-cavern-mineral-crystals';
-    for(let k=0;k<12;k++) {
-      const a=(k/12)*Math.PI*2+i*.15;
-      dummy.position.set(Math.cos(a)*41.8,Math.sin(a)*41.8,-14+(k%4)*6);
-      dummy.rotation.set(k*.2, k*.5, a);
-      dummy.scale.set(2.2+(k%3), 4.5+(k%4), 2.4);
+    for (let k = 0; k < 12; k++) {
+      const a = (k / 12) * Math.PI * 2 + i * 0.15;
+      dummy.position.set(Math.cos(a) * 41.8, Math.sin(a) * 41.8, -14 + (k % 4) * 6);
+      dummy.rotation.set(k * 0.2, k * 0.5, a);
+      dummy.scale.set(2.2 + (k % 3), 4.5 + (k % 4), 2.4);
       dummy.updateMatrix();
-      ores.setMatrixAt(k,dummy.matrix);
-      ores.setColorAt(k,new T.Color(['#b48fff','#6cc9ee','#cfadff','#8d7ac9'][k%4]));
+      ores.setMatrixAt(k, dummy.matrix);
+      ores.setColorAt(k, new T.Color(['#b48fff', '#6cc9ee', '#cfadff', '#8d7ac9'][k % 4]));
     }
-    ores.instanceMatrix.needsUpdate=true;
-    ores.instanceColor.needsUpdate=true;
+    ores.instanceMatrix.needsUpdate = true;
+    ores.instanceColor.needsUpdate = true;
     section.add(ores);
-    const braces = new T.InstancedMesh(braceGeo,braceMaterial,8);
-    braces.name='asteroid-cavern-mining-braces';
-    for(let k=0;k<8;k++){
-      const angle=k*Math.PI/4;
-      dummy.position.set(Math.cos(angle)*42,Math.sin(angle)*42,-10);
-      dummy.rotation.set(0,0,angle+Math.PI/2);
-      dummy.scale.set(1.3,14,1.8);
+    const braces = new T.InstancedMesh(braceGeo, braceMaterial, 8);
+    braces.name = 'asteroid-cavern-mining-braces';
+    for (let k = 0; k < 8; k++) {
+      const angle = (k * Math.PI) / 4;
+      dummy.position.set(Math.cos(angle) * 42, Math.sin(angle) * 42, -10);
+      dummy.rotation.set(0, 0, angle + Math.PI / 2);
+      dummy.scale.set(1.3, 14, 1.8);
       dummy.updateMatrix();
-      braces.setMatrixAt(k,dummy.matrix);
+      braces.setMatrixAt(k, dummy.matrix);
     }
-    braces.instanceMatrix.needsUpdate=true;
+    braces.instanceMatrix.needsUpdate = true;
     section.add(braces);
     const seam = new T.Mesh(new T.TorusGeometry(36.7, 0.44, 5, 28), veinMaterial);
     seam.position.z = -14;

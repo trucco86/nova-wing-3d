@@ -51,8 +51,11 @@ test('city, Mars and planetary globes are mutually exclusive', () => {
   assert.ok(scene.getObjectByName('mars-moon-phobos'));
   assert.ok(scene.getObjectByName('mars-moon-deimos'));
   assert.ok(scene.getObjectByName('mars-curiosity-rover'));
-  assert.equal(scene.getObjectByName('launch-ground').visible, false,
-    'the Mars surface replaces the generic ocean/avenue plane');
+  assert.equal(
+    scene.getObjectByName('launch-ground').visible,
+    false,
+    'the Mars surface replaces the generic ocean/avenue plane',
+  );
   world.setSector(SECTORS[0]);
   world.setLaunchAscent(1, true);
   assert.equal(city.visible, false, 'city disappears during orbital exit');

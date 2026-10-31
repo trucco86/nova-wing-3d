@@ -77,6 +77,9 @@ test('all ten bosses have authored silhouettes and the Mars boss is a six-legged
     edge: new T.MeshBasicMaterial(),
     hot: new T.MeshBasicMaterial(),
   });
-  assert.equal(dune.children.filter((o) => o.name.startsWith('mars-dune-walker-upper-leg')).length, 6);
+  assert.equal(
+    dune.children.filter((o) => o.name.startsWith('mars-dune-walker-upper-leg')).length,
+    6,
+  );
   assert.ok(dune.getObjectByName('mars-armored-crust'));
 });

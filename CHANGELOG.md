@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.53 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.52 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.

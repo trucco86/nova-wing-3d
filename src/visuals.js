@@ -1664,8 +1664,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // black ground. A vivid twilight ambient is cheap and survives Medium
       // mode on mobile without any bloom or additional geometry.
       const illuminatedCity = sceneryTheme === 'city';
-      hemisphere.color.set(sceneryTheme === 'mars' ? '#ffdfb5' : illuminatedCity ? '#e4f4ff' : '#9fcdec');
-      hemisphere.groundColor.set(sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#567d9c' : '#09293a');
+      hemisphere.color.set(
+        sceneryTheme === 'mars' ? '#ffdfb5' : illuminatedCity ? '#e4f4ff' : '#9fcdec',
+      );
+      hemisphere.groundColor.set(
+        sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#567d9c' : '#09293a',
+      );
       hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.6 : 1.6;
       rim.color.set(illuminatedCity ? '#67ffe4' : sector.accent);
       rim.intensity = illuminatedCity ? 3.5 : 3;
@@ -1678,7 +1682,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.background.set(sector.sky);
       skyMat.uniforms.ambient.value.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
-      scene.fog.density = sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
+      scene.fog.density =
+        sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
@@ -2008,7 +2013,9 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
   // 4x MSAA on desktop mitigates shimmering roof edges and neon lines.
   // Touch GPUs keep cheaper native canvas antialiasing plus a higher DPR.
   const full = new T.WebGLRenderTarget(1, 1, {
-    type: targetType, depthBuffer: true, samples: coarsePointer ? 2 : 4,
+    type: targetType,
+    depthBuffer: true,
+    samples: coarsePointer ? 2 : 4,
   });
   const a = new T.WebGLRenderTarget(1, 1, { type: targetType, depthBuffer: false }),
     b = a.clone();

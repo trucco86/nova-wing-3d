@@ -4,11 +4,16 @@ import * as T from 'three';
 // Distant celestial bodies are deliberately larger for gameplay readability.
 // Decorative scene only: no projectile hitboxes or collision-system changes.
 const sand = new T.MeshStandardMaterial({
-  color: '#b97a52', roughness: 0.99, metalness: 0,
+  color: '#b97a52',
+  roughness: 0.99,
+  metalness: 0,
   vertexColors: true,
 });
 const stone = new T.MeshStandardMaterial({
-  color: '#bba28b', roughness: 0.95, metalness: 0.02, vertexColors: true,
+  color: '#bba28b',
+  roughness: 0.95,
+  metalness: 0.02,
+  vertexColors: true,
 });
 const darkRock = new T.MeshStandardMaterial({ color: '#765244', roughness: 0.94 });
 const hull = new T.MeshStandardMaterial({ color: '#c6bbb0', roughness: 0.58, metalness: 0.36 });
@@ -34,8 +39,11 @@ const seeded = (x) => fract(Math.sin(x * 127.13 + 15.78) * 43758.5453);
 function ridge(x, z) {
   const mx = Math.max(0, Math.abs(x) - 29);
   const far = Math.sin(z * 0.004 + x * 0.018) * 3.5;
-  return Math.min(35, mx * 0.06) * (0.64 + 0.36 * Math.sin(z * 0.009)) +
-    Math.sin(z * 0.025 + x * 0.015) * (mx > 0 ? 2.7 : 0.15) + far * Math.min(1, mx / 120);
+  return (
+    Math.min(35, mx * 0.06) * (0.64 + 0.36 * Math.sin(z * 0.009)) +
+    Math.sin(z * 0.025 + x * 0.015) * (mx > 0 ? 2.7 : 0.15) +
+    far * Math.min(1, mx / 120)
+  );
 }
 function makeSurface() {
   const geo = new T.PlaneGeometry(2100, 4500, 65, 140);
@@ -99,7 +107,10 @@ function makeMesa(index) {
   group.position.set((index % 2 ? 1 : -1) * (280 + (index % 3) * 80), 0, -370 - index * 320);
   group.userData.visualOnly = true;
   group.userData.marsChunk = true;
-  const p = new T.Mesh(new T.CylinderGeometry(30 + index % 3 * 6, 75 + index % 3 * 9, 75 + index % 3 * 18, 7), darkRock);
+  const p = new T.Mesh(
+    new T.CylinderGeometry(30 + (index % 3) * 6, 75 + (index % 3) * 9, 75 + (index % 3) * 18, 7),
+    darkRock,
+  );
   p.name = 'mars-layered-sedimentary-mesa';
   p.position.y = 34;
   p.scale.z = 2;
@@ -119,8 +130,16 @@ function makeMarsMoon(name, radius, position, tint) {
   group.position.set(...position);
   group.userData.fixedSky = true;
   group.userData.visualOnly = true;
-  const mesh = new T.Mesh(new T.IcosahedronGeometry(radius, 3),
-    new T.MeshStandardMaterial({color:tint, roughness: 1, metalness: 0, flatShading: true, fog: false}));
+  const mesh = new T.Mesh(
+    new T.IcosahedronGeometry(radius, 3),
+    new T.MeshStandardMaterial({
+      color: tint,
+      roughness: 1,
+      metalness: 0,
+      flatShading: true,
+      fog: false,
+    }),
+  );
   mesh.name = name + '-rocky-moon-surface';
   mesh.scale.set(1.2, 0.84, 0.91);
   group.add(mesh);
@@ -143,8 +162,17 @@ function makeCuriosity() {
       wheel.position.set(side * 4.55, 0.45, axle * 3.4);
       wheel.name = 'curiosity-wheel-' + (side < 0 ? 'left' : 'right') + '-' + axle;
       rover.add(wheel);
-      box(rover, 'curiosity-rocker-bogie-link', metal,
-        side * 3.1, 1.4, axle * 2.3, 2.8, 0.36, 0.45);
+      box(
+        rover,
+        'curiosity-rocker-bogie-link',
+        metal,
+        side * 3.1,
+        1.4,
+        axle * 2.3,
+        2.8,
+        0.36,
+        0.45,
+      );
     }
   }
   box(rover, 'curiosity-mast', metal, 0, 6.65, -2.5, 0.45, 5.0, 0.6);
@@ -182,7 +210,8 @@ export function updateMarsPremium(root, travel) {
   for (const child of root.children) {
     if (!child.userData.marsChunk) continue;
     const base = Number.isFinite(child.userData.startZ)
-      ? child.userData.startZ : (child.userData.startZ = child.position.z);
+      ? child.userData.startZ
+      : (child.userData.startZ = child.position.z);
     // Individual landmarks stream, with visible scene continuity and no
     // Earth-city architecture ever slipping into the Mars stage.
     const z = base + travel;
