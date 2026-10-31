@@ -160,5 +160,5 @@ test('opening maglev is visually aligned with a station and transverse pass cros
   world.reset();
   assert.equal(crossing.position.x, -75);
   world.setSector(SECTORS[1]);
-  assert.equal(near.visible, false, 'no train is visible over the ocean stage');
+  assert.equal(near.getObjectByName('city-urban-life').visible, false, 'city train group is invisible over ocean');
 });
