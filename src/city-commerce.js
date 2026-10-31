@@ -47,14 +47,14 @@ export function createCityCommerce() {
   high.name = 'city-commerce-high-detail';
   high.visible = false;
   const materials = {
-    plaza: steel('#283e50', 0.4),
-    building: steel('#4b6979', 0.39),
+    plaza: steel('#486c8f', 0.33),
+    building: steel('#759bad', 0.3),
     canopy: steel('#98afbc', 0.25),
-    glazing: steel('#16445a', 0.13),
-    retail: light('#75e8e9'),
-    warm: light('#f8aa7b'),
+    glazing: steel('#357fa6', 0.13),
+    retail: light('#5ef9fa'),
+    warm: light('#ffc381'),
     fine: steel('#b4d0d9', 0.24),
-    window: light('#c8f6fd'),
+    window: light('#f1fdff'),
   };
   const arrays = new Map();
   const transform = new T.Object3D();

@@ -1135,6 +1135,7 @@ export function createGame({
     $('pauseMenu').hidden = true;
     $('settingsMenu').hidden = true;
     settingsOpen = false;
+    document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
     stageIntroTime = 3;
     pickupFeedbackTime = 0;
@@ -2266,7 +2267,7 @@ export function createGame({
     settingsOpen = false;
     stageIntroTime = 0;
     setIntermissionUI(false);
-    document.body.classList.remove('in-mission', 'stage-intro');
+    document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
     document.body.classList.add('menu');
     for (const id of [
       'pauseMenu',
