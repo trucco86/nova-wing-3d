@@ -104,7 +104,7 @@ test('City 2.7 Earth has procedural clouds, a separate Moon and a distant Sun wi
   assert.equal(convoy.children.length, 4);
   assert.ok(convoy.children.every((ship) => ship.getObjectByName('launch-escaping-ship-thruster')));
   const startAltitude = convoy.children[0].position.y;
-  sky.update(0.90);
+  sky.update(0.9);
   assert.ok(convoy.visible, 'ships are visible during the final atmospheric climb');
   assert.ok(convoy.children[0].position.y > startAltitude, 'ships flee towards space');
   assert.ok(convoy.children[0].scale.x < 0.4, 'ships shrink into the far horizon');

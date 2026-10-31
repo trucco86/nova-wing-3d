@@ -127,7 +127,9 @@ export function setCityTrafficQuality(traffic, quality) {
   traffic.userData.quality = high ? 'high' : 'medium';
   traffic.children.forEach((group) => {
     const count = high ? group.userData.totalCount : group.userData.mediumCount;
-    group.children.forEach((mesh) => { mesh.count = count; });
+    group.children.forEach((mesh) => {
+      mesh.count = count;
+    });
   });
 }
 

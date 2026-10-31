@@ -25,8 +25,8 @@ A avenida da primeira fase ainda parecia uma pista urbana gerada proceduralmente
 - Sol como disco brilhante com dois halos aditivos em DataTexture local, sem dependência externa, presente em Médio e Alto.
 - Todo elemento celestial volta ao estado invisível em outros setores e no reset.
 
-
 ### Tráfego e evacuação City 2.7
+
 - 12 carros terrestres com cabines e LED, 7 táxis voadores em rotas laterais e 6 espaçonaves em subida; os dois tiles do cenário têm fases distintas para reduzir repetição.
 - 16 grupos GPU InstancedMesh por tile, compartilhando geometrias; no Médio exibir 8 carros, 4 táxis e 3 naves; no Alto, 12/7/6, sem instanciar novos objetos durante o frame.
 - A animação usa deslocamento acumulado da fase, nunca relógio real: pausar deve congelar todos; trocar setor esconde veículos terrestres e reiniciar recompõe posições determinísticas.

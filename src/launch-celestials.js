@@ -222,10 +222,14 @@ export function createLaunchCelestials(scene) {
   escapeGroup.name = 'launch-evacuation-convoy';
   escapeGroup.userData.visualOnly = true;
   const escapeHull = new T.MeshStandardMaterial({
-    color: '#8ea9c3', metalness: 0.76, roughness: 0.33,
+    color: '#8ea9c3',
+    metalness: 0.76,
+    roughness: 0.33,
   });
   const escapeCockpit = new T.MeshStandardMaterial({
-    color: '#1a4c69', metalness: 0.42, roughness: 0.17,
+    color: '#1a4c69',
+    metalness: 0.42,
+    roughness: 0.17,
   });
   const escapeFlame = new T.MeshBasicMaterial({ color: '#ffa35a', toneMapped: false });
   const convoyShips = [];
@@ -292,7 +296,7 @@ export function createLaunchCelestials(scene) {
       sprite.visible = high;
       sprite.material.opacity = sunFade * (i === 0 ? 0.24 : 0.13);
     }
-    escapeGroup.visible = progress > 0.10 && progress < 0.995;
+    escapeGroup.visible = progress > 0.1 && progress < 0.995;
     for (const [i, ship] of convoyShips.entries()) {
       const side = i % 2 ? 1 : -1;
       const climb = smooth(progress);
@@ -301,7 +305,7 @@ export function createLaunchCelestials(scene) {
         -15 + climb * (500 + i * 32),
         -600 - i * 195 - climb * 990,
       );
-      ship.rotation.set(-0.28 - climb * 0.30, side * 0.08, side * (-0.03 - climb * 0.13));
+      ship.rotation.set(-0.28 - climb * 0.3, side * 0.08, side * (-0.03 - climb * 0.13));
       ship.scale.setScalar(0.95 - climb * 0.78);
       for (const plume of ship.userData.plumes) {
         plume.scale.set(1, 1 + 0.16 * Math.sin(progress * 52 + i), 1);

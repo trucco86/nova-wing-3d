@@ -38,8 +38,14 @@ test('moving city has detailed surface cars, aerial taxis and ascending escape s
   const startingRoad = getTranslation(road);
   const startingFlying = getTranslation(flying);
   const startingEscape = getTranslation(escape);
-  assert.ok(Math.abs(startingRoad.x) < 40 && startingRoad.y < 0, 'ground vehicles run along the road');
-  assert.ok(Math.abs(startingFlying.x) > 90 && startingFlying.y > 30, 'flying taxis use aerial routes');
+  assert.ok(
+    Math.abs(startingRoad.x) < 40 && startingRoad.y < 0,
+    'ground vehicles run along the road',
+  );
+  assert.ok(
+    Math.abs(startingFlying.x) > 90 && startingFlying.y > 30,
+    'flying taxis use aerial routes',
+  );
   assert.ok(startingEscape.y > 40, 'evacuation spacecraft already start ascending');
   animateCityTraffic(traffic, 600);
   assert.notDeepEqual(getTranslation(road).toArray(), startingRoad.toArray());
