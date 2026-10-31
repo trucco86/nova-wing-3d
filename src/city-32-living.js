@@ -115,6 +115,7 @@ function facadeSigns(parent, buildings) {
   signs.userData.visualOnly = true;
   const accents = [];
   const shopfronts = [];
+  const backplates = [];
   let count = 0;
   // Anchored to actual building geometry: do not create floating signs.
   // At least one in each near-Z band, on alternating sides of the route.
@@ -145,10 +146,16 @@ function facadeSigns(parent, buildings) {
     panelMesh.scale.set(w, h, 1);
     panelMesh.name = 'city32-advertisement-panel';
     panel.add(panelMesh);
-    const trim = new T.Mesh(block, frame);
-    trim.scale.set(w + 1.5, h + 1.6, 0.65);
-    trim.position.z = -0.6;
-    panel.add(trim);
+    // All 18 metallic backplates share one GPU batch instead of creating a
+    // new draw call per billboard (also shared by the cloned far city tile).
+    backplates.push({
+      x: b.x,
+      y: signY,
+      z: panel.position.z - 0.6,
+      w: w + 1.5,
+      h: h + 1.6,
+      d: 0.65,
+    });
     // In front of panel; chromatic border provides legibility in Medium.
     accents.push({
       x: b.x,
@@ -180,6 +187,7 @@ function facadeSigns(parent, buildings) {
     signs.add(panel);
     count++;
   }
+  instanced('city32-advertising-backplates', frame, backplates, parent);
   instanced('city32-neon-billboard-frames', neon, accents, parent);
   instanced('city32-illuminated-shopfronts', neon, shopfronts, parent);
   parent.add(signs);
