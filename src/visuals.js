@@ -273,6 +273,19 @@ export function fighter(enemy = false, variant = -1) {
   return o;
 }
 
+/** Visually enlarge only the fighter skin, not its parent gameplay/collision transform. */
+export function scaleFighterVisual(ship, size = 1.05) {
+  if (!Number.isFinite(size) || size <= 0) return;
+  const last = ship.userData.visualScale ?? 1;
+  const ratio = size / last;
+  if (Math.abs(ratio - 1) < 0.0001) return;
+  for (const part of ship.children) {
+    part.position.multiplyScalar(ratio);
+    part.scale.multiplyScalar(ratio);
+  }
+  ship.userData.visualScale = size;
+}
+
 /** Rigged flying mech. Its shoulder-mounted thrusters and weapon wrists are independent pivots. */
 export function mechArmPitch(motion, armIndex, boostMotion, fireKick) {
   return T.MathUtils.clamp(
@@ -553,7 +566,7 @@ export function createFlyingRobot() {
     baseScale: 0.94,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
-  robot.scale.setScalar(0.94);
+  // Slightly more presence, without changing the player's collision size.\n  robot.scale.setScalar(0.99);
   return robot;
 }
 
