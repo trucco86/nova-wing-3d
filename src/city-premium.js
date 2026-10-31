@@ -86,6 +86,45 @@ function billboardTexture(brand, caption, color) {
   return texture;
 }
 
+// A tapered, faceted front is more legible from the chase camera than a boxy
+// cuboid end. Two mirrored noses keep cloned west/east trains reversible.
+function createAerodynamicNose(direction) {
+  const rings = [
+    { z: direction * 42.5, width: 6.2, floor: -2.7, roof: 3.4 },
+    { z: direction * 48, width: 5.1, floor: -2.1, roof: 2.8 },
+    { z: direction * 54, width: 2.3, floor: -1.0, roof: 1.25 },
+  ];
+  const positions = [];
+  for (const ring of rings) {
+    positions.push(
+      -ring.width, ring.floor, ring.z,
+      ring.width, ring.floor, ring.z,
+      ring.width, ring.roof, ring.z,
+      -ring.width, ring.roof, ring.z,
+    );
+  }
+  const indices = [];
+  for (let section = 0; section < rings.length - 1; section++) {
+    const base = section * 4;
+    for (let edge = 0; edge < 4; edge++) {
+      const next = (edge + 1) % 4;
+      indices.push(base + edge, base + next, base + 4 + next);
+      indices.push(base + edge, base + 4 + next, base + 4 + edge);
+    }
+  }
+  indices.push(0, 3, 2, 0, 2, 1, 8, 9, 10, 8, 10, 11);
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  const noseMaterial = railBody.clone();
+  noseMaterial.side = T.DoubleSide;
+  const nose = new T.Mesh(geometry, noseMaterial);
+  nose.name = direction > 0 ? 'city-maglev-aerodynamic-nose-front' : 'city-maglev-aerodynamic-nose-rear';
+  nose.userData.visualOnly = true;
+  return nose;
+}
+
 export function createMaglevTrain(side) {
   const train = new T.Group();
   train.name = side < 0 ? 'city-maglev-west' : 'city-maglev-east';
@@ -101,17 +140,31 @@ export function createMaglevTrain(side) {
     addBlock(train, glass, 0, 2.1, center, 11.2, 2.3, 26.3);
     addBlock(train, railTrim, 0, 3.55, center, 9.4, 0.85, 27.5);
     addBlock(train, cyan, 0, -2.05, center, 11.5, 0.34, 26.8);
+    // A continuous floating undercarriage and roof spine visually separate the
+    // levitating train from its elevated guideway without adding any collider.
+    const chassis = addBlock(train, railBody, 0, -3.35, center, 9.4, 0.9, 24.2);
+    chassis.name = 'city-maglev-levitation-chassis';
+    addBlock(train, railTrim, 0, 3.95, center, 6.6, 0.45, 23.5);
     for (const flank of [-1, 1]) {
       addBlock(train, glass, flank * 6.28, 0.5, center, 0.25, 2.9, 25.7);
       addBlock(train, cyan, flank * 6.49, 2.15, center, 0.28, 0.3, 25.4);
+      addBlock(train, railTrim, flank * 6.43, -1.65, center, 0.38, 0.8, 23.9);
+      addBlock(train, amber, flank * 6.48, -2.65, center, 0.3, 0.22, 22.6);
       for (let pane = 0; pane < 4; pane++) {
         addBlock(train, railTrim, flank * 6.56, 0.65, center - 9.8 + pane * 6.5, 0.4, 3.2, 0.54);
       }
     }
     if (car !== 2) addBlock(train, railTrim, 0, -0.2, center + 14.4, 8, 3.3, 1.6);
   }
+  // Sculpted taper, segmented sensor lights and directional marker geometry.
+  // Front and rear are both modeled because the trains reverse their visual
+  // approach between the two elevated lines during the scrolling stage.
+  train.add(createAerodynamicNose(1), createAerodynamicNose(-1));
   // Prominent lit front and rear. The right-hand train approaches the camera.
   for (const end of [-1, 1]) {
+    addBlock(train, cyan, -1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
+    addBlock(train, cyan, 1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
+    addBlock(train, railTrim, 0, -1.25, end * 53.1, 3.7, 0.32, 1.0);
     addBlock(train, glass, 0, 0.7, end * 44, 9.5, 3.2, 0.8);
     addBlock(train, end < 0 ? cyan : amber, 0, 2.65, end * 44.6, 9.3, 0.72, 0.35);
     addBlock(train, cyan, 0, -1.7, end * 44.6, 9, 0.42, 0.4);
@@ -227,6 +280,10 @@ export function createCityPremiumInfrastructure() {
     );
     screen.name = 'advertising-panel';
     sign.add(screen);
+    // Independent beacon material permits subtle animated commercial lighting
+    // without modifying shared city-wide neon materials.
+    const beacon = addBlock(sign, illuminated(ads[i][2]), 0, 24, 0.8, 31, 0.95, 1.2);
+    beacon.name = 'city-billboard-beacon';
     addBlock(sign, frame, 0, 0, -0.8, 30, 46, 1.6);
     addBlock(sign, cyan, 0, 24, -0.2, 31, 0.6, 1.2);
     addBlock(sign, cyan, 0, -24, -0.2, 31, 0.6, 1.2);
@@ -237,4 +294,21 @@ export function createCityPremiumInfrastructure() {
   high.add(new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.5), illuminated('#39bfd4'))); // tiny premium marker to keep high-only subgraph nonempty
   g.add(high);
   return g;
+}
+
+// Uses accumulated travel rather than wall-clock time so Pause freezes the
+// lighting just as it freezes train motion. Both cloned city tiles share the
+// same materials, so compute the same phase for each tile.
+export function animateCityBillboards(cityTile, travel) {
+  const ads = cityTile.getObjectByName('city-commercial-billboards');
+  if (!ads || !Number.isFinite(travel)) return;
+  for (let i = 0; i < ads.children.length; i++) {
+    const beacon = ads.children[i].getObjectByName('city-billboard-beacon');
+    if (!beacon) continue;
+    const intensity = 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(travel * 0.012 + i * 1.9));
+    beacon.material.color.set('#ffffff').multiplyScalar(intensity);
+    // Retain the brand color, but avoid clipping the emissive sign against the
+    // dark architecture. No canvas repaint or texture upload per frame.
+    beacon.material.color.multiply(new T.Color(['#69e8ff', '#70d9ff', '#ffc88a', '#b6a0ff', '#78f7e7', '#ff9dc5'][i]));
+  }
 }
