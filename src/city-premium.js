@@ -182,6 +182,27 @@ export function createMaglevTrain(side) {
   // Front and rear are both modeled because the trains reverse their visual
   // approach between the two elevated lines during the scrolling stage.
   train.add(createAerodynamicNose(1), createAerodynamicNose(-1));
+  // A real in-game advertisement on the three-car vehicle: positioned on the
+  // inside face, toward the player, not the far/outward wall of the guideway.
+  // Reuse the existing fictional ad generator rather than add network assets.
+  const maglevAd = new T.Mesh(
+    new T.PlaneGeometry(15, 5.8),
+    new T.MeshBasicMaterial({
+      map: billboardTexture('AERORAIL', 'EXPRESSO URBANO', '#58e9ff'),
+      toneMapped: false,
+      side: T.DoubleSide,
+    }),
+  );
+  maglevAd.name = 'city-maglev-campaign-side-panel';
+  maglevAd.userData.visualOnly = true;
+  maglevAd.position.set(-side * 6.75, 0.5, 0);
+  maglevAd.rotation.y = -side * Math.PI / 2;
+  train.add(maglevAd);
+  // Short inboard light strips keep the carriage readable during its early pass.
+  for (const dz of [-30, 30]) {
+    const marker = addBlock(train, cyan, -side * 6.8, 2.5, dz, 0.14, 0.8, 13);
+    marker.name = 'city-maglev-advertising-lamp';
+  }
   // Prominent lit front and rear. The right-hand train approaches the camera.
   for (const end of [-1, 1]) {
     addTrainBlock(cyan, -1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
@@ -332,6 +353,21 @@ export function createCityPremiumInfrastructure() {
     signs.add(sign);
   }
   g.add(signs);
+  // Camera-facing terminal campaign beside the first playable maglev station.
+  // Station canopy starts outside x=80; put advertising at x>90 to keep the
+  // train and flight corridor clear and avoid blocking the camera sightline.
+  const terminalAd = new T.Mesh(
+    new T.PlaneGeometry(28, 13),
+    new T.MeshBasicMaterial({
+      map: billboardTexture('AERORAIL', 'TREM EXPRESSO', '#5ff4ff'),
+      toneMapped: false,
+      side: T.DoubleSide,
+    }),
+  );
+  terminalAd.name = 'city-maglev-terminal-advertisement';
+  terminalAd.position.set(100, 55, -215);
+  terminalAd.userData.visualOnly = true;
+  g.add(terminalAd);
   high.add(new T.Mesh(new T.BoxGeometry(0.5, 0.5, 0.5), illuminated('#39bfd4'))); // tiny premium marker to keep high-only subgraph nonempty
   g.add(high);
   return g;
