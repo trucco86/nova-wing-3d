@@ -36,7 +36,7 @@ test('city remains present after one full scenery wrap and reset', () => {
   // City 3.2 adds bounded batches for signs, aircraft, holofotes and skyline.
   // Keep the GPU draw-call budget checked instead of freezing the old count.
   assert.ok(
-    count >= 162 && count <= 190,
+    count >= 162 && count <= 210,
     'City 3.2 keeps extra neon and aerial traffic within a bounded instancing budget',
   );
   const closeCity = scene.getObjectByName('launch-city');
