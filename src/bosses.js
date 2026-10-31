@@ -313,6 +313,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   add(halo(sector.accent, 21, 0.7), 0, 0, 20);
   // Layered armor and exposed machinery stay behind the three aiming zones.
   const vents = [];
+  const batteries = [];
   for (const side of [-1, 1]) {
     for (let i = 0; i < 5; i++) {
       const plate = add(box(5.5, 6, 2, armor), side * (25 + i * 5), 1 + (i % 2) * 5, 18 - i);
@@ -323,6 +324,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
       vents.push(vent);
     }
     const turret = new T.Group();
+    turret.name = side < 0 ? 'boss-battery-left' : 'boss-battery-right';
+    turret.userData.batterySide = side;
     turret.position.set(side * 29, 12, 17);
     turret.add(sphere(4, dark, 1));
     for (const x of [-1.2, 1.2]) {
@@ -332,6 +335,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
       turret.add(barrel);
       turret.add(box(1, 1, 0.3, hot, x, 0, 9));
     }
+    const muzzle = new T.Object3D();
+    muzzle.name = side < 0 ? 'boss-battery-left-muzzle' : 'boss-battery-right-muzzle';
+    muzzle.position.set(0, 0, 10.5);
+    turret.add(muzzle);
+    const activation = new T.Mesh(new T.TorusGeometry(3.3, 0.48, 7, 24), hot);
+    activation.name = 'boss-battery-charging-ring';
+    activation.position.z = 9.8;
+    turret.add(activation);
+    batteries.push(turret);
     g.add(turret);
     const engine = new T.Mesh(new T.CylinderGeometry(4, 5, 12, 16), dark);
     engine.rotation.x = Math.PI / 2;
@@ -376,6 +388,12 @@ export function createBossModel(sector, index = 0, tactical = false) {
       return marker;
     },
     coreMarker = targetMarker(8.5);
+  const coreMuzzle = new T.Object3D();
+  coreMuzzle.name = 'boss-core-muzzle';
+  coreMuzzle.position.set(0, 12, 27);
+  g.add(coreMuzzle);
+  const coreBarrel = add(box(4.6, 3.1, 8, dark), 0, 12, 21);
+  coreBarrel.name = 'boss-core-emergency-weapon';
   coreMarker.position.set(0, 0, 21);
   g.add(coreMarker);
   const parts = [];
@@ -385,7 +403,10 @@ export function createBossModel(sector, index = 0, tactical = false) {
     const marker = targetMarker(6.5);
     marker.position.set(s * 17, 4, 22);
     g.add(marker);
-    parts.push({ mesh: p, marker, hp: 180 + index * 25, max: 180 + index * 25 });
+    parts.push({
+      mesh: p, marker, battery: batteries[s < 0 ? 0 : 1],
+      hp: 180 + index * 25, max: 180 + index * 25,
+    });
   }
   if (tactical) {
     const proportions = [
@@ -485,6 +506,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   g.userData = {
     parts,
+    batteries,
+    coreMuzzle,
     coreMarker,
     vents,
     core,
