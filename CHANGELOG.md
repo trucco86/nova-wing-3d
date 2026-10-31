@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.41 — Graphics 3.6 / Reflex Boost e tiro luminoso seletivo (QA)
+
+- Clarões de disparo e reflexos emissivos locais na fuselagem da NOVA-7 e nos canhões e peito do mecha, inclusive tiros carregados e de precisão. Mobile sem bloom pesado; desktop Alto pode usar uma luz pontual temporária.
+- Reflex Boost ativado via SHIFT/BOOST sob ameaça de 4 projéteis próximos: 1,55s de ataque hostil a 38% de velocidade, esquiva 40% mais rápida, energia extra 14 (mínimo 45) e cooldown 9s. Não interfere no BOOST obrigatório da fase 1.
+- Indicador REFLEX junto ao botão de BOOST, sem invadir gameplay. 400 testes unitários aprovados em validação isolada; revisão de FPS, browsers e homologação humanas pendentes, PR #194 draft.
+
 ## 1.27.40 — City 2.9 / Orçamento de GPU mobile e drones detalhados (QA)
 
 - Dispositivos touch e desktop Médio renderizam a cena 3D diretamente, evitando três passes de bloom e buffers offscreen por frame. Desktop Alto preserva o visual cinematográfico.

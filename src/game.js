@@ -79,6 +79,8 @@ import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
+import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
   fighterInterval,
@@ -254,6 +256,8 @@ export function createGame({
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  const heroEffects = createHeroWeaponEffects(player, robot);
+  const reflexBoost = createReflexBoost();
   const squad = dynamicFlight
     ? createFiveCatsSquad({
         scene,
@@ -999,6 +1003,8 @@ export function createGame({
   function enterSector(resupply = true) {
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    reflexBoost.reset();
+    heroEffects.reset();
     $('launchBoostNotice').hidden = true;
     $('boostTouch').classList.remove('launch-required');
     arcade = null;
@@ -1460,6 +1466,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
+    heroEffects.pulse({ robot: robotMode, color: selectedWeapon().color });
     if (robotMode) robotFireKick = 0.29;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
@@ -1599,6 +1606,7 @@ export function createGame({
       energy -= 10;
       precisionCd = 2;
       lockProgress = 0;
+      heroEffects.pulse({ robot: true, precisionShot: true, color: '#b6f9ff' });
       cue('mechaPrecision');
     }
   }
@@ -2044,6 +2052,8 @@ export function createGame({
     lastStage = -1;
     shake = 0;
     boosting = false;
+    reflexBoost.reset();
+    heroEffects.reset();
     touchFire = touchBoost = false;
     elapsed = 0;
     score = checkpoint?.score ?? 0;
@@ -2325,6 +2335,7 @@ export function createGame({
     $('auditCopy').disabled = result.frames === 0;
   }
   function applyRenderBudget(budget) {
+    heroEffects.setQuality(budget.quality, coarsePointer.matches);
     pixelLimit =
       graphicsPixelRatioLimit(budget.quality, {
         coarsePointer: coarsePointer.matches,
@@ -2723,6 +2734,9 @@ export function createGame({
     audioCues?.silence();
     orbitTouch = 0;
     boosting = false;
+    reflexBoost.reset();
+    heroEffects.reset();
+    document.body.classList.remove('reflex-boost');
     boostNeedsRelease = false;
     document.body.classList.remove('boosting');
     for (const f of player.userData.flames) {
@@ -2928,6 +2942,7 @@ export function createGame({
           robotFireKick = 0.4;
         }
         cockpit?.fire();
+        heroEffects.pulse({ robot: robotMode, charged: true, color: selectedWeapon().color });
         if (dynamicFlight) cue(robotMode ? 'mechaChargeRelease' : 'plasmaRelease');
         else sound(160, 0.4, 'sawtooth', 0.06);
       }
@@ -2944,20 +2959,27 @@ export function createGame({
     }
     reticle.visible = true;
     const previousPlayer = player.position.clone();
+    const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     player.position.x = clamp(
-      player.position.x + dx * dt * 24 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+      player.position.x +
+        dx * dt * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
       -flightLimit(),
       flightLimit(),
     );
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
-      player.position.z = clamp(player.position.z - dy * dt * 34 * profileSpeed, -44, 29);
+      player.position.z = clamp(
+        player.position.z - dy * dt * 34 * dodgeMultiplier * profileSpeed,
+        -44,
+        29,
+      );
       player.position.y = T.MathUtils.damp(player.position.y, 10, 4, dt);
     } else {
       player.position.z = T.MathUtils.damp(player.position.z, 9, 4, dt);
       player.position.y = clamp(
-        player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        player.position.y +
+          dy * dt * 20 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
         -1,
         dynamicFlight ? 46 : 23,
       );
@@ -3230,6 +3252,22 @@ export function createGame({
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
+    const reflex = reflexBoost.update(dt, {
+      boosting: dynamicFlight && boosting,
+      energy,
+      threats: nearbyHostileThreats(hostile, player.position),
+      enabled:
+        dynamicFlight &&
+        state === 'playing' &&
+        (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().complete),
+    });
+    if (reflex.activated) {
+      energy = Math.max(0, energy - reflex.energyCost);
+      message('REFLEX BOOST · CÂMERA LENTA / DESVIE DOS PROJÉTEIS');
+    }
+    if (reflex.active) document.body.classList.add('reflex-boost');
+    else document.body.classList.remove('reflex-boost');
+    const hostileDt = dt * reflex.hostileTimeScale;
     spawnCd -= dt;
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
@@ -3409,7 +3447,7 @@ export function createGame({
 
     for (let e of enemies) {
       if (e.dead) continue;
-      e.age += dt;
+      e.age += hostileDt;
       if (dynamicFlight) {
         e.chilled = Math.max(0, e.chilled - dt);
         e.burning = Math.max(0, e.burning - dt);
@@ -3425,14 +3463,14 @@ export function createGame({
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
       if (e.role) {
-        e.o.position.z = fighterAdvance(e.o.position.z, e.age, dt, speed);
+        e.o.position.z = fighterAdvance(e.o.position.z, e.age, hostileDt, speed);
       } else if (e.subbossTactic) {
         const motion = subbossMotion(sectorIndex, e.age, e.combatPhase, e.x, e.y);
         e.o.position.set(motion.x, motion.y, motion.z);
         e.o.rotation.z = motion.bank;
       } else
         e.o.position.z +=
-          dt *
+          hostileDt *
           (e.kind === 'subboss'
             ? Math.max(0, (-85 - e.o.position.z) * 1.4)
             : e.ground
@@ -3517,7 +3555,7 @@ export function createGame({
         if (e.airborneRobot) e.o.position.y = e.y + Math.sin(e.age * 1.2) * 2.8;
       }
       if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
-      e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
+      e.cd -= hostileDt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
@@ -3602,7 +3640,7 @@ export function createGame({
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
       }
-      bossCombat.update(dt);
+      bossCombat.update(hostileDt);
       const combatPhase = bossCombat.phase;
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
@@ -3795,7 +3833,7 @@ export function createGame({
         $('bossState').textContent +=
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
-      bossCd -= dt;
+      bossCd -= hostileDt;
       $('attackWarning').setAttribute?.(
         'data-severity',
         radarPlan?.threatened === false ? 'info' : 'danger',
@@ -4014,14 +4052,14 @@ export function createGame({
     for (let b of hostile) {
       const from = b.o.position.clone();
       b.previousPosition = from;
-      b.age += dt;
+      b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
         b.v.lerp(
           player.position.clone().sub(b.o.position).normalize().multiplyScalar(38),
-          1 - Math.exp(-2 * dt),
+          1 - Math.exp(-2 * hostileDt),
         );
-      b.o.position.addScaledVector(b.v, dt * (stasis > 0 ? 0.3 : 1));
-      b.life -= dt;
+      b.o.position.addScaledVector(b.v, hostileDt * (stasis > 0 ? 0.3 : 1));
+      b.life -= hostileDt;
       if (b.life > 0 && projectileOccluded(from, b.o.position)) {
         b.life = 0;
         explode(b.o.position, 3, 0xffbf75);
@@ -4202,6 +4240,7 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    heroEffects.tick(dt, state === 'playing' || state === 'collapsing');
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
     if (state === 'playing' && stageIntroTime > 0) {
