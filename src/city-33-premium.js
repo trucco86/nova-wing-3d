@@ -8,19 +8,36 @@ const lightGeometry = new T.SphereGeometry(1, 6, 4);
 const renderObject = new T.Object3D();
 const slate = ['#758994', '#899ba4', '#9ca9ab', '#657f8e', '#b8b5ae', '#70808c'];
 const busPaint = new T.MeshPhysicalMaterial({
-  color: '#d8e5e8', metalness: 0.69, roughness: 0.25, clearcoat: 0.52,
+  color: '#d8e5e8',
+  metalness: 0.69,
+  roughness: 0.25,
+  clearcoat: 0.52,
 });
 const busGlass = new T.MeshStandardMaterial({
-  color: '#385c6a', metalness: 0.43, roughness: 0.19,
+  color: '#385c6a',
+  metalness: 0.43,
+  roughness: 0.19,
 });
-const busLight = new T.MeshBasicMaterial({color: '#c3f8ff', toneMapped: false});
-const cladding = new T.MeshStandardMaterial({color: '#e5e8e6', metalness: 0.64, roughness: 0.37});
-const panelGlass = new T.MeshStandardMaterial({color: '#789eae', metalness: 0.42, roughness: 0.17});
-const machinery = new T.MeshStandardMaterial({color: '#b5bac0', metalness: 0.73, roughness: 0.36});
-const fineMetal = new T.MeshStandardMaterial({color: '#7a8992', metalness: 0.75, roughness: 0.29});
-const amber = new T.MeshBasicMaterial({color: '#ffe0a1', toneMapped: false});
-const safety = new T.MeshBasicMaterial({color: '#ffffff', toneMapped: false});
-const cyan = new T.MeshBasicMaterial({color: '#77dce7', toneMapped: false});
+const busLight = new T.MeshBasicMaterial({ color: '#c3f8ff', toneMapped: false });
+const cladding = new T.MeshStandardMaterial({ color: '#e5e8e6', metalness: 0.64, roughness: 0.37 });
+const panelGlass = new T.MeshStandardMaterial({
+  color: '#789eae',
+  metalness: 0.42,
+  roughness: 0.17,
+});
+const machinery = new T.MeshStandardMaterial({
+  color: '#b5bac0',
+  metalness: 0.73,
+  roughness: 0.36,
+});
+const fineMetal = new T.MeshStandardMaterial({
+  color: '#7a8992',
+  metalness: 0.75,
+  roughness: 0.29,
+});
+const amber = new T.MeshBasicMaterial({ color: '#ffe0a1', toneMapped: false });
+const safety = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
+const cyan = new T.MeshBasicMaterial({ color: '#77dce7', toneMapped: false });
 
 function batch(parent, name, material, entries, premium = false) {
   const mesh = new T.InstancedMesh(cube, material, entries.length);
@@ -42,7 +59,7 @@ function batch(parent, name, material, entries, premium = false) {
   return mesh;
 }
 
-const part = (x, y, z, w, h, d, color) => ({x, y, z, w, h, d, color});
+const part = (x, y, z, w, h, d, color) => ({ x, y, z, w, h, d, color });
 
 function architecturalDetail(root, buildings) {
   const medium = new T.Group();
@@ -52,8 +69,14 @@ function architecturalDetail(root, buildings) {
   high.name = 'city33-architecture-high';
   high.userData.visualOnly = true;
   high.visible = false;
-  const facade = [], windowRecess = [], crown = [], conduit = [], rooftops = [];
-  const mullions = [], balconies = [], lightStreaks = [];
+  const facade = [],
+    windowRecess = [],
+    crown = [],
+    conduit = [],
+    rooftops = [];
+  const mullions = [],
+    balconies = [],
+    lightStreaks = [];
   const ads = new T.Group();
   ads.name = 'city33-facade-integrated-campaigns';
   ads.userData.visualOnly = true;
@@ -65,40 +88,60 @@ function architecturalDetail(root, buildings) {
     const side = Math.sign(b.x) || 1;
     // Change cross-section with shallow inset bays and stepped crowns.
     for (let j = 0; j < 3; j++) {
-      facade.push(part(
-        b.x + (j - 1) * b.w * 0.29, -7 + b.h * (0.33 + (j % 2) * 0.14),
-        face + 0.36 + (j % 2) * 0.3,
-        b.w * 0.24, b.h * (0.46 + j * 0.09), 0.45, color,
-      ));
+      facade.push(
+        part(
+          b.x + (j - 1) * b.w * 0.29,
+          -7 + b.h * (0.33 + (j % 2) * 0.14),
+          face + 0.36 + (j % 2) * 0.3,
+          b.w * 0.24,
+          b.h * (0.46 + j * 0.09),
+          0.45,
+          color,
+        ),
+      );
     }
-    windowRecess.push(part(b.x, -7 + b.h * 0.49, face + 0.76,
-      b.w * 0.72, b.h * 0.43, 0.18));
-    crown.push(part(b.x, b.h - 6.5, b.z,
-      b.w * 1.06, 1.2 + (i % 3), b.depth * 1.08, color));
-    crown.push(part(b.x, b.h - 2.5 + (i % 3) * 0.5, b.z,
-      b.w * 0.79, 2, b.depth * 0.68, color));
+    windowRecess.push(part(b.x, -7 + b.h * 0.49, face + 0.76, b.w * 0.72, b.h * 0.43, 0.18));
+    crown.push(part(b.x, b.h - 6.5, b.z, b.w * 1.06, 1.2 + (i % 3), b.depth * 1.08, color));
+    crown.push(part(b.x, b.h - 2.5 + (i % 3) * 0.5, b.z, b.w * 0.79, 2, b.depth * 0.68, color));
     // Service pipe runs on side wall facing the flight corridor; supports
     // and glazing recesses make parallax reveal a three-dimensional facade.
-    conduit.push(part(b.x - side * (b.w / 2 + 0.37), -7 + b.h * 0.54,
-      b.z + b.depth * 0.16, 0.55, b.h * 0.55, 0.73));
-    rooftops.push(part(b.x - b.w * 0.21, b.h - 0.1, b.z,
-      b.w * 0.22, 3.2, b.depth * 0.36, color));
-    rooftops.push(part(b.x + b.w * 0.26, b.h - 1.6, b.z - b.depth * 0.14,
-      b.w * 0.19, 2.2, b.depth * 0.28, color));
+    conduit.push(
+      part(
+        b.x - side * (b.w / 2 + 0.37),
+        -7 + b.h * 0.54,
+        b.z + b.depth * 0.16,
+        0.55,
+        b.h * 0.55,
+        0.73,
+      ),
+    );
+    rooftops.push(part(b.x - b.w * 0.21, b.h - 0.1, b.z, b.w * 0.22, 3.2, b.depth * 0.36, color));
+    rooftops.push(
+      part(
+        b.x + b.w * 0.26,
+        b.h - 1.6,
+        b.z - b.depth * 0.14,
+        b.w * 0.19,
+        2.2,
+        b.depth * 0.28,
+        color,
+      ),
+    );
     // Microdetails reserved for High; all users still see stepped profiles.
     for (let j = 0; j < 5; j++) {
-      mullions.push(part(b.x + (j - 2) * b.w * 0.15,
-        -7 + b.h * 0.5, face + 0.92, 0.13, b.h * 0.45, 0.14));
+      mullions.push(
+        part(b.x + (j - 2) * b.w * 0.15, -7 + b.h * 0.5, face + 0.92, 0.13, b.h * 0.45, 0.14),
+      );
     }
     if (i % 3 === 0) {
       for (let j = 0; j < 3; j++) {
-        balconies.push(part(b.x, -7 + b.h * (0.22 + j * 0.2),
-          face + 1.2, b.w * 0.65, 0.55, 2.2, color));
+        balconies.push(
+          part(b.x, -7 + b.h * (0.22 + j * 0.2), face + 1.2, b.w * 0.65, 0.55, 2.2, color),
+        );
       }
     }
     if (i % 5 === 0) {
-      lightStreaks.push(part(b.x, -7 + b.h * 0.81, face + 1.03,
-        b.w * 0.62, 0.16, 0.3));
+      lightStreaks.push(part(b.x, -7 + b.h * 0.81, face + 1.03, b.w * 0.62, 0.16, 0.3));
     }
     // Large luminous commercial murals belong to only a few landmarks;
     // all other cladding uses architectural steel rather than garish neon.
@@ -108,7 +151,8 @@ function architecturalDetail(root, buildings) {
         new T.PlaneGeometry(1, 1),
         new T.MeshBasicMaterial({
           map: advertisingTexture(name, tagline, tint),
-          side: T.DoubleSide, toneMapped: false,
+          side: T.DoubleSide,
+          toneMapped: false,
         }),
       );
       billboard.name = 'city33-building-campaign-' + i;
@@ -135,7 +179,10 @@ function elevatedBusRoute(root) {
   const group = new T.Group();
   group.name = 'city33-midstage-transit';
   group.userData.visualOnly = true;
-  const roadway = [], tracks = [], guard = [], station = [];
+  const roadway = [],
+    tracks = [],
+    guard = [],
+    station = [];
   // Side-running busways at mid-stage, with open bridges to the transport
   // district. They remain out of the player lane and have no collision.
   for (const side of [-1, 1]) {
@@ -183,7 +230,10 @@ function activeConstruction(root, buildings) {
   const site = new T.Group();
   site.name = 'city33-active-construction-sites';
   site.userData.visualOnly = true;
-  const scaffolds = [], platforms = [], braces = [], warning = [];
+  const scaffolds = [],
+    platforms = [],
+    braces = [],
+    warning = [];
   const cranes = new T.Group();
   cranes.name = 'city33-animated-cranes';
   const sparks = new T.InstancedMesh(lightGeometry, amber, 12);
@@ -200,16 +250,18 @@ function activeConstruction(root, buildings) {
     const space = height / levels;
     for (const sx of [-1, 1]) {
       for (const sy of [-1, 1]) {
-        scaffolds.push(part(b.x + sx * (b.w / 2 + 2), -7 + height / 2, front + sy * 3.8,
-          0.65, height, 0.65));
+        scaffolds.push(
+          part(b.x + sx * (b.w / 2 + 2), -7 + height / 2, front + sy * 3.8, 0.65, height, 0.65),
+        );
       }
     }
     for (let level = 1; level <= levels; level++) {
       const y = -7 + level * space;
       platforms.push(part(b.x, y, front, b.w + 6, 0.65, 9.4));
       warning.push(part(b.x, y + 1.2, front + 4.9, b.w + 5, 0.23, 0.35));
-      braces.push(part(b.x - sign * (b.w / 2 + 2), y - space / 2, front + 4.5,
-        0.48, space * 0.72, 0.48));
+      braces.push(
+        part(b.x - sign * (b.w / 2 + 2), y - space / 2, front + 4.5, 0.48, space * 0.72, 0.48),
+      );
     }
     const crane = new T.Group();
     crane.name = 'city33-construction-crane-' + siteIndex;
@@ -237,7 +289,8 @@ function activeConstruction(root, buildings) {
   sparks.instanceColor.needsUpdate = true;
   site.add(cranes, sparks);
   site.userData.siteOrigins = chosen.map((b) => ({
-    x: b.x, y: -7 + Math.min(b.h * 0.85, 76) * 0.56,
+    x: b.x,
+    y: -7 + Math.min(b.h * 0.85, 76) * 0.56,
     z: b.z + b.depth / 2 + 8,
   }));
   root.add(site);
@@ -260,21 +313,27 @@ export function setCity33Quality(root, quality) {
   if (!root) return;
   root.getObjectByName('city33-architecture-high').visible = quality === 'high';
   const traffic = root.getObjectByName('city33-moving-futuristic-buses');
-  traffic.children.forEach((mesh) => { mesh.count = quality === 'high' ? 8 : 4; });
+  traffic.children.forEach((mesh) => {
+    mesh.count = quality === 'high' ? 8 : 4;
+  });
   root.getObjectByName('city33-welding-sparks').count = quality === 'high' ? 12 : 6;
   const cranes = root.getObjectByName('city33-animated-cranes');
-  cranes.children.forEach((crane, i) => { crane.visible = quality === 'high' || i < 2; });
+  cranes.children.forEach((crane, i) => {
+    crane.visible = quality === 'high' || i < 2;
+  });
 }
 
 export function updateCity33Premium(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
   const phase = root.userData.phase || 0;
   const traffic = root.getObjectByName('city33-moving-futuristic-buses');
-  const parts = ['hull','glazing','marker','roof'].map((key) => traffic.getObjectByName('city33-bus-' + key));
+  const parts = ['hull', 'glazing', 'marker', 'roof'].map((key) =>
+    traffic.getObjectByName('city33-bus-' + key),
+  );
   for (let i = 0; i < 8; i++) {
     const side = i % 2 ? 1 : -1;
     // Most traffic is concentrated mid-stage instead of near takeoff.
-    const z = -575 - ((i * 129 + travel * (0.31 + i % 3 * 0.04) + phase * 180) % 865);
+    const z = -575 - ((i * 129 + travel * (0.31 + (i % 3) * 0.04) + phase * 180) % 865);
     const x = side * 66;
     const flip = side < 0 ? Math.PI : 0;
     const specs = [
@@ -291,7 +350,9 @@ export function updateCity33Premium(root, travel) {
       parts[index].setMatrixAt(i, renderObject.matrix);
     });
   }
-  parts.forEach((mesh) => { mesh.instanceMatrix.needsUpdate = true; });
+  parts.forEach((mesh) => {
+    mesh.instanceMatrix.needsUpdate = true;
+  });
   const sites = root.getObjectByName('city33-active-construction-sites');
   sites.getObjectByName('city33-animated-cranes').children.forEach((crane, i) => {
     crane.rotation.y = Math.sin(travel * 0.0018 + phase + i * 1.6) * 0.42;
@@ -301,8 +362,7 @@ export function updateCity33Premium(root, travel) {
   for (let i = 0; i < 12; i++) {
     const b = origins[Math.floor(i / 4)];
     const flicker = Math.abs(Math.sin(travel * 0.12 + i * 1.93 + phase));
-    renderObject.position.set(b.x + (i % 4 - 1.5) * 1.8,
-      b.y + (i % 3) * 1.6 + flicker, b.z);
+    renderObject.position.set(b.x + ((i % 4) - 1.5) * 1.8, b.y + (i % 3) * 1.6 + flicker, b.z);
     renderObject.rotation.set(0, 0, 0);
     renderObject.scale.setScalar(0.2 + flicker * 0.45);
     renderObject.updateMatrix();

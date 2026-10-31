@@ -993,8 +993,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       depth = rnd(8, 18);
     buildingAnchors.push({ x, h, z, w, depth });
     const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
-    bodies.setColorAt(i, new T.Color(architecturePalette[(i + Math.floor(i / 11)) % architecturePalette.length]));
-    caps.setColorAt(i, new T.Color(architecturePalette[(i + Math.floor(i / 7) + 2) % architecturePalette.length]));
+    bodies.setColorAt(
+      i,
+      new T.Color(architecturePalette[(i + Math.floor(i / 11)) % architecturePalette.length]),
+    );
+    caps.setColorAt(
+      i,
+      new T.Color(architecturePalette[(i + Math.floor(i / 7) + 2) % architecturePalette.length]),
+    );
     inst(bodies, i, x, h / 2 - 7, z, w, h, depth);
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);

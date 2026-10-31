@@ -3,13 +3,17 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
-import { createCity33Premium, setCity33Quality, updateCity33Premium } from '../src/city-33-premium.js';
+import {
+  createCity33Premium,
+  setCity33Quality,
+  updateCity33Premium,
+} from '../src/city-33-premium.js';
 
 const anchors = Array.from({ length: 200 }, (_, i) => ({
-  x: (i % 2 ? 1 : -1) * (112 + i % 8 * 13),
+  x: (i % 2 ? 1 : -1) * (112 + (i % 8) * 13),
   z: -30 - Math.floor(i / 2) * 19,
-  h: 53 + i % 8 * 8,
-  w: 13 + i % 5,
+  h: 53 + (i % 8) * 8,
+  w: 13 + (i % 5),
   depth: 14,
 }));
 function matrix(mesh) {
@@ -22,8 +26,13 @@ test('City 3.3 facades have layered premium materials, distinct recesses and coh
   const city = createCity33Premium(anchors);
   const medium = city.getObjectByName('city33-architecture-medium');
   const high = city.getObjectByName('city33-architecture-high');
-  for (const name of ['city33-facade-recessed-panels','city33-facade-recessed-glass',
-    'city33-stepped-roof-crowns','city33-side-service-conduits','city33-rooftop-hvac']) {
+  for (const name of [
+    'city33-facade-recessed-panels',
+    'city33-facade-recessed-glass',
+    'city33-stepped-roof-crowns',
+    'city33-side-service-conduits',
+    'city33-rooftop-hvac',
+  ]) {
     const mesh = medium.getObjectByName(name);
     assert.ok(mesh?.isInstancedMesh, name);
     assert.ok(mesh.count >= 180, name + ' on all buildings');

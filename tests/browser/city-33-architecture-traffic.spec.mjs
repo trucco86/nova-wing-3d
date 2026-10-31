@@ -22,10 +22,18 @@ test('City 3.3 shows premium facade details and active mid-stage construction in
   expect(measured.calls).toBeLessThan(1100);
   expect(measured.triangles).toBeGreaterThan(0);
   await info.attach('city33-webgl-frame-budget.json', {
-    body: Buffer.from(JSON.stringify({
-      profile: info.project.name, viewport: page.viewportSize(),
-      renderer: measured, note: 'Software renderer sample; not physical-device FPS',
-    }, null, 2)),
+    body: Buffer.from(
+      JSON.stringify(
+        {
+          profile: info.project.name,
+          viewport: page.viewportSize(),
+          renderer: measured,
+          note: 'Software renderer sample; not physical-device FPS',
+        },
+        null,
+        2,
+      ),
+    ),
     contentType: 'application/json',
   });
   expect(errors).toEqual([]);
