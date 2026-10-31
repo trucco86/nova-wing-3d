@@ -18,7 +18,9 @@ A versão em meia-lua mudou o grupo `.actions` de grid para `display:block` e es
 - PR isolada sem merge. Não declarar aprovação humana.
 
 ## Revisão 3.1 após CI completo
+
 A primeira versão 1.27.44 passou no teste direcionado de BOOST, mas **falhou em três shards de navegador** por regressões adicionais:
+
 - botões de ação com altura inferior ao mínimo de 60 px, apesar de TIRO e BOOST visíveis;
 - tamanhos de analógico incompatíveis com 320/390/430 px e paisagem, afetando também espaço de órbita;
 - BOOST do minigame Arcade 2D permaneceu visível (onde deve ser intencionalmente oculto);

@@ -8502,24 +8502,46 @@ body.reflex-boost #boostTouch::after {
     min-height: 60px;
     margin: 0 !important;
   }
-  body.in-mission #touch .actions #podsTouch { left: 0; top: 0; }
-  body.in-mission #touch .actions #robotTouch { left: 0; top: 65px; }
-  body.in-mission #touch .actions #rollTouch { left: 62px; top: 0; }
-  body.in-mission #touch .actions #bombTouch { left: 62px; top: 65px; }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 65px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 62px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 62px;
+    top: 65px;
+  }
   body.in-mission #touch .actions #lockTouch:not([hidden]) {
-    left: 124px; top: 0;
-    width: 60px; min-width: 60px;
-    height: 60px; min-height: 60px;
+    left: 124px;
+    top: 0;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
   }
   body.in-mission #touch .actions #boostTouch {
-    left: 124px; top: 65px;
-    width: 60px; min-width: 60px;
-    height: 60px; min-height: 60px;
+    left: 124px;
+    top: 65px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
   }
   body.in-mission #touch .actions #fireTouch {
-    left: 186px; top: 18px;
-    width: 62px; min-width: 62px; max-width: 62px;
-    height: 107px; min-height: 107px;
+    left: 186px;
+    top: 18px;
+    width: 62px;
+    min-width: 62px;
+    max-width: 62px;
+    height: 107px;
+    min-height: 107px;
   }
   /* The bonus 2D minigame intentionally disables BOOST and PODS. Do not
      override that rule with the in-flight BOOST visibility hotfix. */
@@ -8532,46 +8554,83 @@ body.reflex-boost #boostTouch::after {
   }
 }
 @media (pointer: coarse) and (max-width: 550px) {
-  body.in-mission #touch .actions { width: 183px; height: 190px; }
-  body.in-mission #touch .actions #podsTouch { left: 0; top: 0; }
-  body.in-mission #touch .actions #robotTouch { left: 0; top: 64px; }
-  body.in-mission #touch .actions #rollTouch { left: 61px; top: 0; }
-  body.in-mission #touch .actions #bombTouch { left: 61px; top: 64px; }
+  body.in-mission #touch .actions {
+    width: 183px;
+    height: 190px;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 64px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 61px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 61px;
+    top: 64px;
+  }
   body.in-mission #touch .actions #lockTouch:not([hidden]) {
-    left: 0; top: 128px;
-    width: 60px; min-width: 60px;
-    height: 60px; min-height: 60px;
+    left: 0;
+    top: 128px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
   }
   body.in-mission #touch .actions #boostTouch {
-    left: 61px; top: 128px;
-    width: 60px; min-width: 60px;
-    height: 60px; min-height: 60px;
+    left: 61px;
+    top: 128px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
   }
   body.in-mission #touch .actions #fireTouch {
-    left: 123px; top: 51px;
-    width: 60px; min-width: 60px; max-width: 60px;
-    height: 137px; min-height: 137px;
+    left: 123px;
+    top: 51px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 137px;
+    min-height: 137px;
   }
   /* The active flight stick must match actual thumb reach. */
-  body.in-mission #touch #stick { width: 102px; height: 102px; }
+  body.in-mission #touch #stick {
+    width: 102px;
+    height: 102px;
+  }
   body.in-mission #orbitControls:not([hidden]) {
     bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 114px);
   }
 }
 @media (pointer: coarse) and (min-width: 391px) and (max-width: 550px) {
-  body.in-mission #touch #stick { width: 128px; height: 128px; }
+  body.in-mission #touch #stick {
+    width: 128px;
+    height: 128px;
+  }
   body.in-mission #orbitControls:not([hidden]) {
     bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 140px);
   }
 }
 @media (pointer: coarse) and (max-width: 340px) {
-  body.in-mission #touch #stick { width: 88px; height: 88px; }
+  body.in-mission #touch #stick {
+    width: 88px;
+    height: 88px;
+  }
   body.in-mission #orbitControls:not([hidden]) {
     bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 100px);
   }
 }
 @media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
-  body.in-mission #touch #stick { width: 91px; height: 91px; }
+  body.in-mission #touch #stick {
+    width: 91px;
+    height: 91px;
+  }
   body.in-mission #orbitControls:not([hidden]) {
     bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 103px);
   }

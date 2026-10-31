@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.45 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
 
 - Corrigida disputa de especificidade entre CSS antigo (`position:relative` para BOOST/TIRO) e controles novos em meia-lua (`position:absolute`). Os botões permanecem em posições absolutas, com alvos clicáveis corretos e sem sobreposição.
