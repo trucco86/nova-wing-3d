@@ -50,7 +50,7 @@ export function createLaunchCelestials(scene) {
         vec3 sun=normalize(vec3(-.72,.34,.56));
         float lightTerm=dot(normalize(n),sun);
         float day=.12+.88*smoothstep(-.30,.7,lightTerm);
-        float cityLight=step(.53,continents)*pow(fbm(N*110.),4.)*smoothstep(.1,-.4,lightTerm);
+        float cityLight=step(.53,continents)*pow(fbm(N*110.),4.)*(1.-smoothstep(-.4,.1,lightTerm));
         float fresnel=pow(1.-max(0.,abs(n.z)),3.);
         c=c*day+vec3(1.,.70,.39)*cityLight*.20;
         c+=vec3(.025,.19,.33)*fresnel*.5;
