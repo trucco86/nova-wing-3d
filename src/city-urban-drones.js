@@ -7,6 +7,10 @@ function serviceDroneHull() {
   const parts = [];
   const add = (geometry, color, x, y, z, sx = 1, sy = 1, sz = 1, rz = 0) => {
     const copy = geometry.clone();
+    // IcosahedronGeometry is non-indexed while wings/engines are indexed.
+    // BufferGeometryUtils requires a consistent representation across parts.
+    if (!copy.index)
+      copy.setIndex(Array.from({ length: copy.getAttribute('position').count }, (_, i) => i));
     const transform = new T.Matrix4().compose(
       new T.Vector3(x, y, z),
       new T.Quaternion().setFromEuler(new T.Euler(0, 0, rz)),
