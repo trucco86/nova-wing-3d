@@ -1,5 +1,21 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Plano P0 — estabilização da próxima release (31/10/2026)
+
+> Planejamento; não constitui implementação, CI aprovada, deploy ou homologação.
+
+1. **P0 — WebGL/boost:** investigar falhas Playwright da [PR #191](https://github.com/trucco86/nova-wing-3d/pull/191) ([execução](https://github.com/trucco86/nova-wing-3d/actions/runs/41195528925)); exigir 4/4 shards no SHA final sem apenas aumentar timeouts.
+2. **P0 — Graphics 3.4:** reconciliar a cadeia #188–#191 em candidata única; revisar diff, build, regressões e performance mobile.
+3. **P0 — Integração funcional:** consolidar abertura Five Cats (#173), combate, mecha, troféus e patentes, preservando dependências e persistência.
+4. **P0 — Menu fullscreen:** planejar composição responsiva 16:9 e 9:16 com arte cobrindo a viewport, personagens preservados, botões legíveis e safe areas. **Ainda sem implementação confirmada.**
+5. **P1 — Promoção controlada:** DEV → HML → produção somente com CI completa, deploy por SHA, homologação explícita e rollback verificado.
+6. **P1 — PRs antigas:** reconciliar #46 (analógico), #51 (iluminação) e #52 (transformação integrada anteriormente), sem merges automáticos de código obsoleto.
+
+**Congelamento de escopo:** priorizar correções, integração e menu fullscreen; novas mecânicas ficam para release posterior. Data de produção condicional.
+
+---
+
+
 ## Estado vigente — 27/10/2026 (substitui prioridades desatualizadas abaixo)
 
 - **Áudio — nova prioridade do mantenedor:** candidata v1.26.0 sobre o Mecha integrado ao DEV: trilha mais grave/imersiva, servo e travas da transformação, turbina contínua e impactos reais. Composição original inspirada no clima pedido; exige renderização sonora real e avaliação de mixagem, sem homologação auditiva presumida.
