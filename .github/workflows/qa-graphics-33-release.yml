@@ -1,0 +1,42 @@
+name: Graphics 3.3 isolated release preparation
+on:
+  push:
+    branches:
+      - feat/graphics-33-fleet-details-20261031
+    paths:
+      - .github/workflows/qa-graphics-33-release.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NOVA_BASE_SHA: 8ba20946648580df78221efdffa869f98617f320
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/graphics-33-fleet-details-20261031
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.37
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - name: Commit synchronized web release and formatted model details
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.37.md index.html src/premium-model-details.js src/bosses.js src/visuals.js src/encounters.js src/city-traffic.js tests/graphics.test.mjs tests/city-2-7-active-traffic.test.mjs tests/graphics-3-3-premium-models.test.mjs specs/graphics-3-3-fleet-detail-polish.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(graphics): prepare Graphics 3.3 v1.27.37 full fleet QA candidate"
+            git push origin HEAD:feat/graphics-33-fleet-details-20261031
+          fi
