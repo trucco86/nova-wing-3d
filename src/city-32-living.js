@@ -120,7 +120,7 @@ function facadeSigns(parent, buildings) {
     if (i % 5 !== 0 && i % 7 !== 1) continue;
     const b = buildings[i];
     if (Math.abs(b.x) < 94 || b.h < 29) continue;
-    const [brand, caption, color] = CITY32_ADS[(count * 5 + Math.floor(count / 3)) % CITY32_ADS.length];
+    const [brand, caption, color] = CITY32_ADS[count % CITY32_ADS.length];
     const panel = new T.Group();
     panel.name = 'city32-sign-' + count;
     panel.userData.brand = brand;
