@@ -249,8 +249,8 @@ export function createGame({
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
-  // Grow the visible craft by 5%, but keep the original player root and hitbox.
-  scaleFighterVisual(player, 1.05);
+  // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
+  scaleFighterVisual(player, 1.11);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
@@ -663,11 +663,11 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
-    shipModule.scale.setScalar(1.05);
+    shipModule.scale.setScalar(1.11);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
-      pilotLoadout.ship === 'aegis' ? 1.08 : pilotLoadout.ship === 'specter' ? 0.84 : 0.93;
+      pilotLoadout.ship === 'aegis' ? 1.13 : pilotLoadout.ship === 'specter' ? 0.88 : 0.98;
     applySkin();
   }
   const statLabels = {
