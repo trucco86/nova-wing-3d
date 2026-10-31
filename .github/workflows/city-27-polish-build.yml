@@ -1,0 +1,39 @@
+name: Prepare City 2.7 cinematic polish bundle
+on:
+  push:
+    branches:
+      - feat/city-27-retail-orbit-20261031
+    paths:
+      - .github/workflows/city-27-polish-build.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-27-retail-orbit-20261031
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run check:repo
+      - name: Commit updated cinema and commerce assets to draft branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/city-commerce.js src/launch-celestials.js tests/city-2-7-retail-orbit.test.mjs index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): synchronize mall architecture and solar cinematic polish"
+            git push origin HEAD:feat/city-27-retail-orbit-20261031
+          fi
