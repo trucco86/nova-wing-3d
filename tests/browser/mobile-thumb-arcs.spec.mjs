@@ -1,8 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.use({ hasTouch: true, isMobile: true });
-const ids = ['podsTouch', 'rollTouch', 'robotTouch', 'lockTouch',
-  'bombTouch', 'boostTouch', 'fireTouch'];
+const ids = [
+  'podsTouch',
+  'rollTouch',
+  'robotTouch',
+  'lockTouch',
+  'bombTouch',
+  'boostTouch',
+  'fireTouch',
+];
 const overlaps = (a, b) =>
   Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) *
   Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
@@ -30,18 +37,33 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
     const state = await page.evaluate((buttons) => {
       const rect = (el) => {
         const r = el.getBoundingClientRect();
-        return { left: r.left, right: r.right, top: r.top, bottom: r.bottom,
-          width: r.width, height: r.height };
+        return {
+          left: r.left,
+          right: r.right,
+          top: r.top,
+          bottom: r.bottom,
+          width: r.width,
+          height: r.height,
+        };
       };
       return {
         coarse: matchMedia('(pointer: coarse)').matches,
         stick: rect(document.querySelector('#stick')),
-        controls: Object.fromEntries(buttons.map((id) => {
-          const el = document.getElementById(id);
-          const style = getComputedStyle(el);
-          return [id, { rect: rect(el), opacity: Number(style.opacity),
-            pointerEvents: style.pointerEvents, visible: style.display !== 'none' }];
-        })),
+        controls: Object.fromEntries(
+          buttons.map((id) => {
+            const el = document.getElementById(id);
+            const style = getComputedStyle(el);
+            return [
+              id,
+              {
+                rect: rect(el),
+                opacity: Number(style.opacity),
+                pointerEvents: style.pointerEvents,
+                visible: style.display !== 'none',
+              },
+            ];
+          }),
+        ),
       };
     }, ids);
     expect(state.coarse).toBe(true);
@@ -58,13 +80,16 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
       expect(opacity).toBeLessThan(0.75);
       for (const other of ids) {
         if (other <= id) continue;
-        expect(overlaps(rect, state.controls[other].rect),
-          id + ' must not overlap ' + other + ' on ' + viewport.width + 'px').toBe(0);
+        expect(
+          overlaps(rect, state.controls[other].rect),
+          id + ' must not overlap ' + other + ' on ' + viewport.width + 'px',
+        ).toBe(0);
       }
       expect(overlaps(rect, state.stick), id + ' must not cover left thumb stick').toBe(0);
     }
-    await page.screenshot({ path: info.outputPath('thumb-arcs-' +
-      viewport.width + 'x' + viewport.height + '.png') });
+    await page.screenshot({
+      path: info.outputPath('thumb-arcs-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
   }
   expect(errors).toEqual([]);
 });

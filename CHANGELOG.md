@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.42 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.41 — Graphics 3.6 / Reflex Boost e tiro luminoso seletivo (QA)
 
 - Clarões de disparo e reflexos emissivos locais na fuselagem da NOVA-7 e nos canhões e peito do mecha, inclusive tiros carregados e de precisão. Mobile sem bloom pesado; desktop Alto pode usar uma luz pontual temporária.

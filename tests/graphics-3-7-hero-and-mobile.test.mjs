@@ -19,8 +19,11 @@ test('NOVA-7 adds premium flush surface layers within the original combat silhou
     for (const v of layer.geometry.attributes.position.array) assert.ok(Number.isFinite(v));
   }
   assert.equal(ship.getObjectByName('airframe-weapon-pod'), undefined);
-  assert.equal(fighter(true).getObjectByName('nova7-step-panel-finish'), undefined,
-    'enemy swarms should not inherit extra hero GPU batches');
+  assert.equal(
+    fighter(true).getObjectByName('nova7-step-panel-finish'),
+    undefined,
+    'enemy swarms should not inherit extra hero GPU batches',
+  );
   const before = new T.Box3().setFromObject(ship).getSize(new T.Vector3()).x;
   scaleFighterVisual(ship, 1.11);
   assert.ok(new T.Box3().setFromObject(ship).getSize(new T.Vector3()).x > before * 1.109);

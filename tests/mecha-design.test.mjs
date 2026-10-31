@@ -63,7 +63,10 @@ test('mecha wings reuse the exact fighter wing geometry rather than a larger rou
   const mechaPoints = mechaWing.geometry.attributes.position.array;
   const fighterPoints = fighterWing.geometry.attributes.position.array;
   assert.deepEqual(Array.from(mechaPoints), Array.from(fighterPoints));
-  assert.ok(robot.scale.x >= 1 && robot.scale.x <= 1.05, 'mecha may grow only subtly without toy-like bulk');
+  assert.ok(
+    robot.scale.x >= 1 && robot.scale.x <= 1.05,
+    'mecha may grow only subtly without toy-like bulk',
+  );
 });
 
 test('turbine has visible moving rotor and boost lengthens propulsion plume', () => {

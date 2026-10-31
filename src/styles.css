@@ -7908,7 +7908,9 @@ body.reflex-boost #boostTouch::after {
     border-radius: 50%;
     border-color: #8dece588;
     background: radial-gradient(circle at 48% 50%, #10556840 10%, #08243130 65%, #05131e35 100%);
-    box-shadow: inset 0 0 0 2px #66cfd825, 0 0 0 4px #091e2d25;
+    box-shadow:
+      inset 0 0 0 2px #66cfd825,
+      0 0 0 4px #091e2d25;
     opacity: 0.55;
     transition: opacity 100ms ease;
   }
@@ -7943,7 +7945,9 @@ body.reflex-boost #boostTouch::after {
     border: 1px solid #86e4d56b;
     border-radius: 46% 54% 44% 56%;
     background: #08223173;
-    box-shadow: inset 0 0 10px #6ee8f01b, 0 3px 12px #01050e38;
+    box-shadow:
+      inset 0 0 10px #6ee8f01b,
+      0 3px 12px #01050e38;
     color: #e7fffc;
     text-shadow: 0 1px 4px #000c;
     opacity: 0.55;
@@ -7952,7 +7956,9 @@ body.reflex-boost #boostTouch::after {
     -webkit-backdrop-filter: none;
     touch-action: none;
     pointer-events: auto;
-    transition: opacity 90ms ease, box-shadow 90ms ease;
+    transition:
+      opacity 90ms ease,
+      box-shadow 90ms ease;
   }
   body.in-mission #touch .actions button:active,
   body.in-mission #touch .actions button.pressed,
@@ -7960,30 +7966,40 @@ body.reflex-boost #boostTouch::after {
   body.in-mission #touch #robotTouch[aria-pressed='true'] {
     opacity: 0.94;
     border-color: #adfff4;
-    box-shadow: inset 0 0 15px #55ddd655, 0 0 12px #5fffe966;
+    box-shadow:
+      inset 0 0 15px #55ddd655,
+      0 0 12px #5fffe966;
   }
   body.in-mission #touch .actions #podsTouch {
-    left: 0; top: 19px;
+    left: 0;
+    top: 19px;
   }
   body.in-mission #touch .actions #rollTouch {
-    left: 56px; top: 2px;
+    left: 56px;
+    top: 2px;
   }
   body.in-mission #touch .actions #robotTouch {
-    left: 4px; top: 80px;
+    left: 4px;
+    top: 80px;
   }
   body.in-mission #touch .actions #bombTouch {
-    left: 63px; top: 76px;
+    left: 63px;
+    top: 76px;
   }
   body.in-mission #touch .actions #boostTouch {
-    left: 122px; top: 67px;
-    width: 56px; height: 62px;
+    left: 122px;
+    top: 67px;
+    width: 56px;
+    height: 62px;
     border-radius: 42% 58% 44% 56% !important;
     background: conic-gradient(#ffd07a var(--meter, 100%), #374137 var(--meter, 100%));
     font-size: 11px !important;
   }
   body.in-mission #touch .actions #fireTouch {
-    left: 181px; top: 46px;
-    width: 61px; height: 82px;
+    left: 181px;
+    top: 46px;
+    width: 61px;
+    height: 82px;
     min-width: 61px;
     max-width: 61px;
     border-radius: 52% 48% 42% 58% !important;
@@ -8017,18 +8033,34 @@ body.reflex-boost #boostTouch::after {
     min-height: 48px;
     font-size: 9px !important;
   }
-  body.in-mission #touch .actions #podsTouch { left: 0; top: 10px; }
-  body.in-mission #touch .actions #rollTouch { left: 58px; top: 0; }
-  body.in-mission #touch .actions #robotTouch { left: 0; top: 70px; }
-  body.in-mission #touch .actions #bombTouch { left: 58px; top: 60px; }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 10px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 58px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 70px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 58px;
+    top: 60px;
+  }
   body.in-mission #touch .actions #boostTouch {
-    left: 49px; top: 114px;
-    width: 62px; height: 49px;
+    left: 49px;
+    top: 114px;
+    width: 62px;
+    height: 49px;
     font-size: 10px !important;
   }
   body.in-mission #touch .actions #fireTouch {
-    left: 122px; top: 66px;
-    width: 62px; height: 97px;
+    left: 122px;
+    top: 66px;
+    width: 62px;
+    height: 97px;
     min-width: 62px;
     max-width: 62px;
     font-size: 11px !important;
@@ -8043,17 +8075,30 @@ body.reflex-boost #boostTouch::after {
     right: max(7px, env(safe-area-inset-right, 0px));
     gap: 4px;
   }
-  body.in-mission #touch .actions { width: 177px; }
+  body.in-mission #touch .actions {
+    width: 177px;
+  }
   body.in-mission #touch .actions #fireTouch {
     left: 116px;
-    width: 61px; min-width: 61px; max-width: 61px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
   }
-  body.in-mission #touch .actions #boostTouch { left: 46px; }
-  body.in-mission #touch .actions #bombTouch { left: 57px; }
-  body.in-mission #touch .actions #rollTouch { left: 57px; }
+  body.in-mission #touch .actions #boostTouch {
+    left: 46px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 57px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 57px;
+  }
 }
 @media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
-  body.in-mission #touch #stick { width: 120px; height: 120px; }
+  body.in-mission #touch #stick {
+    width: 120px;
+    height: 120px;
+  }
 }
 
 /* The independent LEFT-ARM lock is a seventh control in mech mode.
@@ -8078,31 +8123,55 @@ body.reflex-boost #boostTouch::after {
     width: 181px;
     height: 168px;
   }
-  body.in-mission #touch .actions #podsTouch { left: 0; top: 10px; }
-  body.in-mission #touch .actions #robotTouch { left: 0; top: 65px; }
-  body.in-mission #touch .actions #rollTouch { left: 58px; top: 0; }
-  body.in-mission #touch .actions #bombTouch { left: 58px; top: 58px; }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 10px;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 65px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 58px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 58px;
+    top: 58px;
+  }
   body.in-mission #touch .actions #boostTouch {
-    left: 58px; top: 117px;
+    left: 58px;
+    top: 117px;
     width: 58px;
     height: 50px;
   }
   body.in-mission #touch .actions #fireTouch {
-    left: 120px; top: 65px;
-    width: 61px; min-width: 61px; max-width: 61px;
+    left: 120px;
+    top: 65px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
     height: 102px;
   }
   body.in-mission #touch .actions #lockTouch:not([hidden]) {
-    left: 0; top: 119px;
+    left: 0;
+    top: 119px;
     width: 52px;
     height: 48px;
   }
 }
 @media (pointer: coarse) and (max-width: 340px) {
-  body.in-mission #touch .actions { width: 177px; }
-  body.in-mission #touch .actions #boostTouch { left: 58px; width: 54px; }
+  body.in-mission #touch .actions {
+    width: 177px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 58px;
+    width: 54px;
+  }
   body.in-mission #touch .actions #fireTouch {
     left: 116px;
-    width: 61px; min-width: 61px; max-width: 61px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
   }
 }
