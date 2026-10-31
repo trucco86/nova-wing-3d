@@ -1,0 +1,41 @@
+name: Prepare City 2.7 moving traffic build
+on:
+  push:
+    branches:
+      - feat/city-27-retail-orbit-20261031
+    paths:
+      - .github/workflows/city-27-traffic-build.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NOVA_BASE_SHA: 8c33ce20201d71f4a200e69cdaf653f548a10939
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/city-27-retail-orbit-20261031
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run validate
+      - name: Commit QA-only assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/city-traffic.js src/city-commerce.js src/launch-celestials.js src/visuals.js tests/city-2-7-active-traffic.test.mjs tests/city-2-7-retail-orbit.test.mjs tests/flight-launch-visual.test.mjs tests/graphics.test.mjs releases/v1.27.36.md specs/city-2-7-premium-retail-and-orbit.md CHANGELOG.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): bundle moving traffic and seamless Earth reveal in 2.7 QA"
+            git push origin HEAD:feat/city-27-retail-orbit-20261031
+          fi
