@@ -1,4 +1,4 @@
-name: Prepare City 2.9 mobile GPU budget QA
+name: Prepare City 2.9 mobile GPU budget QA — validated 395
 on:
   push:
     branches:
