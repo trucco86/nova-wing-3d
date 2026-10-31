@@ -49,8 +49,10 @@ test('City 2.2 high facade detail has dense window layers within fixed GPU budge
   bridge.getMatrixAt(0, transform);
   transform.decompose(pos, rot, scale);
   assert.ok(pos.y - scale.y / 2 > 45, 'aerial crossing safely clears the flight lane');
-  const commonWindows = near.children.find((obj) => obj.isInstancedMesh && obj.count === 2800);
-  assert.ok(commonWindows, 'medium keeps its pre-existing windows');
+  const commonWindows = near.children.find(
+    (obj) => obj.isInstancedMesh && obj.count > 2800 && obj.count <= 4800,
+  );
+  assert.ok(commonWindows, 'Medium retains every old window and adds rich facade variation');
   world.setGraphicsQuality('high');
   assert.equal(ground.material.uniforms.detail.value, 1, 'High enriches procedural paving');
   assert.equal(high.visible, true);
