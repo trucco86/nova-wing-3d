@@ -82,6 +82,97 @@ function detailRail(parent, name, material, x, y, z, w, h, d, yaw = 0) {
   return mesh;
 }
 
+// Graphics 3.7: small premium surface features in a few instanced GPU draws.
+// These decorate approved hero contours, never introduce new silhouette plates.
+const finishBox = new T.BoxGeometry(1, 1, 1);
+const finishTransform = new T.Object3D();
+function finishBatch(parent, name, material, parts) {
+  const batch = new T.InstancedMesh(finishBox, material, parts.length);
+  batch.name = name;
+  batch.userData.visualOnly = true;
+  batch.frustumCulled = false;
+  parts.forEach(([x, y, z, w, h, d, yaw = 0, roll = 0], index) => {
+    finishTransform.position.set(x, y, z);
+    finishTransform.rotation.set(0, yaw, roll);
+    finishTransform.scale.set(w, h, d);
+    finishTransform.updateMatrix();
+    batch.setMatrixAt(index, finishTransform.matrix);
+  });
+  batch.instanceMatrix.needsUpdate = true;
+  parent.add(batch);
+  return batch;
+}
+function addHeroAirframeFinish(root, { armor, accent, emission }) {
+  const plating = [];
+  const seams = [];
+  const leds = [];
+  for (const side of [-1, 1]) {
+    // Recessed stepped cockpit/wing seams and low-profile service panels.
+    plating.push(
+      [side * 0.73, 0.39, -1.2, 0.19, 0.07, 0.76, side * 0.08],
+      [side * 1.35, 0.35, -0.14, 0.34, 0.085, 0.8, side * 0.19],
+      [side * 2.08, 0.34, 0.52, 0.44, 0.08, 0.65, side * 0.28],
+      [side * 2.74, 0.29, 1.07, 0.29, 0.07, 0.43, side * 0.32],
+    );
+    seams.push(
+      [side * 0.93, 0.47, -0.55, 0.05, 0.05, 0.81],
+      [side * 1.59, 0.41, 0.41, 0.055, 0.055, 0.54, side * 0.22],
+      [side * 2.4, 0.39, 0.91, 0.065, 0.055, 0.46, side * 0.28],
+      [side * 3.13, 0.28, 1.33, 0.05, 0.045, 0.25],
+      [side * 1.05, 0.02, 2.18, 0.15, 0.15, 0.2],
+    );
+    leds.push(
+      [side * 1.2, 0.49, 0.22, 0.09, 0.04, 0.44],
+      [side * 2.61, 0.37, 1.04, 0.1, 0.045, 0.26],
+      [side * 3.28, 0.29, 1.42, 0.14, 0.05, 0.12],
+    );
+  }
+  finishBatch(root, 'nova7-step-panel-finish', armor, plating);
+  finishBatch(root, 'nova7-machined-seams', accent, seams);
+  finishBatch(root, 'nova7-recessed-navigation-leds', emission, leds);
+}
+function addHeroMechFinish(root, robot, { armor, graphite, accent, emission }) {
+  const plateParts = [];
+  const seamParts = [];
+  const leds = [];
+  for (const side of [-1, 1]) {
+    plateParts.push(
+      [side * 0.76, 1.93, -1.12, 0.49, 0.1, 0.62, 0, side * 0.14],
+      [side * 1.04, 1.05, -0.89, 0.38, 0.08, 0.46, 0, side * 0.1],
+      [side * 1.71, 2.56, 0.2, 0.42, 0.16, 0.52, 0, side * 0.12],
+      [side * 0.78, -2.19, -0.88, 0.32, 0.1, 0.44],
+      [side * 0.76, -3.6, -0.96, 0.39, 0.11, 0.51],
+    );
+    seamParts.push(
+      [side * 0.9, 1.55, -1.13, 0.08, 0.06, 0.68],
+      [side * 0.88, -2.5, -0.98, 0.07, 0.055, 0.48],
+      [side * 1.13, 2.72, 0.04, 0.26, 0.09, 0.11],
+    );
+    leds.push(
+      [side * 0.6, 1.35, -1.26, 0.12, 0.04, 0.46],
+      [side * 0.77, -3.24, -1.05, 0.11, 0.045, 0.57],
+      [side * 1.37, 2.57, 0.13, 0.15, 0.06, 0.27],
+    );
+  }
+  finishBatch(root, 'mech-chest-leg-armor-inserts', armor, plateParts);
+  finishBatch(root, 'mech-limb-service-seams', graphite, seamParts);
+  finishBatch(root, 'mech-limb-emissive-indicators', emission, leds);
+  // Follow existing independent arm pivots, rather than pinning greebles to
+  // the body (which made the older mecha arms feel static while aiming).
+  for (const [i, arm] of (robot.userData.mechRig?.arms ?? []).entries()) {
+    const side = i ? 1 : -1;
+    finishBatch(arm, 'mech-articulated-forearm-panels', armor, [
+      [side * 1.88, -0.1, -1.04, 0.26, 0.56, 0.12],
+      [side * 1.91, -0.59, -1.05, 0.3, 0.21, 0.12],
+      [side * 1.8, 0.24, -1.1, 0.2, 0.15, 0.16],
+    ]);
+    finishBatch(arm, 'mech-articulated-cannon-leds', accent, [
+      [side * 1.91, -0.27, -1.16, 0.12, 0.3, 0.07],
+      [side * 1.92, -0.7, -1.15, 0.11, 0.2, 0.07],
+    ]);
+  }
+}
+
 export function addFighterDetail(ship, { armor, accent, emission, enemy = false }) {
   const root = new T.Group();
   root.name = enemy ? 'enemy-premium-airframe' : 'nova7-premium-airframe';
@@ -171,6 +262,7 @@ export function addFighterDetail(ship, { armor, accent, emission, enemy = false 
     ],
     0.042,
   );
+  if (!enemy) addHeroAirframeFinish(root, { armor, accent, emission });
   ship.add(root);
   return root;
 }
@@ -239,6 +331,7 @@ export function addMechDetail(robot, { armor, graphite, accent, emission }) {
     }
     ring(gimbal, 'mech-turbine-machined-ring', graphite, 0.52, 0, 0, 0.74);
   }
+  addHeroMechFinish(root, robot, { armor, graphite, accent, emission });
   robot.add(root);
   for (const arm of robot.userData.mechRig?.arms ?? []) {
     detailRail(arm, 'mech-wrist-targeting-trim', emission, 0, -2.03, -1.3, 0.13, 0.64, 0.11);
