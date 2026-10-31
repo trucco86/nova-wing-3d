@@ -23,12 +23,19 @@ const skyBeam = new T.CylinderGeometry(0.3, 8, 145, 10, 1, true);
 const neon = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const frame = new T.MeshStandardMaterial({ color: '#587d91', metalness: 0.73, roughness: 0.28 });
 const beamMaterial = new T.MeshBasicMaterial({
-  color: '#8ceaff', transparent: true, opacity: 0.12, side: T.DoubleSide,
-  blending: T.AdditiveBlending, depthWrite: false, toneMapped: false,
+  color: '#8ceaff',
+  transparent: true,
+  opacity: 0.12,
+  side: T.DoubleSide,
+  blending: T.AdditiveBlending,
+  depthWrite: false,
+  toneMapped: false,
 });
 const hull = new T.MeshStandardMaterial({ color: '#c5e5f0', metalness: 0.74, roughness: 0.24 });
 const engine = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795'].map((c) => new T.Color(c));
+const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795'].map(
+  (c) => new T.Color(c),
+);
 const transform = new T.Object3D();
 const textureCache = new Map();
 
@@ -129,7 +136,9 @@ function facadeSigns(parent, buildings) {
     const panelMesh = new T.Mesh(
       plane,
       new T.MeshBasicMaterial({
-        map: advertisingTexture(brand, caption, color), side: T.DoubleSide, toneMapped: false,
+        map: advertisingTexture(brand, caption, color),
+        side: T.DoubleSide,
+        toneMapped: false,
       }),
     );
     panelMesh.scale.set(w, h, 1);
@@ -140,9 +149,33 @@ function facadeSigns(parent, buildings) {
     trim.position.z = -0.6;
     panel.add(trim);
     // In front of panel; chromatic border provides legibility in Medium.
-    accents.push({x:b.x, y:signY + h / 2 + 0.7,z:panel.position.z+0.3,w:w+1.6,h:0.35,d:0.45,tint:color});
-    accents.push({x:b.x, y:signY - h / 2 - 0.7,z:panel.position.z+0.3,w:w+1.6,h:0.35,d:0.45,tint:color});
-    shopfronts.push({x:b.x,y:-1.3,z:b.z + b.depth/2+0.9,w:Math.min(b.w*0.83,15),h:2.3,d:0.35,tint:palette[count%palette.length]});
+    accents.push({
+      x: b.x,
+      y: signY + h / 2 + 0.7,
+      z: panel.position.z + 0.3,
+      w: w + 1.6,
+      h: 0.35,
+      d: 0.45,
+      tint: color,
+    });
+    accents.push({
+      x: b.x,
+      y: signY - h / 2 - 0.7,
+      z: panel.position.z + 0.3,
+      w: w + 1.6,
+      h: 0.35,
+      d: 0.45,
+      tint: color,
+    });
+    shopfronts.push({
+      x: b.x,
+      y: -1.3,
+      z: b.z + b.depth / 2 + 0.9,
+      w: Math.min(b.w * 0.83, 15),
+      h: 2.3,
+      d: 0.35,
+      tint: palette[count % palette.length],
+    });
     signs.add(panel);
     count++;
   }
@@ -163,7 +196,7 @@ function searchlightNetwork(parent) {
     tower.userData.index = i;
     const side = i % 2 ? 1 : -1;
     const z = -125 - i * 302;
-    tower.position.set(side * (123 + i % 3 * 29), 85 + i % 3 * 19, z);
+    tower.position.set(side * (123 + (i % 3) * 29), 85 + (i % 3) * 19, z);
     const base = new T.Mesh(block, frame);
     base.scale.set(6, 2.1, 6);
     base.name = 'city32-searchlight-mount';
@@ -177,11 +210,22 @@ function searchlightNetwork(parent) {
     pivot.add(beam);
     const lamp = new T.Mesh(new T.SphereGeometry(2.2, 9, 7), engine);
     lamp.name = 'city32-searchlight-lamp';
-    lamp.material = new T.MeshBasicMaterial({ color: palette[i % palette.length], toneMapped: false });
+    lamp.material = new T.MeshBasicMaterial({
+      color: palette[i % palette.length],
+      toneMapped: false,
+    });
     pivot.add(lamp);
     tower.add(pivot);
     group.add(tower);
-    beacons.push({x:tower.position.x,y:tower.position.y+4,z,w:3.3,h:1,d:3.3,tint:i%2 ? '#ff6482':'#9bdbff'});
+    beacons.push({
+      x: tower.position.x,
+      y: tower.position.y + 4,
+      z,
+      w: 3.3,
+      h: 1,
+      d: 3.3,
+      tint: i % 2 ? '#ff6482' : '#9bdbff',
+    });
   }
   instanced('city32-aviation-warning-beacons', neon, beacons, group);
   parent.add(group);
@@ -200,7 +244,7 @@ function aerialLanes(parent) {
   lamps.name = 'city32-aircraft-navigation-lights';
   lamps.frustumCulled = false;
   lamps.userData.visualOnly = true;
-  for (let i=0;i<count;i++) lamps.setColorAt(i, palette[i%palette.length]);
+  for (let i = 0; i < count; i++) lamps.setColorAt(i, palette[i % palette.length]);
   lamps.instanceColor.needsUpdate = true;
   air.add(vehicles, lamps);
   parent.add(air);
@@ -210,18 +254,25 @@ function holograms(parent) {
   const group = new T.Group();
   group.name = 'city32-holographic-signs';
   group.userData.visualOnly = true;
-  for (let i=0;i<5;i++) {
+  for (let i = 0; i < 5; i++) {
     const [brand, subtitle, color] = CITY32_ADS[(i * 2 + 1) % CITY32_ADS.length];
-    const sign = new T.Mesh(plane, new T.MeshBasicMaterial({
-      map: advertisingTexture(brand, subtitle, color),
-      transparent: true, opacity: 0.62, depthWrite: false, side: T.DoubleSide,
-      blending: T.AdditiveBlending, toneMapped: false,
-    }));
+    const sign = new T.Mesh(
+      plane,
+      new T.MeshBasicMaterial({
+        map: advertisingTexture(brand, subtitle, color),
+        transparent: true,
+        opacity: 0.62,
+        depthWrite: false,
+        side: T.DoubleSide,
+        blending: T.AdditiveBlending,
+        toneMapped: false,
+      }),
+    );
     sign.name = 'city32-hologram-' + i;
     sign.userData.visualOnly = true;
     sign.userData.index = i;
-    sign.position.set((i%2 ? 1:-1)*(145+i%3*18), 54+i%3*17,-245-i*290);
-    sign.scale.set(21,25,1);
+    sign.position.set((i % 2 ? 1 : -1) * (145 + (i % 3) * 18), 54 + (i % 3) * 17, -245 - i * 290);
+    sign.scale.set(21, 25, 1);
     group.add(sign);
   }
   parent.add(group);
@@ -248,54 +299,60 @@ export function setCity32Quality(root, quality) {
   const air = root.getObjectByName('city32-sky-traffic');
   if (air) for (const mesh of air.children) mesh.count = high ? 18 : 9;
   const beams = root.getObjectByName('city32-sky-searchlights');
-  if (beams) for (const tower of beams.children) {
-    if (!tower.isGroup) continue;
-    tower.visible = high || tower.userData.index < 3;
-  }
+  if (beams)
+    for (const tower of beams.children) {
+      if (!tower.isGroup) continue;
+      tower.visible = high || tower.userData.index < 3;
+    }
   const holo = root.getObjectByName('city32-holographic-signs');
-  if (holo) holo.children.forEach((p, i) => { p.visible = high || i < 2; });
+  if (holo)
+    holo.children.forEach((p, i) => {
+      p.visible = high || i < 2;
+    });
 }
 
 export function updateCity32Living(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
   const phase = root.userData.phase || 0;
   const beams = root.getObjectByName('city32-sky-searchlights');
-  if (beams) for (const tower of beams.children) {
-    if (!tower.isGroup) continue;
-    const p = tower.getObjectByName('city32-searchlight-pivot');
-    if (!p) continue;
-    p.rotation.z = Math.sin(travel * 0.005 + tower.userData.index * 1.7 + phase) * 0.24;
-    p.rotation.x = Math.cos(travel * 0.004 + tower.userData.index + phase) * 0.18;
-  }
+  if (beams)
+    for (const tower of beams.children) {
+      if (!tower.isGroup) continue;
+      const p = tower.getObjectByName('city32-searchlight-pivot');
+      if (!p) continue;
+      p.rotation.z = Math.sin(travel * 0.005 + tower.userData.index * 1.7 + phase) * 0.24;
+      p.rotation.x = Math.cos(travel * 0.004 + tower.userData.index + phase) * 0.18;
+    }
   const air = root.getObjectByName('city32-sky-traffic');
   if (air) {
     const bodies = air.getObjectByName('city32-civilian-aircraft');
     const lamps = air.getObjectByName('city32-aircraft-navigation-lights');
-    for (let i=0;i<18;i++){
-      const side = i%2 ? 1:-1;
-      const distance = (i*149 + travel*(0.17+i%4*0.052) + phase*130)%1870;
-      const z = -45-distance;
-      const x = side*(110+(i%5)*27+Math.sin(travel*0.003+i)*10);
-      const y = 88+(i%5)*26+Math.sin(travel*0.007+i*0.8)*6;
-      transform.position.set(x,y,z);
-      transform.rotation.set(Math.PI/2,0,side*0.12*Math.sin(travel*0.004+i));
-      transform.scale.set(2.3,2.1,4.2);
+    for (let i = 0; i < 18; i++) {
+      const side = i % 2 ? 1 : -1;
+      const distance = (i * 149 + travel * (0.17 + (i % 4) * 0.052) + phase * 130) % 1870;
+      const z = -45 - distance;
+      const x = side * (110 + (i % 5) * 27 + Math.sin(travel * 0.003 + i) * 10);
+      const y = 88 + (i % 5) * 26 + Math.sin(travel * 0.007 + i * 0.8) * 6;
+      transform.position.set(x, y, z);
+      transform.rotation.set(Math.PI / 2, 0, side * 0.12 * Math.sin(travel * 0.004 + i));
+      transform.scale.set(2.3, 2.1, 4.2);
       transform.updateMatrix();
-      bodies.setMatrixAt(i,transform.matrix);
-      transform.position.set(x,y-2,z+3);
-      transform.scale.setScalar(1.5+0.12*Math.sin(travel*0.025+i));
-      transform.rotation.set(0,0,0);
+      bodies.setMatrixAt(i, transform.matrix);
+      transform.position.set(x, y - 2, z + 3);
+      transform.scale.setScalar(1.5 + 0.12 * Math.sin(travel * 0.025 + i));
+      transform.rotation.set(0, 0, 0);
       transform.updateMatrix();
-      lamps.setMatrixAt(i,transform.matrix);
+      lamps.setMatrixAt(i, transform.matrix);
     }
     bodies.instanceMatrix.needsUpdate = true;
     lamps.instanceMatrix.needsUpdate = true;
   }
   const holo = root.getObjectByName('city32-holographic-signs');
-  if(holo)holo.children.forEach((mesh,i)=>{
-    mesh.rotation.y = Math.sin(travel*0.004+i)*0.12;
-    mesh.scale.x = 19+2*Math.sin(travel*0.007+i);
-  });
+  if (holo)
+    holo.children.forEach((mesh, i) => {
+      mesh.rotation.y = Math.sin(travel * 0.004 + i) * 0.12;
+      mesh.scale.x = 19 + 2 * Math.sin(travel * 0.007 + i);
+    });
 }
 
 export function createCity32Skyline() {
@@ -309,15 +366,36 @@ export function createCity32Skyline() {
       const x = (i - 15.5) * (tier === 0 ? 30 : tier === 1 ? 26 : 23);
       if (tier < 2 && Math.abs(x) < 65) continue;
       const z = -470 - tier * 260 - (i % 3) * 22;
-      const h = 38 + (i * 17 + tier * 29) % 110;
-      const w = 13 + (i + 2*tier) % 5 * 5;
-      silhouettes.push({x,y:h*0.5-7,z,w,h,d:19,tint:palette[(i+tier)%palette.length]});
-      for (let y=0;y<3;y++) {
-        bands.push({x,y:6+h*(y+1)/4,z:z+10.5,w:w*0.82,h:0.58,d:0.4,tint:palette[(i+3*y+tier)%palette.length]});
+      const h = 38 + ((i * 17 + tier * 29) % 110);
+      const w = 13 + ((i + 2 * tier) % 5) * 5;
+      silhouettes.push({
+        x,
+        y: h * 0.5 - 7,
+        z,
+        w,
+        h,
+        d: 19,
+        tint: palette[(i + tier) % palette.length],
+      });
+      for (let y = 0; y < 3; y++) {
+        bands.push({
+          x,
+          y: 6 + (h * (y + 1)) / 4,
+          z: z + 10.5,
+          w: w * 0.82,
+          h: 0.58,
+          d: 0.4,
+          tint: palette[(i + 3 * y + tier) % palette.length],
+        });
       }
     }
   }
-  instanced('city32-skyline-secondary-towers', new T.MeshStandardMaterial({color:'#779abb',metalness:0.57,roughness:0.48}), silhouettes, root);
+  instanced(
+    'city32-skyline-secondary-towers',
+    new T.MeshStandardMaterial({ color: '#779abb', metalness: 0.57, roughness: 0.48 }),
+    silhouettes,
+    root,
+  );
   instanced('city32-skyline-illuminated-bands', neon, bands, root);
   return root;
 }
