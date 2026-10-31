@@ -56,9 +56,15 @@ test('City 2.7 Earth has procedural clouds, a separate Moon and a distant Sun wi
   const scene = new T.Scene();
   const sky = createLaunchCelestials(scene);
   for (const name of [
-    'launch-earth-horizon', 'launch-earth-clouds', 'launch-earth-atmospheric-limb',
-    'launch-orbit-moon', 'launch-orbit-sun', 'launch-sun-halo-0', 'launch-sun-halo-1',
-  ]) assert.ok(scene.getObjectByName(name), name);
+    'launch-earth-horizon',
+    'launch-earth-clouds',
+    'launch-earth-atmospheric-limb',
+    'launch-orbit-moon',
+    'launch-orbit-sun',
+    'launch-sun-halo-0',
+    'launch-sun-halo-1',
+  ])
+    assert.ok(scene.getObjectByName(name), name);
   sky.setGraphicsQuality('medium');
   sky.update(0.5);
   assert.equal(sky.earth.visible, true);
@@ -101,7 +107,7 @@ test('City 2.7 transition is continuous, leaves architecture below the player an
   assert.equal(city.visible, true, 'city is still present when Earth first appears');
   assert.ok(early > 0 && early < 0.3, 'Earth gently fades in, never pops');
   assert.ok(sun.visible);
-  world.setLaunchAscent(0.70, true);
+  world.setLaunchAscent(0.7, true);
   const middle = earth.material.uniforms.fade.value;
   assert.ok(middle > early, 'Earth reveal increases monotonically');
   assert.ok(city.position.y < -300, 'city physically drops away during ascent');
@@ -112,7 +118,7 @@ test('City 2.7 transition is continuous, leaves architecture below the player an
   assert.equal(horizon.visible, false);
   assert.equal(earth.visible, true);
   world.setLaunchAscent(1, true);
-  assert.ok(earth.material.uniforms.fade.value > 0.90);
+  assert.ok(earth.material.uniforms.fade.value > 0.9);
   world.setSector(SECTORS[1]);
   assert.equal(earth.visible, false, 'Earth launch objects do not leak into ocean sector');
   assert.equal(moon.visible, false);

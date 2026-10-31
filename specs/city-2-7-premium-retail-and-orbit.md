@@ -7,6 +7,7 @@ A avenida da primeira fase ainda parecia uma pista urbana gerada proceduralmente
 ## Implementado na candidata isolada
 
 ### Cidade viva e escala
+
 - 3 shoppings/centros comerciais com nome e letreiro local gerado por CanvasTexture: ORBITAL PLAZA (direita), NOVA MARKET (esquerda), SKYLINE MALL (direita).
 - 16 lojas distribuídas pelos blocos da cidade: fachada envidraçada, marquise, pisos elevados, luzes quentes e frias, módulos de entrada e painéis.
 - Pequenos quiosques e praça de acesso nos shoppings. Posição lateral sempre |x|>90, fora do corredor de voo e do monotrilho; sem hitboxes.
@@ -15,6 +16,7 @@ A avenida da primeira fase ainda parecia uma pista urbana gerada proceduralmente
 - Preserva os trens animados, fachadas, outdoors, distritos e piso da Cidade 2.6.
 
 ### Transição órbita
+
 - Mantém a fase atmosférica de 38 segundos e o BOOST obrigatório. A suavização ocorre pela direção visual e fade, não por alteração do cronômetro ou da progressão de chefe.
 - Cidade, monorail, fachadas e skyline descem suavemente, com fog e escala progressivos; não são escondidos no limiar inicial de desbloqueio de obstáculos espaciais.
 - Revelação cruzada: luz solar começa durante a subida, seguida de Terra abaixo do horizonte e Lua separada, até a cidade estar fisicamente fora do campo da câmera.
@@ -24,6 +26,7 @@ A avenida da primeira fase ainda parecia uma pista urbana gerada proceduralmente
 - Todo elemento celestial volta ao estado invisível em outros setores e no reset.
 
 ## Validação automática
+
 - Verificar 3 shoppings, 16 lojas, fachadas, marquises, shaders/texturas offline, batches de GPU e afastamento do corredor central.
 - Verificar megaconstrução e composição central distante sem hitboxes.
 - Verificar progresso contínuo 44%→70%→85%→100% do fade de Terra e deslocamento urbano, e reset.
@@ -31,6 +34,7 @@ A avenida da primeira fase ainda parecia uma pista urbana gerada proceduralmente
 - Executar format:check, lint, testes Node, validate, build:check e Playwright 4/4 no SHA final.
 
 ## Homologação visual e performance pendentes
+
 1. Em 1366×768, 844×390 e 390×844, identificar os shoppings, a citadel ao fundo e a passagem do trem nos primeiros segundos. Capturar imagens reais do jogo e comparar com 2.6.
 2. Seguir a fase completa: cidade → BOOST obrigatório → atmosfera de 38 s com revelação progressiva → Terra, Lua e Sol → chefe; avaliar cortes visuais, cintilação e qualidade da luz.
 3. Medir 30 segundos de FPS e p95 frame-time em equipamento real, em Médio e Alto. Alvos, **não medições**: 60 FPS desktop, 30 FPS mobile.

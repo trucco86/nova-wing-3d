@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.36 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
 
 - Trem maglev de três vagões com malhas aerodinâmicas nas duas pontas, chassis de levitação, luzes e acabamento lateral; colisões e trajeto preservados.

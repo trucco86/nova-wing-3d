@@ -36,7 +36,11 @@ test('sector 1 moves city and terrain away as Earth-to-orbit horizon comes into 
   const orbitalFade = earth.material.uniforms.fade.value;
   assert.ok(orbitalFade > 0.3);
   world.setLaunchAscent(0.45, true);
-  assert.equal(earth.visible, true, 'early Earth glow is visible before the last buildings disappear');
+  assert.equal(
+    earth.visible,
+    true,
+    'early Earth glow is visible before the last buildings disappear',
+  );
   assert.ok(earth.material.uniforms.fade.value < orbitalFade);
   assert.equal(city.visible, true);
   world.setLaunchAscent(0.85, true);

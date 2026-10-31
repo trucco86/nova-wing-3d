@@ -8,7 +8,8 @@ const smooth = (x) => {
   const t = T.MathUtils.clamp(x, 0, 1);
   return t * t * (3 - 2 * t);
 };
-const vertex = 'varying vec3 n;varying vec3 p;void main(){n=normalize(normalMatrix*normal);p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+const vertex =
+  'varying vec3 n;varying vec3 p;void main(){n=normalize(normalMatrix*normal);p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
 
 function sunGlowTexture() {
   const side = 96;
@@ -149,17 +150,22 @@ export function createLaunchCelestials(scene) {
   sun.add(disc);
   const texture = sunGlowTexture();
   const glow = [];
-  for (const [i, radius, strength] of [[0, 295, .60], [1, 620, .21]]) {
-    const sprite = new T.Sprite(new T.SpriteMaterial({
-      map: texture,
-      color: i === 0 ? '#fff1c2' : '#ffd490',
-      transparent: true,
-      depthWrite: false,
-      depthTest: false,
-      fog: false,
-      blending: T.AdditiveBlending,
-      opacity: 0,
-    }));
+  for (const [i, radius, strength] of [
+    [0, 295, 0.6],
+    [1, 620, 0.21],
+  ]) {
+    const sprite = new T.Sprite(
+      new T.SpriteMaterial({
+        map: texture,
+        color: i === 0 ? '#fff1c2' : '#ffd490',
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        fog: false,
+        blending: T.AdditiveBlending,
+        opacity: 0,
+      }),
+    );
     sprite.name = 'launch-sun-halo-' + i;
     sprite.scale.set(radius, radius, 1);
     sprite.userData.opacityScale = strength;
@@ -177,21 +183,21 @@ export function createLaunchCelestials(scene) {
   }
   function update(amount) {
     const progress = T.MathUtils.clamp(amount, 0, 1);
-    const earthFade = smooth((progress - .38) / .59);
-    const sunFade = smooth((progress - .27) / .48);
-    const moonFade = smooth((progress - .51) / .40);
+    const earthFade = smooth((progress - 0.38) / 0.59);
+    const sunFade = smooth((progress - 0.27) / 0.48);
+    const moonFade = smooth((progress - 0.51) / 0.4);
     const positionY = -920 + 350 * smooth(progress);
     earth.position.y = positionY;
     clouds.position.copy(earth.position);
     limb.position.copy(earth.position);
     earth.visible = earthFade > 0;
-    earthMaterial.uniforms.fade.value = earthFade * .96;
-    cloudMaterial.uniforms.fade.value = earthFade * .75;
+    earthMaterial.uniforms.fade.value = earthFade * 0.96;
+    cloudMaterial.uniforms.fade.value = earthFade * 0.75;
     limbMaterial.uniforms.fade.value = earthFade;
     clouds.visible = earth.visible && high;
     limb.visible = earth.visible && high;
     moon.visible = moonFade > 0;
-    moonMaterial.uniforms.fade.value = moonFade * .93;
+    moonMaterial.uniforms.fade.value = moonFade * 0.93;
     sun.visible = sunFade > 0;
     discMaterial.opacity = sunFade;
     for (const sprite of glow) sprite.material.opacity = sunFade * sprite.userData.opacityScale;
