@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
-import { fighter, createFlyingRobot } from '../src/visuals.js';
+import { fighter, createFlyingRobot, scaleFighterVisual } from '../src/visuals.js';
 import { createBossModel, createSubboss } from '../src/bosses.js';
 import { createGroundEnemy } from '../src/encounters.js';
 import { createCityTraffic, setCityTrafficQuality } from '../src/city-traffic.js';
@@ -28,13 +28,19 @@ test('NOVA-7 retains its aircraft fuselage and painted surfaces with actual rais
   const ship = fighter();
   const kit = ship.getObjectByName('nova7-premium-airframe');
   assert.ok(kit?.isGroup);
-  assert.equal(visualPieces(kit, 'airframe-swept-fairing').length, 2);
-  assert.equal(visualPieces(kit, 'airframe-intake-louver').length, 6);
-  assert.equal(visualPieces(kit, 'airframe-engine-turbine-ring').length, 2);
-  assert.equal(visualPieces(kit, 'airframe-weapon-pod').length, 2);
+  assert.equal(visualPieces(kit, 'airframe-swept-fairing').length, 0, 'bulky 3.3 fairings reverted');
+  assert.equal(visualPieces(kit, 'airframe-weapon-pod').length, 0, 'extra weapon pods removed');
+  assert.equal(visualPieces(kit, 'airframe-fuselage-micro-seam').length, 2);
+  assert.equal(visualPieces(kit, 'airframe-wing-panel-seam').length, 2);
+  assert.equal(visualPieces(kit, 'airframe-low-profile-vent').length, 6);
+  assert.equal(visualPieces(kit, 'airframe-engine-precision-ring').length, 4);
+  assert.equal(visualPieces(kit, 'airframe-engine-turbine-vane').length, 12);
+  assert.equal(visualPieces(kit, 'airframe-engine-inner-core').length, 2);
   assert.ok(ship.getObjectByName('ship-fuselage')?.geometry.type === 'LatheGeometry');
   assert.ok(ship.userData.flames.length === 2);
-  assert.ok(kit.children.some((part) => part.geometry?.type === 'ExtrudeGeometry'));
+  assert.ok(kit.children.some((part) => part.geometry?.type === 'TubeGeometry'));
+  assert.ok(kit.children.every((part) => Math.abs(part.position.x) <= 3.8),
+    'new finishing never extends beyond original wings');
   assert.ok(ship.userData.paint.length >= 1, 'new panels join existing skin paint pipeline');
   noDecorativeColliders(kit);
   const hostile = fighter(true, 1);
@@ -48,13 +54,15 @@ test('transforming mecha keeps targeting pivots and has layered chest, actuator 
   const mecha = createFlyingRobot();
   const detail = mecha.getObjectByName('mech-premium-mechanics');
   assert.ok(detail?.isGroup);
-  assert.equal(visualPieces(detail, 'mech-layered-chest-plate').length, 2);
-  assert.equal(visualPieces(detail, 'mech-rear-heatsink-fin').length, 6);
-  assert.equal(visualPieces(detail, 'mech-dorsal-nozzle-trim').length, 2);
+  assert.equal(visualPieces(detail, 'mech-layered-chest-plate').length, 0);
+  assert.equal(visualPieces(detail, 'mech-chest-machined-seam').length, 2);
+  assert.equal(visualPieces(detail, 'mech-rear-cooling-slat').length, 6);
+  assert.equal(visualPieces(detail, 'mech-dorsal-nozzle-ring').length, 2);
+  assert.equal(visualPieces(detail, 'mech-dorsal-ignition-ring').length, 2);
+  assert.equal(visualPieces(mecha, 'mech-main-turbine-stator').length, 6);
   assert.ok(mecha.userData.mecha.arms.left.muzzle);
   assert.ok(mecha.userData.mecha.arms.right.muzzle);
-  assert.equal(visualPieces(mecha, 'mech-wrist-targeting-rail').length, 2);
-  assert.equal(visualPieces(mecha, 'mech-dual-arm-cannon-collar').length, 2);
+  assert.equal(visualPieces(mecha, 'mech-wrist-targeting-trim').length, 2);
   assert.ok(mecha.getObjectByName('mech-turbine-rotor'));
   noDecorativeColliders(detail);
 });
@@ -110,4 +118,23 @@ test('moving city cars, taxis and escaping ships have instanced tapered bodies w
   assert.equal(world.getObjectByName('city-traffic-road-prow').count, 12);
   setCityTrafficQuality(world, 'medium');
   assert.equal(world.getObjectByName('city-traffic-road-prow').count, 8);
+});
+
+test('hero ship gets exactly 5% visual growth without touching physics-root scale', () => {
+  const craft = fighter();
+  const hull = craft.getObjectByName('ship-fuselage');
+  const initial = new T.Box3().setFromObject(hull);
+  scaleFighterVisual(craft, 1.05);
+  assert.equal(craft.scale.x, 1, 'gameplay root and collision size remain unchanged');
+  assert.equal(craft.userData.visualScale, 1.05);
+  const updated = new T.Box3().setFromObject(hull);
+  assert.ok(updated.getSize(new T.Vector3()).z > initial.getSize(new T.Vector3()).z * 1.049);
+  const before = updated.getSize(new T.Vector3()).z;
+  scaleFighterVisual(craft, 1.05);
+  assert.equal(new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z, before,
+    'repeated skin application must never compound the size');
+  scaleFighterVisual(craft, 1);
+  assert.ok(Math.abs(new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z -
+    initial.getSize(new T.Vector3()).z) < 0.000001);
+  assert.equal(fighter(true).scale.x, 1, 'enemy fighter size is unchanged');
 });
