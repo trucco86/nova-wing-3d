@@ -185,6 +185,7 @@ export function updateMarsPremium(root, travel) {
       ? child.userData.startZ : (child.userData.startZ = child.position.z);
     // Individual landmarks stream, with visible scene continuity and no
     // Earth-city architecture ever slipping into the Mars stage.
-    child.position.z = ((base + travel + 100 + 3000 * 4) % 3000) - 100 - 3000;
+    const z = base + travel;
+    child.position.z = z > 100 ? z - Math.ceil((z - 100) / 3000) * 3000 : z;
   }
 }
