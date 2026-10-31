@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.27.36 — Candidata em preparação
+## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.
+- Terra procedural, Lua e Sol com flare aditivo aparecem gradualmente após o BOOST, enquanto cidade e trilhos recuam no enquadramento; a travessia atmosférica permanece em 38 segundos.
+- Renderização otimizada com instancing e detalhes por perfil Médio/Alto. Testes de progressão, visibilidade, limites de corredor e isolamento de setores atualizados.
+- PR draft empilhada sobre #188, sem homologação visual/FPS nem promoção para DEV, HML ou produção.
 
 ## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
 
