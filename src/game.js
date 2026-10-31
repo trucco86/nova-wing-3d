@@ -321,6 +321,7 @@ export function createGame({
         cue: (sound) => cue(sound),
         status: $('squadSuperStatus'),
         formationStatus: $('squadFormationStatus'),
+        getLanguage: () => settings?.language ?? 'pt',
       })
     : null;
   let skipSquadIntro = false;
@@ -414,6 +415,7 @@ export function createGame({
     rollAngle = 0,
     boosting = false,
     boostNeedsRelease = false,
+    orbitalAlertElapsed = 0,
     bossHp = 200,
     bossCd = 0,
     msgTime = 0,
@@ -1035,6 +1037,7 @@ export function createGame({
     setIntermissionUI(false);
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    orbitalAlertElapsed = 0;
     reflexBoost.reset();
     heroEffects.reset();
     $('launchBoostNotice').hidden = true;
@@ -2939,7 +2942,11 @@ export function createGame({
       });
       const boostGuide = $('launchBoostNotice');
       const needsBoost = launchState.phase === 'boost' && state === 'playing';
-      boostGuide.hidden = !needsBoost;
+      if (launchState.phase !== beforeLaunch && needsBoost) orbitalAlertElapsed = 0;
+      if (needsBoost) orbitalAlertElapsed += dt;
+      // The mandatory BOOST stays on the button; the huge stage notice is
+      // merely a short heads-up, never a persistent gameplay obstruction.
+      boostGuide.hidden = !needsBoost || orbitalAlertElapsed > 2.6;
       const boostButton = $('boostTouch');
       if (needsBoost) boostButton.classList.add('launch-required');
       else boostButton.classList.remove('launch-required');
