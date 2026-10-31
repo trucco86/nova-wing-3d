@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.27.35 — Candidata em preparação
+## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Trem maglev de três vagões com malhas aerodinâmicas nas duas pontas, chassis de levitação, luzes e acabamento lateral; colisões e trajeto preservados.
+- Seis beacons de outdoors animados pelo progresso da fase, sem recriação de texturas ou animação durante Pause.
+- Suite de regressão para geometria 3D, billboard, Pause, transição orbital e integridade dos assets.
+- Build HTML sincronizado. Candidata draft sobre #175, com QA de navegador, FPS, performance e homologação visual pendentes; sem promoção para DEV/HML/produção.
 
 ## 1.27.26 — Candidata em preparação
 
