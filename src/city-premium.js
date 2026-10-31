@@ -143,27 +143,41 @@ export function createMaglevTrain(side) {
   train.userData.visualOnly = true;
   const carriageShell = darkMetal('#b0c9d3', 0.24);
   const glass = darkMetal('#112e4b', 0.16);
+  // City 2.6 performance: one GPU instanced batch per livery material.
+  // Previous three-car trains spawned >80 standalone meshes each, multiplied
+  // across the two scrolling city tiles. Keep every visible box and transform
+  // while reducing the per-train box draw calls to at most seven.
+  const batches = new Map();
+  const transform = new T.Object3D();
+  const addTrainBlock = (material, x, y, z, w, h, d, id = 'livery') => {
+    const key = id === 'chassis' ? 'chassis' : material.uuid;
+    if (!batches.has(key)) batches.set(key, { material, matrices: [], name: id });
+    transform.position.set(x, y, z);
+    transform.rotation.set(0, 0, 0);
+    transform.scale.set(w, h, d);
+    transform.updateMatrix();
+    batches.get(key).matrices.push(transform.matrix.clone());
+  };
   for (let car = 0; car < 3; car++) {
     const center = (car - 1) * 29.5;
-    addBlock(train, carriageShell, 0, 0, center, 12.5, 5.8, 28.1);
-    addBlock(train, glass, 0, 2.1, center, 11.2, 2.3, 26.3);
-    addBlock(train, railTrim, 0, 3.55, center, 9.4, 0.85, 27.5);
-    addBlock(train, cyan, 0, -2.05, center, 11.5, 0.34, 26.8);
+    addTrainBlock(carriageShell, 0, 0, center, 12.5, 5.8, 28.1);
+    addTrainBlock(glass, 0, 2.1, center, 11.2, 2.3, 26.3);
+    addTrainBlock(railTrim, 0, 3.55, center, 9.4, 0.85, 27.5);
+    addTrainBlock(cyan, 0, -2.05, center, 11.5, 0.34, 26.8);
     // A continuous floating undercarriage and roof spine visually separate the
     // levitating train from its elevated guideway without adding any collider.
-    const chassis = addBlock(train, railBody, 0, -3.35, center, 9.4, 0.9, 24.2);
-    chassis.name = 'city-maglev-levitation-chassis';
-    addBlock(train, railTrim, 0, 3.95, center, 6.6, 0.45, 23.5);
+    addTrainBlock(railBody, 0, -3.35, center, 9.4, 0.9, 24.2, 'chassis');
+    addTrainBlock(railTrim, 0, 3.95, center, 6.6, 0.45, 23.5);
     for (const flank of [-1, 1]) {
-      addBlock(train, glass, flank * 6.28, 0.5, center, 0.25, 2.9, 25.7);
-      addBlock(train, cyan, flank * 6.49, 2.15, center, 0.28, 0.3, 25.4);
-      addBlock(train, railTrim, flank * 6.43, -1.65, center, 0.38, 0.8, 23.9);
-      addBlock(train, amber, flank * 6.48, -2.65, center, 0.3, 0.22, 22.6);
+      addTrainBlock(glass, flank * 6.28, 0.5, center, 0.25, 2.9, 25.7);
+      addTrainBlock(cyan, flank * 6.49, 2.15, center, 0.28, 0.3, 25.4);
+      addTrainBlock(railTrim, flank * 6.43, -1.65, center, 0.38, 0.8, 23.9);
+      addTrainBlock(amber, flank * 6.48, -2.65, center, 0.3, 0.22, 22.6);
       for (let pane = 0; pane < 4; pane++) {
-        addBlock(train, railTrim, flank * 6.56, 0.65, center - 9.8 + pane * 6.5, 0.4, 3.2, 0.54);
+        addTrainBlock(railTrim, flank * 6.56, 0.65, center - 9.8 + pane * 6.5, 0.4, 3.2, 0.54);
       }
     }
-    if (car !== 2) addBlock(train, railTrim, 0, -0.2, center + 14.4, 8, 3.3, 1.6);
+    if (car !== 2) addTrainBlock(railTrim, 0, -0.2, center + 14.4, 8, 3.3, 1.6);
   }
   // Sculpted taper, segmented sensor lights and directional marker geometry.
   // Front and rear are both modeled because the trains reverse their visual
@@ -171,13 +185,27 @@ export function createMaglevTrain(side) {
   train.add(createAerodynamicNose(1), createAerodynamicNose(-1));
   // Prominent lit front and rear. The right-hand train approaches the camera.
   for (const end of [-1, 1]) {
-    addBlock(train, cyan, -1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
-    addBlock(train, cyan, 1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
-    addBlock(train, railTrim, 0, -1.25, end * 53.1, 3.7, 0.32, 1.0);
-    addBlock(train, glass, 0, 0.7, end * 44, 9.5, 3.2, 0.8);
-    addBlock(train, end < 0 ? cyan : amber, 0, 2.65, end * 44.6, 9.3, 0.72, 0.35);
-    addBlock(train, cyan, 0, -1.7, end * 44.6, 9, 0.42, 0.4);
+    addTrainBlock(cyan, -1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
+    addTrainBlock(cyan, 1.15, 0.55, end * 54.1, 1.2, 0.62, 0.3);
+    addTrainBlock(railTrim, 0, -1.25, end * 53.1, 3.7, 0.32, 1.0);
+    addTrainBlock(glass, 0, 0.7, end * 44, 9.5, 3.2, 0.8);
+    addTrainBlock(end < 0 ? cyan : amber, 0, 2.65, end * 44.6, 9.3, 0.72, 0.35);
+    addTrainBlock(cyan, 0, -1.7, end * 44.6, 9, 0.42, 0.4);
   }
+  for (const [key, batch] of batches) {
+    const mesh = new T.InstancedMesh(unit, batch.material, batch.matrices.length);
+    mesh.name = key === 'chassis' ? 'city-maglev-levitation-chassis' : 'city-maglev-instanced-livery';
+    mesh.userData.visualOnly = true;
+    for (let i = 0; i < batch.matrices.length; i++) mesh.setMatrixAt(i, batch.matrices[i]);
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+    train.add(mesh);
+  }
+  train.userData.carriages = 3;
+  train.userData.instancedBoxCount = Array.from(batches.values()).reduce(
+    (sum, batch) => sum + batch.matrices.length,
+    0,
+  );
   train.position.set(side * 80, 36, side > 0 ? -225 : -700);
   return train;
 }
