@@ -439,7 +439,8 @@ export function createCity32Skyline() {
         w,
         h,
         d: 19,
-        tint: palette[(i + tier) % palette.length],
+        // Architectural mass is stone/steel, not a neon-coloured solid.
+        tint: new T.Color(['#6c7c88', '#87959b', '#a0a9ac', '#7c8992', '#adb2ae'][(i + tier) % 5]),
       });
       for (let y = 0; y < 3; y++) {
         bands.push({
