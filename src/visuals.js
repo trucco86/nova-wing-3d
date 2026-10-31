@@ -1104,7 +1104,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       inst(crossingLights, crossingGlow++, side * 55, y - 2.3, z + beamDepth / 2, 26, 0.4, 0.6);
     }
     inst(crossingLights, crossingGlow++, 0, y + 2.5, z + beamDepth / 2, 32, 0.3, 0.4);
-    // Some bridges get an extra top spine, breaking up the repetitive roofline.
+    // Every suspended rectangle is now a pedestrian connection with a real
+    // deck, pair of safety rails, service conduits and an upper support rib.
+    for (const side of [-1, 1]) {
+      inst(crossingSteel, crossingParts++, side * 68, y + 3.6, z, 1.2, 5, beamDepth);
+      inst(crossingSteel, crossingParts++, side * 52, y + 1.4, z, 0.5, 2, beamDepth);
+      inst(crossingLights, crossingGlow++, side * 68, y + 6.4,
+        z + beamDepth / 2, 14, 0.24, 0.3);
+    }
+    inst(crossingSteel, crossingParts++, 0, y - 3.2, z, 110, 1.2, beamDepth * 0.72);
     if (i % 3 === 0) {
       inst(crossingSteel, crossingParts++, 0, y + 7, z, 75, 3, beamDepth * 0.5);
     }
