@@ -394,6 +394,9 @@ export function createGame({
     rings = [],
     obstacles = [],
     boss = null;
+  // Shared muzzle meshes avoid per-spawn GPU resource leaks across long missions.
+  const muzzleGeometry = new T.SphereGeometry(0.8, 8, 6);
+  const muzzleMaterial = new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false });
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
@@ -1706,10 +1709,7 @@ export function createGame({
     if (kind !== 'walker' && !airborneRobot) {
       const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
       for (const side of [-1, 1]) {
-        const muzzle = new T.Mesh(
-          new T.SphereGeometry(0.8, 8, 6),
-          new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false }),
-        );
+        const muzzle = new T.Mesh(muzzleGeometry, muzzleMaterial);
         muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
         muzzle.position.set(
           side * (ground ? 1.8 : 2.7),
