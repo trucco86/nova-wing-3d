@@ -1194,6 +1194,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const civicHull = metal('#86b8bc', 0.7, 0.36);
   const civicEngine = glowMaterial('#ffd59b', 1.7);
   for (const side of [-1, 1]) urbanLife.add(createMaglevTrain(side));
+  // A high-altitude transverse service line makes the maglev plainly visible
+  // in narrow portrait play, where side guideways at x=+/-80 are often out of
+  // the camera frustum. The train crosses ABOVE the flight corridor, not in it.
+  const maglevCrossing = new T.Group();
+  maglevCrossing.name = 'city32-cross-city-maglev-line';
+  maglevCrossing.userData.visualOnly = true;
+  const crossBeam = box(266, 3.1, 12, metal('#739caf', 0.72, 0.28), 0, 59, -345);
+  crossBeam.name = 'city32-maglev-crossing-guideway';
+  const crossNeon = box(268, 0.55, 12.3, glowMaterial('#ff8aca', 1.6), 0, 61.3, -345);
+  crossNeon.name = 'city32-maglev-crossing-luminous-rail';
+  maglevCrossing.add(crossBeam, crossNeon);
+  for (const side of [-1, 1]) {
+    maglevCrossing.add(
+      box(7, 68, 9, metal('#6a94a5', 0.76, 0.38), side * 125, 25, -345),
+    );
+  }
+  urbanLife.add(maglevCrossing);
+  const transverseTrain = createMaglevTrain(1);
+  transverseTrain.name = 'city32-cross-city-maglev-train';
+  transverseTrain.userData.role = 'maglev-crossing';
+  transverseTrain.userData.highOnly = false;
+  transverseTrain.position.set(-75, 67, -345);
+  transverseTrain.rotation.y = Math.PI / 2;
+  urbanLife.add(transverseTrain);
   for (let i = 0; i < 7; i++) {
     const side = i % 2 ? 1 : -1;
     const craft = new T.Group();
@@ -1835,7 +1859,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
           }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
-            if (vehicle.userData.role === 'maglev') {
+            if (vehicle.userData.role === 'maglev-crossing') {
+              // Deterministic lateral traversal, looping only outside the
+              // visible 266-unit overhead span; freezes whenever playing=false.
+              vehicle.position.x = -75 + ((travel * 0.46) % 150);
+            } else if (vehicle.userData.role === 'maglev') {
               const side = vehicle.userData.side;
               // An introductory, camera-visible pass on the east line begins
               // within the first moments. A second west train follows later.
