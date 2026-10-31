@@ -3,7 +3,7 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
-import { createCity32Living, setCity32Quality, updateCity32Living } from './city-32-living.js';
+import { createCity32Living, createCity32Skyline, setCity32Quality, updateCity32Living } from './city-32-living.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import {
@@ -1320,6 +1320,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   cityHorizon.add(skylineGate);
   cityHorizon.add(createCityHorizonMegastructure());
+  cityHorizon.add(createCity32Skyline());
   scene.add(cityHorizon);
   const near = [];
   for (let i = 0; i < 18; i++) {
