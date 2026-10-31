@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    130,
-    'City 2.7 urban traffic adds 16 batched car/ship draw groups to each city tile',
+    136,
+    'City 3.3 adds one aerodynamic 3D body batch per traffic role and city tile',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

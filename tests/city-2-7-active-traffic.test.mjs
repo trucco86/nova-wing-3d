@@ -70,7 +70,7 @@ test('Medium keeps visible traffic and High reveals more without new draw groups
     assert.ok(group.children.every((mesh) => mesh.count === high));
     setCityTrafficQuality(traffic, 'medium');
   }
-  assert.equal(drawCalls, 16, '16 batches per city tile, not dozens of independent car meshes');
+  assert.equal(drawCalls, 19, '19 instanced batches per tile, including angular nose assemblies');
 });
 
 test('city traffic continues with gameplay, respects Pause and leaves orbital/ocean scenes', () => {

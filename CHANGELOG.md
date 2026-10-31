@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.37 — Graphics 3.3 / Fleet Detail Pass (QA)
+
+- Modelos 3D aprimorados da NOVA-7, mecha, inimigos aéreos/terrestres, dez chefes e dez subchefes: carenagens, placas de blindagem chanfradas, entradas de ar, turbinas, reatores e partes mecânicas adicionais.
+- Tráfego da Cidade 2.7 passa a ter cabine e capô aerodinâmicos reais, mantendo a movimentação GPU instanciada (19 batches por trecho).
+- Novos testes de geometria, pintura, rig, geradores dos chefes, hitboxes e orçamento de desenho.
+- PR #190 draft sobre #189, sem homologação humana, sem promoção de ambientes e sem integração automática da PR GLB #187.
+
 ## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
 
 - Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.

@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
@@ -245,6 +246,7 @@ export function fighter(enemy = false, variant = -1) {
       g.add(beacon);
     }
     g.add(box(0.2, 0.02, 1.5, enemy ? pink : mint, 0, 0.63, 0.6));
+    addFighterDetail(g, { armor, accent, emission: light, enemy });
     templates[enemy] = g;
   }
   const o = templates[enemy].clone(true);
@@ -550,6 +552,7 @@ export function createFlyingRobot() {
     thrusters: independentThrusters,
     baseScale: 0.94,
   };
+  addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   robot.scale.setScalar(0.94);
   return robot;
 }

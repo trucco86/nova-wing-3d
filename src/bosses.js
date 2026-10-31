@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
@@ -481,6 +482,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
     }
     g.add(face);
   }
+  addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   g.userData = {
     parts,
     coreMarker,
@@ -687,6 +689,7 @@ export function createSubboss(index = 0) {
         }
         break;
     }
+    addSubbossDetail(g, { armor, dark, hot, index });
     g.userData.variant = index;
     cruiserTemplates.set(index, g);
   }

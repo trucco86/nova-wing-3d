@@ -3,8 +3,73 @@ import * as T from 'three';
 // Non-combat traffic for City 2.7. All details are batched on the GPU.
 // Positions are reproducible from travelled distance so Pause never drifts.
 const cube = new T.BoxGeometry(1, 1, 1);
+// Shared faceted hood and cockpit replacing the squared vehicle silhouette.
+// Local +Z is the rear; the leading -Z end narrows down toward the road.
+function aerodynamicWedge(frontHeight = 0.15, backHeight = 0.45) {
+  const v = [
+    [-0.34, -0.44, -0.5],
+    [0.34, -0.44, -0.5],
+    [-0.34, frontHeight, -0.5],
+    [0.34, frontHeight, -0.5],
+    [-0.5, -0.44, 0.5],
+    [0.5, -0.44, 0.5],
+    [-0.5, backHeight, 0.5],
+    [0.5, backHeight, 0.5],
+  ].flat();
+  const indices = [
+    0,
+    1,
+    3,
+    0,
+    3,
+    2, // nose
+    4,
+    6,
+    7,
+    4,
+    7,
+    5, // stern
+    2,
+    3,
+    7,
+    2,
+    7,
+    6, // beveled top
+    0,
+    4,
+    5,
+    0,
+    5,
+    1, // underside
+    0,
+    2,
+    6,
+    0,
+    6,
+    4, // port
+    1,
+    5,
+    7,
+    1,
+    7,
+    3, // starboard
+  ];
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.Float32BufferAttribute(v, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+const aerodynamicHull = aerodynamicWedge(0.1, 0.46);
+const panoramicGlass = aerodynamicWedge(0.08, 0.45);
 const materials = {
   hull: new T.MeshStandardMaterial({ color: '#77a9b9', metalness: 0.72, roughness: 0.27 }),
+  prow: new T.MeshPhysicalMaterial({
+    color: '#adc6d2',
+    metalness: 0.8,
+    roughness: 0.23,
+    clearcoat: 0.65,
+  }),
   taxi: new T.MeshStandardMaterial({ color: '#b9c2d1', metalness: 0.75, roughness: 0.26 }),
   escape: new T.MeshStandardMaterial({ color: '#6d86a4', metalness: 0.8, roughness: 0.28 }),
   glazing: new T.MeshStandardMaterial({ color: '#214c65', metalness: 0.43, roughness: 0.1 }),
@@ -19,6 +84,7 @@ const PROFILES = Object.freeze([
     medium: 8,
     parts: [
       ['hull', 0, 0, 0, 5.8, 2.1, 11.6],
+      ['prow', 0, 0.15, -5.5, 5.2, 2.0, 3.8],
       ['glazing', 0, 1.25, -0.5, 4.4, 1.1, 5.9],
       ['cyan', 0, -1.1, 0, 5.5, 0.3, 9.6],
       ['cyan', 0, 0.05, -5.95, 4.2, 0.65, 0.3],
@@ -31,6 +97,7 @@ const PROFILES = Object.freeze([
     medium: 4,
     parts: [
       ['taxi', 0, 0, 0, 7, 2.5, 14],
+      ['prow', 0, 0.15, -6.5, 6.1, 2.0, 5.4],
       ['glazing', 0, 1.4, -1.7, 5.4, 1.1, 7.3],
       ['taxi', 0, -0.25, 1.2, 15, 0.65, 3.2],
       ['cyan', 0, -1.55, -2, 5.6, 0.4, 8],
@@ -43,6 +110,7 @@ const PROFILES = Object.freeze([
     medium: 3,
     parts: [
       ['escape', 0, 0, 0, 8.5, 3.9, 24],
+      ['prow', 0, 0.35, -11.6, 7.3, 3.2, 8.1],
       ['glazing', 0, 2.3, -5.5, 5.4, 1.6, 7],
       ['escape', 0, -0.6, 2.0, 21, 0.85, 8.5],
       ['cyan', 0, 0.8, -10.7, 4.9, 0.5, 1.7],
@@ -107,7 +175,13 @@ export function createCityTraffic() {
     group.userData.mediumCount = p.medium;
     group.userData.totalCount = p.count;
     for (const [materialName, ...parameters] of p.parts) {
-      const mesh = new T.InstancedMesh(cube, materials[materialName], p.count);
+      const geometry =
+        materialName === 'prow'
+          ? aerodynamicHull
+          : materialName === 'glazing'
+            ? panoramicGlass
+            : cube;
+      const mesh = new T.InstancedMesh(geometry, materials[materialName], p.count);
       mesh.name = 'city-traffic-' + p.role + '-' + materialName;
       mesh.frustumCulled = false; // Vehicles move independently within each tile.
       mesh.userData.visualOnly = true;
