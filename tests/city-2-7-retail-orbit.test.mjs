@@ -99,6 +99,15 @@ test('City 2.7 Earth has procedural clouds, a separate Moon and a distant Sun wi
   assert.ok(sky.earth.material.uniforms.fade.value > partial);
   assert.ok(sky.sun.getObjectByName('launch-sun-halo-0').material.opacity > 0);
   assert.ok(sky.sun.getObjectByName('launch-sun-anamorphic-streak').material.opacity > 0);
+  const convoy = scene.getObjectByName('launch-evacuation-convoy');
+  assert.ok(convoy?.isGroup, 'orbital evacuation ships must outlive the city tile');
+  assert.equal(convoy.children.length, 4);
+  assert.ok(convoy.children.every((ship) => ship.getObjectByName('launch-escaping-ship-thruster')));
+  const startAltitude = convoy.children[0].position.y;
+  sky.update(0.90);
+  assert.ok(convoy.visible, 'ships are visible during the final atmospheric climb');
+  assert.ok(convoy.children[0].position.y > startAltitude, 'ships flee towards space');
+  assert.ok(convoy.children[0].scale.x < 0.4, 'ships shrink into the far horizon');
   const ghost = sky.sun.getObjectByName('launch-sun-lens-ghost-0');
   assert.ok(ghost?.isSprite && ghost.visible, 'cinematic lens ghosts belong only to High');
   sky.setGraphicsQuality('medium');
@@ -106,6 +115,7 @@ test('City 2.7 Earth has procedural clouds, a separate Moon and a distant Sun wi
   assert.equal(ghost.visible, false, 'medium hides secondary lens ghosts');
   assert.ok(sky.sun.getObjectByName('launch-sun-anamorphic-streak').material.opacity > 0);
   sky.reset();
+  assert.equal(convoy.visible, false, 'evacuation ships reset outside opening sector');
   assert.equal(sky.earth.visible, false);
   assert.equal(sky.sun.visible, false);
   assert.equal(sky.moon.visible, false);
