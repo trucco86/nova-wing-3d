@@ -36,7 +36,8 @@ test('semi-moon thumb arc is staggered and both touch halves remain clear in por
   test.skip(info.project.name !== 'mobile');
   test.setTimeout(100000);
   const positions = [
-    { width: 320, height: 568 }, { width: 390, height: 844 },
+    { width: 320, height: 568 },
+    { width: 390, height: 844 },
     { width: 844, height: 390 },
   ];
   for (const viewport of positions) {
@@ -49,35 +50,47 @@ test('semi-moon thumb arc is staggered and both touch halves remain clear in por
       document.getElementById('lockTouch').hidden = false;
     });
     const arc = await page.evaluate(() => {
-      const ids = ['podsTouch','rollTouch','robotTouch','bombTouch','lockTouch',
-        'boostTouch','fireTouch'];
+      const ids = [
+        'podsTouch',
+        'rollTouch',
+        'robotTouch',
+        'bombTouch',
+        'lockTouch',
+        'boostTouch',
+        'fireTouch',
+      ];
       const rect = (el) => {
         const r = el.getBoundingClientRect();
-        return { x:r.left, y:r.top, w:r.width, h:r.height,
-          right:r.right, bottom:r.bottom };
+        return { x: r.left, y: r.top, w: r.width, h: r.height, right: r.right, bottom: r.bottom };
       };
-      return { buttons:Object.fromEntries(ids.map(id =>
-        [id, rect(document.getElementById(id))])),
-        analog:rect(document.getElementById('stick')),
-        pointer:matchMedia('(pointer: coarse)').matches };
+      return {
+        buttons: Object.fromEntries(ids.map((id) => [id, rect(document.getElementById(id))])),
+        analog: rect(document.getElementById('stick')),
+        pointer: matchMedia('(pointer: coarse)').matches,
+      };
     });
     expect(arc.pointer).toBe(true);
     const targets = Object.entries(arc.buttons);
-    for (const [id,r] of targets) {
+    for (const [id, r] of targets) {
       expect(r.w, id).toBeGreaterThanOrEqual(60);
       expect(r.h, id).toBeGreaterThanOrEqual(60);
       expect(r.x, id).toBeGreaterThanOrEqual(-1);
-      expect(r.bottom, id).toBeLessThanOrEqual(viewport.height+1);
-      expect(r.right, id).toBeLessThanOrEqual(viewport.width+1);
-      for (const [next,b] of targets) {
+      expect(r.bottom, id).toBeLessThanOrEqual(viewport.height + 1);
+      expect(r.right, id).toBeLessThanOrEqual(viewport.width + 1);
+      for (const [next, b] of targets) {
         if (next <= id) continue;
-        const overlap = Math.max(0,Math.min(r.right,b.right)-Math.max(r.x,b.x)) *
-          Math.max(0,Math.min(r.bottom,b.bottom)-Math.max(r.y,b.y));
-        expect(overlap, id+' overlaps '+next).toBe(0);
+        const overlap =
+          Math.max(0, Math.min(r.right, b.right) - Math.max(r.x, b.x)) *
+          Math.max(0, Math.min(r.bottom, b.bottom) - Math.max(r.y, b.y));
+        expect(overlap, id + ' overlaps ' + next).toBe(0);
       }
     }
-    expect(arc.buttons.rollTouch.y).toBeLessThan(arc.buttons.podsTouch.y,
-      'semi-arc rises towards the top center, not a rectangular grid');
-    await page.screenshot({ path: info.outputPath('half-moon-'+viewport.width+'x'+viewport.height+'.png') });
+    expect(arc.buttons.rollTouch.y).toBeLessThan(
+      arc.buttons.podsTouch.y,
+      'semi-arc rises towards the top center, not a rectangular grid',
+    );
+    await page.screenshot({
+      path: info.outputPath('half-moon-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
   }
 });

@@ -8,7 +8,7 @@ export const ORBIT_REVEAL = Object.freeze({
   cityGone: 0.73,
   skyDarkStart: 0.66,
   skyDarkEnd: 0.87,
-  hazeStart: 0.70,
+  hazeStart: 0.7,
   hazeEnd: 0.94,
   firstEarth: 0.855,
   earthFull: 0.985,
@@ -23,8 +23,17 @@ export const eased = (v) => {
 export const between = (value, a, b) => eased((value - a) / (b - a));
 export function orbitRevealAt(amount) {
   const p = clamp(amount);
-  const { cityGone, skyDarkStart, skyDarkEnd, hazeStart, hazeEnd,
-    firstEarth, earthFull, firstMoon, firstSun } = ORBIT_REVEAL;
+  const {
+    cityGone,
+    skyDarkStart,
+    skyDarkEnd,
+    hazeStart,
+    hazeEnd,
+    firstEarth,
+    earthFull,
+    firstMoon,
+    firstSun,
+  } = ORBIT_REVEAL;
   const cityVisible = p < cityGone;
   const night = between(p, skyDarkStart, skyDarkEnd);
   const earth = cityVisible ? 0 : between(p, firstEarth, earthFull);

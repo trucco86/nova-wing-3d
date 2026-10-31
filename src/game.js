@@ -2929,10 +2929,13 @@ export function createGame({
         (1 + activeShip().stats.agility * 0.08) *
         (robotMode ? 0.65 : 1)
       : 1;
-    const superBoost = dynamicFlight && sectorIndex === 0 &&
-      orbitalLaunchSequence.snapshot().phase === 'boost' && boosting;
-    const speed = (superBoost ? 114 : boosting ? 90 : 48) *
-      (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
+    const superBoost =
+      dynamicFlight &&
+      sectorIndex === 0 &&
+      orbitalLaunchSequence.snapshot().phase === 'boost' &&
+      boosting;
+    const speed =
+      (superBoost ? 114 : boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -4244,7 +4247,9 @@ export function createGame({
     $('speedValue').textContent =
       boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
         ? '1140'
-        : boosting ? '890' : '480';
+        : boosting
+          ? '890'
+          : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
     $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;

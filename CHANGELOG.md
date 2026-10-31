@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.46 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
 
 - Corrigidos posicionamentos absolutos de BOOST e TIRO e consolidada a distribuição em meia-lua com hit targets mínimos 60×60px e LOCK do mecha sem sobreposição. Joystick responsivo (88/102/128/91px) e órbita 12px acima.
