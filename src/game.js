@@ -3806,6 +3806,7 @@ export function createGame({
         ) {
           bossMeleeResolved = true;
           if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
@@ -3862,17 +3863,31 @@ export function createGame({
             // Projectiles originate from actual robot arms, drill ring, hydra
             // heads or Marvin's crown. Broken generators disable side batteries.
             boss.updateMatrixWorld(true);
+            const generators = boss.userData.parts.map((part) => part.hp > 0);
+            const budget = bossBatteryPlan(generators, signature.shots.length);
+            let fired = 0;
             for (const emission of signature.shots) {
-              const origin = boss.localToWorld(new T.Vector3(...emission.origin));
+              if (fired >= budget.sides.length) break;
+              const side = batteryForSignature(emission.origin, generators);
+              if (side === null || (side === 0 && fired > 0)) continue;
+              const origin = bossMuzzle(side);
+              if (!origin) continue;
               const spread = dangerous ? 0.72 : 1.15;
-              const destination = player.position
-                .clone()
+              const destination = player.position.clone()
                 .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
               bullet(origin, destination, emission.element);
+              fired++;
             }
+            // When both batteries are gone, the boss retains only one weak
+            // center weapon, never invisible gunfire from destroyed flanks.
+            if (!fired && !generators.some(Boolean))
+              bullet(bossMuzzle(0), player.position.clone(), 'fire');
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
-              const origin = boss.position.clone().add(new T.Vector3((n - 1) * 16, 0, 18));
+              const side = bossBatteryPlan(
+                boss.userData.parts.map((p) => p.hp > 0), 3,
+              ).sides[n] ?? 0;
+              const origin = bossMuzzle(side);
               for (const target of encounterPattern(
                 sectorIndex,
                 t.cycle + n,
@@ -4011,8 +4026,12 @@ export function createGame({
         const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
         if (dynamicFlight) {
           // Bosses fire from their own batteries/heads, not the same central barrel.
-          for (const [sourceIndex, source] of program.sources.entries()) {
-            const origin = boss.position.clone().add(new T.Vector3(source.x, source.y, 22));
+          const batteryPlan = bossBatteryPlan(
+            boss.userData.parts.map((part) => part.hp > 0), program.sources.length,
+          );
+          for (const [sourceIndex, side] of batteryPlan.sides.entries()) {
+            const source = program.sources[sourceIndex % program.sources.length];
+            const origin = bossMuzzle(side);
             const targets = encounterPattern(
               sectorIndex,
               source.volley,
@@ -4029,9 +4048,9 @@ export function createGame({
               bullet(origin, target, program.type);
             }
           }
-          bossCd = program.cadence;
+          bossCd = program.cadence * batteryPlan.cadenceMultiplier;
         } else {
-          const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
+          const origin = bossMuzzle(0);
           for (const target of encounterPattern(
             sectorIndex,
             bossVolley,
