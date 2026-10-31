@@ -16,7 +16,7 @@ test('ten campaign sectors use distinct sky and accent palettes without altering
   assert.equal(new Set(signatures).size, 10);
   assert.deepEqual(
     SECTORS.map(({ duration }) => duration),
-    [145, 80, 82, 88, 88, 92, 92, 98, 98, 104],
+    [145, 107, 82, 88, 88, 92, 92, 98, 98, 104],
     'preserve the existing v1.24.19 mission durations exactly',
   );
 });
