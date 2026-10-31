@@ -21,9 +21,9 @@ test('City 2.7 has varied real shops, plazas and three mall buildings outside th
     'three shopping centers must have visibly differentiated 3D rooflines',
   );
   assert.equal(
-    retail.getObjectByName('city-mall-signature-1').children.filter(
-      (c) => c.name === 'city-mall-roof-fin',
-    ).length,
+    retail
+      .getObjectByName('city-mall-signature-1')
+      .children.filter((c) => c.name === 'city-mall-roof-fin').length,
     2,
   );
   assert.ok(retail.getObjectByName('city-mall-sky-arch')?.isMesh);

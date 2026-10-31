@@ -191,7 +191,10 @@ export function createLaunchCelestials(scene) {
   streak.userData.visualOnly = true;
   sun.add(streak);
   const ghostSprites = [];
-  for (const [index, x, y, size] of [[0, 85, -70, 76], [1, 170, -138, 43]]) {
+  for (const [index, x, y, size] of [
+    [0, 85, -70, 76],
+    [1, 170, -138, 43],
+  ]) {
     const ghost = new T.Sprite(
       new T.SpriteMaterial({
         map: texture,
