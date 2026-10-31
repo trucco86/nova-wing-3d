@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    146,
-    'City 2.8 adds merged 3D wheel/engine trim and moving service drones to each city tile',
+    162,
+    'City 3.0 adds eight instanced green-district facade, passarela and taxi batches per city tile',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

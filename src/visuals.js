@@ -10,6 +10,11 @@ import {
   animateCityUrbanDrones,
   setCityUrbanDronesQuality,
 } from './city-urban-drones.js';
+import {
+  createCity30DistrictLife,
+  animateCity30,
+  setCity30Quality,
+} from './city-30-district-life.js';
 import { createLaunchCelestials } from './launch-celestials.js';
 import {
   animateCityBillboards,
@@ -803,7 +808,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const rim = new T.DirectionalLight('#38ffd0', 3);
   rim.position.set(60, 30, -110);
   scene.add(rim);
-  const purple = new T.DirectionalLight('#7f78ff', 1.1);
+  const purple = new T.DirectionalLight('#68bba9', 0.75);
   purple.position.set(-80, 10, 60);
   scene.add(purple);
   const skyMat = new T.ShaderMaterial({
@@ -905,12 +910,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.name = 'launch-city';
   scene.add(city);
   const unit = new T.BoxGeometry(1, 1, 1),
-    bodyMat = metal('#122e39', 0.55, 0.5),
-    roofMat = metal('#2b4651', 0.65, 0.4);
+    bodyMat = metal('#132e2b', 0.55, 0.5),
+    roofMat = metal('#3b5850', 0.65, 0.4);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
-    edges = new T.InstancedMesh(unit, glowMaterial('#13b998', 1.4), 400),
-    windows = new T.InstancedMesh(unit, glowMaterial('#3ec9c2', 1.25), 2800);
+    edges = new T.InstancedMesh(unit, glowMaterial('#45db9c', 1.4), 400),
+    windows = new T.InstancedMesh(unit, glowMaterial('#74e6b8', 1.25), 4800);
   // Rich high-quality architecture in three additional GPU-instanced draw calls.
   // Decoration stays outside the flight corridor and adds no collision volumes.
   const cityHighDetails = new T.Group();
@@ -942,6 +947,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   crossingLights.name = 'city-elevated-crossings-lights';
   const transitTracks = new T.InstancedMesh(unit, metal('#547682', 0.64, 0.54), 180);
   transitTracks.name = 'city-suspended-transit';
+  const buildingAnchors = [];
   let d = new T.Object3D(),
     wi = 0,
     coolWindows = 0,
@@ -960,6 +966,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       h = rnd(16, 105),
       w = rnd(7, 19),
       depth = rnd(8, 18);
+    buildingAnchors.push({ x, h, z, w, depth });
     inst(bodies, i, x, h / 2 - 7, z, w, h, depth);
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
@@ -991,6 +998,23 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         w * 0.22,
         0.35,
         0.12,
+      );
+    }
+    // Additional affordable fenestration in Medium, where 14 simple strips
+    // per skyscraper were making the whole avenue read as repeated slabs.
+    for (let pane = 0; pane < 8; pane++) {
+      const row = Math.floor(pane / 2),
+        col = pane % 2;
+      if ((i % 29 === 8 || i % 37 === 14) && row > 1) continue;
+      inst(
+        windows,
+        wi++,
+        x + (col - 0.5) * w * 0.35,
+        -7 + h * (0.19 + row * 0.2),
+        z + depth / 2 + 0.17,
+        w * 0.14,
+        0.26 + (i % 3) * 0.05,
+        0.1,
       );
     }
     // Extra illuminated floors on the camera-facing facade. Mix dense and
@@ -1049,6 +1073,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       );
     }
   }
+  windows.count = wi;
   facadeWindowsCool.count = coolWindows;
   facadeWindowsAmber.count = amberWindows;
   facadeSideWindows.count = sideWindows;
@@ -1091,7 +1116,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       inst(crossingLights, crossingGlow++, side * 55, y - 2.3, z + beamDepth / 2, 26, 0.4, 0.6);
     }
     inst(crossingLights, crossingGlow++, 0, y + 2.5, z + beamDepth / 2, 32, 0.3, 0.4);
-    // Some bridges get an extra top spine, breaking up the repetitive roofline.
+    // Every suspended rectangle is now a pedestrian connection with a real
+    // deck, pair of safety rails, service conduits and an upper support rib.
+    for (const side of [-1, 1]) {
+      inst(crossingSteel, crossingParts++, side * 68, y + 3.6, z, 1.2, 5, beamDepth);
+      inst(crossingSteel, crossingParts++, side * 52, y + 1.4, z, 0.5, 2, beamDepth);
+      inst(crossingLights, crossingGlow++, side * 68, y + 6.4, z + beamDepth / 2, 14, 0.24, 0.3);
+    }
+    inst(crossingSteel, crossingParts++, 0, y - 3.2, z, 110, 1.2, beamDepth * 0.72);
     if (i % 3 === 0) {
       inst(crossingSteel, crossingParts++, 0, y + 7, z, 75, 3, beamDepth * 0.5);
     }
@@ -1162,6 +1194,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCityCommerce());
   city.add(createCityTraffic());
   city.add(createCityUrbanDrones());
+  city.add(createCity30DistrictLife(buildingAnchors));
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
@@ -1170,6 +1203,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityFar.getObjectByName('city-urban-drones').userData.phase = 2.4;
   animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
   animateCityUrbanDrones(cityFar.getObjectByName('city-urban-drones'), 0);
+  cityFar.getObjectByName('city-matrix-rooftop-taxis').userData.phase = 1.8;
+  animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
@@ -1410,6 +1445,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-commerce-high-detail').visible = high;
         setCityTrafficQuality(tile.getObjectByName('city-active-traffic'), quality);
         setCityUrbanDronesQuality(tile.getObjectByName('city-urban-drones'), quality);
+        setCity30Quality(tile.getObjectByName('city-matrix-streets'), quality);
       }
     },
     showCarrierForBoss() {
@@ -1534,6 +1570,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-commerce-streets').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-active-traffic').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-urban-drones').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-matrix-streets').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
@@ -1750,6 +1787,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCityBillboards(tile, travel);
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
             animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
+            animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
           }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev') {
@@ -1811,6 +1849,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       for (const tile of [city, cityFar]) {
         animateCityTraffic(tile.getObjectByName('city-active-traffic'), 0);
         animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), 0);
+        animateCity30(tile.getObjectByName('city-matrix-streets'), 0);
       }
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';

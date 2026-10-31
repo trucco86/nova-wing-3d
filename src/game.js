@@ -2423,6 +2423,8 @@ export function createGame({
       else $(id).value = String(settings[key]);
     }
     $('touch').style.opacity = String(settings.opacity);
+    // Options controls actual button translucency, not just its parent wrapper.
+    $('touch').style.setProperty?.('--nw-touch-preference', String(settings.opacity));
     document.body.classList[settings.leftHanded ? 'add' : 'remove']('left-handed');
     $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     music?.setVolume(settings.master * settings.music);
@@ -2435,7 +2437,9 @@ export function createGame({
     settingsOpen = true;
     $('settingsMenu').hidden = false;
     applySettings();
-    $('settingLanguage').focus?.({ preventScroll: true });
+    // Keep the language selector visible but never auto-open a native mobile popup.
+    $('settingsTitle').setAttribute?.('tabindex', '-1');
+    $('settingsTitle').focus?.({ preventScroll: true });
   }
   function closeSettings() {
     settingsOpen = false;

@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
+
+- Corrigida visibilidade e captura de toque do BOOST no celular, inclusive no mecha com LOCK, mantendo alvos de 60px em portrait e transparência configurável sem ocultar botões críticos.
+- Cidade em verde/ciano e grafite mais elaborada: +janelas em Médio, fachada variada, trechos danificados com andaimes, passarelas com piso/guarda-corpos conectando prédios e plataformas de táxis animados, com grupos instanciados e LOD.
+- Options reorganizado numa tela compacta sem scroll, idioma visível como dropdown e manutenção das 12 configurações/salvamento. 405 testes unitários aprovados; testes de navegador e aceite de FPS/ergonomia do Galaxy S21 pendentes. PR #196 draft.
+
 ## 1.27.42 — Graphics 3.7 / NOVA-7, mecha e controles em meia-lua (QA)
 
 - NOVA-7 visualmente maior (1,05→1,11), com 24 detalhes instanciados de carenagem rasa, frisos e LEDs, preservando a silhueta clean. Robô passa a 1,04 de escala (corrigida uma instrução antes comentada), com detalhes mecânicos de peito/pernas e acabamento articulado das duas armas.
