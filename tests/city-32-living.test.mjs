@@ -102,3 +102,63 @@ test('City 3.2 distant skyline uses instancing and city scenery does not leak in
   assert.equal(city.visible, false);
   assert.equal(scene.getObjectByName('city-distant-horizon').visible, false);
 });
+
+
+test('City 3.2 fictional advertising spans the full route and commercial districts are visually distinct', () => {
+  const living = createCity32Living(anchors);
+  const signage = living.getObjectByName('city32-facade-advertisements').children;
+  const depths = signage.map((sign) => sign.position.z);
+  assert.ok(Math.max(...depths) - Math.min(...depths) > 1350, 'ads remain visible beyond the opening district');
+  const zones = living.getObjectByName('city32-commercial-districts');
+  assert.ok(zones);
+  assert.deepEqual(
+    zones.children.filter((zone) => zone.isGroup).map((zone) => zone.userData.district),
+    ['corporate', 'entertainment', 'transport'],
+  );
+  for (const zone of zones.children.filter((node) => node.isGroup)) {
+    assert.ok(zone.children.length >= 2, 'each district has actual branded signs');
+    assert.ok(zone.children.every((p) => p.material?.map?.isTexture));
+  }
+  for (const name of [
+    'city32-district-horizontal-neons',
+    'city32-district-lit-shopfronts',
+    'city32-district-vertical-signs',
+  ]) {
+    const batch = zones.getObjectByName(name);
+    assert.ok(batch?.isInstancedMesh, name);
+    assert.ok(batch.instanceColor, name + ' has different colors');
+    assert.ok(batch.count >= 30);
+  }
+});
+
+test('opening maglev is visually aligned with a station and transverse pass crosses portrait camera', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[0]);
+  world.setGraphicsQuality('medium');
+  const near = scene.getObjectByName('launch-city');
+  const terminal = near.getObjectByName('city-maglev-opening-terminal');
+  const main = near.getObjectByName('city-maglev-east');
+  const bridge = near.getObjectByName('city32-cross-city-maglev-line');
+  const crossing = near.getObjectByName('city32-cross-city-maglev-train');
+  assert.ok(terminal?.isGroup);
+  assert.equal(terminal.position.x, 80, 'boarding platform follows the side maglev tracks');
+  assert.ok(main.visible, 'original east-line train stays in Medium');
+  assert.ok(main.getObjectByName('city-maglev-campaign-side-panel')?.material.map?.isTexture);
+  assert.ok(bridge.getObjectByName('city32-maglev-crossing-guideway')?.isMesh);
+  assert.ok(crossing.visible, 'the overhead maglev pass is available in Medium and portrait');
+  assert.ok(Math.abs(crossing.position.x) < 80, 'the transverse train overlaps the camera-forward view');
+  assert.ok(crossing.position.y > 60, 'train passes above instead of through the flight lane');
+  assert.ok(bridge.userData.visualOnly && crossing.userData.visualOnly);
+  assert.ok(near.getObjectByName('city-maglev-terminal-advertisement')?.material.map?.isTexture);
+  const first = crossing.position.x;
+  world.update(1, 1, 48, true);
+  assert.ok(crossing.position.x > first);
+  const stopped = crossing.position.x;
+  world.update(1, 2, 48, false);
+  assert.equal(crossing.position.x, stopped, 'pause freezes the maglev pass');
+  world.reset();
+  assert.equal(crossing.position.x, -75);
+  world.setSector(SECTORS[1]);
+  assert.equal(near.visible, false, 'no train is visible over the ocean stage');
+});
