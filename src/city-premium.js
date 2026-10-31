@@ -255,7 +255,10 @@ export function createCityPremiumInfrastructure() {
     }
     for (const x of [-28, -11, 11, 28]) {
       at(roadGlow, 'lights', x, -6.72, z, 0.45, 0.06, 17.4);
-      roadGlow.setColorAt(counts.lights - 1, new T.Color(x < 0 ? '#ff78d2' : segment % 3 === 0 ? '#ffcf87' : '#62f5ff'));
+      roadGlow.setColorAt(
+        counts.lights - 1,
+        new T.Color(x < 0 ? '#ff78d2' : segment % 3 === 0 ? '#ffcf87' : '#62f5ff'),
+      );
     }
   }
 
