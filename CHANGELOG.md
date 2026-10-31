@@ -1,8 +1,10 @@
 # Histórico
 
-## 1.27.46 — Candidata em preparação
+## 1.27.46 — Graphics 3.8 / arco meia-lua, SUPER BOOST e revelação orbital (QA)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Arco anatômico mobile escalonado com botões não sobrepostos >=60px, FIRE maior e BOOST legível. Durante a saída orbital, botão muda para SUPER BOOST dourado com aviso, aceleração elevada e gasto de energia obrigatório; depois retorna ao normal.
+- Cidade desaparece até 0,73; intervalo somente céu escurecendo, estrelas e névoa; Terra só surge depois de 0,855, seguida de Lua craterizada e Sol. Nenhuma cidade e planeta podem coexistir visualmente.
+- 410 unitários e 3 testes Playwright mobile de preparo passaram. CI final e homologação Galaxy S21 pendentes. PR #199 draft sem promoção à produção.
 
 ## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
 
