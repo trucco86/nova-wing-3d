@@ -77,6 +77,7 @@ import {
 } from './encounters.js';
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
+import { resolveGraphicsQuality, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import {
   difficultyProfile,
@@ -164,7 +165,7 @@ export function createGame({
     window.addEventListener(type, fn);
     cleanups.push(() => window.removeEventListener(type, fn));
   };
-  const pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
+  let pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
@@ -2277,6 +2278,16 @@ export function createGame({
     $('auditCopy').disabled = result.frames === 0;
   }
   function applySettings() {
+    const visualQuality = resolveGraphicsQuality(settings.graphics, {
+      coarsePointer: coarsePointer.matches,
+      deviceMemory: window.navigator?.deviceMemory ?? null,
+    });
+    pixelLimit = graphicsPixelRatioLimit(visualQuality, { coarsePointer: coarsePointer.matches });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
+    world.setGraphicsQuality(visualQuality);
+    post.setGraphicsQuality(visualQuality);
+    post.resize(window.innerWidth, window.innerHeight);
+    if (document.body.dataset) document.body.dataset.graphicsQuality = visualQuality;
     const label = (id, key) => {
       $(id).textContent = uiText(settings.language, key);
     };
@@ -2284,6 +2295,7 @@ export function createGame({
       ['settingsTitle', 'options'],
       ['labelLanguage', 'language'],
       ['labelDifficulty', 'difficulty'],
+      ['labelGraphics', 'graphics'],
       ['labelMaster', 'master'],
       ['labelMusic', 'music'],
       ['labelSfx', 'effects'],
@@ -2316,9 +2328,20 @@ export function createGame({
       );
       if (option) option.textContent = uiText(settings.language, mode);
     }
+    for (const [mode, key] of [
+      ['auto', 'graphicsAuto'],
+      ['medium', 'graphicsMedium'],
+      ['high', 'graphicsHigh'],
+    ]) {
+      const option = Array.from($('settingGraphics').options ?? []).find(
+        (item) => item.value === mode,
+      );
+      if (option) option.textContent = uiText(settings.language, key);
+    }
     for (const [key, id] of [
       ['language', 'settingLanguage'],
       ['difficulty', 'settingDifficulty'],
+      ['graphics', 'settingGraphics'],
       ['master', 'settingMaster'],
       ['music', 'settingMusic'],
       ['sfx', 'settingSfx'],
@@ -2493,6 +2516,7 @@ export function createGame({
   for (const [key, id] of [
     ['language', 'settingLanguage'],
     ['difficulty', 'settingDifficulty'],
+    ['graphics', 'settingGraphics'],
     ['master', 'settingMaster'],
     ['music', 'settingMusic'],
     ['sfx', 'settingSfx'],
@@ -2510,7 +2534,7 @@ export function createGame({
         [key]:
           typeof settings[key] === 'boolean'
             ? !!el.checked
-            : key === 'language' || key === 'difficulty'
+            : key === 'language' || key === 'difficulty' || key === 'graphics'
               ? el.value
               : Number(el.value),
       });

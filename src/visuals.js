@@ -1,6 +1,8 @@
 import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { createCityDistricts } from './city-districts.js';
+import { createCityPremiumInfrastructure, createMaglevTrain } from './city-premium.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -861,10 +863,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   atmosphere.position.copy(moon.position);
   scene.add(atmosphere);
   const terrainMat = new T.ShaderMaterial({
-    uniforms: { time: { value: 0 }, travel: { value: 0 }, water: { value: 0 } },
+    uniforms: {
+      time: { value: 0 },
+      travel: { value: 0 },
+      water: { value: 0 },
+      urban: { value: 1 },
+      detail: { value: 0.4 },
+    },
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=vec3(.009,.019,.027);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.008,.024,.034)*plating+vec3(.012,.078,.092)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float fog=1.-exp(-dist*.002);gl_FragColor=vec4(mix(c,vec3(.013,.046,.054),fog),1.);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -884,8 +892,42 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, glowMaterial('#13b998', 1.4), 400),
     windows = new T.InstancedMesh(unit, glowMaterial('#3ec9c2', 1.25), 2800);
+  // Rich high-quality architecture in three additional GPU-instanced draw calls.
+  // Decoration stays outside the flight corridor and adds no collision volumes.
+  const cityHighDetails = new T.Group();
+  cityHighDetails.name = 'city-high-details';
+  const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
+  const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
+  const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
+  // City 2.2: layered facade details. One instanced draw call per material
+  // instead of thousands of independent meshes, only visible on High.
+  const facadeWindowsCool = new T.InstancedMesh(unit, glowMaterial('#7deffe', 1.35), 15000);
+  facadeWindowsCool.name = 'city-facade-windows-cool';
+  const facadeWindowsAmber = new T.InstancedMesh(unit, glowMaterial('#ffc884', 1.05), 3000);
+  facadeWindowsAmber.name = 'city-facade-windows-amber';
+  const facadeSideWindows = new T.InstancedMesh(unit, glowMaterial('#37cddc', 1.15), 6600);
+  facadeSideWindows.name = 'city-facade-side-windows';
+  const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
+  facadePanelModules.name = 'city-facade-panel-modules';
+  // Restore the physical-looking safety rails along both edges of the avenue.
+  // They are visual-only and remain visible in Medium, unlike premium decoration.
+  const guardrailSteel = new T.InstancedMesh(unit, metal('#3c6570', 0.63, 0.7), 1100);
+  guardrailSteel.name = 'city-avenue-guardrail';
+  const guardrailLamps = new T.InstancedMesh(unit, glowMaterial('#47eedf', 1.35), 240);
+  guardrailLamps.name = 'city-avenue-guardrail-lights';
+  // Three silhouettes: elevated overpasses, illuminated bridge gantries,
+  // and side-running suspended transit beams. Only the High profile shows them.
+  const crossingSteel = new T.InstancedMesh(unit, metal('#3b5867', 0.69, 0.62), 190);
+  crossingSteel.name = 'city-elevated-crossings';
+  const crossingLights = new T.InstancedMesh(unit, glowMaterial('#65dbe9', 1.22), 100);
+  crossingLights.name = 'city-elevated-crossings-lights';
+  const transitTracks = new T.InstancedMesh(unit, metal('#547682', 0.64, 0.54), 180);
+  transitTracks.name = 'city-suspended-transit';
   let d = new T.Object3D(),
-    wi = 0;
+    wi = 0,
+    coolWindows = 0,
+    amberWindows = 0,
+    sideWindows = 0;
   function inst(mesh, i, x, y, z, sx, sy, sz) {
     d.position.set(x, y, z);
     d.scale.set(sx, sy, sz);
@@ -903,6 +945,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     inst(caps, i, x, h - 5, z, w * 0.72, 4, depth * 0.75);
     inst(edges, i * 2, x - w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
     inst(edges, i * 2 + 1, x + w / 2, h / 2 - 7, z + depth / 2, 0.1, h, 0.12);
+    // Facade ribs, illuminated ledges and aerial mast silhouettes.
+    inst(facadeRibs, i * 2, x - w * 0.36, h / 2 - 7, z + depth / 2 + 0.19, 0.35, h * 0.88, 0.33);
+    inst(
+      facadeRibs,
+      i * 2 + 1,
+      x + w * 0.36,
+      h / 2 - 7,
+      z + depth / 2 + 0.19,
+      0.35,
+      h * 0.88,
+      0.33,
+    );
+    inst(ledBands, i * 2, x, h * 0.33 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
+    inst(ledBands, i * 2 + 1, x, h * 0.68 - 7, z + depth / 2 + 0.25, w * 0.85, 0.24, 0.28);
+    inst(antennas, i, x + ((i % 3) - 1) * w * 0.22, h + 1, z, 0.4, 13 + (i % 4) * 3, 0.4);
     for (let j = 0; j < 14; j++) {
       let row = Math.floor(j / 2),
         col = j % 2;
@@ -917,16 +974,270 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         0.12,
       );
     }
+    // Extra illuminated floors on the camera-facing facade. Mix dense and
+    // sparse rows, plus amber accent rooms, to avoid repeating a flat grid.
+    const floorCount = Math.min(15, Math.max(4, Math.floor(h / 5.5)));
+    const columnCount = i % 4 === 0 ? 5 : 4;
+    for (let row = 0; row < floorCount; row++) {
+      for (let col = 0; col < columnCount; col++) {
+        if ((i * 11 + row * 7 + col * 3) % 13 === 0) continue;
+        const amber = (i * 3 + row * 5 + col * 7) % 11 === 0;
+        const target = amber ? facadeWindowsAmber : facadeWindowsCool;
+        const index = amber ? amberWindows++ : coolWindows++;
+        inst(
+          target,
+          index,
+          x + ((col + 0.5) / columnCount - 0.5) * w * 0.83,
+          -7 + ((row + 1) / (floorCount + 1)) * h,
+          z + depth / 2 + 0.12,
+          (w * 0.61) / columnCount,
+          0.36 + (i % 3) * 0.07,
+          0.16,
+        );
+      }
+    }
+    // Add windows on the wall facing the flight corridor. This makes the
+    // buildings feel three-dimensional during parallax instead of like cards.
+    const sideFloors = Math.min(11, floorCount);
+    for (let row = 0; row < sideFloors; row++) {
+      for (let col = 0; col < 3; col++) {
+        if ((i + row * 3 + col) % 8 === 0) continue;
+        inst(
+          facadeSideWindows,
+          sideWindows++,
+          x - s * (w / 2 + 0.1),
+          -7 + ((row + 1) / (sideFloors + 1)) * h,
+          z + ((col + 0.5) / 3 - 0.5) * depth * 0.74,
+          0.16,
+          0.37,
+          (depth * 0.48) / 3,
+        );
+      }
+    }
+    // Offset reinforced facade bays: silhouette and shading layers without
+    // adding colliders or obstructing the central flight corridor.
+    for (let bay = 0; bay < 4; bay++) {
+      const bayHeight = h * (0.11 + (bay % 2) * 0.07);
+      inst(
+        facadePanelModules,
+        i * 4 + bay,
+        x + (bay % 2 ? 0.3 : -0.3) * w,
+        -7 + h * (0.22 + Math.floor(bay / 2) * 0.48),
+        z + depth / 2 + 0.3,
+        w * 0.18,
+        bayHeight,
+        0.52,
+      );
+    }
   }
-  for (let o of [bodies, caps, edges, windows]) {
+  facadeWindowsCool.count = coolWindows;
+  facadeWindowsAmber.count = amberWindows;
+  facadeSideWindows.count = sideWindows;
+
+  // Roadside guardrails run with both looping city blocks. The 95 segments per
+  // side are just two instanced draw calls, rather than thousands of Mesh nodes.
+  const railX = dynamicFlight ? 47 : 38;
+  let railParts = 0;
+  let railLamps = 0;
+  for (const side of [-1, 1]) {
+    for (let segment = 0; segment < 95; segment++) {
+      const z = -10 - segment * 20;
+      const x = side * railX;
+      // Two vertical stanchions, upper and lower bars, armored curb.
+      inst(guardrailSteel, railParts++, x, -4.4, z, 0.75, 4.6, 0.75);
+      inst(guardrailSteel, railParts++, x, -4.4, z - 10, 0.75, 4.6, 0.75);
+      inst(guardrailSteel, railParts++, x, -2.3, z - 10, 0.72, 0.55, 19.4);
+      inst(guardrailSteel, railParts++, x, -4.1, z - 10, 0.5, 0.4, 19.4);
+      inst(guardrailSteel, railParts++, x, -6.5, z - 10, 1.8, 0.7, 19.4);
+      inst(guardrailLamps, railLamps++, x, -1.93, z - 10, 0.25, 0.16, 19);
+    }
+  }
+  guardrailSteel.count = railParts;
+  guardrailLamps.count = railLamps;
+
+  // Aerial crossings stand at least 47 units above street level so that they
+  // enrich the city silhouette without intruding into the player flight lane.
+  let crossingParts = 0;
+  let crossingGlow = 0;
+  for (let i = 0; i < 9; i++) {
+    const z = -160 - i * 204;
+    const y = 59 + (i % 3) * 7;
+    const beamDepth = i % 3 === 0 ? 13 : i % 3 === 1 ? 8 : 5;
+    // Distinct variants: heavy pedestrian skybridge, thin gantry, transit arch.
+    inst(crossingSteel, crossingParts++, 0, y, z, 142, i % 3 === 0 ? 6 : 3.5, beamDepth);
+    for (const side of [-1, 1]) {
+      // Support legs are outside the road and the protective rails.
+      inst(crossingSteel, crossingParts++, side * 70, (y - 7) / 2, z, 5, y + 7, 5);
+      inst(crossingSteel, crossingParts++, side * 60, y + 5, z, 1.4, 10, beamDepth * 0.65);
+      inst(crossingLights, crossingGlow++, side * 55, y - 2.3, z + beamDepth / 2, 26, 0.4, 0.6);
+    }
+    inst(crossingLights, crossingGlow++, 0, y + 2.5, z + beamDepth / 2, 32, 0.3, 0.4);
+    // Some bridges get an extra top spine, breaking up the repetitive roofline.
+    if (i % 3 === 0) {
+      inst(crossingSteel, crossingParts++, 0, y + 7, z, 75, 3, beamDepth * 0.5);
+    }
+  }
+  crossingSteel.count = crossingParts;
+  crossingLights.count = crossingGlow;
+  let transitParts = 0;
+  for (const side of [-1, 1]) {
+    for (let segment = 0; segment < 45; segment++) {
+      const z = -22 - segment * 42;
+      const x = side * 80;
+      const y = 31 + (segment % 3) * 1.1;
+      inst(transitTracks, transitParts++, x, y, z, 7, 2.4, 41.5);
+      inst(transitTracks, transitParts++, x - side * 4, y - 1.4, z, 0.65, 0.75, 41.5);
+    }
+  }
+  transitTracks.count = transitParts;
+
+  for (let o of [bodies, caps, edges, windows, guardrailSteel, guardrailLamps, transitTracks]) {
     o.instanceMatrix.needsUpdate = true;
     city.add(o);
   }
+  for (const detail of [
+    facadeRibs,
+    ledBands,
+    antennas,
+    facadeWindowsCool,
+    facadeWindowsAmber,
+    facadeSideWindows,
+    facadePanelModules,
+    crossingSteel,
+    crossingLights,
+  ]) {
+    detail.instanceMatrix.needsUpdate = true;
+    cityHighDetails.add(detail);
+  }
+  city.add(cityHighDetails);
+  cityHighDetails.visible = false;
+
+  // City 2.3: non-combat urban movement is attached to the looping tile.
+  // Vehicles have no colliders, damage, AI target, or gameplay hitboxes.
+  const urbanLife = new T.Group();
+  urbanLife.name = 'city-urban-life';
+  const maglevWindows = glowMaterial('#93eaff', 1.3);
+  const civicHull = metal('#86b8bc', 0.7, 0.36);
+  const civicEngine = glowMaterial('#ffd59b', 1.7);
+  for (const side of [-1, 1]) urbanLife.add(createMaglevTrain(side));
+  for (let i = 0; i < 7; i++) {
+    const side = i % 2 ? 1 : -1;
+    const craft = new T.Group();
+    craft.name = 'city-evacuation-craft-' + i;
+    craft.userData.role = 'evacuation';
+    craft.userData.index = i;
+    craft.userData.highOnly = i >= 3;
+    craft.add(box(3.4, 1.4, 9.2, civicHull));
+    craft.add(box(10, 0.45, 3.1, civicHull, 0, -0.3, 0.8));
+    craft.add(box(1.4, 0.8, 2, maglevWindows, 0, 0.75, -2.5));
+    for (const flank of [-1, 1]) {
+      craft.add(box(1.4, 0.4, 1.1, civicEngine, flank * 1.3, 0, 5));
+      craft.add(box(1.1, 0.35, 7, maglevWindows, flank * 4.3, -0.2, 0.8));
+    }
+    craft.position.set(side * (120 + (i % 3) * 26), 38, -230 - i * 238);
+    urbanLife.add(craft);
+  }
+  city.add(urbanLife);
+  city.add(createCityDistricts());
+  city.add(createCityPremiumInfrastructure());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
   scene.add(cityFar);
+  const farHighDetails = cityFar.getObjectByName('city-high-details');
+
+  // A persistent, layered urban horizon gives the flight a destination instead
+  // of extending the avenue endlessly. Unlike road tiles this background stays
+  // ahead of the player and never gets close enough to behave like an obstacle.
+  const cityHorizon = new T.Group();
+  cityHorizon.name = 'city-distant-horizon';
+  const horizonCore = new T.InstancedMesh(unit, metal('#263b50', 0.46, 0.86), 110);
+  horizonCore.name = 'city-horizon-tower-mass';
+  const horizonCrown = new T.InstancedMesh(unit, metal('#426779', 0.62, 0.5), 110);
+  horizonCrown.name = 'city-horizon-rooflines';
+  const horizonPremium = new T.Group();
+  horizonPremium.name = 'city-horizon-high-details';
+  const horizonLit = new T.InstancedMesh(unit, glowMaterial('#5bd3d8', 0.86), 270);
+  horizonLit.name = 'city-horizon-window-bands';
+  const horizonFine = new T.InstancedMesh(unit, metal('#354d65', 0.65, 0.55), 90);
+  horizonFine.name = 'city-horizon-secondary-towers';
+  let horizonCount = 0;
+  let horizonWindows = 0;
+  let horizonSecondary = 0;
+  for (let tier = 0; tier < 3; tier++) {
+    for (let i = 0; i < 34; i++) {
+      const x = (i - 16.5) * (tier === 0 ? 29 : tier === 1 ? 25 : 20);
+      // The near and middle bands protect the line of sight in the flight lane.
+      if (Math.abs(x) < (tier === 0 ? 95 : tier === 1 ? 64 : 0)) continue;
+      const height = 31 + ((i * 11 + tier * 23) % 9) * 15;
+      const raised = tier === 2 && Math.abs(x) < 50 ? 58 : 0;
+      const z = -390 - tier * 255 - ((i * 7) % 4) * 12;
+      const width = 16 + ((i + tier) % 5) * 5;
+      inst(horizonCore, horizonCount, x, height / 2 - 7 + raised, z, width, height, 30);
+      inst(
+        horizonCrown,
+        horizonCount,
+        x,
+        height - 5 + raised,
+        z,
+        width * 0.77,
+        5 + (i % 3) * 3,
+        25,
+      );
+      for (let band = 0; band < 2; band++) {
+        inst(
+          horizonLit,
+          horizonWindows++,
+          x,
+          raised + height * (0.35 + band * 0.37) - 7,
+          z + 15.25,
+          width * 0.73,
+          0.65,
+          0.5,
+        );
+      }
+      if (i % 2 === 0) {
+        inst(
+          horizonFine,
+          horizonSecondary++,
+          x + width * 0.7,
+          raised + height * 0.54 - 7,
+          z - 20,
+          width * 0.26,
+          height * 1.08,
+          20,
+        );
+      }
+      horizonCount++;
+    }
+  }
+  horizonCore.count = horizonCount;
+  horizonCrown.count = horizonCount;
+  horizonLit.count = horizonWindows;
+  horizonFine.count = horizonSecondary;
+  for (const o of [horizonCore, horizonCrown]) {
+    o.instanceMatrix.needsUpdate = true;
+    cityHorizon.add(o);
+  }
+  for (const o of [horizonLit, horizonFine]) {
+    o.instanceMatrix.needsUpdate = true;
+    horizonPremium.add(o);
+  }
+  cityHorizon.add(horizonPremium);
+  // The central suspended city gate sits ABOVE the flight corridor: a distant
+  // landmark rather than a solid wall to fly through.
+  const skylineGate = new T.Group();
+  skylineGate.name = 'city-horizon-monument';
+  skylineGate.add(box(158, 14, 25, metal('#32566d', 0.75, 0.48), 0, 147, -830));
+  skylineGate.add(box(79, 34, 29, metal('#446d80', 0.72, 0.42), 0, 170, -830));
+  skylineGate.add(box(64, 2.5, 3.2, glowMaterial('#42ead8', 1.25), 0, 156, -814));
+  for (const side of [-1, 1]) {
+    skylineGate.add(box(19, 164, 31, metal('#233e52', 0.75, 0.48), side * 88, 75, -830));
+    skylineGate.add(box(4.5, 105, 4.5, glowMaterial('#56bace', 0.9), side * 88, 69, -810));
+  }
+  cityHorizon.add(skylineGate);
+  scene.add(cityHorizon);
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1056,6 +1367,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    setGraphicsQuality(quality) {
+      const high = quality === 'high';
+      terrainMat.uniforms.detail.value = high ? 1 : 0.4;
+      cityHighDetails.visible = high;
+      if (farHighDetails) farHighDetails.visible = high;
+      horizonPremium.visible = high;
+      for (const tile of [city, cityFar]) {
+        const life = tile.getObjectByName('city-urban-life');
+        for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
+        tile.getObjectByName('city-district-high-details').visible = high;
+        tile.getObjectByName('city-premium-high-details').visible = high;
+      }
+    },
     showCarrierForBoss() {
       carrier.visible = true;
     },
@@ -1079,6 +1403,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // fallen below the camera long before the city meshes are hidden.
       const retreat = 780 * t * t + 180 * t;
       city.position.y = cityFar.position.y = -retreat;
+      cityHorizon.position.y = -retreat * 0.86;
       near.forEach((o) => (o.position.y = -retreat * 0.92));
       ground.position.y = -7 - retreat * 1.18;
       const scale = 1 - t * 0.26;
@@ -1089,6 +1414,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const orbital = launchOrbitReady(progress);
       ground.visible = !orbital;
       city.visible = cityFar.visible = !orbital;
+      cityHorizon.visible = !orbital;
       near.forEach((o) => (o.visible = !orbital));
       rain.visible = !orbital && t < 0.6;
       moon.visible = atmosphere.visible = false;
@@ -1151,6 +1477,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
+      cityHorizon.position.set(0, 0, 0);
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
@@ -1160,9 +1487,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.launchHaze.value = 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
+      terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
       const land = ['city', 'ocean', 'ice'].includes(sceneryTheme);
       ground.visible = land;
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
+      cityHorizon.visible = sceneryTheme === 'city';
+      for (const tile of [city, cityFar]) {
+        tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-premium-infrastructure').visible = sceneryTheme === 'city';
+      }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
       // Show the orbital globe only after the last city/port buildings are gone.
@@ -1369,6 +1703,33 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         terrainMat.uniforms.travel.value = travel;
         city.position.z = travel % 1900;
         cityFar.position.z = city.position.z - 1900;
+        // Persistent skyline remains distant while roads and trains move at
+        // different speeds: multiple parallax rates reinforce urban scale.
+        cityHorizon.position.x = Math.sin(travel / 3400) * 9;
+        cityHorizon.position.z = -Math.min(85, travel * 0.012);
+        for (const tile of [city, cityFar]) {
+          for (const vehicle of tile.getObjectByName('city-urban-life').children) {
+            if (vehicle.userData.role === 'maglev') {
+              const side = vehicle.userData.side;
+              // An introductory, camera-visible pass on the east line begins
+              // within the first moments. A second west train follows later.
+              // Both are aligned to their own suspended guideways.
+              vehicle.position.z =
+                side > 0
+                  ? -215 - ((travel * 0.18 + 20) % 1470)
+                  : -375 - ((travel * 0.35 + 60) % 1470);
+            } else {
+              const i = vehicle.userData.index;
+              const ascent = ((travel * 0.23 + i * 212) % 1700) / 1700;
+              const side = i % 2 ? 1 : -1;
+              vehicle.position.x = side * (120 + (i % 3) * 26 + ascent * 65);
+              vehicle.position.y = 32 + ascent * 245;
+              vehicle.position.z = -170 - i * 215 - ascent * 45;
+              vehicle.rotation.z = -side * (0.04 + ascent * 0.16);
+              vehicle.scale.setScalar(1 - ascent * 0.45);
+            }
+          }
+        }
         for (let g of near) {
           g.position.z += speed * dt;
           if (g.position.z > 50) g.position.z -= 1170;
@@ -1404,6 +1765,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
+      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
@@ -1475,13 +1838,17 @@ export function postProcessor(renderer, scene, camera) {
   const quad = new T.Mesh(new T.PlaneGeometry(2, 2), blur);
   passScene.add(quad);
   let bw = 1,
-    bh = 1;
+    bh = 1,
+    bloomDivisor = 3;
   return {
+    setGraphicsQuality(quality) {
+      bloomDivisor = quality === 'high' ? 3 : 4;
+    },
     resize(w, h) {
       let pr = renderer.getPixelRatio();
       full.setSize(Math.round(w * pr), Math.round(h * pr));
-      bw = Math.max(1, Math.round((w * pr) / 3));
-      bh = Math.max(1, Math.round((h * pr) / 3));
+      bw = Math.max(1, Math.round((w * pr) / bloomDivisor));
+      bh = Math.max(1, Math.round((h * pr) / bloomDivisor));
       a.setSize(bw, bh);
       b.setSize(bw, bh);
     },

@@ -2,6 +2,7 @@ export const SETTINGS_KEY = 'nova-wing-preferences-v1';
 export const DEFAULT_SETTINGS = Object.freeze({
   language: 'pt',
   difficulty: 'normal',
+  graphics: 'auto',
   master: 0.85,
   music: 0.8,
   sfx: 0.85,
@@ -18,6 +19,7 @@ export function readSettings(raw) {
   const result = { ...DEFAULT_SETTINGS };
   if (['pt', 'en', 'es'].includes(source.language)) result.language = source.language;
   if (['easy', 'normal', 'hard'].includes(source.difficulty)) result.difficulty = source.difficulty;
+  if (['auto', 'medium', 'high'].includes(source.graphics)) result.graphics = source.graphics;
   for (const key of ['master', 'music', 'sfx', 'sensitivity', 'opacity']) {
     if (typeof source[key] === 'number' && Number.isFinite(source[key]))
       result[key] = clamp(
@@ -103,6 +105,10 @@ export const UI_COPY = {
     effects: 'EFEITOS',
     language: 'IDIOMA',
     difficulty: 'DIFICULDADE',
+    graphics: 'GRÁFICOS',
+    graphicsAuto: 'AUTOMÁTICO',
+    graphicsMedium: 'MÉDIO',
+    graphicsHigh: 'ALTO',
     easy: 'FÁCIL',
     normal: 'NORMAL',
     hard: 'DIFÍCIL',
@@ -170,6 +176,10 @@ export const UI_COPY = {
     effects: 'SOUND EFFECTS',
     language: 'LANGUAGE',
     difficulty: 'DIFFICULTY',
+    graphics: 'GRAPHICS',
+    graphicsAuto: 'AUTO',
+    graphicsMedium: 'MEDIUM',
+    graphicsHigh: 'HIGH',
     easy: 'EASY',
     normal: 'NORMAL',
     hard: 'HARD',
@@ -237,6 +247,10 @@ export const UI_COPY = {
     effects: 'EFECTOS',
     language: 'IDIOMA',
     difficulty: 'DIFICULTAD',
+    graphics: 'GRÁFICOS',
+    graphicsAuto: 'AUTOMÁTICO',
+    graphicsMedium: 'MEDIO',
+    graphicsHigh: 'ALTO',
     easy: 'FÁCIL',
     normal: 'NORMAL',
     hard: 'DIFÍCIL',
