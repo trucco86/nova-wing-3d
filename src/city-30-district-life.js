@@ -141,12 +141,12 @@ export function createCity30DistrictLife(buildings = []) {
   const craft = [], engines = [];
   const origin = pads.length ? pads.slice(0, 12) :
     buildings.filter((b) => b.h > 40).slice(0, 8).map((b) => ({ x: b.x, y: 28, z: b.z }));
-  origin.forEach(({ x, y, z }, i) => {
+  origin.forEach(({ x, y, z }) => {
     craft.push(matrix(x, y, z, 5.2, 2, 8.5));
     engines.push(matrix(x, y - 1.35, z + 2.2, 4.0, 0.45, 1.4));
   });
-  const cab = pack(taxis, 'city-matrix-taxi-cabs', glass, craft, Math.min(5, craft.length));
-  const thrusters = pack(taxis, 'city-matrix-taxi-thrusters', amber, engines,
+  pack(taxis, 'city-matrix-taxi-cabs', glass, craft, Math.min(5, craft.length));
+  pack(taxis, 'city-matrix-taxi-thrusters', amber, engines,
     Math.min(5, engines.length));
   taxis.userData.origin = origin;
   taxis.userData.phase = 0;
