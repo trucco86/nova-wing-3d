@@ -1926,6 +1926,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), 0);
         animateCity30(tile.getObjectByName('city-matrix-streets'), 0);
         updateCity32Living(tile.getObjectByName('city32-living-metropolis'), 0);
+        const cross = tile.getObjectByName('city32-cross-city-maglev-train');
+        if (cross) cross.position.x = -75;
       }
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
