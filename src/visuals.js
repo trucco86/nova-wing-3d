@@ -16,6 +16,7 @@ import {
   setCity30Quality,
 } from './city-30-district-life.js';
 import { createLaunchCelestials } from './launch-celestials.js';
+import { ORBIT_REVEAL, orbitRevealAt } from './orbit-reveal.js';
 import {
   animateCityBillboards,
   createCityPremiumInfrastructure,
@@ -1484,24 +1485,25 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const groundFade = 1 - T.MathUtils.smoothstep(progress, 0.31, 0.57);
       terrainMat.uniforms.launchGroundAlpha.value = groundFade;
       ground.visible = progress < 0.57;
-      const urbanVisible = progress < 0.73;
+      const reveal = orbitRevealAt(progress);
+      const urbanVisible = reveal.cityVisible;
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
       // The Moon used in other stages is separate from the real lunar body.
       moon.visible = atmosphere.visible = false;
-      scene.fog.density = 0.0014 - 0.00119 * t;
-      skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
-      starfield.material.opacity = 0.16 + 0.59 * t;
-      skyMat.uniforms.launchHaze.value = 1.65 * Math.sin(Math.PI * t) ** 2;
-      // Earth is already fading in as the city falls below the camera.
-      // No sudden planetary swap or flickering overlapping sky geometry.
+      // Night begins only after the last towers have retreated. A dedicated
+      // sky-only interval builds stars and thin haze before Earth appears.
+      scene.fog.density = T.MathUtils.lerp(0.0014, 0.00021, reveal.night);
+      skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, reveal.night);
+      starfield.material.opacity = 0.14 + 0.61 * reveal.stars;
+      skyMat.uniforms.launchHaze.value = 1.55 * reveal.haze;
       launchCelestials.update(progress);
       const orbital = launchOrbitReady(progress);
-      carrier.visible = orbital && t > 0.77;
+      carrier.visible = orbital && progress > ORBIT_REVEAL.firstEarth;
       if (orbitalSatellite) {
-        orbitalSatellite.visible = orbital && t > 0.79;
+        orbitalSatellite.visible = orbital && progress > ORBIT_REVEAL.firstEarth;
         orbitalSatellite.rotation.y = 0.31 + progress * 0.65;
       }
     },
