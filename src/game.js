@@ -1006,7 +1006,10 @@ export function createGame({
     reflexBoost.reset();
     heroEffects.reset();
     $('launchBoostNotice').hidden = true;
+    document.body.classList.remove('orbital-super-boost');
     $('boostTouch').classList.remove('launch-required');
+    $('boostTouch').textContent = 'BOOST';
+    $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
     arcade = null;
     arcadeDone = false;
     $('arcadePanel').hidden = true;
@@ -2902,11 +2905,18 @@ export function createGame({
       const boostGuide = $('launchBoostNotice');
       const needsBoost = launchState.phase === 'boost' && state === 'playing';
       boostGuide.hidden = !needsBoost;
-      if (needsBoost) $('boostTouch').classList.add('launch-required');
-      else $('boostTouch').classList.remove('launch-required');
+      const boostButton = $('boostTouch');
+      boostButton.classList.toggle('launch-required', needsBoost);
+      const nextLabel = needsBoost ? 'SUPER BOOST' : 'BOOST';
+      if (boostButton.textContent !== nextLabel) boostButton.textContent = nextLabel;
+      boostButton.setAttribute(
+        'aria-label',
+        needsBoost ? 'Super Boost obrigatório para romper a atmosfera' : 'Ativar boost da nave',
+      );
+      document.body.classList.toggle('orbital-super-boost', needsBoost && boosting);
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
-          message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
+          message('FUGA ORBITAL · SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
         else if (launchState.phase === 'atmosphere')
           message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA', 'jenifer');
         else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA', 'bob');
@@ -2917,7 +2927,10 @@ export function createGame({
         (1 + activeShip().stats.agility * 0.08) *
         (robotMode ? 0.65 : 1)
       : 1;
-    const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
+    const superBoost = dynamicFlight && sectorIndex === 0 &&
+      orbitalLaunchSequence.snapshot().phase === 'boost' && boosting;
+    const speed = (superBoost ? 114 : boosting ? 90 : 48) *
+      (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -3116,7 +3129,7 @@ export function createGame({
       if (sectorIndex === 0 && !boss) {
         route.label =
           launchState.phase === 'boost'
-            ? 'SEGURE BOOST PARA SUBIR'
+            ? 'SUPER BOOST · ROMPA A ATMOSFERA'
             : launchState.phase === 'atmosphere'
               ? 'ATRAVESSANDO A ATMOSFERA'
               : launchState.phase === 'orbit'
@@ -4226,7 +4239,10 @@ export function createGame({
         }
     enemies = enemies.filter((e) => !e.dead);
     $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
-    $('speedValue').textContent = boosting ? '890' : '480';
+    $('speedValue').textContent =
+      boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
+        ? '1140'
+        : boosting ? '890' : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
     $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
