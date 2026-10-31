@@ -1200,6 +1200,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const maglevCrossing = new T.Group();
   maglevCrossing.name = 'city32-cross-city-maglev-line';
   maglevCrossing.userData.visualOnly = true;
+  maglevCrossing.userData.role = 'maglev-infrastructure';
   const crossBeam = box(266, 3.1, 12, metal('#739caf', 0.72, 0.28), 0, 59, -345);
   crossBeam.name = 'city32-maglev-crossing-guideway';
   const crossNeon = box(268, 0.55, 12.3, glowMaterial('#ff8aca', 1.6), 0, 61.3, -345);
@@ -1859,6 +1860,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
           }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
+            if (vehicle.userData.role === 'maglev-infrastructure') continue;
             if (vehicle.userData.role === 'maglev-crossing') {
               // Deterministic lateral traversal, looping only outside the
               // visible 266-unit overhead span; freezes whenever playing=false.
