@@ -19,6 +19,20 @@ test('City 3.2 living metropolis renders ads, aerial crossing, illuminated distr
   await page.screenshot({ path: info.outputPath('city32-02-overhead-maglev.png') });
   await page.evaluate(() => window.fixture.advance(7));
   await page.screenshot({ path: info.outputPath('city32-03-districts-and-searchlights.png') });
+  const stats = await page.evaluate(() => window.fixture.renderStats());
+  expect(stats?.calls, 'real WebGL scene must issue draw calls').toBeGreaterThan(0);
+  expect(stats.calls, 'City 3.2 must respect a bounded draw-call budget').toBeLessThan(1000);
+  expect(stats.triangles).toBeGreaterThan(0);
+  await info.attach('city32-webgl-render-budget.json', {
+    body: Buffer.from(JSON.stringify({
+      candidate: 'city-3.2',
+      project: info.project.name,
+      viewport: page.viewportSize(),
+      stats,
+      note: 'Software WebGL draw-call sample; not physical-device FPS',
+    }, null, 2)),
+    contentType: 'application/json',
+  });
   expect(runtimeErrors).toEqual([]);
   expect((await page.evaluate(() => window.fixture.game.snapshot())).state).toBe('playing');
 });
