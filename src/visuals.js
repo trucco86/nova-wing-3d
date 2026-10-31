@@ -2,6 +2,7 @@ import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityPremiumInfrastructure, createMaglevTrain } from './city-premium.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -1115,30 +1116,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Vehicles have no colliders, damage, AI target, or gameplay hitboxes.
   const urbanLife = new T.Group();
   urbanLife.name = 'city-urban-life';
-  const maglevBody = metal('#557f91', 0.8, 0.32);
   const maglevWindows = glowMaterial('#93eaff', 1.3);
   const civicHull = metal('#86b8bc', 0.7, 0.36);
   const civicEngine = glowMaterial('#ffd59b', 1.7);
-  for (const side of [-1, 1]) {
-    const train = new T.Group();
-    train.name = side < 0 ? 'city-maglev-west' : 'city-maglev-east';
-    train.userData.role = 'maglev';
-    train.userData.side = side;
-    train.userData.highOnly = side > 0;
-    train.add(box(7, 3.6, 36, maglevBody));
-    train.add(box(7.6, 0.55, 33, steel, 0, -1.8, 0));
-    train.add(box(6.4, 0.4, 35, maglevWindows, 0, 2, 0));
-    train.add(box(5.6, 1.15, 2.1, maglevWindows, 0, 0.15, -18.6));
-    train.add(box(5.6, 1.15, 2.1, maglevWindows, 0, 0.15, 18.6));
-    for (const flank of [-1, 1]) {
-      train.add(box(0.18, 1.2, 30, maglevWindows, flank * 3.59, 0.45, 0));
-      for (let window = 0; window < 5; window++) {
-        train.add(box(0.22, 1.3, 3.2, navy, flank * 3.72, 0.45, -12 + window * 6));
-      }
-    }
-    train.position.set(side * 80, 36, side < 0 ? -520 : -1200);
-    urbanLife.add(train);
-  }
+  for (const side of [-1, 1]) urbanLife.add(createMaglevTrain(side));
   for (let i = 0; i < 7; i++) {
     const side = i % 2 ? 1 : -1;
     const craft = new T.Group();
@@ -1158,6 +1139,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   city.add(urbanLife);
   city.add(createCityDistricts());
+  city.add(createCityPremiumInfrastructure());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
@@ -1395,6 +1377,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
         tile.getObjectByName('city-district-high-details').visible = high;
+        tile.getObjectByName('city-premium-high-details').visible = high;
       }
     },
     showCarrierForBoss() {
@@ -1512,6 +1495,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       for (const tile of [city, cityFar]) {
         tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-premium-infrastructure').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
@@ -1727,10 +1711,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev') {
               const side = vehicle.userData.side;
+              // An introductory, camera-visible pass on the east line begins
+              // within the first moments. A second west train follows later.
+              // Both are aligned to their own suspended guideways.
               vehicle.position.z =
-                side < 0
-                  ? -120 - ((travel * 0.52 + 340) % 1660)
-                  : -1780 + ((travel * 0.7 + 730) % 1660);
+                side > 0
+                  ? -215 - ((travel * 0.18 + 20) % 1470)
+                  : -375 - ((travel * 0.35 + 60) % 1470);
             } else {
               const i = vehicle.userData.index;
               const ascent = ((travel * 0.23 + i * 212) % 1700) / 1700;
