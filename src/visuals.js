@@ -2,6 +2,8 @@ import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
+import { createLaunchCelestials } from './launch-celestials.js';
 import {
   animateCityBillboards,
   createCityPremiumInfrastructure,
@@ -796,22 +798,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
   skyDome.name = 'launch-sky-dome';
   scene.add(skyDome);
-  // An Earth-like horizon appears as the first sector leaves the city.
-  // This is a background-only visual; collision coordinates do not change.
-  const earthMat = new T.ShaderMaterial({
-    uniforms: { fade: { value: 0 } },
-    transparent: true,
-    depthWrite: false,
-    vertexShader:
-      'varying vec3 planetNormal;void main(){planetNormal=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform float fade;varying vec3 planetNormal;${noise}void main(){vec3 n=normalize(planetNormal);float land=fbm(n*9.);vec3 ocean=vec3(.018,.17,.29);vec3 continent=mix(vec3(.06,.20,.14),vec3(.30,.39,.19),fbm(n*25.));vec3 c=mix(ocean,continent,smoothstep(.46,.61,land));float lit=.4+.6*max(0.,dot(n,normalize(vec3(-.5,.8,1.))));float rim=pow(1.-abs(n.z),3.);gl_FragColor=vec4(c*lit+vec3(.03,.16,.27)*rim,fade);}`,
-  });
-  const earthHorizon = new T.Mesh(new T.SphereGeometry(680, 48, 28), earthMat);
-  earthHorizon.name = 'launch-earth-horizon';
-  earthHorizon.position.set(0, -760, -1450);
-  earthHorizon.visible = false;
-  earthHorizon.userData.fixedSky = true;
-  scene.add(earthHorizon);
+  // Earth, real Moon and backlit Sun share a continuous, scene-local
+  // transition. Unlike the normal fractured moon, these belong only to Earth.
+  const launchCelestials = createLaunchCelestials(scene);
   const launchSkyTint = new T.Color();
   const launchSpaceTint = new T.Color('#192a55');
   const starPos = [],
@@ -1144,6 +1133,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(urbanLife);
   city.add(createCityDistricts());
   city.add(createCityPremiumInfrastructure());
+  city.add(createCityCommerce());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
@@ -1241,6 +1231,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     skylineGate.add(box(4.5, 105, 4.5, glowMaterial('#56bace', 0.9), side * 88, 69, -810));
   }
   cityHorizon.add(skylineGate);
+  cityHorizon.add(createCityHorizonMegastructure());
   scene.add(cityHorizon);
   const near = [];
   for (let i = 0; i < 18; i++) {
@@ -1377,11 +1368,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
+      launchCelestials.setGraphicsQuality(quality);
       for (const tile of [city, cityFar]) {
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
         tile.getObjectByName('city-district-high-details').visible = high;
         tile.getObjectByName('city-premium-high-details').visible = high;
+        tile.getObjectByName('city-commerce-high-detail').visible = high;
       }
     },
     showCarrierForBoss() {
@@ -1403,38 +1397,36 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (!dynamicFlight || sceneryTheme !== 'city' || !enabled) return;
       const progress = T.MathUtils.clamp(amount, 0, 1);
       const t = progress * progress * (3 - 2 * progress);
-      // Continuous altitude parallax: the last visible buildings have already
-      // fallen below the camera long before the city meshes are hidden.
-      const retreat = 780 * t * t + 180 * t;
+      // Retain the architectural silhouette while the craft climbs. Buildings,
+      // rails and distant terminus physically sink below the camera instead of
+      // disappearing at the early gameplay orbit-ready threshold.
+      const retreat = 1200 * t ** 2.8 + 100 * t;
       city.position.y = cityFar.position.y = -retreat;
-      cityHorizon.position.y = -retreat * 0.86;
-      near.forEach((o) => (o.position.y = -retreat * 0.92));
+      cityHorizon.position.y = -retreat * 0.94;
+      near.forEach((o) => (o.position.y = -retreat * 0.98));
       ground.position.y = -7 - retreat * 1.18;
-      const scale = 1 - t * 0.26;
+      const scale = 1 - t * 0.29;
       city.scale.setScalar(scale);
       cityFar.scale.setScalar(scale);
-      // Mutually exclusive urban and planetary stages: never draw the city
-      // together with a globe. The planet fades in through the upper atmosphere.
-      const orbital = launchOrbitReady(progress);
-      ground.visible = !orbital;
-      city.visible = cityFar.visible = !orbital;
-      cityHorizon.visible = !orbital;
-      near.forEach((o) => (o.visible = !orbital));
-      rain.visible = !orbital && t < 0.6;
+      const urbanVisible = progress < 0.84;
+      ground.visible = urbanVisible;
+      city.visible = cityFar.visible = urbanVisible;
+      cityHorizon.visible = urbanVisible;
+      near.forEach((o) => (o.visible = urbanVisible));
+      rain.visible = urbanVisible && t < 0.57;
+      // The Moon used in other stages is separate from the real lunar body.
       moon.visible = atmosphere.visible = false;
-      scene.fog.density = 0.0014 - 0.0012 * t;
+      scene.fog.density = 0.0014 - 0.00119 * t;
       skyMat.uniforms.tint.value.copy(launchSkyTint).lerp(launchSpaceTint, t);
       starfield.material.opacity = 0.16 + 0.59 * t;
-      // A luminous cloud band bridges the city and the planetary horizon.
-      // It peaks midway through the 38-second coast instead of a blank starfield.
-      skyMat.uniforms.launchHaze.value = 1.4 * Math.sin(Math.PI * t) ** 2;
-      earthHorizon.position.y = -940 + t * 180;
-      earthHorizon.visible = orbital;
-      const reveal = T.MathUtils.clamp((t - 0.65) / 0.35, 0, 1);
-      earthMat.uniforms.fade.value = orbital ? 0.88 * reveal * reveal * (3 - 2 * reveal) : 0;
-      carrier.visible = orbital && t > 0.7;
+      skyMat.uniforms.launchHaze.value = 1.65 * Math.sin(Math.PI * t) ** 2;
+      // Earth is already fading in as the city falls below the camera.
+      // No sudden planetary swap or flickering overlapping sky geometry.
+      launchCelestials.update(progress);
+      const orbital = launchOrbitReady(progress);
+      carrier.visible = orbital && t > 0.77;
       if (orbitalSatellite) {
-        orbitalSatellite.visible = orbital && t > 0.74;
+        orbitalSatellite.visible = orbital && t > 0.79;
         orbitalSatellite.rotation.y = 0.31 + progress * 0.65;
       }
     },
@@ -1486,8 +1478,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
       ground.position.y = -7;
-      earthHorizon.visible = false;
-      earthMat.uniforms.fade.value = 0;
+      launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       starfield.material.opacity = 0.75;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
@@ -1500,6 +1491,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-premium-infrastructure').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-commerce-streets').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
@@ -1775,8 +1767,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
-      earthHorizon.visible = false;
-      earthMat.uniforms.fade.value = 0;
+      launchCelestials.reset();
       skyMat.uniforms.launchHaze.value = 0;
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
