@@ -76,7 +76,11 @@ function architecturalDetail(root, buildings) {
     rooftops = [];
   const mullions = [],
     balconies = [],
-    lightStreaks = [];
+    lightStreaks = [],
+    windowFrames = [],
+    glassPanes = [],
+    interiorLights = [],
+    floorCornices = [];
   const ads = new T.Group();
   ads.name = 'city33-facade-integrated-campaigns';
   ads.userData.visualOnly = true;
@@ -100,7 +104,38 @@ function architecturalDetail(root, buildings) {
         ),
       );
     }
-    windowRecess.push(part(b.x, -7 + b.h * 0.49, face + 0.76, b.w * 0.72, b.h * 0.43, 0.18));
+    // Keep base glazing behind the new real window openings; the old glass
+    // slab was in front of many of the windows, hiding their detail.
+    windowRecess.push(part(b.x, -7 + b.h * 0.49, face + 0.06, b.w * 0.72, b.h * 0.43, 0.18));
+    const rows = Math.max(5, Math.min(14, Math.floor(b.h / 6)));
+    const columns = i % 6 === 0 ? 3 : 4 + (i % 2);
+    for (let row = 0; row < rows; row++) {
+      const py = -7 + ((row + 0.8) / (rows + 1.1)) * b.h;
+      for (let col = 0; col < columns; col++) {
+        if ((i * 13 + row * 7 + col * 11) % 23 === 0) continue;
+        const px = b.x + ((col + 0.5) / columns - 0.5) * b.w * 0.81;
+        const width = (b.w * 0.64) / columns;
+        const height = Math.max(1.55, (b.h / (rows + 1)) * 0.38);
+        windowFrames.push(part(px, py, face + 1.03, width + 0.3, height + 0.35, 0.2));
+        glassPanes.push(
+          part(
+            px,
+            py,
+            face + 1.18,
+            width - 0.12,
+            height - 0.12,
+            0.09,
+            ['#76939d', '#b1c0be', '#547683', '#99abb0'][(i + row + col) % 4],
+          ),
+        );
+        if ((i + row * 9 + col * 5) % 11 === 0)
+          interiorLights.push(part(px, py, face + 1.29, width * 0.73, height * 0.66, 0.08));
+      }
+      if (row % 3 === 0)
+        floorCornices.push(
+          part(b.x, py + (b.h / (rows + 1)) * 0.36, face + 0.99, b.w * 0.86, 0.14, 0.34),
+        );
+    }
     crown.push(part(b.x, b.h - 6.5, b.z, b.w * 1.06, 1.2 + (i % 3), b.depth * 1.08, color));
     crown.push(part(b.x, b.h - 2.5 + (i % 3) * 0.5, b.z, b.w * 0.79, 2, b.depth * 0.68, color));
     // Service pipe runs on side wall facing the flight corridor; supports
@@ -158,11 +193,15 @@ function architecturalDetail(root, buildings) {
       billboard.name = 'city33-building-campaign-' + i;
       billboard.userData.visualOnly = true;
       billboard.userData.brand = name;
-      billboard.position.set(b.x, -7 + b.h * 0.67, face + 1.25);
+      billboard.position.set(b.x, -7 + b.h * 0.67, face + 1.72);
       billboard.scale.set(b.w * 0.77, Math.min(28, b.h * 0.41), 1);
       ads.add(billboard);
     }
   });
+  batch(medium, 'city34-detailed-window-frames', fineMetal, windowFrames);
+  batch(medium, 'city34-tempered-glass-panes', panelGlass, glassPanes);
+  batch(medium, 'city34-warm-occupied-windows', amber, interiorLights);
+  batch(medium, 'city34-architectural-floor-cornices', cladding, floorCornices);
   batch(medium, 'city33-facade-recessed-panels', cladding, facade);
   batch(medium, 'city33-facade-recessed-glass', panelGlass, windowRecess);
   batch(medium, 'city33-stepped-roof-crowns', cladding, crown);

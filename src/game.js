@@ -72,6 +72,8 @@ import {
 import {
   createGroundEnemy,
   animateGroundEnemy,
+  fireGroundRobotEyes,
+  robotEyeMuzzles,
   createObstacle,
   isGroundSector,
 } from './encounters.js';
@@ -80,6 +82,8 @@ import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferen
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
+import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
+import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
 import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
@@ -318,6 +322,7 @@ export function createGame({
         cue: (sound) => cue(sound),
         status: $('squadSuperStatus'),
         formationStatus: $('squadFormationStatus'),
+        getLanguage: () => settings?.language ?? 'pt',
       })
     : null;
   let skipSquadIntro = false;
@@ -389,6 +394,9 @@ export function createGame({
     rings = [],
     obstacles = [],
     boss = null;
+  // Shared muzzle meshes avoid per-spawn GPU resource leaks across long missions.
+  const muzzleGeometry = new T.SphereGeometry(0.8, 8, 6);
+  const muzzleMaterial = new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false });
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
@@ -411,6 +419,7 @@ export function createGame({
     rollAngle = 0,
     boosting = false,
     boostNeedsRelease = false,
+    orbitalAlertElapsed = 0,
     bossHp = 200,
     bossCd = 0,
     msgTime = 0,
@@ -1032,6 +1041,7 @@ export function createGame({
     setIntermissionUI(false);
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    orbitalAlertElapsed = 0;
     reflexBoost.reset();
     heroEffects.reset();
     $('launchBoostNotice').hidden = true;
@@ -1694,6 +1704,22 @@ export function createGame({
                 ? rnd(12, 24)
                 : rnd(1, 19));
     o.position.set(x, y, -200);
+    // All enemy projectiles originate at visible physical sockets.
+    // Walker and hover walker reuse their two articulated eye emitters.
+    if (kind !== 'walker' && !airborneRobot) {
+      const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
+      for (const side of [-1, 1]) {
+        const muzzle = new T.Mesh(muzzleGeometry, muzzleMaterial);
+        muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
+        muzzle.position.set(
+          side * (ground ? 1.8 : 2.7),
+          ground ? 0.2 : 0,
+          ground ? 11.8 : kind === 'subboss' ? 13 : kind === 'base' ? 6 : -3.7,
+        );
+        mount.add(muzzle);
+      }
+    }
+    if (kind === 'walker' || airborneRobot) o.userData.combatState = 'deploying';
     if (airborneRobot) {
       const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
       for (const side of [-1, 1]) {
@@ -1769,6 +1795,20 @@ export function createGame({
       elite,
       kind,
     });
+  }
+  function bossMuzzle(side = 0) {
+    if (!boss) return null;
+    boss.updateMatrixWorld(true);
+    return (
+      boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null
+    );
+  }
+  function hostileMuzzles(e) {
+    e.o.updateMatrixWorld(true);
+    if (e.kind === 'walker' || e.airborneRobot) return robotEyeMuzzles(e.o);
+    return ['enemy-muzzle-left', 'enemy-muzzle-right']
+      .map((name) => e.o.getObjectByName(name)?.getWorldPosition(new T.Vector3()))
+      .filter(Boolean);
   }
   function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
@@ -1892,11 +1932,14 @@ export function createGame({
 
       if (part.hp === 0) {
         part.mesh.visible = false;
+        // Destroyed generators power a specific turret. The barrel physically
+        // disappears and attack planner drops that battery's shots.
+        if (part.battery) part.battery.visible = false;
         explode(part.mesh.getWorldPosition(new T.Vector3()), 24);
         credits += 35;
         message(
-          'GERADOR DESTRUÍDO · ' +
-            (parts.length === 1 ? 'NÚCLEO EXPOSTO' : 'MIRE NO OUTRO GERADOR'),
+          'BATERIA DESTRUÍDA · ' +
+            (parts.length === 1 ? 'NÚCLEO EXPOSTO · FOGO REDUZIDO' : 'MENOS TIROS · MIRE NA OUTRA'),
         );
       }
       return dealt;
@@ -2935,7 +2978,11 @@ export function createGame({
       });
       const boostGuide = $('launchBoostNotice');
       const needsBoost = launchState.phase === 'boost' && state === 'playing';
-      boostGuide.hidden = !needsBoost;
+      if (launchState.phase !== beforeLaunch && needsBoost) orbitalAlertElapsed = 0;
+      if (needsBoost) orbitalAlertElapsed += dt;
+      // The mandatory BOOST stays on the button; the huge stage notice is
+      // merely a short heads-up, never a persistent gameplay obstruction.
+      boostGuide.hidden = !needsBoost || orbitalAlertElapsed > 2.6;
       const boostButton = $('boostTouch');
       if (needsBoost) boostButton.classList.add('launch-required');
       else boostButton.classList.remove('launch-required');
@@ -3603,31 +3650,60 @@ export function createGame({
             : SUBBOSS_NAMES[sectorIndex];
       }
       if (e.kind === 'walker' || e.airborneRobot) {
-        // Heavy mechs pace laterally, forcing real tracking instead of static target practice.
-        e.o.position.x = e.x + Math.sin(e.age * (0.58 + e.variant * 0.05)) * 6.5;
-        if (e.airborneRobot) e.o.position.y = e.y + Math.sin(e.age * 1.2) * 2.8;
+        const pose = robotAttackPose(
+          e.age,
+          e.x,
+          e.y,
+          e.variant,
+          player.position.x,
+          e.airborneRobot,
+        );
+        e.o.position.x = pose.x;
+        e.o.position.y = pose.y;
+        e.o.rotation.z = pose.bank;
+        e.o.userData.combatState = pose.deployed ? 'attacking' : 'deploying';
       }
-      if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
+      if (e.ground)
+        animateGroundEnemy(
+          e.o,
+          elapsed,
+          player.position,
+          e.age,
+          (e.kind === 'walker' || e.airborneRobot) &&
+            e.age >= 1.9 &&
+            e.cd <= ROBOT_EYE_WARNING_SECONDS &&
+            e.cd > 0,
+        );
       e.cd -= hostileDt * (e.chilled > 0 ? 0.5 : 1);
-      if (e.cd <= 0 && e.o.position.z < -15) {
+      if (
+        e.cd <= 0 &&
+        e.o.position.z < -15 &&
+        (!(e.kind === 'walker' || e.airborneRobot) ||
+          robotEyeBurstReady(e.age, e.o.position.z, e.cd))
+      ) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
-        for (const offset of introductorySubboss
-          ? [0]
-          : e.role
-            ? fighterAimOffsets(e.role)
-            : e.subbossTactic
-              ? e.subbossTactic.aim
-              : e.kind === 'walker'
-                ? [-5, 5]
+        if (e.kind === 'walker' || e.airborneRobot) {
+          const eyes = hostileMuzzles(e);
+          // Every hostile projectile comes from a visible red eye, not an
+          // arbitrary offset under the body. Genuine collision is unchanged.
+          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          fireGroundRobotEyes(e.o, e.age);
+        } else
+          for (const offset of introductorySubboss
+            ? [0]
+            : e.role
+              ? fighterAimOffsets(e.role)
+              : e.subbossTactic
+                ? e.subbossTactic.aim
                 : [0])
-          bullet(
-            e.o.position
-              .clone()
-              .add(new T.Vector3(e.kind === 'walker' ? offset : 0, e.hitY, e.ground ? 8 : 0)),
-            player.position.clone().add(new T.Vector3(offset, 0, 0)),
-            e.subbossTactic?.spell ?? '',
-          );
+            bullet(
+              hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
+                hostileMuzzles(e)[0] ??
+                e.o.position.clone(),
+              player.position.clone().add(new T.Vector3(offset, 0, 0)),
+              e.subbossTactic?.spell ?? '',
+            );
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
@@ -3637,7 +3713,7 @@ export function createGame({
             e.combatPhase,
           ))
             bullet(
-              e.o.position.clone().add(new T.Vector3(0, 0, 10)),
+              hostileMuzzles(e)[0] ?? e.o.position.clone(),
               target,
               e.subbossTactic?.spell ?? '',
             );
@@ -3648,8 +3724,8 @@ export function createGame({
               : 1.5
             : e.role
               ? 1.8
-              : e.kind === 'walker'
-                ? 3.3 - (e.variant % 3) * 0.25
+              : e.kind === 'walker' || e.airborneRobot
+                ? 2.9 - (e.variant % 3) * 0.18
                 : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
@@ -3736,6 +3812,7 @@ export function createGame({
         ) {
           bossMeleeResolved = true;
           if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
@@ -3746,7 +3823,11 @@ export function createGame({
             explode(player.position.clone(), 8, 0xff8060);
             cue('armorHit');
           } else {
-            message('ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO');
+            message(
+              boss.userData.parts.every((part) => part.hp === 0)
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+            );
           }
         }
         radarPlan =
@@ -3792,17 +3873,37 @@ export function createGame({
             // Projectiles originate from actual robot arms, drill ring, hydra
             // heads or Marvin's crown. Broken generators disable side batteries.
             boss.updateMatrixWorld(true);
+            const generators = boss.userData.parts.map((part) => part.hp > 0);
+            const budget = bossBatteryPlan(generators, signature.shots.length);
+            let fired = 0;
             for (const emission of signature.shots) {
-              const origin = boss.localToWorld(new T.Vector3(...emission.origin));
+              if (fired >= budget.sides.length) break;
+              const side = batteryForSignature(emission.origin, generators);
+              if (side === null || (side === 0 && fired > 0)) continue;
+              const origin = bossMuzzle(side);
+              if (!origin) continue;
               const spread = dangerous ? 0.72 : 1.15;
               const destination = player.position
                 .clone()
                 .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
               bullet(origin, destination, emission.element);
+              fired++;
+            }
+            // Keep one readable fallback shot from the only live weapon.
+            // After both side modules are destroyed the emergency core is
+            // the ONLY valid origin; no invisible fire from destroyed guns.
+            if (!fired) {
+              const survivingSide = generators.some(Boolean) ? budget.sides[0] : 0;
+              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire');
             }
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
-              const origin = boss.position.clone().add(new T.Vector3((n - 1) * 16, 0, 18));
+              const side =
+                bossBatteryPlan(
+                  boss.userData.parts.map((p) => p.hp > 0),
+                  3,
+                ).sides[n] ?? 0;
+              const origin = bossMuzzle(side);
               for (const target of encounterPattern(
                 sectorIndex,
                 t.cycle + n,
@@ -3868,7 +3969,7 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
+              ? 'ARMA VULNERÁVEL · BATERIA ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
               : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
@@ -3941,8 +4042,13 @@ export function createGame({
         const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
         if (dynamicFlight) {
           // Bosses fire from their own batteries/heads, not the same central barrel.
-          for (const [sourceIndex, source] of program.sources.entries()) {
-            const origin = boss.position.clone().add(new T.Vector3(source.x, source.y, 22));
+          const batteryPlan = bossBatteryPlan(
+            boss.userData.parts.map((part) => part.hp > 0),
+            program.sources.length,
+          );
+          for (const [sourceIndex, side] of batteryPlan.sides.entries()) {
+            const source = program.sources[sourceIndex % program.sources.length];
+            const origin = bossMuzzle(side);
             const targets = encounterPattern(
               sectorIndex,
               source.volley,
@@ -3959,9 +4065,9 @@ export function createGame({
               bullet(origin, target, program.type);
             }
           }
-          bossCd = program.cadence;
+          bossCd = program.cadence * batteryPlan.cadenceMultiplier;
         } else {
-          const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
+          const origin = bossMuzzle(0);
           for (const target of encounterPattern(
             sectorIndex,
             bossVolley,
