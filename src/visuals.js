@@ -1853,7 +1853,7 @@ export function bossModel() {
   g.add(h);
   return g;
 }
-export function postProcessor(renderer, scene, camera) {
+export function postProcessor(renderer, scene, camera, { coarsePointer = false } = {}) {
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
     ? T.HalfFloatType
     : T.UnsignedByteType;
@@ -1886,11 +1886,25 @@ export function postProcessor(renderer, scene, camera) {
   let bw = 1,
     bh = 1,
     bloomDivisor = 3;
+  // On touch GPUs a multi-pass blur is often a larger cost than extra mesh
+  // detail. Keep actual scene lights/materials, but avoid full-screen bloom.
+  let direct = coarsePointer;
+  let sceneCost = { drawCalls: null, triangles: null, postPasses: 0 };
+  const captureSceneCost = () => ({
+    drawCalls: renderer.info?.render?.calls ?? null,
+    triangles: renderer.info?.render?.triangles ?? null,
+    postPasses: direct ? 0 : 3,
+  });
   return {
     setGraphicsQuality(quality) {
       bloomDivisor = quality === 'high' ? 3 : 4;
+      direct = coarsePointer || quality !== 'high';
+    },
+    getFrameCost() {
+      return { ...sceneCost };
     },
     resize(w, h) {
+      if (direct) return;
       let pr = renderer.getPixelRatio();
       full.setSize(Math.round(w * pr), Math.round(h * pr));
       bw = Math.max(1, Math.round((w * pr) / bloomDivisor));
@@ -1899,8 +1913,15 @@ export function postProcessor(renderer, scene, camera) {
       b.setSize(bw, bh);
     },
     render() {
+      if (direct) {
+        renderer.setRenderTarget(null);
+        renderer.render(scene, camera);
+        sceneCost = captureSceneCost();
+        return sceneCost;
+      }
       renderer.setRenderTarget(full);
       renderer.render(scene, camera);
+      sceneCost = captureSceneCost();
       quad.material = blur;
       blur.uniforms.tex.value = full.texture;
       blur.uniforms.stepSize.value.set(1 / bw, 0);
@@ -1915,6 +1936,7 @@ export function postProcessor(renderer, scene, camera) {
       quad.material = final;
       renderer.setRenderTarget(null);
       renderer.render(passScene, passCam);
+      return sceneCost;
     },
   };
 }
