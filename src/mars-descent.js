@@ -12,7 +12,6 @@ export function marsDescentAt(seconds) {
     : seconds < 20 ? 'entry' : seconds < MARS_TOUCHDOWN_SECONDS ? 'descent' : 'surface';
   const orbit = smooth((seconds - 6) / 7);
   const entry = smooth((seconds - 13) / 7);
-  const landing = smooth((seconds - 20) / 7);
   const surface = smooth((seconds - 16) / 11);
   const atmosphere = clamp((seconds - 12) / 4) * (1 - smooth((seconds - 21) / 6));
   const planetFade = 1 - smooth((seconds - 20) / 7);
