@@ -89,7 +89,7 @@ export function createAdaptiveGraphics({
     const coverage = samples.length / (windowElapsed / 1000);
     samples = [];
     windowElapsed = 0;
-    if (activeElapsed < 4500 || coverage < 18) return null;
+    if (activeElapsed < 4500 || coverage < 8) return null;
     cooldown = Math.max(0, cooldown - 2.2);
     if (cooldown > 0) return null;
     const struggling = currentFps < 42;
