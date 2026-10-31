@@ -139,7 +139,7 @@ function elevatedBusRoute(root) {
   // Side-running busways at mid-stage, with open bridges to the transport
   // district. They remain out of the player lane and have no collision.
   for (const side of [-1, 1]) {
-    const x = side * 120;
+    const x = side * 66;
     for (let i = 0; i < 30; i++) {
       const z = -540 - i * 33;
       roadway.push(part(x, 13.2, z, 17, 2.2, 32.2));
@@ -191,7 +191,7 @@ function activeConstruction(root, buildings) {
   sparks.frustumCulled = false;
   sparks.userData.visualOnly = true;
   // Pick three existing towers around the MIDPOINT. No floating construction.
-  const chosen = [32, 51, 69].map((i) => buildings[i]).filter(Boolean);
+  const chosen = [78, 111, 146].map((i) => buildings[i]).filter(Boolean);
   chosen.forEach((b, siteIndex) => {
     const sign = Math.sign(b.x) || 1;
     const front = b.z + b.depth / 2 + 3.8;
@@ -275,7 +275,7 @@ export function updateCity33Premium(root, travel) {
     const side = i % 2 ? 1 : -1;
     // Most traffic is concentrated mid-stage instead of near takeoff.
     const z = -575 - ((i * 129 + travel * (0.31 + i % 3 * 0.04) + phase * 180) % 865);
-    const x = side * 120;
+    const x = side * 66;
     const flip = side < 0 ? Math.PI : 0;
     const specs = [
       [x, 18.5, z, 9, 4.4, 22],
