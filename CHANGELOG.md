@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.38 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.37 — Graphics 3.3 / Fleet Detail Pass (QA)
 
 - Modelos 3D aprimorados da NOVA-7, mecha, inimigos aéreos/terrestres, dez chefes e dez subchefes: carenagens, placas de blindagem chanfradas, entradas de ar, turbinas, reatores e partes mecânicas adicionais.

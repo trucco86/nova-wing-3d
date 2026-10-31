@@ -1,9 +1,11 @@
 # Graphics 3.4 — NOVA-7 Clean Futurista + Mecha (QA)
 
 ## Objetivo
+
 Reverter o excesso de carenagens e pods introduzidos na Graphics 3.3, preservando exatamente a silhueta da nave aprovada na Cidade 2.7. Acrescentar acabamento discreto, uma pequena ampliação visual e turbinas com mecânica visível. Robô segue a mesma direção.
 
 ## Alterações
+
 - `addFighterDetail` mantém o corpo e asas do modelo anterior e abandona os grandes `airframe-swept-fairing`, `airframe-hull-armor` e `airframe-weapon-pod` da Graphics 3.3.
 - NOVA-7: dois frisos discretos por lateral, seis entradas de ar compactas, quatro anéis de turbinas, 12 aletas internas nos dois motores, dois núcleos luminosos e um contorno dorsal fino. Componentes limitados aos extremos da silhueta anterior.
 - Ampliação de 5% **apenas nos componentes visuais** do `fighter()` do piloto, pela função idempotente `scaleFighterVisual`. Nó raiz do player mantém a escala base e os volumes de colisão, tiro e movimento não mudam. Módulos trocados no hangar adotam a mesma escala visual.
@@ -11,6 +13,7 @@ Reverter o excesso de carenagens e pods introduzidos na Graphics 3.3, preservand
 - Inimigos, chefes, lojas e veículos da PR Graphics 3.3 permanecem inalterados.
 
 ## Critérios de aceite
+
 1. Visão traseira e lateral da nave reconhecível como a NOVA-7 original, sem pods anexados nem carenagem grosseira.
 2. Motores evidentes em visão traseira, durante BOOST e na troca nave/robô.
 3. O robô mantém dois canhões independentes, asa de mesma identidade da nave, turbinas em movimento.

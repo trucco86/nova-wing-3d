@@ -28,7 +28,11 @@ test('NOVA-7 retains its aircraft fuselage and painted surfaces with actual rais
   const ship = fighter();
   const kit = ship.getObjectByName('nova7-premium-airframe');
   assert.ok(kit?.isGroup);
-  assert.equal(visualPieces(kit, 'airframe-swept-fairing').length, 0, 'bulky 3.3 fairings reverted');
+  assert.equal(
+    visualPieces(kit, 'airframe-swept-fairing').length,
+    0,
+    'bulky 3.3 fairings reverted',
+  );
   assert.equal(visualPieces(kit, 'airframe-weapon-pod').length, 0, 'extra weapon pods removed');
   assert.equal(visualPieces(kit, 'airframe-fuselage-micro-seam').length, 2);
   assert.equal(visualPieces(kit, 'airframe-wing-panel-seam').length, 2);
@@ -39,8 +43,10 @@ test('NOVA-7 retains its aircraft fuselage and painted surfaces with actual rais
   assert.ok(ship.getObjectByName('ship-fuselage')?.geometry.type === 'LatheGeometry');
   assert.ok(ship.userData.flames.length === 2);
   assert.ok(kit.children.some((part) => part.geometry?.type === 'TubeGeometry'));
-  assert.ok(kit.children.every((part) => Math.abs(part.position.x) <= 3.8),
-    'new finishing never extends beyond original wings');
+  assert.ok(
+    kit.children.every((part) => Math.abs(part.position.x) <= 3.8),
+    'new finishing never extends beyond original wings',
+  );
   assert.ok(ship.userData.paint.length >= 1, 'new panels join existing skin paint pipeline');
   noDecorativeColliders(kit);
   const hostile = fighter(true, 1);
@@ -131,10 +137,17 @@ test('hero ship gets exactly 5% visual growth without touching physics-root scal
   assert.ok(updated.getSize(new T.Vector3()).z > initial.getSize(new T.Vector3()).z * 1.049);
   const before = updated.getSize(new T.Vector3()).z;
   scaleFighterVisual(craft, 1.05);
-  assert.equal(new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z, before,
-    'repeated skin application must never compound the size');
+  assert.equal(
+    new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z,
+    before,
+    'repeated skin application must never compound the size',
+  );
   scaleFighterVisual(craft, 1);
-  assert.ok(Math.abs(new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z -
-    initial.getSize(new T.Vector3()).z) < 0.000001);
+  assert.ok(
+    Math.abs(
+      new T.Box3().setFromObject(hull).getSize(new T.Vector3()).z -
+        initial.getSize(new T.Vector3()).z,
+    ) < 0.000001,
+  );
   assert.equal(fighter(true).scale.x, 1, 'enemy fighter size is unchanged');
 });

@@ -89,43 +89,88 @@ export function addFighterDetail(ship, { armor, accent, emission, enemy = false 
   // No bolt-on fairings, oversized pods or thick dorsal plate: retain the
   // original clean fighter from City 2.7, and add controlled surface finishing.
   for (const side of [-1, 1]) {
-    trace(root, 'airframe-fuselage-micro-seam', accent, [
-      [side * 0.34, 0.46, -2.8],
-      [side * 0.49, 0.49, -2.2],
-      [side * 0.76, 0.30, -0.55],
-      [side * 0.84, 0.27, 0.36],
-    ], 0.028);
-    trace(root, 'airframe-wing-panel-seam', accent, [
-      [side * 1.42, 0.24, -0.40],
-      [side * 2.12, 0.23, 0.07],
-      [side * 3.15, 0.22, 0.83],
-      [side * 3.42, 0.20, 1.17],
-    ], 0.032);
+    trace(
+      root,
+      'airframe-fuselage-micro-seam',
+      accent,
+      [
+        [side * 0.34, 0.46, -2.8],
+        [side * 0.49, 0.49, -2.2],
+        [side * 0.76, 0.3, -0.55],
+        [side * 0.84, 0.27, 0.36],
+      ],
+      0.028,
+    );
+    trace(
+      root,
+      'airframe-wing-panel-seam',
+      accent,
+      [
+        [side * 1.42, 0.24, -0.4],
+        [side * 2.12, 0.23, 0.07],
+        [side * 3.15, 0.22, 0.83],
+        [side * 3.42, 0.2, 1.17],
+      ],
+      0.032,
+    );
     for (let i = 0; i < 3; i++) {
-      detailRail(root, 'airframe-low-profile-vent', accent,
-        side * (1.55 + i * 0.31), 0.26, 0.56 + i * 0.14,
-        0.13, 0.07, 0.53, side * 0.12);
+      detailRail(
+        root,
+        'airframe-low-profile-vent',
+        accent,
+        side * (1.55 + i * 0.31),
+        0.26,
+        0.56 + i * 0.14,
+        0.13,
+        0.07,
+        0.53,
+        side * 0.12,
+      );
     }
     // Original nozzles already sit at x=±1.04, y=-0.13, z=2.48.
     // Two rings, recessed blades and cool-hot inner core add perceived depth.
-    for (const [i, r, z] of [[0, 0.49, 2.49], [1, 0.41, 2.67]]) {
-      ring(root, 'airframe-engine-precision-ring-' + i,
-        i === 0 ? armor : emission, r, side * 1.04, -0.13, z);
+    for (const [i, r, z] of [
+      [0, 0.49, 2.49],
+      [1, 0.41, 2.67],
+    ]) {
+      ring(
+        root,
+        'airframe-engine-precision-ring-' + i,
+        i === 0 ? armor : emission,
+        r,
+        side * 1.04,
+        -0.13,
+        z,
+      );
     }
     for (let vane = 0; vane < 6; vane++) {
       const theta = (vane * Math.PI * 2) / 6;
-      const tab = detailRail(root, 'airframe-engine-turbine-vane', accent,
+      const tab = detailRail(
+        root,
+        'airframe-engine-turbine-vane',
+        accent,
         side * 1.04 + Math.cos(theta) * 0.29,
         -0.13 + Math.sin(theta) * 0.29,
-        2.73, 0.09, 0.17, 0.075);
+        2.73,
+        0.09,
+        0.17,
+        0.075,
+      );
       tab.rotation.z = theta - 0.36;
     }
-    cylinder(root, 'airframe-engine-inner-core', emission, 0.16, 0.14,
-      side * 1.04, -0.13, 2.77);
+    cylinder(root, 'airframe-engine-inner-core', emission, 0.16, 0.14, side * 1.04, -0.13, 2.77);
   }
-  trace(root, 'airframe-dorsal-contour', armor, [
-    [0, 0.79, -0.38], [0, 0.68, 0.48], [0, 0.54, 1.28],
-  ], 0.042);
+  trace(
+    root,
+    'airframe-dorsal-contour',
+    armor,
+    [
+      [0, 0.79, -0.38],
+      [0, 0.68, 0.48],
+      [0, 0.54, 1.28],
+    ],
+    0.042,
+  );
   ship.add(root);
   return root;
 }
@@ -137,39 +182,66 @@ export function addMechDetail(robot, { armor, graphite, accent, emission }) {
   // Preserve the already-approved shoulders, shared fighter wings and chest.
   // Replace overlapping armor plates with seams, vents and machined turbines.
   for (const side of [-1, 1]) {
-    trace(root, 'mech-chest-machined-seam', accent, [
-      [side * 0.37, 2.02, -1.10],
-      [side * 0.79, 1.80, -1.09],
-      [side * 0.94, 1.46, -1.03],
-    ], 0.045);
+    trace(
+      root,
+      'mech-chest-machined-seam',
+      accent,
+      [
+        [side * 0.37, 2.02, -1.1],
+        [side * 0.79, 1.8, -1.09],
+        [side * 0.94, 1.46, -1.03],
+      ],
+      0.045,
+    );
     for (let i = 0; i < 3; i++)
-      detailRail(root, 'mech-rear-cooling-slat', graphite,
-        side * (0.65 + i * 0.20), 1.73 + i * 0.16, 1.76,
-        0.13, 0.50, 0.12);
-    cylinder(root, 'mech-shoulder-bearing', graphite, 0.29, 0.40,
-      side * 1.86, 2.47, 0.35, false).rotation.z = Math.PI / 2;
-    ring(root, 'mech-dorsal-nozzle-ring', armor, 0.42,
-      side * 1.38, 2.51, 2.52);
-    ring(root, 'mech-dorsal-ignition-ring', emission, 0.31,
-      side * 1.38, 2.51, 2.57);
-    detailRail(root, 'mech-shin-inset', accent, side * 0.74, -3.20, -0.86,
-      0.14, 0.66, 0.14);
+      detailRail(
+        root,
+        'mech-rear-cooling-slat',
+        graphite,
+        side * (0.65 + i * 0.2),
+        1.73 + i * 0.16,
+        1.76,
+        0.13,
+        0.5,
+        0.12,
+      );
+    cylinder(
+      root,
+      'mech-shoulder-bearing',
+      graphite,
+      0.29,
+      0.4,
+      side * 1.86,
+      2.47,
+      0.35,
+      false,
+    ).rotation.z = Math.PI / 2;
+    ring(root, 'mech-dorsal-nozzle-ring', armor, 0.42, side * 1.38, 2.51, 2.52);
+    ring(root, 'mech-dorsal-ignition-ring', emission, 0.31, side * 1.38, 2.51, 2.57);
+    detailRail(root, 'mech-shin-inset', accent, side * 0.74, -3.2, -0.86, 0.14, 0.66, 0.14);
   }
   const gimbal = robot.getObjectByName('mech-turbine-gimbal');
   if (gimbal) {
     for (let blade = 0; blade < 6; blade++) {
-      const theta = blade * Math.PI / 3;
-      const part = detailRail(gimbal, 'mech-main-turbine-stator', armor,
-        Math.cos(theta) * 0.47, Math.sin(theta) * 0.47, 0.72,
-        0.07, 0.23, 0.09);
+      const theta = (blade * Math.PI) / 3;
+      const part = detailRail(
+        gimbal,
+        'mech-main-turbine-stator',
+        armor,
+        Math.cos(theta) * 0.47,
+        Math.sin(theta) * 0.47,
+        0.72,
+        0.07,
+        0.23,
+        0.09,
+      );
       part.rotation.z = theta - 0.35;
     }
     ring(gimbal, 'mech-turbine-machined-ring', graphite, 0.52, 0, 0, 0.74);
   }
   robot.add(root);
   for (const arm of robot.userData.mechRig?.arms ?? []) {
-    detailRail(arm, 'mech-wrist-targeting-trim', emission, 0, -2.03, -1.30,
-      0.13, 0.64, 0.11);
+    detailRail(arm, 'mech-wrist-targeting-trim', emission, 0, -2.03, -1.3, 0.13, 0.64, 0.11);
   }
   return root;
 }
