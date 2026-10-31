@@ -1,4 +1,4 @@
-name: Prepare City 2.7 moving traffic build
+name: Prepare City 2.7 moving traffic and convoy bundle
 on:
   push:
     branches:
