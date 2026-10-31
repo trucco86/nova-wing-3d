@@ -118,7 +118,87 @@ export function createCityCommerce() {
     label.name = 'city-mall-advertising-sign';
     label.position.set(x, 34, z + 35.2);
     commerce.add(label);
+
+    // Each district has a different architectural profile. Curved,
+    // camera-facing silhouettes read as malls rather than repeat office blocks.
+    const sculpture = new T.Group();
+    sculpture.name = 'city-mall-signature-' + i;
+    sculpture.userData.visualOnly = true;
+    if (i === 0) {
+      // ORBITAL PLAZA: enormous glazed domed atrium visible above the roofs.
+      const atrium = new T.Mesh(
+        new T.SphereGeometry(37, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+        new T.MeshPhysicalMaterial({
+          color: '#5297b4',
+          metalness: 0.12,
+          roughness: 0.16,
+          transparent: true,
+          opacity: 0.72,
+          depthWrite: false,
+        }),
+      );
+      atrium.name = 'city-mall-glass-dome';
+      atrium.position.set(x, 44, z - 6);
+      atrium.scale.set(1, 0.74, 0.82);
+      sculpture.add(atrium);
+    } else if (i === 1) {
+      // NOVA MARKET: elevated angular retail canopy with distinct roofline.
+      for (const flank of [-1, 1]) {
+        const fin = new T.Mesh(new T.ConeGeometry(13, 37, 5), materials.canopy);
+        fin.name = 'city-mall-roof-fin';
+        fin.position.set(x + flank * 27, 66, z - 7);
+        fin.userData.visualOnly = true;
+        sculpture.add(fin);
+      }
+    } else {
+      // SKYLINE MALL: monumental arch rather than another cuboid office block.
+      const arch = new T.Mesh(new T.TorusGeometry(42, 3, 7, 48, Math.PI), materials.retail);
+      arch.name = 'city-mall-sky-arch';
+      arch.position.set(x, 53, z + 42);
+      arch.rotation.z = 0;
+      sculpture.add(arch);
+    }
+    commerce.add(sculpture);
   }
+
+  // A true elevated stop makes passing trains read as public transit, instead
+  // of carriages floating beside generic light rails. Station roofs clear the
+  // vehicle envelope and sit outside the playable flight corridor.
+  const station = new T.Group();
+  station.name = 'city-maglev-market-station';
+  station.userData.visualOnly = true;
+  station.position.set(80, 0, -690);
+  const stationHull = materials.building;
+  const stationGlow = materials.retail;
+  for (const side of [-1, 1]) {
+    const platform = new T.Mesh(BOX, stationHull);
+    platform.name = 'city-maglev-platform';
+    platform.scale.set(14, 2.1, 92);
+    platform.position.set(side * 19, 27, 0);
+    station.add(platform);
+    const canopy = new T.Mesh(BOX, materials.canopy);
+    canopy.name = 'city-maglev-station-canopy';
+    canopy.scale.set(15, 2.4, 96);
+    canopy.position.set(side * 20, 51, 0);
+    station.add(canopy);
+    const edge = new T.Mesh(BOX, stationGlow);
+    edge.name = 'city-maglev-platform-neon';
+    edge.scale.set(1, 0.7, 90);
+    edge.position.set(side * 12, 29, 0);
+    station.add(edge);
+  }
+  const stationTitle = new T.Mesh(
+    new T.PlaneGeometry(50, 9),
+    new T.MeshBasicMaterial({
+      map: mallSignTexture('NOVA TRANSIT', '#77efff'),
+      toneMapped: false,
+      side: T.DoubleSide,
+    }),
+  );
+  stationTitle.name = 'city-maglev-station-sign';
+  stationTitle.position.set(22, 46, 41);
+  station.add(stationTitle);
+  commerce.add(station);
 
   const storeZ = [-140, -280, -610, -760, -905, -1165, -1360, -1765];
   storeZ.forEach((z, i) => {
