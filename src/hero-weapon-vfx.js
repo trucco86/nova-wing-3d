@@ -31,8 +31,8 @@ export function createHeroWeaponEffects(player, robot) {
   // Wing surface reflection: a bright, shallow strip that looks like the shot
   // is illuminating the paint. These remain inside the original silhouette.
   const strips = [-1, 1].map((side) =>
-    glowMesh(craft, 'hero-wing-shot-reflection', stripGeo, side * 1.93, 0.34, -0.74,
-      1.23, 2.45, 1));
+    glowMesh(craft, 'hero-wing-shot-reflection', stripGeo, side * 1.93, 0.34, -0.74, 1.23, 2.45, 1),
+  );
   for (const [i, mesh] of strips.entries()) mesh.rotation.z = i ? -0.36 : 0.36;
   const flash = glowMesh(craft, 'hero-muzzle-flash', burstCore, 0, 0.12, -3.43, 0.65, 0.65, 1.55);
   const ring = glowMesh(craft, 'hero-muzzle-energy-ring', ringGeo, 0, 0.12, -3.48, 1.14, 1.14, 1);
@@ -42,9 +42,19 @@ export function createHeroWeaponEffects(player, robot) {
     robot.userData.mecha?.arms?.right?.muzzle,
   ].filter(Boolean);
   const hands = mechMuzzles.map((muzzle) =>
-    glowMesh(muzzle, 'mecha-arm-flash', burstCore, 0, 0, -0.95, 0.65, 0.65, 1.25));
-  const chest = glowMesh(robot, 'mecha-chest-shot-reflection', stripGeo,
-    0, 1.66, -1.42, 1.48, 1.0, 1);
+    glowMesh(muzzle, 'mecha-arm-flash', burstCore, 0, 0, -0.95, 0.65, 0.65, 1.25),
+  );
+  const chest = glowMesh(
+    robot,
+    'mecha-chest-shot-reflection',
+    stripGeo,
+    0,
+    1.66,
+    -1.42,
+    1.48,
+    1.0,
+    1,
+  );
   const light = new T.PointLight('#7cefff', 0, 9, 2);
   light.name = 'hero-shot-local-light';
   light.position.set(0, 0.28, -2.35);
@@ -61,8 +71,12 @@ export function createHeroWeaponEffects(player, robot) {
     useLight = !coarsePointer && quality === 'high';
     if (!useLight) light.visible = false;
   }
-  function pulse({ robot: mecha = false, charged = false, precisionShot = false,
-    color = '#71edff' } = {}) {
+  function pulse({
+    robot: mecha = false,
+    charged = false,
+    precisionShot = false,
+    color = '#71edff',
+  } = {}) {
     robotMode = mecha;
     precision = precisionShot;
     duration = charged ? 0.3 : precisionShot ? 0.22 : 0.16;
@@ -98,8 +112,16 @@ export function createHeroWeaponEffects(player, robot) {
     remaining = 0;
     tick(0, false);
   }
-  return { pulse, tick, reset, setQuality, snapshot: () => ({
-    remaining, useLight, robotMode,
-    activeMeshes: visuals.filter((mesh) => mesh.visible).length,
-  }) };
+  return {
+    pulse,
+    tick,
+    reset,
+    setQuality,
+    snapshot: () => ({
+      remaining,
+      useLight,
+      robotMode,
+      activeMeshes: visuals.filter((mesh) => mesh.visible).length,
+    }),
+  };
 }

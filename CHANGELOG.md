@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.41 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.40 — City 2.9 / Orçamento de GPU mobile e drones detalhados (QA)
 
 - Dispositivos touch e desktop Médio renderizam a cena 3D diretamente, evitando três passes de bloom e buffers offscreen por frame. Desktop Alto preserva o visual cinematográfico.

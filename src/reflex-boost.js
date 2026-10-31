@@ -15,7 +15,11 @@ export const REFLEX_BOOST = Object.freeze({
   hostileTimeScale: 0.38,
   dodgeMultiplier: 1.4,
 });
-export function nearbyHostileThreats(hostile, position, { radiusX = 29, radiusY = 23, ahead = 145 } = {}) {
+export function nearbyHostileThreats(
+  hostile,
+  position,
+  { radiusX = 29, radiusY = 23, ahead = 145 } = {},
+) {
   if (!Array.isArray(hostile) || !position) return 0;
   let threats = 0;
   for (const shot of hostile) {
@@ -57,8 +61,12 @@ export function createReflexBoost() {
     cooldown = Math.max(0, cooldown - dt);
     let activated = false;
     if (
-      enabled && seconds === 0 && cooldown === 0 && boosting &&
-      energy >= REFLEX_BOOST.minEnergy && threats >= REFLEX_BOOST.minThreats
+      enabled &&
+      seconds === 0 &&
+      cooldown === 0 &&
+      boosting &&
+      energy >= REFLEX_BOOST.minEnergy &&
+      threats >= REFLEX_BOOST.minThreats
     ) {
       seconds = REFLEX_BOOST.duration;
       cooldown = REFLEX_BOOST.cooldown;

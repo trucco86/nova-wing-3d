@@ -2961,19 +2961,25 @@ export function createGame({
     const previousPlayer = player.position.clone();
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     player.position.x = clamp(
-      player.position.x + dx * dt * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+      player.position.x +
+        dx * dt * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
       -flightLimit(),
       flightLimit(),
     );
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
-      player.position.z = clamp(player.position.z - dy * dt * 34 * dodgeMultiplier * profileSpeed, -44, 29);
+      player.position.z = clamp(
+        player.position.z - dy * dt * 34 * dodgeMultiplier * profileSpeed,
+        -44,
+        29,
+      );
       player.position.y = T.MathUtils.damp(player.position.y, 10, 4, dt);
     } else {
       player.position.z = T.MathUtils.damp(player.position.z, 9, 4, dt);
       player.position.y = clamp(
-        player.position.y + dy * dt * 20 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        player.position.y +
+          dy * dt * 20 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
         -1,
         dynamicFlight ? 46 : 23,
       );
@@ -3250,7 +3256,9 @@ export function createGame({
       boosting: dynamicFlight && boosting,
       energy,
       threats: nearbyHostileThreats(hostile, player.position),
-      enabled: dynamicFlight && state === 'playing' &&
+      enabled:
+        dynamicFlight &&
+        state === 'playing' &&
         (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().complete),
     });
     if (reflex.activated) {
