@@ -8055,3 +8055,54 @@ body.reflex-boost #boostTouch::after {
 @media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
   body.in-mission #touch #stick { width: 120px; height: 120px; }
 }
+
+/* The independent LEFT-ARM lock is a seventh control in mech mode.
+   Reserve a real hit target in the arc instead of letting it sit at 0,0. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    display: grid;
+    left: 120px;
+    top: 7px;
+    width: 52px;
+    height: 52px;
+    border-radius: 45% 55% 48% 52%;
+  }
+  body.in-mission #touch .actions #lockTouch[aria-pressed='true'] {
+    opacity: 0.94;
+    background: #16657595;
+    border-color: #96faff;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 181px;
+    height: 168px;
+  }
+  body.in-mission #touch .actions #podsTouch { left: 0; top: 10px; }
+  body.in-mission #touch .actions #robotTouch { left: 0; top: 65px; }
+  body.in-mission #touch .actions #rollTouch { left: 58px; top: 0; }
+  body.in-mission #touch .actions #bombTouch { left: 58px; top: 58px; }
+  body.in-mission #touch .actions #boostTouch {
+    left: 58px; top: 117px;
+    width: 58px;
+    height: 50px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 120px; top: 65px;
+    width: 61px; min-width: 61px; max-width: 61px;
+    height: 102px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 0; top: 119px;
+    width: 52px;
+    height: 48px;
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission #touch .actions { width: 177px; }
+  body.in-mission #touch .actions #boostTouch { left: 58px; width: 54px; }
+  body.in-mission #touch .actions #fireTouch {
+    left: 116px;
+    width: 61px; min-width: 61px; max-width: 61px;
+  }
+}
