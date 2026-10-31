@@ -22,7 +22,6 @@ const plane = new T.PlaneGeometry(1, 1);
 const skyBeam = new T.CylinderGeometry(0.3, 8, 145, 10, 1, true);
 const neon = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const frame = new T.MeshStandardMaterial({ color: '#587d91', metalness: 0.73, roughness: 0.28 });
-const glass = new T.MeshPhysicalMaterial({ color: '#559bc7', metalness: 0.55, roughness: 0.24, transparent: true, opacity: 0.8 });
 const beamMaterial = new T.MeshBasicMaterial({
   color: '#8ceaff', transparent: true, opacity: 0.12, side: T.DoubleSide,
   blending: T.AdditiveBlending, depthWrite: false, toneMapped: false,
