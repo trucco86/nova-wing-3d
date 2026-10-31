@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('Mars is visibly a new planet with its own desert, two moons and rover', async ({
   page,
 }, info) => {
-  test.setTimeout(150000);
+  test.setTimeout(180000);
   await page.setViewportSize(
     info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1366, height: 768 },
   );
@@ -22,6 +22,14 @@ test('Mars is visibly a new planet with its own desert, two moons and rover', as
   await page.screenshot({ path: info.outputPath('mars-03-atmospheric-entry.png') });
   await page.evaluate(() => window.fixture.advance(11));
   await page.screenshot({ path: info.outputPath('mars-04-desert-and-moons.png') });
+  await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');
+  // Distinguish natural face-rock silhouettes, giant shield volcano and
+  // fictional alien sites before the storm clouds change visibility.
+  await page.evaluate(() => window.fixture.advance(42));
+  await page.screenshot({ path: info.outputPath('mars-05-midstage-sandstorm-crosswind.png') });
+  await expect(page.locator('#routeLabel')).toContainText('TURBULÊNCIA MARCIANA');
+  await page.evaluate(() => window.fixture.advance(17));
+  await page.screenshot({ path: info.outputPath('mars-06-clear-desert-after-storm.png') });
   await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');
   const frame = await page.evaluate(() => window.fixture.renderStats());
   expect(frame?.calls).toBeGreaterThan(0);
