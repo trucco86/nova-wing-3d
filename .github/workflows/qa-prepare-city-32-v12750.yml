@@ -1,4 +1,5 @@
 name: Prepare City 3.2 Integrated Metropolis v1.27.50
+# Retest after City 3.2 legacy route-state test contract update.
 on:
   push:
     branches:
