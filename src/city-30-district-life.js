@@ -36,7 +36,12 @@ export function createCity30DistrictLife(buildings = []) {
   const high = new T.Group();
   high.name = 'city-matrix-high-detail';
   high.visible = false;
-  const structure = [], glazing = [], signage = [], damage = [], moreWindows = [], warmWindows = [];
+  const structure = [],
+    glazing = [],
+    signage = [],
+    damage = [],
+    moreWindows = [],
+    warmWindows = [];
   const pads = [];
   let damaged = 0;
   let bridges = 0;
@@ -70,27 +75,29 @@ export function createCity30DistrictLife(buildings = []) {
         if ((row * 13 + col * 7 + i * 3) % 17 === 0) continue;
         if (broken && row > rows / 2 && col > cols / 2) continue;
         const px = x + ((col + 0.5) / cols - 0.5) * w * 0.73;
-        const py = -7 + (row + 1.2) / (rows + 1.8) * h;
+        const py = -7 + ((row + 1.2) / (rows + 1.8)) * h;
         const part = (i + row * 5 + col * 7) % 9 === 0 ? warmWindows : moreWindows;
-        part.push(matrix(px, py, face + 0.28, w * 0.43 / cols, 0.48, 0.15));
+        part.push(matrix(px, py, face + 0.28, (w * 0.43) / cols, 0.48, 0.15));
       }
     }
     if (i % 7 === 0) {
       // Rooftop fins and distinct heliotaxi beacons for navigable sky lanes.
       for (let k = -1; k <= 1; k++)
-        structure.push(matrix(x + k * w * 0.3, h + 2.4, z, 0.65, 7 + i % 4, 1.2));
+        structure.push(matrix(x + k * w * 0.3, h + 2.4, z, 0.65, 7 + (i % 4), 1.2));
       signage.push(matrix(x, h - 3, face + 0.65, w * 0.61, 0.55, 0.24));
     }
     if (broken) {
       const impactY = -7 + h * 0.64;
       damage.push(matrix(x + w * 0.23, impactY, face + 0.55, w * 0.27, h * 0.21, 0.78));
-      damage.push(matrix(x + w * 0.33, impactY + h * 0.09, face + 0.75,
-        w * 0.13, h * 0.1, 0.45, 0.26));
+      damage.push(
+        matrix(x + w * 0.33, impactY + h * 0.09, face + 0.75, w * 0.13, h * 0.1, 0.45, 0.26),
+      );
       for (let k = 0; k < 4; k++) {
         const level = -5 + h * (0.17 + k * 0.15);
         for (const side of [-1, 1])
-          structure.push(matrix(x + side * (w * 0.46 + 3), level, face + 4,
-            0.65, Math.min(13, h * 0.2), 0.65));
+          structure.push(
+            matrix(x + side * (w * 0.46 + 3), level, face + 4, 0.65, Math.min(13, h * 0.2), 0.65),
+          );
         structure.push(matrix(x, level, face + 4, w + 8, 0.5, 4.5));
       }
       // Future-city construction gantry, some damaged but anchored to tower.
@@ -100,7 +107,7 @@ export function createCity30DistrictLife(buildings = []) {
     if (i % 13 === 2 && h > 32) {
       const side = Math.sign(x);
       const landingX = x - side * (w * 0.5 + 9);
-      const landingY = Math.min(h - 9, 25 + i % 3 * 6);
+      const landingY = Math.min(h - 9, 25 + (i % 3) * 6);
       structure.push(matrix(landingX, landingY, z + depth * 0.24, 17, 1.1, 17));
       signage.push(matrix(landingX, landingY + 0.9, z + depth * 0.24, 15, 0.2, 15));
       pads.push({ x: landingX, y: landingY + 4.5, z: z + depth * 0.24 });
@@ -108,8 +115,14 @@ export function createCity30DistrictLife(buildings = []) {
     // Cross links between real, close towers on the SAME side, not floating
     // unlabeled slabs across the central flight corridor.
     const prev = buildings[i - 2];
-    if (prev && i % 12 === 4 && Math.sign(prev.x) === Math.sign(x) &&
-      prev.h > 58 && h > 58 && Math.abs(prev.x - x) < 85) {
+    if (
+      prev &&
+      i % 12 === 4 &&
+      Math.sign(prev.x) === Math.sign(x) &&
+      prev.h > 58 &&
+      h > 58 &&
+      Math.abs(prev.x - x) < 85
+    ) {
       const midX = (prev.x + x) * 0.5;
       const midZ = (prev.z + z) * 0.5;
       const centerY = Math.max(44, Math.min(prev.h, h) - 13);
@@ -138,16 +151,20 @@ export function createCity30DistrictLife(buildings = []) {
   // the city tile and costs only two draw calls, independent of taxi count.
   const taxis = new T.Group();
   taxis.name = 'city-matrix-rooftop-taxis';
-  const craft = [], engines = [];
-  const origin = pads.length ? pads.slice(0, 12) :
-    buildings.filter((b) => b.h > 40).slice(0, 8).map((b) => ({ x: b.x, y: 28, z: b.z }));
+  const craft = [],
+    engines = [];
+  const origin = pads.length
+    ? pads.slice(0, 12)
+    : buildings
+        .filter((b) => b.h > 40)
+        .slice(0, 8)
+        .map((b) => ({ x: b.x, y: 28, z: b.z }));
   origin.forEach(({ x, y, z }) => {
     craft.push(matrix(x, y, z, 5.2, 2, 8.5));
     engines.push(matrix(x, y - 1.35, z + 2.2, 4.0, 0.45, 1.4));
   });
   pack(taxis, 'city-matrix-taxi-cabs', glass, craft, Math.min(5, craft.length));
-  pack(taxis, 'city-matrix-taxi-thrusters', amber, engines,
-    Math.min(5, engines.length));
+  pack(taxis, 'city-matrix-taxi-thrusters', amber, engines, Math.min(5, engines.length));
   taxis.userData.origin = origin;
   taxis.userData.phase = 0;
   root.add(taxis);
@@ -173,13 +190,15 @@ export function animateCity30(group, travel) {
   for (let i = 0; i < count; i++) {
     const { x, y, z } = taxis.userData.origin[i];
     // Shuttling between the facade and a landing, not circling aimlessly.
-    const progress = Math.sin(travel * (0.006 + i % 3 * 0.001) + phase + i * 1.7);
+    const progress = Math.sin(travel * (0.006 + (i % 3) * 0.001) + phase + i * 1.7);
     const offset = 5 * progress;
     const lift = 1.7 * Math.sin(travel * 0.009 + i);
-    taxis.getObjectByName('city-matrix-taxi-cabs').setMatrixAt(i, matrix(x + offset, y + lift, z,
-      5.2, 2, 8.5, 0.2 * progress));
-    taxis.getObjectByName('city-matrix-taxi-thrusters').setMatrixAt(i, matrix(x + offset, y - 1.35 + lift,
-      z + 2.2, 4, 0.45, 1.4, 0.2 * progress));
+    taxis
+      .getObjectByName('city-matrix-taxi-cabs')
+      .setMatrixAt(i, matrix(x + offset, y + lift, z, 5.2, 2, 8.5, 0.2 * progress));
+    taxis
+      .getObjectByName('city-matrix-taxi-thrusters')
+      .setMatrixAt(i, matrix(x + offset, y - 1.35 + lift, z + 2.2, 4, 0.45, 1.4, 0.2 * progress));
   }
   for (const mesh of taxis.children) mesh.instanceMatrix.needsUpdate = true;
 }

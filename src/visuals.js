@@ -10,7 +10,11 @@ import {
   animateCityUrbanDrones,
   setCityUrbanDronesQuality,
 } from './city-urban-drones.js';
-import { createCity30DistrictLife, animateCity30, setCity30Quality } from './city-30-district-life.js';
+import {
+  createCity30DistrictLife,
+  animateCity30,
+  setCity30Quality,
+} from './city-30-district-life.js';
 import { createLaunchCelestials } from './launch-celestials.js';
 import {
   animateCityBillboards,
@@ -999,11 +1003,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // Additional affordable fenestration in Medium, where 14 simple strips
     // per skyscraper were making the whole avenue read as repeated slabs.
     for (let pane = 0; pane < 8; pane++) {
-      const row = Math.floor(pane / 2), col = pane % 2;
+      const row = Math.floor(pane / 2),
+        col = pane % 2;
       if ((i % 29 === 8 || i % 37 === 14) && row > 1) continue;
-      inst(windows, wi++, x + (col - 0.5) * w * 0.35,
-        -7 + h * (0.19 + row * 0.2), z + depth / 2 + 0.17,
-        w * 0.14, 0.26 + (i % 3) * 0.05, 0.1);
+      inst(
+        windows,
+        wi++,
+        x + (col - 0.5) * w * 0.35,
+        -7 + h * (0.19 + row * 0.2),
+        z + depth / 2 + 0.17,
+        w * 0.14,
+        0.26 + (i % 3) * 0.05,
+        0.1,
+      );
     }
     // Extra illuminated floors on the camera-facing facade. Mix dense and
     // sparse rows, plus amber accent rooms, to avoid repeating a flat grid.
@@ -1109,8 +1121,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     for (const side of [-1, 1]) {
       inst(crossingSteel, crossingParts++, side * 68, y + 3.6, z, 1.2, 5, beamDepth);
       inst(crossingSteel, crossingParts++, side * 52, y + 1.4, z, 0.5, 2, beamDepth);
-      inst(crossingLights, crossingGlow++, side * 68, y + 6.4,
-        z + beamDepth / 2, 14, 0.24, 0.3);
+      inst(crossingLights, crossingGlow++, side * 68, y + 6.4, z + beamDepth / 2, 14, 0.24, 0.3);
     }
     inst(crossingSteel, crossingParts++, 0, y - 3.2, z, 110, 1.2, beamDepth * 0.72);
     if (i % 3 === 0) {

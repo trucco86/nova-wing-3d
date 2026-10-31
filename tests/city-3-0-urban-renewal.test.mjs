@@ -2,14 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
-  createCity30DistrictLife, animateCity30, setCity30Quality,
+  createCity30DistrictLife,
+  animateCity30,
+  setCity30Quality,
 } from '../src/city-30-district-life.js';
 import { createWorld } from '../src/visuals.js';
 
 const buildings = Array.from({ length: 50 }, (_, i) => ({
   x: (i % 2 ? 1 : -1) * (105 + (i % 3) * 5),
   z: -30 - Math.floor(i / 2) * 19,
-  h: 64 + i % 3 * 9,
+  h: 64 + (i % 3) * 9,
   w: 18,
   depth: 17,
 }));
@@ -23,8 +25,10 @@ test('building-anchored city adds window variety, broken facade, scaffold and re
   assert.equal(city.userData.anchors, buildings.length);
   assert.ok(city.userData.damaged > 0);
   assert.ok(city.userData.bridges > 0, 'towers connect via supported walkways');
-  assert.equal(city.getObjectByName('city-matrix-structural-frames-and-skybridges').isInstancedMesh,
-    true);
+  assert.equal(
+    city.getObjectByName('city-matrix-structural-frames-and-skybridges').isInstancedMesh,
+    true,
+  );
   const windows = city.getObjectByName('city-matrix-dense-windows');
   assert.ok(windows.count > 100, 'facades get richer, nonrepeating window patterns');
   assert.ok(city.getObjectByName('city-matrix-warm-window-variation').count > 0);

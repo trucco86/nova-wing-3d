@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.43 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.42 — Graphics 3.7 / NOVA-7, mecha e controles em meia-lua (QA)
 
 - NOVA-7 visualmente maior (1,05→1,11), com 24 detalhes instanciados de carenagem rasa, frisos e LEDs, preservando a silhueta clean. Robô passa a 1,04 de escala (corrigida uma instrução antes comentada), com detalhes mecânicos de peito/pernas e acabamento articulado das duas armas.
