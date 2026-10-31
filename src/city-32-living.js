@@ -116,7 +116,7 @@ function facadeSigns(parent, buildings) {
   let count = 0;
   // Anchored to actual building geometry: do not create floating signs.
   // At least one in each near-Z band, on alternating sides of the route.
-  for (let i = 0; i < buildings.length && count < 28; i++) {
+  for (let i = 0; i < buildings.length && count < 18; i++) {
     if (i % 5 !== 0 && i % 7 !== 1) continue;
     const b = buildings[i];
     if (Math.abs(b.x) < 94 || b.h < 29) continue;
