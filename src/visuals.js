@@ -3,6 +3,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
+import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import { createLaunchCelestials } from './launch-celestials.js';
 import {
   animateCityBillboards,
@@ -1137,10 +1138,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCityDistricts());
   city.add(createCityPremiumInfrastructure());
   city.add(createCityCommerce());
+  city.add(createCityTraffic());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
+  cityFar.getObjectByName('city-active-traffic').userData.trafficPhase = 870;
+  animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
   scene.add(cityFar);
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
@@ -1379,6 +1383,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-district-high-details').visible = high;
         tile.getObjectByName('city-premium-high-details').visible = high;
         tile.getObjectByName('city-commerce-high-detail').visible = high;
+        setCityTrafficQuality(tile.getObjectByName('city-active-traffic'), quality);
       }
     },
     showCarrierForBoss() {
@@ -1501,6 +1506,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-premium-infrastructure').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-commerce-streets').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city-active-traffic').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land;
@@ -1713,7 +1719,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         cityHorizon.position.x = Math.sin(travel / 3400) * 9;
         cityHorizon.position.z = -Math.min(85, travel * 0.012);
         for (const tile of [city, cityFar]) {
-          if (sceneryTheme === 'city') animateCityBillboards(tile, travel);
+          if (sceneryTheme === 'city') {
+            animateCityBillboards(tile, travel);
+            animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
+          }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev') {
               const side = vehicle.userData.side;
@@ -1771,6 +1780,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
+      for (const tile of [city, cityFar])
+        animateCityTraffic(tile.getObjectByName('city-active-traffic'), 0);
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
