@@ -5,9 +5,9 @@ import * as T from 'three';
 // pedestrian routes, reconstruction platforms and taxis stay inexpensive.
 const unit = new T.BoxGeometry(1, 1, 1);
 const frame = new T.Object3D();
-const steel = new T.MeshStandardMaterial({ color: '#557b78', metalness: 0.78, roughness: 0.36 });
-const glass = new T.MeshStandardMaterial({ color: '#164a48', metalness: 0.49, roughness: 0.31 });
-const green = new T.MeshBasicMaterial({ color: '#60e8a2', toneMapped: false });
+const steel = new T.MeshStandardMaterial({ color: '#719aaa', metalness: 0.81, roughness: 0.27 });
+const glass = new T.MeshStandardMaterial({ color: '#27788d', metalness: 0.57, roughness: 0.23 });
+const green = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const jade = new T.MeshBasicMaterial({ color: '#b3f9c9', toneMapped: false });
 const amber = new T.MeshBasicMaterial({ color: '#ffd18b', toneMapped: false });
 const wreckage = new T.MeshStandardMaterial({ color: '#182627', metalness: 0.52, roughness: 0.84 });
@@ -142,7 +142,12 @@ export function createCity30DistrictLife(buildings = []) {
   });
   pack(root, 'city-matrix-structural-frames-and-skybridges', steel, structure);
   pack(root, 'city-matrix-glass-walkways', glass, glazing);
-  pack(root, 'city-matrix-green-walkway-neon', green, signage);
+  // One instanced batch, four neon hues: brighter district without extra GPU
+  // draw calls, real lights or costly full-screen bloom on phones.
+  const neon = pack(root, 'city-matrix-green-walkway-neon', green, signage);
+  const hues = ['#48ffe1', '#ff86cb', '#9ec9ff', '#ffd483'].map((h) => new T.Color(h));
+  signage.forEach((_, i) => neon.setColorAt(i, hues[(i + Math.floor(i / 7)) % hues.length]));
+  if (neon.instanceColor) neon.instanceColor.needsUpdate = true;
   pack(high, 'city-matrix-dense-windows', jade, moreWindows);
   pack(high, 'city-matrix-warm-window-variation', amber, warmWindows);
   pack(high, 'city-matrix-broken-facades', wreckage, damage);

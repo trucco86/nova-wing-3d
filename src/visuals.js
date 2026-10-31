@@ -32,7 +32,16 @@ export function box(w, h, d, m, x = 0, y = 0, z = 0) {
   return o;
 }
 const steel = metal('#9eb5ca', 0.72),
-  white = metal('#c4d5e3', 0.62),
+  // Hero paint: real directional specular/clearcoat instead of matte Standard
+  // material. Ship skins still clone and recolor this material independently.
+  white = new T.MeshPhysicalMaterial({
+    color: '#e8f4ff',
+    metalness: 0.79,
+    roughness: 0.18,
+    clearcoat: 0.95,
+    clearcoatRoughness: 0.08,
+    envMapIntensity: 1.35,
+  }),
   navy = metal('#15243e', 0.68),
   black = metal('#081725', 0.5),
   red = metal('#822d49', 0.65),
@@ -910,27 +919,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const city = new T.Group();
   city.name = 'launch-city';
   scene.add(city);
+  // City palette 3.9: more visible paint and high-contrast storefronts in
+  // Medium, without extra geometry or mobile postprocessing passes.
+  const cityNeon = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
   const unit = new T.BoxGeometry(1, 1, 1),
-    bodyMat = metal('#132e2b', 0.55, 0.5),
-    roofMat = metal('#3b5850', 0.65, 0.4);
+    bodyMat = metal('#32627a', 0.71, 0.33),
+    roofMat = metal('#638aa2', 0.74, 0.29);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
-    edges = new T.InstancedMesh(unit, glowMaterial('#45db9c', 1.4), 400),
-    windows = new T.InstancedMesh(unit, glowMaterial('#74e6b8', 1.25), 4800);
+    edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
+    windows = new T.InstancedMesh(unit, cityNeon('#8de3ff'), 4800);
   // Rich high-quality architecture in three additional GPU-instanced draw calls.
   // Decoration stays outside the flight corridor and adds no collision volumes.
   const cityHighDetails = new T.Group();
   cityHighDetails.name = 'city-high-details';
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
-  const ledBands = new T.InstancedMesh(unit, glowMaterial('#43e5dd', 1.1), 400);
+  const ledBands = new T.InstancedMesh(unit, cityNeon('#ff80c7'), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
   // City 2.2: layered facade details. One instanced draw call per material
   // instead of thousands of independent meshes, only visible on High.
-  const facadeWindowsCool = new T.InstancedMesh(unit, glowMaterial('#7deffe', 1.35), 15000);
+  const facadeWindowsCool = new T.InstancedMesh(unit, cityNeon('#74eaff'), 15000);
   facadeWindowsCool.name = 'city-facade-windows-cool';
-  const facadeWindowsAmber = new T.InstancedMesh(unit, glowMaterial('#ffc884', 1.05), 3000);
+  const facadeWindowsAmber = new T.InstancedMesh(unit, cityNeon('#ffce88'), 3000);
   facadeWindowsAmber.name = 'city-facade-windows-amber';
-  const facadeSideWindows = new T.InstancedMesh(unit, glowMaterial('#37cddc', 1.15), 6600);
+  const facadeSideWindows = new T.InstancedMesh(unit, cityNeon('#c99aff'), 6600);
   facadeSideWindows.name = 'city-facade-side-windows';
   const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
   facadePanelModules.name = 'city-facade-panel-modules';
@@ -938,13 +950,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // They are visual-only and remain visible in Medium, unlike premium decoration.
   const guardrailSteel = new T.InstancedMesh(unit, metal('#3c6570', 0.63, 0.7), 1100);
   guardrailSteel.name = 'city-avenue-guardrail';
-  const guardrailLamps = new T.InstancedMesh(unit, glowMaterial('#47eedf', 1.35), 240);
+  const guardrailLamps = new T.InstancedMesh(unit, cityNeon('#44f2e2'), 240);
   guardrailLamps.name = 'city-avenue-guardrail-lights';
   // Three silhouettes: elevated overpasses, illuminated bridge gantries,
   // and side-running suspended transit beams. Only the High profile shows them.
   const crossingSteel = new T.InstancedMesh(unit, metal('#3b5867', 0.69, 0.62), 190);
   crossingSteel.name = 'city-elevated-crossings';
-  const crossingLights = new T.InstancedMesh(unit, glowMaterial('#65dbe9', 1.22), 100);
+  const crossingLights = new T.InstancedMesh(unit, cityNeon('#ffe09a'), 100);
   crossingLights.name = 'city-elevated-crossings-lights';
   const transitTracks = new T.InstancedMesh(unit, metal('#547682', 0.64, 0.54), 180);
   transitTracks.name = 'city-suspended-transit';
@@ -1220,7 +1232,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   horizonCrown.name = 'city-horizon-rooflines';
   const horizonPremium = new T.Group();
   horizonPremium.name = 'city-horizon-high-details';
-  const horizonLit = new T.InstancedMesh(unit, glowMaterial('#5bd3d8', 0.86), 270);
+  const horizonLit = new T.InstancedMesh(unit, cityNeon('#7ddcff'), 270);
   horizonLit.name = 'city-horizon-window-bands';
   const horizonFine = new T.InstancedMesh(unit, metal('#354d65', 0.65, 0.55), 90);
   horizonFine.name = 'city-horizon-secondary-towers';
