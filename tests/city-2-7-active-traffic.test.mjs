@@ -43,7 +43,7 @@ test('moving city has detailed surface cars, aerial taxis and ascending escape s
     'ground vehicles run along the road',
   );
   assert.ok(
-    Math.abs(startingFlying.x) > 90 && startingFlying.y > 30,
+    Math.abs(startingFlying.x) > 60 && startingFlying.y > 60,
     'flying taxis use aerial routes',
   );
   assert.ok(startingEscape.y > 40, 'evacuation spacecraft already start ascending');
@@ -70,7 +70,11 @@ test('Medium keeps visible traffic and High reveals more without new draw groups
     assert.ok(group.children.every((mesh) => mesh.count === high));
     setCityTrafficQuality(traffic, 'medium');
   }
-  assert.equal(drawCalls, 19, '19 instanced batches per tile, including angular nose assemblies');
+  assert.equal(
+    drawCalls,
+    22,
+    '22 GPU batches per tile include merged real wheel and thruster details',
+  );
 });
 
 test('city traffic continues with gameplay, respects Pause and leaves orbital/ocean scenes', () => {

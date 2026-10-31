@@ -119,7 +119,11 @@ test('moving city cars, taxis and escaping ships have instanced tapered bodies w
     assert.ok(normal.count > 0);
   }
   const allDraws = world.children.reduce((sum, role) => sum + role.children.length, 0);
-  assert.equal(allDraws, 19, 'only 19 GPU groups despite 25 independently moving vehicles');
+  assert.equal(
+    allDraws,
+    22,
+    'only 22 GPU groups including merged mechanical trim on all 25 vehicles',
+  );
   setCityTrafficQuality(world, 'high');
   assert.equal(world.getObjectByName('city-traffic-road-prow').count, 12);
   setCityTrafficQuality(world, 'medium');

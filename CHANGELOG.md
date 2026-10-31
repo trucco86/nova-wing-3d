@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.39 — City 2.8 / FPS adaptativo e trânsito urbano realista (QA)
+
+- Proteção de desempenho medida durante o gameplay, com resolução renderizada ajustável, downgrade de Alto para Médio se necessário e limites iniciais mais econômicos em aparelhos touch como Galaxy S21; as escolhas salvas permanecem intactas.
+- Carros terrestres, táxis aéreos e naves agora apresentam rodas, acabamento e propulsores realistas em malhas combinadas por tipo; mais 12 drones de serviço animados (6 em Médio) em cada trecho da cidade.
+- Novos testes de FPS adaptativo, Pause, qualidade gráfica, integridade de geometria, trajetórias e orçamento de draw calls. Candidata PR #192 para validação em S21, sem promoção de produção.
+
 ## 1.27.38 — Graphics 3.4 / NOVA-7 futurista clean e mecha (QA)
 
 - Revertido o excesso de carenagens e pods do fighter na 3.3, preservando a silhueta anterior. Frisos discretos na fuselagem, entradas de ar compactas e motores refinados com anéis, aletas e núcleos luminosos.

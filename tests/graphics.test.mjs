@@ -35,8 +35,8 @@ test('city remains present after one full scenery wrap and reset', () => {
   });
   assert.equal(
     count,
-    136,
-    'City 3.3 adds one aerodynamic 3D body batch per traffic role and city tile',
+    146,
+    'City 2.8 adds merged 3D wheel/engine trim and moving service drones to each city tile',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

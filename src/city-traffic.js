@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 // Non-combat traffic for City 2.7. All details are batched on the GPU.
 // Positions are reproducible from travelled distance so Pause never drifts.
@@ -119,6 +120,77 @@ const PROFILES = Object.freeze([
     ],
   },
 ]);
+// A complete coloured detail shell merges into one indexed mesh per vehicle
+// class, instead of adding ~20 draw calls per car. Geometry includes wheels,
+// skirting, recessed grilles, beacon lamps, thrusters and tiny service panels.
+function vehicleDetailGeometry(role) {
+  const parts = [];
+  const paint = (color) => new T.Color(color);
+  function add(geometry, color, x, y, z, sx = 1, sy = 1, sz = 1, rotX = 0, rotZ = 0) {
+    const mesh = new T.Mesh(geometry);
+    mesh.position.set(x, y, z);
+    mesh.rotation.set(rotX, 0, rotZ);
+    mesh.scale.set(sx, sy, sz);
+    mesh.updateMatrix();
+    const copy = geometry.clone();
+    copy.applyMatrix4(mesh.matrix);
+    const c = paint(color);
+    const v = [];
+    for (let i = 0; i < copy.attributes.position.count; i++) v.push(c.r, c.g, c.b);
+    copy.setAttribute('color', new T.Float32BufferAttribute(v, 3));
+    parts.push(copy);
+  }
+  const wheel = new T.CylinderGeometry(1, 1, 0.7, 10);
+  const pipe = new T.CylinderGeometry(0.38, 0.38, 1, 10);
+  const bar = new T.BoxGeometry(1, 1, 1);
+  if (role === 'road') {
+    for (const side of [-1, 1]) {
+      for (const z of [-3.55, 3.5]) {
+        add(wheel, '#182e42', side * 2.87, -0.64, z, 1, 1, 1, 0, Math.PI / 2);
+        add(wheel, '#69d9e6', side * 3.24, -0.64, z, 0.49, 0.53, 0.49, 0, Math.PI / 2);
+      }
+      add(bar, '#708a9f', side * 2.67, -0.27, 0, 0.24, 0.34, 7.9);
+      add(bar, '#49bbd4', side * 2.88, 0.05, -2.6, 0.09, 0.11, 1.75);
+      add(bar, '#b1cbd7', side * 2.53, 0.36, -4.7, 0.32, 0.18, 1.3);
+      add(bar, '#1b3449', side * 2.61, 0.82, 0.85, 0.12, 0.72, 0.09);
+    }
+    for (const side of [-1, 1]) add(bar, '#aef5fb', side * 1.83, 0.32, -6.08, 0.82, 0.45, 0.2);
+    add(bar, '#4e7184', 0, 1.86, 1.7, 4.0, 0.1, 0.13);
+  } else if (role === 'flycar') {
+    for (const side of [-1, 1]) {
+      for (const z of [-3.9, 3.7]) {
+        add(pipe, '#27475d', side * 6.3, -0.42, z, 1.4, 0.7, 1.4, Math.PI / 2);
+        add(pipe, '#91f7ff', side * 6.3, -0.35, z + 0.8, 0.68, 0.23, 0.68, Math.PI / 2);
+      }
+      add(bar, '#a5bacb', side * 5.1, -0.1, 1.0, 0.4, 0.16, 7.3);
+      add(bar, '#2ed4ea', side * 3.23, 0.62, -5.9, 0.15, 0.16, 3.1);
+      add(bar, '#182d45', side * 2.58, 1.97, -0.75, 0.17, 0.22, 5.0);
+    }
+    add(bar, '#9bc3d6', 0, 2.08, 0.65, 3.0, 0.13, 0.23);
+  } else {
+    for (const side of [-1, 1]) {
+      add(pipe, '#16334b', side * 3.15, -0.6, 11.9, 1.7, 1.4, 1.7, Math.PI / 2);
+      add(pipe, '#f4b884', side * 3.15, -0.6, 13.0, 0.86, 0.2, 0.86, Math.PI / 2);
+      add(bar, '#a8c7d6', side * 5.83, -0.17, 1.5, 0.42, 0.4, 7.5);
+      add(bar, '#65dfe9', side * 4.3, 1.22, -8.2, 0.2, 0.12, 3.5);
+      add(bar, '#2a4158', side * 2.4, 3.42, -3.5, 0.25, 0.26, 5.6);
+    }
+    add(bar, '#7f9ba8', 0, 4.14, 1.5, 1.7, 0.2, 7.0);
+  }
+  const merged = mergeGeometries(parts, false);
+  if (!merged) throw new Error('traffic mesh detail merge failed: ' + role);
+  for (const part of parts) part.dispose();
+  merged.computeBoundingSphere();
+  return merged;
+}
+const detailMaterial = new T.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: 0.35,
+  metalness: 0.52,
+  side: T.DoubleSide,
+});
+const detailGeometry = new Map();
+
 const template = new T.Object3D();
 const root = new T.Object3D();
 const tempMatrix = new T.Matrix4();
@@ -141,8 +213,10 @@ function positionFor(role, i, travel, phase) {
     const phaseValue = (i * 251 + phase + travel * (0.34 + i * 0.027)) % 1820;
     const bank = Math.sin(travel * 0.01 + i * 1.9) * 0.09;
     return {
-      x: side * (110 + i * 4 + 15 * Math.sin(travel * 0.006 + i)),
-      y: 41 + (i % 4) * 15 + Math.sin(travel * 0.017 + i) * 4,
+      // Aerial taxis visibly weave between transit guideways and the retail
+      // towers; never through the low-altitude player flight lane.
+      x: side * (76 + i * 5 + 11 * Math.sin(travel * 0.008 + i)),
+      y: 68 + (i % 4) * 17 + Math.sin(travel * 0.018 + i) * 6,
       z: -75 - phaseValue,
       rx: -0.055,
       ry: side * 0.17,
@@ -189,6 +263,14 @@ export function createCityTraffic() {
       mesh.count = p.medium;
       group.add(mesh);
     }
+    if (!detailGeometry.has(p.role)) detailGeometry.set(p.role, vehicleDetailGeometry(p.role));
+    const detailed = new T.InstancedMesh(detailGeometry.get(p.role), detailMaterial, p.count);
+    detailed.name = 'city-traffic-' + p.role + '-merged-detail';
+    detailed.userData.visualOnly = true;
+    detailed.userData.composite = true;
+    detailed.frustumCulled = false;
+    detailed.count = p.medium;
+    group.add(detailed);
     traffic.add(group);
   }
   animateCityTraffic(traffic, 0);
@@ -220,6 +302,10 @@ export function animateCityTraffic(traffic, travel) {
       root.scale.setScalar(1);
       root.updateMatrix();
       for (const mesh of group.children) {
+        if (mesh.userData.composite) {
+          mesh.setMatrixAt(i, root.matrix);
+          continue;
+        }
         const [x, y, z, w, h, d] = mesh.userData.part;
         template.position.set(x, y, z);
         template.rotation.set(0, 0, 0);
