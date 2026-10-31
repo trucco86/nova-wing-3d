@@ -1714,7 +1714,7 @@ export function createGame({
         muzzle.position.set(
           side * (ground ? 1.8 : 2.7),
           ground ? 0.2 : 0,
-          ground ? 11.8 : kind === 'subboss' ? 13 : 3.7,
+          ground ? 11.8 : kind === 'subboss' ? 13 : kind === 'base' ? 6 : -3.7,
         );
         mount.add(muzzle);
       }
@@ -3823,7 +3823,11 @@ export function createGame({
             explode(player.position.clone(), 8, 0xff8060);
             cue('armorHit');
           } else {
-            message('ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO');
+            message(
+              boss.userData.parts.every((part) => part.hp === 0)
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+            );
           }
         }
         radarPlan =
