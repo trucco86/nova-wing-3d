@@ -59,6 +59,7 @@ import {
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -465,6 +466,7 @@ export function createGame({
     pausedFrom = 'playing',
     ringWave = 0,
     stageIntroTime = 0,
+    marsArrivalPhase = 'space',
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -1073,6 +1075,7 @@ export function createGame({
     world.reset();
     world.setSector(current(), sectorIndex);
     journey = initialJourney(sectorIndex);
+    marsArrivalPhase = 'space';
     asteroidInterior?.reset(sectorIndex === 2);
     asteroidWallCooldown = 0;
     squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
@@ -1107,10 +1110,11 @@ export function createGame({
     podBlocks = 0;
     podCd = 0;
     obstacleCd = 9;
-    subDone = rivalDone = baseDone = false;
+    subDone = rivalDone = false;
+    baseDone = sectorIndex === 1;
     groundCd = 5;
     groundWave = 0;
-    tunnelDone = false;
+    tunnelDone = sectorIndex === 1;
     bossVolley = 0;
     collapseBurst = 0;
     pausedFrom = 'playing';
@@ -3162,6 +3166,20 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
+    const marsTransit = !!marsArrival && !marsArrival.combatReady;
+    if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
+      marsArrivalPhase = marsArrival.phase;
+      const announcements = {
+        orbit: ['ÓRBITA DE MARTE · PREPARAR DESCIDA', 'bob'],
+        entry: ['REENTRADA EM MARTE · PROTEÇÃO TÉRMICA ATIVA', 'christopher'],
+        descent: ['DESCIDA CONTROLADA · DESERTO À FRENTE', 'bia'],
+        surface: ['POUSO CONCLUÍDO · COMBATE NO DESERTO', 'bob'],
+      };
+      const next = announcements[marsArrival.phase];
+      if (next) message(next[0], next[1]);
+      if (marsArrival.phase === 'surface') invuln = Math.max(invuln, 2.5);
+    }
     if (dynamicFlight && sectorIndex === 2) {
       const planned = journeyPhaseAt(elapsed, current().duration);
       if (journey.phase === 'approach' && planned !== 'approach') {
@@ -3209,6 +3227,11 @@ export function createGame({
         !!boss,
         sectorIndex === 0 ? launchState.amount : 0,
       );
+      if (marsArrival && !boss) {
+        route.label = marsArrival.label;
+        // Camera tilts toward the surface continuously during re-entry.
+        route.ascent = marsArrival.cameraAscent;
+      }
       if (sectorIndex === 0 && !boss) {
         route.label =
           launchState.phase === 'boost'
@@ -3372,7 +3395,13 @@ export function createGame({
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
-    if (spawnEncounters && elapsed < current().duration && spawnCd <= 0 && !quietFirstSubboss) {
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      elapsed < current().duration &&
+      spawnCd <= 0 &&
+      !quietFirstSubboss
+    ) {
       const count =
         dynamicFlight && sectorIndex === 0
           ? settings.difficulty === 'hard'
@@ -3391,14 +3420,30 @@ export function createGame({
         ? fighterInterval(sectorIndex, settings.difficulty)
         : 3.4 - sectorIndex * 0.12;
     }
-    if (spawnEncounters && !subDone && elapsed > current().duration * 0.22) {
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      !subDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
+          ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.22
+          : current().duration * 0.22)
+    ) {
       subDone = true;
       enemy('subboss');
       $('subHUD').hidden = false;
       music?.start(sectorIndex, 'subboss');
       message('SUBCHEFE / ' + SUBBOSS_NAMES[sectorIndex]);
     }
-    if (spawnEncounters && !rivalDone && elapsed > current().duration * 0.7) {
+    if (
+      spawnEncounters &&
+      !marsTransit &&
+      !rivalDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
+          ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.7
+          : current().duration * 0.7)
+    ) {
       rivalDone = true;
       enemy('rival');
       message('CAÇA RIVAL / NÃO DEIXE QUE ELE ENCERRE A MISSÃO');
@@ -3433,6 +3478,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       elapsed < current().duration &&
+      !marsTransit &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
@@ -3445,6 +3491,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       !tunnelDone &&
+      sectorIndex !== 1 &&
       subDone &&
       (!dynamicFlight || sectorIndex !== 0) &&
       elapsed >= 24 &&
@@ -4241,7 +4288,7 @@ export function createGame({
       }
     }
     ringCd -= dt;
-    if (spawnEncounters && ringCd < 0 && elapsed < current().duration) {
+    if (spawnEncounters && !marsTransit && ringCd < 0 && elapsed < current().duration) {
       const kind = ringWave++ % 2 === 0 ? 'blue' : 'shield';
       const o = createPickup(kind);
       const extent = Math.max(0, flightLimit() - 2);
@@ -4257,7 +4304,7 @@ export function createGame({
       rings.push({ o, life: 10, kind });
       ringCd = 6;
     }
-    if (dynamicFlight && spawnEncounters && elapsed < current().duration) {
+    if (dynamicFlight && spawnEncounters && !marsTransit && elapsed < current().duration) {
       petCd -= dt;
       if (petCd <= 0) {
         const id = PET_ITEMS[petWave++ % PET_ITEMS.length].id;
@@ -4322,6 +4369,8 @@ export function createGame({
     if (
       spawnEncounters &&
       !launchTransit &&
+      !marsTransit &&
+      !(dynamicFlight && sectorIndex === 1) &&
       reactorGridSeconds <= 0 &&
       obstacleCd <= 0 &&
       elapsed < current().duration &&

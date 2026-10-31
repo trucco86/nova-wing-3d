@@ -10,7 +10,7 @@ import {
   updateCity32Living,
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
-import { createMarsPremium, updateMarsPremium } from './mars-premium.js';
+import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import {
@@ -1490,6 +1490,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     sectorScenery.clear();
   }
   let travel = 0;
+  // Simulated-time Mars transition: fully reproducible after pause or reset.
+  function setMarsDescent(seconds) {
+    if (sceneryTheme !== 'mars') return null;
+    const root = sectorScenery.getObjectByName('mars-premium-desert');
+    if (!root) return null;
+    const state = updateMarsArrival(root, seconds);
+    skyMat.uniforms.marsGlow.value = state.skyMix;
+    starfield.visible = state.starOpacity > 0.015;
+    starfield.material.opacity = state.starOpacity;
+    scene.fog.density = T.MathUtils.lerp(0.00017, 0.00095, state.skyMix);
+    scene.fog.color.set('#251625').lerp(new T.Color('#a16b57'), state.skyMix);
+    return state;
+  }
   const orbitalFrame = dynamicFlight ? new T.Group() : null;
   if (orbitalFrame) {
     const nodes = scene.children.filter((o) => !existing.has(o));
@@ -1497,6 +1510,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    setMarsDescent,
     setGraphicsQuality(quality) {
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
@@ -1865,6 +1879,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         mat.dispose();
         light.dispose();
       }
+      if (sceneryTheme === 'mars') setMarsDescent(0);
     },
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
@@ -1972,6 +1987,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.cityGlow.value = sceneryTheme === 'city' ? 1 : 0;
       skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
       updateMarsPremium(sectorScenery.getObjectByName('mars-premium-desert'), 0);
+      if (sceneryTheme === 'mars') setMarsDescent(0);
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };

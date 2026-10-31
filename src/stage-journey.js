@@ -11,10 +11,10 @@ export const STAGE_JOURNEYS = Object.freeze(
   [
     { destination: 'orbital-ascent', entry: 'atmosphere', arena: 'orbit', exit: 'deep-space' },
     {
-      destination: 'submerged-port',
-      entry: 'ocean-dive',
-      arena: 'underwater-facility',
-      exit: 'surface',
+      destination: 'mars-descent',
+      entry: 'orbit-atmosphere-landing',
+      arena: 'red-desert',
+      exit: 'martian-ascent',
     },
     {
       destination: 'mega-asteroid',

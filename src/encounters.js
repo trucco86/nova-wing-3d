@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { addGroundEnemyDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial } from './visuals.js';
-export const isGroundSector = (sector) => ['city', 'ocean', 'ice'].includes(sector.theme);
+export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
   dark = metal('#101d2b'),
   joint = metal('#a9aeb7', 0.85),

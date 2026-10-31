@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createMarsApproach, updateMarsApproach, marsDescentAt } from './mars-descent.js';
 
 // Mars 4.0: authored desert surface and readable Curiosity-inspired rover.
 // Distant celestial bodies are deliberately larger for gameplay readability.
@@ -197,17 +198,38 @@ export function createMarsPremium() {
   root.name = 'mars-premium-desert';
   root.userData.visualOnly = true;
   root.userData.marsPremium = true;
-  root.add(makeSurface());
+  // The first view must be deep space. No terrain is drawn until the
+  // atmosphere is entered, after which it rises gradually into view.
+  const surface = new T.Group();
+  surface.name = 'mars-surface-scene';
+  surface.userData.visualOnly = true;
+  surface.add(makeSurface());
+  for (let i = 0; i < 10; i++) surface.add(makeRocks(i));
+  for (let i = 0; i < 5; i++) surface.add(makeMesa(i));
+  surface.add(makeCuriosity());
+  root.add(surface);
+  // Both moons remain independent real-world objects: visible in orbit and
+  // above the landscape, never reusing the Earth's cracked moon.
   root.add(makeMarsMoon('phobos', 35, [-340, 250, -1050], '#a29c94'));
   root.add(makeMarsMoon('deimos', 17, [260, 330, -1250], '#c5afa1'));
-  for (let i = 0; i < 10; i++) root.add(makeRocks(i));
-  for (let i = 0; i < 5; i++) root.add(makeMesa(i));
-  root.add(makeCuriosity());
+  root.add(createMarsApproach());
+  updateMarsArrival(root, 0);
   return root;
+}
+export function updateMarsArrival(root, seconds) {
+  if (!root) return marsDescentAt(seconds);
+  const state = marsDescentAt(seconds);
+  const surface = root.getObjectByName('mars-surface-scene');
+  surface.visible = state.terrainVisible;
+  surface.position.y = state.terrainLift;
+  updateMarsApproach(root.getObjectByName('mars-orbital-approach'), state);
+  root.userData.arrivalPhase = state.phase;
+  root.userData.combatReady = state.combatReady;
+  return state;
 }
 export function updateMarsPremium(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
-  for (const child of root.children) {
+  for (const child of root.getObjectByName('mars-surface-scene').children) {
     if (!child.userData.marsChunk) continue;
     const base = Number.isFinite(child.userData.startZ)
       ? child.userData.startZ

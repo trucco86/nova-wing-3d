@@ -22,7 +22,7 @@ export const SECTORS = [
     theme: 'mars',
     accent: '#ffbc80',
     sky: '#9c594a',
-    duration: 80,
+    duration: 107,
     brief: 'Marte à vista: atravesse o deserto vermelho, aviste Fobos, Deimos e o Curiosity.',
   },
   {

@@ -20,7 +20,12 @@ test('Mars sector two has a red desert, two individual moons and Curiosity-style
   const rover = worldRoot.getObjectByName('mars-curiosity-rover');
   assert.ok(rover && rover.getObjectByName('curiosity-mastcam-stereo-head'));
   assert.equal(rover.children.filter((o) => o.name.startsWith('curiosity-wheel')).length, 6);
-  assert.equal(worldRoot.children.filter((o) => o.name.startsWith('mars-rock-field')).length, 10);
+  assert.equal(
+    worldRoot
+      .getObjectByName('mars-surface-scene')
+      .children.filter((o) => o.name.startsWith('mars-rock-field')).length,
+    10,
+  );
   for (const part of worldRoot.children) assert.notEqual(part.userData.hitbox, true);
 });
 
@@ -47,6 +52,8 @@ test('Mars and asteroid interior never inherit urban meshes or each other', () =
   assert.equal(scene.getObjectByName('city-distant-horizon').visible, false);
   const mars = scene.getObjectByName('mars-premium-desert');
   assert.ok(mars);
+  assert.equal(scene.getObjectByName('launch-sky-dome').material.uniforms.marsGlow.value, 0);
+  world.setMarsDescent(27);
   assert.equal(scene.getObjectByName('launch-sky-dome').material.uniforms.marsGlow.value, 1);
   world.update(0.2, 0.2, 60, true);
   const rock = mars.getObjectByName('mars-rock-field-0');

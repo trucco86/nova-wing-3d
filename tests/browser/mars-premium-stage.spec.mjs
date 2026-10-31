@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('Mars is visibly a new planet with its own desert, two moons and rover', async ({
   page,
 }, info) => {
-  test.setTimeout(120000);
+  test.setTimeout(150000);
   await page.setViewportSize(
     info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1366, height: 768 },
   );
@@ -14,11 +14,15 @@ test('Mars is visibly a new planet with its own desert, two moons and rover', as
   const start = await page.evaluate(() => window.fixture.game.snapshot());
   expect(start.state).toBe('playing');
   expect(start.sector).toBe(2);
-  await page.screenshot({ path: info.outputPath('mars-01-desert-moons.png') });
-  await page.evaluate(() => window.fixture.advance(4));
-  await page.screenshot({ path: info.outputPath('mars-02-curiosity-rocks.png') });
+  // Real GPU screenshots at story beats; no static image mockups.
+  await page.screenshot({ path: info.outputPath('mars-01-space-approach.png') });
   await page.evaluate(() => window.fixture.advance(8));
-  await page.screenshot({ path: info.outputPath('mars-03-deep-desert.png') });
+  await page.screenshot({ path: info.outputPath('mars-02-orbit.png') });
+  await page.evaluate(() => window.fixture.advance(8));
+  await page.screenshot({ path: info.outputPath('mars-03-atmospheric-entry.png') });
+  await page.evaluate(() => window.fixture.advance(11));
+  await page.screenshot({ path: info.outputPath('mars-04-desert-and-moons.png') });
+  await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');
   const frame = await page.evaluate(() => window.fixture.renderStats());
   expect(frame?.calls).toBeGreaterThan(0);
   expect(frame?.triangles).toBeGreaterThan(0);
