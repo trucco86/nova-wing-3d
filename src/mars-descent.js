@@ -101,45 +101,42 @@ export function createMarsApproach() {
   );
   edge.name = 'mars-orbit-atmospheric-rim';
   planet.add(edge);
-  const streaks = new T.Group();
-  streaks.name = 'mars-atmosphere-heat-streaks';
-  streaks.userData.visualOnly = true;
-  const streakGeometry = new T.CylinderGeometry(0.28, 0.95, 1, 5);
-  const streakMaterial = new T.MeshBasicMaterial({
-    color: '#ffc27f',
+  // Replace the old thin cylinders ("screen scratches") with an even,
+  // diffuse bow-shock halo. Wide circular glow reads as atmospheric heating
+  // without opaque streaks across the ship, aiming area or horizon.
+  const shock = new T.Group();
+  shock.name = 'mars-atmosphere-bow-shock';
+  shock.userData.visualOnly = true;
+  const material = new T.MeshBasicMaterial({
+    color: '#ffc18a',
     transparent: true,
-    opacity: 0.65,
+    opacity: 0,
     depthWrite: false,
+    depthTest: false,
     blending: T.AdditiveBlending,
     toneMapped: false,
   });
-  const bolts = new T.InstancedMesh(streakGeometry, streakMaterial, 34);
-  bolts.name = 'mars-atmosphere-ionized-trails';
-  bolts.frustumCulled = false;
-  const dummy = new T.Object3D();
-  for (let i = 0; i < bolts.count; i++) {
-    const a = i * Math.PI * (3 - Math.sqrt(5));
-    const radius = 18 + (i % 6) * 15;
-    dummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, -120 - i * 3);
-    dummy.rotation.set(-0.35, i * 0.3, 0.35 + Math.sin(a) * 0.22);
-    dummy.scale.set(0.6 + (i % 3) * 0.3, 23 + (i % 4) * 9, 0.8);
-    dummy.updateMatrix();
-    bolts.setMatrixAt(i, dummy.matrix);
+  for (let i = 0; i < 2; i++) {
+    const halo = new T.Mesh(new T.TorusGeometry(50 + i * 20, 8 + i * 4, 12, 64), material.clone());
+    halo.name = 'mars-reentry-soft-plasma-halo-' + i;
+    halo.position.set(0, 7, -135 - i * 20);
+    halo.scale.set(1.3, 0.77, 1);
+    shock.add(halo);
   }
-  bolts.instanceMatrix.needsUpdate = true;
-  streaks.add(bolts);
-  root.add(streaks);
+  root.add(shock);
   updateMarsApproach(root, marsDescentAt(0));
   return root;
 }
 export function updateMarsApproach(root, state) {
   const globe = root.getObjectByName('mars-orbit-visible-planet');
-  const streaks = root.getObjectByName('mars-atmosphere-heat-streaks');
+  const shock = root.getObjectByName('mars-atmosphere-bow-shock');
   globe.visible = state.planetOpacity > 0.005;
   globe.scale.setScalar(state.planetScale);
   globe.material.uniforms.alpha.value = state.planetOpacity;
   globe.children[0].material.uniforms.alpha.value = state.planetOpacity;
-  streaks.visible = state.atmosphere > 0.06;
-  streaks.getObjectByName('mars-atmosphere-ionized-trails').material.opacity =
-    0.65 * state.atmosphere;
+  shock.visible = state.atmosphere > 0.1;
+  shock.children.forEach((halo, i) => {
+    halo.material.opacity = (i === 0 ? 0.15 : 0.075) * state.atmosphere;
+    halo.scale.set(1.3 + state.atmosphere * 0.1, 0.77 + state.atmosphere * 0.06, 1);
+  });
 }

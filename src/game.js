@@ -60,6 +60,7 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
+import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -467,6 +468,7 @@ export function createGame({
     ringWave = 0,
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
+    marsStormPhase = 'clear',
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -1076,6 +1078,7 @@ export function createGame({
     world.setSector(current(), sectorIndex);
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
+    marsStormPhase = 'clear';
     asteroidInterior?.reset(sectorIndex === 2);
     asteroidWallCooldown = 0;
     squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
@@ -3064,9 +3067,12 @@ export function createGame({
     reticle.visible = true;
     const previousPlayer = player.position.clone();
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
+    const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
+    const gustX = storm?.windX ?? 0;
     player.position.x = clamp(
       player.position.x +
-        dx * dt * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed + gustX) *
+          dt,
       -flightLimit(),
       flightLimit(),
     );
@@ -3115,6 +3121,9 @@ export function createGame({
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
+      // Actual crosswind banks the spacecraft; manual directional inputs
+      // remain fully responsive and can counter-steer against the gust.
+      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -3168,6 +3177,17 @@ export function createGame({
     totalTime += dt;
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
+    const sandstorm = marsArrival?.storm;
+    if (sandstorm && sandstorm.phase !== marsStormPhase) {
+      const previousStorm = marsStormPhase;
+      marsStormPhase = sandstorm.phase;
+      if (sandstorm.phase === 'warning')
+        message('ALERTA MARTE · TEMPESTADE DE AREIA À FRENTE', 'bob');
+      else if (sandstorm.phase === 'active')
+        message('TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL', 'christopher');
+      else if (previousStorm === 'active')
+        message('TEMPESTADE SUPERADA · VISIBILIDADE RESTABELECIDA', 'bia');
+    }
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
       const announcements = {
@@ -3231,6 +3251,10 @@ export function createGame({
         route.label = marsArrival.label;
         // Camera tilts toward the surface continuously during re-entry.
         route.ascent = marsArrival.cameraAscent;
+        if (sandstorm?.label) route.label = sandstorm.label;
+        // Camera reacts to the same physical gust as the player; there are
+        // no random cuts or unplayable top-down control changes.
+        route.bank = (route.bank ?? 0) + (sandstorm?.roll ?? 0) * 0.24;
       }
       if (sectorIndex === 0 && !boss) {
         route.label =

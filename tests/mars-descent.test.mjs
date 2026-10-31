@@ -33,12 +33,17 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   const planet = createMarsPremium();
   const globe = planet.getObjectByName('mars-orbit-visible-planet');
   const surface = planet.getObjectByName('mars-surface-scene');
-  const heat = planet.getObjectByName('mars-atmosphere-heat-streaks');
+  const heat = planet.getObjectByName('mars-atmosphere-bow-shock');
   const phobos = planet.getObjectByName('mars-moon-phobos');
   const deimos = planet.getObjectByName('mars-moon-deimos');
   assert.ok(globe.visible, 'planet visible from space at mission start');
   assert.equal(surface.visible, false);
   assert.equal(heat.visible, false);
+  assert.equal(
+    planet.getObjectByName('mars-atmosphere-ionized-trails'),
+    undefined,
+    'the distracting re-entry scratch meshes have been removed',
+  );
   assert.ok(phobos.visible && deimos.visible);
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
@@ -51,7 +56,7 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   assert.equal(scene.getObjectByName('launch-city').visible, false);
   world.setMarsDescent(15);
   assert.equal(root.userData.arrivalPhase, 'entry');
-  assert.equal(root.getObjectByName('mars-atmosphere-heat-streaks').visible, true);
+  assert.equal(root.getObjectByName('mars-atmosphere-bow-shock').visible, true);
   assert.equal(root.getObjectByName('mars-surface-scene').visible, false);
   world.setMarsDescent(23);
   assert.equal(root.userData.arrivalPhase, 'descent');
