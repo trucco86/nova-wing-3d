@@ -2906,14 +2906,16 @@ export function createGame({
       const needsBoost = launchState.phase === 'boost' && state === 'playing';
       boostGuide.hidden = !needsBoost;
       const boostButton = $('boostTouch');
-      boostButton.classList.toggle('launch-required', needsBoost);
+      if (needsBoost) boostButton.classList.add('launch-required');
+      else boostButton.classList.remove('launch-required');
       const nextLabel = needsBoost ? 'SUPER BOOST' : 'BOOST';
       if (boostButton.textContent !== nextLabel) boostButton.textContent = nextLabel;
       boostButton.setAttribute(
         'aria-label',
         needsBoost ? 'Super Boost obrigatório para romper a atmosfera' : 'Ativar boost da nave',
       );
-      document.body.classList.toggle('orbital-super-boost', needsBoost && boosting);
+      if (needsBoost && boosting) document.body.classList.add('orbital-super-boost');
+      else document.body.classList.remove('orbital-super-boost');
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
           message('FUGA ORBITAL · SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
