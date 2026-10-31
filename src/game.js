@@ -2279,25 +2279,35 @@ export function createGame({
   function renderFrameAudit() {
     const result = frameAudit.report();
     const budget = adaptiveGraphics.current();
-    const detail = settings.language === 'en'
-      ? 'Render: '
-      : settings.language === 'es' ? 'Renderizado: ' : 'Renderização: ';
-    $('auditReadout').textContent = formatFrameAudit(result, {
-      language: settings.language,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      dpr: window.devicePixelRatio ?? 1,
-    }) + '\n' + detail + budget.quality.toUpperCase() +
-      ' · ' + Math.round(budget.resolutionScale * 100) + '% ' +
+    const detail =
+      settings.language === 'en'
+        ? 'Render: '
+        : settings.language === 'es'
+          ? 'Renderizado: '
+          : 'Renderização: ';
+    $('auditReadout').textContent =
+      formatFrameAudit(result, {
+        language: settings.language,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        dpr: window.devicePixelRatio ?? 1,
+      }) +
+      '\n' +
+      detail +
+      budget.quality.toUpperCase() +
+      ' · ' +
+      Math.round(budget.resolutionScale * 100) +
+      '% ' +
       (budget.adaptive ? '(adaptativo)' : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
   }
   function applyRenderBudget(budget) {
-    pixelLimit = graphicsPixelRatioLimit(budget.quality, {
-      coarsePointer: coarsePointer.matches,
-    }) * budget.resolutionScale;
+    pixelLimit =
+      graphicsPixelRatioLimit(budget.quality, {
+        coarsePointer: coarsePointer.matches,
+      }) * budget.resolutionScale;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
     world.setGraphicsQuality(budget.quality);
     post.setGraphicsQuality(budget.quality);

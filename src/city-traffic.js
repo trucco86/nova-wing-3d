@@ -184,7 +184,10 @@ function vehicleDetailGeometry(role) {
   return merged;
 }
 const detailMaterial = new T.MeshStandardMaterial({
-  vertexColors: true, roughness: 0.35, metalness: 0.52, side: T.DoubleSide,
+  vertexColors: true,
+  roughness: 0.35,
+  metalness: 0.52,
+  side: T.DoubleSide,
 });
 const detailGeometry = new Map();
 

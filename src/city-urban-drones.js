@@ -45,9 +45,11 @@ export function animateCityUrbanDrones(group, travel) {
     const y = 64 + (i % 5) * 13 + 8 * Math.sin(phase + travel * 0.014);
     const z = -35 - distance;
     cursor.position.set(x, y, z);
-    cursor.rotation.set(Math.sin(phase + travel * 0.013) * 0.2,
+    cursor.rotation.set(
+      Math.sin(phase + travel * 0.013) * 0.2,
       0.2 * Math.sin(phase + travel * 0.008),
-      side * 0.16 * Math.sin(phase + travel * 0.02));
+      side * 0.16 * Math.sin(phase + travel * 0.02),
+    );
     cursor.scale.set(1.2, 0.62, 1.85);
     cursor.updateMatrix();
     body.setMatrixAt(i, cursor.matrix);

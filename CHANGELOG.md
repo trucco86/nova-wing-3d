@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.39 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.38 — Graphics 3.4 / NOVA-7 futurista clean e mecha (QA)
 
 - Revertido o excesso de carenagens e pods do fighter na 3.3, preservando a silhueta anterior. Frisos discretos na fuselagem, entradas de ar compactas e motores refinados com anéis, aletas e núcleos luminosos.

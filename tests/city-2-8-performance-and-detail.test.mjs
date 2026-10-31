@@ -1,13 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
+import { createAdaptiveGraphics, graphicsPixelRatioLimit } from '../src/graphics-quality.js';
 import {
-  createAdaptiveGraphics,
-  graphicsPixelRatioLimit,
-} from '../src/graphics-quality.js';
-import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from '../src/city-traffic.js';
+  createCityTraffic,
+  animateCityTraffic,
+  setCityTrafficQuality,
+} from '../src/city-traffic.js';
 import {
-  createCityUrbanDrones, animateCityUrbanDrones, setCityUrbanDronesQuality,
+  createCityUrbanDrones,
+  animateCityUrbanDrones,
+  setCityUrbanDronesQuality,
 } from '../src/city-urban-drones.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
@@ -76,7 +79,10 @@ test('urban ground cars, flying taxis and escape craft have real mechanical merg
     animateCityTraffic(traffic, 300);
     assert.deepEqual(matrix(mesh), snapshot, 'traffic does not drift while paused');
   }
-  assert.equal(traffic.children.reduce((sum, group) => sum + group.children.length, 0), 22);
+  assert.equal(
+    traffic.children.reduce((sum, group) => sum + group.children.length, 0),
+    22,
+  );
   setCityTrafficQuality(traffic, 'high');
   assert.equal(traffic.getObjectByName('city-traffic-road-merged-detail').count, 12);
   setCityTrafficQuality(traffic, 'medium');
