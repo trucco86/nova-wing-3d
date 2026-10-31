@@ -2,7 +2,11 @@ import * as T from 'three';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
-import { createCityPremiumInfrastructure, createMaglevTrain } from './city-premium.js';
+import {
+  animateCityBillboards,
+  createCityPremiumInfrastructure,
+  createMaglevTrain,
+} from './city-premium.js';
 export const metal = (c, m = 0.65, r = 0.36) =>
   new T.MeshStandardMaterial({ color: c, metalness: m, roughness: r });
 export const glowMaterial = (c, k = 2.8) =>
@@ -1708,6 +1712,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         cityHorizon.position.x = Math.sin(travel / 3400) * 9;
         cityHorizon.position.z = -Math.min(85, travel * 0.012);
         for (const tile of [city, cityFar]) {
+          if (sceneryTheme === 'city') animateCityBillboards(tile, travel);
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev') {
               const side = vehicle.userData.side;

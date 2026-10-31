@@ -77,19 +77,34 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const arrival = SECTORS[0].duration * 0.22;
   const engaged = await page.evaluate((target) => {
-    while (window.fixture.game.snapshot().seconds < target) {
+    const maxSteps = Math.ceil(target * 2) + 16;
+    for (let i = 0; i < maxSteps; i++) {
+      const state = window.fixture.game.snapshot();
+      if (state.seconds >= target) {
+        window.fixture.advance(0);
+        return window.fixture.game.snapshot();
+      }
       window.fixture.game.collect('shield');
-      window.fixture.advance(0.5);
+      window.fixture.advance(0.5, { renderAfter: false });
     }
-    return window.fixture.game.snapshot();
+    const stalled = window.fixture.game.snapshot();
+    throw new Error(
+      'Subboss approach stalled at ' +
+        stalled.seconds.toFixed(1) +
+        's; state=' +
+        stalled.state +
+        '; orbital=' +
+        stalled.orbitalLaunch.phase,
+    );
   }, arrival + 20);
   expect(engaged.encounterKinds).toContain('subboss');
   await expect(page.locator('#subHUD')).toBeVisible();
   const retreat = await page.evaluate(() => {
     for (let i = 0; i < 8; i++) {
       window.fixture.game.collect('shield');
-      window.fixture.advance(0.5);
+      window.fixture.advance(0.5, { renderAfter: false });
     }
+    window.fixture.advance(0);
     return window.fixture.game.snapshot();
   });
   const fleeing = retreat.targets.find((target) => target.kind === 'subboss');
@@ -101,8 +116,9 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
   const escaped = await page.evaluate(() => {
     for (let i = 0; i < 8; i++) {
       window.fixture.game.collect('shield');
-      window.fixture.advance(0.5);
+      window.fixture.advance(0.5, { renderAfter: false });
     }
+    window.fixture.advance(0);
     return window.fixture.game.snapshot();
   });
   expect(escaped.encounterKinds).not.toContain('subboss');
@@ -125,11 +141,31 @@ test('undefeated city subboss visibly retreats without rewards or blocking the o
     'atmosphere',
   );
   const completed = await page.evaluate((duration) => {
-    while (window.fixture.game.snapshot().seconds < duration + 1) {
+    // Keep original 0.05s physics steps, pickup and boss assertions, but
+    // stop with useful diagnostics rather than an unbounded Playwright hang.
+    const maxSteps = Math.ceil((duration + 18) * 2);
+    for (let i = 0; i < maxSteps; i++) {
+      const state = window.fixture.game.snapshot();
+      if (state.seconds >= duration + 1) {
+        window.fixture.advance(0);
+        return window.fixture.game.snapshot();
+      }
       window.fixture.game.collect('shield');
-      window.fixture.advance(0.5);
+      window.fixture.advance(0.5, { renderAfter: false });
     }
-    return window.fixture.game.snapshot();
+    const stalled = window.fixture.game.snapshot();
+    throw new Error(
+      'Orbit completion stalled at ' +
+        stalled.seconds.toFixed(1) +
+        's; state=' +
+        stalled.state +
+        '; orbital=' +
+        stalled.orbitalLaunch.phase +
+        '; launchComplete=' +
+        stalled.orbitalLaunch.complete +
+        '; boss=' +
+        stalled.boss,
+    );
   }, SECTORS[0].duration);
   expect(completed.orbitalLaunch.complete).toBe(true);
   expect(completed.boss).toBe(true);

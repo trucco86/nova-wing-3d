@@ -33,11 +33,14 @@ const game = createGame({
     return renderer;
   },
 });
-function advance(seconds) {
+function advance(seconds, { renderAfter = true } = {}) {
+  // Fast deterministic simulation can postpone the expensive software-GPU
+  // frame until a visual checkpoint, without skipping physics or game logic.
   rendering = false;
   for (let t = 0; t < seconds - 1e-8; t += 0.05) game.step(Math.min(0.05, seconds - t));
-  rendering = capture;
+  rendering = capture && renderAfter;
   game.step(0);
+  rendering = capture;
 }
 window.fixture = {
   game,
