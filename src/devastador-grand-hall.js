@@ -55,7 +55,11 @@ export function createDevastadorGrandHall() {
   // Full floor and ceiling with annular service decks. They are visual-only:
   // the cockpit never collides with artificial planes on the orbital path.
   const deck = new T.Mesh(
-    new T.RingGeometry(DEVASTADOR_GRAND_HALL.reactorRadius + 23, DEVASTADOR_GRAND_HALL.radius + 12, 64),
+    new T.RingGeometry(
+      DEVASTADOR_GRAND_HALL.reactorRadius + 23,
+      DEVASTADOR_GRAND_HALL.radius + 12,
+      64,
+    ),
     dark,
   );
   deck.name = 'devastador-grand-hall-deep-service-floor';
@@ -63,10 +67,7 @@ export function createDevastadorGrandHall() {
   deck.position.y = DEVASTADOR_GRAND_HALL.floorY;
   deck.userData.visualOnly = true;
   hall.add(deck);
-  const ceiling = new T.Mesh(
-    new T.RingGeometry(90, DEVASTADOR_GRAND_HALL.radius + 12, 64),
-    hull,
-  );
+  const ceiling = new T.Mesh(new T.RingGeometry(90, DEVASTADOR_GRAND_HALL.radius + 12, 64), hull);
   ceiling.name = 'devastador-grand-hall-vaulted-ceiling';
   ceiling.rotation.x = Math.PI / 2;
   ceiling.position.y = DEVASTADOR_GRAND_HALL.ceilingY;
@@ -82,25 +83,45 @@ export function createDevastadorGrandHall() {
     const isEntrance = i === 0 || i === 1 || i === DEVASTADOR_GRAND_HALL.wallSegments - 1;
     if (!isEntrance) {
       createBox(hall, 'hall-perimeter-armor-wall', hull, x, 22, z, 73, 193, 12, a);
-      createBox(
-        hall, 'hall-observation-deck', plate, x * 0.965, 52, z * 0.965,
-        64, 6, 22, a,
-      );
+      createBox(hall, 'hall-observation-deck', plate, x * 0.965, 52, z * 0.965, 64, 6, 22, a);
       // Distinct indicator buses, recessed into wall panels.
       createBox(
-        hall, 'hall-wall-energy-bus', i % 4 ? blue : amber,
-        x * 0.968, 63, z * 0.968, 47, 1.2, 1.5, a,
+        hall,
+        'hall-wall-energy-bus',
+        i % 4 ? blue : amber,
+        x * 0.968,
+        63,
+        z * 0.968,
+        47,
+        1.2,
+        1.5,
+        a,
       );
     }
     createBox(
-      hall, isEntrance ? 'hall-entrance-giant-pillar' : 'hall-structural-column',
-      chrome, x, 20, z, 13, 215, 17, a,
+      hall,
+      isEntrance ? 'hall-entrance-giant-pillar' : 'hall-structural-column',
+      chrome,
+      x,
+      20,
+      z,
+      13,
+      215,
+      17,
+      a,
     );
     createBox(hall, 'hall-overhead-beam', plate, x * 0.83, 119, z * 0.83, 13, 11, 62, a);
   }
   const entrance = createBox(
-    hall, 'hall-open-hangar-throat-gantry', chrome,
-    0, 113, DEVASTADOR_GRAND_HALL.radius - 5, 145, 15, 24,
+    hall,
+    'hall-open-hangar-throat-gantry',
+    chrome,
+    0,
+    113,
+    DEVASTADOR_GRAND_HALL.radius - 5,
+    145,
+    15,
+    24,
   );
   entrance.userData.entrance = true;
 
@@ -117,11 +138,7 @@ export function createDevastadorGrandHall() {
   for (const sector of sectors) {
     const facility = new T.Group();
     facility.name = 'hall-facility-' + sector.name;
-    facility.position.set(
-      Math.sin(sector.a) * 223,
-      0,
-      Math.cos(sector.a) * 223,
-    );
+    facility.position.set(Math.sin(sector.a) * 223, 0, Math.cos(sector.a) * 223);
     facility.rotation.y = sector.a;
     facility.userData.visualOnly = true;
     hall.add(facility);
@@ -130,12 +147,17 @@ export function createDevastadorGrandHall() {
     createBox(facility, 'facility-raised-industrial-deck', plate, 0, -21, 0, 64, 4, 30);
     createBox(facility, 'facility-overhead-service-crane', chrome, 0, 97, 0, 64, 6, 17);
     for (const side of [-1, 1]) {
+      createBox(facility, 'facility-gantry-pylon', hull, side * 28, 25, 4, 7, 131, 12);
       createBox(
-        facility, 'facility-gantry-pylon', hull, side * 28, 25, 4, 7, 131, 12,
-      );
-      createBox(
-        facility, 'facility-diagnostic-monitor', sector.color,
-        side * 23, 30, -17.1, 19, 11, 1.3,
+        facility,
+        'facility-diagnostic-monitor',
+        sector.color,
+        side * 23,
+        30,
+        -17.1,
+        19,
+        11,
+        1.3,
       );
     }
     if (sector.name === 'capacitor-farm') {
@@ -158,8 +180,17 @@ export function createDevastadorGrandHall() {
         const x = -21 + k * 20;
         createBox(facility, 'hall-cryogenic-heat-exchanger', chrome, x, 17, 4, 15, 75, 14);
         for (let pipe = 0; pipe < 3; pipe++)
-          createBox(facility, 'hall-coolant-translucent-pipe', blue,
-            x - 4 + pipe * 4, 28, -5, 1.4, 49, 1.4);
+          createBox(
+            facility,
+            'hall-coolant-translucent-pipe',
+            blue,
+            x - 4 + pipe * 4,
+            28,
+            -5,
+            1.4,
+            49,
+            1.4,
+          );
       }
     } else if (sector.name === 'twin-propulsion-works') {
       for (const side of [-1, 1]) {
@@ -172,14 +203,9 @@ export function createDevastadorGrandHall() {
         rotor.name = 'hall-engine-turbine-rotor';
         rotor.position.set(side * 17, 20, -25);
         for (let k = 0; k < 8; k++) {
-          const blade = createBox(rotor, 'hall-turbine-radial-blade', chrome,
-            0, 9, 0, 3, 13, 1.4);
-          blade.rotation.z = k * Math.PI / 4;
-          blade.position.set(
-            Math.cos(k * Math.PI / 4) * 8,
-            Math.sin(k * Math.PI / 4) * 8,
-            0,
-          );
+          const blade = createBox(rotor, 'hall-turbine-radial-blade', chrome, 0, 9, 0, 3, 13, 1.4);
+          blade.rotation.z = (k * Math.PI) / 4;
+          blade.position.set(Math.cos((k * Math.PI) / 4) * 8, Math.sin((k * Math.PI) / 4) * 8, 0);
         }
         movable.push(rotor);
         facility.add(rotor);
@@ -192,8 +218,17 @@ export function createDevastadorGrandHall() {
       createBox(facility, 'hall-bridge-control-platform', hull, 0, 38, 1, 60, 14, 31);
       createBox(facility, 'hall-bridge-hologram-table', blue, 0, 49, -12, 31, 2, 17);
       for (let k = 0; k < 5; k++)
-        createBox(facility, 'hall-bridge-systems-console', k % 2 ? blue : amber,
-          -24 + k * 12, 25, -16, 9, 8, 2);
+        createBox(
+          facility,
+          'hall-bridge-systems-console',
+          k % 2 ? blue : amber,
+          -24 + k * 12,
+          25,
+          -16,
+          9,
+          8,
+          2,
+        );
     }
   }
 
@@ -205,25 +240,17 @@ export function createDevastadorGrandHall() {
   cable.name = 'hall-perimeter-energy-traces-instanced';
   const helper = new T.Object3D();
   for (let i = 0; i < 160; i++) {
-    const a = (i % 20) / 20 * Math.PI * 2;
+    const a = ((i % 20) / 20) * Math.PI * 2;
     const radial = 238;
-    helper.position.set(
-      Math.sin(a) * radial,
-      -45 + Math.floor(i / 20) * 22,
-      Math.cos(a) * radial,
-    );
+    helper.position.set(Math.sin(a) * radial, -45 + Math.floor(i / 20) * 22, Math.cos(a) * radial);
     helper.rotation.set(0, a, 0);
     helper.scale.set(3, 5.2, 1.4);
     helper.updateMatrix();
     fastener.setMatrixAt(i, helper.matrix);
   }
   for (let i = 0; i < 100; i++) {
-    const a = (i % 20) / 20 * Math.PI * 2;
-    helper.position.set(
-      Math.sin(a) * 230,
-      -52 + Math.floor(i / 20) * 26,
-      Math.cos(a) * 230,
-    );
+    const a = ((i % 20) / 20) * Math.PI * 2;
+    helper.position.set(Math.sin(a) * 230, -52 + Math.floor(i / 20) * 26, Math.cos(a) * 230);
     helper.rotation.set(0, a, 0);
     helper.scale.set(37, 1.3, 1.4);
     helper.updateMatrix();
@@ -249,7 +276,10 @@ export function createDevastadorGrandHall() {
   return hall;
 }
 
-export function updateDevastadorGrandHall(hall, { orbit = 0, time = 0, driveSpeed = 1, blackout = 0 } = {}) {
+export function updateDevastadorGrandHall(
+  hall,
+  { orbit = 0, time = 0, driveSpeed = 1, blackout = 0 } = {},
+) {
   if (!hall) return;
   // Parent is spun for the virtual orbit; cancel it for architecture. The
   // reactor remains dynamically targetable while the hall stays stationary.
@@ -259,7 +289,7 @@ export function updateDevastadorGrandHall(hall, { orbit = 0, time = 0, driveSpee
   });
   hall.userData.facilities.forEach((group, i) => {
     // Power loss cascades across peripheral factories rather than merely hiding core meshes.
-    const fault = blackout > 0.1 && (Math.sin(time * 7 + i * 1.4) > 0.65 + blackout * 0.18);
+    const fault = blackout > 0.1 && Math.sin(time * 7 + i * 1.4) > 0.65 + blackout * 0.18;
     for (const obj of group.children)
       if (obj.name === 'facility-diagnostic-monitor') obj.visible = !fault;
   });

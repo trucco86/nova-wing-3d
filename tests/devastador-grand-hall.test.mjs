@@ -43,7 +43,8 @@ test('four industrial districts are visibly and mechanically distinct, not repea
     'hall-colossal-engine-housing',
     'hall-bridge-hologram-table',
     'hall-engine-turbine-rotor',
-  ]) assert.ok(hall.getObjectByName(name), name);
+  ])
+    assert.ok(hall.getObjectByName(name), name);
   const meshes = [];
   hall.traverse((node) => {
     if (node.isMesh) meshes.push(node);
@@ -82,7 +83,11 @@ test('stage 4 developer encounter replaces tight corridors with the new hall wit
   assert.equal(snap.sabotage.hall.facilities, 4);
   assert.equal(snap.sabotage.hall.centralReactor, true);
   assert.equal(snap.sabotage.hall.active, true);
-  assert.equal(snap.sabotage.hall.corridorsHidden, true, 'old narrow walls cannot overlap 360 flight');
+  assert.equal(
+    snap.sabotage.hall.corridorsHidden,
+    true,
+    'old narrow walls cannot overlap 360 flight',
+  );
   // Runtime snapshot comes from the real world state; renderers may
   // expose a later postprocessing scene instead of the gameplay scene.
   h.game.orbit(1);
