@@ -3342,7 +3342,7 @@ export function createGame({
         duration: current().duration,
         bossActive: !!boss,
         player: player.position,
-        fire: (origin, target, element) => bullet(origin, target, element),
+        fire: spawnEncounters ? (origin, target, element) => bullet(origin, target, element) : null,
         notify: (line, speaker) => message(line, speaker),
       });
     }
