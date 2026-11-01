@@ -8,11 +8,11 @@ No CI de 01/11/2026, o job Node terminou em ~0,8 min. Os quatro shards Playwrigh
 
 ## Pipeline de três níveis
 
-| Nível | Comando | Uso |
-| --- | --- | --- |
-| FAST | `npm run test:fast -- --scope=auto` | Feedback de desenvolvimento; não valida release |
-| PREVIEW | `npm run build && npm run build:check && npm run test:fast` | Preview Cloudflare isolado, para validação visual |
-| FULL | `npm run validate` + quatro shards Playwright | Obrigatório no SHA final antes de merge ou produção |
+| Nível   | Comando                                                     | Uso                                                 |
+| ------- | ----------------------------------------------------------- | --------------------------------------------------- |
+| FAST    | `npm run test:fast -- --scope=auto`                         | Feedback de desenvolvimento; não valida release     |
+| PREVIEW | `npm run build && npm run build:check && npm run test:fast` | Preview Cloudflare isolado, para validação visual   |
+| FULL    | `npm run validate` + quatro shards Playwright               | Obrigatório no SHA final antes de merge ou produção |
 
 Os shards FULL passam a executar somente Playwright; os testes Node continuam íntegros no job quality. A seleção FAST sempre inclui testes básicos de jogo/campanha e testes relacionados às fontes alteradas. Novos testes modificados entram automaticamente no FAST.
 
