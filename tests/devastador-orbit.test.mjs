@@ -21,9 +21,7 @@ test('real orbit places the ship around a fixed reactor without rotating the hal
   assert.ok(a.z > center.z);
   assert.ok(b.x > center.x + 150, 'the fighter physically moves to the reactor flank');
   assert.ok(Math.abs(b.z - center.z) > 1, 'steering is tangent to the orbit');
-  assert.ok(
-    Math.hypot(b.x - center.x, b.z - center.z) < DEVASTADOR_ORBIT.maxRadius + 15,
-  );
+  assert.ok(Math.hypot(b.x - center.x, b.z - center.z) < DEVASTADOR_ORBIT.maxRadius + 15);
   const camera = reactorOrbitCamera(center, b, Math.PI / 2);
   assert.ok(camera.eye.x > b.x, 'camera follows behind ship at its actual orbit angle');
   assert.deepEqual(camera.aim.toArray(), [0, 20, -164]);

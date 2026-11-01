@@ -276,10 +276,7 @@ export function createDevastadorGrandHall() {
   return hall;
 }
 
-export function updateDevastadorGrandHall(
-  hall,
-  { time = 0, driveSpeed = 1, blackout = 0 } = {},
-) {
+export function updateDevastadorGrandHall(hall, { time = 0, driveSpeed = 1, blackout = 0 } = {}) {
   if (!hall) return;
   // The pilot now physically circles the chamber. No artificial rotation
   // of the reactor, architecture or scenery is allowed.
