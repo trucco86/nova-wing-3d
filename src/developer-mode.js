@@ -18,6 +18,7 @@ export function developerToolsAllowed(hostname, native = false) {
     host === 'fix-stage4-camera-encounter.nova-wing-preview.pages.dev' ||
     host === 'fix-qa-browser-stage4-lab-re.nova-wing-preview.pages.dev' ||
     host === 'feat-p0-mecha-arsenal-carrie.nova-wing-preview.pages.dev' ||
+    host === 'fix-hero-scale-dash-and-dest.nova-wing-preview.pages.dev' ||
     /^pr-[0-9]+\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'localhost' ||
     host === '127.0.0.1'
