@@ -5348,10 +5348,12 @@ export function createGame({
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
-      sabotage: boss?.userData.sabotage ? {
-        ...sabotagedSystem(boss.userData.parts),
-        visual: boss.userData.reactorVisual,
-      } : null,
+      sabotage: boss?.userData.sabotage
+        ? {
+            ...sabotagedSystem(boss.userData.parts),
+            visual: boss.userData.reactorVisual,
+          }
+        : null,
       bossDriveShock:
         boss?.userData.driveShockPlumes?.map((plume, i) => ({
           side: i ? 1 : -1,

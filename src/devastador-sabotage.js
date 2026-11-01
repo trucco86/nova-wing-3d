@@ -242,11 +242,8 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
     part.shortCircuit.visible = failed && Math.sin(time * 16 + i * 2.9) > -0.18;
     part.shortCircuit.scale.y = 3.5 + 3 * Math.abs(Math.sin(time * 13 + i));
     part.warning.visible =
-      active &&
-      (failed || (open && alarmsOn)) &&
-      Math.sin(time * 8 + i * 1.9) > -0.2;
-    if (part.fan && !failed)
-      part.fan.rotation.z = time * (0.35 + 2 * driveSpeed);
+      active && (failed || (open && alarmsOn)) && Math.sin(time * 8 + i * 1.9) > -0.2;
+    if (part.fan && !failed) part.fan.rotation.z = time * (0.35 + 2 * driveSpeed);
     if (part.fan && failed) part.fan.rotation.z = 0;
   }
   root.userData.core.visible = stage.system === 'core';
@@ -254,11 +251,11 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
   root.userData.coreMarker.rotation.z = time * 0.7;
   for (const [i, rotor] of root.userData.rotors.entries()) {
     rotor.rotation.z =
-      (i % 2 ? 1 : -1) *
-      time *
-      (stage.system === 'core' ? 2.3 : 0.45 * (1 - damageRatio * 0.68));
-    rotor.visible = stage.system === 'core' || powerOnline > 0 ||
-      Math.sin(time * (5 + i) + i) > (0.18 + damageRatio * 0.65);
+      (i % 2 ? 1 : -1) * time * (stage.system === 'core' ? 2.3 : 0.45 * (1 - damageRatio * 0.68));
+    rotor.visible =
+      stage.system === 'core' ||
+      powerOnline > 0 ||
+      Math.sin(time * (5 + i) + i) > 0.18 + damageRatio * 0.65;
   }
   return stage;
 }
