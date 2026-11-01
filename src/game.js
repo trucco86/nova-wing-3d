@@ -4408,7 +4408,7 @@ export function createGame({
         // the projectile. This is not a fake overlay or an invisible hitbox.
         const target = obstacles.find(({ o, life }) =>
           life > 0 && projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt));
-        if (target && target.hp != null) {
+        if (target && Number.isFinite(target.hp)) {
           const result = damageDestructibleObstacle(target.o.userData.kind,
             target.hp, b.damage ?? 2);
           if (result) {
@@ -5082,7 +5082,7 @@ export function createGame({
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
-      destructibleTargets: obstacles.filter(o => o.hp != null && o.life > 0).map(o => ({
+      destructibleTargets: obstacles.filter(o => Number.isFinite(o.hp) && o.life > 0).map(o => ({
         kind: o.o.userData.kind, hp: o.hp, x: o.o.position.x, y: o.o.position.y, z: o.o.position.z,
       })),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
