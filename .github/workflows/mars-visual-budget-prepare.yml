@@ -22,6 +22,31 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: npm run release:prepare -- 1.27.62
+      - name: Record actual QA candidate scope
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const path = 'releases/v1.27.62.md';
+          writeFileSync(path, [
+            '## Nova Wing 3D v1.27.62 — Mars Medium GPU budget QA candidate',
+            '',
+            '- Reduces only Martian storm transparent particle draw to 144 (from 240) in Medium and two haze banks (from three).',
+            '- High retains all 240 particles and three banks; settings can be changed during gameplay.',
+            '- No changes to wind physics, warnings, timings, Mars landmarks, other planets, saves, bosses, UI, audio or login.',
+            '- Adds deterministic tests for High/Medium, restoration without allocations and isolated sector transitions.',
+            '- Brings master backlog up to date with the shipped v1.27.61 and gates for real mobile visual acceptance.',
+            '',
+            '**QA candidate only. Web production remains v1.27.61 until full CI, real-device visual acceptance and release authorization.**',
+            ''
+          ].join('\n'));
+          let changelog = readFileSync('CHANGELOG.md', 'utf8');
+          changelog = changelog.replace(
+            '- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '- QA: orçamento de névoa/partículas da tempestade marciana no Médio, preservando o perfil Alto e toda a física; sem publicação em PROD.'
+          );
+          writeFileSync('CHANGELOG.md', changelog);
+          NODE
       - run: npm run format
       - run: npm run build
       - run: npm run build:check
@@ -29,12 +54,12 @@ jobs:
       - name: Commit only changed source, QA documents and generated HTML
         run: |
           git diff --check
-          git add -- index.html src/mars-sandstorm.js src/mars-premium.js src/visuals.js tests/mars-42-mysteries-storm.test.mjs docs/BACKLOG.md specs/mars-medium-visual-budget-20261101.md
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.62.md index.html src/mars-sandstorm.js src/mars-premium.js src/visuals.js tests/mars-42-mysteries-storm.test.mjs docs/BACKLOG.md specs/mars-medium-visual-budget-20261101.md
           if git diff --cached --quiet; then
             echo 'Candidate already synchronized.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'build(mars): sync Medium/High storm visual budget candidate'
+          git commit -m 'build(mars): prepare QA candidate v1.27.62 with synced web bundle'
           git push origin HEAD:feat/mars-visual-budget-20261101
