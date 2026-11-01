@@ -173,8 +173,9 @@ export function createMothershipInterior() {
         drum.rotation.x = Math.PI / 2;
         engine.add(drum);
         for (let ring = 0; ring < 4; ring++) {
-          const halo = new T.Mesh(new T.TorusGeometry(15, 1.2, 8, 24),
+          const halo = new T.Mesh(new T.CylinderGeometry(16, 16, 1.2, 24, 1, true),
             ring === 3 ? hazard : cyan);
+          halo.rotation.x = Math.PI / 2;
           halo.position.z = 10 - ring * 8;
           engine.add(halo);
         }
