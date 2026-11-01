@@ -59,6 +59,7 @@ import {
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
@@ -2009,6 +2010,10 @@ export function createGame({
       }
     }
     collapseTime += dt;
+    if (dynamicFlight) {
+      const exit = world.setDestinationExit(collapseTime);
+      if (exit?.active) $('routeLabel').textContent = exit.label;
+    }
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
@@ -3178,6 +3183,9 @@ export function createGame({
     totalTime += dt;
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
+    const destinationArrival =
+      dynamicFlight && sectorIndex >= 3 ? world.setDestinationArrival(elapsed) : null;
+    const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
     const sandstorm = marsArrival?.storm;
     if (sandstorm && sandstorm.phase !== marsStormPhase) {
       const previousStorm = marsStormPhase;
@@ -3229,7 +3237,7 @@ export function createGame({
       spawnEncounters &&
       !arcadeDone &&
       [6].includes(sectorIndex) &&
-      elapsed >= 8
+      elapsed >= ARRIVAL_SECONDS + 4
     ) {
       arcadeDone = true;
       arcade = createArcade(sectorIndex + 1);
@@ -3248,6 +3256,11 @@ export function createGame({
         !!boss,
         sectorIndex === 0 ? launchState.amount : 0,
       );
+      if (destinationArrival && !boss) {
+        route.label = destinationArrival.label;
+        if (destinationArrival.phase === 'entry')
+          route.ascent -= 0.16 * destinationArrival.haze;
+      }
       if (marsArrival && !boss) {
         route.label = marsArrival.label;
         // Camera tilts toward the surface continuously during re-entry.
@@ -3422,7 +3435,7 @@ export function createGame({
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (
       spawnEncounters &&
-      !marsTransit &&
+      !arrivalTransit &&
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss
@@ -3447,7 +3460,7 @@ export function createGame({
     }
     if (
       spawnEncounters &&
-      !marsTransit &&
+      !arrivalTransit &&
       !subDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -3462,7 +3475,7 @@ export function createGame({
     }
     if (
       spawnEncounters &&
-      !marsTransit &&
+      !arrivalTransit &&
       !rivalDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -3503,7 +3516,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       elapsed < current().duration &&
-      !marsTransit &&
+      !arrivalTransit &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
@@ -4313,7 +4326,7 @@ export function createGame({
       }
     }
     ringCd -= dt;
-    if (spawnEncounters && !marsTransit && ringCd < 0 && elapsed < current().duration) {
+    if (spawnEncounters && !arrivalTransit && ringCd < 0 && elapsed < current().duration) {
       const kind = ringWave++ % 2 === 0 ? 'blue' : 'shield';
       const o = createPickup(kind);
       const extent = Math.max(0, flightLimit() - 2);
@@ -4329,7 +4342,7 @@ export function createGame({
       rings.push({ o, life: 10, kind });
       ringCd = 6;
     }
-    if (dynamicFlight && spawnEncounters && !marsTransit && elapsed < current().duration) {
+    if (dynamicFlight && spawnEncounters && !arrivalTransit && elapsed < current().duration) {
       petCd -= dt;
       if (petCd <= 0) {
         const id = PET_ITEMS[petWave++ % PET_ITEMS.length].id;
@@ -4394,7 +4407,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !launchTransit &&
-      !marsTransit &&
+      !arrivalTransit &&
       !(dynamicFlight && sectorIndex === 1) &&
       reactorGridSeconds <= 0 &&
       obstacleCd <= 0 &&
