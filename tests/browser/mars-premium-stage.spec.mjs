@@ -20,16 +20,21 @@ test('Mars is visibly a new planet with its own desert, two moons and rover', as
   await page.screenshot({ path: info.outputPath('mars-02-orbit.png') });
   await page.evaluate(() => window.fixture.advance(8));
   await page.screenshot({ path: info.outputPath('mars-03-atmospheric-entry.png') });
-  await page.evaluate(() => window.fixture.advance(11));
-  await page.screenshot({ path: info.outputPath('mars-04-desert-and-moons.png') });
+  await page.evaluate(() => window.fixture.advance(7));
+  await page.screenshot({ path: info.outputPath('mars-04-sand-haze-descent.png') });
+  await expect(page.locator('#routeLabel')).toContainText('DESCIDA CONTROLADA');
+  await page.evaluate(() => window.fixture.advance(4));
+  await page.screenshot({ path: info.outputPath('mars-05-desert-and-moons.png') });
   await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');
+  await page.evaluate(() => window.fixture.advance(5));
+  await page.screenshot({ path: info.outputPath('mars-06-entry-haze-cleared.png') });
   // Distinguish natural face-rock silhouettes, giant shield volcano and
   // fictional alien sites before the storm clouds change visibility.
-  await page.evaluate(() => window.fixture.advance(42));
-  await page.screenshot({ path: info.outputPath('mars-05-midstage-sandstorm-crosswind.png') });
+  await page.evaluate(() => window.fixture.advance(37));
+  await page.screenshot({ path: info.outputPath('mars-07-midstage-sandstorm-crosswind.png') });
   await expect(page.locator('#routeLabel')).toContainText('TURBULÊNCIA MARCIANA');
   await page.evaluate(() => window.fixture.advance(17));
-  await page.screenshot({ path: info.outputPath('mars-06-clear-desert-after-storm.png') });
+  await page.screenshot({ path: info.outputPath('mars-08-clear-desert-after-storm.png') });
   await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');
   const frame = await page.evaluate(() => window.fixture.renderStats());
   expect(frame?.calls).toBeGreaterThan(0);
