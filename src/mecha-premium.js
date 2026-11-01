@@ -32,6 +32,8 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
   const vents = [];
   const crest = [];
   const exhausts = [];
+  const afterburnerCores = [];
+  const dashJets = [];
   const backFins = [];
   // Side-shoulders and forearms are designed around the existing independent
   // lock-on wrists; laser muzzle pointers and arm IK remain untouched.
@@ -240,6 +242,46 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
     trail.visible = false;
     robot.add(trail);
     exhausts.push(trail);
+
+    // Concentrated white-hot core gives the rear boost visible contrast even
+    // against bright planets; both layers are purely visual, not colliders.
+    const core = new T.Mesh(
+      new T.ConeGeometry(0.14, 1.55, 8, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#f7fcff',
+        transparent: true,
+        opacity: 0.8,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        side: T.DoubleSide,
+      }),
+    );
+    core.name = 'premium-mecha-afterburner-core-' + side;
+    core.rotation.x = Math.PI / 2;
+    core.position.copy(trail.position);
+    core.visible = false;
+    robot.add(core);
+    afterburnerCores.push(core);
+
+    // Opposite-side vector thruster shows the direction of the quick dodge.
+    // It is disabled during ordinary strafe and firing animations.
+    const dashJet = new T.Mesh(
+      new T.ConeGeometry(0.23, 1.7, 8, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#b5ecff',
+        transparent: true,
+        opacity: 0.84,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        side: T.DoubleSide,
+      }),
+    );
+    dashJet.name = 'premium-mecha-lateral-dash-jet-' + side;
+    dashJet.rotation.z = -side * Math.PI / 2;
+    dashJet.position.set(side * 1.54, 0.02, 1.6);
+    dashJet.visible = false;
+    robot.add(dashJet);
+    dashJets.push({ side, jet: dashJet });
   }
   for (let i = 0; i < 5; i++)
     add(
@@ -250,7 +292,19 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
       [0, -0.68 + i * 0.61, 0.75],
       [0.72, 0.37, 0.3],
     );
-  const rig = { forearms, calves, kneePistons, vents, spine, helmet, crest, exhausts, backFins };
+  const rig = {
+    forearms,
+    calves,
+    kneePistons,
+    vents,
+    spine,
+    helmet,
+    crest,
+    exhausts,
+    afterburnerCores,
+    dashJets,
+    backFins,
+  };
   robot.userData.premiumMecha = rig;
   return rig;
 }
@@ -260,7 +314,7 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
  */
 export function animatePremiumMecha(
   robot,
-  { progress = 1, level = 0, time = 0, boosting = false } = {},
+  { progress = 1, level = 0, time = 0, boosting = false, dash = null } = {},
 ) {
   const rig = robot?.userData?.premiumMecha;
   if (!rig) return null;
@@ -273,6 +327,9 @@ export function animatePremiumMecha(
   const extension = smooth((p - 0.22) / 0.5);
   const power = smooth((p - 0.55) / 0.45);
   const growth = Math.max(0, Math.min(18, Math.floor(level))) / 18;
+  const dashActive = !!dash?.active && power > 0.75;
+  const dashSide = dash?.direction === -1 ? -1 : 1;
+  const dashPhase = Math.max(0, Math.min(1, Number.isFinite(dash?.progress) ? dash.progress : 0));
   for (const { arm, forearm, side } of rig.forearms) {
     arm.rotation.z = side * (0.9 * (1 - unfold) + 0.1 * unfold);
     forearm.position.y = -1.15 - 0.5 * extension - growth * 0.22;
@@ -283,11 +340,14 @@ export function animatePremiumMecha(
     calf.position.y = -1.4 - 0.6 * extension - growth * 0.18;
     calf.rotation.x = (1 - extension) * 1.08;
     foot.rotation.x = -0.45 * (1 - extension) + Math.sin(time * 1.8 + side) * 0.055 * extension;
+    foot.rotation.z = dashActive ? -dashSide * 0.12 : 0;
+    calf.rotation.z = dashActive ? -dashSide * 0.16 : 0;
     leg.rotation.z = side * (-0.42 * (1 - unfold) + 0.065 * unfold);
   }
   for (const knee of rig.kneePistons) knee.scale.y = 0.62 + extension * 0.38;
   rig.spine.scale.y = 0.82 + extension * (0.18 + growth * 0.08);
   rig.spine.rotation.x = boosting ? -0.09 * power : 0;
+  rig.spine.rotation.z = dashActive ? -dashSide * 0.12 : 0;
   for (const [index, plume] of rig.exhausts.entries()) {
     plume.visible = boosting && power > 0.75;
     const length = 1.25 + Math.sin(time * 32 + index * 1.3) * 0.19 + growth * 1.1;
@@ -295,6 +355,17 @@ export function animatePremiumMecha(
     plume.position.z = 3.0 + length * 0.88;
     plume.material.opacity = boosting ? 0.43 + growth * 0.26 : 0.12;
     plume.material.color.set(growth > 0.65 ? '#f2ebff' : '#55d5ff');
+    const core = rig.afterburnerCores[index];
+    core.visible = plume.visible;
+    core.position.copy(plume.position);
+    core.scale.y = length * 1.12;
+    core.material.opacity = boosting ? 0.73 + 0.16 * Math.sin(time * 24 + index) ** 2 : 0;
+  }
+  for (const { side, jet } of rig.dashJets) {
+    const firing = dashActive && side === -dashSide;
+    jet.visible = firing;
+    jet.scale.y = firing ? 1.5 + Math.sin(Math.PI * dashPhase) * 0.65 : 1;
+    jet.material.opacity = firing ? 0.72 + 0.15 * Math.sin(Math.PI * dashPhase) : 0;
   }
   for (const [index, fin] of rig.backFins.entries()) {
     fin.rotation.z = (index === 0 ? -1 : 1) * (boosting ? 0.28 : 0.1);
