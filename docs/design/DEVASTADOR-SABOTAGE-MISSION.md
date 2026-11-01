@@ -77,3 +77,19 @@ A colisão é validada contra os meshes reais, não por proximidade de interface
 10. Gate de produção somente com build/4 shards/preview íntegros e aceite humano.
 
 **Escopo fora desta onda:** kit Hiper Nova, quarto pod, fases 11–20, mundo aberto, câmeras aleatórias, novo chefe humanoide na Devastador.
+
+
+## 6. Fuga cinematográfica — implementada em QA
+
+A conclusão da missão não usa o boss convencional. Depois de destruir as oito unidades e o reator:
+
+- **0–1,35 s:** Bia confirma o colapso do núcleo. Explosões industriais se propagam.
+- **1,35–3,30 s:** Bob relata a perda em cascata dos sistemas, incluindo propulsão e suporte.
+- **3,30–4,70 s:** Calvinho anuncia a rota de fuga. Destroços e tremores aumentam.
+- **4,70–6,45 s:** Christopher solicita **BOOST**. Teclado Shift e botão touch funcionam, com energia de emergência para não bloquear o comando.
+- **6,45–8,00 s:** Jenifer confirma a formação Five Cats e o hiperimpulso. Se o jogador não conseguiu acionar o boost, a assistência assume apenas a saída cinematográfica.
+- **Após 8 s:** progresso e checkpoint originais preservados; retorno ao hangar/loja e preparação da missão seguinte.
+
+A nave mantém controles e câmera ativos; nenhuma cutscene bloqueia o jogador. O efeito de velocidade usa sobreposição CSS sem interceptar toques, com `prefers-reduced-motion` respeitado. A versão anterior da fase 4 com boss e descarga de bateria **não deve reaparecer** na integração.
+
+**Evidência de validação local em runner:** [workflow Source repair check 41350076274](https://github.com/trucco86/nova-wing-3d/actions/runs/41350076274) concluiu com **509 testes Node aprovados de 509**, formatação e `npm run validate` aprovados. O HTML foi sincronizado no commit `8d67a3c`. Ainda falta CI completo (Playwright quatro grupos), verificação real em celular e deploy final sob esse commit. Produção não alterada.
