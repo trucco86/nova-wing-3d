@@ -101,6 +101,7 @@ import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
+import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { evolvedShotColor, dockedPodPower, podLaserMultiplier, lockLaserCount, progressionSpeed, boostTrailLength } from './combat-progression.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
@@ -306,7 +307,7 @@ export function createGame({
           if (boss) {
             boss.updateMatrixWorld(true);
             const weak = boss.userData.parts.find(
-              (p, i) => p.hp > 0 && weakPointOpen(relativeOrbit(), i),
+              (p, i) => p.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
             );
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
             if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
@@ -1594,7 +1595,7 @@ export function createGame({
       const candidates = boss
         ? [
             ...boss.userData.parts.flatMap((part, i) =>
-              part.hp > 0 && weakPointOpen(relativeOrbit(), i)
+              part.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i)
                 ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
                 : [],
             ),
@@ -1946,7 +1947,7 @@ export function createGame({
       return dealt;
     }
     const openPart = (p) =>
-      !dynamicFlight || weakPointOpen(relativeOrbit(), boss.userData.parts.indexOf(p));
+      !dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), boss.userData.parts.indexOf(p));
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
@@ -3989,7 +3990,7 @@ export function createGame({
             b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
           }
         boss.userData.parts.forEach((p, i) => {
-          const open = weakPointOpen(relativeOrbit(), i) && p.hp > 0;
+          const open = bossWeakPointOpen(sectorIndex, relativeOrbit(), i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
           p.marker.visible = open;
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
@@ -4177,7 +4178,7 @@ export function createGame({
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const openGenerator = boss.userData.parts.findIndex(
-        (p, i) => p.hp > 0 && (!dynamicFlight || weakPointOpen(relativeOrbit(), i)),
+        (p, i) => p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
       );
       const coreVulnerable =
         remaining === 0 &&
@@ -4318,7 +4319,7 @@ export function createGame({
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
         const weakPart = boss?.userData.parts.find(
-          (p, i) => p.hp > 0 && (!dynamicFlight || weakPointOpen(relativeOrbit(), i)),
+          (p, i) => p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
         );
         const target = boss
           ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
@@ -4912,9 +4913,9 @@ export function createGame({
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
           hp: p.hp,
-          open: !dynamicFlight || weakPointOpen(relativeOrbit(), i),
+          open: !dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
           angle: wrapAngle(
-            (i === 0 ? -Math.PI / 3 : Math.PI / 3) + (dynamicFlight ? tactics().heading : 0),
+            bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
           ),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
