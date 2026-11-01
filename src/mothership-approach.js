@@ -47,10 +47,10 @@ export function mothershipApproachAt(seconds) {
     opening,
     visible: seconds < BOARDING.clear,
     inside: seconds >= BOARDING.entry,
-    jupiterOpacity: 1 - smooth((seconds - 10) / 12),
+    jupiterOpacity: 0, // Stage 4 shows the mothership alone, never a planet.
     label:
       phase === 'sighting'
-        ? 'JÚPITER · NAVE-MÃE DEVASTADOR À VISTA'
+        ? 'NAVE-MÃE DEVASTADOR À VISTA'
         : phase === 'approaching'
           ? 'APROXIMAÇÃO · DEVASTADOR CRESCENDO À FRENTE'
           : phase === 'hangar-alignment'
