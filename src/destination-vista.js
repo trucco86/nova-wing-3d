@@ -138,8 +138,12 @@ export function createDestinationVista(index) {
       const band = new T.Mesh(
         new T.RingGeometry(inner, outer, 96, 3),
         new T.MeshBasicMaterial({
-          color, side: T.DoubleSide, transparent: true,
-          opacity, depthWrite: false, fog: false,
+          color,
+          side: T.DoubleSide,
+          transparent: true,
+          opacity,
+          depthWrite: false,
+          fog: false,
         }),
       );
       band.name = 'saturn-astronomical-band';

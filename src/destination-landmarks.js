@@ -60,8 +60,13 @@ export function createDestinationLandmarks(index) {
   if (cloud) {
     const geometry = new T.SphereGeometry(1, 14, 9);
     const count = index === 4 ? 38 : 34;
-    const fog = makeInstanced(index, count, geometry, materialFor(index, 0.28),
-      index === 4 ? 'venus-sulfur-cloud-columns' : 'neptune-turbulent-cloud-columns', (i) => {
+    const fog = makeInstanced(
+      index,
+      count,
+      geometry,
+      materialFor(index, 0.28),
+      index === 4 ? 'venus-sulfur-cloud-columns' : 'neptune-turbulent-cloud-columns',
+      (i) => {
         const side = i % 2 ? 1 : -1;
         const x = side * (90 + hash(i * 7 + 2) * 200);
         const y = -13 + hash(i * 17 + 7) * 125;
@@ -71,13 +76,25 @@ export function createDestinationLandmarks(index) {
           scale: [35 + hash(i * 13) * 56, 22 + hash(i * 21) * 43, 42 + hash(i * 3) * 52],
           rotation: [0, hash(i * 5) * 2.7, i * 0.05],
         };
-      });
+      },
+    );
     group.add(fog);
-    const high = makeInstanced(index, 18, new T.SphereGeometry(1, 16, 10),
-      materialFor(index, 0.16), 'destination-cloud-depth-high', (i) => ({
-        position: [(i % 2 ? 1 : -1) * (125 + hash(i * 7) * 170), 25 + hash(i * 3) * 105, -260 - i * 62],
+    const high = makeInstanced(
+      index,
+      18,
+      new T.SphereGeometry(1, 16, 10),
+      materialFor(index, 0.16),
+      'destination-cloud-depth-high',
+      (i) => ({
+        position: [
+          (i % 2 ? 1 : -1) * (125 + hash(i * 7) * 170),
+          25 + hash(i * 3) * 105,
+          -260 - i * 62,
+        ],
         scale: [56 + hash(i * 4) * 75, 22 + hash(i * 5) * 34, 80],
-      }), true);
+      }),
+      true,
+    );
     group.add(high);
     if (index === 4) {
       // Forked electrical discharges remain near distant lateral cloud banks.
@@ -91,14 +108,29 @@ export function createDestinationLandmarks(index) {
       }
       const geometry = new T.BufferGeometry();
       geometry.setAttribute('position', new T.Float32BufferAttribute(points, 3));
-      const lightning = mark(new T.LineSegments(geometry, new T.LineBasicMaterial({
-        color: '#f9dfb6', transparent: true, opacity: 0.4, depthWrite: false,
-      })), 'venus-lightning-at-cloud-horizon', true);
+      const lightning = mark(
+        new T.LineSegments(
+          geometry,
+          new T.LineBasicMaterial({
+            color: '#f9dfb6',
+            transparent: true,
+            opacity: 0.4,
+            depthWrite: false,
+          }),
+        ),
+        'venus-lightning-at-cloud-horizon',
+        true,
+      );
       group.add(lightning);
     }
   } else if (index === 5) {
-    const ice = makeInstanced(index, 54, new T.ConeGeometry(1, 1, 6), materialFor(index),
-      'europa-fractured-glacial-spires', (i) => {
+    const ice = makeInstanced(
+      index,
+      54,
+      new T.ConeGeometry(1, 1, 6),
+      materialFor(index),
+      'europa-fractured-glacial-spires',
+      (i) => {
         const x = (i % 2 ? 1 : -1) * (85 + hash(i * 3) * 175);
         const h = 12 + hash(i * 11) * 65;
         return {
@@ -106,18 +138,31 @@ export function createDestinationLandmarks(index) {
           scale: [9 + hash(i * 8) * 22, h, 10 + hash(i * 13) * 26],
           rotation: [hash(i * 4) * 0.22, hash(i * 7) * 6, (i % 2 ? 1 : -1) * hash(i * 6) * 0.33],
         };
-      });
+      },
+    );
     group.add(ice);
-    const plates = makeInstanced(index, 18, new T.IcosahedronGeometry(1, 1), materialFor(index),
-      'europa-rift-ice-plates-high', (i) => ({
+    const plates = makeInstanced(
+      index,
+      18,
+      new T.IcosahedronGeometry(1, 1),
+      materialFor(index),
+      'europa-rift-ice-plates-high',
+      (i) => ({
         position: [(i % 2 ? 1 : -1) * (128 + hash(i * 4) * 150), -13, -210 - i * 53],
         scale: [27 + hash(i * 12) * 33, 3 + hash(i * 13) * 7, 36 + hash(i * 15) * 38],
         rotation: [0, hash(i * 6) * 2, 0],
-      }), true);
+      }),
+      true,
+    );
     group.add(plates);
   } else if (index === 9) {
-    const rocks = makeInstanced(index, 46, new T.DodecahedronGeometry(1, 1), materialFor(index),
-      'titan-icy-mineral-monoliths', (i) => {
+    const rocks = makeInstanced(
+      index,
+      46,
+      new T.DodecahedronGeometry(1, 1),
+      materialFor(index),
+      'titan-icy-mineral-monoliths',
+      (i) => {
         const x = (i % 2 ? 1 : -1) * (135 + hash(i * 7) * 165);
         const h = 8 + hash(i * 13) * 48;
         return {
@@ -125,31 +170,47 @@ export function createDestinationLandmarks(index) {
           scale: [6 + hash(i * 5) * 18, h, 9 + hash(i * 3) * 22],
           rotation: [hash(i * 2) * 0.5, hash(i * 11) * 6, hash(i * 17) * 0.25],
         };
-      });
+      },
+    );
     group.add(rocks);
-    const lakes = makeInstanced(index, 10, new T.SphereGeometry(1, 18, 8),
-      new T.MeshStandardMaterial({ color: '#3a5c60', roughness: 0.18, metalness: 0.11,
-        transparent: true, opacity: 0.82, depthWrite: false }),
-      'titan-methane-lake-shores', (i) => ({
+    const lakes = makeInstanced(
+      index,
+      10,
+      new T.SphereGeometry(1, 18, 8),
+      new T.MeshStandardMaterial({
+        color: '#3a5c60',
+        roughness: 0.18,
+        metalness: 0.11,
+        transparent: true,
+        opacity: 0.82,
+        depthWrite: false,
+      }),
+      'titan-methane-lake-shores',
+      (i) => ({
         position: [(i % 2 ? 1 : -1) * (205 + hash(i * 12) * 130), -13, -250 - i * 92],
         scale: [45 + hash(i * 6) * 34, 0.6, 55 + hash(i * 19) * 29],
         rotation: [0, hash(i * 3) * 2, 0],
-      }));
+      }),
+    );
     group.add(lakes);
   }
-  group.traverse((node) => { node.userData.visualOnly = true; });
+  group.traverse((node) => {
+    node.userData.visualOnly = true;
+  });
   return group;
 }
 
 export function updateDestinationLandmarks(root, seconds) {
   if (!root) return;
-  const clouds = root.getObjectByName('venus-sulfur-cloud-columns') ||
+  const clouds =
+    root.getObjectByName('venus-sulfur-cloud-columns') ||
     root.getObjectByName('neptune-turbulent-cloud-columns');
   if (clouds) {
     clouds.position.x = Math.sin(seconds * (root.userData.world === 6 ? 0.13 : 0.07)) * 8;
-    clouds.material.opacity = root.userData.world === 6
-      ? 0.28 + 0.055 * Math.sin(seconds * 0.17)
-      : 0.26 + 0.035 * Math.sin(seconds * 0.11);
+    clouds.material.opacity =
+      root.userData.world === 6
+        ? 0.28 + 0.055 * Math.sin(seconds * 0.17)
+        : 0.26 + 0.035 * Math.sin(seconds * 0.11);
   }
   const lightning = root.getObjectByName('venus-lightning-at-cloud-horizon');
   if (lightning) {

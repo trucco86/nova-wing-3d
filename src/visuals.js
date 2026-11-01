@@ -12,7 +12,11 @@ import {
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
-import { createDestinationLandmarks, updateDestinationLandmarks, setDestinationLandmarkQuality } from './destination-landmarks.js';
+import {
+  createDestinationLandmarks,
+  updateDestinationLandmarks,
+  setDestinationLandmarkQuality,
+} from './destination-landmarks.js';
 import {
   createDestinationVista,
   updateDestinationVista,
