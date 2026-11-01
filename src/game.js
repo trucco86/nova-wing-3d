@@ -4172,6 +4172,24 @@ export function createGame({
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
         boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
         boss.rotation.z = t.bank;
+        // Each real drive valve powers its own reactor-exhaust shock. Breaking
+        // that valve removes the plume and its physical attack on that flank.
+        for (const [sideIndex, plume] of (boss.userData.driveShockPlumes ?? []).entries()) {
+          const side = sideIndex ? 1 : -1;
+          const active =
+            bossIntent?.kind === 'reactor-vent' &&
+            bossIntent.ventSide === side &&
+            boss.userData.parts[sideIndex]?.hp > 0 &&
+            (t.state === 'windup' || t.state === 'attack');
+          plume.visible = !!active;
+          if (active) {
+            const intensity = Math.max(0.06, meleePose.exhaust);
+            plume.scale.set(0.6 + intensity * 1.4, 0.5 + intensity * 1.7, 0.6 + intensity * 1.4);
+            plume.position.z =
+              boss.userData.parts[sideIndex].mesh.position.z + 16 * plume.scale.y;
+            plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
+          }
+        }
         if (
           t.state === 'attack' &&
           bossIntent &&
@@ -4205,7 +4223,9 @@ export function createGame({
                 x: player.position.x,
                 y: player.position.y,
                 orbit: relativeOrbit(),
-                originX: boss.position.x,
+                originX:
+                  boss.position.x +
+                  (bossIntent.kind === 'reactor-vent' ? bossIntent.ventSide * 38 : 0),
                 originY: boss.position.y,
               })
             : null;
