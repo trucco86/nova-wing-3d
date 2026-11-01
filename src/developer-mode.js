@@ -12,6 +12,8 @@ export function developerToolsAllowed(hostname, native = false) {
     host === 'feat-planetary-visual-polish.nova-wing-preview.pages.dev' ||
     // Strictly this integrated QA alias; production and HML remain blocked.
     host === 'integration-boss-worlds-qa-2.nova-wing-preview.pages.dev' ||
+    // Only the verified rival/mothership candidate is allowed to launch QA stages.
+    host === 'feat-mothership-marvin-rival.nova-wing-preview.pages.dev' ||
     /^pr-[0-9]+\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'localhost' ||
     host === '127.0.0.1'
