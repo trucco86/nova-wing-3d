@@ -1723,6 +1723,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
       if (corridors && carrierGrandHallActive) corridors.visible = false;
     },
+    reactorGrandHallState() {
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      return {
+        active: carrierGrandHallActive,
+        corridorsHidden: !!corridors && !corridors.visible,
+      };
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
