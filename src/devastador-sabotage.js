@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createDevastadorGrandHall, updateDevastadorGrandHall } from './devastador-grand-hall.js';
 
 // Devastador is the mission objective, NOT a generic enemy boss.
 // The last chamber is a destructible orbital machine with ordered circuits:
@@ -32,6 +33,8 @@ export function createDevastadorSabotageCore() {
   root.name = 'devastador-reactor-sabotage';
   root.userData.sabotage = true;
   const ownedMaterials = [];
+  const grandHall = createDevastadorGrandHall();
+  root.add(grandHall);
   const mat = (color, emissive = false) => {
     const m = emissive
       ? new T.MeshBasicMaterial({ color, toneMapped: false })
@@ -186,6 +189,7 @@ export function createDevastadorSabotageCore() {
   root.userData = {
     sabotage: true,
     parts,
+    grandHall,
     core,
     coreMarker,
     coreMuzzle,
@@ -195,7 +199,7 @@ export function createDevastadorSabotageCore() {
     organic: [],
     jaw: new T.Object3D(),
     driveShockPlumes: [],
-    materials: ownedMaterials,
+    materials: [...ownedMaterials, ...grandHall.userData.materials],
     reactorVisual: {
       powerOnline: 4,
       coolantOnline: 2,
@@ -249,6 +253,12 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
   root.userData.core.visible = stage.system === 'core';
   root.userData.coreMarker.visible = stage.system === 'core';
   root.userData.coreMarker.rotation.z = time * 0.7;
+  updateDevastadorGrandHall(root.userData.grandHall, {
+    orbit,
+    time,
+    driveSpeed,
+    blackout: damageRatio,
+  });
   for (const [i, rotor] of root.userData.rotors.entries()) {
     rotor.rotation.z =
       (i % 2 ? 1 : -1) * time * (stage.system === 'core' ? 2.3 : 0.45 * (1 - damageRatio * 0.68));
