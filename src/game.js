@@ -3297,7 +3297,7 @@ export function createGame({
         }
       }
     }
-    player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
+    // Single interpolation below: do not fight held 90° bank with legacy steering.
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
     if (roll > 0) {
