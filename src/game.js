@@ -4484,13 +4484,14 @@ export function createGame({
             }
           }
         }
-      } else {
+      } else if (!dynamicFlight) {
         boss.position.z = T.MathUtils.lerp(boss.position.z, -88, dt * 0.7);
         boss.position.x = Math.sin(elapsed * 0.3) * 7;
         boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
       }
-      boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
-      const t = dynamicFlight ? tactics() : null;
+      if (!boss.userData.sabotage)
+        boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      const t = dynamicFlight && !boss.userData.sabotage ? tactics() : null;
       const poseAge = t ? Math.max(0, bossCombat.age - 8) % t.period : 0;
       const melee = bossMeleePose(
         bossIntent,
@@ -5347,7 +5348,10 @@ export function createGame({
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
-      sabotage: boss?.userData.sabotage ? sabotagedSystem(boss.userData.parts) : null,
+      sabotage: boss?.userData.sabotage ? {
+        ...sabotagedSystem(boss.userData.parts),
+        visual: boss.userData.reactorVisual,
+      } : null,
       bossDriveShock:
         boss?.userData.driveShockPlumes?.map((plume, i) => ({
           side: i ? 1 : -1,
