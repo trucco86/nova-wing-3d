@@ -3,6 +3,7 @@ import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
+import { createBossPremiumSystems, animateBossPremiumSystems } from './boss-premium-systems.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
@@ -628,6 +629,12 @@ export function createBossModel(sector, index = 0, tactical = false) {
     shell.userData.visualOnly = true;
     g.add(shell);
   }
+  // Mounted after the final Marvin hull swap so its detailed moving hardware
+  // stays visible. Never move the real hit volumes or generator hardpoints.
+  const premiumSystems = createBossPremiumSystems(index, sector.accent);
+  g.add(premiumSystems);
+  g.userData.premiumSystems = premiumSystems;
+  g.userData.materials.push(...premiumSystems.userData.materials);
   return g;
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
@@ -636,6 +643,7 @@ export function animateBossSignature(g, index, time, phase = 1, attackState = 'm
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
+  animateBossPremiumSystems(g.userData.premiumSystems, time, phase, attackState);
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
