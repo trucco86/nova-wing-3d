@@ -115,3 +115,30 @@ test('only hostile satellites and carriers can be destroyed by real projectile g
   }
   assert.equal(damageBreakableHull(70, Number.NaN).health, 70);
 });
+
+test('mecha dash never clips outside asteroid cavern, even for a single frame', (t) => {
+  const h = harness({ hostname: 'localhost', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(2, 'stage'), true);
+  h.advance(17, 0.1);
+  assert.equal(h.game.snapshot().asteroidInterior.phase, 'transition');
+  h.key('KeyT');
+  h.advance(1.35);
+  assert.equal(h.game.snapshot().mecha.active, true);
+
+  // Start the dash against the right cavern wall; the regular steering and
+  // dash displacement must be resolved before the radial collision clamp.
+  h.key('KeyD');
+  h.advance(1.1);
+  const before = h.game.snapshot();
+  assert.ok(Math.hypot(before.player.x, before.player.y - 10) <= 27.001);
+  h.game.roll();
+  h.advance(0.05);
+  const during = h.game.snapshot();
+  assert.equal(during.dash.active, true);
+  assert.ok(
+    Math.hypot(during.player.x, during.player.y - 10) <= 27.001,
+    'dash collision must be resolved in the same frame, not after visual clipping',
+  );
+  h.key('KeyD', false);
+});
