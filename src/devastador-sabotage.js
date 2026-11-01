@@ -45,7 +45,6 @@ export function createDevastadorSabotageCore() {
   const charge = mat('#ff9954', true);
   const mint = mat('#a0ffe8', true);
   const cube = new T.BoxGeometry(1, 1, 1);
-  const cylinder = new T.CylinderGeometry(1, 1, 1, 16);
   const addBox = (parent, name, material, pos, size) => {
     const mesh = new T.Mesh(cube, material);
     mesh.name = name;
