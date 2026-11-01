@@ -88,8 +88,10 @@ Referência Firebase: https://firebase.google.com/docs/auth/admin/verify-id-toke
 O job GitHub Pages pode gerar `public-site/nova-config.json` por meio de
 `tools/write-public-config.mjs` **somente** quando a variável do repositório
 `NOVA_FIREBASE_PROD_CONFIG_JSON` contém uma configuração pública válida de
-Firebase Web de um projeto PROD diferente de `nova-wing-dev`.
-Sem a variável, o login permanece indisponível e o jogo segue como visitante.
+Firebase Web de um projeto PROD diferente de `nova-wing-dev`, **e**
+`NOVA_GOOGLE_LOGIN_PROD_ENABLED` esteja explicitamente igual a `true`.
+Sem essas duas variáveis, o login permanece indisponível e o jogo segue como visitante.
+Apenas cadastrar o projeto Firebase não ativa contas reais acidentalmente.
 Se ela apontar para DEV ou for inválida, a publicação falha com erro.
 
 Habilitação real requer projeto Firebase PROD, provedor Google ativo,
