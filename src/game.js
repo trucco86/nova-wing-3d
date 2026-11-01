@@ -3735,7 +3735,7 @@ export function createGame({
       const o = createObstacle('tunnel');
       o.position.z = -230;
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const bossBlocked =
@@ -4394,10 +4394,30 @@ export function createGame({
       if (b.v) b.o.position.addScaledVector(b.v, dt);
       else b.o.position.z -= dt * 190;
       b.life -= dt;
-      if (b.life > 0 && projectileOccluded(previousShot, b.o.position)) {
+      // Destructible carriers and hostile satellites are resolved BEFORE the
+      // solid occlusion gate; no phantom collision survives their destruction.
+      const struckObstacle = b.life > 0 ? obstacles.find(({ o, life }) =>
+        life > 0 && projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt)) : null;
+      if (struckObstacle) {
+        if (struckObstacle.hp != null) {
+          const hitHull = damageBreakableHull(struckObstacle.hp, b.damage ?? 2);
+          struckObstacle.hp = hitHull.health;
+          if (hitHull.destroyed) {
+            struckObstacle.life = 0;
+            score += struckObstacle.o.userData.kind === 'carrier' ? 140 : 70;
+            explode(struckObstacle.o.position.clone(), 11, 0xffa85f);
+            message(struckObstacle.o.userData.kind === 'carrier' ?
+              'NAVE HOSTIL DESTRUÍDA' : 'SATÉLITE HOSTIL DESTRUÍDO');
+          } else impact(b.o.position, hitHull.dealt, { heavy: b.source?.startsWith('mecha-') });
+        }
+        b.life = 0;
+        if (dynamicFlight) cue('armorHit');
+        continue;
+      }
+      if (b.life > 0 && (sectorIndex === 2 && dynamicFlight &&
+        asteroidInterior.projectileBlocked(previousShot, b.o.position))) {
         b.life = 0;
         explode(b.o.position, 3, 0xffbf75);
-        if (dynamicFlight) cue('armorHit');
         continue;
       }
       if (b.life > 0 && dynamicFlight && !boss) {
@@ -4650,10 +4670,11 @@ export function createGame({
         -230,
       );
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
     }
     for (const obstacle of obstacles) {
+      if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
       const from = previousPlayer
