@@ -114,6 +114,12 @@ import {
   sabotagedSystem,
   sabotageTargetOpen,
 } from './devastador-sabotage.js';
+import {
+  reactorOrbitReady,
+  reactorOrbitPosition,
+  reactorOrbitCamera,
+  reactorShotDirection,
+} from './devastador-orbit.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
 import {
@@ -611,6 +617,7 @@ export function createGame({
     evolutionStage = -1,
     orbitAngle = 0,
     orbitTouch = 0;
+  let sabotagePilotLocal = null;
   let tacticEnergy = 0,
     scanTime = 0,
     impactTime = 0,
@@ -1242,6 +1249,7 @@ export function createGame({
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
     orbitAngle = orbitTouch = 0;
+    sabotagePilotLocal = null;
     arcana = 100;
     tacticEnergy = scanTime = impactTime = 0;
     impactConfirmed = false;
@@ -1701,6 +1709,17 @@ export function createGame({
     o.position.x += x;
     if (!origin) o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
+    if (dynamicFlight && boss?.userData.sabotage && reactorOrbitReady(boss.position)) {
+      const localShot = o.position.clone();
+      o.position.copy(reactorOrbitPosition(boss.position, localShot, orbitAngle));
+      o.rotation.y = orbitAngle;
+      boss.updateMatrixWorld(true);
+      const weak = boss.userData.parts.find(
+        (part, i) => part.hp > 0 && sabotageTargetOpen(boss.userData.parts, i, orbitAngle),
+      );
+      const target = (weak?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3());
+      o.userData.orbitVelocity = reactorShotDirection(target, o.position, orbitAngle);
+    }
     scene.add(o);
     shots.push({
       o,
@@ -1709,6 +1728,7 @@ export function createGame({
       charged,
       element: dynamicFlight ? selectedWeapon().element : 'kinetic',
       pierced: new Set(),
+      ...(o.userData.orbitVelocity ? { v: o.userData.orbitVelocity } : {}),
     });
   }
   function fire() {
@@ -2091,6 +2111,7 @@ export function createGame({
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     orbitAngle = 0;
+    sabotagePilotLocal = null;
     scanTime = 0;
     lastSpecialCycle = -1;
     lastRangedCycle = bossIntentCycle = -1;
@@ -3398,6 +3419,12 @@ export function createGame({
     bomb();
   };
   function updatePiloting(dt) {
+    // Input stays in camera-local coordinates. Restore those coordinates
+    // before piloting, then map the actual fighter around the fixed chamber.
+    if (state === 'playing' && boss?.userData.sabotage && sabotagePilotLocal) {
+      player.position.copy(sabotagePilotLocal);
+      player.rotation.y = 0;
+    }
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
     if (robot.visible) robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
@@ -3918,6 +3945,9 @@ export function createGame({
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
+    if (dynamicFlight && boss?.userData.sabotage) {
+      sabotagePilotLocal = player.position.clone();
+    }
     const reflex = reflexBoost.update(dt, {
       boosting: dynamicFlight && boosting,
       energy,
@@ -4350,22 +4380,27 @@ export function createGame({
     }
     if (boss) {
       if (dynamicFlight && boss.userData.sabotage) {
-        // System-level 360° sabotage; do not run the generic boss AI.
-        const turn =
-          ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
-        orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
-        boss.rotation.y = -orbitAngle;
-        world.setOrbit(-orbitAngle, boss.position);
+        // The reactor and all architecture remain fixed in world space.
+        // Only the pilot travels around the reactor on the 360-degree path.
+        boss.rotation.y = 0;
+        world.setOrbit(0, boss.position);
         boss.position.z = T.MathUtils.lerp(boss.position.z, -164, Math.min(1, dt * 0.7));
         boss.position.y = T.MathUtils.lerp(boss.position.y, 17, Math.min(1, dt * 0.7));
-        if (turn)
-          for (const shot of [...shots, ...hostile]) {
-            shot.o.position
-              .sub(boss.position)
-              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
-              .add(boss.position);
-            if (shot.v) shot.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
-          }
+        const orbitalReady = reactorOrbitReady(boss.position);
+        const turn = orbitalReady
+          ? ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8
+          : 0;
+        orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
+        if (orbitalReady) {
+          const localPilot = sabotagePilotLocal ?? player.position.clone();
+          player.position.copy(reactorOrbitPosition(boss.position, localPilot, orbitAngle));
+          player.rotation.y = orbitAngle;
+          const orbitalCamera = reactorOrbitCamera(boss.position, player.position, orbitAngle);
+          camera.position.copy(orbitalCamera.eye);
+          camera.lookAt(orbitalCamera.aim);
+          reticle.position.copy(boss.position);
+          updateAimReticle();
+        }
         renderBossRadar(document, null);
         $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
@@ -5436,6 +5471,9 @@ export function createGame({
               wallSegments: boss.userData.grandHall.userData.walls,
               centralReactor: true,
               ...world.reactorGrandHallState(),
+              pilotOrbitsReactor: reactorOrbitReady(boss.position),
+              reactorWorldYaw: boss.rotation.y,
+              playerWorldPosition: player.position.toArray(),
             },
           }
         : null,
