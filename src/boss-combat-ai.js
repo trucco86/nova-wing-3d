@@ -150,7 +150,10 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
     exhaust: intent.kind === 'reactor-vent' ? windup * 0.4 + strike : 0,
-    lunge: strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 72 : 48),
+    lunge:
+      intent.kind === 'reactor-vent'
+        ? 0
+        : strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 72 : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'claw-swipe' || intent.kind === 'hammer-slam'
