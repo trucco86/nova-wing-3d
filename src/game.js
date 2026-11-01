@@ -108,6 +108,7 @@ import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
+import { fighterAllowedDuringArrival, arrivalFighterDepth, shouldKeepArrivalCooldown } from './encounter-arrival-flow.js';
 import {
   subbossProfile,
   subbossMotion,
@@ -1721,7 +1722,7 @@ export function createGame({
               : dynamicFlight && sectorIndex === 0
                 ? rnd(12, 24)
                 : rnd(1, 19));
-    o.position.set(x, y, -200);
+    o.position.set(x, y, tacticalFighter ? arrivalFighterDepth(sectorIndex, assignedSlot?.arrivalIndex) : -200);
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
@@ -3306,7 +3307,7 @@ export function createGame({
       ) {
         reactorGridCompleted = true;
         reactorGridSeconds = 17;
-        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL', 'calvin');
+        message('DEVASTADOR · REATOR · DESVIE DAS DEFESAS E ELIMINE OS INIMIGOS', 'calvin');
       }
       if (reactorGridSeconds > 0)
         reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
@@ -3314,8 +3315,7 @@ export function createGame({
         mission: reactorGridSeconds > 0 ? 'reactor-grid' : '',
       });
       flightCamera.setShot(directedShot);
-      if (directedShot === 'overhead')
-        route.label = 'REATOR ÓRBITA-9 · DESVIE EM X/Z · W/S PROFUNDIDADE';
+      // Sector 4 never overrides forward flight with a top-down camera.
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
@@ -3458,12 +3458,17 @@ export function createGame({
     else document.body.classList.remove('reflex-boost');
     const hostileDt = dt * reflex.hostileTimeScale;
     spawnCd -= dt;
+    // Never accumulate a huge overdue spawn while the spacecraft boards a
+    // world. The first formation approaches from deep offscreen, not as a
+    // synchronized pop immediately after an arrival gate becomes false.
+    if (shouldKeepArrivalCooldown(sectorIndex, elapsed, arrivalTransit))
+      spawnCd = Math.max(spawnCd, 1.35);
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (
       spawnEncounters &&
-      !arrivalTransit &&
+      fighterAllowedDuringArrival(sectorIndex, elapsed, arrivalTransit) &&
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss
@@ -3477,7 +3482,7 @@ export function createGame({
       if (dynamicFlight) {
         const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
         lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-        for (const slot of wave.slots) enemy('fighter', slot);
+        wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
         if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
       } else {
         for (let i = 0; i < count; i++) enemy();
@@ -4433,8 +4438,8 @@ export function createGame({
       reactorGridWave < 4 &&
       reactorGridSeconds < 15.8 - reactorGridWave * 3.5
     ) {
-      // Playable reactor-grid hazards only during the top-down X/Z section;
-      // their physical collision volume matches their visible station props.
+      // Reactor hazards remain in front of the chasing fighter; no sudden
+      // overhead camera/control mapping or arbitrary X/Z navigation mode.
       const gate = createObstacle('reactor');
       gate.position.set([-17, 18, -12, 13][reactorGridWave], 8, player.position.z - 82);
       scene.add(gate);
