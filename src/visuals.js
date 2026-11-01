@@ -1499,6 +1499,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationVista = null;
   let destinationEscape = null;
   let destinationLandmarks = null;
+  let carrierGrandHallActive = false;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
@@ -1572,10 +1573,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // This continuous physically moving model is visible from the first
       // frame and grows by real perspective until it crosses the camera.
       const boarding = updateMothershipApproach(mothership, seconds);
-      updateMothershipInterior(
-        sectorScenery.getObjectByName('marvin-mothership-interior'),
-        seconds,
-      );
+      const carrierCorridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      updateMothershipInterior(carrierCorridors, seconds);
+      // The narrow corridor modules must never occupy the final 360-degree hall.
+      // Their own timeline can continue for the next stage transition,
+      // but scenery remains suppressed while the wide arena is active.
+      if (carrierGrandHallActive && carrierCorridors) carrierCorridors.visible = false;
       // The old freestanding station gantries obscure the hangar and appear
       // to float inside the ship. The new exterior has its own scale cues.
       if (destinationLandmarks) destinationLandmarks.visible = false;
@@ -1715,6 +1718,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moon.visible = atmosphere.visible = !active;
       scene.fog.density = active ? 0.0015 : 0.00045;
     },
+    setReactorGrandHall(active) {
+      carrierGrandHallActive = dynamicFlight && sceneryTheme === 'station' && !!active;
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      if (corridors && carrierGrandHallActive) corridors.visible = false;
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -1723,6 +1731,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), angle));
     },
     setSector(sector, sectorIndex = -1) {
+      carrierGrandHallActive = false;
       clearScenery();
       destinationVista = null;
       destinationEscape = null;
