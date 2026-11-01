@@ -1,0 +1,50 @@
+name: Prepare stage 4 flow and QA laboratory
+on:
+  push:
+    branches:
+      - fix/stage4-camera-encounter-flow-20261101
+    paths:
+      - .github/workflows/stage4-and-lab-qa-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/stage4-camera-encounter-flow-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Regenerate, validate and test real game
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit audited scope and web build only
+        run: |
+          git add -- index.html src/stage-variety.js src/game.js src/destination-vista.js src/mothership-approach.js src/mothership-interior.js src/encounter-arrival-flow.js src/developer-lab.js src/shell.html tests/mothership-boarding.test.mjs tests/stage-variety.test.mjs tests/boss-rpg-camera-v1278.test.mjs tests/stage4-flow-and-developer-lab.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No generated changes'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified forward stage 4 and player equipment lab'
+            git push origin HEAD:fix/stage4-camera-encounter-flow-20261101
+          fi
+      - name: Run complete browser CI and independent Cloudflare preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref fix/stage4-camera-encounter-flow-20261101
+          gh workflow run cloudflare-preview.yml --ref fix/stage4-camera-encounter-flow-20261101
