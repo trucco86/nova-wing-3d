@@ -34,12 +34,27 @@ test('mobile: hold fighter 90 degrees, transform, dash with real side movement a
   await expect(button).toHaveText('DASH');
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   await button.tap();
+  const neutral = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(neutral.dash.active).toBe(false);
+  expect(neutral.energy).toBe(before.energy);
+
+  // Hold the actual touch stick to the right while tapping DASH with a
+  // different touch pointer: no automatic direction from player position.
+  const stick = page.locator('#stick');
+  const stickBounds = await stick.boundingBox();
+  await page.mouse.move(stickBounds.x + stickBounds.width * 0.84, stickBounds.y + stickBounds.height * 0.5);
+  await page.mouse.down();
+  await expect.poll(async () => page.evaluate(() => window.fixture.game.snapshot().controls.stickX)).toBeGreaterThan(0.2);
+  await button.tap();
   await page.evaluate(() => window.fixture.advance(0.12));
   const during = await page.evaluate(() => window.fixture.game.snapshot());
+  await page.mouse.up();
   expect(during.dash.active).toBe(true);
   expect(Math.abs(during.player.x - before.player.x)).toBeGreaterThan(3);
   expect(during.mecha.dashJetSide).toBe(-during.dash.direction);
   expect(during.energy).toBeLessThan(before.energy);
+  expect(during.dash.trail.visible).toBeGreaterThan(0);
+  expect(during.mecha.boostCoreCount).toBe(0);
   await page.screenshot({ path: info.outputPath('mecha-lateral-dash.png') });
   await page.evaluate(() => window.fixture.advance(0.3));
   const after = await page.evaluate(() => window.fixture.game.snapshot());
@@ -88,4 +103,23 @@ test('desktop: a held Q banks vertically, a tapped E barrel-rolls, robot Z dashe
   await page.screenshot({ path: info.outputPath('desktop-mecha-side-jet.png') });
   await page.keyboard.up('d');
   expect(errors).toEqual([]);
+});
+
+test('mobile: extended robot boost is measurably longer than the idle exhaust', async ({ page }, info) => {
+  test.skip(info.project.name !== 'mobile', 'Mobile boost visual regression');
+  await page.goto('/__dynamic.html?sector=3');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.locator('#robotTouch').tap();
+  await page.evaluate(() => window.fixture.advance(1.45));
+  const idle = await page.evaluate(() => window.fixture.game.snapshot());
+  const booster = page.locator('#boostTouch');
+  const bounds = await booster.boundingBox();
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.down();
+  await page.evaluate(() => window.fixture.advance(0.55));
+  const boosted = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(boosted.mecha.boostCoreCount).toBe(2);
+  expect(boosted.mecha.thrustLength).toBeGreaterThan(idle.mecha.thrustLength * 2);
+  await page.screenshot({ path: info.outputPath('mecha-extended-boost.png') });
+  await page.mouse.up();
 });
