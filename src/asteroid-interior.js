@@ -50,10 +50,41 @@ export function createAsteroidInterior(scene) {
   });
   const mouth = new T.Group();
   mouth.name = 'asteroid-entrance';
-  const outerShell = new T.Mesh(new T.TorusGeometry(106, 65, 7, 19), gateMaterial);
-  outerShell.scale.y = 0.82;
+  // A real irregular rock aperture, not a bright circular portal/ring.
+  // Instancing retains two draw calls and a clear central flight corridor.
+  const entranceDummy = new T.Object3D();
+  const outerShell = new T.InstancedMesh(rockGeometry, gateMaterial, 56);
+  outerShell.name = 'asteroid-entrance-jagged-rock-face';
+  for (let i = 0; i < 56; i++) {
+    const a = (i / 56) * Math.PI * 2;
+    const radius = 76 + Math.sin(i * 2.37) * 7;
+    entranceDummy.position.set(
+      Math.cos(a) * radius,
+      Math.sin(a) * radius * 0.88,
+      Math.sin(i * 1.7) * 22,
+    );
+    entranceDummy.rotation.set(i * 0.37, i * 0.18, a);
+    entranceDummy.scale.set(31 + (i % 4) * 4, 30 + (i % 3) * 5, 36 + (i % 5) * 6);
+    entranceDummy.updateMatrix();
+    outerShell.setMatrixAt(i, entranceDummy.matrix);
+    outerShell.setColorAt(i, new T.Color(['#68505b', '#7b6269', '#584956', '#817273'][i % 4]));
+  }
+  outerShell.instanceMatrix.needsUpdate = true;
+  outerShell.instanceColor.needsUpdate = true;
   mouth.add(outerShell);
-  const portal = new T.Mesh(new T.TorusGeometry(42, 2, 5, 24), veinMaterial);
+  // Sparse mineral faults follow separate rock faces, not a concentric hoop.
+  const portal = new T.InstancedMesh(braceGeo, veinMaterial, 12);
+  portal.name = 'asteroid-entrance-mineral-faults';
+  for (let i = 0; i < 12; i++) {
+    const a = (i * 2.399963) % (Math.PI * 2);
+    const radius = 53 + (i % 3) * 5;
+    entranceDummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 17 + i % 4);
+    entranceDummy.rotation.set(0, 0, a + 0.24);
+    entranceDummy.scale.set(1.1, 7 + (i % 4) * 3, 1.4);
+    entranceDummy.updateMatrix();
+    portal.setMatrixAt(i, entranceDummy.matrix);
+  }
+  portal.instanceMatrix.needsUpdate = true;
   mouth.add(portal);
   mouth.position.set(0, CENTER_Y, -630);
   scene.add(mouth);
@@ -131,14 +162,22 @@ export function createAsteroidInterior(scene) {
 
   let phase = 'inactive';
   let runTime = 0;
+  let entryFromZ = -630;
+  let entryAge = 0;
   function setPhase(next) {
+    if (next === phase) return;
+    if (next === 'transition') {
+      // Preserve the last visible approach frame: no geometry teleport.
+      entryFromZ = mouth.position.z;
+      entryAge = 0;
+    }
     phase = next;
     mouth.visible = next === 'approach' || next === 'transition';
     tunnel.visible = next === 'transition' || next === 'interior' || next === 'escape';
     arena.visible = next === 'boss';
-    if (mouth.visible) {
-      mouth.position.z = next === 'transition' ? -220 : -630;
-      mouth.scale.setScalar(next === 'transition' ? 1.2 : 1);
+    if (next === 'approach') {
+      mouth.position.z = -630;
+      mouth.scale.setScalar(1);
     }
   }
   setPhase('inactive');
@@ -146,6 +185,8 @@ export function createAsteroidInterior(scene) {
     setPhase,
     reset(active) {
       runTime = 0;
+      entryAge = 0;
+      entryFromZ = -630;
       for (let i = 0; i < rings.length; i++) rings[i].position.z = -115 - i * RING_GAP;
       setPhase(active ? 'approach' : 'inactive');
     },
@@ -154,6 +195,14 @@ export function createAsteroidInterior(scene) {
       runTime += dt;
       if (mouth.visible && phase === 'approach') {
         mouth.position.z = -630 + Math.min(1, runTime / 16) * 370;
+      } else if (mouth.visible && phase === 'transition') {
+        // Fly through the asteroid over the existing transition window.
+        // Uses the simulation clock: pause/reset/replay never drift.
+        entryAge += dt;
+        const linear = Math.max(0, Math.min(1, entryAge / 11));
+        const eased = linear * linear * (3 - 2 * linear);
+        mouth.position.z = entryFromZ + (55 - entryFromZ) * eased;
+        mouth.scale.setScalar(1 + 0.22 * eased);
       }
       if (tunnel.visible) {
         for (const section of rings) {
