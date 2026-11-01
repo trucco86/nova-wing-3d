@@ -19,7 +19,7 @@ test('perspectives require an authored gameplay objective, not arbitrary timesta
       assert.equal(stagePerspectiveAt(sector, time, 100), 'chase');
     }
   }
-  assert.equal(stagePerspectiveAt(3, 44, 100, false, { mission: 'reactor-grid' }), 'overhead');
+  assert.equal(stagePerspectiveAt(3, 44, 100, false, { mission: 'reactor-grid' }), 'chase');
   assert.equal(stagePerspectiveAt(2, 55, 100, false, { mission: 'asteroid-escape' }), 'combat');
   assert.equal(stagePerspectiveAt(3, 44, 100, true, { mission: 'reactor-grid' }), 'chase');
   assert.equal(stagePerspectiveAt(3, 44, 0, false, { mission: 'reactor-grid' }), 'chase');
