@@ -562,7 +562,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
     jaw,
     coreZ: 18,
     owned: true,
-    materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial],
+    materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial, ...driveShockPlumes.map((plume) => plume.material)],
   };
   // The penultimate biomechanical monster is piloted by Marvin, while the
   // FINAL boss is his Obsidian fighter — not the same monstrous shape reused.
