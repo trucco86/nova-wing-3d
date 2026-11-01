@@ -432,9 +432,8 @@ export function createGame({
     }
     if (!sustained) {
       // A quick tap retains the old toggle-to-auto-aim behavior.
-      lockEnabled = !wasEnabled;
-      if (!lockEnabled) resetMechaLock();
-      else $('lockTouch').ariaPressed = 'true';
+      lockEnabled = wasEnabled;
+      toggleMechaLock();
       return;
     }
     const cost = multiLockCost(targets.length);
