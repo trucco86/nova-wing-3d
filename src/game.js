@@ -2247,6 +2247,14 @@ export function createGame({
       true,
     );
     if (!developerSession) return false;
+    for (const [id, value] of [
+      ['qaLabLevel', $('developerTier').value],
+      ['qaLabShip', lab.ship],
+      ['qaLabArsenal', String(lab.arsenal)],
+      ['qaLabSpecial', String(lab.special)],
+      ['qaLabForm', 'ship'],
+      ['qaLabPods', 'docked'],
+    ]) $(id).value = value;
     if (scenario.encounter !== 'stage') {
       if (scenario.sector === 0) {
         // Advance the genuine orbital state machine, never bypass the main campaign gate.
@@ -2655,6 +2663,11 @@ export function createGame({
   $('menuQA').hidden = !developerAvailable;
   $('developerSessionTag').hidden = true;
   if (developerAvailable) {
+    // Test harnesses and first-load mobile browsers share safe defaults.
+    for (const [id, value] of [
+      ['developerTier', '9'], ['developerShip', 'nova7'],
+      ['developerArsenal', '0'], ['developerSpecial', '0'],
+    ]) if (!$(id).value) $(id).value = value;
     for (const [index, sector] of SECTORS.entries()) {
       const option = document.createElement('option');
       option.value = String(index);
