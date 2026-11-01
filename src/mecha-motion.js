@@ -28,7 +28,9 @@ export function updateMechaPose(
     nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.19 + (boosting ? -0.14 : 0), dt, 6);
     plume.scale.y = ease(
       plume.scale.y,
-      0.42 + thrust * (boosting ? 4.35 : 1.45) + Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
+      0.42 +
+        thrust * (boosting ? 4.35 : 1.45) +
+        Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
       dt,
       12,
     );
