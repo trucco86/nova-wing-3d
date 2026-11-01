@@ -88,10 +88,15 @@ window.fixture = {
     game.step(0);
   },
 };
-// The QA query must be launched while still in the menu; developer sessions
-// never load or overwrite a player's campaign checkpoint.
+// QA encounter variants start from the same authorized developer path that
+// players use, not from an artificial HUD mock or an incomplete wave timer.
+// These URLs exist only on the localhost visual fixture server.
 const qaSector = params.get('qaBoss');
-if (qaSector !== null) {
+const qaSubboss = params.get('qaSubboss');
+if (qaSubboss !== null) {
+  if (!game.startDeveloperScenario(Number(qaSubboss), 'subboss'))
+    throw new Error('Developer/QA subboss fixture unavailable');
+} else if (qaSector !== null) {
   if (!game.startDeveloperScenario(Number(qaSector), 'boss'))
     throw new Error('Developer/QA boss fixture unavailable');
 } else game.start(true);
