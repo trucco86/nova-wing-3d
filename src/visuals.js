@@ -611,7 +611,7 @@ export function createFlyingRobot() {
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
   // Modest presence increase without changing player collider physics.
-  robot.scale.setScalar(1.04);
+  robot.scale.setScalar(1.0);
   return robot;
 }
 
