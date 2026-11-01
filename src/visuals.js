@@ -12,6 +12,7 @@ import {
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
+import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import {
   createDestinationLandmarks,
   updateDestinationLandmarks,
@@ -1557,6 +1558,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         child.userData.arrivalWasRevealed = true;
       }
     }
+    if (destinationIndex === 3) {
+      // Apply this after generic arrival visibility so the hangar never pops
+      // in too early or gets mistakenly re-enabled during the outer approach.
+      updateMothershipInterior(
+        sectorScenery.getObjectByName('marvin-mothership-interior'), seconds,
+      );
+    }
     return state;
   }
   // Capture the established destination scene at the start of the boss exit.
@@ -1804,16 +1812,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           sectorScenery.add(o);
         }
       }
-      if (sceneryTheme === 'station')
-        for (let i = 0; i < 10; i++) {
-          const g = new T.Group();
-          const ring = new T.Mesh(new T.TorusGeometry(78, 2.2, 6, 8), mat);
-          g.add(ring);
-          g.add(new T.Mesh(new T.TorusGeometry(74, 0.4, 6, 8), light));
-          g.position.set(0, 0, -i * 150 - 100);
-          g.rotation.z = i * 0.13;
-          sectorScenery.add(g);
-        }
+      if (sceneryTheme === 'station' && dynamicFlight) {
+        // Mission 4 is INSIDE Marvin's mothership; do not reuse a generic
+        // corridor of space rings as the main environmental geometry.
+        sectorScenery.add(createMothershipInterior());
+      }
       if (
         ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&
         !(dynamicFlight && sceneryTheme === 'throne')
@@ -1883,15 +1886,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
-      if (dynamicFlight && sceneryTheme === 'station') {
-        for (let i = 0; i < 7; i++) {
-          const ring = new T.Mesh(new T.TorusGeometry(43, 1.5, 6, 24), mat);
-          ring.add(new T.Mesh(new T.TorusGeometry(40.5, 0.32, 4, 48), light));
-          ring.position.set(0, 10, -800 - i * 22);
-          ring.userData.conduit = true;
-          sectorScenery.add(ring);
-        }
-      }
+      // The station is now a physical hangar/engine room, not extra torus rings.
       // Each non-Earth location has a different silhouette, palette and traversal
       // grammar. No universal orbital torus corridor or broken moon in every stage.
       if (dynamicFlight && sceneryTheme === 'fleet') {
