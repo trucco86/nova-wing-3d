@@ -10,8 +10,9 @@ import {
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
 }, info) => {
-  // Two screenshots took over 20s on the software-rendered CI runner.
-  test.setTimeout(60000);
+  // WebGL screenshots + illustrated hangar may exceed 60s on CI SwiftShader;
+  // preserve all visual/control checks, without timing out mid-flight.
+  test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
