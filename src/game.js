@@ -3265,8 +3265,7 @@ export function createGame({
       );
       if (destinationArrival && !boss) {
         route.label = destinationArrival.label;
-        if (destinationArrival.phase === 'entry')
-          route.ascent -= 0.16 * destinationArrival.haze;
+        if (destinationArrival.phase === 'entry') route.ascent -= 0.16 * destinationArrival.haze;
       }
       if (marsArrival && !boss) {
         route.label = marsArrival.label;

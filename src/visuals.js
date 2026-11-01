@@ -13,8 +13,10 @@ import { createCity33Premium, setCity33Quality, updateCity33Premium } from './ci
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import {
-  createDestinationVista, updateDestinationVista,
-  createDestinationEscape, updateDestinationEscape,
+  createDestinationVista,
+  updateDestinationVista,
+  createDestinationEscape,
+  updateDestinationEscape,
 } from './destination-vista.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
@@ -1527,7 +1529,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
     const normalDensity = destinationIndex === 5 ? 0.0014 : 0.00045;
-    scene.fog.density = T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
+    scene.fog.density =
+      T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
     starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;

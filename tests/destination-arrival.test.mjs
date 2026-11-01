@@ -5,9 +5,16 @@ import { SECTORS } from '../src/campaign.js';
 import { STAGE_JOURNEYS } from '../src/stage-journey.js';
 import { createWorld } from '../src/visuals.js';
 import {
-  DESTINATION_PROFILES, ARRIVAL_SECONDS, destinationArrivalAt, destinationExitAt,
+  DESTINATION_PROFILES,
+  ARRIVAL_SECONDS,
+  destinationArrivalAt,
+  destinationExitAt,
 } from '../src/destination-arrival.js';
-import { createDestinationVista, createDestinationEscape, updateDestinationEscape } from '../src/destination-vista.js';
+import {
+  createDestinationVista,
+  createDestinationEscape,
+  updateDestinationEscape,
+} from '../src/destination-vista.js';
 
 test('all later destinations retain independent celestial routes, and entry is deterministic', () => {
   assert.equal(SECTORS.length, 10);
@@ -18,7 +25,10 @@ test('all later destinations retain independent celestial routes, and entry is d
     assert.ok(profile.label.includes(profile.location));
     assert.ok(STAGE_JOURNEYS[index].world);
     const phases = [0, 8, 15, 22, 26].map((seconds) => destinationArrivalAt(index, seconds));
-    assert.deepEqual(phases.map((x) => x.phase), ['space', 'orbit', 'entry', 'descent', 'arena']);
+    assert.deepEqual(
+      phases.map((x) => x.phase),
+      ['space', 'orbit', 'entry', 'descent', 'arena'],
+    );
     assert.ok(phases[0].globeOpacity >= phases[3].globeOpacity);
     assert.equal(phases[0].combatReady, false);
     assert.equal(phases[4].combatReady, true);
@@ -37,7 +47,10 @@ test('the planetary vistas are non-colliding and only Saturn has astronomical ri
     assert.ok(root.userData.fixedSky);
     const globe = root.getObjectByName('destination-celestial-body');
     assert.ok(globe?.isMesh);
-    assert.equal(globe.getObjectByName('saturn-planetary-ring-system')?.isMesh ?? false, index === 7);
+    assert.equal(
+      globe.getObjectByName('saturn-planetary-ring-system')?.isMesh ?? false,
+      index === 7,
+    );
     assert.equal(root.getObjectByName('destination-entry-mist').children.length, 3);
     root.traverse((obj) => assert.notEqual(obj.userData.hitbox, true));
   }

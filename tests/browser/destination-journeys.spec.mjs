@@ -10,7 +10,9 @@ const worlds = [
   [9, 'TITÃ'],
 ];
 for (const [sector, destination] of worlds) {
-  test(`destination ${sector + 1} is shown before entry into ${destination}`, async ({ page }, info) => {
+  test(`destination ${sector + 1} is shown before entry into ${destination}`, async ({
+    page,
+  }, info) => {
     test.setTimeout(180000);
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');

@@ -33,7 +33,8 @@ export const SECTORS = [
     accent: '#e8a0ff',
     sky: '#30225d',
     duration: 82,
-    brief: 'Da órbita de Marte ao mega-asteroide: encontre a abertura, lute no interior e escape do colapso.',
+    brief:
+      'Da órbita de Marte ao mega-asteroide: encontre a abertura, lute no interior e escape do colapso.',
   },
   {
     name: 'ESTAÇÃO ÓRBITA-9',
@@ -63,7 +64,8 @@ export const SECTORS = [
     accent: '#9feeff',
     sky: '#28527d',
     duration: 92,
-    brief: 'Europa, lua de Júpiter: pouse nas geleiras, cruze fissuras e enfrente o colosso glacial.',
+    brief:
+      'Europa, lua de Júpiter: pouse nas geleiras, cruze fissuras e enfrente o colosso glacial.',
   },
   {
     name: 'NÚCLEO PÚRPURA',
@@ -73,7 +75,8 @@ export const SECTORS = [
     accent: '#f18bff',
     sky: '#482b78',
     duration: 92,
-    brief: 'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
+    brief:
+      'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
   },
   {
     name: 'GRADE DE BATALHA',
@@ -83,7 +86,8 @@ export const SECTORS = [
     accent: '#ff9e73',
     sky: '#302d65',
     duration: 98,
-    brief: 'Saturno ao fundo: rompa a frota inimiga perto dos anéis planetários e enfrente o couraçado.',
+    brief:
+      'Saturno ao fundo: rompa a frota inimiga perto dos anéis planetários e enfrente o couraçado.',
   },
   {
     name: 'ABISMO DE ÓRION',

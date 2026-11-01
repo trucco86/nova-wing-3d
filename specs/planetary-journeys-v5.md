@@ -9,18 +9,18 @@ anéis, arranhões, nuvens ou silhuetas para todas as fases.
 
 ## Itinerário dirigido por destino
 
-| Setor | Destino visual / transição | Saída |
-|---|---|---|
-| 1 | Terra: cidade -> lançamento e espaço (existente) | aceleração espacial após boss |
-| 2 | Marte: órbita -> areia e deserto (existente) | ascensão marciana |
-| 3 | Mega-asteroide: abertura -> caverna (existente) | fuga pelo túnel em colapso |
-| 4 | Júpiter: estação Órbita-9 -> hangar | saída pela eclusa |
-| 5 | Vênus: espaço -> nuvens amarelas e descargas de plasma | subida através das nuvens |
-| 6 | Europa: órbita joviana -> fenda glacial | retorno ao espaço gelado |
-| 7 | Netuno: atmosfera azul -> colmeia suspensa | rompimento da tempestade |
-| 8 | Saturno: anéis *do planeta* -> bloqueio da frota | ruptura do bloqueio |
-| 9 | Abismo de Órion: entrada gravitacional | ruptura do corredor |
-| 10 | Titã: névoa externa -> fortaleza de Marvin | vitória dos Five Cats |
+| Setor | Destino visual / transição                             | Saída                         |
+| ----- | ------------------------------------------------------ | ----------------------------- |
+| 1     | Terra: cidade -> lançamento e espaço (existente)       | aceleração espacial após boss |
+| 2     | Marte: órbita -> areia e deserto (existente)           | ascensão marciana             |
+| 3     | Mega-asteroide: abertura -> caverna (existente)        | fuga pelo túnel em colapso    |
+| 4     | Júpiter: estação Órbita-9 -> hangar                    | saída pela eclusa             |
+| 5     | Vênus: espaço -> nuvens amarelas e descargas de plasma | subida através das nuvens     |
+| 6     | Europa: órbita joviana -> fenda glacial                | retorno ao espaço gelado      |
+| 7     | Netuno: atmosfera azul -> colmeia suspensa             | rompimento da tempestade      |
+| 8     | Saturno: anéis _do planeta_ -> bloqueio da frota       | ruptura do bloqueio           |
+| 9     | Abismo de Órion: entrada gravitacional                 | ruptura do corredor           |
+| 10    | Titã: névoa externa -> fortaleza de Marvin             | vitória dos Five Cats         |
 
 Os setores 3 e 4 continuam cavernoso/espacial; não devem virar deserto. Saturno
 tem anéis astronomicamente plausíveis **presos ao globo**, não arcos de voo

@@ -22,10 +22,34 @@ export const STAGE_JOURNEYS = Object.freeze(
       arena: 'asteroid-core',
       exit: 'collapse-tunnel',
     },
-    { destination: 'orbital-station', world: 'jupiter-orbit', entry: 'hangar', arena: 'reactor', exit: 'airlock' },
-    { destination: 'storm-planet', world: 'venus', entry: 'atmospheric-descent', arena: 'plasma-clouds', exit: 'orbit' },
-    { destination: 'frozen-moon', world: 'europa', entry: 'ice-rift', arena: 'glacial-cavern', exit: 'surface' },
-    { destination: 'living-hive', world: 'neptune-clouds', entry: 'organic-tunnel', arena: 'hive-heart', exit: 'breach' },
+    {
+      destination: 'orbital-station',
+      world: 'jupiter-orbit',
+      entry: 'hangar',
+      arena: 'reactor',
+      exit: 'airlock',
+    },
+    {
+      destination: 'storm-planet',
+      world: 'venus',
+      entry: 'atmospheric-descent',
+      arena: 'plasma-clouds',
+      exit: 'orbit',
+    },
+    {
+      destination: 'frozen-moon',
+      world: 'europa',
+      entry: 'ice-rift',
+      arena: 'glacial-cavern',
+      exit: 'surface',
+    },
+    {
+      destination: 'living-hive',
+      world: 'neptune-clouds',
+      entry: 'organic-tunnel',
+      arena: 'hive-heart',
+      exit: 'breach',
+    },
     {
       destination: 'mothership',
       world: 'saturn-orbit',
@@ -40,7 +64,13 @@ export const STAGE_JOURNEYS = Object.freeze(
       arena: 'gravity-anomaly',
       exit: 'portal',
     },
-    { destination: 'marvin-fortress', world: 'titan', entry: 'fortress-gate', arena: 'throne', exit: 'victory' },
+    {
+      destination: 'marvin-fortress',
+      world: 'titan',
+      entry: 'fortress-gate',
+      arena: 'throne',
+      exit: 'victory',
+    },
   ].map((journey) => Object.freeze(journey)),
 );
 

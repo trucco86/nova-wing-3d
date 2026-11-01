@@ -1,9 +1,14 @@
 import * as T from 'three';
-import { DESTINATION_PROFILES, destinationArrivalAt, destinationExitAt } from './destination-arrival.js';
+import {
+  DESTINATION_PROFILES,
+  destinationArrivalAt,
+  destinationExitAt,
+} from './destination-arrival.js';
 
 // Separate, low-draw-call celestial vista per world. Real rings are attached
 // to Saturn itself; no unexplained hoop appears in the flight corridor.
-const PLANET_VERT = 'varying vec3 vLocal;varying vec3 vNormal;void main(){vLocal=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+const PLANET_VERT =
+  'varying vec3 vLocal;varying vec3 vNormal;void main(){vLocal=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
 const PLANET_FRAG = `varying vec3 vLocal;varying vec3 vNormal;uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;
 float noise3(vec3 v){return fract(sin(dot(floor(v),vec3(127.1,311.7,74.7)))*43758.5453);}
 void main(){
@@ -21,8 +26,10 @@ void main(){
  float sun=max(.22,dot(n,normalize(vec3(-.45,.6,.8))));
  gl_FragColor=vec4(c*(.34+.77*sun),alpha);
 }`;
-const RIM_FRAG = 'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
-const RIM_VERT = 'varying vec3 vNormal;void main(){vNormal=normalMatrix*normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
+const RIM_FRAG =
+  'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
+const RIM_VERT =
+  'varying vec3 vNormal;void main(){vNormal=normalMatrix*normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
 const HAZE_FRAG = `varying vec2 uvp;uniform float alpha;uniform float time;uniform vec3 tint;
 float n2(vec2 p){return fract(sin(dot(floor(p),vec2(127.1,311.7)))*43758.5453);}
 void main(){
@@ -118,7 +125,8 @@ export function createDestinationVista(index) {
           alpha: { value: 0 },
           time: { value: 0 },
         },
-        vertexShader: 'varying vec2 uvp;void main(){uvp=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        vertexShader:
+          'varying vec2 uvp;void main(){uvp=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
         fragmentShader: HAZE_FRAG,
         transparent: true,
         depthWrite: false,
@@ -127,7 +135,7 @@ export function createDestinationVista(index) {
       }),
     );
     cloud.name = 'destination-atmospheric-cloud-' + i;
-    cloud.position.set((i-1)*18, -18+i*20, -95-i*32);
+    cloud.position.set((i - 1) * 18, -18 + i * 20, -95 - i * 32);
     cloud.userData.visualOnly = true;
     mist.add(cloud);
   }
@@ -146,12 +154,13 @@ export function updateDestinationVista(root, index, seconds) {
   globe.position.x = state.keepGlobe ? -365 * state.reveal : 0;
   globe.position.y = 94 + state.reveal * 44;
   globe.material.uniforms.alpha.value = state.globeOpacity;
-  globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value = state.globeOpacity * 0.8;
+  globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value =
+    state.globeOpacity * 0.8;
   for (const child of root.getObjectByName('destination-entry-mist').children) {
     const i = Number(child.name.slice(-1));
     child.material.uniforms.alpha.value = state.haze * (0.3 + i * 0.05);
     child.material.uniforms.time.value = seconds + i * 13;
-    child.position.x = (i-1)*18 + Math.sin(seconds*.32+i)*13;
+    child.position.x = (i - 1) * 18 + Math.sin(seconds * 0.32 + i) * 13;
   }
   root.userData.arrivalPhase = state.phase;
   return state;
@@ -164,14 +173,23 @@ export function createDestinationEscape(index) {
   root.name = 'destination-escape';
   root.userData.fixedSky = true;
   root.userData.visualOnly = true;
-  const count = 96, coords = new Float32Array(count * 3);
+  const count = 96,
+    coords = new Float32Array(count * 3);
   const geom = new T.BufferGeometry();
   geom.setAttribute('position', new T.BufferAttribute(coords, 3));
   const color = index === 9 ? '#ffd4a2' : index === 1 ? '#e8c092' : '#7edbff';
-  const streaks = new T.Points(geom, new T.PointsMaterial({
-    color, size: 2.0, sizeAttenuation: true,
-    opacity: 0, transparent: true, depthWrite: false, fog: false,
-  }));
+  const streaks = new T.Points(
+    geom,
+    new T.PointsMaterial({
+      color,
+      size: 2.0,
+      sizeAttenuation: true,
+      opacity: 0,
+      transparent: true,
+      depthWrite: false,
+      fog: false,
+    }),
+  );
   streaks.name = 'escape-hyperspeed-particles';
   streaks.userData.visualOnly = true;
   streaks.frustumCulled = false;
@@ -189,7 +207,7 @@ export function updateDestinationEscape(root, index, seconds) {
   for (let i = 0; i < positions.count; i++) {
     const angle = i * 2.399963;
     const rad = 65 + (i % 13) * 7;
-    const z = -300 + (((i * 37 + seconds * 230) % 360) + 360) % 360;
+    const z = -300 + ((((i * 37 + seconds * 230) % 360) + 360) % 360);
     positions.setXYZ(i, Math.cos(angle) * rad, Math.sin(angle) * rad + 8, z);
   }
   positions.needsUpdate = true;
