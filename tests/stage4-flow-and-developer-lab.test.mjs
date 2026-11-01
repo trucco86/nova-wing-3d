@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { developerLabLoadout, QA_EVOLUTION_STAGES } from '../src/developer-lab.js';
 import { ARSENAL, SPECIALS } from '../src/strategy.js';
 import { SHIP_MODELS } from '../src/pilots.js';
-import { fighterAllowedDuringArrival, arrivalFighterDepth, shouldKeepArrivalCooldown } from '../src/encounter-arrival-flow.js';
+import {
+  fighterAllowedDuringArrival,
+  arrivalFighterDepth,
+  shouldKeepArrivalCooldown,
+} from '../src/encounter-arrival-flow.js';
 import { harness } from './harness.mjs';
 
 test('QA laboratory represents every visual evolution, hull, weapon and RPG power', () => {
@@ -19,8 +23,13 @@ test('QA laboratory represents every visual evolution, hull, weapon and RPG powe
           assert.equal(loadout.special, special);
           assert.ok(loadout.pods >= 1 && loadout.pods <= 3);
         }
-  for (const bad of [['999', 'nova7', 0, 0], [9, 'unknown', 0, 0],
-    [9, 'nova7', 5, 0], [9, 'nova7', 0, 3], [null, 'nova7', 0, 0]])
+  for (const bad of [
+    ['999', 'nova7', 0, 0],
+    [9, 'unknown', 0, 0],
+    [9, 'nova7', 5, 0],
+    [9, 'nova7', 0, 3],
+    [null, 'nova7', 0, 0],
+  ])
     assert.equal(developerLabLoadout(...bad), null);
 });
 
@@ -41,13 +50,20 @@ test('QA stage can be launched with all upgrades; sandbox mode saves nothing', (
   const events = new Map();
   let written = 0;
   const storage = {
-    getItem() { return null; },
-    setItem() { written++; },
+    getItem() {
+      return null;
+    },
+    setItem() {
+      written++;
+    },
   };
   const h = harness({
-    hostname: 'dev.nova-wing-preview.pages.dev', storage,
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    storage,
     spawnEncounters: false,
-    onStageFinished(event) { events.set('finished', event); },
+    onStageFinished(event) {
+      events.set('finished', event);
+    },
   });
   t.after(() => h.close());
   h.elements.get('developerTier').value = '18';
@@ -79,10 +95,15 @@ test('pause QA lab swaps ship/weapon/RPG and triggers real robot transformation 
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
   h.game.pause();
   assert.equal(h.game.snapshot().state, 'paused');
-  for (const [id,value] of [
-    ['qaLabLevel','9'], ['qaLabShip','specter'], ['qaLabArsenal','3'],
-    ['qaLabSpecial','1'], ['qaLabForm','robot'], ['qaLabPods','deployed'],
-  ]) h.elements.get(id).value = value;
+  for (const [id, value] of [
+    ['qaLabLevel', '9'],
+    ['qaLabShip', 'specter'],
+    ['qaLabArsenal', '3'],
+    ['qaLabSpecial', '1'],
+    ['qaLabForm', 'robot'],
+    ['qaLabPods', 'deployed'],
+  ])
+    h.elements.get(id).value = value;
   h.elements.get('qaLabApply').onclick();
   const after = h.game.snapshot();
   assert.equal(after.state, 'playing');

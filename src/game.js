@@ -108,7 +108,11 @@ import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
-import { fighterAllowedDuringArrival, arrivalFighterDepth, shouldKeepArrivalCooldown } from './encounter-arrival-flow.js';
+import {
+  fighterAllowedDuringArrival,
+  arrivalFighterDepth,
+  shouldKeepArrivalCooldown,
+} from './encounter-arrival-flow.js';
 import {
   subbossProfile,
   subbossMotion,
@@ -1723,7 +1727,11 @@ export function createGame({
               : dynamicFlight && sectorIndex === 0
                 ? rnd(12, 24)
                 : rnd(1, 19));
-    o.position.set(x, y, tacticalFighter ? arrivalFighterDepth(sectorIndex, assignedSlot?.arrivalIndex) : -200);
+    o.position.set(
+      x,
+      y,
+      tacticalFighter ? arrivalFighterDepth(sectorIndex, assignedSlot?.arrivalIndex) : -200,
+    );
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
@@ -2254,7 +2262,8 @@ export function createGame({
       ['qaLabSpecial', String(lab.special)],
       ['qaLabForm', 'ship'],
       ['qaLabPods', 'docked'],
-    ]) $(id).value = value;
+    ])
+      $(id).value = value;
     if (scenario.encounter !== 'stage') {
       if (scenario.sector === 0) {
         // Advance the genuine orbital state machine, never bypass the main campaign gate.
@@ -2665,9 +2674,12 @@ export function createGame({
   if (developerAvailable) {
     // Test harnesses and first-load mobile browsers share safe defaults.
     for (const [id, value] of [
-      ['developerTier', '9'], ['developerShip', 'nova7'],
-      ['developerArsenal', '0'], ['developerSpecial', '0'],
-    ]) if (!$(id).value) $(id).value = value;
+      ['developerTier', '9'],
+      ['developerShip', 'nova7'],
+      ['developerArsenal', '0'],
+      ['developerSpecial', '0'],
+    ])
+      if (!$(id).value) $(id).value = value;
     for (const [index, sector] of SECTORS.entries()) {
       const option = document.createElement('option');
       option.value = String(index);
@@ -2715,8 +2727,14 @@ export function createGame({
       if (form === 'robot' && !robotMode) toggleRobot();
       else if (form === 'ship' && robotMode) toggleRobot();
       if ((pods === 'deployed') !== podsDetached) togglePods();
-      message('QA · EVOLUÇÃO ' + (stage() + 1) + ' / ARMA ' + selectedWeapon().name +
-        ' / RPG ' + SPECIALS[strategy.special].name);
+      message(
+        'QA · EVOLUÇÃO ' +
+          (stage() + 1) +
+          ' / ARMA ' +
+          selectedWeapon().name +
+          ' / RPG ' +
+          SPECIALS[strategy.special].name,
+      );
     };
   }
   $('start').onclick = () => (settings.intro ? beginCinematic() : start());

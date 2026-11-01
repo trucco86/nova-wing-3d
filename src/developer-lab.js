@@ -11,13 +11,22 @@ export function developerLabLoadout(tier, ship, arsenal, special) {
   if (
     !QA_EVOLUTION_STAGES.includes(level) ||
     !SHIP_MODELS.some((s) => s.id === ship) ||
-    !Number.isInteger(weapon) || weapon < 0 || weapon >= ARSENAL.length ||
-    !Number.isInteger(spell) || spell < 0 || spell >= SPECIALS.length
-  ) return null;
+    !Number.isInteger(weapon) ||
+    weapon < 0 ||
+    weapon >= ARSENAL.length ||
+    !Number.isInteger(spell) ||
+    spell < 0 ||
+    spell >= SPECIALS.length
+  )
+    return null;
   const xp = xpForStage(level);
   // Even level 0 can inspect the complete arsenal via a lab-only bonus stage;
   // never leak these unlocks into ordinary campaign checkpoints.
-  const unlockedXp = Math.max(xp, xpForStage(ARSENAL[weapon].stage), xpForStage(SPECIALS[spell].stage));
+  const unlockedXp = Math.max(
+    xp,
+    xpForStage(ARSENAL[weapon].stage),
+    xpForStage(SPECIALS[spell].stage),
+  );
   return {
     level: Math.max(level, ARSENAL[weapon].stage, SPECIALS[spell].stage),
     xp: unlockedXp,
