@@ -5,6 +5,9 @@ on:
       - fix/hero-scale-dash-and-destructibles-20261101
     paths:
       - .github/workflows/hero-dash-destructibles-qa.yml
+      # Source changes require synchronized generated index before strict CI.
+      - src/**
+      - tests/**
 permissions:
   contents: write
   actions: write
