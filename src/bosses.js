@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
-import { box, metal, glowMaterial, halo } from './visuals.js';
+import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
@@ -523,6 +523,58 @@ export function createBossModel(sector, index = 0, tactical = false) {
     owned: true,
     materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial],
   };
+  // The penultimate biomechanical monster is piloted by Marvin, while the
+  // FINAL boss is his Obsidian fighter — not the same monstrous shape reused.
+  // Preserve physical generators, original boss AI, damage budgets and the
+  // battle radar. Added geometry is isolated from cached player ship assets.
+  if (tactical && (index === 8 || index === 9)) {
+    const shell = index === 9 ? fighter(true) : createFlyingRobot();
+    shell.name = index === 9 ? 'marvin-final-obsidian-fighter' : 'marvin-bastion-mecha-pilot';
+    const independent = new Map();
+    const geometries = new Map();
+    shell.traverse((o) => {
+      if (o.geometry) {
+        if (!geometries.has(o.geometry)) geometries.set(o.geometry, o.geometry.clone());
+        o.geometry = geometries.get(o.geometry);
+      }
+      if (!o.material) return;
+      const list = Array.isArray(o.material) ? o.material : [o.material];
+      const copies = list.map((m) => {
+        if (!independent.has(m)) {
+          const copy = m.clone();
+          if (copy.isMeshStandardMaterial || copy.isMeshPhysicalMaterial) {
+            copy.color.set(index === 9 ? '#10131e' : '#21212c');
+            if (copy.emissive) copy.emissive.set('#5a0b1d');
+            copy.metalness = 0.87;
+            copy.roughness = 0.22;
+          }
+          independent.set(m, copy);
+          return copy;
+        }
+        return independent.get(m);
+      });
+      o.material = Array.isArray(o.material) ? copies : copies[0];
+    });
+    g.userData.materials.push(...independent.values());
+    shell.scale.setScalar(index === 9 ? 11.5 : 2.8);
+    if (index === 9) {
+      shell.rotation.y = Math.PI;
+      shell.position.set(0, 2, 0);
+      const keep = new Set([
+        core, coreMarker, coreMuzzle,
+        ...batteries,
+        ...parts.flatMap((part) => [part.mesh, part.marker]),
+      ]);
+      for (const child of g.children) if (!keep.has(child)) child.visible = false;
+      // Existing weak points remain visible on the face of the carrier fighter.
+      // Side batteries remain the actual physical projectile origins.
+    } else {
+      shell.position.set(0, 28, 23);
+      shell.rotation.y = Math.PI;
+    }
+    shell.userData.visualOnly = true;
+    g.add(shell);
+  }
   return g;
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
