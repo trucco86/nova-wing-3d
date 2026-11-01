@@ -17,6 +17,11 @@ test('Pages generates public Firebase config strictly before the published artif
   assert.ok(configStep, 'Pages requires the guarded PROD OAuth configuration step');
   assert.ok(artifactStep, 'Pages artifact upload stays enabled');
   assert.ok(pagesSteps.indexOf(configStep) < pagesSteps.indexOf(artifactStep));
+  assert.equal(
+    configStep.if,
+    "${{ vars.NOVA_GOOGLE_LOGIN_PROD_ENABLED == 'true' }}",
+    'Google login must require deliberate production activation',
+  );
   assert.equal(configStep.env.NOVA_ENV, 'prod');
   assert.equal(
     configStep.env.NOVA_FIREBASE_CONFIG_JSON,
