@@ -16,6 +16,10 @@ test('all ten missions are slightly longer, without changing the campaign size',
   assert.equal(SECTORS.length, 10);
   const previous = [130, 70, 70, 75, 75, 80, 80, 85, 85, 90];
   SECTORS.forEach((sector, i) => {
+    if (i === 9) {
+      assert.equal(sector.duration, 150, 'the final Marvin pursuit has a longer playable chase');
+      return;
+    }
     if (i === 1) {
       assert.equal(
         sector.duration,
