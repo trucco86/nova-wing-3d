@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { mothershipApproachAt } from './mothership-approach.js';
 import {
   DESTINATION_PROFILES,
   destinationArrivalAt,
@@ -202,6 +203,20 @@ export function updateDestinationVista(root, index, seconds) {
     child.material.uniforms.alpha.value = state.haze * (0.3 + i * 0.05);
     child.material.uniforms.time.value = seconds + i * 13;
     child.position.x = (i - 1) * 18 + Math.sin(seconds * 0.32 + i) * 13;
+  }
+  if (index === 3) {
+    // Jupiter establishes scale in the first wide orbital shot. As the
+    // Devastador eclipses the flight path, Jupiter recedes behind the ship
+    // and fully disappears before the pilot enters the enclosed hangar.
+    const boarding = mothershipApproachAt(seconds);
+    globe.position.set(-240 - 70 * (1 - boarding.jupiterOpacity), 94, -920);
+    globe.scale.setScalar(1.08);
+    globe.visible = boarding.jupiterOpacity > 0.02;
+    globe.material.uniforms.alpha.value = boarding.jupiterOpacity;
+    globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value =
+      boarding.jupiterOpacity * 0.72;
+    for (const child of root.getObjectByName('destination-entry-mist').children)
+      child.material.uniforms.alpha.value = 0;
   }
   root.userData.arrivalPhase = state.phase;
   return state;
