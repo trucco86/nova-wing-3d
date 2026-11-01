@@ -66,6 +66,10 @@ test('High/Medium quality changes only decorative objects, not the planet or col
   assert.equal(plates.visible, false);
   world.setDestinationArrival(27);
   assert.equal(plates.visible, false);
+  // Arrival re-render must not undo graphics quality or resurrect a hidden
+  // scene prop on the next frame.
+  world.setDestinationArrival(28);
+  assert.equal(plates.visible, false);
   world.setGraphicsQuality('high');
   assert.equal(plates.visible, true);
   world.setSector(SECTORS[9], 9);
@@ -92,4 +96,26 @@ test('Jupiter spot, Neptune storm and Saturn rings are physically attached to th
   assert.equal(planet.children.filter((x) => x.name === 'saturn-astronomical-band').length, 3);
   world.setSector(SECTORS[4], 4);
   assert.equal(scene.getObjectByName('saturn-planetary-ring-system'), undefined);
+});
+
+test('planetary horizon objects never spin or drift with generic obstacle travel', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[4], 4);
+  const root = scene.getObjectByName('destination-landmarks');
+  assert.ok(root.userData.fixedSky, 'landmarks belong to the horizon');
+  world.setDestinationArrival(30);
+  const before = { x: root.position.x, z: root.position.z, rot: root.rotation.z };
+  world.update(0.5, 30, 450, true);
+  assert.deepEqual(
+    { x: root.position.x, z: root.position.z, rot: root.rotation.z },
+    before,
+    'only clouds may drift, not the entire planet environment',
+  );
+  world.setDestinationArrival(30);
+  assert.deepEqual(
+    { x: root.position.x, z: root.position.z, rot: root.rotation.z },
+    before,
+    'pausing/re-rendering the same mission time is deterministic',
+  );
 });
