@@ -13,6 +13,7 @@ import { createCity33Premium, setCity33Quality, updateCity33Premium } from './ci
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
+import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
 import {
   createDestinationLandmarks,
   updateDestinationLandmarks,
@@ -1531,6 +1532,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     if (!dynamicFlight || !destinationVista) return null;
     const state = updateDestinationVista(destinationVista, destinationIndex, seconds);
     updateDestinationLandmarks(destinationLandmarks, seconds);
+    const mothership =
+      destinationIndex === 3
+        ? sectorScenery.getObjectByName('devastador-mothership-boarding')
+        : null;
     const profile = DESTINATION_PROFILES[destinationIndex];
     const target = new T.Color(profile.haze);
     // The opening really starts in space. Each location's dust/cloud color
@@ -1544,7 +1549,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
     for (const child of sectorScenery.children) {
-      if (child === destinationVista || child === destinationEscape) continue;
+      if (child === destinationVista || child === destinationEscape || child === mothership)
+        continue;
       // Record original visibility once. On revealing a destination, restore it
       // exactly once rather than re-enabling props hidden by gameplay, LOD or
       // the authored encounter timeline on every frame.
@@ -1559,12 +1565,25 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
     }
     if (destinationIndex === 3) {
-      // Apply this after generic arrival visibility so the hangar never pops
-      // in too early or gets mistakenly re-enabled during the outer approach.
+      // Do not let the generic orbital reveal hide the mothership for 18s.
+      // This continuous physically moving model is visible from the first
+      // frame and grows by real perspective until it crosses the camera.
+      const boarding = updateMothershipApproach(mothership, seconds);
       updateMothershipInterior(
         sectorScenery.getObjectByName('marvin-mothership-interior'),
         seconds,
       );
+      // The old freestanding station gantries obscure the hangar and appear
+      // to float inside the ship. The new exterior has its own scale cues.
+      if (destinationLandmarks) destinationLandmarks.visible = false;
+      const retreat = 1 - boarding.jupiterOpacity;
+      starfield.visible = seconds < 22;
+      starfield.material.opacity *= 1 - retreat;
+      scene.fog.color.set('#101b30').lerp(new T.Color('#293447'), retreat * 0.8);
+      scene.fog.density = T.MathUtils.lerp(0.00007, 0.0003, retreat);
+      state.label = boarding.label;
+      state.boardingPhase = boarding.phase;
+      state.boardingInside = boarding.inside;
     }
     return state;
   }
@@ -1623,7 +1642,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
     },
     showCarrierForBoss() {
-      carrier.visible = true;
+      // Sector 4 has its own continuous Devastador, not the generic
+      // faraway carrier originally used in the first boss warning.
+      if (sceneryTheme !== 'station' || !dynamicFlight) carrier.visible = true;
     },
     setAscent(amount, enabled) {
       if (!dynamicFlight) return;
@@ -1723,7 +1744,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
-      carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
+      carrier.visible = sceneryTheme === 'fleet' || (sceneryTheme === 'station' && !dynamicFlight);
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
@@ -1817,6 +1838,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // Mission 4 is INSIDE Marvin's mothership; do not reuse a generic
         // corridor of space rings as the main environmental geometry.
         sectorScenery.add(createMothershipInterior());
+        sectorScenery.add(createMothershipApproach());
       }
       if (
         ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&

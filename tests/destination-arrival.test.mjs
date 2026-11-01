@@ -69,7 +69,14 @@ test('the scene begins in space, reveals a distinct planetary world, and resets 
     const transition = world.setDestinationArrival(16);
     assert.equal(transition.phase, 'entry');
     assert.ok(transition.haze > 0);
-    assert.ok(scene.fog.density > 0.0004);
+    if (index === 3) {
+      assert.ok(
+        scene.fog.density <= 0.0003,
+        'Devastador close-up stays visible; approach is not obscured by generic re-entry haze',
+      );
+    } else {
+      assert.ok(scene.fog.density > 0.0004);
+    }
     const arrived = world.setDestinationArrival(27);
     assert.equal(arrived.combatReady, true);
     assert.equal(root.userData.arrivalPhase, 'arena');

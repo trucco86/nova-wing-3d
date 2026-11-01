@@ -1,9 +1,10 @@
 import * as T from 'three';
+import { BOARDING, mothershipApproachAt } from './mothership-approach.js';
 
 // Sector 4: an actual carrier interior, not generic luminous rings.
 // All structures are decorative; the flight corridor, aiming, reactor-grid
 // mission, collision geometry and camera controls remain unchanged.
-const WINDOW_START = 21;
+const WINDOW_START = 19;
 const TRAVEL_SPEED = 34;
 const SPAN = 1080;
 const SECTION_COUNT = 6;
@@ -152,7 +153,10 @@ export function updateMothershipInterior(root, elapsed) {
     // pilot moves through the 3D interior at a variable frame rate.
     section.position.z = ((((distance - 85) % SPAN) + SPAN) % SPAN) - (SPAN - 85);
   }
-  root.userData.threshold.position.z = -240 + Math.min(290, s.time * 20);
-  root.userData.threshold.visible = s.time < 18;
+  // Interior gate is at a stable depth directly beyond the same hangar
+  // entrance seen from orbit; it does not jump to a different corridor.
+  const exterior = mothershipApproachAt(elapsed);
+  root.userData.threshold.position.z = exterior.frontZ - 48;
+  root.userData.threshold.visible = elapsed < BOARDING.clear + 3;
   return s;
 }
