@@ -45,6 +45,7 @@ test('mecha dash lasts 240ms and never bypasses cooldown or frame-rate limits', 
   for (const fps of [30, 60, 120])
     assert.ok(Math.abs(distanceAt(fps) - MECHA_DASH.distance) < 1e-8);
   assert.throws(() => dashFrame(0.3, -0.1, 1), RangeError);
+  assert.equal(MECHA_DASH.energyCost, 18);
 });
 
 test('real touch hold turns ship vertical; mecha roll button becomes lateral dash', (t) => {
@@ -141,4 +142,77 @@ test('mecha dash never clips outside asteroid cavern, even for a single frame', 
     'dash collision must be resolved in the same frame, not after visual clipping',
   );
   h.key('KeyD', false);
+});
+
+test('keyboard Q/E/Z hold banks fighter edge-on, short tap spins, robot dash pays energy', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+
+  h.key('KeyQ');
+  h.advance(0.45);
+  assert.ok(Math.abs(h.game.snapshot().bankAngle + Math.PI / 2) < 0.04);
+  h.key('KeyQ', false);
+  h.advance(0.4);
+  assert.equal(h.game.snapshot().rolling, false, 'releasing a long hold must not trigger 360');
+  assert.ok(Math.abs(h.game.snapshot().bankAngle) < 0.03);
+
+  h.key('KeyE');
+  h.advance(0.05);
+  h.key('KeyE', false);
+  assert.equal(h.game.snapshot().rolling, true, 'short keyboard tap retains the 360 roll');
+
+  h.advance(0.7);
+  h.key('KeyT');
+  h.advance(1.4);
+  assert.equal(h.game.snapshot().mecha.active, true);
+  const energy = h.game.snapshot().energy;
+  h.key('KeyD');
+  h.key('KeyZ');
+  assert.equal(h.game.snapshot().dash.active, true);
+  assert.ok(Math.abs(h.game.snapshot().energy - (energy - MECHA_DASH.energyCost)) < 0.001);
+  h.key('KeyZ', false);
+  h.key('KeyD', false);
+});
+
+test('robot dodge uses opposite-side lateral jet and retains hot boost cores', () => {
+  const robot = createFlyingRobot();
+  const rig = robot.userData.premiumMecha;
+  assert.equal(rig.afterburnerCores.length, 2);
+  assert.equal(rig.dashJets.length, 2);
+  animatePremiumMecha(robot, { progress: 1, boosting: true, time: 1 });
+  assert.ok(rig.afterburnerCores.every((mesh) => mesh.visible));
+  assert.ok(rig.dashJets.every(({ jet }) => !jet.visible));
+
+  animatePremiumMecha(robot, {
+    progress: 1,
+    boosting: false,
+    time: 1.2,
+    dash: { active: true, direction: 1, progress: 0.5 },
+  });
+  assert.equal(rig.dashJets.find(({ side }) => side === -1).jet.visible, true);
+  assert.equal(rig.dashJets.find(({ side }) => side === 1).jet.visible, false);
+  assert.ok(rig.spine.rotation.z < 0, 'mecha braces against lateral impulse');
+  assert.ok(rig.afterburnerCores.every((mesh) => !mesh.visible));
+
+  animatePremiumMecha(robot, { progress: 1, boosting: false, time: 2 });
+  assert.ok(rig.dashJets.every(({ jet }) => !jet.visible));
+  assert.equal(rig.spine.rotation.z, 0);
+});
+
+test('a depleted mecha cannot repeatedly dash without enough energy', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+  h.key('KeyT');
+  h.advance(1.35);
+  h.key('ShiftLeft');
+  h.advance(4.0);
+  h.key('ShiftLeft', false);
+  assert.ok(h.game.snapshot().energy < MECHA_DASH.energyCost);
+  const energy = h.game.snapshot().energy;
+  h.key('KeyZ');
+  assert.equal(h.game.snapshot().dash.active, false);
+  assert.equal(h.game.snapshot().energy, energy);
+  h.key('KeyZ', false);
 });
