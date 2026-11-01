@@ -61,19 +61,20 @@ test('Five Cats formation still attacks armored boss hull when no weak generator
   assert.equal(after.bossParts, 2, 'ordinary hull damage must not bypass generators');
 });
 
-test('reactor top-down is a playable X/Z navigation objective, never an automatic scenic cut', (t) => {
+test('reactor remains playable in chase view; WASD flight axes never flip mid-stage', (t) => {
   const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
   t.after(() => h.close());
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
   assert.equal(h.game.snapshot().directedShot, 'chase');
   h.advance(31.2, 0.1);
   const started = h.game.snapshot();
-  assert.equal(started.directedShot, 'overhead');
+  assert.equal(started.directedShot, 'chase');
   assert.ok(started.missionCameraSeconds > 0);
   h.key('KeyW');
   h.advance(0.5, 0.1);
   const moved = h.game.snapshot();
-  assert.ok(moved.playerDepth < started.playerDepth - 6, 'UP moves into world depth');
+  assert.ok(moved.player.y > started.player.y + 4, 'UP retains ordinary climb controls');
+  assert.ok(Math.abs(moved.playerDepth - 9) < 1, 'UP never changes gameplay depth');
   h.key('KeyW', false);
   h.key('KeyD');
   h.advance(0.6, 0.1);
@@ -87,7 +88,7 @@ test('reactor top-down is a playable X/Z navigation objective, never an automati
   assert.equal(
     h.game.snapshot().directedShot,
     'cockpit',
-    'manual cockpit overrides mission camera',
+    'manual cockpit remains available during reactor combat',
   );
   h.advance(18, 0.1);
   assert.equal(h.game.snapshot().directedShot, 'cockpit');

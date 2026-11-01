@@ -109,6 +109,11 @@ import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
 import {
+  fighterAllowedDuringArrival,
+  arrivalFighterDepth,
+  shouldKeepArrivalCooldown,
+} from './encounter-arrival-flow.js';
+import {
   subbossProfile,
   subbossMotion,
   subbossCooldown,
@@ -120,6 +125,7 @@ import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
+import { developerLabLoadout } from './developer-lab.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
 import {
@@ -1721,7 +1727,11 @@ export function createGame({
               : dynamicFlight && sectorIndex === 0
                 ? rnd(12, 24)
                 : rnd(1, 19));
-    o.position.set(x, y, -200);
+    o.position.set(
+      x,
+      y,
+      tacticalFighter ? arrivalFighterDepth(sectorIndex, assignedSlot?.arrivalIndex) : -200,
+    );
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
@@ -2114,6 +2124,7 @@ export function createGame({
     developerSession = developerAvailable && developerRun;
     if (!developerSession) developerScenario = null;
     $('developerSessionTag').hidden = !developerSession;
+    $('developerFlightLab').hidden = !developerSession;
     document.body.classList[developerSession ? 'add' : 'remove']('developer-session');
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
@@ -2207,18 +2218,34 @@ export function createGame({
     if (!developerAvailable || (!fromRestart && state !== 'menu')) return false;
     const scenario = parseDeveloperScenario(sector, encounter, SECTORS.length);
     if (!scenario) return false;
+    const lab = developerLabLoadout(
+      $('developerTier').value,
+      $('developerShip').value,
+      $('developerArsenal').value,
+      $('developerSpecial').value,
+    );
+    if (!lab) return false;
     developerScenario = scenario;
     // This is an isolated, disposable QA run. The user's real save is never loaded or updated.
     start(
       false,
       {
         sector: scenario.sector,
-        loadout: { ...pilotLoadout },
-        strategy: { specialty: activePilot().specialty },
-        weapon: 2,
-        armor: 2,
-        pods: 2,
-        bombs: 8,
+        loadout: { ...pilotLoadout, ship: lab.ship },
+        strategy: {
+          specialty: activePilot().specialty,
+          xp: lab.xp,
+          arsenal: lab.arsenal,
+          special: lab.special,
+        },
+        weapon: lab.weaponLevel,
+        volley: lab.volley,
+        rapid: lab.rapid,
+        scatterOwned: lab.scatterOwned,
+        fireMode: 'pulse',
+        armor: lab.armor,
+        pods: lab.pods,
+        bombs: lab.bombs,
         credits: 0,
         score: 0,
         cosmetics: { ...cosmetics, owned: [...cosmetics.owned] },
@@ -2228,6 +2255,15 @@ export function createGame({
       true,
     );
     if (!developerSession) return false;
+    for (const [id, value] of [
+      ['qaLabLevel', $('developerTier').value],
+      ['qaLabShip', lab.ship],
+      ['qaLabArsenal', String(lab.arsenal)],
+      ['qaLabSpecial', String(lab.special)],
+      ['qaLabForm', 'ship'],
+      ['qaLabPods', 'docked'],
+    ])
+      $(id).value = value;
     if (scenario.encounter !== 'stage') {
       if (scenario.sector === 0) {
         // Advance the genuine orbital state machine, never bypass the main campaign gate.
@@ -2331,6 +2367,7 @@ export function createGame({
     developerSession = false;
     developerScenario = null;
     $('developerSessionTag').hidden = true;
+    $('developerFlightLab').hidden = true;
     document.body.classList.remove('developer-session');
     menuThemePlaying = false;
     confirmation = null;
@@ -2635,6 +2672,14 @@ export function createGame({
   $('menuQA').hidden = !developerAvailable;
   $('developerSessionTag').hidden = true;
   if (developerAvailable) {
+    // Test harnesses and first-load mobile browsers share safe defaults.
+    for (const [id, value] of [
+      ['developerTier', '9'],
+      ['developerShip', 'nova7'],
+      ['developerArsenal', '0'],
+      ['developerSpecial', '0'],
+    ])
+      if (!$(id).value) $(id).value = value;
     for (const [index, sector] of SECTORS.entries()) {
       const option = document.createElement('option');
       option.value = String(index);
@@ -2643,6 +2688,54 @@ export function createGame({
     }
     $('developerLaunch').onclick = () =>
       startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
+    $('qaLabApply').onclick = () => {
+      if (!developerAvailable || !developerSession || state !== 'paused' || confirmation) return;
+      const lab = developerLabLoadout(
+        $('qaLabLevel').value,
+        $('qaLabShip').value,
+        $('qaLabArsenal').value,
+        $('qaLabSpecial').value,
+      );
+      if (!lab) return;
+      const form = $('qaLabForm').value;
+      const pods = $('qaLabPods').value;
+      // Apply real visuals/progression without issuing a gameplay stat write
+      // to any saved checkpoint, server ranking or production environment.
+      strategy.xp = lab.xp;
+      strategy.arsenal = lab.arsenal;
+      strategy.special = lab.special;
+      weapon = lab.weaponLevel;
+      volley = lab.volley;
+      rapid = lab.rapid;
+      scatterOwned = lab.scatterOwned;
+      armor = lab.armor;
+      podCount = lab.pods;
+      bombs = 8;
+      arcana = 100;
+      tacticEnergy = 3;
+      energy = 100;
+      specialCd = 0;
+      robotCooldown = 0;
+      hp = maxHp();
+      if (pilotLoadout.ship !== lab.ship) {
+        pilotLoadout = { ...pilotLoadout, ship: lab.ship };
+        applyShipModel();
+      }
+      evolve();
+      syncPods();
+      pause(); // Resume first; transforms must run the real gameplay action.
+      if (form === 'robot' && !robotMode) toggleRobot();
+      else if (form === 'ship' && robotMode) toggleRobot();
+      if ((pods === 'deployed') !== podsDetached) togglePods();
+      message(
+        'QA · EVOLUÇÃO ' +
+          (stage() + 1) +
+          ' / ARMA ' +
+          selectedWeapon().name +
+          ' / RPG ' +
+          SPECIALS[strategy.special].name,
+      );
+    };
   }
   $('start').onclick = () => (settings.intro ? beginCinematic() : start());
   $('continue').onclick = () => start(true);
@@ -3306,7 +3399,7 @@ export function createGame({
       ) {
         reactorGridCompleted = true;
         reactorGridSeconds = 17;
-        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL', 'calvin');
+        message('DEVASTADOR · REATOR · DESVIE DAS DEFESAS E ELIMINE OS INIMIGOS', 'calvin');
       }
       if (reactorGridSeconds > 0)
         reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
@@ -3314,8 +3407,7 @@ export function createGame({
         mission: reactorGridSeconds > 0 ? 'reactor-grid' : '',
       });
       flightCamera.setShot(directedShot);
-      if (directedShot === 'overhead')
-        route.label = 'REATOR ÓRBITA-9 · DESVIE EM X/Z · W/S PROFUNDIDADE';
+      // Sector 4 never overrides forward flight with a top-down camera.
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
@@ -3458,12 +3550,17 @@ export function createGame({
     else document.body.classList.remove('reflex-boost');
     const hostileDt = dt * reflex.hostileTimeScale;
     spawnCd -= dt;
+    // Never accumulate a huge overdue spawn while the spacecraft boards a
+    // world. The first formation approaches from deep offscreen, not as a
+    // synchronized pop immediately after an arrival gate becomes false.
+    if (shouldKeepArrivalCooldown(sectorIndex, elapsed, arrivalTransit))
+      spawnCd = Math.max(spawnCd, 1.35);
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (
       spawnEncounters &&
-      !arrivalTransit &&
+      fighterAllowedDuringArrival(sectorIndex, elapsed, arrivalTransit) &&
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss
@@ -3477,7 +3574,7 @@ export function createGame({
       if (dynamicFlight) {
         const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
         lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-        for (const slot of wave.slots) enemy('fighter', slot);
+        wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
         if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
       } else {
         for (let i = 0; i < count; i++) enemy();
@@ -4433,8 +4530,8 @@ export function createGame({
       reactorGridWave < 4 &&
       reactorGridSeconds < 15.8 - reactorGridWave * 3.5
     ) {
-      // Playable reactor-grid hazards only during the top-down X/Z section;
-      // their physical collision volume matches their visible station props.
+      // Reactor hazards remain in front of the chasing fighter; no sudden
+      // overhead camera/control mapping or arbitrary X/Z navigation mode.
       const gate = createObstacle('reactor');
       gate.position.set([-17, 18, -12, 13][reactorGridWave], 8, player.position.z - 82);
       scene.add(gate);

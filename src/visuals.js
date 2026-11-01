@@ -1576,7 +1576,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // The old freestanding station gantries obscure the hangar and appear
       // to float inside the ship. The new exterior has its own scale cues.
       if (destinationLandmarks) destinationLandmarks.visible = false;
-      const retreat = 1 - boarding.jupiterOpacity;
+      // Keep the approach crystal clear; interior fog grows only after the
+      // hangar fills the view. Planet visibility is no longer a fog trigger.
+      const retreat = Math.max(0, Math.min(1, (seconds - 13) / 11));
       starfield.visible = seconds < 22;
       starfield.material.opacity *= 1 - retreat;
       scene.fog.color.set('#101b30').lerp(new T.Color('#293447'), retreat * 0.8);

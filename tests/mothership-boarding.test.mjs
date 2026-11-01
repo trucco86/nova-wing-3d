@@ -25,8 +25,8 @@ test('phase 4 ship grows continuously in projected size as pilot approaches', ()
   assert.equal(at(0).visible, true, 'ship exists from the first stage frame');
   assert.equal(at(BOARDING.clear).visible, false, 'no external ship inside corridor');
   assert.equal(at(BOARDING.entry).inside, true);
-  assert.ok(at(0).jupiterOpacity > at(12).jupiterOpacity);
-  assert.ok(at(12).jupiterOpacity > at(20).jupiterOpacity);
+  assert.equal(at(0).jupiterOpacity, 0);
+  assert.equal(at(12).jupiterOpacity, 0);
   assert.equal(at(22).jupiterOpacity, 0);
   assert.throws(() => at(-1), RangeError);
 });
@@ -41,7 +41,8 @@ test('same modeled ship opens the hangar and crosses the actual corridor gate', 
   updateMothershipApproach(external, 18);
   const opened = external.getObjectByName('devastador-hangar-upper-shutter').position.y;
   assert.ok(opened > closed + 29, 'door physically slides out of the pilot path');
-  assert.equal(updateMothershipInterior(interior, 18).visible, false);
+  assert.equal(updateMothershipInterior(interior, 16).visible, false);
+  assert.equal(updateMothershipInterior(interior, 18).visible, true);
   const boarding = updateMothershipApproach(external, 21);
   const inside = updateMothershipInterior(interior, 21);
   assert.equal(inside.visible, true);
@@ -60,7 +61,7 @@ test('same modeled ship opens the hangar and crosses the actual corridor gate', 
   assert.equal(external.visible, false);
 });
 
-test('the world shows Devastador from space, hides Jupiter before entry, and keeps stage 1–3', () => {
+test('stage 4 shows only the Devastador and never shows Jupiter; stages 1–3 unchanged', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[3], 3);
@@ -69,10 +70,10 @@ test('the world shows Devastador from space, hides Jupiter before entry, and kee
   const globe = scene.getObjectByName('destination-celestial-body');
   assert.ok(actor && corridor && globe);
   assert.equal(scene.getObjectByName('distant-orbital-flagship').visible, false);
-  assert.equal(world.setDestinationArrival(0).label, 'JÚPITER · NAVE-MÃE DEVASTADOR À VISTA');
+  assert.equal(world.setDestinationArrival(0).label, 'NAVE-MÃE DEVASTADOR À VISTA');
   assert.equal(actor.visible, true);
   assert.equal(corridor.visible, false);
-  assert.equal(globe.visible, true);
+  assert.equal(globe.visible, false);
   const entry = world.setDestinationArrival(22);
   assert.equal(entry.boardingPhase, 'threshold');
   assert.equal(entry.boardingInside, true);

@@ -637,6 +637,43 @@
                 <option value="subboss">SUBCHEFE</option>
                 <option value="boss">CHEFE PRINCIPAL</option>
               </select>
+              <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
+                <legend>LABORATÓRIO DE NAVE / RPG · QA</legend>
+                <label for="developerTier">EVOLUÇÃO DA NAVE</label>
+                <select id="developerTier" aria-label="Evolução inicial da nave">
+                  <option value="0">NÍVEL 1 · ORIGINAL</option>
+                  <option value="3">NÍVEL 4 · PRIMEIROS UPGRADES</option>
+                  <option value="6">NÍVEL 7 · ARMAMENTO AVANÇADO</option>
+                  <option value="9" selected>NÍVEL 10 · PODS / RPG AVANÇADO</option>
+                  <option value="12">NÍVEL 13 · EVOLUÇÃO SUPERIOR</option>
+                  <option value="18">NÍVEL 19 · EVOLUÇÃO MÁXIMA VISUAL</option>
+                </select>
+                <label for="developerShip">MODELO DE NAVE</label>
+                <select id="developerShip">
+                  <option value="nova7">NOVA-7 · MULTIFUNÇÃO</option>
+                  <option value="specter">SPECTER-X · INTERCEPTADOR</option>
+                  <option value="aegis">AEGIS-R · FORTALEZA</option>
+                </select>
+                <label for="developerArsenal">ARMA INICIAL</label>
+                <select id="developerArsenal">
+                  <option value="0">PULSO</option>
+                  <option value="1">GEADA</option>
+                  <option value="2">PLASMA</option>
+                  <option value="3">ARCANO</option>
+                  <option value="4">VAZIO</option>
+                </select>
+                <label for="developerSpecial">RPG INICIAL</label>
+                <select id="developerSpecial">
+                  <option value="0">BARREIRA</option>
+                  <option value="1">NOVA</option>
+                  <option value="2">ESTASE</option>
+                </select>
+                <small
+                  >Neste teste, níveis, armas, pods e bombas são liberados sem gastar créditos.
+                  Durante o voo, pressione ROBÔ, PODS, H/G e os especiais dos Five Cats para testar
+                  efeitos reais.</small
+                >
+              </fieldset>
               <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
               <button id="developerExplore" type="button" hidden>
                 EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D
@@ -703,6 +740,57 @@
             <button class="secondary" id="pauseOptions">⚙ OPÇÕES</button>
             <button class="secondary" id="pauseExit">SAIR PARA O MENU</button>
           </div>
+          <details id="developerFlightLab" hidden>
+            <summary>LABORATÓRIO QA · TROCAR UPGRADE / ARMA / PODER SEM REINICIAR</summary>
+            <div class="developer-panel-content">
+              <label for="qaLabLevel">EVOLUÇÃO VISUAL</label>
+              <select id="qaLabLevel">
+                <option value="0">NÍVEL 1</option>
+                <option value="3">NÍVEL 4</option>
+                <option value="6">NÍVEL 7</option>
+                <option value="9">NÍVEL 10</option>
+                <option value="12">NÍVEL 13</option>
+                <option value="18">NÍVEL 19</option>
+              </select>
+              <label for="qaLabArsenal">ARMA</label>
+              <select id="qaLabArsenal">
+                <option value="0">PULSO</option>
+                <option value="1">GEADA</option>
+                <option value="2">PLASMA</option>
+                <option value="3">ARCANO</option>
+                <option value="4">VAZIO</option>
+              </select>
+              <label for="qaLabSpecial">PODER RPG</label>
+              <select id="qaLabSpecial">
+                <option value="0">BARREIRA</option>
+                <option value="1">NOVA</option>
+                <option value="2">ESTASE</option>
+              </select>
+              <label for="qaLabShip">CHASSI / MODELO</label>
+              <select id="qaLabShip">
+                <option value="nova7">NOVA-7</option>
+                <option value="specter">SPECTER-X</option>
+                <option value="aegis">AEGIS-R</option>
+              </select>
+              <label for="qaLabForm">MODO AO RETOMAR</label>
+              <select id="qaLabForm">
+                <option value="ship">NAVE</option>
+                <option value="robot">ROBÔ TRANSFORMADO</option>
+              </select>
+              <label for="qaLabPods">PODS AO RETOMAR</label>
+              <select id="qaLabPods">
+                <option value="docked">ACOPLADOS</option>
+                <option value="deployed">DESTACADOS</option>
+              </select>
+              <button type="button" class="primary" id="qaLabApply">
+                APLICAR E RETOMAR O VOO ↗
+              </button>
+              <small
+                >Recarga RPG, bombas, escudo e energia completos só nesta sessão QA. Para acionar o
+                poder real, use G / ATIVAR.</small
+              >
+            </div>
+          </details>
           <div id="pausePanelTabs" role="group" aria-label="Ajuda de jogo e diagnóstico">
             <button id="pauseTabControls" type="button" aria-pressed="true" data-help-key="helpTab">
               CONTROLES
