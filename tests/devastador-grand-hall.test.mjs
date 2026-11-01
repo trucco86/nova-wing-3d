@@ -83,6 +83,8 @@ test('stage 4 developer encounter replaces tight corridors with the new hall wit
   assert.equal(snap.sabotage.hall.clearOrbitRadius, 190);
   assert.equal(snap.sabotage.hall.facilities, 4);
   assert.equal(snap.sabotage.hall.centralReactor, true);
+  assert.equal(snap.sabotage.hall.active, true);
+  assert.equal(snap.sabotage.hall.corridorsHidden, true, 'old narrow walls cannot overlap 360 flight');
   // The headless renderer can omit scene captures in the QA-only developer
   // harness; the model and world lifecycle are verified independently above.
   if (scene) {
