@@ -52,4 +52,3 @@ test('QA mobile/desktop opens stage 4 with upgraded ship, swaps mecha and pods w
   }
   expect(errors).toEqual([]);
 });
-

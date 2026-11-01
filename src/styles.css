@@ -9058,8 +9058,10 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   min-height: 44px;
   box-sizing: border-box;
   color: #b5f6e7;
-  font: 700 12px/1.4 system-ui, sans-serif;
-  letter-spacing: .035em;
+  font:
+    700 12px/1.4 system-ui,
+    sans-serif;
+  letter-spacing: 0.035em;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -9074,7 +9076,9 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   grid-column: span 1;
   color: #87ead9;
   align-self: end;
-  font: 700 11px/1.4 system-ui, sans-serif;
+  font:
+    700 11px/1.4 system-ui,
+    sans-serif;
 }
 #pauseMenu #developerFlightLab .developer-panel-content > select {
   grid-column: span 1;
@@ -9087,7 +9091,9 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   background: #143447;
   border: 1px solid #649ca9;
   border-radius: 6px;
-  font: 600 13px system-ui, sans-serif;
+  font:
+    600 13px system-ui,
+    sans-serif;
 }
 #pauseMenu #developerFlightLab .developer-panel-content > button,
 #pauseMenu #developerFlightLab .developer-panel-content > small {
