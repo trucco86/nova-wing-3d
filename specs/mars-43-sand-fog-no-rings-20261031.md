@@ -4,7 +4,7 @@
 
 Na fase 2, o antigo bow shock era desenhado por dois toros gigantes que apareciam como
 anéis concêntricos no centro da tela e não tinham justificativa narrativa.
-O efeito não deve ser confundido com os *anéis de recursos* do gameplay,
+O efeito não deve ser confundido com os _anéis de recursos_ do gameplay,
 que mantêm suas próprias regras, exclusivamente fora dos 27 segundos iniciais.
 
 ## Comportamento observável

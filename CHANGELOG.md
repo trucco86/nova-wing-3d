@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.56 — Candidata em preparação
+
+- Marte 4.3: troca dos anéis da reentrada por névoa de areia animada. QA visual e browser ainda dependem de execução.
+
 ## 1.27.55 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
