@@ -111,6 +111,8 @@ import { fighterWaveAt } from './sector-waves.js';
 import {
   fighterAllowedDuringArrival,
   arrivalFighterDepth,
+  fighterArrivalAge,
+  fighterMayFireAtDepth,
   shouldKeepArrivalCooldown,
 } from './encounter-arrival-flow.js';
 import {
@@ -1780,6 +1782,7 @@ export function createGame({
     enemies.push({
       o,
       role: tacticalFighter ? FIGHTER_ROLES[roleIndex] : null,
+      arrivalIndex: assignedSlot?.arrivalIndex ?? 0,
       subbossTactic,
       attackGlow,
       x,
@@ -3773,7 +3776,9 @@ export function createGame({
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
       if (e.role) {
-        e.o.position.z = fighterAdvance(e.o.position.z, e.age, hostileDt, speed);
+        const approachAge = fighterArrivalAge(sectorIndex, e.age, e.arrivalIndex);
+        const flightStep = approachAge > 0 ? hostileDt : 0;
+        e.o.position.z = fighterAdvance(e.o.position.z, approachAge, flightStep, speed);
       } else if (e.subbossTactic) {
         const motion = subbossMotion(sectorIndex, e.age, e.combatPhase, e.x, e.y);
         e.o.position.set(motion.x, motion.y, motion.z);
@@ -3888,6 +3893,7 @@ export function createGame({
       if (
         e.cd <= 0 &&
         e.o.position.z < -15 &&
+        (!e.role || fighterMayFireAtDepth(sectorIndex, e.o.position.z)) &&
         (!(e.kind === 'walker' || e.airborneRobot) ||
           robotEyeBurstReady(e.age, e.o.position.z, e.cd))
       ) {
