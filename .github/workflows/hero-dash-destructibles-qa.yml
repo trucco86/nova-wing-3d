@@ -24,6 +24,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      # strict equality recheck after breakable target health fix
       - name: Verify source, tests and reproducible web build
         run: |
           npm run format
