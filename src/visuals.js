@@ -1539,14 +1539,24 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     }
     return state;
   }
+  // Capture the established destination scene at the start of the boss exit.
+  // Repeated calls for the same mission time must never cumulatively darken fog.
+  const exitBaseFog = new T.Color();
+  const exitSpaceFog = new T.Color('#111a35');
+  let exitBaseDensity = 0.00045;
+  let exitBaseStars = 0.75;
   function setDestinationExit(seconds) {
     if (!dynamicFlight || !destinationEscape) return null;
     const state = updateDestinationEscape(destinationEscape, destinationIndex, seconds);
-    if (state.active) {
-      scene.fog.density = T.MathUtils.lerp(scene.fog.density, 0.00014, state.progress * 0.18);
-      scene.fog.color.lerp(new T.Color('#111a35'), state.progress * 0.17);
+    if (!state.active) {
+      exitBaseFog.copy(scene.fog.color);
+      exitBaseDensity = scene.fog.density;
+      exitBaseStars = starfield.material.opacity;
+    } else {
+      scene.fog.density = T.MathUtils.lerp(exitBaseDensity, 0.00014, state.progress);
+      scene.fog.color.copy(exitBaseFog).lerp(exitSpaceFog, state.progress);
       starfield.visible = true;
-      starfield.material.opacity = Math.max(starfield.material.opacity, state.progress * 0.86);
+      starfield.material.opacity = T.MathUtils.lerp(exitBaseStars, 0.86, state.progress);
     }
     return state;
   }
