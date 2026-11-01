@@ -3165,7 +3165,8 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
-    rollHeld = !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
+    rollHeld =
+      !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {

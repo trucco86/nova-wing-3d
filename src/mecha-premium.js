@@ -277,7 +277,7 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
       }),
     );
     dashJet.name = 'premium-mecha-lateral-dash-jet-' + side;
-    dashJet.rotation.z = -side * Math.PI / 2;
+    dashJet.rotation.z = (-side * Math.PI) / 2;
     dashJet.position.set(side * 1.54, 0.02, 1.6);
     dashJet.visible = false;
     robot.add(dashJet);
