@@ -37,8 +37,12 @@ for (const viewport of [
       await page.locator('#pressStart').click();
       await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'home');
       const menu = page.locator('#menuPrimary');
-      await expect(menu.locator('button')).toHaveCount(3);
-      for (const name of ['JOGAR', 'HANGAR', 'CENTRAL']) await expect(menu).toContainText(name);
+      // CI runs on localhost, an authorized QA origin: one extra action
+      // is intentionally visible only here; production still has three.
+      await expect(menu.locator('button:visible')).toHaveCount(4);
+      await expect(page.locator('#menuQA')).toBeVisible();
+      for (const name of ['JOGAR', 'HANGAR', 'CENTRAL', 'TESTAR FASES · QA'])
+        await expect(menu).toContainText(name);
       await expect(page.locator('#start')).toBeHidden();
       await expect(page.locator('#novaRanking')).toBeHidden();
       await page.screenshot({

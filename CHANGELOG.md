@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.60 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
+## 1.27.59 — Candidata em preparação
+
+- Planetary Visual Polish: marcos próprios para cada planeta, testes WebGL e otimização Alto/Médio, sem alterar produção.
+
 ## 1.27.58 — Candidata em preparação
 
 - Planetary Journeys: chegada e escape cinematográficos específicos por destino, sem alterar produção.

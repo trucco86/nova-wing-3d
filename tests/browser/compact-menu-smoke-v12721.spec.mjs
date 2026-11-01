@@ -16,7 +16,8 @@ for (const viewport of viewports) {
     await expect(menu).toHaveAttribute('data-screen', 'splash');
     await expect(page.locator('#pressStart')).toBeVisible();
     await expect(page.locator('#menuPrimary')).toBeHidden();
-    await expect(page.locator('#menuQA')).toBeVisible();
+    // QA remains behind PRESS START, and must not obscure the splash artwork.
+    await expect(page.locator('#menuQA')).toBeHidden();
     await expect(page.locator('#menuHero')).toBeVisible();
 
     const cover = await menu.evaluate((node) => {
@@ -50,6 +51,7 @@ for (const viewport of viewports) {
 
     await page.locator('#pressStart').click();
     await expect(menu).toHaveAttribute('data-screen', 'home');
+    await expect(page.locator('#menuQA')).toBeVisible();
     await expect(page.locator('#menuPrimary button:visible')).toHaveCount(4);
     const actionBounds = await page.locator('#menuPrimary button').evaluateAll((buttons) =>
       buttons.map((button) => {
@@ -75,6 +77,10 @@ for (const viewport of viewports) {
     await expect(page.locator('#developerPanel')).toBeVisible();
     await expect(page.locator('#developerPanel')).toHaveAttribute('open', '');
     await expect(page.locator('#developerSector option')).toHaveCount(10);
+    const back = await page.locator('#menuBack').boundingBox();
+    expect(back).not.toBeNull();
+    expect(back.y).toBeGreaterThanOrEqual(-1);
+    expect(back.y + back.height).toBeLessThanOrEqual(viewport.height + 1);
     await page.locator('#menuBack').click();
     await page.locator('#menuHangar').click();
     await expect(menu).toHaveAttribute('data-screen', 'hangar');

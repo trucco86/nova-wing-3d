@@ -50,9 +50,9 @@ test('web route, orbital ascent and final black hole render without shader error
   });
   for (const [sector, time, expected] of [
     [0, 28, 'SUPER BOOST'],
-    [1, 30, 'CURVA'],
+    [1, 30, 'SUPERFÍCIE DE MARTE'],
     [2, 30, 'INTERIOR DO ASTEROIDE'],
-    [9, 10, 'ROTA DE APROXIMAÇÃO'],
+    [9, 10, 'TITÃ'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
@@ -70,6 +70,9 @@ test('2D perspective supports controls, pause and return to the same mission', a
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=6&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
+  await expect(page.locator('#arcadePanel')).toBeHidden();
+  await expect(page.locator('#routeLabel')).toContainText('NETUNO');
+  await page.evaluate(() => window.fixture.advance(21.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
   await expect(page.locator('#arcadePanel')).toHaveCSS('opacity', '1');
   await expect(page.locator('#comms')).toHaveCSS('visibility', 'hidden');
