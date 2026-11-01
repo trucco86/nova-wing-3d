@@ -382,6 +382,10 @@ export function createGame({
     robotCooldown = 2.5;
     robotTransition = transformDuration;
     robotMode = !robotMode;
+    dashRemaining = 0;
+    rollHeld = false;
+    $('rollTouch').textContent = robotMode ? 'DASH' : 'GIRO';
+    $('rollTouch').setAttribute('aria-label', robotMode ? 'Dash lateral rápido do robô' : 'Inclinar a nave 90 graus ao segurar, giro 360 ao tocar');
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
     $('lockTouch').hidden = !robotMode;
@@ -1086,6 +1090,8 @@ export function createGame({
     resetMechPower(robot);
     robotFireKick = 0;
     robotMode = false;
+    $('rollTouch').textContent = 'GIRO';
+    $('rollTouch').setAttribute('aria-label', 'Inclinar a nave 90 graus ao segurar, giro 360 ao tocar');
     shipModule.visible = true;
     if (evolution) evolution.visible = true;
     robotCooldown = 0;
@@ -2230,6 +2236,8 @@ export function createGame({
     invuln = 2;
     roll = 0;
     rollCd = 0;
+    dashRemaining = 0;
+    dashCd = 0;
     rollHeld = false;
     rollAngle = 0;
     bossHp = 200;
@@ -3111,11 +3119,6 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
-    if (robotMode && dashRemaining > 0) {
-      const delta = dashOffset(dt, dashRemaining, dashDirection, { x: player.position.x });
-      dashRemaining = delta.remaining;
-      player.position.x = delta.x;
-    }
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -3242,6 +3245,13 @@ export function createGame({
     }
     reticle.visible = true;
     const previousPlayer = player.position.clone();
+    if (robotMode && dashRemaining > 0) {
+      const delta = dashOffset(dt, dashRemaining, dashDirection, {
+        x: player.position.x, min: -flightLimit(), max: flightLimit(),
+      });
+      dashRemaining = delta.remaining;
+      player.position.x = delta.x;
+    }
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
     const gustX = storm?.windX ?? 0;
