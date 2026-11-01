@@ -4401,7 +4401,7 @@ export function createGame({
       const struckObstacle = b.life > 0 ? obstacles.find(({ o, life }) =>
         life > 0 && projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt)) : null;
       if (struckObstacle) {
-        if (struckObstacle.hp != null) {
+        if (struckObstacle.hp !== null) {
           const hitHull = damageBreakableHull(struckObstacle.hp, b.damage ?? 2);
           struckObstacle.hp = hitHull.health;
           if (hitHull.destroyed) {
@@ -5049,7 +5049,7 @@ export function createGame({
       heroScale: player.scale.x,
       shipScale: shipModule.scale.x,
       robotScale: robot.scale.x,
-      breakableTargets: obstacles.filter(o => o.hp != null && o.life > 0).map(o => ({ kind: o.o.userData.kind, hp: o.hp, x: o.o.position.x, y: o.o.position.y, z: o.o.position.z })),
+      breakableTargets: obstacles.filter(o => o.hp !== null && o.life > 0).map(o => ({ kind: o.o.userData.kind, hp: o.hp, x: o.o.position.x, y: o.o.position.y, z: o.o.position.z })),
       player: { x: player.position.x, y: player.position.y },
       playerDepth: player.position.z,
       camera: {
