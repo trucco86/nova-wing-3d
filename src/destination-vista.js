@@ -9,22 +9,39 @@ import {
 // to Saturn itself; no unexplained hoop appears in the flight corridor.
 const PLANET_VERT =
   'varying vec3 vLocal;varying vec3 vNormal;void main(){vLocal=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
-const PLANET_FRAG = `varying vec3 vLocal;varying vec3 vNormal;uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;
+const PLANET_FRAG = `varying vec3 vLocal;varying vec3 vNormal;
+uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;uniform float drift;
 float noise3(vec3 v){return fract(sin(dot(floor(v),vec3(127.1,311.7,74.7)))*43758.5453);}
 void main(){
  vec3 n=normalize(vLocal);
- float bands=sin(n.y*54.+sin(n.x*16.)*4.)*.5+.5;
- float cloud=sin(n.y*25.+sin(n.x*22.)*2.5+n.z*8.)*.5+.5;
- float grain=noise3(vLocal*.13)*.14;
- float surface=kind<.5 ? bands*.65+cloud*.35 :
- kind<1.5 ? cloud*.8+bands*.2 :
- kind<2.5 ? abs(sin(n.x*28.+n.z*24.))*.24+noise3(vLocal*.06)*.73 :
- kind<3.5 ? cloud*.42+bands*.58 :
- kind<4.5 ? bands*.72+cloud*.28 : cloud*.75+bands*.25;
+ float bands=sin(n.y*58.+sin(n.x*13.+drift*.07)*3.2)*.5+.5;
+ float cloud=sin(n.y*24.+sin(n.x*19.+drift*.06)*2.7+n.z*11.)*.5+.5;
+ float grain=noise3(vLocal*.085)*.095;
+ float surface=kind<.5 ? bands*.8+cloud*.2 :
+ kind<1.5 ? cloud*.86+bands*.14 :
+ kind<2.5 ? abs(sin(n.x*39.+n.z*25.))*.3+noise3(vLocal*.07)*.68 :
+ kind<3.5 ? cloud*.36+bands*.64 :
+ kind<4.5 ? bands*.74+cloud*.26 : cloud*.74+bands*.26;
  vec3 c=mix(darkTint,lightTint,clamp(surface+grain,0.,1.));
- if(kind>4.5 && kind<5.5) c=mix(vec3(.013,.022,.062),c,.28);
- float sun=max(.22,dot(n,normalize(vec3(-.45,.6,.8))));
- gl_FragColor=vec4(c*(.34+.77*sun),alpha);
+ // Great Red Spot belongs to Jupiter alone, anchored on the visible disk.
+ if(kind<.5){
+   vec2 p=(n.xy-vec2(.27,-.17))*vec2(2.9,6.);
+   float oval=1.-smoothstep(.65,1.05,length(p));
+   c=mix(c,vec3(.65,.19,.12),oval*step(.25,n.z)*.91);
+   c+=vec3(.045,.035,.025)*sin(n.y*165.+sin(n.x*27.)*3.)*.5;
+ }
+ // Europa's fractured ice, Neptune's dark storm and Titan's hydrocarbon haze.
+ if(kind>1.5 && kind<2.5){
+   float crack=1.-smoothstep(.025,.13,abs(sin(n.x*37.+n.z*23.+sin(n.y*16.)*3.)));
+   c=mix(c,vec3(.16,.32,.42),crack*.42);
+ }
+ if(kind>2.5 && kind<3.5){
+   vec2 storm=(n.xy-vec2(-.25,.22))*vec2(3.3,3.8);
+   c=mix(c,vec3(.04,.11,.31),(1.-smoothstep(.62,1.2,length(storm)))*step(.25,n.z)*.82);
+ }
+ if(kind>4.5 && kind<5.5)c=mix(vec3(.007,.014,.04),c,.2);
+ float sun=max(.19,dot(n,normalize(vec3(-.45,.6,.8))));
+ gl_FragColor=vec4(c*(.33+.79*sun),alpha);
 }`;
 const RIM_FRAG =
   'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
@@ -67,6 +84,7 @@ export function createDestinationVista(index) {
         lightTint: { value: new T.Color(profile.colors[1]) },
         kind: { value: tints[profile.type] },
         alpha: { value: 1 },
+        drift: { value: 0 },
       },
       vertexShader: PLANET_VERT,
       fragmentShader: PLANET_FRAG,
@@ -111,6 +129,24 @@ export function createDestinationVista(index) {
     rings.rotation.set(1.19, 0.2, -0.12);
     rings.userData.visualOnly = true;
     globe.add(rings);
+    // Distinct A/C bands and the Cassini gap: rings belong only to Saturn.
+    for (const [inner, outer, color, opacity] of [
+      [210, 241, '#e8d8b2', 0.44],
+      [266, 281, '#8d7656', 0.18],
+      [293, 343, '#c0ad91', 0.32],
+    ]) {
+      const band = new T.Mesh(
+        new T.RingGeometry(inner, outer, 96, 3),
+        new T.MeshBasicMaterial({
+          color, side: T.DoubleSide, transparent: true,
+          opacity, depthWrite: false, fog: false,
+        }),
+      );
+      band.name = 'saturn-astronomical-band';
+      band.rotation.copy(rings.rotation);
+      band.userData.visualOnly = true;
+      globe.add(band);
+    }
   }
   const mist = new T.Group();
   mist.name = 'destination-entry-mist';
@@ -154,6 +190,7 @@ export function updateDestinationVista(root, index, seconds) {
   globe.position.x = state.keepGlobe ? -365 * state.reveal : 0;
   globe.position.y = 94 + state.reveal * 44;
   globe.material.uniforms.alpha.value = state.globeOpacity;
+  globe.material.uniforms.drift.value = seconds;
   globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value =
     state.globeOpacity * 0.8;
   for (const child of root.getObjectByName('destination-entry-mist').children) {
