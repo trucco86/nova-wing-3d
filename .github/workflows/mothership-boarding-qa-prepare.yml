@@ -32,7 +32,7 @@ jobs:
           npm run validate
       - name: Publish verified generated HTML to isolated branch only
         run: |
-          git add -- index.html src/mothership-approach.js src/mothership-interior.js src/destination-vista.js src/visuals.js tests/mothership-boarding.test.mjs tests/destination-arrival.test.mjs
+          git add -- index.html src/mothership-approach.js src/mothership-interior.js src/destination-vista.js src/visuals.js tests/mothership-boarding.test.mjs tests/destination-arrival.test.mjs src/developer-mode.js tests/developer-mode.test.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'No scoped changes to commit.'
