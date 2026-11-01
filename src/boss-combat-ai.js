@@ -108,7 +108,13 @@ export function chooseBossIntent({
               : 'approach',
     warning: 2.2,
     dodgeRadius:
-      kind === 'reactor-vent' ? 13 : kind === 'tentacle-sweep' ? 11 : kind === 'hammer-slam' ? 14 : 9,
+      kind === 'reactor-vent'
+        ? 13
+        : kind === 'tentacle-sweep'
+          ? 11
+          : kind === 'hammer-slam'
+            ? 14
+            : 9,
     origin:
       kind === 'reactor-vent'
         ? ventSide < 0

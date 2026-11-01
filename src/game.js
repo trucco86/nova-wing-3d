@@ -4185,8 +4185,7 @@ export function createGame({
           if (active) {
             const intensity = Math.max(0.06, meleePose.exhaust);
             plume.scale.set(0.6 + intensity * 1.4, 0.5 + intensity * 1.7, 0.6 + intensity * 1.4);
-            plume.position.z =
-              boss.userData.parts[sideIndex].mesh.position.z + 16 * plume.scale.y;
+            plume.position.z = boss.userData.parts[sideIndex].mesh.position.z + 16 * plume.scale.y;
             plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
           }
         }

@@ -76,8 +76,10 @@ test('QA stage 4 windup exposes actual visual plume and a damage-linked intent',
   for (let i = 0; i < 210; i++) {
     h.advance(0.1, 0.1);
     const snapshot = h.game.snapshot();
-    if (snapshot.bossIntent?.kind === 'reactor-vent' &&
-        snapshot.bossDriveShock.some((jet) => jet.visible)) {
+    if (
+      snapshot.bossIntent?.kind === 'reactor-vent' &&
+      snapshot.bossDriveShock.some((jet) => jet.visible)
+    ) {
       observed = snapshot;
       break;
     }
@@ -85,8 +87,11 @@ test('QA stage 4 windup exposes actual visual plume and a damage-linked intent',
   assert.ok(observed, 'visible reactor engine must turn on during a real windup');
   assert.equal(observed.bossDriveShock.length, 2);
   assert.equal(observed.bossDriveShock.filter((jet) => jet.visible).length, 1);
-  assert.ok(observed.bossDriveShock.some((jet) => jet.visible &&
-    jet.side === observed.bossIntent.ventSide && jet.generatorAlive));
+  assert.ok(
+    observed.bossDriveShock.some(
+      (jet) => jet.visible && jet.side === observed.bossIntent.ventSide && jet.generatorAlive,
+    ),
+  );
   assert.equal(observed.bossIntent.origin.includes('drive-valve'), true);
   assert.equal(observed.developerSession, true);
 });
