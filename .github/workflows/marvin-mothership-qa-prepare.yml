@@ -32,7 +32,7 @@ jobs:
           npm run validate
       - name: Commit only scope and generated HTML for isolated QA
         run: |
-          git add -- index.html src/visuals.js src/game.js src/bosses.js src/campaign.js src/stage-journey.js src/destination-arrival.js src/mothership-interior.js src/marvin-rival.js tests/mothership-interior-story.test.mjs tests/marvin-rival-story.test.mjs
+          git add -- index.html src/visuals.js src/game.js src/bosses.js src/campaign.js src/stage-journey.js src/destination-arrival.js src/mothership-interior.js src/marvin-rival.js tests/mothership-interior-story.test.mjs tests/marvin-rival-story.test.mjs tests/sector-palette.test.mjs tests/mission-pacing-difficulty.test.mjs tests/intermission-campaign-map.test.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'No generated artifact change.'
