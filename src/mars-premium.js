@@ -1,7 +1,11 @@
 import * as T from 'three';
 import { createMarsApproach, updateMarsApproach, marsDescentAt } from './mars-descent.js';
 import { createMarsMysteries } from './mars-mysteries.js';
-import { createMarsSandstorm, setMarsSandstormQuality, updateMarsSandstorm } from './mars-sandstorm.js';
+import {
+  createMarsSandstorm,
+  setMarsSandstormQuality,
+  updateMarsSandstorm,
+} from './mars-sandstorm.js';
 
 // Mars 4.0: authored desert surface and readable Curiosity-inspired rover.
 // Distant celestial bodies are deliberately larger for gameplay readability.

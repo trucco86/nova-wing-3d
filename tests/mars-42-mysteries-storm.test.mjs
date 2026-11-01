@@ -112,12 +112,18 @@ test('Mars Medium trims only transparent storm overdraw, preserving High and phy
   const particles = storm.getObjectByName('mars-sandstorm-particle-field');
   const originalGeometry = particles.geometry;
   const originalMaterial = particles.material;
-  const banks = storm.children.filter((part) => part.name.startsWith('mars-rolling-sand-haze-bank'));
+  const banks = storm.children.filter((part) =>
+    part.name.startsWith('mars-rolling-sand-haze-bank'),
+  );
   const peak = updateMarsSandstorm(storm, 71);
   assert.equal(particles.geometry.drawRange.count, Infinity);
   setMarsSandstormQuality(storm, 'medium');
   assert.equal(storm.userData.graphicsQuality, 'medium');
-  assert.equal(particles.geometry.drawRange.count, 144, 'Medium cuts particles without deleting the field');
+  assert.equal(
+    particles.geometry.drawRange.count,
+    144,
+    'Medium cuts particles without deleting the field',
+  );
   assert.equal(banks.filter((bank) => bank.visible).length, 2, 'two readable haze layers remain');
   const mediumWind = updateMarsSandstorm(storm, 71);
   assert.deepEqual(mediumWind, peak, 'difficulty, wind and warning remain unchanged');

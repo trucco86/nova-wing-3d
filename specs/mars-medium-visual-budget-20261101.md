@@ -1,11 +1,13 @@
 # Marte — orçamento visual Médio/Alto · QA 01/11/2026
 
 ## Intenção
+
 Reduzir transparências e partículas da tempestade de areia de Marte apenas
 na configuração gráfica **Médio** (inclusive Automático resolvido para Médio),
 preservando a cena premium no modo **Alto** e **sem alterar a física**.
 
 ## Contrato de implementação
+
 - Alto: **240 partículas** no campo, **3 bancos** de névoa.
 - Médio: **144 partículas** no mesmo buffer, **2 bancos** de névoa.
 - Reutilizar a geometria, os materiais e as matrizes; apenas atualizar
@@ -20,6 +22,7 @@ preservando a cena premium no modo **Alto** e **sem alterar a física**.
   nenhum collider ou hitbox é introduzido.
 
 ## Critérios e evidências
+
 1. Testes Node verificam densidade, bancos visíveis, identidade da geometria,
    cena ao trocar de setor e **vento idêntico** com os perfis.
 2. Quality, build sincronizado, quatro shards Playwright e preview de PR no
