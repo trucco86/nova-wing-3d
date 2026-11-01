@@ -1,5 +1,49 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Atualização pós-produção — 01/11/2026 · v1.27.61
+
+**Fonte de verdade:** `main` no commit `420254627b7d89daa5c8a4af443b1457b9a31619`;
+[CI quality + 4/4 browser + Pages + release aprovado](https://github.com/trucco86/nova-wing-3d/actions/runs/41268267451),
+[release v1.27.61](https://github.com/trucco86/nova-wing-3d/releases/tag/v1.27.61) e
+[produção](https://trucco86.github.io/nova-wing-3d/). O quadro antigo abaixo é **histórico**, não
+significa que a `main` ainda esteja em v1.24.18. CI e deploy são comprovados;
+qualidade artística, FPS/temperatura em iPhone e equilíbrio de chefes **ainda exigem aceite real**.
+
+### Regra de preservação (não-regressão)
+
+1. **Não substituir a `main` inteira por PRs antigas**: as candidatas históricas #167–#222
+   foram reconciliadas na v1.27.61 e ainda podem aparecer abertas como drafts.
+   Somente integrar diffs novos, a partir da `main` atual, comparando baseline.
+2. Preservar tela Five Cats e portraits, menu, progresso/save, troféus e patentes,
+   assistência de mira e feedback de coleta, nave/Mecha, teclas/touch, HUD periférico,
+   áudio original, cidade com maglev e Terra→órbita, descida orbital de Marte,
+   tempestade com vento físico, cenários exclusivos dos dez setores e chefes distintos.
+3. Todo visual novo é **decorativo e não colisor**; não alterar dano, física ou
+   desbloqueio de fases sem uma spec de gameplay, e não cobrir o centro do jogo.
+   Preservar Automático/Médio/Alto e o fallback de desempenho mobile.
+4. O fluxo para novidades permanece **branch isolada → testes Node + 4 shards Playwright →
+   preview DEV/QA → avaliação visual em celular → HML → autorização de produção**.
+   Nenhum CI verde equivale, por si só, a homologação estética/física.
+
+### Backlog reavaliado (a partir da release real)
+
+| Prioridade | Frente                                                  | Situação verificada                                                                                            | Próximo critério de aceite                                                                                                                                                        |
+| ---------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0         | **Qualidade gráfica e fluidez de ponta a ponta** (#213) | Materiais/LOD, render adaptativo e contadores de draw calls no código; **sem baseline físico iPhone por fase** | Medir p95, FPS, DPR, chamadas e triângulos em Alto/Médio para Terra, Marte, maglev e arena; regressão de frame time alvo ≤10% com hardware igual                                  |
+| P0         | **Cena da cidade premium e trem visível** (#209–#212)   | Assets de maglev, fachadas, anúncios, tráfego e skyline incorporados; screenshot automatizado existente        | Verificar _visibilidade real_ do trem durante gameplay, composição e profundidade em portrait/landscape, sem travar GPU                                                           |
+| P1         | **Tempestade marciana mobile**                          | Entrada 4.3, Monte Olimpo, Cydonia, ruínas, duas luas, Curiosity e vento físico já existem                     | Nova otimização isolada: cortar apenas partículas e um banco translúcido em Médio; Alto, vento e colisões intactos; medir antes/depois em aparelho                                |
+| P1         | **Combate e chefes com identidade própria**             | Modelos de 10 chefes, golpes especiais, radar, hardpoints e Mecha Heavy Fire existem                           | Homologar lutas reais de Marte, Asteroide, Hidra e Marvin: telegraph legível, ataques físicos e vulnerabilidades na frente/costas; corrigir comportamentos repetitivos observados |
+| P1         | **Transições e variedade dos dez setores**              | Journeys específicas e entrada/saída contextuais incluídas                                                     | Confirmar variedade dos 10 setores no gameplay completo; evitar repetir Terra/Lua, cenário fora da identidade ou câmera que esconda a nave                                        |
+| P1         | **Áudio e narrativa Five Cats**                         | Efeitos de turbina/armas, trilha sintetizada e diálogos no código                                              | Ouvir no iPhone e desktop, equilibrar volume, efeitos de transformação e saída pós-chefe sem mascarar alertas                                                                     |
+| P1         | **HUD, controls e UX mobile**                           | Menu compactado, anéis, radar e controles de órbita/boost já incluídos                                         | Testar polegares, safe-area, legibilidade e bloqueio de gestos no Safari iPhone nas fases, Mecha e chefes                                                                         |
+| P2         | **Conquistas, patentes, loja e progressão**             | Hall, medalhas felinas, compras e checkpoints locais já incluem testes                                         | Percurso de campanha end-to-end, retomada sem reset e equilíbrio econômico sem duplicar recompensa                                                                                |
+| Pausado    | **Firebase PROD, login Google e ranking remoto**        | Suporte técnico na [PR #224](https://github.com/trucco86/nova-wing-3d/pull/224), ainda isolada                 | Só retomar quando o mantenedor configurar projeto/domínio e solicitar ativação; não misturar com release visual                                                                   |
+
+**Não marcar concluído** um critério que só possui implementação no código ou
+screenshot sintético. Antes de abrir outra PR, comparar diffs e testes com v1.27.61.
+
+---
+
 ## Estado de integração — 30/10/2026 (referência mais recente)
 
 **Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.

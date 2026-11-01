@@ -1,7 +1,11 @@
 import * as T from 'three';
 import { createMarsApproach, updateMarsApproach, marsDescentAt } from './mars-descent.js';
 import { createMarsMysteries } from './mars-mysteries.js';
-import { createMarsSandstorm, updateMarsSandstorm } from './mars-sandstorm.js';
+import {
+  createMarsSandstorm,
+  setMarsSandstormQuality,
+  updateMarsSandstorm,
+} from './mars-sandstorm.js';
 
 // Mars 4.0: authored desert surface and readable Curiosity-inspired rover.
 // Distant celestial bodies are deliberately larger for gameplay readability.
@@ -220,6 +224,13 @@ export function createMarsPremium() {
   updateMarsArrival(root, 0);
   return root;
 }
+// Adjust only decorative storm draw cost. Surface, rover, Olympus, moons,
+// approach path, crosswind and all combat geometry remain identical.
+export function setMarsPremiumQuality(root, quality) {
+  if (!root) return;
+  setMarsSandstormQuality(root.getObjectByName('mars-sandstorm'), quality);
+}
+
 export function updateMarsArrival(root, seconds) {
   if (!root) return marsDescentAt(seconds);
   const state = marsDescentAt(seconds);

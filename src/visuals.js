@@ -10,7 +10,12 @@ import {
   updateCity32Living,
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
-import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
+import {
+  createMarsPremium,
+  setMarsPremiumQuality,
+  updateMarsPremium,
+  updateMarsArrival,
+} from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import {
   createDestinationLandmarks,
@@ -1593,6 +1598,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
+      setMarsPremiumQuality(sectorScenery.getObjectByName('mars-premium-desert'), quality);
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
@@ -1786,7 +1792,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
-      if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());
+      if (sceneryTheme === 'mars') {
+        const mars = createMarsPremium();
+        setMarsPremiumQuality(mars, destinationGraphicsQuality);
+        sectorScenery.add(mars);
+      }
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
       if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {

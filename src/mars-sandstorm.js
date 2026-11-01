@@ -95,6 +95,21 @@ export function createMarsSandstorm() {
   root.visible = false;
   return root;
 }
+// P0 visual budget: preserve the storm and crosswind gameplay on Medium while
+// reducing transparent overdraw. Reuse the original geometry/materials: no
+// allocations on settings changes, no collision/hitbox and no change to wind.
+export function setMarsSandstormQuality(root, quality) {
+  if (!root) return;
+  const high = quality === 'high';
+  const particles = root.getObjectByName('mars-sandstorm-particle-field');
+  particles.geometry.setDrawRange(0, high ? particleCount : 144);
+  root.children.forEach((child) => {
+    if (child.name.startsWith('mars-rolling-sand-haze-bank'))
+      child.visible = high || !child.name.endsWith('-2');
+  });
+  root.userData.graphicsQuality = high ? 'high' : 'medium';
+}
+
 export function updateMarsSandstorm(root, seconds) {
   const wind = marsSandstormAt(seconds);
   if (!root) return wind;
