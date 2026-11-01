@@ -248,7 +248,7 @@ export function animatePremiumMecha(
   for (const light of [...rig.vents, ...rig.backVents]) light.visible = power > 0.1;
   const energized = boosting ? 1 : 0.38;
   for (const { jet, centerJet } of rig.boostJets) {
-    const length = (0.78 + energized * 2.25 + growth * 1.3) *
+    const length = (0.74 + energized * 3.4 + growth * 1.0) *
       (0.94 + Math.sin(time * (boosting ? 31 : 9)) * 0.06);
     jet.scale.y = length * power;
     centerJet.scale.y = length * 0.82 * power;
