@@ -5139,6 +5139,7 @@ export function createGame({
         remaining: dashRemaining,
         cooldown: dashCooldown,
         direction: dashSide,
+        energyCost: MECHA_DASH.energyCost,
       },
       heroScale: player.scale.x,
       shipScale: shipModule.scale.x,
