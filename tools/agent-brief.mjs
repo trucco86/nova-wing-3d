@@ -81,7 +81,7 @@ export function makeAgentBrief({
   }
   const body = { ...outline, excerpts };
   const output = JSON.stringify(body, null, 2);
-  return output.length > max ? output.slice(0, max - 24) + '\n[TRUNCATED]\n' : output;
+  return output.length > max ? JSON.stringify({ ...outline, excerpts: {} }, null, 2) : output;
 }
 
 function opt(key, fallback) {
