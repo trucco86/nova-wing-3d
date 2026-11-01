@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createMothershipInterior, updateMothershipInterior, carrierInteriorState } from '../src/mothership-interior.js';
+import {
+  createMothershipInterior,
+  updateMothershipInterior,
+  carrierInteriorState,
+} from '../src/mothership-interior.js';
 import { SECTORS } from '../src/campaign.js';
 
 test('sector 4 actually traverses a massive interior hangar instead of ring geometry', () => {
@@ -14,9 +18,14 @@ test('sector 4 actually traverses a massive interior hangar instead of ring geom
     if (child.name) names.add(child.name);
     assert.equal(child.geometry?.type === 'TorusGeometry', false);
   });
-  for (const name of ['carrier-side-hull', 'carrier-docking-crane',
-    'carrier-service-balcony', 'carrier-reactor-coolant-core',
-    'carrier-boarding-gate']) assert.ok(names.has(name), name);
+  for (const name of [
+    'carrier-side-hull',
+    'carrier-docking-crane',
+    'carrier-service-balcony',
+    'carrier-reactor-coolant-core',
+    'carrier-boarding-gate',
+  ])
+    assert.ok(names.has(name), name);
   assert.equal(root.visible, false);
 });
 
@@ -31,7 +40,10 @@ test('mothership entry and interior segment travel are deterministic', () => {
   assert.equal(root.userData.zone, 'reactor');
   const first = root.userData.sections.map((section) => section.position.z);
   updateMothershipInterior(root, 69);
-  assert.deepEqual(root.userData.sections.map((section) => section.position.z), first);
+  assert.deepEqual(
+    root.userData.sections.map((section) => section.position.z),
+    first,
+  );
   updateMothershipInterior(root, 0);
   assert.equal(root.visible, false);
 });
@@ -39,7 +51,10 @@ test('mothership entry and interior segment travel are deterministic', () => {
 test('mothership scenic geometry is distinct from approved stages 1, 2 and 3', () => {
   const group = createMothershipInterior();
   assert.equal(group.userData.sector, 3);
-  assert.deepEqual(SECTORS.slice(0, 3).map((s) => s.theme), ['city', 'mars', 'asteroids']);
+  assert.deepEqual(
+    SECTORS.slice(0, 3).map((s) => s.theme),
+    ['city', 'mars', 'asteroids'],
+  );
   assert.equal(SECTORS[3].theme, 'station');
   const scene = new T.Scene();
   scene.add(group);

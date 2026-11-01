@@ -5,18 +5,54 @@ import { fighter, createFlyingRobot } from './visuals.js';
 // Brief duels are capped and never change campaign progression, trophies or
 // ranking; the actual mission boss still guards each sector completion.
 export const MARVIN_ARC = Object.freeze({
-  4: Object.freeze({ type: 'intercept', start: 31, end: 53, form: 'fighter',
-    notice: 'CONTATO HOSTIL · MARVIN PILOTA UM CAÇA NEGRO!', speaker: 'bob' }),
-  5: Object.freeze({ type: 'transformation', start: 37, end: 59, form: 'robot',
-    notice: 'MARVIN TRANSFORMOU O CAÇA EM ROBÔ · PREPARE-SE!', speaker: 'christopher' }),
-  6: Object.freeze({ type: 'boss-support', start: 31, end: Infinity, form: 'fighter',
-    notice: 'MARVIN ESTÁ PROTEGENDO A COLMEIA · DOIS INIMIGOS!', speaker: 'bia' }),
-  7: Object.freeze({ type: 'ambush', start: 41, end: 61, form: 'fighter',
-    notice: 'MARVIN RETORNOU · INTERCEPÇÃO NO BLOQUEIO!', speaker: 'bob' }),
-  8: Object.freeze({ type: 'monster-pilot', start: 46, end: Infinity, form: 'robot',
-    notice: 'MARVIN ASSUMIU O CONTROLE DO BASTIÃO!', speaker: 'calvin' }),
-  9: Object.freeze({ type: 'pursuit', start: 8, end: Infinity, form: 'fighter',
-    notice: 'ALVO PRINCIPAL · PERSIGA O CAÇA DE MARVIN!', speaker: 'bia' }),
+  4: Object.freeze({
+    type: 'intercept',
+    start: 31,
+    end: 53,
+    form: 'fighter',
+    notice: 'CONTATO HOSTIL · MARVIN PILOTA UM CAÇA NEGRO!',
+    speaker: 'bob',
+  }),
+  5: Object.freeze({
+    type: 'transformation',
+    start: 37,
+    end: 59,
+    form: 'robot',
+    notice: 'MARVIN TRANSFORMOU O CAÇA EM ROBÔ · PREPARE-SE!',
+    speaker: 'christopher',
+  }),
+  6: Object.freeze({
+    type: 'boss-support',
+    start: 31,
+    end: Infinity,
+    form: 'fighter',
+    notice: 'MARVIN ESTÁ PROTEGENDO A COLMEIA · DOIS INIMIGOS!',
+    speaker: 'bia',
+  }),
+  7: Object.freeze({
+    type: 'ambush',
+    start: 41,
+    end: 61,
+    form: 'fighter',
+    notice: 'MARVIN RETORNOU · INTERCEPÇÃO NO BLOQUEIO!',
+    speaker: 'bob',
+  }),
+  8: Object.freeze({
+    type: 'monster-pilot',
+    start: 46,
+    end: Infinity,
+    form: 'robot',
+    notice: 'MARVIN ASSUMIU O CONTROLE DO BASTIÃO!',
+    speaker: 'calvin',
+  }),
+  9: Object.freeze({
+    type: 'pursuit',
+    start: 8,
+    end: Infinity,
+    form: 'fighter',
+    notice: 'ALVO PRINCIPAL · PERSIGA O CAÇA DE MARVIN!',
+    speaker: 'bia',
+  }),
 });
 const smooth = (v) => {
   const n = Math.max(0, Math.min(1, v));
@@ -28,8 +64,12 @@ export function marvinBeatAt(sector, elapsed, duration, bossActive = false, forc
     return { active: false, type: arc?.type ?? 'none', phase: 'hidden', shoot: false };
   const end = Math.min(duration - 5, arc.end);
   if (arc.type === 'monster-pilot') {
-    return { active: false, type: arc.type, phase: bossActive ? 'piloting-boss' : 'foreshadow',
-      shoot: false };
+    return {
+      active: false,
+      type: arc.type,
+      phase: bossActive ? 'piloting-boss' : 'foreshadow',
+      shoot: false,
+    };
   }
   if (arc.type === 'boss-support' && !bossActive) {
     return { active: false, type: arc.type, phase: 'await-boss', shoot: false };
@@ -46,12 +86,20 @@ export function marvinBeatAt(sector, elapsed, duration, bossActive = false, forc
   const robot = arc.type === 'transformation' && age >= 6 && age <= 17;
   // Unlike randomly spinning enemies, Marvin executes a legible series of
   // lateral feints, controlled attack passes and deliberate retreats.
-  const x = Math.sin(age * (arc.type === 'pursuit' ? 0.47 : 0.32)) * (arc.type === 'pursuit' ? 19 : 23);
+  const x =
+    Math.sin(age * (arc.type === 'pursuit' ? 0.47 : 0.32)) * (arc.type === 'pursuit' ? 19 : 23);
   const y = 12 + Math.sin(age * 0.59) * 8 + (robot ? 5 : 0);
-  const z = -195 + 90 * entry - 370 * retreat + (arc.type === 'pursuit' ? -18 * Math.sin(age * 0.18) : 0);
+  const z =
+    -195 + 90 * entry - 370 * retreat + (arc.type === 'pursuit' ? -18 * Math.sin(age * 0.18) : 0);
   return {
-    active: true, type: arc.type, phase: retreat ? 'escaping' : robot ? 'robot' : 'attack',
-    form: robot ? 'robot' : 'fighter', x, y, z, age,
+    active: true,
+    type: arc.type,
+    phase: retreat ? 'escaping' : robot ? 'robot' : 'attack',
+    form: robot ? 'robot' : 'fighter',
+    x,
+    y,
+    z,
+    age,
     shoot: entry > 0.9 && retreat < 0.1,
     retreat,
   };
@@ -144,7 +192,12 @@ export function createMarvinRival(scene) {
       }
       const arc = MARVIN_ARC[sector];
       state = marvinBeatAt(sector, elapsed, duration, bossActive, retreat);
-      if (arc && elapsed >= arc.start && !announced && (arc.type !== 'boss-support' || bossActive)) {
+      if (
+        arc &&
+        elapsed >= arc.start &&
+        !announced &&
+        (arc.type !== 'boss-support' || bossActive)
+      ) {
         announced = true;
         notify?.(arc.notice, arc.speaker);
       }
@@ -183,13 +236,21 @@ export function createMarvinRival(scene) {
       return state?.active ? root.position.clone() : null;
     },
     snapshot() {
-      return { visible: root.visible, phase: state?.phase ?? 'hidden',
-        form: state?.form ?? null, type: state?.type ?? 'none', hp, position: root.position.toArray() };
+      return {
+        visible: root.visible,
+        phase: state?.phase ?? 'hidden',
+        form: state?.form ?? null,
+        type: state?.type ?? 'none',
+        hp,
+        position: root.position.toArray(),
+      };
     },
     destroy() {
       scene.remove(root);
       const geos = new Set();
-      root.traverse((o) => { if (o.geometry && !ship.getObjectByName(o.name)) geos.add(o.geometry); });
+      root.traverse((o) => {
+        if (o.geometry && !ship.getObjectByName(o.name)) geos.add(o.geometry);
+      });
       geos.forEach((g) => g.dispose());
       for (const m of cloned.values()) m.dispose();
       for (const m of mechaMats.values()) m.dispose();

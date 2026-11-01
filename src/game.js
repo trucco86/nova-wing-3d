@@ -4227,10 +4227,16 @@ export function createGame({
       }
       if (b.life > 0 && dynamicFlight && !boss) {
         const rival = marvinRival?.target();
-        if (rival && crossesSolid(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16), 0.5)) {
+        if (
+          rival &&
+          crossesSolid(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16), 0.5)
+        ) {
           const dealt = marvinRival.hit(b.damage ?? 2);
-          impact(impactPoint(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16)), dealt,
-            { bossHit: true, weak: false, heavy: b.source?.startsWith('mecha-') });
+          impact(impactPoint(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16)), dealt, {
+            bossHit: true,
+            weak: false,
+            heavy: b.source?.startsWith('mecha-'),
+          });
           b.life = 0;
         }
       }

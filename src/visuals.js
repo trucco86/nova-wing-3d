@@ -1562,7 +1562,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // Apply this after generic arrival visibility so the hangar never pops
       // in too early or gets mistakenly re-enabled during the outer approach.
       updateMothershipInterior(
-        sectorScenery.getObjectByName('marvin-mothership-interior'), seconds,
+        sectorScenery.getObjectByName('marvin-mothership-interior'),
+        seconds,
       );
     }
     return state;

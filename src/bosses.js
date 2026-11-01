@@ -561,7 +561,9 @@ export function createBossModel(sector, index = 0, tactical = false) {
       shell.rotation.y = Math.PI;
       shell.position.set(0, 2, 0);
       const keep = new Set([
-        core, coreMarker, coreMuzzle,
+        core,
+        coreMarker,
+        coreMuzzle,
         ...batteries,
         ...parts.flatMap((part) => [part.mesh, part.marker]),
       ]);

@@ -34,7 +34,10 @@ test('Marvin launches real physical volleys, responds to shots, escapes and rese
   const shots = [];
   const messages = [];
   const options = {
-    sector: 4, elapsed: 35, duration: 88, bossActive: false,
+    sector: 4,
+    elapsed: 35,
+    duration: 88,
+    bossActive: false,
     player: new T.Vector3(0, 6, 9),
     fire: (...args) => shots.push(args),
     notify: (...args) => messages.push(args),
@@ -68,8 +71,15 @@ test('Marvin never changes game camera, scene sector or progression on its own',
   scene.add(camera);
   const starting = camera.position.toArray();
   const rival = createMarvinRival(scene);
-  rival.update({ sector: 5, elapsed: 46, duration: 92, bossActive: false,
-    player: new T.Vector3(10, 12, 9), fire() {}, notify() {} });
+  rival.update({
+    sector: 5,
+    elapsed: 46,
+    duration: 92,
+    bossActive: false,
+    player: new T.Vector3(10, 12, 9),
+    fire() {},
+    notify() {},
+  });
   assert.equal(rival.snapshot().form, 'robot');
   assert.deepEqual(camera.position.toArray(), starting);
   rival.destroy();

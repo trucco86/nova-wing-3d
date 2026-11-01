@@ -64,19 +64,49 @@ export function createMothershipInterior() {
         const z = -56 + j * 53;
         block(section, 'carrier-docking-crane', cube, armor, side * 63, 38, z, 3, 48, 5);
         block(section, 'carrier-docking-arm', cube, plating, side * 51, 43, z, 20, 4, 5);
-        block(section, 'carrier-docking-beacon', cube, j % 2 ? hazard : cyan,
-          side * 60, 53, z, 2, 5, 1.3);
+        block(
+          section,
+          'carrier-docking-beacon',
+          cube,
+          j % 2 ? hazard : cyan,
+          side * 60,
+          53,
+          z,
+          2,
+          5,
+          1.3,
+        );
       }
       for (let j = 0; j < 4; j++) {
-        block(section, 'carrier-hangar-window', cube, cyan,
-          side * 74, 20 + j * 10, -42, 1.6, 4, 16);
+        block(
+          section,
+          'carrier-hangar-window',
+          cube,
+          cyan,
+          side * 74,
+          20 + j * 10,
+          -42,
+          1.6,
+          4,
+          16,
+        );
       }
     }
     block(section, 'carrier-ceiling-armored-spine', cube, plating, 0, 73, 0, 160, 13, 160);
     block(section, 'carrier-floor-armored-grid', cube, hull, 0, -32, 0, 156, 9, 160);
     for (let lane = -2; lane <= 2; lane++) {
-      block(section, 'carrier-hangar-runway-lights', cube, lane % 2 ? cyan : warm,
-        lane * 23, -26, -56, 2, 1, 114);
+      block(
+        section,
+        'carrier-hangar-runway-lights',
+        cube,
+        lane % 2 ? cyan : warm,
+        lane * 23,
+        -26,
+        -56,
+        2,
+        1,
+        114,
+      );
     }
     // A distinct reactor and exposed machinery at the far end, never across
     // the center aiming line or the navigable floor.
@@ -86,8 +116,7 @@ export function createMothershipInterior() {
         core.name = 'carrier-reactor-coolant-core';
         core.position.set(side * 68, 10, -30);
         section.add(core);
-        block(section, 'carrier-reactor-shield-frame', cube, armor,
-          side * 68, 10, -55, 23, 51, 4);
+        block(section, 'carrier-reactor-shield-frame', cube, armor, side * 68, 10, -55, 23, 51, 4);
       }
     }
     section.position.z = section.userData.baseZ;

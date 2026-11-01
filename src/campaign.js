@@ -107,7 +107,8 @@ export const SECTORS = [
     accent: '#ff6e99',
     sky: '#5d2548',
     duration: 150,
-    brief: 'Persiga Marvin em Titã, enfrente seu caça negro e vermelho e conclua a guerra dos Five Cats.',
+    brief:
+      'Persiga Marvin em Titã, enfrente seu caça negro e vermelho e conclua a guerra dos Five Cats.',
   },
 ];
 export const PILOTS = ['BIA', 'BOB', 'CHRISTOPHER'];
