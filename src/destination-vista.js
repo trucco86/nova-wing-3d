@@ -4,7 +4,7 @@ import { DESTINATION_PROFILES, destinationArrivalAt, destinationExitAt } from '.
 // Separate, low-draw-call celestial vista per world. Real rings are attached
 // to Saturn itself; no unexplained hoop appears in the flight corridor.
 const PLANET_VERT = 'varying vec3 vLocal;varying vec3 vNormal;void main(){vLocal=position;vNormal=normalize(normalMatrix*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
-const PLANET_FRAG = String.raw\`varying vec3 vLocal;varying vec3 vNormal;uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;
+const PLANET_FRAG = `varying vec3 vLocal;varying vec3 vNormal;uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;
 float noise3(vec3 v){return fract(sin(dot(floor(v),vec3(127.1,311.7,74.7)))*43758.5453);}
 void main(){
  vec3 n=normalize(vLocal);
@@ -20,10 +20,10 @@ void main(){
  if(kind>4.5 && kind<5.5) c=mix(vec3(.013,.022,.062),c,.28);
  float sun=max(.22,dot(n,normalize(vec3(-.45,.6,.8))));
  gl_FragColor=vec4(c*(.34+.77*sun),alpha);
-}\`;
+}`;
 const RIM_FRAG = 'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
 const RIM_VERT = 'varying vec3 vNormal;void main(){vNormal=normalMatrix*normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}';
-const HAZE_FRAG = String.raw\`varying vec2 uvp;uniform float alpha;uniform float time;uniform vec3 tint;
+const HAZE_FRAG = `varying vec2 uvp;uniform float alpha;uniform float time;uniform vec3 tint;
 float n2(vec2 p){return fract(sin(dot(floor(p),vec2(127.1,311.7)))*43758.5453);}
 void main(){
  vec2 q=uvp*vec2(4.,3.)+vec2(time*.034,-time*.018);
@@ -32,7 +32,7 @@ void main(){
  *smoothstep(0.,.2,uvp.y)*(1.-smoothstep(.8,1.,uvp.y));
  float center= .38+.62*smoothstep(.1,.9,abs(uvp.x-.5)*2.);
  gl_FragColor=vec4(tint,alpha*diffuse*mask*center);
-}\`;
+}`;
 
 const tints = {
   station: 0,
