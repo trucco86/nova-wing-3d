@@ -37,3 +37,11 @@ Não fazer merge em DEV/HML/main, alterar Firebase ou liberar produção sem gat
 
 - Rastro de esquiva: pool de até 16 planos de energia em coordenadas de mundo, com dissipação em 320 ms. Nenhuma geometria de colisão extra.
 - Propulsão do robô: jato central, saídas laterais e motores dorsais agora ficam visivelmente mais longos em BOOST, com a ponta estreita ancorada na boca do motor; confirmar em qualidade Alto e Médio no iPhone.
+
+## Boss Combat 4.0 — primeira entrega: Descarga do Motor (Devastador)
+
+- Fase 4, não fases 1–3: ataque exclusivo `reactor-vent` com alvo travado no início da preparação; área vermelha retangular no radar usa a mesma física do dano.
+- O motor esquerdo ou direito fica visivelmente energizado durante o aviso e a descarga. O jogador sai do eixo horizontal (dash lateral do robô ou movimento da nave); o golpe não transporta a nave-mãe como se fosse uma investida.
+- Válvula destruída não pode lançar a descarga, inclusive se a destruição acontecer durante o aviso. Ao destruir os dois motores, a descarga física é substituída pela rajada do núcleo; as salvas ficam limitadas às armas restantes.
+- Testes: `tests/boss4-reactor-exhaust.test.mjs` verifica origem, aviso, área segura, motor destruído, modelo 3D e laboratório; a mesma suíte cobre resposta imediata do HUD ao uso de bombas em WebGL lento.
+- **Aceite visual pendente:** em modo Alto/Médio e em celular horizontal, validar que a chama e o radar mostram o MESMO lado, que a descarga fica legível sem cobrir o retículo e que o dash sai da zona de impacto. Não promover a produção sem Playwright 4/4 e aprovação humana.
