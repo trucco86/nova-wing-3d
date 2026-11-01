@@ -41,7 +41,8 @@ test('same modeled ship opens the hangar and crosses the actual corridor gate', 
   updateMothershipApproach(external, 18);
   const opened = external.getObjectByName('devastador-hangar-upper-shutter').position.y;
   assert.ok(opened > closed + 29, 'door physically slides out of the pilot path');
-  assert.equal(updateMothershipInterior(interior, 18).visible, false);
+  assert.equal(updateMothershipInterior(interior, 16).visible, false);
+  assert.equal(updateMothershipInterior(interior, 18).visible, true);
   const boarding = updateMothershipApproach(external, 21);
   const inside = updateMothershipInterior(interior, 21);
   assert.equal(inside.visible, true);
