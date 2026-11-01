@@ -5,7 +5,7 @@ Candidata: [PR #239](https://github.com/trucco86/nova-wing-3d/pull/239), empilha
 ## Contratos de gameplay
 
 - Nave: segurar Q/E/Z ou o botão GIRO mantém a inclinação a 90°; toque curto faz o giro completo de 360°. Soltar um comando longo não deve produzir um segundo giro.
-- Robô: o botão torna-se DASH e desloca lateralmente para o lado comandado. Sem direção explícita, desvia para o centro. Duração de 0,24 s, cooldown de 1,55 s e custo de 18 pontos de energia.
+- Robô: o botão torna-se DASH e desloca lateralmente para o lado comandado. Sem esquerda/direita no WASD, setas ou joystick, o dash é bloqueado sem consumo de energia ou cooldown. Duração de 0,24 s, cooldown de 1,55 s e custo de 18 pontos de energia.
 - Efeitos: em boost, dois pós-combustores com camada externa e núcleo claro; em dash, ativa somente o jato do lado oposto ao deslocamento. Quando inativo, os jatos laterais desaparecem.
 - Fase 3: o robô não pode atravessar visualmente a parede do asteroide nem mesmo por um único frame. A regra também se aplica durante o dash.
 - Satélites hostis e escoltas carregadoras: possuem HP, explosão e remoção de colisão após destruição. Paredes, trilhos e estruturas permanentes continuam sólidas.
@@ -13,9 +13,9 @@ Candidata: [PR #239](https://github.com/trucco86/nova-wing-3d/pull/239), empilha
 
 ## Cenários de aceite no navegador
 
-1. **Desktop, teclado:** segurar Q por 450 ms, soltar sem giro de 360°, tocar E rapidamente e confirmar o giro completo. Transformar em robô e executar Z com D segurado; confirmar deslocamento, consumo de energia e jato visível à esquerda.
-2. **Mobile horizontal:** segurar GIRO até a nave ficar de lado; cancelar e confirmar retorno à posição neutra. Transformar; tocar DASH, verificar deslocamento lateral, propulsor correto, botão acessível e nenhum bloqueio pelo HUD.
-3. **Energia e cooldown:** gastar energia com boost, impedir dash com menos de 18 pontos, recuperar energia e executar apenas um dash por janela de cooldown.
+1. **Desktop, teclado:** segurar Q por 450 ms, soltar sem giro de 360°, tocar E rapidamente e confirmar o giro completo. Transformar em robô e executar Z com D segurado; confirmar deslocamento, consumo de energia, rastro no espaço e jato visível à esquerda.
+2. **Mobile horizontal:** segurar GIRO até a nave ficar de lado; cancelar e confirmar retorno à posição neutra. Transformar; tocar DASH, verificar que sem direcional o DASH não ativa; depois segurar o stick à esquerda ou direita e confirmar deslocamento, rastro persistente com fade, propulsor correto, botão acessível e nenhum bloqueio pelo HUD.
+3. **Energia e cooldown:** gastar energia com boost, impedir dash com menos de 18 pontos, recuperar energia, exigir esquerda/direita e executar apenas um dash por janela de cooldown.
 4. **Asteroide, fase 3:** usar TESTAR FASES (somente QA), levar o robô até a parede, acionar DASH para a parede e verificar clipping, colisão e indicador de escudo.
 5. **Alvos físicos:** destruir satélite e nave hostil com tiros normais e robô; confirmar HP, pontuação, explosão e ausência de hitbox fantasma.
 6. **Regressão visual/performance:** comparar capturas no iPhone horizontal e no desktop, qualidade Alto/Médio, funcionamento dos controles sem perda da mira e estabilidade de FPS.
@@ -32,3 +32,8 @@ Executar no commit final sincronizado: `npm ci`, `npm run format:check`, `npm ru
 As duas asserções de visualização para QA são `snapshot().mecha.dashJetSide` e `snapshot().mecha.boostCoreCount`. Elas observam efeitos visuais, não substituem as capturas reais de WebGL.
 
 Não fazer merge em DEV/HML/main, alterar Firebase ou liberar produção sem gates verdes e homologação explícita.
+
+## Efeitos de velocidade
+
+- Rastro de esquiva: pool de até 16 planos de energia em coordenadas de mundo, com dissipação em 320 ms. Nenhuma geometria de colisão extra.
+- Propulsão do robô: jato central, saídas laterais e motores dorsais agora ficam visivelmente mais longos em BOOST, com a ponta estreita ancorada na boca do motor; confirmar em qualidade Alto e Médio no iPhone.
