@@ -1,0 +1,40 @@
+name: Prepare Mars visual-budget QA candidate
+on:
+  push:
+    branches:
+      - feat/mars-visual-budget-20261101
+    paths:
+      - .github/workflows/mars-visual-budget-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - name: Commit only changed source, QA documents and generated HTML
+        run: |
+          git diff --check
+          git add -- index.html src/mars-sandstorm.js src/mars-premium.js src/visuals.js tests/mars-42-mysteries-storm.test.mjs docs/BACKLOG.md specs/mars-medium-visual-budget-20261101.md
+          if git diff --cached --quiet; then
+            echo 'Candidate already synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(mars): sync Medium/High storm visual budget candidate'
+          git push origin HEAD:feat/mars-visual-budget-20261101
