@@ -300,6 +300,62 @@ export function createMothershipInterior() {
         30,
       );
     }
+    // High-density machine detail using instancing, not hundreds of draw calls.
+    // Recessed wall panels and luminous bus lines keep the flight lane clear.
+    const machineMatrix = new T.Object3D();
+    for (const [label, itemMaterial, count, width] of [
+      ['circuit-boards', plating, 42, 4.8],
+      ['power-traces', cyan, 42, 0.65],
+      ['heat-exchangers', armor, 24, 3.2],
+    ]) {
+      const panels = new T.InstancedMesh(cube, itemMaterial, count);
+      panels.name = 'devastador-' + corridorKinds[i] + '-' + label;
+      panels.userData.visualOnly = true;
+      panels.frustumCulled = false;
+      for (let k = 0; k < count; k++) {
+        const side = k % 2 ? 1 : -1;
+        const depth = -70 + (Math.floor(k / 2) % 21) * 7;
+        const height = label === 'heat-exchangers' ? 30 + (k % 4) * 7 : 2 + (k % 7) * 7;
+        const offset = label === 'power-traces' ? 1.3 : label === 'heat-exchangers' ? -2.1 : 0;
+        machineMatrix.position.set(side * (71.5 + offset), height, depth);
+        machineMatrix.scale.set(
+          label === 'power-traces' ? 0.55 : width,
+          label === 'power-traces' ? 6.3 : label === 'heat-exchangers' ? 9 : 6.1,
+          label === 'heat-exchangers' ? 7 : 4.3,
+        );
+        machineMatrix.rotation.set(0, 0, 0);
+        machineMatrix.updateMatrix();
+        panels.setMatrixAt(k, machineMatrix.matrix);
+      }
+      panels.instanceMatrix.needsUpdate = true;
+      section.add(panels);
+    }
+    for (const side of [-1, 1]) {
+      const trunk = new T.Mesh(new T.CylinderGeometry(2.3, 2.3, 146, 10), dark);
+      trunk.name = 'devastador-hydraulic-coolant-pipeline';
+      trunk.rotation.x = Math.PI / 2;
+      trunk.position.set(side * 66, 51, -4);
+      section.add(trunk);
+      for (let j = 0; j < 4; j++) {
+        const coupler = new T.Mesh(new T.CylinderGeometry(3.6, 3.6, 3.8, 12), armor);
+        coupler.name = 'devastador-conduit-servo-coupler';
+        coupler.rotation.x = Math.PI / 2;
+        coupler.position.set(side * 66, 51, -56 + j * 36);
+        section.add(coupler);
+        block(
+          section,
+          'devastador-engine-diagnostic-screen',
+          cube,
+          i >= 4 ? hazard : cyan,
+          side * 68,
+          33,
+          -62 + j * 33,
+          2,
+          7,
+          11,
+        );
+      }
+    }
     section.position.z = section.userData.baseZ;
     sections.push(section);
     root.add(section);
