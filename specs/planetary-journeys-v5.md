@@ -68,3 +68,13 @@ em branch posterior, preservando os gates.
 - Detalhes altos marcados `highOnly`, ocultados em Médio, e grupos de instâncias por bioma para reduzir draw calls.
 - Toda transformação visual usa tempo de missão; sem `Math.random`, timers, armas ou hitboxes; verificar pausa, reinício e QA em portrait.
 - Testes de navegador devem confirmar ausência de erros WebGL e o momento correto de entrada antes do minigame de Netuno.
+
+## QA hardening v1.27.60 (regressões e contratos da experiência)
+
+- O painel `TESTAR FASES · QA` aparece **após** PRESS START somente em DEV/hosts de preview autorizados; nunca deve cobrir a arte de abertura ou aparecer no menu de produção.
+- O próximo destino da campanha depois da Terra é **DESERTO DE MARTE** e seu alvo é **COLOSSO DAS DUNAS**, com ameaças coerentes de deserto e tempestade. Nenhum teste deve continuar referenciando a fase oceânica removida do roteiro.
+- Durante a saída da atmosfera (12–31s) o jogo restaura a visibilidade inicial de cada elemento do cenário **uma única vez**. Mudanças intencionais subsequentes (LOD Alto/Médio, ocultação de objetos por gameplay) não podem ser sobrescritas pelo próximo frame.
+- Geometrias decorativas do horizonte não herdam deslocamento/rotação dos destroços do rail shooter; nuvens podem mover-se individualmente pelo relógio simulado, mantendo pausa e replay determinísticos.
+- BOOST obrigatório permanece indicado no botão `SUPER BOOST`; aviso de texto superior é breve (até 2,6s) para preservar o centro da tela. Texto neutro a teclado/toque: `SEGURE SUPER BOOST`.
+- Testes de regressão antigos atualizados apenas quando confrontados com a implementação e com a experiência aprovada; não mascarar erros reais de WebGL, toque, HUD, colisões ou performance.
+- Evidência exigida: `npm run validate`, `npm run validate -- --browser`, frames de entrada nas dez fases, verificação de nave/mira e controles em landscape/portrait; falhas de Playwright restantes bloqueiam merge.
