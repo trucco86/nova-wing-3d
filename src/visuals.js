@@ -12,6 +12,7 @@ import {
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
+import { createLivingDepth, updateLivingDepth, setLivingDepthQuality } from './living-depth.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
@@ -1499,6 +1500,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationVista = null;
   let destinationEscape = null;
   let destinationLandmarks = null;
+  let livingDepth = null;
   let carrierGrandHallActive = false;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
@@ -1628,6 +1630,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setDestinationExit,
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
+      setLivingDepthQuality(livingDepth, quality);
       setDestinationLandmarkQuality(destinationLandmarks, quality);
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
@@ -1743,6 +1746,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       destinationVista = null;
       destinationEscape = null;
       destinationLandmarks = null;
+      livingDepth = null;
       const resolvedIndex =
         sectorIndex >= 0
           ? sectorIndex
@@ -2004,6 +2008,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         light.dispose();
       }
       if (dynamicFlight) {
+        // Four instanced draw groups make each world visibly alive in the
+        // middle and far planes. They never participate in collision or fire.
+        livingDepth = createLivingDepth(destinationIndex);
+        sectorScenery.add(livingDepth);
+        setLivingDepthQuality(livingDepth, destinationGraphicsQuality);
         // Earth, Mars and the asteroid already have their own authored arrivals.
         if (DESTINATION_PROFILES[destinationIndex]) {
           destinationVista = createDestinationVista(destinationIndex);
@@ -2024,6 +2033,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
+      // Time is the gameplay clock; frozen by the game on pause. Traffic is
+      // still active during boss fights, when forward scenery travel stops.
+      updateLivingDepth(livingDepth, time);
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
@@ -2106,6 +2118,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         orbitalFrame.rotation.set(0, 0, 0);
       }
       travel = 0;
+      updateLivingDepth(livingDepth, 0);
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
       for (const tile of [city, cityFar]) {
