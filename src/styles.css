@@ -9001,3 +9001,38 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   border-color: #69e7cf;
   box-shadow: 0 0 18px #18c8ab26;
 }
+
+/* QA menu regression v1.27.60: the fourth action stays on the first row
+   in landscape while the three-action production menu is unchanged. */
+@media (min-width: 700px), (orientation: landscape) {
+  #menu.title-screen[data-screen='home'] #menuPrimary:has(#menuQA:not([hidden])) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary:has(#menuQA:not([hidden])) button {
+    min-width: 0;
+    padding: 8px 10px;
+    letter-spacing: 0.035em;
+    font-size: clamp(10px, 1vw, 13px);
+  }
+}
+
+/* The central QA panel is deliberately scrolled into view on entry.
+   Keep the return control inside the scrollport instead of centering a
+   taller-than-viewport flex column with an unreachable top. */
+#menu.title-screen[data-screen='central']:not(.selecting) {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='central']:not(.selecting) .title-content {
+  margin: 0 auto;
+  justify-content: flex-start;
+}
+#menu.title-screen[data-screen='central'] #menuBack {
+  position: sticky;
+  top: max(4px, env(safe-area-inset-top, 0px));
+  z-index: 9;
+  background: #071d2a;
+}
