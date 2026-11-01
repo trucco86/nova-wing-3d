@@ -30,7 +30,9 @@ test('worlds have identifiable, non-colliding geometry and distinct silhouettes'
     assert.equal(createDestinationLandmarks(world - 0)?.userData.world, world);
   }
   assert.ok(createDestinationLandmarks(0) === null);
-  assert.ok(createDestinationLandmarks(8) === null);
+  assert.ok(
+    createDestinationLandmarks(8).getObjectByName('orion-gravitational-spires')?.isInstancedMesh,
+  );
 });
 
 test('Venus lightning pulses, Neptune clouds drift, and pause reproduces a frame', () => {

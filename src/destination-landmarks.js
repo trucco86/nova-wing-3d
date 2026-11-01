@@ -7,6 +7,9 @@ const hash = (n) => {
   return x - Math.floor(x);
 };
 const palette = {
+  3: ['#6b839d', '#a9c6da', '#e1a35d', '#435d78'], // Jupiter station gantries
+  7: ['#4f6686', '#758ba5', '#ff8567', '#2c3f5b'], // Saturn blockade fleet
+  8: ['#594a91', '#a283cf', '#57c7ef', '#28355c'], // Orion gravity rift
   4: ['#9c7147', '#edc28c', '#ba8550', '#e9aa67'], // Venus acid-cloud stacks
   5: ['#78b0ca', '#e3f5fc', '#8dbccd', '#bedee7'], // Europa ice plates
   6: ['#1a4c9c', '#397ed1', '#71b1ed', '#1e3877'], // Neptune vortex clouds
@@ -60,7 +63,67 @@ export function createDestinationLandmarks(index) {
   // Only authored clouds move, driven by simulated mission time.
   group.userData.fixedSky = true;
   const cloud = index === 4 || index === 6;
-  if (cloud) {
+  if (index === 3 || index === 7 || index === 8) {
+    // These three destinations previously had no independent environment
+    // landmarks: only the orbital backdrop. Keep everything off the flyable
+    // corridor and grouped by world, with no physics or targeting changes.
+    const structureName =
+      index === 3
+        ? 'jupiter-orbit9-hangar-gantries'
+        : index === 7
+          ? 'saturn-blockade-dreadnoughts'
+          : 'orion-gravitational-spires';
+    const main = makeInstanced(
+      index,
+      index === 7 ? 24 : 32,
+      index === 8 ? new T.IcosahedronGeometry(1, 1) : new T.BoxGeometry(1, 1, 1),
+      materialFor(index),
+      structureName,
+      (i) => {
+        const side = i % 2 ? 1 : -1;
+        const spread = index === 7 ? 145 : 108;
+        const x = side * (spread + hash(i * 7 + index) * 170);
+        const y = 12 + hash(i * 13 + index) * (index === 8 ? 105 : 80);
+        const z = -220 - i * (index === 7 ? 62 : 45);
+        const scale =
+          index === 3
+            ? [19 + hash(i * 3) * 14, 40 + hash(i * 5) * 38, 27 + hash(i * 11) * 33]
+            : index === 7
+              ? [30 + hash(i * 9) * 26, 12 + hash(i * 7) * 14, 60 + hash(i * 5) * 55]
+              : [14 + hash(i * 9) * 23, 47 + hash(i * 3) * 57, 18 + hash(i * 4) * 30];
+        return {
+          position: [x, y, z],
+          scale,
+          rotation: [0, hash(i * 8) * 2, index === 8 ? hash(i * 4) * 0.7 : 0],
+        };
+      },
+    );
+    group.add(main);
+    const detailName =
+      index === 3
+        ? 'jupiter-orbit9-docking-beacons-high'
+        : index === 7
+          ? 'saturn-fleet-escort-fighters-high'
+          : 'orion-rift-luminous-shards-high';
+    const details = makeInstanced(
+      index,
+      24,
+      index === 7 ? new T.TetrahedronGeometry(1) : new T.ConeGeometry(1, 1, 6),
+      materialFor(index, index === 8 ? 0.74 : 1),
+      detailName,
+      (i) => ({
+        position: [
+          (i % 2 ? 1 : -1) * (120 + hash(i * 11 + 4) * 190),
+          34 + hash(i * 5 + 2) * 92,
+          -175 - i * 63,
+        ],
+        scale: index === 7 ? [9, 4, 23] : [4 + hash(i * 7) * 8, 18 + hash(i * 13) * 38, 5],
+        rotation: [hash(i * 9) * 0.35, hash(i * 7) * 2.5, hash(i * 2) * 0.3],
+      }),
+      true,
+    );
+    group.add(details);
+  } else if (cloud) {
     const geometry = new T.SphereGeometry(1, 14, 9);
     const count = index === 4 ? 38 : 34;
     const fog = makeInstanced(
@@ -196,6 +259,45 @@ export function createDestinationLandmarks(index) {
       }),
     );
     group.add(lakes);
+  }
+  // Each planetary surface also receives a second, deeper architectural
+  // layer; close-up props stay lateral to the actual gameplay corridor.
+  const additions = {
+    4: ['venus-volcanic-ridge-masses', 26],
+    5: ['europa-glacier-fault-walls', 24],
+    6: ['neptune-organic-hive-towers', 28],
+    9: ['titan-fortress-perimeter-towers', 28],
+  };
+  if (additions[index]) {
+    const [name, count] = additions[index];
+    const shape =
+      index === 5 || index === 9
+        ? new T.BoxGeometry(1, 1, 1)
+        : index === 6
+          ? new T.ConeGeometry(1, 1, 7)
+          : new T.IcosahedronGeometry(1, 1);
+    const layer = makeInstanced(
+      index,
+      count,
+      shape,
+      materialFor(index),
+      name,
+      (i) => {
+        const side = i % 2 ? 1 : -1;
+        const height = 32 + hash(i * 9 + index) * (index === 6 ? 105 : 78);
+        return {
+          position: [
+            side * (120 + hash(i * 7) * 185),
+            -8 + height * (index === 4 ? 0.2 : 0.46),
+            -230 - i * 49,
+          ],
+          scale: [17 + hash(i * 11) * (index === 5 ? 37 : 24), height, 18 + hash(i * 13) * 31],
+          rotation: [0, hash(i * 5) * 2.8, side * hash(i * 2) * 0.17],
+        };
+      },
+      true,
+    );
+    group.add(layer);
   }
   group.traverse((node) => {
     node.userData.visualOnly = true;

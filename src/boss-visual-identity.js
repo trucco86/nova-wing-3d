@@ -200,5 +200,123 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
     for (const side of [-1, 1])
       slab(root, dark, 'marvin-royal-hull-guard', side * 55, 1, -11, 24, 45, 30);
   }
+  // Late-game bosses read as huge, articulated silhouettes without moving
+  // generators, muzzle coordinates, hull collision or the validated bosses 1–3.
+  if (index === 7) {
+    for (const side of [-1, 1]) {
+      slab(root, armor, 'omega-outer-armored-flank-' + side, side * 77, 3, -39, 34, 32, 30);
+      talon(root, edge, 'omega-outer-horn-' + side, side * 84, 32, -35, 7, 43, side * 0.16);
+    }
+  } else if (index === 8) {
+    for (const side of [-1, 1]) {
+      slab(root, dark, 'orion-outer-field-stabilizer-' + side, side * 74, 9, -43, 24, 74, 20);
+      arc(root, edge, 'orion-side-gravity-arc-' + side, 21, side * 75, 9, -36, Math.PI);
+    }
+  } else if (index === 9) {
+    for (const side of [-1, 1]) {
+      slab(
+        root,
+        armor,
+        'marvin-fortress-outer-shoulder-' + side,
+        side * 82,
+        7,
+        -46,
+        38,
+        52,
+        32,
+        side * 0.13,
+      );
+      talon(
+        root,
+        dark,
+        'marvin-fortress-outer-horn-' + side,
+        side * 88,
+        52,
+        -47,
+        12,
+        61,
+        side * 0.18,
+      );
+      slab(root, edge, 'marvin-fortress-outer-eye-' + side, side * 79, 20, -25, 10, 3, 4);
+    }
+  }
   return root;
+}
+
+/** Visual-only articulation: attack silhouettes move, not physical hit targets.
+ * Frames depend solely on mission time so pause/replay is deterministic. */
+export function animateBossVisualIdentity(root, index, time, phase = 1, attackState = 'maneuver') {
+  if (!root || index < 3 || index > 9 || !Number.isFinite(time)) return;
+  const identity =
+    root.name === 'boss-distinct-' + BOSS_SHAPES[index]
+      ? root
+      : root.getObjectByName('boss-distinct-' + BOSS_SHAPES[index]);
+  if (!identity) return;
+  const intensity = attackState === 'attack' ? 1 : attackState === 'windup' ? 0.5 : 0.15;
+  const factor = 1 + 0.12 * Math.max(0, Math.min(2, phase - 1));
+
+  if (index === 3) {
+    // Orbital fortress closes its four shield gates before releasing a salvo.
+    for (let i = 0; i < 4; i++) {
+      const spoke = identity.getObjectByName('station-reactor-shield-spoke-' + i);
+      if (spoke)
+        spoke.rotation.z =
+          (i * Math.PI) / 2 + Math.sin(time * 0.72 + i) * 0.12 * factor + intensity * 0.19;
+    }
+  } else if (index === 4) {
+    // Phoenix folds its wings into a dive and opens them during recovery.
+    for (const feather of identity.children) {
+      if (!feather.name.startsWith('solar-phoenix-feather-')) continue;
+      const side = Math.sign(feather.position.x);
+      const part = Number(feather.name.split('-').at(-1));
+      feather.rotation.z =
+        -side * (0.15 + part * 0.13) +
+        side * (Math.sin(time * 1.9 + part * 0.48) * 0.15 + intensity * 0.18) * factor;
+    }
+  } else if (index === 5) {
+    // Independent glacial artillery arms recoil rather than remaining rigid.
+    for (const arm of identity.children) {
+      if (arm.name === 'glacial-artillery-forearm') {
+        const side = Math.sign(arm.position.x);
+        arm.rotation.z =
+          side * (0.16 + Math.sin(time * 0.85 + side) * 0.1 + intensity * 0.28) * factor;
+      }
+    }
+  } else if (index === 6) {
+    // Seven bio-heads hunt asynchronously across the hull.
+    for (let i = 0; i < 7; i++) {
+      const eye = identity.getObjectByName('hydra-head-eye-' + i);
+      if (!eye) continue;
+      const angle = (i * Math.PI * 2) / 7;
+      eye.position.x = Math.cos(angle) * 44 + Math.sin(time * 0.94 + i) * 5 * factor;
+      eye.position.y = Math.sin(angle) * 31 + 5 + Math.sin(time * 1.2 + i * 1.9) * 4 * factor;
+      eye.scale.setScalar(1 + intensity * 0.17);
+    }
+  } else if (index === 7) {
+    // Broadside battery banks recoil only when committed to an attack.
+    const guns = identity.children.filter(
+      (part) => part.name === 'omega-armored-battery-emplacement',
+    );
+    guns.forEach((gun, i) => {
+      gun.position.z = 11 - intensity * (2.4 + Math.sin(time * 9 + i) * 0.6);
+    });
+  } else if (index === 8) {
+    // Gravitational iris phases in opposed directions.
+    for (let i = 0; i < 4; i++) {
+      const lens = identity.getObjectByName('orion-lensing-iris-' + i);
+      if (!lens) continue;
+      lens.rotation.z = time * (i % 2 ? -0.16 : 0.16);
+      lens.scale.setScalar(1 + Math.sin(time * 1.7 + i) * 0.055 + intensity * 0.045);
+    }
+  } else if (index === 9) {
+    // Marvin's crown and fortress wings loom without changing bite/claw hitboxes.
+    for (let i = -2; i <= 2; i++) {
+      const spire = identity.getObjectByName('marvin-imperial-crown-spire-' + i);
+      if (spire) spire.rotation.z = Math.sin(time * 0.75 + i * 0.7) * 0.12 * factor;
+    }
+    for (const side of [-1, 1]) {
+      const shoulder = identity.getObjectByName('marvin-fortress-outer-shoulder-' + side);
+      if (shoulder) shoulder.rotation.z = side * (0.13 + intensity * 0.075);
+    }
+  }
 }
