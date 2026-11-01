@@ -18,7 +18,7 @@ test('Devastador finale progresses through five authored radio beats with an opt
   assert.equal(devastadorEscapeAt(1.4).speaker, 'bob');
   assert.equal(devastadorEscapeAt(3.4).speaker, 'calvin');
   assert.equal(devastadorEscapeAt(DEVASTADOR_ESCAPE_BOOST_START).speaker, 'christopher');
-  assert.equal(devastadorEscapeAt(DEVASTADOR_ESCAPE_WARP_START).speaker, 'bia');
+  assert.equal(devastadorEscapeAt(DEVASTADOR_ESCAPE_WARP_START).speaker, 'jenifer');
   assert.equal(devastadorEscapeAt(4.6).boostWindow, false);
   assert.equal(devastadorEscapeAt(4.75).boostWindow, true);
   const manual = devastadorEscapeAt(6.7, { boostedSeconds: 0.38 });
