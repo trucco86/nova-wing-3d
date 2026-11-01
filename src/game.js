@@ -5140,6 +5140,13 @@ export function createGame({
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
+      bossDriveShock:
+        boss?.userData.driveShockPlumes?.map((plume, i) => ({
+          side: i ? 1 : -1,
+          visible: plume.visible,
+          length: plume.scale.y,
+          generatorAlive: boss.userData.parts[i].hp > 0,
+        })) ?? [],
       seconds: elapsed,
       shield: hp,
       hits: score,
