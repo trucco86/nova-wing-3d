@@ -1,6 +1,7 @@
 import * as T from 'three';
 
 // Stage 4 is a real ship-side orbit, not a rotating reactor or backdrop.
+// Local steering is projected onto the orbit; the reactor stays in world space.
 // The local cockpit controls stay in a narrow lane, then map onto a circular
 // player trajectory around the fixed reactor in world coordinates.
 export const DEVASTADOR_ORBIT = Object.freeze({
