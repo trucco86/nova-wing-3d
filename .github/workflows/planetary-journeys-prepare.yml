@@ -55,10 +55,11 @@ jobs:
       - run: npm run build
       - run: npm run build:check
       - run: npm run validate
+      # Repeat the complete gate after updating the timing contracts.
       - run: git diff --check
       - name: Commit validated, generated web candidate only
         run: |
-          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.58.md index.html src/destination-arrival.js src/destination-vista.js src/developer-mode.js src/visuals.js src/game.js src/campaign.js src/stage-journey.js tests/destination-arrival.test.mjs tests/browser/destination-journeys.spec.mjs specs/planetary-journeys-v5.md
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.58.md index.html src/destination-arrival.js src/destination-vista.js src/developer-mode.js src/visuals.js src/game.js src/campaign.js src/stage-journey.js tests/destination-arrival.test.mjs tests/dynamic-flight.test.mjs tests/flight-cameras.test.mjs tests/sector-waves.test.mjs tests/browser/destination-journeys.spec.mjs specs/planetary-journeys-v5.md
           git diff --cached --stat
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
