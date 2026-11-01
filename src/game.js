@@ -4374,7 +4374,7 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      obstacles.some(({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
       (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
@@ -4400,9 +4400,28 @@ export function createGame({
       else b.o.position.z -= dt * 190;
       b.life -= dt;
       if (b.life > 0 && projectileOccluded(previousShot, b.o.position)) {
+        // Explicit damage is resolved against the same swept solid that blocked
+        // the projectile. This is not a fake overlay or an invisible hitbox.
+        const target = obstacles.find(({ o, life }) =>
+          life > 0 && projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt));
+        if (target && target.hp != null) {
+          const result = damageDestructibleObstacle(target.o.userData.kind,
+            target.hp, b.damage ?? 2);
+          if (result) {
+            target.hp = result.hp;
+            if (result.destroyed) {
+              target.life = 0;
+              target.o.visible = false;
+              score += target.o.userData.kind === 'carrier' ? 400 : 150;
+              explode(target.o.position.clone(), 14, 0xffa85e);
+              cue('armorHit');
+              message(target.o.userData.kind === 'carrier'
+                ? 'NAVE INIMIGA DESTRUÍDA' : 'SATÉLITE HOSTIL DESTRUÍDO');
+            } else explode(b.o.position, 2, 0xffcf85);
+          }
+        } else explode(b.o.position, 3, 0xffbf75);
         b.life = 0;
-        explode(b.o.position, 3, 0xffbf75);
-        if (dynamicFlight) cue('armorHit');
+        if (dynamicFlight && target?.life !== 0) cue('armorHit');
         continue;
       }
       if (b.life > 0 && dynamicFlight && !boss) {
@@ -4655,10 +4674,11 @@ export function createGame({
         -230,
       );
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: dynamicFlight ? destructibleObstacleHp(kind) : null });
       obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
     }
     for (const obstacle of obstacles) {
+      if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
       const from = previousPlayer
@@ -5058,6 +5078,9 @@ export function createGame({
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
+      destructibleTargets: obstacles.filter(o => o.hp != null && o.life > 0).map(o => ({
+        kind: o.o.userData.kind, hp: o.hp, x: o.o.position.x, y: o.o.position.y, z: o.o.position.z,
+      })),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {
         enemies: enemies.length,
