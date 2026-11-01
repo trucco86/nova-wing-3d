@@ -9159,3 +9159,32 @@ body.intermission-active #mechaMultiTargets {
     box-shadow: none;
   }
 }
+
+/* Phase 4: limited-cost original hyperspace streaks during the Devastador escape.
+   HUD / controls remain above the effect; no extra WebGL particles or pointers. */
+body.devastador-warp::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 42;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 48%,
+    transparent 0deg 9deg,
+    rgb(152 235 255 / 0.23) 9.1deg 9.55deg,
+    transparent 9.85deg 19deg
+  );
+  -webkit-mask-image: radial-gradient(ellipse at 50% 48%, transparent 0 20%, #000 49%, transparent 91%);
+  mask-image: radial-gradient(ellipse at 50% 48%, transparent 0 20%, #000 49%, transparent 91%);
+  animation: devastador-escape-streak 0.62s linear infinite;
+}
+body.devastador-escape:not(.devastador-warp) #attackWarning {
+  text-shadow: 0 0 12px rgb(255 95 52 / 0.5);
+}
+@keyframes devastador-escape-streak {
+  0% { transform: scale(0.94); opacity: 0.36; }
+  100% { transform: scale(1.19); opacity: 0.75; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.devastador-warp::after { animation: none; opacity: 0.35; }
+}
