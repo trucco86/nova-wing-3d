@@ -63,6 +63,7 @@ import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
+import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
@@ -228,6 +229,7 @@ export function createGame({
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
   const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
+  const marvinRival = dynamicFlight ? createMarvinRival(scene) : null;
   let journey = initialJourney(0);
   let asteroidWallCooldown = 0;
   const buildingMat = metal('#173344');
@@ -1081,6 +1083,7 @@ export function createGame({
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
     asteroidInterior?.reset(sectorIndex === 2);
+    marvinRival?.reset();
     asteroidWallCooldown = 0;
     squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
     skipSquadIntro = false;
@@ -3329,6 +3332,20 @@ export function createGame({
       }
       $('routeLabel').textContent = route.label;
     }
+    // Marvin's recurring rivalry is scoped to sector 5 onwards. The actor
+    // uses the same mission clock as movement/attacks, and never swaps the
+    // camera or overwrites player controls during the brief encounters.
+    if (dynamicFlight && sectorIndex >= 4) {
+      marvinRival.update({
+        sector: sectorIndex,
+        elapsed,
+        duration: current().duration,
+        bossActive: !!boss,
+        player: player.position,
+        fire: (origin, target, element) => bullet(origin, target, element),
+        notify: (line, speaker) => message(line, speaker),
+      });
+    }
     const orbitalLaunch =
       dynamicFlight &&
       sectorIndex === 0 &&
@@ -4208,6 +4225,15 @@ export function createGame({
         if (dynamicFlight) cue('armorHit');
         continue;
       }
+      if (b.life > 0 && dynamicFlight && !boss) {
+        const rival = marvinRival?.target();
+        if (rival && crossesSolid(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16), 0.5)) {
+          const dealt = marvinRival.hit(b.damage ?? 2);
+          impact(impactPoint(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16)), dealt,
+            { bossHit: true, weak: false, heavy: b.source?.startsWith('mecha-') });
+          b.life = 0;
+        }
+      }
       for (let e of enemies) {
         if (
           !e.dead &&
@@ -4736,6 +4762,7 @@ export function createGame({
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
       journey: { ...journey },
       asteroidInterior: asteroidInterior?.snapshot() ?? null,
+      marvinRival: marvinRival?.snapshot() ?? null,
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
