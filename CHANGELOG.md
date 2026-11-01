@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.61 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
 ## 1.27.60 — Candidata em preparação
 
 - Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.

@@ -15,6 +15,7 @@ as mudanças empilhadas antes de `#222`, incluindo `#220` e `#221`.
 
 CI de 1.27.60: qualidade 451/451 verde; browser vermelho nos quatro shards.
 Os testes que falharam incluíram:
+
 - abertura/seleção Five Cats em CI WebGL software;
 - fluxo inicial de renderização e pausa;
 - boost sustentado e retomado em hardware simulado;
@@ -55,6 +56,7 @@ Não desabilitar branch protection nem regravar histórico compartilhado.
 Na preparação de `v1.27.61`, os 16 testes focados do menu/Marte/boost
 passaram; a bateria de 8 cenários focados de produção teve **6 aprovações,
 2 reprovações e 2 skips específicos de plataforma**:
+
 - **Bug funcional:** selecionar Calvinho no hangar ainda mostrava BIA no HUD
   logo após pular a cinemática. Corrigir o HUD no momento da chamada
   `start()` e exigir o piloto selecionado antes do primeiro tick.
