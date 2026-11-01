@@ -5435,6 +5435,7 @@ export function createGame({
               facilities: boss.userData.grandHall.userData.facilities.length,
               wallSegments: boss.userData.grandHall.userData.walls,
               centralReactor: true,
+              ...world.reactorGrandHallState(),
             },
           }
         : null,
