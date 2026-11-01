@@ -16,6 +16,7 @@ for (const viewport of viewports) {
     await expect(menu).toHaveAttribute('data-screen', 'splash');
     await expect(page.locator('#pressStart')).toBeVisible();
     await expect(page.locator('#menuPrimary')).toBeHidden();
+    await expect(page.locator('#menuQA')).toBeVisible();
     await expect(page.locator('#menuHero')).toBeVisible();
 
     const cover = await menu.evaluate((node) => {
@@ -49,7 +50,7 @@ for (const viewport of viewports) {
 
     await page.locator('#pressStart').click();
     await expect(menu).toHaveAttribute('data-screen', 'home');
-    await expect(page.locator('#menuPrimary button:visible')).toHaveCount(3);
+    await expect(page.locator('#menuPrimary button:visible')).toHaveCount(4);
     const actionBounds = await page.locator('#menuPrimary button').evaluateAll((buttons) =>
       buttons.map((button) => {
         const rect = button.getBoundingClientRect();
@@ -69,6 +70,12 @@ for (const viewport of viewports) {
     await expect(page.locator('#novaRanking')).toBeHidden();
     await expect(page.locator('#novaAuth')).toBeHidden();
 
+    await page.locator('#menuQA').click();
+    await expect(menu).toHaveAttribute('data-screen', 'central');
+    await expect(page.locator('#developerPanel')).toBeVisible();
+    await expect(page.locator('#developerPanel')).toHaveAttribute('open', '');
+    await expect(page.locator('#developerSector option')).toHaveCount(10);
+    await page.locator('#menuBack').click();
     await page.locator('#menuHangar').click();
     await expect(menu).toHaveAttribute('data-screen', 'hangar');
     await expect(page.locator('#squadSelection')).toBeVisible();
