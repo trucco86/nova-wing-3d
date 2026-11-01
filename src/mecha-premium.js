@@ -237,7 +237,9 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
       }),
     );
     trail.name = 'premium-mecha-afterburner-' + side;
-    trail.rotation.x = Math.PI / 2;
+    // Cone points back toward the real nozzle (-Z); the broad flame grows
+    // into positive Z, away from the ship and visible in chase camera.
+    trail.rotation.x = -Math.PI / 2;
     trail.position.set(side * 1.38, 2.51, 3.9);
     trail.visible = false;
     robot.add(trail);
@@ -257,7 +259,7 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
       }),
     );
     core.name = 'premium-mecha-afterburner-core-' + side;
-    core.rotation.x = Math.PI / 2;
+    core.rotation.x = -Math.PI / 2;
     core.position.copy(trail.position);
     core.visible = false;
     robot.add(core);
@@ -277,7 +279,7 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
       }),
     );
     dashJet.name = 'premium-mecha-lateral-dash-jet-' + side;
-    dashJet.rotation.z = (-side * Math.PI) / 2;
+    dashJet.rotation.z = (side * Math.PI) / 2;
     dashJet.position.set(side * 1.54, 0.02, 1.6);
     dashJet.visible = false;
     robot.add(dashJet);
@@ -350,16 +352,18 @@ export function animatePremiumMecha(
   rig.spine.rotation.z = dashActive ? -dashSide * 0.12 : 0;
   for (const [index, plume] of rig.exhausts.entries()) {
     plume.visible = boosting && power > 0.75;
-    const length = 1.25 + Math.sin(time * 32 + index * 1.3) * 0.19 + growth * 1.1;
+    // The afterburner is >3x its former short bloom. Keep the flame tip
+    // anchored at z=2.75 as the cone stretches into +Z (toward chase camera).
+    const length = 3.9 + Math.sin(time * 27 + index * 1.3) * 0.25 + growth * 1.35;
     plume.scale.y = length;
-    plume.position.z = 3.0 + length * 0.88;
-    plume.material.opacity = boosting ? 0.43 + growth * 0.26 : 0.12;
-    plume.material.color.set(growth > 0.65 ? '#f2ebff' : '#55d5ff');
+    plume.position.z = 2.75 + length * 0.9;
+    plume.material.opacity = boosting ? 0.63 + growth * 0.14 : 0;
+    plume.material.color.set(growth > 0.65 ? '#b9a5ff' : '#4fd9ff');
     const core = rig.afterburnerCores[index];
     core.visible = plume.visible;
-    core.position.copy(plume.position);
-    core.scale.y = length * 1.12;
-    core.material.opacity = boosting ? 0.73 + 0.16 * Math.sin(time * 24 + index) ** 2 : 0;
+    core.scale.y = length * 1.28;
+    core.position.set(plume.position.x, plume.position.y, 2.75 + core.scale.y * 0.775);
+    core.material.opacity = boosting ? 0.86 + 0.11 * Math.sin(time * 24 + index) ** 2 : 0;
   }
   for (const { side, jet } of rig.dashJets) {
     const firing = dashActive && side === -dashSide;
