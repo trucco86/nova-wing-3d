@@ -276,10 +276,7 @@ export function createDevastadorGrandHall() {
   return hall;
 }
 
-export function updateDevastadorGrandHall(
-  hall,
-  { time = 0, driveSpeed = 1, blackout = 0 } = {},
-) {
+export function updateDevastadorGrandHall(hall, { time = 0, driveSpeed = 1, blackout = 0 } = {}) {
   if (!hall) return;
   // The reactor and hall share a fixed inertial frame in presentation.
   // The enclosing scene frame carries the actual player/camera orbit; never
