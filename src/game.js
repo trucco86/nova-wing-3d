@@ -4200,6 +4200,8 @@ export function createGame({
           bossMeleeResolved = true;
           if (
             !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            (bossIntent.kind !== 'reactor-vent' ||
+              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
