@@ -709,8 +709,9 @@ export function createGame({
     shipModule.scale.setScalar(0.98);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
-    robot.scale.x =
-      pilotLoadout.ship === 'aegis' ? 1.13 : pilotLoadout.ship === 'specter' ? 0.88 : 0.98;
+    robot.userData.mecha.baseScale =
+      pilotLoadout.ship === 'aegis' ? 0.89 : pilotLoadout.ship === 'specter' ? 0.81 : 0.85;
+    robot.scale.setScalar(robot.userData.mecha.baseScale);
     applySkin();
   }
   const statLabels = {
