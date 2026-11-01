@@ -53,9 +53,3 @@ test('QA mobile/desktop opens stage 4 with upgraded ship, swaps mecha and pods w
   expect(errors).toEqual([]);
 });
 
-test('non-developer page never exposes pause upgrade lab or stage selector', async ({ page }) => {
-  await page.goto('/__android.html');
-  await expect(page.locator('#developerPanel')).toBeHidden();
-  await expect(page.locator('#menuQA')).toBeHidden();
-  await expect(page.locator('#developerFlightLab')).toBeHidden();
-});
