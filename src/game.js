@@ -2194,6 +2194,11 @@ export function createGame({
     unlockAudio();
     menuThemePlaying = false;
     enterSector(false);
+    // The selected Five Cats pilot is already the active player on frame zero.
+    // Do not leave the previous/default pilot on the HUD until the first tick.
+    $('pilotName').textContent =
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + ' VIDAS';
+    renderPilotSelection();
   }
   function startDeveloperScenario(sector, encounter, fromRestart = false) {
     if (!developerAvailable || (!fromRestart && state !== 'menu')) return false;
