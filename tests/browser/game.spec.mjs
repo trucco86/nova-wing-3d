@@ -126,7 +126,7 @@ test('checkpoint restores the final sector with independent music control', asyn
   );
   await page.goto('/');
   await clickMenu(page, '#continue');
-  await expect(page.locator('#stage')).toHaveText('TRONO DE MARVIN');
+  await expect(page.locator('#stage')).toHaveText('CAÇADA FINAL · MARVIN');
   await expect(page.locator('#weaponLabel')).toContainText('PLASMA VÓRTICE');
   await page.locator('#pause').click();
   await page.locator('#pauseOptions').click();
