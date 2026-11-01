@@ -3996,7 +3996,11 @@ export function createGame({
         : elapsed < current().duration * 0.7
           ? 1
           : 2;
-    $('stage').textContent = boss ? current().boss : current().name;
+    $('stage').textContent = boss?.userData.sabotage
+      ? 'DEVASTADOR · SABOTAGEM'
+      : boss
+        ? current().boss
+        : current().name;
     if (phase !== lastStage) {
       lastStage = phase;
     }
@@ -5019,7 +5023,18 @@ export function createGame({
     $('boostTouch').style.setProperty?.('--meter', energy + '%');
     $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
-    $('bossHealth').style.width = Math.max(0, (bossHp / (bossCombat?.max ?? 1400)) * 100) + '%';
+    const sabotageProgress = boss?.userData.sabotage
+      ? (boss.userData.parts.filter((part) => part.hp <= 0).length +
+          (1 - bossHp / bossCombat.max)) /
+        9
+      : null;
+    $('bossHealth').style.width =
+      Math.max(
+        0,
+        (sabotageProgress === null
+          ? bossHp / (bossCombat?.max ?? 1400)
+          : sabotageProgress) * 100,
+      ) + '%';
   }
   let last = now();
   function tick(dt, nowMs) {
