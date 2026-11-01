@@ -640,7 +640,13 @@ export function animateBossSignature(g, index, time, phase = 1, attackState = 'm
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
-  animateBossKineticDetails(g.getObjectByName('boss-premium-kinetic-' + index), index, time, phase, attackState);
+  animateBossKineticDetails(
+    g.getObjectByName('boss-premium-kinetic-' + index),
+    index,
+    time,
+    phase,
+    attackState,
+  );
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
