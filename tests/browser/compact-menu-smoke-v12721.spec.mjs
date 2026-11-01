@@ -77,6 +77,10 @@ for (const viewport of viewports) {
     await expect(page.locator('#developerPanel')).toBeVisible();
     await expect(page.locator('#developerPanel')).toHaveAttribute('open', '');
     await expect(page.locator('#developerSector option')).toHaveCount(10);
+    const back = await page.locator('#menuBack').boundingBox();
+    expect(back).not.toBeNull();
+    expect(back.y).toBeGreaterThanOrEqual(-1);
+    expect(back.y + back.height).toBeLessThanOrEqual(viewport.height + 1);
     await page.locator('#menuBack').click();
     await page.locator('#menuHangar').click();
     await expect(menu).toHaveAttribute('data-screen', 'hangar');
