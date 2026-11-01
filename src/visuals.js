@@ -468,7 +468,7 @@ export function createFlyingRobot() {
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
     sidePlumes.push(plume);
@@ -521,7 +521,7 @@ export function createFlyingRobot() {
     new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
-  turbineFlame.rotation.x = Math.PI / 2;
+  turbineFlame.rotation.x = -Math.PI / 2;
   turbineFlame.position.set(0, 0, 1.6);
   turbineGimbal.add(turbineFlame);
   // Exposed mechanical fan blades make the turbine visibly rotate during flight.
@@ -597,7 +597,7 @@ export function createFlyingRobot() {
       new T.ConeGeometry(0.31, 1.35, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.46 }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.z = 1.1;
     nozzle.add(plume);
     robot.add(nozzle);
@@ -746,12 +746,13 @@ export function animateMechPower(
     (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
 
   const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
-  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
-  rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
+  rig.turbineFlame.scale.y = (0.85 + rig.propulsionPower * 3.25) * pulse;
+  // Base tip stays attached to the gimballed reactor; exhaust stretches away.
+  rig.turbineFlame.position.z = 0.85 + (1.75 * rig.turbineFlame.scale.y) / 2;
   rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
   for (const plume of rig.sidePlumes) {
-    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
-    plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
+    plume.scale.y = (0.85 + rig.propulsionPower * 2.85) * pulse;
+    plume.position.z = 2.45 + (1.4 * plume.scale.y) / 2;
   }
 }
 const variants = new Map();
