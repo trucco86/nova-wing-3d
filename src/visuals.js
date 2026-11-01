@@ -15,6 +15,7 @@ import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
+import { createLivingWorldLayers, updateLivingWorldLayers, setLivingWorldQuality } from './living-world-depth.js';
 import {
   createDestinationLandmarks,
   updateDestinationLandmarks,
@@ -1629,6 +1630,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
+      setLivingWorldQuality(sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme), quality);
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
@@ -2020,10 +2022,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         destinationEscape = createDestinationEscape(destinationIndex);
         sectorScenery.add(destinationEscape);
       }
+      if (dynamicFlight)
+        sectorScenery.add(createLivingWorldLayers(sceneryTheme, destinationGraphicsQuality));
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
     update(dt, time, speed, playing) {
       terrainMat.uniforms.time.value = time;
+      // Independent, low-draw-call depth planes remain animated during boss
+      // fights while the near collision corridor is intentionally frozen.
+      updateLivingWorldLayers(sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme), {
+        time,
+        travel,
+      });
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
