@@ -100,6 +100,12 @@ import {
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import {
+  mechaMultiLockCapacity,
+  availableMechaTargets,
+  collectMultiLocks,
+  multiLockCost,
+} from './mecha-multi-lock.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import {
@@ -378,10 +384,21 @@ export function createGame({
   let lockedId = null;
   let lockProgress = 0;
   let precisionCd = 0;
+  let lockHeld = false;
+  let lockWasEnabled = false;
+  let lockHoldSeconds = 0;
+  let lockQueue = [];
+  const clearMultiLockMarkers = () => {
+    for (let i = 0; i < 12; i++) $('mechaMultiTarget' + i).hidden = true;
+  };
   function resetMechaLock() {
     lockEnabled = false;
     lockedId = null;
     lockProgress = 0;
+    lockHeld = false;
+    lockHoldSeconds = 0;
+    lockQueue = [];
+    clearMultiLockMarkers();
     $('lockTouch').ariaPressed = 'false';
     $('mechaLockStatus').hidden = true;
     $('mechaLockReticle').hidden = true;
@@ -391,6 +408,58 @@ export function createGame({
     lockEnabled = !lockEnabled;
     if (!lockEnabled) resetMechaLock();
     else $('lockTouch').ariaPressed = 'true';
+  }
+  function startMechaMultiLock() {
+    if (!robotMode || state !== 'playing') return;
+    lockWasEnabled = lockEnabled;
+    lockHeld = true;
+    lockHoldSeconds = 0;
+    lockQueue = [];
+    lockEnabled = true;
+    lockedId = null;
+    lockProgress = 0;
+    $('lockTouch').ariaPressed = 'true';
+  }
+  function finishMechaMultiLock(cancel = false) {
+    if (!lockHeld) return;
+    const sustained = lockHoldSeconds >= 0.23;
+    const targets = [...lockQueue];
+    const wasEnabled = lockWasEnabled;
+    lockHeld = false;
+    if (cancel) {
+      resetMechaLock();
+      return;
+    }
+    if (!sustained) {
+      // A quick tap retains the old toggle-to-auto-aim behavior.
+      lockEnabled = !wasEnabled;
+      if (!lockEnabled) resetMechaLock();
+      else $('lockTouch').ariaPressed = 'true';
+      return;
+    }
+    const cost = multiLockCost(targets.length);
+    if (targets.length && energy >= cost && precisionCd <= 0) {
+      robot.updateMatrixWorld(true);
+      const origin = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
+      for (const target of targets) {
+        const aim = target.position.clone().sub(origin);
+        if (aim.lengthSq() < 1) continue;
+        launchShot(0, mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) * 0.8, false, origin);
+        const shot = shots.at(-1);
+        shot.v = aim.normalize().multiplyScalar(215 + stage() * 3);
+        shot.source = 'mecha-multi-lock';
+        shot.homing = false;
+        shot.o.scale.setScalar(1.8 + stage() * 0.05);
+      }
+      energy -= cost;
+      precisionCd = Math.max(1.15, 1.8 - stage() * 0.03);
+      heroEffects.pulse({ robot: true, precisionShot: true, color: shotColor() });
+      cue('mechaPrecision');
+      message('MULTI-LOCK · ' + targets.length + ' ALVOS · RAJADA LIBERADA');
+    } else if (targets.length) {
+      message('MULTI-LOCK · RECARGA OU ENERGIA INSUFICIENTE');
+    }
+    resetMechaLock();
   }
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
@@ -1709,16 +1778,37 @@ export function createGame({
               position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
               weak: enemy.kind === 'subboss',
             }));
-      selected = selectMechaTarget(player.position, candidates, {
-        visible: (from, to) =>
-          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
-      });
+      const visible = (from, to) =>
+        !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0));
+      selected = selectMechaTarget(player.position, candidates, { visible });
+      if (lockHeld) {
+        lockHoldSeconds += dt;
+        const available = availableMechaTargets(player.position, candidates, { visible });
+        lockQueue = collectMultiLocks(
+          lockQueue,
+          available,
+          mechaMultiLockCapacity(stage()),
+          1 + Math.floor(lockHoldSeconds / 0.16),
+        );
+        selected = lockQueue[0] ?? selected;
+      }
     }
     if (selected?.id !== lockedId) {
       lockedId = selected?.id ?? null;
       lockProgress = 0;
     } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
     const position = selected?.position ?? null;
+    for (let i = 0; i < 12; i++) {
+      const marker = $('mechaMultiTarget' + i);
+      marker.hidden = true;
+      if (!lockHeld || !lockQueue[i]) continue;
+      const projected = lockQueue[i].position.clone().project(camera);
+      if (projected.z < -1 || projected.z > 1 || Math.abs(projected.x) > 1 || Math.abs(projected.y) > 1)
+        continue;
+      marker.hidden = false;
+      marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+      marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
+    }
     updateMechaPose(robot, {
       dt,
       time: visualTime,
@@ -1734,7 +1824,9 @@ export function createGame({
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
     if (lockEnabled)
-      status.textContent = !selected
+      status.textContent = lockHeld
+        ? 'MULTI-LOCK · ' + lockQueue.length + '/' + mechaMultiLockCapacity(stage()) + ' · SOLTE PARA ATIRAR'
+        : !selected
         ? 'MIRA · SEM ALVO'
         : lockProgress < 0.8
           ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
@@ -1758,7 +1850,7 @@ export function createGame({
     }
     const lasers = lockLaserCount(stage());
     const laserEnergy = 10 + (lasers - 1) * 2;
-    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
+    if (!lockHeld && selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
       const totalDamage =
@@ -3049,7 +3141,7 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
-    if (e.code === 'KeyN') toggleMechaLock();
+    if (e.code === 'KeyN') startMechaMultiLock();
     if (e.code === 'KeyY') castSquadSpecial('plasma');
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
@@ -3066,6 +3158,7 @@ export function createGame({
     const rollStarted = rollKeyDownAt.get(e.code);
     rollKeyDownAt.delete(e.code);
     keys.delete(e.code);
+    if (e.code === 'KeyN') finishMechaMultiLock();
     if (
       rollStarted !== undefined &&
       !robotMode &&
@@ -3201,8 +3294,12 @@ export function createGame({
   };
   $('lockTouch').onpointerdown = (e) => {
     e.preventDefault?.();
-    toggleMechaLock();
+    $('lockTouch').setPointerCapture?.(e.pointerId);
+    startMechaMultiLock();
   };
+  $('lockTouch').addEventListener('pointerup', () => finishMechaMultiLock());
+  for (const event of ['pointercancel', 'lostpointercapture'])
+    $('lockTouch').addEventListener(event, () => finishMechaMultiLock(true));
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -5191,6 +5288,9 @@ export function createGame({
         active: robotMode,
         lockEnabled,
         lockProgress,
+        multiLockHeld: lockHeld,
+        multiLockTargets: lockQueue.length,
+        multiLockCapacity: mechaMultiLockCapacity(stage()),
         thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
         dashJetSide:
           robot.userData.premiumMecha?.dashJets?.find(({ jet }) => jet.visible)?.side ?? null,
