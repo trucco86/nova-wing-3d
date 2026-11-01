@@ -1,6 +1,6 @@
 # Nova Wing — QA integrada: núcleo fixo, cenários vivos e chefes premium
 
-Data: 2026-11-01. Candidata: PR #244. Ambiente isolado, sem merge em produção.
+Data: 2026-11-01. Candidata: PR #244, versão v1.27.63. Ambiente isolado, sem merge em produção.
 
 ## O que foi implementado
 
