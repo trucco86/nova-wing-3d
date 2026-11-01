@@ -6,7 +6,11 @@ export const ADVANCED_WEAPON_TIERS = Object.freeze([
   { stage: 12, color: '#df85ff', label: 'NOVA' },
   { stage: 16, color: '#f8ffff', label: 'HIPERPLASMA' },
 ]);
-const tier = (level) => ADVANCED_WEAPON_TIERS.reduce((current, t) => level >= t.stage ? t : current, ADVANCED_WEAPON_TIERS[0]);
+const tier = (level) =>
+  ADVANCED_WEAPON_TIERS.reduce(
+    (current, t) => (level >= t.stage ? t : current),
+    ADVANCED_WEAPON_TIERS[0],
+  );
 
 export function evolvedShotColor(level = 0, originalColor = '#62ffe0') {
   if (!Number.isFinite(level)) return originalColor;
@@ -19,7 +23,9 @@ export function dockedPodPower(pods = 0, stage = 0, detached = false) {
   if (detached || pods <= 0) return 1;
   // Three maxed pods provide the requested double cannon power, while
   // lower levels still receive the previously approved incremental benefit.
-  return pods >= 3 && stage >= 9 ? 2 + Math.min(0.3, (stage - 9) * 0.025) : 1 + Math.min(pods, 3) * 0.3;
+  return pods >= 3 && stage >= 9
+    ? 2 + Math.min(0.3, (stage - 9) * 0.025)
+    : 1 + Math.min(pods, 3) * 0.3;
 }
 export function podLaserMultiplier(pods = 0, stage = 0) {
   return 1 + Math.min(3, Math.max(0, pods)) * 0.16 + Math.min(18, Math.max(0, stage)) * 0.03;

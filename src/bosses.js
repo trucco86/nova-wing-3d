@@ -402,8 +402,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   for (const [i, entry] of bossWeakPointPlan(index).entries()) {
     const side = i === 0 ? -1 : 1;
     const mechanical = [3, 5].includes(index);
-    const p = add(mechanical ? box(10, 8, 7, hot) : sphere(4, hot),
-      entry.x, entry.y, entry.z);
+    const p = add(mechanical ? box(10, 8, 7, hot) : sphere(4, hot), entry.x, entry.y, entry.z);
     p.name = 'boss-breakable-' + entry.type;
     if (mechanical) {
       // Industrial vents, gears and exhaust shafts instead of identical

@@ -133,17 +133,23 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
       hub.rotation.x = Math.PI / 2;
       turbine.add(hub);
       for (let blade = 0; blade < 5; blade++) {
-        const fin = slab(turbine, blade % 2 ? armor : edge, 'devastador-drive-rotor-fin',
-          Math.sin(blade * Math.PI * 2 / 5) * 9,
-          Math.cos(blade * Math.PI * 2 / 5) * 9, 13, 5, 14, 3,
-          -blade * Math.PI * 2 / 5);
+        const fin = slab(
+          turbine,
+          blade % 2 ? armor : edge,
+          'devastador-drive-rotor-fin',
+          Math.sin((blade * Math.PI * 2) / 5) * 9,
+          Math.cos((blade * Math.PI * 2) / 5) * 9,
+          13,
+          5,
+          14,
+          3,
+          (-blade * Math.PI * 2) / 5,
+        );
         fin.userData.visualOnly = true;
       }
       root.add(turbine);
-      slab(root, armor, 'devastador-engine-exhaust-ramp-' + side,
-        side * 67, -24, -28, 17, 23, 49);
-      slab(root, hot, 'devastador-engine-radiator-' + side,
-        side * 58, 9, 0, 4, 33, 11);
+      slab(root, armor, 'devastador-engine-exhaust-ramp-' + side, side * 67, -24, -28, 17, 23, 49);
+      slab(root, hot, 'devastador-engine-radiator-' + side, side * 58, 9, 0, 4, 33, 11);
     }
   } else if (index === 4) {
     for (const side of [-1, 1]) {

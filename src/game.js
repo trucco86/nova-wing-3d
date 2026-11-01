@@ -103,7 +103,14 @@ import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import { animatePremiumMecha } from './mecha-premium.js';
-import { evolvedShotColor, dockedPodPower, podLaserMultiplier, lockLaserCount, progressionSpeed, boostTrailLength } from './combat-progression.js';
+import {
+  evolvedShotColor,
+  dockedPodPower,
+  podLaserMultiplier,
+  lockLaserCount,
+  progressionSpeed,
+  boostTrailLength,
+} from './combat-progression.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
@@ -1464,9 +1471,21 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
-  const upgradedShotMaterials = ['#52ecff', '#ffd15e', '#df85ff', '#f8ffff'].map((c) => glowMaterial(c, 3.4));
-  const shotColor = () => dynamicFlight ? evolvedShotColor(stage(), selectedWeapon().color) : WEAPON_COLORS[weapon];
-  const shotMaterial = () => stage() >= 16 ? upgradedShotMaterials[3] : stage() >= 12 ? upgradedShotMaterials[2] : stage() >= 8 ? upgradedShotMaterials[1] : stage() >= 4 ? upgradedShotMaterials[0] : shotMaterials[strategy.arsenal];
+  const upgradedShotMaterials = ['#52ecff', '#ffd15e', '#df85ff', '#f8ffff'].map((c) =>
+    glowMaterial(c, 3.4),
+  );
+  const shotColor = () =>
+    dynamicFlight ? evolvedShotColor(stage(), selectedWeapon().color) : WEAPON_COLORS[weapon];
+  const shotMaterial = () =>
+    stage() >= 16
+      ? upgradedShotMaterials[3]
+      : stage() >= 12
+        ? upgradedShotMaterials[2]
+        : stage() >= 8
+          ? upgradedShotMaterials[1]
+          : stage() >= 4
+            ? upgradedShotMaterials[0]
+            : shotMaterials[strategy.arsenal];
   const scatterShotMaterial = glowMaterial('#ffba70', 3);
   function impact(position, dealt = 1, { bossHit = false, weak = false, heavy = false } = {}) {
     if (!dynamicFlight) return;
@@ -1516,13 +1535,7 @@ export function createGame({
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterial() : green,
     );
-    o.add(
-      halo(
-        scatter ? '#ffba70' : shotColor(),
-        charged ? 6 : 1.8,
-        0.5,
-      ),
-    );
+    o.add(halo(scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5));
     o.rotation.x = Math.PI / 2;
     o.position.copy(origin ?? player.position);
     o.position.x += x;
@@ -1670,7 +1683,8 @@ export function createGame({
     if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
-      const totalDamage = mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) *
+      const totalDamage =
+        mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) *
         (1 + (lasers - 1) * 0.22);
       for (let i = 0; i < lasers; i++) {
         const origin = muzzle.clone().add(new T.Vector3((i - (lasers - 1) / 2) * 0.62, 0, 0));
@@ -1678,7 +1692,11 @@ export function createGame({
         const shot = shots.at(-1);
         shot.source = 'mecha-precision';
         shot.o.scale.setScalar(2.1 + stage() * 0.045);
-        shot.v = position.clone().sub(origin).normalize().multiplyScalar(205 + stage() * 2);
+        shot.v = position
+          .clone()
+          .sub(origin)
+          .normalize()
+          .multiplyScalar(205 + stage() * 2);
         shot.homing = false; // Already physically aimed at the locked target.
       }
       energy -= laserEnergy;
@@ -1947,7 +1965,8 @@ export function createGame({
       return dealt;
     }
     const openPart = (p) =>
-      !dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), boss.userData.parts.indexOf(p));
+      !dynamicFlight ||
+      bossWeakPointOpen(sectorIndex, relativeOrbit(), boss.userData.parts.indexOf(p));
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
@@ -3087,7 +3106,12 @@ export function createGame({
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / transformDuration;
-    animatePremiumMecha(robot, { progress: robotMode ? 1 - unfoldProgress : 0, level: stage(), time: elapsed, boosting });
+    animatePremiumMecha(robot, {
+      progress: robotMode ? 1 - unfoldProgress : 0,
+      level: stage(),
+      time: elapsed,
+      boosting,
+    });
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
       // updateMechaPose(). Do not overwrite their animation with a legacy rig.
@@ -3147,7 +3171,10 @@ export function createGame({
       orbitalLaunchSequence.snapshot().phase === 'boost' &&
       boosting;
     const speed =
-      (superBoost ? 114 : boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed * progressionSpeed(stage());
+      (superBoost ? 114 : boosting ? 90 : 48) *
+      (1 + Math.min(30, stage()) * 0.02) *
+      profileSpeed *
+      progressionSpeed(stage());
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -4178,7 +4205,8 @@ export function createGame({
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const openGenerator = boss.userData.parts.findIndex(
-        (p, i) => p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+        (p, i) =>
+          p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
       );
       const coreVulnerable =
         remaining === 0 &&
@@ -4319,7 +4347,8 @@ export function createGame({
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
         const weakPart = boss?.userData.parts.find(
-          (p, i) => p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+          (p, i) =>
+            p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
         );
         const target = boss
           ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
@@ -4693,10 +4722,21 @@ export function createGame({
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
       for (let f of player.userData.flames) {
-        f.material.color.set(boostVisible ? stage() >= 16 ? '#f8ffff' : stage() >= 12 ? '#d995ff' : stage() >= 8 ? '#ffd15e' : '#ff9a35' : '#78eaff');
+        f.material.color.set(
+          boostVisible
+            ? stage() >= 16
+              ? '#f8ffff'
+              : stage() >= 12
+                ? '#d995ff'
+                : stage() >= 8
+                  ? '#ffd15e'
+                  : '#ff9a35'
+            : '#78eaff',
+        );
         f.scale.set(
           boostVisible ? 1.7 : 1,
-          boostTrailLength(stage(), boostVisible) * (boostVisible ? 1.65 : 1) + Math.sin(visualTime * 30) * 0.12,
+          boostTrailLength(stage(), boostVisible) * (boostVisible ? 1.65 : 1) +
+            Math.sin(visualTime * 30) * 0.12,
           boostVisible ? 1.7 : 1,
         );
         f.position.z = 2.3 + 1.7 * f.scale.y;
