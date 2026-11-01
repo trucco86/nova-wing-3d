@@ -179,6 +179,19 @@ jobs:
         run: |
           mkdir public-site
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
+      - name: Generate optional Google login config for PROD — fail closed
+        env:
+          NOVA_ENV: prod
+          NOVA_FIREBASE_CONFIG_JSON: ${{ vars.NOVA_FIREBASE_PROD_CONFIG_JSON }}
+          # Keep ranking local. Remote scores require separately reviewed API and D1.
+          NOVA_RANKING_API_URL: ''
+        run: |
+          node tools/write-public-config.mjs public-site/nova-config.json
+          if test -f public-site/nova-config.json; then
+            echo 'PROD Google sign-in public web configuration generated.'
+          else
+            echo 'PROD Google sign-in disabled until Firebase PROD is configured.'
+          fi
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: public-site
