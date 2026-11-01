@@ -8,7 +8,10 @@ const workflow = (name) =>
 const commands = (job) =>
   job.steps.flatMap((step) =>
     typeof step.run === 'string'
-      ? step.run.split('\n').map((line) => line.trim()).filter(Boolean)
+      ? step.run
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
       : [],
   );
 
