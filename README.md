@@ -2,9 +2,13 @@
 
 # NOVA WING 3D
 
-### FIVE CATS · Um jogo jogável. Um laboratório real de AI SDLC.
+### FIVE CATS · Uma aventura espacial inspirada nos meus pets
 
-**Da ideia ao gameplay, do feedback ao código testado.**
+<img src="docs/images/five-cats-cover.webp" alt="Arte original do menu de Nova Wing 3D, com os personagens Five Cats" width="960" />
+
+<sub>A arte da tela inicial do jogo · Os personagens nasceram da inspiração nos meus pets.</sub>
+
+**Dos meus pets a uma aventura espacial — e da ideia a um jogo desenvolvido com engenharia assistida por IA.**
 
 [![CI · main](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/trucco86/nova-wing-3d/actions/workflows/ci.yml)
 [![Node.js 24](https://img.shields.io/badge/Node.js-24-339933?logo=nodedotjs&logoColor=white)](package.json)
@@ -14,13 +18,17 @@
 
 **[JOGAR · PRODUÇÃO](https://trucco86.github.io/nova-wing-3d/)** &nbsp;·&nbsp; **[TESTAR · DEV](https://dev.nova-wing-preview.pages.dev/)** &nbsp;·&nbsp; **[EXPLORAR O CASE DE AI SDLC](docs/case/README.md)**
 
-<img src="docs/images/boost.png" alt="Captura real do Nova Wing 3D em WebGL, com nave usando boost durante uma missão" width="880" />
-
-<sub>Captura real em WebGL · A imagem não é uma renderização conceitual. Produção e DEV podem estar em versões diferentes.</sub>
-
 </div>
 
 ---
+
+## Uma história que começou com meus pets
+
+O **Nova Wing** nasceu de uma ideia simples e pessoal: imaginar meus pets como protagonistas de um jogo de naves. **Bia, Jenifer, Christopher, Bob e Calvinho** inspiraram os cinco pilotos do esquadrão **Five Cats**. Já **Marvin**, meu pitbull, ganhou um papel bem diferente na ficção: ele é o grande vilão da aventura.
+
+Na história, Marvin rouba os suprimentos dos gatos e foge para o espaço profundo. Liderados por Bia, os Five Cats partem em suas naves para recuperar o que foi levado, atravessando setores, enfrentando inimigos e chefes e descobrindo novas formas de combate.
+
+O jogo é, ao mesmo tempo, uma homenagem divertida aos animais que fazem parte da minha vida e um projeto pessoal para experimentar **desenvolvimento de games, IA aplicada ao ciclo de software e qualidade de engenharia**.
 
 ## O que é este projeto?
 
@@ -82,6 +90,12 @@ No ciclo de outubro de 2026, as mudanças de menu, login e áudio exigiram sincr
 - **Web first:** teclado, toque, paisagem mobile, áudio procedural e renderização Three.js/WebGL.
 
 O [guia completo](docs/GAMEPLAY-GUIDE.md) descreve controles e mecânicas. Este repositório é uma evolução 3D do [Nova Wing original](https://github.com/trucco86/nova-wing), com implementação própria baseada em Three.js.
+
+<div align="center">
+  <img src="docs/images/boost.png" alt="Captura real da jogabilidade Nova Wing 3D, com a nave em boost" width="820" />
+  <br />
+  <sub>Gameplay real em WebGL · As versões de produção e DEV podem ser diferentes.</sub>
+</div>
 
 ## Arquitetura de produto e entrega
 
