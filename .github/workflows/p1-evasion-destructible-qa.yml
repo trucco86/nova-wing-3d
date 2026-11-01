@@ -1,0 +1,50 @@
+name: Prepare Nova Wing dash and destruction QA
+on:
+  push:
+    branches:
+      - feat/p1-dash-roll-destruction-silhouette-20261101
+    paths:
+      - .github/workflows/p1-evasion-destructible-qa.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/p1-dash-roll-destruction-silhouette-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Reformat, build and run all tests
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit validated source and generated build
+        run: |
+          git add -- index.html src/game.js src/visuals.js src/mecha-premium.js src/flight-evasion-and-targets.js src/developer-mode.js tests/developer-mode.test.mjs tests/mecha-dash-evasion-and-destruction.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No generated changes'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified sideways mecha dash and destructible hostile spacecraft'
+            git push origin HEAD:feat/p1-dash-roll-destruction-silhouette-20261101
+          fi
+      - name: Full browser suite and independent preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/p1-dash-roll-destruction-silhouette-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/p1-dash-roll-destruction-silhouette-20261101
