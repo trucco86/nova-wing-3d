@@ -37,3 +37,8 @@ O arquivo `src/game.js` tem mais de 200 mil caracteres. Para evitar reler o arqu
 Comparar antes/depois para tempo até primeiro preview, p50/p95 dos shards, duração FULL, commits de sincronização, taxa de regressão e custo por mudança aceita. Rebalancear shards por duração real é a próxima oportunidade P1; não aumentar workers ou retirar asserts sem medir.
 
 **Gate:** preview e FAST jamais significam autorização para produção. Exigir quatro shards Playwright, qualidade e aceite visual no SHA final.
+
+
+## Perfis de agentes versionados
+
+Quatro definições de custom agents do GitHub Copilot, em `.github/agents/`: `nova-planner.agent.md`, `nova-builder.agent.md`, `nova-visual-qa.agent.md` e `nova-release-gate.agent.md`. Todos exigem seleção explícita (`disable-model-invocation: true`), com leitura/edição/execução restritas à função. Esses arquivos são **perfis**, não agentes autônomos executando tarefas continuamente. A disponibilidade no seletor do Copilot depende de suporte do cliente, permissões e integração na branch relevante.
