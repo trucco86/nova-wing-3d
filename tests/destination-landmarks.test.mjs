@@ -5,7 +5,6 @@ import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 import {
   createDestinationLandmarks, updateDestinationLandmarks,
-  setDestinationLandmarkQuality,
 } from '../src/destination-landmarks.js';
 
 test('worlds have identifiable, non-colliding geometry and distinct silhouettes', () => {
