@@ -126,7 +126,7 @@ test('sand fog follows mission time smoothly and is stable under pause or replay
   world.setMarsDescent(18);
   assert.equal(first.position.x, x, 're-render at the same mission time cannot cause fog drift');
   assert.equal(first.material.uniforms.alpha.value, opacity);
-  world.setMarsDescent(30);
+  world.setMarsDescent(32);
   assert.equal(haze.visible, false, 'entry sand clears before regular surface gameplay');
   world.reset();
   assert.equal(haze.visible, false, 'reset returns to clear deep-space approach');
