@@ -78,7 +78,7 @@ export function createAsteroidInterior(scene) {
   for (let i = 0; i < 12; i++) {
     const a = (i * 2.399963) % (Math.PI * 2);
     const radius = 53 + (i % 3) * 5;
-    entranceDummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 17 + i % 4);
+    entranceDummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 17 + (i % 4));
     entranceDummy.rotation.set(0, 0, a + 0.24);
     entranceDummy.scale.set(1.1, 7 + (i % 4) * 3, 1.4);
     entranceDummy.updateMatrix();
@@ -165,7 +165,6 @@ export function createAsteroidInterior(scene) {
   let entryFromZ = -630;
   let entryAge = 0;
   function setPhase(next) {
-    if (next === phase) return;
     if (next === 'transition') {
       // Preserve the last visible approach frame: no geometry teleport.
       entryFromZ = mouth.position.z;
