@@ -56,6 +56,9 @@ export function createDestinationLandmarks(index) {
   if (!palette[index]) return null;
   const group = mark(new T.Group(), 'destination-landmarks');
   group.userData.world = index;
+  // The destination is part of the horizon, not a spinning obstacle.
+  // Only authored clouds move, driven by simulated mission time.
+  group.userData.fixedSky = true;
   const cloud = index === 4 || index === 6;
   if (cloud) {
     const geometry = new T.SphereGeometry(1, 14, 9);
