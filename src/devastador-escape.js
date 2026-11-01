@@ -32,8 +32,8 @@ export const DEVASTADOR_ESCAPE_BEATS = Object.freeze([
   Object.freeze({
     at: 6.45,
     phase: 'warp',
-    speaker: 'bia',
-    radio: 'BIA · FIVE CATS EM FORMAÇÃO! IMPULSO FINAL, RUMO À PRÓXIMA MISSÃO!',
+    speaker: 'jenifer',
+    radio: 'JENIFER · FIVE CATS EM FORMAÇÃO! ROTA LIVRE, IMPULSO FINAL!',
     label: 'IMPULSO FINAL · SAÍDA DA NAVE-MÃE',
   }),
 ]);
