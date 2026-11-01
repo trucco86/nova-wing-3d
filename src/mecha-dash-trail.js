@@ -65,7 +65,10 @@ export function createMechaDashTrail(scene) {
     return {
       visible: rails.filter((item) => item.mesh.visible).length,
       max: STREAKS,
-      longest: Math.max(0, ...rails.filter((item) => item.mesh.visible).map((item) => item.mesh.scale.x)),
+      longest: Math.max(
+        0,
+        ...rails.filter((item) => item.mesh.visible).map((item) => item.mesh.scale.x),
+      ),
     };
   }
   function destroy() {
