@@ -1,0 +1,50 @@
+# Nova Wing — auditoria de backlog e plano de execução (01/11/2026)
+
+**Fonte de verdade atual para prioridades; histórico detalhado permanece em [BACKLOG.md](BACKLOG.md).** Este documento separa *código existente*, *CI*, *preview*, *aceite visual* e *publicação*. Não converta PR draft ou testes verdes em release por inferência.
+
+## Snapshot confirmado
+
+- **Produção:** `main` em v1.27.61; release #223 foi mergeada. Isso não inclui automaticamente as candidatas abertas de 01/11.
+- **QA integrada em progresso:** cadeia #230 → #232 → #233 → #234 → #235 → #236 → #239. O HEAD de referência da #239 no início da auditoria é `6f3d54d` (v1.27.62). Preview: https://pr-239.nova-wing-preview.pages.dev/
+- **Gates da #239 nesse HEAD:** quality e deploy Cloudflare PASS; quatro shards Playwright de navegador ainda executando na consulta. Revisão no iPhone e aceitação final da campanha completa não foram inferidas.
+- **Branch paralela #225:** orçamento de tempestade de Marte e paridade Alto/Médio, em QA e `main` como base. **Conflito potencial:** #225 e #239 usam ambas o número de candidata 1.27.62; quando conciliadas, usar versão nova e reconstruir `index.html`, lockfile, release notes e iOS.
+- **Login social #224:** preparação de configuração e guardrails, em draft. OAuth real, Worker/D1 de ranking e gravações públicas não comprovados.
+- Inventário: busca de issues devolveu **43 abertas**. Busca de PRs devolveu o **limite de 100** abertas; isso é limite do inventário, não contagem exaustiva. Muitas PRs são etapas empilhadas/alternativas, não funcionalidades novas.
+
+## Matriz de prioridades, sem contabilizar duplicações
+
+| Ordem | Frente | Situação de entrega | Trabalho que permanece e critério de término | Rastreamento |
+| --- | --- | --- | --- | --- |
+| P0-A | Gate de QA e consolidação | Candidata real #239, build/deploy isolado e quality aprovados | Quatro shards Playwright no mesmo SHA; fluxos completos das dez fases, regressão 1–4, desktop/iPhone físico, 30/60 FPS Alto/Médio, comparação de assets, integrações e rollback | #161, #237, #239 |
+| P0-B | Modelo do robô, dash direcional, rastro e boost | Implementado em #236/#239; último feedback de gameplay positivo | Confirmação em múltiplos corredores, escala, colisões/câmera, dano, energia e rastros durante combate; não refazer os controles aprovados | #66, #123, #124, #236, #239 |
+| P0-C | Fase 4 Devastador | Interior/hangar/abordagem, laboratório, pontos fracos do motor e Marvin rival em QA empilhada | Validar travessia, seis corredores, destruição física do núcleo e saída; sem Júpiter, sem top-down da fase 4, com tiros originados de armas visíveis | #232–#236, #237 |
+| P0-D | Orçamento visual e HUD mobile | Implementações 3.x e proteção adaptativa presentes; #225 QA paralela | Medir FPS/p95/draw calls em aparelhos físicos (não só headless); proteger HUD e legibilidade no iPhone/Galaxy; reconciliar #225 | #40, #201, #213, #225 |
+| P0-E | Login/ranking seguro | Frontend local e preparação de PROD; serviço remoto não homologado | Firebase OAuth, separação ambientes, D1/Worker, LGPD/consentimento, tombstones, testes de conta real e i18n; manter escrita remota desativada | #224, #119, #110, #114, #112, #118 |
+| P1-A | Boss Combat 4.0 | Modelos e ataques distintos + articulações visuais em QA; inteligência física completa **não** concluída | Pelo menos três ataques únicos com telegraph por chefe, contragolpes físicos, weak points laterais/traseiros, módulos que desativam ataque, Marvin corpo a corpo; sem chuva aleatória | #231, #141, #42, #47, #228, #230 |
+| P1-B | Arsenal diferenciado + Berserk | Dispersão/multitiro, plasma, pods e quatro lasers do robô existem nas candidatas; arsenal completo ainda não | Priorizar **mísseis rastreadores** e **feixe perfurante** como duas mecânicas novas; depois modo Berserk limitado por energia/cooldown, evolução elétrica dos pods e DPS de QA | #84, #237 |
+| P1-C | Final da fase 4 e ritmo de missões | Transições por fase/cinemáticas e warp existentes em parte, muitos detalhes ainda em QA | Motor com explosão segmentada, rádio Five Cats, saída triunfal BOOST; duração/objetivos do percurso; não reintroduzir rota genérica/câmera aleatória | #105, #158, #237 |
+| P1-D | Identidade das fases 5–10 | Marcos 3D/biomas e silhuetas variáveis em #229/#230 | Inspeção de profundidade, diversidade de inimigos e chefes, iluminação, obstáculos, pouca repetição, perfis Alto/Médio; preservar Marte e fases 1/3 aprovadas | #229–#231 |
+| P1-E | Arte/cidade e maglev | Múltiplas PRs City 3.x e Graphics 2.x; parte está incluída no release 1.27.61 | Tratar #201 e #203–#212 como **um único épico** com revisão visual: trem de fato visível, fachadas, luz/neon e cidade com horizonte profundo, custo GPU controlado. Não implementar clones por ticket | #201, #203–#213 |
+| P1-F | Narrativa/áudio/Five Cats | Menu, capa, rádio com retratos, 5 naves, troféus/patentes e áudio com implementação existente | Homologação visual/audio real, cobertura de PT/EN/ES inclusive opções/login/ranking, retratos corretos e som envolvente; abertura full-screen sem texto tampando os gatos | #166, #170, #34, #126, #112 |
+| P2-A | Ranking competitivo persistente | Proposta técnica, frontend e API de QA | Só após P0-E + segurança LGPD e prova de integridade; não expor publicação de ranking público ainda | #119, #118, #114 |
+| P2-B | Five Cats Universe/exploração | Contratos e protótipos exploratórios em PRs; **não é campanha homologada** | Um vertical slice Órbita-9 com três pistas, decisão, NPC, save e consequência; evitar lançar "mundo aberto" antes da campanha arcade madura | #139, #149 |
+| P2-C | Kit Hiper Nova, 4º pod e fases 11–20 | **Não iniciados como produto completo**; objetivo de expansão, não bloqueador do jogo atual | Definir roteiro, endgame da fase 10, migração de save e balanceamento; só então produzir kit, 4º pod, boost interestelar e 10 novos mapas | #237 |
+| P2-D | Apps nativos, observabilidade, portfólio | Web é prioridade; arquitetura CI e README/case existem | Android/iOS e distribuição só após Web estável; instrumentação real DORA/QA e vídeo gameplay real, sem anunciar builds nativos | #21, #56 |
+
+## Cortes, consolidação e despriorização
+
+1. **Não fazer novamente:** Marte com anéis de reentrada, Júpiter na fase 4, top-down obrigatório na fase 4, giro 360° do robô, chefes com mesmo alvo circular nos olhos, câmera que troca aleatoriamente. São direções rejeitadas/substituídas, não itens a reabrir.
+2. **Não duplicar PR #238 em #239:** ambos abordam escala, dash e destrutíveis, mas #238 mantém uma implementação alternativa em `src/flight-evasion-and-targets.js`. **Não fechar/mesclar sem comparação semântica de diferenças**; usar #239 como candidata de integração e arquivar #238 somente depois de confirmar que não há comportamento exclusivo necessário.
+3. **Graphics/City:** encerrar o planejamento parcelado #203–#212 como entregas individuais novas; avaliar o conjunto visual e abrir somente defeitos de aceitação ainda reproduzíveis. Código em branches antigas não implica que o resultado esté aprovado no iPhone.
+4. **Abertura:** preservar a capa Five Cats original expandida como padrão. A abertura 3D completa, nova pintura da capa e expressão por emoção são extras optativos; não bloquear o fluxo por eles.
+5. **Câmeras:** descartar a exigência de alternância periódica ou de top-down/side-scrolling por variedade artificial (#48). Adicionar perspectiva alternativa **apenas** quando o setor tiver controles, objetivo e layout específicos testáveis.
+6. **Expansão 11–20, modo mundo aberto, 4º pod, Android/iOS:** manter P2 de descoberta, não colocá-los em sprint atual nem construir dez mundos antes de estabilizar a campanha existente.
+7. **Automações e QA:** aproveitar os gates existentes; não construir outro pipeline de preview em paralelo. O que falta é convergência de SHA, smoke real e testes de desempenho por dispositivo.
+
+## Próxima execução indicada
+
+1. Concluir/verificar Playwright da #239 e comparar seu SHA ao preview publicado; revisar dash/boost/robô/corredor no celular físico.
+2. Fazer revisão de diffs concorrentes (especialmente #238, #225) e plano de integração da cadeia #230→#239; **não fazer merge direto em main**.
+3. Só então abrir candidata integrada v1.27.63+ para DEV/HML com testes completos e fallback/rollback.
+4. Após P0 aprovado, implementar Boss Combat 4.0 com uma mecânica física real por chefe (começar fase 4/5); ampliar arsenal com duas armas distintas em pacotes independentes.
+5. Revisar os épicos #201/#237 após cada aceite e marcar como concluído apenas requisito verificável, não a PR inteira.
