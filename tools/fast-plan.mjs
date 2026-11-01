@@ -19,8 +19,7 @@ export const TESTS_BY_AREA = Object.freeze({
 export function fastAreasForFiles(files) {
   const areas = new Set(['core']);
   for (const file of files) {
-    if (/devastador|mothership|stage4|finale|destination-arrival/.test(file))
-      areas.add('stage4');
+    if (/devastador|mothership|stage4|finale|destination-arrival/.test(file)) areas.add('stage4');
     if (/mecha|robot|dash|hero-dodge|hero-weapon/.test(file)) areas.add('mecha');
     if (/shell\.html|styles\.css|input|developer-mode|ui-/.test(file)) areas.add('mobile');
     if (/visuals|graphics|grand-hall|flight|render/.test(file)) areas.add('graphics');
@@ -37,12 +36,10 @@ export function selectFastTests(files, scope = 'auto', available = existsSync) {
         ? Object.keys(TESTS_BY_AREA)
         : scope.split(',').map((s) => s.trim());
   for (const area of areas)
-    if (!Object.hasOwn(TESTS_BY_AREA, area))
-      throw new Error('Unknown scope: ' + area);
+    if (!Object.hasOwn(TESTS_BY_AREA, area)) throw new Error('Unknown scope: ' + area);
   const selected = new Set();
   for (const area of areas)
-    for (const test of TESTS_BY_AREA[area])
-      if (available(test)) selected.add(test);
+    for (const test of TESTS_BY_AREA[area]) if (available(test)) selected.add(test);
   // Run any modified Node regression test even when its filename is unknown
   // to the impact map. Keep the early lane conservative, not authoritative.
   for (const file of files)
