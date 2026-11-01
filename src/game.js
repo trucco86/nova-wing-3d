@@ -3294,6 +3294,19 @@ export function createGame({
         dynamicFlight ? 46 : 23,
       );
     }
+    dashCooldown = Math.max(0, dashCooldown - dt);
+    if (robotMode && dashRemaining > 0) {
+      const dash = dashFrame(dashRemaining, dt, dashSide);
+      dashRemaining = dash.remaining;
+      player.position.x = clamp(
+        player.position.x + dash.displacement,
+        -flightLimit(),
+        flightLimit(),
+      );
+    }
+    // Resolve cavern walls after BOTH stick movement and the mecha dash.
+    // Otherwise the dash could put the player outside the rock collision hull
+    // until the following frame, causing visible clipping at tight corners.
     asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
     if (dynamicFlight && sectorIndex === 2) {
       const wall = asteroidInterior.constrain(player.position);
@@ -3306,16 +3319,6 @@ export function createGame({
           cue('armorHit');
         }
       }
-    }
-    dashCooldown = Math.max(0, dashCooldown - dt);
-    if (robotMode && dashRemaining > 0) {
-      const dash = dashFrame(dashRemaining, dt, dashSide);
-      dashRemaining = dash.remaining;
-      player.position.x = clamp(
-        player.position.x + dash.displacement,
-        -flightLimit(),
-        flightLimit(),
-      );
     }
     player.rotation.z = T.MathUtils.lerp(
       player.rotation.z,
