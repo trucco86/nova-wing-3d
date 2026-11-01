@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.58 — Candidata em preparação
+
+- Planetary Journeys: chegada e escape cinematográficos específicos por destino, sem alterar produção.
+
 ## 1.27.57 — Candidata em preparação
 
 - Marte 4.3: névoa de areia animada e seletor de fases acessível no preview QA. QA visual e browser ainda dependem de execução.

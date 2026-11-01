@@ -75,6 +75,8 @@ test('pausing a 2D rift keeps the cockpit hidden and restores it only on return 
   h.advance(0.1);
   assert.equal(h.elements.get('cockpitPanel').hidden, false);
   h.advance(8);
+  assert.equal(h.game.snapshot().state, 'playing');
+  h.advance(21);
   assert.equal(h.game.snapshot().state, 'arcade');
   h.game.pause();
   h.advance(0.1);
