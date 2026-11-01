@@ -123,6 +123,7 @@ export function animatePremiumMecha(robot, { progress = 1, level = 0, time = 0, 
   }
   for (const knee of rig.kneePistons) knee.scale.y = 0.62 + extension * 0.38;
   rig.spine.scale.y = 0.82 + extension * (0.18 + growth * 0.08);
+  rig.spine.rotation.x = boosting ? -0.09 * power : 0;
   rig.helmet.rotation.x = -0.48 * (1 - power);
   for (const light of rig.vents) light.visible = power > 0.1;
   return { phase: p < 0.2 ? 'release' : p < 0.4 ? 'unfold' : p < 0.58 ? 'extend' : p < 0.77 ? 'lock' : 'energize', progress: p, stage: level };
