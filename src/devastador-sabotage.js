@@ -99,6 +99,7 @@ export function createDevastadorSabotageCore() {
     ['drive', 2.83, -10, 115],
   ];
   const parts = [];
+  const alarmMaterial = mat('#ff3925', true);
   for (let i = 0; i < entries.length; i++) {
     const [type, angle, height, hp] = entries[i];
     const radius = type === 'drive' ? 55 : type === 'coolant' ? 46 : 41;
@@ -128,14 +129,45 @@ export function createDevastadorSabotageCore() {
       addBox(cradle, 'sabotage-hydraulic-piston', steel, [side * 9, 0, -1], [2.4, 16, 3]);
       addBox(cradle, 'sabotage-harness-cable', conduits, [side * 11, 7, -1], [1.1, 2.1, 15]);
     }
+    let fan = null;
     if (type === 'drive') {
-      const fan = new T.Mesh(new T.CylinderGeometry(8, 8, 10, 12), steel);
+      fan = new T.Mesh(new T.CylinderGeometry(8, 8, 10, 12), steel);
       fan.name = 'sabotage-main-drive-turbine';
       fan.rotation.x = Math.PI / 2;
       fan.position.z = -12;
       cradle.add(fan);
     }
-    parts.push({ mesh: target, marker, cradle, type, angle, hp, max: hp, battery: null });
+    // Each failed system leaves an intermittent localized electrical short.
+    // It uses the same cube geometry/material; no particle system or lights.
+    const shortCircuit = addBox(
+      cradle,
+      'sabotage-failed-' + type + '-arc-' + i,
+      alarmMaterial,
+      [0, 9, 6],
+      [1.4, 5.5, 1.8],
+    );
+    shortCircuit.visible = false;
+    const warning = addBox(
+      cradle,
+      'sabotage-warning-beacon-' + i,
+      alarmMaterial,
+      [0, -9, 2],
+      [5, 0.9, 1],
+    );
+    warning.visible = false;
+    parts.push({
+      mesh: target,
+      marker,
+      cradle,
+      type,
+      angle,
+      hp,
+      max: hp,
+      fan,
+      shortCircuit,
+      warning,
+      battery: null,
+    });
   }
   const core = new T.Mesh(new T.IcosahedronGeometry(12, 2), charge);
   core.name = 'devastador-destroyable-central-reactor';
@@ -164,6 +196,14 @@ export function createDevastadorSabotageCore() {
     jaw: new T.Object3D(),
     driveShockPlumes: [],
     materials: ownedMaterials,
+    reactorVisual: {
+      powerOnline: 4,
+      coolantOnline: 2,
+      drivesOnline: 2,
+      blackout: 0,
+      alarm: false,
+      driveSpeed: 1,
+    },
     owned: true,
   };
   return root;
@@ -173,18 +213,52 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
   if (!root?.userData.sabotage) return null;
   const parts = root.userData.parts;
   const stage = sabotagedSystem(parts);
+  const online = (type) => parts.filter((p) => p.type === type && p.hp > 0).length;
+  const powerOnline = online('power');
+  const coolantOnline = online('coolant');
+  const drivesOnline = online('drive');
+  const damageRatio = (8 - powerOnline - coolantOnline - drivesOnline) / 8;
+  const driveSpeed = drivesOnline / 2;
+  const alarmsOn = damageRatio > 0;
+  root.userData.reactorVisual = {
+    powerOnline,
+    coolantOnline,
+    drivesOnline,
+    blackout: damageRatio,
+    alarm: alarmsOn,
+    driveSpeed,
+  };
+  // The ship visibly loses electrical distribution as its controllers fail.
+  // Cooling lines warn orange, drive turbines slow independently, and failed
+  // components arc/flash instead of simply disappearing.
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i];
     const open = active && sabotageTargetOpen(parts, i, orbit);
     part.marker.visible = open;
     part.mesh.visible = part.hp > 0;
     part.mesh.scale.set(open ? 1.12 : 1, 1 + Math.sin(time * 2.2 + i) * 0.03, 1);
-    part.cradle.rotation.z = part.hp <= 0 ? 0.14 : 0;
+    const failed = part.hp <= 0;
+    part.cradle.rotation.z = failed ? 0.14 : 0;
+    part.shortCircuit.visible = failed && Math.sin(time * 16 + i * 2.9) > -0.18;
+    part.shortCircuit.scale.y = 3.5 + 3 * Math.abs(Math.sin(time * 13 + i));
+    part.warning.visible =
+      active &&
+      (failed || (open && alarmsOn)) &&
+      Math.sin(time * 8 + i * 1.9) > -0.2;
+    if (part.fan && !failed)
+      part.fan.rotation.z = time * (0.35 + 2 * driveSpeed);
+    if (part.fan && failed) part.fan.rotation.z = 0;
   }
   root.userData.core.visible = stage.system === 'core';
   root.userData.coreMarker.visible = stage.system === 'core';
   root.userData.coreMarker.rotation.z = time * 0.7;
-  for (const [i, rotor] of root.userData.rotors.entries())
-    rotor.rotation.z = (i % 2 ? 1 : -1) * time * (stage.system === 'core' ? 2.3 : 0.45);
+  for (const [i, rotor] of root.userData.rotors.entries()) {
+    rotor.rotation.z =
+      (i % 2 ? 1 : -1) *
+      time *
+      (stage.system === 'core' ? 2.3 : 0.45 * (1 - damageRatio * 0.68));
+    rotor.visible = stage.system === 'core' || powerOnline > 0 ||
+      Math.sin(time * (5 + i) + i) > (0.18 + damageRatio * 0.65);
+  }
   return stage;
 }
