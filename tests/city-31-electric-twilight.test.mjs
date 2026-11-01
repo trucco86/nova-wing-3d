@@ -57,8 +57,13 @@ test('electric city palette fades on orbital launch and never leaks to other sec
   );
   assert.equal(sky.uniforms.marsGlow.value, 0, 'Martian sky is hidden during orbital arrival');
   world.setMarsDescent(27);
-  assert.equal(scene.fog.density, 0.00095);
+  assert.ok(
+    scene.fog.density > 0.00095,
+    'the sand-colored entry haze persists briefly after touchdown without a visual cut',
+  );
   assert.equal(sky.uniforms.marsGlow.value, 1, 'Martian sky appears after atmospheric entry');
+  world.setMarsDescent(32);
+  assert.equal(scene.fog.density, 0.00095, 'entry haze has fully cleared in the desert');
   assert.equal(scene.getObjectByName('launch-ground').material.uniforms.urban.value, 0);
   world.setSector(SECTORS[0]);
   world.reset();
