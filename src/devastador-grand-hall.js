@@ -281,9 +281,10 @@ export function updateDevastadorGrandHall(
   { orbit = 0, time = 0, driveSpeed = 1, blackout = 0 } = {},
 ) {
   if (!hall) return;
-  // Parent is spun for the virtual orbit; cancel it for architecture. The
-  // reactor remains dynamically targetable while the hall stays stationary.
-  hall.rotation.y = orbit;
+  // The reactor and hall share a fixed inertial frame in presentation.
+  // The enclosing scene frame carries the actual player/camera orbit; never
+  // counterrotate the room, which previously looked glued to the cockpit.
+  hall.rotation.y = 0;
   hall.userData.rotors.forEach((r, i) => {
     r.rotation.z = time * (i % 2 ? -1 : 1) * 1.55 * driveSpeed;
   });
