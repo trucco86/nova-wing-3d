@@ -49,3 +49,22 @@ WebGL em SwiftShader; sem skip ou regravação de golden screenshots.
 Identificar o SHA do `main` antes da promoção. Se surgirem regressões,
 criar PR de revert do commit de integração, rodar CI e verificar Pages.
 Não desabilitar branch protection nem regravar histórico compartilhado.
+
+## Gate real do candidato inicial (executado e reprovado)
+
+Na preparação de `v1.27.61`, os 16 testes focados do menu/Marte/boost
+passaram; a bateria de 8 cenários focados de produção teve **6 aprovações,
+2 reprovações e 2 skips específicos de plataforma**:
+- **Bug funcional:** selecionar Calvinho no hangar ainda mostrava BIA no HUD
+  logo após pular a cinemática. Corrigir o HUD no momento da chamada
+  `start()` e exigir o piloto selecionado antes do primeiro tick.
+- **Bloqueio de observação:** a UI do subchefe em três viewports era testada
+  por um avanço de ~35s de simulação WebGL e excedia 120s de CI. O
+  `startDeveloperScenario(0, 'subboss')` existente já cria **o subchefe real**,
+  sua barra real e é isolado do ranking; o fixture localhost pode acioná-lo
+  diretamente sem alterar hitbox/HP ou simular 35s não relacionados ao HUD.
+
+A bateria revisada tem de permanecer verde; não retirar verificações de
+seleção/vida dos Five Cats, bloqueio central do HUD, collision ou ranking.
+Sem sucesso do Playwright completo e resolução da divergência com main,
+**não publicar a nova versão em produção**.
