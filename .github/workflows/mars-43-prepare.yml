@@ -27,20 +27,21 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Prepare version v1.27.56, without publishing
-        run: npm run release:prepare -- 1.27.56
+      - name: Prepare version v1.27.57, without publishing
+        run: npm run release:prepare -- 1.27.57
       - name: Fill release notes with actual scope, not placeholders
         run: |
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
-          const notes = 'releases/v1.27.56.md';
+          const notes = 'releases/v1.27.57.md';
           const n = [
-            '## Nova Wing 3D v1.27.56 — candidata web Marte 4.3',
+            '## Nova Wing 3D v1.27.57 — candidata web Marte 4.3',
             '',
             '- Substitui os dois anéis da reentrada por quatro cortinas animadas de névoa cor de areia e partículas douradas.',
             '- Transição determinística de 12s a 31s; fog marciano contínuo após touchdown; sem novos hitboxes.',
             '- Preserva descida orbital, formações, marcos de Marte e tempestade na segunda metade.',
             '- Testes de regressão de pausa, reinício, cor, isolamento e capturas WebGL adicionados.',
+            '- Restaura o seletor de 10 fases e encontros no preview QA autorizado e adiciona acesso direto TESTAR FASES no menu inicial.',
             '',
             '### Pendências',
             '- Capturas do jogo em GPU real e medição de FPS no iPhone aguardam validação.',
@@ -51,7 +52,7 @@ jobs:
           const path = 'CHANGELOG.md';
           let changelog = readFileSync(path, 'utf8');
           const old = '- Candidata não homologada; preencher entregas e evidências antes da publicação.';
-          const detail = '- Marte 4.3: troca dos anéis da reentrada por névoa de areia animada. QA visual e browser ainda dependem de execução.';
+          const detail = '- Marte 4.3: névoa de areia animada e seletor de fases acessível no preview QA. QA visual e browser ainda dependem de execução.';
           if(changelog.includes(old)) changelog = changelog.replace(old, detail);
           writeFileSync(path, changelog);
           NODE
@@ -62,7 +63,7 @@ jobs:
       - run: git diff --check
       - name: Commit exact generated and formatted artifacts to isolated branch
         run: |
-          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.56.md index.html src/mars-descent.js src/visuals.js tests/mars-descent.test.mjs tests/city-31-electric-twilight.test.mjs tests/browser/mars-premium-stage.spec.mjs specs/mars-43-sand-fog-no-rings-20261031.md
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.57.md index.html src/mars-descent.js src/visuals.js src/developer-mode.js src/compact-menu.js src/game.js src/shell.html src/styles.css tests/developer-mode.test.mjs tests/browser/compact-menu-smoke-v12721.spec.mjs tests/mars-descent.test.mjs tests/city-31-electric-twilight.test.mjs tests/browser/mars-premium-stage.spec.mjs specs/mars-43-sand-fog-no-rings-20261031.md
           git diff --cached --stat
           if git diff --cached --quiet; then
             echo 'All checked in outputs already match.'
@@ -70,7 +71,7 @@ jobs:
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'build(mars): prepare v1.27.56 QA candidate with synced HTML'
+          git commit -m 'build(mars): prepare v1.27.57 QA candidate with synced HTML'
           git push origin HEAD:feat/mars-43-sand-fog-no-rings-20261031
       - name: Trigger strict CI and isolated Cloudflare preview for new SHA
         env:
