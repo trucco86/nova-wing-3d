@@ -10,7 +10,7 @@ test('FAST impact selection includes stage 4 and gameplay baseline without silen
     'tests/custom-regression.test.mjs',
   ];
   const result = selectFastTests(files, 'auto', () => true);
-  assert.deepEqual(fastAreasForFiles(files), ['core', 'stage4', 'mobile', 'graphics']);
+  assert.deepEqual(fastAreasForFiles(files), ['core', 'stage4', 'graphics', 'mobile']);
   assert.ok(result.tests.includes('tests/campaign.test.mjs'));
   assert.ok(result.tests.includes('tests/devastador-grand-hall.test.mjs'));
   assert.ok(result.tests.includes('tests/input-title.test.mjs'));
