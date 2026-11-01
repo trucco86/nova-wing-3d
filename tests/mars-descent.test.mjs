@@ -33,12 +33,23 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   const planet = createMarsPremium();
   const globe = planet.getObjectByName('mars-orbit-visible-planet');
   const surface = planet.getObjectByName('mars-surface-scene');
-  const heat = planet.getObjectByName('mars-atmosphere-bow-shock');
+  const haze = planet.getObjectByName('mars-atmospheric-sand-haze');
   const phobos = planet.getObjectByName('mars-moon-phobos');
   const deimos = planet.getObjectByName('mars-moon-deimos');
   assert.ok(globe.visible, 'planet visible from space at mission start');
   assert.equal(surface.visible, false);
-  assert.equal(heat.visible, false);
+  assert.equal(haze.visible, false);
+  assert.equal(planet.getObjectByName('mars-atmosphere-bow-shock'), undefined);
+  assert.equal(
+    haze.children.filter((child) => child.name.startsWith('mars-sand-haze-curtain-')).length,
+    4,
+    'four broad sand curtains replace the circular entry ring',
+  );
+  assert.ok(haze.getObjectByName('mars-entry-floating-sand').isPoints);
+  haze.traverse((part) => {
+    assert.notEqual(part.geometry?.type, 'TorusGeometry', 'no circular meshes in entry effect');
+    assert.notEqual(part.userData.hitbox, true, 'sand haze cannot collide with the player');
+  });
   assert.equal(
     planet.getObjectByName('mars-atmosphere-ionized-trails'),
     undefined,
@@ -56,7 +67,10 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   assert.equal(scene.getObjectByName('launch-city').visible, false);
   world.setMarsDescent(15);
   assert.equal(root.userData.arrivalPhase, 'entry');
-  assert.equal(root.getObjectByName('mars-atmosphere-bow-shock').visible, true);
+  assert.equal(root.getObjectByName('mars-atmospheric-sand-haze').visible, true);
+  assert.ok(scene.fog.density > 0.001, 'entry fog becomes visible before the surface');
+  const entryFogColor = scene.fog.color.clone();
+  assert.ok(entryFogColor.r > entryFogColor.b, 'dust fog is sand/ochre, not space purple');
   assert.equal(root.getObjectByName('mars-surface-scene').visible, false);
   world.setMarsDescent(23);
   assert.equal(root.userData.arrivalPhase, 'descent');
@@ -66,6 +80,9 @@ test('Mars starts in visible deep space; entry haze reveals ground without cutti
   assert.equal(done.combatReady, true);
   assert.equal(root.getObjectByName('mars-surface-scene').position.y, 0);
   assert.equal(root.getObjectByName('mars-orbit-visible-planet').visible, false);
+  assert.ok(root.getObjectByName('mars-atmospheric-sand-haze').visible);
+  world.setMarsDescent(32);
+  assert.equal(root.getObjectByName('mars-atmospheric-sand-haze').visible, false);
   assert.equal(scene.getObjectByName('launch-sky-dome').material.uniforms.marsGlow.value, 1);
 });
 
@@ -88,4 +105,31 @@ test('Mars arrival respects pause, reset, asteroid transition and Earth isolatio
   world.setSector(SECTORS[0]);
   assert.equal(scene.getObjectByName('launch-city').visible, true);
   assert.equal(world.setMarsDescent(27), null);
+});
+
+test('sand fog follows mission time smoothly and is stable under pause or replay', () => {
+  assert.equal(marsDescentAt(0).sandHaze, 0);
+  assert.equal(marsDescentAt(12).sandHaze, 0);
+  assert.ok(marsDescentAt(15).sandHaze > 0.9);
+  assert.ok(marsDescentAt(23).sandHaze > 0.9);
+  assert.ok(marsDescentAt(27).sandHaze > 0);
+  assert.equal(marsDescentAt(32).sandHaze, 0);
+
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[1]);
+  world.setMarsDescent(18);
+  const haze = scene.getObjectByName('mars-atmospheric-sand-haze');
+  const first = haze.getObjectByName('mars-sand-haze-curtain-0');
+  const x = first.position.x;
+  const opacity = first.material.uniforms.alpha.value;
+  world.setMarsDescent(18);
+  assert.equal(first.position.x, x, 're-render at the same mission time cannot cause fog drift');
+  assert.equal(first.material.uniforms.alpha.value, opacity);
+  world.setMarsDescent(32);
+  assert.equal(haze.visible, false, 'entry sand clears before regular surface gameplay');
+  world.reset();
+  assert.equal(haze.visible, false, 'reset returns to clear deep-space approach');
+  world.setMarsDescent(18);
+  assert.equal(first.position.x, x, 'replay reproduces the same atmospheric animation');
 });

@@ -2612,6 +2612,7 @@ export function createGame({
     $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
   }
   $('developerPanel').hidden = !developerAvailable;
+  $('menuQA').hidden = !developerAvailable;
   $('developerSessionTag').hidden = true;
   if (developerAvailable) {
     for (const [index, sector] of SECTORS.entries()) {

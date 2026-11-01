@@ -6,6 +6,8 @@ test('developer menu is restricted to isolated DEV/PR and local browser hosts', 
   for (const host of [
     'dev.nova-wing-preview.pages.dev',
     'pr-134.nova-wing-preview.pages.dev',
+    '52fd04c6.nova-wing-preview.pages.dev',
+    'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev',
     'localhost',
     '127.0.0.1',
   ])
@@ -13,6 +15,9 @@ test('developer menu is restricted to isolated DEV/PR and local browser hosts', 
   for (const host of [
     'nova-wing-preview.pages.dev',
     'hml.nova-wing-preview.pages.dev',
+    '52fd04c6.nova-wing-preview.pages.dev.evil.com',
+    'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev.evil.com',
+    'some-other-preview.nova-wing-preview.pages.dev',
     'www.nova-wing-preview.pages.dev',
     'dev.nova-wing-preview.pages.dev.evil.com',
     '',

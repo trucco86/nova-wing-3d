@@ -8986,3 +8986,18 @@ body.in-mission #hudNotices > #launchBoostNotice span {
     font-size: 8px;
   }
 }
+
+/* Explicit, one-tap QA entry on authorized preview builds only. */
+#menuPrimary #menuQA[hidden] {
+  display: none !important;
+}
+#menu[data-screen='home'] #menuQA:not([hidden]) {
+  background: #124b50ee;
+  border: 1px solid #64e4d3a1;
+  color: #dcfff7;
+  min-height: 46px;
+}
+#menu[data-screen='central'] #developerPanel[open] {
+  border-color: #69e7cf;
+  box-shadow: 0 0 18px #18c8ab26;
+}

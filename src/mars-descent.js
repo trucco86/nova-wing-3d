@@ -26,12 +26,15 @@ export function marsDescentAt(seconds) {
   const surface = smooth((seconds - 16) / 11);
   const atmosphere = clamp((seconds - 12) / 4) * (1 - smooth((seconds - 21) / 6));
   const planetFade = 1 - smooth((seconds - 20) / 7);
+  const sandHaze = smooth((seconds - 12) / 3) * (1 - smooth((seconds - 24) / 7));
   return {
     phase,
     progress: clamp(seconds / MARS_TOUCHDOWN_SECONDS),
     planetScale: 0.83 + orbit * 1.4 + entry * 2.6,
     planetOpacity: planetFade,
     atmosphere,
+    sandHaze,
+    elapsedSeconds: seconds,
     terrainVisible: seconds >= 16,
     terrainReveal: surface,
     terrainLift: surface >= 1 ? 0 : -340 * (1 - surface),
@@ -101,42 +104,87 @@ export function createMarsApproach() {
   );
   edge.name = 'mars-orbit-atmospheric-rim';
   planet.add(edge);
-  // Replace the old thin cylinders ("screen scratches") with an even,
-  // diffuse bow-shock halo. Wide circular glow reads as atmospheric heating
-  // without opaque streaks across the ship, aiming area or horizon.
-  const shock = new T.Group();
-  shock.name = 'mars-atmosphere-bow-shock';
-  shock.userData.visualOnly = true;
-  const material = new T.MeshBasicMaterial({
-    color: '#ffc18a',
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    depthTest: false,
-    blending: T.AdditiveBlending,
-    toneMapped: false,
-  });
-  for (let i = 0; i < 2; i++) {
-    const halo = new T.Mesh(new T.TorusGeometry(50 + i * 20, 8 + i * 4, 12, 64), material.clone());
-    halo.name = 'mars-reentry-soft-plasma-halo-' + i;
-    halo.position.set(0, 7, -135 - i * 20);
-    halo.scale.set(1.3, 0.77, 1);
-    shock.add(halo);
+  // Soft, irregular drifting sand curtains: no torus, shock ring or scratch
+  // pattern in the player's flight path. One low-cost plane per depth layer.
+  const haze = new T.Group();
+  haze.name = 'mars-atmospheric-sand-haze';
+  haze.userData.visualOnly = true;
+  const curtainGeometry = new T.PlaneGeometry(420, 160);
+  for (let i = 0; i < 4; i++) {
+    const curtain = new T.Mesh(
+      curtainGeometry,
+      new T.ShaderMaterial({
+        uniforms: {
+          alpha: { value: 0 },
+          time: { value: 0 },
+          seed: { value: i * 1.73 + 0.5 },
+        },
+        transparent: true,
+        depthWrite: false,
+        depthTest: true,
+        fog: false,
+        side: T.DoubleSide,
+        vertexShader:
+          'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader:
+          'varying vec2 vUv;\nuniform float alpha;\nuniform float time;\nuniform float seed;\nfloat hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat noise2(vec2 p){\n  vec2 i=floor(p),f=fract(p);\n  vec2 u=f*f*(3.-2.*f);\n  return mix(mix(hash(i),hash(i+vec2(1.,0.)),u.x),\n             mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),u.x),u.y);\n}\nvoid main(){\n  vec2 drift=vec2(time*.055+seed*.77,time*.022-seed*.41);\n  float fine=noise2(vUv*vec2(8.8,5.8)+drift);\n  float broad=noise2(vUv*vec2(3.2,2.0)+drift*.53);\n  float grain=mix(broad,fine,.32);\n  float ripples=sin(vUv.y*14.+sin(vUv.x*5.+time*.13+seed)*1.5+time*.09);\n  float edgeX=smoothstep(.01,.22,vUv.x)*(1.-smoothstep(.78,.99,vUv.x));\n  float edgeY=smoothstep(.01,.25,vUv.y)*(1.-smoothstep(.73,.99,vUv.y));\n  float centerSafe=mix(.36,1.,smoothstep(.15,.78,abs(vUv.x-.5)*2.));\n  float coverage=clamp(.3+grain*.85+ripples*.12,0.,1.);\n  vec3 ochre=mix(vec3(.60,.35,.20),vec3(.91,.68,.45),grain);\n  gl_FragColor=vec4(ochre,alpha*edgeX*edgeY*centerSafe*coverage);\n}',
+      }),
+    );
+    curtain.name = 'mars-sand-haze-curtain-' + i;
+    curtain.position.set((i - 1.5) * 12, -22 + i * 16, -88 - i * 38);
+    curtain.rotation.z = (i - 1.5) * 0.025;
+    curtain.userData.visualOnly = true;
+    haze.add(curtain);
   }
-  root.add(shock);
+  const particleCount = 180;
+  const positions = new Float32Array(particleCount * 3);
+  const fract = (n) => n - Math.floor(n);
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (fract(Math.sin((i + 1) * 91.7) * 4317.7) - 0.5) * 300;
+    positions[i * 3 + 1] = (fract(Math.sin((i + 3) * 37.1) * 1363.3) - 0.5) * 145;
+    positions[i * 3 + 2] = -95 - fract(Math.sin((i + 7) * 73.7) * 9213.7) * 220;
+  }
+  const particlesGeo = new T.BufferGeometry();
+  particlesGeo.setAttribute('position', new T.BufferAttribute(positions, 3));
+  const particles = new T.Points(
+    particlesGeo,
+    new T.PointsMaterial({
+      color: '#e7ac75',
+      size: 1.4,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      sizeAttenuation: true,
+      fog: false,
+    }),
+  );
+  particles.name = 'mars-entry-floating-sand';
+  particles.userData.visualOnly = true;
+  particles.frustumCulled = false;
+  haze.add(particles);
+  root.add(haze);
   updateMarsApproach(root, marsDescentAt(0));
   return root;
 }
 export function updateMarsApproach(root, state) {
   const globe = root.getObjectByName('mars-orbit-visible-planet');
-  const shock = root.getObjectByName('mars-atmosphere-bow-shock');
+  const haze = root.getObjectByName('mars-atmospheric-sand-haze');
   globe.visible = state.planetOpacity > 0.005;
   globe.scale.setScalar(state.planetScale);
   globe.material.uniforms.alpha.value = state.planetOpacity;
   globe.children[0].material.uniforms.alpha.value = state.planetOpacity;
-  shock.visible = state.atmosphere > 0.1;
-  shock.children.forEach((halo, i) => {
-    halo.material.opacity = (i === 0 ? 0.15 : 0.075) * state.atmosphere;
-    halo.scale.set(1.3 + state.atmosphere * 0.1, 0.77 + state.atmosphere * 0.06, 1);
+  haze.visible = state.sandHaze > 0.005;
+  const seconds = state.elapsedSeconds;
+  haze.children.forEach((child, i) => {
+    if (child.isPoints) {
+      child.material.opacity = state.sandHaze * 0.4;
+      child.position.x = Math.sin(seconds * 0.57) * 11;
+      child.position.y = Math.sin(seconds * 0.21) * 3;
+      return;
+    }
+    child.material.uniforms.alpha.value = state.sandHaze * (0.24 + i * 0.025);
+    child.material.uniforms.time.value = seconds;
+    child.position.x = (i - 1.5) * 12 + Math.sin(seconds * 0.48 + i * 1.5) * 14;
+    child.position.y = -22 + i * 16 + Math.sin(seconds * 0.23 + i) * 5;
   });
 }
