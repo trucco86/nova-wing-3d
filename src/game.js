@@ -426,7 +426,7 @@ export function createGame({
     const targets = [...lockQueue];
     const wasEnabled = lockWasEnabled;
     lockHeld = false;
-    if (cancel) {
+    if (cancel || state !== 'playing' || !robotMode) {
       resetMechaLock();
       return;
     }
