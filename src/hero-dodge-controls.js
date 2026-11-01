@@ -3,7 +3,7 @@
 // dash with a short collision protection window and genuine cooldown.
 export const MECHA_DASH = Object.freeze({ duration: 0.24, distance: 16, cooldown: 1.55, protection: 0.19 });
 export function heldBankAngle({ robot = false, held = false, steer = 0 } = {}) {
-  if (robot) return Math.max(-0.16, Math.min(0.16, -steer * 0.12));
+  if (robot) return steer === 0 ? 0 : Math.max(-0.16, Math.min(0.16, -steer * 0.12));
   return held ? -Math.PI / 2 : Math.max(-0.48, Math.min(0.48, -steer * 0.48));
 }
 export function dashDirection(steer = 0, positionX = 0) {
