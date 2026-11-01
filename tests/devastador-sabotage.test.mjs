@@ -84,3 +84,49 @@ test('QA stage 4 spawns a real sabotage scene, preserving campaign and sandbox r
   assert.ok(snap.bossTargets.some((p) => Math.abs(p.angle) > 2));
   assert.equal(snap.bossDriveShock.length, 0);
 });
+
+test('sabotaged rooms show progressive blackout, electrical arcs and stopped motors', () => {
+  const model = createDevastadorSabotageCore();
+  const parts = model.userData.parts;
+  const initial = updateDevastadorSabotageCore(model, { orbit: parts[0].angle, time: 1 });
+  assert.equal(initial.system, 'power');
+  assert.deepEqual(model.userData.reactorVisual, {
+    powerOnline: 4,
+    coolantOnline: 2,
+    drivesOnline: 2,
+    blackout: 0,
+    alarm: false,
+    driveSpeed: 1,
+  });
+  assert.equal(parts[0].shortCircuit.visible, false);
+  const healthyRotation = parts[6].fan.rotation.z;
+  assert.ok(healthyRotation > 0);
+  parts[0].hp = 0;
+  updateDevastadorSabotageCore(model, { time: 3, orbit: parts[0].angle });
+  assert.equal(model.userData.reactorVisual.blackout, 0.125);
+  assert.equal(model.userData.reactorVisual.alarm, true);
+  assert.equal(parts[0].mesh.visible, false);
+  assert.equal(parts[0].marker.visible, false);
+  assert.ok(parts[0].shortCircuit.name.includes('failed'));
+  for (const p of parts) p.hp = 0;
+  updateDevastadorSabotageCore(model, { time: 12, orbit: 0 });
+  assert.equal(model.userData.reactorVisual.powerOnline, 0);
+  assert.equal(model.userData.reactorVisual.coolantOnline, 0);
+  assert.equal(model.userData.reactorVisual.driveSpeed, 0);
+  assert.equal(model.userData.reactorVisual.blackout, 1);
+  assert.equal(parts[6].fan.rotation.z, 0, 'main engine turbine must stop');
+  assert.equal(model.userData.core.visible, true, 'reactor only activates after sabotage');
+  disposeBoss(model);
+});
+
+test('destroying a system in the QA chamber persists without moving it as a generic boss', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
+  h.advance(1.5, 0.1);
+  const s = h.game.snapshot();
+  assert.equal(s.sector, 4);
+  assert.ok(s.bossZ < -100, 'the reactor must stay within the industrial chamber');
+  assert.equal(s.bossIntent, null, 'generic boss AI remains disabled');
+  assert.equal(s.sabotage.visual.blackout, 0);
+});
