@@ -168,7 +168,45 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
     );
     crest.push(fin);
   }
-  const rig = { forearms, calves, kneePistons, vents, spine, helmet, crest };
+  // Rear-facing hard-surface details are crucial in the third-person camera.
+  // Fins sit behind the wings and do not alter the existing collision proxy.
+  const backVents = [];
+  const boostJets = [];
+  for (const side of [-1, 1]) {
+    const pylon = hinge(robot, 'premium-rear-dorsal-pylon-' + side, [side * 1.35, 2.32, 1.62]);
+    add(pylon, cube, graphite, 'premium-back-thruster-housing', [0, 0.13, 0.3],
+      [0.88, 1.65, 1.42]);
+    add(pylon, cube, armor, 'premium-back-thruster-armor', [side * 0.17, 0.36, 0.92],
+      [0.78, 1.27, 0.34], [0, 0, side * 0.19]);
+    for (let i = 0; i < 4; i++) {
+      const vent = add(pylon, cube, i % 2 ? accent : luminous,
+        'premium-back-reactor-vent-' + side + '-' + i,
+        [side * 0.21, -0.37 + i * 0.34, 1.14], [0.62, 0.12, 0.12]);
+      backVents.push(vent);
+    }
+    add(pylon, cone, graphite, 'premium-angular-rear-fin', [side * 0.57, 1.0, 0.82],
+      [0.27, 1.5, 0.61], [0, 0, -side * 0.32]);
+    const jetMaterial = new T.MeshBasicMaterial({
+      color: '#55e7ff', transparent: true, opacity: 0.58, depthWrite: false,
+      blending: T.AdditiveBlending, toneMapped: false, side: T.DoubleSide,
+    });
+    const jet = add(pylon, cone, jetMaterial,
+      'premium-boost-streak-' + side, [0, 0.02, 2.15],
+      [0.38, 1.2, 0.38], [Math.PI / 2, 0, 0]);
+    const centerJet = add(pylon, cone, jetMaterial.clone(),
+      'premium-boost-core-' + side, [0, 0.02, 1.88],
+      [0.16, 0.82, 0.16], [Math.PI / 2, 0, 0]);
+    boostJets.push({ jet, centerJet });
+  }
+  for (const side of [-1, 1]) {
+    const thigh = robot.userData.mechRig.legs[side < 0 ? 0 : 1];
+    add(thigh, cylinder, graphite, 'premium-rear-knee-actuator-' + side,
+      [side * 0.25, -2.42, 0.92], [0.18, 1.13, 0.18], [0, 0, side * 0.11]);
+    for (let i = 0; i < 3; i++)
+      add(thigh, cube, i % 2 ? accent : armor, 'premium-shin-rear-heat-sink',
+        [side * 0.28, -3.36 + i * 0.44, 0.98], [0.68, 0.23, 0.23]);
+  }
+  const rig = { forearms, calves, kneePistons, vents, spine, helmet, crest, backVents, boostJets };
   robot.userData.premiumMecha = rig;
   return rig;
 }
@@ -207,7 +245,20 @@ export function animatePremiumMecha(
   rig.spine.scale.y = 0.82 + extension * (0.18 + growth * 0.08);
   rig.spine.rotation.x = boosting ? -0.09 * power : 0;
   rig.helmet.rotation.x = -0.48 * (1 - power);
-  for (const light of rig.vents) light.visible = power > 0.1;
+  for (const light of [...rig.vents, ...rig.backVents]) light.visible = power > 0.1;
+  const energized = boosting ? 1 : 0.38;
+  for (const { jet, centerJet } of rig.boostJets) {
+    const length = (0.78 + energized * 2.25 + growth * 1.3) *
+      (0.94 + Math.sin(time * (boosting ? 31 : 9)) * 0.06);
+    jet.scale.y = length * power;
+    centerJet.scale.y = length * 0.82 * power;
+    jet.position.z = 1.65 + length * 0.55;
+    centerJet.position.z = 1.5 + length * 0.47;
+    jet.material.opacity = (boosting ? 0.96 : 0.31) * power;
+    centerJet.material.opacity = (boosting ? 0.97 : 0.62) * power;
+    jet.material.color.set(boosting ? '#a84aff' : '#49dbff');
+    centerJet.material.color.set(boosting ? '#f1ffff' : '#a3ffff');
+  }
   return {
     phase:
       p < 0.2
