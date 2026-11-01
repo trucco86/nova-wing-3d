@@ -103,7 +103,7 @@ import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import { animatePremiumMecha } from './mecha-premium.js';
-import { MECHA_DASH, heldBankAngle, dashDirection, dashFrame, heroVisualScale } from './hero-dodge-controls.js';
+import { MECHA_DASH, heldBankAngle, dashDirection, dashFrame, heroVisualScale, shipCollisionMargin } from './hero-dodge-controls.js';
 import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
   evolvedShotColor,
@@ -3007,6 +3007,8 @@ export function createGame({
     stick.x = stick.y = 0;
     stickId = null;
     heldPointers.clear();
+    rollHeld = false;
+    dashRemaining = 0;
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
     mechaEngine?.silence();
@@ -4369,7 +4371,7 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      obstacles.some(({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
       (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
@@ -4684,7 +4686,7 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       if (
         obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
+          crossesSolid(from, to, solid.center, solid.half, shipCollisionMargin(robotMode, rollHeld)),
         )
       )
         hit(30);
