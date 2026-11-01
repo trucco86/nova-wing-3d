@@ -69,6 +69,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.down();
   } else await page.keyboard.down('Shift');
+  await page.evaluate(() => window.fixture.advance(0.2));
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   if (mobile) {
     await expect
