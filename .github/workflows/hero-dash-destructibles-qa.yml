@@ -24,7 +24,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      # Recheck new neutral scale expectation, full mobile inputs and breakable targets
+      # Final verified mobile preview: exact allowlisted hostname and pointer gameplay regression
       - name: Verify source, tests and reproducible web build
         run: |
           npm run format
@@ -33,7 +33,7 @@ jobs:
           npm run validate
       - name: Commit only audited QA build outputs
         run: |
-          git add -- index.html src/game.js src/visuals.js src/mecha-premium.js src/hero-dodge-controls.js src/breakable-encounters.js tests/hero-dash-breakables.test.mjs tests/graphics-3-7-hero-and-mobile.test.mjs
+          git add -- index.html src/game.js src/visuals.js src/mecha-premium.js src/hero-dodge-controls.js src/breakable-encounters.js tests/hero-dash-breakables.test.mjs tests/graphics-3-7-hero-and-mobile.test.mjs src/shell.html src/developer-mode.js tests/developer-mode.test.mjs tests/browser/hero-dash-mobile.spec.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'Already synchronized'
