@@ -55,6 +55,7 @@ jobs:
       - run: npm run build
       - run: npm run build:check
       - run: npm run validate
+      # Run from current branch head after fixing the source/bundle race.
       # Repeat the complete gate after updating the timing contracts.
       - run: git diff --check
       - name: Commit validated, generated web candidate only
