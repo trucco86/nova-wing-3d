@@ -1490,6 +1490,11 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    // HUD acknowledgement must not wait for the next expensive WebGL frame.
+    // Under mobile GPU pressure, gameplay input may be received seconds before
+    // the render loop next paints, so reflect the actual consumable immediately.
+    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
+    $('bombTouch').setAttribute?.('data-count', bombs);
     if (stagePerformance) {
       stagePerformance.bombsUsed = true;
       if (boss) stagePerformance.primaryOnly = false;
