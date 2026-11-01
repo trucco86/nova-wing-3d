@@ -180,6 +180,9 @@ jobs:
           mkdir public-site
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
       - name: Generate optional Google login config for PROD — fail closed
+        # An explicit release toggle must be set in addition to the Firebase
+        # Web configuration; merely creating a variable cannot launch OAuth.
+        if: ${{ vars.NOVA_GOOGLE_LOGIN_PROD_ENABLED == 'true' }}
         env:
           NOVA_ENV: prod
           NOVA_FIREBASE_CONFIG_JSON: ${{ vars.NOVA_FIREBASE_PROD_CONFIG_JSON }}
