@@ -6,6 +6,7 @@ export const MECHA_DASH = Object.freeze({
   distance: 16,
   cooldown: 1.55,
   protection: 0.19,
+  energyCost: 18,
 });
 export function heldBankAngle({ robot = false, held = false, steer = 0 } = {}) {
   if (robot) return steer === 0 ? 0 : Math.max(-0.16, Math.min(0.16, -steer * 0.12));
