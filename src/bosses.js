@@ -3,6 +3,7 @@ import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
+import { createBossKineticDetails, animateBossKineticDetails } from './boss-kinetic-details.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
@@ -522,6 +523,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
   }
   g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
+  const kineticDetails = createBossKineticDetails(index, { armor, dark, edge, hot });
+  g.add(kineticDetails);
   // Devastador's twin exhaust valves are real named launch points. The
   // translucent shock jets exist only during a telegraphed reactor attack.
   // They are visual-only: collision uses the exact same intent as the radar.
@@ -615,6 +618,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
         core,
         coreMarker,
         coreMuzzle,
+        kineticDetails,
         ...batteries,
         ...parts.flatMap((part) => [part.mesh, part.marker]),
       ]);
@@ -636,6 +640,7 @@ export function animateBossSignature(g, index, time, phase = 1, attackState = 'm
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
+  animateBossKineticDetails(g.getObjectByName('boss-premium-kinetic-' + index), index, time, phase, attackState);
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
