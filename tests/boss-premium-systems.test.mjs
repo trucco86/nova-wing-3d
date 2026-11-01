@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createBossPremiumSystems, animateBossPremiumSystems } from '../src/boss-premium-systems.js';
+import {
+  createBossPremiumSystems,
+  animateBossPremiumSystems,
+} from '../src/boss-premium-systems.js';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 import { SECTORS } from '../src/campaign.js';
 
@@ -18,7 +21,11 @@ test('each of the ten bosses has unique moving mechanical surface detail without
     assert.ok(g.userData.actuators.some((a, n) => a.rotation.y !== angles[n]));
     const values = g.userData.actuators.map((a) => a.rotation.y);
     animateBossPremiumSystems(g, 6.2, 3, 'attack');
-    assert.deepEqual(g.userData.actuators.map((a) => a.rotation.y), values, 'pause must freeze pose');
+    assert.deepEqual(
+      g.userData.actuators.map((a) => a.rotation.y),
+      values,
+      'pause must freeze pose',
+    );
     g.userData.materials.forEach((m) => m.dispose());
     g.userData.geometries.forEach((geo) => geo.dispose());
   }
@@ -31,6 +38,9 @@ test('boss premium features remain visible and independent of physical weak-poin
   assert.equal(details.userData.visualOnly, true);
   const targets = boss.userData.parts.map((p) => p.mesh.position.toArray());
   animateBossSignature(boss, 9, 7, 3, 'windup');
-  assert.deepEqual(boss.userData.parts.map((p) => p.mesh.position.toArray()), targets);
+  assert.deepEqual(
+    boss.userData.parts.map((p) => p.mesh.position.toArray()),
+    targets,
+  );
   disposeBoss(boss);
 });
