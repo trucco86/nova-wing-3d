@@ -32,7 +32,7 @@ jobs:
           npm run validate
       - name: Commit only the QA-generated game and its scoped source/tests
         run: |
-          git add -- index.html src/tactics.js src/asteroid-interior.js src/boss-visual-identity.js src/bosses.js src/destination-landmarks.js tests/boss-heading-stability.test.mjs tests/asteroid-entry-cinematic.test.mjs tests/boss-late-game-articulation.test.mjs tests/destination-landmarks.test.mjs tests/late-world-landmarks.test.mjs
+          git add -- index.html src/tactics.js src/asteroid-interior.js src/boss-visual-identity.js src/bosses.js src/destination-landmarks.js tests/boss-heading-stability.test.mjs tests/asteroid-entry-cinematic.test.mjs tests/boss-late-game-articulation.test.mjs tests/destination-landmarks.test.mjs tests/late-world-landmarks.test.mjs src/developer-mode.js tests/developer-mode.test.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo "The QA source and distributable are already synchronized."
