@@ -55,7 +55,7 @@ test('four industrial districts are visibly and mechanically distinct, not repea
   updateDevastadorGrandHall(hall, { orbit: Math.PI, time: 3, driveSpeed: 1 });
   const turning = engines[0].rotation.z;
   assert.notEqual(turning, 0);
-  assert.equal(hall.rotation.y, Math.PI, 'hall compensates reactor rotation');
+  assert.equal(hall.rotation.y, 0, 'architecture is fixed while the ship orbits');
   updateDevastadorGrandHall(hall, { orbit: Math.PI / 2, time: 10, driveSpeed: 0, blackout: 1 });
   assert.equal(engines[0].rotation.z, 0, 'engines stop after sabotage');
   assert.equal(hall.rotation.y, Math.PI / 2);
