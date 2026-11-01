@@ -1544,9 +1544,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
     for (const child of sectorScenery.children) {
       if (child === destinationVista || child === destinationEscape) continue;
-      // The same region materializes through atmospheric fog, not a scene
-      // teleport. Do not change individual landmarks, hitboxes or AI.
-      child.visible = state.reveal > 0.15;
+      // Record original visibility once. On revealing a destination, restore it
+      // exactly once rather than re-enabling props hidden by gameplay, LOD or
+      // the authored encounter timeline on every frame.
+      if (child.userData.arrivalInitiallyVisible === undefined)
+        child.userData.arrivalInitiallyVisible = child.visible;
+      if (state.reveal <= 0.15) {
+        child.visible = false;
+        child.userData.arrivalWasRevealed = false;
+      } else if (!child.userData.arrivalWasRevealed) {
+        child.visible = child.userData.arrivalInitiallyVisible;
+        child.userData.arrivalWasRevealed = true;
+      }
     }
     return state;
   }
