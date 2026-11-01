@@ -9036,3 +9036,88 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   z-index: 9;
   background: #071d2a;
 }
+
+/* Developer equipment lab is a genuine touch-friendly form inside the pause
+   scrollport. Only shown when the dev session is explicitly authorized. */
+#pauseMenu #developerFlightLab:not([hidden]) {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 10px 0;
+  border: 1px solid #68cfc18a;
+  border-radius: 10px;
+  background: #081d2c;
+}
+#pauseMenu #developerFlightLab[hidden] {
+  display: none !important;
+}
+#pauseMenu #developerFlightLab > summary {
+  display: block;
+  padding: 12px;
+  min-height: 44px;
+  box-sizing: border-box;
+  color: #b5f6e7;
+  font:
+    700 12px/1.4 system-ui,
+    sans-serif;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#pauseMenu #developerFlightLab .developer-panel-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 12px;
+  min-width: 0;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > label {
+  grid-column: span 1;
+  color: #87ead9;
+  align-self: end;
+  font:
+    700 11px/1.4 system-ui,
+    sans-serif;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > select {
+  grid-column: span 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 9px;
+  color: #e5faff;
+  background: #143447;
+  border: 1px solid #649ca9;
+  border-radius: 6px;
+  font:
+    600 13px system-ui,
+    sans-serif;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > button,
+#pauseMenu #developerFlightLab .developer-panel-content > small {
+  grid-column: 1 / -1;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > button {
+  min-height: 48px;
+  touch-action: manipulation;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > small {
+  color: #afcfd5;
+  line-height: 1.45;
+}
+@media (max-width: 550px) {
+  #pauseMenu #developerFlightLab .developer-panel-content {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px;
+  }
+  #pauseMenu #developerFlightLab .developer-panel-content > label,
+  #pauseMenu #developerFlightLab .developer-panel-content > select {
+    grid-column: 1;
+  }
+  #pauseMenu #developerFlightLab > summary {
+    font-size: 11px;
+  }
+}

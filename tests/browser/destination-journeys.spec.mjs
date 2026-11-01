@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const worlds = [
-  [3, 'JÚPITER'],
+  [3, 'DEVASTADOR'],
   [4, 'VÊNUS'],
   [5, 'EUROPA'],
   [6, 'NETUNO'],
@@ -19,8 +19,16 @@ for (const [sector, destination] of worlds) {
     const begin = await page.evaluate(() => window.fixture.game.snapshot());
     expect(begin.state).toBe('playing');
     await expect(page.locator('#routeLabel')).toContainText(destination);
+    if (sector === 3)
+      expect((await page.evaluate(() => window.fixture.game.snapshot())).directedShot).toBe(
+        'chase',
+      );
     await page.screenshot({ path: info.outputPath(`planet-${sector + 1}-01-space.png`) });
     await page.evaluate(() => window.fixture.advance(16));
+    if (sector === 3)
+      expect((await page.evaluate(() => window.fixture.game.snapshot())).directedShot).toBe(
+        'chase',
+      );
     await page.screenshot({ path: info.outputPath(`planet-${sector + 1}-02-entry.png`) });
     await page.evaluate(() => window.fixture.advance(10));
     await expect(page.locator('#routeLabel')).toContainText(destination);
