@@ -25,6 +25,7 @@
     "release:prepare": "node tools/release-prepare.mjs",
     "hooks:install": "git config core.hooksPath .githooks",
     "agent:context": "node tools/context.mjs",
+    "agent:brief": "node tools/agent-brief.mjs",
     "agent:new": "node tools/task.mjs",
     "android:prepare": "node tools/android.mjs prepare",
     "android:sync": "node tools/android.mjs sync",
