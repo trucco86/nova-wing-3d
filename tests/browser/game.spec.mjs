@@ -2,6 +2,9 @@ import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { prepareAndroidWeb } from '../../tools/android.mjs';
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {
+  // The software WebGL runner requires more than the Playwright 30s default
+  // for a genuine menu -> cinematic -> mission -> pause interaction.
+  test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
@@ -55,14 +58,11 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
 test('held depleted boost settles at cruise and rearms on keyboard and touch', async ({
   page,
 }, info) => {
-  // Software WebGL can take over 30 wall-clock seconds for 3.4 simulated seconds.
-  // The CI trace still had 50% energy at the old deadline; preserve all state assertions.
-  // CI evidence shows boost rendered after the default 5s assertion deadline.
-  // Keep the real animation loop and input; allow software rendering to present the frame.
-  test.setTimeout(180000);
-  await page.goto('/');
-  await clickMenu(page, '#start');
-  await page.locator('#cinematicSkip').click();
+  // Same game simulation and real keyboard/touch events, with deterministic
+  // simulated time instead of slow SwiftShader wall-clock timing.
+  test.setTimeout(90000);
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const mobile = info.project.name === 'mobile';
   if (mobile) {
     const bounds = await page.locator('#boostTouch').boundingBox();
@@ -78,11 +78,13 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
       .toContain('conic-gradient');
   }
   await expect(page.locator('#speedValue')).toHaveText('890');
-  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 90000 });
+  await page.evaluate(() => window.fixture.advance(3.8));
+  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO');
+  // A held boost must exhaust; recovery is tested against real game time,
+  // not the variable render rate of a software GPU in CI.
+  await page.evaluate(() => window.fixture.advance(2.2));
   await expect
-    .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 40000,
-    })
+    .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)))
     .toBeGreaterThan(20);
   await expect(page.locator('body')).not.toHaveClass(/boosting/);
   await expect(page.locator('#speedValue')).toHaveText('480');
@@ -94,6 +96,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.keyboard.up('Shift');
     await page.keyboard.down('Shift');
   }
+  await page.evaluate(() => window.fixture.advance(0.2));
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   await expect(page.locator('#speedValue')).toHaveText('890');
   await page.screenshot({ path: info.outputPath('boost-rearmed.png') });
@@ -158,9 +161,8 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
     info.project.name !== 'mobile',
     'Controles de toque são apresentados apenas em dispositivos coarse.',
   );
-  await page.goto('/');
-  await clickMenu(page, '#start', 'tap');
-  await page.locator('#cinematicSkip').tap();
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const fire = page.locator('#fireTouch');
   await expect(fire).toBeVisible();
   expect(await fire.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
@@ -169,10 +171,11 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
   await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
   await page.mouse.down();
   await expect(fire).toHaveClass(/pressed/);
+  // Still holding the real pointer button: step the identical simulation
+  // for 1.1s to verify the cannon actually builds charge beyond 65%.
+  await page.evaluate(() => window.fixture.advance(1.1));
   await expect
-    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 15000,
-    })
+    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)))
     .toBeGreaterThan(65);
   const cancelled = await fire.evaluate(
     (el) => !el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),
