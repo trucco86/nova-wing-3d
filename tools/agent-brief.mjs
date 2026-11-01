@@ -3,7 +3,12 @@ import { existsSync, readFileSync } from 'node:fs';
 
 export const AGENT_AREAS = Object.freeze({
   stage4: {
-    files: ['src/devastador-grand-hall.js', 'src/devastador-sabotage.js', 'src/mothership-interior.js', 'src/game.js'],
+    files: [
+      'src/devastador-grand-hall.js',
+      'src/devastador-sabotage.js',
+      'src/mothership-interior.js',
+      'src/game.js',
+    ],
     tests: ['tests/devastador-grand-hall.test.mjs', 'tests/devastador-sabotage.test.mjs'],
     skill: 'skills/nova-wing-graficos/SKILL.md',
   },
@@ -18,7 +23,11 @@ export const AGENT_AREAS = Object.freeze({
     skill: 'skills/nova-wing-qa/SKILL.md',
   },
   pipeline: {
-    files: ['.github/workflows/ci.yml', '.github/workflows/cloudflare-preview.yml', 'tools/fast-check.mjs'],
+    files: [
+      '.github/workflows/ci.yml',
+      '.github/workflows/cloudflare-preview.yml',
+      'tools/fast-check.mjs',
+    ],
     tests: ['tests/fast-plan.test.mjs'],
     skill: 'skills/nova-wing-entrega/SKILL.md',
   },
@@ -97,6 +106,8 @@ if (process.argv[1]?.endsWith('/agent-brief.mjs')) {
   });
   console.log(result);
   console.error(
-    '[agent-brief] ' + result.length + ' characters of context. Token usage/billing is not observable here.',
+    '[agent-brief] ' +
+      result.length +
+      ' characters of context. Token usage/billing is not observable here.',
   );
 }
