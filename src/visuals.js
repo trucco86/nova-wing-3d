@@ -11,6 +11,11 @@ import {
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
+import { DESTINATION_PROFILES } from './destination-arrival.js';
+import {
+  createDestinationVista, updateDestinationVista,
+  createDestinationEscape, updateDestinationEscape,
+} from './destination-vista.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
 import {
@@ -1478,6 +1483,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const sectorScenery = new T.Group();
   scene.add(sectorScenery);
   let sceneryTheme = 'city';
+  let destinationIndex = 0;
+  let destinationVista = null;
+  let destinationEscape = null;
   function clearScenery() {
     const geometries = new Set(),
       materials = new Set();
@@ -1509,6 +1517,39 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     scene.fog.color.lerp(new T.Color('#c38a61'), sand * 0.8);
     return state;
   }
+  function setDestinationArrival(seconds) {
+    if (!dynamicFlight || !destinationVista) return null;
+    const state = updateDestinationVista(destinationVista, destinationIndex, seconds);
+    const profile = DESTINATION_PROFILES[destinationIndex];
+    const target = new T.Color(profile.haze);
+    // The opening really starts in space. Each location's dust/cloud color
+    // grows naturally during re-entry and clears into its own established biome.
+    scene.fog.color.set('#101c34').lerp(target, state.reveal);
+    scene.fog.color.lerp(target, state.haze * 0.65);
+    const normalDensity = destinationIndex === 5 ? 0.0014 : 0.00045;
+    scene.fog.density = T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
+    starfield.visible = state.reveal < 0.95 || state.keepGlobe;
+    starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
+    if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
+    for (const child of sectorScenery.children) {
+      if (child === destinationVista || child === destinationEscape) continue;
+      // The same region materializes through atmospheric fog, not a scene
+      // teleport. Do not change individual landmarks, hitboxes or AI.
+      child.visible = state.reveal > 0.15;
+    }
+    return state;
+  }
+  function setDestinationExit(seconds) {
+    if (!dynamicFlight || !destinationEscape) return null;
+    const state = updateDestinationEscape(destinationEscape, destinationIndex, seconds);
+    if (state.active) {
+      scene.fog.density = T.MathUtils.lerp(scene.fog.density, 0.00014, state.progress * 0.18);
+      scene.fog.color.lerp(new T.Color('#111a35'), state.progress * 0.17);
+      starfield.visible = true;
+      starfield.material.opacity = Math.max(starfield.material.opacity, state.progress * 0.86);
+    }
+    return state;
+  }
   const orbitalFrame = dynamicFlight ? new T.Group() : null;
   if (orbitalFrame) {
     const nodes = scene.children.filter((o) => !existing.has(o));
@@ -1517,6 +1558,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   return {
     setMarsDescent,
+    setDestinationArrival,
+    setDestinationExit,
     setGraphicsQuality(quality) {
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
@@ -1614,6 +1657,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     setSector(sector, sectorIndex = -1) {
       clearScenery();
+      destinationVista = null;
+      destinationEscape = null;
       const resolvedIndex =
         sectorIndex >= 0
           ? sectorIndex
@@ -1630,6 +1675,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
               'emperor',
             ].indexOf(sector.kind);
       const signature = stageVisualAt(resolvedIndex);
+      destinationIndex = resolvedIndex;
       moon.position.set(480, 280, -1000);
       moon.scale.setScalar(1);
       atmosphere.position.copy(moon.position);
@@ -1885,6 +1931,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         mat.dispose();
         light.dispose();
       }
+      if (dynamicFlight) {
+        // Earth, Mars and the asteroid already have their own authored arrivals.
+        if (DESTINATION_PROFILES[destinationIndex]) {
+          destinationVista = createDestinationVista(destinationIndex);
+          sectorScenery.add(destinationVista);
+          setDestinationArrival(0);
+        }
+        // All sectors, including the terrestrial and cavern missions, get
+        // a short post-boss exit beat without changing the progress gate.
+        destinationEscape = createDestinationEscape(destinationIndex);
+        sectorScenery.add(destinationEscape);
+      }
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
     update(dt, time, speed, playing) {
@@ -1994,6 +2052,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
       updateMarsPremium(sectorScenery.getObjectByName('mars-premium-desert'), 0);
       if (sceneryTheme === 'mars') setMarsDescent(0);
+      if (destinationVista) setDestinationArrival(0);
+      if (destinationEscape) setDestinationExit(0);
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));
     },
   };
