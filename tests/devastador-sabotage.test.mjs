@@ -22,7 +22,10 @@ test('Devastador is an eight-component systems puzzle, not the generic two-eye b
   assert.ok(model.getObjectByName('reactor-induction-circuit-2'));
   assert.ok(model.userData.parts.some((part) => part.angle < -2.3));
   assert.ok(model.userData.parts.some((part) => part.angle > 2.3));
-  assert.equal(model.userData.parts.some((part) => part.type === 'eye'), false);
+  assert.equal(
+    model.userData.parts.some((part) => part.type === 'eye'),
+    false,
+  );
   assert.equal(model.userData.batteries.length, 0);
   disposeBoss(model);
 });

@@ -336,9 +336,7 @@ export function createGame({
         opponent() {
           if (boss) {
             boss.updateMatrixWorld(true);
-            const weak = boss.userData.parts.find(
-              (p, i) => p.hp > 0 && bossTargetOpen(i),
-            );
+            const weak = boss.userData.parts.find((p, i) => p.hp > 0 && bossTargetOpen(i));
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
             if (bossCoreOpen() && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
@@ -443,7 +441,12 @@ export function createGame({
       for (const target of targets) {
         const aim = target.position.clone().sub(origin);
         if (aim.lengthSq() < 1) continue;
-        launchShot(0, mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) * 0.8, false, origin);
+        launchShot(
+          0,
+          mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) * 0.8,
+          false,
+          origin,
+        );
         const shot = shots.at(-1);
         shot.v = aim.normalize().multiplyScalar(215 + stage() * 3);
         shot.source = 'mecha-multi-lock';
@@ -1802,7 +1805,12 @@ export function createGame({
       marker.hidden = true;
       if (!lockHeld || !lockQueue[i]) continue;
       const projected = lockQueue[i].position.clone().project(camera);
-      if (projected.z < -1 || projected.z > 1 || Math.abs(projected.x) > 1 || Math.abs(projected.y) > 1)
+      if (
+        projected.z < -1 ||
+        projected.z > 1 ||
+        Math.abs(projected.x) > 1 ||
+        Math.abs(projected.y) > 1
+      )
         continue;
       marker.hidden = false;
       marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
@@ -1824,14 +1832,18 @@ export function createGame({
     status.hidden = !lockEnabled;
     if (lockEnabled)
       status.textContent = lockHeld
-        ? 'MULTI-LOCK · ' + lockQueue.length + '/' + mechaMultiLockCapacity(stage()) + ' · SOLTE PARA ATIRAR'
+        ? 'MULTI-LOCK · ' +
+          lockQueue.length +
+          '/' +
+          mechaMultiLockCapacity(stage()) +
+          ' · SOLTE PARA ATIRAR'
         : !selected
-        ? 'MIRA · SEM ALVO'
-        : lockProgress < 0.8
-          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
-          : precisionCd > 0
-            ? 'MIRA · RECARGA'
-            : 'MIRA · FIXADA';
+          ? 'MIRA · SEM ALVO'
+          : lockProgress < 0.8
+            ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+            : precisionCd > 0
+              ? 'MIRA · RECARGA'
+              : 'MIRA · FIXADA';
     const marker = $('mechaLockReticle');
     marker.hidden = true;
     if (position) {
@@ -2075,9 +2087,10 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
-    boss = dynamicFlight && sectorIndex === 3
-      ? createDevastadorSabotageCore()
-      : createBossModel(current(), sectorIndex, dynamicFlight);
+    boss =
+      dynamicFlight && sectorIndex === 3
+        ? createDevastadorSabotageCore()
+        : createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
@@ -2096,7 +2109,9 @@ export function createGame({
       );
     }
     music?.start(sectorIndex, true);
-    $('bossName').textContent = boss.userData.sabotage ? 'DEVASTADOR · NÚCLEO DE PROPULSÃO' : current().boss;
+    $('bossName').textContent = boss.userData.sabotage
+      ? 'DEVASTADOR · NÚCLEO DE PROPULSÃO'
+      : current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
     message(
@@ -2104,7 +2119,7 @@ export function createGame({
         ? 'SABOTAGEM · J/L PARA ORBITAR 360° · TRAVE OS SISTEMAS COM O ROBÔ'
         : dynamicFlight
           ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
-        : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
+          : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
   function damageBoss(
@@ -2142,9 +2157,7 @@ export function createGame({
       bossHp = bossCombat.hp;
       return dealt;
     }
-    const openPart = (p) =>
-      !dynamicFlight ||
-      bossTargetOpen(boss.userData.parts.indexOf(p));
+    const openPart = (p) => !dynamicFlight || bossTargetOpen(boss.userData.parts.indexOf(p));
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
@@ -2201,7 +2214,11 @@ export function createGame({
         : Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7)
     )
       return 0;
-    if (!bossCoreOpen() || (dynamicFlight && !boss?.userData.sabotage && !weakPointOpen(relativeOrbit()))) return 0;
+    if (
+      !bossCoreOpen() ||
+      (dynamicFlight && !boss?.userData.sabotage && !weakPointOpen(relativeOrbit()))
+    )
+      return 0;
     const spent = spendDamage(amount, dynamicFlight && charged);
     const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
@@ -4506,8 +4523,7 @@ export function createGame({
         ? updateDevastadorSabotageCore(boss, { orbit: orbitAngle, time: bossCombat.age })
         : null;
       const openGenerator = boss.userData.parts.findIndex(
-        (p, i) =>
-          p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
+        (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
       );
       const coreVulnerable =
         remaining === 0 &&
@@ -4538,8 +4554,11 @@ export function createGame({
                   : 'BLINDAGEM · DANO REDUZIDO');
       if (sabotagePhase) {
         $('bossState').textContent =
-          'DESATIVE ' + sabotagePhase.label +
-          (sabotagePhase.remaining ? ' · ' + sabotagePhase.remaining + ' ALVOS' : ' · FOGO NO REATOR');
+          'DESATIVE ' +
+          sabotagePhase.label +
+          (sabotagePhase.remaining
+            ? ' · ' + sabotagePhase.remaining + ' ALVOS'
+            : ' · FOGO NO REATOR');
       }
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
@@ -4591,7 +4610,8 @@ export function createGame({
                 'COROA IMPERIAL',
               ][sectorIndex]
             : '';
-      if (boss.userData.sabotage) $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      if (boss.userData.sabotage)
+        $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
       if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
@@ -4657,8 +4677,7 @@ export function createGame({
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
         const weakPart = boss?.userData.parts.find(
-          (p, i) =>
-            p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
+          (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
         );
         const target = boss
           ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
@@ -5031,9 +5050,7 @@ export function createGame({
     $('bossHealth').style.width =
       Math.max(
         0,
-        (sabotageProgress === null
-          ? bossHp / (bossCombat?.max ?? 1400)
-          : sabotageProgress) * 100,
+        (sabotageProgress === null ? bossHp / (bossCombat?.max ?? 1400) : sabotageProgress) * 100,
       ) + '%';
   }
   let last = now();
@@ -5324,7 +5341,9 @@ export function createGame({
           open: !dynamicFlight || bossTargetOpen(i),
           angle: boss.userData.sabotage
             ? p.angle
-            : wrapAngle(bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0)),
+            : wrapAngle(
+                bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
+              ),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,

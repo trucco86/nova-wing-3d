@@ -13,7 +13,8 @@ export const SABOTAGE_SYSTEMS = Object.freeze([
 export const sabotagedSystem = (parts) => {
   for (const system of SABOTAGE_SYSTEMS.slice(0, 3)) {
     const pending = parts.filter((part) => part.type === system.name && part.hp > 0);
-    if (pending.length) return { system: system.name, label: system.label, remaining: pending.length };
+    if (pending.length)
+      return { system: system.name, label: system.label, remaining: pending.length };
   }
   return { system: 'core', label: 'NÚCLEO CENTRAL EXPOSTO', remaining: 0 };
 };
@@ -60,7 +61,10 @@ export function createDevastadorSabotageCore() {
   root.add(drum);
   const rotors = [];
   for (let layer = 0; layer < 5; layer++) {
-    const ring = new T.Mesh(new T.TorusGeometry(32 + (layer % 2) * 2, 1.6, 7, 36), layer % 2 ? steel : conduits);
+    const ring = new T.Mesh(
+      new T.TorusGeometry(32 + (layer % 2) * 2, 1.6, 7, 36),
+      layer % 2 ? steel : conduits,
+    );
     ring.name = 'reactor-induction-circuit-' + layer;
     ring.position.z = -28 + layer * 14;
     root.add(ring);
@@ -75,7 +79,13 @@ export function createDevastadorSabotageCore() {
     for (let k = 0; k < 3; k++) {
       const x2 = Math.sin(a) * (36.2 + k * 1.1);
       const y2 = Math.cos(a) * (36.2 + k * 1.1);
-      addBox(root, 'reactor-circuit-trace', k === 2 ? charge : conduits, [x2, y2, -24 + k * 23], [0.8, 1, 13]);
+      addBox(
+        root,
+        'reactor-circuit-trace',
+        k === 2 ? charge : conduits,
+        [x2, y2, -24 + k * 23],
+        [0.8, 1, 13],
+      );
     }
   }
   const entries = [
@@ -168,11 +178,7 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
     const open = active && sabotageTargetOpen(parts, i, orbit);
     part.marker.visible = open;
     part.mesh.visible = part.hp > 0;
-    part.mesh.scale.set(
-      open ? 1.12 : 1,
-      1 + Math.sin(time * 2.2 + i) * 0.03,
-      1,
-    );
+    part.mesh.scale.set(open ? 1.12 : 1, 1 + Math.sin(time * 2.2 + i) * 0.03, 1);
     part.cradle.rotation.z = part.hp <= 0 ? 0.14 : 0;
   }
   root.userData.core.visible = stage.system === 'core';

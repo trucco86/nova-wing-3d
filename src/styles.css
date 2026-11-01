@@ -9141,7 +9141,9 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   border-radius: 6px;
   background: #052635aa;
   color: #fff6a0;
-  box-shadow: 0 0 12px #34e4ff88, inset 0 0 9px #34e4ff55;
+  box-shadow:
+    0 0 12px #34e4ff88,
+    inset 0 0 9px #34e4ff55;
   font: 800 11px/1 monospace;
   transform: rotate(45deg);
 }

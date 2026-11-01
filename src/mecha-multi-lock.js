@@ -1,5 +1,5 @@
 // One lock per physical target. An original fire-control mechanic:
- // holding LOCK paints different targets; releasing sends a bounded salvo.
+// holding LOCK paints different targets; releasing sends a bounded salvo.
 export function mechaMultiLockCapacity(stage = 0) {
   if (stage >= 18) return 12;
   if (stage >= 12) return 8;
@@ -34,9 +34,7 @@ export function availableMechaTargets(
 }
 export function collectMultiLocks(existing, candidates, capacity, availableSlots) {
   const byId = new Map(candidates.map((candidate) => [candidate.id, candidate]));
-  const stillAlive = existing.flatMap((item) =>
-    byId.has(item.id) ? [byId.get(item.id)] : [],
-  );
+  const stillAlive = existing.flatMap((item) => (byId.has(item.id) ? [byId.get(item.id)] : []));
   const result = [...stillAlive];
   for (const candidate of candidates) {
     if (result.length >= Math.min(capacity, availableSlots)) break;
