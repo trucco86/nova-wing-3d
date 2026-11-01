@@ -12,8 +12,10 @@ export function heldBankAngle({ robot = false, held = false, steer = 0 } = {}) {
   if (robot) return steer === 0 ? 0 : Math.max(-0.16, Math.min(0.16, -steer * 0.12));
   return held ? -Math.PI / 2 : Math.max(-0.48, Math.min(0.48, -steer * 0.48));
 }
-export function dashDirection(steer = 0, positionX = 0) {
-  return Math.abs(steer) >= 0.15 ? Math.sign(steer) : positionX >= 0 ? -1 : 1;
+// Dash is a deliberate dodge: neutral sticks and vertical-only input
+// cannot silently choose a side. The player's last position never decides.
+export function dashDirection(steer = 0) {
+  return Number.isFinite(steer) && Math.abs(steer) >= 0.2 ? Math.sign(steer) : 0;
 }
 export function dashFrame(remaining, dt, direction) {
   if (!Number.isFinite(dt) || dt < 0) throw new RangeError('dash frame dt');
