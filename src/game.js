@@ -3004,6 +3004,9 @@ export function createGame({
     }
     keys.clear();
     touchFire = touchBoost = false;
+    rollHeld = false;
+    rollPointerId = null;
+    rollHeldSeconds = 0;
     charge = 0;
     chargeLatch = false;
     stick.x = stick.y = 0;
@@ -3076,19 +3079,19 @@ export function createGame({
   }
   const rollButton = $('rollTouch');
   let rollPointerId = null;
-  let rollPressStarted = 0;
+  let rollHeldSeconds = 0;
   rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
-    rollPressStarted = performance.now();
+    rollHeldSeconds = 0;
     if (robotMode) doRoll(stick.x);
     else rollHeld = true;
     rollButton.setPointerCapture?.(e.pointerId);
   };
   const finishRollPress = (e) => {
     if (rollPointerId !== e.pointerId) return;
-    const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
+    const tap = e.type === 'pointerup' && rollHeldSeconds < 0.24;
     rollPointerId = null;
     rollHeld = false;
     if (tap && !robotMode) doRoll();
@@ -3604,6 +3607,7 @@ export function createGame({
     invuln -= dt;
     rollCd -= dt;
     dashCd = Math.max(0, dashCd - dt);
+    if (rollHeld && !robotMode) rollHeldSeconds += dt;
     // Touch briefing owns the radio lane; retain the pending real message until
     // it can be shown. Desktop and native keep their existing timer contract.
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
