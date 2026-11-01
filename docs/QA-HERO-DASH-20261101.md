@@ -21,6 +21,10 @@ Candidata: [PR #239](https://github.com/trucco86/nova-wing-3d/pull/239), empilha
 6. **Regressão visual/performance:** comparar capturas no iPhone horizontal e no desktop, qualidade Alto/Médio, funcionamento dos controles sem perda da mira e estabilidade de FPS.
 7. **Preservação:** verificar fases 1–2, fase 4, câmera, armas, menu, ranking e login sem mudanças não aprovadas.
 
+## Versão desta rodada
+
+A candidata usa `v1.27.62`, com package, lockfile, metadados de release e HTML compilado sincronizados. O teste final deve rodar sobre o commit completo de QA; a geração do build não autoriza publicação em produção.
+
 ## Gates antes da promoção
 
 Executar no commit final sincronizado: `npm ci`, `npm run format:check`, `npm run build:check`, `npm run validate`, `npm test` e `npm run test:browser`. Confirmar os resultados da CI, do preview Cloudflare isolado e o aceite visual no celular.
