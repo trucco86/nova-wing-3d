@@ -4306,7 +4306,7 @@ export function createGame({
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       let radarPlan = null;
-      if (dynamicFlight) {
+      if (dynamicFlight && !boss.userData.sabotage) {
         const t = tactics();
         if (t.state === 'windup' && bossIntentCycle !== t.cycle) {
           bossIntent = chooseBossIntent({
