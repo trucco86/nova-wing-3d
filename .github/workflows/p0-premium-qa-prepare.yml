@@ -24,7 +24,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      # P0 v2: transform thrust integration and full lint/test validation
+      # P0 v3: side-specific articulating-foot regression fixed
       - name: Validate premium P0 source and reproducible output
         run: |
           npm run format
