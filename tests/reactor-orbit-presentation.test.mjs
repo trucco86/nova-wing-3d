@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { reactorOrbitalPosition, withReactorOrbitPresentation } from '../src/reactor-orbit-presentation.js';
+import {
+  reactorOrbitalPosition,
+  withReactorOrbitPresentation,
+} from '../src/reactor-orbit-presentation.js';
 
 test('the player and camera physically orbit a stationary Devastador chamber in presentation coordinates', () => {
   const scene = new T.Scene();
@@ -15,9 +18,9 @@ test('the player and camera physically orbit a stationary Devastador chamber in 
   core.position.copy(center);
   core.rotation.y = -turn;
   core.add(hall);
-  background.position.copy(center).sub(
-    center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), -turn),
-  );
+  background.position
+    .copy(center)
+    .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), -turn));
   background.rotation.y = -turn;
   background.add(new T.Object3D());
   pilot.position.set(0, 12, 9);
@@ -31,9 +34,11 @@ test('the player and camera physically orbit a stationary Devastador chamber in 
     const observedPilot = pilot.getWorldPosition(new T.Vector3());
     const expected = reactorOrbitalPosition(oldPilot, center, turn);
     assert.ok(observedPilot.distanceTo(expected) < 0.001);
-    assert.ok(camera.getWorldPosition(new T.Vector3()).distanceTo(
-      reactorOrbitalPosition(oldCamera, center, turn),
-    ) < 0.001);
+    assert.ok(
+      camera
+        .getWorldPosition(new T.Vector3())
+        .distanceTo(reactorOrbitalPosition(oldCamera, center, turn)) < 0.001,
+    );
     // Reactor and room orientation is constant in the fixed world frame.
     assert.ok(Math.abs(core.getWorldQuaternion(new T.Quaternion()).y) < 0.001);
     assert.ok(Math.abs(hall.getWorldQuaternion(new T.Quaternion()).y) < 0.001);
@@ -66,6 +71,9 @@ test('presentation always restores state on renderer error and never mutates col
   );
   assert.deepEqual(scene.position.toArray(), before.toArray());
   assert.deepEqual(child.position.toArray(), [3, 4, 5]);
-  assert.equal(withReactorOrbitPresentation(null, null, 0, () => 8), 8);
+  assert.equal(
+    withReactorOrbitPresentation(null, null, 0, () => 8),
+    8,
+  );
   assert.throws(() => withReactorOrbitPresentation(scene, before, 0, null), TypeError);
 });
