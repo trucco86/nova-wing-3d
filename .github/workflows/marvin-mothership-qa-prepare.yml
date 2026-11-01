@@ -1,0 +1,50 @@
+name: Prepare mothership and Marvin rival QA
+on:
+  push:
+    branches:
+      - feat/mothership-marvin-rival-qa-20261101
+    paths:
+      - .github/workflows/marvin-mothership-qa-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mothership-marvin-rival-qa-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Regenerate and test the playable web build
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit only scope and generated HTML for isolated QA
+        run: |
+          git add -- index.html src/visuals.js src/game.js src/bosses.js src/campaign.js src/stage-journey.js src/destination-arrival.js src/mothership-interior.js src/marvin-rival.js tests/mothership-interior-story.test.mjs tests/marvin-rival-story.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No generated artifact change.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): ship isolated Marvin rival and mothership candidate'
+            git push origin HEAD:feat/mothership-marvin-rival-qa-20261101
+          fi
+      - name: Verify complete browser CI and generate an isolated preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/mothership-marvin-rival-qa-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/mothership-marvin-rival-qa-20261101
