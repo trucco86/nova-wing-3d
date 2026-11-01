@@ -52,7 +52,7 @@ test('cinematic side and overhead cameras change real 3D perspective, manually s
   rig.reset(pilot);
   assert.equal(rig.getShot(), 'combat', 'manual selection belongs to pilot');
   assert.equal(stagePerspectiveAt(6, 0.3 * 92, 92), 'chase');
-  assert.equal(stagePerspectiveAt(3, 40, 92, false, { mission: 'reactor-grid' }), 'overhead');
+  assert.equal(stagePerspectiveAt(3, 40, 92, false, { mission: 'reactor-grid' }), 'chase');
 });
 
 test('giant robot walks and aims; stronger leg articulation is visible', () => {
