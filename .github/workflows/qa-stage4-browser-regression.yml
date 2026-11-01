@@ -32,7 +32,7 @@ jobs:
           npm run validate
       - name: Commit verified web and isolated QA changes
         run: |
-          git add -- index.html src/game.js src/encounter-arrival-flow.js src/styles.css tests/stage4-flow-and-developer-lab.test.mjs tests/browser/developer-lab-mobile.spec.mjs tests/browser/destination-journeys.spec.mjs tests/browser/game.spec.mjs
+          git add -- index.html src/game.js src/encounter-arrival-flow.js src/styles.css tests/stage4-flow-and-developer-lab.test.mjs src/developer-mode.js tests/developer-mode.test.mjs tests/browser/developer-lab-mobile.spec.mjs tests/browser/destination-journeys.spec.mjs tests/browser/game.spec.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'No generated changes.'
