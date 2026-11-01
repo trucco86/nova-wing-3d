@@ -78,3 +78,19 @@ em branch posterior, preservando os gates.
 - BOOST obrigatório permanece indicado no botão `SUPER BOOST`; aviso de texto superior é breve (até 2,6s) para preservar o centro da tela. Texto neutro a teclado/toque: `SEGURE SUPER BOOST`.
 - Testes de regressão antigos atualizados apenas quando confrontados com a implementação e com a experiência aprovada; não mascarar erros reais de WebGL, toque, HUD, colisões ou performance.
 - Evidência exigida: `npm run validate`, `npm run validate -- --browser`, frames de entrada nas dez fases, verificação de nave/mira e controles em landscape/portrait; falhas de Playwright restantes bloqueiam merge.
+
+## CI evidência concreta — fase de correção 5.1
+
+O primeiro gate focado da candidata v1.27.60 executou **16 testes browser**
+(desktop e mobile): 12 aprovaram; quatro apontaram bugs de layout reais.
+Duas telas em `844×390` posicionaram o quarto botão fora do limite vertical,
+e duas em `1366×768` não conseguiram clicar VOLTAR após abrir QA porque
+o controle ficou fora do viewport. Os arquivos de teste não foram ignorados.
+
+Correção: quatro colunas em paisagem apenas quando `#menuQA` está habilitado;
+três colunas para menus normais; CENTRAL com alinhamento ao topo,
+scroll próprio e VOLTAR fixo no topo. O teste verifica limites do
+viewport de **todos** os botões e também o botão VOLTAR depois de abrir
+o painel, em portrait e landscape, mobile e desktop.
+
+A reprovação de CI continua bloqueante até a execução seguinte aprovar.
