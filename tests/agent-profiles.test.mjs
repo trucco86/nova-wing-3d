@@ -3,12 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
 
-const profiles = [
-  'nova-planner',
-  'nova-builder',
-  'nova-visual-qa',
-  'nova-release-gate',
-];
+const profiles = ['nova-planner', 'nova-builder', 'nova-visual-qa', 'nova-release-gate'];
 test('Nova Wing provides four opt-in, scoped Copilot agent profiles with distinct tool permissions', () => {
   const names = new Set();
   for (const id of profiles) {
@@ -29,7 +24,10 @@ test('Nova Wing provides four opt-in, scoped Copilot agent profiles with distinc
     names.add(metadata.name);
     assert.match(content, /AGENTS\.md/, 'same repository guardrails for every role');
   }
-  const planner = readFileSync(new URL('../.github/agents/nova-planner.agent.md', import.meta.url), 'utf8');
+  const planner = readFileSync(
+    new URL('../.github/agents/nova-planner.agent.md', import.meta.url),
+    'utf8',
+  );
   const reviewer = readFileSync(
     new URL('../.github/agents/nova-release-gate.agent.md', import.meta.url),
     'utf8',
