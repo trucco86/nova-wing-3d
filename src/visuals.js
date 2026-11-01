@@ -12,6 +12,7 @@ import {
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
+import { createDestinationLandmarks, updateDestinationLandmarks, setDestinationLandmarkQuality } from './destination-landmarks.js';
 import {
   createDestinationVista,
   updateDestinationVista,
@@ -1488,6 +1489,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationIndex = 0;
   let destinationVista = null;
   let destinationEscape = null;
+  let destinationLandmarks = null;
+  let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
       materials = new Set();
@@ -1522,6 +1525,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   function setDestinationArrival(seconds) {
     if (!dynamicFlight || !destinationVista) return null;
     const state = updateDestinationVista(destinationVista, destinationIndex, seconds);
+    updateDestinationLandmarks(destinationLandmarks, seconds);
     const profile = DESTINATION_PROFILES[destinationIndex];
     const target = new T.Color(profile.haze);
     // The opening really starts in space. Each location's dust/cloud color
@@ -1574,6 +1578,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setDestinationArrival,
     setDestinationExit,
     setGraphicsQuality(quality) {
+      destinationGraphicsQuality = quality;
+      setDestinationLandmarkQuality(destinationLandmarks, quality);
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
@@ -1672,6 +1678,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       clearScenery();
       destinationVista = null;
       destinationEscape = null;
+      destinationLandmarks = null;
       const resolvedIndex =
         sectorIndex >= 0
           ? sectorIndex
@@ -1949,6 +1956,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         if (DESTINATION_PROFILES[destinationIndex]) {
           destinationVista = createDestinationVista(destinationIndex);
           sectorScenery.add(destinationVista);
+          destinationLandmarks = createDestinationLandmarks(destinationIndex);
+          if (destinationLandmarks) {
+            sectorScenery.add(destinationLandmarks);
+            setDestinationLandmarkQuality(destinationLandmarks, destinationGraphicsQuality);
+          }
           setDestinationArrival(0);
         }
         // All sectors, including the terrestrial and cavern missions, get
