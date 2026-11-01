@@ -13,7 +13,8 @@ export function installCompactMenu({
     back = $('menuBack');
   const play = $('menuPlay'),
     hangar = $('menuHangar'),
-    hub = $('menuHub');
+    hub = $('menuHub'),
+    qa = $('menuQA');
   const prepare = $('prepareSquad'),
     selection = $('squadSelection');
   const labels = {
@@ -61,6 +62,15 @@ export function installCompactMenu({
   on(play, 'click', () => navigate('play'));
   on(hangar, 'click', () => navigate('hangar'));
   on(hub, 'click', () => navigate('central'));
+  on(qa, 'click', () => {
+    const panel = $('developerPanel');
+    // A visible control on an isolated QA origin only; never bypass host gating.
+    if (qa.hidden || panel?.hidden) return;
+    navigate('central');
+    panel.open = true;
+    panel.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+    $('developerSector')?.focus?.({ preventScroll: true });
+  });
   on(
     window,
     'keydown',
