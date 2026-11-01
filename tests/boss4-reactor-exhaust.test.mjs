@@ -106,7 +106,7 @@ test('bomb command updates visible HUD immediately before the next WebGL frame',
   assert.equal(h.game.snapshot().bombs, before - 1);
   assert.equal(h.elements.get('bombs').textContent, '◆ '.repeat(before - 1) || '—');
   assert.equal(
-    h.elements.get('bombTouch').attributes.get('data-count'),
+    h.elements.get('bombTouch')['data-count'],
     before - 1,
     'touch count and visible HUD must be in sync before another animation frame',
   );
