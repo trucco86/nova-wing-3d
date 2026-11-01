@@ -38,7 +38,6 @@ Comparar antes/depois para tempo até primeiro preview, p50/p95 dos shards, dura
 
 **Gate:** preview e FAST jamais significam autorização para produção. Exigir quatro shards Playwright, qualidade e aceite visual no SHA final.
 
-
 ## Perfis de agentes versionados
 
 Quatro definições de custom agents do GitHub Copilot, em `.github/agents/`: `nova-planner.agent.md`, `nova-builder.agent.md`, `nova-visual-qa.agent.md` e `nova-release-gate.agent.md`. Todos exigem seleção explícita (`disable-model-invocation: true`), com leitura/edição/execução restritas à função. Esses arquivos são **perfis**, não agentes autônomos executando tarefas continuamente. A disponibilidade no seletor do Copilot depende de suporte do cliente, permissões e integração na branch relevante.
