@@ -176,7 +176,10 @@ import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import { devastadorEscapeAt, DEVASTADOR_ESCAPE_BOOST_START } from './devastador-escape.js';
-import { reactorOrbitalPosition, withReactorOrbitPresentation } from './reactor-orbit-presentation.js';
+import {
+  reactorOrbitalPosition,
+  withReactorOrbitPresentation,
+} from './reactor-orbit-presentation.js';
 import {
   fighter,
   createFlyingRobot,
