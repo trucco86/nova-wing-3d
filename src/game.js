@@ -103,7 +103,14 @@ import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import { animatePremiumMecha } from './mecha-premium.js';
-import { MECHA_DASH, heldBankAngle, dashDirection, dashFrame, heroVisualScale, shipCollisionMargin } from './hero-dodge-controls.js';
+import {
+  MECHA_DASH,
+  heldBankAngle,
+  dashDirection,
+  dashFrame,
+  heroVisualScale,
+  shipCollisionMargin,
+} from './hero-dodge-controls.js';
 import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
   evolvedShotColor,
@@ -393,7 +400,10 @@ export function createGame({
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     $('rollTouch').textContent = robotMode ? 'DASH' : 'GIRO';
-    $('rollTouch').setAttribute('aria-label', robotMode ? 'Dash lateral do robô' : 'Giro e inclinação vertical da nave');
+    $('rollTouch').setAttribute(
+      'aria-label',
+      robotMode ? 'Dash lateral do robô' : 'Giro e inclinação vertical da nave',
+    );
     dashRemaining = 0;
     rollHeld = false;
     cue(robotMode ? 'transformRobot' : 'transformShip');
@@ -1384,7 +1394,15 @@ export function createGame({
   }
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
-    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0 || (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection)) return;
+    if (
+      state !== 'playing' ||
+      !Number.isFinite(d) ||
+      d <= 0 ||
+      invuln > 0 ||
+      roll > 0 ||
+      (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection)
+    )
+      return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -1440,8 +1458,10 @@ export function createGame({
     if (state !== 'playing') return;
     if (robotMode) {
       if (dashCooldown > 0 || robotTransition > 0) return;
-      const steer = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
-        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + stick.x;
+      const steer =
+        (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
+        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
+        stick.x;
       dashSide = dashDirection(steer, player.position.x);
       dashRemaining = MECHA_DASH.duration;
       dashCooldown = MECHA_DASH.cooldown;
@@ -3291,9 +3311,17 @@ export function createGame({
     if (robotMode && dashRemaining > 0) {
       const dash = dashFrame(dashRemaining, dt, dashSide);
       dashRemaining = dash.remaining;
-      player.position.x = clamp(player.position.x + dash.displacement, -flightLimit(), flightLimit());
+      player.position.x = clamp(
+        player.position.x + dash.displacement,
+        -flightLimit(),
+        flightLimit(),
+      );
     }
-    player.rotation.z = T.MathUtils.lerp(player.rotation.z, heldBankAngle({ robot: robotMode, held: rollHeld, steer: dx }), dt * 8);
+    player.rotation.z = T.MathUtils.lerp(
+      player.rotation.z,
+      heldBankAngle({ robot: robotMode, held: rollHeld, steer: dx }),
+      dt * 8,
+    );
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
     if (roll > 0) {
@@ -3309,7 +3337,8 @@ export function createGame({
       rollAngle = 0;
       // Actual crosswind banks the spacecraft; manual directional inputs
       // remain fully responsive and can counter-steer against the gust.
-      if (storm?.active && !rollHeld) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+      if (storm?.active && !rollHeld)
+        player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -4371,7 +4400,9 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      obstacles.some(
+        ({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt),
+      ) ||
       (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
@@ -4398,8 +4429,14 @@ export function createGame({
       b.life -= dt;
       // Destructible carriers and hostile satellites are resolved BEFORE the
       // solid occlusion gate; no phantom collision survives their destruction.
-      const struckObstacle = b.life > 0 ? obstacles.find(({ o, life }) =>
-        life > 0 && projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt)) : null;
+      const struckObstacle =
+        b.life > 0
+          ? obstacles.find(
+              ({ o, life }) =>
+                life > 0 &&
+                projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt),
+            )
+          : null;
       if (struckObstacle) {
         if (struckObstacle.hp !== null) {
           const hitHull = damageBreakableHull(struckObstacle.hp, b.damage ?? 2);
@@ -4408,16 +4445,23 @@ export function createGame({
             struckObstacle.life = 0;
             score += struckObstacle.o.userData.kind === 'carrier' ? 140 : 70;
             explode(struckObstacle.o.position.clone(), 11, 0xffa85f);
-            message(struckObstacle.o.userData.kind === 'carrier' ?
-              'NAVE HOSTIL DESTRUÍDA' : 'SATÉLITE HOSTIL DESTRUÍDO');
+            message(
+              struckObstacle.o.userData.kind === 'carrier'
+                ? 'NAVE HOSTIL DESTRUÍDA'
+                : 'SATÉLITE HOSTIL DESTRUÍDO',
+            );
           } else impact(b.o.position, hitHull.dealt, { heavy: b.source?.startsWith('mecha-') });
         }
         b.life = 0;
         if (dynamicFlight) cue('armorHit');
         continue;
       }
-      if (b.life > 0 && (sectorIndex === 2 && dynamicFlight &&
-        asteroidInterior.projectileBlocked(previousShot, b.o.position))) {
+      if (
+        b.life > 0 &&
+        sectorIndex === 2 &&
+        dynamicFlight &&
+        asteroidInterior.projectileBlocked(previousShot, b.o.position)
+      ) {
         b.life = 0;
         explode(b.o.position, 3, 0xffbf75);
         continue;
@@ -4686,7 +4730,13 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       if (
         obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, shipCollisionMargin(robotMode, rollHeld)),
+          crossesSolid(
+            from,
+            to,
+            solid.center,
+            solid.half,
+            shipCollisionMargin(robotMode, rollHeld),
+          ),
         )
       )
         hit(30);
@@ -5045,11 +5095,24 @@ export function createGame({
       })),
       rolling: roll > 0,
       bankAngle: player.rotation.z,
-      dash: { active: dashRemaining > 0, remaining: dashRemaining, cooldown: dashCooldown, direction: dashSide },
+      dash: {
+        active: dashRemaining > 0,
+        remaining: dashRemaining,
+        cooldown: dashCooldown,
+        direction: dashSide,
+      },
       heroScale: player.scale.x,
       shipScale: shipModule.scale.x,
       robotScale: robot.scale.x,
-      breakableTargets: obstacles.filter(o => o.hp !== null && o.life > 0).map(o => ({ kind: o.o.userData.kind, hp: o.hp, x: o.o.position.x, y: o.o.position.y, z: o.o.position.z })),
+      breakableTargets: obstacles
+        .filter((o) => o.hp !== null && o.life > 0)
+        .map((o) => ({
+          kind: o.o.userData.kind,
+          hp: o.hp,
+          x: o.o.position.x,
+          y: o.o.position.y,
+          z: o.o.position.z,
+        })),
       player: { x: player.position.x, y: player.position.y },
       playerDepth: player.position.z,
       camera: {
