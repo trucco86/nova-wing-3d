@@ -95,3 +95,19 @@ test('QA stage 4 windup exposes actual visual plume and a damage-linked intent',
   assert.equal(observed.bossIntent.origin.includes('drive-valve'), true);
   assert.equal(observed.developerSession, true);
 });
+
+test('bomb command updates visible HUD immediately before the next WebGL frame', (t) => {
+  const h = harness({ spawnEncounters: false });
+  t.after(() => h.close());
+  h.game.start();
+  const before = h.game.snapshot().bombs;
+  assert.ok(before > 0);
+  h.game.bomb();
+  assert.equal(h.game.snapshot().bombs, before - 1);
+  assert.equal(h.elements.get('bombs').textContent, '◆ '.repeat(before - 1) || '—');
+  assert.equal(
+    h.elements.get('bombTouch').attributes.get('data-count'),
+    before - 1,
+    'touch count and visible HUD must be in sync before another animation frame',
+  );
+});
