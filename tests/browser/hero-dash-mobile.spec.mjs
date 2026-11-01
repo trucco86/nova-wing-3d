@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 // Real mobile pointer events + deterministic game simulation; screenshots are
 // saved for visual QA rather than asserting pixel-dependent engine effects.
-test('mobile: hold fighter 90 degrees, transform, dash with real side movement and new jet trails', async ({ page }, info) => {
+test('mobile: hold fighter 90 degrees, transform, dash with real side movement and new jet trails', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile', 'Only touch viewport exposes the roll control');
   test.setTimeout(120000);
   const errors = [];
