@@ -1,0 +1,25 @@
+name: Verify final planetary release SHA after main reconciliation
+on:
+  push:
+    branches:
+      - release/planetary-consolidated-v1.27.61-20261101
+    paths:
+      - README.md
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  recheck:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatch required CI for exact merged candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          gh workflow run ci.yml --repo trucco86/nova-wing-3d --ref release/planetary-consolidated-v1.27.61-20261101
+          echo "Required checks dispatched for candidate $HEAD_SHA"
