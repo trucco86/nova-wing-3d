@@ -3,6 +3,7 @@ import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
+import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -398,16 +399,29 @@ export function createBossModel(sector, index = 0, tactical = false) {
   coreMarker.position.set(0, 0, 21);
   g.add(coreMarker);
   const parts = [];
-  for (const s of [-1, 1]) {
-    const p = add(sphere(4, hot), s * 17, 4, 19);
-    add(ring(5), s * 17, 4, 18);
-    const marker = targetMarker(6.5);
-    marker.position.set(s * 17, 4, 22);
+  for (const [i, entry] of bossWeakPointPlan(index).entries()) {
+    const side = i === 0 ? -1 : 1;
+    const mechanical = [3, 5].includes(index);
+    const p = add(mechanical ? box(10, 8, 7, hot) : sphere(4, hot),
+      entry.x, entry.y, entry.z);
+    p.name = 'boss-breakable-' + entry.type;
+    if (mechanical) {
+      // Industrial vents, gears and exhaust shafts instead of identical
+      // floating luminous eye rings. These are REAL damage targets.
+      const casing = add(box(15, 12, 3.5, dark), entry.x, entry.y, entry.z - 3);
+      casing.name = 'boss-valve-base-' + entry.type;
+      const brace = add(box(3, 14, 9, armor), entry.x + side * 9, entry.y, entry.z - 2);
+      brace.name = 'boss-valve-side-armor-' + entry.type;
+    } else add(ring(5), entry.x, entry.y, entry.z - 1);
+    const marker = targetMarker(mechanical ? 5.2 : 6.5);
+    marker.position.set(entry.x, entry.y, entry.z + (mechanical ? 4 : 3));
+    marker.rotation.y = mechanical ? entry.yaw * 0.48 : 0;
     g.add(marker);
     parts.push({
       mesh: p,
       marker,
-      battery: batteries[s < 0 ? 0 : 1],
+      type: entry.type,
+      battery: batteries[i],
       hp: 180 + index * 25,
       max: 180 + index * 25,
     });
