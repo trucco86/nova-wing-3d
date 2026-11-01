@@ -109,6 +109,7 @@ import {
   shipBankAngle,
   destructibleObstacleHp,
   damageDestructibleObstacle,
+  shipEvasionRadius,
 } from './flight-evasion-and-targets.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import {
@@ -4607,7 +4608,7 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (b.o.position.distanceTo(player.position) < 2.1) {
+      if (b.o.position.distanceTo(player.position) < shipEvasionRadius('projectile', rollHeld, robotMode)) {
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
@@ -4734,7 +4735,8 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       if (
         obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
+          crossesSolid(from, to, solid.center, solid.half,
+            shipEvasionRadius('environment', rollHeld, robotMode)),
         )
       )
         hit(30);
