@@ -1,0 +1,48 @@
+name: Prepare premium living world QA
+on:
+  push:
+    branches:
+      - feat/qa-premium-living-world-20261101
+    paths:
+      - .github/workflows/qa-premium-living-world-20261101.yml
+      - src/**
+      - tests/**
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: qa-premium-living-world-build
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/qa-premium-living-world-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare final candidate and verify all Node contracts
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit only audited source formatting and generated single-file game
+        run: |
+          git add -- index.html src/game.js src/visuals.js src/bosses.js src/devastador-orbit.js src/devastador-grand-hall.js src/living-depth.js src/boss-premium-systems.js tests/devastador-orbit.test.mjs tests/devastador-grand-hall.test.mjs tests/living-depth.test.mjs tests/boss-premium-systems.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'All files already synchronized'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified orbital gameplay and living world synchronization'
+            git push origin HEAD:feat/qa-premium-living-world-20261101
+          fi
