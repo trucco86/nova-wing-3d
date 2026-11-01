@@ -9,6 +9,7 @@ export function developerToolsAllowed(hostname, native = false) {
     host === '52fd04c6.nova-wing-preview.pages.dev' ||
     host === 'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev' ||
     host === 'feat-planetary-journeys-2026.nova-wing-preview.pages.dev' ||
+    host === 'feat-planetary-visual-polish.nova-wing-preview.pages.dev' ||
     /^pr-[0-9]+\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'localhost' ||
     host === '127.0.0.1'
