@@ -61,16 +61,21 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
     y: INSET + ((MAX_Y - clamp(py, MIN_Y, MAX_Y)) / (MAX_Y - MIN_Y)) * (100 - INSET * 2),
   });
   const r = intent.dodgeRadius;
-  const rect = intent.kind === 'tentacle-sweep' || intent.kind === 'claw-swipe';
+  const rect =
+    intent.kind === 'tentacle-sweep' ||
+    intent.kind === 'claw-swipe' ||
+    intent.kind === 'reactor-vent';
   const halfX =
-    intent.kind === 'tentacle-sweep'
-      ? r * 2.4
-      : intent.kind === 'claw-swipe'
-        ? r * 1.7
-        : intent.kind === 'tentacle-grab'
-          ? r / 0.7
-          : r;
-  const halfY = r;
+    intent.kind === 'reactor-vent'
+      ? r * 1.35
+      : intent.kind === 'tentacle-sweep'
+        ? r * 2.4
+        : intent.kind === 'claw-swipe'
+          ? r * 1.7
+          : intent.kind === 'tentacle-grab'
+            ? r / 0.7
+            : r;
+  const halfY = intent.kind === 'reactor-vent' ? r * 1.1 : r;
   const dangerActive = bossMeleeHit(intent, {
     x: intent.targetX,
     y: intent.targetY,

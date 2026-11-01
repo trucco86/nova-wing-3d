@@ -468,7 +468,7 @@ export function createFlyingRobot() {
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
     sidePlumes.push(plume);
@@ -521,7 +521,7 @@ export function createFlyingRobot() {
     new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
-  turbineFlame.rotation.x = Math.PI / 2;
+  turbineFlame.rotation.x = -Math.PI / 2;
   turbineFlame.position.set(0, 0, 1.6);
   turbineGimbal.add(turbineFlame);
   // Exposed mechanical fan blades make the turbine visibly rotate during flight.
@@ -597,7 +597,7 @@ export function createFlyingRobot() {
       new T.ConeGeometry(0.31, 1.35, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.46 }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.z = 1.1;
     nozzle.add(plume);
     robot.add(nozzle);
@@ -611,7 +611,7 @@ export function createFlyingRobot() {
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
   // Modest presence increase without changing player collider physics.
-  robot.scale.setScalar(1.04);
+  robot.scale.setScalar(1.0);
   return robot;
 }
 
@@ -746,12 +746,13 @@ export function animateMechPower(
     (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
 
   const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
-  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
-  rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
+  rig.turbineFlame.scale.y = (0.85 + rig.propulsionPower * 3.25) * pulse;
+  // Base tip stays attached to the gimballed reactor; exhaust stretches away.
+  rig.turbineFlame.position.z = 0.85 + (1.75 * rig.turbineFlame.scale.y) / 2;
   rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
   for (const plume of rig.sidePlumes) {
-    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
-    plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
+    plume.scale.y = (0.85 + rig.propulsionPower * 2.85) * pulse;
+    plume.position.z = 2.45 + (1.4 * plume.scale.y) / 2;
   }
 }
 const variants = new Map();
@@ -1498,6 +1499,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationVista = null;
   let destinationEscape = null;
   let destinationLandmarks = null;
+  let carrierGrandHallActive = false;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
@@ -1571,10 +1573,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // This continuous physically moving model is visible from the first
       // frame and grows by real perspective until it crosses the camera.
       const boarding = updateMothershipApproach(mothership, seconds);
-      updateMothershipInterior(
-        sectorScenery.getObjectByName('marvin-mothership-interior'),
-        seconds,
-      );
+      const carrierCorridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      updateMothershipInterior(carrierCorridors, seconds);
+      // The narrow corridor modules must never occupy the final 360-degree hall.
+      // Their own timeline can continue for the next stage transition,
+      // but scenery remains suppressed while the wide arena is active.
+      if (carrierGrandHallActive && carrierCorridors) carrierCorridors.visible = false;
       // The old freestanding station gantries obscure the hangar and appear
       // to float inside the ship. The new exterior has its own scale cues.
       if (destinationLandmarks) destinationLandmarks.visible = false;
@@ -1714,6 +1718,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moon.visible = atmosphere.visible = !active;
       scene.fog.density = active ? 0.0015 : 0.00045;
     },
+    setReactorGrandHall(active) {
+      carrierGrandHallActive = dynamicFlight && sceneryTheme === 'station' && !!active;
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      if (corridors && carrierGrandHallActive) corridors.visible = false;
+    },
+    reactorGrandHallState() {
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      return {
+        active: carrierGrandHallActive,
+        corridorsHidden: !!corridors && !corridors.visible,
+      };
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -1722,6 +1738,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), angle));
     },
     setSector(sector, sectorIndex = -1) {
+      carrierGrandHallActive = false;
       clearScenery();
       destinationVista = null;
       destinationEscape = null;

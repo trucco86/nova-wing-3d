@@ -4,7 +4,7 @@ const MELEE = Object.freeze({
   0: ['claw-swipe', 'tentacle-sweep'],
   1: ['tentacle-grab', 'claw-swipe'],
   2: ['drill-ram', 'claw-swipe'],
-  3: ['hammer-slam', 'tentacle-sweep'],
+  3: ['reactor-vent', 'hammer-slam'],
   4: ['drill-ram', 'claw-swipe'],
   5: ['hammer-slam', 'claw-swipe'],
   6: ['tentacle-grab', 'tentacle-sweep'],
@@ -15,6 +15,7 @@ const MELEE = Object.freeze({
 const LABEL = Object.freeze({
   'drill-ram': 'INVESTIDA DA BROCA · FUJA DO EIXO',
   'hammer-slam': 'MARTELO DO COLOSSO · DESVIE DO IMPACTO',
+  'reactor-vent': 'DESCARGA DO MOTOR · DASH PARA FORA DO EIXO',
   'claw-swipe': 'GARRAS · TROQUE DE FLANCO',
   'tentacle-grab': 'TENTÁCULOS · QUEBRE O RASTREAMENTO',
   'tentacle-sweep': 'VARREDURA · MUDE DE ALTURA',
@@ -61,16 +62,31 @@ export function chooseBossIntent({
     else if (sector === 5) kind = robot || healthy === 0 ? 'hammer-slam' : 'claw-swipe';
     else if (sector === 2)
       kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
+    else if (sector === 3)
+      // A destroyed port/starboard engine can no longer vent its side.
+      // When both are broken, the carrier can only fire a core barrage.
+      kind = healthy === 0 ? 'barrage' : cycle % 3 === 1 ? 'hammer-slam' : 'reactor-vent';
     else kind = options[(cycle + (boosting ? 1 : 0) + (robot ? 1 : 0)) % options.length];
     // Every third cycle retains a readable ranged counterplay window instead
     // of an endless stream of area attacks.
     if (cycle > 0 && cycle % 4 === 0) kind = 'barrage';
   }
+  const ventSide =
+    sector === 3 && kind === 'reactor-vent'
+      ? !generators[0]
+        ? 1
+        : !generators[1]
+          ? -1
+          : playerX >= 0
+            ? 1
+            : -1
+      : 0;
   const targetX = Math.max(-95, Math.min(95, playerX));
   const targetY = Math.max(-5, Math.min(52, playerY));
   return Object.freeze({
     kind,
     label: LABEL[kind],
+    ventSide,
     sector,
     cycle,
     phase: p,
@@ -91,8 +107,24 @@ export function chooseBossIntent({
               ? 'mecha'
               : 'approach',
     warning: 2.2,
-    dodgeRadius: kind === 'tentacle-sweep' ? 11 : kind === 'hammer-slam' ? 14 : 9,
-    origin: kind === 'bite' ? 'jaw' : kind.startsWith('tentacle') ? 'tentacles' : 'claws',
+    dodgeRadius:
+      kind === 'reactor-vent'
+        ? 13
+        : kind === 'tentacle-sweep'
+          ? 11
+          : kind === 'hammer-slam'
+            ? 14
+            : 9,
+    origin:
+      kind === 'reactor-vent'
+        ? ventSide < 0
+          ? 'port-drive-valve'
+          : 'starboard-drive-valve'
+        : kind === 'bite'
+          ? 'jaw'
+          : kind.startsWith('tentacle')
+            ? 'tentacles'
+            : 'claws',
   });
 }
 
@@ -104,6 +136,7 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   const dx = Math.abs(x - intent.targetX);
   const dy = Math.abs(y - intent.targetY);
   const r = intent.dodgeRadius;
+  if (intent.kind === 'reactor-vent') return dx < r * 1.35 && dy < r * 1.1;
   if (intent.kind === 'tentacle-sweep') return dy < r && dx < r * 2.4;
   if (intent.kind === 'claw-swipe') {
     const flank =
@@ -122,7 +155,11 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const windup = state === 'windup' ? Math.min(1, phaseAge / intent.warning) : 0;
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
-    lunge: strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 72 : 48),
+    exhaust: intent.kind === 'reactor-vent' ? windup * 0.4 + strike : 0,
+    lunge:
+      intent.kind === 'reactor-vent'
+        ? 0
+        : strike * (intent.kind === 'bite' || intent.kind === 'drill-ram' ? 72 : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'claw-swipe' || intent.kind === 'hammer-slam'

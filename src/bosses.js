@@ -522,19 +522,57 @@ export function createBossModel(sector, index = 0, tactical = false) {
   }
   g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
+  // Devastador's twin exhaust valves are real named launch points. The
+  // translucent shock jets exist only during a telegraphed reactor attack.
+  // They are visual-only: collision uses the exact same intent as the radar.
+  const driveShockPlumes = [];
+  if (index === 3 && tactical) {
+    for (let sideIndex = 0; sideIndex < 2; sideIndex++) {
+      const valve = parts[sideIndex];
+      const plume = new T.Mesh(
+        new T.ConeGeometry(3.6, 32, 12),
+        new T.MeshBasicMaterial({
+          color: sideIndex ? '#ffb17a' : '#73eaff',
+          transparent: true,
+          opacity: 0.65,
+          blending: T.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      plume.name = sideIndex ? 'devastador-drive-shock-starboard' : 'devastador-drive-shock-port';
+      plume.rotation.x = -Math.PI / 2;
+      plume.position.copy(valve.mesh.position);
+      plume.position.z += 16;
+      plume.visible = false;
+      plume.userData.visualOnly = true;
+      g.add(plume);
+      driveShockPlumes.push(plume);
+    }
+  }
   g.userData = {
     parts,
     batteries,
     coreMuzzle,
     coreMarker,
     vents,
+    driveShockPlumes,
     core,
     rotors,
     organic,
     jaw,
     coreZ: 18,
     owned: true,
-    materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial],
+    materials: [
+      armor,
+      dark,
+      edge,
+      hot,
+      flesh,
+      bone,
+      vein,
+      markerMaterial,
+      ...driveShockPlumes.map((plume) => plume.material),
+    ],
   };
   // The penultimate biomechanical monster is piloted by Marvin, while the
   // FINAL boss is his Obsidian fighter — not the same monstrous shape reused.

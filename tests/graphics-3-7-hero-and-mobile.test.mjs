@@ -30,9 +30,9 @@ test('NOVA-7 adds premium flush surface layers within the original combat silhou
   assert.equal(ship.scale.x, 1, 'hero hitbox / gameplay root not scaled');
 });
 
-test('robot has a 4% visual presence increase and mechanical finishes following articulated wrists', () => {
+test('robot has neutral smaller visual scale and mechanical finishes following articulated wrists', () => {
   const robot = createFlyingRobot();
-  assert.equal(robot.scale.x, 1.04);
+  assert.equal(robot.scale.x, 1.0);
   const detail = robot.getObjectByName('mech-premium-mechanics');
   for (const name of [
     'mech-chest-leg-armor-inserts',

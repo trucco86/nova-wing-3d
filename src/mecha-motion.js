@@ -28,14 +28,19 @@ export function updateMechaPose(
     nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.19 + (boosting ? -0.14 : 0), dt, 6);
     plume.scale.y = ease(
       plume.scale.y,
-      0.53 + thrust * 1.1 + Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
+      0.42 +
+        thrust * (boosting ? 4.35 : 1.45) +
+        Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
       dt,
-      8,
+      12,
     );
-    plume.scale.x = ease(plume.scale.x, 0.72 + thrust * 0.5, dt, 8);
+    // Rotate cone toward -Z at authoring time and translate its center
+    // so the narrow nozzle tip stays at the actual engine outlet.
+    plume.position.z = 0.6 + plume.scale.y * 0.675;
+    plume.scale.x = ease(plume.scale.x, 0.72 + thrust * (boosting ? 0.78 : 0.26), dt, 10);
     plume.scale.z = plume.scale.x;
-    plume.material.opacity = 0.38 + thrust * 0.55;
-    exhaustCore.scale.y = plume.scale.y * 0.86;
+    plume.material.opacity = 0.44 + thrust * 0.48;
+    exhaustCore.scale.setScalar(boosting ? 1.28 : 1);
   });
   const { left, right } = rig.arms;
   const firingRecoil = firing ? 0.05 + Math.sin(time * 32) * 0.045 : 0;

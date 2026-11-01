@@ -1,6 +1,10 @@
 # Backlog mestre — Nova Wing Five Cats
 
-## Estado de integração — 30/10/2026 (referência mais recente)
+> **Estado vigente (01/11/2026):** consulte [ROADMAP-STATUS-20261101.md](ROADMAP-STATUS-20261101.md) para inventário auditado, prioridades P0/P1/P2, critérios de aceite e itens redundantes. O conteúdo abaixo é **histórico**, mantido para rastreabilidade; referências a produção v1.24.x, apenas seis issues, e flags "não iniciado" de outubro não representam o estado atual. Produção confirmada em v1.27.61; QA #239 é candidata v1.27.62, não produção.
+>
+> **Regra:** PR draft/preview/CI não são sinônimos de feature publicada. Não promover sem revisão de diffs encadeados, 4 shards e aceite visual móvel.
+
+## Estado de integração — 30/10/2026 (histórico)
 
 **Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.
 

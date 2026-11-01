@@ -100,9 +100,31 @@ import {
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import {
+  mechaMultiLockCapacity,
+  availableMechaTargets,
+  collectMultiLocks,
+  multiLockCost,
+} from './mecha-multi-lock.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import {
+  createDevastadorSabotageCore,
+  updateDevastadorSabotageCore,
+  sabotagedSystem,
+  sabotageTargetOpen,
+} from './devastador-sabotage.js';
 import { animatePremiumMecha } from './mecha-premium.js';
+import { createMechaDashTrail } from './mecha-dash-trail.js';
+import {
+  MECHA_DASH,
+  heldBankAngle,
+  dashDirection,
+  dashFrame,
+  heroVisualScale,
+  shipCollisionMargin,
+} from './hero-dodge-controls.js';
+import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
   evolvedShotColor,
   dockedPodPower,
@@ -153,6 +175,7 @@ import { createBossCombat } from './combat.js';
 import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
+import { devastadorEscapeAt, DEVASTADOR_ESCAPE_BOOST_START } from './devastador-escape.js';
 import {
   fighter,
   createFlyingRobot,
@@ -246,6 +269,7 @@ export function createGame({
     post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
+  const dashTrail = createMechaDashTrail(scene);
   const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
   const marvinRival = dynamicFlight ? createMarvinRival(scene) : null;
   let journey = initialJourney(0);
@@ -277,7 +301,7 @@ export function createGame({
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
   // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
-  scaleFighterVisual(player, 1.11);
+  scaleFighterVisual(player, 1.02);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
@@ -313,11 +337,9 @@ export function createGame({
         opponent() {
           if (boss) {
             boss.updateMatrixWorld(true);
-            const weak = boss.userData.parts.find(
-              (p, i) => p.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
-            );
+            const weak = boss.userData.parts.find((p, i) => p.hp > 0 && bossTargetOpen(i));
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
-            if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
+            if (bossCoreOpen() && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
             // The full Five Cats formation must never stop firing just because
             // the flank generators are armored. Aim at the visible hull; its
@@ -361,10 +383,21 @@ export function createGame({
   let lockedId = null;
   let lockProgress = 0;
   let precisionCd = 0;
+  let lockHeld = false;
+  let lockWasEnabled = false;
+  let lockHoldSeconds = 0;
+  let lockQueue = [];
+  const clearMultiLockMarkers = () => {
+    for (let i = 0; i < 12; i++) $('mechaMultiTarget' + i).hidden = true;
+  };
   function resetMechaLock() {
     lockEnabled = false;
     lockedId = null;
     lockProgress = 0;
+    lockHeld = false;
+    lockHoldSeconds = 0;
+    lockQueue = [];
+    clearMultiLockMarkers();
     $('lockTouch').ariaPressed = 'false';
     $('mechaLockStatus').hidden = true;
     $('mechaLockReticle').hidden = true;
@@ -374,6 +407,62 @@ export function createGame({
     lockEnabled = !lockEnabled;
     if (!lockEnabled) resetMechaLock();
     else $('lockTouch').ariaPressed = 'true';
+  }
+  function startMechaMultiLock() {
+    if (!robotMode || state !== 'playing') return;
+    lockWasEnabled = lockEnabled;
+    lockHeld = true;
+    lockHoldSeconds = 0;
+    lockQueue = [];
+    lockEnabled = true;
+    lockedId = null;
+    lockProgress = 0;
+    $('lockTouch').ariaPressed = 'true';
+  }
+  function finishMechaMultiLock(cancel = false) {
+    if (!lockHeld) return;
+    const sustained = lockHoldSeconds >= 0.23;
+    const targets = [...lockQueue];
+    const wasEnabled = lockWasEnabled;
+    lockHeld = false;
+    if (cancel || state !== 'playing' || !robotMode) {
+      resetMechaLock();
+      return;
+    }
+    if (!sustained) {
+      // A quick tap retains the old toggle-to-auto-aim behavior.
+      lockEnabled = wasEnabled;
+      toggleMechaLock();
+      return;
+    }
+    const cost = multiLockCost(targets.length);
+    if (targets.length && energy >= cost && precisionCd <= 0) {
+      robot.updateMatrixWorld(true);
+      const origin = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
+      for (const target of targets) {
+        const aim = target.position.clone().sub(origin);
+        if (aim.lengthSq() < 1) continue;
+        launchShot(
+          0,
+          mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) * 0.8,
+          false,
+          origin,
+        );
+        const shot = shots.at(-1);
+        shot.v = aim.normalize().multiplyScalar(215 + stage() * 3);
+        shot.source = 'mecha-multi-lock';
+        shot.homing = false;
+        shot.o.scale.setScalar(1.8 + stage() * 0.05);
+      }
+      energy -= cost;
+      precisionCd = Math.max(1.15, 1.8 - stage() * 0.03);
+      heroEffects.pulse({ robot: true, precisionShot: true, color: shotColor() });
+      cue('mechaPrecision');
+      message('MULTI-LOCK · ' + targets.length + ' ALVOS · RAJADA LIBERADA');
+    } else if (targets.length) {
+      message('MULTI-LOCK · RECARGA OU ENERGIA INSUFICIENTE');
+    }
+    resetMechaLock();
   }
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
@@ -390,6 +479,13 @@ export function createGame({
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
+    $('rollTouch').textContent = robotMode ? 'DASH' : 'GIRO';
+    $('rollTouch').setAttribute(
+      'aria-label',
+      robotMode ? 'Dash lateral do robô' : 'Giro e inclinação vertical da nave',
+    );
+    dashRemaining = 0;
+    rollHeld = false;
     cue(robotMode ? 'transformRobot' : 'transformShip');
     message(
       robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA',
@@ -441,6 +537,9 @@ export function createGame({
     rollCd = 0,
     rollHeld = false,
     rollAngle = 0,
+    dashRemaining = 0,
+    dashCooldown = 0,
+    dashSide = 1,
     boosting = false,
     boostNeedsRelease = false,
     orbitalAlertElapsed = 0,
@@ -486,6 +585,10 @@ export function createGame({
     collapseTime = 0,
     collapseBurst = 0,
     collapseFinal = false,
+    devastadorEscapeBoostSeconds = 0,
+    devastadorEscapeBeat = -1,
+    devastadorEscapeAssisted = false,
+    devastadorEscapeWarp = false,
     pausedFrom = 'playing',
     ringWave = 0,
     stageIntroTime = 0,
@@ -524,7 +627,18 @@ export function createGame({
     reactorGridWave = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
-  const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+  const relativeOrbit = () =>
+    boss?.userData.sabotage
+      ? orbitAngle
+      : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+  const bossTargetOpen = (index) =>
+    boss?.userData.sabotage
+      ? sabotageTargetOpen(boss.userData.parts, index, relativeOrbit())
+      : bossWeakPointOpen(sectorIndex, relativeOrbit(), index);
+  const bossCoreOpen = () =>
+    boss?.userData.sabotage
+      ? sabotagedSystem(boss.userData.parts).system === 'core'
+      : (bossCombat?.coreOpen ?? false);
   const stage = () => (dynamicFlight ? stageAt(strategy.xp) : 0);
   const rank = (branch) =>
     dynamicFlight ? specialtyRank(strategy.xp, strategy.specialty, branch) : 0;
@@ -545,7 +659,7 @@ export function createGame({
     player.add(evolution);
     evolution.visible = !robotMode;
     setFighterEvolution(shipModule, evolutionStage);
-    player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
+    player.scale.setScalar(heroVisualScale(evolutionStage));
   }
   function gainXP(amount) {
     if (!dynamicFlight) return;
@@ -698,11 +812,11 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
-    shipModule.scale.setScalar(1.11);
+    shipModule.scale.setScalar(1.02);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
-    robot.scale.x =
-      pilotLoadout.ship === 'aegis' ? 1.13 : pilotLoadout.ship === 'specter' ? 0.88 : 0.98;
+    robot.userData.mecha.baseScale =
+      pilotLoadout.ship === 'aegis' ? 0.94 : pilotLoadout.ship === 'specter' ? 0.85 : 0.91;
     applySkin();
   }
   const statLabels = {
@@ -1072,6 +1186,12 @@ export function createGame({
     heroEffects.reset();
     $('launchBoostNotice').hidden = true;
     document.body.classList.remove('orbital-super-boost');
+    document.body.classList.remove('devastador-escape');
+    document.body.classList.remove('devastador-warp');
+    devastadorEscapeBoostSeconds = 0;
+    devastadorEscapeBeat = -1;
+    devastadorEscapeAssisted = false;
+    devastadorEscapeWarp = false;
     $('boostTouch').classList.remove('launch-required');
     $('boostTouch').textContent = 'BOOST';
     $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
@@ -1092,6 +1212,9 @@ export function createGame({
     $('lockTouch').hidden = true;
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
+    $('rollTouch').textContent = 'GIRO';
+    dashCooldown = dashRemaining = 0;
+    dashTrail.reset();
     robot.visible = false;
     for (const part of shipParts) part.visible = true;
     routeRenderer?.update(route);
@@ -1157,6 +1280,7 @@ export function createGame({
     touchFire = touchBoost = false;
     roll = 0;
     rollHeld = false;
+    dashRemaining = dashCooldown = 0;
     rollAngle = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
@@ -1372,7 +1496,15 @@ export function createGame({
   }
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
-    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
+    if (
+      state !== 'playing' ||
+      !Number.isFinite(d) ||
+      d <= 0 ||
+      invuln > 0 ||
+      roll > 0 ||
+      (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection)
+    )
+      return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -1425,7 +1557,30 @@ export function createGame({
     e.dead = true;
   }
   function doRoll() {
-    if (state !== 'playing' || rollCd > 0) return;
+    if (state !== 'playing') return;
+    if (robotMode) {
+      if (dashCooldown > 0 || robotTransition > 0) return;
+      const steer =
+        (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
+        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
+        stick.x;
+      const direction = dashDirection(steer);
+      if (!direction) {
+        message('DASH · APONTE ESQUERDA OU DIREITA + DASH');
+        return;
+      }
+      if (energy < MECHA_DASH.energyCost) {
+        message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
+        return;
+      }
+      dashSide = direction;
+      dashRemaining = MECHA_DASH.duration;
+      dashCooldown = MECHA_DASH.cooldown;
+      energy = Math.max(0, energy - MECHA_DASH.energyCost);
+      cue('boostIgnition');
+      return;
+    }
+    if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
     rollCd = 1.6;
@@ -1434,6 +1589,11 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    // HUD acknowledgement must not wait for the next expensive WebGL frame.
+    // Under mobile GPU pressure, gameplay input may be received seconds before
+    // the render loop next paints, so reflect the actual consumable immediately.
+    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
+    $('bombTouch').setAttribute?.('data-count', bombs);
     if (stagePerformance) {
       stagePerformance.bombsUsed = true;
       if (boss) stagePerformance.primaryOnly = false;
@@ -1608,11 +1768,11 @@ export function createGame({
       const candidates = boss
         ? [
             ...boss.userData.parts.flatMap((part, i) =>
-              part.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i)
+              part.hp > 0 && bossTargetOpen(i)
                 ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
                 : [],
             ),
-            ...(bossCombat?.coreOpen &&
+            ...(bossCoreOpen() &&
             boss.userData.parts.every((part) => part.hp <= 0) &&
             weakPointOpen(relativeOrbit())
               ? [
@@ -1631,16 +1791,42 @@ export function createGame({
               position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
               weak: enemy.kind === 'subboss',
             }));
-      selected = selectMechaTarget(player.position, candidates, {
-        visible: (from, to) =>
-          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
-      });
+      const visible = (from, to) =>
+        !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0));
+      selected = selectMechaTarget(player.position, candidates, { visible });
+      if (lockHeld) {
+        lockHoldSeconds += dt;
+        const available = availableMechaTargets(player.position, candidates, { visible });
+        lockQueue = collectMultiLocks(
+          lockQueue,
+          available,
+          mechaMultiLockCapacity(stage()),
+          1 + Math.floor(lockHoldSeconds / 0.16),
+        );
+        selected = lockQueue[0] ?? selected;
+      }
     }
     if (selected?.id !== lockedId) {
       lockedId = selected?.id ?? null;
       lockProgress = 0;
     } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
     const position = selected?.position ?? null;
+    for (let i = 0; i < 12; i++) {
+      const marker = $('mechaMultiTarget' + i);
+      marker.hidden = true;
+      if (!lockHeld || !lockQueue[i]) continue;
+      const projected = lockQueue[i].position.clone().project(camera);
+      if (
+        projected.z < -1 ||
+        projected.z > 1 ||
+        Math.abs(projected.x) > 1 ||
+        Math.abs(projected.y) > 1
+      )
+        continue;
+      marker.hidden = false;
+      marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+      marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
+    }
     updateMechaPose(robot, {
       dt,
       time: visualTime,
@@ -1656,13 +1842,19 @@ export function createGame({
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
     if (lockEnabled)
-      status.textContent = !selected
-        ? 'MIRA · SEM ALVO'
-        : lockProgress < 0.8
-          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
-          : precisionCd > 0
-            ? 'MIRA · RECARGA'
-            : 'MIRA · FIXADA';
+      status.textContent = lockHeld
+        ? 'MULTI-LOCK · ' +
+          lockQueue.length +
+          '/' +
+          mechaMultiLockCapacity(stage()) +
+          ' · SOLTE PARA ATIRAR'
+        : !selected
+          ? 'MIRA · SEM ALVO'
+          : lockProgress < 0.8
+            ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+            : precisionCd > 0
+              ? 'MIRA · RECARGA'
+              : 'MIRA · FIXADA';
     const marker = $('mechaLockReticle');
     marker.hidden = true;
     if (position) {
@@ -1680,7 +1872,7 @@ export function createGame({
     }
     const lasers = lockLaserCount(stage());
     const laserEnergy = 10 + (lasers - 1) * 2;
-    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
+    if (!lockHeld && selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
       const totalDamage =
@@ -1906,7 +2098,10 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
-    boss = createBossModel(current(), sectorIndex, dynamicFlight);
+    boss =
+      dynamicFlight && sectorIndex === 3
+        ? createDevastadorSabotageCore()
+        : createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
@@ -1916,18 +2111,29 @@ export function createGame({
     boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight) {
       world.showCarrierForBoss?.();
+      // The narrow corridor section ends at the monumental reactor hall:
+      // keeping both active would put walls through the 360-degree orbit.
+      world.setReactorGrandHall?.(boss.userData.sabotage === true);
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
-      message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
+      message(
+        sectorIndex === 3
+          ? 'DEVASTADOR · SABOTAGEM · DESTRUA CIRCUITOS, REFRIGERAÇÃO E MOTORES'
+          : 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS',
+      );
     }
     music?.start(sectorIndex, true);
-    $('bossName').textContent = current().boss;
+    $('bossName').textContent = boss.userData.sabotage
+      ? 'DEVASTADOR · NÚCLEO DE PROPULSÃO'
+      : current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
     message(
-      dynamicFlight
-        ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
-        : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
+      dynamicFlight && boss.userData.sabotage
+        ? 'SABOTAGEM · J/L PARA ORBITAR 360° · TRAVE OS SISTEMAS COM O ROBÔ'
+        : dynamicFlight
+          ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+          : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
   function damageBoss(
@@ -1953,6 +2159,7 @@ export function createGame({
       source === 'squad-plasma' || source === 'squad-overdrive'
         ? bossCombat.spendSquadSpecial(value)
         : bossCombat.spend(value, chargedShot);
+    if (hitZone === 'hull' && boss.userData.sabotage) return 0;
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
@@ -1964,9 +2171,7 @@ export function createGame({
       bossHp = bossCombat.hp;
       return dealt;
     }
-    const openPart = (p) =>
-      !dynamicFlight ||
-      bossWeakPointOpen(sectorIndex, relativeOrbit(), boss.userData.parts.indexOf(p));
+    const openPart = (p) => !dynamicFlight || bossTargetOpen(boss.userData.parts.indexOf(p));
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
@@ -1991,6 +2196,19 @@ export function createGame({
 
       if (part.hp === 0) {
         part.mesh.visible = false;
+        if (boss.userData.sabotage) {
+          part.marker.visible = false;
+          const phase = sabotagedSystem(boss.userData.parts);
+          explode(part.mesh.getWorldPosition(new T.Vector3()), 35, 0xffa65a);
+          credits += 45;
+          message(
+            'SISTEMA DESTRUÍDO · ' +
+              (phase.system === 'core'
+                ? 'BLINDAGEM ABERTA · DESTRUA O NÚCLEO CENTRAL'
+                : phase.label + ' · ' + phase.remaining + ' RESTANTES'),
+          );
+          return dealt;
+        }
         // Destroyed generators power a specific turret. The barrel physically
         // disappears and attack planner drops that battery's shots.
         if (part.battery) part.battery.visible = false;
@@ -2010,7 +2228,11 @@ export function createGame({
         : Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7)
     )
       return 0;
-    if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(relativeOrbit()))) return 0;
+    if (
+      !bossCoreOpen() ||
+      (dynamicFlight && !boss?.userData.sabotage && !weakPointOpen(relativeOrbit()))
+    )
+      return 0;
     const spent = spendDamage(amount, dynamicFlight && charged);
     const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
@@ -2020,6 +2242,17 @@ export function createGame({
       if (stagePerformance) {
         stagePerformance.bossDefeated = true;
         stagePerformance.mechaFinisher = robotMode;
+      }
+      if (boss.userData.sabotage) {
+        message(devastadorEscapeAt(0).radio, 'bia');
+        devastadorEscapeBoostSeconds = 0;
+        devastadorEscapeBeat = 0;
+        devastadorEscapeAssisted = false;
+        devastadorEscapeWarp = false;
+        // The last phase is a cinematic emergency thrust, not a resource
+        // softlock. Real player BOOST works; assisted thrust guarantees exit.
+        energy = Math.max(energy, 50);
+        document.body.classList.add('devastador-escape');
       }
       if (dynamicFlight && sectorIndex === 2) {
         journey = advanceJourney(journey, 'bossDefeated');
@@ -2065,6 +2298,51 @@ export function createGame({
       const exit = world.setDestinationExit(collapseTime);
       if (exit?.active) $('routeLabel').textContent = exit.label;
     }
+    if (boss?.userData.sabotage) {
+      if (collapseTime >= DEVASTADOR_ESCAPE_BOOST_START && boosting)
+        devastadorEscapeBoostSeconds += dt;
+      const escape = devastadorEscapeAt(collapseTime, {
+        boostedSeconds: devastadorEscapeBoostSeconds,
+      });
+      $('routeLabel').textContent = escape.label;
+      if (escape.beat !== devastadorEscapeBeat) {
+        devastadorEscapeBeat = escape.beat;
+        message(escape.radio, escape.speaker);
+        if (escape.phase === 'boost') cue('boostIgnition');
+      }
+      if (escape.boostWindow && !escape.warp && !escape.boostActivated) {
+        $('boostTouch').classList.add('launch-required');
+        $('boostTouch').textContent = 'BOOST FUGA';
+        $('boostTouch').setAttribute('aria-label', 'Segure BOOST para sair da Devastador');
+        $('attackWarning').textContent = 'FUGA · ACIONE BOOST AGORA';
+      } else {
+        $('boostTouch').classList.remove('launch-required');
+        if (!escape.warp) $('attackWarning').textContent = 'DEVASTADOR · FALHA EM CASCATA';
+      }
+      if (escape.warp && !devastadorEscapeWarp) {
+        devastadorEscapeWarp = true;
+        devastadorEscapeAssisted = escape.assistedBoost;
+        document.body.classList.add('devastador-warp');
+        heroEffects.pulse({ robot: robotMode, charged: true, color: '#c9faff' });
+        cue('boostIgnition');
+        if (escape.assistedBoost)
+          message('FIVE CATS · PROPULSÃO DE EMERGÊNCIA ATIVADA! SAÍDA EM HIPERIMPULSO!', 'bob');
+      }
+      if (escape.warp) {
+        // The visual emergency exhaust is independent of control input and
+        // never modifies the player’s shield, flight trajectory or checkpoint.
+        boosting = true;
+        for (const flame of player.userData.flames) {
+          flame.scale.y = Math.max(flame.scale.y, escape.flameScale * 2.5);
+          flame.material.color.set('#daffff');
+        }
+        $('attackWarning').textContent = 'HIPERIMPULSO · DEVASTADOR EM COLAPSO';
+      }
+      // Earlier reactor systems spark in sequence. Existing collapse debris
+      // remains bounded and retains the generic eight-second finale contract.
+      if (!escape.warp && collapseTime > 1.3 && collapseBurst <= 0)
+        $('attackWarning').setAttribute?.('data-severity', 'danger');
+    }
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
@@ -2092,6 +2370,15 @@ export function createGame({
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
     camera.position.y += Math.cos(collapseTime * 27) * vibration * 0.4;
     if (collapseTime >= COLLAPSE_SECONDS) {
+      if (boss.userData.sabotage) {
+        document.body.classList.remove('devastador-escape');
+        document.body.classList.remove('devastador-warp');
+        $('boostTouch').classList.remove('launch-required');
+        $('boostTouch').textContent = 'BOOST';
+        $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
+        boosting = false;
+        message('BIA · DEVASTADOR DESTRUÍDA. FIVE CATS, PREPARAR PRÓXIMA MISSÃO!', 'bia');
+      }
       dispose(boss);
       disposeBoss(boss);
       boss = null;
@@ -2904,6 +3191,10 @@ export function createGame({
   cleanups.push(() => document.removeEventListener?.('visibilitychange', visibilityHandler));
   const inFlight = () =>
     ['playing', 'paused', 'respawning', 'collapsing', 'arcade'].includes(state);
+  // Q/E/Z mirror touch behavior: a brief tap spins 360°, a hold banks 90°.
+  // Robot mode continues to use the same keys for a single lateral dash.
+  const rollKeys = new Set(['KeyQ', 'KeyE', 'KeyZ']);
+  const rollKeyDownAt = new Map();
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (cinematic) {
@@ -2943,18 +3234,33 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
-    if (e.code === 'KeyN') toggleMechaLock();
+    if (e.code === 'KeyN') startMechaMultiLock();
     if (e.code === 'KeyY') castSquadSpecial('plasma');
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
-    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
+    if (rollKeys.has(e.code) && state === 'playing') {
+      rollKeyDownAt.set(e.code, now());
+      if (robotMode) doRoll();
+    }
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
   addEventListener('keyup', (e) => {
     if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
+    const rollStarted = rollKeyDownAt.get(e.code);
+    rollKeyDownAt.delete(e.code);
     keys.delete(e.code);
+    if (e.code === 'KeyN') finishMechaMultiLock();
+    if (
+      rollStarted !== undefined &&
+      !robotMode &&
+      state === 'playing' &&
+      now() - rollStarted < 240 &&
+      ![...rollKeys].some((code) => keys.has(code)) &&
+      rollPointerId === null
+    )
+      doRoll();
     if (!boostRequested()) boostNeedsRelease = false;
   });
   cleanups.push(protectFlightSurface(document, $('game'), $('touch'), inFlight));
@@ -2984,6 +3290,11 @@ export function createGame({
     stick.x = stick.y = 0;
     stickId = null;
     heldPointers.clear();
+    rollKeyDownAt.clear();
+    rollPointerId = null;
+    rollHeld = false;
+    dashRemaining = 0;
+    dashTrail.reset();
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
     mechaEngine?.silence();
@@ -3057,7 +3368,8 @@ export function createGame({
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
     rollPressStarted = performance.now();
-    rollHeld = true;
+    rollHeld = !robotMode;
+    if (robotMode) doRoll();
     rollButton.setPointerCapture?.(e.pointerId);
   };
   const finishRollPress = (e) => {
@@ -3065,7 +3377,7 @@ export function createGame({
     const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
     rollPointerId = null;
     rollHeld = false;
-    if (tap) doRoll();
+    if (tap && !robotMode) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
@@ -3075,8 +3387,12 @@ export function createGame({
   };
   $('lockTouch').onpointerdown = (e) => {
     e.preventDefault?.();
-    toggleMechaLock();
+    $('lockTouch').setPointerCapture?.(e.pointerId);
+    startMechaMultiLock();
   };
+  $('lockTouch').addEventListener('pointerup', () => finishMechaMultiLock());
+  for (const event of ['pointercancel', 'lostpointercapture'])
+    $('lockTouch').addEventListener(event, () => finishMechaMultiLock(true));
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -3094,6 +3410,8 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
+    rollHeld =
+      !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -3111,6 +3429,11 @@ export function createGame({
       level: stage(),
       time: elapsed,
       boosting,
+      dash: {
+        active: robotMode && dashRemaining > 0,
+        direction: dashSide,
+        progress: 1 - dashRemaining / MECHA_DASH.duration,
+      },
     });
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
@@ -3248,6 +3571,21 @@ export function createGame({
         dynamicFlight ? 46 : 23,
       );
     }
+    dashCooldown = Math.max(0, dashCooldown - dt);
+    dashTrail.update(dt);
+    const dashStart = robotMode && dashRemaining > 0 ? player.position.clone() : null;
+    if (dashStart) {
+      const dash = dashFrame(dashRemaining, dt, dashSide);
+      dashRemaining = dash.remaining;
+      player.position.x = clamp(
+        player.position.x + dash.displacement,
+        -flightLimit(),
+        flightLimit(),
+      );
+    }
+    // Resolve cavern walls after BOTH stick movement and the mecha dash.
+    // Otherwise the dash could put the player outside the rock collision hull
+    // until the following frame, causing visible clipping at tight corners.
     asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
     if (dynamicFlight && sectorIndex === 2) {
       const wall = asteroidInterior.constrain(player.position);
@@ -3261,7 +3599,12 @@ export function createGame({
         }
       }
     }
-    player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
+    if (dashStart) dashTrail.emit(dashStart, player.position);
+    player.rotation.z = T.MathUtils.lerp(
+      player.rotation.z,
+      heldBankAngle({ robot: robotMode, held: rollHeld, steer: dx }),
+      dt * 8,
+    );
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
     if (roll > 0) {
@@ -3271,13 +3614,14 @@ export function createGame({
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
-      const bankTarget = rollHeld ? -Math.PI / 2 : -dx * 0.48;
+      const bankTarget = heldBankAngle({ robot: robotMode, held: rollHeld, steer: dx });
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
       // Actual crosswind banks the spacecraft; manual directional inputs
       // remain fully responsive and can counter-steer against the gust.
-      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+      if (storm?.active && !rollHeld)
+        player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -3568,6 +3912,7 @@ export function createGame({
     }
     invuln -= dt;
     rollCd -= dt;
+    // Dash timer is advanced inside piloting, never by a separate wall clock.
     // Touch briefing owns the radio lane; retain the pending real message until
     // it can be shown. Desktop and native keep their existing timer contract.
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
@@ -3704,7 +4049,7 @@ export function createGame({
       const o = createObstacle('tunnel');
       o.position.z = -230;
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const bossBlocked =
@@ -3745,7 +4090,11 @@ export function createGame({
         : elapsed < current().duration * 0.7
           ? 1
           : 2;
-    $('stage').textContent = boss ? current().boss : current().name;
+    $('stage').textContent = boss?.userData.sabotage
+      ? 'DEVASTADOR · SABOTAGEM'
+      : boss
+        ? current().boss
+        : current().name;
     if (phase !== lastStage) {
       lastStage = phase;
     }
@@ -4000,7 +4349,29 @@ export function createGame({
       }
     }
     if (boss) {
-      if (dynamicFlight) {
+      if (dynamicFlight && boss.userData.sabotage) {
+        // System-level 360° sabotage; do not run the generic boss AI.
+        const turn =
+          ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
+        orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
+        boss.rotation.y = -orbitAngle;
+        world.setOrbit(-orbitAngle, boss.position);
+        boss.position.z = T.MathUtils.lerp(boss.position.z, -164, Math.min(1, dt * 0.7));
+        boss.position.y = T.MathUtils.lerp(boss.position.y, 17, Math.min(1, dt * 0.7));
+        if (turn)
+          for (const shot of [...shots, ...hostile]) {
+            shot.o.position
+              .sub(boss.position)
+              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
+              .add(boss.position);
+            if (shot.v) shot.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
+          }
+        renderBossRadar(document, null);
+        $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
+        $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
+        $('radarWeak').hidden = true;
+        $('tacticState').textContent = 'SABOTAGEM · ORBITE 360°';
+      } else if (dynamicFlight) {
         const turn =
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
@@ -4017,7 +4388,7 @@ export function createGame({
             b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
           }
         boss.userData.parts.forEach((p, i) => {
-          const open = bossWeakPointOpen(sectorIndex, relativeOrbit(), i) && p.hp > 0;
+          const open = bossTargetOpen(i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
           p.marker.visible = open;
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
@@ -4029,7 +4400,7 @@ export function createGame({
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       let radarPlan = null;
-      if (dynamicFlight) {
+      if (dynamicFlight && !boss.userData.sabotage) {
         const t = tactics();
         if (t.state === 'windup' && bossIntentCycle !== t.cycle) {
           bossIntent = chooseBossIntent({
@@ -4058,6 +4429,23 @@ export function createGame({
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
         boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
         boss.rotation.z = t.bank;
+        // Each real drive valve powers its own reactor-exhaust shock. Breaking
+        // that valve removes the plume and its physical attack on that flank.
+        for (const [sideIndex, plume] of (boss.userData.driveShockPlumes ?? []).entries()) {
+          const side = sideIndex ? 1 : -1;
+          const active =
+            bossIntent?.kind === 'reactor-vent' &&
+            bossIntent.ventSide === side &&
+            boss.userData.parts[sideIndex]?.hp > 0 &&
+            (t.state === 'windup' || t.state === 'attack');
+          plume.visible = !!active;
+          if (active) {
+            const intensity = Math.max(0.06, meleePose.exhaust);
+            plume.scale.set(0.6 + intensity * 1.4, 0.5 + intensity * 1.7, 0.6 + intensity * 1.4);
+            plume.position.z = boss.userData.parts[sideIndex].mesh.position.z + 16 * plume.scale.y;
+            plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
+          }
+        }
         if (
           t.state === 'attack' &&
           bossIntent &&
@@ -4068,6 +4456,8 @@ export function createGame({
           bossMeleeResolved = true;
           if (
             !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            (bossIntent.kind !== 'reactor-vent' ||
+              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
@@ -4091,7 +4481,9 @@ export function createGame({
                 x: player.position.x,
                 y: player.position.y,
                 orbit: relativeOrbit(),
-                originX: boss.position.x,
+                originX:
+                  boss.position.x +
+                  (bossIntent.kind === 'reactor-vent' ? bossIntent.ventSide * 38 : 0),
                 originY: boss.position.y,
               })
             : null;
@@ -4169,13 +4561,14 @@ export function createGame({
             }
           }
         }
-      } else {
+      } else if (!dynamicFlight) {
         boss.position.z = T.MathUtils.lerp(boss.position.z, -88, dt * 0.7);
         boss.position.x = Math.sin(elapsed * 0.3) * 7;
         boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
       }
-      boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
-      const t = dynamicFlight ? tactics() : null;
+      if (!boss.userData.sabotage)
+        boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      const t = dynamicFlight && !boss.userData.sabotage ? tactics() : null;
       const poseAge = t ? Math.max(0, bossCombat.age - 8) % t.period : 0;
       const melee = bossMeleePose(
         bossIntent,
@@ -4199,26 +4592,28 @@ export function createGame({
           claw.rotation.x = melee.claw * 0.4;
         }
       }
-      if (dynamicFlight) {
+      if (dynamicFlight && !boss.userData.sabotage) {
         animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
+      const sabotagePhase = boss.userData.sabotage
+        ? updateDevastadorSabotageCore(boss, { orbit: orbitAngle, time: bossCombat.age })
+        : null;
       const openGenerator = boss.userData.parts.findIndex(
-        (p, i) =>
-          p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+        (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
       );
       const coreVulnerable =
         remaining === 0 &&
-        bossCombat.coreOpen &&
-        (!dynamicFlight || weakPointOpen(relativeOrbit()));
+        bossCoreOpen() &&
+        (!dynamicFlight || boss.userData.sabotage || weakPointOpen(relativeOrbit()));
       boss.userData.coreMarker.visible = coreVulnerable;
       boss.userData.coreMarker.rotation.z -= dt * 1.8;
       boss.userData.coreMarker.scale.setScalar(1 + Math.sin(visualTime * 8) * 0.12);
       boss.userData.vents.forEach((v, i) => {
         v.visible = bossHp / bossCombat.max > 0.65 || i % 3 !== 0;
       });
-      boss.userData.core.scale.setScalar(bossCombat.coreOpen ? 1.1 : 0.7);
+      boss.userData.core.scale.setScalar(bossCoreOpen() ? 1.1 : 0.7);
       $('bossHUD').setAttribute?.('data-vulnerable', String(openGenerator >= 0 || coreVulnerable));
       $('bossState').textContent =
         bossCombat.age < 3
@@ -4235,10 +4630,18 @@ export function createGame({
                 : bossCombat.coreOpen
                   ? 'ORBITE PARA A FRENTE'
                   : 'BLINDAGEM · DANO REDUZIDO');
+      if (sabotagePhase) {
+        $('bossState').textContent =
+          'DESATIVE ' +
+          sabotagePhase.label +
+          (sabotagePhase.remaining
+            ? ' · ' + sabotagePhase.remaining + ' ALVOS'
+            : ' · FOGO NO REATOR');
+      }
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
-          (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+          (bossCoreOpen() ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
       if (dynamicFlight && scanTime > 0)
         $('bossState').textContent +=
           ' · FRACO: ' +
@@ -4285,13 +4688,16 @@ export function createGame({
                 'COROA IMPERIAL',
               ][sectorIndex]
             : '';
-      if (dynamicFlight && !physicalWarning && bossCd < 0.65)
+      if (boss.userData.sabotage)
+        $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
       // Only one targeted volley per maneuver; never spray generic bullets
       // over the physical strike window.
       const allowRanged =
-        !dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
+        !boss.userData.sabotage &&
+        (!dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle));
       if (bossCd <= 0 && bossCombat.age >= 3 && allowRanged) {
         lastRangedCycle = tactics().cycle;
         bossVolley++;
@@ -4338,7 +4744,9 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      obstacles.some(
+        ({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt),
+      ) ||
       (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
@@ -4347,8 +4755,7 @@ export function createGame({
       if (b.homing) {
         const enemy = boss ? null : enemies.find((e) => !e.dead);
         const weakPart = boss?.userData.parts.find(
-          (p, i) =>
-            p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+          (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
         );
         const target = boss
           ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
@@ -4363,10 +4770,43 @@ export function createGame({
       if (b.v) b.o.position.addScaledVector(b.v, dt);
       else b.o.position.z -= dt * 190;
       b.life -= dt;
-      if (b.life > 0 && projectileOccluded(previousShot, b.o.position)) {
+      // Destructible carriers and hostile satellites are resolved BEFORE the
+      // solid occlusion gate; no phantom collision survives their destruction.
+      const struckObstacle =
+        b.life > 0
+          ? obstacles.find(
+              ({ o, life }) =>
+                life > 0 &&
+                projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt),
+            )
+          : null;
+      if (struckObstacle) {
+        if (struckObstacle.hp !== null) {
+          const hitHull = damageBreakableHull(struckObstacle.hp, b.damage ?? 2);
+          struckObstacle.hp = hitHull.health;
+          if (hitHull.destroyed) {
+            struckObstacle.life = 0;
+            score += struckObstacle.o.userData.kind === 'carrier' ? 140 : 70;
+            explode(struckObstacle.o.position.clone(), 11, 0xffa85f);
+            message(
+              struckObstacle.o.userData.kind === 'carrier'
+                ? 'NAVE HOSTIL DESTRUÍDA'
+                : 'SATÉLITE HOSTIL DESTRUÍDO',
+            );
+          } else impact(b.o.position, hitHull.dealt, { heavy: b.source?.startsWith('mecha-') });
+        }
+        b.life = 0;
+        if (dynamicFlight) cue('armorHit');
+        continue;
+      }
+      if (
+        b.life > 0 &&
+        sectorIndex === 2 &&
+        dynamicFlight &&
+        asteroidInterior.projectileBlocked(previousShot, b.o.position)
+      ) {
         b.life = 0;
         explode(b.o.position, 3, 0xffbf75);
-        if (dynamicFlight) cue('armorHit');
         continue;
       }
       if (b.life > 0 && dynamicFlight && !boss) {
@@ -4619,10 +5059,11 @@ export function createGame({
         -230,
       );
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
     }
     for (const obstacle of obstacles) {
+      if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
       const from = previousPlayer
@@ -4632,7 +5073,13 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       if (
         obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
+          crossesSolid(
+            from,
+            to,
+            solid.center,
+            solid.half,
+            shipCollisionMargin(robotMode, rollHeld),
+          ),
         )
       )
         hit(30);
@@ -4673,7 +5120,16 @@ export function createGame({
     $('boostTouch').style.setProperty?.('--meter', energy + '%');
     $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
-    $('bossHealth').style.width = Math.max(0, (bossHp / (bossCombat?.max ?? 1400)) * 100) + '%';
+    const sabotageProgress = boss?.userData.sabotage
+      ? (boss.userData.parts.filter((part) => part.hp <= 0).length +
+          (1 - bossHp / bossCombat.max)) /
+        9
+      : null;
+    $('bossHealth').style.width =
+      Math.max(
+        0,
+        (sabotageProgress === null ? bossHp / (bossCombat?.max ?? 1400) : sabotageProgress) * 100,
+      ) + '%';
   }
   let last = now();
   function tick(dt, nowMs) {
@@ -4941,7 +5397,14 @@ export function createGame({
         active: robotMode,
         lockEnabled,
         lockProgress,
+        multiLockHeld: lockHeld,
+        multiLockTargets: lockQueue.length,
+        multiLockCapacity: mechaMultiLockCapacity(stage()),
         thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
+        dashJetSide:
+          robot.userData.premiumMecha?.dashJets?.find(({ jet }) => jet.visible)?.side ?? null,
+        boostCoreCount:
+          robot.userData.premiumMecha?.afterburnerCores?.filter((core) => core.visible).length ?? 0,
         motor: mechaEngine?.snapshot() ?? { amplitude: 0, velocity: 0, voices: 0 },
       },
       pods: podCount,
@@ -4953,13 +5416,36 @@ export function createGame({
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
           hp: p.hp,
-          open: !dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
-          angle: wrapAngle(
-            bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
-          ),
+          open: !dynamicFlight || bossTargetOpen(i),
+          angle: boss.userData.sabotage
+            ? p.angle
+            : wrapAngle(
+                bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
+              ),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
+      sabotage: boss?.userData.sabotage
+        ? {
+            ...sabotagedSystem(boss.userData.parts),
+            visual: boss.userData.reactorVisual,
+            hall: {
+              radius: boss.userData.grandHall.userData.radius,
+              clearOrbitRadius: boss.userData.grandHall.userData.safeOrbitRadius,
+              facilities: boss.userData.grandHall.userData.facilities.length,
+              wallSegments: boss.userData.grandHall.userData.walls,
+              centralReactor: true,
+              ...world.reactorGrandHallState(),
+            },
+          }
+        : null,
+      bossDriveShock:
+        boss?.userData.driveShockPlumes?.map((plume, i) => ({
+          side: i ? 1 : -1,
+          visible: plume.visible,
+          length: plume.scale.y,
+          generatorAlive: boss.userData.parts[i].hp > 0,
+        })) ?? [],
       seconds: elapsed,
       shield: hp,
       hits: score,
@@ -4972,6 +5458,16 @@ export function createGame({
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
+      devastadorEscape:
+        boss?.userData.sabotage && state === 'collapsing'
+          ? {
+              ...devastadorEscapeAt(collapseTime, {
+                boostedSeconds: devastadorEscapeBoostSeconds,
+              }),
+              boostedSeconds: devastadorEscapeBoostSeconds,
+              assisted: devastadorEscapeAssisted,
+            }
+          : null,
       podsDetached,
       podMode,
       podBlocks,
@@ -4990,6 +5486,27 @@ export function createGame({
         z: r.o.position.z,
       })),
       rolling: roll > 0,
+      bankAngle: player.rotation.z,
+      dash: {
+        active: dashRemaining > 0,
+        remaining: dashRemaining,
+        cooldown: dashCooldown,
+        direction: dashSide,
+        energyCost: MECHA_DASH.energyCost,
+        trail: dashTrail.snapshot(),
+      },
+      heroScale: player.scale.x,
+      shipScale: shipModule.scale.x,
+      robotScale: robot.scale.x,
+      breakableTargets: obstacles
+        .filter((o) => o.hp !== null && o.life > 0)
+        .map((o) => ({
+          kind: o.o.userData.kind,
+          hp: o.hp,
+          x: o.o.position.x,
+          y: o.o.position.y,
+          z: o.o.position.z,
+        })),
       player: { x: player.position.x, y: player.position.y },
       playerDepth: player.position.z,
       camera: {
@@ -5055,6 +5572,7 @@ export function createGame({
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
+      dashTrail.destroy();
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {

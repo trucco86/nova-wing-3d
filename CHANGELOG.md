@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.62 — Candidata em preparação
+
+- Nave: GIRO de 90° enquanto Q/E/Z ou toque são segurados; toque curto mantém giro defensivo de 360°.
+- Robô: dash lateral com gasto de energia, cooldown, jato direcional e núcleo luminoso duplo no boost.
+- Correção de colisão do dash nas paredes do asteroide e aumento da cobertura Node/Playwright.
+- Alvos hostis destrutíveis e redução de escala de nave/robô preservados da candidata anterior.
+- Exclusivo para QA: não publicar sem CI completa, Playwright e aceite visual mobile.
+
 ## 1.27.61 — Candidata em preparação
 
 - Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
