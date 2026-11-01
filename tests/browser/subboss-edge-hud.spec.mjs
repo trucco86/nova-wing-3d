@@ -18,10 +18,15 @@ test('first subboss health stays at the top-right information edge on phones', a
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     const firstArrival = SECTORS[0].duration * 0.22;
     await page.evaluate((arrival) => {
-      while (window.fixture.game.snapshot().seconds < arrival + 3) {
+      // Same combat physics, but defer software-GPU renders until the HUD
+      // checkpoint. Shield refresh maintains the original survivability.
+      const until = arrival + 3;
+      while (window.fixture.game.snapshot().seconds < until) {
         window.fixture.game.collect('shield');
-        window.fixture.advance(0.5);
+        const remaining = until - window.fixture.game.snapshot().seconds;
+        window.fixture.advance(Math.min(5, remaining), { renderAfter: false });
       }
+      window.fixture.advance(0);
     }, firstArrival);
     await expect(page.locator('#subHUD')).toBeVisible();
     const bounds = await page.locator('#subHUD').boundingBox();
