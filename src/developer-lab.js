@@ -4,6 +4,7 @@ import { SHIP_MODELS } from './pilots.js';
 // Disposable QA only. These loadouts reuse the real game progression system.
 export const QA_EVOLUTION_STAGES = Object.freeze([0, 3, 6, 9, 12, 18]);
 export function developerLabLoadout(tier, ship, arsenal, special) {
+  if (tier === null || tier === undefined || tier === '') return null;
   const level = Number(tier);
   const weapon = Number(arsenal);
   const spell = Number(special);
