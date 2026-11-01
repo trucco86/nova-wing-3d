@@ -1458,6 +1458,10 @@ export function createGame({
     if (state !== 'playing') return;
     if (robotMode) {
       if (dashCooldown > 0 || robotTransition > 0) return;
+      if (energy < MECHA_DASH.energyCost) {
+        message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
+        return;
+      }
       const steer =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -1465,6 +1469,7 @@ export function createGame({
       dashSide = dashDirection(steer, player.position.x);
       dashRemaining = MECHA_DASH.duration;
       dashCooldown = MECHA_DASH.cooldown;
+      energy = Math.max(0, energy - MECHA_DASH.energyCost);
       cue('boostIgnition');
       return;
     }
@@ -2947,6 +2952,10 @@ export function createGame({
   cleanups.push(() => document.removeEventListener?.('visibilitychange', visibilityHandler));
   const inFlight = () =>
     ['playing', 'paused', 'respawning', 'collapsing', 'arcade'].includes(state);
+  // Q/E/Z mirror touch behavior: a brief tap spins 360°, a hold banks 90°.
+  // Robot mode continues to use the same keys for a single lateral dash.
+  const rollKeys = new Set(['KeyQ', 'KeyE', 'KeyZ']);
+  const rollKeyDownAt = new Map();
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (cinematic) {
@@ -2991,13 +3000,27 @@ export function createGame({
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
-    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
+    if (rollKeys.has(e.code) && state === 'playing') {
+      rollKeyDownAt.set(e.code, now());
+      if (robotMode) doRoll();
+    }
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
   addEventListener('keyup', (e) => {
     if (inFlight() && isGameKey(e) && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault?.();
+    const rollStarted = rollKeyDownAt.get(e.code);
+    rollKeyDownAt.delete(e.code);
     keys.delete(e.code);
+    if (
+      rollStarted !== undefined &&
+      !robotMode &&
+      state === 'playing' &&
+      now() - rollStarted < 240 &&
+      ![...rollKeys].some((code) => keys.has(code)) &&
+      rollPointerId === null
+    )
+      doRoll();
     if (!boostRequested()) boostNeedsRelease = false;
   });
   cleanups.push(protectFlightSurface(document, $('game'), $('touch'), inFlight));
@@ -3027,6 +3050,8 @@ export function createGame({
     stick.x = stick.y = 0;
     stickId = null;
     heldPointers.clear();
+    rollKeyDownAt.clear();
+    rollPointerId = null;
     rollHeld = false;
     dashRemaining = 0;
     $('nub').style.transform = '';
@@ -3140,6 +3165,7 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
+    rollHeld = !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -3157,6 +3183,11 @@ export function createGame({
       level: stage(),
       time: elapsed,
       boosting,
+      dash: {
+        active: robotMode && dashRemaining > 0,
+        direction: dashSide,
+        progress: 1 - dashRemaining / MECHA_DASH.duration,
+      },
     });
     if (robot.visible) {
       // The independently aimed wrists and dual dorsal gimbals belong to
