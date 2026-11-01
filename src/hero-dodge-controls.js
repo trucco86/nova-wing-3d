@@ -22,3 +22,9 @@ export function dashFrame(remaining, dt, direction) {
 export function heroVisualScale(level = 0) {
   return 1 + Math.min(18, Math.max(0, level)) * 0.007;
 }
+
+// Narrower collision clearance is granted only while the physical ship is
+// held edge-on, not during a tap or while in robot mode.
+export function shipCollisionMargin(robot = false, held = false) {
+  return !robot && held ? 0.92 : 1.3;
+}
