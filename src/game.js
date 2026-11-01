@@ -5081,6 +5081,10 @@ export function createGame({
         lockEnabled,
         lockProgress,
         thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
+        dashJetSide:
+          robot.userData.premiumMecha?.dashJets?.find(({ jet }) => jet.visible)?.side ?? null,
+        boostCoreCount:
+          robot.userData.premiumMecha?.afterburnerCores?.filter((core) => core.visible).length ?? 0,
         motor: mechaEngine?.snapshot() ?? { amplitude: 0, velocity: 0, voices: 0 },
       },
       pods: podCount,
