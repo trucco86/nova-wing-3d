@@ -31,7 +31,9 @@ export function createLivingDepth(sectorIndex = 0) {
   const chassis = new T.BoxGeometry(1, 1, 1);
   const fins = new T.ConeGeometry(1, 2.6, 3);
   const body = new T.MeshStandardMaterial({
-    color: profile.color, roughness: 0.35, metalness: 0.78,
+    color: profile.color,
+    roughness: 0.35,
+    metalness: 0.78,
   });
   const lights = new T.MeshBasicMaterial({ color: profile.hazard, toneMapped: false });
   const lanes = [];
@@ -74,14 +76,16 @@ export function updateLivingDepth(root, seconds = 0) {
     lane.frames.count = lane.detail.count = active;
     for (let i = 0; i < active; i++) {
       const direction = i % 2 ? 1 : -1;
-      const speed = lane.layer === 'middle' ? 10.5 + i % 4 : 3.6 + i % 3;
+      const speed = lane.layer === 'middle' ? 10.5 + (i % 4) : 3.6 + (i % 3);
       const phase = i * 2.399 + root.userData.sectorIndex * 0.8;
       const loop = ((t * speed + i * 53) % 730) / 730;
-      const x = direction * (25 + (i % 4) * (lane.spread / 9)) +
+      const x =
+        direction * (25 + (i % 4) * (lane.spread / 9)) +
         Math.sin(t * 0.31 + phase) * (lane.layer === 'middle' ? 22 : 13);
-      const y = lane.layer === 'middle'
-        ? 22 + (i % 3) * 11 + Math.sin(t * 0.65 + phase) * 6
-        : 58 + (i % 5) * 22 + Math.sin(t * 0.19 + phase) * 12;
+      const y =
+        lane.layer === 'middle'
+          ? 22 + (i % 3) * 11 + Math.sin(t * 0.65 + phase) * 6
+          : 58 + (i % 5) * 22 + Math.sin(t * 0.19 + phase) * 12;
       const z = -lane.depth - loop * (lane.layer === 'middle' ? 240 : 430);
       dummy.position.set(x, y, z);
       dummy.rotation.set(
