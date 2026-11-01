@@ -38,10 +38,54 @@ test('mobile: hold fighter 90 degrees, transform, dash with real side movement a
   const during = await page.evaluate(() => window.fixture.game.snapshot());
   expect(during.dash.active).toBe(true);
   expect(Math.abs(during.player.x - before.player.x)).toBeGreaterThan(3);
+  expect(during.mecha.dashJetSide).toBe(-during.dash.direction);
+  expect(during.energy).toBeLessThan(before.energy);
   await page.screenshot({ path: info.outputPath('mecha-lateral-dash.png') });
   await page.evaluate(() => window.fixture.advance(0.3));
   const after = await page.evaluate(() => window.fixture.game.snapshot());
   expect(after.dash.active).toBe(false);
   expect(after.dash.cooldown).toBeGreaterThan(0);
+  expect(errors).toEqual([]);
+});
+
+test('desktop: a held Q banks vertically, a tapped E barrel-rolls, robot Z dashes with visible side thrust', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'desktop', 'Keyboard desktop regression');
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/__dynamic.html?sector=3');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.keyboard.down('q');
+  await page.evaluate(() => window.fixture.advance(0.45));
+  const held = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(Math.abs(held.bankAngle + Math.PI / 2)).toBeLessThan(0.1);
+  await page.screenshot({ path: info.outputPath('desktop-fighter-90-degree-bank.png') });
+  await page.keyboard.up('q');
+  await page.evaluate(() => window.fixture.advance(0.4));
+  const released = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(released.rolling).toBe(false);
+  expect(Math.abs(released.bankAngle)).toBeLessThan(0.08);
+
+  await page.keyboard.press('e');
+  const tap = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(tap.rolling).toBe(true);
+  await page.evaluate(() => window.fixture.advance(0.8));
+  await page.keyboard.press('t');
+  await page.evaluate(() => window.fixture.advance(1.4));
+  const mode = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(mode.mecha.active).toBe(true);
+
+  await page.keyboard.down('d');
+  await page.keyboard.press('z');
+  await page.evaluate(() => window.fixture.advance(0.12));
+  const dash = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(dash.dash.active).toBe(true);
+  expect(dash.mecha.dashJetSide).toBe(-dash.dash.direction);
+  expect(dash.player.x).toBeGreaterThan(mode.player.x + 3);
+  expect(dash.energy).toBeLessThan(mode.energy - 15);
+  await page.screenshot({ path: info.outputPath('desktop-mecha-side-jet.png') });
+  await page.keyboard.up('d');
   expect(errors).toEqual([]);
 });
