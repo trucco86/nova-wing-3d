@@ -60,11 +60,11 @@ jobs:
       # Keep the browser gate strict; avoid repeating apt dependency installation on each
       # hosted runner. Missing runtime libraries still fail the real Playwright tests.
       - run: npx playwright install chromium
+      # The quality job already ran format, lint, Node tests, invariants and
+      # reproducible build. Never re-run that full suite in four browser jobs.
       - run: npm run build:check
-      # Reproduce only after checking the committed artifact matches the sources.
-      # Pages deploys this same committed HTML from a fresh checkout.
-      - run: npm run build
-      - run: npm run validate -- --browser
+      - name: Run browser-only shard (full release assertions preserved)
+        run: npm run test:browser -- --shard="$NOVA_BROWSER_SHARD"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
