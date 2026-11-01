@@ -1,5 +1,328 @@
 # Histórico
 
+## 1.27.61 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
+## 1.27.60 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
+## 1.27.59 — Candidata em preparação
+
+- Planetary Visual Polish: marcos próprios para cada planeta, testes WebGL e otimização Alto/Médio, sem alterar produção.
+
+## 1.27.58 — Candidata em preparação
+
+- Planetary Journeys: chegada e escape cinematográficos específicos por destino, sem alterar produção.
+
+## 1.27.57 — Candidata em preparação
+
+- Marte 4.3: névoa de areia animada e seletor de fases acessível no preview QA. QA visual e browser ainda dependem de execução.
+
+## 1.27.56 — Candidata em preparação
+
+- Marte 4.3: troca dos anéis da reentrada por névoa de areia animada. QA visual e browser ainda dependem de execução.
+
+## 1.27.55 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.54 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.53 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.52 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.51 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.50 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.49 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.48 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.47 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.46 — Graphics 3.8 / arco meia-lua, SUPER BOOST e revelação orbital (QA)
+
+- Arco anatômico mobile escalonado com botões não sobrepostos >=60px, FIRE maior e BOOST legível. Durante a saída orbital, botão muda para SUPER BOOST dourado com aviso, aceleração elevada e gasto de energia obrigatório; depois retorna ao normal.
+- Cidade desaparece até 0,73; intervalo somente céu escurecendo, estrelas e névoa; Terra só surge depois de 0,855, seguida de Lua craterizada e Sol. Nenhuma cidade e planeta podem coexistir visualmente.
+- 410 unitários e 3 testes Playwright mobile de preparo passaram. CI final e homologação Galaxy S21 pendentes. PR #199 draft sem promoção à produção.
+
+## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
+
+- Corrigidos posicionamentos absolutos de BOOST e TIRO e consolidada a distribuição em meia-lua com hit targets mínimos 60×60px e LOCK do mecha sem sobreposição. Joystick responsivo (88/102/128/91px) e órbita 12px acima.
+- Arcade 2D volta a esconder BOOST quando desabilitado; testes WebGL aceitam resolução adaptativa sem cortar canvas. 405 testes unitários e 10 Playwright direcionados passaram. QA final em shards e aceite no S21 pendentes. PR #198 draft, produção intacta.
+
+## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
+
+- Corrigida disputa de especificidade entre CSS antigo (`position:relative` para BOOST/TIRO) e controles novos em meia-lua (`position:absolute`). Os botões permanecem em posições absolutas, com alvos clicáveis corretos e sem sobreposição.
+- Evidência: 405 unitários e 2 testes Playwright mobile, cobrindo BOOST com LOCK, posição computada absoluta, `elementFromPoint`, 320×568/390×844/844×390 e tela Options. Validação física no S21 e os shards completos ainda são pendências. PR #198 draft, sem promoção a produção.
+
+## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
+
+- Corrigida visibilidade e captura de toque do BOOST no celular, inclusive no mecha com LOCK, mantendo alvos de 60px em portrait e transparência configurável sem ocultar botões críticos.
+- Cidade em verde/ciano e grafite mais elaborada: +janelas em Médio, fachada variada, trechos danificados com andaimes, passarelas com piso/guarda-corpos conectando prédios e plataformas de táxis animados, com grupos instanciados e LOD.
+- Options reorganizado numa tela compacta sem scroll, idioma visível como dropdown e manutenção das 12 configurações/salvamento. 405 testes unitários aprovados; testes de navegador e aceite de FPS/ergonomia do Galaxy S21 pendentes. PR #196 draft.
+
+## 1.27.42 — Graphics 3.7 / NOVA-7, mecha e controles em meia-lua (QA)
+
+- NOVA-7 visualmente maior (1,05→1,11), com 24 detalhes instanciados de carenagem rasa, frisos e LEDs, preservando a silhueta clean. Robô passa a 1,04 de escala (corrigida uma instrução antes comentada), com detalhes mecânicos de peito/pernas e acabamento articulado das duas armas.
+- Controles touchscreen com áreas em arcos inferiores, 55% opacos em repouso e 94% ao pressionar; sete botões acomodados inclusive o LOCK do robô, joystick esquerdo, TIRO/BOOST direitos, safe areas e alvos ≥48px.
+- 403 testes unitários passaram; browsers e homologação de ergonomia/FPS em Samsung Galaxy S21 pendentes. PR #195 draft, sem promoção a produção.
+
+## 1.27.41 — Graphics 3.6 / Reflex Boost e tiro luminoso seletivo (QA)
+
+- Clarões de disparo e reflexos emissivos locais na fuselagem da NOVA-7 e nos canhões e peito do mecha, inclusive tiros carregados e de precisão. Mobile sem bloom pesado; desktop Alto pode usar uma luz pontual temporária.
+- Reflex Boost ativado via SHIFT/BOOST sob ameaça de 4 projéteis próximos: 1,55s de ataque hostil a 38% de velocidade, esquiva 40% mais rápida, energia extra 14 (mínimo 45) e cooldown 9s. Não interfere no BOOST obrigatório da fase 1.
+- Indicador REFLEX junto ao botão de BOOST, sem invadir gameplay. 400 testes unitários aprovados em validação isolada; revisão de FPS, browsers e homologação humanas pendentes, PR #194 draft.
+
+## 1.27.40 — City 2.9 / Orçamento de GPU mobile e drones detalhados (QA)
+
+- Dispositivos touch e desktop Médio renderizam a cena 3D diretamente, evitando três passes de bloom e buffers offscreen por frame. Desktop Alto preserva o visual cinematográfico.
+- Diagnóstico de FPS agora inclui chamadas de desenho, triângulos e passes de pós-processamento quando disponíveis no renderizador.
+- Drones de serviço com fuselagem, asas, propulsores e compartimento de carga mais detalhados, mantendo dois batches GPU instanciados por trecho.
+- 395 testes unitários passaram em workspace de QA; browser, FPS medido no S21 e homologação visual pendentes. PR #193 draft sobre #192.
+
+## 1.27.39 — City 2.8 / FPS adaptativo e trânsito urbano realista (QA)
+
+- Proteção de desempenho medida durante o gameplay, com resolução renderizada ajustável, downgrade de Alto para Médio se necessário e limites iniciais mais econômicos em aparelhos touch como Galaxy S21; as escolhas salvas permanecem intactas.
+- Carros terrestres, táxis aéreos e naves agora apresentam rodas, acabamento e propulsores realistas em malhas combinadas por tipo; mais 12 drones de serviço animados (6 em Médio) em cada trecho da cidade.
+- Novos testes de FPS adaptativo, Pause, qualidade gráfica, integridade de geometria, trajetórias e orçamento de draw calls. Candidata PR #192 para validação em S21, sem promoção de produção.
+
+## 1.27.38 — Graphics 3.4 / NOVA-7 futurista clean e mecha (QA)
+
+- Revertido o excesso de carenagens e pods do fighter na 3.3, preservando a silhueta anterior. Frisos discretos na fuselagem, entradas de ar compactas e motores refinados com anéis, aletas e núcleos luminosos.
+- NOVA-7 principal com aumento visual de 5% sem alterar raiz física do jogador; mecha um pouco maior, com acabamento e turbinas mais elaboradas, sem modificar o rig de combate.
+- 386 testes unitários passaram na candidata; validação de navegador, FPS e homologação visual pendentes. PR #191 draft sobre #190.
+
+## 1.27.37 — Graphics 3.3 / Fleet Detail Pass (QA)
+
+- Modelos 3D aprimorados da NOVA-7, mecha, inimigos aéreos/terrestres, dez chefes e dez subchefes: carenagens, placas de blindagem chanfradas, entradas de ar, turbinas, reatores e partes mecânicas adicionais.
+- Tráfego da Cidade 2.7 passa a ter cabine e capô aerodinâmicos reais, mantendo a movimentação GPU instanciada (19 batches por trecho).
+- Novos testes de geometria, pintura, rig, geradores dos chefes, hitboxes e orçamento de desenho.
+- PR #190 draft sobre #189, sem homologação humana, sem promoção de ambientes e sem integração automática da PR GLB #187.
+
+## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
+
+- Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.
+- Terra procedural, Lua e Sol com flare aditivo aparecem gradualmente após o BOOST, enquanto cidade e trilhos recuam no enquadramento; a travessia atmosférica permanece em 38 segundos.
+- Renderização otimizada com instancing e detalhes por perfil Médio/Alto. Testes de progressão, visibilidade, limites de corredor e isolamento de setores atualizados.
+- PR draft empilhada sobre #188, sem homologação visual/FPS nem promoção para DEV, HML ou produção.
+
+- Tráfego urbano agora inclui carros futuristas nas ruas, táxis voadores e naves que evacuam a cidade rumo ao espaço. Movimentação determinística por progresso da fase, com congelamento no Pause, sem colisores e em lotes GPU conforme qualidade Alto/Médio.
+- Piso urbano deixa de cortar a Terra durante a subida graças ao fade do terreno, mantendo o tempo da fase e a mecânica de BOOST.
+
+## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
+
+- Trem maglev de três vagões com malhas aerodinâmicas nas duas pontas, chassis de levitação, luzes e acabamento lateral; colisões e trajeto preservados.
+- Seis beacons de outdoors animados pelo progresso da fase, sem recriação de texturas ou animação durante Pause.
+- Suite de regressão para geometria 3D, billboard, Pause, transição orbital e integridade dos assets.
+- Build HTML sincronizado. Candidata draft sobre #175, com QA de navegador, FPS, performance e homologação visual pendentes; sem promoção para DEV/HML/produção.
+
+## 1.27.26 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.25 — Abertura Five Cats remasterizada (candidata QA)
+
+- Cinemática passa a renderizar cinco naves distintas (Bia na liderança central, Jenifer e Bob nos flancos internos, Christopher e Calvinho nas laterais externas), respeitando telas retrato e paisagem.
+- O robô de combate atual aparece brevemente na perseguição, usando a mesma malha e turbinas do gameplay, sem criar design desatualizado.
+- Diálogos de abertura agora incluem os cinco gatos e retratos individuais derivados da arte original; narração sem retrato indevido.
+- Entrada e botão de pular continuam funcionando; nenhum impacto em saves, ranking, login ou missão.
+- Candidata QA sobre PR #171, separada da homologação da home. HML, DEV oficial e produção inalterados.
+
+## 1.27.24 — Five Cats Original Cover & Radio Portraits (candidata QA)
+
+- Opção A, primeira etapa visual: reaproveita a capa original sem recortar nem distorcer os cinco gatos; uma camada atmosférica ampliada preenche o fundo da home e o pôster original permanece completo em primeiro plano.
+- Menu JOGAR/HANGAR/CENTRAL pode usar uma linha no desktop e celular paisagem, criando espaço para a arte dominante sem comprometer os botões.
+- Rádio de missão usa recortes da arte oficial dos cinco gatos e atribuição explícita de falas a Bia, Bob, Christopher, Calvinho e Jenifer; sem downloads externos.
+- Testes unitários garantem identities/fallback; Playwright verifica três viewports e portrait real após transformação para robô.
+- Expansão verdadeira do canvas/outpainting e reformulação da abertura ficam fora deste pacote e exigem homologação visual específica. DEV/HML/produção inalterados.
+
+## 1.27.23 — Boss Adaptive Counterplay (candidata QA)
+
+- Marvin e Hidra passam a reagir à altura real de voo, boost e posição orbital do jogador no instante do telegraph.
+- Tentáculos interceptam o piloto em altitude, garras respondem ao flanco/robô, e Marvin alterna a pressão frontal na fase 3 sem eliminar as janelas de ataque à distância.
+- O alvo é fixado no início do aviso; desviar da área indicada continua evitando o golpe, sem retarget invisível ou golpes aleatórios.
+- Testes determinísticos validam seleção, altura, hitbox, esquiva, comportamento em robô e fase 3.
+- Isolado em QA sobre PR #168; sem mudanças em DEV oficial, HML ou produção. Home e retratos permanecem backlog separado.
+
+## 1.27.22 — Mecha Heavy Fire (candidata isolada QA)
+
+- Nave mantém agilidade e a cadência original; robô recebe 2,35× no dano por disparo com intervalo 20% maior entre tiros (DPS ~1,96× na mesma arma).
+- Tiro carregado do robô recebe 2,1×; precisão do braço esquerdo aplica 7× dano base mantendo trava, custo de energia e cooldown.
+- Projétil pesado 1,6× maior, recuo e flash de saída, impactos mais evidentes e efeitos sonoros próprios para tiros, precisão e colisões. O disparo carregado nasce do canhão do punho direito (não do centro da nave), com escala reforçada e teste real de teclado/toque.
+- Respeita colisões e armadura/pontos fracos dos chefes; nenhuma alteração na pontuação, ranking, saves, login ou nave.
+- QA isolada baseada no PR #167; sem integração em DEV/HML/prod antes de CI e avaliação visual/sonora humana.
+
+## 1.27.21 — Console Start & Three-Menu Hub (candidata QA)
+
+- Capa original Web centralizada, com PRESS START como único comando inicial e sem rolagem de configurações.
+- Segunda tela apresenta apenas JOGAR, HANGAR e CENTRAL; recursos antigos preservados e organizados em submenus.
+- JOGAR: início de missão, checkpoint e abertura; HANGAR: seleção e inspeção 360°; CENTRAL: opções, músicas, Google, patentes, troféus, ranking e QA.
+- Teclado Enter abre o primeiro menu em vez de pular a tela de título; Escape volta do submenu.
+- Interface responsiva, touch target >=44px, sem duplicar lógica de save/ranking/autenticação.
+- Isolada sobre PR #160; revisão visual e Playwright obrigatórios antes de DEV/HML/PROD.
+
+## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
+
+- Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
+- Medalhas felinas e insígnias em formato de gato com origens verificáveis nas missões.
+- Hall da Patrulha com cinco fichas, graduação coletiva e evolução de uniforme 3D no hangar.
+- Notificação pós-fase de promoções/medalhas; no gameplay normal, não altera dano, velocidade nem ranking.
+- Baseada na PR de troféus #159; HML e produção não alterados.
+
+## 1.27.19 — Troféus Five Cats (candidata em QA)
+
+- 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.
+- Conquistas por chefe, recorde real, pontuação, dano, armas primárias, dificuldade, robô e equipe.
+- Hall da Fama no menu, pop-up de desbloqueio no HUD superior e progresso offline local versionado.
+- Sem recompensas em sessões de QA/dev; testes Playwright e localização obrigatórios antes de DEV.
+
+## 1.27.14 — Dez formações táticas por setor (candidata)
+
+- Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
+- Preserva cadência, quantidade e dano dos inimigos e o controle contextual da câmera.
+- Candidata de QA isolada, sem promoção de DEV/HML/PROD.
+
+## 1.27.13 — Radar de esquiva com hitbox real (candidata isolada)
+
+- Radar dos chefes mostra origem do golpe, área vermelha de colisão física e rota até uma posição segura.
+- Aviso contextual não acompanha a nave após fixar o alvo, permitindo desviar ou manter uma posição fora do golpe.
+- Radar de projéteis permanece angular; nenhum falso indicador de segurança para disparos não determinísticos.
+- Guia acessível no HUD superior direito, sem bloquear o gameplay, com regressão mobile retrato/paisagem.
+- PR integrada sem mudanças em DEV, HML ou produção, aguardando CI e homologação humana.
+
+## 1.27.12 — Candidata integrada Boss AI e Órbita-9 (QA)
+
+- Código combinado: dez chefes com assinatura visual, IA de golpes físicos telegráficos e esquiva real.
+- RPG: Plasma Titan 8 s, Five Cats Overdrive 10 s, Barreira 12 s, Estase 11 s, dano metrado separadamente.
+- Câmera superior contextual com controles X/Z, missão Reator Órbita-9 e exploração 3D experimental com três pistas e NPC.
+- Mobile: canvas e botões em camadas distintas, testes reais de hit-testing de controles.
+- CI e homologação humana pendentes na candidata; DEV, HML e produção permanecem intactos.
+
+## 1.27.11 — Preview integrado de campanha e exploração (candidata QA)
+
+- Reúne as mudanças de cenário/câmera da v1.27.6 e os dez padrões de chefes das candidatas v1.27.7/v1.27.8.
+- Adiciona o protótipo de investigação da Órbita-9 da v1.27.10 com domínio de quest v1.27.9, limitado a Developer/QA.
+- Branch de integração experimental; progresso da campanha, ranking, HML e produção preservados.
+
+## 1.27.8 — Dez chefes com assinaturas de combate (candidata isolada)
+
+- Rok, Ferrão, Fortaleza Órbita, Fênix, Ômega e Bastião ganham ataque posicional próprio, animação de peça e reação à destruição de baterias.
+- Combinados à v1.27.7, todos os dez chefes têm padrão especial de ataque, sem retirar a mecânica de flancos e núcleos.
+- Testes de emissões, duração, número de projéteis e movimento de peças visuais.
+- Não inclui mundo aberto nem ataques físicos de arena; HML/PROD inalterados.
+
+## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
+
+- Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
+- Ataques partem de peças visuais da nave/robô e os avisos permanecem na faixa superior do HUD.
+- Testes de assinatura, animação, intensidade por fase e simulação real.
+- Scope limitado aos quatro chefes; mundo aberto e danos por membros individuais continuam no backlog.
+
+## 1.27.6 — Cenários, perspectiva e chefes diferenciados (candidata DEV)
+
+- Terra e satélite contextualizados na ascensão; lua rachada exclusiva do cinturão de destroços, lua de gelo sem fissuras; ambientação temática de plasma, nebulosa, frota, vazio e fortaleza.
+- Mudanças curtas de câmera lateral, superior e plano aberto por fase, sem substituir escolha manual.
+- Chefes mais resistentes, carcaça com dano reduzido, marcadores fracos visíveis e multiplicadores para gerador/núcleo.
+- Dez perfis de ataque com origens e cadência diversas por fase; robôs gigantes articulados e móveis.
+- Projeto de exploração RPG/mundo aberto Five Cats Universe documentado; ainda não implementado.
+- Candidata isolada, sem homologação humana; HML/PROD inalterados.
+
+## 1.27.5 — Developer QA e configuração de missão (candidata DEV)
+
+- Painel de testes por setor, com entrada no início, subchefe ou chefe principal das dez fases.
+- Guardrails por hostname: ativo somente em DEV, preview de PR e localhost; nativo, HML e produção não exibem ferramentas de QA.
+- Sessões QA isoladas: bloqueiam salvamento de checkpoint e envio de pontuação ao ranking.
+- Piloto e nave agrupados dentro da ação de missão na capa, preservando hangar e jogabilidade.
+- Testes de scenario jump, proteção de dados, seleção mobile/desktop e fluxo de reinício; exige homologação visual/funcional humana.
+- HML e produção não alterados.
+
+## 1.27.4 — Som da turbina do robô mais discreto (candidata DEV)
+
+- Substitui o zumbido serrilhado contínuo por uma base mais grave e suave, quase silenciosa em voo normal.
+- Reage às manobras e ao BOOST, que mantém presença sonora sem competir com a trilha do jogo.
+- Pausa, alternância de nave e mudo de efeitos desligam imediatamente o som contínuo.
+- Preserva a música, os outros efeitos, os controles, a jogabilidade e as evoluções anteriores.
+- Candidata DEV sem homologação auditiva em smartphone; HML e produção não alterados.
+
+## 1.27.3 — Correção do menu em paisagem (candidata DEV)
+
+- Corrige rolagem vertical e acesso à preparação do esquadrão em modo paisagem de baixa altura.
+- Substitui expectativa de botão de 300px por igualdade de largura responsiva entre ações.
+- Acrescenta regressão de alcance e clique no botão de preparação em 844×390.
+- Preserva ranking, Google login, trilha de ação e os demais recursos da v1.27.2.
+- Candidata ainda não homologada; não altera HML nem produção.
+
+## 1.27.2 — Menu centralizado e ranking após Como jogar (candidata DEV)
+
+- Botões da tela inicial centralizados e padronizados em altura, largura e espaçamento, com alvos touch consistentes.
+- Ranking integrado abaixo de Como jogar, mantendo histórico local, ranking experimental e controles de privacidade.
+- Login social Google e trilha de ação energizada da v1.27.1 preservados, sem mudanças nas configurações Firebase/D1.
+- Build reproduzível e regressões de menu para celular e desktop; testes de navegador e aceite humano obrigatórios antes de homologação.
+- Candidata somente para DEV; HML e produção permanecem inalterados.
+
+## 1.27.1 — Login social Google no menu e trilha com adrenalina (candidata DEV)
+
+- Login social Google integrado ao fluxo do menu, abaixo de Iniciar/Opções/Trilha/Abertura, sem overlay fixo ou colisões com o RANK.
+- Botão de autenticação identificado, estado de conta visível e textos traduzidos em PT/EN/ES, mantendo modo visitante.
+- Setores acelerados a 130–154 BPM; boss 150, enraged 164 e colapso 168, com novo ritmo de bateria, ostinatos e frases melódicas mais presentes, preservando subgrave e volume ajustável.
+- 289 testes unitários aprovados e build reproduzível; regressão de posicionamento em três resoluções para Playwright.
+- Candidata DEV sem alteração de Firebase/D1, HML ou PROD; exige CI browser completa e avaliação auditiva/visual humana.
+
+## 1.27.0 — Integração unificada DEV (candidata)
+
+- HUD mobile P0, prioridade de avisos e controles protegidos; satélite orbital, chegada do chefe pela nave-mãe e melhoria visual dos caças.
+- Mecha angular com asa compartilhada, neon progressivo, turbinas animadas e som reativo, duas mãos independentes, lock-on e recoil.
+- Formação de cinco naves liderada por Bia, aliados, plasma e especial Five Cats Overdrive.
+- Trilha e efeitos cinematográficos originais; transições de fase, caverna 3D e boss gate do mega-asteroide no setor 3.
+- Histórico local de vitórias e derrotas, sem dependência de Firebase/D1; nenhuma gravação remota do ranking habilitada.
+- Integração passou em 286 testes unitários, lint, formato e build reproduzível. Testes de navegador e aceite mobile ainda requeridos; versão não publicada em HML/PROD.
+
+## 1.24.26 — Hierarquia de alertas no HUD mobile (P0)
+
+- Aviso de vida crítica prevalece sobre ataque iminente, escudo baixo, aproximação de chefe, coleta e rádio em telas touch.
+- Informações de menor prioridade voltam automaticamente quando o risco principal termina, preservando os estados internos.
+- Teste de estresse Playwright cobre 320×568, 390×844 e 844×390, segurança da área central e acesso aos botões de ataque, impulso, bomba e robô.
+- Sem alterações de gameplay, ranking, autenticação, produção ou salvamento; candidata requer CI completa e homologação visual.
+
+## 1.24.24 — Conta e ranking multilíngues (candidata)
+
+- Arranjos originais com andamento mais contido, pads sustentados, percussão de ruído filtrado, tambores graves e mixagem estéreo.
+- Transformação e retorno com servo/travas/impacto, turbina contínua responsiva ao robô e BOOST, ignição, impactos na nave e explosões com textura própria.
+- Buffers reutilizados, vozes limitadas, prioridade para alertas/impactos, pausa e controles de volume preservados; renderização real de áudio em CI para análise e audição.
+- Candidata conjunta de Mecha/armas/paletas/áudio; métricas técnicas não equivalem a homologação estética ou audição humana.
+
+## 1.25.0 — Mecha 2.0: integração limpa para validação
+
+- Candidata sem homologação visual: armadura angular, asas, turbina dorsal articulada e pintura por nave.
+- Propulsão contínua por dt, boost touch e movimentação de braços/pernas.
+- Testes automatizados de rig e preview separados de mudanças do HUD e arsenal.
+- **Não publicar em produção sem QA visual e desempenho.**
+
+## 1.24.20 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
 - Hangar com dois níveis de multitiro e cadência, bombas individuais e pacote ×3 com teto de oito na web.
@@ -79,7 +402,7 @@
 - Playwright verifica toda a travessia sem obstáculos e confirma o tráfego espacial apenas depois da órbita.
 - Candidata ainda não homologada visualmente; sem promoção para HML ou produção.
 
-## 1.24.6 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
+## 1.23 — Candidata: ritmo, dificuldade e encontro inicial (DEV)
 
 - Fases 10–17% mais longas e boost obrigatório para a subida orbital no primeiro setor, sem corte brusco entre cidade e Terra.
 - Configurações de dificuldade Fácil, Normal e Difícil. Cada nova sessão inicia em Normal; escolha de dificuldade vale apenas na sessão.

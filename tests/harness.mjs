@@ -56,10 +56,15 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableSquadIntro = false,
   seed = 42,
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  hostname,
+  observeScene = () => {},
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const elements = new Map(
     [
@@ -118,6 +123,7 @@ export function harness({
       matches: coarsePointer && query.replaceAll(' ', '') === '(pointer:coarse)',
     }),
     AudioContext,
+    location: hostname ? { hostname } : undefined,
     localStorage: storage,
   };
   const renderer = {
@@ -126,8 +132,9 @@ export function harness({
     getPixelRatio: () => 1,
     setSize() {},
     setRenderTarget() {},
-    render() {
+    render(scene, camera) {
       calls.renders++;
+      observeScene(scene, camera);
     },
     dispose() {},
   };
@@ -144,7 +151,10 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableSquadIntro,
     nativeLifecycle,
+    onStageStarted,
+    onStageFinished,
   });
   return {
     game,

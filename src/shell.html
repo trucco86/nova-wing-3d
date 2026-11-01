@@ -44,6 +44,12 @@
           <button id="repairPulse">R · REPARO ◆◆</button
           ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
         </div>
+        <div class="squadSuperActions" role="group" aria-label="Superespeciais dos Five Cats">
+          <button id="plasmaTitan" aria-label="Disparar canhão de plasma Titan">Y · PLASMA</button>
+          <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
+            O · FIVE CATS
+          </button>
+        </div>
       </details>
       <div id="quickRpg" aria-label="Ações rápidas de RPG">
         <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
@@ -58,26 +64,109 @@
     </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
     <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
-      <div id="battleRadar"><i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b></div>
+      <div id="battleRadar" role="img" aria-label="Radar orbital">
+        <i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b>
+        <svg
+          id="radarThreatMap"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style="display: none"
+          aria-hidden="true"
+        >
+          <defs>
+            <marker
+              id="radarArrowhead"
+              markerWidth="5"
+              markerHeight="5"
+              refX="4"
+              refY="2.5"
+              orient="auto"
+            >
+              <path d="M0,0 L5,2.5 L0,5 Z" fill="#ff8066"></path>
+            </marker>
+          </defs>
+          <rect
+            id="radarThreatRect"
+            style="display: none"
+            fill="#fa574977"
+            stroke="#ff8066"
+            stroke-width="2"
+          ></rect>
+          <ellipse
+            id="radarThreatEllipse"
+            style="display: none"
+            fill="#fa574977"
+            stroke="#ff8066"
+            stroke-width="2"
+          ></ellipse>
+          <line
+            id="radarAttackVector"
+            stroke="#ff8066"
+            stroke-width="2.6"
+            stroke-dasharray="4 2"
+            marker-end="url(#radarArrowhead)"
+          ></line>
+          <circle
+            id="radarAttackOrigin"
+            r="5"
+            fill="#ff5d51"
+            stroke="#fff5e6"
+            stroke-width="1.5"
+          ></circle>
+          <circle
+            id="radarSafePoint"
+            r="6"
+            fill="#45ffa044"
+            stroke="#5affac"
+            stroke-width="2.7"
+          ></circle>
+          <circle
+            id="radarShipPoint"
+            r="4.5"
+            fill="#88ffbc"
+            stroke="#ffffff"
+            stroke-width="1.9"
+          ></circle>
+        </svg>
+      </div>
+      <span id="radarGuide" hidden role="status" aria-live="off"></span>
       <span id="tacticState"></span><span id="battleCharge" aria-label="Reservas de ação"></span>
     </aside>
     <div id="aimReticle" hidden aria-label="Direção dos disparos" aria-hidden="true"><i></i></div>
+    <div id="mechaLockReticle" hidden aria-hidden="true"></div>
     <div id="petCareHud" hidden aria-label="Itens resgatados para cuidar dos gatos"></div>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="hudNotices" aria-label="Avisos e comunicação da missão">
+      <div id="squadFormationStatus" hidden role="status">
+        FIVE CATS · BIA NO COMANDO · FORMAÇÃO EM V
+      </div>
+      <div id="squadSuperStatus" hidden role="status"></div>
+      <div id="mechaLockStatus" hidden role="status" aria-live="polite"></div>
       <div id="criticalWarning" hidden role="alert">⚠ INTEGRIDADE CRÍTICA — BUSQUE REPARO</div>
       <div id="shieldWarning" hidden role="status" aria-live="polite">
         ⚠ ESCUDO BAIXO · BUSQUE REPARO
+      </div>
+      <div id="launchBoostNotice" hidden role="alert" aria-live="assertive">
+        <strong>⚠ SUBIDA ORBITAL</strong>
+        <span>SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA</span>
       </div>
       <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
       <div id="attackWarning" role="status"></div>
       <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
       <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
-      <div id="comms">
-        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
-        <div>
-          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
+      <div id="comms" aria-label="Rádio Five Cats">
+        <i
+          id="commsPortrait"
+          class="cat-avatar"
+          data-pilot="bia"
+          role="img"
+          aria-label="BIA, transmissão Five Cats"
+        ></i>
+        <div class="comms-copy">
+          <span class="eyebrow"
+            ><strong id="commsSpeaker">BIA</strong> <b>/ CANAL FIVE CATS</b></span
+          >
           <p id="message" aria-live="polite"></p>
         </div>
       </div>
@@ -97,6 +186,7 @@
           <div class="status-caption">NOVA-7 <span>● SISTEMAS ONLINE</span></div>
         </div>
         <div class="mission">
+          <span id="developerSessionTag" hidden>QA · SEM RANK</span>
           <span class="eyebrow" id="sectorLabel">BLOCO I / SETOR 01</span
           ><strong id="stage">CIDADE DAS MÁQUINAS</strong>
           <div class="route"><i id="progress"></i></div>
@@ -142,15 +232,49 @@
         <div id="stick" aria-label="Direcional virtual"><div id="nub"></div></div>
         <div class="actions">
           <button id="robotTouch" aria-label="Alternar nave e robô">ROBÔ</button
+          ><button
+            id="lockTouch"
+            hidden
+            aria-pressed="false"
+            aria-label="Ativar mira de precisão do robô"
+          >
+            LOCK</button
           ><button id="podsTouch">PODS</button><button id="rollTouch">GIRO</button
           ><button id="bombTouch">BOMBA</button><button id="fireTouch">TIRO</button
           ><button id="boostTouch">BOOST</button>
         </div>
       </div>
-      <section id="menu" class="title-screen" aria-label="Menu principal">
+      <section id="menu" class="title-screen" data-screen="splash" aria-label="Menu principal">
         <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
         <div class="title-content">
+          <div
+            id="menuHero"
+            class="menu-cover-hero"
+            role="img"
+            aria-label="Capa original Nova Wing com os cinco gatos da esquadrilha"
+          ></div>
+          <div id="menuStartGate" class="menu-start-gate" aria-label="Tela de título">
+            <button
+              type="button"
+              id="pressStart"
+              class="press-start"
+              aria-label="Press start, abrir menu"
+            >
+              PRESS START <span aria-hidden="true">▶</span>
+            </button>
+            <small>FIVE CATS · NOVA WING</small>
+          </div>
           <h1>NOVA<span>WING</span></h1>
+          <nav id="menuPrimary" class="menu-primary" aria-label="Menu principal Nova Wing">
+            <button type="button" id="menuPlay">JOGAR <span aria-hidden="true">↗</span></button>
+            <button type="button" id="menuHangar">HANGAR <span aria-hidden="true">⌁</span></button>
+            <button type="button" id="menuHub">CENTRAL <span aria-hidden="true">◆</span></button>
+            <button type="button" id="menuQA" hidden>
+              TESTAR FASES · QA <span aria-hidden="true">↗</span>
+            </button>
+          </nav>
+          <button type="button" id="menuBack" class="menu-back">← VOLTAR AO MENU</button>
+          <p id="menuScreenLabel" class="menu-screen-label" aria-live="polite"></p>
           <p id="brief">Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.</p>
           <label id="specialtyChoice" hidden
             >ESPECIALIDADE
@@ -210,12 +334,45 @@
               <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
             </section>
             <div class="pilot-profile">
-              <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
+              <div class="profile-portrait">
+                <i id="profileAvatar" class="cat-avatar">B</i>
+                <div
+                  id="pilotUniform"
+                  class="cat-uniform"
+                  data-grade="0"
+                  aria-label="Uniforme de recruta"
+                >
+                  <span class="cat-uniform-collar" aria-hidden="true"></span>
+                  <span class="cat-uniform-stripes" aria-hidden="true"></span>
+                  <span class="cat-uniform-crest" aria-hidden="true"></span>
+                </div>
+              </div>
               <div class="profile-copy">
                 <span id="profileRole">COMANDANTE VANGUARDA</span>
+                <div class="pilot-rank-line" id="pilotRankInsignia">
+                  RECRUTA · PRIMEIRA PATRULHA
+                </div>
                 <h2 id="profileName">BIA</h2>
                 <strong id="profileSkill">SOBRECARGA</strong>
                 <p id="profileDescription"></p>
+                <meter
+                  id="pilotServiceMeter"
+                  class="pilot-service-meter"
+                  min="0"
+                  max="1"
+                  value="0"
+                  aria-label="Progresso de patente"
+                ></meter>
+                <div id="pilotRankProgress" class="pilot-rank-progress">0 / 120 PS</div>
+                <div
+                  id="pilotRankMedals"
+                  class="pilot-rank-medals"
+                  aria-label="Medalhas do piloto"
+                ></div>
+                <div class="pilot-uniform-inspect">
+                  <button type="button" id="pilotUniformPreview">VISUALIZAR UNIFORMES</button>
+                  <small id="pilotUniformPreviewStatus"> Uniforme conquistado: Mk-1 </small>
+                </div>
               </div>
               <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
             </div>
@@ -289,10 +446,13 @@
             </details>
           </section>
           <div class="title-actions">
-            <button class="secondary" id="prepareSquad" aria-expanded="false">
-              PILOTO E NAVE <span>＋</span>
-            </button>
-            <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+            <div class="mission-entry" role="group" aria-label="Preparação da missão">
+              <span class="mission-entry-heading">MISSÃO PRINCIPAL</span>
+              <button class="primary" id="start">INICIAR MISSÃO <span>↗</span></button>
+              <button class="secondary" id="prepareSquad" aria-expanded="false">
+                ESCOLHER PILOTO E NAVE <span>＋</span>
+              </button>
+            </div>
             <button class="secondary" id="optionsFromMenu">⚙ OPÇÕES</button>
             <button class="secondary" id="continue" hidden>CONTINUAR CAMPANHA ↗</button>
           </div>
@@ -304,6 +464,32 @@
               ▶ VER ABERTURA
             </button>
           </div>
+          <details id="novaAuth" class="social-login" open aria-label="Login social do Google">
+            <summary aria-label="Login social do Google">
+              <span class="google-brand-mark" aria-hidden="true">G</span>
+              <span data-auth-summary>LOGIN SOCIAL · GOOGLE</span>
+              <span class="social-login-chevron" aria-hidden="true">⌄</span>
+            </summary>
+            <div class="nova-auth-content">
+              <p class="social-login-intro">
+                Use sua conta Google para identificar seu piloto e participar do ranking quando
+                estiver disponível.
+              </p>
+              <button type="button" class="google-login-button" data-auth-login disabled>
+                <span class="google-brand-mark" aria-hidden="true">G</span>
+                <span>Entrar com Google</span>
+              </button>
+              <div class="social-login-meta">
+                <strong data-auth-name>Piloto visitante</strong>
+                <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
+              </div>
+              <div class="social-login-utilities">
+                <button type="button" data-auth-logout hidden>Sair da conta</button>
+                <button type="button" data-auth-guest>Continuar como visitante</button>
+              </div>
+              <small>Login opcional. Você pode jogar sem entrar no Google.</small>
+            </div>
+          </details>
           <details class="title-help">
             <summary>Como jogar</summary>
             <div class="help-panel">
@@ -319,6 +505,146 @@
               perfura. Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos
               ±60° para geradores e frente 0° para núcleo.
             </p>
+          </details>
+          <details
+            id="catRanks"
+            class="cat-ranks-panel"
+            aria-label="Patentes e medalhas dos Five Cats"
+          >
+            <summary>✦ HALL DA PATRULHA <span id="catSquadRank">PATRULHA ORBITAL</span></summary>
+            <p class="cat-ranks-intro">
+              Conclua missões para promover cada gato. Medalhas, uniformes e insígnias evoluem sem
+              afetar os atributos de combate.
+            </p>
+            <p id="catMedalDetails" class="cat-medal-details" role="status" aria-live="polite">
+              Toque em uma medalha para consultar como conquistá-la.
+            </p>
+            <div
+              id="catRankCards"
+              class="cat-rank-cards"
+              aria-label="Patentes individuais dos cinco pilotos"
+            ></div>
+          </details>
+          <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
+            <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
+            <p id="novaTrophyPoints">0 pontos de troféu</p>
+            <ol id="novaTrophyList" aria-label="Lista de troféus e conquistas"></ol>
+          </details>
+          <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
+            <summary aria-label="Abrir ranking Five Cats">
+              ◈ RANK <span class="rank-pill">TOP 20</span>
+            </summary>
+            <div class="nova-rank-content">
+              <div class="rank-headline">
+                <div>
+                  <span class="rank-overline">FIVE CATS · PILOT BOARD</span>
+                  <strong>RANKING GALÁCTICO</strong>
+                </div>
+                <details class="rank-info">
+                  <summary aria-label="Informações do ranking" title="Informações do ranking">
+                    i
+                  </summary>
+                  <div class="rank-help">
+                    <strong>COMO FUNCIONA</strong>
+                    <p>
+                      O ranking online é experimental e as pontuações ainda não são verificadas.
+                    </p>
+                    <p>
+                      Entre com Google e ative a participação para salvar próximas partidas.
+                      Visitantes continuam jogando; seu histórico local não sincroniza.
+                    </p>
+                    <p>
+                      Excluir os dados remotos preserva o progresso local, mas bloqueia nova
+                      inscrição desta conta até existir um processo seguro de reinscrição.
+                    </p>
+                  </div>
+                </details>
+              </div>
+              <div class="rank-identity-line">
+                <span data-rank-identity>Visitante · resultados locais</span>
+                <button
+                  type="button"
+                  data-rank-refresh
+                  aria-label="Atualizar ranking"
+                  title="Atualizar ranking"
+                >
+                  ↻
+                </button>
+              </div>
+              <ol data-rank-global class="rank-leaderboard">
+                <li>Ranking online ainda não configurado.</li>
+              </ol>
+              <p class="rank-inline-status" data-rank-status role="status" aria-live="polite"></p>
+              <div class="rank-local-best">
+                <span>MEU DESEMPENHO</span>
+                <strong data-rank-summary>0 fases · recorde 0 pts · total 0</strong>
+              </div>
+              <details class="rank-expansion">
+                <summary>MINHAS PARTIDAS</summary>
+                <div class="rank-history">
+                  <strong>NA NUVEM</strong>
+                  <ol data-rank-cloud>
+                    <li>Entre com Google para consultar.</li>
+                  </ol>
+                  <strong>NESTE DISPOSITIVO</strong>
+                  <ol data-rank-local>
+                    <li>Sem partidas concluídas.</li>
+                  </ol>
+                </div>
+              </details>
+              <details class="rank-expansion rank-enroll">
+                <summary>PARTICIPAR / PRIVACIDADE</summary>
+                <div class="rank-enrollment">
+                  <label
+                    >Apelido público
+                    <input
+                      data-rank-nickname
+                      type="text"
+                      maxlength="24"
+                      value="Piloto"
+                      autocomplete="nickname"
+                    />
+                  </label>
+                  <label class="nova-rank-consent">
+                    <input data-rank-consent type="checkbox" />
+                    Quero participar do ranking experimental e salvar minhas próximas pontuações na
+                    minha conta.
+                  </label>
+                  <button type="button" data-rank-delete disabled>
+                    EXCLUIR MEUS DADOS NA NUVEM
+                  </button>
+                  <small
+                    >Exclui suas pontuações remotas após confirmação, sem apagar sua conta Google ou
+                    seu progresso local. A mesma conta só poderá participar novamente após existir
+                    um novo processo de inscrição.</small
+                  >
+                </div>
+              </details>
+            </div>
+          </details>
+          <details id="developerPanel" hidden aria-label="Ferramentas de teste Developer QA">
+            <summary>DEVELOPER / QA · TESTAR CENÁRIOS</summary>
+            <div class="developer-panel-content">
+              <p>
+                Disponível em DEV e previews QA autorizados. Testes isolados: sem ranking, sem
+                salvamento e sem afetar a campanha.
+              </p>
+              <label for="developerSector">FASE / SETOR</label>
+              <select id="developerSector" aria-label="Escolher fase para teste"></select>
+              <label for="developerEncounter">PONTO DE ENTRADA</label>
+              <select id="developerEncounter" aria-label="Escolher encontro para teste">
+                <option value="stage">COMEÇO DA FASE</option>
+                <option value="subboss">SUBCHEFE</option>
+                <option value="boss">CHEFE PRINCIPAL</option>
+              </select>
+              <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
+              <button id="developerExplore" type="button" hidden>
+                EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D
+              </button>
+              <small
+                >QA · Sem pontuação no ranking. Para voltar, use Pausar → Sair → Confirmar.</small
+              >
+            </div>
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
@@ -340,7 +666,17 @@
         </div>
         <div class="cinematic-story">
           <span class="eyebrow">NOVA WING / FIVE CATS</span>
-          <strong id="cinematicSpeaker">NARRADOR</strong>
+          <div class="cinematic-speaker-row">
+            <i
+              id="cinematicPortrait"
+              class="cat-avatar"
+              data-pilot="bia"
+              role="img"
+              aria-label="BIA, diálogo Five Cats"
+              hidden
+            ></i>
+            <strong id="cinematicSpeaker">NARRADOR</strong>
+          </div>
           <p id="cinematicCaption" aria-live="polite"></p>
           <div class="cinematic-track"><i id="cinematicProgress"></i></div>
           <button id="cinematicSkip" class="secondary" aria-label="Pular abertura">
@@ -513,6 +849,14 @@
               </select></label
             >
             <label
+              ><span id="labelGraphics">GRÁFICOS</span>
+              <select id="settingGraphics" aria-label="Qualidade gráfica">
+                <option value="auto" selected>AUTOMÁTICO</option>
+                <option value="medium">MÉDIO</option>
+                <option value="high">ALTO</option>
+              </select></label
+            >
+            <label
               ><span id="labelMaster">VOLUME GERAL</span
               ><input id="settingMaster" type="range" min="0" max="1" step="0.05" value="0.85"
             /></label>
@@ -567,14 +911,25 @@
           <h2 id="shopTitle">SETOR LIBERTADO</h2>
           <p id="shopNext"></p>
           <strong id="shopCredits">0 CR</strong>
+          <div
+            id="shopServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Condecorações da missão"
+          ></div>
           <p>
             Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
           </p>
           <div class="shop-grid">
             <button id="buyweapon">CANHÃO</button><button id="buyvolley">MULTITIRO</button
+            ><button id="buyscatter">CANHÃO DE DISPERSÃO</button
             ><button id="buyrapid">NÚCLEO RÁPIDO</button><button id="buyarmor">BLINDAGEM</button
             ><button id="buypods">POD ORBITAL</button><button id="buyrepair">REPARAR</button
             ><button id="buybomb">BOMBA</button><button id="buybombPack">BOMBAS ×3</button>
+          </div>
+          <div id="scatterLoadout" class="scatter-loadout" aria-label="Equipamento de disparo">
+            <strong id="scatterInfo">DISPARO EQUIPADO: PULSO · ALCANCE LONGO</strong>
+            <button type="button" id="equipScatter" disabled>EQUIPAR DISPERSÃO</button>
           </div>
           <details id="customization">
             <summary>PINTURAS DA NOVA-7</summary>
@@ -619,21 +974,68 @@
           <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>
           <h2 id="resultTitle"></h2>
           <p id="resultText"></p>
+          <div
+            id="resultServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Patentes e medalhas da missão"
+          ></div>
           <button class="primary" id="restart">VOAR NOVAMENTE ↗</button>
         </div>
       </section>
     </div>
-    <details id="novaAuth" aria-label="Conta do piloto">
-      <summary>CONTA · PILOTO</summary>
-      <div class="nova-auth-content">
-        <strong data-auth-name>Piloto visitante</strong>
-        <p data-auth-status role="status" aria-live="polite">Preparando autenticação...</p>
-        <button type="button" data-auth-login disabled>Entrar com Google</button>
-        <button type="button" data-auth-logout hidden>Sair da conta</button>
-        <button type="button" data-auth-guest>Continuar como visitante</button>
-        <small>O login é opcional. Ranking online ainda não está disponível.</small>
+    <section
+      id="explorationOverlay"
+      class="exploration-overlay"
+      hidden
+      role="dialog"
+      aria-modal="true"
+      aria-label="Exploração da estação Órbita-9, protótipo Developer QA"
+    >
+      <header class="exploration-toprail">
+        <div>
+          <span class="eyebrow">FIVE CATS UNIVERSE · DEV / QA</span>
+          <h2>SINAIS DE ÓRBITA-9</h2>
+          <p id="explorationObjective">INVESTIGUE OS SINAIS MISTERIOSOS</p>
+        </div>
+        <strong id="explorationProgress">ÓRBITA-9 · PISTAS 0/3</strong>
+        <button id="exploreExit" type="button">SAIR / VOLTAR</button>
+      </header>
+      <div
+        id="explorationViewport"
+        class="exploration-viewport"
+        aria-label="Cena 3D explorável"
+      ></div>
+      <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
+      <div
+        id="explorationChoices"
+        hidden
+        class="exploration-choices"
+        aria-label="Escolha da missão"
+      >
+        <strong>SOBREVIVENTE: QUAL CAMINHO SEGUIR?</strong>
+        <button id="exploreChoiceRestore" type="button">RESTAURAR A ENERGIA</button>
+        <button id="exploreChoiceHidden" type="button">ABRIR ROTA CLANDESTINA</button>
       </div>
-    </details>
+      <footer class="exploration-controls">
+        <div class="exploration-directional" aria-label="Controles de deslocamento">
+          <button id="exploreMoveUp" type="button" aria-label="Avançar">▲</button>
+          <button id="exploreMoveLeft" type="button" aria-label="Ir à esquerda">◀</button>
+          <button id="exploreMoveDown" type="button" aria-label="Recuar">▼</button>
+          <button id="exploreMoveRight" type="button" aria-label="Ir à direita">▶</button>
+        </div>
+        <div class="exploration-actions">
+          <button id="exploreScan" type="button" disabled>SCAN · PISTA</button>
+          <button id="exploreTalk" type="button" disabled>INTERAGIR · NPC</button>
+          <button id="exploreLaunchCombat" type="button" hidden>
+            INICIAR COMBATE DESBLOQUEADO ↗
+          </button>
+        </div>
+        <small
+          >WASD / SETAS PARA ANDAR · E PARA INVESTIGAR · ESC PARA SAIR · QA SEM SAVE/RANKING</small
+        >
+      </footer>
+    </section>
     <script>
       /* BUILD:GAME */
     </script>

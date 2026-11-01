@@ -1,4 +1,5 @@
 import { UnauthorizedError, verifyFirebaseIdToken } from './firebase-jwt.js';
+import { handleProvisional } from './provisional.js';
 
 // The ranking remains read-only until score verification and anti-replay are complete.
 function json(data, status = 200, extraHeaders = {}) {
@@ -90,13 +91,15 @@ export default {
         status: 204,
         headers: {
           ...cors,
-          'access-control-allow-methods': 'GET, HEAD, OPTIONS',
+          'access-control-allow-methods': 'GET, HEAD, POST, DELETE, OPTIONS',
           'access-control-allow-headers': 'Authorization, Content-Type',
           'access-control-max-age': '600',
         },
       });
     }
     const url = new URL(request.url);
+    const experimental = await handleProvisional(request, env, url, cors);
+    if (experimental) return experimental;
     if (request.method === 'GET' && url.pathname === '/v1/health') {
       return json({ status: 'ok', scoreSubmissionsEnabled: false }, 200, cors);
     }

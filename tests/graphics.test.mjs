@@ -33,7 +33,23 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  assert.equal(count, 8);
+  // City 3.2 adds bounded batches for signs, aircraft, holofotes and skyline.
+  // Keep the GPU draw-call budget checked instead of freezing the old count.
+  assert.ok(
+    count >= 180 && count <= 260,
+    'City 3.2 keeps extra neon and aerial traffic within a bounded instancing budget',
+  );
+  const closeCity = scene.getObjectByName('launch-city');
+  const farCity = scene.getObjectByName('launch-city-far');
+  const closeDetail = closeCity.getObjectByName('city-high-details');
+  const farDetail = farCity.getObjectByName('city-high-details');
+  assert.equal(closeDetail.visible, false, 'medium avoids premium geometry');
+  world.setGraphicsQuality('high');
+  assert.equal(closeDetail.visible, true);
+  assert.equal(farDetail.visible, true);
+  world.setGraphicsQuality('medium');
+  assert.equal(closeDetail.visible, false);
+  assert.equal(farDetail.visible, false);
   world.reset();
   world.update(0.1, 0.1, 48, true);
 });

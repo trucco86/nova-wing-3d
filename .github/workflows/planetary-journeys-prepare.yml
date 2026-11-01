@@ -1,0 +1,75 @@
+name: Prepare Planetary Journeys QA v1.27.58
+on:
+  push:
+    branches:
+      - feat/planetary-journeys-20261101
+    paths:
+      - .github/workflows/planetary-journeys-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/planetary-journeys-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare unapproved web candidate
+        run: npm run release:prepare -- 1.27.58
+      - name: Describe real changes and QA limitations
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const notesPath = 'releases/v1.27.58.md';
+          writeFileSync(notesPath, [
+            '## Nova Wing 3D v1.27.58 — Planetary Journeys QA',
+            '',
+            '- Authored spatial transitions for Jupiter Orbit-9, Venus, Europa, Neptune, Saturn, Orion anomaly and Titan.',
+            '- Existing Earth launch, Mars sand descent and asteroid interiors remain independent.',
+            '- Boss escape accelerates with deterministic visual streaks and route-specific calls; progression still requires the shop/map.',
+            '- Delays combat spawns until planetary arrivals end, keeps QA scenarios isolated and all ten destinations selectable.',
+            '',
+            '**Candidate only — browser/mobile GPU review and human QA pending; no PROD or HML promotion.**',
+            ''
+          ].join('\n'));
+          let log = readFileSync('CHANGELOG.md', 'utf8');
+          const marker = '- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          if (log.includes('## 1.27.58') && log.includes(marker)) {
+            const start = log.indexOf('## 1.27.58');
+            const idx = log.indexOf(marker, start);
+            if (idx >= 0) log = log.slice(0,idx) + '- Planetary Journeys: chegada e escape cinematográficos específicos por destino, sem alterar produção.' + log.slice(idx+marker.length);
+          }
+          writeFileSync('CHANGELOG.md', log);
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      # Run from current branch head after fixing the source/bundle race.
+      # Repeat the complete gate after updating the timing contracts.
+      - run: git diff --check
+      - name: Commit validated, generated web candidate only
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.58.md index.html src/destination-arrival.js src/destination-vista.js src/developer-mode.js src/visuals.js src/game.js src/campaign.js src/stage-journey.js tests/destination-arrival.test.mjs tests/dynamic-flight.test.mjs tests/flight-cameras.test.mjs tests/sector-waves.test.mjs tests/browser/destination-journeys.spec.mjs specs/planetary-journeys-v5.md
+          git diff --cached --stat
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(planetary): sync candidate v1.27.58 web bundle'
+          git push origin HEAD:feat/planetary-journeys-20261101
+      - name: Request strict CI and isolated Cloudflare preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/planetary-journeys-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/planetary-journeys-20261101

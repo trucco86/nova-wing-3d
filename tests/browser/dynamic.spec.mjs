@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import {
   reachBrowserBoss,
@@ -9,8 +10,9 @@ import {
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
 }, info) => {
-  // Two screenshots took over 20s on the software-rendered CI runner.
-  test.setTimeout(60000);
+  // WebGL screenshots + illustrated hangar may exceed 60s on CI SwiftShader;
+  // preserve all visual/control checks, without timing out mid-flight.
+  test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -19,7 +21,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.goto('/');
   await expect(page.locator('#squadSelection')).toBeHidden();
   await page.screenshot({ path: info.outputPath('cover.png') });
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
   await page.locator('#pilot-calvin').click();
   await expect(page.locator('#profileName')).toHaveText('CALVINHO');
@@ -31,7 +33,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.locator('#loadoutCatalog summary').click();
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#pilotName')).toContainText('CALVINHO');
   await expect(page.locator('#rpgLevel')).toContainText('EV 1');
@@ -48,10 +50,10 @@ test('web route, orbital ascent and final black hole render without shader error
     if (m.type() === 'error') errors.push(m.text());
   });
   for (const [sector, time, expected] of [
-    [0, 28, 'SEGURE BOOST'],
-    [1, 30, 'CURVA'],
-    [2, 30, 'ASCENSÃO'],
-    [9, 10, 'ROTA DE APROXIMAÇÃO'],
+    [0, 28, 'SUPER BOOST'],
+    [1, 30, 'SUPERFÍCIE DE MARTE'],
+    [2, 30, 'INTERIOR DO ASTEROIDE'],
+    [9, 10, 'TITÃ'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
@@ -67,8 +69,11 @@ test('2D perspective supports controls, pause and return to the same mission', a
   test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('/__dynamic.html?sector=2&arcade=1');
+  await page.goto('/__dynamic.html?sector=6&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
+  await expect(page.locator('#arcadePanel')).toBeHidden();
+  await expect(page.locator('#routeLabel')).toContainText('NETUNO');
+  await page.evaluate(() => window.fixture.advance(21.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
   await expect(page.locator('#arcadePanel')).toHaveCSS('opacity', '1');
   await expect(page.locator('#comms')).toHaveCSS('visibility', 'hidden');
@@ -122,7 +127,7 @@ test('hangar equips purchased paint and preserves it on reload', async ({ page }
   await page.evaluate(() => window.fixture.advance(0.1));
   await page.screenshot({ path: info.outputPath('paint-equipped.png') });
   await page.goto('/');
-  await page.locator('#continue').click();
+  await clickMenu(page, '#continue');
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('nova-wing-3d-v1')).cosmetics.skin),
   ).toBe('ember');
@@ -217,9 +222,17 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   );
   await page.locator('#pauseResume').click();
   await page.evaluate(() => {
-    window.fixture.advance(8);
+    // Wait for the configured cooldown instead of assuming the old 8s value.
+    // This exercises the longer-lived RPG shield without weakening the assertion.
+    const cooldown = window.fixture.game.snapshot().strategy.specialCd;
+    if (!Number.isFinite(cooldown) || cooldown <= 0) {
+      throw new Error('Expected an active cooldown after casting BARREIRA');
+    }
+    window.fixture.advance(cooldown + 0.15);
     window.fixture.game.cycleSpecial();
-    window.fixture.game.castSpecial();
+    if (!window.fixture.game.castSpecial()) {
+      throw new Error('NOVA should be castable after BARREIRA cooldown');
+    }
     window.fixture.advance(0.15);
   });
   expect(
@@ -347,36 +360,38 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });
   await waitForBrowserArmoredFront(page);
-  const blocked = await fireBrowserPrecision(page);
-  expect(blocked.event.type).toBe('blocked');
-  expect(blocked.after.bossTargets[0].hp).toBe(blocked.before.bossTargets[0].hp);
+  const armored = await fireBrowserPrecision(page);
+  expect(armored.event.type).toBe('boss');
+  expect(armored.after.bossHp).toBeLessThan(armored.before.bossHp);
+  expect(armored.after.bossTargets[0].hp).toBe(armored.before.bossTargets[0].hp);
+  expect(armored.after.bossParts).toBe(2);
   await expect(page.locator('#hitFeedback')).toBeVisible();
-  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
-  await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
-  const blockedFeedback = await page.locator('#hitFeedback').boundingBox();
-  expect(blockedFeedback.width).toBeLessThanOrEqual(24);
-  expect(blockedFeedback.height).toBeLessThanOrEqual(24);
+  await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'boss');
+  await expect(page.locator('#hitFeedback')).toContainText(/ACERTO \+\d+/);
+  const armoredFeedback = await page.locator('#hitFeedback').boundingBox();
+  expect(armoredFeedback).not.toBeNull();
   expect(
-    blockedFeedback.y + blockedFeedback.height,
+    armoredFeedback.y + armoredFeedback.height,
     'Impact labels stay above the center',
   ).toBeLessThan(page.viewportSize().height * 0.49);
   expect(await page.locator('#hitFeedback').evaluate((el) => el.parentElement.id)).toBe(
     'hudNotices',
   );
-  await page.screenshot({ path: info.outputPath('blocked-impact-compact.png') });
+  await page.screenshot({ path: info.outputPath('armored-impact-compact.png') });
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await reachBrowserBoss(page, { bossAge: 5 });
     await waitForBrowserArmoredFront(page);
-    const portraitBlocked = await fireBrowserPrecision(page);
-    expect(portraitBlocked.event.type).toBe('blocked');
-    expect(portraitBlocked.after.bossTargets[0].hp).toBe(portraitBlocked.before.bossTargets[0].hp);
+    const portraitArmored = await fireBrowserPrecision(page);
+    expect(portraitArmored.event.type).toBe('boss');
+    expect(portraitArmored.after.bossHp).toBeLessThan(portraitArmored.before.bossHp);
+    expect(portraitArmored.after.bossTargets[0].hp).toBe(portraitArmored.before.bossTargets[0].hp);
     await expect(page.locator('#game')).toBeVisible();
-    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
+    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'boss');
     await expect(page.locator('#hitFeedback')).toBeVisible();
-    await page.screenshot({ path: info.outputPath('blocked-impact-portrait.png') });
+    await page.screenshot({ path: info.outputPath('armored-impact-portrait.png') });
   }
   await page.goto('/__dynamic.html?sector=0');
   await reachBrowserBoss(page, { bossAge: 5 });

@@ -1,5 +1,8 @@
 import * as T from 'three';
+import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
+import { bossSignaturePose } from './boss-signature.js';
+import { createBossVisualIdentity } from './boss-visual-identity.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -47,9 +50,13 @@ export function createBossModel(sector, index = 0, tactical = false) {
       break;
     }
     case 'drill': {
+      // Independent rotating bit gives the player a readable charge windup.
+      const drillPivot = new T.Group();
+      drillPivot.name = 'signature-drill-bit';
       const drill = new T.Mesh(new T.ConeGeometry(13, 40, 8), armor);
       drill.rotation.x = Math.PI / 2;
-      add(drill, 0, 0, -8);
+      drillPivot.add(drill);
+      add(drillPivot, 0, 0, -8);
       for (let i = 0; i < 4; i++) {
         const q = ring(15 + i * 3);
         add(q, 0, 0, -i * 7);
@@ -77,11 +84,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
     case 'mech': {
       add(box(20, 25, 16, armor), 0, -2);
       add(sphere(8, edge), 0, 18, 0);
-      for (const s of [-1, 1]) {
-        add(box(12, 30, 14, armor), s * 21, -4);
-        add(box(11, 25, 15, dark), s * 12, -28);
-        add(box(12, 6, 23, armor), s * 12, -42, 5);
-        add(box(6, 6, 22, edge), s * 23, -13, 12);
+      for (const side of [-1, 1]) {
+        // The Colossus aims with two independently animated cannons.
+        const shoulder = new T.Group();
+        shoulder.name = side < 0 ? 'signature-mech-left-arm' : 'signature-mech-right-arm';
+        shoulder.add(box(12, 30, 14, armor, 0, -7, 0));
+        shoulder.add(box(6, 6, 22, edge, side * 2, -15, 12));
+        add(shoulder, side * 21, 4, 0);
+        add(box(11, 25, 15, dark), side * 12, -28);
+        add(box(12, 6, 23, armor), side * 12, -42, 5);
       }
       break;
     }
@@ -89,6 +100,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
       for (let i = 0; i < 7; i++) {
         const a = (i * Math.PI * 2) / 7,
           arm = new T.Group();
+        arm.name = 'signature-hydra-head-' + i;
         for (let j = 1; j < 6; j++) {
           let p = sphere(4 - j * 0.35, armor);
           p.position.set(Math.cos(a) * j * 8, Math.sin(a) * j * 5, -j * 2);
@@ -114,15 +126,57 @@ export function createBossModel(sector, index = 0, tactical = false) {
         add(box(30, 1, 47, edge), s * 33, 4, -10);
       }
       const crown = ring(24, 2);
+      crown.name = 'signature-marvin-eclipse';
       add(crown, 0, 4, -10);
       rotors.push(crown);
       break;
     }
   }
+  // Small authored moving assemblies give the six new attack families a
+  // visible telegraph without changing generator hitboxes.
+  if (index === 0 || index === 7) {
+    for (const side of [-1, 1]) {
+      const bank = new T.Group();
+      bank.name =
+        (index === 0 ? 'signature-rok' : 'signature-omega') + (side < 0 ? '-left' : '-right');
+      bank.add(box(13, 7, 19, armor, side * 4, 0, 0));
+      for (let i = 0; i < 3; i++) bank.add(box(2, 2, 16, hot, side * (i * 5 - 4), 3, 10));
+      add(bank, side * (index === 7 ? 45 : 31), index === 7 ? 17 : 7, 22);
+    }
+  }
+  if (index === 1) {
+    const tail = new T.Group();
+    tail.name = 'signature-stingray-tail';
+    tail.add(new T.Mesh(new T.ConeGeometry(5, 36, 5), armor));
+    tail.add(box(14, 2, 20, edge, 0, -14, 10));
+    add(tail, 0, -14, -18);
+  }
+  if (index === 3) {
+    const iris = new T.Group();
+    iris.name = 'signature-orbit-iris';
+    iris.add(new T.Mesh(new T.TorusGeometry(28, 2.2, 7, 48), edge));
+    for (let i = 0; i < 4; i++) {
+      const spoke = box(22, 2, 4, armor);
+      spoke.rotation.z = (i * Math.PI) / 2;
+      spoke.position.set(Math.cos((i * Math.PI) / 2) * 12, Math.sin((i * Math.PI) / 2) * 12, 0);
+      iris.add(spoke);
+    }
+    add(iris, 0, 0, 25);
+  }
+  if (index === 8) {
+    const lens = new T.Group();
+    lens.name = 'signature-orion-lens';
+    lens.add(new T.Mesh(new T.TorusGeometry(37, 2.3, 8, 48), edge));
+    const inner = new T.Mesh(new T.TorusGeometry(24, 1.5, 8, 40), hot);
+    inner.rotation.y = 0.3;
+    lens.add(inner);
+    add(lens, 0, 0, 25);
+  }
   if (sector.kind === 'phoenix') {
     for (const side of [-1, 1]) {
       const flame = new T.Mesh(new T.ConeGeometry(9, 40, 6), edge);
       flame.rotation.z = side * 0.4;
+      flame.name = side < 0 ? 'signature-phoenix-left-wing' : 'signature-phoenix-right-wing';
       add(flame, side * 40, 15, -24);
     }
     add(sphere(12, edge), 0, 0, -15);
@@ -260,6 +314,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   add(halo(sector.accent, 21, 0.7), 0, 0, 20);
   // Layered armor and exposed machinery stay behind the three aiming zones.
   const vents = [];
+  const batteries = [];
   for (const side of [-1, 1]) {
     for (let i = 0; i < 5; i++) {
       const plate = add(box(5.5, 6, 2, armor), side * (25 + i * 5), 1 + (i % 2) * 5, 18 - i);
@@ -270,6 +325,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
       vents.push(vent);
     }
     const turret = new T.Group();
+    turret.name = side < 0 ? 'boss-battery-left' : 'boss-battery-right';
+    turret.userData.batterySide = side;
     turret.position.set(side * 29, 12, 17);
     turret.add(sphere(4, dark, 1));
     for (const x of [-1.2, 1.2]) {
@@ -279,6 +336,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
       turret.add(barrel);
       turret.add(box(1, 1, 0.3, hot, x, 0, 9));
     }
+    const muzzle = new T.Object3D();
+    muzzle.name = side < 0 ? 'boss-battery-left-muzzle' : 'boss-battery-right-muzzle';
+    muzzle.position.set(0, 0, 10.5);
+    turret.add(muzzle);
+    const activation = new T.Mesh(new T.TorusGeometry(3.3, 0.48, 7, 24), hot);
+    activation.name = 'boss-battery-charging-ring';
+    activation.position.z = 9.8;
+    turret.add(activation);
+    batteries.push(turret);
     g.add(turret);
     const engine = new T.Mesh(new T.CylinderGeometry(4, 5, 12, 16), dark);
     engine.rotation.x = Math.PI / 2;
@@ -308,10 +374,27 @@ export function createBossModel(sector, index = 0, tactical = false) {
         tick.rotation.z = -angle;
         marker.add(tick);
       }
+      // Two nested rotating frames plus chevrons make the exposed hitbox readable
+      // against highly detailed bosses even at phone resolution.
+      const inner = new T.Mesh(new T.TorusGeometry(radius * 0.7, 0.35, 6, 30), markerMaterial);
+      inner.name = 'weak-point-inner-reticle';
+      marker.add(inner);
+      for (const side of [-1, 1]) {
+        const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
+        chevron.position.set(side * (radius + 3), 0, 0.2);
+        chevron.rotation.z = (side * Math.PI) / 2;
+        marker.add(chevron);
+      }
       marker.visible = false;
       return marker;
     },
     coreMarker = targetMarker(8.5);
+  const coreMuzzle = new T.Object3D();
+  coreMuzzle.name = 'boss-core-muzzle';
+  coreMuzzle.position.set(0, 12, 27);
+  g.add(coreMuzzle);
+  const coreBarrel = add(box(4.6, 3.1, 8, dark), 0, 12, 21);
+  coreBarrel.name = 'boss-core-emergency-weapon';
   coreMarker.position.set(0, 0, 21);
   g.add(coreMarker);
   const parts = [];
@@ -321,7 +404,13 @@ export function createBossModel(sector, index = 0, tactical = false) {
     const marker = targetMarker(6.5);
     marker.position.set(s * 17, 4, 22);
     g.add(marker);
-    parts.push({ mesh: p, marker, hp: 180 + index * 25, max: 180 + index * 25 });
+    parts.push({
+      mesh: p,
+      marker,
+      battery: batteries[s < 0 ? 0 : 1],
+      hp: 180 + index * 25,
+      max: 180 + index * 25,
+    });
   }
   if (tactical) {
     const proportions = [
@@ -390,10 +479,40 @@ export function createBossModel(sector, index = 0, tactical = false) {
     nose.position.set(0, -2, 13);
     nose.scale.set(1.4, 0.7, 0.65);
     face.add(nose);
+    const biteJaw = new T.Group();
+    biteJaw.name = 'marvin-bite-jaw';
+    biteJaw.position.set(0, -8, 7);
+    const lowerJaw = sphere(8, bone, 1);
+    lowerJaw.scale.set(1.2, 0.35, 0.7);
+    biteJaw.add(lowerJaw);
+    for (const side of [-1, 1]) {
+      const fang = new T.Mesh(new T.ConeGeometry(1.25, 6, 5), bone);
+      fang.position.set(side * 5.5, 2, 5);
+      fang.rotation.x = Math.PI;
+      biteJaw.add(fang);
+    }
+    face.add(biteJaw);
+    for (const side of [-1, 1]) {
+      const claw = new T.Group();
+      claw.name = side < 0 ? 'marvin-left-claw' : 'marvin-right-claw';
+      claw.position.set(side * 41, -11, 19);
+      claw.add(box(7, 17, 13, armor));
+      for (let digit = -1; digit <= 1; digit++) {
+        const talon = new T.Mesh(new T.ConeGeometry(2.2, 14, 5), bone);
+        talon.rotation.x = Math.PI / 2;
+        talon.position.set(digit * 5.5, -11, 10);
+        claw.add(talon);
+      }
+      g.add(claw);
+    }
     g.add(face);
   }
+  g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
+  addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   g.userData = {
     parts,
+    batteries,
+    coreMuzzle,
     coreMarker,
     vents,
     core,
@@ -406,6 +525,72 @@ export function createBossModel(sector, index = 0, tactical = false) {
   };
   return g;
 }
+/** Boss-only procedural choreography. Reuses authored geometry and freezes
+ * with the simulation clock; never moves the actual generator hit volumes. */
+export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
+  const pose = bossSignaturePose(index, time, phase, attackState);
+  if (!pose || !g) return null;
+  if (index === 0 || index === 7) {
+    const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
+    const left = g.getObjectByName(prefix + '-left');
+    const right = g.getObjectByName(prefix + '-right');
+    const angle = index === 0 ? pose.pincer : pose.broadside;
+    if (left) left.rotation.y = angle;
+    if (right) right.rotation.y = -angle;
+  } else if (index === 1) {
+    const tail = g.getObjectByName('signature-stingray-tail');
+    if (tail) tail.rotation.z = pose.tail;
+  } else if (index === 3) {
+    const iris = g.getObjectByName('signature-orbit-iris');
+    if (iris) {
+      iris.rotation.z = pose.iris;
+      iris.scale.setScalar(pose.aperture);
+    }
+  } else if (index === 4) {
+    const left = g.getObjectByName('signature-phoenix-left-wing');
+    const right = g.getObjectByName('signature-phoenix-right-wing');
+    if (left) left.rotation.z = pose.wingLeft;
+    if (right) right.rotation.z = pose.wingRight;
+  } else if (index === 8) {
+    const lens = g.getObjectByName('signature-orion-lens');
+    if (lens) {
+      lens.rotation.z = pose.lens;
+      lens.scale.setScalar(pose.pulse);
+    }
+  } else if (index === 2) {
+    const bit = g.getObjectByName('signature-drill-bit');
+    if (bit) {
+      bit.rotation.z = pose.spin;
+      bit.position.z = -8 + pose.extension;
+    }
+  } else if (index === 5) {
+    const left = g.getObjectByName('signature-mech-left-arm');
+    const right = g.getObjectByName('signature-mech-right-arm');
+    if (left) {
+      left.rotation.x = pose.armLeft;
+      left.rotation.z = -pose.stomp;
+    }
+    if (right) {
+      right.rotation.x = pose.armRight;
+      right.rotation.z = pose.stomp;
+    }
+  } else if (index === 6) {
+    for (let i = 0; i < 7; i++) {
+      const head = g.getObjectByName('signature-hydra-head-' + i);
+      if (!head) continue;
+      head.rotation.z = pose.headSwing * Math.sin(time * 0.6 + i * 1.1);
+      head.scale.setScalar(pose.headPulse);
+    }
+  } else if (index === 9) {
+    const crown = g.getObjectByName('signature-marvin-eclipse');
+    if (crown) {
+      crown.scale.setScalar(pose.eclipse);
+      crown.rotation.z = pose.twist;
+    }
+  }
+  return pose;
+}
+
 export function disposeBoss(g) {
   const geos = new Set();
   g.traverse((o) => {
@@ -532,6 +717,7 @@ export function createSubboss(index = 0) {
         }
         break;
     }
+    addSubbossDetail(g, { armor, dark, hot, index });
     g.userData.variant = index;
     cruiserTemplates.set(index, g);
   }

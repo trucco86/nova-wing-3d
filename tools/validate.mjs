@@ -62,8 +62,10 @@ for (const command of commands) {
   }
   const r = spawnSync('npm', args, {
     encoding: 'utf8',
-    // The complete suite exceeded eight minutes on a software-rendered CI runner.
-    timeout: command === 'test:browser' ? 720000 : 180000,
+    // Four software-rendered WebGL shards can exceed 12 minutes while still
+    // passing real assertions. Let Playwright finish; the job retains a
+    // separate 25-minute hard ceiling and still fails on every test error.
+    timeout: command === 'test:browser' ? 1200000 : 180000,
   });
   const output = (r.stdout ?? '') + (r.stderr ?? '');
   writeFileSync(`artifacts/${command.replaceAll(':', '-')}.log`, output);

@@ -1,16 +1,21 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { prepareAndroidWeb } from '../../tools/android.mjs';
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {
+  // The software WebGL runner requires more than the Playwright 30s default
+  // for a genuine menu -> cinematic -> mission -> pause interaction.
+  test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text());
   });
   await page.goto('/');
+  await openMenu(page, 'play');
   await expect(page.getByRole('button', { name: /INICIAR MISSÃO/ })).toBeEnabled();
   // A disabled WebGL context is a failure in this required CI job, never a skipped pass.
   expect(await page.locator('#brief').innerText()).not.toContain('não conseguiu');
-  await page.getByRole('button', { name: /INICIAR MISSÃO/ }).click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#music')).toBeHidden();
@@ -31,32 +36,40 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await expect(page.locator('#pause')).toHaveText('▶');
   await page.locator('#pauseOptions').click();
   await expect(page.locator('#settingsMenu')).toBeVisible();
-  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
+  await expect(page.locator('#settingMusic')).toHaveValue('0.8');
   await page.locator('#settingsClose').click();
-  await expect(page.locator('#game')).toHaveJSProperty(
-    'width',
-    info.project.name === 'mobile' ? 844 : 1366,
-  );
+  // Adaptive mobile DPR is allowed to reduce the backing resolution to
+  // preserve FPS. The canvas must still occupy the complete CSS viewport.
+  const canvas = await page.locator('#game').evaluate((element) => ({
+    displayWidth: element.getBoundingClientRect().width,
+    displayHeight: element.getBoundingClientRect().height,
+    backingWidth: element.width,
+    backingHeight: element.height,
+  }));
+  const viewport = page.viewportSize();
+  expect(canvas.displayWidth).toBeCloseTo(viewport.width, 0);
+  expect(canvas.displayHeight).toBeCloseTo(viewport.height, 0);
+  expect(canvas.backingWidth).toBeGreaterThanOrEqual(viewport.width * 0.65);
+  expect(canvas.backingWidth).toBeLessThanOrEqual(viewport.width * 2.5);
+  expect(canvas.backingHeight).toBeGreaterThanOrEqual(viewport.height * 0.65);
   await page.screenshot({ path: test.info().outputPath('mission.png') });
   expect(errors).toEqual([]);
 });
 test('held depleted boost settles at cruise and rearms on keyboard and touch', async ({
   page,
 }, info) => {
-  // Software WebGL can take over 30 wall-clock seconds for 3.4 simulated seconds.
-  // The CI trace still had 50% energy at the old deadline; preserve all state assertions.
-  // CI evidence shows boost rendered after the default 5s assertion deadline.
-  // Keep the real animation loop and input; allow software rendering to present the frame.
-  test.setTimeout(180000);
-  await page.goto('/');
-  await page.locator('#start').click();
-  await page.locator('#cinematicSkip').click();
+  // Same game simulation and real keyboard/touch events, with deterministic
+  // simulated time instead of slow SwiftShader wall-clock timing.
+  test.setTimeout(90000);
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const mobile = info.project.name === 'mobile';
   if (mobile) {
     const bounds = await page.locator('#boostTouch').boundingBox();
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.down();
   } else await page.keyboard.down('Shift');
+  await page.evaluate(() => window.fixture.advance(0.2));
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   if (mobile) {
     await expect
@@ -66,11 +79,13 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
       .toContain('conic-gradient');
   }
   await expect(page.locator('#speedValue')).toHaveText('890');
-  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO', { timeout: 90000 });
+  await page.evaluate(() => window.fixture.advance(3.8));
+  await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO');
+  // A held boost must exhaust; recovery is tested against real game time,
+  // not the variable render rate of a software GPU in CI.
+  await page.evaluate(() => window.fixture.advance(2.2));
   await expect
-    .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 40000,
-    })
+    .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)))
     .toBeGreaterThan(20);
   await expect(page.locator('body')).not.toHaveClass(/boosting/);
   await expect(page.locator('#speedValue')).toHaveText('480');
@@ -82,6 +97,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     await page.keyboard.up('Shift');
     await page.keyboard.down('Shift');
   }
+  await page.evaluate(() => window.fixture.advance(0.2));
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
   await expect(page.locator('#speedValue')).toHaveText('890');
   await page.screenshot({ path: info.outputPath('boost-rearmed.png') });
@@ -109,13 +125,13 @@ test('checkpoint restores the final sector with independent music control', asyn
     ),
   );
   await page.goto('/');
-  await page.locator('#continue').click();
+  await clickMenu(page, '#continue');
   await expect(page.locator('#stage')).toHaveText('TRONO DE MARVIN');
   await expect(page.locator('#weaponLabel')).toContainText('PLASMA VÓRTICE');
   await page.locator('#pause').click();
   await page.locator('#pauseOptions').click();
-  await expect(page.locator('#settingMusic')).toHaveValue('0.7');
-  await expect(page.locator('#settingSfx')).toHaveValue('0.75');
+  await expect(page.locator('#settingMusic')).toHaveValue('0.8');
+  await expect(page.locator('#settingSfx')).toHaveValue('0.85');
   await page.locator('#settingsClose').click();
   await page.locator('#pauseResume').click();
   await expect(page.locator('#pauseMenu')).toBeHidden();
@@ -146,9 +162,8 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
     info.project.name !== 'mobile',
     'Controles de toque são apresentados apenas em dispositivos coarse.',
   );
-  await page.goto('/');
-  await page.locator('#start').tap();
-  await page.locator('#cinematicSkip').tap();
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const fire = page.locator('#fireTouch');
   await expect(fire).toBeVisible();
   expect(await fire.evaluate((el) => getComputedStyle(el).touchAction)).toBe('none');
@@ -157,10 +172,11 @@ test('held mobile controls suppress browser gestures and release on pause', asyn
   await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
   await page.mouse.down();
   await expect(fire).toHaveClass(/pressed/);
+  // Still holding the real pointer button: step the identical simulation
+  // for 1.1s to verify the cannon actually builds charge beyond 65%.
+  await page.evaluate(() => window.fixture.advance(1.1));
   await expect
-    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 15000,
-    })
+    .poll(async () => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)))
     .toBeGreaterThan(65);
   const cancelled = await fire.evaluate(
     (el) => !el.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true })),
@@ -218,7 +234,9 @@ test('evolving pods, distinct rings, cruiser and reactor collapse render', async
   }
   expect(errors).toEqual([]);
 });
-test('six music states render finite audible audio without clipping', async ({ page }, info) => {
+test('menu and six music states render stereo bass with finite audio and no clipping', async ({
+  page,
+}, info) => {
   test.setTimeout(90000);
   await page.goto('/__audio.html');
   await page.getByRole('button', { name: 'Renderizar trilha' }).click();
@@ -227,6 +245,7 @@ test('six music states render finite audible audio without clipping', async ({ p
   });
   const metrics = JSON.parse(await page.locator('pre').textContent());
   expect(metrics.map((m) => m.mode)).toEqual([
+    'menu',
     'sector',
     'subboss',
     'boss',
@@ -238,6 +257,9 @@ test('six music states render finite audible audio without clipping', async ({ p
     expect(m.finite).toBe(true);
     expect(m.rms).toBeGreaterThan(0.005);
     expect(m.peak).toBeLessThan(0.98);
+    expect(m.bassRms).toBeGreaterThan(0.003);
+    expect(m.bassFraction).toBeGreaterThan(0.15);
+    expect(m.stereoRms).toBeGreaterThan(0.0001);
   }
   const download = page.waitForEvent('download');
   await page.getByRole('link', { name: 'Baixar demonstração' }).click();
@@ -253,7 +275,7 @@ test('boost streaks follow keyboard or touch input and disappear on pause', asyn
 }, info) => {
   test.setTimeout(60000);
   await page.goto('/');
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   if (info.project.name === 'mobile') {
     const bounds = await page.locator('#boostTouch').boundingBox();
@@ -282,8 +304,9 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
 }, info) => {
   await page.goto('/');
   await expect(page.locator('#loadout')).toBeHidden();
+  await expect(page.locator('#pressStart')).toBeInViewport();
+  await openMenu(page, 'central');
   await expect(page.locator('.title-help')).not.toHaveAttribute('open', '');
-  await expect(page.locator('#start')).toBeInViewport();
   await page.screenshot({ path: info.outputPath('title.png') });
   await page.locator('.title-help summary').click();
   await expect(page.locator('.help-panel')).toBeVisible();
@@ -291,8 +314,7 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
   if (info.project.name === 'mobile') {
     await page.setViewportSize({ width: 390, height: 844 });
     await expect.poll(() => page.evaluate(() => window.innerWidth)).toBe(390);
-    await expect(page.locator('#start')).toHaveCSS('width', '300px');
-    await expect(page.locator('#start')).toBeInViewport();
+    await expect(page.locator('#optionsFromMenu')).toBeInViewport();
     await page.screenshot({ path: info.outputPath('title-portrait.png') });
   }
 });
@@ -314,7 +336,7 @@ test('offline Android interface protects controls from cutout and gesture insets
     for (const [side, value] of Object.entries({ left: 32, right: 18, top: 12, bottom: 24 }))
       document.documentElement.style.setProperty(`--safe-area-inset-${side}`, `${value}px`);
   });
-  await page.locator('#start').tap();
+  await clickMenu(page, '#start', 'tap');
   await expect(page.locator('#cinematic')).toHaveCSS('pointer-events', 'auto');
   await page.locator('#cinematicSkip').tap();
   await expect(page.locator('#touch')).toBeVisible();
@@ -345,7 +367,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
   page,
 }) => {
   await page.goto('/');
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await page.locator('#pause').focus();
   const label = await page.locator('#pause').textContent();

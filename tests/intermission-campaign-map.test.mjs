@@ -33,6 +33,10 @@ test('campaign route shows ten real levels with completed/current/future progres
   assert.equal(map[4].boss, SECTORS[4].boss);
   assert.ok(map[4].brief.length > 10);
   assert.ok(map[4].threat.includes('plasma'));
+  assert.equal(map[1].name, 'DESERTO DE MARTE');
+  assert.match(map[1].threat, /Tempestades de areia/);
+  assert.equal(map[1].boss, 'COLOSSO DAS DUNAS');
+  assert.notEqual(map[1].icon, '◆', 'Mars has a unique map symbol');
   assert.equal(map[9].name, 'TRONO DE MARVIN');
 });
 

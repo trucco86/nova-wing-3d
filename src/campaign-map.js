@@ -1,6 +1,7 @@
 const THREATS = {
   city: 'Torres, sentinelas e caças de interceptação',
   ocean: 'Defesas costeiras e máquinas submarinas',
+  mars: 'Tempestades de areia, sentinelas alienígenas e colossos do deserto',
   asteroids: 'Detritos em alta velocidade e perfuradores',
   station: 'Geradores externos e baterias orbitais',
   sun: 'Rajadas de plasma e instabilidade térmica',
@@ -13,6 +14,7 @@ const THREATS = {
 const ICONS = {
   city: '▥',
   ocean: '≈',
+  mars: '◈',
   asteroids: '✦',
   station: '◎',
   sun: '☼',

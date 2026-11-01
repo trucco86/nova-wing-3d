@@ -1,6 +1,6 @@
 # Firebase Authentication — contrato de login Google (Nova Wing)
 
-**Status (25/10/2026 UTC):** frontend implementado pela [PR #59](https://github.com/trucco86/nova-wing-3d/pull/59), integrado e publicado em **DEV**. CI verde não equivale a uma sessão Google real homologada. O ranking, o banco remoto e a sincronização do save **não** foram implementados.
+**Status da implementação (27/10/2026):** a configuração independente de PROD, o histórico e a integração com ranking experimental foram propostos em uma branch de feature. **Não foram publicados nem homologados em HML/PROD.** O Firebase `nova-wing-dev` continua sendo apenas de testes. Ver [Plano de implantação e gates](IDENTITY-RANKING-DELIVERY.md).
 
 ## Decisão arquitetural
 

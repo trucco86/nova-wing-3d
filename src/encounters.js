@@ -1,6 +1,7 @@
 import * as T from 'three';
+import { addGroundEnemyDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial } from './visuals.js';
-export const isGroundSector = (sector) => ['city', 'ocean', 'ice'].includes(sector.theme);
+export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
   dark = metal('#101d2b'),
   joint = metal('#a9aeb7', 0.85),
@@ -62,6 +63,28 @@ export function createGroundEnemy(kind, variant = -1) {
       turret.position.y = 25;
       turret.add(box(7, 4, 6, dark));
       turret.add(box(5.5, 1, 0.4, red, 0, 0.4, 3.1));
+      // Two actual emitter sockets on the head, in the same +Z direction
+      // as the visible face. Projectiles and warning beams start here.
+      for (const side of [-1, 1]) {
+        const eye = new T.Mesh(new T.SphereGeometry(0.68, 10, 7), red);
+        eye.name = side < 0 ? 'enemy-robot-eye-left' : 'enemy-robot-eye-right';
+        eye.position.set(side * 1.75, 0.46, 3.45);
+        turret.add(eye);
+        const ray = new T.Mesh(
+          new T.CylinderGeometry(0.12, 0.26, 1, 8),
+          new T.MeshBasicMaterial({
+            color: '#ff4055',
+            transparent: true,
+            opacity: 0.76,
+            depthWrite: false,
+            blending: T.AdditiveBlending,
+            toneMapped: false,
+          }),
+        );
+        ray.name = side < 0 ? 'enemy-robot-eye-ray-left' : 'enemy-robot-eye-ray-right';
+        ray.visible = false;
+        turret.add(ray);
+      }
       turret.add(beam([0, 1, 0], [0, 5, 0], 0.25, joint));
     }
     if (variant >= 0) {
@@ -163,22 +186,72 @@ export function createGroundEnemy(kind, variant = -1) {
       }
     }
     g.add(turret);
+    addGroundEnemyDetail(g, { armor, dark, warning: red, kind });
     templates.set(key, g);
   }
   const model = templates.get(key).clone(true);
-  model.userData = { turret: model.getObjectByName('turret'), kind, variant };
+  model.userData = { turret: model.getObjectByName('turret'), kind, variant, eyeBeamUntil: 0 };
+  // Cloned mechs must not mutate one another's alpha when firing.
+  if (kind === 'walker') {
+    for (const side of ['left', 'right']) {
+      const ray = model.getObjectByName('enemy-robot-eye-ray-' + side);
+      if (ray) ray.material = ray.material.clone();
+    }
+  }
   return model;
 }
-export function animateGroundEnemy(model, time, target) {
+export function fireGroundRobotEyes(model, age) {
+  if (model.userData.kind !== 'walker') return;
+  model.userData.eyeBeamUntil = age + 0.33;
+}
+
+export function robotEyeMuzzles(model) {
+  if (model.userData.kind !== 'walker') return [];
+  model.updateMatrixWorld(true);
+  return ['left', 'right']
+    .map((side) =>
+      model.getObjectByName('enemy-robot-eye-' + side)?.getWorldPosition(new T.Vector3()),
+    )
+    .filter(Boolean);
+}
+
+export function animateGroundEnemy(model, time, target, age = time, charging = false) {
   const turret = model.userData.turret;
   turret.rotation.y = T.MathUtils.clamp(
     Math.atan2(target.x - model.position.x, target.z - model.position.z),
     -0.7,
     0.7,
   );
-  if (model.userData.kind === 'walker')
-    for (const s of [-1, 1])
-      model.getObjectByName('leg' + s).rotation.x = Math.sin(time * 2.5 + s) * 0.07;
+  if (model.userData.kind === 'walker') {
+    // Giant robot has articulated alternating strides and aims its upper turret
+    // independently; changes stay visual and do not alter the tested hitboxes.
+    const stride = time * (1.75 + model.userData.variant * 0.14);
+    for (const side of [-1, 1]) {
+      const leg = model.getObjectByName('leg' + side);
+      leg.rotation.x = Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.24;
+      leg.rotation.z = Math.sin(stride * 0.5 + side) * 0.075;
+    }
+    turret.rotation.x = -0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12;
+    turret.rotation.z = Math.sin(stride * 0.55) * 0.11;
+    const firing = age < (model.userData.eyeBeamUntil ?? 0);
+    model.updateMatrixWorld(true);
+    const localTarget = turret.worldToLocal(target.clone());
+    for (const side of ['left', 'right']) {
+      const eye = turret.getObjectByName('enemy-robot-eye-' + side);
+      const ray = turret.getObjectByName('enemy-robot-eye-ray-' + side);
+      if (!eye || !ray) continue;
+      eye.scale.setScalar(charging ? 1.25 + 0.25 * Math.sin(age * 28) : 1);
+      ray.visible = firing;
+      if (!firing) continue;
+      const vector = localTarget.clone().sub(eye.position);
+      const length = Math.min(250, vector.length());
+      if (length < 0.1) continue;
+      ray.scale.set(1, length, 1);
+      ray.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), vector.normalize());
+      ray.position.copy(eye.position).addScaledVector(vector, length * 0.5);
+      // The impact is computed by the real hostile projectile collision path.
+    }
+  }
 }
 /** Geometry and collision boxes are built together. No invisible solid opening. */
 export function createObstacle(kind = 'gantry') {

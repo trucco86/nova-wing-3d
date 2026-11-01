@@ -26,9 +26,10 @@ test('intermission hangar upgrades projectiles and cadence before campaign map a
   await expect(page.locator('.campaign-node')).toHaveCount(10);
   await expect(page.locator('.campaign-node.completed')).toHaveCount(1);
   await expect(page.locator('.campaign-node.next')).toHaveCount(1);
-  await expect(page.locator('#mapSectorTitle')).toContainText('DISTRITO PORTUÁRIO');
-  await expect(page.locator('#mapSectorThreat')).toContainText('Defesas costeiras');
-  await expect(page.locator('#mapSectorBoss')).toContainText('NAVE-FERRÃO');
+  // The next sector after Earth is now Marte, not the retired ocean stage.
+  await expect(page.locator('#mapSectorTitle')).toContainText('DESERTO DE MARTE');
+  await expect(page.locator('#mapSectorThreat')).toContainText('Tempestades de areia');
+  await expect(page.locator('#mapSectorBoss')).toContainText('COLOSSO DAS DUNAS');
   if (page.viewportSize().width >= 701 && page.viewportSize().height <= 550) {
     // On small landscape screens the player must see route and launch
     // CTA without guessing there is important content below the fold.

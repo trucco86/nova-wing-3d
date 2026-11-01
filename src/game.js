@@ -22,6 +22,9 @@ import {
 import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
+import { stagePerspectiveAt } from './stage-variety.js';
+import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
+import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -55,16 +58,36 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
+import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
+import { ARRIVAL_SECONDS } from './destination-arrival.js';
+import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
+import { marsSandstormAt } from './mars-sandstorm.js';
+import { createAsteroidInterior } from './asteroid-interior.js';
+import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
+import {
+  SCATTER_CADENCE_FACTOR,
+  SCATTER_LIFETIME,
+  readScatterLoadout,
+  scatterDamageFactor,
+  scatterPellets,
+} from './scatter-cannon.js';
 import {
   createGroundEnemy,
   animateGroundEnemy,
+  fireGroundRobotEyes,
+  robotEyeMuzzles,
   createObstacle,
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
+import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
+import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
+import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
+import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
   fighterInterval,
@@ -74,9 +97,16 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
+import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
+import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
+import { createFiveCatsSquad } from './five-cats-runtime.js';
+import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
+import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
+import { fighterWaveAt } from './sector-waves.js';
 import {
   subbossProfile,
   subbossMotion,
@@ -88,6 +118,7 @@ import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
+import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
 import {
@@ -96,13 +127,20 @@ import {
   disposeBoss,
   encounterPattern,
   SUBBOSS_NAMES,
+  animateBossSignature,
 } from './bosses.js';
+import { bossSignatureVolley } from './boss-signature.js';
 import { createBossCombat } from './combat.js';
+import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import {
   fighter,
   createFlyingRobot,
+  scaleFighterVisual,
+  animateMechPower,
+  resetMechPower,
+  setFighterEvolution,
   createShipModule,
   createWorld,
   postProcessor,
@@ -121,7 +159,10 @@ export function createGame({
   random = Math.random,
   autoLoop = true,
   spawnEncounters = true,
+  enableSquadIntro = true,
   nativeLifecycle = false,
+  onStageStarted = () => {},
+  onStageFinished = () => {},
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
@@ -134,7 +175,7 @@ export function createGame({
     window.addEventListener(type, fn);
     cleanups.push(() => window.removeEventListener(type, fn));
   };
-  const pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
+  let pixelLimit = coarsePointer.matches ? 1.25 : 1.7;
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
@@ -163,6 +204,7 @@ export function createGame({
   camera.lookAt(0, 7, -50);
   const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
+  const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
   scene.add(camera);
   const cockpit = dynamicFlight ? createCockpit(camera) : null;
@@ -182,8 +224,12 @@ export function createGame({
   let arcade = null,
     arcadeDone = false;
   const world = createWorld(scene, random, dynamicFlight),
-    post = postProcessor(renderer, scene, camera);
+    post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
+  let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
+  const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
+  let journey = initialJourney(0);
+  let asteroidWallCooldown = 0;
   const buildingMat = metal('#173344');
   const green = glowMaterial('#64ffe4', 4),
     enemyOrbMat = glowMaterial('#ff5065', 3);
@@ -210,25 +256,124 @@ export function createGame({
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
+  // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
+  scaleFighterVisual(player, 1.11);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  const heroEffects = createHeroWeaponEffects(player, robot);
+  const reflexBoost = createReflexBoost();
+  const squad = dynamicFlight
+    ? createFiveCatsSquad({
+        scene,
+        player,
+        createWing(pilot) {
+          const wing = fighter();
+          wing.name = 'five-cats-wingman-' + pilot.id;
+          wing.userData.paint?.forEach((material) => material.color.set(pilot.color));
+          wing.scale.setScalar(1.1);
+          return wing;
+        },
+        fireFrom(origin, target, damage, element, charged, source = 'squad-support') {
+          launchShot(0, damage, charged, origin);
+          const shot = shots.at(-1);
+          shot.v = target
+            .clone()
+            .sub(origin)
+            .normalize()
+            .multiplyScalar(charged ? 250 : 195);
+          shot.element = element;
+          shot.homing = false;
+          shot.source = source;
+          shot.life = 2.2;
+          if (charged) shot.o.scale.setScalar(5);
+        },
+        opponent() {
+          if (boss) {
+            boss.updateMatrixWorld(true);
+            const weak = boss.userData.parts.find(
+              (p, i) => p.hp > 0 && weakPointOpen(relativeOrbit(), i),
+            );
+            if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
+            if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
+              return boss.userData.core.getWorldPosition(new T.Vector3());
+            // The full Five Cats formation must never stop firing just because
+            // the flank generators are armored. Aim at the visible hull; its
+            // damage is low until the pilot exposes a generator.
+            return boss.position.clone().add(new T.Vector3(0, 0, 4));
+          }
+          const target = enemies.find((e) => !e.dead);
+          return target ? target.o.position.clone().add(new T.Vector3(0, target.hitY, 0)) : null;
+        },
+        obstacleRange() {
+          const nearest = obstacles
+            .filter(
+              ({ o }) =>
+                o.position.z < player.position.z &&
+                Math.abs(o.position.x - player.position.x) < 6 &&
+                Math.abs(o.position.y - player.position.y) < 6,
+            )
+            .reduce(
+              (distance, { o }) => Math.min(distance, player.position.z - o.position.z - 6),
+              150,
+            );
+          return Math.max(5, nearest);
+        },
+        notify: (text) => message(text),
+        cue: (sound) => cue(sound),
+        status: $('squadSuperStatus'),
+        formationStatus: $('squadFormationStatus'),
+        getLanguage: () => settings?.language ?? 'pt',
+      })
+    : null;
+  let skipSquadIntro = false;
+  let developerSession = false;
+  let developerScenario = null;
   let robotMode = false;
+  let robotFireKick = 0;
   let robotCooldown = 0;
   let robotTransition = 0;
+  let mechaEngine = null;
+  let lockEnabled = false;
+  let lockedId = null;
+  let lockProgress = 0;
+  let precisionCd = 0;
+  function resetMechaLock() {
+    lockEnabled = false;
+    lockedId = null;
+    lockProgress = 0;
+    $('lockTouch').ariaPressed = 'false';
+    $('mechaLockStatus').hidden = true;
+    $('mechaLockReticle').hidden = true;
+  }
+  function toggleMechaLock() {
+    if (!robotMode || state !== 'playing') return;
+    lockEnabled = !lockEnabled;
+    if (!lockEnabled) resetMechaLock();
+    else $('lockTouch').ariaPressed = 'true';
+  }
   function toggleRobot() {
     if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
     energy -= 15;
     robotCooldown = 2.5;
-    robotTransition = 0.35;
+    robotTransition = 0.7;
     robotMode = !robotMode;
+    if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
+    $('lockTouch').hidden = !robotMode;
+    unlockAudio();
+    if (!mechaEngine && audioCtx && robotMode) mechaEngine = createMechaThrusterAudio(audioCtx);
+    cue('mechaTransform');
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
-    message(robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA');
+    cue(robotMode ? 'transformRobot' : 'transformShip');
+    message(
+      robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA',
+      'christopher',
+    );
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
   const activeShip = () => shipAt(pilotLoadout.ship);
@@ -252,6 +397,9 @@ export function createGame({
     rings = [],
     obstacles = [],
     boss = null;
+  // Shared muzzle meshes avoid per-spawn GPU resource leaks across long missions.
+  const muzzleGeometry = new T.SphereGeometry(0.8, 8, 6);
+  const muzzleMaterial = new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false });
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
@@ -274,6 +422,7 @@ export function createGame({
     rollAngle = 0,
     boosting = false,
     boostNeedsRelease = false,
+    orbitalAlertElapsed = 0,
     bossHp = 200,
     bossCd = 0,
     msgTime = 0,
@@ -281,6 +430,8 @@ export function createGame({
     visualTime = 0,
     shake = 0,
     lastStage = -1;
+  let scatterOwned = false;
+  let fireMode = 'pulse';
   let sectorIndex = 0,
     lives = 3,
     credits = 0,
@@ -317,11 +468,16 @@ export function createGame({
     pausedFrom = 'playing',
     ringWave = 0,
     stageIntroTime = 0,
+    marsArrivalPhase = 'space',
+    marsStormPhase = 'clear',
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
     bossWarned = false,
     bossWarningTime = 0;
+  let stageScoreStart = 0,
+    stageResultSent = false,
+    stagePerformance = null;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -336,6 +492,15 @@ export function createGame({
     impactTime = 0,
     impactConfirmed = false,
     lastSpecialCycle = -1,
+    lastRangedCycle = -1,
+    bossIntentCycle = -1,
+    fighterWaveSerial = 0,
+    lastFighterWave = null,
+    bossMeleeResolved = false,
+    bossIntent = null,
+    reactorGridSeconds = 0,
+    reactorGridCompleted = false,
+    reactorGridWave = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
@@ -357,6 +522,8 @@ export function createGame({
     if (evolution) player.remove(evolution);
     evolution = createEvolution(evolutionStage);
     player.add(evolution);
+    evolution.visible = !robotMode;
+    setFighterEvolution(shipModule, evolutionStage);
     player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
   }
   function gainXP(amount) {
@@ -380,6 +547,17 @@ export function createGame({
     if (!dynamicFlight || state !== 'playing') return;
     strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
   }
+  function castSquadSpecial(kind) {
+    if (!dynamicFlight || state !== 'playing' || !squad) return false;
+    const spent = squad.activate(kind, arcana);
+    if (!spent) return false;
+    if (stagePerformance) {
+      stagePerformance.squadSpecialUsed = true;
+      if (boss) stagePerformance.primaryOnly = false;
+    }
+    arcana -= spent;
+    return true;
+  }
   function castSpecial() {
     if (!dynamicFlight || state !== 'playing' || specialCd > 0) return false;
     const spell = SPECIALS[strategy.special];
@@ -388,9 +566,10 @@ export function createGame({
       return false;
     }
     arcana -= spell.cost;
-    specialCd = dynamicFlight ? Math.max(3, 8 / (1 + rank('spirit') * 0.025)) : 8;
-    if (strategy.special === 0) barrier = 4 + rank('defense') * 0.08;
-    if (strategy.special === 2) stasis = 5;
+    if (boss && stagePerformance) stagePerformance.primaryOnly = false;
+    specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
+    if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
+    if (strategy.special === 2) stasis = spell.duration;
     if (strategy.special === 1) {
       for (let i = 0; i < 9; i++) {
         const angle = (i * Math.PI * 2) / 9;
@@ -421,6 +600,7 @@ export function createGame({
     const cost = { precision: 1, repair: 2, barrage: 3 }[kind];
     if (!cost || tacticEnergy + 1e-8 < cost || (kind === 'repair' && hp >= maxHp())) return false;
     tacticEnergy = Math.max(0, tacticEnergy - cost);
+    if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     if (kind === 'repair') hp = Math.min(maxHp(), hp + 25 + rank('defense') * 2);
     else {
       const count = kind === 'precision' ? 1 : 7;
@@ -460,6 +640,13 @@ export function createGame({
   let cosmetics = readCosmetics(null);
   let petCare = readPetCare(null);
   let settings = loadSettings(storage);
+  const adaptiveGraphics = createAdaptiveGraphics({
+    mode: settings.graphics,
+    coarsePointer: coarsePointer.matches,
+    deviceMemory: window.navigator?.deviceMemory ?? null,
+    hardwareConcurrency: window.navigator?.hardwareConcurrency ?? null,
+  });
+  let activeGraphicsSetting = settings.graphics;
   const localization = createI18n(document, window);
   const saved = readSave(storage);
   if (saved) {
@@ -476,6 +663,9 @@ export function createGame({
     shipModule.traverse((o) => {
       if (o.material?.userData.paintModule) o.material.color.set(palette.color);
     });
+    robot.userData.mechPaint.primary.color.set(palette.color);
+    robot.userData.mechPaint.accent.color.set(palette.accent);
+    $('robotTouch').style.setProperty?.('--mech-accent', palette.accent);
   }
   function applyShipModel() {
     if (shipModule) {
@@ -487,6 +677,11 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
+    shipModule.scale.setScalar(1.11);
+    shipModule.visible = !robotMode;
+    setFighterEvolution(shipModule, Math.max(0, evolutionStage));
+    robot.scale.x =
+      pilotLoadout.ship === 'aegis' ? 1.13 : pilotLoadout.ship === 'specter' ? 0.88 : 0.98;
     applySkin();
   }
   const statLabels = {
@@ -626,12 +821,14 @@ export function createGame({
   const current = () =>
     nativeLifecycle && sectorIndex === 0 ? nativeLaunchSector : SECTORS[sectorIndex];
   function saveCheckpoint(next = sectorIndex) {
+    if (developerSession) return; // QA flights never overwrite campaign checkpoints.
     writeSave(storage, {
       sector: next,
       credits,
       weapon,
       volley,
       rapid,
+      ...(dynamicFlight ? { scatterOwned, fireMode } : {}),
       bombs: next > sectorIndex ? Math.min(dynamicFlight ? 8 : 5, bombs + 1) : bombs,
       armor,
       pods: podCount,
@@ -680,14 +877,73 @@ export function createGame({
       );
     } else {
       hp = Math.min(maxHp(), hp + 25);
-      message('ESCUDO +25');
+      message('ESCUDO +25', 'bob');
     }
     credits += 15;
     if (!dynamicFlight) sound(1400, 0.25, 'sine');
   }
+  function recordStageResult(outcome = 'cleared') {
+    if (!dynamicFlight || developerSession || stageResultSent) return;
+    stageResultSent = true;
+    try {
+      Promise.resolve(
+        onStageFinished({
+          sector: sectorIndex + 1,
+          points: Math.max(0, score - stageScoreStart),
+          durationMs: Math.max(0, Math.round(elapsed * 1000)),
+          totalPoints: score,
+          outcome,
+          difficulty: settings.difficulty,
+          pilot: activePilot().id,
+          bossDefeated: stagePerformance?.bossDefeated === true,
+          primaryOnly: stagePerformance?.primaryOnly === true,
+          mechaFinisher: stagePerformance?.mechaFinisher === true,
+          damageTaken: stagePerformance?.damageTaken !== false,
+          bombsUsed: stagePerformance?.bombsUsed !== false,
+          kills: stagePerformance?.kills ?? 0,
+          rings: stagePerformance?.rings ?? 0,
+          squadSpecialUsed: stagePerformance?.squadSpecialUsed === true,
+        }),
+      ).catch(() => {});
+    } catch {
+      // Optional ranking must never interrupt a finished mission.
+    }
+  }
+  // A completed mission is a distinct UI state. Inert blocks stray touch and
+  // keyboard focus in browsers that retain controls underneath the shop panel.
+  // CSS provides the visual fallback and always keeps the hangar in front.
+  function setIntermissionUI(active) {
+    document.body.classList[active ? 'add' : 'remove']('intermission-active');
+    for (const id of [
+      'hud',
+      'hudNotices',
+      'touch',
+      'bottom',
+      'loadout',
+      'sectorTag',
+      'bossHUD',
+      'subHUD',
+      'petCareHud',
+      'orbitControls',
+      'strategyControls',
+      'cameraView',
+      'aimReticle',
+      'mechaLockReticle',
+    ]) {
+      const node = document.getElementById(id);
+      if (node) node.inert = active;
+    }
+    if (active)
+      document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
+  }
   function showShop() {
+    recordStageResult('cleared');
+    setIntermissionUI(true);
+    document.body.classList.add('ranking-intermission');
     state = 'shop';
     releaseControls();
+    mechaEngine?.silence();
+    resetMechaLock();
     keys.clear();
     touchFire = touchBoost = false;
     charge = 0;
@@ -701,7 +957,7 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
   }
   function shopLevel(k) {
-    return { weapon, volley, rapid, armor, pods: podCount }[k] ?? 0;
+    return { weapon, volley, rapid, scatter: Number(scatterOwned), armor, pods: podCount }[k] ?? 0;
   }
   function shopFull(k) {
     if (k === 'repair') return hp >= maxHp();
@@ -715,22 +971,40 @@ export function createGame({
     for (const k of Object.keys(SHOP)) {
       const level = shopLevel(k);
       const full = shopFull(k);
-      $('buy' + k).hidden = !dynamicFlight && ['volley', 'rapid', 'bombPack'].includes(k);
+      $('buy' + k).hidden =
+        !dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k);
       const price = shopPrice(k, level);
       const status = full ? (k === 'bombPack' ? 'PRECISA DE 3 VAGAS' : 'MÁXIMO') : price + ' CR';
       $('buy' + k).textContent = SHOP[k].label + ' · ' + status;
       $('buy' + k).disabled = full || credits < price;
     }
+    $('scatterLoadout').hidden = !dynamicFlight;
+    $('equipScatter').hidden = !dynamicFlight;
+    $('equipScatter').disabled = !scatterOwned || !dynamicFlight;
+    $('equipScatter').textContent = fireMode === 'scatter' ? 'EQUIPAR PULSO' : 'EQUIPAR DISPERSÃO';
+    $('scatterInfo').textContent =
+      fireMode === 'scatter'
+        ? 'DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE'
+        : 'DISPARO EQUIPADO: PULSO · ALCANCE LONGO';
+    $('scatterInfo').hidden = !dynamicFlight;
+  }
+  function equipScatter() {
+    if (state !== 'shop' || !dynamicFlight || !scatterOwned) return false;
+    fireMode = fireMode === 'scatter' ? 'pulse' : 'scatter';
+    renderShop();
+    saveCheckpoint(sectorIndex + 1);
+    return true;
   }
   function buy(k) {
     if (state !== 'shop' || !SHOP[k]) return false;
-    if (!dynamicFlight && ['volley', 'rapid', 'bombPack'].includes(k)) return false;
+    if (!dynamicFlight && ['volley', 'rapid', 'bombPack', 'scatter'].includes(k)) return false;
     const price = shopPrice(k, shopLevel(k));
     if (credits < price || shopFull(k)) return false;
     credits -= price;
     if (k === 'weapon') weapon++;
     if (k === 'volley') volley++;
     if (k === 'rapid') rapid++;
+    if (k === 'scatter') scatterOwned = true;
     if (k === 'armor') {
       armor++;
       hp = Math.min(maxHp(), hp + 25);
@@ -769,14 +1043,32 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    setIntermissionUI(false);
+    document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
+    orbitalAlertElapsed = 0;
+    reflexBoost.reset();
+    heroEffects.reset();
+    $('launchBoostNotice').hidden = true;
+    document.body.classList.remove('orbital-super-boost');
+    $('boostTouch').classList.remove('launch-required');
+    $('boostTouch').textContent = 'BOOST';
+    $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
     arcade = null;
     arcadeDone = false;
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
+    resetMechPower(robot);
+    robotFireKick = 0;
     robotMode = false;
+    shipModule.visible = true;
+    if (evolution) evolution.visible = true;
     robotCooldown = 0;
     robotTransition = 0;
+    precisionCd = 0;
+    mechaEngine?.silence();
+    resetMechaLock();
+    $('lockTouch').hidden = true;
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
     robot.visible = false;
@@ -784,11 +1076,20 @@ export function createGame({
     routeRenderer?.update(route);
     clearWorld();
     world.reset();
-    world.setSector(current());
+    world.setSector(current(), sectorIndex);
+    journey = initialJourney(sectorIndex);
+    marsArrivalPhase = 'space';
+    marsStormPhase = 'clear';
+    asteroidInterior?.reset(sectorIndex === 2);
+    asteroidWallCooldown = 0;
+    squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
+    skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
     spawnCd = 2;
     fighterSerial = 0;
+    fighterWaveSerial = 0;
+    lastFighterWave = null;
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -800,16 +1101,24 @@ export function createGame({
     tacticEnergy = scanTime = impactTime = 0;
     impactConfirmed = false;
     lastSpecialCycle = -1;
+    lastRangedCycle = bossIntentCycle = -1;
+    bossMeleeResolved = false;
+    bossIntent = null;
+    renderBossRadar(document, null);
+    reactorGridSeconds = 0;
+    reactorGridCompleted = false;
+    reactorGridWave = 0;
     specialCd = barrier = stasis = 0;
     podsDetached = false;
     podMode = 'docked';
     podBlocks = 0;
     podCd = 0;
     obstacleCd = 9;
-    subDone = rivalDone = baseDone = false;
+    subDone = rivalDone = false;
+    baseDone = sectorIndex === 1;
     groundCd = 5;
     groundWave = 0;
-    tunnelDone = false;
+    tunnelDone = sectorIndex === 1;
     bossVolley = 0;
     collapseBurst = 0;
     pausedFrom = 'playing';
@@ -844,6 +1153,7 @@ export function createGame({
     $('pauseMenu').hidden = true;
     $('settingsMenu').hidden = true;
     settingsOpen = false;
+    document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
     stageIntroTime = 3;
     pickupFeedbackTime = 0;
@@ -855,6 +1165,13 @@ export function createGame({
       String(sectorIndex + 1).padStart(2, '0');
     $('chapter').textContent = String(sectorIndex + 1).padStart(2, '0');
     $('stage').textContent = current().name;
+    // Show the correct destination even in the very first rendered frame;
+    // never briefly flash an unrelated route label in QA screenshots.
+    if (dynamicFlight && sectorIndex >= 3) {
+      const firstArrival = world.setDestinationArrival(0);
+      if (firstArrival) route.label = firstArrival.label;
+    }
+    $('routeLabel').textContent = route.label;
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     syncPods();
     sectorStart = {
@@ -863,6 +1180,7 @@ export function createGame({
       weapon,
       volley,
       rapid,
+      ...(dynamicFlight ? { scatterOwned, fireMode } : {}),
       bombs,
       armor,
       pods: podCount,
@@ -872,6 +1190,25 @@ export function createGame({
       strategy: { ...strategy },
       petCare: { ...petCare },
     };
+    stageScoreStart = score;
+    stageResultSent = false;
+    stagePerformance = {
+      damageTaken: false,
+      bombsUsed: false,
+      kills: 0,
+      rings: 0,
+      bossDefeated: false,
+      primaryOnly: true,
+      mechaFinisher: false,
+      squadSpecialUsed: false,
+    };
+    if (dynamicFlight && !developerSession) {
+      try {
+        Promise.resolve(onStageStarted({ sector: sectorIndex + 1 })).catch(() => {});
+      } catch {
+        // Offline progression always continues if the ranking API is unavailable.
+      }
+    }
     music?.start(sectorIndex);
     message(PILOTS[3 - lives] + ' / ' + current().brief);
   }
@@ -890,6 +1227,7 @@ export function createGame({
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
+      audioCues.setEnabled(!muted);
       return true;
     } catch {
       return false;
@@ -957,7 +1295,8 @@ export function createGame({
     pickupFeedbackTime = 1;
     if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
-  function message(t) {
+  function message(t, speakerId = 'bia') {
+    renderRadioSpeaker(document, speakerId);
     $('message').textContent = t;
     $('comms').classList.add('active');
     msgTime = 3;
@@ -1014,6 +1353,7 @@ export function createGame({
     if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
+    if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
     if (settings.vibration) window.navigator?.vibrate?.(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
@@ -1023,7 +1363,8 @@ export function createGame({
     invuln = 1.1;
     $('flash').style.opacity = '.3';
     setTimeout(() => ($('flash').style.opacity = '0'), 150);
-    sound(60, 0.25);
+    if (dynamicFlight) cue('shipImpact');
+    else sound(60, 0.25);
     if (hp <= 0) {
       lives--;
       if (lives <= 0) finish(false);
@@ -1050,6 +1391,7 @@ export function createGame({
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
     }
     score += e.elite ? 15 : 1;
+    if (stagePerformance) stagePerformance.kills++;
     gainXP(e.elite ? 8 : 1);
     credits += e.elite ? 90 : 12;
     if (e.kind === 'base') {
@@ -1070,6 +1412,10 @@ export function createGame({
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    if (stagePerformance) {
+      stagePerformance.bombsUsed = true;
+      if (boss) stagePerformance.primaryOnly = false;
+    }
     const bombPower = dynamicFlight ? activePilot().bonuses.bomb : 1;
     for (let e of enemies)
       if (!e.dead) {
@@ -1103,13 +1449,15 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
-  function impact(position, dealt = 1, { bossHit = false, weak = false } = {}) {
+  const scatterShotMaterial = glowMaterial('#ffba70', 3);
+  function impact(position, dealt = 1, { bossHit = false, weak = false, heavy = false } = {}) {
     if (!dynamicFlight) return;
     const feedback = combatFeedback(dealt, { boss: bossHit, weak });
     const confirmed = feedback.type !== 'blocked';
     const color = feedback.color;
-    explode(position, 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
-    const flash = halo(color, confirmed ? (weak ? 11 : 8) : 5, 0.95);
+    explode(position, heavy ? 7 : 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
+    if (heavy && confirmed) cue('mechaImpact');
+    const flash = halo(color, confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5, 0.95);
     flash.material = flash.material.clone();
     flash.material.depthTest = false;
     flash.material.depthWrite = false;
@@ -1145,18 +1493,22 @@ export function createGame({
     if (e.life <= 0) kill(e);
     return amount;
   }
-  function launchShot(x, damage = 2, charged = false) {
+  function launchShot(x, damage = 2, charged = false, origin = null, scatter = false) {
     const o = new T.Mesh(
       charged ? orbGeo : laserGeo,
-      dynamicFlight ? shotMaterials[strategy.arsenal] : green,
+      scatter ? scatterShotMaterial : dynamicFlight ? shotMaterials[strategy.arsenal] : green,
     );
     o.add(
-      halo(dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon], charged ? 6 : 1.8, 0.5),
+      halo(
+        scatter ? '#ffba70' : dynamicFlight ? selectedWeapon().color : WEAPON_COLORS[weapon],
+        charged ? 6 : 1.8,
+        0.5,
+      ),
     );
     o.rotation.x = Math.PI / 2;
-    o.position.copy(player.position);
+    o.position.copy(origin ?? player.position);
     o.position.x += x;
-    o.position.z -= 3;
+    if (!origin) o.position.z -= 3;
     if (charged) o.scale.setScalar(5);
     scene.add(o);
     shots.push({
@@ -1172,27 +1524,156 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    const count = projectileCount(weapon, volley, dynamicFlight);
+    heroEffects.pulse({ robot: robotMode, color: selectedWeapon().color });
+    if (robotMode) robotFireKick = 0.29;
+    const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
+    const pellets = scatter ? scatterPellets() : null;
+    const count = scatter ? pellets.length : projectileCount(weapon, volley, dynamicFlight);
     for (let i = 0; i < count; i++) {
-      const power = weaponPower() * (robotMode ? 1.45 : 1);
-      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power);
+      const power = mechaShotDamage(weaponPower(), { robot: robotMode });
+      const rightHand = robotMode
+        ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
+        : null;
+      launchShot((i - (count - 1) / 2) * 0.9, (2 + weapon) * power, false, rightHand, scatter);
       const b = shots.at(-1);
       if (dynamicFlight) {
-        b.homing = strategy.arsenal === 3;
-        b.spread = strategy.arsenal === 2 ? (i - (count - 1) / 2) * 7 : 0;
-        b.o.scale.setScalar(podsDetached ? 1 : 1 + podCount * 0.22);
+        b.homing = !scatter && strategy.arsenal === 3;
+        b.spread = scatter
+          ? pellets[i].drift
+          : strategy.arsenal === 2
+            ? (i - (count - 1) / 2) * 7
+            : 0;
+        if (scatter) {
+          b.scatter = true;
+          b.travelled = 0;
+          b.life = SCATTER_LIFETIME;
+        }
+        b.o.scale.setScalar(mechaShotScale(podsDetached ? 1 : 1 + podCount * 0.22, robotMode));
+        if (robotMode) b.source = 'mecha-heavy';
       }
     }
-    if (dynamicFlight) cue('shot');
+    if (robotMode && dynamicFlight) {
+      const flash = halo('#a8faff', 3.8, 0.7);
+      flash.position.copy(robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()));
+      scene.add(flash);
+      particles.push({ o: flash, v: new T.Vector3(), life: 0.14, kind: 'flash' });
+    }
+    if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
     else sound(900 + weapon * 110);
     shotCd = dynamicFlight
-      ? firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid)
+      ? mechaShotCooldown(
+          firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
+            (scatter ? SCATTER_CADENCE_FACTOR : 1),
+          robotMode,
+        )
       : 0.135;
   }
-  function enemy(kind = 'fighter') {
+
+  /** Right wrist maintains frontal pressure. Left wrist requires LOS lock for precision. */
+  function updateMechaLock(dt, dx, dy) {
+    let selected = null;
+    if (lockEnabled) {
+      if (boss) boss.updateMatrixWorld(true);
+      const candidates = boss
+        ? [
+            ...boss.userData.parts.flatMap((part, i) =>
+              part.hp > 0 && weakPointOpen(relativeOrbit(), i)
+                ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
+                : [],
+            ),
+            ...(bossCombat?.coreOpen &&
+            boss.userData.parts.every((part) => part.hp <= 0) &&
+            weakPointOpen(relativeOrbit())
+              ? [
+                  {
+                    id: boss.userData.core,
+                    position: boss.userData.core.getWorldPosition(new T.Vector3()),
+                    weak: true,
+                  },
+                ]
+              : []),
+          ]
+        : enemies
+            .filter((enemy) => !enemy.dead)
+            .map((enemy) => ({
+              id: enemy,
+              position: enemy.o.position.clone().add(new T.Vector3(0, enemy.hitY, 0)),
+              weak: enemy.kind === 'subboss',
+            }));
+      selected = selectMechaTarget(player.position, candidates, {
+        visible: (from, to) =>
+          !obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, 0)),
+      });
+    }
+    if (selected?.id !== lockedId) {
+      lockedId = selected?.id ?? null;
+      lockProgress = 0;
+    } else if (selected) lockProgress = Math.min(0.8, lockProgress + dt);
+    const position = selected?.position ?? null;
+    updateMechaPose(robot, {
+      dt,
+      time: visualTime,
+      boosting,
+      strafe: dx,
+      vertical: dy,
+      firing: touchFire || keys.has('Space'),
+      targetWorld: position,
+      transforming: robotTransition,
+      recoil: robotFireKick,
+    });
+    robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
+    const status = $('mechaLockStatus');
+    status.hidden = !lockEnabled;
+    if (lockEnabled)
+      status.textContent = !selected
+        ? 'MIRA · SEM ALVO'
+        : lockProgress < 0.8
+          ? 'MIRA · ' + Math.round((lockProgress / 0.8) * 100) + '%'
+          : precisionCd > 0
+            ? 'MIRA · RECARGA'
+            : 'MIRA · FIXADA';
+    const marker = $('mechaLockReticle');
+    marker.hidden = true;
+    if (position) {
+      const projected = position.clone().project(camera);
+      if (
+        projected.z > -1 &&
+        projected.z < 1 &&
+        Math.abs(projected.x) <= 1 &&
+        Math.abs(projected.y) <= 1
+      ) {
+        marker.hidden = false;
+        marker.style.left = ((projected.x + 1) * window.innerWidth) / 2 + 'px';
+        marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
+      }
+    }
+    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
+      robot.updateMatrixWorld(true);
+      const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
+      launchShot(
+        0,
+        mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }),
+        false,
+        muzzle,
+      );
+      const shot = shots.at(-1);
+      shot.source = 'mecha-precision';
+      shot.o.scale.setScalar(2.2);
+      shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
+      shot.homing = false;
+      energy -= 10;
+      precisionCd = 2;
+      lockProgress = 0;
+      heroEffects.pulse({ robot: true, precisionShot: true, color: '#b6f9ff' });
+      cue('mechaPrecision');
+    }
+  }
+  function enemy(kind = 'fighter', assignedSlot = null) {
     const airborneRobot = kind === 'hover-walker';
     const ground = kind === 'tank' || kind === 'walker' || airborneRobot;
-    const roleIndex = (fighterSerial + sectorIndex) % 3;
+    const roleIndex = assignedSlot?.role
+      ? FIGHTER_ROLES.indexOf(assignedSlot.role)
+      : (fighterSerial + sectorIndex) % 3;
     const tacticalFighter = dynamicFlight && kind === 'fighter';
     const subbossTactic = dynamicFlight && kind === 'subboss' ? subbossProfile(sectorIndex) : null;
     if (tacticalFighter) fighterSerial++;
@@ -1223,17 +1704,37 @@ export function createGame({
       ground || kind === 'subboss' ? 1 : elite ? 1.6 : tacticalFighter ? 1.3 : 0.65,
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
-    const x = ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24),
-      y = airborneRobot
-        ? rnd(9, 23)
-        : ground
-          ? -7
-          : kind === 'subboss'
-            ? 10
-            : dynamicFlight && sectorIndex === 0
-              ? rnd(12, 24)
-              : rnd(1, 19);
+    const x =
+        assignedSlot?.x ??
+        (ground ? (groundWave % 2 ? -17 : 17) : kind === 'subboss' ? 0 : rnd(-24, 24)),
+      y =
+        assignedSlot?.y ??
+        (airborneRobot
+          ? rnd(9, 23)
+          : ground
+            ? -7
+            : kind === 'subboss'
+              ? 10
+              : dynamicFlight && sectorIndex === 0
+                ? rnd(12, 24)
+                : rnd(1, 19));
     o.position.set(x, y, -200);
+    // All enemy projectiles originate at visible physical sockets.
+    // Walker and hover walker reuse their two articulated eye emitters.
+    if (kind !== 'walker' && !airborneRobot) {
+      const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
+      for (const side of [-1, 1]) {
+        const muzzle = new T.Mesh(muzzleGeometry, muzzleMaterial);
+        muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
+        muzzle.position.set(
+          side * (ground ? 1.8 : 2.7),
+          ground ? 0.2 : 0,
+          ground ? 11.8 : kind === 'subboss' ? 13 : kind === 'base' ? 6 : -3.7,
+        );
+        mount.add(muzzle);
+      }
+    }
+    if (kind === 'walker' || airborneRobot) o.userData.combatState = 'deploying';
     if (airborneRobot) {
       const thrusterMat = new T.MeshBasicMaterial({ color: '#64dfff' });
       for (const side of [-1, 1]) {
@@ -1261,7 +1762,7 @@ export function createGame({
       $('subHealth').style.background =
         'linear-gradient(90deg, ' + subbossTactic.color + ', #fff3c4)';
     }
-    const phase = rnd(0, 6);
+    const phase = assignedSlot?.phase ?? rnd(0, 6);
     const initialCooldown = rnd(1, 3);
     enemies.push({
       o,
@@ -1310,6 +1811,20 @@ export function createGame({
       kind,
     });
   }
+  function bossMuzzle(side = 0) {
+    if (!boss) return null;
+    boss.updateMatrixWorld(true);
+    return (
+      boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null
+    );
+  }
+  function hostileMuzzles(e) {
+    e.o.updateMatrixWorld(true);
+    if (e.kind === 'walker' || e.airborneRobot) return robotEyeMuzzles(e.o);
+    return ['enemy-muzzle-left', 'enemy-muzzle-right']
+      .map((name) => e.o.getObjectByName(name)?.getWorldPosition(new T.Vector3()))
+      .filter(Boolean);
+  }
   function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
     let o = new T.Mesh(
@@ -1333,20 +1848,31 @@ export function createGame({
     });
   }
   function makeBoss() {
+    if (dynamicFlight && sectorIndex === 2) {
+      journey = advanceJourney(journey, 'arenaReached');
+      asteroidInterior.setPhase(journey.phase);
+    }
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
+    lastRangedCycle = bossIntentCycle = -1;
+    bossMeleeResolved = false;
+    bossIntent = null;
+    reactorGridSeconds = 0;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
-    boss.position.set(0, 10, -230);
+    // Enter through the illuminated hangar of the mother ship in the distance.
+    // No instant pop-in to the combat position.
+    boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight) {
+      world.showCarrierForBoss?.();
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
       message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
@@ -1361,10 +1887,40 @@ export function createGame({
         : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
-  function damageBoss(amount, target = null, element = 'kinetic', charged = false) {
-    if (state !== 'playing' || !boss || !Number.isFinite(amount) || amount <= 0) return 0;
+  function damageBoss(
+    amount,
+    target = null,
+    element = 'kinetic',
+    charged = false,
+    hitZone = 'weak',
+    source = 'weapon',
+  ) {
+    if (
+      state !== 'playing' ||
+      !boss ||
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      (dynamicFlight && bossCombat?.age < 3)
+    )
+      return 0;
+    if (stagePerformance && source !== 'weapon') stagePerformance.primaryOnly = false;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    const spendDamage = (value, chargedShot) =>
+      source === 'squad-plasma' || source === 'squad-overdrive'
+        ? bossCombat.spendSquadSpecial(value)
+        : bossCombat.spend(value, chargedShot);
+    if (hitZone === 'hull' && dynamicFlight) {
+      // Hull plating absorbs most damage but does not make ordinary hits meaningless.
+      // Generators must still be destroyed and the exposed core gets the final blow.
+      const chip =
+        spendDamage(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
+      const floor = bossCombat.max * (parts.length > 0 ? 0.72 : 0.12);
+      const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
+      bossCombat.damage(dealt);
+      bossHp = bossCombat.hp;
+      return dealt;
+    }
     const openPart = (p) =>
       !dynamicFlight || weakPointOpen(relativeOrbit(), boss.userData.parts.indexOf(p));
     if (dynamicFlight)
@@ -1383,16 +1939,22 @@ export function createGame({
       : parts.find(openPart);
     if (parts.length) {
       if (!part || !openPart(part)) return 0;
-      const dealt = bossCombat.spend(amount, dynamicFlight && charged);
-      part.hp = Math.max(0, part.hp - dealt);
+      const dealt = spendDamage(amount, dynamicFlight && charged);
+      part.hp = Math.max(
+        0,
+        part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
+      );
 
       if (part.hp === 0) {
         part.mesh.visible = false;
+        // Destroyed generators power a specific turret. The barrel physically
+        // disappears and attack planner drops that battery's shots.
+        if (part.battery) part.battery.visible = false;
         explode(part.mesh.getWorldPosition(new T.Vector3()), 24);
         credits += 35;
         message(
-          'GERADOR DESTRUÍDO · ' +
-            (parts.length === 1 ? 'NÚCLEO EXPOSTO' : 'MIRE NO OUTRO GERADOR'),
+          'BATERIA DESTRUÍDA · ' +
+            (parts.length === 1 ? 'NÚCLEO EXPOSTO · FOGO REDUZIDO' : 'MENOS TIROS · MIRE NA OUTRA'),
         );
       }
       return dealt;
@@ -1405,11 +1967,21 @@ export function createGame({
     )
       return 0;
     if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(relativeOrbit()))) return 0;
-    const dealt = bossCombat.spend(amount, dynamicFlight && charged);
+    const spent = spendDamage(amount, dynamicFlight && charged);
+    const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
 
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
+      if (stagePerformance) {
+        stagePerformance.bossDefeated = true;
+        stagePerformance.mechaFinisher = robotMode;
+      }
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'bossDefeated');
+        asteroidInterior.setPhase(journey.phase);
+        message('NÚCLEO DESTRUÍDO · FUJA DO ASTEROIDE!');
+      }
       gainXP(30);
       state = 'collapsing';
       if (!dynamicFlight) releaseControls();
@@ -1445,6 +2017,10 @@ export function createGame({
       }
     }
     collapseTime += dt;
+    if (dynamicFlight) {
+      const exit = world.setDestinationExit(collapseTime);
+      if (exit?.active) $('routeLabel').textContent = exit.label;
+    }
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
@@ -1480,6 +2056,11 @@ export function createGame({
       collapse = null;
       score += 50;
       credits += 250 + sectorIndex * 40;
+      if (dynamicFlight && sectorIndex === 2) {
+        journey = advanceJourney(journey, 'exitReached');
+        asteroidInterior.setPhase(journey.phase);
+        world.setAsteroidInterior(false);
+      }
       $('attackWarning').textContent = '';
       if (sectorIndex === SECTORS.length - 1) finish(true);
       else showShop();
@@ -1487,6 +2068,8 @@ export function createGame({
   }
 
   function finish(win) {
+    recordStageResult(win ? 'cleared' : 'defeated');
+    document.body.classList.add('ranking-intermission');
     releaseControls();
     if (win) music?.start(sectorIndex, 'victory');
     else music?.pause();
@@ -1522,8 +2105,13 @@ export function createGame({
     }
     boss = null;
   }
-  function start(resume = false, restart = null) {
+  function start(resume = false, restart = null, skipSquad = false, developerRun = false) {
+    skipSquadIntro = skipSquad;
     if (!appActive) return;
+    developerSession = developerAvailable && developerRun;
+    if (!developerSession) developerScenario = null;
+    $('developerSessionTag').hidden = !developerSession;
+    document.body.classList[developerSession ? 'add' : 'remove']('developer-session');
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
     cameraMode = 'chase';
@@ -1535,6 +2123,9 @@ export function createGame({
     weapon = checkpoint?.weapon ?? 0;
     volley = checkpoint?.volley ?? 0;
     rapid = checkpoint?.rapid ?? 0;
+    const scatterLoadout = readScatterLoadout(checkpoint);
+    scatterOwned = dynamicFlight && scatterLoadout.owned;
+    fireMode = dynamicFlight ? scatterLoadout.mode : 'pulse';
     pilotLoadout = dynamicFlight
       ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
       : readPilotLoadout(null);
@@ -1556,6 +2147,8 @@ export function createGame({
     lastStage = -1;
     shake = 0;
     boosting = false;
+    reflexBoost.reset();
+    heroEffects.reset();
     touchFire = touchBoost = false;
     elapsed = 0;
     score = checkpoint?.score ?? 0;
@@ -1601,6 +2194,87 @@ export function createGame({
     unlockAudio();
     menuThemePlaying = false;
     enterSector(false);
+    // The selected Five Cats pilot is already the active player on frame zero.
+    // Do not leave the previous/default pilot on the HUD until the first tick.
+    $('pilotName').textContent =
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + ' VIDAS';
+    renderPilotSelection();
+  }
+  function startDeveloperScenario(sector, encounter, fromRestart = false) {
+    if (!developerAvailable || (!fromRestart && state !== 'menu')) return false;
+    const scenario = parseDeveloperScenario(sector, encounter, SECTORS.length);
+    if (!scenario) return false;
+    developerScenario = scenario;
+    // This is an isolated, disposable QA run. The user's real save is never loaded or updated.
+    start(
+      false,
+      {
+        sector: scenario.sector,
+        loadout: { ...pilotLoadout },
+        strategy: { specialty: activePilot().specialty },
+        weapon: 2,
+        armor: 2,
+        pods: 2,
+        bombs: 8,
+        credits: 0,
+        score: 0,
+        cosmetics: { ...cosmetics, owned: [...cosmetics.owned] },
+        petCare: { ...petCare },
+      },
+      true,
+      true,
+    );
+    if (!developerSession) return false;
+    if (scenario.encounter !== 'stage') {
+      if (scenario.sector === 0) {
+        // Advance the genuine orbital state machine, never bypass the main campaign gate.
+        orbitalLaunchSequence.advance({
+          seconds: 23,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 100,
+          chargeAfter: 40,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 25,
+          dt: 2,
+          boosting: true,
+          chargeBefore: 40,
+          chargeAfter: 0,
+        });
+        orbitalLaunchSequence.advance({
+          seconds: 26,
+          dt: 40,
+          boosting: false,
+          chargeBefore: 0,
+          chargeAfter: 0,
+        });
+      }
+      // Keep the test focused on its selected encounter, not ambient enemies/pickups.
+      subDone = rivalDone = baseDone = tunnelDone = arcadeDone = true;
+      spawnCd = groundCd = obstacleCd = ringCd = petCd = Infinity;
+      if (scenario.encounter === 'subboss') {
+        elapsed = current().duration * 0.25;
+        enemy('subboss');
+        $('subHUD').hidden = false;
+        music?.start(sectorIndex, 'subboss');
+      } else {
+        elapsed = current().duration + 0.1;
+        if (sectorIndex === 2) {
+          // The asteroid boss lives inside the cavern; prepare the actual journey phases.
+          journey = advanceJourney(journey, 'destinationReached');
+          journey = advanceJourney(journey, 'entryCompleted');
+        }
+        makeBoss();
+      }
+    }
+    $('developerSessionTag').textContent =
+      'QA · SETOR ' +
+      String(scenario.sector + 1).padStart(2, '0') +
+      ' · ' +
+      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE' }[scenario.encounter] +
+      ' · SEM RANK';
+    return true;
   }
   function pause() {
     if (!appActive) return;
@@ -1610,6 +2284,7 @@ export function createGame({
       state = 'paused';
       $('bossIncoming').hidden = true;
       music?.pause();
+      mechaEngine?.silence();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
       $('pauseConfirmPanel').hidden = true;
@@ -1650,11 +2325,16 @@ export function createGame({
     music?.pause();
     clearWorld();
     state = 'menu';
+    developerSession = false;
+    developerScenario = null;
+    $('developerSessionTag').hidden = true;
+    document.body.classList.remove('developer-session');
     menuThemePlaying = false;
     confirmation = null;
     settingsOpen = false;
     stageIntroTime = 0;
-    document.body.classList.remove('in-mission', 'stage-intro');
+    setIntermissionUI(false);
+    document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
     document.body.classList.add('menu');
     for (const id of [
       'pauseMenu',
@@ -1680,6 +2360,8 @@ export function createGame({
     confirmation = null;
     $('pauseConfirmPanel').hidden = true;
     if (action === 'exit') exitToMenu();
+    else if (developerSession && developerScenario)
+      startDeveloperScenario(developerScenario.sector, developerScenario.encounter, true);
     else
       start(
         false,
@@ -1708,17 +2390,72 @@ export function createGame({
   }
   function renderFrameAudit() {
     const result = frameAudit.report();
-    $('auditReadout').textContent = formatFrameAudit(result, {
-      language: settings.language,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      dpr: window.devicePixelRatio ?? 1,
-    });
+    const budget = adaptiveGraphics.current();
+    const detail =
+      settings.language === 'en'
+        ? 'Render: '
+        : settings.language === 'es'
+          ? 'Renderizado: '
+          : 'Renderização: ';
+    $('auditReadout').textContent =
+      formatFrameAudit(result, {
+        language: settings.language,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        dpr: window.devicePixelRatio ?? 1,
+      }) +
+      '\n' +
+      detail +
+      budget.quality.toUpperCase() +
+      ' · ' +
+      Math.round(budget.resolutionScale * 100) +
+      '% ' +
+      (budget.adaptive ? '(adaptativo)' : '') +
+      (Number.isFinite(lastFrameCost.drawCalls)
+        ? '\n' +
+          (settings.language === 'en'
+            ? 'Scene draw calls'
+            : settings.language === 'es'
+              ? 'Llamadas de escena'
+              : 'Chamadas de cena') +
+          ': ' +
+          lastFrameCost.drawCalls +
+          ' · ' +
+          (settings.language === 'en'
+            ? 'triangles'
+            : settings.language === 'es'
+              ? 'triángulos'
+              : 'triângulos') +
+          ': ' +
+          (lastFrameCost.triangles ?? 0) +
+          ' · pós-passes: ' +
+          lastFrameCost.postPasses
+        : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
   }
+  function applyRenderBudget(budget) {
+    heroEffects.setQuality(budget.quality, coarsePointer.matches);
+    pixelLimit =
+      graphicsPixelRatioLimit(budget.quality, {
+        coarsePointer: coarsePointer.matches,
+      }) * budget.resolutionScale;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
+    world.setGraphicsQuality(budget.quality);
+    post.setGraphicsQuality(budget.quality);
+    post.resize(window.innerWidth, window.innerHeight);
+    if (document.body.dataset) {
+      document.body.dataset.graphicsQuality = budget.quality;
+      document.body.dataset.graphicsAdaptive = String(budget.adaptive);
+    }
+  }
   function applySettings() {
+    if (settings.graphics !== activeGraphicsSetting) {
+      activeGraphicsSetting = settings.graphics;
+      adaptiveGraphics.reset(settings.graphics);
+    }
+    applyRenderBudget(adaptiveGraphics.current());
     const label = (id, key) => {
       $(id).textContent = uiText(settings.language, key);
     };
@@ -1726,6 +2463,7 @@ export function createGame({
       ['settingsTitle', 'options'],
       ['labelLanguage', 'language'],
       ['labelDifficulty', 'difficulty'],
+      ['labelGraphics', 'graphics'],
       ['labelMaster', 'master'],
       ['labelMusic', 'music'],
       ['labelSfx', 'effects'],
@@ -1758,9 +2496,20 @@ export function createGame({
       );
       if (option) option.textContent = uiText(settings.language, mode);
     }
+    for (const [mode, key] of [
+      ['auto', 'graphicsAuto'],
+      ['medium', 'graphicsMedium'],
+      ['high', 'graphicsHigh'],
+    ]) {
+      const option = Array.from($('settingGraphics').options ?? []).find(
+        (item) => item.value === mode,
+      );
+      if (option) option.textContent = uiText(settings.language, key);
+    }
     for (const [key, id] of [
       ['language', 'settingLanguage'],
       ['difficulty', 'settingDifficulty'],
+      ['graphics', 'settingGraphics'],
       ['master', 'settingMaster'],
       ['music', 'settingMusic'],
       ['sfx', 'settingSfx'],
@@ -1775,6 +2524,8 @@ export function createGame({
       else $(id).value = String(settings[key]);
     }
     $('touch').style.opacity = String(settings.opacity);
+    // Options controls actual button translucency, not just its parent wrapper.
+    $('touch').style.setProperty?.('--nw-touch-preference', String(settings.opacity));
     document.body.classList[settings.leftHanded ? 'add' : 'remove']('left-handed');
     $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     music?.setVolume(settings.master * settings.music);
@@ -1787,7 +2538,9 @@ export function createGame({
     settingsOpen = true;
     $('settingsMenu').hidden = false;
     applySettings();
-    $('settingLanguage').focus?.({ preventScroll: true });
+    // Keep the language selector visible but never auto-open a native mobile popup.
+    $('settingsTitle').setAttribute?.('tabindex', '-1');
+    $('settingsTitle').focus?.({ preventScroll: true });
   }
   function closeSettings() {
     settingsOpen = false;
@@ -1812,19 +2565,20 @@ export function createGame({
     if (!cinematic) return;
     const beat = cinematicBeat(cinematic.scenes, cinematic.elapsed);
     $('cinematicSpeaker').textContent = beat.speaker;
+    renderCinematicPortrait(document, beat.speaker);
     $('cinematicCaption').textContent = beat.text;
     cinematicStage?.update(cinematic.elapsed, window.innerWidth, window.innerHeight);
     $('cinematicProgress').style.width =
       (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
   }
-  function finishCinematic() {
+  function finishCinematic(skipSquad = false) {
     if (!cinematic) return;
     const playMission = cinematic.playMission;
     cinematic = null;
     cinematicStage?.destroy();
     cinematicStage = null;
     $('cinematic').hidden = true;
-    if (playMission) start();
+    if (playMission) start(false, null, skipSquad);
     else $('menu').hidden = false;
   }
   function advanceCinematic(dt) {
@@ -1874,11 +2628,24 @@ export function createGame({
     }
     $('menuMusic').textContent = menuThemePlaying ? '♪ PAUSAR TEMA' : '♪ OUVIR TEMA';
   }
+  $('developerPanel').hidden = !developerAvailable;
+  $('menuQA').hidden = !developerAvailable;
+  $('developerSessionTag').hidden = true;
+  if (developerAvailable) {
+    for (const [index, sector] of SECTORS.entries()) {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = String(index + 1).padStart(2, '0') + ' · ' + sector.name;
+      $('developerSector').append(option);
+    }
+    $('developerLaunch').onclick = () =>
+      startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
+  }
   $('start').onclick = () => (settings.intro ? beginCinematic() : start());
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
-  $('cinematicSkip').onclick = finishCinematic;
+  $('cinematicSkip').onclick = () => finishCinematic(true);
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
   $('pauseTabControls').onclick = () => showPausePanel('controls');
@@ -1922,6 +2689,7 @@ export function createGame({
   for (const [key, id] of [
     ['language', 'settingLanguage'],
     ['difficulty', 'settingDifficulty'],
+    ['graphics', 'settingGraphics'],
     ['master', 'settingMaster'],
     ['music', 'settingMusic'],
     ['sfx', 'settingSfx'],
@@ -1939,7 +2707,7 @@ export function createGame({
         [key]:
           typeof settings[key] === 'boolean'
             ? !!el.checked
-            : key === 'language' || key === 'difficulty'
+            : key === 'language' || key === 'difficulty' || key === 'graphics'
               ? el.value
               : Number(el.value),
       });
@@ -1953,6 +2721,7 @@ export function createGame({
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
+  $('equipScatter').onclick = equipScatter;
   $('music').onclick = () => {
     musicOn = !musicOn;
     music?.setEnabled(musicOn);
@@ -1961,6 +2730,8 @@ export function createGame({
   $('arsenalSwitch').onclick = cycleArsenal;
   $('specialSwitch').onclick = cycleSpecial;
   $('specialCast').onclick = castSpecial;
+  $('plasmaTitan').onclick = () => castSquadSpecial('plasma');
+  $('fiveCatsOverdrive').onclick = () => castSquadSpecial('overdrive');
   $('scanBoss').onclick = scanBoss;
   $('precisionShot').onclick = () => tacticalAction('precision');
   $('repairPulse').onclick = () => tacticalAction('repair');
@@ -1992,6 +2763,7 @@ export function createGame({
   $('pause').onclick = pause;
   $('sound').onclick = () => {
     muted = !muted;
+    audioCues?.setEnabled(!muted);
     $('sound').textContent = muted ? 'SOM OFF' : 'SOM ON';
   };
   const visibilityHandler = () => {
@@ -2010,7 +2782,7 @@ export function createGame({
     if (cinematic) {
       if (['Enter', 'Space', 'Escape'].includes(e.code)) {
         e.preventDefault?.();
-        finishCinematic();
+        finishCinematic(true);
       }
       return;
     }
@@ -2044,6 +2816,9 @@ export function createGame({
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
     if (e.code === 'KeyT') toggleRobot();
+    if (e.code === 'KeyN') toggleMechaLock();
+    if (e.code === 'KeyY') castSquadSpecial('plasma');
+    if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
@@ -2062,8 +2837,12 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    audioCues?.silence();
     orbitTouch = 0;
     boosting = false;
+    reflexBoost.reset();
+    heroEffects.reset();
+    document.body.classList.remove('reflex-boost');
     boostNeedsRelease = false;
     document.body.classList.remove('boosting');
     for (const f of player.userData.flames) {
@@ -2080,6 +2859,7 @@ export function createGame({
     heldPointers.clear();
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
+    mechaEngine?.silence();
   }
   addEventListener('blur', () => {
     releaseControls();
@@ -2166,6 +2946,10 @@ export function createGame({
     e.preventDefault?.();
     toggleRobot();
   };
+  $('lockTouch').onpointerdown = (e) => {
+    e.preventDefault?.();
+    toggleMechaLock();
+  };
   $('bombTouch').onpointerdown = (e) => {
     e.preventDefault?.();
     bomb();
@@ -2173,10 +2957,8 @@ export function createGame({
   function updatePiloting(dt) {
     robotCooldown = Math.max(0, robotCooldown - dt);
     robotTransition = Math.max(0, robotTransition - dt);
-    if (robot.visible) {
-      robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
-      robot.scale.setScalar(0.88 * (1 + robotTransition * 0.7));
-    }
+    if (robot.visible) robot.rotation.y = Math.sin(robotTransition * 18) * robotTransition * 1.8;
+    precisionCd = Math.max(0, precisionCd - dt);
     let dx =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
@@ -2192,7 +2974,22 @@ export function createGame({
       if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
+    const wasBoosting = boosting;
     boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
+    if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
+    const unfoldProgress = robotTransition / 0.7;
+    if (robot.visible) {
+      // The independently aimed wrists and dual dorsal gimbals belong to
+      // updateMechaPose(). Do not overwrite their animation with a legacy rig.
+      robot.rotation.y =
+        Math.sin(elapsed * 1.7) * 0.035 +
+        Math.sin(unfoldProgress * Math.PI * 5) * unfoldProgress * 0.32;
+    } else if (robotTransition > 0) {
+      shipModule.rotation.z = Math.sin(unfoldProgress * Math.PI * 2) * unfoldProgress * 0.22;
+    } else {
+      shipModule.rotation.z = 0;
+    }
     const energyBeforeBoost = energy;
     energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     if (dynamicFlight && sectorIndex === 0) {
@@ -2204,12 +3001,30 @@ export function createGame({
         chargeBefore: energyBeforeBoost,
         chargeAfter: energy,
       });
+      const boostGuide = $('launchBoostNotice');
+      const needsBoost = launchState.phase === 'boost' && state === 'playing';
+      if (launchState.phase !== beforeLaunch && needsBoost) orbitalAlertElapsed = 0;
+      if (needsBoost) orbitalAlertElapsed += dt;
+      // The mandatory BOOST stays on the button; the huge stage notice is
+      // merely a short heads-up, never a persistent gameplay obstruction.
+      boostGuide.hidden = !needsBoost || orbitalAlertElapsed > 2.6;
+      const boostButton = $('boostTouch');
+      if (needsBoost) boostButton.classList.add('launch-required');
+      else boostButton.classList.remove('launch-required');
+      const nextLabel = needsBoost ? 'SUPER BOOST' : 'BOOST';
+      if (boostButton.textContent !== nextLabel) boostButton.textContent = nextLabel;
+      boostButton.setAttribute(
+        'aria-label',
+        needsBoost ? 'Super Boost obrigatório para romper a atmosfera' : 'Ativar boost da nave',
+      );
+      if (needsBoost && boosting) document.body.classList.add('orbital-super-boost');
+      else document.body.classList.remove('orbital-super-boost');
       if (launchState.phase !== beforeLaunch) {
         if (launchState.phase === 'boost')
-          message('ASCENSÃO ORBITAL · SEGURE BOOST ATÉ ESGOTAR A ENERGIA');
+          message('FUGA ORBITAL · SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
         else if (launchState.phase === 'atmosphere')
-          message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA');
-        else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA');
+          message('IMPULSO ESGOTADO · ATRAVESSANDO A ATMOSFERA', 'jenifer');
+        else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA', 'bob');
       }
     }
     const profileSpeed = dynamicFlight
@@ -2217,7 +3032,13 @@ export function createGame({
         (1 + activeShip().stats.agility * 0.08) *
         (robotMode ? 0.65 : 1)
       : 1;
-    const speed = (boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
+    const superBoost =
+      dynamicFlight &&
+      sectorIndex === 0 &&
+      orbitalLaunchSequence.snapshot().phase === 'boost' &&
+      boosting;
+    const speed =
+      (superBoost ? 114 : boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
     if (holding) {
       charge = Math.min(1.5, charge + dt);
@@ -2225,13 +3046,29 @@ export function createGame({
       chargeLatch = true;
     } else if (chargeLatch) {
       if (charge >= 0.8) {
+        // The charged cannon must originate at the same articulated right wrist
+        // as the mecha's primary fire, never from the hidden ship's center.
+        if (robotMode) robot.updateMatrixWorld(true);
+        const chargedMuzzle = robotMode
+          ? robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3())
+          : null;
         launchShot(
           0,
-          (20 + weapon * 12) * weaponPower() * (dynamicFlight ? 1 + charge / 1.5 : 1),
+          mechaShotDamage((20 + weapon * 12) * weaponPower(), {
+            robot: robotMode,
+            kind: 'charged',
+          }) * (dynamicFlight ? 1 + charge / 1.5 : 1),
           true,
+          chargedMuzzle,
         );
+        if (robotMode) {
+          shots.at(-1).source = 'mecha-charged';
+          shots.at(-1).o.scale.multiplyScalar(1.3);
+          robotFireKick = 0.4;
+        }
         cockpit?.fire();
-        if (dynamicFlight) cue('plasmaRelease');
+        heroEffects.pulse({ robot: robotMode, charged: true, color: selectedWeapon().color });
+        if (dynamicFlight) cue(robotMode ? 'mechaChargeRelease' : 'plasmaRelease');
         else sound(160, 0.4, 'sawtooth', 0.06);
       }
       charge = 0;
@@ -2247,16 +3084,47 @@ export function createGame({
     }
     reticle.visible = true;
     const previousPlayer = player.position.clone();
+    const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
+    const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
+    const gustX = storm?.windX ?? 0;
     player.position.x = clamp(
-      player.position.x + dx * dt * 24 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+      player.position.x +
+        (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed + gustX) *
+          dt,
       -flightLimit(),
       flightLimit(),
     );
-    player.position.y = clamp(
-      player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
-      -1,
-      dynamicFlight ? 46 : 23,
-    );
+    const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
+    if (overheadControls) {
+      // UP/DOWN become depth movement for a real, playable tactical corridor.
+      player.position.z = clamp(
+        player.position.z - dy * dt * 34 * dodgeMultiplier * profileSpeed,
+        -44,
+        29,
+      );
+      player.position.y = T.MathUtils.damp(player.position.y, 10, 4, dt);
+    } else {
+      player.position.z = T.MathUtils.damp(player.position.z, 9, 4, dt);
+      player.position.y = clamp(
+        player.position.y +
+          dy * dt * 20 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        -1,
+        dynamicFlight ? 46 : 23,
+      );
+    }
+    asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
+    if (dynamicFlight && sectorIndex === 2) {
+      const wall = asteroidInterior.constrain(player.position);
+      if (wall.collided) {
+        player.position.x = wall.x;
+        player.position.y = wall.y;
+        if (asteroidWallCooldown <= 0) {
+          asteroidWallCooldown = 1.25;
+          hit(12);
+          cue('armorHit');
+        }
+      }
+    }
     player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
@@ -2271,9 +3139,20 @@ export function createGame({
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
+      // Actual crosswind banks the spacecraft; manual directional inputs
+      // remain fully responsive and can counter-steer against the gust.
+      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
+    // Keep transformation and flight-mech readable even during the initial
+    // invulnerability flicker. Damage protection is unchanged; ordinary ship
+    // mode retains the original blink feedback when invulnerable.
     player.visible =
-      cameraMode !== 'cockpit' && (boosting || invuln <= 0 || Math.floor(invuln * 12) % 2 === 0);
+      cameraMode !== 'cockpit' &&
+      (robotMode ||
+        robotTransition > 0 ||
+        boosting ||
+        invuln <= 0 ||
+        Math.floor(invuln * 12) % 2 === 0);
     flightCamera.update(
       dt,
       player.position,
@@ -2281,6 +3160,14 @@ export function createGame({
       boosting,
       dynamicFlight ? route : undefined,
     );
+    if (robotMode) updateMechaLock(dt, dx, dy);
+    mechaEngine?.update({
+      dt,
+      active: robotMode && state === 'playing' && !muted && appActive,
+      boosting,
+      accelerating: Math.max(Math.abs(dx), Math.abs(dy)),
+      volume: settings.master * settings.sfx,
+    });
     reticle.position.set(player.position.x, player.position.y, -60);
     // Keep legacy/native 3D sight; use clearer projected HUD for the web.
     reticle.visible = !dynamicFlight;
@@ -2295,8 +3182,64 @@ export function createGame({
   }
   function update(dt) {
     if (state !== 'playing') return;
+    if (squad?.snapshot().intro > 0) {
+      squad.update(dt, {
+        sector: sectorIndex,
+        elapsed,
+        pilot: pilotLoadout.pilot,
+        aspect: camera.aspect,
+      });
+      return;
+    }
     elapsed += dt;
     totalTime += dt;
+    const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
+    const marsTransit = !!marsArrival && !marsArrival.combatReady;
+    const destinationArrival =
+      dynamicFlight && sectorIndex >= 3 ? world.setDestinationArrival(elapsed) : null;
+    const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
+    const sandstorm = marsArrival?.storm;
+    if (sandstorm && sandstorm.phase !== marsStormPhase) {
+      const previousStorm = marsStormPhase;
+      marsStormPhase = sandstorm.phase;
+      if (sandstorm.phase === 'warning')
+        message('ALERTA MARTE · TEMPESTADE DE AREIA À FRENTE', 'bob');
+      else if (sandstorm.phase === 'active')
+        message('TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL', 'christopher');
+      else if (previousStorm === 'active')
+        message('TEMPESTADE SUPERADA · VISIBILIDADE RESTABELECIDA', 'bia');
+    }
+    if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
+      marsArrivalPhase = marsArrival.phase;
+      const announcements = {
+        orbit: ['ÓRBITA DE MARTE · PREPARAR DESCIDA', 'bob'],
+        entry: ['REENTRADA EM MARTE · PROTEÇÃO TÉRMICA ATIVA', 'christopher'],
+        descent: ['DESCIDA CONTROLADA · DESERTO À FRENTE', 'bia'],
+        surface: ['POUSO CONCLUÍDO · COMBATE NO DESERTO', 'bob'],
+      };
+      const next = announcements[marsArrival.phase];
+      if (next) message(next[0], next[1]);
+      if (marsArrival.phase === 'surface') invuln = Math.max(invuln, 2.5);
+    }
+    if (dynamicFlight && sectorIndex === 2) {
+      const planned = journeyPhaseAt(elapsed, current().duration);
+      if (journey.phase === 'approach' && planned !== 'approach') {
+        journey = advanceJourney(journey, 'destinationReached');
+        asteroidInterior.setPhase(journey.phase);
+        message('MEGA-ASTEROIDE À FRENTE · ENCONTRE A ABERTURA');
+      }
+      if (journey.phase === 'transition' && ['interior', 'boss'].includes(planned)) {
+        journey = advanceJourney(journey, 'entryCompleted');
+        asteroidInterior.setPhase(journey.phase);
+        message('DENTRO DO ASTEROIDE · EVITE AS PAREDES');
+      }
+    }
+    squad?.update(dt, {
+      sector: sectorIndex,
+      elapsed,
+      pilot: pilotLoadout.pilot,
+      power: weaponPower(),
+    });
     // The first boss cannot begin while the pilot remains in the city or
     // inside the long post-boost climb. Keep the flight playable meanwhile.
     if (dynamicFlight && sectorIndex === 0 && !orbitalLaunchSequence.snapshot().complete)
@@ -2305,15 +3248,15 @@ export function createGame({
       dynamicFlight &&
       spawnEncounters &&
       !arcadeDone &&
-      [2, 6].includes(sectorIndex) &&
-      elapsed >= 8
+      [6].includes(sectorIndex) &&
+      elapsed >= ARRIVAL_SECONDS + 4
     ) {
       arcadeDone = true;
       arcade = createArcade(sectorIndex + 1);
       state = 'arcade';
       releaseControls();
       $('arcadePanel').hidden = false;
-      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS');
+      message('FENDA ESPACIAL / VISÃO LATERAL · MOVA, ATIRE E RECOLHA CRÉDITOS', 'calvin');
       return;
     }
     if (dynamicFlight) {
@@ -2325,19 +3268,65 @@ export function createGame({
         !!boss,
         sectorIndex === 0 ? launchState.amount : 0,
       );
+      if (destinationArrival && !boss) {
+        route.label = destinationArrival.label;
+        if (destinationArrival.phase === 'entry') route.ascent -= 0.16 * destinationArrival.haze;
+      }
+      if (marsArrival && !boss) {
+        route.label = marsArrival.label;
+        // Camera tilts toward the surface continuously during re-entry.
+        route.ascent = marsArrival.cameraAscent;
+        if (sandstorm?.label) route.label = sandstorm.label;
+        // Camera reacts to the same physical gust as the player; there are
+        // no random cuts or unplayable top-down control changes.
+        route.bank = (route.bank ?? 0) + (sandstorm?.roll ?? 0) * 0.24;
+      }
       if (sectorIndex === 0 && !boss) {
         route.label =
           launchState.phase === 'boost'
-            ? 'SEGURE BOOST PARA SUBIR'
+            ? 'SUPER BOOST · ROMPA A ATMOSFERA'
             : launchState.phase === 'atmosphere'
               ? 'ATRAVESSANDO A ATMOSFERA'
               : launchState.phase === 'orbit'
                 ? 'ÓRBITA TERRESTRE'
                 : 'ROTA DE APROXIMAÇÃO';
       }
+      // Authored short perspectives, while pilot cockpit/combat selection retains priority.
+      // The camera changes only for an authored reactor-grid mission beat,
+      // with a matching playable depth-control mode. Never for elapsed time
+      // alone or while fighting a boss.
+      if (
+        sectorIndex === 3 &&
+        !boss &&
+        !reactorGridCompleted &&
+        elapsed >= current().duration * 0.35
+      ) {
+        reactorGridCompleted = true;
+        reactorGridSeconds = 17;
+        message('ÓRBITA-9 · REATOR · W/S PROFUNDIDADE · A/D LATERAL', 'calvin');
+      }
+      if (reactorGridSeconds > 0)
+        reactorGridSeconds = boss ? 0 : Math.max(0, reactorGridSeconds - dt);
+      const directedShot = stagePerspectiveAt(sectorIndex, elapsed, current().duration, !!boss, {
+        mission: reactorGridSeconds > 0 ? 'reactor-grid' : '',
+      });
+      flightCamera.setShot(directedShot);
+      if (directedShot === 'overhead')
+        route.label = 'REATOR ÓRBITA-9 · DESVIE EM X/Z · W/S PROFUNDIDADE';
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
       world.setLaunchAscent(launchState.amount, sectorIndex === 0);
+      if (sectorIndex === 2) {
+        world.setAsteroidInterior(journey.phase !== 'approach' && journey.phase !== 'complete');
+        route.label =
+          {
+            approach: 'APROXIMAÇÃO · MEGA-ASTEROIDE',
+            transition: 'ENTRADA · CAVERNA',
+            interior: 'COMBATE · INTERIOR DO ASTEROIDE',
+            boss: 'NÚCLEO · PERFURADOR',
+            escape: 'FUGA · COLAPSO DO ASTEROIDE',
+          }[journey.phase] ?? route.label;
+      }
       $('routeLabel').textContent = route.label;
     }
     const orbitalLaunch =
@@ -2371,6 +3360,19 @@ export function createGame({
             activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      const team = squad?.snapshot();
+      $('plasmaTitan').disabled =
+        !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
+      $('fiveCatsOverdrive').disabled =
+        !!team && (team.overdriveCooldown > 0 || arcana < SQUAD_SPECIALS.overdrive.cost);
+      $('plasmaTitan').textContent =
+        team?.plasmaCooldown > 0
+          ? 'Y · PLASMA ' + Math.ceil(team.plasmaCooldown) + 's'
+          : 'Y · PLASMA';
+      $('fiveCatsOverdrive').textContent =
+        team?.overdriveCooldown > 0
+          ? 'O · FIVE CATS ' + Math.ceil(team.overdriveCooldown) + 's'
+          : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
       $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
@@ -2409,7 +3411,11 @@ export function createGame({
         '% · ARCANA +' +
         benefits.arcana +
         '%' +
-        (barrier > 0 ? ' · BARREIRA' : stasis > 0 ? ' · ESTASE' : '');
+        (barrier > 0
+          ? ' · BARREIRA ' + Math.ceil(barrier) + 's'
+          : stasis > 0
+            ? ' · ESTASE ' + Math.ceil(stasis) + 's'
+            : '');
     }
     invuln -= dt;
     rollCd -= dt;
@@ -2418,30 +3424,75 @@ export function createGame({
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
+    const reflex = reflexBoost.update(dt, {
+      boosting: dynamicFlight && boosting,
+      energy,
+      threats: nearbyHostileThreats(hostile, player.position),
+      enabled:
+        dynamicFlight &&
+        state === 'playing' &&
+        (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().complete),
+    });
+    if (reflex.activated) {
+      energy = Math.max(0, energy - reflex.energyCost);
+      message('REFLEX BOOST · CÂMERA LENTA / DESVIE DOS PROJÉTEIS');
+    }
+    if (reflex.active) document.body.classList.add('reflex-boost');
+    else document.body.classList.remove('reflex-boost');
+    const hostileDt = dt * reflex.hostileTimeScale;
     spawnCd -= dt;
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
-    if (spawnEncounters && elapsed < current().duration && spawnCd <= 0 && !quietFirstSubboss) {
+    if (
+      spawnEncounters &&
+      !arrivalTransit &&
+      elapsed < current().duration &&
+      spawnCd <= 0 &&
+      !quietFirstSubboss
+    ) {
       const count =
         dynamicFlight && sectorIndex === 0
           ? settings.difficulty === 'hard'
             ? 2
             : 1
           : 2 + Math.floor(sectorIndex / 4);
-      for (let i = 0; i < count; i++) enemy();
+      if (dynamicFlight) {
+        const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
+        lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
+        for (const slot of wave.slots) enemy('fighter', slot);
+        if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
+      } else {
+        for (let i = 0; i < count; i++) enemy();
+      }
       spawnCd = dynamicFlight
         ? fighterInterval(sectorIndex, settings.difficulty)
         : 3.4 - sectorIndex * 0.12;
     }
-    if (spawnEncounters && !subDone && elapsed > current().duration * 0.22) {
+    if (
+      spawnEncounters &&
+      !arrivalTransit &&
+      !subDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
+          ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.22
+          : current().duration * 0.22)
+    ) {
       subDone = true;
       enemy('subboss');
       $('subHUD').hidden = false;
       music?.start(sectorIndex, 'subboss');
       message('SUBCHEFE / ' + SUBBOSS_NAMES[sectorIndex]);
     }
-    if (spawnEncounters && !rivalDone && elapsed > current().duration * 0.7) {
+    if (
+      spawnEncounters &&
+      !arrivalTransit &&
+      !rivalDone &&
+      elapsed >
+        (sectorIndex === 1 && dynamicFlight
+          ? MARS_TOUCHDOWN_SECONDS + (current().duration - MARS_TOUCHDOWN_SECONDS) * 0.7
+          : current().duration * 0.7)
+    ) {
       rivalDone = true;
       enemy('rival');
       message('CAÇA RIVAL / NÃO DEIXE QUE ELE ENCERRE A MISSÃO');
@@ -2476,6 +3527,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       elapsed < current().duration &&
+      !arrivalTransit &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
@@ -2488,6 +3540,7 @@ export function createGame({
       spawnEncounters &&
       isGroundSector(current()) &&
       !tunnelDone &&
+      sectorIndex !== 1 &&
       subDone &&
       (!dynamicFlight || sectorIndex !== 0) &&
       elapsed >= 24 &&
@@ -2515,7 +3568,8 @@ export function createGame({
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;
-      $('bossIncoming').textContent = '⚠ ALERTA · CHEFE SE APROXIMANDO';
+      world.showCarrierForBoss?.();
+      $('bossIncoming').textContent = '⚠ CHEFE SE APROXIMANDO · SAINDO DA NAVE-MÃE';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
@@ -2580,6 +3634,7 @@ export function createGame({
           launchShot(0, 3 + weapon);
           const shot = shots[shots.length - 1];
           shot.o.position.copy(p.position);
+          shot.source = 'pod';
           shot.spread = spread * (8 + podCount * 2);
           if (podCount === 3 || (dynamicFlight && podsDetached)) shot.homing = true;
         }
@@ -2588,7 +3643,7 @@ export function createGame({
 
     for (let e of enemies) {
       if (e.dead) continue;
-      e.age += dt;
+      e.age += hostileDt;
       if (dynamicFlight) {
         e.chilled = Math.max(0, e.chilled - dt);
         e.burning = Math.max(0, e.burning - dt);
@@ -2604,14 +3659,14 @@ export function createGame({
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
       if (e.role) {
-        e.o.position.z = fighterAdvance(e.o.position.z, e.age, dt, speed);
+        e.o.position.z = fighterAdvance(e.o.position.z, e.age, hostileDt, speed);
       } else if (e.subbossTactic) {
         const motion = subbossMotion(sectorIndex, e.age, e.combatPhase, e.x, e.y);
         e.o.position.set(motion.x, motion.y, motion.z);
         e.o.rotation.z = motion.bank;
       } else
         e.o.position.z +=
-          dt *
+          hostileDt *
           (e.kind === 'subboss'
             ? Math.max(0, (-85 - e.o.position.z) * 1.4)
             : e.ground
@@ -2661,7 +3716,7 @@ export function createGame({
         e.dead = true;
         $('subHUD').hidden = true;
         music?.start(sectorIndex);
-        message('SUBCHEFE RECUOU / PERSEGUIÇÃO ORBITAL LIBERADA');
+        message('SUBCHEFE RECUOU / PERSEGUIÇÃO ORBITAL LIBERADA', 'christopher');
         continue;
       }
       if (departure?.retreating) {
@@ -2690,23 +3745,61 @@ export function createGame({
               (e.age % 6 < 1.5 ? ' · ESCUDO' : '')
             : SUBBOSS_NAMES[sectorIndex];
       }
-      if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
-      e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
-      if (e.cd <= 0 && e.o.position.z < -15) {
+      if (e.kind === 'walker' || e.airborneRobot) {
+        const pose = robotAttackPose(
+          e.age,
+          e.x,
+          e.y,
+          e.variant,
+          player.position.x,
+          e.airborneRobot,
+        );
+        e.o.position.x = pose.x;
+        e.o.position.y = pose.y;
+        e.o.rotation.z = pose.bank;
+        e.o.userData.combatState = pose.deployed ? 'attacking' : 'deploying';
+      }
+      if (e.ground)
+        animateGroundEnemy(
+          e.o,
+          elapsed,
+          player.position,
+          e.age,
+          (e.kind === 'walker' || e.airborneRobot) &&
+            e.age >= 1.9 &&
+            e.cd <= ROBOT_EYE_WARNING_SECONDS &&
+            e.cd > 0,
+        );
+      e.cd -= hostileDt * (e.chilled > 0 ? 0.5 : 1);
+      if (
+        e.cd <= 0 &&
+        e.o.position.z < -15 &&
+        (!(e.kind === 'walker' || e.airborneRobot) ||
+          robotEyeBurstReady(e.age, e.o.position.z, e.cd))
+      ) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
-        for (const offset of introductorySubboss
-          ? [0]
-          : e.role
-            ? fighterAimOffsets(e.role)
-            : e.subbossTactic
-              ? e.subbossTactic.aim
-              : [0])
-          bullet(
-            e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
-            player.position.clone().add(new T.Vector3(offset, 0, 0)),
-            e.subbossTactic?.spell ?? '',
-          );
+        if (e.kind === 'walker' || e.airborneRobot) {
+          const eyes = hostileMuzzles(e);
+          // Every hostile projectile comes from a visible red eye, not an
+          // arbitrary offset under the body. Genuine collision is unchanged.
+          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          fireGroundRobotEyes(e.o, e.age);
+        } else
+          for (const offset of introductorySubboss
+            ? [0]
+            : e.role
+              ? fighterAimOffsets(e.role)
+              : e.subbossTactic
+                ? e.subbossTactic.aim
+                : [0])
+            bullet(
+              hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
+                hostileMuzzles(e)[0] ??
+                e.o.position.clone(),
+              player.position.clone().add(new T.Vector3(offset, 0, 0)),
+              e.subbossTactic?.spell ?? '',
+            );
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
@@ -2716,7 +3809,7 @@ export function createGame({
             e.combatPhase,
           ))
             bullet(
-              e.o.position.clone().add(new T.Vector3(0, 0, 10)),
+              hostileMuzzles(e)[0] ?? e.o.position.clone(),
               target,
               e.subbossTactic?.spell ?? '',
             );
@@ -2727,7 +3820,9 @@ export function createGame({
               : 1.5
             : e.role
               ? 1.8
-              : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
+              : e.kind === 'walker' || e.airborneRobot
+                ? 2.9 - (e.variant % 3) * 0.18
+                : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
         crossesSolid(
@@ -2770,20 +3865,79 @@ export function createGame({
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
       }
-      bossCombat.update(dt);
+      bossCombat.update(hostileDt);
       const combatPhase = bossCombat.phase;
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
+      let radarPlan = null;
       if (dynamicFlight) {
         const t = tactics();
-        const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
-        boss.position.set(
-          t.x * approach,
-          10 + (t.y - 10) * approach,
-          -230 + (t.z + 230) * approach,
+        if (t.state === 'windup' && bossIntentCycle !== t.cycle) {
+          bossIntent = chooseBossIntent({
+            sector: sectorIndex,
+            cycle: t.cycle,
+            phase: combatPhase,
+            playerX: player.position.x,
+            playerY: player.position.y,
+            orbit: relativeOrbit(),
+            boosting,
+            robot: robotMode,
+            generators: boss.userData.parts.map((part) => part.hp > 0),
+          });
+          bossIntentCycle = t.cycle;
+          bossMeleeResolved = false;
+        }
+        const attackAge = Math.max(0, bossCombat.age - 8) % t.period;
+        const meleePose = bossMeleePose(
+          bossIntent,
+          t.state,
+          t.state === 'attack' ? attackAge - 2.2 : attackAge,
         );
+        const approach = 1 - Math.pow(1 - Math.min(1, bossCombat.age / 3), 3);
+        // Cinematic 3 s launch: boss exits the ship's central bay in the
+        // background before following its existing tactic trajectory.
+        const launchPose = bossDepartureAt(bossCombat.age, t, approach);
+        boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
         boss.rotation.z = t.bank;
-        $('battleRadar').style.background = radarGradient(t);
+        if (
+          t.state === 'attack' &&
+          bossIntent &&
+          bossIntent.kind !== 'barrage' &&
+          !bossMeleeResolved &&
+          attackAge >= 2.72
+        ) {
+          bossMeleeResolved = true;
+          if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            bossMeleeHit(bossIntent, {
+              x: player.position.x,
+              y: player.position.y,
+              orbit: relativeOrbit(),
+            })
+          ) {
+            hit(bossIntent.damage);
+            explode(player.position.clone(), 8, 0xff8060);
+            cue('armorHit');
+          } else {
+            message(
+              boss.userData.parts.every((part) => part.hp === 0)
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+            );
+          }
+        }
+        radarPlan =
+          ['windup', 'attack'].includes(t.state) && bossIntent
+            ? bossRadarPlan(bossIntent, {
+                x: player.position.x,
+                y: player.position.y,
+                orbit: relativeOrbit(),
+                originX: boss.position.x,
+                originY: boss.position.y,
+              })
+            : null;
+        renderBossRadar(document, radarPlan);
+        $('battleRadar').style.background = radarPlan ? '#071b20' : radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
         $('tacticState').textContent =
           t.state === 'windup'
@@ -2797,18 +3951,63 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        if (
+          bossCombat.age >= 3 &&
+          t.state === 'attack' &&
+          t.cycle !== lastSpecialCycle &&
+          (bossIntent?.kind === 'barrage' || !bossIntent)
+        ) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
-          for (let n = 0; n < (dangerous ? 3 : 1); n++) {
-            const origin = boss.position.clone().add(new T.Vector3((n - 1) * 16, 0, 18));
-            for (const target of encounterPattern(
-              sectorIndex,
-              t.cycle + n,
-              player.position,
-              dangerous ? 3 : 1,
-            ))
-              bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+          const signature = bossSignatureVolley(
+            sectorIndex,
+            t.cycle,
+            combatPhase,
+            boss.userData.parts.map((part) => part.hp > 0),
+          );
+          if (signature) {
+            // Projectiles originate from actual robot arms, drill ring, hydra
+            // heads or Marvin's crown. Broken generators disable side batteries.
+            boss.updateMatrixWorld(true);
+            const generators = boss.userData.parts.map((part) => part.hp > 0);
+            const budget = bossBatteryPlan(generators, signature.shots.length);
+            let fired = 0;
+            for (const emission of signature.shots) {
+              if (fired >= budget.sides.length) break;
+              const side = batteryForSignature(emission.origin, generators);
+              if (side === null || (side === 0 && fired > 0)) continue;
+              const origin = bossMuzzle(side);
+              if (!origin) continue;
+              const spread = dangerous ? 0.72 : 1.15;
+              const destination = player.position
+                .clone()
+                .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
+              bullet(origin, destination, emission.element);
+              fired++;
+            }
+            // Keep one readable fallback shot from the only live weapon.
+            // After both side modules are destroyed the emergency core is
+            // the ONLY valid origin; no invisible fire from destroyed guns.
+            if (!fired) {
+              const survivingSide = generators.some(Boolean) ? budget.sides[0] : 0;
+              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire');
+            }
+          } else {
+            for (let n = 0; n < (dangerous ? 3 : 1); n++) {
+              const side =
+                bossBatteryPlan(
+                  boss.userData.parts.map((p) => p.hp > 0),
+                  3,
+                ).sides[n] ?? 0;
+              const origin = bossMuzzle(side);
+              for (const target of encounterPattern(
+                sectorIndex,
+                t.cycle + n,
+                player.position,
+                dangerous ? 3 : 1,
+              ))
+                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+            }
           }
         }
       } else {
@@ -2817,10 +4016,33 @@ export function createGame({
         boss.position.y = 10 + Math.sin(elapsed * 0.4) * 3;
       }
       boss.userData.rotors.forEach((o, i) => (o.rotation.z += dt * (i % 2 ? -0.14 : 0.2)));
+      const t = dynamicFlight ? tactics() : null;
+      const poseAge = t ? Math.max(0, bossCombat.age - 8) % t.period : 0;
+      const melee = bossMeleePose(
+        bossIntent,
+        t?.state,
+        t?.state === 'attack' ? poseAge - 2.2 : poseAge,
+      );
       boss.userData.organic?.forEach((o, i) => {
-        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1;
+        o.rotation.z = Math.sin(elapsed * 1.8 + i) * 0.1 + melee.tentacle * (i % 2 ? -1 : 1);
+        o.rotation.x = melee.tentacle * 0.32;
       });
-      boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
+      boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12 + melee.jaw;
+      const biteJaw = boss.getObjectByName('marvin-bite-jaw');
+      if (biteJaw) biteJaw.rotation.x = melee.jaw;
+      for (const [name, side] of [
+        ['marvin-left-claw', -1],
+        ['marvin-right-claw', 1],
+      ]) {
+        const claw = boss.getObjectByName(name);
+        if (claw) {
+          claw.rotation.z = side * melee.claw;
+          claw.rotation.x = melee.claw * 0.4;
+        }
+      }
+      if (dynamicFlight) {
+        animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
+      }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const openGenerator = boss.userData.parts.findIndex(
@@ -2843,8 +4065,8 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ALVO VULNERÁVEL · GERADOR ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
-              : 'BLINDAGEM · ORBITE PARA O FLANCO'
+              ? 'ARMA VULNERÁVEL · BATERIA ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
+              : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
@@ -2852,7 +4074,7 @@ export function createGame({
                 ? 'ALVO VULNERÁVEL · NÚCLEO'
                 : bossCombat.coreOpen
                   ? 'ORBITE PARA A FRENTE'
-                  : 'BLINDAGEM ATIVA');
+                  : 'BLINDAGEM · DANO REDUZIDO');
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
@@ -2861,44 +4083,103 @@ export function createGame({
         $('bossState').textContent +=
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
-      bossCd -= dt;
-      $('attackWarning').setAttribute?.('data-severity', 'danger');
-      $('attackWarning').textContent =
-        bossCd < 0.65
-          ? '⚠ ' +
-            [
-              'LEQUE DUPLO',
-              'PINÇAS',
-              'HÉLICE',
-              'CRUZ ORBITAL',
-              'ASAS DE FOGO',
-              'MARTELO',
-              'CABEÇAS DA HIDRA',
-              'BATERIAS',
-              'ANEL DO VAZIO',
-              'COROA IMPERIAL',
-            ][sectorIndex]
-          : '';
-      if (dynamicFlight && bossCd < 0.65)
+      bossCd -= hostileDt;
+      $('attackWarning').setAttribute?.(
+        'data-severity',
+        radarPlan?.threatened === false ? 'info' : 'danger',
+      );
+      const physicalWarning =
+        dynamicFlight &&
+        bossIntent &&
+        ['windup', 'attack'].includes(tactics().state) &&
+        bossIntent.kind !== 'barrage'
+          ? bossIntent.label
+          : null;
+      const signatureWarning =
+        dynamicFlight && tactics().state === 'windup' && bossIntent?.kind === 'barrage'
+          ? bossSignatureVolley(
+              sectorIndex,
+              tactics().cycle,
+              combatPhase,
+              boss.userData.parts.map((part) => part.hp > 0),
+            )?.name
+          : null;
+      $('attackWarning').textContent = physicalWarning
+        ? '⚠ ' +
+          physicalWarning +
+          (radarPlan?.threatened ? ' · SIGA A ZONA VERDE DO RADAR' : ' · POSIÇÃO SEGURA')
+        : signatureWarning
+          ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+          : bossCd < 0.65
+            ? '⚠ ' +
+              [
+                'LEQUE DUPLO',
+                'PINÇAS',
+                'HÉLICE',
+                'CRUZ ORBITAL',
+                'ASAS DE FOGO',
+                'MARTELO',
+                'CABEÇAS DA HIDRA',
+                'BATERIAS',
+                'ANEL DO VAZIO',
+                'COROA IMPERIAL',
+              ][sectorIndex]
+            : '';
+      if (dynamicFlight && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
-      if (bossCd <= 0 && bossCombat.age >= 3) {
+      // Only one targeted volley per maneuver; never spray generic bullets
+      // over the physical strike window.
+      const allowRanged =
+        !dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
+      if (bossCd <= 0 && bossCombat.age >= 3 && allowRanged) {
+        lastRangedCycle = tactics().cycle;
         bossVolley++;
-        const origin = boss.position.clone().add(new T.Vector3(0, 0, 22));
-        for (const target of encounterPattern(
-          sectorIndex,
-          bossVolley,
-          player.position,
-          combatPhase,
-        ))
-          bullet(origin, target, dynamicFlight ? (bossVolley % 3 === 0 ? 'arcane' : 'fire') : '');
-        bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
+        const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
+        if (dynamicFlight) {
+          // Bosses fire from their own batteries/heads, not the same central barrel.
+          const batteryPlan = bossBatteryPlan(
+            boss.userData.parts.map((part) => part.hp > 0),
+            program.sources.length,
+          );
+          for (const [sourceIndex, side] of batteryPlan.sides.entries()) {
+            const source = program.sources[sourceIndex % program.sources.length];
+            const origin = bossMuzzle(side);
+            const targets = encounterPattern(
+              sectorIndex,
+              source.volley,
+              player.position,
+              combatPhase,
+            );
+            for (const [targetIndex, target] of targets.entries()) {
+              // Keep a disciplined mobile projectile budget despite multi-origin volleys.
+              if (
+                program.sources.length > 1 &&
+                targetIndex % program.sources.length !== sourceIndex
+              )
+                continue;
+              bullet(origin, target, program.type);
+            }
+          }
+          bossCd = program.cadence * batteryPlan.cadenceMultiplier;
+        } else {
+          const origin = bossMuzzle(0);
+          for (const target of encounterPattern(
+            sectorIndex,
+            bossVolley,
+            player.position,
+            combatPhase,
+          ))
+            bullet(origin, target, '');
+          bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
+        }
       }
     } else $('attackWarning').textContent = '';
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt));
+      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
       b.previousPosition = previousShot;
@@ -2917,6 +4198,7 @@ export function createGame({
         }
       }
       b.o.position.x += (b.spread ?? 0) * dt;
+      if (b.scatter) b.travelled += dt * 190;
       if (b.v) b.o.position.addScaledVector(b.v, dt);
       else b.o.position.z -= dt * 190;
       b.life -= dt;
@@ -2944,7 +4226,9 @@ export function createGame({
               Math.abs(e.o.position.y + e.hitY - b.o.position.y) < e.half.y)
         ) {
           const weak = Math.abs(e.o.position.x - b.o.position.x) < 1.2;
-          const dealt = damageEnemy(e, (b.damage ?? 2) * (weak ? 2 : 1), b.element);
+          const effective =
+            (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1);
+          const dealt = damageEnemy(e, effective * (weak ? 2 : 1), b.element);
           impact(
             impactPoint(
               previousShot,
@@ -2953,7 +4237,7 @@ export function createGame({
               e.half,
             ),
             dealt,
-            { weak: weak && dealt > 0 },
+            { weak: weak && dealt > 0, heavy: b.source?.startsWith('mecha-') },
           );
           b.pierced.add(e);
           if (b.element !== 'void') b.life = 0;
@@ -2982,10 +4266,18 @@ export function createGame({
         for (const mesh of targets) {
           const center = mesh.getWorldPosition(new T.Vector3());
           if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
-            const dealt = damageBoss(b.damage ?? 2, center, b.element, b.charged);
+            const dealt = damageBoss(
+              (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
+              center,
+              b.element,
+              b.charged,
+              'weak',
+              b.source,
+            );
             impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
               bossHit: true,
               weak: dealt > 0,
+              heavy: b.source?.startsWith('mecha-'),
             });
             b.life = 0;
 
@@ -2995,8 +4287,18 @@ export function createGame({
         // Hull catches missed/armored shots behind the forward weak-point volumes.
         const hull = new T.Vector3(45, 20, 4);
         if (b.life > 0 && crossesSolid(previousShot, b.o.position, boss.position, hull, 0.2)) {
-          impact(impactPoint(previousShot, b.o.position, boss.position, hull), 0, {
+          const dealt = damageBoss(
+            (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
+            boss.position,
+            b.element,
+            b.charged,
+            'hull',
+            b.source,
+          );
+          impact(impactPoint(previousShot, b.o.position, boss.position, hull), dealt, {
             bossHit: true,
+            weak: false,
+            heavy: b.source?.startsWith('mecha-'),
           });
           b.life = 0;
         }
@@ -3005,14 +4307,14 @@ export function createGame({
     for (let b of hostile) {
       const from = b.o.position.clone();
       b.previousPosition = from;
-      b.age += dt;
+      b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
         b.v.lerp(
           player.position.clone().sub(b.o.position).normalize().multiplyScalar(38),
-          1 - Math.exp(-2 * dt),
+          1 - Math.exp(-2 * hostileDt),
         );
-      b.o.position.addScaledVector(b.v, dt * (stasis > 0 ? 0.3 : 1));
-      b.life -= dt;
+      b.o.position.addScaledVector(b.v, hostileDt * (stasis > 0 ? 0.3 : 1));
+      b.life -= hostileDt;
       if (b.life > 0 && projectileOccluded(from, b.o.position)) {
         b.life = 0;
         explode(b.o.position, 3, 0xffbf75);
@@ -3035,7 +4337,7 @@ export function createGame({
       }
     }
     ringCd -= dt;
-    if (spawnEncounters && ringCd < 0 && elapsed < current().duration) {
+    if (spawnEncounters && !arrivalTransit && ringCd < 0 && elapsed < current().duration) {
       const kind = ringWave++ % 2 === 0 ? 'blue' : 'shield';
       const o = createPickup(kind);
       const extent = Math.max(0, flightLimit() - 2);
@@ -3051,7 +4353,7 @@ export function createGame({
       rings.push({ o, life: 10, kind });
       ringCd = 6;
     }
-    if (dynamicFlight && spawnEncounters && elapsed < current().duration) {
+    if (dynamicFlight && spawnEncounters && !arrivalTransit && elapsed < current().duration) {
       petCd -= dt;
       if (petCd <= 0) {
         const id = PET_ITEMS[petWave++ % PET_ITEMS.length].id;
@@ -3081,6 +4383,7 @@ export function createGame({
       r.o.position.set(result.x, result.y, result.z);
       r.o.rotation.z += dt;
       if (result.collected) {
+        if (stagePerformance && !r.kind.startsWith('pet:')) stagePerformance.rings++;
         score += 3;
         r.life = 0;
         explode(r.o.position, 3, r.kind === 'blue' ? 0x61b9ff : 0x9affb5);
@@ -3090,6 +4393,22 @@ export function createGame({
       if (r.o.position.z > 40) r.life = 0;
     }
     obstacleCd -= dt;
+    if (
+      dynamicFlight &&
+      sectorIndex === 3 &&
+      reactorGridSeconds > 0 &&
+      spawnEncounters &&
+      reactorGridWave < 4 &&
+      reactorGridSeconds < 15.8 - reactorGridWave * 3.5
+    ) {
+      // Playable reactor-grid hazards only during the top-down X/Z section;
+      // their physical collision volume matches their visible station props.
+      const gate = createObstacle('reactor');
+      gate.position.set([-17, 18, -12, 13][reactorGridWave], 8, player.position.z - 82);
+      scene.add(gate);
+      obstacles.push({ o: gate, life: 1 });
+      reactorGridWave++;
+    }
     // Preserve a clear view during BOOST ascent and the atmospheric crossing.
     // Orbital debris/carriers enter only once the player has reached real orbit.
     const launchTransit =
@@ -3099,10 +4418,14 @@ export function createGame({
     if (
       spawnEncounters &&
       !launchTransit &&
+      !arrivalTransit &&
+      !(dynamicFlight && sectorIndex === 1) &&
+      reactorGridSeconds <= 0 &&
       obstacleCd <= 0 &&
       elapsed < current().duration &&
       !obstacles.some((o) => o.o.userData.kind === 'tunnel') &&
       !quietFirstSubboss &&
+      !(dynamicFlight && sectorIndex === 2 && journey.phase !== 'approach') &&
       !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration)) &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
@@ -3156,7 +4479,12 @@ export function createGame({
         }
     enemies = enemies.filter((e) => !e.dead);
     $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
-    $('speedValue').textContent = boosting ? '890' : '480';
+    $('speedValue').textContent =
+      boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
+        ? '1140'
+        : boosting
+          ? '890'
+          : '480';
     $('shield').style.width = (hp / maxHp()) * 100 + '%';
     $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
     $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
@@ -3174,6 +4502,7 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    heroEffects.tick(dt, state === 'playing' || state === 'collapsing');
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
     if (state === 'playing' && stageIntroTime > 0) {
@@ -3203,17 +4532,16 @@ export function createGame({
     }
     if (state !== 'paused' && state !== 'arcade') {
       visualTime += dt;
-      world.update(
-        dt,
-        visualTime,
+      const scenerySpeed =
         (boosting ? 90 : 48) *
-          (1 + Math.min(30, stage()) * 0.02) *
-          (dynamicFlight
-            ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08)
-            : 1),
+        (1 + Math.min(30, stage()) * 0.02) *
+        (dynamicFlight ? activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08) : 1);
+      const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
-          (dynamicFlight && state === 'collapsing'),
-      );
+        (dynamicFlight && state === 'collapsing');
+      world.update(dt, visualTime, scenerySpeed, sceneryMoving);
+      if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
+        asteroidInterior.update(dt, scenerySpeed);
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
@@ -3282,6 +4610,11 @@ export function createGame({
       camera.position.set(0, 11, 32);
       camera.lookAt(0, 5, -60);
     }
+    audioCues?.setFlight({
+      active: dynamicFlight && !muted && ['playing', 'collapsing'].includes(state),
+      boosting,
+      robot: robotMode,
+    });
     const inside =
       cameraMode === 'cockpit' &&
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
@@ -3306,7 +4639,7 @@ export function createGame({
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
-      post.render();
+      lastFrameCost = post.render() ?? lastFrameCost;
     }
   }
   function step(dt) {
@@ -3316,8 +4649,11 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
-    frameAudit.sample(time, appActive && !document.hidden && state === 'playing');
-    const dt = Math.min((time - last) / 1000, 0.035);
+    const renderingFlight = appActive && !document.hidden && state === 'playing';
+    frameAudit.sample(time, renderingFlight);
+    const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
+    if (nextBudget) applyRenderBudget(nextBudget);
+    const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
     last = time;
     tick(dt, time);
     requestFrame(loop);
@@ -3367,18 +4703,26 @@ export function createGame({
     damageBoss,
     collect,
     buy,
+    equipScatter,
     buySkin,
     selectPilot,
     selectShip,
     selectShipColor,
     nextSector,
+    startDeveloperScenario,
     snapshot: () => ({
       state,
+      developerAvailable,
+      developerSession,
+      developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
+      missionCameraSeconds: reactorGridSeconds,
+      missionHazardWave: reactorGridWave,
+      bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
       shotPower: shots[0]?.damage ?? 0,
@@ -3386,9 +4730,12 @@ export function createGame({
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
       cameraMode,
+      directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
       route: { ...route },
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
+      journey: { ...journey },
+      asteroidInterior: asteroidInterior?.snapshot() ?? null,
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },
       petCare: { ...petCare },
@@ -3400,10 +4747,20 @@ export function createGame({
       weapon: weapon + 1,
       volley,
       rapid,
+      scatterOwned,
+      fireMode,
+      mecha: {
+        active: robotMode,
+        lockEnabled,
+        lockProgress,
+        thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
+        motor: mechaEngine?.snapshot() ?? { amplitude: 0, velocity: 0, voices: 0 },
+      },
       pods: podCount,
       armor,
       charge,
       music: music?.snapshot() ?? null,
+      audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
@@ -3431,6 +4788,7 @@ export function createGame({
       podMode,
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
+      fiveCats: squad?.snapshot() ?? null,
       boostVisual: {
         color: player.userData.flames[0].material.color.getHex(),
         length: player.userData.flames[0].scale.y,
@@ -3445,6 +4803,7 @@ export function createGame({
       })),
       rolling: roll > 0,
       player: { x: player.position.x, y: player.position.y },
+      playerDepth: player.position.z,
       camera: {
         x: camera.position.x,
         y: camera.position.y,
@@ -3452,6 +4811,7 @@ export function createGame({
         fov: camera.fov,
         bank: camera.rotation.z,
       },
+      fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
@@ -3484,11 +4844,17 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
-      document.body.classList.remove('in-mission', 'stage-intro', 'left-handed');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'left-handed',
+        'ranking-intermission',
+      );
       $('pauseMenu').hidden = true;
       $('settingsMenu').hidden = true;
       music?.destroy();
       audioCues?.destroy();
+      mechaEngine?.destroy();
       cinematicStage?.destroy();
       localization.destroy();
       cleanups.forEach((fn) => fn());
@@ -3496,9 +4862,11 @@ export function createGame({
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
+      squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
+      asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
         o.geometry?.dispose();

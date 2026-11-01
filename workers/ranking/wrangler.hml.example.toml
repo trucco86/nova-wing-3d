@@ -1,0 +1,18 @@
+# HML uses a non-production Firebase project, Worker and D1 database.
+# Fill database_id only after creating the HML D1 database.
+name = "nova-wing-ranking-hml"
+main = "src/index.js"
+compatibility_date = "2026-10-27"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "nova-wing-dev"
+ALLOWED_ORIGINS = "https://hml.nova-wing-preview.pages.dev"
+RANKING_SEASON = "current"
+SCORE_WRITE_ENABLED = "false"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nova-wing-ranking-hml"
+database_id = "REPLACE_HML_DATABASE_ID"
+migrations_dir = "migrations"

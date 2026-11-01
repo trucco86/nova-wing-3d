@@ -76,6 +76,8 @@ O subchefe usa um cruzador próprio e se mantém em z=-85 até ser derrotado. Du
 
 O sequenciador possui seis estados musicais e arranjos com harmonia, baixo, melodia e percussão sintetizada; filtro e compressor controlam o espectro e a soma das vozes. Destruição libera os nós. Fixtures gráficas e de áudio não são distribuídas no Pages.
 
+Na candidata v1.26.0, `audio-synth.js` centraliza envelopes, filtros, panorâmica e ruído determinístico em buffers por AudioContext. `audio.js` mantém o menu e os seis estados com notas espaçadas, pads e percussão grave; `audio-cues.js` mantém efeitos de evento e duas fontes contínuas de turbina. Somente mudanças de modo atualizam a automação da turbina. Pausa libera controles e silencia o loop imediatamente; mute/volume zero cancelam efeitos pendentes. O contexto continua desbloqueado pelo gesto do jogador e compartilhado, sem novos downloads. A fixture privada usa OfflineAudioContext estéreo real para verificar silêncio, amostras, picos e energia abaixo de 200 Hz, separadamente da avaliação subjetiva.
+
 ## Voo e Force (1.3)
 
 Anéis derivam sua faixa de spawn do limite horizontal da nave, inclusive após resize, e usam cruzamento varrido em Z e atração de curta distância. O voo mantém os limites anteriores; evita-se posicionar recompensas fora deles.

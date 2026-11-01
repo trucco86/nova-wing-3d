@@ -76,7 +76,7 @@ test('moving boss weak points follow its orientation and native keeps its origin
   assert.equal(n.game.snapshot().tactics.energy, 0);
 });
 
-test('real precision collision shows confirmed damage; armored hull shows blocked feedback', (t) => {
+test('precision attack chips armored hull while weak generators remain essential', (t) => {
   const h = harness();
   t.after(() => h.close());
   h.game.start();
@@ -86,9 +86,11 @@ test('real precision collision shows confirmed damage; armored hull shows blocke
     h.game.snapshot().bossTargets.some((part) => part.open),
     false,
   );
+  const hullHp = h.game.snapshot().bossHp;
   assert.equal(h.game.tacticalAction('precision'), true);
   h.advance(0.65);
-  assert.equal(h.elements.get('hitFeedback').textContent, 'SEM DANO · AJUSTE O ÂNGULO');
+  assert.match(h.elements.get('hitFeedback').textContent, /^ACERTO \+\d+$/);
+  assert.ok(h.game.snapshot().bossHp < hullHp, 'armored body now takes limited damage');
   assert.equal(h.game.snapshot().bossTargets[0].hp, 180);
   aimAtFirstGenerator(h);
   assert.equal(h.game.tacticalAction('precision'), true);

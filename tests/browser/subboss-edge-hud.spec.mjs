@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { SECTORS } from '../../src/campaign.js';
 
 test('first subboss health stays at the top-right information edge on phones', async ({
   page,
@@ -14,15 +13,15 @@ test('first subboss health stays at the top-right information edge on phones', a
     { width: 844, height: 390 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto('/__dynamic.html?sector=0&encounters=1');
+    await page.goto('/__dynamic.html?qaSubboss=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    const firstArrival = SECTORS[0].duration * 0.22;
-    await page.evaluate((arrival) => {
-      while (window.fixture.game.snapshot().seconds < arrival + 3) {
-        window.fixture.game.collect('shield');
-        window.fixture.advance(0.5);
-      }
-    }, firstArrival);
+    // This runs the actual sector-1 subboss through the same isolated QA
+    // launcher as the user-facing menu. The fight and HUD are real; a
+    // 35-second simulated rail ride is irrelevant to the layout contract.
+    const stateBefore = await page.evaluate(() => window.fixture.game.snapshot());
+    expect(stateBefore.developerSession).toBe(true);
+    expect(stateBefore.developerScenario).toEqual({ sector: 0, encounter: 'subboss' });
+    await page.evaluate(() => window.fixture.advance(0.05));
     await expect(page.locator('#subHUD')).toBeVisible();
     const bounds = await page.locator('#subHUD').boundingBox();
     const rail = await page.locator('#hudNotices').boundingBox();
