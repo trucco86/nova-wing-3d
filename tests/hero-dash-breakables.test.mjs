@@ -4,6 +4,9 @@ import * as T from 'three';
 import { harness } from './harness.mjs';
 import { createFlyingRobot } from '../src/visuals.js';
 import { animatePremiumMecha } from '../src/mecha-premium.js';
+import { createMechaDashTrail } from '../src/mecha-dash-trail.js';
+import { animateMechPower } from '../src/visuals.js';
+import { updateMechaPose } from '../src/mecha-motion.js';
 import { createObstacle } from '../src/encounters.js';
 import { projectileHitsApproachingObstacle } from '../src/flight.js';
 import {
@@ -29,8 +32,11 @@ test('hero size is capped for narrow halls, ship holds edge-on bank with actual 
 test('mecha dash lasts 240ms and never bypasses cooldown or frame-rate limits', () => {
   assert.equal(dashDirection(1, 5), 1);
   assert.equal(dashDirection(-1, -5), -1);
-  assert.equal(dashDirection(0, 6), -1);
-  assert.equal(dashDirection(0, -6), 1);
+  assert.equal(dashDirection(0), 0, 'neutral must never dodge automatically');
+  assert.equal(dashDirection(0.1), 0, 'ignore analog joystick drift');
+  assert.equal(dashDirection(0.6), 1);
+  assert.equal(dashDirection(-0.75), -1);
+  assert.equal(dashDirection(Number.NaN), 0);
   const distanceAt = (fps) => {
     let remain = MECHA_DASH.duration;
     let move = 0;
@@ -90,7 +96,9 @@ test('robot boosts with visible paired afterburners and layered back details', (
   assert.ok(robot.userData.premiumMecha.exhausts.every((o) => !o.visible));
   animatePremiumMecha(robot, { progress: 1, level: 18, time: 2, boosting: true });
   assert.equal(robot.userData.premiumMecha.exhausts.length, 2);
-  assert.ok(robot.userData.premiumMecha.exhausts.every((o) => o.visible && o.scale.y > 1.5));
+  assert.ok(robot.userData.premiumMecha.exhausts.every((o) => o.visible && o.scale.y > 3.5));
+  assert.ok(robot.userData.premiumMecha.exhausts.every((o) => o.rotation.x === -Math.PI / 2));
+  assert.ok(robot.userData.premiumMecha.afterburnerCores.every((o) => o.visible && o.scale.y > 4));
 });
 
 test('only hostile satellites and carriers can be destroyed by real projectile geometry', () => {
@@ -215,4 +223,82 @@ test('a depleted mecha cannot repeatedly dash without enough energy', (t) => {
   assert.equal(h.game.snapshot().dash.active, false);
   assert.equal(h.game.snapshot().energy, energy);
   h.key('KeyZ', false);
+});
+
+test('DASH without left/right input does not pick a direction or spend energy', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+  h.key('KeyT');
+  h.advance(1.4);
+  const before = h.game.snapshot();
+  h.game.roll();
+  const neutral = h.game.snapshot();
+  assert.equal(neutral.dash.active, false);
+  assert.equal(neutral.dash.cooldown, 0);
+  assert.equal(neutral.energy, before.energy);
+  h.key('KeyW');
+  h.game.roll();
+  assert.equal(h.game.snapshot().dash.active, false, 'upward-only input is not lateral');
+  h.key('KeyW', false);
+
+  // Actual touch joystick explicitly points left before DASH button fires.
+  const stick = h.elements.get('stick');
+  stick.onpointerdown({
+    pointerId: 22,
+    clientX: 12,
+    clientY: 50,
+    preventDefault() {},
+  });
+  h.elements.get('rollTouch').onpointerdown({
+    pointerId: 23,
+    preventDefault() {},
+  });
+  const dash = h.game.snapshot();
+  assert.equal(dash.dash.active, true);
+  assert.equal(dash.dash.direction, -1);
+  assert.equal(dash.energy, before.energy - MECHA_DASH.energyCost);
+  stick.emit('pointercancel', { pointerId: 22 });
+  h.elements.get('rollTouch').emit('pointerup', { pointerId: 23, type: 'pointerup' });
+  h.advance(0.1);
+  assert.ok(h.game.snapshot().player.x < before.player.x - 3);
+  assert.ok(h.game.snapshot().dash.trail.visible > 0);
+  h.advance(0.55);
+  assert.equal(h.game.snapshot().dash.trail.visible, 0);
+});
+
+test('world-space dash streak pool remains behind as mecha moves and fades completely', () => {
+  const scene = new T.Scene();
+  const trail = createMechaDashTrail(scene);
+  assert.equal(scene.children.length, 16);
+  assert.equal(trail.snapshot().visible, 0);
+  trail.emit(new T.Vector3(-5, 7, 9), new T.Vector3(0, 7, 9));
+  assert.equal(trail.snapshot().visible, 2);
+  const line = scene.children.find((mesh) => mesh.visible);
+  assert.ok(line.scale.x >= 6);
+  const x = line.position.x;
+  trail.emit(new T.Vector3(0, 7, 9), new T.Vector3(5, 7, 9));
+  assert.equal(line.position.x, x, 'older trail segment must remain in world coordinates');
+  trail.update(0.16);
+  assert.ok(line.visible && line.material.opacity < 0.83);
+  trail.update(0.17);
+  assert.equal(trail.snapshot().visible, 0);
+  trail.reset();
+  trail.destroy();
+  assert.equal(scene.children.length, 0);
+});
+
+test('robot boost stretches the real three thruster assemblies, not just a glow', () => {
+  const robot = createFlyingRobot();
+  const rig = robot.userData.mechRig;
+  animateMechPower(robot, 1, false, 8, {}, 0.5);
+  const idle = rig.turbineFlame.scale.y;
+  animateMechPower(robot, 2, true, 8, {}, 0.5);
+  assert.ok(rig.turbineFlame.scale.y > idle * 2.5);
+  assert.ok(rig.sidePlumes.every((o) => o.scale.y > 2.8));
+  updateMechaPose(robot, { dt: 0.3, time: 2, boosting: true });
+  assert.ok(robot.userData.mecha.thrusters.every(({ plume }) => plume.scale.y > 4));
+  assert.ok(robot.userData.mecha.thrusters.every(({ plume }) => plume.rotation.x === -Math.PI / 2));
+  animatePremiumMecha(robot, { progress: 1, boosting: true, level: 8, time: 2 });
+  assert.ok(robot.userData.premiumMecha.exhausts.every((plume) => plume.scale.y > 3.5));
 });
