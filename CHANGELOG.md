@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.62 — Candidata em preparação
+
+- QA: orçamento de névoa/partículas da tempestade marciana no Médio, preservando o perfil Alto e toda a física; sem publicação em PROD.
+
 ## 1.27.61 — Candidata em preparação
 
 - Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
