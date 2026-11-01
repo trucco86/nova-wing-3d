@@ -15,7 +15,7 @@ test('mecha gets longer articulated limbs and distinct transforming stages witho
   const robot = createFlyingRobot();
   const rig = robot.userData.premiumMecha;
   assert.ok(rig);
-  for (const part of ['premium-extended-forearm', 'premium-long-greave', 'premium-articulated-foot',
+  for (const part of ['premium-extended-forearm', 'premium-long-greave', 'premium-articulated-foot--1',
     'premium-knee-axis', 'premium-visor-laser', 'premium-hydraulic-piston'])
     assert.ok(robot.getObjectByName(part), part);
   const originalMuzzle = robot.userData.mecha.arms.left.muzzle;
