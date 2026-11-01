@@ -33,7 +33,7 @@ export const SECTORS = [
     accent: '#e8a0ff',
     sky: '#30225d',
     duration: 82,
-    brief: 'Subindo para a órbita. Atravesse os destroços sem perder os pods.',
+    brief: 'Da órbita de Marte ao mega-asteroide: encontre a abertura, lute no interior e escape do colapso.',
   },
   {
     name: 'ESTAÇÃO ÓRBITA-9',
@@ -43,7 +43,7 @@ export const SECTORS = [
     accent: '#57d9ff',
     sky: '#1c365e',
     duration: 88,
-    brief: 'Christopher encontrou o núcleo da estação. Desative os geradores externos.',
+    brief: 'A Estação Órbita-9 gira diante de Júpiter. Entre pelo hangar e desative os geradores.',
   },
   {
     name: 'TEMPESTADE DE DADOS',
@@ -53,7 +53,7 @@ export const SECTORS = [
     accent: '#ffbb58',
     sky: '#663039',
     duration: 88,
-    brief: 'A rede entrou em colapso. Cuidado com as rajadas de plasma.',
+    brief: 'Vênus: atravesse nuvens densas, tempestades elétricas e descargas de plasma.',
   },
   {
     name: 'SETOR CONGELADO',
@@ -63,7 +63,7 @@ export const SECTORS = [
     accent: '#9feeff',
     sky: '#28527d',
     duration: 92,
-    brief: 'Bloco dois. Um colosso protege os depósitos de energia de Marvin.',
+    brief: 'Europa, lua de Júpiter: pouse nas geleiras, cruze fissuras e enfrente o colosso glacial.',
   },
   {
     name: 'NÚCLEO PÚRPURA',
@@ -73,7 +73,7 @@ export const SECTORS = [
     accent: '#f18bff',
     sky: '#482b78',
     duration: 92,
-    brief: 'A biofrota reage aos nossos sinais. Quebre as cabeças da colmeia.',
+    brief: 'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
   },
   {
     name: 'GRADE DE BATALHA',
@@ -83,7 +83,7 @@ export const SECTORS = [
     accent: '#ff9e73',
     sky: '#302d65',
     duration: 98,
-    brief: 'Toda a frota está aqui. Guarde uma bomba para a barragem.',
+    brief: 'Saturno ao fundo: rompa a frota inimiga perto dos anéis planetários e enfrente o couraçado.',
   },
   {
     name: 'ABISMO DE ÓRION',
@@ -93,7 +93,7 @@ export const SECTORS = [
     accent: '#76d7ff',
     sky: '#2b315b',
     duration: 98,
-    brief: 'Sem sinal da Terra. Siga o disco de acreção até o Bastião.',
+    brief: 'Entre no Abismo de Órion, atravesse a anomalia gravitacional e enfrente o Bastião.',
   },
   {
     name: 'TRONO DE MARVIN',
@@ -103,7 +103,7 @@ export const SECTORS = [
     accent: '#ff6e99',
     sky: '#5d2548',
     duration: 104,
-    brief: 'Five Cats reunidos. A Devastador está à frente. Termine esta guerra.',
+    brief: 'Em Titã, entre nos portões da fortaleza de Marvin e conclua a guerra dos Five Cats.',
   },
 ];
 export const PILOTS = ['BIA', 'BOB', 'CHRISTOPHER'];
