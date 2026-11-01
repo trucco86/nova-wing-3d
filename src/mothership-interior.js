@@ -49,6 +49,15 @@ export function createMothershipInterior() {
   const warm = material('#e4b572', true);
   const cube = new T.BoxGeometry(1, 1, 1);
   const sections = [];
+  const animatedMachines = [];
+  const corridorKinds = [
+    'hangar-landing',
+    'maintenance-bays',
+    'rail-foundry',
+    'armory-forge',
+    'reactor-cooling',
+    'drive-core',
+  ];
   for (let i = 0; i < SECTION_COUNT; i++) {
     const section = new T.Group();
     section.name = 'carrier-interior-module-' + i;
@@ -120,6 +129,177 @@ export function createMothershipInterior() {
         block(section, 'carrier-reactor-shield-frame', cube, armor, side * 68, 10, -55, 23, 51, 4);
       }
     }
+    // Distinct room architecture every 180 units. The aiming corridor stays
+    // open: equipment is recessed into the side bays or high overhead.
+    section.userData.kind = corridorKinds[i];
+    const industrial = i >= 2 && i <= 3;
+    const driveRoom = i >= 4;
+    if (i <= 1) {
+      for (const side of [-1, 1]) {
+        // Docked alien shuttles under gantry cranes, visible beyond rails.
+        block(
+          section,
+          'carrier-maintenance-shuttle-hull',
+          cube,
+          armor,
+          side * 59,
+          1,
+          -14,
+          17,
+          9,
+          37,
+        );
+        block(section, 'carrier-shuttle-cockpit', cube, plating, side * 59, 5, -33, 10, 6, 11);
+        for (let rail = 0; rail < 3; rail++)
+          block(
+            section,
+            'carrier-hangar-service-stripe',
+            cube,
+            rail === 1 ? hazard : cyan,
+            side * (52 + rail * 3.2),
+            -22,
+            -9,
+            1.25,
+            0.8,
+            43,
+          );
+        const clamp = block(
+          section,
+          'carrier-mobile-docking-clamp',
+          cube,
+          armor,
+          side * 52,
+          43,
+          -18,
+          13,
+          22,
+          5,
+        );
+        animatedMachines.push({ mesh: clamp, axis: 'y', base: 43, amplitude: 6, phase: side + i });
+      }
+    }
+    if (industrial) {
+      for (const side of [-1, 1]) {
+        // A foundry/armory: heavy pistons above enclosed maintenance shafts.
+        for (let pipe = 0; pipe < 3; pipe++) {
+          const z = -56 + pipe * 53;
+          const piston = block(
+            section,
+            'carrier-foundry-press-' + pipe,
+            cube,
+            pipe % 2 ? armor : plating,
+            side * 52,
+            41,
+            z,
+            11,
+            34,
+            10,
+          );
+          animatedMachines.push({
+            mesh: piston,
+            axis: 'y',
+            base: 41,
+            amplitude: 10,
+            phase: pipe * 1.2 + side,
+          });
+          block(
+            section,
+            'carrier-hot-forge-conduit',
+            cube,
+            pipe % 2 ? hazard : warm,
+            side * 52,
+            63,
+            z,
+            2,
+            3,
+            30,
+          );
+        }
+        block(section, 'carrier-conveyor-channel', cube, plating, side * 58, -25, -7, 34, 5, 142);
+        block(section, 'carrier-red-moving-rail', cube, hazard, side * 60, -20, -7, 4, 1.3, 138);
+      }
+      // Overhead gantry traverses without hiding the flight center.
+      block(section, 'carrier-industrial-overhead-truss', cube, armor, 0, 55, -13, 142, 7, 12);
+    }
+    if (driveRoom) {
+      for (const side of [-1, 1]) {
+        const engine = new T.Group();
+        engine.name =
+          i === SECTION_COUNT - 1
+            ? 'devastador-main-drive-engine'
+            : 'devastador-reactor-coolant-pump';
+        engine.position.set(side * 54, 9, -46);
+        engine.userData.visualOnly = true;
+        const drum = new T.Mesh(new T.CylinderGeometry(19, 21, 36, 18), hull);
+        drum.rotation.x = Math.PI / 2;
+        engine.add(drum);
+        for (let ring = 0; ring < 4; ring++) {
+          const halo = new T.Mesh(
+            new T.CylinderGeometry(16, 16, 1.2, 24, 1, true),
+            ring === 3 ? hazard : cyan,
+          );
+          halo.rotation.x = Math.PI / 2;
+          halo.position.z = 10 - ring * 8;
+          engine.add(halo);
+        }
+        const turbine = new T.Group();
+        turbine.name = 'carrier-destroyable-drive-fan-visual';
+        turbine.position.z = 19;
+        for (let blade = 0; blade < 5; blade++) {
+          const fan = block(
+            turbine,
+            'carrier-drive-fan-blade',
+            cube,
+            blade % 2 ? plating : armor,
+            0,
+            9,
+            0,
+            4,
+            13,
+            2,
+          );
+          fan.rotation.z = blade * ((Math.PI * 2) / 5);
+          fan.position.set(
+            Math.cos((blade * Math.PI * 2) / 5) * 7,
+            Math.sin((blade * Math.PI * 2) / 5) * 7,
+            0,
+          );
+        }
+        engine.add(turbine);
+        animatedMachines.push({
+          mesh: turbine,
+          axis: 'rotationZ',
+          phase: side + i,
+          base: 0,
+          amplitude: side * 1.3,
+        });
+        section.add(engine);
+        block(
+          section,
+          'carrier-engine-exhaust-spine',
+          cube,
+          plating,
+          side * 54,
+          38,
+          -45,
+          23,
+          17,
+          65,
+        );
+      }
+      block(
+        section,
+        i === 5 ? 'devastador-drive-core-upper-gantry' : 'carrier-reactor-overhead',
+        cube,
+        armor,
+        0,
+        61,
+        0,
+        132,
+        12,
+        30,
+      );
+    }
     section.position.z = section.userData.baseZ;
     sections.push(section);
     root.add(section);
@@ -135,6 +315,8 @@ export function createMothershipInterior() {
   threshold.position.z = -240;
   root.add(threshold);
   root.userData.sections = sections;
+  root.userData.corridorKinds = corridorKinds;
+  root.userData.animatedMachines = animatedMachines;
   root.userData.threshold = threshold;
   root.visible = false;
   return root;
@@ -152,6 +334,11 @@ export function updateMothershipInterior(root, elapsed) {
     // Deterministic recycled modules: there is never a missing wall when the
     // pilot moves through the 3D interior at a variable frame rate.
     section.position.z = ((((distance - 85) % SPAN) + SPAN) % SPAN) - (SPAN - 85);
+  }
+  for (const item of root.userData.animatedMachines) {
+    if (item.axis === 'rotationZ') item.mesh.rotation.z = item.base + s.time * item.amplitude;
+    else if (item.axis === 'y')
+      item.mesh.position.y = item.base + Math.sin(s.time * 1.35 + item.phase) * item.amplitude;
   }
   // Interior gate is at a stable depth directly beyond the same hangar
   // entrance seen from orbit; it does not jump to a different corridor.

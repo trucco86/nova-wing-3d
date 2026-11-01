@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
@@ -608,6 +609,7 @@ export function createFlyingRobot() {
     baseScale: 0.94,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
+  installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
   // Modest presence increase without changing player collider physics.
   robot.scale.setScalar(1.04);
   return robot;

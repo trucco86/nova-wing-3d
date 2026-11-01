@@ -120,6 +120,37 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
       slab(spoke, hot, 'reactor-coil', 0, 35, 16, 5, 22, 2);
       root.add(spoke);
     }
+    // Stage 4 ends by disabling the DEVASTADOR drive machine, not another
+    // identical creature. The generators are now REAL lateral/rear valves.
+    slab(root, dark, 'devastador-drive-engine-main-frame', 0, 3, -24, 112, 52, 60);
+    slab(root, armor, 'devastador-drive-engine-upper-armature', 0, 39, -31, 134, 12, 33);
+    slab(root, hot, 'devastador-drive-engine-core', 0, -7, 14, 16, 17, 5);
+    for (const side of [-1, 1]) {
+      const turbine = new T.Group();
+      turbine.name = 'devastador-drive-engine-rotor-' + side;
+      turbine.position.set(side * 43, -7, -7);
+      const hub = new T.Mesh(new T.CylinderGeometry(9, 12, 23, 16), dark);
+      hub.rotation.x = Math.PI / 2;
+      turbine.add(hub);
+      for (let blade = 0; blade < 5; blade++) {
+        const fin = slab(
+          turbine,
+          blade % 2 ? armor : edge,
+          'devastador-drive-rotor-fin',
+          Math.sin((blade * Math.PI * 2) / 5) * 9,
+          Math.cos((blade * Math.PI * 2) / 5) * 9,
+          13,
+          5,
+          14,
+          3,
+          (-blade * Math.PI * 2) / 5,
+        );
+        fin.userData.visualOnly = true;
+      }
+      root.add(turbine);
+      slab(root, armor, 'devastador-engine-exhaust-ramp-' + side, side * 67, -24, -28, 17, 23, 49);
+      slab(root, hot, 'devastador-engine-radiator-' + side, side * 58, 9, 0, 4, 33, 11);
+    }
   } else if (index === 4) {
     for (const side of [-1, 1]) {
       for (let i = 0; i < 5; i++) {
@@ -262,6 +293,10 @@ export function animateBossVisualIdentity(root, index, time, phase = 1, attackSt
       if (spoke)
         spoke.rotation.z =
           (i * Math.PI) / 2 + Math.sin(time * 0.72 + i) * 0.12 * factor + intensity * 0.19;
+    }
+    for (const side of [-1, 1]) {
+      const rotor = identity.getObjectByName('devastador-drive-engine-rotor-' + side);
+      if (rotor) rotor.rotation.z = time * side * (0.65 + intensity * 0.35) * factor;
     }
   } else if (index === 4) {
     // Phoenix folds its wings into a dive and opens them during recovery.
