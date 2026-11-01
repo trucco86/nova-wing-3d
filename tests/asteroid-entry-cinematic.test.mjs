@@ -14,7 +14,10 @@ test('asteroid approach is a rocky opening, not concentric portal hoops', () => 
   assert.equal(face.count, 56);
   assert.ok(veins.isInstancedMesh);
   assert.equal(veins.count, 12);
-  assert.equal(entrance.children.some((mesh) => mesh.geometry?.type === 'TorusGeometry'), false);
+  assert.equal(
+    entrance.children.some((mesh) => mesh.geometry?.type === 'TorusGeometry'),
+    false,
+  );
   asteroid.destroy();
   assert.equal(scene.children.length, 0);
 });

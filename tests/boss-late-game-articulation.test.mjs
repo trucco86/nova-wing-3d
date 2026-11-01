@@ -34,9 +34,21 @@ test('bosses 4–10 have distinct visual-only mechanisms that animate during att
     const object = root.getObjectByName(animated[sector - 3]);
     assert.ok(object, 'missing articulation in sector ' + sector);
     animateBossVisualIdentity(root, sector, 0, 1, 'maneuver');
-    const first = [object.rotation.z, object.position.x, object.position.y, object.position.z, object.scale.x];
+    const first = [
+      object.rotation.z,
+      object.position.x,
+      object.position.y,
+      object.position.z,
+      object.scale.x,
+    ];
     animateBossVisualIdentity(root, sector, 2, 3, 'attack');
-    const next = [object.rotation.z, object.position.x, object.position.y, object.position.z, object.scale.x];
+    const next = [
+      object.rotation.z,
+      object.position.x,
+      object.position.y,
+      object.position.z,
+      object.scale.x,
+    ];
     assert.notDeepEqual(next, first, 'boss is static in sector ' + sector);
   }
 });

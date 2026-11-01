@@ -50,9 +50,13 @@ test('architectural layers remain outside player flight corridor and respect Hig
       }
     }
     setDestinationLandmarkQuality(world, 'medium');
-    assert.ok(world.children.filter((node) => node.userData.highOnly).every((node) => !node.visible));
+    assert.ok(
+      world.children.filter((node) => node.userData.highOnly).every((node) => !node.visible),
+    );
     setDestinationLandmarkQuality(world, 'high');
-    assert.ok(world.children.filter((node) => node.userData.highOnly).every((node) => node.visible));
+    assert.ok(
+      world.children.filter((node) => node.userData.highOnly).every((node) => node.visible),
+    );
     updateDestinationLandmarks(world, 20);
     updateDestinationLandmarks(world, 20);
   }

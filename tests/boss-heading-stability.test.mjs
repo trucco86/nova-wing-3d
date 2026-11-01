@@ -10,10 +10,7 @@ test('every boss faces continuously when tactical states or attack cycles change
     for (let age = 8 + step; age <= duration; age += step) {
       const facing = bossTacticsAt(sector, age).heading;
       const jump = Math.abs(wrapAngle(facing - previous));
-      assert.ok(
-        jump < 0.08,
-        'boss ' + sector + ' snapped at ' + age.toFixed(3) + 's: ' + jump,
-      );
+      assert.ok(jump < 0.08, 'boss ' + sector + ' snapped at ' + age.toFixed(3) + 's: ' + jump);
       previous = facing;
     }
   }

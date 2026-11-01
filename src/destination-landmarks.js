@@ -67,11 +67,12 @@ export function createDestinationLandmarks(index) {
     // These three destinations previously had no independent environment
     // landmarks: only the orbital backdrop. Keep everything off the flyable
     // corridor and grouped by world, with no physics or targeting changes.
-    const structureName = index === 3
-      ? 'jupiter-orbit9-hangar-gantries'
-      : index === 7
-        ? 'saturn-blockade-dreadnoughts'
-        : 'orion-gravitational-spires';
+    const structureName =
+      index === 3
+        ? 'jupiter-orbit9-hangar-gantries'
+        : index === 7
+          ? 'saturn-blockade-dreadnoughts'
+          : 'orion-gravitational-spires';
     const main = makeInstanced(
       index,
       index === 7 ? 24 : 32,
@@ -84,20 +85,26 @@ export function createDestinationLandmarks(index) {
         const x = side * (spread + hash(i * 7 + index) * 170);
         const y = 12 + hash(i * 13 + index) * (index === 8 ? 105 : 80);
         const z = -220 - i * (index === 7 ? 62 : 45);
-        const scale = index === 3
-          ? [19 + hash(i * 3) * 14, 40 + hash(i * 5) * 38, 27 + hash(i * 11) * 33]
-          : index === 7
-            ? [30 + hash(i * 9) * 26, 12 + hash(i * 7) * 14, 60 + hash(i * 5) * 55]
-            : [14 + hash(i * 9) * 23, 47 + hash(i * 3) * 57, 18 + hash(i * 4) * 30];
-        return { position: [x, y, z], scale, rotation: [0, hash(i * 8) * 2, index === 8 ? hash(i * 4) * 0.7 : 0] };
+        const scale =
+          index === 3
+            ? [19 + hash(i * 3) * 14, 40 + hash(i * 5) * 38, 27 + hash(i * 11) * 33]
+            : index === 7
+              ? [30 + hash(i * 9) * 26, 12 + hash(i * 7) * 14, 60 + hash(i * 5) * 55]
+              : [14 + hash(i * 9) * 23, 47 + hash(i * 3) * 57, 18 + hash(i * 4) * 30];
+        return {
+          position: [x, y, z],
+          scale,
+          rotation: [0, hash(i * 8) * 2, index === 8 ? hash(i * 4) * 0.7 : 0],
+        };
       },
     );
     group.add(main);
-    const detailName = index === 3
-      ? 'jupiter-orbit9-docking-beacons-high'
-      : index === 7
-        ? 'saturn-fleet-escort-fighters-high'
-        : 'orion-rift-luminous-shards-high';
+    const detailName =
+      index === 3
+        ? 'jupiter-orbit9-docking-beacons-high'
+        : index === 7
+          ? 'saturn-fleet-escort-fighters-high'
+          : 'orion-rift-luminous-shards-high';
     const details = makeInstanced(
       index,
       24,
@@ -263,11 +270,12 @@ export function createDestinationLandmarks(index) {
   };
   if (additions[index]) {
     const [name, count] = additions[index];
-    const shape = index === 5 || index === 9
-      ? new T.BoxGeometry(1, 1, 1)
-      : index === 6
-        ? new T.ConeGeometry(1, 1, 7)
-        : new T.IcosahedronGeometry(1, 1);
+    const shape =
+      index === 5 || index === 9
+        ? new T.BoxGeometry(1, 1, 1)
+        : index === 6
+          ? new T.ConeGeometry(1, 1, 7)
+          : new T.IcosahedronGeometry(1, 1);
     const layer = makeInstanced(
       index,
       count,
@@ -283,11 +291,7 @@ export function createDestinationLandmarks(index) {
             -8 + height * (index === 4 ? 0.2 : 0.46),
             -230 - i * 49,
           ],
-          scale: [
-            17 + hash(i * 11) * (index === 5 ? 37 : 24),
-            height,
-            18 + hash(i * 13) * 31,
-          ],
+          scale: [17 + hash(i * 11) * (index === 5 ? 37 : 24), height, 18 + hash(i * 13) * 31],
           rotation: [0, hash(i * 5) * 2.8, side * hash(i * 2) * 0.17],
         };
       },

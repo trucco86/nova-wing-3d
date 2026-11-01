@@ -214,8 +214,29 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
     }
   } else if (index === 9) {
     for (const side of [-1, 1]) {
-      slab(root, armor, 'marvin-fortress-outer-shoulder-' + side, side * 82, 7, -46, 38, 52, 32, side * 0.13);
-      talon(root, dark, 'marvin-fortress-outer-horn-' + side, side * 88, 52, -47, 12, 61, side * 0.18);
+      slab(
+        root,
+        armor,
+        'marvin-fortress-outer-shoulder-' + side,
+        side * 82,
+        7,
+        -46,
+        38,
+        52,
+        32,
+        side * 0.13,
+      );
+      talon(
+        root,
+        dark,
+        'marvin-fortress-outer-horn-' + side,
+        side * 88,
+        52,
+        -47,
+        12,
+        61,
+        side * 0.18,
+      );
       slab(root, edge, 'marvin-fortress-outer-eye-' + side, side * 79, 20, -25, 10, 3, 4);
     }
   }
@@ -226,9 +247,10 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
  * Frames depend solely on mission time so pause/replay is deterministic. */
 export function animateBossVisualIdentity(root, index, time, phase = 1, attackState = 'maneuver') {
   if (!root || index < 3 || index > 9 || !Number.isFinite(time)) return;
-  const identity = root.name === 'boss-distinct-' + BOSS_SHAPES[index]
-    ? root
-    : root.getObjectByName('boss-distinct-' + BOSS_SHAPES[index]);
+  const identity =
+    root.name === 'boss-distinct-' + BOSS_SHAPES[index]
+      ? root
+      : root.getObjectByName('boss-distinct-' + BOSS_SHAPES[index]);
   if (!identity) return;
   const intensity = attackState === 'attack' ? 1 : attackState === 'windup' ? 0.5 : 0.15;
   const factor = 1 + 0.12 * Math.max(0, Math.min(2, phase - 1));
@@ -237,7 +259,9 @@ export function animateBossVisualIdentity(root, index, time, phase = 1, attackSt
     // Orbital fortress closes its four shield gates before releasing a salvo.
     for (let i = 0; i < 4; i++) {
       const spoke = identity.getObjectByName('station-reactor-shield-spoke-' + i);
-      if (spoke) spoke.rotation.z = (i * Math.PI) / 2 + Math.sin(time * 0.72 + i) * 0.12 * factor + intensity * 0.19;
+      if (spoke)
+        spoke.rotation.z =
+          (i * Math.PI) / 2 + Math.sin(time * 0.72 + i) * 0.12 * factor + intensity * 0.19;
     }
   } else if (index === 4) {
     // Phoenix folds its wings into a dive and opens them during recovery.
@@ -245,14 +269,17 @@ export function animateBossVisualIdentity(root, index, time, phase = 1, attackSt
       if (!feather.name.startsWith('solar-phoenix-feather-')) continue;
       const side = Math.sign(feather.position.x);
       const part = Number(feather.name.split('-').at(-1));
-      feather.rotation.z = -side * (0.15 + part * 0.13) + side * (Math.sin(time * 1.9 + part * 0.48) * 0.15 + intensity * 0.18) * factor;
+      feather.rotation.z =
+        -side * (0.15 + part * 0.13) +
+        side * (Math.sin(time * 1.9 + part * 0.48) * 0.15 + intensity * 0.18) * factor;
     }
   } else if (index === 5) {
     // Independent glacial artillery arms recoil rather than remaining rigid.
     for (const arm of identity.children) {
       if (arm.name === 'glacial-artillery-forearm') {
         const side = Math.sign(arm.position.x);
-        arm.rotation.z = side * (0.16 + Math.sin(time * 0.85 + side) * 0.1 + intensity * 0.28) * factor;
+        arm.rotation.z =
+          side * (0.16 + Math.sin(time * 0.85 + side) * 0.1 + intensity * 0.28) * factor;
       }
     }
   } else if (index === 6) {
@@ -267,7 +294,9 @@ export function animateBossVisualIdentity(root, index, time, phase = 1, attackSt
     }
   } else if (index === 7) {
     // Broadside battery banks recoil only when committed to an attack.
-    const guns = identity.children.filter((part) => part.name === 'omega-armored-battery-emplacement');
+    const guns = identity.children.filter(
+      (part) => part.name === 'omega-armored-battery-emplacement',
+    );
     guns.forEach((gun, i) => {
       gun.position.z = 11 - intensity * (2.4 + Math.sin(time * 9 + i) * 0.6);
     });
