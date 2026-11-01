@@ -9121,3 +9121,39 @@ body.in-mission #hudNotices > #launchBoostNotice span {
     font-size: 11px;
   }
 }
+
+/* Robô: lock-on multi-alvo responsivo. Os indicadores seguem alvos 3D reais;
+   nenhum painel ocupa o centro de gameplay ou captura toques. */
+#mechaMultiTargets {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  pointer-events: none;
+}
+#mechaMultiTargets .nw-mecha-target {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -12px;
+  border: 2px solid #9cfaff;
+  border-radius: 6px;
+  background: #052635aa;
+  color: #fff6a0;
+  box-shadow: 0 0 12px #34e4ff88, inset 0 0 9px #34e4ff55;
+  font: 800 11px/1 monospace;
+  transform: rotate(45deg);
+}
+#mechaMultiTargets .nw-mecha-target[hidden] {
+  display: none;
+}
+body:not(.in-mission) #mechaMultiTargets,
+body.intermission-active #mechaMultiTargets {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #mechaMultiTargets .nw-mecha-target {
+    box-shadow: none;
+  }
+}
