@@ -68,32 +68,21 @@ test('Devastador has two real, named engine shock emitters with no new collision
   disposeBoss(other);
 });
 
-test('QA stage 4 windup exposes actual visual plume and a damage-linked intent', (t) => {
+test('QA stage 4 is now a 360 sabotage chamber, without generic boss strikes', (t) => {
   const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
   t.after(() => h.close());
   assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
-  let observed = null;
-  for (let i = 0; i < 210; i++) {
-    h.advance(0.1, 0.1);
-    const snapshot = h.game.snapshot();
-    if (
-      snapshot.bossIntent?.kind === 'reactor-vent' &&
-      snapshot.bossDriveShock.some((jet) => jet.visible)
-    ) {
-      observed = snapshot;
-      break;
-    }
-  }
-  assert.ok(observed, 'visible reactor engine must turn on during a real windup');
-  assert.equal(observed.bossDriveShock.length, 2);
-  assert.equal(observed.bossDriveShock.filter((jet) => jet.visible).length, 1);
-  assert.ok(
-    observed.bossDriveShock.some(
-      (jet) => jet.visible && jet.side === observed.bossIntent.ventSide && jet.generatorAlive,
-    ),
-  );
-  assert.equal(observed.bossIntent.origin.includes('drive-valve'), true);
-  assert.equal(observed.developerSession, true);
+  const initial = h.game.snapshot();
+  assert.equal(initial.bossParts, 8);
+  assert.equal(initial.sabotage.system, 'power');
+  assert.equal(initial.bossDriveShock.length, 0);
+  h.advance(1.2, 0.1);
+  const after = h.game.snapshot();
+  assert.equal(after.boss, true);
+  assert.equal(after.developerSession, true);
+  assert.equal(after.bossParts, 8);
+  assert.equal(after.bossIntent, null, 'generic boss windup is removed from Devastador');
+  assert.equal(after.hostilePositions.length, 0, 'no invisible generic boss shots');
 });
 
 test('bomb command updates visible HUD immediately before the next WebGL frame', (t) => {
