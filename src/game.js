@@ -102,6 +102,12 @@ import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import {
+  createDevastadorSabotageCore,
+  updateDevastadorSabotageCore,
+  sabotagedSystem,
+  sabotageTargetOpen,
+} from './devastador-sabotage.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
 import {
@@ -325,10 +331,10 @@ export function createGame({
           if (boss) {
             boss.updateMatrixWorld(true);
             const weak = boss.userData.parts.find(
-              (p, i) => p.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
+              (p, i) => p.hp > 0 && bossTargetOpen(i),
             );
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
-            if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
+            if (bossCoreOpen() && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
             // The full Five Cats formation must never stop firing just because
             // the flank generators are armored. Aim at the visible hull; its
@@ -545,7 +551,18 @@ export function createGame({
     reactorGridWave = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
-  const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+  const relativeOrbit = () =>
+    boss?.userData.sabotage
+      ? orbitAngle
+      : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+  const bossTargetOpen = (index) =>
+    boss?.userData.sabotage
+      ? sabotageTargetOpen(boss.userData.parts, index, relativeOrbit())
+      : bossWeakPointOpen(sectorIndex, relativeOrbit(), index);
+  const bossCoreOpen = () =>
+    boss?.userData.sabotage
+      ? sabotagedSystem(boss.userData.parts).system === 'core'
+      : (bossCombat?.coreOpen ?? false);
   const stage = () => (dynamicFlight ? stageAt(strategy.xp) : 0);
   const rank = (branch) =>
     dynamicFlight ? specialtyRank(strategy.xp, strategy.specialty, branch) : 0;
@@ -1669,11 +1686,11 @@ export function createGame({
       const candidates = boss
         ? [
             ...boss.userData.parts.flatMap((part, i) =>
-              part.hp > 0 && bossWeakPointOpen(sectorIndex, relativeOrbit(), i)
+              part.hp > 0 && bossTargetOpen(i)
                 ? [{ id: part, position: part.mesh.getWorldPosition(new T.Vector3()), weak: true }]
                 : [],
             ),
-            ...(bossCombat?.coreOpen &&
+            ...(bossCoreOpen() &&
             boss.userData.parts.every((part) => part.hp <= 0) &&
             weakPointOpen(relativeOrbit())
               ? [
@@ -1967,7 +1984,9 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
-    boss = createBossModel(current(), sectorIndex, dynamicFlight);
+    boss = dynamicFlight && sectorIndex === 3
+      ? createDevastadorSabotageCore()
+      : createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
@@ -1979,15 +1998,21 @@ export function createGame({
       world.showCarrierForBoss?.();
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
-      message('ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS');
+      message(
+        sectorIndex === 3
+          ? 'DEVASTADOR · SABOTAGEM · DESTRUA CIRCUITOS, REFRIGERAÇÃO E MOTORES'
+          : 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES NOS FLANCOS',
+      );
     }
     music?.start(sectorIndex, true);
-    $('bossName').textContent = current().boss;
+    $('bossName').textContent = boss.userData.sabotage ? 'DEVASTADOR · NÚCLEO DE PROPULSÃO' : current().boss;
     scene.add(boss);
     $('bossHUD').hidden = false;
     message(
-      dynamicFlight
-        ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+      dynamicFlight && boss.userData.sabotage
+        ? 'SABOTAGEM · J/L PARA ORBITAR 360° · TRAVE OS SISTEMAS COM O ROBÔ'
+        : dynamicFlight
+          ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
         : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
@@ -2014,6 +2039,7 @@ export function createGame({
       source === 'squad-plasma' || source === 'squad-overdrive'
         ? bossCombat.spendSquadSpecial(value)
         : bossCombat.spend(value, chargedShot);
+    if (hitZone === 'hull' && boss.userData.sabotage) return 0;
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
@@ -2027,7 +2053,7 @@ export function createGame({
     }
     const openPart = (p) =>
       !dynamicFlight ||
-      bossWeakPointOpen(sectorIndex, relativeOrbit(), boss.userData.parts.indexOf(p));
+      bossTargetOpen(boss.userData.parts.indexOf(p));
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
@@ -2052,6 +2078,19 @@ export function createGame({
 
       if (part.hp === 0) {
         part.mesh.visible = false;
+        if (boss.userData.sabotage) {
+          part.marker.visible = false;
+          const phase = sabotagedSystem(boss.userData.parts);
+          explode(part.mesh.getWorldPosition(new T.Vector3()), 35, 0xffa65a);
+          credits += 45;
+          message(
+            'SISTEMA DESTRUÍDO · ' +
+              (phase.system === 'core'
+                ? 'BLINDAGEM ABERTA · DESTRUA O NÚCLEO CENTRAL'
+                : phase.label + ' · ' + phase.remaining + ' RESTANTES'),
+          );
+          return dealt;
+        }
         // Destroyed generators power a specific turret. The barrel physically
         // disappears and attack planner drops that battery's shots.
         if (part.battery) part.battery.visible = false;
@@ -2071,7 +2110,7 @@ export function createGame({
         : Math.hypot(target.x - boss.position.x, target.y - boss.position.y) > 7)
     )
       return 0;
-    if (!bossCombat.coreOpen || (dynamicFlight && !weakPointOpen(relativeOrbit()))) return 0;
+    if (!bossCoreOpen() || (dynamicFlight && !boss?.userData.sabotage && !weakPointOpen(relativeOrbit()))) return 0;
     const spent = spendDamage(amount, dynamicFlight && charged);
     const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
@@ -2082,6 +2121,8 @@ export function createGame({
         stagePerformance.bossDefeated = true;
         stagePerformance.mechaFinisher = robotMode;
       }
+      if (boss.userData.sabotage)
+        message('DEVASTADOR INOPERANTE · REATOR EM COLAPSO · ACIONE BOOST PARA FUGIR');
       if (dynamicFlight && sectorIndex === 2) {
         journey = advanceJourney(journey, 'bossDefeated');
         asteroidInterior.setPhase(journey.phase);
@@ -4114,7 +4155,29 @@ export function createGame({
       }
     }
     if (boss) {
-      if (dynamicFlight) {
+      if (dynamicFlight && boss.userData.sabotage) {
+        // System-level 360° sabotage; do not run the generic boss AI.
+        const turn =
+          ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
+        orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
+        boss.rotation.y = -orbitAngle;
+        world.setOrbit(-orbitAngle, boss.position);
+        boss.position.z = T.MathUtils.lerp(boss.position.z, -164, Math.min(1, dt * 0.7));
+        boss.position.y = T.MathUtils.lerp(boss.position.y, 17, Math.min(1, dt * 0.7));
+        if (turn)
+          for (const shot of [...shots, ...hostile]) {
+            shot.o.position
+              .sub(boss.position)
+              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
+              .add(boss.position);
+            if (shot.v) shot.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
+          }
+        renderBossRadar(document, null);
+        $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
+        $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
+        $('radarWeak').hidden = true;
+        $('tacticState').textContent = 'SABOTAGEM · ORBITE 360°';
+      } else if (dynamicFlight) {
         const turn =
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
@@ -4131,7 +4194,7 @@ export function createGame({
             b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
           }
         boss.userData.parts.forEach((p, i) => {
-          const open = bossWeakPointOpen(sectorIndex, relativeOrbit(), i) && p.hp > 0;
+          const open = bossTargetOpen(i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
           p.marker.visible = open;
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
@@ -4334,26 +4397,29 @@ export function createGame({
           claw.rotation.x = melee.claw * 0.4;
         }
       }
-      if (dynamicFlight) {
+      if (dynamicFlight && !boss.userData.sabotage) {
         animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
+      const sabotagePhase = boss.userData.sabotage
+        ? updateDevastadorSabotageCore(boss, { orbit: orbitAngle, time: bossCombat.age })
+        : null;
       const openGenerator = boss.userData.parts.findIndex(
         (p, i) =>
-          p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+          p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
       );
       const coreVulnerable =
         remaining === 0 &&
-        bossCombat.coreOpen &&
-        (!dynamicFlight || weakPointOpen(relativeOrbit()));
+        bossCoreOpen() &&
+        (!dynamicFlight || boss.userData.sabotage || weakPointOpen(relativeOrbit()));
       boss.userData.coreMarker.visible = coreVulnerable;
       boss.userData.coreMarker.rotation.z -= dt * 1.8;
       boss.userData.coreMarker.scale.setScalar(1 + Math.sin(visualTime * 8) * 0.12);
       boss.userData.vents.forEach((v, i) => {
         v.visible = bossHp / bossCombat.max > 0.65 || i % 3 !== 0;
       });
-      boss.userData.core.scale.setScalar(bossCombat.coreOpen ? 1.1 : 0.7);
+      boss.userData.core.scale.setScalar(bossCoreOpen() ? 1.1 : 0.7);
       $('bossHUD').setAttribute?.('data-vulnerable', String(openGenerator >= 0 || coreVulnerable));
       $('bossState').textContent =
         bossCombat.age < 3
@@ -4370,10 +4436,15 @@ export function createGame({
                 : bossCombat.coreOpen
                   ? 'ORBITE PARA A FRENTE'
                   : 'BLINDAGEM · DANO REDUZIDO');
+      if (sabotagePhase) {
+        $('bossState').textContent =
+          'DESATIVE ' + sabotagePhase.label +
+          (sabotagePhase.remaining ? ' · ' + sabotagePhase.remaining + ' ALVOS' : ' · FOGO NO REATOR');
+      }
       if (sectorIndex === SECTORS.length - 1 && combatPhase === 3 && remaining === 0)
         $('bossState').textContent =
           'ÚLTIMA RESISTÊNCIA DE MARVIN · ' +
-          (bossCombat.coreOpen ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
+          (bossCoreOpen() ? 'NÚCLEO EXPOSTO' : 'BLINDAGEM ATIVA');
       if (dynamicFlight && scanTime > 0)
         $('bossState').textContent +=
           ' · FRACO: ' +
@@ -4420,13 +4491,15 @@ export function createGame({
                 'COROA IMPERIAL',
               ][sectorIndex]
             : '';
-      if (dynamicFlight && !physicalWarning && bossCd < 0.65)
+      if (boss.userData.sabotage) $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
       // Only one targeted volley per maneuver; never spray generic bullets
       // over the physical strike window.
       const allowRanged =
-        !dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle);
+        !boss.userData.sabotage &&
+        (!dynamicFlight || (tactics().state === 'maneuver' && lastRangedCycle !== tactics().cycle));
       if (bossCd <= 0 && bossCombat.age >= 3 && allowRanged) {
         lastRangedCycle = tactics().cycle;
         bossVolley++;
@@ -4485,7 +4558,7 @@ export function createGame({
         const enemy = boss ? null : enemies.find((e) => !e.dead);
         const weakPart = boss?.userData.parts.find(
           (p, i) =>
-            p.hp > 0 && (!dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i)),
+            p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
         );
         const target = boss
           ? (weakPart?.mesh ?? boss.userData.core).getWorldPosition(new T.Vector3())
@@ -5134,13 +5207,14 @@ export function createGame({
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
           hp: p.hp,
-          open: !dynamicFlight || bossWeakPointOpen(sectorIndex, relativeOrbit(), i),
-          angle: wrapAngle(
-            bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
-          ),
+          open: !dynamicFlight || bossTargetOpen(i),
+          angle: boss.userData.sabotage
+            ? p.angle
+            : wrapAngle(bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0)),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
       bossParts: boss?.userData.parts.filter((p) => p.hp > 0).length ?? 0,
+      sabotage: boss?.userData.sabotage ? sabotagedSystem(boss.userData.parts) : null,
       bossDriveShock:
         boss?.userData.driveShockPlumes?.map((plume, i) => ({
           side: i ? 1 : -1,
