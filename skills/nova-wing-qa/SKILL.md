@@ -13,7 +13,9 @@
 5. Para interface: validar portrait/landscape, safe-area, toque e elementos sobrepostos; registrar screenshot real.
 6. Para gameplay: preservar colisões, progressão, boss, save, áudio e taxa de quadros; usar relógio determinístico no harness.
 
-## Execução local obrigatória
+## Iteração e execução local obrigatória
+
+Para uma mudança ainda em desenvolvimento, o gate `npm run test:fast -- --scope=auto` é somente feedback antecipado, não autorização de merge. O preview isolado pode executar FAST para antecipar revisão visual. **Antes de merge/release**, aplicar o protocolo completo a seguir e confirmar CI FULL no SHA final.
 
 ```sh
 npm ci
