@@ -2111,6 +2111,9 @@ export function createGame({
     boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight) {
       world.showCarrierForBoss?.();
+      // The narrow corridor section ends at the monumental reactor hall:
+      // keeping both active would put walls through the 360-degree orbit.
+      world.setReactorGrandHall?.(boss.userData.sabotage === true);
       for (const o of obstacles) dispose(o.o);
       obstacles = [];
       message(
@@ -5426,6 +5429,13 @@ export function createGame({
         ? {
             ...sabotagedSystem(boss.userData.parts),
             visual: boss.userData.reactorVisual,
+            hall: {
+              radius: boss.userData.grandHall.userData.radius,
+              clearOrbitRadius: boss.userData.grandHall.userData.safeOrbitRadius,
+              facilities: boss.userData.grandHall.userData.facilities.length,
+              wallSegments: boss.userData.grandHall.userData.walls,
+              centralReactor: true,
+            },
           }
         : null,
       bossDriveShock:
