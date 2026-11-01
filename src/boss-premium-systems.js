@@ -3,9 +3,15 @@ import * as T from 'three';
 // Additional physical mechanical depth comparable to the player models.
 // Decoration NEVER changes boss collision boxes, weak points or muzzle origins.
 const TYPES = Object.freeze([
-  'carrier-hydraulics', 'stingray-fins', 'drill-service-gears',
-  'devastador-gantries', 'phoenix-articulators', 'glacial-actuators',
-  'hydra-cooling-sacs', 'dreadnought-turret-rails', 'orion-gimbals',
+  'carrier-hydraulics',
+  'stingray-fins',
+  'drill-service-gears',
+  'devastador-gantries',
+  'phoenix-articulators',
+  'glacial-actuators',
+  'hydra-cooling-sacs',
+  'dreadnought-turret-rails',
+  'orion-gimbals',
   'marvin-thruster-armatures',
 ]);
 
@@ -13,7 +19,11 @@ export function createBossPremiumSystems(index = 0, tint = '#69cfff') {
   const root = new T.Group();
   root.name = 'boss-premium-systems-' + TYPES[Math.max(0, Math.min(index, 9))];
   root.userData.visualOnly = true;
-  const material = new T.MeshStandardMaterial({ color: '#526a84', metalness: 0.89, roughness: 0.29 });
+  const material = new T.MeshStandardMaterial({
+    color: '#526a84',
+    metalness: 0.89,
+    roughness: 0.29,
+  });
   const inner = new T.MeshStandardMaterial({ color: '#172338', metalness: 0.78, roughness: 0.38 });
   const light = new T.MeshBasicMaterial({ color: tint, toneMapped: false });
   const box = new T.BoxGeometry(1, 1, 1);
@@ -75,7 +85,8 @@ export function animateBossPremiumSystems(root, time, phase = 1, state = 'maneuv
   const amplitude = (0.05 + energy * 0.27) * (1 + Math.max(0, phase - 1) * 0.12);
   root.userData.actuators.forEach((actuator, index) => {
     const side = index % 2 ? 1 : -1;
-    actuator.rotation.y = side * (0.18 + Math.floor(index / 2) * 0.12) +
+    actuator.rotation.y =
+      side * (0.18 + Math.floor(index / 2) * 0.12) +
       Math.sin(time * (0.73 + index * 0.08) + index) * amplitude;
     actuator.rotation.z = Math.sin(time * 1.6 + index * 0.6) * amplitude * 0.75;
   });
