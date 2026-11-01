@@ -103,6 +103,7 @@ import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
 import { animatePremiumMecha } from './mecha-premium.js';
+import { createMechaDashTrail } from './mecha-dash-trail.js';
 import {
   MECHA_DASH,
   heldBankAngle,
@@ -255,6 +256,7 @@ export function createGame({
     post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
+  const dashTrail = createMechaDashTrail(scene);
   const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
   const marvinRival = dynamicFlight ? createMarvinRival(scene) : null;
   let journey = initialJourney(0);
@@ -1113,6 +1115,7 @@ export function createGame({
     $('robotTouch').textContent = 'ROBÔ';
     $('rollTouch').textContent = 'GIRO';
     dashCooldown = dashRemaining = 0;
+    dashTrail.reset();
     robot.visible = false;
     for (const part of shipParts) part.visible = true;
     routeRenderer?.update(route);
@@ -1458,15 +1461,20 @@ export function createGame({
     if (state !== 'playing') return;
     if (robotMode) {
       if (dashCooldown > 0 || robotTransition > 0) return;
-      if (energy < MECHA_DASH.energyCost) {
-        message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
-        return;
-      }
       const steer =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
         stick.x;
-      dashSide = dashDirection(steer, player.position.x);
+      const direction = dashDirection(steer);
+      if (!direction) {
+        message('DASH · APONTE ESQUERDA OU DIREITA + DASH');
+        return;
+      }
+      if (energy < MECHA_DASH.energyCost) {
+        message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
+        return;
+      }
+      dashSide = direction;
       dashRemaining = MECHA_DASH.duration;
       dashCooldown = MECHA_DASH.cooldown;
       energy = Math.max(0, energy - MECHA_DASH.energyCost);
@@ -3054,6 +3062,7 @@ export function createGame({
     rollPointerId = null;
     rollHeld = false;
     dashRemaining = 0;
+    dashTrail.reset();
     $('nub').style.transform = '';
     for (const id of ['fireTouch', 'boostTouch']) $(id).classList.remove('pressed');
     mechaEngine?.silence();
@@ -3327,7 +3336,9 @@ export function createGame({
       );
     }
     dashCooldown = Math.max(0, dashCooldown - dt);
-    if (robotMode && dashRemaining > 0) {
+    dashTrail.update(dt);
+    const dashStart = robotMode && dashRemaining > 0 ? player.position.clone() : null;
+    if (dashStart) {
       const dash = dashFrame(dashRemaining, dt, dashSide);
       dashRemaining = dash.remaining;
       player.position.x = clamp(
@@ -3352,6 +3363,7 @@ export function createGame({
         }
       }
     }
+    if (dashStart) dashTrail.emit(dashStart, player.position);
     player.rotation.z = T.MathUtils.lerp(
       player.rotation.z,
       heldBankAngle({ robot: robotMode, held: rollHeld, steer: dx }),
@@ -5140,6 +5152,7 @@ export function createGame({
         cooldown: dashCooldown,
         direction: dashSide,
         energyCost: MECHA_DASH.energyCost,
+        trail: dashTrail.snapshot(),
       },
       heroScale: player.scale.x,
       shipScale: shipModule.scale.x,
@@ -5218,6 +5231,7 @@ export function createGame({
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       routeRenderer?.destroy();
+      dashTrail.destroy();
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
       shipModule.traverse((o) => {
