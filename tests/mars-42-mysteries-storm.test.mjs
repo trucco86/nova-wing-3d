@@ -7,6 +7,7 @@ import {
   MARS_STORM_END,
   marsSandstormAt,
   createMarsSandstorm,
+  setMarsSandstormQuality,
   updateMarsSandstorm,
 } from '../src/mars-sandstorm.js';
 import { createMarsPremium, updateMarsArrival } from '../src/mars-premium.js';
@@ -104,4 +105,47 @@ test('Mars world transitions from quiet orbit to dust storm and back; previous s
   world.setSector(SECTORS[0]);
   assert.equal(scene.getObjectByName('mars-sandstorm'), undefined);
   assert.equal(world.setMarsDescent(70), null);
+});
+
+test('Mars Medium trims only transparent storm overdraw, preserving High and physical wind', () => {
+  const storm = createMarsSandstorm();
+  const particles = storm.getObjectByName('mars-sandstorm-particle-field');
+  const originalGeometry = particles.geometry;
+  const originalMaterial = particles.material;
+  const banks = storm.children.filter((part) => part.name.startsWith('mars-rolling-sand-haze-bank'));
+  const peak = updateMarsSandstorm(storm, 71);
+  assert.equal(particles.geometry.drawRange.count, Infinity);
+  setMarsSandstormQuality(storm, 'medium');
+  assert.equal(storm.userData.graphicsQuality, 'medium');
+  assert.equal(particles.geometry.drawRange.count, 144, 'Medium cuts particles without deleting the field');
+  assert.equal(banks.filter((bank) => bank.visible).length, 2, 'two readable haze layers remain');
+  const mediumWind = updateMarsSandstorm(storm, 71);
+  assert.deepEqual(mediumWind, peak, 'difficulty, wind and warning remain unchanged');
+  assert.equal(storm.visible, true, 'storm stays visible during the encounter');
+  setMarsSandstormQuality(storm, 'high');
+  assert.equal(particles.geometry.drawRange.count, 240, 'High restores premium density');
+  assert.equal(banks.filter((bank) => bank.visible).length, 3);
+  assert.equal(particles.geometry, originalGeometry, 'no new geometry allocated');
+  assert.equal(particles.material, originalMaterial, 'no material churn on settings changes');
+  updateMarsSandstorm(storm, 90);
+  assert.equal(storm.visible, false, 'storm still ends normally');
+  storm.traverse((part) => assert.notEqual(part.userData.hitbox, true));
+});
+
+test('world applies Mars quality on sector entry and live changes, without touching Earth', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setGraphicsQuality('medium');
+  world.setSector(SECTORS[1]);
+  const particles = scene.getObjectByName('mars-sandstorm-particle-field');
+  assert.ok(particles);
+  assert.equal(particles.geometry.drawRange.count, 144);
+  world.setMarsDescent(70);
+  assert.equal(scene.getObjectByName('mars-sandstorm').visible, true);
+  world.setGraphicsQuality('high');
+  assert.equal(particles.geometry.drawRange.count, 240);
+  world.setGraphicsQuality('medium');
+  assert.equal(particles.geometry.drawRange.count, 144);
+  world.setSector(SECTORS[0]);
+  assert.equal(scene.getObjectByName('mars-sandstorm'), undefined);
 });
