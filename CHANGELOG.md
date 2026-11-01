@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.57 — Candidata em preparação
+
+- Marte 4.3: névoa de areia animada e seletor de fases acessível no preview QA. QA visual e browser ainda dependem de execução.
+
 ## 1.27.56 — Candidata em preparação
 
 - Marte 4.3: troca dos anéis da reentrada por névoa de areia animada. QA visual e browser ainda dependem de execução.
