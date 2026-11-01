@@ -29,7 +29,11 @@ test('all ten worlds provide unique near/far animated planes with fixed GPU draw
     assert.notDeepEqual(Array.from(near.instanceMatrix.array), before);
     const next = Array.from(near.instanceMatrix.array);
     updateLivingWorldLayers(world, { time: 17, travel: 950 });
-    assert.deepEqual(Array.from(near.instanceMatrix.array), next, 'same simulated time freezes scene');
+    assert.deepEqual(
+      Array.from(near.instanceMatrix.array),
+      next,
+      'same simulated time freezes scene',
+    );
     setLivingWorldQuality(world, 'medium');
     assert.equal(world.userData.layers[0].mesh.count, 10);
     assert.equal(world.userData.layers[1].mesh.count, 14);
