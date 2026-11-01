@@ -1664,24 +1664,26 @@ export function createGame({
         marker.style.top = ((1 - projected.y) * window.innerHeight) / 2 + 'px';
       }
     }
-    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= 10) {
+    const lasers = lockLaserCount(stage());
+    const laserEnergy = 10 + (lasers - 1) * 2;
+    if (selected && lockProgress >= 0.8 && precisionCd <= 0 && energy >= laserEnergy) {
       robot.updateMatrixWorld(true);
       const muzzle = robot.userData.mecha.arms.left.muzzle.getWorldPosition(new T.Vector3());
-      launchShot(
-        0,
-        mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }),
-        false,
-        muzzle,
-      );
-      const shot = shots.at(-1);
-      shot.source = 'mecha-precision';
-      shot.o.scale.setScalar(2.2);
-      shot.v = position.clone().sub(muzzle).normalize().multiplyScalar(205);
-      shot.homing = false;
-      energy -= 10;
-      precisionCd = 2;
+      const totalDamage = mechaShotDamage(weaponPower(), { robot: true, kind: 'precision' }) *
+        (1 + (lasers - 1) * 0.22);
+      for (let i = 0; i < lasers; i++) {
+        const origin = muzzle.clone().add(new T.Vector3((i - (lasers - 1) / 2) * 0.62, 0, 0));
+        launchShot(0, totalDamage / lasers, false, origin);
+        const shot = shots.at(-1);
+        shot.source = 'mecha-precision';
+        shot.o.scale.setScalar(2.1 + stage() * 0.045);
+        shot.v = position.clone().sub(origin).normalize().multiplyScalar(205 + stage() * 2);
+        shot.homing = false; // Already physically aimed at the locked target.
+      }
+      energy -= laserEnergy;
+      precisionCd = Math.max(1.25, 2 - stage() * 0.025);
       lockProgress = 0;
-      heroEffects.pulse({ robot: true, precisionShot: true, color: '#b6f9ff' });
+      heroEffects.pulse({ robot: true, precisionShot: true, color: shotColor() });
       cue('mechaPrecision');
     }
   }
