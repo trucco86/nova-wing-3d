@@ -606,7 +606,7 @@ export function createFlyingRobot() {
   robot.userData.mecha = {
     arms: articulatedArms,
     thrusters: independentThrusters,
-    baseScale: 0.94,
+    baseScale: 0.85,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
