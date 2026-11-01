@@ -28,15 +28,16 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - name: Prepare final candidate and verify all Node contracts
+      - name: Prepare versioned QA candidate and verify all Node contracts
         run: |
+          npm run release:prepare -- 1.27.63
           npm run format
           npm run build
           npm run build:check
           npm run validate
       - name: Commit only audited source formatting and generated single-file game
         run: |
-          git add -- index.html src/game.js src/visuals.js src/bosses.js src/devastador-orbit.js src/devastador-grand-hall.js src/living-depth.js src/boss-premium-systems.js tests/devastador-orbit.test.mjs tests/devastador-grand-hall.test.mjs tests/living-depth.test.mjs tests/boss-premium-systems.test.mjs
+          git add -- package.json package-lock.json CHANGELOG.md releases/v1.27.63.md ios/App/App.xcodeproj/project.pbxproj index.html src/game.js src/visuals.js src/bosses.js src/devastador-orbit.js src/devastador-grand-hall.js src/living-depth.js src/boss-premium-systems.js tests/devastador-orbit.test.mjs tests/devastador-grand-hall.test.mjs tests/living-depth.test.mjs tests/boss-premium-systems.test.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'All files already synchronized'
