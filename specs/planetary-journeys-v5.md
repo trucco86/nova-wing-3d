@@ -57,3 +57,14 @@ Esta entrega é uma **candidata de QA**. Descrições de mundos e novos estilos
 não são homologação visual; nenhum merge em DEV/HML/PROD enquanto CI obrigatória
 estiver vermelha. Se o tempo de entrada afetar dificuldade/boss, ajustar pacing
 em branch posterior, preservando os gates.
+
+## Planetary Visual Polish — critérios QA adicionais
+
+- Vênus: bancos de nuvens sulfúricas em múltiplas profundidades e descargas elétricas distantes, sem cobrir a nave ou formar arcos artificiais de reentrada.
+- Europa: fendas e placas de gelo e espigões irregulares ao lado do corredor, sem criar colisões ou repetir o deserto marciano.
+- Netuno: atmosfera azul profunda, vórtice na face visível e turbulência decorativa, sem representar solo sólido no gigante gasoso.
+- Titã: minerais criogênicos, depósitos de metano e fortaleza ao fundo, sem interromper a campanha.
+- Júpiter: bandas atmosféricas e mancha vermelha no globo; Saturno: faixas reais de anéis com lacunas no globo, nunca anéis gigantes atravessando a nave.
+- Detalhes altos marcados `highOnly`, ocultados em Médio, e grupos de instâncias por bioma para reduzir draw calls.
+- Toda transformação visual usa tempo de missão; sem `Math.random`, timers, armas ou hitboxes; verificar pausa, reinício e QA em portrait.
+- Testes de navegador devem confirmar ausência de erros WebGL e o momento correto de entrada antes do minigame de Netuno.
