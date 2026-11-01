@@ -25,3 +25,13 @@ export function damageDestructibleObstacle(kind, hp, damage) {
   const next = Math.max(0, Math.min(ceiling, hp) - damage);
   return { hp: next, destroyed: next === 0 };
 }
+
+// Holding the ship side-on is a real evasive profile: not temporary
+// invulnerability, just a narrower swept collision radius. The mecha dash
+// retains its separately bounded immunity window.
+export function shipEvasionRadius(kind, held = false, robot = false) {
+  const banked = held && !robot;
+  if (kind === 'projectile') return banked ? 1.25 : 2.1;
+  if (kind === 'environment') return banked ? 0.7 : 1.3;
+  throw new RangeError('unknown collision category');
+}
