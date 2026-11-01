@@ -291,8 +291,7 @@ test('world-space dash streak pool remains behind as mecha moves and fades compl
 test('robot boost stretches the real three thruster assemblies, not just a glow', () => {
   const robot = createFlyingRobot();
   const rig = robot.userData.mechRig;
-  for (let frame = 0; frame < 12; frame++)
-    animateMechPower(robot, frame / 20, false, 8, {}, 0.05);
+  for (let frame = 0; frame < 12; frame++) animateMechPower(robot, frame / 20, false, 8, {}, 0.05);
   const idle = rig.turbineFlame.scale.y;
   for (let frame = 0; frame < 12; frame++)
     animateMechPower(robot, 1 + frame / 20, true, 8, {}, 0.05);
