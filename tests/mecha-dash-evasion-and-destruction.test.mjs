@@ -26,9 +26,17 @@ test('mobile dash stays inside flight corridor, travels exactly once and keeps i
   assert.equal(shipBankAngle(true, -1), -Math.PI / 2);
   assert.equal(shipBankAngle(true, 1), Math.PI / 2);
   assert.equal(shipBankAngle(false, 1, 1), -0.48);
-  assert.ok(shipEvasionRadius('projectile', true, false) < shipEvasionRadius('projectile', false, false));
-  assert.ok(shipEvasionRadius('environment', true, false) < shipEvasionRadius('environment', false, false));
-  assert.equal(shipEvasionRadius('projectile', true, true), 2.1, 'robot only dodges with real dash');
+  assert.ok(
+    shipEvasionRadius('projectile', true, false) < shipEvasionRadius('projectile', false, false),
+  );
+  assert.ok(
+    shipEvasionRadius('environment', true, false) < shipEvasionRadius('environment', false, false),
+  );
+  assert.equal(
+    shipEvasionRadius('projectile', true, true),
+    2.1,
+    'robot only dodges with real dash',
+  );
 });
 
 test('robot dash replaces 360 roll, moves laterally and cooldown protects against spam', (t) => {
