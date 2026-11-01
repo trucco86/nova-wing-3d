@@ -45,10 +45,14 @@ test('same modeled ship opens the hangar and crosses the actual corridor gate', 
   const boarding = updateMothershipApproach(external, 21);
   const inside = updateMothershipInterior(interior, 21);
   assert.equal(inside.visible, true);
-  assert.ok(Math.abs(
-    interior.userData.threshold.position.z - (boarding.frontZ - 48),
-  ) < 0.001, 'tunnel gate stays linked to the exterior hangar aperture');
-  assert.ok(external.userData.fixedSky, 'authoring controls ship approach, not random scenery drift');
+  assert.ok(
+    Math.abs(interior.userData.threshold.position.z - (boarding.frontZ - 48)) < 0.001,
+    'tunnel gate stays linked to the exterior hangar aperture',
+  );
+  assert.ok(
+    external.userData.fixedSky,
+    'authoring controls ship approach, not random scenery drift',
+  );
   const state = external.userData.motion;
   updateMothershipApproach(external, 21);
   assert.deepEqual(external.userData.motion, state, 'same stage time is idempotent');
@@ -88,5 +92,8 @@ test('the world shows Devastador from space, hides Jupiter before entry, and kee
     world.setSector(SECTORS[i], i);
     assert.equal(scene.getObjectByName('devastador-mothership-boarding'), undefined);
   }
-  assert.deepEqual(SECTORS.slice(0, 3).map((s) => s.theme), ['city', 'mars', 'asteroids']);
+  assert.deepEqual(
+    SECTORS.slice(0, 3).map((s) => s.theme),
+    ['city', 'mars', 'asteroids'],
+  );
 });

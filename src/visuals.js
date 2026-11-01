@@ -1549,7 +1549,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
     for (const child of sectorScenery.children) {
-      if (child === destinationVista || child === destinationEscape || child === mothership) continue;
+      if (child === destinationVista || child === destinationEscape || child === mothership)
+        continue;
       // Record original visibility once. On revealing a destination, restore it
       // exactly once rather than re-enabling props hidden by gameplay, LOD or
       // the authored encounter timeline on every frame.
