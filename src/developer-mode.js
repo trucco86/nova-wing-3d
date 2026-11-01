@@ -16,6 +16,7 @@ export function developerToolsAllowed(hostname, native = false) {
     host === 'feat-mothership-marvin-rival.nova-wing-preview.pages.dev' ||
     host === 'feat-mothership-boarding-cin.nova-wing-preview.pages.dev' ||
     host === 'fix-stage4-camera-encounter.nova-wing-preview.pages.dev' ||
+    host === 'fix-qa-browser-stage4-lab-re.nova-wing-preview.pages.dev' ||
     /^pr-[0-9]+\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'localhost' ||
     host === '127.0.0.1'
