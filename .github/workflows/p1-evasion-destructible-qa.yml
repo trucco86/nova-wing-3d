@@ -24,7 +24,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      # v4: add physical narrow-bank collision profile to the corrected dash and boost
+      # v5: approve precise isolated QA URL and anti-spoof guard test
       - name: Reformat, build and run all tests
         run: |
           npm run format
