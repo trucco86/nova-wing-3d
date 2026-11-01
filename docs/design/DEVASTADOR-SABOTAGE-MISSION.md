@@ -4,25 +4,25 @@
 
 ## 1. Objetivo e roteiro por tempo de missão
 
-A duração principal da fase 4 é **88 s** na campanha atual; o trecho orbital interno continua até o jogador neutralizar todos os sistemas. Tempos de passagem são *objetivos de direção*, não cutscenes incontroláveis.
+A duração principal da fase 4 é **88 s** na campanha atual; o trecho orbital interno continua até o jogador neutralizar todos os sistemas. Tempos de passagem são _objetivos de direção_, não cutscenes incontroláveis.
 
-| Trecho | Relógio de missão | Gameplay ativo | Cenário / narrativa |
-| --- | --- | --- | --- |
-| A — Abordagem | 00:00–00:17 | Aproximar-se da nave-mãe, desviar de defesas, cruzar abertura física do hangar | Exterior monumental com docas e armas visíveis; sem Júpiter |
-| B — Hangar e manutenção | 00:17–00:35 | Voar em corredores largos, desviar de drones, selecionar nave/robô | Caças estacionados, guindastes, braços, passarelas e depósitos |
-| C — Fundição e armamento | 00:35–01:00 | Enfrentar escoltas e evitar prensas, fornos, esteiras e equipamentos | Trens industriais, pistões, linhas de circuito, cabos e tubulações energizadas |
-| D — Resfriamento e propulsão | 01:00–01:28 | Sobreviver às defesas, chegar à câmara, reconhecer máquinas a destruir | Bombas hidráulicas, trocadores de calor, turbinas, motores e telas de diagnóstico |
-| E — Núcleo 360° | Após 01:28 | Orbitar manualmente a estrutura, destruir módulos por etapa; usar lock-on multi-alvo | Reator físico tridimensional: circuitos, refrigeração, motores e núcleo sem boss genérico |
-| F — Escape | Após destruir núcleo | Acelerar pelo corredor de saída, ativar boost e sobreviver ao colapso | Explosões sequenciadas, alarme, rádio dos Five Cats, fuga e warp |
+| Trecho                       | Relógio de missão    | Gameplay ativo                                                                       | Cenário / narrativa                                                                       |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| A — Abordagem                | 00:00–00:17          | Aproximar-se da nave-mãe, desviar de defesas, cruzar abertura física do hangar       | Exterior monumental com docas e armas visíveis; sem Júpiter                               |
+| B — Hangar e manutenção      | 00:17–00:35          | Voar em corredores largos, desviar de drones, selecionar nave/robô                   | Caças estacionados, guindastes, braços, passarelas e depósitos                            |
+| C — Fundição e armamento     | 00:35–01:00          | Enfrentar escoltas e evitar prensas, fornos, esteiras e equipamentos                 | Trens industriais, pistões, linhas de circuito, cabos e tubulações energizadas            |
+| D — Resfriamento e propulsão | 01:00–01:28          | Sobreviver às defesas, chegar à câmara, reconhecer máquinas a destruir               | Bombas hidráulicas, trocadores de calor, turbinas, motores e telas de diagnóstico         |
+| E — Núcleo 360°              | Após 01:28           | Orbitar manualmente a estrutura, destruir módulos por etapa; usar lock-on multi-alvo | Reator físico tridimensional: circuitos, refrigeração, motores e núcleo sem boss genérico |
+| F — Escape                   | Após destruir núcleo | Acelerar pelo corredor de saída, ativar boost e sobreviver ao colapso                | Explosões sequenciadas, alarme, rádio dos Five Cats, fuga e warp                          |
 
 ## 2. Ordem de destruição do reator
 
-| Ordem | Sistemas físicos | Condição | Consequência |
-| --- | --- | --- | --- |
-| 1 | 4 circuitos de energia | Orbitá-los pelo ângulo real, atingir os módulos luminosos | A refrigeração entra em sobrecarga |
-| 2 | 2 controladores de resfriamento | Circuitos desligados | Motores perdem proteção térmica |
-| 3 | 2 motores de propulsão | Refrigeração neutralizada | A nave-mãe para de avançar; blindagem final exposta |
-| 4 | 1 núcleo central | Todos os oito componentes destruídos | Colapso controlado + fase de escape |
+| Ordem | Sistemas físicos                | Condição                                                  | Consequência                                        |
+| ----- | ------------------------------- | --------------------------------------------------------- | --------------------------------------------------- |
+| 1     | 4 circuitos de energia          | Orbitá-los pelo ângulo real, atingir os módulos luminosos | A refrigeração entra em sobrecarga                  |
+| 2     | 2 controladores de resfriamento | Circuitos desligados                                      | Motores perdem proteção térmica                     |
+| 3     | 2 motores de propulsão          | Refrigeração neutralizada                                 | A nave-mãe para de avançar; blindagem final exposta |
+| 4     | 1 núcleo central                | Todos os oito componentes destruídos                      | Colapso controlado + fase de escape                 |
 
 A colisão é validada contra os meshes reais, não por proximidade de interface; apenas sistemas ativos aceitam dano. Sem tiros invisíveis do antigo chefe. A órbita 360° é controlada pelo jogador por J/L ou botões do radar no touch; NÃO há top-down inesperado nem troca dos eixos WASD.
 
@@ -39,29 +39,30 @@ A colisão é validada contra os meshes reais, não por proximidade de interface
 ## 4. Robô — multi-lock original de laser
 
 **Nova interação:**
+
 - Segurar **LOCK** começa o scanner de múltiplos alvos 3D em frente ao robô. Cada alvo vivo e visível recebe um marcador numerado, inclusive peças expostas da Devastador.
 - Os alvos são adquiridos um a um, sem duplicatas e com validação de linha de visão.
 - Evolução progressiva: **3 / 5 / 8 / 12** alvos. O custo de energia cresce com o número, com cooldown e proteção contra disparos sem alvo.
 - Soltar LOCK dispara um feixe/projétil físico por alvo, com feedback visual de disparo independente e dano pesado. O tiro frontal da mão direita permanece disponível.
 - Toque curto em LOCK continua ativando/desativando a antiga mira automática, sem desfazer o que já foi validado.
 - Os marcadores são pequenos e não interceptam toque nem sobrepõem menus. Redução de movimento e proteção de desempenho devem ser respeitadas.
-- O design é autoral; toma a *ideia geral de varrer múltiplos alvos* como referência, sem copiar assets, efeitos, sons, nomes ou animações de jogos existentes.
+- O design é autoral; toma a _ideia geral de varrer múltiplos alvos_ como referência, sem copiar assets, efeitos, sons, nomes ou animações de jogos existentes.
 
 ## 5. Estado técnico e critérios de aceite
 
-| Requisito | Estado |
-| --- | --- |
-| Modelo 3D novo com oito subsistemas destrutíveis + núcleo final | Implementação em PR #239, QA |
-| Ordem circuitos -> resfriamento -> motores -> reator | Implementação em PR #239, QA |
-| Órbita controlada 360° e sem IA de chefe genérico | Implementação em PR #239, QA |
-| Corredores ricos em circuitos, acopladores e motores | Implementação ampliada em PR #239, QA |
-| Multi-lock por segurar/soltar com capacidade 3/5/8/12 e marcadores | Implementação em PR #239, QA |
-| Modelo de colisão e dano com todos os tipos de armas, incluindo bombas | **Testes end-to-end pendentes** |
-| Reação ambiental completa à perda de cada subsistema | **Pendente** — som, iluminação e colapso físico progressivo |
-| Saída com boost e diálogo de conclusão Five Cats | **Parcial** — colapso existente, roteiro cinematográfico novo pendente |
-| Homologação visual comparativa (iPhone, Android, desktop, Alto/Médio) | **Pendente** |
-| CI Node + 4 shards Playwright, SHA do HTML sincronizado, preview integrado | **Em verificação; não marcar verde sem evidência** |
-| DEV/HML/produção | **Não promovido** |
+| Requisito                                                                  | Estado                                                                 |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Modelo 3D novo com oito subsistemas destrutíveis + núcleo final            | Implementação em PR #239, QA                                           |
+| Ordem circuitos -> resfriamento -> motores -> reator                       | Implementação em PR #239, QA                                           |
+| Órbita controlada 360° e sem IA de chefe genérico                          | Implementação em PR #239, QA                                           |
+| Corredores ricos em circuitos, acopladores e motores                       | Implementação ampliada em PR #239, QA                                  |
+| Multi-lock por segurar/soltar com capacidade 3/5/8/12 e marcadores         | Implementação em PR #239, QA                                           |
+| Modelo de colisão e dano com todos os tipos de armas, incluindo bombas     | **Testes end-to-end pendentes**                                        |
+| Reação ambiental completa à perda de cada subsistema                       | **Pendente** — som, iluminação e colapso físico progressivo            |
+| Saída com boost e diálogo de conclusão Five Cats                           | **Parcial** — colapso existente, roteiro cinematográfico novo pendente |
+| Homologação visual comparativa (iPhone, Android, desktop, Alto/Médio)      | **Pendente**                                                           |
+| CI Node + 4 shards Playwright, SHA do HTML sincronizado, preview integrado | **Em verificação; não marcar verde sem evidência**                     |
+| DEV/HML/produção                                                           | **Não promovido**                                                      |
 
 ### Casos P0 do QA
 
@@ -77,7 +78,6 @@ A colisão é validada contra os meshes reais, não por proximidade de interface
 10. Gate de produção somente com build/4 shards/preview íntegros e aceite humano.
 
 **Escopo fora desta onda:** kit Hiper Nova, quarto pod, fases 11–20, mundo aberto, câmeras aleatórias, novo chefe humanoide na Devastador.
-
 
 ## 6. Fuga cinematográfica — implementada em QA
 
