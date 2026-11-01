@@ -93,3 +93,14 @@ A conclusão da missão não usa o boss convencional. Depois de destruir as oito
 A nave mantém controles e câmera ativos; nenhuma cutscene bloqueia o jogador. O efeito de velocidade usa sobreposição CSS sem interceptar toques, com `prefers-reduced-motion` respeitado. A versão anterior da fase 4 com boss e descarga de bateria **não deve reaparecer** na integração.
 
 **Evidência de validação local em runner:** [workflow Source repair check 41350076274](https://github.com/trucco86/nova-wing-3d/actions/runs/41350076274) concluiu com **509 testes Node aprovados de 509**, formatação e `npm run validate` aprovados. O HTML foi sincronizado no commit `8d67a3c`. Ainda falta CI completo (Playwright quatro grupos), verificação real em celular e deploy final sob esse commit. Produção não alterada.
+
+
+## 7. Salão monumental do núcleo
+
+O núcleo fica suspenso no centro de uma câmara monumental com diâmetro de 480 unidades. A órbita do jogador tem raio de referência de 190 unidades, reservando uma folga de 50 unidades até o anel exterior. A área central não contém paredes ou máquinas de cenário bloqueando o voo; os painéis são somente visuais.
+
+A câmara tem quatro setores industriais diferenciados: banco de megacapacitores, complexo criogênico, propulsão dupla e ponte de controle. Cada setor possui seus próprios motores, suportes, maquinário, consoles e sinais visuais. Pisos de manutenção, galerias elevadas, vigas do teto, iluminação e estruturas periféricas compõem a escala sem invadir a órbita.
+
+A transição da nave-mãe para o salão desativa os módulos estreitos dos corredores anteriores. A arena é estática em relação ao mundo; apenas o reator e seus pontos de alvo fazem a rotação virtual. Os shaders, materiais e instâncias de decoração são compartilhados, com testes de segurança da órbita e de cenário disponíveis em `tests/devastador-grand-hall.test.mjs`.
+
+Critério de aceite: a nave e o robô devem orbitar 360 graus sem atravessar paredes, sem paredes surgindo na frente da câmera, com identificação dos quatro setores e com os oito componentes do reator acessíveis. A versão permanece em QA até validação visual desktop/mobile e gates completos.
