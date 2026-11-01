@@ -331,7 +331,7 @@ export function createMothershipInterior() {
       section.add(panels);
     }
     for (const side of [-1, 1]) {
-      const trunk = new T.Mesh(new T.CylinderGeometry(2.3, 2.3, 146, 10), dark);
+      const trunk = new T.Mesh(new T.CylinderGeometry(2.3, 2.3, 146, 10), plating);
       trunk.name = 'devastador-hydraulic-coolant-pipeline';
       trunk.rotation.x = Math.PI / 2;
       trunk.position.set(side * 66, 51, -4);
