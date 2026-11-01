@@ -102,6 +102,7 @@ import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import { MECHA_DASH, evasionDirection, dashOffset, shipBankAngle, destructibleObstacleHp, damageDestructibleObstacle } from './flight-evasion-and-targets.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import {
   evolvedShotColor,
@@ -277,7 +278,7 @@ export function createGame({
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
   // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
-  scaleFighterVisual(player, 1.11);
+  scaleFighterVisual(player, 1.01);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
@@ -439,6 +440,9 @@ export function createGame({
     invuln = 0,
     roll = 0,
     rollCd = 0,
+    dashRemaining = 0,
+    dashCd = 0,
+    dashDirection = 1,
     rollHeld = false,
     rollAngle = 0,
     boosting = false,
@@ -545,7 +549,7 @@ export function createGame({
     player.add(evolution);
     evolution.visible = !robotMode;
     setFighterEvolution(shipModule, evolutionStage);
-    player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
+    player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.01);
   }
   function gainXP(amount) {
     if (!dynamicFlight) return;
@@ -698,7 +702,7 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
-    shipModule.scale.setScalar(1.11);
+    shipModule.scale.setScalar(0.98);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.scale.x =
@@ -1156,6 +1160,8 @@ export function createGame({
     releaseControls();
     touchFire = touchBoost = false;
     roll = 0;
+    dashRemaining = 0;
+    dashCd = 0;
     rollHeld = false;
     rollAngle = 0;
     player.position.set(0, 6, 9);
@@ -1372,7 +1378,7 @@ export function createGame({
   }
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
-    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
+    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0 || dashRemaining > 0) return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -1424,8 +1430,18 @@ export function createGame({
     dispose(e.o);
     e.dead = true;
   }
-  function doRoll() {
-    if (state !== 'playing' || rollCd > 0) return;
+  function doRoll(direction = 0) {
+    if (state !== 'playing') return;
+    if (robotMode) {
+      if (dashCd > 0 || energy < MECHA_DASH.cost) return;
+      dashDirection = evasionDirection(direction || stick.x || (keys.has('KeyA') ? -1 : keys.has('KeyD') ? 1 : 0), dashDirection);
+      dashRemaining = MECHA_DASH.duration;
+      dashCd = MECHA_DASH.cooldown;
+      energy -= MECHA_DASH.cost;
+      cue('boostIgnition');
+      return;
+    }
+    if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
     rollCd = 1.6;
@@ -2948,7 +2964,7 @@ export function createGame({
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
-    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
+    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll(e.code === 'KeyQ' ? -1 : 1);
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
@@ -3057,7 +3073,8 @@ export function createGame({
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
     rollPressStarted = performance.now();
-    rollHeld = true;
+    if (robotMode) doRoll(stick.x);
+    else rollHeld = true;
     rollButton.setPointerCapture?.(e.pointerId);
   };
   const finishRollPress = (e) => {
@@ -3065,7 +3082,7 @@ export function createGame({
     const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
     rollPointerId = null;
     rollHeld = false;
-    if (tap) doRoll();
+    if (tap && !robotMode) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
@@ -3094,6 +3111,11 @@ export function createGame({
         (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) -
         (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) +
         stick.y;
+    if (robotMode && dashRemaining > 0) {
+      const delta = dashOffset(dt, dashRemaining, dashDirection, { x: player.position.x });
+      dashRemaining = delta.remaining;
+      player.position.x = delta.x;
+    }
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -3271,13 +3293,15 @@ export function createGame({
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
-      const bankTarget = rollHeld ? -Math.PI / 2 : -dx * 0.48;
+      const bankTarget = robotMode && dashRemaining > 0
+        ? dashDirection * 0.34
+        : shipBankAngle(rollHeld && !robotMode, dx >= 0 ? 1 : -1, dx);
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
       // Actual crosswind banks the spacecraft; manual directional inputs
       // remain fully responsive and can counter-steer against the gust.
-      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+      if (storm?.active && !rollHeld && !robotMode) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -3568,6 +3592,7 @@ export function createGame({
     }
     invuln -= dt;
     rollCd -= dt;
+    dashCd = Math.max(0, dashCd - dt);
     // Touch briefing owns the radio lane; retain the pending real message until
     // it can be shown. Desktop and native keep their existing timer contract.
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
@@ -4990,6 +5015,9 @@ export function createGame({
         z: r.o.position.z,
       })),
       rolling: roll > 0,
+      dash: { active: dashRemaining > 0, remaining: dashRemaining, cooldown: dashCd, direction: dashDirection },
+      playerBank: player.rotation.z,
+      playerScale: player.scale.x,
       player: { x: player.position.x, y: player.position.y },
       playerDepth: player.position.z,
       camera: {
