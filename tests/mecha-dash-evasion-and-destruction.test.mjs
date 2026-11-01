@@ -5,8 +5,12 @@ import { createFlyingRobot } from '../src/visuals.js';
 import { animatePremiumMecha } from '../src/mecha-premium.js';
 import { createObstacle } from '../src/encounters.js';
 import {
-  MECHA_DASH, evasionDirection, dashOffset, shipBankAngle,
-  destructibleObstacleHp, damageDestructibleObstacle,
+  MECHA_DASH,
+  evasionDirection,
+  dashOffset,
+  shipBankAngle,
+  destructibleObstacleHp,
+  damageDestructibleObstacle,
 } from '../src/flight-evasion-and-targets.js';
 
 test('mobile dash stays inside flight corridor, travels exactly once and keeps independent cooldown', () => {
@@ -23,7 +27,7 @@ test('mobile dash stays inside flight corridor, travels exactly once and keeps i
   assert.equal(shipBankAngle(false, 1, 1), -0.48);
 });
 
-test('robot dash replaces 360 roll, moves laterally and cooldown protects against spam', t => {
+test('robot dash replaces 360 roll, moves laterally and cooldown protects against spam', (t) => {
   const h = harness({ spawnEncounters: false });
   t.after(() => h.close());
   h.game.start();
@@ -47,7 +51,7 @@ test('robot dash replaces 360 roll, moves laterally and cooldown protects agains
   assert.equal(h.game.snapshot().dash.active, false);
 });
 
-test('holding GIRO banks fighter fully sideways until pointer release, no accidental spin', t => {
+test('holding GIRO banks fighter fully sideways until pointer release, no accidental spin', (t) => {
   const h = harness({ spawnEncounters: false });
   t.after(() => h.close());
   h.game.start();
@@ -56,8 +60,10 @@ test('holding GIRO banks fighter fully sideways until pointer release, no accide
   roll.onpointerdown({ pointerId: 14, type: 'pointerdown', preventDefault() {} });
   h.advance(0.6, 0.02);
   const held = h.game.snapshot();
-  assert.ok(Math.abs(Math.abs(held.playerBank) - Math.PI / 2) < 0.07,
-    'ship is completely vertical, at 90 degrees');
+  assert.ok(
+    Math.abs(Math.abs(held.playerBank) - Math.PI / 2) < 0.07,
+    'ship is completely vertical, at 90 degrees',
+  );
   roll.emit('pointerup', { pointerId: 14, type: 'pointerup' });
   h.advance(0.35, 0.02);
   assert.ok(Math.abs(h.game.snapshot().playerBank) < 0.1, 'smooth neutral return');
@@ -87,8 +93,7 @@ test('hostile satellites and escort carriers have real health; scenery and debri
     const first = damageDestructibleObstacle(kind, hp, 10);
     assert.equal(first.destroyed, false);
     assert.equal(first.hp, hp - 10);
-    assert.deepEqual(damageDestructibleObstacle(kind, first.hp, hp),
-      { hp: 0, destroyed: true });
+    assert.deepEqual(damageDestructibleObstacle(kind, first.hp, hp), { hp: 0, destroyed: true });
   }
   for (const kind of ['debris', 'tunnel', 'gantry', 'reactor']) {
     assert.equal(destructibleObstacleHp(kind), null);
