@@ -1,0 +1,50 @@
+name: Prepare hero dash and destructibles QA
+on:
+  push:
+    branches:
+      - fix/hero-scale-dash-and-destructibles-20261101
+    paths:
+      - .github/workflows/hero-dash-destructibles-qa.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/hero-scale-dash-and-destructibles-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Verify source, tests and reproducible web build
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit only audited QA build outputs
+        run: |
+          git add -- index.html src/game.js src/visuals.js src/mecha-premium.js src/hero-dodge-controls.js src/breakable-encounters.js tests/hero-dash-breakables.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Already synchronized'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): hero scale, mecha dash, boost and destructibles verified'
+            git push origin HEAD:fix/hero-scale-dash-and-destructibles-20261101
+          fi
+      - name: Run browser/mobile CI and isolated preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref fix/hero-scale-dash-and-destructibles-20261101
+          gh workflow run cloudflare-preview.yml --ref fix/hero-scale-dash-and-destructibles-20261101
