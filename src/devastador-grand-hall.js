@@ -276,14 +276,11 @@ export function createDevastadorGrandHall() {
   return hall;
 }
 
-export function updateDevastadorGrandHall(
-  hall,
-  { orbit = 0, time = 0, driveSpeed = 1, blackout = 0 } = {},
-) {
+export function updateDevastadorGrandHall(hall, { time = 0, driveSpeed = 1, blackout = 0 } = {}) {
   if (!hall) return;
-  // Parent is spun for the virtual orbit; cancel it for architecture. The
-  // reactor remains dynamically targetable while the hall stays stationary.
-  hall.rotation.y = orbit;
+  // The pilot now physically circles the chamber. No artificial rotation
+  // of the reactor, architecture or scenery is allowed.
+  hall.rotation.y = 0;
   hall.userData.rotors.forEach((r, i) => {
     r.rotation.z = time * (i % 2 ? -1 : 1) * 1.55 * driveSpeed;
   });
