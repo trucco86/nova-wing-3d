@@ -38,12 +38,12 @@ export function stageVisualAt(index) {
 
 // No camera cuts on elapsed percentage: a viewpoint must correspond to a
 // deliberate mission mechanic, with matching controls and safe ship framing.
-// Overhead is exclusive to station reactor-grid traversal; all other sectors
-// retain the pilot's chase/cockpit/combat choice until dedicated mechanics exist.
+// The Devastador interior is always piloted in forward perspective. The
+// abandoned top-down reactor view is not part of the stage 4 experience.
 export function stagePerspectiveAt(index, seconds, duration, boss = false, context = {}) {
   if (boss || !Number.isFinite(duration) || duration <= 0 || !Number.isFinite(seconds))
     return 'chase';
-  if (index === 3 && context.mission === 'reactor-grid') return 'overhead';
+  if (index === 3) return 'chase';
   if (index === 2 && context.mission === 'asteroid-escape') return 'combat';
   return 'chase';
 }
