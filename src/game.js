@@ -102,6 +102,15 @@ import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import {
+  MECHA_DASH,
+  evasionDirection,
+  dashOffset,
+  shipBankAngle,
+  destructibleObstacleHp,
+  damageDestructibleObstacle,
+  shipEvasionRadius,
+} from './flight-evasion-and-targets.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import {
   evolvedShotColor,
@@ -277,7 +286,7 @@ export function createGame({
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
   // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
-  scaleFighterVisual(player, 1.11);
+  scaleFighterVisual(player, 1.01);
   // Only these meshes represent the ship; keep effects independent of form changes.
   const shipParts = [...player.children];
   const robot = createFlyingRobot();
@@ -381,6 +390,15 @@ export function createGame({
     robotCooldown = 2.5;
     robotTransition = transformDuration;
     robotMode = !robotMode;
+    dashRemaining = 0;
+    rollHeld = false;
+    $('rollTouch').textContent = robotMode ? 'DASH' : 'GIRO';
+    $('rollTouch').setAttribute(
+      'aria-label',
+      robotMode
+        ? 'Dash lateral rápido do robô'
+        : 'Inclinar a nave 90 graus ao segurar, giro 360 ao tocar',
+    );
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
     $('lockTouch').hidden = !robotMode;
@@ -439,6 +457,9 @@ export function createGame({
     invuln = 0,
     roll = 0,
     rollCd = 0,
+    dashRemaining = 0,
+    dashCd = 0,
+    dashDirection = 1,
     rollHeld = false,
     rollAngle = 0,
     boosting = false,
@@ -545,7 +566,7 @@ export function createGame({
     player.add(evolution);
     evolution.visible = !robotMode;
     setFighterEvolution(shipModule, evolutionStage);
-    player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.025);
+    player.scale.setScalar(1 + Math.min(18, evolutionStage) * 0.01);
   }
   function gainXP(amount) {
     if (!dynamicFlight) return;
@@ -698,11 +719,12 @@ export function createGame({
     }
     shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
     player.add(shipModule);
-    shipModule.scale.setScalar(1.11);
+    shipModule.scale.setScalar(0.98);
     shipModule.visible = !robotMode;
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
-    robot.scale.x =
-      pilotLoadout.ship === 'aegis' ? 1.13 : pilotLoadout.ship === 'specter' ? 0.88 : 0.98;
+    robot.userData.mecha.baseScale =
+      pilotLoadout.ship === 'aegis' ? 0.89 : pilotLoadout.ship === 'specter' ? 0.81 : 0.85;
+    robot.scale.setScalar(robot.userData.mecha.baseScale);
     applySkin();
   }
   const statLabels = {
@@ -1082,6 +1104,11 @@ export function createGame({
     resetMechPower(robot);
     robotFireKick = 0;
     robotMode = false;
+    $('rollTouch').textContent = 'GIRO';
+    $('rollTouch').setAttribute(
+      'aria-label',
+      'Inclinar a nave 90 graus ao segurar, giro 360 ao tocar',
+    );
     shipModule.visible = true;
     if (evolution) evolution.visible = true;
     robotCooldown = 0;
@@ -1156,6 +1183,8 @@ export function createGame({
     releaseControls();
     touchFire = touchBoost = false;
     roll = 0;
+    dashRemaining = 0;
+    dashCd = 0;
     rollHeld = false;
     rollAngle = 0;
     player.position.set(0, 6, 9);
@@ -1372,7 +1401,15 @@ export function createGame({
   }
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
-    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
+    if (
+      state !== 'playing' ||
+      !Number.isFinite(d) ||
+      d <= 0 ||
+      invuln > 0 ||
+      roll > 0 ||
+      dashRemaining > 0
+    )
+      return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -1424,8 +1461,21 @@ export function createGame({
     dispose(e.o);
     e.dead = true;
   }
-  function doRoll() {
-    if (state !== 'playing' || rollCd > 0) return;
+  function doRoll(direction = 0) {
+    if (state !== 'playing') return;
+    if (robotMode) {
+      if (dashCd > 0 || energy < MECHA_DASH.cost) return;
+      dashDirection = evasionDirection(
+        direction || stick.x || (keys.has('KeyA') ? -1 : keys.has('KeyD') ? 1 : 0),
+        dashDirection,
+      );
+      dashRemaining = MECHA_DASH.duration;
+      dashCd = MECHA_DASH.cooldown;
+      energy -= MECHA_DASH.cost;
+      cue('boostIgnition');
+      return;
+    }
+    if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
     rollCd = 1.6;
@@ -2214,6 +2264,8 @@ export function createGame({
     invuln = 2;
     roll = 0;
     rollCd = 0;
+    dashRemaining = 0;
+    dashCd = 0;
     rollHeld = false;
     rollAngle = 0;
     bossHp = 200;
@@ -2948,7 +3000,8 @@ export function createGame({
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
-    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
+    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ')
+      doRoll(e.code === 'KeyQ' ? -1 : 1);
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
@@ -2979,6 +3032,9 @@ export function createGame({
     }
     keys.clear();
     touchFire = touchBoost = false;
+    rollHeld = false;
+    rollPointerId = null;
+    rollHeldSeconds = 0;
     charge = 0;
     chargeLatch = false;
     stick.x = stick.y = 0;
@@ -3051,21 +3107,22 @@ export function createGame({
   }
   const rollButton = $('rollTouch');
   let rollPointerId = null;
-  let rollPressStarted = 0;
+  let rollHeldSeconds = 0;
   rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
-    rollPressStarted = performance.now();
-    rollHeld = true;
+    rollHeldSeconds = 0;
+    if (robotMode) doRoll(stick.x);
+    else rollHeld = true;
     rollButton.setPointerCapture?.(e.pointerId);
   };
   const finishRollPress = (e) => {
     if (rollPointerId !== e.pointerId) return;
-    const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
+    const tap = e.type === 'pointerup' && rollHeldSeconds < 0.24;
     rollPointerId = null;
     rollHeld = false;
-    if (tap) doRoll();
+    if (tap && !robotMode) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
@@ -3220,6 +3277,15 @@ export function createGame({
     }
     reticle.visible = true;
     const previousPlayer = player.position.clone();
+    if (robotMode && dashRemaining > 0) {
+      const delta = dashOffset(dt, dashRemaining, dashDirection, {
+        x: player.position.x,
+        min: -flightLimit(),
+        max: flightLimit(),
+      });
+      dashRemaining = delta.remaining;
+      player.position.x = delta.x;
+    }
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
     const gustX = storm?.windX ?? 0;
@@ -3261,7 +3327,7 @@ export function createGame({
         }
       }
     }
-    player.rotation.z = T.MathUtils.lerp(player.rotation.z, -dx * 0.48, dt * 8);
+    // Single interpolation below: do not fight held 90° bank with legacy steering.
     player.rotation.x = T.MathUtils.lerp(player.rotation.x, dy * 0.14, dt * 8);
     player.rotation.y = T.MathUtils.lerp(player.rotation.y, -dx * 0.12, dt * 8);
     if (roll > 0) {
@@ -3271,13 +3337,17 @@ export function createGame({
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
-      const bankTarget = rollHeld ? -Math.PI / 2 : -dx * 0.48;
+      const bankTarget =
+        robotMode && dashRemaining > 0
+          ? dashDirection * 0.34
+          : shipBankAngle(rollHeld && !robotMode, dx >= 0 ? 1 : -1, dx);
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
       // Actual crosswind banks the spacecraft; manual directional inputs
       // remain fully responsive and can counter-steer against the gust.
-      if (storm?.active) player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+      if (storm?.active && !rollHeld && !robotMode)
+        player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -3568,6 +3638,8 @@ export function createGame({
     }
     invuln -= dt;
     rollCd -= dt;
+    dashCd = Math.max(0, dashCd - dt);
+    if (rollHeld && !robotMode) rollHeldSeconds += dt;
     // Touch briefing owns the radio lane; retain the pending real message until
     // it can be shown. Desktop and native keep their existing timer contract.
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
@@ -4338,7 +4410,9 @@ export function createGame({
     // Resolve walls before damage. At this point obstacles are still at their
     // previous-frame positions; both projectile and obstacle are swept together.
     const projectileOccluded = (from, to) =>
-      obstacles.some(({ o }) => projectileHitsApproachingObstacle(from, to, o, speed * dt)) ||
+      obstacles.some(
+        ({ o, life }) => life > 0 && projectileHitsApproachingObstacle(from, to, o, speed * dt),
+      ) ||
       (sectorIndex === 2 && dynamicFlight && asteroidInterior.projectileBlocked(from, to));
     for (let b of shots) {
       const previousShot = b.o.position.clone();
@@ -4364,9 +4438,37 @@ export function createGame({
       else b.o.position.z -= dt * 190;
       b.life -= dt;
       if (b.life > 0 && projectileOccluded(previousShot, b.o.position)) {
+        // Explicit damage is resolved against the same swept solid that blocked
+        // the projectile. This is not a fake overlay or an invisible hitbox.
+        const target = obstacles.find(
+          ({ o, life }) =>
+            life > 0 &&
+            projectileHitsApproachingObstacle(previousShot, b.o.position, o, speed * dt),
+        );
+        if (target && Number.isFinite(target.hp)) {
+          const result = damageDestructibleObstacle(
+            target.o.userData.kind,
+            target.hp,
+            b.damage ?? 2,
+          );
+          if (result) {
+            target.hp = result.hp;
+            if (result.destroyed) {
+              target.life = 0;
+              target.o.visible = false;
+              score += target.o.userData.kind === 'carrier' ? 400 : 150;
+              explode(target.o.position.clone(), 14, 0xffa85e);
+              cue('armorHit');
+              message(
+                target.o.userData.kind === 'carrier'
+                  ? 'NAVE INIMIGA DESTRUÍDA'
+                  : 'SATÉLITE HOSTIL DESTRUÍDO',
+              );
+            } else explode(b.o.position, 2, 0xffcf85);
+          }
+        } else explode(b.o.position, 3, 0xffbf75);
         b.life = 0;
-        explode(b.o.position, 3, 0xffbf75);
-        if (dynamicFlight) cue('armorHit');
+        if (dynamicFlight && target?.life !== 0) cue('armorHit');
         continue;
       }
       if (b.life > 0 && dynamicFlight && !boss) {
@@ -4506,7 +4608,10 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (b.o.position.distanceTo(player.position) < 2.1) {
+      if (
+        b.o.position.distanceTo(player.position) <
+        shipEvasionRadius('projectile', rollHeld, robotMode)
+      ) {
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
@@ -4619,10 +4724,11 @@ export function createGame({
         -230,
       );
       scene.add(o);
-      obstacles.push({ o, life: 1 });
+      obstacles.push({ o, life: 1, hp: dynamicFlight ? destructibleObstacleHp(kind) : null });
       obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
     }
     for (const obstacle of obstacles) {
+      if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
       const from = previousPlayer
@@ -4632,7 +4738,13 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       if (
         obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
+          crossesSolid(
+            from,
+            to,
+            solid.center,
+            solid.half,
+            shipEvasionRadius('environment', rollHeld, robotMode),
+          ),
         )
       )
         hit(30);
@@ -4990,6 +5102,14 @@ export function createGame({
         z: r.o.position.z,
       })),
       rolling: roll > 0,
+      dash: {
+        active: dashRemaining > 0,
+        remaining: dashRemaining,
+        cooldown: dashCd,
+        direction: dashDirection,
+      },
+      playerBank: player.rotation.z,
+      playerScale: player.scale.x,
       player: { x: player.position.x, y: player.position.y },
       playerDepth: player.position.z,
       camera: {
@@ -5019,6 +5139,15 @@ export function createGame({
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
+      destructibleTargets: obstacles
+        .filter((o) => Number.isFinite(o.hp) && o.life > 0)
+        .map((o) => ({
+          kind: o.o.userData.kind,
+          hp: o.hp,
+          x: o.o.position.x,
+          y: o.o.position.y,
+          z: o.o.position.z,
+        })),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {
         enemies: enemies.length,
