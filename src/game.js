@@ -1165,6 +1165,13 @@ export function createGame({
       String(sectorIndex + 1).padStart(2, '0');
     $('chapter').textContent = String(sectorIndex + 1).padStart(2, '0');
     $('stage').textContent = current().name;
+    // Show the correct destination even in the very first rendered frame;
+    // never briefly flash an unrelated route label in QA screenshots.
+    if (dynamicFlight && sectorIndex >= 3) {
+      const firstArrival = world.setDestinationArrival(0);
+      if (firstArrival) route.label = firstArrival.label;
+    }
+    $('routeLabel').textContent = route.label;
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     syncPods();
     sectorStart = {
