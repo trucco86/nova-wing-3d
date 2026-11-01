@@ -80,7 +80,8 @@ test('after each boss, time controls the exit effect; pause and reset never move
     assert.equal(exit.visible, false);
     assert.equal(destinationExitAt(i, 3).active, false);
     const state = updateDestinationEscape(exit, i, 7);
-    assert.ok(state.progress > 0.9);
+    assert.ok(state.progress > 0.7 && state.progress < 1);
+    assert.equal(destinationExitAt(i, 8).progress, 1, 'exit accelerates smoothly until 8s');
     const particle = exit.getObjectByName('escape-hyperspeed-particles');
     const sample = [...particle.geometry.getAttribute('position').array.slice(0, 12)];
     updateDestinationEscape(exit, i, 7);
