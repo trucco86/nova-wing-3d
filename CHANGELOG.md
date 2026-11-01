@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.63 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.62 — Candidata em preparação
 
 - Nave: GIRO de 90° enquanto Q/E/Z ou toque são segurados; toque curto mantém giro defensivo de 360°.
