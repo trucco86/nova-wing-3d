@@ -121,6 +121,7 @@ import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
+import { developerLabLoadout } from './developer-lab.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
 import {
@@ -2115,6 +2116,7 @@ export function createGame({
     developerSession = developerAvailable && developerRun;
     if (!developerSession) developerScenario = null;
     $('developerSessionTag').hidden = !developerSession;
+    $('developerFlightLab').hidden = !developerSession;
     document.body.classList[developerSession ? 'add' : 'remove']('developer-session');
     $('pauseConfirmPanel').hidden = true;
     confirmation = null;
@@ -2208,18 +2210,34 @@ export function createGame({
     if (!developerAvailable || (!fromRestart && state !== 'menu')) return false;
     const scenario = parseDeveloperScenario(sector, encounter, SECTORS.length);
     if (!scenario) return false;
+    const lab = developerLabLoadout(
+      $('developerTier').value,
+      $('developerShip').value,
+      $('developerArsenal').value,
+      $('developerSpecial').value,
+    );
+    if (!lab) return false;
     developerScenario = scenario;
     // This is an isolated, disposable QA run. The user's real save is never loaded or updated.
     start(
       false,
       {
         sector: scenario.sector,
-        loadout: { ...pilotLoadout },
-        strategy: { specialty: activePilot().specialty },
-        weapon: 2,
-        armor: 2,
-        pods: 2,
-        bombs: 8,
+        loadout: { ...pilotLoadout, ship: lab.ship },
+        strategy: {
+          specialty: activePilot().specialty,
+          xp: lab.xp,
+          arsenal: lab.arsenal,
+          special: lab.special,
+        },
+        weapon: lab.weaponLevel,
+        volley: lab.volley,
+        rapid: lab.rapid,
+        scatterOwned: lab.scatterOwned,
+        fireMode: 'pulse',
+        armor: lab.armor,
+        pods: lab.pods,
+        bombs: lab.bombs,
         credits: 0,
         score: 0,
         cosmetics: { ...cosmetics, owned: [...cosmetics.owned] },
@@ -2332,6 +2350,7 @@ export function createGame({
     developerSession = false;
     developerScenario = null;
     $('developerSessionTag').hidden = true;
+    $('developerFlightLab').hidden = true;
     document.body.classList.remove('developer-session');
     menuThemePlaying = false;
     confirmation = null;
@@ -2644,6 +2663,48 @@ export function createGame({
     }
     $('developerLaunch').onclick = () =>
       startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
+    $('qaLabApply').onclick = () => {
+      if (!developerAvailable || !developerSession || state !== 'paused' || confirmation) return;
+      const lab = developerLabLoadout(
+        $('qaLabLevel').value,
+        $('qaLabShip').value,
+        $('qaLabArsenal').value,
+        $('qaLabSpecial').value,
+      );
+      if (!lab) return;
+      const form = $('qaLabForm').value;
+      const pods = $('qaLabPods').value;
+      // Apply real visuals/progression without issuing a gameplay stat write
+      // to any saved checkpoint, server ranking or production environment.
+      strategy.xp = lab.xp;
+      strategy.arsenal = lab.arsenal;
+      strategy.special = lab.special;
+      weapon = lab.weaponLevel;
+      volley = lab.volley;
+      rapid = lab.rapid;
+      scatterOwned = lab.scatterOwned;
+      armor = lab.armor;
+      podCount = lab.pods;
+      bombs = 8;
+      arcana = 100;
+      tacticEnergy = 3;
+      energy = 100;
+      specialCd = 0;
+      robotCooldown = 0;
+      hp = maxHp();
+      if (pilotLoadout.ship !== lab.ship) {
+        pilotLoadout = { ...pilotLoadout, ship: lab.ship };
+        applyShipModel();
+      }
+      evolve();
+      syncPods();
+      pause(); // Resume first; transforms must run the real gameplay action.
+      if (form === 'robot' && !robotMode) toggleRobot();
+      else if (form === 'ship' && robotMode) toggleRobot();
+      if ((pods === 'deployed') !== podsDetached) togglePods();
+      message('QA · EVOLUÇÃO ' + (stage() + 1) + ' / ARMA ' + selectedWeapon().name +
+        ' / RPG ' + SPECIALS[strategy.special].name);
+    };
   }
   $('start').onclick = () => (settings.intro ? beginCinematic() : start());
   $('continue').onclick = () => start(true);
