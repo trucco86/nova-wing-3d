@@ -42,9 +42,14 @@ test('mobile: hold fighter 90 degrees, transform, dash with real side movement a
   // different touch pointer: no automatic direction from player position.
   const stick = page.locator('#stick');
   const stickBounds = await stick.boundingBox();
-  await page.mouse.move(stickBounds.x + stickBounds.width * 0.84, stickBounds.y + stickBounds.height * 0.5);
+  await page.mouse.move(
+    stickBounds.x + stickBounds.width * 0.84,
+    stickBounds.y + stickBounds.height * 0.5,
+  );
   await page.mouse.down();
-  await expect.poll(async () => page.evaluate(() => window.fixture.game.snapshot().controls.stickX)).toBeGreaterThan(0.2);
+  await expect
+    .poll(async () => page.evaluate(() => window.fixture.game.snapshot().controls.stickX))
+    .toBeGreaterThan(0.2);
   await button.tap();
   await page.evaluate(() => window.fixture.advance(0.12));
   const during = await page.evaluate(() => window.fixture.game.snapshot());
@@ -105,7 +110,9 @@ test('desktop: a held Q banks vertically, a tapped E barrel-rolls, robot Z dashe
   expect(errors).toEqual([]);
 });
 
-test('mobile: extended robot boost is measurably longer than the idle exhaust', async ({ page }, info) => {
+test('mobile: extended robot boost is measurably longer than the idle exhaust', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile', 'Mobile boost visual regression');
   await page.goto('/__dynamic.html?sector=3');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
