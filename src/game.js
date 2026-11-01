@@ -176,6 +176,7 @@ import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import { devastadorEscapeAt, DEVASTADOR_ESCAPE_BOOST_START } from './devastador-escape.js';
+import { reactorOrbitalPosition, withReactorOrbitPresentation } from './reactor-orbit-presentation.js';
 import {
   fighter,
   createFlyingRobot,
@@ -5282,7 +5283,11 @@ export function createGame({
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
-      lastFrameCost = post.render() ?? lastFrameCost;
+      const drawFrame = () => post.render();
+      lastFrameCost =
+        (dynamicFlight && boss?.userData.sabotage
+          ? withReactorOrbitPresentation(scene, boss.position, orbitAngle, drawFrame)
+          : drawFrame()) ?? lastFrameCost;
     }
   }
   function step(dt) {
@@ -5429,6 +5434,17 @@ export function createGame({
         ? {
             ...sabotagedSystem(boss.userData.parts),
             visual: boss.userData.reactorVisual,
+            orbit: {
+              angle: orbitAngle,
+              pilotWorldPosition: reactorOrbitalPosition(
+                player.position,
+                boss.position,
+                orbitAngle,
+              ).toArray(),
+              coreWorldPosition: boss.position.toArray(),
+              physicallyOrbiting: true,
+              roomStationary: true,
+            },
             hall: {
               radius: boss.userData.grandHall.userData.radius,
               clearOrbitRadius: boss.userData.grandHall.userData.safeOrbitRadius,
