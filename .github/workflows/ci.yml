@@ -63,6 +63,8 @@ jobs:
       # The quality job already ran format, lint, Node tests, invariants and
       # reproducible build. Never re-run that full suite in four browser jobs.
       - run: npm run build:check
+      # Rebuild after verifying committed HTML: existing security contract retained.
+      - run: npm run build
       - name: Run browser-only shard (full release assertions preserved)
         run: npm run test:browser -- --shard="$NOVA_BROWSER_SHARD"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
