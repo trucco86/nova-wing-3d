@@ -4,7 +4,7 @@ import { BOARDING, mothershipApproachAt } from './mothership-approach.js';
 // Sector 4: an actual carrier interior, not generic luminous rings.
 // All structures are decorative; the flight corridor, aiming, reactor-grid
 // mission, collision geometry and camera controls remain unchanged.
-const WINDOW_START = 19;
+const WINDOW_START = 17;
 const TRAVEL_SPEED = 34;
 const SPAN = 1080;
 const SECTION_COUNT = 6;
