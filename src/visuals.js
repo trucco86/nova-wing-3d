@@ -15,7 +15,11 @@ import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
-import { createLivingWorldLayers, updateLivingWorldLayers, setLivingWorldQuality } from './living-world-depth.js';
+import {
+  createLivingWorldLayers,
+  updateLivingWorldLayers,
+  setLivingWorldQuality,
+} from './living-world-depth.js';
 import {
   createDestinationLandmarks,
   updateDestinationLandmarks,
@@ -1630,7 +1634,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
-      setLivingWorldQuality(sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme), quality);
+      setLivingWorldQuality(
+        sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
+        quality,
+      );
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
