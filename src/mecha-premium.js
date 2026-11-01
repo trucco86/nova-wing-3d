@@ -31,6 +31,8 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
   const kneePistons = [];
   const vents = [];
   const crest = [];
+  const exhausts = [];
+  const backFins = [];
   // Side-shoulders and forearms are designed around the existing independent
   // lock-on wrists; laser muzzle pointers and arm IK remain untouched.
   for (const side of [-1, 1]) {
@@ -168,7 +170,44 @@ export function installPremiumMechaDetails(robot, { armor, graphite, accent, lum
     );
     crest.push(fin);
   }
-  const rig = { forearms, calves, kneePistons, vents, spine, helmet, crest };
+  // Layered rear hull is the player's main view in chase camera. Add
+  // believable mechanical density at the upper back and actuator housings
+  // without increasing width or drawing opaque parts over the pilot's sights.
+  for (const side of [-1, 1]) {
+    add(robot, cube, graphite, 'premium-rear-shoulder-backplate-' + side,
+      [side * 1.68, 2.43, 1.72], [1.45, 1.85, 0.46], [0, 0, -side * 0.14]);
+    add(robot, cube, armor, 'premium-rear-wing-spine-' + side,
+      [side * 2.58, 2.09, 1.86], [1.42, 0.38, 1.3], [0, 0, side * 0.16]);
+    for (let i = 0; i < 4; i++)
+      add(robot, cube, i % 2 ? accent : luminous,
+        'premium-dorsal-heat-sink-' + side + '-' + i,
+        [side * 1.92, 2.83 - i * 0.37, 2.05],
+        [0.65, 0.12, 0.25]);
+    for (let i = 0; i < 3; i++)
+      add(robot, cube, graphite, 'premium-spinal-reactor-cover-' + side + '-' + i,
+        [side * 0.46, 2.27 - i * 0.74, 1.78],
+        [0.52, 0.49, 0.36], [0, 0, side * 0.12]);
+    const fins = add(robot, cube, armor, 'premium-back-vector-fin-' + side,
+      [side * 2.02, 0.65, 2.1], [0.33, 2.45, 1.18], [0, 0, side * 0.18]);
+    backFins.push(fins);
+    // Two independently pulsing afterburner cones, anchored to the real
+    // dorsal nozzles rather than adding misleading phantom engines.
+    const trail = new T.Mesh(new T.ConeGeometry(0.32, 1.8, 10, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#54caff', transparent: true, opacity: 0.16,
+        blending: T.AdditiveBlending, depthWrite: false, side: T.DoubleSide,
+      }));
+    trail.name = 'premium-mecha-afterburner-' + side;
+    trail.rotation.x = Math.PI / 2;
+    trail.position.set(side * 1.38, 2.51, 3.9);
+    trail.visible = false;
+    robot.add(trail);
+    exhausts.push(trail);
+  }
+  for (let i = 0; i < 5; i++)
+    add(spine, cube, i % 2 ? armor : luminous, 'premium-backbone-socket-' + i,
+      [0, -0.68 + i * 0.61, 0.75], [0.72, 0.37, 0.3]);
+  const rig = { forearms, calves, kneePistons, vents, spine, helmet, crest, exhausts, backFins };
   robot.userData.premiumMecha = rig;
   return rig;
 }
@@ -206,6 +245,17 @@ export function animatePremiumMecha(
   for (const knee of rig.kneePistons) knee.scale.y = 0.62 + extension * 0.38;
   rig.spine.scale.y = 0.82 + extension * (0.18 + growth * 0.08);
   rig.spine.rotation.x = boosting ? -0.09 * power : 0;
+  for (const [index, plume] of rig.exhausts.entries()) {
+    plume.visible = boosting && power > 0.75;
+    const length = 1.25 + Math.sin(time * 32 + index * 1.3) * 0.19 + growth * 1.1;
+    plume.scale.y = length;
+    plume.position.z = 3.0 + length * 0.88;
+    plume.material.opacity = boosting ? 0.43 + growth * 0.26 : 0.12;
+    plume.material.color.set(growth > 0.65 ? '#f2ebff' : '#55d5ff');
+  }
+  for (const [index, fin] of rig.backFins.entries()) {
+    fin.rotation.z = (index === 0 ? -1 : 1) * (boosting ? 0.28 : 0.1);
+  }
   rig.helmet.rotation.x = -0.48 * (1 - power);
   for (const light of rig.vents) light.visible = power > 0.1;
   return {
