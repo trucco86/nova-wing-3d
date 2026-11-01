@@ -6,6 +6,8 @@ import { SHIP_MODELS } from '../src/pilots.js';
 import {
   fighterAllowedDuringArrival,
   arrivalFighterDepth,
+  fighterArrivalAge,
+  fighterMayFireAtDepth,
   shouldKeepArrivalCooldown,
 } from '../src/encounter-arrival-flow.js';
 import { harness } from './harness.mjs';
@@ -44,6 +46,13 @@ test('stage 4 stays in chase view with early but distant and staggered late-sect
   assert.ok(arrivalFighterDepth(3, 0) < -300);
   assert.ok(arrivalFighterDepth(3, 3) < arrivalFighterDepth(3, 0) - 100);
   assert.equal(arrivalFighterDepth(0, 0), -200);
+  assert.equal(fighterArrivalAge(3, 1, 0), 1);
+  assert.equal(fighterArrivalAge(3, 1, 2), 0);
+  assert.equal(fighterArrivalAge(3, 3, 2), 1.5);
+  assert.equal(fighterArrivalAge(0, 1, 3), 1, 'stages 1–3 keep original cadence');
+  assert.equal(fighterMayFireAtDepth(3, -300), false);
+  assert.equal(fighterMayFireAtDepth(3, -125), true);
+  assert.equal(fighterMayFireAtDepth(3, -8), false);
 });
 
 test('QA stage can be launched with all upgrades; sandbox mode saves nothing', (t) => {
