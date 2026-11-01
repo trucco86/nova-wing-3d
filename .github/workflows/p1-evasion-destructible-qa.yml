@@ -24,7 +24,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      # v2: safe numeric hostile-hitpoint checks and gameplay assertions
+      # v3: eliminate competing rotation and exaggerate visible robot boost
       - name: Reformat, build and run all tests
         run: |
           npm run format
