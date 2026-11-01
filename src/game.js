@@ -175,6 +175,7 @@ import { createBossCombat } from './combat.js';
 import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
 import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
+import { devastadorEscapeAt, DEVASTADOR_ESCAPE_BOOST_START } from './devastador-escape.js';
 import {
   fighter,
   createFlyingRobot,
@@ -584,6 +585,10 @@ export function createGame({
     collapseTime = 0,
     collapseBurst = 0,
     collapseFinal = false,
+    devastadorEscapeBoostSeconds = 0,
+    devastadorEscapeBeat = -1,
+    devastadorEscapeAssisted = false,
+    devastadorEscapeWarp = false,
     pausedFrom = 'playing',
     ringWave = 0,
     stageIntroTime = 0,
@@ -1181,6 +1186,12 @@ export function createGame({
     heroEffects.reset();
     $('launchBoostNotice').hidden = true;
     document.body.classList.remove('orbital-super-boost');
+    document.body.classList.remove('devastador-escape');
+    document.body.classList.remove('devastador-warp');
+    devastadorEscapeBoostSeconds = 0;
+    devastadorEscapeBeat = -1;
+    devastadorEscapeAssisted = false;
+    devastadorEscapeWarp = false;
     $('boostTouch').classList.remove('launch-required');
     $('boostTouch').textContent = 'BOOST';
     $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
@@ -2229,8 +2240,17 @@ export function createGame({
         stagePerformance.bossDefeated = true;
         stagePerformance.mechaFinisher = robotMode;
       }
-      if (boss.userData.sabotage)
-        message('DEVASTADOR INOPERANTE · REATOR EM COLAPSO · ACIONE BOOST PARA FUGIR');
+      if (boss.userData.sabotage) {
+        message(devastadorEscapeAt(0).radio, 'bia');
+        devastadorEscapeBoostSeconds = 0;
+        devastadorEscapeBeat = 0;
+        devastadorEscapeAssisted = false;
+        devastadorEscapeWarp = false;
+        // The last phase is a cinematic emergency thrust, not a resource
+        // softlock. Real player BOOST works; assisted thrust guarantees exit.
+        energy = Math.max(energy, 50);
+        document.body.classList.add('devastador-escape');
+      }
       if (dynamicFlight && sectorIndex === 2) {
         journey = advanceJourney(journey, 'bossDefeated');
         asteroidInterior.setPhase(journey.phase);
@@ -2275,6 +2295,51 @@ export function createGame({
       const exit = world.setDestinationExit(collapseTime);
       if (exit?.active) $('routeLabel').textContent = exit.label;
     }
+    if (boss?.userData.sabotage) {
+      if (collapseTime >= DEVASTADOR_ESCAPE_BOOST_START && boosting)
+        devastadorEscapeBoostSeconds += dt;
+      const escape = devastadorEscapeAt(collapseTime, {
+        boostedSeconds: devastadorEscapeBoostSeconds,
+      });
+      $('routeLabel').textContent = escape.label;
+      if (escape.beat !== devastadorEscapeBeat) {
+        devastadorEscapeBeat = escape.beat;
+        message(escape.radio, escape.speaker);
+        if (escape.phase === 'boost') cue('boostIgnition');
+      }
+      if (escape.boostWindow && !escape.warp && !escape.boostActivated) {
+        $('boostTouch').classList.add('launch-required');
+        $('boostTouch').textContent = 'BOOST FUGA';
+        $('boostTouch').setAttribute('aria-label', 'Segure BOOST para sair da Devastador');
+        $('attackWarning').textContent = 'FUGA · ACIONE BOOST AGORA';
+      } else {
+        $('boostTouch').classList.remove('launch-required');
+        if (!escape.warp) $('attackWarning').textContent = 'DEVASTADOR · FALHA EM CASCATA';
+      }
+      if (escape.warp && !devastadorEscapeWarp) {
+        devastadorEscapeWarp = true;
+        devastadorEscapeAssisted = escape.assistedBoost;
+        document.body.classList.add('devastador-warp');
+        heroEffects.pulse({ robot: robotMode, charged: true, color: '#c9faff' });
+        cue('boostIgnition');
+        if (escape.assistedBoost)
+          message('FIVE CATS · PROPULSÃO DE EMERGÊNCIA ATIVADA! SAÍDA EM HIPERIMPULSO!', 'bob');
+      }
+      if (escape.warp) {
+        // The visual emergency exhaust is independent of control input and
+        // never modifies the player’s shield, flight trajectory or checkpoint.
+        boosting = true;
+        for (const flame of player.userData.flames) {
+          flame.scale.y = Math.max(flame.scale.y, escape.flameScale * 2.5);
+          flame.material.color.set('#daffff');
+        }
+        $('attackWarning').textContent = 'HIPERIMPULSO · DEVASTADOR EM COLAPSO';
+      }
+      // Earlier reactor systems spark in sequence. Existing collapse debris
+      // remains bounded and retains the generic eight-second finale contract.
+      if (!escape.warp && collapseTime > 1.3 && collapseBurst <= 0)
+        $('attackWarning').setAttribute?.('data-severity', 'danger');
+    }
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
@@ -2302,6 +2367,15 @@ export function createGame({
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
     camera.position.y += Math.cos(collapseTime * 27) * vibration * 0.4;
     if (collapseTime >= COLLAPSE_SECONDS) {
+      if (boss.userData.sabotage) {
+        document.body.classList.remove('devastador-escape');
+        document.body.classList.remove('devastador-warp');
+        $('boostTouch').classList.remove('launch-required');
+        $('boostTouch').textContent = 'BOOST';
+        $('boostTouch').setAttribute('aria-label', 'Ativar boost da nave');
+        boosting = false;
+        message('BIA · DEVASTADOR DESTRUÍDA. FIVE CATS, PREPARAR PRÓXIMA MISSÃO!', 'bia');
+      }
       dispose(boss);
       disposeBoss(boss);
       boss = null;
@@ -5373,6 +5447,16 @@ export function createGame({
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
+      devastadorEscape:
+        boss?.userData.sabotage && state === 'collapsing'
+          ? {
+              ...devastadorEscapeAt(collapseTime, {
+                boostedSeconds: devastadorEscapeBoostSeconds,
+              }),
+              boostedSeconds: devastadorEscapeBoostSeconds,
+              assisted: devastadorEscapeAssisted,
+            }
+          : null,
       podsDetached,
       podMode,
       podBlocks,
