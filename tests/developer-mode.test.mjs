@@ -71,7 +71,11 @@ test('the published stage-4 QA alias exposes the real scenario menu but producti
   qa.elements.get('developerBerserkLaunch').onclick();
   assert.equal(qa.game.snapshot().developerSession, true);
   assert.equal(qa.game.snapshot().strategy.special, 3);
-  assert.ok(qa.game.snapshot().strategy.berserk > 0);
+  assert.equal(qa.game.snapshot().strategy.berserk, 0, 'Berserk must wait for an explicit in-flight tap');
+  qa.advance(0.05);
+  assert.equal(qa.elements.get('qaBerserkDock').hidden, false);
+  qa.elements.get('qaBerserkAction').onclick();
+  assert.equal(qa.game.snapshot().strategy.berserk, 20, 'the visible QA control activates the real mode');
   const prod = harness({ hostname: 'nova-wing-preview.pages.dev', spawnEncounters: false });
   t.after(() => prod.close());
   assert.equal(prod.game.snapshot().developerAvailable, false);
