@@ -76,7 +76,10 @@ for (const [mode, width, height] of [
     }
     for (let i = 0; i < buttons.length; i++) {
       for (let j = i + 1; j < buttons.length; j++) {
-        assert.ok(!overlaps(rects[buttons[i]], rects[buttons[j]]), `${buttons[i]} overlaps ${buttons[j]}`);
+        assert.ok(
+          !overlaps(rects[buttons[i]], rects[buttons[j]]),
+          `${buttons[i]} overlaps ${buttons[j]}`,
+        );
       }
     }
   });
