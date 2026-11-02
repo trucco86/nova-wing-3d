@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.71 — Saturno: travessia coreografada pelos anéis (QA)
+
+- Fase 8 em cinco trechos: aproximação orbital, anel externo, campo denso de gelo, divisão de Cassini e bloqueio do Couraçado Ômega. Rótulos do HUD acompanham a região percorrida.
+- A intensidade visual do gelo aumenta e diminui para abrir a arena do chefe, com **o mesmo número de meshes/instâncias** da 1.27.70.
+- Meteoros de gelo com colisão só aparecem durante a travessia e a passagem pela Cassini; abertura e arena de chefe ficam sem sucata.
+- Testes de fase, determinismo, budget de draw calls e checkpoints de navegador desktop/mobile. Sem alterar Terra, controles, progressão ou IA do chefe.
+- QA isolada: FPS físico e avaliação estética ainda necessários.
+
 ## 1.27.70 — Saturno: batalha orbital nos anéis de gelo (QA)
 
 - Fase 8 passa a ser combate orbital junto a Saturno: entrada curta de 8 segundos, sem transição genérica atmosférica; o planeta permanece em quadro inclusive no mobile.

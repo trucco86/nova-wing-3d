@@ -1,0 +1,37 @@
+name: Prepare Saturn passage QA
+on:
+  push:
+    branches: [feat/saturn-ring-passage-choreography-20261102]
+    paths:
+      - .github/workflows/saturn-passage-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/saturn-ring-passage-choreography-20261102
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format, build and validate
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit synchronized HTML and formatted sources
+        run: |
+          git add -- index.html src/saturn-ring-passage.js src/destination-arrival.js src/destination-landmarks.js src/game.js tests/destination-arrival.test.mjs tests/late-world-landmarks.test.mjs tests/browser/destination-journeys.spec.mjs specs/saturn-passage-2-1.md
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): synchronize Saturn passage and generated HTML'
+            git push origin HEAD:feat/saturn-ring-passage-choreography-20261102
+          fi
