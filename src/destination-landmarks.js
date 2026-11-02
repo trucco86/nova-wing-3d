@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { saturnPassageAt } from './saturn-ring-passage.js';
 
 // Authored landmarks outside the flight corridor. Draw calls stay bounded by
 // InstancedMesh; these never participate in collision, targeting or scoring.
@@ -365,6 +366,8 @@ export function updateDestinationLandmarks(root, seconds) {
   if (!root) return;
   if (root.userData.world === 7) {
     const helper = root.userData.iceTransform;
+    const passage = saturnPassageAt(seconds);
+    root.userData.saturnPassage = passage.zone;
     for (const layer of root.children) {
       if (!layer.userData.saturnIce || !layer.visible) continue;
       const near = layer.name === 'saturn-ring-ice-near';
@@ -376,9 +379,9 @@ export function updateDestinationLandmarks(root, seconds) {
           -180 - ((i * (near ? 71 : 101) + seconds * (near ? 33 : 12)) % 1800),
         );
         helper.scale.set(
-          (near ? 6 : 3) + hash(i * 9) * (near ? 13 : 8),
-          (near ? 4 : 2) + hash(i * 3) * (near ? 10 : 6),
-          (near ? 8 : 3) + hash(i * 11) * (near ? 14 : 9),
+          ((near ? 6 : 3) + hash(i * 9) * (near ? 13 : 8)) * passage.density,
+          ((near ? 4 : 2) + hash(i * 3) * (near ? 10 : 6)) * passage.density,
+          ((near ? 8 : 3) + hash(i * 11) * (near ? 14 : 9)) * passage.density,
         );
         helper.rotation.set(
           hash(i * 7) * 2 + seconds * 0.035,
