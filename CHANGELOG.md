@@ -2,7 +2,10 @@
 
 ## 1.27.70 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Hangar reorganizado em abas Pilotos/Naves/Arsenal, seleção visível antes do preview 360° no mobile.
+- QA com seletor de fases fechado inicialmente e loadout/RPG em laboratório avançado recolhível.
+- Painéis da Central fecham ao navegar; traduções PT/EN/ES e testes Playwright atualizados.
+- Candidata QA isolada: aguarda testes de navegador, validação visual/tátil e autorização para produção.
 
 ## 1.27.69 — Evidência FPS reproduzível por fase e preset (QA)
 
