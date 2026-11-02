@@ -154,11 +154,14 @@ test('the stage-4 QA radar shows the actual current power circuit while orbiting
   assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
   h.advance(0.2, 0.05);
   const snap = h.game.snapshot();
-  const target = sabotageRadarTarget(snap.bossTargets.map((p, i) => ({
-    hp: p.hp,
-    angle: p.angle,
-    type: i < 4 ? 'power' : i < 6 ? 'coolant' : 'drive',
-  })), snap.strategy.orbitAngle);
+  const target = sabotageRadarTarget(
+    snap.bossTargets.map((p, i) => ({
+      hp: p.hp,
+      angle: p.angle,
+      type: i < 4 ? 'power' : i < 6 ? 'coolant' : 'drive',
+    })),
+    snap.strategy.orbitAngle,
+  );
   assert.ok(target);
   assert.equal(h.elements.get('radarWeak').hidden, false);
   assert.equal(h.elements.get('radarWeak').style.transform, 'rotate(' + target.angle + 'rad)');

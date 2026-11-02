@@ -33,8 +33,7 @@ export function sabotageRadarTarget(parts, orbit = 0) {
     if (part?.type !== system || part.hp <= 0 || !Number.isFinite(part.angle)) continue;
     const delta = Math.atan2(Math.sin(part.angle - orbit), Math.cos(part.angle - orbit));
     const distance = Math.abs(delta);
-    if (!target || distance < target.distance)
-      target = { index, angle: part.angle, distance };
+    if (!target || distance < target.distance) target = { index, angle: part.angle, distance };
   }
   return target ? { index: target.index, angle: target.angle } : null;
 }
