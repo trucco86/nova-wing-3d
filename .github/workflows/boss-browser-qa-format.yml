@@ -1,0 +1,34 @@
+name: Prepare Boss Browser QA
+on:
+  push:
+    branches: [test/boss-radar-berserk-e2e-20261102]
+    paths:
+      - .github/workflows/boss-browser-qa-format.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: test/boss-radar-berserk-e2e-20261102
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format only changed browser regression
+        run: npx prettier --write tests/browser/boss-combat-qa-chain.spec.mjs
+      - name: Commit exactly formatted test
+        run: |
+          git add -- tests/browser/boss-combat-qa-chain.spec.mjs
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'test(browser): format boss and Berserk QA regression'
+            git push origin HEAD:test/boss-radar-berserk-e2e-20261102
+          fi
