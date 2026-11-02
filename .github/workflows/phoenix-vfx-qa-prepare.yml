@@ -7,6 +7,7 @@ on:
       - src/bosses.js
       - src/game.js
       - tests/phoenix-attack-vfx.test.mjs
+      - releases/v1.27.67.md
       - .github/workflows/phoenix-vfx-qa-prepare.yml
 permissions:
   contents: write
