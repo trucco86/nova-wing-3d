@@ -648,14 +648,23 @@ export function createBossModel(sector, index = 0, tactical = false) {
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
  * with the simulation clock; never moves the actual generator hit volumes. */
 export function animateBossSignature(
-  g, index, time, phase = 1, attackState = 'maneuver', attackKind = null,
+  g,
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
 ) {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
   if (index === 4)
     animatePhoenixAttackVfx(
-      g.getObjectByName('boss-phoenix-attack-vfx'), time, phase, attackState, attackKind,
+      g.getObjectByName('boss-phoenix-attack-vfx'),
+      time,
+      phase,
+      attackState,
+      attackKind,
     );
   animateBossKineticDetails(
     g.getObjectByName('boss-premium-kinetic-' + index),

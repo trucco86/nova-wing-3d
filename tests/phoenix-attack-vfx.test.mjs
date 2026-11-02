@@ -9,11 +9,17 @@ test('Phoenix telegraphs separate dive and wing sweep without introducing collid
   assert.equal(effect.userData.visualOnly, true);
   assert.equal(effect.children.length, 4);
   assert.ok(effect.children.every((mesh) => mesh.userData.visualOnly && !mesh.userData.collider));
-  assert.ok(effect.userData.materials.every((material) => material.transparent && !material.depthWrite));
+  assert.ok(
+    effect.userData.materials.every((material) => material.transparent && !material.depthWrite),
+  );
   animatePhoenixAttackVfx(effect, 2, 2, 'windup', 'plasma-dive');
   assert.ok(effect.userData.core.visible && effect.userData.dive.visible);
   assert.ok(effect.userData.swept.every((mesh) => !mesh.visible));
-  const snapshot = [effect.userData.solar.opacity, effect.userData.core.rotation.z, effect.userData.dive.scale.y];
+  const snapshot = [
+    effect.userData.solar.opacity,
+    effect.userData.core.rotation.z,
+    effect.userData.dive.scale.y,
+  ];
   animatePhoenixAttackVfx(effect, 2, 2, 'windup', 'plasma-dive');
   assert.deepEqual(
     [effect.userData.solar.opacity, effect.userData.core.rotation.z, effect.userData.dive.scale.y],
@@ -40,8 +46,14 @@ test('real Phoenix boss animates visual effects without moving generators or bat
   assert.equal(effect.userData.dive.visible, true);
   animateBossSignature(boss, 4, 19, 3, 'attack', 'solar-sweep');
   assert.ok(effect.userData.swept.every((mesh) => mesh.visible));
-  assert.deepEqual(boss.userData.parts.map((part) => part.mesh.position.toArray()), weak);
-  assert.deepEqual(boss.userData.batteries.map((part) => part.position.toArray()), batteries);
+  assert.deepEqual(
+    boss.userData.parts.map((part) => part.mesh.position.toArray()),
+    weak,
+  );
+  assert.deepEqual(
+    boss.userData.batteries.map((part) => part.position.toArray()),
+    batteries,
+  );
   disposeBoss(boss);
   const station = createBossModel(SECTORS[3], 3, true);
   assert.equal(station.getObjectByName('boss-phoenix-attack-vfx'), undefined);

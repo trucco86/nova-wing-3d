@@ -6,12 +6,18 @@ export function createPhoenixAttackVfx() {
   group.name = 'boss-phoenix-attack-vfx';
   group.userData.visualOnly = true;
   const solar = new T.MeshBasicMaterial({
-    color: '#ffb346', transparent: true, opacity: 0,
-    blending: T.AdditiveBlending, depthWrite: false,
+    color: '#ffb346',
+    transparent: true,
+    opacity: 0,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
   });
   const wing = new T.MeshBasicMaterial({
-    color: '#ff5f3d', transparent: true, opacity: 0,
-    blending: T.AdditiveBlending, depthWrite: false,
+    color: '#ff5f3d',
+    transparent: true,
+    opacity: 0,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
   });
   const core = new T.Mesh(new T.TorusGeometry(13, 1.4, 6, 24), solar);
   core.name = 'phoenix-dive-charge';
