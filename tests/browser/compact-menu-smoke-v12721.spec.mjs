@@ -73,10 +73,13 @@ for (const viewport of viewports) {
     await expect(page.locator('#novaAuth')).toBeHidden();
 
     await page.locator('#menuQA').click();
-    await expect(menu).toHaveAttribute('data-screen', 'central');
+    await expect(menu).toHaveAttribute('data-screen', 'qa');
     await expect(page.locator('#developerPanel')).toBeVisible();
-    await expect(page.locator('#developerPanel')).toHaveAttribute('open', '');
+    await expect(page.locator('#developerPanel')).not.toHaveAttribute('open', '');
+    await expect(page.locator('#developerSector')).toBeHidden();
+    await page.locator('#developerPanel > summary').click();
     await expect(page.locator('#developerSector option')).toHaveCount(10);
+    await expect(page.locator('#developerLabOptions')).not.toHaveAttribute('open', '');
     const back = await page.locator('#menuBack').boundingBox();
     expect(back).not.toBeNull();
     expect(back.y).toBeGreaterThanOrEqual(-1);
@@ -87,6 +90,22 @@ for (const viewport of viewports) {
     await expect(page.locator('#squadSelection')).toBeVisible();
     await expect(page.locator('#pilot-bia')).toBeVisible();
     await expect(page.locator('#pilot-jenifer')).toBeVisible();
+    await expect(page.locator('#hangarTabPilots')).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#ship-aegis')).toBeHidden();
+    const pilotLayout = await page.evaluate(() => ({
+      tab: document.querySelector('#hangarSectionTabs').getBoundingClientRect().top,
+      pilot: document.querySelector('#pilot-bia').getBoundingClientRect().top,
+      preview: document.querySelector('#hangarCanvas').getBoundingClientRect().top,
+    }));
+    expect(pilotLayout.pilot).toBeGreaterThanOrEqual(pilotLayout.tab);
+    if (viewport.width <= 720 || viewport.height <= 540)
+      expect(pilotLayout.preview).toBeGreaterThan(pilotLayout.pilot);
+    await page.locator('#hangarTabShips').click();
+    await expect(page.locator('#ship-aegis')).toBeVisible();
+    await expect(page.locator('#pilot-bia')).toBeHidden();
+    await page.locator('#hangarTabArsenal').click();
+    await expect(page.locator('#loadoutCatalog')).toBeVisible();
+    await expect(page.locator('#ship-aegis')).toBeHidden();
 
     await page.locator('#menuBack').click();
     await page.locator('#menuHub').click();

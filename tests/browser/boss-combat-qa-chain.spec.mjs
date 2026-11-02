@@ -94,6 +94,8 @@ test('mobile QA Berserk is actionable and cannot persist power into campaign sav
   await openMenu(page, 'home');
   await page.locator('#menuQA').click();
   await expect(page.locator('#developerPanel')).toBeVisible();
+  await expect(page.locator('#developerPanel')).not.toHaveAttribute('open', '');
+  await page.locator('#developerPanel > summary').click();
   await page.locator('#developerSector').selectOption('5');
   await page.locator('#developerEncounter').selectOption('boss');
   await page.locator('#developerBerserkLaunch').click();
