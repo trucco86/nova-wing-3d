@@ -1,16 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createCity30DistrictLife, setCity30Quality, animateCity30 } from '../src/city-30-district-life.js';
+import {
+  createCity30DistrictLife,
+  setCity30Quality,
+  animateCity30,
+} from '../src/city-30-district-life.js';
 import { createCity32Living, setCity32Quality, updateCity32Living } from '../src/city-32-living.js';
-import { createCity33Premium, setCity33Quality, updateCity33Premium } from '../src/city-33-premium.js';
+import {
+  createCity33Premium,
+  setCity33Quality,
+  updateCity33Premium,
+} from '../src/city-33-premium.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
 const buildings = Array.from({ length: 200 }, (_, i) => ({
   x: (i % 2 ? 1 : -1) * (112 + (i % 8) * 13),
   z: -30 - Math.floor(i / 2) * 19,
-  h: 53 + (i % 8) * 8, w: 13 + (i % 5), depth: 14,
+  h: 53 + (i % 8) * 8,
+  w: 13 + (i % 5),
+  depth: 14,
 }));
 function matrix(mesh, i = 0) {
   const out = new T.Matrix4();
@@ -58,9 +68,11 @@ test('City 3.2 aircraft: Medium updates 9 visible pairs, hidden holos and search
   const far = near.clone();
   const air = near.getObjectByName('city32-civilian-aircraft');
   const lights = near.getObjectByName('city32-aircraft-navigation-lights');
-  const writesAir = countWrites(air), writesLight = countWrites(lights);
+  const writesAir = countWrites(air),
+    writesLight = countWrites(lights);
   const hiddenMatrix = matrix(air, 17);
-  const hiddenSearchlight = near.getObjectByName('city32-searchlight-5')
+  const hiddenSearchlight = near
+    .getObjectByName('city32-searchlight-5')
     .getObjectByName('city32-searchlight-pivot');
   const hiddenBefore = hiddenSearchlight.rotation.z;
   setCity32Quality(near, 'medium');
@@ -76,7 +88,10 @@ test('City 3.2 aircraft: Medium updates 9 visible pairs, hidden holos and search
   setCity32Quality(reference, 'high');
   updateCity32Living(reference, 375);
   for (const i of [0, 8, 17])
-    assert.deepEqual(matrix(air, i), matrix(reference.getObjectByName('city32-civilian-aircraft'), i));
+    assert.deepEqual(
+      matrix(air, i),
+      matrix(reference.getObjectByName('city32-civilian-aircraft'), i),
+    );
   far.userData.phase = 2.8;
   updateCity32Living(far, 375);
   assert.notDeepEqual(matrix(air), matrix(far.getObjectByName('city32-civilian-aircraft')));
@@ -107,7 +122,10 @@ test('City 3.3 buses and welding: Medium updates 4 buses, 6 sparks, only visible
   for (const i of [0, 3, 7])
     assert.deepEqual(matrix(hull, i), matrix(reference.getObjectByName('city33-bus-hull'), i));
   for (const i of [0, 5, 11])
-    assert.deepEqual(matrix(sparks, i), matrix(reference.getObjectByName('city33-welding-sparks'), i));
+    assert.deepEqual(
+      matrix(sparks, i),
+      matrix(reference.getObjectByName('city33-welding-sparks'), i),
+    );
   far.userData.phase = 2.1;
   updateCity33Premium(far, 375);
   assert.notDeepEqual(matrix(hull), matrix(far.getObjectByName('city33-bus-hull')));
