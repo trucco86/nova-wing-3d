@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.68 — Europa Combat 4.0: onda de gelo e pinça criogênica (QA)
+
+- Colosso de Europa (fase 6): onda de gelo exige esquiva vertical; pinça criogênica exige deslocamento lateral. Alternância reage à altitude e modo robô.
+- Telegraph físico com alvo travado durante windup; radar e dano compartilham a mesma área horizontal ou vertical.
+- Três meshes e dois materiais visuais reutilizáveis, sem novos colisores, projéteis ou timers.
+- Fases 1–4, mecânicas da Fênix e coordenadas de baterias/pontos fracos preservadas.
+- Somente QA: CI completa, testes visuais e FPS mobile antes de integração.
+
 ## 1.27.67 — Phoenix VFX: telegraph físico com custo controlado (QA)
 
 - Núcleo solar e cone de plasma indicam mergulho; duas asas sinalizam varredura antes da colisão.

@@ -61,3 +61,22 @@ test('Phoenix solar attacks share their exact damage footprint with the readable
     assert.equal(escaped.threatened, false);
   }
 });
+
+test('Europa ice quake and cryo pincer radar geometry follows real damage', () => {
+  for (const [cycle, y, kind, safeX, safeY] of [
+    [1, 10, 'ice-quake', 0, 22],
+    [2, 30, 'cryo-pincer', 28, 30],
+  ]) {
+    const intent = chooseBossIntent({ sector: 5, cycle, playerX: 0, playerY: y });
+    assert.equal(intent.kind, kind);
+    const plan = bossRadarPlan(intent, { x: 0, y });
+    assert.equal(plan.shape.type, 'rect');
+    assert.equal(plan.threatened, true);
+    assert.ok(plan.exit);
+    const escaped = bossRadarPlan(intent, { x: safeX, y: safeY });
+    assert.equal(escaped.threatened, false);
+    assert.equal(escaped.threatened, bossMeleeHit(intent, { x: safeX, y: safeY }));
+    if (kind === 'ice-quake') assert.ok(plan.shape.rx > plan.shape.ry);
+    else assert.ok(plan.shape.ry > plan.shape.rx);
+  }
+});

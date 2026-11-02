@@ -1,0 +1,39 @@
+name: Prepare Europa QA source
+on:
+  push:
+    branches: [feat/europa-boss-physical-20261102]
+    paths:
+      - src/**
+      - tests/**
+      - .github/workflows/europa-qa-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/europa-boss-physical-20261102
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and regenerate HTML
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit generated version and source
+        run: |
+          git add -- index.html src/boss-combat-ai.js src/boss-radar.js src/bosses.js src/europa-attack-vfx.js tests/boss-combat-ai.test.mjs tests/boss-radar.test.mjs tests/europa-attack-vfx.test.mjs specs/europa-combat-4-0.md
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): synchronize Europa combat and generated HTML'
+            git push origin HEAD:feat/europa-boss-physical-20261102
+          fi
