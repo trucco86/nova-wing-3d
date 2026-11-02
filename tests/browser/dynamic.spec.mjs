@@ -26,10 +26,14 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.locator('#pilot-calvin').click();
   await expect(page.locator('#profileName')).toHaveText('CALVINHO');
   await expect(page.locator('#profileSkill')).toHaveText('FLUXO ARCANO');
+  await page.locator('#hangarTabShips').click();
+  await expect(page.locator('#ship-aegis')).toBeVisible();
   await page.locator('#ship-aegis').click();
   await expect(page.locator('#selectedShipName')).toHaveText('AEGIS-R');
   await page.locator('#ship-color-gold').click();
   await expect(page.locator('#ship-color-gold')).toHaveClass(/selected/);
+  await page.locator('#hangarTabArsenal').click();
+  await expect(page.locator('#loadoutCatalog')).toBeVisible();
   await page.locator('#loadoutCatalog summary').click();
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });

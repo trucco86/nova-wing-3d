@@ -1,6 +1,9 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['PILOTOS', 'PILOTS', 'PILOTOS'],
+  ['NAVES', 'SHIPS', 'NAVES'],
+  ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],
   ['CANHÃO · PRÓXIMA CLASSE', 'CANNON · NEXT CLASS', 'CAÑÓN · SIGUIENTE CLASE'],
   ['MULTITIRO · +1 PROJÉTIL', 'MULTISHOT · +1 PROJECTILE', 'MULTIDISPARO · +1 PROYECTIL'],
   [

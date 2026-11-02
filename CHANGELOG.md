@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.62 — Layout compacto de Hangar e QA (release Web)
+
+- Hangar em abas Pilotos/Naves/Arsenal, com os cinco gatos e o preview 360° organizados em mobile/desktop.
+- QA abre tela dedicada sem expandir automaticamente o seletor de fases; Central fecha painéis ao reentrar.
+- PT/EN/ES e testes de navegação atualizados; nenhuma mudança de gameplay, ranking, saves ou Firebase.
+- Correção portada isoladamente do PR #254 para a base de produção 1.27.61; exige gate CI e deploy Pages.
+
 ## 1.27.61 — Candidata em preparação
 
 - Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
