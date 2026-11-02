@@ -1722,7 +1722,9 @@ export function createGame({
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterial() : green,
     );
-    o.add(halo(berserk > 0 ? '#ff913e' : scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5));
+    o.add(
+      halo(berserk > 0 ? '#ff913e' : scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5),
+    );
     o.rotation.x = Math.PI / 2;
     o.position.copy(origin ?? player.position);
     o.position.x += x;
