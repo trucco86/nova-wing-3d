@@ -56,7 +56,9 @@ test('Saturn stage 8 plays an open orbit, dense ice-ring crossing and clear fina
   await page.screenshot({ path: info.outputPath('saturn-ice-ring-' + info.project.name + '.png') });
   await page.evaluate(() => window.fixture.advance(46));
   await expect(page.locator('#routeLabel')).toContainText('COURAÇADO');
-  await page.screenshot({ path: info.outputPath('saturn-boss-approach-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('saturn-boss-approach-' + info.project.name + '.png'),
+  });
   const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
   expect(snapshot.sector).toBe(8);
   expect(snapshot.boss).toBe(false);

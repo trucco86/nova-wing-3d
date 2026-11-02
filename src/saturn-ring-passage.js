@@ -10,7 +10,12 @@ export function saturnPassageAt(seconds, duration = 98) {
     throw new RangeError('Invalid Saturn passage time');
   const p = seconds / duration;
   if (seconds < 8)
-    return { zone: 'approach', density: 0.27, label: 'SATURNO À VISTA · ANÉIS À FRENTE', meteor: false };
+    return {
+      zone: 'approach',
+      density: 0.27,
+      label: 'SATURNO À VISTA · ANÉIS À FRENTE',
+      meteor: false,
+    };
   if (p < 0.24)
     return {
       zone: 'outer',
