@@ -82,6 +82,7 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
+import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
@@ -1370,6 +1371,9 @@ export function createGame({
     appActive = true;
   function unlockAudio() {
     try {
+      // On iOS WebKit, media playback must use the playback session so that
+      // explicit game audio is audible through the built-in speaker in Silent mode.
+      configurePlaybackAudioSession(window.navigator);
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
       if (!music) music = createMusic(audioCtx);
@@ -1387,7 +1391,11 @@ export function createGame({
     audioCues?.play(name, { enabled: !muted, active: appActive });
   }
   function resumeAudio() {
-    if (appActive) audioCtx?.resume().catch(() => {});
+    if (appActive) {
+      // WebKit can reset its audio route after an app or tab interruption.
+      configurePlaybackAudioSession(window.navigator);
+      audioCtx?.resume().catch(() => {});
+    }
   }
   function sound(freq = 400, duration = 0.07, type = 'sawtooth', vol = 0.025) {
     if (muted || !audioCtx || !appActive || settings.master * settings.sfx <= 0) return;
