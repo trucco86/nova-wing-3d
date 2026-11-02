@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.65 — Worlds 2.1: ritmo e silhueta próprios por setor (QA)
+
+- Dez ambientes agora têm silhuetas e padrões de movimento distintos nas duas camadas de profundidade; nenhum é apenas recoloração da mesma forma.
+- Dois draw calls por tema, contagens Alto/Médio preservadas, sem adicionar alvo, obstáculo ou colisão.
+- Testes de assinatura por planeta, corredor central livre, determinismo e troca de qualidade.
+- Candidata isolada em QA; confirmar visual em desktop/mobile e impacto FPS antes de integrar.
+
 ## 1.27.64 — Controles Mobile 3.3: ergonomia de tiro e boost
 
 - TIRO e BOOST como ações principais do polegar direito, adjacentes no arco inferior; hitboxes maiores, sem sobreposição em retrato e paisagem.
