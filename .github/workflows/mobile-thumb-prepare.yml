@@ -1,0 +1,58 @@
+name: Prepare mobile thumb ergonomics QA
+
+on:
+  push:
+    branches:
+      - fix/mobile-primary-thumb-reach-20261102
+    paths:
+      - .github/workflows/mobile-thumb-prepare.yml
+      - src/styles.css
+      - tests/mobile-thumb-reach.test.mjs
+      - tests/graphics-3-8-orbit-and-arc.test.mjs
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: mobile-thumb-prepare
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/mobile-primary-thumb-reach-20261102
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize mobile source, tests and HTML
+        run: |
+          npx prettier --write src/styles.css tests/mobile-thumb-reach.test.mjs tests/graphics-3-8-orbit-and-arc.test.mjs
+          npm run build
+          npm run build:check
+          node --test tests/mobile-thumb-reach.test.mjs tests/graphics-3-8-orbit-and-arc.test.mjs
+      - name: Commit generated preview and formatted tests
+        run: |
+          git add -- src/styles.css tests/mobile-thumb-reach.test.mjs tests/graphics-3-8-orbit-and-arc.test.mjs index.html
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(mobile): synchronize thumb controls preview and tests'
+            git push origin HEAD:fix/mobile-primary-thumb-reach-20261102
+          fi
+      - name: Dispatch full CI and isolated preview after synchronization
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref fix/mobile-primary-thumb-reach-20261102
+          gh workflow run cloudflare-preview.yml --ref fix/mobile-primary-thumb-reach-20261102
