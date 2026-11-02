@@ -65,29 +65,39 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
     intent.kind === 'tentacle-sweep' ||
     intent.kind === 'claw-swipe' ||
     intent.kind === 'solar-sweep' ||
+    intent.kind === 'ice-quake' ||
+    intent.kind === 'cryo-pincer' ||
     intent.kind === 'reactor-vent';
   const halfX =
     intent.kind === 'reactor-vent'
       ? r * 1.35
-      : intent.kind === 'solar-sweep'
+      : intent.kind === 'ice-quake'
         ? r * 2.5
-        : intent.kind === 'plasma-dive'
-          ? r / 0.8
-          : intent.kind === 'tentacle-sweep'
-            ? r * 2.4
-            : intent.kind === 'claw-swipe'
-              ? r * 1.7
-              : intent.kind === 'tentacle-grab'
-                ? r / 0.7
-                : r;
+        : intent.kind === 'cryo-pincer'
+          ? r * 0.75
+          : intent.kind === 'solar-sweep'
+            ? r * 2.5
+            : intent.kind === 'plasma-dive'
+              ? r / 0.8
+              : intent.kind === 'tentacle-sweep'
+                ? r * 2.4
+                : intent.kind === 'claw-swipe'
+                  ? r * 1.7
+                  : intent.kind === 'tentacle-grab'
+                    ? r / 0.7
+                    : r;
   const halfY =
     intent.kind === 'reactor-vent'
       ? r * 1.1
-      : intent.kind === 'solar-sweep'
-        ? r * 0.68
-        : intent.kind === 'plasma-dive'
-          ? r / 1.15
-          : r;
+      : intent.kind === 'ice-quake'
+        ? r * 0.55
+        : intent.kind === 'cryo-pincer'
+          ? r * 1.75
+          : intent.kind === 'solar-sweep'
+            ? r * 0.68
+            : intent.kind === 'plasma-dive'
+              ? r / 1.15
+              : r;
   const dangerActive = bossMeleeHit(intent, {
     x: intent.targetX,
     y: intent.targetY,

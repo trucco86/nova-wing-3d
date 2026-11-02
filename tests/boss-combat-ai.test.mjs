@@ -15,7 +15,7 @@ test('four signature bosses select physical moves in response to pilot state and
   assert.equal(chooseBossIntent({ ...base, sector: 9, boosting: true }).kind, 'tentacle-grab');
   assert.equal(chooseBossIntent({ ...base, sector: 6 }).kind, 'tentacle-sweep');
   assert.equal(chooseBossIntent({ ...base, sector: 6, boosting: true }).kind, 'tentacle-grab');
-  assert.equal(chooseBossIntent({ ...base, sector: 5, robot: true }).kind, 'hammer-slam');
+  assert.equal(chooseBossIntent({ ...base, sector: 5, robot: true }).kind, 'ice-quake');
   assert.equal(chooseBossIntent({ ...base, sector: 2 }).kind, 'drill-ram');
   assert.equal(chooseBossIntent({ ...base, sector: 9, cycle: 4 }).kind, 'barrage');
 });
@@ -100,5 +100,30 @@ test('Venus Phoenix wing sweep rewards vertical evasion and retains a ranged rec
   assert.ok(bossMeleePose(sweep, 'attack', 0.7).claw > 0);
   assert.equal(chooseBossIntent({ sector: 4, cycle: 4 }).kind, 'barrage');
   // The approved Devastador encounter is explicitly outside this change.
+  assert.equal(chooseBossIntent({ sector: 3, cycle: 1 }).kind, 'hammer-slam');
+});
+
+test('Europa Colossus alternates physical dodge axes and commits its target at windup', () => {
+  const low = chooseBossIntent({ sector: 5, cycle: 1, phase: 2, playerX: 6, playerY: 10 });
+  assert.equal(low.kind, 'ice-quake');
+  assert.equal(low.origin, 'colossus-impact-plates');
+  assert.match(low.label, /MUDE DE ALTURA/);
+  assert.equal(bossMeleeHit(low, { x: 6, y: 10 }), true);
+  assert.equal(bossMeleeHit(low, { x: 6, y: 19 }), false);
+  assert.equal(bossMeleeHit(low, { x: 26, y: 10 }), true);
+  assert.equal(bossMeleePose(low, 'windup', 1).lunge, 0);
+  assert.ok(bossMeleePose(low, 'attack', 0.7).claw > 0.7);
+  const high = chooseBossIntent({ sector: 5, cycle: 2, phase: 3, playerX: 5, playerY: 30 });
+  assert.equal(high.kind, 'cryo-pincer');
+  assert.equal(high.origin, 'colossus-piston-arms');
+  assert.match(high.label, /DESVIE PARA O LADO/);
+  assert.equal(bossMeleeHit(high, { x: 5, y: 30 }), true);
+  assert.equal(bossMeleeHit(high, { x: 15, y: 30 }), false);
+  assert.equal(bossMeleeHit(high, { x: 5, y: 9 }), false);
+  assert.equal(bossMeleePose(high, 'windup', 1).lunge, 0);
+  assert.ok(Object.isFrozen(high));
+  assert.deepEqual([high.targetX, high.targetY], [5, 30]);
+  assert.equal(chooseBossIntent({ sector: 5, cycle: 4 }).kind, 'barrage');
+  assert.equal(chooseBossIntent({ sector: 5, cycle: 1, robot: true }).kind, 'ice-quake');
   assert.equal(chooseBossIntent({ sector: 3, cycle: 1 }).kind, 'hammer-slam');
 });
