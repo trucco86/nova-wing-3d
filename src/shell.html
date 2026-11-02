@@ -313,12 +313,17 @@
               <option value="spirit">Espiritual · magia</option>
             </select></label
           >
-          <section hidden id="squadSelection" aria-label="Seleção dos Five Cats">
-            <div class="selection-head">
+          <section hidden id="squadSelection" data-hangar-tab="pilots" aria-label="Seleção dos Five Cats">
+            <nav id="hangarSectionTabs" class="hangar-section-switch" role="group" aria-label="Áreas do hangar">
+              <button id="hangarTabPilots" type="button" data-hangar-target="pilots" aria-pressed="true">PILOTOS</button>
+              <button id="hangarTabShips" type="button" data-hangar-target="ships" aria-pressed="false">NAVES</button>
+              <button id="hangarTabArsenal" type="button" data-hangar-target="arsenal" aria-pressed="false">ARSENAL</button>
+            </nav>
+            <div class="selection-head" data-hangar-section="pilots">
               <span class="eyebrow">01 / ESCOLHA O PILOTO</span>
               <strong>FIVE CATS</strong>
             </div>
-            <div class="pilot-roster" role="group" aria-label="Pilotos disponíveis">
+            <div class="pilot-roster" data-hangar-section="pilots" role="group" aria-label="Pilotos disponíveis">
               <button id="pilot-bia" class="pilot-choice selected" aria-pressed="true">
                 <i class="cat-avatar" style="--pilot: #67ffe0">B</i><span>BIA</span>
               </button>
@@ -362,7 +367,7 @@
               </div>
               <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
             </section>
-            <div class="pilot-profile">
+            <div class="pilot-profile" data-hangar-section="pilots">
               <div class="profile-portrait">
                 <i id="profileAvatar" class="cat-avatar">B</i>
                 <div
@@ -405,11 +410,11 @@
               </div>
               <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
             </div>
-            <div class="selection-head ship-head">
+            <div class="selection-head ship-head" data-hangar-section="ships">
               <span class="eyebrow">02 / ESCOLHA A NAVE</span
               ><strong id="selectedShipName">NOVA-7</strong>
             </div>
-            <div class="ship-roster" role="group" aria-label="Modelos de nave">
+            <div class="ship-roster" data-hangar-section="ships" role="group" aria-label="Modelos de nave">
               <button id="ship-nova7" class="ship-choice selected" aria-pressed="true">
                 <i class="ship-silhouette nova7"></i><span>NOVA-7</span><small>EQUILÍBRIO</small>
               </button>
@@ -421,7 +426,7 @@
                 <i class="ship-silhouette aegis"></i><span>AEGIS-R</span><small>DEFESA +</small>
               </button>
             </div>
-            <div class="color-roster" role="group" aria-label="Cor base da nave">
+            <div class="color-roster" data-hangar-section="ships" role="group" aria-label="Cor base da nave">
               <span>COR BASE</span
               ><button
                 id="ship-color-polar"
@@ -442,8 +447,8 @@
               ></button
               ><button id="ship-color-gold" style="--swatch: #e7bd63" aria-label="Ouro"></button>
             </div>
-            <p id="selectedShipDescription" class="ship-description"></p>
-            <details id="loadoutCatalog">
+            <p id="selectedShipDescription" class="ship-description" data-hangar-section="ships"></p>
+            <details id="loadoutCatalog" data-hangar-section="arsenal">
               <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
               <div class="loadout-catalog">
                 <article>
@@ -671,7 +676,9 @@
                 <option value="subboss">SUBCHEFE</option>
                 <option value="boss">CHEFE PRINCIPAL</option>
               </select>
-              <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
+              <details id="developerLabOptions" class="developer-lab-options">
+                <summary>OPÇÕES AVANÇADAS · NAVE / ARSENAL</summary>
+                <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
                 <legend>LABORATÓRIO DE NAVE / RPG · QA</legend>
                 <label for="developerTier">EVOLUÇÃO DA NAVE</label>
                 <select id="developerTier" aria-label="Evolução inicial da nave">
@@ -708,7 +715,8 @@
                   Durante o voo, pressione ROBÔ, PODS, H/G e os especiais dos Five Cats para testar
                   efeitos reais.</small
                 >
-              </fieldset>
+                </fieldset>
+              </details>
               <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
               <button
                 id="developerBerserkLaunch"
