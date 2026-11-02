@@ -14,23 +14,24 @@ uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float k
 float noise3(vec3 v){return fract(sin(dot(floor(v),vec3(127.1,311.7,74.7)))*43758.5453);}
 void main(){
  vec3 n=normalize(vLocal);
- float bands=sin(n.y*58.+sin(n.x*13.+drift*.07)*3.2)*.5+.5;
- float cloud=sin(n.y*24.+sin(n.x*19.+drift*.06)*2.7+n.z*11.)*.5+.5;
- float grain=noise3(vLocal*.085)*.095;
- float surface=kind<.5 ? bands*.8+cloud*.2 :
- kind<1.5 ? cloud*.86+bands*.14 :
+ // Layered latitude currents give giant-gas planets local variation without textures.
+ float shear=sin(n.x*13.+n.z*8.+drift*.012)*2.1+sin(n.x*31.-n.z*23.)*.7;
+ float broad=sin(n.y*52.+shear)*.5+.5;
+ float mid=sin(n.y*138.+sin(n.x*27.+n.z*13.)*3.)*.5+.5;
+ float micro=sin(n.y*310.+sin(n.x*39.+n.z*52.)*4.)*.5+.5;
+ float cloud=sin(n.y*24.+sin(n.x*19.+drift*.012)*2.7+n.z*11.)*.5+.5;
+ float grain=(noise3(vLocal*.23)-.5)*.075;
+ float surface=kind<.5 ? broad*.63+mid*.19+cloud*.18 :
+ kind<1.5 ? cloud*.74+broad*.18+mid*.08 :
  kind<2.5 ? abs(sin(n.x*39.+n.z*25.))*.3+noise3(vLocal*.07)*.68 :
- kind<3.5 ? cloud*.36+bands*.64 :
- kind<4.5 ? bands*.74+cloud*.26 : cloud*.74+bands*.26;
+ kind<3.5 ? cloud*.35+broad*.47+mid*.18 :
+ kind<4.5 ? broad*.56+mid*.29+micro*.15 : cloud*.70+broad*.3;
  vec3 c=mix(darkTint,lightTint,clamp(surface+grain,0.,1.));
- // Great Red Spot belongs to Jupiter alone, anchored on the visible disk.
  if(kind<.5){
    vec2 p=(n.xy-vec2(.27,-.17))*vec2(2.9,6.);
    float oval=1.-smoothstep(.65,1.05,length(p));
    c=mix(c,vec3(.65,.19,.12),oval*step(.25,n.z)*.91);
-   c+=vec3(.045,.035,.025)*sin(n.y*165.+sin(n.x*27.)*3.)*.5;
  }
- // Europa's fractured ice, Neptune's dark storm and Titan's hydrocarbon haze.
  if(kind>1.5 && kind<2.5){
    float crack=1.-smoothstep(.025,.13,abs(sin(n.x*37.+n.z*23.+sin(n.y*16.)*3.)));
    c=mix(c,vec3(.16,.32,.42),crack*.42);
@@ -39,9 +40,37 @@ void main(){
    vec2 storm=(n.xy-vec2(-.25,.22))*vec2(3.3,3.8);
    c=mix(c,vec3(.04,.11,.31),(1.-smoothstep(.62,1.2,length(storm)))*step(.25,n.z)*.82);
  }
+ if(kind>3.5 && kind<4.5){
+   // Saturn: soft cream/ochre jet streams, fine banding and a quiet ring shadow.
+   float cream=sin(n.y*17.+shear*.3)*.5+.5;
+   c=mix(c,vec3(.94,.81,.61),cream*.22);
+   float shadow=smoothstep(-.30,-.22,n.y)*(1.-smoothstep(.13,.23,n.y))*smoothstep(.0,.35,n.z);
+   c*=1.-shadow*.20;
+ }
  if(kind>4.5 && kind<5.5)c=mix(vec3(.007,.014,.04),c,.2);
- float sun=max(.19,dot(n,normalize(vec3(-.45,.6,.8))));
- gl_FragColor=vec4(c*(.33+.79*sun),alpha);
+ float light=max(.08,dot(n,normalize(vec3(-.45,.62,.8))));
+ float shade=.28+.96*light;
+ gl_FragColor=vec4(c*shade,alpha);
+}`;
+// Saturn's B/A/C ring structure with the dark Cassini division cut out
+// in the actual ring geometry. Rings stay attached to the planet.
+const SATURN_RING_VERT = `varying float radius;
+void main(){radius=length(position.xy);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+const SATURN_RING_FRAG = `varying float radius;uniform float opacity;
+void main(){
+ float r=radius;
+ float envelope=smoothstep(205.,212.,r)*(1.-smoothstep(338.,346.,r));
+ float cRing=1.-smoothstep(225.,238.,r);
+ float bRing=smoothstep(228.,241.,r)*(1.-smoothstep(276.,281.,r));
+ float aRing=smoothstep(294.,300.,r)*(1.-smoothstep(338.,345.,r));
+ float density=.27*cRing+.88*bRing+.76*aRing;
+ float fine=.80+.12*sin(r*2.15)+.08*sin(r*7.1);
+ float gap=1.-smoothstep(278.,283.,r)*(1.-smoothstep(294.,299.,r));
+ float t=clamp((r-205.)/141.,0.,1.);
+ vec3 cream=mix(vec3(.95,.86,.69),vec3(.62,.56,.47),t);
+ cream*=.89+.12*sin(r*.24);
+ float a=opacity*envelope*density*fine*gap;
+ gl_FragColor=vec4(cream,a);
 }`;
 const RIM_FRAG =
   'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
@@ -114,40 +143,39 @@ export function createDestinationVista(index) {
   globe.add(rim);
 
   if (profile.type === 'rings') {
+    const tilt = new T.Euler(1.13, 0.21, -0.17);
     const rings = new T.Mesh(
-      new T.RingGeometry(223, 344, 96, 7),
-      new T.MeshBasicMaterial({
-        color: '#d7be91',
+      new T.RingGeometry(205, 346, 192, 6),
+      new T.ShaderMaterial({
+        uniforms: { opacity: { value: 0.9 } },
+        vertexShader: SATURN_RING_VERT,
+        fragmentShader: SATURN_RING_FRAG,
         side: T.DoubleSide,
         transparent: true,
-        opacity: 0.54,
         depthWrite: false,
         fog: false,
       }),
     );
     rings.name = 'saturn-planetary-ring-system';
-    rings.rotation.set(1.19, 0.2, -0.12);
+    rings.rotation.copy(tilt);
     rings.userData.visualOnly = true;
     globe.add(rings);
-    // Distinct A/C bands and the Cassini gap: rings belong only to Saturn.
+    // Three faint structural bands accent the authored ring disk without
+    // adding a fake navigable torus in the player's center screen.
     for (const [inner, outer, color, opacity] of [
-      [210, 241, '#e8d8b2', 0.44],
-      [266, 281, '#8d7656', 0.18],
-      [293, 343, '#c0ad91', 0.32],
+      [209, 223, '#f8edd5', 0.15],
+      [242, 271, '#e3d7b9', 0.13],
+      [302, 334, '#c5b8a6', 0.1],
     ]) {
       const band = new T.Mesh(
-        new T.RingGeometry(inner, outer, 96, 3),
+        new T.RingGeometry(inner, outer, 160, 2),
         new T.MeshBasicMaterial({
-          color,
-          side: T.DoubleSide,
-          transparent: true,
-          opacity,
-          depthWrite: false,
-          fog: false,
+          color, side: T.DoubleSide, transparent: true, opacity,
+          depthWrite: false, fog: false,
         }),
       );
       band.name = 'saturn-astronomical-band';
-      band.rotation.copy(rings.rotation);
+      band.rotation.copy(tilt);
       band.userData.visualOnly = true;
       globe.add(band);
     }
@@ -191,15 +219,16 @@ export function updateDestinationVista(root, index, seconds) {
   const visible = state.globeOpacity > 0.01;
   globe.visible = visible;
   globe.scale.setScalar(state.globeScale);
-  globe.position.x = state.keepGlobe ? -365 * state.reveal : 0;
-  globe.position.y = 94 + state.reveal * 44;
+  // Saturn remains within the narrow portrait viewport during ring combat.
+  globe.position.x = index === 7 ? -58 * state.reveal : state.keepGlobe ? -365 * state.reveal : 0;
+  globe.position.y = index === 7 ? 86 + state.reveal * 18 : 94 + state.reveal * 44;
   globe.material.uniforms.alpha.value = state.globeOpacity;
   globe.material.uniforms.drift.value = seconds;
   globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value =
     state.globeOpacity * 0.8;
   for (const child of root.getObjectByName('destination-entry-mist').children) {
     const i = Number(child.name.slice(-1));
-    child.material.uniforms.alpha.value = state.haze * (0.3 + i * 0.05);
+    child.material.uniforms.alpha.value = index === 7 ? 0 : state.haze * (0.3 + i * 0.05);
     child.material.uniforms.time.value = seconds + i * 13;
     child.position.x = (i - 1) * 18 + Math.sin(seconds * 0.32 + i) * 13;
   }
