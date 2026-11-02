@@ -59,7 +59,8 @@ export function installCompactMenu({
       central: 'menuBack',
       qa: 'developerPanel',
     }[screen];
-    if (screen === 'qa') $('developerPanel')?.querySelector('summary')?.focus?.({ preventScroll: true });
+    if (screen === 'qa')
+      $('developerPanel')?.querySelector('summary')?.focus?.({ preventScroll: true });
     else $(focusId)?.focus?.({ preventScroll: true });
   }
   function enterTitle() {

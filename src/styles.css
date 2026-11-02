@@ -9385,9 +9385,10 @@ body:not(.developer-session) #qaBerserkDock {
   }
 }
 
-
 /* Compact menu v1.27.70: actionable tabs replace vertical hangar/QA stacks. */
-#menu[data-screen='qa'] .title-content > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
+#menu[data-screen='qa']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
   display: none !important;
 }
 #menu.title-screen[data-screen='qa'] {
@@ -9510,9 +9511,15 @@ body:not(.developer-session) #qaBerserkDock {
   grid-column: 1 / -1 !important;
   width: 100%;
 }
-#menu #squadSelection[data-hangar-tab='pilots'] > [data-hangar-section]:not([data-hangar-section='pilots']),
-#menu #squadSelection[data-hangar-tab='ships'] > [data-hangar-section]:not([data-hangar-section='ships']),
-#menu #squadSelection[data-hangar-tab='arsenal'] > [data-hangar-section]:not([data-hangar-section='arsenal']),
+#menu
+  #squadSelection[data-hangar-tab='pilots']
+  > [data-hangar-section]:not([data-hangar-section='pilots']),
+#menu
+  #squadSelection[data-hangar-tab='ships']
+  > [data-hangar-section]:not([data-hangar-section='ships']),
+#menu
+  #squadSelection[data-hangar-tab='arsenal']
+  > [data-hangar-section]:not([data-hangar-section='arsenal']),
 #menu #squadSelection[data-hangar-tab='arsenal'] > .hangar-preview {
   display: none !important;
 }

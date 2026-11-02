@@ -313,17 +313,53 @@
               <option value="spirit">Espiritual · magia</option>
             </select></label
           >
-          <section hidden id="squadSelection" data-hangar-tab="pilots" aria-label="Seleção dos Five Cats">
-            <nav id="hangarSectionTabs" class="hangar-section-switch" role="group" aria-label="Áreas do hangar">
-              <button id="hangarTabPilots" type="button" data-hangar-target="pilots" aria-pressed="true">PILOTOS</button>
-              <button id="hangarTabShips" type="button" data-hangar-target="ships" aria-pressed="false">NAVES</button>
-              <button id="hangarTabArsenal" type="button" data-hangar-target="arsenal" aria-pressed="false">ARSENAL</button>
+          <section
+            hidden
+            id="squadSelection"
+            data-hangar-tab="pilots"
+            aria-label="Seleção dos Five Cats"
+          >
+            <nav
+              id="hangarSectionTabs"
+              class="hangar-section-switch"
+              role="group"
+              aria-label="Áreas do hangar"
+            >
+              <button
+                id="hangarTabPilots"
+                type="button"
+                data-hangar-target="pilots"
+                aria-pressed="true"
+              >
+                PILOTOS
+              </button>
+              <button
+                id="hangarTabShips"
+                type="button"
+                data-hangar-target="ships"
+                aria-pressed="false"
+              >
+                NAVES
+              </button>
+              <button
+                id="hangarTabArsenal"
+                type="button"
+                data-hangar-target="arsenal"
+                aria-pressed="false"
+              >
+                ARSENAL
+              </button>
             </nav>
             <div class="selection-head" data-hangar-section="pilots">
               <span class="eyebrow">01 / ESCOLHA O PILOTO</span>
               <strong>FIVE CATS</strong>
             </div>
-            <div class="pilot-roster" data-hangar-section="pilots" role="group" aria-label="Pilotos disponíveis">
+            <div
+              class="pilot-roster"
+              data-hangar-section="pilots"
+              role="group"
+              aria-label="Pilotos disponíveis"
+            >
               <button id="pilot-bia" class="pilot-choice selected" aria-pressed="true">
                 <i class="cat-avatar" style="--pilot: #67ffe0">B</i><span>BIA</span>
               </button>
@@ -414,7 +450,12 @@
               <span class="eyebrow">02 / ESCOLHA A NAVE</span
               ><strong id="selectedShipName">NOVA-7</strong>
             </div>
-            <div class="ship-roster" data-hangar-section="ships" role="group" aria-label="Modelos de nave">
+            <div
+              class="ship-roster"
+              data-hangar-section="ships"
+              role="group"
+              aria-label="Modelos de nave"
+            >
               <button id="ship-nova7" class="ship-choice selected" aria-pressed="true">
                 <i class="ship-silhouette nova7"></i><span>NOVA-7</span><small>EQUILÍBRIO</small>
               </button>
@@ -426,7 +467,12 @@
                 <i class="ship-silhouette aegis"></i><span>AEGIS-R</span><small>DEFESA +</small>
               </button>
             </div>
-            <div class="color-roster" data-hangar-section="ships" role="group" aria-label="Cor base da nave">
+            <div
+              class="color-roster"
+              data-hangar-section="ships"
+              role="group"
+              aria-label="Cor base da nave"
+            >
               <span>COR BASE</span
               ><button
                 id="ship-color-polar"
@@ -447,7 +493,11 @@
               ></button
               ><button id="ship-color-gold" style="--swatch: #e7bd63" aria-label="Ouro"></button>
             </div>
-            <p id="selectedShipDescription" class="ship-description" data-hangar-section="ships"></p>
+            <p
+              id="selectedShipDescription"
+              class="ship-description"
+              data-hangar-section="ships"
+            ></p>
             <details id="loadoutCatalog" data-hangar-section="arsenal">
               <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
               <div class="loadout-catalog">
@@ -685,42 +735,42 @@
               <details id="developerLabOptions" class="developer-lab-options">
                 <summary>OPÇÕES AVANÇADAS · NAVE / ARSENAL</summary>
                 <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
-                <legend>LABORATÓRIO DE NAVE / RPG · QA</legend>
-                <label for="developerTier">EVOLUÇÃO DA NAVE</label>
-                <select id="developerTier" aria-label="Evolução inicial da nave">
-                  <option value="0">NÍVEL 1 · ORIGINAL</option>
-                  <option value="3">NÍVEL 4 · PRIMEIROS UPGRADES</option>
-                  <option value="6">NÍVEL 7 · ARMAMENTO AVANÇADO</option>
-                  <option value="9" selected>NÍVEL 10 · PODS / RPG AVANÇADO</option>
-                  <option value="12">NÍVEL 13 · EVOLUÇÃO SUPERIOR</option>
-                  <option value="18">NÍVEL 19 · EVOLUÇÃO MÁXIMA VISUAL</option>
-                </select>
-                <label for="developerShip">MODELO DE NAVE</label>
-                <select id="developerShip">
-                  <option value="nova7">NOVA-7 · MULTIFUNÇÃO</option>
-                  <option value="specter">SPECTER-X · INTERCEPTADOR</option>
-                  <option value="aegis">AEGIS-R · FORTALEZA</option>
-                </select>
-                <label for="developerArsenal">ARMA INICIAL</label>
-                <select id="developerArsenal">
-                  <option value="0">PULSO</option>
-                  <option value="1">GEADA</option>
-                  <option value="2">PLASMA</option>
-                  <option value="3">ARCANO</option>
-                  <option value="4">VAZIO</option>
-                </select>
-                <label for="developerSpecial">RPG INICIAL</label>
-                <select id="developerSpecial">
-                  <option value="0">BARREIRA</option>
-                  <option value="1">NOVA</option>
-                  <option value="2">ESTASE</option>
-                  <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
-                </select>
-                <small
-                  >Neste teste, níveis, armas, pods e bombas são liberados sem gastar créditos.
-                  Durante o voo, pressione ROBÔ, PODS, H/G e os especiais dos Five Cats para testar
-                  efeitos reais.</small
-                >
+                  <legend>LABORATÓRIO DE NAVE / RPG · QA</legend>
+                  <label for="developerTier">EVOLUÇÃO DA NAVE</label>
+                  <select id="developerTier" aria-label="Evolução inicial da nave">
+                    <option value="0">NÍVEL 1 · ORIGINAL</option>
+                    <option value="3">NÍVEL 4 · PRIMEIROS UPGRADES</option>
+                    <option value="6">NÍVEL 7 · ARMAMENTO AVANÇADO</option>
+                    <option value="9" selected>NÍVEL 10 · PODS / RPG AVANÇADO</option>
+                    <option value="12">NÍVEL 13 · EVOLUÇÃO SUPERIOR</option>
+                    <option value="18">NÍVEL 19 · EVOLUÇÃO MÁXIMA VISUAL</option>
+                  </select>
+                  <label for="developerShip">MODELO DE NAVE</label>
+                  <select id="developerShip">
+                    <option value="nova7">NOVA-7 · MULTIFUNÇÃO</option>
+                    <option value="specter">SPECTER-X · INTERCEPTADOR</option>
+                    <option value="aegis">AEGIS-R · FORTALEZA</option>
+                  </select>
+                  <label for="developerArsenal">ARMA INICIAL</label>
+                  <select id="developerArsenal">
+                    <option value="0">PULSO</option>
+                    <option value="1">GEADA</option>
+                    <option value="2">PLASMA</option>
+                    <option value="3">ARCANO</option>
+                    <option value="4">VAZIO</option>
+                  </select>
+                  <label for="developerSpecial">RPG INICIAL</label>
+                  <select id="developerSpecial">
+                    <option value="0">BARREIRA</option>
+                    <option value="1">NOVA</option>
+                    <option value="2">ESTASE</option>
+                    <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
+                  </select>
+                  <small
+                    >Neste teste, níveis, armas, pods e bombas são liberados sem gastar créditos.
+                    Durante o voo, pressione ROBÔ, PODS, H/G e os especiais dos Five Cats para
+                    testar efeitos reais.</small
+                  >
                 </fieldset>
               </details>
               <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
