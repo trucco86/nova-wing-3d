@@ -14,7 +14,12 @@ export const STAGE_VISUALS = Object.freeze(
     { location: 'plasma-storm', globe: 'sun', motif: 'plasma-streams', encounter: 'solar-dive' },
     { location: 'frozen-moon', globe: 'ice-world', motif: 'crystal-rifts', encounter: 'stomp' },
     { location: 'bio-nebula', globe: 'none', motif: 'bio-spires', encounter: 'swarm' },
-    { location: 'mothership-battle', globe: 'none', motif: 'fleet-wrecks', encounter: 'broadside' },
+    {
+      location: 'saturn-ring-battle',
+      globe: 'saturn',
+      motif: 'icy-ring-crossing',
+      encounter: 'broadside',
+    },
     {
       location: 'orion-gravity-well',
       globe: 'none',

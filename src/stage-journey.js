@@ -51,11 +51,11 @@ export const STAGE_JOURNEYS = Object.freeze(
       exit: 'breach',
     },
     {
-      destination: 'mothership',
+      destination: 'saturn-ring-battle',
       world: 'saturn-orbit',
-      entry: 'battle-hangar',
-      arena: 'command-deck',
-      exit: 'escape-bay',
+      entry: 'outer-ring-ice-field',
+      arena: 'cassini-division-blockade',
+      exit: 'breakthrough-the-rings',
     },
     {
       destination: 'orion-abyss',

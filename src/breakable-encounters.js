@@ -1,7 +1,7 @@
 // Combatants use the same solid collision geometry as ordinary obstructions.
 // Only hostile carrier escorts and satellites have health: rails and tunnel
 // supports remain real obstacles, with no invisible "destroyed" hitbox.
-export const BREAKABLE_HULL = Object.freeze({ satellite: 70, carrier: 180 });
+export const BREAKABLE_HULL = Object.freeze({ satellite: 70, carrier: 180, 'ice-meteor': 85 });
 export function breakableHullHealth(kind) {
   return Object.hasOwn(BREAKABLE_HULL, kind) ? BREAKABLE_HULL[kind] : null;
 }

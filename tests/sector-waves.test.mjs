@@ -33,7 +33,7 @@ test('a running mission spawns the authored fleet pattern while preserving the b
   assert.equal(h.game.snapshot().fighterWave, null, 'no fighter ambush during planetary approach');
   h.advance(20, 0.1);
   const state = h.game.snapshot();
-  assert.equal(state.fighterWave?.name, 'GUARDA DA NAVE-MÃE');
+  assert.equal(state.fighterWave?.name, 'BATALHA NOS ANÉIS');
   assert.ok(state.fighterWave?.cycle >= 0);
   assert.ok(state.targets.some((e) => e.kind === 'fighter' && e.role));
   assert.equal(state.boss, false);

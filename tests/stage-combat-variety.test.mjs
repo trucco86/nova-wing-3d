@@ -25,7 +25,9 @@ test('only the asteroid has a cracked moon; the frozen sector uses an uncracked 
   assert.ok(scene.getObjectByName('bio-nebula-spire'));
   assert.equal(globe.visible, false);
   world.setSector(SECTORS[7], 7);
-  assert.ok(scene.getObjectByName('fleet-destroyed-frigate'));
+  assert.equal(scene.getObjectByName('fleet-destroyed-frigate'), undefined);
+  assert.ok(scene.getObjectByName('saturn-ring-ice-near'));
+  assert.ok(scene.getObjectByName('saturn-planetary-ring-system'));
   world.setSector(SECTORS[8], 8);
   assert.ok(scene.getObjectByName('orion-gravitational-lens'));
   world.setSector(SECTORS[9], 9);
