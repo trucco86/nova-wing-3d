@@ -13,7 +13,11 @@ function setup(maxRetained = 2) {
   };
   const haloMat = new T.SpriteMaterial({ color: 'red' });
   const pool = createHostileProjectilePool({
-    scene, geometry, materials, createHalo: () => new T.Sprite(haloMat), maxRetained,
+    scene,
+    geometry,
+    materials,
+    createHalo: () => new T.Sprite(haloMat),
+    maxRetained,
   });
   const dispose = () => {
     pool.clear();
@@ -65,7 +69,11 @@ test('enemy bolts reuse identical meshes, light, speed and reset every spell-spe
     assert.equal(returned.o.material, materials.normal);
     pool.release(returned);
     assert.deepEqual(pool.stats(), {
-      created: 1, reused: 3, active: 0, retained: 1, maxRetained: 2,
+      created: 1,
+      reused: 3,
+      active: 0,
+      retained: 1,
+      maxRetained: 2,
     });
   } finally {
     dispose();

@@ -38,7 +38,11 @@ export function createHostileProjectilePool({
     shot.o.scale.setScalar(spell ? 1.8 : 1);
     shot.o.position.copy(origin);
     shot.o.rotation.set(0, 0, 0);
-    shot.v.copy(target).sub(origin).normalize().multiplyScalar(spell === 'arcane' ? 38 : 58);
+    shot.v
+      .copy(target)
+      .sub(origin)
+      .normalize()
+      .multiplyScalar(spell === 'arcane' ? 38 : 58);
     shot.previousPosition.copy(origin);
     shot.life = 6;
     shot.age = 0;
