@@ -46,8 +46,8 @@ export const DESTINATION_PROFILES = Object.freeze({
     type: 'rings',
     colors: ['#8d795d', '#e0c79c', '#b49a75'],
     haze: '#888ba5',
-    label: 'SATURNO · CINTURÃO DA FROTA',
-    entry: 'INTERCEPTAÇÃO · FROTA DE MARVIN',
+    label: 'SATURNO · BATALHA NOS ANÉIS',
+    entry: 'INTERCEPTAÇÃO · CAMPOS DE GELO DE SATURNO',
     exit: 'ROMPENDO O BLOQUEIO DE SATURNO',
     keepGlobe: true,
   }),
@@ -82,6 +82,24 @@ export function destinationArrivalAt(index, seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid destination time');
   const profile = DESTINATION_PROFILES[index];
   if (!profile) return null;
+  // Saturn is an orbital battle, not another compulsory atmosphere/ship entry.
+  // Enter the ice-ring region with the planet already visible, and unlock
+  // encounters after a short orienting beat. All other journeys stay intact.
+  if (index === 7) {
+    const reveal = smooth(seconds / 8);
+    const phase = seconds < 3 ? 'space' : seconds < 8 ? 'orbit' : 'arena';
+    return {
+      phase,
+      combatReady: seconds >= 8,
+      reveal,
+      haze: 0,
+      seconds,
+      keepGlobe: true,
+      globeOpacity: 1,
+      globeScale: 1.12 + 0.28 * reveal,
+      label: phase === 'space' ? 'SATURNO À VISTA · ANÉIS À FRENTE' : profile.label,
+    };
+  }
   const phase =
     seconds < 6
       ? 'space'

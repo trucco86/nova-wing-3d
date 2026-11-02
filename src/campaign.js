@@ -79,7 +79,7 @@ export const SECTORS = [
       'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
   },
   {
-    name: 'GRADE DE BATALHA',
+    name: 'ANÉIS DE SATURNO',
     boss: 'COURAÇADO ÔMEGA',
     kind: 'dreadnought',
     theme: 'fleet',
@@ -87,7 +87,7 @@ export const SECTORS = [
     sky: '#302d65',
     duration: 98,
     brief:
-      'Saturno ao fundo: rompa a frota inimiga perto dos anéis planetários e enfrente o couraçado.',
+      'Atravesse os anéis de Saturno e seus meteoros de gelo. Rompa o bloqueio da frota e enfrente o couraçado.',
   },
   {
     name: 'ABISMO DE ÓRION',

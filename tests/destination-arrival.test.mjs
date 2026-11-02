@@ -27,7 +27,7 @@ test('all later destinations retain independent celestial routes, and entry is d
     const phases = [0, 8, 15, 22, 26].map((seconds) => destinationArrivalAt(index, seconds));
     assert.deepEqual(
       phases.map((x) => x.phase),
-      ['space', 'orbit', 'entry', 'descent', 'arena'],
+      index === 7 ? ['space', 'arena', 'arena', 'arena', 'arena'] : ['space', 'orbit', 'entry', 'descent', 'arena'],
     );
     assert.ok(phases[0].globeOpacity >= phases[3].globeOpacity);
     assert.equal(phases[0].combatReady, false);
@@ -68,13 +68,14 @@ test('the scene begins in space, reveals a distinct planetary world, and resets 
     assert.ok(scene.fog.density <= 0.00015);
     const transition = world.setDestinationArrival(16);
     assert.equal(transition.phase, 'entry');
-    assert.ok(transition.haze > 0);
+    if (index === 7) assert.equal(transition.haze, 0, 'Saturn has no invented atmosphere crossing');
+    else assert.ok(transition.haze > 0);
     if (index === 3) {
       assert.ok(
         scene.fog.density <= 0.0003,
         'Devastador close-up stays visible; approach is not obscured by generic re-entry haze',
       );
-    } else {
+    } else if (index !== 7) {
       assert.ok(scene.fog.density > 0.0004);
     }
     const arrived = world.setDestinationArrival(27);
@@ -111,4 +112,21 @@ test('after each boss, time controls the exit effect; pause and reset never move
   }
   assert.match(destinationExitAt(9, 8).label, /VITÓRIA/);
   assert.throws(() => destinationExitAt(3, Infinity), RangeError);
+});
+
+test('Saturn stage 8 starts near its rings and reaches combat without an arbitrary 25-second transition', () => {
+  const first = destinationArrivalAt(7, 0);
+  const near = destinationArrivalAt(7, 7.9);
+  const ready = destinationArrivalAt(7, 8);
+  const battle = destinationArrivalAt(7, 90);
+  assert.equal(first.phase, 'space');
+  assert.equal(first.globeOpacity, 1);
+  assert.equal(near.combatReady, false);
+  assert.equal(ready.phase, 'arena');
+  assert.equal(ready.combatReady, true);
+  assert.equal(battle.globeOpacity, 1, 'Saturn stays readable throughout the battle');
+  assert.equal(battle.haze, 0);
+  assert.equal(battle.globeScale, 1.4);
+  assert.equal(destinationArrivalAt(6, 8).combatReady, false, 'Neptune pacing unchanged');
+  assert.equal(destinationArrivalAt(9, 8).combatReady, false, 'Titan pacing unchanged');
 });
