@@ -9,20 +9,25 @@ export const TESTS_BY_AREA = Object.freeze({
     'tests/devastador-sabotage.test.mjs',
     'tests/devastador-grand-hall.test.mjs',
     'tests/devastador-escape.test.mjs',
+    'tests/reactor-orbit-presentation.test.mjs',
   ],
   mecha: ['tests/mecha-design.test.mjs', 'tests/hero-dash-breakables.test.mjs'],
   mobile: ['tests/input-title.test.mjs', 'tests/developer-mode.test.mjs'],
-  graphics: ['tests/flight-environments.test.mjs'],
+  graphics: [
+    'tests/flight-environments.test.mjs',
+    'tests/living-world-depth.test.mjs',
+    'tests/boss-kinetic-details.test.mjs',
+  ],
   audio: ['tests/audio.test.mjs'],
 });
 
 export function fastAreasForFiles(files) {
   const areas = new Set(['core']);
   for (const file of files) {
-    if (/devastador|mothership|stage4|finale|destination-arrival/.test(file)) areas.add('stage4');
+    if (/devastador|mothership|stage4|finale|destination-arrival|reactor-orbit/.test(file)) areas.add('stage4');
     if (/mecha|robot|dash|hero-dodge|hero-weapon/.test(file)) areas.add('mecha');
     if (/shell\.html|styles\.css|input|developer-mode|ui-/.test(file)) areas.add('mobile');
-    if (/visuals|graphics|grand-hall|flight|render/.test(file)) areas.add('graphics');
+    if (/visuals|graphics|grand-hall|flight|render|living-world-depth|boss-kinetic|bosses/.test(file)) areas.add('graphics');
     if (/audio|music|sound/.test(file)) areas.add('audio');
   }
   return [...areas];

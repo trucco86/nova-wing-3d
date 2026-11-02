@@ -14,7 +14,7 @@ No CI de 01/11/2026, o job Node terminou em ~0,8 min. Os quatro shards Playwrigh
 | PREVIEW | `npm run build && npm run build:check && npm run test:fast` | Preview Cloudflare isolado, para validação visual   |
 | FULL    | `npm run validate` + quatro shards Playwright               | Obrigatório no SHA final antes de merge ou produção |
 
-Os shards FULL passam a executar somente Playwright; os testes Node continuam íntegros no job quality. A seleção FAST sempre inclui testes básicos de jogo/campanha e testes relacionados às fontes alteradas. Novos testes modificados entram automaticamente no FAST.
+Os shards FULL passam a executar somente Playwright; os testes Node continuam íntegros no job quality. A seleção FAST sempre inclui testes básicos de jogo/campanha e testes relacionados às fontes alteradas. Novos testes modificados entram automaticamente no FAST. Os novos módulos `reactor-orbit-presentation`, `living-world-depth` e `boss-kinetic-details` agora entram no mapa de impacto mesmo quando somente o código-fonte muda; isso evita um feedback FAST com cobertura restrita ao smoke básico.
 
 ## Papéis de agentes
 

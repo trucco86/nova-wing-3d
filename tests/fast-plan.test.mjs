@@ -1,3 +1,18 @@
+test('FAST includes orbit, living depth and premium boss regressions even if only sources changed', () => {
+  const orbit = selectFastTests(['src/reactor-orbit-presentation.js'], 'auto', () => true);
+  assert.deepEqual(orbit.areas, ['core', 'stage4']);
+  assert.ok(orbit.tests.includes('tests/reactor-orbit-presentation.test.mjs'));
+
+  const living = selectFastTests(['src/living-world-depth.js'], 'auto', () => true);
+  assert.deepEqual(living.areas, ['core', 'graphics']);
+  assert.ok(living.tests.includes('tests/living-world-depth.test.mjs'));
+
+  const bosses = selectFastTests(['src/boss-kinetic-details.js', 'src/bosses.js'], 'auto', () => true);
+  assert.deepEqual(bosses.areas, ['core', 'graphics']);
+  assert.ok(bosses.tests.includes('tests/boss-kinetic-details.test.mjs'));
+  assert.ok(bosses.tests.includes('tests/flight-environments.test.mjs'));
+});
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { selectFastTests, fastAreasForFiles } from '../tools/fast-plan.mjs';
