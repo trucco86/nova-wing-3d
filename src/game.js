@@ -86,6 +86,7 @@ import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
@@ -220,6 +221,7 @@ export function createGame({
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
+  const renderCostAudit = createRenderCostAudit();
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
   const coarsePointer = matchMedia('(pointer:coarse)');
@@ -2569,6 +2571,7 @@ export function createGame({
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     frameAudit.clear();
+    renderCostAudit.clear();
     pausePanel = 'controls';
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
@@ -2806,6 +2809,7 @@ export function createGame({
   }
   function renderFrameAudit() {
     const result = frameAudit.report();
+    const renderCost = renderCostAudit.report();
     const budget = adaptiveGraphics.current();
     const detail =
       settings.language === 'en'
@@ -2827,25 +2831,43 @@ export function createGame({
       Math.round(budget.resolutionScale * 100) +
       '% ' +
       (budget.adaptive ? '(adaptativo)' : '') +
-      (Number.isFinite(lastFrameCost.drawCalls)
+      (renderCost.samples > 0
         ? '\n' +
           (settings.language === 'en'
-            ? 'Scene draw calls'
+            ? 'Scene cost samples'
             : settings.language === 'es'
-              ? 'Llamadas de escena'
-              : 'Chamadas de cena') +
+              ? 'Muestras de coste 3D'
+              : 'Amostras de custo 3D') +
           ': ' +
-          lastFrameCost.drawCalls +
-          ' · ' +
+          renderCost.samples +
+          '\n' +
           (settings.language === 'en'
-            ? 'triangles'
+            ? 'Draw calls p95 / peak'
             : settings.language === 'es'
-              ? 'triángulos'
-              : 'triângulos') +
+              ? 'Llamadas p95 / pico'
+              : 'Chamadas p95 / pico') +
           ': ' +
-          (lastFrameCost.triangles ?? 0) +
-          ' · pós-passes: ' +
-          lastFrameCost.postPasses
+          renderCost.p95DrawCalls +
+          ' / ' +
+          renderCost.maxDrawCalls +
+          '\n' +
+          (settings.language === 'en'
+            ? 'Triangles p95 / peak'
+            : settings.language === 'es'
+              ? 'Triángulos p95 / pico'
+              : 'Triângulos p95 / pico') +
+          ': ' +
+          renderCost.p95Triangles +
+          ' / ' +
+          renderCost.maxTriangles +
+          '\n' +
+          (settings.language === 'en'
+            ? 'Post-process passes (peak)'
+            : settings.language === 'es'
+              ? 'Pasadas posproceso (pico)'
+              : 'Passes pós-processamento (pico)') +
+          ': ' +
+          renderCost.maxPostPasses
         : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
@@ -3138,11 +3160,13 @@ export function createGame({
   $('auditStart').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.start();
+    renderCostAudit.start();
     renderFrameAudit();
   };
   $('auditStop').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.stop();
+    renderCostAudit.stop();
     renderFrameAudit();
   };
   $('auditCopy').onclick = () => {
@@ -5453,6 +5477,8 @@ export function createGame({
     const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
     last = time;
     tick(dt, time);
+    // Read renderer counters only after this frame rendered. No extra WebGL calls.
+    renderCostAudit.sample(lastFrameCost, renderingFlight && state === 'playing');
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
@@ -5728,6 +5754,7 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
+      renderCostAudit.clear();
       document.body.classList.remove(
         'in-mission',
         'stage-intro',
