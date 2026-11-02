@@ -5165,11 +5165,6 @@ export function createGame({
     $('boostTouch').style.setProperty?.('--meter', energy + '%');
     $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
-    const sabotageProgress = boss?.userData.sabotage
-      ? (boss.userData.parts.filter((part) => part.hp <= 0).length +
-          (1 - bossHp / bossCombat.max)) /
-        9
-      : null;
     const integrity = boss
       ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
       : 0;
