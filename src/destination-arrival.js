@@ -1,3 +1,5 @@
+import { saturnPassageAt } from './saturn-ring-passage.js';
+
 // The authored 10-sector itinerary: Earth and Mars keep their bespoke
 // transitions; asteroid traversal is already controlled by stage-journey.
 export const DESTINATION_PROFILES = Object.freeze({
@@ -87,6 +89,7 @@ export function destinationArrivalAt(index, seconds) {
   // encounters after a short orienting beat. All other journeys stay intact.
   if (index === 7) {
     const reveal = smooth(seconds / 8);
+    const passage = saturnPassageAt(seconds);
     const phase = seconds < 3 ? 'space' : seconds < 8 ? 'orbit' : 'arena';
     return {
       phase,
@@ -97,7 +100,7 @@ export function destinationArrivalAt(index, seconds) {
       keepGlobe: true,
       globeOpacity: 1,
       globeScale: 1.12 + 0.28 * reveal,
-      label: phase === 'space' ? 'SATURNO À VISTA · ANÉIS À FRENTE' : profile.label,
+      label: passage.label,
     };
   }
   const phase =
