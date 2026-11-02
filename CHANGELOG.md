@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.70 — Saturno: batalha orbital nos anéis de gelo (QA)
+
+- Fase 8 passa a ser combate orbital junto a Saturno: entrada curta de 8 segundos, sem transição genérica atmosférica; o planeta permanece em quadro inclusive no mobile.
+- Saturno redesenhado com faixas gasosas em múltiplas frequências, sombra sutil dos anéis e disco anelar com divisão de Cassini, mais detalhe radial e cores em camadas. O shader também aprimora a definição dos outros gigantes e luas sem tocar a Terra.
+- Removidos sete cascos destruídos repetitivos e reduzida a frota decorativa. Duas camadas instanciadas de gelo orbital se movem em diferentes velocidades; a nave atravessa a região dos anéis, sem arcos artificiais no corredor.
+- Meteoros de gelo sólidos e destrutíveis substituem sucata/satélites genéricos na fase 8, mantendo os mesmos controles, combate, câmera e chefe Couraçado Ômega.
+- Qualidades Alto/Médio preservadas: partículas extras de gelo apenas em Alto; sem novos timers, storage, saves ou métricas falsas de FPS.
+- Candidata QA: CI Node/Playwright e verificação visual/FPS Alto/Médio em celular físico antes de integração.
+
 ## 1.27.69 — Evidência FPS reproduzível por fase e preset (QA)
 
 - Relatório de FPS explicita fase, perfil de qualidade selecionado e versão do build capturados ao iniciar medição.

@@ -126,7 +126,7 @@ test('Saturn stage 8 starts near its rings and reaches combat without an arbitra
   assert.equal(ready.combatReady, true);
   assert.equal(battle.globeOpacity, 1, 'Saturn stays readable throughout the battle');
   assert.equal(battle.haze, 0);
-  assert.equal(battle.globeScale, 1.4);
+  assert.ok(Math.abs(battle.globeScale - 1.4) < 1e-9);
   assert.equal(destinationArrivalAt(6, 8).combatReady, false, 'Neptune pacing unchanged');
   assert.equal(destinationArrivalAt(9, 8).combatReady, false, 'Titan pacing unchanged');
 });
