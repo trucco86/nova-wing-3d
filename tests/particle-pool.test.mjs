@@ -39,7 +39,10 @@ test('spark reuse preserves velocity, color, scale and independent fade', () => 
     assert.equal(second.o.scale.x, 1);
     assert.deepEqual(second.o.position.toArray(), [-2, 1, 0]);
     assert.deepEqual(second.v.toArray(), [-1, 2, 3]);
-    assert.equal(second.o.material.color.getHex(), new T.Color(0xbaffee).multiplyScalar(2.2).getHex());
+    assert.equal(
+      second.o.material.color.getHex(),
+      new T.Color(0xbaffee).multiplyScalar(2.2).getHex(),
+    );
     assert.equal(pool.stats().created.spark, 1);
     assert.equal(pool.stats().reused.spark, 1);
     assert.equal(scene.children.length, 1);
@@ -85,9 +88,7 @@ test('bounded retained particles never drop active effects and clean all scene n
   const { scene, pool, dispose } = fixture({ spark: 1, flash: 0, wave: 0 });
   try {
     const position = new T.Vector3();
-    const spawned = Array.from({ length: 5 }, () =>
-      pool.spark(position, 0xffffff, 1, 2, 3, 0.4),
-    );
+    const spawned = Array.from({ length: 5 }, () => pool.spark(position, 0xffffff, 1, 2, 3, 0.4));
     assert.equal(pool.stats().active, 5);
     assert.equal(scene.children.length, 5);
     for (const particle of spawned) pool.release(particle);

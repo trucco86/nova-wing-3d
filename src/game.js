@@ -1505,14 +1505,7 @@ export function createGame({
     else if (n > 3) sound(100, 0.2, 'sine', 0.025);
     for (let i = 0; i < n; i++)
       particles.push(
-        particlePool.spark(
-          pos,
-          color,
-          rnd(-17, 17),
-          rnd(-17, 17),
-          rnd(-17, 17),
-          rnd(0.3, 0.85),
-        ),
+        particlePool.spark(pos, color, rnd(-17, 17), rnd(-17, 17), rnd(-17, 17), rnd(0.3, 0.85)),
       );
     if (n > 5) {
       particles.push(particlePool.flash(pos, color, 9, 0.85, 0.45));
