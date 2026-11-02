@@ -88,6 +88,10 @@ const STRINGS = {
     jank: 'quadros acima de 33/50 ms',
     gaps: 'interrupções de aba/sistema ignoradas',
     viewport: 'tela',
+    context: 'Cenário',
+    sector: 'fase',
+    selected: 'perfil selecionado',
+    version: 'versão',
     disclaimer: 'Cadência de frames do navegador, não tempo de GPU. Requer teste no aparelho.',
   },
   en: {
@@ -101,6 +105,10 @@ const STRINGS = {
     jank: 'frames over 33/50 ms',
     gaps: 'ignored tab/system interruptions',
     viewport: 'viewport',
+    context: 'Scenario',
+    sector: 'stage',
+    selected: 'selected profile',
+    version: 'version',
     disclaimer: 'Browser frame cadence, not GPU time. Test on a physical device.',
   },
   es: {
@@ -114,14 +122,29 @@ const STRINGS = {
     jank: 'cuadros superiores a 33/50 ms',
     gaps: 'interrupciones de pestaña/sistema ignoradas',
     viewport: 'pantalla',
+    context: 'Escenario',
+    sector: 'fase',
+    selected: 'perfil seleccionado',
+    version: 'versión',
     disclaimer: 'Cadencia del navegador, no tiempo de GPU. Se requiere prueba en dispositivo.',
   },
 };
-export function formatFrameAudit(data, { language = 'pt', width = 0, height = 0, dpr = 1 } = {}) {
+export function formatFrameAudit(
+  data,
+  { language = 'pt', width = 0, height = 0, dpr = 1, sector = null, graphics = null, version = null } = {},
+) {
   const s = STRINGS[language] ?? STRINGS.pt;
   if (!data.frames) return s.empty;
+  const scenario = [];
+  if (Number.isSafeInteger(sector) && sector >= 1 && sector <= 20)
+    scenario.push(s.sector + ' ' + sector);
+  if (['auto', 'high', 'medium'].includes(graphics))
+    scenario.push(s.selected + ': ' + graphics.toUpperCase());
+  if (typeof version === 'string' && /^v?\d+\.\d+\.\d+$/.test(version))
+    scenario.push(s.version + ': ' + version);
   const lines = [
     data.active ? s.recording : s.finished,
+    ...(scenario.length ? [s.context + ': ' + scenario.join(' · ')] : []),
     `${s.frames}: ${data.frames} · ${s.time}: ${data.durationSeconds.toFixed(2)} s`,
     `${s.fps}: ${data.avgFps.toFixed(1)} · ${s.p95}: ${data.p95FrameMs.toFixed(1)} ms`,
     `${s.jank}: ${data.over33Ms} / ${data.over50Ms} · ${s.gaps}: ${data.interruptions}`,

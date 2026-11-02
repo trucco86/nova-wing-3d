@@ -76,3 +76,29 @@ test('localized report has only view dimensions and frame statistics, never user
     assert.doesNotMatch(report, /userAgent|localStorage|latitude|longitude|token/);
   }
 });
+
+test('physical-device reports label stage, selected quality and build for reproducible comparisons', () => {
+  const audit = createFrameAudit();
+  audit.start();
+  for (const timestamp of [0, 16.7, 33.4, 50.1]) audit.sample(timestamp);
+  audit.stop();
+  for (const [language, keyword, quality] of [
+    ['pt', /Cenário: fase 6/, /perfil selecionado: HIGH/],
+    ['en', /Scenario: stage 6/, /selected profile: HIGH/],
+    ['es', /Escenario: fase 6/, /perfil seleccionado: HIGH/],
+  ]) {
+    const text = formatFrameAudit(audit.report(), {
+      language, width: 390, height: 844, dpr: 3,
+      sector: 6, graphics: 'high', version: 'v1.27.69',
+    });
+    assert.match(text, keyword);
+    assert.match(text, quality);
+    assert.match(text, /v1\.27\.69/);
+    assert.match(text, /390×844/);
+    assert.doesNotMatch(text, /userAgent|localStorage|latitude|longitude|token/);
+  }
+  const invalid = formatFrameAudit(audit.report(), {
+    sector: '6', graphics: 'pretend-maximum', version: 'private-secret',
+  });
+  assert.doesNotMatch(invalid, /private-secret|pretend-maximum|fase 6/);
+});
