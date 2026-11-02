@@ -5,6 +5,7 @@ import { developerToolsAllowed, parseDeveloperScenario } from '../src/developer-
 test('developer menu is restricted to isolated DEV/PR and local browser hosts', () => {
   for (const host of [
     'dev.nova-wing-preview.pages.dev',
+    'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev',
     'pr-134.nova-wing-preview.pages.dev',
     '52fd04c6.nova-wing-preview.pages.dev',
     'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev',
@@ -26,6 +27,8 @@ test('developer menu is restricted to isolated DEV/PR and local browser hosts', 
     '52fd04c6.nova-wing-preview.pages.dev.evil.com',
     'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev.evil.com',
     'some-other-preview.nova-wing-preview.pages.dev',
+    'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev.evil.com',
+    'stage4-orbit-and-living.nova-wing-preview.pages.dev',
     'feat-planetary-visual-polish.nova-wing-preview.pages.dev.evil.com',
     'integration-boss-worlds-qa-2.nova-wing-preview.pages.dev.evil.com',
     'feat-mothership-marvin-rival.nova-wing-preview.pages.dev.evil.com',
@@ -50,4 +53,40 @@ test('developer QA scenarios accept only real campaign sectors and known encount
   for (const value of [-1, 10, '1.5', 'NaN', Infinity, 'abc'])
     assert.equal(parseDeveloperScenario(value, 'boss', 10), null);
   assert.equal(parseDeveloperScenario(0, 'production', 10), null);
+});
+
+test('the published stage-4 QA alias exposes the real scenario menu but production does not', async (t) => {
+  const { harness } = await import('./harness.mjs');
+  const qa = harness({
+    hostname: 'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+  });
+  t.after(() => qa.close());
+  assert.equal(qa.game.snapshot().developerAvailable, true);
+  assert.equal(qa.elements.get('menuQA').hidden, false);
+  assert.equal(qa.elements.get('developerPanel').hidden, false);
+  assert.equal(typeof qa.elements.get('developerBerserkLaunch').onclick, 'function');
+  qa.elements.get('developerSector').value = '3';
+  qa.elements.get('developerEncounter').value = 'boss';
+  qa.elements.get('developerBerserkLaunch').onclick();
+  assert.equal(qa.game.snapshot().developerSession, true);
+  assert.equal(qa.game.snapshot().strategy.special, 3);
+  assert.equal(
+    qa.game.snapshot().strategy.berserk,
+    0,
+    'Berserk must wait for an explicit in-flight tap',
+  );
+  qa.advance(0.05);
+  assert.equal(qa.elements.get('qaBerserkDock').hidden, false);
+  qa.elements.get('qaBerserkAction').onclick();
+  assert.equal(
+    qa.game.snapshot().strategy.berserk,
+    20,
+    'the visible QA control activates the real mode',
+  );
+  const prod = harness({ hostname: 'nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => prod.close());
+  assert.equal(prod.game.snapshot().developerAvailable, false);
+  assert.equal(prod.elements.get('menuQA').hidden, true);
+  assert.equal(prod.elements.get('developerPanel').hidden, true);
 });

@@ -20,6 +20,24 @@ export const sabotagedSystem = (parts) => {
   return { system: 'core', label: 'NÚCLEO CENTRAL EXPOSTO', remaining: 0 };
 };
 
+/**
+ * Current sabotage objective on the actual 360-degree ring. A destroyed or
+ * not-yet-unlocked system is never shown as the active radar target.
+ */
+export function sabotageRadarTarget(parts, orbit = 0) {
+  if (!Array.isArray(parts)) return null;
+  const system = sabotagedSystem(parts).system;
+  if (system === 'core') return null;
+  let target = null;
+  for (const [index, part] of parts.entries()) {
+    if (part?.type !== system || part.hp <= 0 || !Number.isFinite(part.angle)) continue;
+    const delta = Math.atan2(Math.sin(part.angle - orbit), Math.cos(part.angle - orbit));
+    const distance = Math.abs(delta);
+    if (!target || distance < target.distance) target = { index, angle: part.angle, distance };
+  }
+  return target ? { index: target.index, angle: target.angle } : null;
+}
+
 export const sabotageTargetOpen = (parts, index, orbit = 0) => {
   const part = parts[index];
   if (!part || part.hp <= 0 || part.type !== sabotagedSystem(parts).system) return false;

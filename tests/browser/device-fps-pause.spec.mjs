@@ -27,6 +27,7 @@ test('physical-device FPS measurement is opt-in, pause-only and localized', asyn
   await expect(page.locator('#auditStart')).toBeDisabled();
   await expect(page.locator('#auditStop')).toBeEnabled();
   await expect(page.locator('#auditReadout')).toContainText('Sem quadros medidos');
+  await expect(page.locator('#auditReadout')).not.toContainText('Chamadas p95 / pico');
   await page.locator('#pauseResume').click();
   await expect(audit).toBeHidden();
   // The deterministic fixture does not run real RAF; it must not invent FPS data.

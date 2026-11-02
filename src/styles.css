@@ -9202,3 +9202,141 @@ body.devastador-escape:not(.devastador-warp) #attackWarning {
     opacity: 0.35;
   }
 }
+
+/* Boss clarity: damage to real generators reduces total displayed integrity. */
+#bossHealthReadout {
+  display: block;
+  margin-top: 3px;
+  color: #fff0bf;
+  font: 700 10px/1.15 monospace;
+  letter-spacing: 0.07em;
+}
+#bossHUD[data-hit='true'] .bar {
+  outline: 2px solid #fff39b;
+  box-shadow: 0 0 15px #ffe36e88;
+}
+#bossHUD[data-hit='true'] #bossHealth {
+  filter: brightness(1.65);
+}
+#weakPointCues {
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+}
+.weak-point-tag {
+  position: absolute;
+  transform: translate(-50%, -150%);
+  background: #111b25e8;
+  border: 1px solid #f6df68;
+  border-radius: 5px;
+  padding: 4px 7px;
+  white-space: nowrap;
+  color: #fff6aa;
+  text-shadow: 0 0 6px #feeb77;
+  font: 800 11px/1.1 monospace;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 9px #fff18355;
+}
+.weak-point-tag[data-state='armored'] {
+  color: #ffba85;
+  border-color: #ed8855;
+  text-shadow: none;
+}
+.weak-point-tag[hidden] {
+  display: none !important;
+}
+.qa-berserk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 12px;
+  color: #ffdf9b;
+}
+.qa-berserk-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+#quickRpg[data-selected='BERSERK'] #specialSwitch {
+  border-color: #f7a354;
+  color: #ffe1ae;
+}
+#quickRpg #specialCast:not(:disabled) {
+  border-color: #8bfbd7;
+  box-shadow: inset 0 0 8px #45ffb422;
+}
+body.berserk-active #quickRpg #specialCast {
+  border-color: #ffb14f;
+  color: #ffe4a2;
+  box-shadow: 0 0 14px #ff7f3266;
+}
+body.berserk-active #rpgLevel {
+  color: #ffb45a;
+}
+@media (pointer: coarse) {
+  body.in-mission #strategyControls #quickRpg button {
+    font-size: 9px;
+    line-height: 1.18;
+  }
+}
+
+/* QA-only, one-tap Berserk activation beneath the existing approved RPG rail.
+   Never cover the aim reticle or enable this dock in normal/production sessions. */
+#qaBerserkDock[hidden],
+body:not(.developer-session) #qaBerserkDock {
+  display: none !important;
+}
+#qaBerserkDock {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 46;
+  width: min(238px, calc(100vw - 100px));
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  box-sizing: border-box;
+  border: 1px solid #ffa461;
+  border-radius: 10px;
+  padding: 5px;
+  background: #20140fef;
+  box-shadow: 0 4px 20px #0008;
+  pointer-events: auto;
+}
+#strategyControls #qaBerserkAction {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #ffd076;
+  border-radius: 7px;
+  background: linear-gradient(110deg, #713a1d, #b54b27);
+  color: #fff6e3;
+  font:
+    800 12px/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.03em;
+  touch-action: manipulation;
+}
+#qaBerserkStatus {
+  color: #ffdba8;
+  font: 700 10px/1.25 monospace;
+}
+#qaBerserkDock[data-active='true'] {
+  border-color: #ffee8a;
+  box-shadow: 0 0 15px #ff962b88;
+}
+#qaBerserkDock[data-active='true'] #qaBerserkAction {
+  background: linear-gradient(110deg, #a13a18, #f27e2b);
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    top: max(245px, calc(env(safe-area-inset-top, 0px) + 215px));
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    left: max(260px, calc(env(safe-area-inset-left, 0px) + 250px));
+    top: max(150px, calc(env(safe-area-inset-top, 0px) + 135px));
+  }
+}

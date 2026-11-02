@@ -29,7 +29,7 @@ test('QA laboratory represents every visual evolution, hull, weapon and RPG powe
     ['999', 'nova7', 0, 0],
     [9, 'unknown', 0, 0],
     [9, 'nova7', 5, 0],
-    [9, 'nova7', 0, 3],
+    [9, 'nova7', 0, 4],
     [null, 'nova7', 0, 0],
   ])
     assert.equal(developerLabLoadout(...bad), null);
@@ -135,4 +135,56 @@ test('production hostname cannot open the laboratory or use developer stage flow
   assert.equal(h.elements.get('developerPanel').hidden, true);
   assert.equal(h.elements.get('menuQA').hidden, true);
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), false);
+});
+
+test('QA Berserk activates on resume without modifying a campaign save', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(0, 'stage'), true);
+  h.game.pause();
+  h.elements.get('qaLabBerserk').checked = true;
+  h.elements.get('qaLabApply').onclick();
+  const active = h.game.snapshot();
+  assert.equal(active.state, 'playing');
+  assert.equal(active.strategy.special, 3);
+  assert.ok(active.strategy.berserk > 9);
+  assert.equal(active.strategy.arcana, 25);
+  h.game.fire();
+  assert.ok(h.game.snapshot().shotPower > 0);
+  h.game.pause();
+  const before = h.game.snapshot().strategy.berserk;
+  h.advance(3);
+  assert.equal(h.game.snapshot().strategy.berserk, before);
+  h.game.pause();
+  h.advance(11, 0.1);
+  assert.equal(h.game.snapshot().strategy.berserk, 0);
+});
+
+test('QA menu one-tap Berserk launches a selected boss with real power-up', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  h.elements.get('developerSector').value = '1';
+  h.elements.get('developerEncounter').value = 'boss';
+  h.elements.get('developerBerserkLaunch').onclick();
+  const active = h.game.snapshot();
+  assert.equal(active.state, 'playing');
+  assert.equal(active.developerSession, true);
+  assert.equal(active.sector, 2);
+  assert.equal(active.boss, true);
+  assert.equal(active.strategy.special, 3);
+  assert.equal(active.strategy.berserk, 0, 'pilot chooses when the inspection starts');
+  assert.equal(h.elements.get('menu').hidden, true);
+  h.advance(0.05);
+  assert.equal(h.elements.get('qaBerserkDock').hidden, false);
+  assert.equal(h.elements.get('qaBerserkAction').textContent, 'ATIVAR BERSERK');
+  h.elements.get('qaBerserkAction').onclick();
+  assert.equal(h.game.snapshot().strategy.arcana, 25);
+  assert.equal(h.game.snapshot().strategy.berserk, 20);
+  h.advance(0.5);
+  assert.ok(h.game.snapshot().strategy.berserk < 20);
+  h.elements.get('qaBerserkAction').onclick();
+  assert.equal(h.game.snapshot().strategy.berserk, 20, 'one tap rearms it for another inspection');
+  assert.equal(h.game.snapshot().strategy.arcana, 25);
+  assert.equal(h.elements.get('developerTier').value, '12');
+  assert.equal(h.elements.get('developerSpecial').value, '3');
 });

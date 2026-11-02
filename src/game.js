@@ -82,9 +82,14 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
+import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { createHostileProjectilePool } from './hostile-projectile-pool.js';
+import { createParticlePool } from './particle-pool.js';
+import { createHudWriteGuard } from './hud-write-guard.js';
+import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
@@ -107,12 +112,19 @@ import {
   multiLockCost,
 } from './mecha-multi-lock.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
-import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import { bossWeakPointOpen, bossWeakPointAngle, bossRadarTarget } from './boss-weakpoint-layout.js';
+import {
+  newWeakpointEvidence,
+  recordWeakpointContact,
+  bossIntegrityRatio,
+  weakpointReadout,
+} from './boss-weakpoint-feedback.js';
 import {
   createDevastadorSabotageCore,
   updateDevastadorSabotageCore,
   sabotagedSystem,
   sabotageTargetOpen,
+  sabotageRadarTarget,
 } from './devastador-sabotage.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
@@ -177,6 +189,10 @@ import { createPod, animatePod, createPickup } from './equipment.js';
 import { createCollapse, updateCollapse, disposeCollapse, COLLAPSE_SECONDS } from './finale.js';
 import { devastadorEscapeAt, DEVASTADOR_ESCAPE_BOOST_START } from './devastador-escape.js';
 import {
+  reactorOrbitalPosition,
+  withReactorOrbitPresentation,
+} from './reactor-orbit-presentation.js';
+import {
   fighter,
   createFlyingRobot,
   scaleFighterVisual,
@@ -208,6 +224,7 @@ export function createGame({
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
+  const renderCostAudit = createRenderCostAudit();
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
   const coarsePointer = matchMedia('(pointer:coarse)');
@@ -221,6 +238,7 @@ export function createGame({
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
+  const hud = createHudWriteGuard($);
   document.body.classList.add('menu');
   let renderer;
   try {
@@ -520,6 +538,7 @@ export function createGame({
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
+  const particlePool = createParticlePool({ scene, sparkGeometry: particleGeo, createHalo: halo });
   let state = 'menu',
     elapsed = 0,
     score = 0,
@@ -606,7 +625,10 @@ export function createGame({
     arcana = 100,
     specialCd = 0,
     barrier = 0,
-    stasis = 0;
+    stasis = 0,
+    berserk = 0,
+    bossHitPulse = 0;
+  let weakpointEvidence = [];
   let evolution = null,
     evolutionStage = -1,
     orbitAngle = 0,
@@ -648,7 +670,8 @@ export function createGame({
         (1 + rank('attack') * 0.12) *
         (strategy.specialty === 'attack' ? 1.15 : 1) *
         activePilot().bonuses.damage *
-        dockedPodPower(podCount, stage(), podsDetached)
+        dockedPodPower(podCount, stage(), podsDetached) *
+        (berserk > 0 ? 1.6 : 1)
       : 1;
   const selectedWeapon = () => ARSENAL[dynamicFlight ? strategy.arsenal : 0];
   function evolve() {
@@ -705,6 +728,10 @@ export function createGame({
     specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
     if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
     if (strategy.special === 2) stasis = spell.duration;
+    if (strategy.special === 3) {
+      berserk = spell.duration;
+      message('BERSERK ATIVO · POTÊNCIA +60% · CADÊNCIA +25%');
+    }
     if (strategy.special === 1) {
       for (let i = 0; i < 9; i++) {
         const angle = (i * Math.PI * 2) / 9;
@@ -722,6 +749,23 @@ export function createGame({
       }
     }
     message('ESPECIAL · ' + spell.name);
+    return true;
+  }
+  function activateQaBerserk() {
+    // Repeatable QA action: genuine Berserk spell, isolated from campaign saves,
+    // with a longer inspection window and no twenty-six-second cooldown.
+    if (!developerAvailable || !developerSession || state !== 'playing' || !dynamicFlight)
+      return false;
+    const before = stage();
+    strategy.xp = Math.max(strategy.xp, xpForStage(12));
+    strategy.special = 3;
+    if (stage() !== before) evolve();
+    arcana = 100;
+    specialCd = 0;
+    if (!castSpecial()) return false;
+    berserk = 20;
+    $('qaBerserkAction').textContent = 'REPETIR BERSERK';
+    $('qaBerserkStatus').textContent = 'ATIVO · 20s · POTÊNCIA +60%';
     return true;
   }
   function scanBoss() {
@@ -1253,7 +1297,8 @@ export function createGame({
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
     reactorGridWave = 0;
-    specialCd = barrier = stasis = 0;
+    specialCd = barrier = stasis = berserk = bossHitPulse = 0;
+    weakpointEvidence = [];
     podsDetached = false;
     podMode = 'docked';
     podBlocks = 0;
@@ -1366,6 +1411,9 @@ export function createGame({
     appActive = true;
   function unlockAudio() {
     try {
+      // On iOS WebKit, media playback must use the playback session so that
+      // explicit game audio is audible through the built-in speaker in Silent mode.
+      configurePlaybackAudioSession(window.navigator);
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
       if (!music) music = createMusic(audioCtx);
@@ -1383,7 +1431,11 @@ export function createGame({
     audioCues?.play(name, { enabled: !muted, active: appActive });
   }
   function resumeAudio() {
-    if (appActive) audioCtx?.resume().catch(() => {});
+    if (appActive) {
+      // WebKit can reset its audio route after an app or tab interruption.
+      configurePlaybackAudioSession(window.navigator);
+      audioCtx?.resume().catch(() => {});
+    }
   }
   function sound(freq = 400, duration = 0.07, type = 'sawtooth', vol = 0.025) {
     if (muted || !audioCtx || !appActive || settings.master * settings.sfx <= 0) return;
@@ -1453,45 +1505,13 @@ export function createGame({
   function explode(pos, n = 16, color = 0xffa04a) {
     if (n >= 12 && dynamicFlight) cue('explosion');
     else if (n > 3) sound(100, 0.2, 'sine', 0.025);
-    for (let i = 0; i < n; i++) {
-      const p = new T.Mesh(
-        particleGeo,
-        new T.MeshBasicMaterial({
-          color: new T.Color(color).multiplyScalar(2.2),
-          transparent: true,
-          blending: T.AdditiveBlending,
-          depthWrite: false,
-        }),
+    for (let i = 0; i < n; i++)
+      particles.push(
+        particlePool.spark(pos, color, rnd(-17, 17), rnd(-17, 17), rnd(-17, 17), rnd(0.3, 0.85)),
       );
-      p.position.copy(pos);
-      scene.add(p);
-      particles.push({
-        o: p,
-        v: new T.Vector3(rnd(-17, 17), rnd(-17, 17), rnd(-17, 17)),
-        life: rnd(0.3, 0.85),
-        kind: 'spark',
-      });
-    }
     if (n > 5) {
-      const light = halo(color, 9, 0.85);
-      light.material = light.material.clone();
-      light.position.copy(pos);
-      scene.add(light);
-      particles.push({ o: light, v: new T.Vector3(), life: 0.45, kind: 'flash' });
-      const wave = new T.Mesh(
-        new T.RingGeometry(1, 1.2, 48),
-        new T.MeshBasicMaterial({
-          color,
-          transparent: true,
-          opacity: 0.9,
-          blending: T.AdditiveBlending,
-          side: T.DoubleSide,
-          depthWrite: false,
-        }),
-      );
-      wave.position.copy(pos);
-      scene.add(wave);
-      particles.push({ o: wave, v: new T.Vector3(), life: 0.6, kind: 'wave' });
+      particles.push(particlePool.flash(pos, color, 9, 0.85, 0.45));
+      particles.push(particlePool.wave(pos, color, 0.6));
     }
   }
   function hit(d) {
@@ -1607,7 +1627,7 @@ export function createGame({
           if (e.life <= 0) kill(e);
         } else kill(e);
       }
-    for (let b of hostile) dispose(b.o);
+    for (let b of hostile) hostileShotPool.release(b);
     hostile = [];
     if (boss) {
       explode(boss.position, 40);
@@ -1631,6 +1651,13 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  const hostileShotPool = createHostileProjectilePool({
+    scene,
+    geometry: orbGeo,
+    materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    createHalo: () => halo(0xff4265, 2.6, 0.8),
+    maxRetained: 96,
+  });
   const upgradedShotMaterials = ['#52ecff', '#ffd15e', '#df85ff', '#f8ffff'].map((c) =>
     glowMaterial(c, 3.4),
   );
@@ -1654,11 +1681,7 @@ export function createGame({
     const color = feedback.color;
     explode(position, heavy ? 7 : 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
     if (heavy && confirmed) cue('mechaImpact');
-    const flash = halo(color, confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5, 0.95);
-    flash.material = flash.material.clone();
-    flash.material.depthTest = false;
-    flash.material.depthWrite = false;
-    flash.renderOrder = 100;
+    const flashSize = confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5;
     if (confirmed || impactTime <= 0 || !impactConfirmed) {
       impactTime = feedback.duration;
       impactConfirmed = confirmed;
@@ -1672,9 +1695,7 @@ export function createGame({
       if (weak) cue('weakPoint');
       else if (bossHit && !confirmed) cue('armorHit');
     }
-    flash.position.copy(position);
-    scene.add(flash);
-    particles.push({ o: flash, v: new T.Vector3(), life: 0.22, kind: 'flash' });
+    particles.push(particlePool.flash(position, color, flashSize, 0.95, 0.22, false));
   }
   function damageEnemy(e, amount, element = 'kinetic') {
     if (dynamicFlight) {
@@ -1695,7 +1716,9 @@ export function createGame({
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterial() : green,
     );
-    o.add(halo(scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5));
+    o.add(
+      halo(berserk > 0 ? '#ff913e' : scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5),
+    );
     o.rotation.x = Math.PI / 2;
     o.position.copy(origin ?? player.position);
     o.position.x += x;
@@ -1715,7 +1738,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    heroEffects.pulse({ robot: robotMode, color: shotColor() });
+    heroEffects.pulse({ robot: robotMode, color: berserk > 0 ? '#ff913e' : shotColor() });
     if (robotMode) robotFireKick = 0.29;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
@@ -1744,10 +1767,15 @@ export function createGame({
       }
     }
     if (robotMode && dynamicFlight) {
-      const flash = halo('#a8faff', 3.8, 0.7);
-      flash.position.copy(robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()));
-      scene.add(flash);
-      particles.push({ o: flash, v: new T.Vector3(), life: 0.14, kind: 'flash' });
+      particles.push(
+        particlePool.flash(
+          robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()),
+          '#a8faff',
+          3.8,
+          0.7,
+          0.14,
+        ),
+      );
     }
     if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
     else sound(900 + weapon * 110);
@@ -1756,7 +1784,7 @@ export function createGame({
           firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
             (scatter ? SCATTER_CADENCE_FACTOR : 1),
           robotMode,
-        )
+        ) * (berserk > 0 ? 0.8 : 1)
       : 0.135;
   }
 
@@ -2062,25 +2090,7 @@ export function createGame({
   }
   function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
-    let o = new T.Mesh(
-      orbGeo,
-      spell === 'arcane' ? shotMaterials[3] : spell === 'fire' ? shotMaterials[2] : enemyOrbMat,
-    );
-    if (spell) o.scale.setScalar(1.8);
-    o.add(halo(0xff4265, 2.6, 0.8));
-    o.position.copy(pos);
-    scene.add(o);
-    hostile.push({
-      o,
-      v: target
-        .clone()
-        .sub(pos)
-        .normalize()
-        .multiplyScalar(spell === 'arcane' ? 38 : 58),
-      life: 6,
-      spell,
-      age: 0,
-    });
+    hostile.push(hostileShotPool.acquire(pos, target, spell));
   }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
@@ -2102,9 +2112,11 @@ export function createGame({
       dynamicFlight && sectorIndex === 3
         ? createDevastadorSabotageCore()
         : createBossModel(current(), sectorIndex, dynamicFlight);
+    weakpointEvidence = newWeakpointEvidence(boss.userData.parts);
+    bossHitPulse = 0;
     for (const e of enemies) dispose(e.o);
     enemies = [];
-    for (const e of hostile) dispose(e.o);
+    for (const e of hostile) hostileShotPool.release(e);
     hostile = [];
     // Enter through the illuminated hangar of the mother ship in the distance.
     // No instant pop-in to the combat position.
@@ -2132,7 +2144,7 @@ export function createGame({
       dynamicFlight && boss.userData.sabotage
         ? 'SABOTAGEM · J/L PARA ORBITAR 360° · TRAVE OS SISTEMAS COM O ROBÔ'
         : dynamicFlight
-          ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+          ? 'ARENA · ORBITE 360° · GERADORES NOS FLANCOS E TRASEIRA'
           : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
@@ -2169,6 +2181,7 @@ export function createGame({
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
       bossCombat.damage(dealt);
       bossHp = bossCombat.hp;
+      if (dealt > 0) bossHitPulse = 0.5;
       return dealt;
     }
     const openPart = (p) => !dynamicFlight || bossTargetOpen(boss.userData.parts.indexOf(p));
@@ -2187,8 +2200,15 @@ export function createGame({
         )
       : parts.find(openPart);
     if (parts.length) {
-      if (!part || !openPart(part)) return 0;
+      if (!part) return 0;
+      const evidenceIndex = boss.userData.parts.indexOf(part);
+      if (!openPart(part)) {
+        recordWeakpointContact(weakpointEvidence, evidenceIndex, 0);
+        return 0;
+      }
       const dealt = spendDamage(amount, dynamicFlight && charged);
+      recordWeakpointContact(weakpointEvidence, evidenceIndex, dealt);
+      if (dealt > 0) bossHitPulse = 0.5;
       part.hp = Math.max(
         0,
         part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
@@ -2236,6 +2256,7 @@ export function createGame({
     const spent = spendDamage(amount, dynamicFlight && charged);
     const dealt = spent * (dynamicFlight ? bossDamageMultipliers('core') : 1);
     bossCombat.damage(dealt);
+    if (dealt > 0) bossHitPulse = 0.5;
 
     bossHp = bossCombat.hp;
     if (bossHp === 0) {
@@ -2263,7 +2284,9 @@ export function createGame({
       state = 'collapsing';
       if (!dynamicFlight) releaseControls();
       for (const arr of [shots, hostile]) {
-        for (const e of arr) dispose(e.o);
+        for (const e of arr)
+          if (arr === hostile) hostileShotPool.release(e);
+          else dispose(e.o);
         arr.length = 0;
       }
       collapseTime = collapseBurst = 0;
@@ -2421,8 +2444,9 @@ export function createGame({
     collapseFinal = false;
     for (let arr of [enemies, shots, hostile, particles, rings, obstacles])
       for (let e of arr) {
-        dispose(e.o);
-        if (arr === particles) e.o.material.dispose();
+        if (arr === hostile) hostileShotPool.release(e);
+        else if (arr === particles) particlePool.release(e);
+        else dispose(e.o);
       }
     enemies = [];
     shots = [];
@@ -2511,6 +2535,7 @@ export function createGame({
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     frameAudit.clear();
+    renderCostAudit.clear();
     pausePanel = 'controls';
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
@@ -2748,6 +2773,7 @@ export function createGame({
   }
   function renderFrameAudit() {
     const result = frameAudit.report();
+    const renderCost = renderCostAudit.report();
     const budget = adaptiveGraphics.current();
     const detail =
       settings.language === 'en'
@@ -2769,25 +2795,43 @@ export function createGame({
       Math.round(budget.resolutionScale * 100) +
       '% ' +
       (budget.adaptive ? '(adaptativo)' : '') +
-      (Number.isFinite(lastFrameCost.drawCalls)
+      (renderCost.samples > 0
         ? '\n' +
           (settings.language === 'en'
-            ? 'Scene draw calls'
+            ? 'Scene cost samples'
             : settings.language === 'es'
-              ? 'Llamadas de escena'
-              : 'Chamadas de cena') +
+              ? 'Muestras de coste 3D'
+              : 'Amostras de custo 3D') +
           ': ' +
-          lastFrameCost.drawCalls +
-          ' · ' +
+          renderCost.samples +
+          '\n' +
           (settings.language === 'en'
-            ? 'triangles'
+            ? 'Draw calls p95 / peak'
             : settings.language === 'es'
-              ? 'triángulos'
-              : 'triângulos') +
+              ? 'Llamadas p95 / pico'
+              : 'Chamadas p95 / pico') +
           ': ' +
-          (lastFrameCost.triangles ?? 0) +
-          ' · pós-passes: ' +
-          lastFrameCost.postPasses
+          renderCost.p95DrawCalls +
+          ' / ' +
+          renderCost.maxDrawCalls +
+          '\n' +
+          (settings.language === 'en'
+            ? 'Triangles p95 / peak'
+            : settings.language === 'es'
+              ? 'Triángulos p95 / pico'
+              : 'Triângulos p95 / pico') +
+          ': ' +
+          renderCost.p95Triangles +
+          ' / ' +
+          renderCost.maxTriangles +
+          '\n' +
+          (settings.language === 'en'
+            ? 'Post-process passes (peak)'
+            : settings.language === 'es'
+              ? 'Pasadas posproceso (pico)'
+              : 'Passes pós-processamento (pico)') +
+          ': ' +
+          renderCost.maxPostPasses
         : '');
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
@@ -3006,6 +3050,15 @@ export function createGame({
     }
     $('developerLaunch').onclick = () =>
       startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
+    $('developerBerserkLaunch').onclick = () => {
+      // One-tap QA access. Real power-up and disposable progression.
+      $('developerTier').value = '12';
+      $('developerSpecial').value = '3';
+      if (startDeveloperScenario($('developerSector').value, $('developerEncounter').value)) {
+        message('QA · BERSERK PRONTO · TOQUE ATIVAR BERSERK NO HUD');
+      }
+    };
+    $('qaBerserkAction').onclick = activateQaBerserk;
     $('qaLabApply').onclick = () => {
       if (!developerAvailable || !developerSession || state !== 'paused' || confirmation) return;
       const lab = developerLabLoadout(
@@ -3017,11 +3070,13 @@ export function createGame({
       if (!lab) return;
       const form = $('qaLabForm').value;
       const pods = $('qaLabPods').value;
+      const testBerserk = $('qaLabBerserk').checked;
       // Apply real visuals/progression without issuing a gameplay stat write
       // to any saved checkpoint, server ranking or production environment.
       strategy.xp = lab.xp;
       strategy.arsenal = lab.arsenal;
-      strategy.special = lab.special;
+      strategy.special = testBerserk ? 3 : lab.special;
+      if (testBerserk) strategy.xp = Math.max(strategy.xp, xpForStage(12));
       weapon = lab.weaponLevel;
       volley = lab.volley;
       rapid = lab.rapid;
@@ -3033,6 +3088,7 @@ export function createGame({
       tacticEnergy = 3;
       energy = 100;
       specialCd = 0;
+      berserk = 0;
       robotCooldown = 0;
       hp = maxHp();
       if (pilotLoadout.ship !== lab.ship) {
@@ -3042,6 +3098,7 @@ export function createGame({
       evolve();
       syncPods();
       pause(); // Resume first; transforms must run the real gameplay action.
+      if (testBerserk) castSpecial();
       if (form === 'robot' && !robotMode) toggleRobot();
       else if (form === 'ship' && robotMode) toggleRobot();
       if ((pods === 'deployed') !== podsDetached) togglePods();
@@ -3067,11 +3124,13 @@ export function createGame({
   $('auditStart').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.start();
+    renderCostAudit.start();
     renderFrameAudit();
   };
   $('auditStop').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.stop();
+    renderCostAudit.stop();
     renderFrameAudit();
   };
   $('auditCopy').onclick = () => {
@@ -3853,6 +3912,10 @@ export function createGame({
             activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
+      berserk = Math.max(0, berserk - dt);
+      bossHitPulse = Math.max(0, bossHitPulse - dt);
+      if (berserk > 0) document.body.classList.add('berserk-active');
+      else document.body.classList.remove('berserk-active');
       const team = squad?.snapshot();
       $('plasmaTitan').disabled =
         !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
@@ -3868,14 +3931,33 @@ export function createGame({
           : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
-      $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
-      $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
-      $('specialCast').textContent =
-        'G · ' +
-        (specialCd > 0 ? Math.ceil(specialCd) + 's' : 'ATIVAR') +
-        ' · ' +
-        Math.floor(arcana);
+      const compactRpg = coarsePointer.matches && window.innerWidth <= 900;
+      $('arsenalSwitch').textContent = compactRpg
+        ? 'ARMA ' + selectedWeapon().name
+        : 'F · ' + selectedWeapon().name;
+      $('specialSwitch').textContent = compactRpg
+        ? 'RPG ' + SPECIALS[strategy.special].name
+        : 'H · ' + SPECIALS[strategy.special].name;
+      $('specialCast').textContent = compactRpg
+        ? berserk > 0
+          ? 'BERSERK ' + Math.ceil(berserk) + 's'
+          : specialCd > 0
+            ? 'RECARGA ' + Math.ceil(specialCd) + 's'
+            : 'USAR ' + Math.floor(arcana)
+        : 'G · ' +
+          (berserk > 0
+            ? 'BERSERK ' + Math.ceil(berserk) + 's'
+            : specialCd > 0
+              ? Math.ceil(specialCd) + 's'
+              : 'ATIVAR') +
+          ' · ' +
+          Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('quickRpg').setAttribute('data-selected', SPECIALS[strategy.special].name);
+      $('specialCast').setAttribute(
+        'aria-label',
+        'Ativar ' + SPECIALS[strategy.special].name + ', energia ' + Math.floor(arcana),
+      );
       $('arsenalSwitch').disabled = ARSENAL.filter((item) => item.stage <= stage()).length < 2;
       $('specialSwitch').disabled = SPECIALS.filter((item) => item.stage <= stage()).length < 2;
       $('orbitControls').hidden = !boss;
@@ -4369,7 +4451,9 @@ export function createGame({
         renderBossRadar(document, null);
         $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
-        $('radarWeak').hidden = true;
+        const objective = sabotageRadarTarget(boss.userData.parts, relativeOrbit());
+        $('radarWeak').hidden = !objective;
+        if (objective) $('radarWeak').style.transform = 'rotate(' + objective.angle + 'rad)';
         $('tacticState').textContent = 'SABOTAGEM · ORBITE 360°';
       } else if (dynamicFlight) {
         const turn =
@@ -4390,7 +4474,10 @@ export function createGame({
         boss.userData.parts.forEach((p, i) => {
           const open = bossTargetOpen(i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
-          p.marker.visible = open;
+          const discovered = weakpointEvidence[i]?.revealed;
+          p.marker.visible = open || (discovered && p.hp > 0);
+          if (p.marker.userData.signalMaterial)
+            p.marker.userData.signalMaterial.color.set(open ? '#fff27a' : '#ff925b');
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
@@ -4498,10 +4585,16 @@ export function createGame({
               : inDanger(orbitAngle, t)
                 ? 'RISCO'
                 : 'COBERTURA';
-        const point = boss.userData.parts.findIndex((p) => p.hp > 0);
-        const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
-        $('radarWeak').hidden = scanTime <= 0;
-        $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
+        const objective = bossRadarTarget(
+          sectorIndex,
+          boss.userData.parts,
+          weakpointEvidence,
+          relativeOrbit(),
+          scanTime > 0,
+        );
+        $('radarWeak').hidden = !objective;
+        if (objective)
+          $('radarWeak').style.transform = 'rotate(' + (objective.angle + t.heading) + 'rad)';
         if (
           bossCombat.age >= 3 &&
           t.state === 'attack' &&
@@ -4921,8 +5014,7 @@ export function createGame({
       }
     }
     for (let b of hostile) {
-      const from = b.o.position.clone();
-      b.previousPosition = from;
+      const from = b.previousPosition.copy(b.o.position);
       b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
         b.v.lerp(
@@ -5097,39 +5189,40 @@ export function createGame({
     for (let arr of [shots, hostile, rings, obstacles])
       for (let i = arr.length - 1; i >= 0; i--)
         if (arr[i].life <= 0) {
-          dispose(arr[i].o);
+          if (arr === hostile) hostileShotPool.release(arr[i]);
+          else dispose(arr[i].o);
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
-    $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
-    $('speedValue').textContent =
+    hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
+    hud.text(
+      'speedValue',
       boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
         ? '1140'
         : boosting
           ? '890'
-          : '480';
-    $('shield').style.width = (hp / maxHp()) * 100 + '%';
-    $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
-    $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
-    $('petCareHud').hidden = !dynamicFlight;
-    $('petCareHud').textContent =
-      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');
-    $('score').textContent = String(score).padStart(3, '0');
-    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
-    $('energy').style.width = energy + '%';
-    $('boostTouch').style.setProperty?.('--meter', energy + '%');
-    $('bombTouch').setAttribute?.('data-count', bombs);
-    $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
-    const sabotageProgress = boss?.userData.sabotage
-      ? (boss.userData.parts.filter((part) => part.hp <= 0).length +
-          (1 - bossHp / bossCombat.max)) /
-        9
-      : null;
-    $('bossHealth').style.width =
-      Math.max(
-        0,
-        (sabotageProgress === null ? bossHp / (bossCombat?.max ?? 1400) : sabotageProgress) * 100,
-      ) + '%';
+          : '480',
+    );
+    hud.style('shield', 'width', (hp / maxHp()) * 100 + '%');
+    hud.hidden('criticalWarning', !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25);
+    hud.hidden('shieldWarning', !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45);
+    hud.hidden('petCareHud', !dynamicFlight);
+    hud.text(
+      'petCareHud',
+      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / '),
+    );
+    hud.text('score', String(score).padStart(3, '0'));
+    hud.text('bombs', '◆ '.repeat(bombs) || '—');
+    hud.style('energy', 'width', energy + '%');
+    hud.cssVar('boostTouch', '--meter', energy + '%');
+    hud.attribute('bombTouch', 'data-count', bombs);
+    hud.style('progress', 'width', Math.min(100, (elapsed / current().duration) * 100) + '%');
+    const integrity = boss
+      ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
+      : 0;
+    hud.style('bossHealth', 'width', Math.round(integrity * 100) + '%');
+    hud.text('bossHealthReadout', Math.round(integrity * 100) + '% INTEGRIDADE');
+    hud.attribute('bossHUD', 'data-hit', String(bossHitPulse > 0));
   }
   let last = now();
   function tick(dt, nowMs) {
@@ -5205,9 +5298,7 @@ export function createGame({
         if (p.kind === 'wave') p.o.scale.addScalar(dt * 30);
         else p.o.scale.multiplyScalar(1 + dt * (p.kind === 'flash' ? 4 : 1.4));
         if (p.life <= 0) {
-          dispose(p.o);
-          p.o.material.dispose();
-          if (p.kind === 'wave') p.o.geometry.dispose();
+          particlePool.release(p);
           particles.splice(i, 1);
         }
       }
@@ -5264,25 +5355,86 @@ export function createGame({
     barrierVisual.visible =
       dynamicFlight && barrier > 0 && !inside && ['playing', 'paused'].includes(state);
     cockpit?.update(state === 'paused' ? 0 : dt, inside, charge);
-    $('cockpitPanel').hidden = !inside;
-    $('tacticalPanel').hidden = !dynamicFlight || !boss || !['playing', 'paused'].includes(state);
-    $('hitFeedback').hidden =
-      !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state);
-    $('cameraView').disabled = state !== 'playing';
-    $('strategyControls').hidden =
+    hud.hidden('cockpitPanel', !inside);
+    hud.hidden('tacticalPanel', !dynamicFlight || !boss || !['playing', 'paused'].includes(state));
+    hud.hidden(
+      'hitFeedback',
+      !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state),
+    );
+    // For the eight physical Devastador valves, reuse the two lightweight
+    // labels for whichever currently vulnerable parts face the pilot.
+    const cueTargets = boss?.userData.sabotage
+      ? boss.userData.parts
+          .map((part, index) => ({ part, index, open: bossTargetOpen(index) }))
+          .filter(({ part, open }) => part.hp > 0 && open)
+          .slice(0, 2)
+      : [0, 1].map((index) => ({
+          part: boss?.userData.parts[index],
+          index,
+          open: Boolean(boss && bossTargetOpen(index)),
+        }));
+    for (let i = 0; i < 2; i++) {
+      const node = $('weakCue' + i);
+      const target = cueTargets[i];
+      const part = target?.part;
+      const cue =
+        dynamicFlight && boss
+          ? weakpointReadout(part, weakpointEvidence[target?.index], target?.open)
+          : null;
+      hud.hidden('weakCue' + i, !cue || !['playing', 'paused'].includes(state));
+      if (node.hidden) continue;
+      boss.updateMatrixWorld(true);
+      camera.updateMatrixWorld(true);
+      const marker = part.marker.getWorldPosition(new T.Vector3()).project(camera);
+      if (
+        marker.z <= -1 ||
+        marker.z >= 1 ||
+        Math.abs(marker.x) > 0.94 ||
+        Math.abs(marker.y) > 0.85
+      ) {
+        hud.hidden('weakCue' + i, true);
+        continue;
+      }
+      hud.text('weakCue' + i, cue.label);
+      hud.attribute('weakCue' + i, 'data-state', cue.state);
+      hud.style('weakCue' + i, 'left', ((marker.x + 1) * window.innerWidth) / 2 + 'px');
+      hud.style('weakCue' + i, 'top', ((1 - marker.y) * window.innerHeight) / 2 + 'px');
+    }
+    hud.disabled('cameraView', state !== 'playing');
+    hud.hidden(
+      'strategyControls',
       !dynamicFlight ||
-      !['playing', 'paused'].includes(state) ||
-      (state === 'paused' && pausedFrom !== 'playing');
-    $('cockpitReadout').textContent =
+        !['playing', 'paused'].includes(state) ||
+        (state === 'paused' && pausedFrom !== 'playing'),
+    );
+    const qaBerserkVisible = developerAvailable && developerSession && state === 'playing';
+    hud.hidden('qaBerserkDock', !qaBerserkVisible);
+    if (qaBerserkVisible) {
+      hud.text('qaBerserkAction', berserk > 0 ? 'REPETIR BERSERK' : 'ATIVAR BERSERK');
+      hud.text(
+        'qaBerserkStatus',
+        berserk > 0
+          ? 'ATIVO · ' + Math.ceil(berserk) + 's · ATAQUE +60%'
+          : 'PRONTO · TOQUE PARA ATIVAR',
+      );
+      hud.attribute('qaBerserkDock', 'data-active', String(berserk > 0));
+    }
+    hud.text(
+      'cockpitReadout',
       Math.ceil(hp) +
-      '% ESCUDO · ' +
-      Math.ceil(energy) +
-      '% ENERGIA · ' +
-      (boosting ? '890' : '480');
+        '% ESCUDO · ' +
+        Math.ceil(energy) +
+        '% ENERGIA · ' +
+        (boosting ? '890' : '480'),
+    );
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
-      lastFrameCost = post.render() ?? lastFrameCost;
+      const drawFrame = () => post.render();
+      lastFrameCost =
+        (dynamicFlight && boss?.userData.sabotage
+          ? withReactorOrbitPresentation(scene, boss.position, orbitAngle, drawFrame)
+          : drawFrame()) ?? lastFrameCost;
     }
   }
   function step(dt) {
@@ -5299,6 +5451,8 @@ export function createGame({
     const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
     last = time;
     tick(dt, time);
+    // Read renderer counters only after this frame rendered. No extra WebGL calls.
+    renderCostAudit.sample(lastFrameCost, renderingFlight && state === 'playing');
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
@@ -5362,7 +5516,16 @@ export function createGame({
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
-      strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
+      strategy: {
+        ...strategy,
+        stage: stage(),
+        arcana,
+        specialCd,
+        barrier,
+        stasis,
+        berserk,
+        orbitAngle,
+      },
       missionCameraSeconds: reactorGridSeconds,
       missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,
@@ -5372,6 +5535,8 @@ export function createGame({
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      hostileProjectilePool: hostileShotPool.stats(),
+      particlePool: particlePool.stats(),
       cameraMode,
       directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
@@ -5416,6 +5581,8 @@ export function createGame({
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
           hp: p.hp,
+          discovered: Boolean(weakpointEvidence[i]?.revealed),
+          contacts: weakpointEvidence[i]?.contacts ?? 0,
           open: !dynamicFlight || bossTargetOpen(i),
           angle: boss.userData.sabotage
             ? p.angle
@@ -5429,6 +5596,17 @@ export function createGame({
         ? {
             ...sabotagedSystem(boss.userData.parts),
             visual: boss.userData.reactorVisual,
+            orbit: {
+              angle: orbitAngle,
+              pilotWorldPosition: reactorOrbitalPosition(
+                player.position,
+                boss.position,
+                orbitAngle,
+              ).toArray(),
+              coreWorldPosition: boss.position.toArray(),
+              physicallyOrbiting: true,
+              roomStationary: true,
+            },
             hall: {
               radius: boss.userData.grandHall.userData.radius,
               clearOrbitRadius: boss.userData.grandHall.userData.safeOrbitRadius,
@@ -5453,6 +5631,9 @@ export function createGame({
       energy,
       boss: !!boss,
       bossHp,
+      bossIntegrity: boss
+        ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
+        : 0,
       bossPhase: bossCombat?.phase ?? 0,
       bossAge: bossCombat?.age ?? 0,
       bossZ: boss?.position.z ?? null,
@@ -5549,6 +5730,7 @@ export function createGame({
     destroy() {
       running = false;
       frameAudit.clear();
+      renderCostAudit.clear();
       document.body.classList.remove(
         'in-mission',
         'stage-intro',
@@ -5564,6 +5746,8 @@ export function createGame({
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
+      hostileShotPool.clear();
+      particlePool.clear();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());

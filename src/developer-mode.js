@@ -5,6 +5,8 @@ export function developerToolsAllowed(hostname, native = false) {
   const host = hostname.toLowerCase();
   return (
     host === 'dev.nova-wing-preview.pages.dev' ||
+    // Dedicated branch alias used by the stage-4, boss and Berserk QA preview.
+    host === 'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev' ||
     // Approved QA build and its stable branch alias; never enable HML or PROD.
     host === '52fd04c6.nova-wing-preview.pages.dev' ||
     host === 'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev' ||

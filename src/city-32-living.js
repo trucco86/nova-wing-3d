@@ -38,6 +38,24 @@ const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795
 );
 const transform = new T.Object3D();
 const textureCache = new Map();
+// WeakMap keeps scene references private and correct after the far-city clone.
+const cityAnimation = new WeakMap();
+function animationNodes(root) {
+  let nodes = cityAnimation.get(root);
+  if (nodes) return nodes;
+  const beams = root.getObjectByName('city32-sky-searchlights');
+  const air = root.getObjectByName('city32-sky-traffic');
+  nodes = {
+    pivots: beams.children
+      .filter((tower) => tower.isGroup)
+      .map((tower) => ({ tower, pivot: tower.getObjectByName('city32-searchlight-pivot') })),
+    bodies: air.getObjectByName('city32-civilian-aircraft'),
+    lamps: air.getObjectByName('city32-aircraft-navigation-lights'),
+    holograms: root.getObjectByName('city32-holographic-signs').children,
+  };
+  cityAnimation.set(root, nodes);
+  return nodes;
+}
 
 export function advertisingTexture(brand, subtitle, color) {
   if (textureCache.has(brand)) return textureCache.get(brand);
@@ -378,20 +396,15 @@ export function setCity32Quality(root, quality) {
 export function updateCity32Living(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
   const phase = root.userData.phase || 0;
-  const beams = root.getObjectByName('city32-sky-searchlights');
-  if (beams)
-    for (const tower of beams.children) {
-      if (!tower.isGroup) continue;
-      const p = tower.getObjectByName('city32-searchlight-pivot');
-      if (!p) continue;
-      p.rotation.z = Math.sin(travel * 0.005 + tower.userData.index * 1.7 + phase) * 0.24;
-      p.rotation.x = Math.cos(travel * 0.004 + tower.userData.index + phase) * 0.18;
-    }
-  const air = root.getObjectByName('city32-sky-traffic');
-  if (air) {
-    const bodies = air.getObjectByName('city32-civilian-aircraft');
-    const lamps = air.getObjectByName('city32-aircraft-navigation-lights');
-    for (let i = 0; i < 18; i++) {
+  const { pivots, bodies, lamps, holograms } = animationNodes(root);
+  for (const { tower, pivot } of pivots) {
+    if (!tower.visible || !pivot) continue;
+    pivot.rotation.z = Math.sin(travel * 0.005 + tower.userData.index * 1.7 + phase) * 0.24;
+    pivot.rotation.x = Math.cos(travel * 0.004 + tower.userData.index + phase) * 0.18;
+  }
+  const count = Math.min(bodies.count, lamps.count);
+  if (count) {
+    for (let i = 0; i < count; i++) {
       const side = i % 2 ? 1 : -1;
       const distance = (i * 149 + travel * (0.17 + (i % 4) * 0.052) + phase * 130) % 1870;
       const z = -45 - distance;
@@ -411,12 +424,11 @@ export function updateCity32Living(root, travel) {
     bodies.instanceMatrix.needsUpdate = true;
     lamps.instanceMatrix.needsUpdate = true;
   }
-  const holo = root.getObjectByName('city32-holographic-signs');
-  if (holo)
-    holo.children.forEach((mesh, i) => {
-      mesh.rotation.y = Math.sin(travel * 0.004 + i) * 0.12;
-      mesh.scale.x = 19 + 2 * Math.sin(travel * 0.007 + i);
-    });
+  holograms.forEach((mesh, i) => {
+    if (!mesh.visible) return;
+    mesh.rotation.y = Math.sin(travel * 0.004 + i) * 0.12;
+    mesh.scale.x = 19 + 2 * Math.sin(travel * 0.007 + i);
+  });
 }
 
 export function createCity32Skyline() {

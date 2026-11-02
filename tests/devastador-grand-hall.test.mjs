@@ -55,10 +55,10 @@ test('four industrial districts are visibly and mechanically distinct, not repea
   updateDevastadorGrandHall(hall, { orbit: Math.PI, time: 3, driveSpeed: 1 });
   const turning = engines[0].rotation.z;
   assert.notEqual(turning, 0);
-  assert.equal(hall.rotation.y, Math.PI, 'hall compensates reactor rotation');
+  assert.equal(hall.rotation.y, 0, 'fixed hall does not spin with player orbit');
   updateDevastadorGrandHall(hall, { orbit: Math.PI / 2, time: 10, driveSpeed: 0, blackout: 1 });
   assert.equal(engines[0].rotation.z, 0, 'engines stop after sabotage');
-  assert.equal(hall.rotation.y, Math.PI / 2);
+  assert.equal(hall.rotation.y, 0, 'the chamber remains fixed throughout orbit');
   assert.ok(hall.userData.materials.every((m) => m instanceof T.Material));
   // All geometry and materials belong to the same boss cleanup path.
   const owner = new T.Group();
@@ -82,6 +82,9 @@ test('stage 4 developer encounter replaces tight corridors with the new hall wit
   assert.equal(snap.sabotage.hall.clearOrbitRadius, 190);
   assert.equal(snap.sabotage.hall.facilities, 4);
   assert.equal(snap.sabotage.hall.centralReactor, true);
+  assert.equal(snap.sabotage.orbit.physicallyOrbiting, true);
+  assert.equal(snap.sabotage.orbit.roomStationary, true);
+  assert.equal(snap.sabotage.orbit.pilotWorldPosition.length, 3);
   assert.equal(snap.sabotage.hall.active, true);
   assert.equal(
     snap.sabotage.hall.corridorsHidden,

@@ -5,6 +5,7 @@ import {
   SABOTAGE_SYSTEMS,
   sabotagedSystem,
   sabotageTargetOpen,
+  sabotageRadarTarget,
   createDevastadorSabotageCore,
   updateDevastadorSabotageCore,
 } from '../src/devastador-sabotage.js';
@@ -129,4 +130,39 @@ test('destroying a system in the QA chamber persists without moving it as a gene
   assert.ok(s.bossZ < -100, 'the reactor must stay within the industrial chamber');
   assert.equal(s.bossIntent, null, 'generic boss AI remains disabled');
   assert.equal(s.sabotage.visual.blackout, 0);
+});
+
+test('sabotage radar tracks the nearest LIVE system, never future stages or dead targets', () => {
+  const model = createDevastadorSabotageCore();
+  const parts = model.userData.parts;
+  assert.deepEqual(sabotageRadarTarget(parts, -2.45), { index: 0, angle: -2.45 });
+  assert.deepEqual(sabotageRadarTarget(parts, 2.45), { index: 3, angle: 2.45 });
+  parts[0].hp = 0;
+  assert.notEqual(sabotageRadarTarget(parts, -2.45)?.index, 0);
+  for (const part of parts.filter((p) => p.type === 'power')) part.hp = 0;
+  assert.equal(parts[sabotageRadarTarget(parts, 1.65).index].type, 'coolant');
+  for (const part of parts.filter((p) => p.type === 'coolant')) part.hp = 0;
+  assert.equal(parts[sabotageRadarTarget(parts, 2.83).index].type, 'drive');
+  for (const part of parts.filter((p) => p.type === 'drive')) part.hp = 0;
+  assert.equal(sabotageRadarTarget(parts, 0), null, 'core has its own central indicator');
+  disposeBoss(model);
+});
+
+test('the stage-4 QA radar shows the actual current power circuit while orbiting', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
+  h.advance(0.2, 0.05);
+  const snap = h.game.snapshot();
+  const target = sabotageRadarTarget(
+    snap.bossTargets.map((p, i) => ({
+      hp: p.hp,
+      angle: p.angle,
+      type: i < 4 ? 'power' : i < 6 ? 'coolant' : 'drive',
+    })),
+    snap.strategy.orbitAngle,
+  );
+  assert.ok(target);
+  assert.equal(h.elements.get('radarWeak').hidden, false);
+  assert.equal(h.elements.get('radarWeak').style.transform, 'rotate(' + target.angle + 'rad)');
 });

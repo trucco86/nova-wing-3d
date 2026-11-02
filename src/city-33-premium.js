@@ -6,6 +6,25 @@ import { advertisingTexture, CITY32_ADS } from './city-32-living.js';
 const cube = new T.BoxGeometry(1, 1, 1);
 const lightGeometry = new T.SphereGeometry(1, 6, 4);
 const renderObject = new T.Object3D();
+// The city is cloned for the second road tile. Keep live references in a
+// WeakMap so each clone owns its own buses and construction equipment.
+const premiumAnimation = new WeakMap();
+function animationNodes(root) {
+  let nodes = premiumAnimation.get(root);
+  if (nodes) return nodes;
+  const traffic = root.getObjectByName('city33-moving-futuristic-buses');
+  const sites = root.getObjectByName('city33-active-construction-sites');
+  nodes = {
+    parts: ['hull', 'glazing', 'marker', 'roof'].map((key) =>
+      traffic.getObjectByName('city33-bus-' + key),
+    ),
+    cranes: sites.getObjectByName('city33-animated-cranes').children,
+    sparks: sites.getObjectByName('city33-welding-sparks'),
+    origins: sites.userData.siteOrigins,
+  };
+  premiumAnimation.set(root, nodes);
+  return nodes;
+}
 const slate = ['#758994', '#899ba4', '#9ca9ab', '#657f8e', '#b8b5ae', '#70808c'];
 const busPaint = new T.MeshPhysicalMaterial({
   color: '#d8e5e8',
@@ -365,40 +384,41 @@ export function setCity33Quality(root, quality) {
 export function updateCity33Premium(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
   const phase = root.userData.phase || 0;
-  const traffic = root.getObjectByName('city33-moving-futuristic-buses');
-  const parts = ['hull', 'glazing', 'marker', 'roof'].map((key) =>
-    traffic.getObjectByName('city33-bus-' + key),
-  );
-  for (let i = 0; i < 8; i++) {
+  const { parts, cranes, sparks, origins } = animationNodes(root);
+  // All four bus meshes are quality-gated together. Medium draws four,
+  // High draws eight; never recompute objects hidden by the selected LOD.
+  const busCount = Math.min(...parts.map((mesh) => mesh.count));
+  for (let i = 0; i < busCount; i++) {
     const side = i % 2 ? 1 : -1;
-    // Most traffic is concentrated mid-stage instead of near takeoff.
     const z = -575 - ((i * 129 + travel * (0.31 + (i % 3) * 0.04) + phase * 180) % 865);
     const x = side * 66;
     const flip = side < 0 ? Math.PI : 0;
-    const specs = [
-      [x, 18.5, z, 9, 4.4, 22],
-      [x, 21.1, z - 1, 7.6, 2.3, 15],
-      [x, 18.4, z - 11.3, 6.7, 0.6, 0.45],
-      [x, 22.5, z, 8.3, 0.6, 17.8],
-    ];
-    specs.forEach(([px, py, pz, sx, sy, sz], index) => {
-      renderObject.position.set(px, py, pz);
-      renderObject.rotation.set(0, flip, 0);
-      renderObject.scale.set(sx, sy, sz);
-      renderObject.updateMatrix();
-      parts[index].setMatrixAt(i, renderObject.matrix);
-    });
+    renderObject.rotation.set(0, flip, 0);
+    // Four rigid parts share the exact same transform math as the original
+    // spec list, with no transient arrays or matrix clones per frame.
+    renderObject.position.set(x, 18.5, z);
+    renderObject.scale.set(9, 4.4, 22);
+    renderObject.updateMatrix();
+    parts[0].setMatrixAt(i, renderObject.matrix);
+    renderObject.position.set(x, 21.1, z - 1);
+    renderObject.scale.set(7.6, 2.3, 15);
+    renderObject.updateMatrix();
+    parts[1].setMatrixAt(i, renderObject.matrix);
+    renderObject.position.set(x, 18.4, z - 11.3);
+    renderObject.scale.set(6.7, 0.6, 0.45);
+    renderObject.updateMatrix();
+    parts[2].setMatrixAt(i, renderObject.matrix);
+    renderObject.position.set(x, 22.5, z);
+    renderObject.scale.set(8.3, 0.6, 17.8);
+    renderObject.updateMatrix();
+    parts[3].setMatrixAt(i, renderObject.matrix);
   }
-  parts.forEach((mesh) => {
-    mesh.instanceMatrix.needsUpdate = true;
-  });
-  const sites = root.getObjectByName('city33-active-construction-sites');
-  sites.getObjectByName('city33-animated-cranes').children.forEach((crane, i) => {
+  if (busCount) for (const mesh of parts) mesh.instanceMatrix.needsUpdate = true;
+  cranes.forEach((crane, i) => {
+    if (!crane.visible) return;
     crane.rotation.y = Math.sin(travel * 0.0018 + phase + i * 1.6) * 0.42;
   });
-  const sparks = sites.getObjectByName('city33-welding-sparks');
-  const origins = sites.userData.siteOrigins;
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < sparks.count; i++) {
     const b = origins[Math.floor(i / 4)];
     const flicker = Math.abs(Math.sin(travel * 0.12 + i * 1.93 + phase));
     renderObject.position.set(b.x + ((i % 4) - 1.5) * 1.8, b.y + (i % 3) * 1.6 + flicker, b.z);
@@ -407,5 +427,5 @@ export function updateCity33Premium(root, travel) {
     renderObject.updateMatrix();
     sparks.setMatrixAt(i, renderObject.matrix);
   }
-  sparks.instanceMatrix.needsUpdate = true;
+  if (sparks.count) sparks.instanceMatrix.needsUpdate = true;
 }
