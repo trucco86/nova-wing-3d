@@ -102,7 +102,9 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
   expect(errors).toEqual([]);
 });
 
-test('both fingers hold FIRE and BOOST independently without ghost taps', async ({ page }, info) => {
+test('both fingers hold FIRE and BOOST independently without ghost taps', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile');
   test.setTimeout(90000);
   for (const viewport of [
