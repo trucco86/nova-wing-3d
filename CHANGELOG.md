@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.63 — Candidata de QA: reator em órbita e cenários vivos
+
+- Fase 4: apresentação da nave e câmera orbitando o reator estacionário, com salão fixo; colisões e tiros preservados no referencial de gameplay.
+- Dez fases: segundo e terceiro planos animados, qualidade Alto/Médio e objetos exclusivamente visuais.
+- Dez chefes: mecanismos e blindagem articulados sem mudanças de hitbox ou origem dos disparos.
+- Apenas QA: Playwright FULL, testes visuais desktop/mobile e aceite ainda são exigidos antes de produção.
+
 ## 1.27.62 — Candidata em preparação
 
 - Nave: GIRO de 90° enquanto Q/E/Z ou toque são segurados; toque curto mantém giro defensivo de 360°.
