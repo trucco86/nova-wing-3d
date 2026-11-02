@@ -21,3 +21,10 @@ O diagnóstico anterior apresentava o custo **apenas do último frame** depois d
 ## Escopo de código
 
 `src/render-cost-audit.js`, `src/game.js`, testes Node isolados, teste browser existente de pausa e FPS. Mantém produção e persistência sem alteração.
+
+## v1.27.69 — comparação entre perfis sem contaminar a amostra
+
+- O campo **Cenário** identifica automaticamente fase, preset selecionado e versão da candidata no instante de **Iniciar medição**. Isso permite comparar relatórios copiados da mesma fase/missão em diferentes builds.
+- Se o jogador alterar Alto/Médio/Auto em Opções, os dois medidores são limpos. É obrigatório iniciar uma nova medição após a troca; não somar FPS de modos diferentes.
+- O perfil escolhido não deve ser confundido com render efetivo: a linha de resolução adaptativa permanece no relatório. Repetir a mesma duração e percurso para comparar p95 e custo do render.
+- Isso melhora a **qualidade da evidência**, não significa FPS físico aprovado. Ainda é necessário um jogador testar e fornecer os resultados em iOS e Android.

@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.69 — Evidência FPS reproduzível por fase e preset (QA)
+
+- Relatório de FPS explicita fase, perfil de qualidade selecionado e versão do build capturados ao iniciar medição.
+- Ao trocar manualmente entre Alto, Médio e Auto, ambas as amostragens são invalidadas: evita misturar frames/triângulos de perfis diferentes.
+- Evidências continuam somente na memória local, copiadas pelo jogador, sem dados de identificação nem telemetria externa.
+- Testes Node de contexto/localização e Playwright do reset de medição durante opções.
+- Sem alteração na física, chefes, controles ou qualidade gráfica em si. Candidata QA, não produção.
+
 ## 1.27.68 — Europa Combat 4.0: onda de gelo e pinça criogênica (QA)
 
 - Colosso de Europa (fase 6): onda de gelo exige esquiva vertical; pinça criogênica exige deslocamento lateral. Alternância reage à altitude e modo robô.

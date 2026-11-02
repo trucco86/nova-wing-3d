@@ -225,6 +225,7 @@ export function createGame({
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
   const renderCostAudit = createRenderCostAudit();
+  let frameAuditContext = null;
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
   const coarsePointer = matchMedia('(pointer:coarse)');
@@ -2536,6 +2537,7 @@ export function createGame({
     flightCamera.reset(player.position);
     frameAudit.clear();
     renderCostAudit.clear();
+    frameAuditContext = null;
     pausePanel = 'controls';
     state = 'playing';
     document.getSelection?.()?.removeAllRanges();
@@ -2787,6 +2789,7 @@ export function createGame({
         width: window.innerWidth,
         height: window.innerHeight,
         dpr: window.devicePixelRatio ?? 1,
+        ...frameAuditContext,
       }) +
       '\n' +
       detail +
@@ -2854,6 +2857,11 @@ export function createGame({
   }
   function applySettings() {
     if (settings.graphics !== activeGraphicsSetting) {
+      // A single FPS report must never combine two manually selected
+      // render presets. Invalidate both samplers before changing quality.
+      frameAudit.clear();
+      renderCostAudit.clear();
+      frameAuditContext = null;
       activeGraphicsSetting = settings.graphics;
       adaptiveGraphics.reset(settings.graphics);
     }
@@ -3123,6 +3131,11 @@ export function createGame({
   $('pauseTabFps').onclick = () => showPausePanel('fps');
   $('auditStart').onclick = () => {
     if (state !== 'paused') return;
+    frameAuditContext = {
+      sector: sectorIndex + 1,
+      graphics: settings.graphics,
+      version: $('gameVersion').textContent.trim(),
+    };
     frameAudit.start();
     renderCostAudit.start();
     renderFrameAudit();
@@ -5738,6 +5751,7 @@ export function createGame({
       running = false;
       frameAudit.clear();
       renderCostAudit.clear();
+      frameAuditContext = null;
       document.body.classList.remove(
         'in-mission',
         'stage-intro',

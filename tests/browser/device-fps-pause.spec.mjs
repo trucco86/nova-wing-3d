@@ -115,3 +115,23 @@ test('FPS entry is reachable in compact portrait and landscape without obscuring
     await expect(page.locator('#pauseMenu')).toBeHidden();
   }
 });
+
+test('switching graphics mode cancels any active performance measurement to avoid mixed evidence', async ({
+  page,
+}) => {
+  await page.goto('/__dynamic.html?sector=5');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.game.pause());
+  await page.locator('#pauseTabFps').click();
+  await page.locator('#auditStart').click();
+  await expect(page.locator('#auditStop')).toBeEnabled();
+  await page.locator('#pauseOptions').click();
+  const graphics = page.locator('#settingGraphics');
+  const oldValue = await graphics.inputValue();
+  await graphics.selectOption(oldValue === 'medium' ? 'high' : 'medium');
+  await page.locator('#settingsClose').click();
+  await expect(page.locator('#auditStart')).toBeEnabled();
+  await expect(page.locator('#auditStop')).toBeDisabled();
+  await expect(page.locator('#auditCopy')).toBeDisabled();
+  await expect(page.locator('#auditReadout')).toContainText('Sem quadros medidos');
+});
