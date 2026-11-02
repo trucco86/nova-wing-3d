@@ -44,3 +44,20 @@ test('a distant player is shown safe even if the boss aims at the original locat
   assert.equal(plan.threatened, false);
   assert.equal(plan.guide, 'SEGURO · MANTENHA');
 });
+
+test('Phoenix solar attacks share their exact damage footprint with the readable radar', () => {
+  for (const [cycle, playerY, expected, dodgeX, dodgeY] of [
+    [1, 10, 'solar-sweep', 0, 23],
+    [2, 30, 'plasma-dive', 25, 30],
+  ]) {
+    const intent = chooseBossIntent({ sector: 4, cycle, playerX: 0, playerY });
+    assert.equal(intent.kind, expected);
+    const shown = bossRadarPlan(intent, { x: 0, y: playerY });
+    assert.equal(shown.threatened, true);
+    assert.equal(shown.shape.type, expected === 'solar-sweep' ? 'rect' : 'ellipse');
+    assert.ok(shown.exit, 'danger radar shows a reachable safe direction');
+    const escaped = bossRadarPlan(intent, { x: dodgeX, y: dodgeY });
+    assert.equal(escaped.threatened, bossMeleeHit(intent, { x: dodgeX, y: dodgeY }));
+    assert.equal(escaped.threatened, false);
+  }
+});

@@ -1,0 +1,41 @@
+name: Prepare Phoenix combat QA
+on:
+  push:
+    branches: [feat/phoenix-plasma-attacks-20261102]
+    paths:
+      - src/boss-combat-ai.js
+      - src/boss-radar.js
+      - tests/boss-combat-ai.test.mjs
+      - tests/boss-radar.test.mjs
+      - .github/workflows/phoenix-qa-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/phoenix-plasma-attacks-20261102
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and build versioned game
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit generated HTML and formatting
+        run: |
+          git add -- src/boss-combat-ai.js src/boss-radar.js tests/boss-combat-ai.test.mjs tests/boss-radar.test.mjs index.html
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): synchronize Phoenix combat version'
+            git push origin HEAD:feat/phoenix-plasma-attacks-20261102
+          fi
