@@ -67,7 +67,7 @@ test('the scene begins in space, reveals a distinct planetary world, and resets 
     assert.equal(initial, 'space');
     assert.ok(scene.fog.density <= 0.00015);
     const transition = world.setDestinationArrival(16);
-    assert.equal(transition.phase, 'entry');
+    assert.equal(transition.phase, index === 7 ? 'arena' : 'entry');
     if (index === 7) assert.equal(transition.haze, 0, 'Saturn has no invented atmosphere crossing');
     else assert.ok(transition.haze > 0);
     if (index === 3) {
