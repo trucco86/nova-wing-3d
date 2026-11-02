@@ -389,7 +389,9 @@ export function createBossModel(sector, index = 0, tactical = false) {
       }
       marker.visible = false;
       const signalMaterial = markerMaterial.clone();
-      marker.traverse((part) => { if (part.isMesh) part.material = signalMaterial; });
+      marker.traverse((part) => {
+        if (part.isMesh) part.material = signalMaterial;
+      });
       marker.userData.signalMaterial = signalMaterial;
       return marker;
     },

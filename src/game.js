@@ -109,7 +109,12 @@ import {
 } from './mecha-multi-lock.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
-import { newWeakpointEvidence, recordWeakpointContact, bossIntegrityRatio, weakpointReadout } from './boss-weakpoint-feedback.js';
+import {
+  newWeakpointEvidence,
+  recordWeakpointContact,
+  bossIntegrityRatio,
+  weakpointReadout,
+} from './boss-weakpoint-feedback.js';
 import {
   createDevastadorSabotageCore,
   updateDevastadorSabotageCore,
@@ -657,7 +662,8 @@ export function createGame({
         (1 + rank('attack') * 0.12) *
         (strategy.specialty === 'attack' ? 1.15 : 1) *
         activePilot().bonuses.damage *
-        dockedPodPower(podCount, stage(), podsDetached) * (berserk > 0 ? 1.6 : 1)
+        dockedPodPower(podCount, stage(), podsDetached) *
+        (berserk > 0 ? 1.6 : 1)
       : 1;
   const selectedWeapon = () => ARSENAL[dynamicFlight ? strategy.arsenal : 0];
   function evolve() {
@@ -3889,10 +3895,10 @@ export function createGame({
             activePilot().bonuses.arcana,
       );
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
-    berserk = Math.max(0, berserk - dt);
-    bossHitPulse = Math.max(0, bossHitPulse - dt);
-    if (berserk > 0) document.body.classList.add('berserk-active');
-    else document.body.classList.remove('berserk-active');
+      berserk = Math.max(0, berserk - dt);
+      bossHitPulse = Math.max(0, bossHitPulse - dt);
+      if (berserk > 0) document.body.classList.add('berserk-active');
+      else document.body.classList.remove('berserk-active');
       const team = squad?.snapshot();
       $('plasmaTitan').disabled =
         !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
@@ -3912,12 +3918,19 @@ export function createGame({
       $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
       $('specialCast').textContent =
         'G · ' +
-        (berserk > 0 ? 'BERSERK ' + Math.ceil(berserk) + 's' : specialCd > 0 ? Math.ceil(specialCd) + 's' : 'ATIVAR') +
+        (berserk > 0
+          ? 'BERSERK ' + Math.ceil(berserk) + 's'
+          : specialCd > 0
+            ? Math.ceil(specialCd) + 's'
+            : 'ATIVAR') +
         ' · ' +
         Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
       $('quickRpg').setAttribute('data-selected', SPECIALS[strategy.special].name);
-      $('specialCast').setAttribute('aria-label', 'Ativar ' + SPECIALS[strategy.special].name + ', energia ' + Math.floor(arcana));
+      $('specialCast').setAttribute(
+        'aria-label',
+        'Ativar ' + SPECIALS[strategy.special].name + ', energia ' + Math.floor(arcana),
+      );
       $('arsenalSwitch').disabled = ARSENAL.filter((item) => item.stage <= stage()).length < 2;
       $('specialSwitch').disabled = SPECIALS.filter((item) => item.stage <= stage()).length < 2;
       $('orbitControls').hidden = !boss;
@@ -5313,14 +5326,21 @@ export function createGame({
       const node = $('weakCue' + i);
       const part = boss?.userData.parts[i];
       const open = Boolean(part && bossTargetOpen(i));
-      const cue = dynamicFlight && boss && !boss.userData.sabotage
-        ? weakpointReadout(part, weakpointEvidence[i], open) : null;
+      const cue =
+        dynamicFlight && boss && !boss.userData.sabotage
+          ? weakpointReadout(part, weakpointEvidence[i], open)
+          : null;
       node.hidden = !cue || !['playing', 'paused'].includes(state);
       if (node.hidden) continue;
       boss.updateMatrixWorld(true);
       camera.updateMatrixWorld(true);
       const marker = part.marker.getWorldPosition(new T.Vector3()).project(camera);
-      if (marker.z <= -1 || marker.z >= 1 || Math.abs(marker.x) > 0.94 || Math.abs(marker.y) > 0.85) {
+      if (
+        marker.z <= -1 ||
+        marker.z >= 1 ||
+        Math.abs(marker.x) > 0.94 ||
+        Math.abs(marker.y) > 0.85
+      ) {
         node.hidden = true;
         continue;
       }
@@ -5427,7 +5447,16 @@ export function createGame({
       pauseDialog: !$('pauseMenu').hidden,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
-      strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, berserk, orbitAngle },
+      strategy: {
+        ...strategy,
+        stage: stage(),
+        arcana,
+        specialCd,
+        barrier,
+        stasis,
+        berserk,
+        orbitAngle,
+      },
       missionCameraSeconds: reactorGridSeconds,
       missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,
@@ -5531,7 +5560,9 @@ export function createGame({
       energy,
       boss: !!boss,
       bossHp,
-      bossIntegrity: boss ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400) : 0,
+      bossIntegrity: boss
+        ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
+        : 0,
       bossPhase: bossCombat?.phase ?? 0,
       bossAge: bossCombat?.age ?? 0,
       bossZ: boss?.position.z ?? null,

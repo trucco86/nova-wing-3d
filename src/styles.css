@@ -9204,17 +9204,80 @@ body.devastador-escape:not(.devastador-warp) #attackWarning {
 }
 
 /* Boss clarity: damage to real generators reduces total displayed integrity. */
-#bossHealthReadout { display: block; margin-top: 3px; color: #fff0bf; font: 700 10px/1.15 monospace; letter-spacing: .07em; }
-#bossHUD[data-hit='true'] .bar { outline: 2px solid #fff39b; box-shadow: 0 0 15px #ffe36e88; }
-#bossHUD[data-hit='true'] #bossHealth { filter: brightness(1.65); }
-#weakPointCues { position: fixed; inset: 0; z-index: 36; pointer-events: none; }
-.weak-point-tag { position: absolute; transform: translate(-50%, -150%); background: #111b25e8; border: 1px solid #f6df68; border-radius: 5px; padding: 4px 7px; white-space: nowrap; color: #fff6aa; text-shadow: 0 0 6px #feeb77; font: 800 11px/1.1 monospace; letter-spacing: .04em; box-shadow: 0 0 9px #fff18355; }
-.weak-point-tag[data-state='armored'] { color: #ffba85; border-color: #ed8855; text-shadow: none; }
-.weak-point-tag[hidden] { display: none !important; }
-.qa-berserk-toggle { display: flex; align-items: center; gap: 8px; padding: 8px; font-size: 12px; color: #ffdf9b; }
-.qa-berserk-toggle input { width: 18px; height: 18px; flex: 0 0 auto; }
-#quickRpg[data-selected='BERSERK'] #specialSwitch { border-color: #f7a354; color: #ffe1ae; }
-#quickRpg #specialCast:not(:disabled) { border-color: #8bfbd7; box-shadow: inset 0 0 8px #45ffb422; }
-body.berserk-active #quickRpg #specialCast { border-color: #ffb14f; color: #ffe4a2; box-shadow: 0 0 14px #ff7f3266; }
-body.berserk-active #rpgLevel { color: #ffb45a; }
-@media (pointer: coarse) { body.in-mission #strategyControls #quickRpg button { font-size: 9px; line-height: 1.18; } }
+#bossHealthReadout {
+  display: block;
+  margin-top: 3px;
+  color: #fff0bf;
+  font: 700 10px/1.15 monospace;
+  letter-spacing: 0.07em;
+}
+#bossHUD[data-hit='true'] .bar {
+  outline: 2px solid #fff39b;
+  box-shadow: 0 0 15px #ffe36e88;
+}
+#bossHUD[data-hit='true'] #bossHealth {
+  filter: brightness(1.65);
+}
+#weakPointCues {
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+}
+.weak-point-tag {
+  position: absolute;
+  transform: translate(-50%, -150%);
+  background: #111b25e8;
+  border: 1px solid #f6df68;
+  border-radius: 5px;
+  padding: 4px 7px;
+  white-space: nowrap;
+  color: #fff6aa;
+  text-shadow: 0 0 6px #feeb77;
+  font: 800 11px/1.1 monospace;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 9px #fff18355;
+}
+.weak-point-tag[data-state='armored'] {
+  color: #ffba85;
+  border-color: #ed8855;
+  text-shadow: none;
+}
+.weak-point-tag[hidden] {
+  display: none !important;
+}
+.qa-berserk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 12px;
+  color: #ffdf9b;
+}
+.qa-berserk-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+#quickRpg[data-selected='BERSERK'] #specialSwitch {
+  border-color: #f7a354;
+  color: #ffe1ae;
+}
+#quickRpg #specialCast:not(:disabled) {
+  border-color: #8bfbd7;
+  box-shadow: inset 0 0 8px #45ffb422;
+}
+body.berserk-active #quickRpg #specialCast {
+  border-color: #ffb14f;
+  color: #ffe4a2;
+  box-shadow: 0 0 14px #ff7f3266;
+}
+body.berserk-active #rpgLevel {
+  color: #ffb45a;
+}
+@media (pointer: coarse) {
+  body.in-mission #strategyControls #quickRpg button {
+    font-size: 9px;
+    line-height: 1.18;
+  }
+}

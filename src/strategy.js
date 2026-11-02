@@ -52,7 +52,10 @@ export function readStrategy(value) {
       ? value.specialty
       : 'attack',
     arsenal: valid(value?.arsenal, 4) && ARSENAL[value.arsenal].stage <= stage ? value.arsenal : 0,
-    special: valid(value?.special, SPECIALS.length - 1) && SPECIALS[value.special].stage <= stage ? value.special : 0,
+    special:
+      valid(value?.special, SPECIALS.length - 1) && SPECIALS[value.special].stage <= stage
+        ? value.special
+        : 0,
   };
 }
 export const weaknessAt = (index, phase = 1) =>
