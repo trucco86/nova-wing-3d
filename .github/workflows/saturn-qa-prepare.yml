@@ -27,7 +27,7 @@ jobs:
           npm run validate
       - name: Commit generated HTML and formatted sources
         run: |
-          git add -- index.html src/destination-vista.js src/destination-arrival.js src/destination-landmarks.js src/stage-journey.js src/stage-variety.js src/campaign.js src/visuals.js src/game.js src/encounters.js src/breakable-encounters.js src/sector-waves.js tests/destination-arrival.test.mjs tests/destination-landmarks.test.mjs tests/late-world-landmarks.test.mjs tests/flight-environments.test.mjs specs/saturn-rings-ice-battle.md
+          git add -- index.html src/destination-vista.js src/destination-arrival.js src/destination-landmarks.js src/stage-journey.js src/stage-variety.js src/campaign.js src/visuals.js src/game.js src/encounters.js src/breakable-encounters.js src/sector-waves.js tests/destination-arrival.test.mjs tests/destination-landmarks.test.mjs tests/late-world-landmarks.test.mjs tests/flight-environments.test.mjs tests/stage-combat-variety.test.mjs tests/sector-waves.test.mjs specs/saturn-rings-ice-battle.md
           git diff --cached --check
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
