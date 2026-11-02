@@ -86,6 +86,7 @@ import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
@@ -1654,7 +1655,7 @@ export function createGame({
           if (e.life <= 0) kill(e);
         } else kill(e);
       }
-    for (let b of hostile) dispose(b.o);
+    for (let b of hostile) hostileShotPool.release(b);
     hostile = [];
     if (boss) {
       explode(boss.position, 40);
@@ -1678,6 +1679,13 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  const hostileShotPool = createHostileProjectilePool({
+    scene,
+    geometry: orbGeo,
+    materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    createHalo: () => halo(0xff4265, 2.6, 0.8),
+    maxRetained: 96,
+  });
   const upgradedShotMaterials = ['#52ecff', '#ffd15e', '#df85ff', '#f8ffff'].map((c) =>
     glowMaterial(c, 3.4),
   );
@@ -2111,25 +2119,7 @@ export function createGame({
   }
   function bullet(pos, target, spell = '') {
     if (hostile.length >= 180) return;
-    let o = new T.Mesh(
-      orbGeo,
-      spell === 'arcane' ? shotMaterials[3] : spell === 'fire' ? shotMaterials[2] : enemyOrbMat,
-    );
-    if (spell) o.scale.setScalar(1.8);
-    o.add(halo(0xff4265, 2.6, 0.8));
-    o.position.copy(pos);
-    scene.add(o);
-    hostile.push({
-      o,
-      v: target
-        .clone()
-        .sub(pos)
-        .normalize()
-        .multiplyScalar(spell === 'arcane' ? 38 : 58),
-      life: 6,
-      spell,
-      age: 0,
-    });
+    hostile.push(hostileShotPool.acquire(pos, target, spell));
   }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
@@ -2155,7 +2145,7 @@ export function createGame({
     bossHitPulse = 0;
     for (const e of enemies) dispose(e.o);
     enemies = [];
-    for (const e of hostile) dispose(e.o);
+    for (const e of hostile) hostileShotPool.release(e);
     hostile = [];
     // Enter through the illuminated hangar of the mother ship in the distance.
     // No instant pop-in to the combat position.
@@ -2323,7 +2313,9 @@ export function createGame({
       state = 'collapsing';
       if (!dynamicFlight) releaseControls();
       for (const arr of [shots, hostile]) {
-        for (const e of arr) dispose(e.o);
+        for (const e of arr)
+          if (arr === hostile) hostileShotPool.release(e);
+          else dispose(e.o);
         arr.length = 0;
       }
       collapseTime = collapseBurst = 0;
@@ -2481,7 +2473,8 @@ export function createGame({
     collapseFinal = false;
     for (let arr of [enemies, shots, hostile, particles, rings, obstacles])
       for (let e of arr) {
-        dispose(e.o);
+        if (arr === hostile) hostileShotPool.release(e);
+        else dispose(e.o);
         if (arr === particles) e.o.material.dispose();
       }
     enemies = [];
@@ -5050,8 +5043,7 @@ export function createGame({
       }
     }
     for (let b of hostile) {
-      const from = b.o.position.clone();
-      b.previousPosition = from;
+      const from = b.previousPosition.copy(b.o.position);
       b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
         b.v.lerp(
@@ -5226,7 +5218,8 @@ export function createGame({
     for (let arr of [shots, hostile, rings, obstacles])
       for (let i = arr.length - 1; i >= 0; i--)
         if (arr[i].life <= 0) {
-          dispose(arr[i].o);
+          if (arr === hostile) hostileShotPool.release(arr[i]);
+          else dispose(arr[i].o);
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
@@ -5561,6 +5554,7 @@ export function createGame({
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      hostileProjectilePool: hostileShotPool.stats(),
       cameraMode,
       directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
@@ -5770,6 +5764,7 @@ export function createGame({
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
+      hostileShotPool.clear();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
