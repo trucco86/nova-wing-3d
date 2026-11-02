@@ -5338,9 +5338,10 @@ export function createGame({
       const node = $('weakCue' + i);
       const target = cueTargets[i];
       const part = target?.part;
-      const cue = dynamicFlight && boss
-        ? weakpointReadout(part, weakpointEvidence[target?.index], target?.open)
-        : null;
+      const cue =
+        dynamicFlight && boss
+          ? weakpointReadout(part, weakpointEvidence[target?.index], target?.open)
+          : null;
       node.hidden = !cue || !['playing', 'paused'].includes(state);
       if (node.hidden) continue;
       boss.updateMatrixWorld(true);

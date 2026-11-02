@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bossWeakPointPlan, bossWeakPointAngle, bossWeakPointOpen } from '../src/boss-weakpoint-layout.js';
+import {
+  bossWeakPointPlan,
+  bossWeakPointAngle,
+  bossWeakPointOpen,
+} from '../src/boss-weakpoint-layout.js';
 
 test('each of ten chiefs has two physical batteries with valid, aimable attack arcs', () => {
   for (let sector = 0; sector < 10; sector++) {
