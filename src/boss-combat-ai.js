@@ -110,10 +110,10 @@ export function chooseBossIntent({
         : kind === 'cryo-pincer'
           ? 19
           : kind === 'hammer-slam'
-          ? 22
-          : kind === 'solar-sweep'
-            ? 18
-            : 16) +
+            ? 22
+            : kind === 'solar-sweep'
+              ? 18
+              : 16) +
       p * 3,
     // Always commit once at windup: the boss cannot instantly retarget after
     // the player starts dodging the telegraphed danger area.
@@ -136,11 +136,11 @@ export function chooseBossIntent({
           ? 12
           : kind === 'ice-quake'
             ? 13
-          : kind === 'tentacle-sweep'
-            ? 11
-            : kind === 'hammer-slam'
-              ? 14
-              : 9,
+            : kind === 'tentacle-sweep'
+              ? 11
+              : kind === 'hammer-slam'
+                ? 14
+                : 9,
     origin:
       kind === 'reactor-vent'
         ? ventSide < 0
@@ -152,13 +152,13 @@ export function chooseBossIntent({
             ? 'colossus-piston-arms'
             : kind === 'plasma-dive'
               ? 'phoenix-solar-core'
-          : kind === 'solar-sweep'
-            ? 'phoenix-wings'
-            : kind === 'bite'
-              ? 'jaw'
-              : kind.startsWith('tentacle')
-                ? 'tentacles'
-                : 'claws',
+              : kind === 'solar-sweep'
+                ? 'phoenix-wings'
+                : kind === 'bite'
+                  ? 'jaw'
+                  : kind.startsWith('tentacle')
+                    ? 'tentacles'
+                    : 'claws',
   });
 }
 

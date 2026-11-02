@@ -6,12 +6,18 @@ export function createEuropaAttackVfx() {
   root.name = 'boss-europa-attack-vfx';
   root.userData.visualOnly = true;
   const shock = new T.MeshBasicMaterial({
-    color: '#8de6ff', transparent: true, opacity: 0,
-    blending: T.AdditiveBlending, depthWrite: false,
+    color: '#8de6ff',
+    transparent: true,
+    opacity: 0,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
   });
   const pincer = new T.MeshBasicMaterial({
-    color: '#b9f6ff', transparent: true, opacity: 0,
-    blending: T.AdditiveBlending, depthWrite: false,
+    color: '#b9f6ff',
+    transparent: true,
+    opacity: 0,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
   });
   const quake = new T.Mesh(new T.TorusGeometry(22, 1.65, 6, 28), shock);
   quake.name = 'europa-impact-charge';
