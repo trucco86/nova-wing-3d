@@ -33,7 +33,7 @@ function properties(cssPart, id) {
   if (!match) return {};
   const result = {};
   for (const key of ['left', 'top', 'width', 'height']) {
-    const value = match[1].match(new RegExp('(?:^|\\n)\\s*' + key + ':\\s*(\\d+)px;'));
+    const value = match[1].match(new RegExp('(?:^|\\n)\\s*' + key + ':\\s*(\\d+)(?:px)?;'));
     if (value) result[key] = Number(value[1]);
   }
   return result;
