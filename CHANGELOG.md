@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.66 — Phoenix Combat 4.0: golpes solares físicos (QA)
+
+- Fase 5 (Vênus): mergulho de plasma quando piloto está alto/impulsionando e varredura horizontal quando voa baixo; zonas de perigo travadas no início do aviso.
+- Radar usa a mesma área de colisão das duas novas manobras; sair da região evita dano real, com sinalização e recuperação.
+- Preservados ataques e gameplay aprovados das fases 1–4, incluindo sabotagem da Devastador.
+- Candidata QA isolada; CI FULL, visual desktop/mobile e teste físico pendentes antes de integração.
+
 ## 1.27.65 — Worlds 2.1: ritmo e silhueta próprios por setor (QA)
 
 - Dez ambientes agora têm silhuetas e padrões de movimento distintos nas duas camadas de profundidade; nenhum é apenas recoloração da mesma forma.

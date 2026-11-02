@@ -73,3 +73,32 @@ test('Marvin escalates aggression in final phase while keeping ranged counterpla
   assert.equal(bossMeleePose(flank, 'windup', 1).lunge, 0);
   assert.ok(bossMeleePose(flank, 'attack', 0.7).claw > 0.7);
 });
+
+test('Venus Phoenix dive follows the pilot position only when windup begins', () => {
+  const start = chooseBossIntent({ sector: 4, cycle: 2, phase: 2, playerX: 14, playerY: 35 });
+  assert.equal(start.kind, 'plasma-dive');
+  assert.equal(start.origin, 'phoenix-solar-core');
+  assert.equal(start.targetX, 14);
+  assert.equal(start.targetY, 35);
+  assert.equal(bossMeleeHit(start, { x: 14, y: 35 }), true);
+  assert.equal(bossMeleeHit(start, { x: 35, y: 35 }), false);
+  assert.equal(bossMeleeHit(start, { x: 14, y: 49 }), false);
+  assert.ok(Object.isFrozen(start), 'new aim cannot overwrite the original danger zone');
+  assert.equal(bossMeleePose(start, 'windup', 1).lunge, 0);
+  assert.equal(bossMeleePose(start, 'attack', 0.7).lunge, 72);
+  assert.ok(bossMeleePose(start, 'attack', 0.7).exhaust > 0);
+  assert.equal(chooseBossIntent({ sector: 4, cycle: 1, boosting: true }).kind, 'plasma-dive');
+});
+
+test('Venus Phoenix wing sweep rewards vertical evasion and retains a ranged recovery', () => {
+  const sweep = chooseBossIntent({ sector: 4, cycle: 1, phase: 1, playerX: 6, playerY: 10 });
+  assert.equal(sweep.kind, 'solar-sweep');
+  assert.equal(sweep.origin, 'phoenix-wings');
+  assert.equal(bossMeleeHit(sweep, { x: 6, y: 10 }), true);
+  assert.equal(bossMeleeHit(sweep, { x: 6, y: 20 }), false);
+  assert.equal(bossMeleeHit(sweep, { x: 38, y: 10 }), false);
+  assert.ok(bossMeleePose(sweep, 'attack', 0.7).claw > 0);
+  assert.equal(chooseBossIntent({ sector: 4, cycle: 4 }).kind, 'barrage');
+  // The approved Devastador encounter is explicitly outside this change.
+  assert.equal(chooseBossIntent({ sector: 3, cycle: 1 }).kind, 'hammer-slam');
+});
