@@ -5357,7 +5357,10 @@ export function createGame({
     cockpit?.update(state === 'paused' ? 0 : dt, inside, charge);
     hud.hidden('cockpitPanel', !inside);
     hud.hidden('tacticalPanel', !dynamicFlight || !boss || !['playing', 'paused'].includes(state));
-    hud.hidden('hitFeedback', !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state));
+    hud.hidden(
+      'hitFeedback',
+      !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state),
+    );
     // For the eight physical Devastador valves, reuse the two lightweight
     // labels for whichever currently vulnerable parts face the pilot.
     const cueTargets = boss?.userData.sabotage

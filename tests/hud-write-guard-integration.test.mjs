@@ -7,8 +7,13 @@ function monitor(node, field) {
   let mutations = 0;
   Object.defineProperty(node, field, {
     configurable: true,
-    get() { return value; },
-    set(next) { mutations++; value = next; },
+    get() {
+      return value;
+    },
+    set(next) {
+      mutations++;
+      value = next;
+    },
   });
   return () => mutations;
 }
@@ -18,7 +23,14 @@ test('steady gameplay stops rewriting static counters but updates progress conti
   t.after(() => h.close());
   h.game.start();
   h.advance(0.3);
-  const staticCounters = ['shieldValue', 'score', 'bombs', 'petCareHud', 'bossHealthReadout', 'cockpitReadout'];
+  const staticCounters = [
+    'shieldValue',
+    'score',
+    'bombs',
+    'petCareHud',
+    'bossHealthReadout',
+    'cockpitReadout',
+  ];
   const writes = Object.fromEntries(
     staticCounters.map((id) => [id, monitor(h.elements.get(id), 'textContent')]),
   );

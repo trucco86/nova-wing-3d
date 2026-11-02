@@ -3,30 +3,77 @@ import assert from 'node:assert/strict';
 import { createHudWriteGuard } from '../src/hud-write-guard.js';
 
 function fixture() {
-  const counts = { elements: 0, text: 0, hidden: 0, disabled: 0, style: 0, cssVar: 0, attribute: 0 };
+  const counts = {
+    elements: 0,
+    text: 0,
+    hidden: 0,
+    disabled: 0,
+    style: 0,
+    cssVar: 0,
+    attribute: 0,
+  };
   let currentText = '';
   let hidden = false;
   let disabled = false;
   const css = { width: '' };
   const attrs = new Map();
   const node = {
-    get textContent() { return currentText; },
-    set textContent(value) { counts.text++; currentText = value; },
-    get hidden() { return hidden; },
-    set hidden(value) { counts.hidden++; hidden = value; },
-    get disabled() { return disabled; },
-    set disabled(value) { counts.disabled++; disabled = value; },
-    style: new Proxy({
-      setProperty(name, value) { counts.cssVar++; css[name] = value; },
-      getPropertyValue(name) { return css[name] ?? ''; },
-    }, {
-      get(target, name) { if (name === 'width') return css.width; return target[name]; },
-      set(_target, name, value) { counts.style++; css[name] = value; return true; },
-    }),
-    setAttribute(name, value) { counts.attribute++; attrs.set(name, value); },
-    getAttribute(name) { return attrs.get(name) ?? null; },
+    get textContent() {
+      return currentText;
+    },
+    set textContent(value) {
+      counts.text++;
+      currentText = value;
+    },
+    get hidden() {
+      return hidden;
+    },
+    set hidden(value) {
+      counts.hidden++;
+      hidden = value;
+    },
+    get disabled() {
+      return disabled;
+    },
+    set disabled(value) {
+      counts.disabled++;
+      disabled = value;
+    },
+    style: new Proxy(
+      {
+        setProperty(name, value) {
+          counts.cssVar++;
+          css[name] = value;
+        },
+        getPropertyValue(name) {
+          return css[name] ?? '';
+        },
+      },
+      {
+        get(target, name) {
+          if (name === 'width') return css.width;
+          return target[name];
+        },
+        set(_target, name, value) {
+          counts.style++;
+          css[name] = value;
+          return true;
+        },
+      },
+    ),
+    setAttribute(name, value) {
+      counts.attribute++;
+      attrs.set(name, value);
+    },
+    getAttribute(name) {
+      return attrs.get(name) ?? null;
+    },
   };
-  const guard = createHudWriteGuard((id) => { counts.elements++; assert.equal(id, 'meter'); return node; });
+  const guard = createHudWriteGuard((id) => {
+    counts.elements++;
+    assert.equal(id, 'meter');
+    return node;
+  });
   return { node, guard, counts };
 }
 
@@ -41,7 +88,13 @@ test('stable HUD text, style, visibility, attrs and inputs perform no repeated D
     guard.attribute('meter', 'data-count', 3);
   }
   assert.deepEqual(counts, {
-    elements: 1, text: 1, hidden: 1, disabled: 1, style: 1, cssVar: 1, attribute: 1,
+    elements: 1,
+    text: 1,
+    hidden: 1,
+    disabled: 1,
+    style: 1,
+    cssVar: 1,
+    attribute: 1,
   });
 });
 
@@ -70,7 +123,12 @@ test('live DOM changes outside guard never cause stale HUD or delayed feedback',
 test('guard reads mock DOM attributes and rejects invalid element provider', () => {
   assert.throws(() => createHudWriteGuard(null), TypeError);
   const attrs = {};
-  const node = { setAttribute(name, value) { this[name] = value; attrs[name] = value; } };
+  const node = {
+    setAttribute(name, value) {
+      this[name] = value;
+      attrs[name] = value;
+    },
+  };
   const guard = createHudWriteGuard(() => node);
   assert.equal(guard.attribute('meter', 'data-count', 2), true);
   assert.equal(guard.attribute('meter', 'data-count', 2), false);
