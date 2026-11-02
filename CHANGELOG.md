@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.67 — Phoenix VFX: telegraph físico com custo controlado (QA)
+
+- Núcleo solar e cone de plasma indicam mergulho; duas asas sinalizam varredura antes da colisão.
+- Quatro meshes leves, duas materiais aditivas, sem partículas novas, colisores ou alocação por frame.
+- Efeitos sincronizados com o ataque existente e desligados no estado de manobra; fase 4 preservada.
+- QA: testes Node, Playwright 4 shards, preview e validação visual mobile antes de produção.
+
 ## 1.27.66 — Phoenix Combat 4.0: golpes solares físicos (QA)
 
 - Fase 5 (Vênus): mergulho de plasma quando piloto está alto/impulsionando e varredura horizontal quando voa baixo; zonas de perigo travadas no início do aviso.
