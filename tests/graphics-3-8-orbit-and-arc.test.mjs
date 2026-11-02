@@ -120,10 +120,10 @@ test('button becomes SUPER BOOST only during required orbital climb, then resets
 
 test('half moon arcs and tactile SUPER BOOST are intentionally separate from hit targets', () => {
   const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
-  assert.match(css, /Mobile Controls 3\.2/);
+  assert.match(css, /Mobile Controls 3\.3/);
   assert.match(css, /#boostTouch\.launch-required/);
   assert.match(css, /@keyframes nova-super-boost-aura/);
   assert.match(css, /prefers-reduced-motion: reduce/);
-  assert.match(css, /#boostTouch\s*\{\s*left: 61px;\s*top: 134px;/);
-  assert.match(css, /#fireTouch\s*\{\s*left: 123px;\s*top: 58px;/);
+  assert.match(css, /#boostTouch\s*\{\s*left: 49px;\s*top: 146px;/);
+  assert.match(css, /#fireTouch\s*\{\s*left: 125px;\s*top: 117px;/);
 });
