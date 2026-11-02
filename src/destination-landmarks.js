@@ -35,7 +35,16 @@ const mark = (node, name, highOnly = false) => {
   return node;
 };
 
-function makeInstanced(index, count, geometry, material, name, positioner, highOnly = false, colorsOverride = null) {
+function makeInstanced(
+  index,
+  count,
+  geometry,
+  material,
+  name,
+  positioner,
+  highOnly = false,
+  colorsOverride = null,
+) {
   const mesh = mark(new T.InstancedMesh(geometry, material, count), name, highOnly);
   const dummy = new T.Object3D();
   const colors = colorsOverride ?? palette[index];
@@ -130,7 +139,10 @@ export function createDestinationLandmarks(index) {
     // the planet's true ring disk remains attached to the distant globe.
     const colors = ['#c3eff6', '#8dbdce', '#eef7ee', '#94acc5'];
     const frozen = new T.MeshStandardMaterial({
-      color: '#ffffff', roughness: 0.57, metalness: 0.04, flatShading: true,
+      color: '#ffffff',
+      roughness: 0.57,
+      metalness: 0.04,
+      flatShading: true,
     });
     const geometry = new T.IcosahedronGeometry(1, 0);
     for (const [name, count, highOnly] of [
@@ -139,7 +151,10 @@ export function createDestinationLandmarks(index) {
     ]) {
       const near = !highOnly;
       const ice = makeInstanced(
-        7, count, geometry, frozen,
+        7,
+        count,
+        geometry,
+        frozen,
         name,
         (i) => {
           const side = i % 2 ? 1 : -1;
@@ -147,7 +162,7 @@ export function createDestinationLandmarks(index) {
             position: [
               side * ((near ? 92 : 160) + hash(i * 17 + 4) * 115),
               -8 + hash(i * 13 + 7) * 135,
-              -180 - (i * (near ? 71 : 101)) % 1800,
+              -180 - ((i * (near ? 71 : 101)) % 1800),
             ],
             scale: [
               (near ? 6 : 3) + hash(i * 9) * (near ? 13 : 8),

@@ -5158,9 +5158,10 @@ export function createGame({
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
-      const kinds = sectorIndex === 7
-        ? ['ice-meteor', 'ice-meteor', 'carrier']
-        : ['satellite', 'carrier', 'debris'];
+      const kinds =
+        sectorIndex === 7
+          ? ['ice-meteor', 'ice-meteor', 'carrier']
+          : ['satellite', 'carrier', 'debris'];
       const kind = space
         ? kinds[Math.floor(elapsed / 8) % kinds.length]
         : Math.floor(elapsed / 8) % 2

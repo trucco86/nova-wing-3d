@@ -351,8 +351,12 @@ export function createObstacle(kind = 'gantry') {
       const ice = new T.Mesh(
         new T.IcosahedronGeometry(9, 1),
         new T.MeshStandardMaterial({
-          color: '#badce7', metalness: 0.06, roughness: 0.54, flatShading: true,
-          emissive: '#254259', emissiveIntensity: 0.09,
+          color: '#badce7',
+          metalness: 0.06,
+          roughness: 0.54,
+          flatShading: true,
+          emissive: '#254259',
+          emissiveIntensity: 0.09,
         }),
       );
       ice.name = 'saturn-breakable-ice-meteor';

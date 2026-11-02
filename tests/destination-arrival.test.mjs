@@ -27,7 +27,9 @@ test('all later destinations retain independent celestial routes, and entry is d
     const phases = [0, 8, 15, 22, 26].map((seconds) => destinationArrivalAt(index, seconds));
     assert.deepEqual(
       phases.map((x) => x.phase),
-      index === 7 ? ['space', 'arena', 'arena', 'arena', 'arena'] : ['space', 'orbit', 'entry', 'descent', 'arena'],
+      index === 7
+        ? ['space', 'arena', 'arena', 'arena', 'arena']
+        : ['space', 'orbit', 'entry', 'descent', 'arena'],
     );
     assert.ok(phases[0].globeOpacity >= phases[3].globeOpacity);
     assert.equal(phases[0].combatReady, false);
