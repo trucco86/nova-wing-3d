@@ -12,7 +12,7 @@ jobs:
   prepare:
     if: github.repository == 'trucco86/nova-wing-3d' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -36,3 +36,6 @@ jobs:
             git push origin HEAD:fix/compact-hangar-qa-menus-20261102
           fi
       - run: npm run validate
+      - run: npx playwright install chromium
+      - name: Mobile and desktop menu regression tests
+        run: npm run test:browser -- tests/browser/compact-menu-smoke-v12721.spec.mjs tests/browser/showroom.spec.mjs tests/browser/developer-scenarios.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs
