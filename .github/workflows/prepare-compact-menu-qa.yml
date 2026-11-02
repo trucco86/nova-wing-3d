@@ -30,7 +30,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- index.html src tests specs docs package.json package-lock.json CHANGELOG.md ios
+          git add -- index.html src tests specs docs releases package.json package-lock.json CHANGELOG.md ios
           if ! git diff --cached --quiet; then
             git commit -m "build(web): prepare v1.27.70 compact menus QA candidate"
             git push origin HEAD:fix/compact-hangar-qa-menus-20261102
