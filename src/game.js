@@ -1722,7 +1722,7 @@ export function createGame({
       charged ? orbGeo : laserGeo,
       scatter ? scatterShotMaterial : dynamicFlight ? shotMaterial() : green,
     );
-    o.add(halo(scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5));
+    o.add(halo(berserk > 0 ? '#ff913e' : scatter ? '#ffba70' : shotColor(), charged ? 6 : 1.8, 0.5));
     o.rotation.x = Math.PI / 2;
     o.position.copy(origin ?? player.position);
     o.position.x += x;
@@ -1742,7 +1742,7 @@ export function createGame({
     if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
-    heroEffects.pulse({ robot: robotMode, color: shotColor() });
+    heroEffects.pulse({ robot: robotMode, color: berserk > 0 ? '#ff913e' : shotColor() });
     if (robotMode) robotFireKick = 0.29;
     const scatter = dynamicFlight && scatterOwned && fireMode === 'scatter';
     const pellets = scatter ? scatterPellets() : null;
@@ -3044,6 +3044,13 @@ export function createGame({
     }
     $('developerLaunch').onclick = () =>
       startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
+    $('developerBerserkLaunch').onclick = () => {
+      // One-tap QA access. Real power-up and disposable progression.
+      $('developerTier').value = '12';
+      $('developerSpecial').value = '3';
+      if (startDeveloperScenario($('developerSector').value, $('developerEncounter').value))
+        castSpecial();
+    };
     $('qaLabApply').onclick = () => {
       if (!developerAvailable || !developerSession || state !== 'paused' || confirmation) return;
       const lab = developerLabLoadout(
@@ -3914,17 +3921,27 @@ export function createGame({
           : 'O · FIVE CATS';
       barrier = Math.max(0, barrier - dt);
       stasis = Math.max(0, stasis - dt);
-      $('arsenalSwitch').textContent = 'F · ' + selectedWeapon().name;
-      $('specialSwitch').textContent = 'H · ' + SPECIALS[strategy.special].name;
-      $('specialCast').textContent =
-        'G · ' +
-        (berserk > 0
+      const compactRpg = coarsePointer.matches && window.innerWidth <= 900;
+      $('arsenalSwitch').textContent = compactRpg
+        ? 'ARMA ' + selectedWeapon().name
+        : 'F · ' + selectedWeapon().name;
+      $('specialSwitch').textContent = compactRpg
+        ? 'RPG ' + SPECIALS[strategy.special].name
+        : 'H · ' + SPECIALS[strategy.special].name;
+      $('specialCast').textContent = compactRpg
+        ? berserk > 0
           ? 'BERSERK ' + Math.ceil(berserk) + 's'
           : specialCd > 0
-            ? Math.ceil(specialCd) + 's'
-            : 'ATIVAR') +
-        ' · ' +
-        Math.floor(arcana);
+            ? 'RECARGA ' + Math.ceil(specialCd) + 's'
+            : 'USAR ' + Math.floor(arcana)
+        : 'G · ' +
+          (berserk > 0
+            ? 'BERSERK ' + Math.ceil(berserk) + 's'
+            : specialCd > 0
+              ? Math.ceil(specialCd) + 's'
+              : 'ATIVAR') +
+          ' · ' +
+          Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
       $('quickRpg').setAttribute('data-selected', SPECIALS[strategy.special].name);
       $('specialCast').setAttribute(

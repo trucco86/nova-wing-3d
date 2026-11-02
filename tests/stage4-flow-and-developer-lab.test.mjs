@@ -159,3 +159,22 @@ test('QA Berserk activates on resume without modifying a campaign save', (t) => 
   h.advance(11, 0.1);
   assert.equal(h.game.snapshot().strategy.berserk, 0);
 });
+
+test('QA menu one-tap Berserk launches a selected boss with real power-up', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  h.elements.get('developerSector').value = '1';
+  h.elements.get('developerEncounter').value = 'boss';
+  h.elements.get('developerBerserkLaunch').onclick();
+  const active = h.game.snapshot();
+  assert.equal(active.state, 'playing');
+  assert.equal(active.developerSession, true);
+  assert.equal(active.sector, 2);
+  assert.equal(active.boss, true);
+  assert.equal(active.strategy.special, 3);
+  assert.ok(active.strategy.berserk > 0);
+  assert.equal(active.strategy.arcana, 25);
+  assert.equal(h.elements.get('menu').hidden, true);
+  assert.equal(h.elements.get('developerTier').value, '12');
+  assert.equal(h.elements.get('developerSpecial').value, '3');
+});
