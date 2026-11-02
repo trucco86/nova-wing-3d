@@ -88,6 +88,7 @@ import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-qual
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
+import { createHudWriteGuard } from './hud-write-guard.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
@@ -237,6 +238,7 @@ export function createGame({
   const $ = (id) => document.getElementById(id),
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
+  const hud = createHudWriteGuard($);
   document.body.classList.add('menu');
   let renderer;
   try {
@@ -5192,31 +5194,35 @@ export function createGame({
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
-    $('shieldValue').textContent = Math.ceil(hp) + ' / ' + maxHp();
-    $('speedValue').textContent =
+    hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
+    hud.text(
+      'speedValue',
       boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
         ? '1140'
         : boosting
           ? '890'
-          : '480';
-    $('shield').style.width = (hp / maxHp()) * 100 + '%';
-    $('criticalWarning').hidden = !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25;
-    $('shieldWarning').hidden = !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45;
-    $('petCareHud').hidden = !dynamicFlight;
-    $('petCareHud').textContent =
-      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');
-    $('score').textContent = String(score).padStart(3, '0');
-    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
-    $('energy').style.width = energy + '%';
-    $('boostTouch').style.setProperty?.('--meter', energy + '%');
-    $('bombTouch').setAttribute?.('data-count', bombs);
-    $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
+          : '480',
+    );
+    hud.style('shield', 'width', (hp / maxHp()) * 100 + '%');
+    hud.hidden('criticalWarning', !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25);
+    hud.hidden('shieldWarning', !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45);
+    hud.hidden('petCareHud', !dynamicFlight);
+    hud.text(
+      'petCareHud',
+      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / '),
+    );
+    hud.text('score', String(score).padStart(3, '0'));
+    hud.text('bombs', '◆ '.repeat(bombs) || '—');
+    hud.style('energy', 'width', energy + '%');
+    hud.cssVar('boostTouch', '--meter', energy + '%');
+    hud.attribute('bombTouch', 'data-count', bombs);
+    hud.style('progress', 'width', Math.min(100, (elapsed / current().duration) * 100) + '%');
     const integrity = boss
       ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
       : 0;
-    $('bossHealth').style.width = Math.round(integrity * 100) + '%';
-    $('bossHealthReadout').textContent = Math.round(integrity * 100) + '% INTEGRIDADE';
-    $('bossHUD').setAttribute('data-hit', String(bossHitPulse > 0));
+    hud.style('bossHealth', 'width', Math.round(integrity * 100) + '%');
+    hud.text('bossHealthReadout', Math.round(integrity * 100) + '% INTEGRIDADE');
+    hud.attribute('bossHUD', 'data-hit', String(bossHitPulse > 0));
   }
   let last = now();
   function tick(dt, nowMs) {
@@ -5349,10 +5355,9 @@ export function createGame({
     barrierVisual.visible =
       dynamicFlight && barrier > 0 && !inside && ['playing', 'paused'].includes(state);
     cockpit?.update(state === 'paused' ? 0 : dt, inside, charge);
-    $('cockpitPanel').hidden = !inside;
-    $('tacticalPanel').hidden = !dynamicFlight || !boss || !['playing', 'paused'].includes(state);
-    $('hitFeedback').hidden =
-      !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state);
+    hud.hidden('cockpitPanel', !inside);
+    hud.hidden('tacticalPanel', !dynamicFlight || !boss || !['playing', 'paused'].includes(state));
+    hud.hidden('hitFeedback', !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state));
     // For the eight physical Devastador valves, reuse the two lightweight
     // labels for whichever currently vulnerable parts face the pilot.
     const cueTargets = boss?.userData.sabotage
@@ -5373,7 +5378,7 @@ export function createGame({
         dynamicFlight && boss
           ? weakpointReadout(part, weakpointEvidence[target?.index], target?.open)
           : null;
-      node.hidden = !cue || !['playing', 'paused'].includes(state);
+      hud.hidden('weakCue' + i, !cue || !['playing', 'paused'].includes(state));
       if (node.hidden) continue;
       boss.updateMatrixWorld(true);
       camera.updateMatrixWorld(true);
@@ -5384,35 +5389,41 @@ export function createGame({
         Math.abs(marker.x) > 0.94 ||
         Math.abs(marker.y) > 0.85
       ) {
-        node.hidden = true;
+        hud.hidden('weakCue' + i, true);
         continue;
       }
-      node.textContent = cue.label;
-      node.setAttribute('data-state', cue.state);
-      node.style.left = ((marker.x + 1) * window.innerWidth) / 2 + 'px';
-      node.style.top = ((1 - marker.y) * window.innerHeight) / 2 + 'px';
+      hud.text('weakCue' + i, cue.label);
+      hud.attribute('weakCue' + i, 'data-state', cue.state);
+      hud.style('weakCue' + i, 'left', ((marker.x + 1) * window.innerWidth) / 2 + 'px');
+      hud.style('weakCue' + i, 'top', ((1 - marker.y) * window.innerHeight) / 2 + 'px');
     }
-    $('cameraView').disabled = state !== 'playing';
-    $('strategyControls').hidden =
+    hud.disabled('cameraView', state !== 'playing');
+    hud.hidden(
+      'strategyControls',
       !dynamicFlight ||
-      !['playing', 'paused'].includes(state) ||
-      (state === 'paused' && pausedFrom !== 'playing');
+        !['playing', 'paused'].includes(state) ||
+        (state === 'paused' && pausedFrom !== 'playing'),
+    );
     const qaBerserkVisible = developerAvailable && developerSession && state === 'playing';
-    $('qaBerserkDock').hidden = !qaBerserkVisible;
+    hud.hidden('qaBerserkDock', !qaBerserkVisible);
     if (qaBerserkVisible) {
-      $('qaBerserkAction').textContent = berserk > 0 ? 'REPETIR BERSERK' : 'ATIVAR BERSERK';
-      $('qaBerserkStatus').textContent =
+      hud.text('qaBerserkAction', berserk > 0 ? 'REPETIR BERSERK' : 'ATIVAR BERSERK');
+      hud.text(
+        'qaBerserkStatus',
         berserk > 0
           ? 'ATIVO · ' + Math.ceil(berserk) + 's · ATAQUE +60%'
-          : 'PRONTO · TOQUE PARA ATIVAR';
-      $('qaBerserkDock').setAttribute('data-active', String(berserk > 0));
+          : 'PRONTO · TOQUE PARA ATIVAR',
+      );
+      hud.attribute('qaBerserkDock', 'data-active', String(berserk > 0));
     }
-    $('cockpitReadout').textContent =
+    hud.text(
+      'cockpitReadout',
       Math.ceil(hp) +
-      '% ESCUDO · ' +
-      Math.ceil(energy) +
-      '% ENERGIA · ' +
-      (boosting ? '890' : '480');
+        '% ESCUDO · ' +
+        Math.ceil(energy) +
+        '% ENERGIA · ' +
+        (boosting ? '890' : '480'),
+    );
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
