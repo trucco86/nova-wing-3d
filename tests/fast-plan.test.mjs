@@ -7,7 +7,11 @@ test('FAST includes orbit, living depth and premium boss regressions even if onl
   assert.deepEqual(living.areas, ['core', 'graphics']);
   assert.ok(living.tests.includes('tests/living-world-depth.test.mjs'));
 
-  const bosses = selectFastTests(['src/boss-kinetic-details.js', 'src/bosses.js'], 'auto', () => true);
+  const bosses = selectFastTests(
+    ['src/boss-kinetic-details.js', 'src/bosses.js'],
+    'auto',
+    () => true,
+  );
   assert.deepEqual(bosses.areas, ['core', 'graphics']);
   assert.ok(bosses.tests.includes('tests/boss-kinetic-details.test.mjs'));
   assert.ok(bosses.tests.includes('tests/flight-environments.test.mjs'));
