@@ -77,13 +77,21 @@ test('Medium updates only drawn instances and High restores identical time-based
   const helper = world.userData.transformHelper;
   updateLivingWorldLayers(world, { time: 9, travel: 360 });
   assert.equal(world.userData.transformHelper, helper, 'reuses one transform across frames');
-  assert.deepEqual(matrixAt(second, 17), invisibleSecond, 'hidden second-plane item is not updated');
+  assert.deepEqual(
+    matrixAt(second, 17),
+    invisibleSecond,
+    'hidden second-plane item is not updated',
+  );
   assert.deepEqual(matrixAt(third, 27), invisibleThird, 'hidden third-plane item is not updated');
   const visibleMedium = matrixAt(second, 0);
   setLivingWorldQuality(world, 'high');
   updateLivingWorldLayers(world, { time: 9, travel: 360 });
   assert.deepEqual(matrixAt(second, 0), visibleMedium, 'switching quality preserves motion');
-  assert.notDeepEqual(matrixAt(second, 17), invisibleSecond, 'High fills restored second-plane slots');
+  assert.notDeepEqual(
+    matrixAt(second, 17),
+    invisibleSecond,
+    'High fills restored second-plane slots',
+  );
   assert.notDeepEqual(matrixAt(third, 27), invisibleThird, 'High fills restored third-plane slots');
   const reference = createLivingWorldLayers('city', 'high');
   updateLivingWorldLayers(reference, { time: 9, travel: 360 });
