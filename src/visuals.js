@@ -2051,6 +2051,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         cityHorizon.position.x = Math.sin(travel / 3400) * 9;
         cityHorizon.position.z = -Math.min(85, travel * 0.012);
         for (const tile of [city, cityFar]) {
+          // These are visual-only tiles. Once the launch city is hidden in
+          // orbit or another mission, do not animate its entire traffic graph.
+          // Travel still advances, so the visible tile catches up instantly.
+          if (sceneryTheme !== 'city' || !tile.visible) continue;
           if (sceneryTheme === 'city') {
             animateCityBillboards(tile, travel);
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
