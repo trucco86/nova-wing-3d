@@ -29,7 +29,7 @@ test('steady gameplay stops rewriting static counters but updates progress conti
   assert.ok(progress() > 0, 'continuous progress display stays responsive');
   h.game.bomb();
   assert.equal(h.elements.get('bombs').textContent, '◆ ◆ ');
-  assert.equal(h.elements.get('bombTouch')['data-count'], '2');
+  assert.equal(String(h.elements.get('bombTouch')['data-count']), '2');
   h.advance(0.1);
   assert.equal(writes.bombs(), 1, 'next frame does not rewrite immediate bomb feedback');
 });
