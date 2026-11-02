@@ -2161,7 +2161,7 @@ export function createGame({
       dynamicFlight && boss.userData.sabotage
         ? 'SABOTAGEM · J/L PARA ORBITAR 360° · TRAVE OS SISTEMAS COM O ROBÔ'
         : dynamicFlight
-          ? 'ARENA · J/L OU ↶/↷ PARA ORBITAR · GERADORES ±60° / NÚCLEO 0°'
+          ? 'ARENA · ORBITE 360° · GERADORES NOS FLANCOS E TRASEIRA'
           : 'ALERTA COLOSSAL / ' + current().boss + ' · DESTRUA OS GERADORES VERMELHOS',
     );
   }
