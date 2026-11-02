@@ -87,6 +87,7 @@ import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferen
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
+import { createParticlePool } from './particle-pool.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
@@ -535,6 +536,7 @@ export function createGame({
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
+  const particlePool = createParticlePool({ scene, sparkGeometry: particleGeo, createHalo: halo });
   let state = 'menu',
     elapsed = 0,
     score = 0,
@@ -1501,45 +1503,20 @@ export function createGame({
   function explode(pos, n = 16, color = 0xffa04a) {
     if (n >= 12 && dynamicFlight) cue('explosion');
     else if (n > 3) sound(100, 0.2, 'sine', 0.025);
-    for (let i = 0; i < n; i++) {
-      const p = new T.Mesh(
-        particleGeo,
-        new T.MeshBasicMaterial({
-          color: new T.Color(color).multiplyScalar(2.2),
-          transparent: true,
-          blending: T.AdditiveBlending,
-          depthWrite: false,
-        }),
-      );
-      p.position.copy(pos);
-      scene.add(p);
-      particles.push({
-        o: p,
-        v: new T.Vector3(rnd(-17, 17), rnd(-17, 17), rnd(-17, 17)),
-        life: rnd(0.3, 0.85),
-        kind: 'spark',
-      });
-    }
-    if (n > 5) {
-      const light = halo(color, 9, 0.85);
-      light.material = light.material.clone();
-      light.position.copy(pos);
-      scene.add(light);
-      particles.push({ o: light, v: new T.Vector3(), life: 0.45, kind: 'flash' });
-      const wave = new T.Mesh(
-        new T.RingGeometry(1, 1.2, 48),
-        new T.MeshBasicMaterial({
+    for (let i = 0; i < n; i++)
+      particles.push(
+        particlePool.spark(
+          pos,
           color,
-          transparent: true,
-          opacity: 0.9,
-          blending: T.AdditiveBlending,
-          side: T.DoubleSide,
-          depthWrite: false,
-        }),
+          rnd(-17, 17),
+          rnd(-17, 17),
+          rnd(-17, 17),
+          rnd(0.3, 0.85),
+        ),
       );
-      wave.position.copy(pos);
-      scene.add(wave);
-      particles.push({ o: wave, v: new T.Vector3(), life: 0.6, kind: 'wave' });
+    if (n > 5) {
+      particles.push(particlePool.flash(pos, color, 9, 0.85, 0.45));
+      particles.push(particlePool.wave(pos, color, 0.6));
     }
   }
   function hit(d) {
@@ -1709,11 +1686,7 @@ export function createGame({
     const color = feedback.color;
     explode(position, heavy ? 7 : 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
     if (heavy && confirmed) cue('mechaImpact');
-    const flash = halo(color, confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5, 0.95);
-    flash.material = flash.material.clone();
-    flash.material.depthTest = false;
-    flash.material.depthWrite = false;
-    flash.renderOrder = 100;
+    const flashSize = confirmed ? (weak ? 11 : 8) * (heavy ? 1.5 : 1) : 5;
     if (confirmed || impactTime <= 0 || !impactConfirmed) {
       impactTime = feedback.duration;
       impactConfirmed = confirmed;
@@ -1727,9 +1700,7 @@ export function createGame({
       if (weak) cue('weakPoint');
       else if (bossHit && !confirmed) cue('armorHit');
     }
-    flash.position.copy(position);
-    scene.add(flash);
-    particles.push({ o: flash, v: new T.Vector3(), life: 0.22, kind: 'flash' });
+    particles.push(particlePool.flash(position, color, flashSize, 0.95, 0.22, false));
   }
   function damageEnemy(e, amount, element = 'kinetic') {
     if (dynamicFlight) {
@@ -1801,10 +1772,15 @@ export function createGame({
       }
     }
     if (robotMode && dynamicFlight) {
-      const flash = halo('#a8faff', 3.8, 0.7);
-      flash.position.copy(robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()));
-      scene.add(flash);
-      particles.push({ o: flash, v: new T.Vector3(), life: 0.14, kind: 'flash' });
+      particles.push(
+        particlePool.flash(
+          robot.userData.mecha.arms.right.muzzle.getWorldPosition(new T.Vector3()),
+          '#a8faff',
+          3.8,
+          0.7,
+          0.14,
+        ),
+      );
     }
     if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
     else sound(900 + weapon * 110);
@@ -2474,8 +2450,8 @@ export function createGame({
     for (let arr of [enemies, shots, hostile, particles, rings, obstacles])
       for (let e of arr) {
         if (arr === hostile) hostileShotPool.release(e);
+        else if (arr === particles) particlePool.release(e);
         else dispose(e.o);
-        if (arr === particles) e.o.material.dispose();
       }
     enemies = [];
     shots = [];
@@ -5323,9 +5299,7 @@ export function createGame({
         if (p.kind === 'wave') p.o.scale.addScalar(dt * 30);
         else p.o.scale.multiplyScalar(1 + dt * (p.kind === 'flash' ? 4 : 1.4));
         if (p.life <= 0) {
-          dispose(p.o);
-          p.o.material.dispose();
-          if (p.kind === 'wave') p.o.geometry.dispose();
+          particlePool.release(p);
           particles.splice(i, 1);
         }
       }
@@ -5555,6 +5529,7 @@ export function createGame({
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
       hostileProjectilePool: hostileShotPool.stats(),
+      particlePool: particlePool.stats(),
       cameraMode,
       directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
@@ -5765,6 +5740,7 @@ export function createGame({
       cleanups.forEach((fn) => fn());
       clearWorld();
       hostileShotPool.clear();
+      particlePool.clear();
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
