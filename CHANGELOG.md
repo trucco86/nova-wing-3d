@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.64 — Controles Mobile 3.3: ergonomia de tiro e boost
+
+- TIRO e BOOST como ações principais do polegar direito, adjacentes no arco inferior; hitboxes maiores, sem sobreposição em retrato e paisagem.
+- Ações secundárias acima, suporte canhoto preservado e SUPER BOOST no mesmo comando.
+- Testes de geometria das sete ações e regressão do arco, mais preview isolado.
+- Apenas candidata QA: não promover sem CI completa, Playwright mobile e validação real de multi-touch.
+
 ## 1.27.63 — Candidata de QA: reator em órbita e cenários vivos
 
 - Fase 4: apresentação da nave e câmera orbitando o reator estacionário, com salão fixo; colisões e tiros preservados no referencial de gameplay.

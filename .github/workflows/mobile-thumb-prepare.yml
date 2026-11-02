@@ -6,6 +6,10 @@ on:
       - fix/mobile-primary-thumb-reach-20261102
     paths:
       - .github/workflows/mobile-thumb-prepare.yml
+      - package.json
+      - package-lock.json
+      - CHANGELOG.md
+      - releases/**
       - src/styles.css
       - tests/mobile-thumb-reach.test.mjs
       - tests/graphics-3-8-orbit-and-arc.test.mjs
