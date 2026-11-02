@@ -4,22 +4,34 @@ import * as T from 'three';
 // Instancing keeps each animated layer at a fixed number of draw calls.
 // No obstacle, damage, target or projectile data is created here.
 export const LIVING_WORLD_PROFILES = Object.freeze({
-  city: { name: 'sky-lanes', near: '#66dbfa', far: '#fbb869', shape: 'ship' },
-  mars: { name: 'dust-and-survey-drones', near: '#e9ac78', far: '#9f6250', shape: 'crystal' },
-  asteroids: { name: 'mine-haulers', near: '#f8b86c', far: '#a29abf', shape: 'rock' },
-  station: { name: 'maintenance-shuttles', near: '#60dfff', far: '#f18d57', shape: 'ship' },
-  sun: { name: 'plasma-sailers', near: '#ffcf6d', far: '#f26c57', shape: 'crystal' },
-  ice: { name: 'glacial-probes', near: '#8cdaff', far: '#c4f2ff', shape: 'crystal' },
-  nebula: { name: 'bio-spores', near: '#ec83fc', far: '#8eecfa', shape: 'rock' },
-  fleet: { name: 'escort-squadrons', near: '#ffb078', far: '#72e0ff', shape: 'ship' },
-  void: { name: 'gravity-debris', near: '#80d5fc', far: '#c8a1e9', shape: 'rock' },
-  throne: { name: 'imperial-patrol', near: '#ff739c', far: '#ffd38d', shape: 'ship' },
+  // Each sector has its own silhouette and flight signature. Only two GPU draws
+  // remain active; these meshes never participate in collision or targeting.
+  city: { name: 'sky-lanes', near: '#66dbfa', far: '#fbb869', shape: 'commuter', motion: { lateral: 6, vertical: 3, forward: 1.4, spin: 0.4, size: 0.95, altitude: 0 } },
+  mars: { name: 'dust-and-survey-drones', near: '#e9ac78', far: '#9f6250', shape: 'surveyor', motion: { lateral: 25, vertical: 13, forward: 0.7, spin: 1.5, size: 0.85, altitude: -14 } },
+  asteroids: { name: 'mine-haulers', near: '#f8b86c', far: '#a29abf', shape: 'ore', motion: { lateral: 31, vertical: 8, forward: 0.5, spin: 2.1, size: 1.18, altitude: 6 } },
+  station: { name: 'maintenance-shuttles', near: '#60dfff', far: '#f18d57', shape: 'shuttle', motion: { lateral: 4, vertical: 3, forward: 1.1, spin: 0.3, size: 1.0, altitude: 9 } },
+  sun: { name: 'plasma-sailers', near: '#ffcf6d', far: '#f26c57', shape: 'sail', motion: { lateral: 13, vertical: 20, forward: 1.6, spin: 1.2, size: 1.15, altitude: 23 } },
+  ice: { name: 'glacial-probes', near: '#8cdaff', far: '#c4f2ff', shape: 'ice', motion: { lateral: 12, vertical: 5, forward: 0.28, spin: 0.18, size: 1.35, altitude: -18 } },
+  nebula: { name: 'bio-spores', near: '#ec83fc', far: '#8eecfa', shape: 'spore', motion: { lateral: 27, vertical: 24, forward: 0.24, spin: 1.8, size: 0.9, altitude: 18 } },
+  fleet: { name: 'escort-squadrons', near: '#ffb078', far: '#72e0ff', shape: 'escort', motion: { lateral: 5, vertical: 3, forward: 1.7, spin: 0.32, size: 1.13, altitude: 11 } },
+  void: { name: 'gravity-debris', near: '#80d5fc', far: '#c8a1e9', shape: 'grav-ring', motion: { lateral: 36, vertical: 11, forward: 0.18, spin: 2.3, size: 1.2, altitude: 30 } },
+  throne: { name: 'imperial-patrol', near: '#ff739c', far: '#ffd38d', shape: 'interceptor', motion: { lateral: 8, vertical: 4, forward: 1.9, spin: 0.15, size: 1.02, altitude: 15 } },
 });
 
 function geometry(shape) {
-  if (shape === 'ship') return new T.ConeGeometry(2, 9, 5);
-  if (shape === 'crystal') return new T.OctahedronGeometry(3.4, 0);
-  return new T.IcosahedronGeometry(3.8, 0);
+  switch (shape) {
+    case 'commuter': return new T.ConeGeometry(2, 9, 5);
+    case 'surveyor': return new T.CylinderGeometry(3, 3, 1.7, 6);
+    case 'ore': return new T.IcosahedronGeometry(3.8, 0);
+    case 'shuttle': return new T.BoxGeometry(3.5, 2.5, 10);
+    case 'sail': return new T.TetrahedronGeometry(4, 0);
+    case 'ice': return new T.OctahedronGeometry(4.3, 0);
+    case 'spore': return new T.DodecahedronGeometry(3.1, 0);
+    case 'escort': return new T.ConeGeometry(2.2, 11, 3);
+    case 'grav-ring': return new T.TorusGeometry(3.5, 1.1, 6, 10);
+    case 'interceptor': return new T.CylinderGeometry(0, 4, 11, 4);
+    default: throw new Error('Unknown ambient silhouette: ' + shape);
+  }
 }
 
 export function createLivingWorldLayers(theme, quality = 'high') {
@@ -38,12 +50,13 @@ export function createLivingWorldLayers(theme, quality = 'high') {
   ];
   const mats = [];
   const instances = layers.map((layer) => {
+    const mineral = ['ore', 'ice', 'grav-ring'].includes(profile.shape);
     const material = new T.MeshStandardMaterial({
       color: layer.color,
-      metalness: profile.shape === 'rock' ? 0.28 : 0.72,
-      roughness: profile.shape === 'rock' ? 0.81 : 0.3,
+      metalness: mineral ? 0.28 : 0.72,
+      roughness: mineral ? 0.81 : 0.3,
       emissive: layer.color,
-      emissiveIntensity: profile.shape === 'rock' ? 0.04 : 0.2,
+      emissiveIntensity: mineral ? 0.04 : 0.2,
       flatShading: true,
     });
     mats.push(material);
@@ -74,6 +87,7 @@ export function setLivingWorldQuality(root, quality = 'high') {
 export function updateLivingWorldLayers(root, { time = 0, travel = 0 } = {}) {
   if (!root) return;
   const helper = root.userData.transformHelper;
+  const motion = LIVING_WORLD_PROFILES[root.userData.theme].motion;
   for (const layer of root.userData.layers) {
     const far = layer.name === 'third-plane';
     // Medium hides some instances; do not animate/upload invisible slots.
@@ -81,19 +95,19 @@ export function updateLivingWorldLayers(root, { time = 0, travel = 0 } = {}) {
     for (let i = 0; i < layer.mesh.count; i++) {
       const side = i % 2 ? 1 : -1;
       const lane = layer.width + (i % 4) * (far ? 27 : 13);
-      const loop = (i * 97 + travel * layer.speed + time * (far ? 2.3 : 8.4)) % 1480;
-      const altitude = (far ? 55 : 18) + (i % 6) * (far ? 19 : 11);
+      const loop = (i * 97 + travel * layer.speed + time * (far ? 2.3 : 8.4) * motion.forward) % 1480;
+      const altitude = (far ? 55 : 18) + (i % 6) * (far ? 19 : 11) + motion.altitude;
       helper.position.set(
-        side * (lane + Math.sin(time * (far ? 0.11 : 0.26) + i) * (far ? 13 : 23)),
-        altitude + Math.sin(time * 0.36 + i * 1.73) * (far ? 11 : 8),
+        side * (lane + Math.sin(time * (far ? 0.11 : 0.26) * motion.spin + i) * motion.lateral * (far ? 0.55 : 1)),
+        altitude + Math.sin(time * 0.36 * motion.spin + i * 1.73) * motion.vertical * (far ? 0.8 : 1),
         -180 - loop,
       );
-      const size = (far ? 2.25 : 1.35) * (1 + (i % 4) * 0.12);
+      const size = (far ? 2.25 : 1.35) * (1 + (i % 4) * 0.12) * motion.size;
       helper.scale.set(size, size, size * (far ? 1.45 : 1));
       helper.rotation.set(
-        Math.sin(time * 0.27 + i) * 0.18,
-        i * 0.57 + time * (far ? 0.04 : 0.17),
-        i * 0.39 + time * (far ? 0.06 : 0.13),
+        Math.sin(time * 0.27 * motion.spin + i) * 0.18,
+        i * 0.57 + time * (far ? 0.04 : 0.17) * motion.spin,
+        i * 0.39 + time * (far ? 0.06 : 0.13) * motion.spin,
       );
       helper.updateMatrix();
       layer.mesh.setMatrixAt(i, helper.matrix);

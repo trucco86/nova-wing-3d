@@ -106,3 +106,25 @@ test('Medium updates only drawn instances and High restores identical time-based
     node.userData.materials.forEach((material) => material.dispose());
   }
 });
+
+test('every sector has a distinct silhouette and motion signature without extra GPU draws', () => {
+  const signatures = new Set();
+  const silhouettes = new Set();
+  for (const [theme, profile] of Object.entries(LIVING_WORLD_PROFILES)) {
+    silhouettes.add(profile.shape);
+    signatures.add(JSON.stringify(profile.motion));
+    const world = createLivingWorldLayers(theme, 'medium');
+    const mesh = world.userData.layers[0].mesh;
+    const matrix = new T.Matrix4();
+    updateLivingWorldLayers(world, { time: 12, travel: 560 });
+    mesh.getMatrixAt(0, matrix);
+    const pos = new T.Vector3().setFromMatrixPosition(matrix);
+    assert.ok(Math.abs(pos.x) > 80, theme + ': preserve a clear central flight corridor');
+    assert.equal(world.children.length, 2, theme + ': retain two instanced draw calls');
+    assert.ok(world.userData.geometry.attributes.position.count < 400, theme + ': cheap geometry');
+    world.userData.geometry.dispose();
+    world.userData.materials.forEach((material) => material.dispose());
+  }
+  assert.equal(silhouettes.size, 10);
+  assert.equal(signatures.size, 10);
+});
