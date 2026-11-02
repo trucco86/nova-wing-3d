@@ -3891,7 +3891,8 @@ export function createGame({
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
     berserk = Math.max(0, berserk - dt);
     bossHitPulse = Math.max(0, bossHitPulse - dt);
-    document.body.classList.toggle('berserk-active', berserk > 0);
+    if (berserk > 0) document.body.classList.add('berserk-active');
+    else document.body.classList.remove('berserk-active');
       const team = squad?.snapshot();
       $('plasmaTitan').disabled =
         !!team && (team.plasmaCooldown > 0 || arcana < SQUAD_SPECIALS.plasma.cost);
