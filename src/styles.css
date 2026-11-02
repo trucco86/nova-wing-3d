@@ -9285,7 +9285,9 @@ body.berserk-active #rpgLevel {
 /* QA-only, one-tap Berserk activation beneath the existing approved RPG rail.
    Never cover the aim reticle or enable this dock in normal/production sessions. */
 #qaBerserkDock[hidden],
-body:not(.developer-session) #qaBerserkDock { display: none !important; }
+body:not(.developer-session) #qaBerserkDock {
+  display: none !important;
+}
 #qaBerserkDock {
   position: absolute;
   top: calc(100% + 6px);
@@ -9310,11 +9312,16 @@ body:not(.developer-session) #qaBerserkDock { display: none !important; }
   border-radius: 7px;
   background: linear-gradient(110deg, #713a1d, #b54b27);
   color: #fff6e3;
-  font: 800 12px/1.2 Arial, sans-serif;
-  letter-spacing: .03em;
+  font:
+    800 12px/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.03em;
   touch-action: manipulation;
 }
-#qaBerserkStatus { color: #ffdba8; font: 700 10px/1.25 monospace; }
+#qaBerserkStatus {
+  color: #ffdba8;
+  font: 700 10px/1.25 monospace;
+}
 #qaBerserkDock[data-active='true'] {
   border-color: #ffee8a;
   box-shadow: 0 0 15px #ff962b88;
