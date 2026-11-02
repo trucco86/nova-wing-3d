@@ -89,6 +89,7 @@ import {
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { groundMechaKind, hoverMechaMotion } from './enemy-mecha-behavior.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
@@ -1640,7 +1641,8 @@ export function createGame({
         kind === 'subboss' ? (dynamicFlight ? 360 + sectorIndex * 90 : 180 + sectorIndex * 40) : 1,
       ground,
       airborneRobot,
-      hitY: airborneRobot ? 0 : kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
+      combatStyle: airborneRobot ? 'aerial-chase' : kind === 'walker' ? 'hand-cannon' : null,
+      hitY: airborneRobot ? 18 : kind === 'walker' ? 18 : kind === 'tank' ? 5 : 0,
       half: new T.Vector3(
         ground
           ? kind === 'walker'
@@ -3142,7 +3144,13 @@ export function createGame({
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
-      enemy(groundWave % 2 ? 'tank' : 'walker');
+      enemy(
+        dynamicFlight
+          ? groundMechaKind(sectorIndex, groundWave)
+          : groundWave % 2
+            ? 'tank'
+            : 'walker',
+      );
       groundCd = 6;
     }
     if (
@@ -3353,31 +3361,58 @@ export function createGame({
             : SUBBOSS_NAMES[sectorIndex];
       }
       if (e.kind === 'walker' || e.airborneRobot) {
-        // Heavy mechs pace laterally, forcing real tracking instead of static target practice.
-        e.o.position.x = e.x + Math.sin(e.age * (0.58 + e.variant * 0.05)) * 6.5;
-        if (e.airborneRobot) e.o.position.y = e.y + Math.sin(e.age * 1.2) * 2.8;
+        if (e.airborneRobot) {
+          const chase = hoverMechaMotion(
+            e.age,
+            e.x,
+            e.y,
+            player.position.x,
+            player.position.y,
+            e.phase,
+          );
+          e.o.position.x = chase.x;
+          e.o.position.y = chase.y;
+          // Maintain a readable chase distance; never pass through the player's plane.
+          e.o.position.z = Math.min(-37, e.o.position.z);
+          e.o.rotation.z = chase.bank;
+        } else {
+          e.o.position.x = e.x + Math.sin(e.age * (0.58 + e.variant * 0.05)) * 6.5;
+        }
       }
-      if (e.ground) animateGroundEnemy(e.o, elapsed, player.position);
+      if (e.ground)
+        animateGroundEnemy(e.o, e.age, player.position, {
+          dt,
+          airborne: e.airborneRobot,
+          charging: e.cd > 0 && e.cd < 0.65,
+        });
       e.cd -= dt * (e.chilled > 0 ? 0.5 : 1);
       if (e.cd <= 0 && e.o.position.z < -15) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
-        for (const offset of introductorySubboss
-          ? [0]
-          : e.role
-            ? fighterAimOffsets(e.role)
-            : e.subbossTactic
-              ? e.subbossTactic.aim
-              : e.kind === 'walker'
-                ? [-5, 5]
+        if (e.kind === 'walker' || e.airborneRobot) {
+          // Projectiles originate at the animated palms, not the old torso origin.
+          e.o.updateMatrixWorld(true);
+          for (const side of ['left', 'right']) {
+            const muzzle = e.o.getObjectByName('walker-muzzle-' + side);
+            if (!muzzle) continue;
+            bullet(
+              muzzle.getWorldPosition(new T.Vector3()),
+              player.position.clone().add(new T.Vector3(side === 'left' ? -4 : 4, 0, 0)),
+            );
+          }
+        } else
+          for (const offset of introductorySubboss
+            ? [0]
+            : e.role
+              ? fighterAimOffsets(e.role)
+              : e.subbossTactic
+                ? e.subbossTactic.aim
                 : [0])
-          bullet(
-            e.o.position
-              .clone()
-              .add(new T.Vector3(e.kind === 'walker' ? offset : 0, e.hitY, e.ground ? 8 : 0)),
-            player.position.clone().add(new T.Vector3(offset, 0, 0)),
-            e.subbossTactic?.spell ?? '',
-          );
+            bullet(
+              e.o.position.clone().add(new T.Vector3(0, e.hitY, e.ground ? 8 : 0)),
+              player.position.clone().add(new T.Vector3(offset, 0, 0)),
+              e.subbossTactic?.spell ?? '',
+            );
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
@@ -3398,7 +3433,7 @@ export function createGame({
               : 1.5
             : e.role
               ? 1.8
-              : e.kind === 'walker'
+              : e.kind === 'walker' || e.airborneRobot
                 ? 3.3 - (e.variant % 3) * 0.25
                 : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
@@ -4351,6 +4386,7 @@ export function createGame({
         .filter((e) => !e.dead)
         .map((e) => ({
           kind: e.kind,
+          combatStyle: e.combatStyle,
           role: e.role,
           tactic: e.subbossTactic?.motion ?? null,
           attack: e.subbossTactic?.attack ?? null,

@@ -38,17 +38,40 @@ export function updateMechaPose(
     exhaustCore.scale.y = plume.scale.y * 0.86;
   });
   const { left, right } = rig.arms;
+  const legs = robot.userData.mechRig?.legs ?? [];
+  legs.forEach((leg, i) => {
+    const side = i === 0 ? -1 : 1;
+    const stride = Math.sin(time * (boosting ? 5 : 2.8) + i * Math.PI);
+    leg.rotation.x = ease(
+      leg.rotation.x,
+      (boosting ? -0.23 : 0.08) + stride * (boosting ? 0.26 : 0.17) - v * 0.12,
+      dt,
+      5.5,
+    );
+    leg.rotation.z = ease(
+      leg.rotation.z,
+      side * (0.08 + Math.abs(s) * 0.06) + Math.sin(time * 1.8 + i) * 0.035,
+      dt,
+      4.5,
+    );
+  });
+  robot.rotation.x = ease(
+    robot.rotation.x,
+    (boosting ? -0.1 : 0) + v * 0.07 + Math.sin(time * 2) * 0.02,
+    dt,
+    5,
+  );
   const firingRecoil = firing ? 0.05 + Math.sin(time * 32) * 0.045 : 0;
   right.shoulder.rotation.x = ease(
     right.shoulder.rotation.x,
-    1.07 + firingRecoil + recoil * 0.65,
+    1.07 + firingRecoil + recoil * 0.65 + Math.sin(time * 1.9) * 0.07,
     dt,
     11,
   );
   right.shoulder.rotation.z = ease(right.shoulder.rotation.z, -0.05 + s * 0.08, dt, 8);
   right.elbow.rotation.x = ease(right.elbow.rotation.x, -0.13 - recoil * 0.22, dt, 14);
 
-  let leftX = 0.9 + 0.06 * Math.sin(time * 1.5);
+  let leftX = 0.9 + 0.11 * Math.sin(time * 1.5);
   let leftY = 0.03;
   let leftZ = -0.04;
   if (targetWorld?.isVector3) {
