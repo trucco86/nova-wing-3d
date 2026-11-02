@@ -50,7 +50,7 @@ export function createHudWriteGuard(getElement) {
     const current = node.getAttribute?.(name) ?? node[name];
     // DOM getAttribute always yields strings; test adapters and direct input
     // handlers may store a numeric property on lightweight mock nodes.
-    if (current != null && String(current) === next) return false;
+    if (current !== null && current !== undefined && String(current) === next) return false;
     node.setAttribute(name, next);
     return true;
   }
