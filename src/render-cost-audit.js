@@ -31,7 +31,8 @@ export function createRenderCostAudit({ capacity = 3600 } = {}) {
       ![drawCalls, trianglesCount, postPasses].every(
         (value) => Number.isSafeInteger(value) && value >= 0,
       )
-    ) return;
+    )
+      return;
     calls[cursor] = drawCalls;
     triangles[cursor] = trianglesCount;
     passes[cursor] = postPasses;
