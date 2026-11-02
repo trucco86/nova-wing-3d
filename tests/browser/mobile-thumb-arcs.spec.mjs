@@ -77,7 +77,10 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
       expect(rect.right, id + ' inside screen').toBeLessThanOrEqual(viewport.width + 1);
       expect(rect.bottom, id + ' inside screen').toBeLessThanOrEqual(viewport.height + 1);
       expect(opacity, id + ' transparent but readable').toBeGreaterThan(0.35);
-      expect(opacity).toBeLessThanOrEqual(id === 'boostTouch' ? 0.9 : 0.76);
+      expect(opacity).toBeLessThanOrEqual(['boostTouch', 'fireTouch'].includes(id) ? 1 : 0.76);
+      if (id === 'fireTouch' || id === 'boostTouch') {
+        expect(opacity, id + ' primary action must be readable').toBeGreaterThanOrEqual(0.8);
+      }
       if (id === 'boostTouch') {
         expect(opacity).toBeGreaterThan(0.74);
         expect(rect.width).toBeGreaterThanOrEqual(60);
