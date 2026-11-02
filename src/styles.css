@@ -9036,3 +9036,223 @@ body.in-mission #hudNotices > #launchBoostNotice span {
   z-index: 9;
   background: #071d2a;
 }
+
+/* Compact menu v1.27.62: isolated hangar tabs and collapsed QA screens. */
+#menu[data-screen='qa']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
+  display: none !important;
+}
+#menu.title-screen[data-screen='qa'] {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: max(36px, 5dvh) max(12px, 4vw) 24px;
+}
+#menu[data-screen='qa'] .title-content {
+  width: min(100%, 540px);
+}
+#menu[data-screen='qa'] #developerPanel {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 12px auto 0;
+}
+#menu[data-screen='qa'] #developerPanel[hidden] {
+  display: none !important;
+}
+#menu[data-screen='qa'] #developerPanel > summary {
+  min-height: 48px;
+  text-align: center;
+}
+#menu .developer-scenario-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+#menu .developer-scenario-fields > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+#menu .developer-lab-options {
+  border: 1px solid #3e87928a;
+  border-radius: 8px;
+  background: #071b27d9;
+}
+#menu .developer-lab-options > summary {
+  padding: 12px;
+  min-height: 44px;
+  box-sizing: border-box;
+  cursor: pointer;
+  color: #b7e9e5;
+}
+#menu .developer-lab-options fieldset {
+  margin: 4px 10px 12px;
+  min-width: 0;
+}
+#menu[data-screen='hangar'] #squadSelection {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 9px 16px;
+  align-items: start;
+  padding: 14px;
+}
+#menu[data-screen='hangar'] #hangarSectionTabs {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+#menu[data-screen='hangar'] #hangarSectionTabs button {
+  min-height: 46px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #4b8392;
+  background: #0c2634;
+  color: #b4d2db;
+  font: 700 11px monospace;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#menu[data-screen='hangar'] #hangarSectionTabs button[aria-pressed='true'] {
+  border-color: #67ead3;
+  background: #12534c;
+  color: #e4fff5;
+}
+#menu[data-screen='hangar'] #squadSelection > [data-hangar-section] {
+  grid-column: 1;
+  min-width: 0;
+}
+#menu[data-screen='hangar'] #squadSelection > .hangar-preview {
+  grid-column: 2;
+  grid-row: 2 / span 5;
+  margin: 0;
+}
+#menu[data-screen='hangar'] #hangarCanvas {
+  height: clamp(220px, 35dvh, 345px);
+}
+#menu[data-screen='hangar'] #squadSelection > .pilot-profile {
+  grid-template-columns: 66px minmax(0, 1fr);
+  gap: 9px;
+  margin: 0;
+  min-height: 0;
+  padding: 9px;
+}
+#menu[data-screen='hangar'] #squadSelection .profile-portrait .cat-avatar {
+  width: 53px !important;
+  height: 50px !important;
+}
+#menu[data-screen='hangar'] #squadSelection .profile-stats {
+  grid-column: 1 / -1;
+}
+#menu[data-screen='hangar'] #squadSelection .ship-roster {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#menu[data-screen='hangar'] #squadSelection .ship-choice {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+}
+#menu[data-screen='hangar'] #squadSelection .ship-choice small {
+  font-size: 8px;
+}
+#menu[data-screen='hangar'] #loadoutCatalog {
+  grid-column: 1 / -1 !important;
+  width: 100%;
+}
+#menu
+  #squadSelection[data-hangar-tab='pilots']
+  > [data-hangar-section]:not([data-hangar-section='pilots']),
+#menu
+  #squadSelection[data-hangar-tab='ships']
+  > [data-hangar-section]:not([data-hangar-section='ships']),
+#menu
+  #squadSelection[data-hangar-tab='arsenal']
+  > [data-hangar-section]:not([data-hangar-section='arsenal']),
+#menu #squadSelection[data-hangar-tab='arsenal'] > .hangar-preview {
+  display: none !important;
+}
+@media (max-width: 720px), (max-height: 540px) {
+  #menu.title-screen[data-screen='hangar'].selecting {
+    padding: max(18px, 3dvh) 3vw max(14px, env(safe-area-inset-bottom, 0px));
+  }
+  #menu[data-screen='hangar'] #squadSelection {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+  #menu[data-screen='hangar'] #squadSelection > * {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #menu[data-screen='hangar'] #hangarSectionTabs {
+    order: 0;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .selection-head {
+    order: 1;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .pilot-roster,
+  #menu[data-screen='hangar'] #squadSelection > .ship-roster {
+    order: 2;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .color-roster {
+    order: 3;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .ship-description {
+    order: 4;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .hangar-preview {
+    order: 5;
+    margin: 0;
+  }
+  #menu[data-screen='hangar'] #squadSelection > .pilot-profile {
+    order: 6;
+  }
+  #menu[data-screen='hangar'] #squadSelection > #loadoutCatalog {
+    order: 7;
+  }
+  #menu[data-screen='hangar'] #hangarCanvas {
+    height: clamp(145px, 26dvh, 220px);
+  }
+  #menu[data-screen='hangar'] .hangar-topline {
+    padding: 10px 12px 6px;
+  }
+  #menu[data-screen='hangar'] .hangar-tabs {
+    top: 29px;
+  }
+  #menu[data-screen='hangar'] .hangar-tools {
+    padding: 3px;
+  }
+  #menu[data-screen='hangar'] .hangar-tools button {
+    min-height: 38px;
+    padding: 6px 8px;
+  }
+  #menu[data-screen='hangar'] .pilot-roster {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  #menu[data-screen='hangar'] .pilot-choice {
+    flex-direction: column;
+    padding: 5px 2px !important;
+    min-height: 53px;
+  }
+  #menu[data-screen='hangar'] .pilot-choice span {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  #menu[data-screen='hangar'] .pilot-choice .cat-avatar {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  #menu[data-screen='hangar'] .pilot-profile .profile-copy p {
+    display: none;
+  }
+}
+@media (max-height: 440px) and (min-width: 721px) {
+  #menu[data-screen='hangar'] #hangarCanvas {
+    height: 150px;
+  }
+}
