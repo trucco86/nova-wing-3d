@@ -116,7 +116,9 @@ test('FPS entry is reachable in compact portrait and landscape without obscuring
   }
 });
 
-test('switching graphics mode cancels any active performance measurement to avoid mixed evidence', async ({ page }) => {
+test('switching graphics mode cancels any active performance measurement to avoid mixed evidence', async ({
+  page,
+}) => {
   await page.goto('/__dynamic.html?sector=5');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.evaluate(() => window.fixture.game.pause());

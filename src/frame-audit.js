@@ -131,7 +131,15 @@ const STRINGS = {
 };
 export function formatFrameAudit(
   data,
-  { language = 'pt', width = 0, height = 0, dpr = 1, sector = null, graphics = null, version = null } = {},
+  {
+    language = 'pt',
+    width = 0,
+    height = 0,
+    dpr = 1,
+    sector = null,
+    graphics = null,
+    version = null,
+  } = {},
 ) {
   const s = STRINGS[language] ?? STRINGS.pt;
   if (!data.frames) return s.empty;

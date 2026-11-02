@@ -88,8 +88,13 @@ test('physical-device reports label stage, selected quality and build for reprod
     ['es', /Escenario: fase 6/, /perfil seleccionado: HIGH/],
   ]) {
     const text = formatFrameAudit(audit.report(), {
-      language, width: 390, height: 844, dpr: 3,
-      sector: 6, graphics: 'high', version: 'v1.27.69',
+      language,
+      width: 390,
+      height: 844,
+      dpr: 3,
+      sector: 6,
+      graphics: 'high',
+      version: 'v1.27.69',
     });
     assert.match(text, keyword);
     assert.match(text, quality);
@@ -98,7 +103,9 @@ test('physical-device reports label stage, selected quality and build for reprod
     assert.doesNotMatch(text, /userAgent|localStorage|latitude|longitude|token/);
   }
   const invalid = formatFrameAudit(audit.report(), {
-    sector: '6', graphics: 'pretend-maximum', version: 'private-secret',
+    sector: '6',
+    graphics: 'pretend-maximum',
+    version: 'private-secret',
   });
   assert.doesNotMatch(invalid, /private-secret|pretend-maximum|fase 6/);
 });
