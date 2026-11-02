@@ -62,3 +62,17 @@ export function bossWeakPointOpen(sectorIndex, relativeAngle, partIndex) {
   const difference = Math.atan2(Math.sin(relativeAngle - center), Math.cos(relativeAngle - center));
   return Math.abs(difference) < ([3, 5].includes(sectorIndex) ? 0.75 : 0.8);
 }
+
+/**
+ * The radar shares the same flank/stern arcs as physical generator damage.
+ * Only visible or previously discovered weak points appear without a scan.
+ */
+export function bossRadarTarget(sectorIndex, parts, evidence = [], orbit = 0, scanning = false) {
+  if (!Array.isArray(parts)) return null;
+  const alive = parts.flatMap((part, index) => (part?.hp > 0 ? [index] : []));
+  const index =
+    alive.find((i) => bossWeakPointOpen(sectorIndex, orbit, i)) ??
+    alive.find((i) => evidence[i]?.revealed) ??
+    (scanning ? alive[0] : undefined);
+  return index === undefined ? null : { index, angle: bossWeakPointAngle(sectorIndex, index) };
+}

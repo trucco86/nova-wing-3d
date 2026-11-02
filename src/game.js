@@ -108,7 +108,7 @@ import {
   multiLockCost,
 } from './mecha-multi-lock.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
-import { bossWeakPointOpen, bossWeakPointAngle } from './boss-weakpoint-layout.js';
+import { bossWeakPointOpen, bossWeakPointAngle, bossRadarTarget } from './boss-weakpoint-layout.js';
 import {
   newWeakpointEvidence,
   recordWeakpointContact,
@@ -120,6 +120,7 @@ import {
   updateDevastadorSabotageCore,
   sabotagedSystem,
   sabotageTargetOpen,
+  sabotageRadarTarget,
 } from './devastador-sabotage.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
@@ -4462,7 +4463,9 @@ export function createGame({
         renderBossRadar(document, null);
         $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
-        $('radarWeak').hidden = true;
+        const objective = sabotageRadarTarget(boss.userData.parts, relativeOrbit());
+        $('radarWeak').hidden = !objective;
+        if (objective) $('radarWeak').style.transform = 'rotate(' + objective.angle + 'rad)';
         $('tacticState').textContent = 'SABOTAGEM · ORBITE 360°';
       } else if (dynamicFlight) {
         const turn =
@@ -4594,10 +4597,16 @@ export function createGame({
               : inDanger(orbitAngle, t)
                 ? 'RISCO'
                 : 'COBERTURA';
-        const point = boss.userData.parts.findIndex((p) => p.hp > 0);
-        const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
-        $('radarWeak').hidden = scanTime <= 0;
-        $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
+        const objective = bossRadarTarget(
+          sectorIndex,
+          boss.userData.parts,
+          weakpointEvidence,
+          relativeOrbit(),
+          scanTime > 0,
+        );
+        $('radarWeak').hidden = !objective;
+        if (objective)
+          $('radarWeak').style.transform = 'rotate(' + (objective.angle + t.heading) + 'rad)';
         if (
           bossCombat.age >= 3 &&
           t.state === 'attack' &&
