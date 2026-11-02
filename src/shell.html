@@ -668,14 +668,20 @@
                 Disponível em DEV e previews QA autorizados. Testes isolados: sem ranking, sem
                 salvamento e sem afetar a campanha.
               </p>
-              <label for="developerSector">FASE / SETOR</label>
-              <select id="developerSector" aria-label="Escolher fase para teste"></select>
-              <label for="developerEncounter">PONTO DE ENTRADA</label>
-              <select id="developerEncounter" aria-label="Escolher encontro para teste">
-                <option value="stage">COMEÇO DA FASE</option>
-                <option value="subboss">SUBCHEFE</option>
-                <option value="boss">CHEFE PRINCIPAL</option>
-              </select>
+              <div class="developer-scenario-fields">
+                <div>
+                  <label for="developerSector">FASE / SETOR</label>
+                  <select id="developerSector" aria-label="Escolher fase para teste"></select>
+                </div>
+                <div>
+                  <label for="developerEncounter">PONTO DE ENTRADA</label>
+                  <select id="developerEncounter" aria-label="Escolher encontro para teste">
+                    <option value="stage">COMEÇO DA FASE</option>
+                    <option value="subboss">SUBCHEFE</option>
+                    <option value="boss">CHEFE PRINCIPAL</option>
+                  </select>
+                </div>
+              </div>
               <details id="developerLabOptions" class="developer-lab-options">
                 <summary>OPÇÕES AVANÇADAS · NAVE / ARSENAL</summary>
                 <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
