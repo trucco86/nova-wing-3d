@@ -20,6 +20,14 @@ test('QA launcher is visible in the home menu, opens the lab, and starts Berserk
   await page.locator('#developerBerserkLaunch').click();
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#developerSessionTag')).toContainText('SETOR 02');
+  const berserk = page.locator('#qaBerserkAction');
+  await expect(berserk).toBeVisible();
+  await expect(berserk).toContainText('ATIVAR BERSERK');
+  await berserk.click();
   await expect(page.locator('body')).toHaveClass(/berserk-active/);
+  await expect(page.locator('#qaBerserkStatus')).toContainText('ATIVO');
+  await expect(berserk).toContainText('REPETIR BERSERK');
+  await berserk.click();
+  await expect(page.locator('#qaBerserkStatus')).toContainText('ATIVO');
   await page.screenshot({ path: info.outputPath('qa-berserk-activated.png') });
 });

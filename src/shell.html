@@ -56,6 +56,12 @@
         ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
         ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
       </div>
+      <div id="qaBerserkDock" hidden role="group" aria-label="Controle exclusivo de teste Berserk">
+        <button type="button" id="qaBerserkAction" aria-label="Ativar ou repetir o modo Berserk em QA">
+          ATIVAR BERSERK
+        </button>
+        <span id="qaBerserkStatus">QA · PRONTO PARA ATIVAR</span>
+      </div>
       <div id="orbitControls" hidden>
         <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
         ><span>ORBITAR</span
@@ -706,10 +712,10 @@
                 class="primary"
                 aria-label="Testar modo Berserk diretamente nesta fase ou chefe"
               >
-                TESTAR BERSERK AGORA
+                PREPARAR TESTE BERSERK
               </button>
               <small
-                >Atalho QA: começa com evolução 13, Berserk equipado e ativado. Escolha o setor e o
+                >Atalho QA: escolhe evolução 13 e Berserk. Ative e repita o poder pelo botão no HUD da fase. Escolha o setor e o
                 chefe acima.</small
               >
               <button id="developerExplore" type="button" hidden>

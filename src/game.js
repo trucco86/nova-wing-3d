@@ -743,6 +743,23 @@ export function createGame({
     message('ESPECIAL · ' + spell.name);
     return true;
   }
+  function activateQaBerserk() {
+    // Repeatable QA action: genuine Berserk spell, isolated from campaign saves,
+    // with a longer inspection window and no twenty-six-second cooldown.
+    if (!developerAvailable || !developerSession || state !== 'playing' || !dynamicFlight)
+      return false;
+    const before = stage();
+    strategy.xp = Math.max(strategy.xp, xpForStage(12));
+    strategy.special = 3;
+    if (stage() !== before) evolve();
+    arcana = 100;
+    specialCd = 0;
+    if (!castSpecial()) return false;
+    berserk = 20;
+    $('qaBerserkAction').textContent = 'REPETIR BERSERK';
+    $('qaBerserkStatus').textContent = 'ATIVO · 20s · POTÊNCIA +60%';
+    return true;
+  }
   function scanBoss() {
     if (!dynamicFlight || state !== 'playing' || !boss || arcana < 10 || scanTime > 0) return false;
     arcana -= 10;
@@ -3050,9 +3067,11 @@ export function createGame({
       // One-tap QA access. Real power-up and disposable progression.
       $('developerTier').value = '12';
       $('developerSpecial').value = '3';
-      if (startDeveloperScenario($('developerSector').value, $('developerEncounter').value))
-        castSpecial();
+      if (startDeveloperScenario($('developerSector').value, $('developerEncounter').value)) {
+        message('QA · BERSERK PRONTO · TOQUE ATIVAR BERSERK NO HUD');
+      }
     };
+    $('qaBerserkAction').onclick = activateQaBerserk;
     $('qaLabApply').onclick = () => {
       if (!developerAvailable || !developerSession || state !== 'paused' || confirmation) return;
       const lab = developerLabLoadout(
@@ -5385,6 +5404,16 @@ export function createGame({
       !dynamicFlight ||
       !['playing', 'paused'].includes(state) ||
       (state === 'paused' && pausedFrom !== 'playing');
+    const qaBerserkVisible = developerAvailable && developerSession && state === 'playing';
+    $('qaBerserkDock').hidden = !qaBerserkVisible;
+    if (qaBerserkVisible) {
+      $('qaBerserkAction').textContent = berserk > 0 ? 'REPETIR BERSERK' : 'ATIVAR BERSERK';
+      $('qaBerserkStatus').textContent =
+        berserk > 0
+          ? 'ATIVO · ' + Math.ceil(berserk) + 's · ATAQUE +60%'
+          : 'PRONTO · TOQUE PARA ATIVAR';
+      $('qaBerserkDock').setAttribute('data-active', String(berserk > 0));
+    }
     $('cockpitReadout').textContent =
       Math.ceil(hp) +
       '% ESCUDO · ' +
