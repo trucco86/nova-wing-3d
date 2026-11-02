@@ -5322,14 +5322,25 @@ export function createGame({
     $('tacticalPanel').hidden = !dynamicFlight || !boss || !['playing', 'paused'].includes(state);
     $('hitFeedback').hidden =
       !dynamicFlight || impactTime <= 0 || !['playing', 'paused'].includes(state);
+    // For the eight physical Devastador valves, reuse the two lightweight
+    // labels for whichever currently vulnerable parts face the pilot.
+    const cueTargets = boss?.userData.sabotage
+      ? boss.userData.parts
+          .map((part, index) => ({ part, index, open: bossTargetOpen(index) }))
+          .filter(({ part, open }) => part.hp > 0 && open)
+          .slice(0, 2)
+      : [0, 1].map((index) => ({
+          part: boss?.userData.parts[index],
+          index,
+          open: Boolean(boss && bossTargetOpen(index)),
+        }));
     for (let i = 0; i < 2; i++) {
       const node = $('weakCue' + i);
-      const part = boss?.userData.parts[i];
-      const open = Boolean(part && bossTargetOpen(i));
-      const cue =
-        dynamicFlight && boss && !boss.userData.sabotage
-          ? weakpointReadout(part, weakpointEvidence[i], open)
-          : null;
+      const target = cueTargets[i];
+      const part = target?.part;
+      const cue = dynamicFlight && boss
+        ? weakpointReadout(part, weakpointEvidence[target?.index], target?.open)
+        : null;
       node.hidden = !cue || !['playing', 'paused'].includes(state);
       if (node.hidden) continue;
       boss.updateMatrixWorld(true);
