@@ -344,6 +344,29 @@ export function createObstacle(kind = 'gantry') {
       uplink.position.set(0, 27.7, 0);
       g.add(uplink);
       g.add(box(4, 0.4, 7, red, 0, 18.7, 0));
+    } else if (kind === 'ice-meteor') {
+      // Saturn: icy, faceted rocks in the actual flight corridor.
+      // A conservative bounding box encloses the visible object; unlike the
+      // background ring layers these meteors are real, breakable hazards.
+      const ice = new T.Mesh(
+        new T.IcosahedronGeometry(9, 1),
+        new T.MeshStandardMaterial({
+          color: '#badce7', metalness: 0.06, roughness: 0.54, flatShading: true,
+          emissive: '#254259', emissiveIntensity: 0.09,
+        }),
+      );
+      ice.name = 'saturn-breakable-ice-meteor';
+      ice.position.set(0, 17, 0);
+      g.add(ice);
+      for (const side of [-1, 1]) {
+        const chip = new T.Mesh(new T.TetrahedronGeometry(2.6, 0), ice.material);
+        chip.position.set(side * 7.5, 20, side * 3);
+        g.add(chip);
+      }
+      solids.push({
+        center: new T.Vector3(0, 17, 0),
+        half: new T.Vector3(12, 11, 12),
+      });
     } else if (kind === 'debris') {
       solid(14, 12, 16, 0, 18, 0, dark);
       for (const side of [-1, 1]) {

@@ -61,3 +61,32 @@ test('architectural layers remain outside player flight corridor and respect Hig
     updateDestinationLandmarks(world, 20);
   }
 });
+
+test('Saturn has deliberate near/far ice-ring geometry, no generic wreck landscape', () => {
+  const world = createDestinationLandmarks(7);
+  const near = world.getObjectByName('saturn-ring-ice-near');
+  const far = world.getObjectByName('saturn-ring-ice-far-high');
+  assert.equal(near.isInstancedMesh, true);
+  assert.equal(far.isInstancedMesh, true);
+  assert.equal(near.count, 36);
+  assert.equal(far.count, 22);
+  const helper = new T.Object3D();
+  near.getMatrixAt(0, helper.matrix);
+  helper.matrix.decompose(helper.position, helper.quaternion, helper.scale);
+  const before = helper.position.z;
+  updateDestinationLandmarks(world, 12);
+  near.getMatrixAt(0, helper.matrix);
+  helper.matrix.decompose(helper.position, helper.quaternion, helper.scale);
+  assert.notEqual(helper.position.z, before, 'ice must visibly pass alongside flight');
+  assert.ok(Math.abs(helper.position.x) >= 85, 'keep navigation corridor readable');
+  const z = helper.position.z;
+  updateDestinationLandmarks(world, 12);
+  near.getMatrixAt(0, helper.matrix);
+  helper.matrix.decompose(helper.position, helper.quaternion, helper.scale);
+  assert.equal(helper.position.z, z, 'pause and replay must be deterministic');
+  setDestinationLandmarkQuality(world, 'medium');
+  assert.equal(near.visible, true);
+  assert.equal(far.visible, false);
+  setDestinationLandmarkQuality(world, 'high');
+  assert.equal(far.visible, true);
+});

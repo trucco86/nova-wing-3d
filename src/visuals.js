@@ -1551,7 +1551,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
-    const normalDensity = destinationIndex === 5 ? 0.0014 : 0.00045;
+    const normalDensity =
+      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : 0.00045;
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
@@ -1942,18 +1943,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // The station is now a physical hangar/engine room, not extra torus rings.
       // Each non-Earth location has a different silhouette, palette and traversal
       // grammar. No universal orbital torus corridor or broken moon in every stage.
-      if (dynamicFlight && sceneryTheme === 'fleet') {
-        for (let i = 0; i < 7; i++) {
-          const wreck = new T.Group();
-          wreck.name = 'fleet-destroyed-frigate';
-          wreck.add(box(35, 7, 80, mat));
-          wreck.add(box(12, 4, 45, light, -13, 5, -8));
-          wreck.add(box(18, 1, 50, mat, 20, -6, 12));
-          wreck.position.set((i % 2 ? 1 : -1) * (78 + (i % 3) * 25), 35 + i * 12, -170 - i * 185);
-          wreck.rotation.set(i * 0.15, i * 0.4, i * 0.2);
-          sectorScenery.add(wreck);
-        }
-      }
+      // Saturn: the abandoned seven-frigate debris field obscured the rings.
+      // The singular distant warship and authored icy landmark layers remain;
+      // scattered wrecks do not repeat throughout this orbital battlefield.
       if (dynamicFlight && sceneryTheme === 'nebula') {
         for (let i = 0; i < 12; i++) {
           const root = new T.Group();
