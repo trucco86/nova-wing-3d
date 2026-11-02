@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { openMenu } from './menu-navigation.mjs';
 
-test('QA launcher is visible in the home menu, opens the lab, and starts Berserk', async ({ page }, info) => {
+test('QA launcher is visible in the home menu, opens the lab, and starts Berserk', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   await page.goto('/');
   await openMenu(page, 'home');
@@ -19,5 +21,5 @@ test('QA launcher is visible in the home menu, opens the lab, and starts Berserk
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#developerSessionTag')).toContainText('SETOR 02');
   await expect(page.locator('body')).toHaveClass(/berserk-active/);
-  await page.screenshot({path: info.outputPath('qa-berserk-activated.png')});
+  await page.screenshot({ path: info.outputPath('qa-berserk-activated.png') });
 });
