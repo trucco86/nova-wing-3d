@@ -6,7 +6,7 @@ const MELEE = Object.freeze({
   2: ['drill-ram', 'claw-swipe'],
   3: ['reactor-vent', 'hammer-slam'],
   4: ['plasma-dive', 'solar-sweep'],
-  5: ['hammer-slam', 'claw-swipe'],
+  5: ['ice-quake', 'cryo-pincer'],
   6: ['tentacle-grab', 'tentacle-sweep'],
   7: ['claw-swipe', 'hammer-slam'],
   8: ['tentacle-sweep', 'tentacle-grab'],
@@ -17,6 +17,8 @@ const LABEL = Object.freeze({
   'plasma-dive': 'FÊNIX · MERGULHO SOLAR · SAIA DO IMPACTO',
   'solar-sweep': 'FÊNIX · VARREDURA DAS ASAS · SUBA OU DESÇA',
   'hammer-slam': 'MARTELO DO COLOSSO · DESVIE DO IMPACTO',
+  'ice-quake': 'COLOSSO · ONDA NO GELO · MUDE DE ALTURA',
+  'cryo-pincer': 'COLOSSO · PINÇA CRIOGÊNICA · DESVIE PARA O LADO',
   'reactor-vent': 'DESCARGA DO MOTOR · DASH PARA FORA DO EIXO',
   'claw-swipe': 'GARRAS · TROQUE DE FLANCO',
   'tentacle-grab': 'TENTÁCULOS · QUEBRE O RASTREAMENTO',
@@ -66,7 +68,10 @@ export function chooseBossIntent({
       // low flight triggers a wide but shallow wing sweep. The player can
       // escape either area after the target is latched at windup.
       kind = boosting || playerY >= 25 || cycle % 2 === 0 ? 'plasma-dive' : 'solar-sweep';
-    else if (sector === 5) kind = robot || healthy === 0 ? 'hammer-slam' : 'claw-swipe';
+    else if (sector === 5)
+      // A low pilot or robot triggers an ice-quake; high flight or alternate
+      // cycle brings in the narrow cryo-pincer. Both latch aim at windup.
+      kind = robot || (playerY < 23 && cycle % 2 !== 0) ? 'ice-quake' : 'cryo-pincer';
     else if (sector === 2)
       kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
     else if (sector === 3)
@@ -100,9 +105,11 @@ export function chooseBossIntent({
     targetX,
     targetY,
     damage:
-      (kind === 'bite' || kind === 'plasma-dive'
+      (kind === 'bite' || kind === 'plasma-dive' || kind === 'ice-quake'
         ? 25
-        : kind === 'hammer-slam'
+        : kind === 'cryo-pincer'
+          ? 19
+          : kind === 'hammer-slam'
           ? 22
           : kind === 'solar-sweep'
             ? 18
@@ -125,8 +132,10 @@ export function chooseBossIntent({
     dodgeRadius:
       kind === 'reactor-vent' || kind === 'plasma-dive'
         ? 13
-        : kind === 'solar-sweep'
+        : kind === 'solar-sweep' || kind === 'cryo-pincer'
           ? 12
+          : kind === 'ice-quake'
+            ? 13
           : kind === 'tentacle-sweep'
             ? 11
             : kind === 'hammer-slam'
@@ -137,8 +146,12 @@ export function chooseBossIntent({
         ? ventSide < 0
           ? 'port-drive-valve'
           : 'starboard-drive-valve'
-        : kind === 'plasma-dive'
-          ? 'phoenix-solar-core'
+        : kind === 'ice-quake'
+          ? 'colossus-impact-plates'
+          : kind === 'cryo-pincer'
+            ? 'colossus-piston-arms'
+            : kind === 'plasma-dive'
+              ? 'phoenix-solar-core'
           : kind === 'solar-sweep'
             ? 'phoenix-wings'
             : kind === 'bite'
@@ -161,6 +174,8 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   if (intent.kind === 'tentacle-sweep') return dy < r && dx < r * 2.4;
   if (intent.kind === 'solar-sweep') return dy < r * 0.68 && dx < r * 2.5;
   if (intent.kind === 'plasma-dive') return Math.hypot(dx * 0.8, dy * 1.15) < r;
+  if (intent.kind === 'ice-quake') return dx < r * 2.5 && dy < r * 0.55;
+  if (intent.kind === 'cryo-pincer') return dx < r * 0.75 && dy < r * 1.75;
   if (intent.kind === 'claw-swipe') {
     const flank =
       intent.sector !== 9 || Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.45;
@@ -186,7 +201,11 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
         : strike * (['bite', 'drill-ram', 'plasma-dive'].includes(intent.kind) ? 72 : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
-      intent.kind === 'claw-swipe' || intent.kind === 'hammer-slam' || intent.kind === 'solar-sweep'
+      intent.kind === 'claw-swipe' ||
+      intent.kind === 'hammer-slam' ||
+      intent.kind === 'solar-sweep' ||
+      intent.kind === 'ice-quake' ||
+      intent.kind === 'cryo-pincer'
         ? windup * 0.3 + strike * 0.85
         : 0,
     tentacle: intent.kind.startsWith('tentacle') ? windup * 0.2 + strike * 0.75 : 0,
