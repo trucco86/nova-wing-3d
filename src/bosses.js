@@ -4,6 +4,7 @@ import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './vi
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
 import { createBossKineticDetails, animateBossKineticDetails } from './boss-kinetic-details.js';
+import { createPhoenixAttackVfx, animatePhoenixAttackVfx } from './phoenix-attack-vfx.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
@@ -530,6 +531,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   const kineticDetails = createBossKineticDetails(index, { armor, dark, edge, hot });
   g.add(kineticDetails);
+  const phoenixVfx = index === 4 && tactical ? createPhoenixAttackVfx() : null;
+  if (phoenixVfx) g.add(phoenixVfx);
   // Devastador's twin exhaust valves are real named launch points. The
   // translucent shock jets exist only during a telegraphed reactor attack.
   // They are visual-only: collision uses the exact same intent as the radar.
@@ -582,6 +585,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
       coreMarker.userData.signalMaterial,
       ...parts.map((part) => part.marker.userData.signalMaterial),
       ...driveShockPlumes.map((plume) => plume.material),
+      ...(phoenixVfx?.userData.materials ?? []),
     ],
   };
   // The penultimate biomechanical monster is piloted by Marvin, while the
@@ -643,10 +647,25 @@ export function createBossModel(sector, index = 0, tactical = false) {
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
  * with the simulation clock; never moves the actual generator hit volumes. */
-export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
+export function animateBossSignature(
+  g,
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
+) {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
+  if (index === 4)
+    animatePhoenixAttackVfx(
+      g.getObjectByName('boss-phoenix-attack-vfx'),
+      time,
+      phase,
+      attackState,
+      attackKind,
+    );
   animateBossKineticDetails(
     g.getObjectByName('boss-premium-kinetic-' + index),
     index,

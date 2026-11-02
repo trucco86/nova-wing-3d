@@ -4686,7 +4686,14 @@ export function createGame({
         }
       }
       if (dynamicFlight && !boss.userData.sabotage) {
-        animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
+        animateBossSignature(
+          boss,
+          sectorIndex,
+          bossCombat.age,
+          combatPhase,
+          tactics().state,
+          bossIntent?.kind,
+        );
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
