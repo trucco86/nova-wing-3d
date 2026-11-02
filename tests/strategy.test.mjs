@@ -36,7 +36,8 @@ test('RPG summary explains effective bonuses and the next real unlock', () => {
   });
   assert.deepEqual(nextRpgUnlock(0), { type: 'ARMA', name: 'GEADA', stage: 2 });
   assert.deepEqual(nextRpgUnlock(2), { type: 'ESPECIAL', name: 'NOVA', stage: 3 });
-  assert.equal(nextRpgUnlock(9), null);
+  assert.deepEqual(nextRpgUnlock(9), { type: 'ESPECIAL', name: 'BERSERK', stage: 12 });
+  assert.equal(nextRpgUnlock(12), null);
   assert.ok(progressionBenefits(160, 'defense').shield > 25);
   assert.ok(progressionBenefits(160, 'spirit').arcana >= 30);
 });

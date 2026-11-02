@@ -388,6 +388,9 @@ export function createBossModel(sector, index = 0, tactical = false) {
         marker.add(chevron);
       }
       marker.visible = false;
+      const signalMaterial = markerMaterial.clone();
+      marker.traverse((part) => { if (part.isMesh) part.material = signalMaterial; });
+      marker.userData.signalMaterial = signalMaterial;
       return marker;
     },
     coreMarker = targetMarker(8.5);
@@ -574,6 +577,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
       bone,
       vein,
       markerMaterial,
+      coreMarker.userData.signalMaterial,
+      ...parts.map((part) => part.marker.userData.signalMaterial),
       ...driveShockPlumes.map((plume) => plume.material),
     ],
   };

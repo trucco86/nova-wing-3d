@@ -220,7 +220,9 @@
           ><strong id="bossName">CAÇA-LÍDER ROK</strong> <b id="bossState">GERADORES 2/2</b></span
         >
         <div class="bar"><i id="bossHealth"></i></div>
+        <small id="bossHealthReadout" aria-live="off">100% INTEGRIDADE</small>
       </div>
+      <div id="weakPointCues" aria-hidden="true"><b id="weakCue0" class="weak-point-tag" hidden></b><b id="weakCue1" class="weak-point-tag" hidden></b></div>
       <div id="subHUD" hidden>
         <span>SUBCHEFE <b id="subState">CRUZADOR DE INTERCEPTAÇÃO</b></span>
         <div class="bar"><i id="subHealth"></i></div>
@@ -686,6 +688,7 @@
                   <option value="0">BARREIRA</option>
                   <option value="1">NOVA</option>
                   <option value="2">ESTASE</option>
+                  <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
                 </select>
                 <small
                   >Neste teste, níveis, armas, pods e bombas são liberados sem gastar créditos.
@@ -784,6 +787,7 @@
                 <option value="0">BARREIRA</option>
                 <option value="1">NOVA</option>
                 <option value="2">ESTASE</option>
+                  <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
               </select>
               <label for="qaLabShip">CHASSI / MODELO</label>
               <select id="qaLabShip">
@@ -801,6 +805,7 @@
                 <option value="docked">ACOPLADOS</option>
                 <option value="deployed">DESTACADOS</option>
               </select>
+              <label class="qa-berserk-toggle" for="qaLabBerserk"><input type="checkbox" id="qaLabBerserk" /> ATIVAR BERSERK AO RETOMAR · QA</label>
               <button type="button" class="primary" id="qaLabApply">
                 APLICAR E RETOMAR O VOO ↗
               </button>
