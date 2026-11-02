@@ -62,3 +62,39 @@ test('ambient planes do not create targetable geometry, lights or collisions', (
   world.userData.geometry.dispose();
   world.userData.materials.forEach((material) => material.dispose());
 });
+
+test('Medium updates only drawn instances and High restores identical time-based motion', () => {
+  const world = createLivingWorldLayers('city', 'medium');
+  const second = world.userData.layers[0].mesh;
+  const third = world.userData.layers[1].mesh;
+  const matrixAt = (mesh, index) => {
+    const matrix = new T.Matrix4();
+    mesh.getMatrixAt(index, matrix);
+    return matrix.toArray();
+  };
+  const invisibleSecond = matrixAt(second, 17);
+  const invisibleThird = matrixAt(third, 27);
+  const helper = world.userData.transformHelper;
+  updateLivingWorldLayers(world, { time: 9, travel: 360 });
+  assert.equal(world.userData.transformHelper, helper, 'reuses one transform across frames');
+  assert.deepEqual(matrixAt(second, 17), invisibleSecond, 'hidden second-plane item is not updated');
+  assert.deepEqual(matrixAt(third, 27), invisibleThird, 'hidden third-plane item is not updated');
+  const visibleMedium = matrixAt(second, 0);
+  setLivingWorldQuality(world, 'high');
+  updateLivingWorldLayers(world, { time: 9, travel: 360 });
+  assert.deepEqual(matrixAt(second, 0), visibleMedium, 'switching quality preserves motion');
+  assert.notDeepEqual(matrixAt(second, 17), invisibleSecond, 'High fills restored second-plane slots');
+  assert.notDeepEqual(matrixAt(third, 27), invisibleThird, 'High fills restored third-plane slots');
+  const reference = createLivingWorldLayers('city', 'high');
+  updateLivingWorldLayers(reference, { time: 9, travel: 360 });
+  for (const i of [0, 9, 17])
+    assert.deepEqual(
+      matrixAt(second, i),
+      matrixAt(reference.userData.layers[0].mesh, i),
+      'High mode output is identical to original premium animation',
+    );
+  for (const node of [world, reference]) {
+    node.userData.geometry.dispose();
+    node.userData.materials.forEach((material) => material.dispose());
+  }
+});

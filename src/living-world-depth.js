@@ -58,6 +58,9 @@ export function createLivingWorldLayers(theme, quality = 'high') {
   root.userData.layers = instances;
   root.userData.materials = mats;
   root.userData.geometry = geo;
+  // Reuse the transform across frames: these ambient layers are animated
+  // continuously, but creating an Object3D per frame produces GC churn.
+  root.userData.transformHelper = new T.Object3D();
   updateLivingWorldLayers(root, { time: 0, travel: 0 });
   return root;
 }
@@ -70,10 +73,12 @@ export function setLivingWorldQuality(root, quality = 'high') {
 
 export function updateLivingWorldLayers(root, { time = 0, travel = 0 } = {}) {
   if (!root) return;
-  const helper = new T.Object3D();
+  const helper = root.userData.transformHelper;
   for (const layer of root.userData.layers) {
     const far = layer.name === 'third-plane';
-    for (let i = 0; i < layer.count; i++) {
+    // Medium hides some instances; do not animate/upload invisible slots.
+    // Restoring High fills all slots with their exact time-based transform.
+    for (let i = 0; i < layer.mesh.count; i++) {
       const side = i % 2 ? 1 : -1;
       const lane = layer.width + (i % 4) * (far ? 27 : 13);
       const loop = (i * 97 + travel * layer.speed + time * (far ? 2.3 : 8.4)) % 1480;
