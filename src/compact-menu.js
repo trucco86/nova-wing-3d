@@ -22,34 +22,45 @@ export function installCompactMenu({
     play: '01 / MISSÃO',
     hangar: '02 / HANGAR',
     central: '03 / CENTRAL DO PILOTO',
+    qa: 'QA / CENÁRIOS DE TESTE',
   };
   const listeners = [];
   const on = (target, type, handler, capture = false) => {
     target?.addEventListener(type, handler, capture);
     listeners.push(() => target?.removeEventListener(type, handler, capture));
   };
+  function selectHangarTab(tab) {
+    if (!['pilots', 'ships', 'arsenal'].includes(tab) || !selection) return;
+    selection.dataset.hangarTab = tab;
+    for (const button of selection.querySelectorAll('[data-hangar-target]'))
+      button.setAttribute('aria-pressed', String(button.dataset.hangarTarget === tab));
+    // The existing showroom retains all rotation/selection handlers.
+    if (tab === 'pilots') $('hangarPilot')?.click();
+    else if (tab === 'ships') $('hangarShip')?.click();
+    menu.scrollTop = 0;
+  }
   function navigate(screen) {
-    if (!['splash', 'home', 'play', 'hangar', 'central'].includes(screen)) return;
+    if (!['splash', 'home', 'play', 'hangar', 'central', 'qa'].includes(screen)) return;
     if (menu.hidden || !document.body.classList.contains('menu')) return;
     // The existing game handler owns the 360-degree inspection lifecycle.
     if (screen === 'hangar' && selection.hidden) prepare?.click();
     else if (screen !== 'hangar' && !selection.hidden) prepare?.click();
     menu.dataset.screen = screen;
     $('menuScreenLabel').textContent = labels[screen] ?? '';
-    if (screen !== 'central') $('novaAuth')?.removeAttribute('open');
-    if (screen === 'central') {
-      $('novaAuth')?.removeAttribute('open');
-      for (const id of ['novaRanking', 'catRanks', 'novaTrophies']) $(id)?.removeAttribute('open');
-    }
+    // Returning to a menu never reopens a long scrollable panel implicitly.
+    for (const item of menu.querySelectorAll('details')) item.removeAttribute('open');
+    if (screen === 'hangar') selectHangarTab('pilots');
     menu.scrollTop = 0;
     const focusId = {
       splash: 'pressStart',
       home: 'menuPlay',
       play: 'start',
-      hangar: 'pilot-bia',
+      hangar: 'hangarTabPilots',
       central: 'menuBack',
+      qa: 'developerPanel',
     }[screen];
-    $(focusId)?.focus?.({ preventScroll: true });
+    if (screen === 'qa') $('developerPanel')?.querySelector('summary')?.focus?.({ preventScroll: true });
+    else $(focusId)?.focus?.({ preventScroll: true });
   }
   function enterTitle() {
     navigate('home');
@@ -62,14 +73,14 @@ export function installCompactMenu({
   on(play, 'click', () => navigate('play'));
   on(hangar, 'click', () => navigate('hangar'));
   on(hub, 'click', () => navigate('central'));
+  for (const button of selection?.querySelectorAll('[data-hangar-target]') ?? [])
+    on(button, 'click', () => selectHangarTab(button.dataset.hangarTarget));
   on(qa, 'click', () => {
     const panel = $('developerPanel');
     // A visible control on an isolated QA origin only; never bypass host gating.
     if (qa.hidden || panel?.hidden) return;
-    navigate('central');
-    panel.open = true;
-    panel.scrollIntoView?.({ block: 'start', behavior: 'instant' });
-    $('developerSector')?.focus?.({ preventScroll: true });
+    navigate('qa');
+    // QA opens on its compact entry point, not an expanded configuration form.
   });
   on(
     window,
