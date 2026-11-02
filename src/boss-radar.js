@@ -75,11 +75,11 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
           ? r / 0.8
           : intent.kind === 'tentacle-sweep'
             ? r * 2.4
-        : intent.kind === 'claw-swipe'
-          ? r * 1.7
-          : intent.kind === 'tentacle-grab'
-            ? r / 0.7
-            : r;
+            : intent.kind === 'claw-swipe'
+              ? r * 1.7
+              : intent.kind === 'tentacle-grab'
+                ? r / 0.7
+                : r;
   const halfY =
     intent.kind === 'reactor-vent'
       ? r * 1.1

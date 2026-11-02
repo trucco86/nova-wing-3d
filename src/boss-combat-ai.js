@@ -106,7 +106,8 @@ export function chooseBossIntent({
           ? 22
           : kind === 'solar-sweep'
             ? 18
-            : 16) + p * 3,
+            : 16) +
+      p * 3,
     // Always commit once at windup: the boss cannot instantly retarget after
     // the player starts dodging the telegraphed danger area.
     counter:
@@ -127,10 +128,10 @@ export function chooseBossIntent({
         : kind === 'solar-sweep'
           ? 12
           : kind === 'tentacle-sweep'
-          ? 11
-          : kind === 'hammer-slam'
-            ? 14
-            : 9,
+            ? 11
+            : kind === 'hammer-slam'
+              ? 14
+              : 9,
     origin:
       kind === 'reactor-vent'
         ? ventSide < 0
@@ -142,9 +143,9 @@ export function chooseBossIntent({
             ? 'phoenix-wings'
             : kind === 'bite'
               ? 'jaw'
-          : kind.startsWith('tentacle')
-            ? 'tentacles'
-            : 'claws',
+              : kind.startsWith('tentacle')
+                ? 'tentacles'
+                : 'claws',
   });
 }
 
@@ -178,19 +179,14 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
     exhaust:
-      intent.kind === 'reactor-vent' || intent.kind === 'plasma-dive'
-        ? windup * 0.4 + strike
-        : 0,
+      intent.kind === 'reactor-vent' || intent.kind === 'plasma-dive' ? windup * 0.4 + strike : 0,
     lunge:
       intent.kind === 'reactor-vent'
         ? 0
-        : strike *
-          (['bite', 'drill-ram', 'plasma-dive'].includes(intent.kind) ? 72 : 48),
+        : strike * (['bite', 'drill-ram', 'plasma-dive'].includes(intent.kind) ? 72 : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
-      intent.kind === 'claw-swipe' ||
-      intent.kind === 'hammer-slam' ||
-      intent.kind === 'solar-sweep'
+      intent.kind === 'claw-swipe' || intent.kind === 'hammer-slam' || intent.kind === 'solar-sweep'
         ? windup * 0.3 + strike * 0.85
         : 0,
     tentacle: intent.kind.startsWith('tentacle') ? windup * 0.2 + strike * 0.75 : 0,
