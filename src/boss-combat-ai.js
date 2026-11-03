@@ -195,7 +195,7 @@ export function chooseBossIntent({
       : kind === 'rok-ram' ? 'signature-rok-right'
       : kind === 'stingray-scissor' ? 'signature-stingray-tail'
       : kind === 'stingray-sting' ? 'signature-stingray-tail'
-      : kind === 'drill-crosscut' ? 'signature-drill-bit'
+      : kind === 'drill-crosscut' || kind === 'drill-ram' ? 'signature-drill-bit'
       : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear' ? 'signature-orion-lens'
       : kind === 'reactor-vent'
         ? ventSide < 0
