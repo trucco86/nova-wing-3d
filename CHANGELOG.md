@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.73 — Ômega: giro após retaguarda sustentada, Saturno estático (QA)
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
 ## 1.27.72 — Saturno Cassini + Couraçado Ômega 4.0 (QA)
 
 - Saturno em paleta de cores naturais inspiradas em imagens Cassini NASA/JPL: nuvens suaves amarelo-creme e bege, divisão de Cassini escura, anéis em tons contidos de gelo e poeira.
@@ -112,39 +119,66 @@
 
 ## 1.27.55 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.54 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.53 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.52 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.51 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.50 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.49 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.48 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.47 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.46 — Graphics 3.8 / arco meia-lua, SUPER BOOST e revelação orbital (QA)
 
@@ -225,7 +259,10 @@
 
 ## 1.27.26 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.27.25 — Abertura Five Cats remasterizada (candidata QA)
 
@@ -407,7 +444,10 @@
 
 ## 1.24.20 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
@@ -436,7 +476,10 @@
 
 ## 1.24.14 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.24.13 — Medição local de FPS na pausa (DEV)
 

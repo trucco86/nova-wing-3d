@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SECTORS } from '../src/campaign.js';
-import { chaseOmegaHeading, chaseOmegaOffset, omegaAppendageAmplitude } from '../src/omega-hunt.js';
+import * as T from 'three';
+import {
+  advanceOmegaRearResponse,
+  chaseOmegaHeading,
+  chaseOmegaOffset,
+  omegaAppendageAmplitude,
+  OMEGA_REAR_LOCK_SECONDS,
+} from '../src/omega-hunt.js';
+import { withReactorOrbitPresentation } from '../src/reactor-orbit-presentation.js';
 import { chooseBossIntent, bossMeleePose, bossMeleeHit } from '../src/boss-combat-ai.js';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 import { bossWeakPointOpen, bossWeakPointPlan } from '../src/boss-weakpoint-layout.js';
@@ -139,4 +147,79 @@ test('destroying a physical Omega battery leaves its corresponding claw and tent
   assert.ok(portTentacle.rotation.x < 0, 'linked tentacle visibly collapses');
   assert.equal(boss.userData.parts[1].hp > 0, true);
   disposeBoss(boss);
+});
+
+test('Omega waits for a sustained rear approach, then turns its own hull to face the pilot', () => {
+  let response = { heading: 0, rearSeconds: 0, tracking: false };
+  const rear = Math.PI;
+  const fps = 60;
+  const framesToReact = Math.ceil(OMEGA_REAR_LOCK_SECONDS * fps);
+  for (let i = 0; i < framesToReact - 1; i++) {
+    response = advanceOmegaRearResponse(response, rear, 1 / fps, 2);
+    assert.equal(response.heading, 0, 'boss must not turn while rear timer is pending');
+    assert.equal(response.tracking, false);
+  }
+  response = advanceOmegaRearResponse(response, rear, 1 / fps, 2);
+  assert.equal(response.tracking, true, 'remaining behind activates boss counterturn');
+  assert.ok(response.heading > 0, 'boss starts rotating its own yaw');
+  const initialGap = angleDiff(rear, response.heading);
+  for (let i = 0; i < 480; i++) response = advanceOmegaRearResponse(response, rear, 1 / fps, 2);
+  assert.ok(angleDiff(rear, response.heading) < initialGap);
+  assert.equal(response.tracking, false, 'turn stops when the boss faces the pilot');
+  assert.ok(angleDiff(rear, response.heading) < 0.1);
+});
+
+test('Omega rear timer resets on early escape and does not track the normal front', () => {
+  let response = { heading: 0, rearSeconds: 0, tracking: false };
+  for (let i = 0; i < 75; i++) response = advanceOmegaRearResponse(response, -Math.PI, 1 / 60);
+  assert.ok(response.rearSeconds > 1);
+  assert.equal(response.heading, 0);
+  response = advanceOmegaRearResponse(response, 0.3, 1 / 60);
+  assert.equal(response.rearSeconds, 0);
+  assert.equal(response.tracking, false);
+  for (let i = 0; i < 40; i++) response = advanceOmegaRearResponse(response, Math.PI, 1 / 60);
+  assert.equal(response.heading, 0, 're-approach must wait through a fresh full rear window');
+  assert.throws(() => advanceOmegaRearResponse(response, Math.PI, -1), RangeError);
+});
+
+test('Saturn stays motionless while ship/camera orbit and Omega independently rotates', () => {
+  const scene = new T.Scene();
+  const center = new T.Vector3(0, 57, -230);
+  const frame = new T.Group();
+  scene.add(frame);
+  const saturn = new T.Object3D();
+  saturn.position.set(200, 130, -900);
+  frame.add(saturn);
+  const ship = new T.Object3D();
+  ship.position.set(0, 6, 9);
+  scene.add(ship);
+  const omega = new T.Object3D();
+  omega.position.copy(center);
+  scene.add(omega);
+  const worldUp = new T.Vector3(0, 1, 0);
+  let firstSaturn = null;
+  const positions = [];
+  for (const angle of [0, Math.PI / 3, Math.PI]) {
+    frame.rotation.y = -angle;
+    frame.position.copy(center).sub(center.clone().applyAxisAngle(worldUp, -angle));
+    omega.rotation.y = 0.65 - angle;
+    const expectedHeading = 0.65;
+    withReactorOrbitPresentation(scene, center, angle, () => {
+      scene.updateMatrixWorld(true);
+      const planetPosition = saturn.getWorldPosition(new T.Vector3());
+      if (!firstSaturn) firstSaturn = planetPosition;
+      else
+        assert.ok(
+          planetPosition.distanceTo(firstSaturn) < 1e-8,
+          'Saturn does not orbit the player',
+        );
+      positions.push(ship.getWorldPosition(new T.Vector3()));
+      const worldQuaternion = omega.getWorldQuaternion(new T.Quaternion());
+      const worldEuler = new T.Euler().setFromQuaternion(worldQuaternion, 'XYZ');
+      assert.ok(angleDiff(worldEuler.y, expectedHeading) < 1e-8, 'only boss hull counterturns');
+    });
+    assert.equal(scene.rotation.y, 0, 'presentation restores scene transformation');
+  }
+  assert.ok(positions[0].distanceTo(positions[1]) > 30, 'ship actually orbits around the boss');
+  assert.ok(positions[1].distanceTo(positions[2]) > 30);
 });

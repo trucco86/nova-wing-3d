@@ -60,7 +60,7 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
-import { chaseOmegaHeading, chaseOmegaOffset } from './omega-hunt.js';
+import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
@@ -4477,17 +4477,17 @@ export function createGame({
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
         if (sectorIndex === 7) {
-          // Camera orbit shows the REAR immediately; Omega's own counter-yaw
-          // catches up over seconds instead of snapping to always face us.
-          // The delayed counter-turn preserves real flank/stern hit windows.
-          boss.userData.omegaCounterYaw = chaseOmegaHeading(
-            boss.userData.omegaCounterYaw ?? 0,
-            orbitAngle + tactics().heading,
+          // The pilot orbits a stationary Saturn arena. Omega itself remains
+          // facing forward until the pilot holds its rear blind spot for 1.8 s,
+          // then turns its hull smoothly to face the pilot. No instant tracking.
+          boss.userData.omegaRearResponse = advanceOmegaRearResponse(
+            boss.userData.omegaRearResponse,
+            orbitAngle,
             dt,
             bossCombat.phase,
             tactics().state,
           );
-          boss.rotation.y = boss.userData.omegaCounterYaw - orbitAngle;
+          boss.rotation.y = boss.userData.omegaRearResponse.heading - orbitAngle;
         } else boss.rotation.y = tactics().heading - orbitAngle;
         world.setOrbit(-orbitAngle, boss.position);
         // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
@@ -4561,6 +4561,9 @@ export function createGame({
           launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
           launchPose.z + meleePose.lunge,
         );
+        // Use the same center for both inverse world frame and final camera
+        // presentation, even while Omega moves: Saturn/rings stay stationary.
+        if (sectorIndex === 7) world.setOrbit(-orbitAngle, boss.position);
         boss.rotation.z = t.bank;
         // Each real drive valve powers its own reactor-exhaust shock. Breaking
         // that valve removes the plume and its physical attack on that flank.
@@ -5499,7 +5502,7 @@ export function createGame({
       routeRenderer?.prepare();
       const drawFrame = () => post.render();
       lastFrameCost =
-        (dynamicFlight && boss?.userData.sabotage
+        (dynamicFlight && boss && (boss.userData.sabotage || sectorIndex === 7)
           ? withReactorOrbitPresentation(scene, boss.position, orbitAngle, drawFrame)
           : drawFrame()) ?? lastFrameCost;
     }
