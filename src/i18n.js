@@ -5,7 +5,11 @@ const ROWS = [
   ['02 / HANGAR', '02 / HANGAR', '02 / HANGAR'],
   ['03 / CENTRAL DO PILOTO', '03 / PILOT HUB', '03 / CENTRO DEL PILOTO'],
   ['PRESSIONE PARA COMEÇAR', 'PRESS START', 'PULSA PARA EMPEZAR'],
-  ['Pressione para começar, abrir menu', 'Press start, open menu', 'Pulsa para empezar, abrir menú'],
+  [
+    'Pressione para começar, abrir menu',
+    'Press start, open menu',
+    'Pulsa para empezar, abrir menú',
+  ],
 
   ['PILOTOS', 'PILOTS', 'PILOTOS'],
   ['NAVES', 'SHIPS', 'NAVES'],
