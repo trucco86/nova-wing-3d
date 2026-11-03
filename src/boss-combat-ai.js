@@ -8,7 +8,7 @@ const MELEE = Object.freeze({
   4: ['plasma-dive', 'solar-sweep'],
   5: ['ice-quake', 'cryo-pincer'],
   6: ['tentacle-grab', 'tentacle-sweep'],
-  7: ['claw-swipe', 'hammer-slam'],
+  7: ['bite', 'claw-swipe', 'hammer-slam', 'tentacle-grab', 'tentacle-sweep'],
   8: ['tentacle-sweep', 'tentacle-grab'],
   9: ['bite', 'claw-swipe', 'tentacle-grab'],
 });
@@ -72,7 +72,21 @@ export function chooseBossIntent({
       // A low pilot or robot triggers an ice-quake; high flight or alternate
       // cycle brings in the narrow cryo-pincer. Both latch aim at windup.
       kind = robot || (playerY < 23 && cycle % 2 !== 0) ? 'ice-quake' : 'cryo-pincer';
-    else if (sector === 2)
+    else if (sector === 7) {
+      // Omega counters the approach angle chosen by the pilot.
+      // Face: jaw; flank: claws; stern: tracking tentacles; heavy: hammer arms.
+      const angle = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit)));
+      kind =
+        angle > 2.1
+          ? 'tentacle-grab'
+          : angle > 0.85
+            ? 'claw-swipe'
+            : robot || cycle % 3 === 2
+              ? 'hammer-slam'
+              : boosting || playerY >= 28 || cycle % 3 === 1
+                ? 'tentacle-sweep'
+                : 'bite';
+    } else if (sector === 2)
       kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
     else if (sector === 3)
       // A destroyed port/starboard engine can no longer vent its side.
