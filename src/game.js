@@ -1657,10 +1657,12 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
     materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    bossMaterials: bossShotMaterials,
     createHalo: () => halo(0xff4265, 2.6, 0.8),
     maxRetained: 96,
   });
