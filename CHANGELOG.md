@@ -1,5 +1,29 @@
 # Histórico
 
+## 1.27.21 — Console Start & Three-Menu Hub (candidata QA)
+
+- Capa original Web centralizada, com PRESS START como único comando inicial e sem rolagem de configurações.
+- Segunda tela apresenta apenas JOGAR, HANGAR e CENTRAL; recursos antigos preservados e organizados em submenus.
+- JOGAR: início de missão, checkpoint e abertura; HANGAR: seleção e inspeção 360°; CENTRAL: opções, músicas, Google, patentes, troféus, ranking e QA.
+- Teclado Enter abre o primeiro menu em vez de pular a tela de título; Escape volta do submenu.
+- Interface responsiva, touch target >=44px, sem duplicar lógica de save/ranking/autenticação.
+- Isolada sobre PR #160; revisão visual e Playwright obrigatórios antes de DEV/HML/PROD.
+
+## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
+
+- Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
+- Medalhas felinas e insígnias em formato de gato com origens verificáveis nas missões.
+- Hall da Patrulha com cinco fichas, graduação coletiva e evolução de uniforme 3D no hangar.
+- Notificação pós-fase de promoções/medalhas; no gameplay normal, não altera dano, velocidade nem ranking.
+- Baseada na PR de troféus #159; HML e produção não alterados.
+
+## 1.27.19 — Troféus Five Cats (candidata em QA)
+
+- 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.
+- Conquistas por chefe, recorde real, pontuação, dano, armas primárias, dificuldade, robô e equipe.
+- Hall da Fama no menu, pop-up de desbloqueio no HUD superior e progresso offline local versionado.
+- Sem recompensas em sessões de QA/dev; testes Playwright e localização obrigatórios antes de DEV.
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.

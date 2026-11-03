@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import {
   reachBrowserBoss,
@@ -19,7 +20,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.goto('/');
   await expect(page.locator('#squadSelection')).toBeHidden();
   await page.screenshot({ path: info.outputPath('cover.png') });
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
   await page.locator('#pilot-calvin').click();
   await expect(page.locator('#profileName')).toHaveText('CALVINHO');
@@ -31,7 +32,7 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.locator('#loadoutCatalog summary').click();
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#pilotName')).toContainText('CALVINHO');
   await expect(page.locator('#rpgLevel')).toContainText('EV 1');
@@ -122,7 +123,7 @@ test('hangar equips purchased paint and preserves it on reload', async ({ page }
   await page.evaluate(() => window.fixture.advance(0.1));
   await page.screenshot({ path: info.outputPath('paint-equipped.png') });
   await page.goto('/');
-  await page.locator('#continue').click();
+  await clickMenu(page, '#continue');
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('nova-wing-3d-v1')).cosmetics.skin),
   ).toBe('ember');
