@@ -4758,8 +4758,11 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ARMA VULNERÁVEL · BATERIA ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
-              : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
+              ? (sectorIndex === 7 ? 'ÔMEGA · PEÇA DESTRUTÍVEL FRACA · ' : 'ARMA VULNERÁVEL · ') +
+                (openGenerator === 0 ? 'BATERIA ESQ.' : 'BATERIA DIR.')
+              : sectorIndex === 7
+                ? 'ÔMEGA · PEÇAS AZUIS BLINDADAS · ORBITE FLANCO OU COSTAS'
+                : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
