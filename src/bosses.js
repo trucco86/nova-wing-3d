@@ -5,6 +5,7 @@ import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
 import { createBossKineticDetails, animateBossKineticDetails } from './boss-kinetic-details.js';
 import { createPhoenixAttackVfx, animatePhoenixAttackVfx } from './phoenix-attack-vfx.js';
+import { omegaAppendageAmplitude } from './omega-hunt.js';
 import { createEuropaAttackVfx, animateEuropaAttackVfx } from './europa-attack-vfx.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
@@ -528,6 +529,46 @@ export function createBossModel(sector, index = 0, tactical = false) {
     }
     g.add(face);
   }
+  if (index === 7 && tactical) {
+    // Omega is a living dreadnought. Its jaw opens over a recessed mouth;
+    // two articulated talon limbs and two rear-firing tentacles telegraph
+    // real, dodgeable attacks without relocating generator hitboxes.
+    const maw = sphere(7.5, dark, 1);
+    maw.name = 'omega-mouth-cavity';
+    maw.scale.set(1.4, 0.6, 0.35);
+    maw.position.set(0, -11, 17);
+    g.add(maw);
+    for (const side of [-1, 1]) {
+      const claw = new T.Group();
+      claw.name = side < 0 ? 'omega-port-talon' : 'omega-starboard-talon';
+      claw.position.set(side * 33, -7, 20);
+      const upper = box(10, 25, 12, armor);
+      upper.position.set(0, -10, 0);
+      claw.add(upper);
+      for (let i = -1; i <= 1; i++) {
+        const digit = new T.Mesh(new T.ConeGeometry(2, 15, 6), bone);
+        digit.position.set(i * 5, -27, 10);
+        digit.rotation.x = Math.PI / 2;
+        claw.add(digit);
+      }
+      g.add(claw);
+      const tentacle = new T.Group();
+      tentacle.name = side < 0 ? 'omega-port-tentacle' : 'omega-starboard-tentacle';
+      tentacle.position.set(side * 62, -10, -21);
+      const curve = new T.CatmullRomCurve3([
+        new T.Vector3(0, 0, 0),
+        new T.Vector3(side * 8, -12, 14),
+        new T.Vector3(side * 10, -21, 33),
+        new T.Vector3(side * 4, -19, 52),
+      ]);
+      tentacle.add(new T.Mesh(new T.TubeGeometry(curve, 12, 2.9, 6, false), flesh));
+      const tip = new T.Mesh(new T.ConeGeometry(3, 10, 6), bone);
+      tip.rotation.x = Math.PI / 2;
+      tip.position.set(side * 4, -19, 53);
+      tentacle.add(tip);
+      g.add(tentacle);
+    }
+  }
   g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
   addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
   const kineticDetails = createBossKineticDetails(index, { armor, dark, edge, hot });
@@ -658,6 +699,7 @@ export function animateBossSignature(
   phase = 1,
   attackState = 'maneuver',
   attackKind = null,
+  attackPose = null,
 ) {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
@@ -685,6 +727,29 @@ export function animateBossSignature(
     phase,
     attackState,
   );
+  if (index === 7) {
+    const effort = omegaAppendageAmplitude(attackKind, attackState, attackPose ?? {});
+    const jaw = g.userData.jaw;
+    if (jaw) jaw.rotation.x = Math.sin(time * 2) * 0.12 + effort.jaw;
+    for (const side of [-1, 1]) {
+      const prefix = side < 0 ? 'omega-port-' : 'omega-starboard-';
+      const claw = g.getObjectByName(prefix + 'talon');
+      const tentacle = g.getObjectByName(prefix + 'tentacle');
+      const battery = g.getObjectByName('signature-omega-' + (side < 0 ? 'left' : 'right'));
+      if (claw) {
+        claw.rotation.z = side * (0.07 * Math.sin(time * 1.2 + side) + effort.claw * 0.8);
+        claw.rotation.x = effort.claw * 0.38;
+      }
+      if (tentacle) {
+        tentacle.rotation.z = side * (0.11 * Math.sin(time * 1.1 + side) + effort.tentacle * 0.72);
+        tentacle.rotation.x = effort.tentacle * 0.42;
+      }
+      if (battery) {
+        battery.rotation.x = effort.arm * 0.55;
+        battery.rotation.z = -side * effort.arm * 0.36;
+      }
+    }
+  }
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
