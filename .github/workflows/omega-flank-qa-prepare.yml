@@ -1,0 +1,45 @@
+name: One-shot Omega flank QA release preparation
+on:
+  push:
+    branches: [feat/omega-flank-tracking-20261103]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.75
+      - name: Write factual release notes and changelog
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const changelog = 'CHANGELOG.md';
+          let s = readFileSync(changelog, 'utf8');
+          const old = '## 1.27.75 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const next = '## 1.27.75 — Ômega acompanha os dois flancos após exposição sustentada (QA)\n\n- Na fase 8, o Ômega passa a reconhecer o flanco esquerdo e o direito, além da retaguarda: após 1,8 s de permanência em ângulo igual ou superior a 75° da proa, gira apenas o casco gradualmente para encarar a nave.\n- Aproximações rápidas e retorno à frente reiniciam a percepção; a área frontal não dispara perseguição. Velocidade de rotação limitada e menor durante o ataque.\n- Preservados a órbita 360° da nave, o cenário e Saturno imóveis, os pontos fracos, os ataques travados e a correção dos botões RPG/ORBITAR da v1.27.74.\n- Novos testes Node dos dois flancos, atraso, reset e ângulo frontal. Testes browser e homologação visual ainda necessários.\n- QA isolada; não publicar em produção sem aprovação.';
+          if (!s.includes(old)) throw new Error('Changelog release marker not found');
+          s = s.replace(old, next);
+          writeFileSync(changelog, s);
+          writeFileSync('releases/v1.27.75.md', '## Nova Wing 3D v1.27.75 — candidata QA\n\n- Chefe Ômega em Saturno: ao permanecer por 1,8 s no flanco esquerdo, direito ou na retaguarda (desvio de pelo menos 75°), ele começa a girar seu próprio casco para encarar a nave, sem salto brusco.\n- Entrar brevemente pela lateral não dispara rastreamento; voltar ao setor frontal reinicia a percepção.\n- Saturno, anéis e arena ficam estacionários. Nave/câmera continuam em órbita real 360°, controles RPG/ORBITAR mobile da 1.27.74 preservados.\n- Testes unitários para os dois lados, giro limitado, reset e zona frontal; build, Node, Playwright e teste físico condicionam aprovação.\n\n**Somente QA. Produção inalterada até homologação.**\n');
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated artifacts to candidate branch
+        run: |
+          git config user.name 'nova-wing-qa-bot'
+          git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
+          git add CHANGELOG.md releases/v1.27.75.md package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html src/omega-hunt.js src/game.js tests/omega-hunt.test.mjs specs/saturn-omega-realism-v12772.md
+          git commit -m 'chore(release): prepare Omega flank tracking v1.27.75'
+          git push origin HEAD:feat/omega-flank-tracking-20261103
