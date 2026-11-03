@@ -42,6 +42,7 @@ const EXCLUSIVE_FOOTPRINTS = Object.freeze({
   'rok-ram': Object.freeze({ type: 'ellipse', x: 1.12, y: 0.84 }),
   'stingray-scissor': Object.freeze({ type: 'rect', x: 0.65, y: 1.55 }),
   'stingray-sting': Object.freeze({ type: 'ellipse', x: 0.82, y: 1.16 }),
+  'drill-ram': Object.freeze({ type: 'ellipse', x: 1, y: 1 }),
   'drill-crosscut': Object.freeze({ type: 'rect', x: 1.55, y: 0.65 }),
   'orion-gravity-pulse': Object.freeze({ type: 'ellipse', x: 1.18, y: 1.18 }),
   'orion-iris-shear': Object.freeze({ type: 'rect', x: 0.55, y: 1.9 }),
