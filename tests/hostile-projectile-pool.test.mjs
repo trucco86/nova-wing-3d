@@ -104,3 +104,50 @@ test('retained pool is bounded and cleared between game instances', () => {
     dispose();
   }
 });
+
+test('themed boss bolt uses pooled streak and keeps original speed, spell and hit semantics', () => {
+  const scene = new T.Scene();
+  const geometry = new T.SphereGeometry(0.35, 8, 6);
+  const materials = {
+    normal: new T.MeshBasicMaterial({ color: '#ff0000' }),
+    fire: new T.MeshBasicMaterial({ color: '#ff9900' }),
+    arcane: new T.MeshBasicMaterial({ color: '#ff00ff' }),
+  };
+  const bossMaterials = [new T.MeshBasicMaterial({ color: '#33ffff' })];
+  const haloMat = new T.SpriteMaterial({ color: '#ff3333' });
+  const pool = createHostileProjectilePool({
+    scene,
+    geometry,
+    materials,
+    bossMaterials,
+    createHalo: () => new T.Sprite(haloMat),
+    maxRetained: 1,
+  });
+  try {
+    const start = new T.Vector3(3, 5, 10);
+    const target = new T.Vector3(30, 5, -100);
+    const shot = pool.acquire(start, target, 'arcane', 0);
+    assert.equal(shot.o.position.equals(start), true);
+    assert.equal(shot.o.material, bossMaterials[0]);
+    assert.equal(shot.spell, 'arcane', 'visual palette does not alter attack damage or tracking');
+    assert.ok(Math.abs(shot.v.length() - 38) < 0.00001);
+    assert.ok(shot.o.scale.x >= 2, 'boss projectile is larger and legible');
+    assert.equal(shot.o.children[0].isSprite, true, 'original halo remains');
+    const streak = shot.o.getObjectByName('hostile-projectile-streak');
+    assert.ok(streak.visible && streak.material === bossMaterials[0]);
+    assert.ok(shot.o.quaternion.angleTo(new T.Quaternion()) > 0);
+    pool.release(shot);
+    const reused = pool.acquire(start, target, 'fire');
+    assert.equal(reused, shot);
+    assert.equal(streak.visible, false, 'normal shots never inherit boss streaks');
+    assert.equal(reused.o.scale.x, 1.8);
+    assert.ok(reused.o.quaternion.angleTo(new T.Quaternion()) < 1e-6);
+    assert.ok(Math.abs(reused.v.length() - 58) < 0.00001);
+    pool.release(reused);
+  } finally {
+    pool.clear();
+    geometry.dispose();
+    haloMat.dispose();
+    for (const m of [...Object.values(materials), ...bossMaterials]) m.dispose();
+  }
+});
