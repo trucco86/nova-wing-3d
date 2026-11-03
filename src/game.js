@@ -4684,7 +4684,7 @@ export function createGame({
               const destination = player.position
                 .clone()
                 .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
-              bullet(origin, destination, emission.element);
+              bullet(origin, destination, emission.element, sectorIndex);
               fired++;
             }
             // Keep one readable fallback shot from the only live weapon.
