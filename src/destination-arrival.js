@@ -46,7 +46,8 @@ export const DESTINATION_PROFILES = Object.freeze({
   7: Object.freeze({
     location: 'SATURNO',
     type: 'rings',
-    colors: ['#8d795d', '#e0c79c', '#b49a75'],
+    // Pale cream/yellow-beige from Cassini natural-color observations.
+    colors: ['#aea08a', '#f3e5be', '#b5aa96'],
     haze: '#888ba5',
     label: 'SATURNO · BATALHA NOS ANÉIS',
     entry: 'INTERCEPTAÇÃO · CAMPOS DE GELO DE SATURNO',
