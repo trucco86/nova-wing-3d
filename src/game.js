@@ -4692,7 +4692,7 @@ export function createGame({
             // the ONLY valid origin; no invisible fire from destroyed guns.
             if (!fired) {
               const survivingSide = generators.some(Boolean) ? budget.sides[0] : 0;
-              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire');
+              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire', sectorIndex);
             }
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
