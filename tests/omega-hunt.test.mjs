@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { chaseOmegaHeading, omegaAppendageAmplitude } from '../src/omega-hunt.js';
 import { chooseBossIntent, bossMeleePose, bossMeleeHit } from '../src/boss-combat-ai.js';
