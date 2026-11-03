@@ -48,7 +48,6 @@ export function chaseOmegaOffset(
   return { x: chase(previous.x, targetX), y: chase(previous.y, targetY) };
 }
 
-
 // Omega reacts to a pilot holding position behind its stern, not to every
 // orbital input. The rear must remain exposed before the boss notices it;
 // once alerted, it turns its own hull until it faces the pilot again.

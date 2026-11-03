@@ -149,7 +149,6 @@ test('destroying a physical Omega battery leaves its corresponding claw and tent
   disposeBoss(boss);
 });
 
-
 test('Omega waits for a sustained rear approach, then turns its own hull to face the pilot', () => {
   let response = { heading: 0, rearSeconds: 0, tracking: false };
   const rear = Math.PI;
@@ -164,8 +163,7 @@ test('Omega waits for a sustained rear approach, then turns its own hull to face
   assert.equal(response.tracking, true, 'remaining behind activates boss counterturn');
   assert.ok(response.heading > 0, 'boss starts rotating its own yaw');
   const initialGap = angleDiff(rear, response.heading);
-  for (let i = 0; i < 480; i++)
-    response = advanceOmegaRearResponse(response, rear, 1 / fps, 2);
+  for (let i = 0; i < 480; i++) response = advanceOmegaRearResponse(response, rear, 1 / fps, 2);
   assert.ok(angleDiff(rear, response.heading) < initialGap);
   assert.equal(response.tracking, false, 'turn stops when the boss faces the pilot');
   assert.ok(angleDiff(rear, response.heading) < 0.1);
@@ -173,15 +171,13 @@ test('Omega waits for a sustained rear approach, then turns its own hull to face
 
 test('Omega rear timer resets on early escape and does not track the normal front', () => {
   let response = { heading: 0, rearSeconds: 0, tracking: false };
-  for (let i = 0; i < 75; i++)
-    response = advanceOmegaRearResponse(response, -Math.PI, 1 / 60);
+  for (let i = 0; i < 75; i++) response = advanceOmegaRearResponse(response, -Math.PI, 1 / 60);
   assert.ok(response.rearSeconds > 1);
   assert.equal(response.heading, 0);
   response = advanceOmegaRearResponse(response, 0.3, 1 / 60);
   assert.equal(response.rearSeconds, 0);
   assert.equal(response.tracking, false);
-  for (let i = 0; i < 40; i++)
-    response = advanceOmegaRearResponse(response, Math.PI, 1 / 60);
+  for (let i = 0; i < 40; i++) response = advanceOmegaRearResponse(response, Math.PI, 1 / 60);
   assert.equal(response.heading, 0, 're-approach must wait through a fresh full rear window');
   assert.throws(() => advanceOmegaRearResponse(response, Math.PI, -1), RangeError);
 });
@@ -212,7 +208,11 @@ test('Saturn stays motionless while ship/camera orbit and Omega independently ro
       scene.updateMatrixWorld(true);
       const planetPosition = saturn.getWorldPosition(new T.Vector3());
       if (!firstSaturn) firstSaturn = planetPosition;
-      else assert.ok(planetPosition.distanceTo(firstSaturn) < 1e-8, 'Saturn does not orbit the player');
+      else
+        assert.ok(
+          planetPosition.distanceTo(firstSaturn) < 1e-8,
+          'Saturn does not orbit the player',
+        );
       positions.push(ship.getWorldPosition(new T.Vector3()));
       const worldQuaternion = omega.getWorldQuaternion(new T.Quaternion());
       const worldEuler = new T.Euler().setFromQuaternion(worldQuaternion, 'XYZ');
