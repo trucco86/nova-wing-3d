@@ -4886,7 +4886,7 @@ export function createGame({
                 targetIndex % program.sources.length !== sourceIndex
               )
                 continue;
-              bullet(origin, target, program.type);
+              bullet(origin, target, program.type, sectorIndex);
             }
           }
           bossCd = program.cadence * batteryPlan.cadenceMultiplier;
