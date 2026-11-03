@@ -10,7 +10,6 @@
 - Preservados Terra, cena 4 de sabotagem, demais chefes, save, câmera e economia de projéteis. Regressões Node contra giro instantâneo, falso ponto fraco, geometria anelar e animações.
 - QA isolada. Requer CI Node/Playwright 4 shards, inspeção visual no iPhone e FPS Alto/Médio antes da integração.
 
-
 ## 1.27.71 — Saturno: travessia coreografada pelos anéis (QA)
 
 - Fase 8 em cinco trechos: aproximação orbital, anel externo, campo denso de gelo, divisão de Cassini e bloqueio do Couraçado Ômega. Rótulos do HUD acompanham a região percorrida.
