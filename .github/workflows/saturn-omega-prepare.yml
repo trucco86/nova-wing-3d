@@ -3,6 +3,7 @@ on:
   push:
     branches: [feat/nasa-saturn-omega-hunt-20261102]
     paths:
+      - tests/omega-hunt.test.mjs
       - .github/workflows/saturn-omega-prepare.yml
 permissions:
   contents: write
