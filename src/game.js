@@ -60,6 +60,7 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
+import { chaseOmegaHeading } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
@@ -654,7 +655,9 @@ export function createGame({
   const relativeOrbit = () =>
     boss?.userData.sabotage
       ? orbitAngle
-      : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+      : sectorIndex === 7 && dynamicFlight && boss
+        ? -boss.rotation.y
+        : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
   const bossTargetOpen = (index) =>
     boss?.userData.sabotage
       ? sabotageTargetOpen(boss.userData.parts, index, relativeOrbit())
@@ -4473,7 +4476,16 @@ export function createGame({
         const turn =
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
-        boss.rotation.y = tactics().heading - orbitAngle;
+        boss.rotation.y =
+          sectorIndex === 7
+            ? chaseOmegaHeading(
+                boss.rotation.y,
+                tactics().heading - orbitAngle,
+                dt,
+                bossCombat.phase,
+                tactics().state,
+              )
+            : tactics().heading - orbitAngle;
         world.setOrbit(-orbitAngle, boss.position);
         // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
         if (turn)
@@ -4489,9 +4501,14 @@ export function createGame({
           const open = bossTargetOpen(i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
           const discovered = weakpointEvidence[i]?.revealed;
-          p.marker.visible = open || (discovered && p.hp > 0);
+          // Omega always marks its two destructible armored modules; cool
+          // markers mean shielded, amber means discovered, yellow means
+          // physically vulnerable from the current orbital approach.
+          p.marker.visible = (sectorIndex === 7 && p.hp > 0) || open || (discovered && p.hp > 0);
           if (p.marker.userData.signalMaterial)
-            p.marker.userData.signalMaterial.color.set(open ? '#fff27a' : '#ff925b');
+            p.marker.userData.signalMaterial.color.set(
+              open ? '#fff27a' : discovered ? '#ff925b' : '#6db8d2',
+            );
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
@@ -4608,7 +4625,10 @@ export function createGame({
         );
         $('radarWeak').hidden = !objective;
         if (objective)
-          $('radarWeak').style.transform = 'rotate(' + (objective.angle + t.heading) + 'rad)';
+          $('radarWeak').style.transform =
+            'rotate(' +
+            (objective.angle + (sectorIndex === 7 ? orbitAngle + boss.rotation.y : t.heading)) +
+            'rad)';
         if (
           bossCombat.age >= 3 &&
           t.state === 'attack' &&
@@ -4707,6 +4727,7 @@ export function createGame({
           combatPhase,
           tactics().state,
           bossIntent?.kind,
+          melee,
         );
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
@@ -5615,7 +5636,12 @@ export function createGame({
           angle: boss.userData.sabotage
             ? p.angle
             : wrapAngle(
-                bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
+                bossWeakPointAngle(sectorIndex, i) +
+                  (dynamicFlight
+                    ? sectorIndex === 7
+                      ? orbitAngle + boss.rotation.y
+                      : tactics().heading
+                    : 0),
               ),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],
