@@ -95,6 +95,7 @@ import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
+import { animateBossWeaponVfx, flashBossWeapon, BOSS_WEAPON_COLORS } from './boss-weapon-vfx.js';
 import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
