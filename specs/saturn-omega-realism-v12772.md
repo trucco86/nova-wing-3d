@@ -9,7 +9,8 @@
 
 ## Ômega: nave-mãe biomecânica de Saturno
 
-- Ao orbitar para trás, a visão do **lado traseiro aparece imediatamente**; o corpo só então contra-gira progressivamente rumo ao jogador, com velocidade angular limitada e sem salto de 180 graus.
+- Ao orbitar para trás, a visão do **lado traseiro aparece imediatamente**; a **nave e a câmera orbitam fisicamente em torno do chefe**, sem fazer Saturno, seus anéis ou a arena girarem. A transformação da câmera é cancelada no cenário, que mantém coordenadas inerciais.
+- O Ômega **não acompanha continuamente** o ângulo do jogador: ao permanecer por **1,8 s na retaguarda** (setor traseiro de 120° ou mais em relação à frente do chefe), ele percebe o piloto e **gira o próprio casco** gradualmente para encará-lo. Sair do setor traseiro antes desse tempo reinicia a contagem; depois de encarar o jogador, cessa o rastreamento até nova incursão traseira. Sem salto de 180°.
 - Durante preparação/ataque o chefe desacelera a rotação, permitindo esquiva e acerto real das baterias laterais/traseiras.
 - Frente baixa: mordida com mandíbula; flanco: garras; piloto em robô: braços/martelo; altitude alta: varredura de tentáculos; retaguarda: tentáculos perseguidores.
 - Os golpes usam a função `chooseBossIntent`, o relógio de 2,2s de aviso, `bossMeleeHit` e as mesmas áreas marcadas no radar. Animações são somente visuais; nunca criar colisores que não correspondam à zona de dano.
@@ -18,7 +19,7 @@
 
 ## Critérios de aceite
 
-- Node: geometria dos anéis, paleta de referência, câmera, perseguição angular (inclusive ângulo +/-pi), quatro ataques, dois hardpoints preservados e fase 4 sem regressão.
+- Node: geometria dos anéis, paleta de referência, câmera e planeta fixos durante órbita, nave mudando de posição, atraso de 1,8 s na retaguarda, reset ao sair, giro limitado do casco (inclusive ângulo +/-pi), quatro ataques, dois hardpoints preservados e fase 4 sem regressão.
 - Playwright: quatro shards, screenshots e console limpo, browser mobile emulado.
 - Humano: comparar Saturno com fotografia Cassini; assistir ataque de mordida e braço, tentar orbitar pelo lado e chegar às costas, atingir as duas baterias, conferir radar e seus feedbacks.
 - FPS Alto/Médio em celular real: comparar p95, triângulos e draw calls com v1.27.71; não assumir performance pela quantidade de objetos.
