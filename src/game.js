@@ -2097,9 +2097,9 @@ export function createGame({
       .map((name) => e.o.getObjectByName(name)?.getWorldPosition(new T.Vector3()))
       .filter(Boolean);
   }
-  function bullet(pos, target, spell = '') {
-    if (hostile.length >= 180) return;
-    hostile.push(hostileShotPool.acquire(pos, target, spell));
+  function bullet(pos, target, spell = '', bossIndex = -1) {
+    if (hostile.length >= 180 || !pos) return;
+    hostile.push(hostileShotPool.acquire(pos, target, spell, bossIndex));
   }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
