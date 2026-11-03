@@ -60,7 +60,7 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
-import { chaseOmegaHeading } from './omega-hunt.js';
+import { chaseOmegaHeading, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
@@ -4548,7 +4548,19 @@ export function createGame({
         // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
-        boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
+        if (sectorIndex === 7) {
+          boss.userData.omegaPursuit = chaseOmegaOffset(
+            boss.userData.omegaPursuit ?? { x: 0, y: 0 },
+            player.position,
+            dt,
+            t.state,
+          );
+        }
+        boss.position.set(
+          launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0),
+          launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
+          launchPose.z + meleePose.lunge,
+        );
         boss.rotation.z = t.bank;
         // Each real drive valve powers its own reactor-exhaust shock. Breaking
         // that valve removes the plume and its physical attack on that flank.
