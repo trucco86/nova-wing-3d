@@ -70,9 +70,9 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
     intent.kind === 'ice-quake' ||
     intent.kind === 'cryo-pincer' ||
     intent.kind === 'reactor-vent';
-  const halfX =
-    special ? r * special.x :
-    intent.kind === 'reactor-vent'
+  const halfX = special
+    ? r * special.x
+    : intent.kind === 'reactor-vent'
       ? r * 1.35
       : intent.kind === 'ice-quake'
         ? r * 2.5
@@ -89,9 +89,9 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
                   : intent.kind === 'tentacle-grab'
                     ? r / 0.7
                     : r;
-  const halfY =
-    special ? r * special.y :
-    intent.kind === 'reactor-vent'
+  const halfY = special
+    ? r * special.y
+    : intent.kind === 'reactor-vent'
       ? r * 1.1
       : intent.kind === 'ice-quake'
         ? r * 0.55

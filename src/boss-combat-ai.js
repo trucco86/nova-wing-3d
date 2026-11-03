@@ -177,44 +177,53 @@ export function chooseBossIntent({
               : 'approach',
     warning: 2.2,
     dodgeRadius:
-      kind === 'orion-gravity-pulse' ? 13 :
-      kind === 'rok-pincer' || kind === 'drill-crosscut' ? 12 :
-      kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram' ? 11 :
-      kind === 'reactor-vent' || kind === 'plasma-dive'
+      kind === 'orion-gravity-pulse'
         ? 13
-        : kind === 'solar-sweep' || kind === 'cryo-pincer'
+        : kind === 'rok-pincer' || kind === 'drill-crosscut'
           ? 12
-          : kind === 'ice-quake'
-            ? 13
-            : kind === 'tentacle-sweep'
-              ? 11
-              : kind === 'hammer-slam'
-                ? 14
-                : 9,
+          : kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram'
+            ? 11
+            : kind === 'reactor-vent' || kind === 'plasma-dive'
+              ? 13
+              : kind === 'solar-sweep' || kind === 'cryo-pincer'
+                ? 12
+                : kind === 'ice-quake'
+                  ? 13
+                  : kind === 'tentacle-sweep'
+                    ? 11
+                    : kind === 'hammer-slam'
+                      ? 14
+                      : 9,
     origin:
-      kind === 'rok-pincer' ? 'signature-rok-left'
-      : kind === 'rok-ram' ? 'signature-rok-right'
-      : kind === 'stingray-scissor' ? 'signature-stingray-tail'
-      : kind === 'stingray-sting' ? 'signature-stingray-tail'
-      : kind === 'drill-crosscut' || kind === 'drill-ram' ? 'signature-drill-bit'
-      : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear' ? 'signature-orion-lens'
-      : kind === 'reactor-vent'
-        ? ventSide < 0
-          ? 'port-drive-valve'
-          : 'starboard-drive-valve'
-        : kind === 'ice-quake'
-          ? 'colossus-impact-plates'
-          : kind === 'cryo-pincer'
-            ? 'colossus-piston-arms'
-            : kind === 'plasma-dive'
-              ? 'phoenix-solar-core'
-              : kind === 'solar-sweep'
-                ? 'phoenix-wings'
-                : kind === 'bite'
-                  ? 'jaw'
-                  : kind.startsWith('tentacle')
-                    ? 'tentacles'
-                    : 'claws',
+      kind === 'rok-pincer'
+        ? 'signature-rok-left'
+        : kind === 'rok-ram'
+          ? 'signature-rok-right'
+          : kind === 'stingray-scissor'
+            ? 'signature-stingray-tail'
+            : kind === 'stingray-sting'
+              ? 'signature-stingray-tail'
+              : kind === 'drill-crosscut' || kind === 'drill-ram'
+                ? 'signature-drill-bit'
+                : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear'
+                  ? 'signature-orion-lens'
+                  : kind === 'reactor-vent'
+                    ? ventSide < 0
+                      ? 'port-drive-valve'
+                      : 'starboard-drive-valve'
+                    : kind === 'ice-quake'
+                      ? 'colossus-impact-plates'
+                      : kind === 'cryo-pincer'
+                        ? 'colossus-piston-arms'
+                        : kind === 'plasma-dive'
+                          ? 'phoenix-solar-core'
+                          : kind === 'solar-sweep'
+                            ? 'phoenix-wings'
+                            : kind === 'bite'
+                              ? 'jaw'
+                              : kind.startsWith('tentacle')
+                                ? 'tentacles'
+                                : 'claws',
   });
 }
 
@@ -258,14 +267,19 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
     exhaust:
-      intent.kind === 'reactor-vent' || intent.kind === 'plasma-dive' ||
-      intent.kind === 'orion-gravity-pulse' || intent.kind === 'orion-iris-shear'
+      intent.kind === 'reactor-vent' ||
+      intent.kind === 'plasma-dive' ||
+      intent.kind === 'orion-gravity-pulse' ||
+      intent.kind === 'orion-iris-shear'
         ? windup * 0.4 + strike
         : 0,
     lunge:
       intent.kind === 'reactor-vent'
         ? 0
-        : strike * (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind) ? 72 : 48),
+        : strike *
+          (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
+            ? 72
+            : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'rok-pincer' ||

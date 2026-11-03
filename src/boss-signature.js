@@ -206,7 +206,13 @@ export function bossSignatureVolley(index, cycle = 0, phase = 1, generators = [t
 /** Visual choreography is sampled from game time, freezes automatically on pause.
  * The caller applies these poses to existing model joints, not hitboxes.
  */
-export function bossSignaturePose(index, time, phase = 1, attackState = 'maneuver', attackKind = null) {
+export function bossSignaturePose(
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
+) {
   const t = Math.max(0, Number.isFinite(time) ? time : 0);
   const intensity = clampPhase(phase) / 3;
   const firing = attackState === 'attack';
@@ -216,14 +222,23 @@ export function bossSignaturePose(index, time, phase = 1, attackState = 'maneuve
     return {
       pincer:
         (attackKind === 'rok-pincer'
-          ? charging ? 0.5 : firing ? -0.58 : 0
-          : charging ? 0.28 : firing ? -0.24 : 0) + Math.sin(t * 1.4) * 0.08,
-      ram: attackKind === 'rok-ram' ? charging ? 0.35 : firing ? 1 : 0 : 0,
+          ? charging
+            ? 0.5
+            : firing
+              ? -0.58
+              : 0
+          : charging
+            ? 0.28
+            : firing
+              ? -0.24
+              : 0) +
+        Math.sin(t * 1.4) * 0.08,
+      ram: attackKind === 'rok-ram' ? (charging ? 0.35 : firing ? 1 : 0) : 0,
     };
   if (index === 1)
     return {
       tail: Math.sin(t * (2 + intensity)) * 0.28 + (charging ? 0.45 : firing ? -0.5 : 0),
-      scissor: attackKind === 'stingray-scissor' ? charging ? 0.6 : firing ? -0.72 : 0 : 0,
+      scissor: attackKind === 'stingray-scissor' ? (charging ? 0.6 : firing ? -0.72 : 0) : 0,
     };
   if (index === 3)
     return {
@@ -239,7 +254,7 @@ export function bossSignaturePose(index, time, phase = 1, attackState = 'maneuve
     return {
       spin: t * (2.4 + intensity * 2.5),
       extension: charging ? 8 : firing ? 13 : 0,
-      crosscut: attackKind === 'drill-crosscut' ? charging ? 0.3 : firing ? 0.68 : 0 : 0,
+      crosscut: attackKind === 'drill-crosscut' ? (charging ? 0.3 : firing ? 0.68 : 0) : 0,
     };
   if (index === 5)
     return {
@@ -258,7 +273,7 @@ export function bossSignaturePose(index, time, phase = 1, attackState = 'maneuve
     return {
       lens: t * (0.9 + intensity),
       pulse: firing ? 1.34 : charging ? 0.8 : 1,
-      shear: attackKind === 'orion-iris-shear' ? charging ? 0.22 : firing ? 0.66 : 0 : 0,
+      shear: attackKind === 'orion-iris-shear' ? (charging ? 0.22 : firing ? 0.66 : 0) : 0,
     };
   if (index === 9)
     return {

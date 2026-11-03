@@ -4631,8 +4631,8 @@ export function createGame({
                 orbit: relativeOrbit(),
                 originX:
                   signatureOrigin?.x ??
-                  (boss.position.x +
-                    (bossIntent.kind === 'reactor-vent' ? bossIntent.ventSide * 38 : 0)),
+                  boss.position.x +
+                    (bossIntent.kind === 'reactor-vent' ? bossIntent.ventSide * 38 : 0),
                 originY: signatureOrigin?.y ?? boss.position.y,
               })
             : null;

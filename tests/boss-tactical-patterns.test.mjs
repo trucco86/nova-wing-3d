@@ -66,7 +66,9 @@ test('exclusive danger shapes exactly match radar and expose a reachable safe di
     assert.equal(danger.dangerActive, true, intent.kind);
     assert.ok(danger.exit, 'safe route must exist for ' + intent.kind);
     const escaped = bossRadarPlan(intent, {
-      x: safe[0], y: safe[1], orbit: overrides.orbit ?? 0,
+      x: safe[0],
+      y: safe[1],
+      orbit: overrides.orbit ?? 0,
     });
     assert.equal(bossMeleeHit(intent, { x: safe[0], y: safe[1] }), false, intent.kind);
     assert.equal(escaped.threatened, false, intent.kind);
@@ -99,7 +101,8 @@ test('four boss visual identities telegraph on their own real articulations', ()
       assert.ok(
         Math.abs(readyAngle.x - fireAngle.x) +
           Math.abs(readyAngle.y - fireAngle.y) +
-          Math.abs(readyAngle.z - fireAngle.z) > 0.1,
+          Math.abs(readyAngle.z - fireAngle.z) >
+          0.1,
         attack + ' has an observable physical windup',
       );
       boss.userData.parts.forEach((p, i) =>
