@@ -2083,9 +2083,10 @@ export function createGame({
   function bossMuzzle(side = 0) {
     if (!boss) return null;
     boss.updateMatrixWorld(true);
-    return (
-      boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null
-    );
+    const muzzle = boss.getObjectByName(sourceHardpointName(side));
+    if (!muzzle) return null;
+    flashBossWeapon(boss, side);
+    return muzzle.getWorldPosition(new T.Vector3());
   }
   function hostileMuzzles(e) {
     e.o.updateMatrixWorld(true);
