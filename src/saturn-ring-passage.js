@@ -44,3 +44,10 @@ export function saturnPassageAt(seconds, duration = 98) {
     meteor: false,
   };
 }
+
+// Physical hazards are limited to the denser ice-ring corridor. Fighter waves
+// are independent and can still engage during the approach and boss blockade.
+export function saturnObstacleKindAt(seconds, duration = 98) {
+  if (!saturnPassageAt(seconds, duration).meteor) return null;
+  return ['ice-meteor', 'ice-meteor', 'carrier'][Math.floor(seconds / 8) % 3];
+}
