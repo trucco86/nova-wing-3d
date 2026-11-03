@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('approved artwork and 360 hangar support selection, touch drag, zoom and reduced motion', async ({
@@ -25,7 +26,7 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
     .locator('#menu')
     .evaluate((e) => getComputedStyle(e, '::before').animationName);
   expect(cover).toBe('none');
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     await expect(page.locator('#pilot-' + id + ' .cat-avatar')).toBeVisible();
   }
@@ -80,7 +81,7 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   await page.screenshot({ path: info.outputPath('hangar-pilot.png') });
   await page.locator('#hangarShip').click();
   await page.screenshot({ path: info.outputPath('hangar-ship.png') });
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
   expect(errors).toEqual([]);

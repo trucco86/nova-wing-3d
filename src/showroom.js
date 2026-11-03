@@ -124,7 +124,14 @@ export function installShowroom({
       return;
     }
     if (!initialize()) return;
-    const next = [mode, root.dataset.pilot, root.dataset.ship, root.dataset.shipColor].join(':');
+    const next = [
+      mode,
+      root.dataset.pilot,
+      root.dataset.ship,
+      root.dataset.shipColor,
+      root.dataset.uniformGrade ?? '0',
+      root.dataset.medalsCount ?? '0',
+    ].join(':');
     if (next !== signature) {
       signature = next;
       if (model) {
@@ -134,7 +141,11 @@ export function installShowroom({
       model =
         mode === 'ship'
           ? createShowroomShip(root.dataset.ship, root.dataset.shipColor)
-          : createShowroomPilot(root.dataset.pilot);
+          : createShowroomPilot(
+              root.dataset.pilot,
+              Number(root.dataset.uniformGrade ?? 0),
+              Number(root.dataset.medalsCount ?? 0),
+            );
       mount.add(model);
       yaw = -0.55;
       pitch = mode === 'ship' ? 0.3 : 0;
@@ -145,7 +156,9 @@ export function installShowroom({
       $('hangarName').textContent =
         mode === 'ship' ? shipAt(root.dataset.ship).name : pilotAt(root.dataset.pilot).name;
       $('hangarKind').textContent =
-        mode === 'ship' ? 'NAVE DE COMBATE / 360°' : 'PILOTO / ESCULTURA 3D';
+        mode === 'ship'
+          ? 'NAVE DE COMBATE / 360°'
+          : 'PILOTO / UNIFORME FELINO MK-' + (Number(root.dataset.uniformGrade ?? 0) + 1);
       $('hangarShip').setAttribute('aria-pressed', String(mode === 'ship'));
       $('hangarPilot').setAttribute('aria-pressed', String(mode === 'pilot'));
     }
@@ -253,7 +266,14 @@ export function installShowroom({
   });
   observer.observe(root, {
     attributes: true,
-    attributeFilter: ['hidden', 'data-pilot', 'data-ship', 'data-ship-color'],
+    attributeFilter: [
+      'hidden',
+      'data-pilot',
+      'data-ship',
+      'data-ship-color',
+      'data-uniform-grade',
+      'data-medals-count',
+    ],
   });
   observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   const resize = new window.ResizeObserver(() => draw());
