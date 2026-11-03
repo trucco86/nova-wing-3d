@@ -4479,9 +4479,9 @@ export function createGame({
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
         if (sectorIndex === 7) {
-          // The pilot orbits a stationary Saturn arena. Omega itself remains
-          // facing forward until the pilot holds its rear blind spot for 1.8 s,
-          // then turns its hull smoothly to face the pilot. No instant tracking.
+          // The pilot orbits a stationary Saturn arena. Omega holds its heading
+          // until the pilot spends 1.8 s on either flank or behind it; only then
+          // does its hull counterturn smoothly. Saturn and rings stay still.
           boss.userData.omegaRearResponse = advanceOmegaRearResponse(
             boss.userData.omegaRearResponse,
             orbitAngle,

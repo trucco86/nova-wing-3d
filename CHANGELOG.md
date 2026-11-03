@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.75 — Ômega acompanha os dois flancos após exposição sustentada (QA)
+
+- Na fase 8, o Ômega passa a reconhecer o flanco esquerdo e o direito, além da retaguarda: após 1,8 s de permanência em ângulo igual ou superior a 75° da proa, gira apenas o casco gradualmente para encarar a nave.
+- Aproximações rápidas e retorno à frente reiniciam a percepção; a área frontal não dispara perseguição. Velocidade de rotação limitada e menor durante o ataque.
+- Preservados a órbita 360° da nave, o cenário e Saturno imóveis, os pontos fracos, os ataques travados e a correção dos botões RPG/ORBITAR da v1.27.74.
+- Novos testes Node dos dois flancos, atraso, reset e ângulo frontal. Testes browser e homologação visual ainda necessários.
+- QA isolada; não publicar em produção sem aprovação.
+
 ## 1.27.74 — RPG mobile fecha e órbita permanece acessível (QA)
 
 - O painel RPG preserva o botão de abertura/fechamento no topo; somente o conteúdo tático é expansível/rolável.

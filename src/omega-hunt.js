@@ -48,9 +48,11 @@ export function chaseOmegaOffset(
   return { x: chase(previous.x, targetX), y: chase(previous.y, targetY) };
 }
 
-// Omega reacts to a pilot holding position behind its stern, not to every
-// orbital input. The rear must remain exposed before the boss notices it;
-// once alerted, it turns its own hull until it faces the pilot again.
+// Omega notices a sustained flank OR rear approach, not every orbit input.
+// A 75° off-axis entry protects frontal combat, gives both side weakpoints
+// an exposure window, and also covers the stern. Once alerted, the hull turns
+// gradually to face the pilot; the world and Saturn never rotate.
+export const OMEGA_FLANK_ENTRY_RADIANS = (Math.PI * 5) / 12;
 export const OMEGA_REAR_LOCK_SECONDS = 1.8;
 export function advanceOmegaRearResponse(
   previous = { heading: 0, rearSeconds: 0, tracking: false },
@@ -64,8 +66,8 @@ export function advanceOmegaRearResponse(
   if (![heading, rearSeconds, desired, dt].every(Number.isFinite) || dt < 0 || rearSeconds < 0)
     throw new RangeError('Invalid Omega rear response');
   const angularGap = Math.abs(wrap(desired - heading));
-  const behind = angularGap >= (Math.PI * 2) / 3;
-  const observed = behind ? Math.min(OMEGA_REAR_LOCK_SECONDS, rearSeconds + dt) : 0;
+  const offAxis = angularGap >= OMEGA_FLANK_ENTRY_RADIANS;
+  const observed = offAxis ? Math.min(OMEGA_REAR_LOCK_SECONDS, rearSeconds + dt) : 0;
   const alerted = Boolean(previous.tracking) || observed + 1e-9 >= OMEGA_REAR_LOCK_SECONDS;
   if (!alerted) return { heading, rearSeconds: observed, tracking: false };
   const nextHeading = chaseOmegaHeading(heading, desired, dt, phase, state);
