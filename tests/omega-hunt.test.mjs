@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SECTORS } from '../src/campaign.js';
-import { chaseOmegaHeading, omegaAppendageAmplitude } from '../src/omega-hunt.js';
+import { chaseOmegaHeading, chaseOmegaOffset, omegaAppendageAmplitude } from '../src/omega-hunt.js';
 import { chooseBossIntent, bossMeleePose, bossMeleeHit } from '../src/boss-combat-ai.js';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 import { bossWeakPointOpen, bossWeakPointPlan } from '../src/boss-weakpoint-layout.js';
@@ -109,4 +109,34 @@ test('Omega visual jaw, claws, hammer arms and tentacles react without moving ac
   assert.equal(room4.getObjectByName('omega-port-tentacle'), undefined);
   disposeBoss(room4);
   assert.equal(bossWeakPointPlan(7).length, 2, 'retain only actual destructible battery targets');
+});
+
+test('Omega follows player movement without teleporting into the dodge corridor', () => {
+  const start = { x: 0, y: 0 };
+  const pilot = { x: 90, y: 55 };
+  const moving = chaseOmegaOffset(start, pilot, 0.08, 'maneuver');
+  const committed = chaseOmegaOffset(start, pilot, 0.08, 'attack');
+  assert.ok(moving.x > committed.x && moving.y > committed.y);
+  assert.ok(moving.x <= 0.81);
+  assert.ok(moving.y <= 0.81);
+  assert.deepEqual(chaseOmegaOffset(moving, pilot, 0, 'recovery'), moving);
+  let offset = start;
+  for (let i = 0; i < 500; i++) offset = chaseOmegaOffset(offset, pilot, 1 / 60);
+  assert.deepEqual(offset, { x: 20, y: 9 }, 'leash keeps the boss in the center arena');
+  assert.throws(() => chaseOmegaOffset(start, pilot, -1), RangeError);
+});
+
+test('destroying a physical Omega battery leaves its corresponding claw and tentacle damaged', () => {
+  const boss = createBossModel(SECTORS[7], 7, true);
+  boss.userData.parts[0].hp = 0;
+  animateBossSignature(boss, 7, 12, 3, 'attack', 'claw-swipe', { claw: 0.9 });
+  const portClaw = boss.getObjectByName('omega-port-talon');
+  const starboardClaw = boss.getObjectByName('omega-starboard-talon');
+  const portTentacle = boss.getObjectByName('omega-port-tentacle');
+  assert.ok(Math.abs(portClaw.rotation.z + 0.95) < 1e-6, 'destroyed port limb droops');
+  assert.ok(portClaw.rotation.x < 0, 'destroyed port limb cannot make an attack stroke');
+  assert.ok(starboardClaw.rotation.x > 0.25, 'intact opposite limb keeps moving');
+  assert.ok(portTentacle.rotation.x < 0, 'linked tentacle visibly collapses');
+  assert.equal(boss.userData.parts[1].hp > 0, true);
+  disposeBoss(boss);
 });
