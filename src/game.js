@@ -2106,6 +2106,7 @@ export function createGame({
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
     orbitAngle = 0;
+    $('strategyDrawer').open = false;
     scanTime = 0;
     lastSpecialCycle = -1;
     lastRangedCycle = bossIntentCycle = -1;
@@ -3233,6 +3234,7 @@ export function createGame({
     $(id).onpointerdown = (e) => {
       e.preventDefault?.();
       if (state !== 'playing' || !boss) return;
+      $('strategyDrawer').open = false;
       $(id).setPointerCapture(e.pointerId);
       orbitTouch = direction;
     };
