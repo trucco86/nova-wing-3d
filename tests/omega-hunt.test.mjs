@@ -48,8 +48,10 @@ test('Omega uses bite, flank claw, hammer arm and rear tentacle hitboxes', () =>
   const rear = chooseBossIntent({ sector: 7, cycle: 0, orbit: 2.85 });
   const heavy = chooseBossIntent({ sector: 7, cycle: 2, robot: true, orbit: 0 });
   const sweep = chooseBossIntent({ sector: 7, cycle: 1, playerY: 35, orbit: 0 });
-  assert.deepEqual([front.kind, flank.kind, rear.kind, heavy.kind, sweep.kind],
-    ['bite', 'claw-swipe', 'tentacle-grab', 'hammer-slam', 'tentacle-sweep']);
+  assert.deepEqual(
+    [front.kind, flank.kind, rear.kind, heavy.kind, sweep.kind],
+    ['bite', 'claw-swipe', 'tentacle-grab', 'hammer-slam', 'tentacle-sweep'],
+  );
   assert.deepEqual([front.origin, flank.origin, rear.origin], ['jaw', 'claws', 'tentacles']);
   for (const intent of [front, flank, rear, heavy, sweep]) {
     assert.ok(Object.isFrozen(intent));
@@ -64,10 +66,16 @@ test('Omega uses bite, flank claw, hammer arm and rear tentacle hitboxes', () =>
 
 test('Omega visual jaw, claws, hammer arms and tentacles react without moving actual generators', () => {
   const boss = createBossModel(SECTORS[7], 7, true);
-  for (const part of ['omega-mouth-cavity', 'omega-port-talon', 'omega-starboard-talon',
-    'omega-port-tentacle', 'omega-starboard-tentacle']) assert.ok(boss.getObjectByName(part), part);
-  const weak = boss.userData.parts.map(p => p.mesh.position.toArray());
-  const muzzles = boss.userData.batteries.map(p => p.position.toArray());
+  for (const part of [
+    'omega-mouth-cavity',
+    'omega-port-talon',
+    'omega-starboard-talon',
+    'omega-port-tentacle',
+    'omega-starboard-tentacle',
+  ])
+    assert.ok(boss.getObjectByName(part), part);
+  const weak = boss.userData.parts.map((p) => p.mesh.position.toArray());
+  const muzzles = boss.userData.batteries.map((p) => p.position.toArray());
   assert.equal(boss.userData.jaw.visible, true);
   const motion = [
     ['bite', { jaw: 0.85, claw: 0, tentacle: 0 }, 'jaw'],
@@ -80,11 +88,19 @@ test('Omega visual jaw, claws, hammer arms and tentacles react without moving ac
     assert.ok(p[part] > 0);
     animateBossSignature(boss, 7, 12, 3, 'attack', kind, pose);
     if (part === 'jaw') assert.ok(boss.userData.jaw.rotation.x > 0.5);
-    if (part === 'claw') assert.ok(Math.abs(boss.getObjectByName('omega-port-talon').rotation.z) > 0.5);
+    if (part === 'claw')
+      assert.ok(Math.abs(boss.getObjectByName('omega-port-talon').rotation.z) > 0.5);
     if (part === 'arm') assert.ok(boss.getObjectByName('signature-omega-left').rotation.x > 0.4);
-    if (part === 'tentacle') assert.ok(boss.getObjectByName('omega-starboard-tentacle').rotation.x > 0.25);
-    assert.deepEqual(boss.userData.parts.map(p => p.mesh.position.toArray()), weak);
-    assert.deepEqual(boss.userData.batteries.map(p => p.position.toArray()), muzzles);
+    if (part === 'tentacle')
+      assert.ok(boss.getObjectByName('omega-starboard-tentacle').rotation.x > 0.25);
+    assert.deepEqual(
+      boss.userData.parts.map((p) => p.mesh.position.toArray()),
+      weak,
+    );
+    assert.deepEqual(
+      boss.userData.batteries.map((p) => p.position.toArray()),
+      muzzles,
+    );
   }
   animateBossSignature(boss, 7, 20, 3, 'recovery', 'bite');
   assert.equal(boss.getObjectByName('omega-port-talon').rotation.x, 0);
