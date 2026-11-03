@@ -27,3 +27,17 @@ export function omegaAppendageAmplitude(kind, state, pose = {}) {
     tentacle: kind?.startsWith('tentacle') ? Math.max(0, pose.tentacle ?? 0) : 0,
   };
 }
+
+// The boss also follows lateral/vertical pilot displacement with bounded
+// velocity. Keep the authored departure and stage center; offsets are small
+// and slow, never instant lunges or extra untelegraphed damage.
+export function chaseOmegaOffset(previous = { x: 0, y: 0 }, pilot = { x: 0, y: 18 }, dt, state = 'maneuver') {
+  if (![previous.x, previous.y, pilot.x, pilot.y, dt].every(Number.isFinite) || dt < 0)
+    throw new RangeError('Invalid Omega pursuit');
+  const speed = state === 'attack' ? 2 : state === 'windup' ? 4 : 10;
+  const step = Math.min(dt, 0.08) * speed;
+  const targetX = Math.max(-20, Math.min(20, pilot.x * 0.35));
+  const targetY = Math.max(-9, Math.min(9, (pilot.y - 18) * 0.26));
+  const chase = (current, target) => current + Math.sign(target - current) * Math.min(step, Math.abs(target - current));
+  return { x: chase(previous.x, targetX), y: chase(previous.y, targetY) };
+}
