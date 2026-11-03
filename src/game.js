@@ -4708,7 +4708,7 @@ export function createGame({
                 player.position,
                 dangerous ? 3 : 1,
               ))
-                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire', sectorIndex);
             }
           }
         }
