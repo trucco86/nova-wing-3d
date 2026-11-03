@@ -689,6 +689,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
     shell.userData.visualOnly = true;
     g.add(shell);
   }
+  g.userData.materials.push(...installBossWeaponVfx(g, index));
   return g;
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
