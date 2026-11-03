@@ -8,6 +8,7 @@ import { createPhoenixAttackVfx, animatePhoenixAttackVfx } from './phoenix-attac
 import { omegaAppendageAmplitude } from './omega-hunt.js';
 import { createEuropaAttackVfx, animateEuropaAttackVfx } from './europa-attack-vfx.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
+import { installBossWeaponVfx } from './boss-weapon-vfx.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
