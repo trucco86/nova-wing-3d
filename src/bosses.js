@@ -736,17 +736,24 @@ export function animateBossSignature(
       const claw = g.getObjectByName(prefix + 'talon');
       const tentacle = g.getObjectByName(prefix + 'tentacle');
       const battery = g.getObjectByName('signature-omega-' + (side < 0 ? 'left' : 'right'));
+      const operational = g.userData.parts[side < 0 ? 0 : 1]?.hp > 0;
       if (claw) {
-        claw.rotation.z = side * (0.07 * Math.sin(time * 1.2 + side) + effort.claw * 0.8);
-        claw.rotation.x = effort.claw * 0.38;
+        // A destroyed real generator leaves its linked limb hanging damaged,
+        // not miraculously attacking from a hidden duplicate hitbox.
+        claw.rotation.z = operational
+          ? side * (0.07 * Math.sin(time * 1.2 + side) + effort.claw * 0.8)
+          : side * 0.95;
+        claw.rotation.x = operational ? effort.claw * 0.38 : -0.32;
       }
       if (tentacle) {
-        tentacle.rotation.z = side * (0.11 * Math.sin(time * 1.1 + side) + effort.tentacle * 0.72);
-        tentacle.rotation.x = effort.tentacle * 0.42;
+        tentacle.rotation.z = operational
+          ? side * (0.11 * Math.sin(time * 1.1 + side) + effort.tentacle * 0.72)
+          : side * 0.82;
+        tentacle.rotation.x = operational ? effort.tentacle * 0.42 : -0.45;
       }
       if (battery) {
-        battery.rotation.x = effort.arm * 0.55;
-        battery.rotation.z = -side * effort.arm * 0.36;
+        battery.rotation.x = operational ? effort.arm * 0.55 : -0.42;
+        battery.rotation.z = operational ? -side * effort.arm * 0.36 : side * 0.3;
       }
     }
   }
