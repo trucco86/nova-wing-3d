@@ -156,6 +156,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
     tail.add(new T.Mesh(new T.ConeGeometry(5, 36, 5), armor));
     tail.add(box(14, 2, 20, edge, 0, -14, 10));
     add(tail, 0, -14, -18);
+    // Two visible scissor vanes fold independently around the player during
+    // Stingray's physical blade attack; collision remains the authored radar.
+    for (const side of [-1, 1]) {
+      const vane = new T.Group();
+      vane.name = side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right';
+      vane.add(box(17, 3.5, 28, armor, side * 7, 0, 1));
+      vane.add(box(19, 0.9, 25, edge, side * 7, 2.2, 1));
+      add(vane, side * 38, 0, 13);
+    }
   }
   if (index === 3) {
     const iris = new T.Group();
@@ -703,7 +712,7 @@ export function animateBossSignature(
   attackKind = null,
   attackPose = null,
 ) {
-  const pose = bossSignaturePose(index, time, phase, attackState);
+  const pose = bossSignaturePose(index, time, phase, attackState, attackKind);
   if (!pose || !g) return null;
   animateBossVisualIdentity(g, index, time, phase, attackState);
   if (index === 5)
@@ -764,11 +773,23 @@ export function animateBossSignature(
     const left = g.getObjectByName(prefix + '-left');
     const right = g.getObjectByName(prefix + '-right');
     const angle = index === 0 ? pose.pincer : pose.broadside;
-    if (left) left.rotation.y = angle;
-    if (right) right.rotation.y = -angle;
+    if (left) {
+      left.rotation.y = angle;
+      left.rotation.x = -pose.ram * 0.28;
+    }
+    if (right) {
+      right.rotation.y = -angle;
+      right.rotation.x = -pose.ram * 0.28;
+    }
   } else if (index === 1) {
     const tail = g.getObjectByName('signature-stingray-tail');
     if (tail) tail.rotation.z = pose.tail;
+    for (const side of [-1, 1]) {
+      const vane = g.getObjectByName(
+        side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right',
+      );
+      if (vane) vane.rotation.z = side * pose.scissor;
+    }
   } else if (index === 3) {
     const iris = g.getObjectByName('signature-orbit-iris');
     if (iris) {
@@ -784,12 +805,14 @@ export function animateBossSignature(
     const lens = g.getObjectByName('signature-orion-lens');
     if (lens) {
       lens.rotation.z = pose.lens;
+      lens.rotation.y = pose.shear;
       lens.scale.setScalar(pose.pulse);
     }
   } else if (index === 2) {
     const bit = g.getObjectByName('signature-drill-bit');
     if (bit) {
       bit.rotation.z = pose.spin;
+      bit.rotation.y = pose.crosscut;
       bit.position.z = -8 + pose.extension;
     }
   } else if (index === 5) {
