@@ -4871,11 +4871,6 @@ body.in-mission #tacticalPanel {
   body.in-mission #tacticalPanel {
     top: max(112px, calc(env(safe-area-inset-top, 0px) + 95px));
   }
-  /* Opening the RPG drawer must never make orbit buttons intercept SCAN. */
-  body.in-mission:has(#strategyDrawer[open]) #orbitControls {
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
 }
 @media (pointer: coarse) and (max-width: 550px) {
   #hudNotices {
@@ -9382,5 +9377,62 @@ body:not(.developer-session) #qaBerserkDock {
   body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
     left: max(260px, calc(env(safe-area-inset-left, 0px) + 250px));
     top: max(150px, calc(env(safe-area-inset-top, 0px) + 135px));
+  }
+}
+
+/* QA P0: RPG stays anchored in the top rail when expanded. The native
+   <summary> must NEVER move into a scroll box, or iOS players cannot close
+   it. Only its optional tactical CONTENT expands below the pinned header.
+   Do not hide ORBIT as a workaround: the ship must always be steerable. */
+@media (pointer: coarse) {
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    box-shadow: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary {
+    position: relative;
+    z-index: 4;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer:not([open]) > .rpgDrawerBody {
+    display: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 3;
+    width: min(238px, calc(100vw - 106px));
+    max-height: min(32dvh, 245px);
+    margin: 0;
+    padding: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #4eb5ad88;
+    border-radius: 10px;
+    background: #061522f5;
+    box-shadow: 0 6px 18px #010811aa;
+  }
+  /* ORBIT remains above the optional RPG content when screen space is tight.
+     Holding either arrow also folds RPG, freeing the entire lower HUD. */
+  body.in-mission #orbitControls:not([hidden]) {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
+    width: min(206px, calc(100vw - 106px));
   }
 }
