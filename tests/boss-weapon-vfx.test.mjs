@@ -18,6 +18,7 @@ test('all ten bosses use ten bright palettes at the actual physical cannon mouth
     const boss = createBossModel(SECTORS[i], i, true);
     try {
       for (const side of [-1, 1, 0]) {
+        if (side === 0) boss.userData.parts.forEach((part) => (part.hp = 0));
         const holder = side === 0 ? boss : boss.userData.batteries[side < 0 ? 0 : 1];
         const muzzle = holder.getObjectByName(sourceHardpointName(side));
         const face = holder.children.find((part) => part.name === 'boss-weapon-visible-rim');
