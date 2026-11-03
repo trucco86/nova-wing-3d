@@ -2,7 +2,7 @@ import * as T from 'three';
 import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
-import { createBossVisualIdentity } from './boss-visual-identity.js';
+import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
@@ -530,6 +530,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
 export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
+  animateBossVisualIdentity(g, index, time, phase, attackState);
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
