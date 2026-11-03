@@ -117,8 +117,10 @@ export function createDestinationVista(index) {
       },
       vertexShader: PLANET_VERT,
       fragmentShader: PLANET_FRAG,
-      transparent: true,
-      depthWrite: false,
+      // Saturn's opaque globe writes depth, so the back half of its rings
+      // cannot bleed through the planet. Other planets retain arrival fades.
+      transparent: profile.type !== 'rings',
+      depthWrite: profile.type === 'rings',
       fog: false,
     }),
   );
@@ -157,6 +159,7 @@ export function createDestinationVista(index) {
       }),
     );
     rings.name = 'saturn-planetary-ring-system';
+    rings.renderOrder = 2; // tested against the opaque globe depth buffer
     rings.rotation.copy(tilt);
     rings.userData.visualOnly = true;
     globe.add(rings);
@@ -179,6 +182,7 @@ export function createDestinationVista(index) {
         }),
       );
       band.name = 'saturn-astronomical-band';
+      band.renderOrder = 3;
       band.rotation.copy(tilt);
       band.userData.visualOnly = true;
       globe.add(band);
