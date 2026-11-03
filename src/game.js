@@ -23,6 +23,11 @@ import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
+import {
+  sectorObjectiveAt,
+  initialSectorObjective,
+  advanceSectorObjective,
+} from './sector-objectives.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
@@ -238,6 +243,17 @@ export function createGame({
   reticle.visible = false;
   const player = fighter();
   scene.add(player);
+  const missionBeacon = new T.Mesh(
+    new T.TorusGeometry(9, 0.6, 6, 40),
+    new T.MeshBasicMaterial({
+      color: 0x64ffe4,
+      transparent: true,
+      opacity: 0.92,
+      depthWrite: false,
+    }),
+  );
+  missionBeacon.visible = false;
+  scene.add(missionBeacon);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
@@ -467,6 +483,8 @@ export function createGame({
     bossIntentCycle = -1,
     fighterWaveSerial = 0,
     lastFighterWave = null,
+    sectorObjectivePlan = null,
+    sectorObjectiveState = { status: 'none', hold: 0 },
     bossMeleeResolved = false,
     bossIntent = null,
     reactorGridSeconds = 0,
@@ -1000,6 +1018,12 @@ export function createGame({
     fighterSerial = 0;
     fighterWaveSerial = 0;
     lastFighterWave = null;
+    sectorObjectivePlan = dynamicFlight ? sectorObjectiveAt(sectorIndex) : null;
+    sectorObjectiveState = initialSectorObjective(sectorIndex);
+    missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
+    if (sectorObjectivePlan)
+      missionBeacon.position.set(sectorObjectivePlan.x, sectorObjectivePlan.y, -45);
     ringCd = 4;
     ringWave = 0;
     bossCombat = null;
@@ -1689,6 +1713,8 @@ export function createGame({
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
     bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
+    missionBeacon.visible = false;
+    $('sectorObjectiveGuide').hidden = true;
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
@@ -3072,6 +3098,44 @@ export function createGame({
     if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0)) msgTime -= dt;
     if (msgTime <= 0) $('comms').classList.remove('active');
     const { speed, previousPlayer, holding } = updatePiloting(dt);
+    if (dynamicFlight && sectorObjectivePlan && !boss) {
+      const step = advanceSectorObjective(
+        sectorObjectiveState,
+        sectorObjectivePlan,
+        elapsed,
+        current().duration,
+        player.position,
+        dt,
+      );
+      sectorObjectiveState = step.state;
+      missionBeacon.visible = sectorObjectiveState.status === 'active';
+      const objectiveGuide = $('sectorObjectiveGuide');
+      objectiveGuide.hidden = !missionBeacon.visible;
+      if (missionBeacon.visible) {
+        missionBeacon.position.z = player.position.z - 50;
+        missionBeacon.rotation.z += dt * 0.55;
+        missionBeacon.scale.setScalar(1 + Math.sin(elapsed * 6) * 0.055);
+        objectiveGuide.textContent =
+          sectorObjectivePlan.label +
+          ' · SEGURE POSIÇÃO ' +
+          Math.ceil(sectorObjectivePlan.requiredSeconds - sectorObjectiveState.hold) +
+          's';
+      }
+      if (step.event === 'started')
+        message('OBJETIVO OPCIONAL · ' + sectorObjectivePlan.label + ' · SIGA O ANEL VERDE');
+      if (step.event === 'completed') {
+        missionBeacon.visible = false;
+        credits += sectorObjectivePlan.rewardCredits;
+        gainXP(sectorObjectivePlan.rewardXP);
+        message(
+          'OBJETIVO CONCLUÍDO · +' +
+            sectorObjectivePlan.rewardCredits +
+            ' CR · +' +
+            sectorObjectivePlan.rewardXP +
+            ' XP',
+        );
+      }
+    }
     spawnCd -= dt;
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
@@ -4255,6 +4319,14 @@ export function createGame({
       stageTitleVisible: stageIntroTime > 0,
       strategy: { ...strategy, stage: stage(), arcana, specialCd, barrier, stasis, orbitAngle },
       missionCameraSeconds: reactorGridSeconds,
+      sectorObjective: sectorObjectivePlan
+        ? {
+            ...sectorObjectiveState,
+            id: sectorObjectivePlan.id,
+            targetX: sectorObjectivePlan.x,
+            targetY: sectorObjectivePlan.y,
+          }
+        : null,
       missionHazardWave: reactorGridWave,
       bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
@@ -4406,6 +4478,9 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      scene.remove(missionBeacon);
+      missionBeacon.geometry.dispose();
+      missionBeacon.material.dispose();
       renderer.dispose?.();
     },
   };
