@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.72 — Saturno Cassini + Couraçado Ômega 4.0 (QA)
+
+- Saturno em paleta de cores naturais inspiradas em imagens Cassini NASA/JPL: nuvens suaves amarelo-creme e bege, divisão de Cassini escura, anéis em tons contidos de gelo e poeira.
+- Correção geométrica: anéis no plano equatorial do planeta, planeta e anéis inclinados como um conjunto, oclusão real atrás da esfera; evita desenho de discos independentes.
+- Fase 8: Couraçado Ômega persegue angularmente a órbita do piloto com atraso e velocidade limitados. A visão traseira aparece imediatamente ao orbitar e o chefe tenta virar-se progressivamente, sem teleporte de frente.
+- Moveset conforme direção e modo: mordida frontal com mandíbula, garras de flanco, braços em pancada e tentáculos de interceptação pela retaguarda; telegraph e dano seguem intent travado.
+- Duas peças destrutíveis reais recebem sinalização azul quando blindadas, âmbar após contato e amarela quando vulneráveis; mensagem no HUD explica o flanco ou costas. Radar usa ângulo físico atual do casco, não ângulo teórico.
+- Preservados Terra, cena 4 de sabotagem, demais chefes, save, câmera e economia de projéteis. Regressões Node contra giro instantâneo, falso ponto fraco, geometria anelar e animações.
+- QA isolada. Requer CI Node/Playwright 4 shards, inspeção visual no iPhone e FPS Alto/Médio antes da integração.
+
 ## 1.27.71 — Saturno: travessia coreografada pelos anéis (QA)
 
 - Fase 8 em cinco trechos: aproximação orbital, anel externo, campo denso de gelo, divisão de Cassini e bloqueio do Couraçado Ômega. Rótulos do HUD acompanham a região percorrida.

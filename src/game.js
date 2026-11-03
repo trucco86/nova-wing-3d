@@ -60,6 +60,7 @@ import {
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
+import { chaseOmegaHeading, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
@@ -654,7 +655,9 @@ export function createGame({
   const relativeOrbit = () =>
     boss?.userData.sabotage
       ? orbitAngle
-      : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
+      : sectorIndex === 7 && dynamicFlight && boss
+        ? -boss.rotation.y
+        : orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
   const bossTargetOpen = (index) =>
     boss?.userData.sabotage
       ? sabotageTargetOpen(boss.userData.parts, index, relativeOrbit())
@@ -4473,7 +4476,19 @@ export function createGame({
         const turn =
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
-        boss.rotation.y = tactics().heading - orbitAngle;
+        if (sectorIndex === 7) {
+          // Camera orbit shows the REAR immediately; Omega's own counter-yaw
+          // catches up over seconds instead of snapping to always face us.
+          // The delayed counter-turn preserves real flank/stern hit windows.
+          boss.userData.omegaCounterYaw = chaseOmegaHeading(
+            boss.userData.omegaCounterYaw ?? 0,
+            orbitAngle + tactics().heading,
+            dt,
+            bossCombat.phase,
+            tactics().state,
+          );
+          boss.rotation.y = boss.userData.omegaCounterYaw - orbitAngle;
+        } else boss.rotation.y = tactics().heading - orbitAngle;
         world.setOrbit(-orbitAngle, boss.position);
         // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
         if (turn)
@@ -4489,9 +4504,14 @@ export function createGame({
           const open = bossTargetOpen(i) && p.hp > 0;
           p.mesh.scale.setScalar(open ? 1.18 : 0.75);
           const discovered = weakpointEvidence[i]?.revealed;
-          p.marker.visible = open || (discovered && p.hp > 0);
+          // Omega always marks its two destructible armored modules; cool
+          // markers mean shielded, amber means discovered, yellow means
+          // physically vulnerable from the current orbital approach.
+          p.marker.visible = (sectorIndex === 7 && p.hp > 0) || open || (discovered && p.hp > 0);
           if (p.marker.userData.signalMaterial)
-            p.marker.userData.signalMaterial.color.set(open ? '#fff27a' : '#ff925b');
+            p.marker.userData.signalMaterial.color.set(
+              open ? '#fff27a' : discovered ? '#ff925b' : '#6db8d2',
+            );
           p.marker.rotation.z += dt * (i ? -1.5 : 1.5);
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
@@ -4528,7 +4548,19 @@ export function createGame({
         // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
-        boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
+        if (sectorIndex === 7) {
+          boss.userData.omegaPursuit = chaseOmegaOffset(
+            boss.userData.omegaPursuit ?? { x: 0, y: 0 },
+            player.position,
+            dt,
+            t.state,
+          );
+        }
+        boss.position.set(
+          launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0),
+          launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
+          launchPose.z + meleePose.lunge,
+        );
         boss.rotation.z = t.bank;
         // Each real drive valve powers its own reactor-exhaust shock. Breaking
         // that valve removes the plume and its physical attack on that flank.
@@ -4608,7 +4640,10 @@ export function createGame({
         );
         $('radarWeak').hidden = !objective;
         if (objective)
-          $('radarWeak').style.transform = 'rotate(' + (objective.angle + t.heading) + 'rad)';
+          $('radarWeak').style.transform =
+            'rotate(' +
+            (objective.angle + (sectorIndex === 7 ? orbitAngle + boss.rotation.y : t.heading)) +
+            'rad)';
         if (
           bossCombat.age >= 3 &&
           t.state === 'attack' &&
@@ -4707,6 +4742,7 @@ export function createGame({
           combatPhase,
           tactics().state,
           bossIntent?.kind,
+          melee,
         );
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
@@ -4734,8 +4770,11 @@ export function createGame({
           ? 'APROXIMAÇÃO'
           : remaining
             ? openGenerator >= 0
-              ? 'ARMA VULNERÁVEL · BATERIA ' + (openGenerator === 0 ? 'ESQ.' : 'DIR.')
-              : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
+              ? (sectorIndex === 7 ? 'ÔMEGA · PEÇA DESTRUTÍVEL FRACA · ' : 'ARMA VULNERÁVEL · ') +
+                (openGenerator === 0 ? 'BATERIA ESQ.' : 'BATERIA DIR.')
+              : sectorIndex === 7
+                ? 'ÔMEGA · PEÇAS AZUIS BLINDADAS · ORBITE FLANCO OU COSTAS'
+                : 'BLINDAGEM · CORPO RECEBE DANO REDUZIDO · ORBITE PARA O FLANCO'
             : 'FASE ' +
               combatPhase +
               ' · ' +
@@ -5615,7 +5654,12 @@ export function createGame({
           angle: boss.userData.sabotage
             ? p.angle
             : wrapAngle(
-                bossWeakPointAngle(sectorIndex, i) + (dynamicFlight ? tactics().heading : 0),
+                bossWeakPointAngle(sectorIndex, i) +
+                  (dynamicFlight
+                    ? sectorIndex === 7
+                      ? orbitAngle + boss.rotation.y
+                      : tactics().heading
+                    : 0),
               ),
           position: p.mesh.getWorldPosition(new T.Vector3()).toArray(),
         })) ?? [],

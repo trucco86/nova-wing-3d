@@ -41,11 +41,16 @@ void main(){
    c=mix(c,vec3(.04,.11,.31),(1.-smoothstep(.62,1.2,length(storm)))*step(.25,n.z)*.82);
  }
  if(kind>3.5 && kind<4.5){
-   // Saturn: soft cream/ochre jet streams, fine banding and a quiet ring shadow.
-   float cream=sin(n.y*17.+shear*.3)*.5+.5;
-   c=mix(c,vec3(.94,.81,.61),cream*.22);
-   float shadow=smoothstep(-.30,-.22,n.y)*(1.-smoothstep(.13,.23,n.y))*smoothstep(.0,.35,n.z);
-   c*=1.-shadow*.20;
+   // Cassini natural-color reference: subdued ivory, cream, sand and beige.
+   // Narrow, softly changing zonal jets rather than orange/brown striping.
+   float belts=sin(n.y*31.+shear*.31+sin(n.x*8.)*.8)*.5+.5;
+   float threads=sin(n.y*96.+sin(n.x*21.+n.z*8.)*1.6)*.5+.5;
+   float latitude=0.5+0.5*cos(n.y*5.8);
+   c=mix(vec3(.69,.62,.49),vec3(.95,.88,.72),clamp(.25+belts*.38+threads*.12+latitude*.2,0.,1.));
+   // A subdued ring shadow near Saturn's equator (celestial latitude y=0).
+   // It is painted on the atmosphere, not a second fake ring crossing the hull.
+   float ringShadow=(1.-smoothstep(.03,.14,abs(n.y-.06)))*smoothstep(-.25,.25,n.z);
+   c*=1.-ringShadow*.23;
  }
  if(kind>4.5 && kind<5.5)c=mix(vec3(.007,.014,.04),c,.2);
  float light=max(.08,dot(n,normalize(vec3(-.45,.62,.8))));
@@ -59,18 +64,20 @@ void main(){radius=length(position.xy);gl_Position=projectionMatrix*modelViewMat
 const SATURN_RING_FRAG = `varying float radius;uniform float opacity;
 void main(){
  float r=radius;
- float envelope=smoothstep(205.,212.,r)*(1.-smoothstep(338.,346.,r));
- float cRing=1.-smoothstep(225.,238.,r);
- float bRing=smoothstep(228.,241.,r)*(1.-smoothstep(276.,281.,r));
- float aRing=smoothstep(294.,300.,r)*(1.-smoothstep(338.,345.,r));
- float density=.27*cRing+.88*bRing+.76*aRing;
- float fine=.80+.12*sin(r*2.15)+.08*sin(r*7.1);
- float gap=1.-smoothstep(278.,283.,r)*(1.-smoothstep(294.,299.,r));
- float t=clamp((r-205.)/141.,0.,1.);
- vec3 cream=mix(vec3(.95,.86,.69),vec3(.62,.56,.47),t);
- cream*=.89+.12*sin(r*.24);
- float a=opacity*envelope*density*fine*gap;
- gl_FragColor=vec4(cream,a);
+ // Inner C, bright B and outer A rings are all pale ice/dust bands.
+ // Cassini's division remains DARK and visibly separates A from B.
+ float envelope=smoothstep(205.,210.,r)*(1.-smoothstep(341.,346.,r));
+ float cRing=1.-smoothstep(228.,240.,r);
+ float bRing=smoothstep(225.,240.,r)*(1.-smoothstep(272.,281.,r));
+ float aRing=smoothstep(295.,301.,r)*(1.-smoothstep(336.,346.,r));
+ float gap=1.-smoothstep(278.,282.,r)*(1.-smoothstep(294.,297.,r));
+ float density=.24*cRing+.81*bRing+.67*aRing;
+ float filaments=.84+.09*sin(r*1.42)+.07*sin(r*6.2)+.025*sin(r*15.6);
+ float outer=clamp((r-205.)/141.,0.,1.);
+ vec3 icyCream=mix(vec3(.80,.77,.69),vec3(.53,.51,.47),outer);
+ icyCream*=.91+.09*sin(r*.17);
+ float alpha=opacity*envelope*density*filaments*gap;
+ gl_FragColor=vec4(icyCream,clamp(alpha,0.,.92));
 }`;
 const RIM_FRAG =
   'varying vec3 vNormal;uniform vec3 tint;uniform float alpha;void main(){float edge=pow(1.-abs(dot(normalize(vNormal),vec3(0.,0.,1.))),3.);gl_FragColor=vec4(tint,alpha*edge*.48);}';
@@ -126,6 +133,11 @@ export function createDestinationVista(index) {
   );
   globe.name = 'destination-celestial-body';
   globe.position.set(0, 94, -920);
+  if (profile.type === 'rings') {
+    // Cassini camera geometry: tilt the entire planet with its equatorial plane.
+    // The rings are a child of the globe and stay aligned with its real equator.
+    globe.rotation.set(-0.44, 0, -0.14);
+  }
   globe.userData.visualOnly = true;
   root.add(globe);
   const rim = new T.Mesh(
@@ -145,7 +157,9 @@ export function createDestinationVista(index) {
   globe.add(rim);
 
   if (profile.type === 'rings') {
-    const tilt = new T.Euler(1.13, 0.21, -0.17);
+    // RingGeometry lies in local XY. Rotating it 90° into XZ gives a true
+    // equatorial plane; the parent's tilt makes the ellipse visible to camera.
+    const tilt = new T.Euler(Math.PI / 2, 0, 0);
     const rings = new T.Mesh(
       new T.RingGeometry(205, 346, 192, 6),
       new T.ShaderMaterial({
