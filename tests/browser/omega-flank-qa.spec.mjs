@@ -69,3 +69,85 @@ test('Saturn QA boss counters both real orbital flanks only after sustained expo
   }
   expect(errors).toEqual([]);
 });
+
+const center = (rect) => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+
+test('Saturn mobile thumb orbit closes RPG and triggers delayed Omega turn on both sides', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'Real mobile touch environment required');
+  test.setTimeout(180000);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const side of [-1, 1]) {
+      await page.goto('/__dynamic.html?sector=7&qaBoss=7');
+      await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+      await expect(page.locator('#bossHUD')).toBeVisible();
+      const drawer = page.locator('#strategyDrawer');
+      await drawer.locator('summary').tap();
+      await expect(drawer).toHaveAttribute('open');
+      const button = page.locator(side < 0 ? '#orbitLeft' : '#orbitRight');
+      await expect(button).toBeVisible();
+      const rect = await button.boundingBox();
+      expect(rect).not.toBeNull();
+      const pos = center(rect);
+      expect(
+        await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, pos),
+        'expanded RPG must not intercept the actual orbit button in Saturn battle',
+      ).toBe(side < 0 ? 'orbitLeft' : 'orbitRight');
+
+      const initialTarget = await page.evaluate(
+        () => window.fixture.game.snapshot().bossTargets[0].angle,
+      );
+      const touch = await page.context().newCDPSession(page);
+      try {
+        await touch.send('Input.dispatchTouchEvent', {
+          type: 'touchStart',
+          touchPoints: [{ ...pos, id: 8 }],
+        });
+        await expect(drawer).not.toHaveAttribute('open');
+        await page.evaluate(() => window.fixture.advance(1.96, { renderAfter: false }));
+      } finally {
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await touch.detach();
+      }
+      const flank = await page.evaluate(() => window.fixture.game.snapshot());
+      expect(flank.sector).toBe(8);
+      expect(flank.boss).toBe(true);
+      expect(flank.strategy.orbitAngle * side).toBeGreaterThan(1.5);
+      expect(flank.strategy.orbitAngle * side).toBeLessThan(1.7);
+      await page.evaluate(() => window.fixture.advance(0.8, { renderAfter: false }));
+      const waiting = await page.evaluate(() => window.fixture.game.snapshot());
+      expect(
+        Math.abs(wrap(waiting.bossTargets[0].angle - initialTarget)),
+        'Omega must remain stationary during lateral exposure window',
+      ).toBeLessThan(0.025);
+      await page.evaluate(() => window.fixture.advance(1.2));
+      const responding = await page.evaluate(() => window.fixture.game.snapshot());
+      expect(
+        wrap(responding.bossTargets[0].angle - waiting.bossTargets[0].angle) * side,
+        'actual touch orbit must trigger Omega hull counterturn',
+      ).toBeGreaterThan(0.08);
+      await expect(page.locator('#orbitLeft')).toBeVisible();
+      await expect(page.locator('#orbitRight')).toBeVisible();
+      await page.screenshot({
+        path: info.outputPath(
+          'omega-mobile-' +
+            (side < 0 ? 'left' : 'right') +
+            '-' +
+            viewport.width +
+            'x' +
+            viewport.height +
+            '.png',
+        ),
+      });
+    }
+  }
+  expect(errors).toEqual([]);
+});
