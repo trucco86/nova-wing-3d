@@ -5164,13 +5164,14 @@ export function createGame({
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
       // No stray carrier colliders in the quiet Saturn approach/arena.
       const kinds = ['satellite', 'carrier', 'debris'];
-      const kind = sectorIndex === 7
-        ? saturnHazard
-        : space
-          ? kinds[Math.floor(elapsed / 8) % kinds.length]
-          : Math.floor(elapsed / 8) % 2
-            ? 'gantry'
-            : 'reactor';
+      const kind =
+        sectorIndex === 7
+          ? saturnHazard
+          : space
+            ? kinds[Math.floor(elapsed / 8) % kinds.length]
+            : Math.floor(elapsed / 8) % 2
+              ? 'gantry'
+              : 'reactor';
       const o = createObstacle(kind);
       o.position.set(
         kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),

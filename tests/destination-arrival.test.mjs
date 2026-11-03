@@ -180,6 +180,12 @@ test('Saturn ring depth is clipped by the opaque globe, keeping the front arc vi
   assert.equal(ring.renderOrder, 2);
   assert.equal(ring.parent, planet, 'the ring tilts and scales with Saturn');
   const earthOrOther = createDestinationVista(6);
-  assert.equal(earthOrOther.getObjectByName('destination-celestial-body').material.transparent, true);
-  assert.equal(earthOrOther.getObjectByName('destination-celestial-body').material.depthWrite, false);
+  assert.equal(
+    earthOrOther.getObjectByName('destination-celestial-body').material.transparent,
+    true,
+  );
+  assert.equal(
+    earthOrOther.getObjectByName('destination-celestial-body').material.depthWrite,
+    false,
+  );
 });
