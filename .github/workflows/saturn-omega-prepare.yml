@@ -1,0 +1,37 @@
+name: Prepare Saturn NASA Omega QA
+on:
+  push:
+    branches: [feat/nasa-saturn-omega-hunt-20261102]
+    paths:
+      - .github/workflows/saturn-omega-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/nasa-saturn-omega-hunt-20261102
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format, build and validate all Saturn-Omega changes
+        run: |
+          npm run format
+          npm run build
+          npm run validate
+      - name: Commit checked-in HTML and deterministic source formatting
+        run: |
+          git add -- index.html src/destination-vista.js src/destination-arrival.js src/boss-combat-ai.js src/bosses.js src/game.js src/omega-hunt.js tests/destination-arrival.test.mjs tests/omega-hunt.test.mjs
+          git diff --cached --check
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): synchronize Cassini Saturn and Omega pursuit sources'
+            git push origin HEAD:feat/nasa-saturn-omega-hunt-20261102
+          fi
