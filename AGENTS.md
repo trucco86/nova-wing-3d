@@ -22,3 +22,12 @@ A autorização do usuário determina publicação e alterações remotas. Açõ
 ## Evidências
 
 `artifacts/validation.json` registra commit, digest da fonte, comandos e resultados. Relatórios são locais/artefatos da CI, não fonte de verdade editável para substituir testes. Quando um gate não puder rodar, descreva o bloqueio e deixe o status pendente. A proteção de merge depende das regras efetivamente configuradas no GitHub.
+
+## Internacionalização obrigatória (PT-BR / EN / ES)
+
+1. Todo texto visível ou acessível ao jogador (menus, HUD, gameplay, chefes, missões, configurações, QA, mensagens, diálogos, notificações, tooltips e atributos aria-label/title/placeholder/alt) deve respeitar o idioma selecionado, inclusive textos criados dinamicamente.
+2. Use PT-BR como texto canônico e registre as versões EN e ES no catálogo `src/i18n.js`. Não introduza rótulos em inglês diretamente no HTML/JS sem tradução; nomes próprios, códigos de tecla e marcas podem permanecer invariantes se documentados.
+3. Ao adicionar ou alterar uma string, inclua no mesmo PR as três traduções e testes para alternância de idioma em tempo de execução, persistência após navegação e textos dinâmicos. Valide também acessibilidade.
+4. QA deve inspecionar todas as telas afetadas em PT-BR, EN e ES, incluindo celular e desktop. Strings ausentes, mistura acidental de idiomas ou regressões de idioma são defeitos bloqueantes de release.
+5. O pipeline de CI deve ter verificação automatizada do catálogo e smoke tests por idioma. Enquanto esses gates não existirem ou não rodarem, registre a lacuna e não declare a internacionalização integralmente validada.
+6. Promova somente após evidências de DEV/HML e CI aprovadas. Não presuma que um PR aberto está em produção; confirme merge e deploy do SHA final.
