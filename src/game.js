@@ -59,7 +59,7 @@ import {
 } from './flight.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
-import { saturnPassageAt } from './saturn-ring-passage.js';
+import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt } from './mars-sandstorm.js';
@@ -5144,10 +5144,13 @@ export function createGame({
       dynamicFlight &&
       sectorIndex === 0 &&
       ['boost', 'atmosphere'].includes(orbitalLaunchSequence.snapshot().phase);
+    const saturnHazard =
+      sectorIndex === 7 ? saturnObstacleKindAt(elapsed, current().duration) : null;
     if (
       spawnEncounters &&
       !launchTransit &&
       !arrivalTransit &&
+      (sectorIndex !== 7 || saturnHazard !== null) &&
       !(dynamicFlight && sectorIndex === 1) &&
       reactorGridSeconds <= 0 &&
       obstacleCd <= 0 &&
@@ -5159,19 +5162,15 @@ export function createGame({
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunch || elapsed < current().duration * 0.56)
     ) {
       const space = dynamicFlight && (orbitalLaunch || !isGroundSector(current()));
-      // Ice hazards belong in the ring crossing, never in the quiet approach
-      // or the Couraçado Ômega arena. No increased obstacle budget.
-      const passage = sectorIndex === 7 ? saturnPassageAt(elapsed, current().duration) : null;
-      const kinds = passage
-        ? passage.meteor
-          ? ['ice-meteor', 'ice-meteor', 'carrier']
-          : ['carrier']
-        : ['satellite', 'carrier', 'debris'];
-      const kind = space
-        ? kinds[Math.floor(elapsed / 8) % kinds.length]
-        : Math.floor(elapsed / 8) % 2
-          ? 'gantry'
-          : 'reactor';
+      // No stray carrier colliders in the quiet Saturn approach/arena.
+      const kinds = ['satellite', 'carrier', 'debris'];
+      const kind = sectorIndex === 7
+        ? saturnHazard
+        : space
+          ? kinds[Math.floor(elapsed / 8) % kinds.length]
+          : Math.floor(elapsed / 8) % 2
+            ? 'gantry'
+            : 'reactor';
       const o = createObstacle(kind);
       o.position.set(
         kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
