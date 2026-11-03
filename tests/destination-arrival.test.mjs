@@ -189,3 +189,30 @@ test('Saturn ring depth is clipped by the opaque globe, keeping the front arc vi
     false,
   );
 });
+
+test('Cassini Saturn palette and real equatorial ring plane keep both arcs around the sphere', () => {
+  const saturn = createDestinationVista(7);
+  const globe = saturn.getObjectByName('destination-celestial-body');
+  const rings = saturn.getObjectByName('saturn-planetary-ring-system');
+  const bands = globe.children.filter((mesh) => mesh.name === 'saturn-astronomical-band');
+  assert.equal(globe.geometry.parameters.radius, 180);
+  assert.equal(rings.geometry.parameters.innerRadius, 205);
+  assert.equal(rings.geometry.parameters.outerRadius, 346);
+  assert.ok(Math.abs(rings.rotation.x - Math.PI / 2) < 0.000001);
+  assert.ok(Math.abs(globe.rotation.x) > 0.3, 'planet pole and rings share the camera tilt');
+  assert.equal(rings.parent, globe, 'orbiting disk must stay attached to Saturn');
+  assert.equal(bands.length, 3);
+  assert.ok(bands.every((band) => band.parent === globe && band.rotation.x === rings.rotation.x));
+  assert.equal(globe.material.transparent, false);
+  assert.equal(globe.material.depthWrite, true);
+  assert.equal(rings.material.depthTest, true, 'rear arc is occluded by globe');
+  assert.equal(rings.material.depthWrite, false);
+  assert.match(rings.material.fragmentShader, /Cassini|gap=1\.-smoothstep/);
+  assert.match(globe.material.fragmentShader, /Cassini natural-color reference/);
+  const profile = DESTINATION_PROFILES[7];
+  assert.equal(profile.colors[1], '#f3e5be');
+  assert.equal(profile.colors[0], '#aea08a');
+  const earthSafe = createDestinationVista(4);
+  assert.equal(earthSafe.getObjectByName('saturn-planetary-ring-system'), undefined);
+  assert.equal(earthSafe.getObjectByName('destination-celestial-body').rotation.x, 0);
+});
