@@ -47,3 +47,33 @@ export function chaseOmegaOffset(
     current + Math.sign(target - current) * Math.min(step, Math.abs(target - current));
   return { x: chase(previous.x, targetX), y: chase(previous.y, targetY) };
 }
+
+
+// Omega reacts to a pilot holding position behind its stern, not to every
+// orbital input. The rear must remain exposed before the boss notices it;
+// once alerted, it turns its own hull until it faces the pilot again.
+export const OMEGA_REAR_LOCK_SECONDS = 1.8;
+export function advanceOmegaRearResponse(
+  previous = { heading: 0, rearSeconds: 0, tracking: false },
+  desired,
+  dt,
+  phase = 1,
+  state = 'maneuver',
+) {
+  const heading = previous.heading ?? 0;
+  const rearSeconds = previous.rearSeconds ?? 0;
+  if (![heading, rearSeconds, desired, dt].every(Number.isFinite) || dt < 0 || rearSeconds < 0)
+    throw new RangeError('Invalid Omega rear response');
+  const angularGap = Math.abs(wrap(desired - heading));
+  const behind = angularGap >= (Math.PI * 2) / 3;
+  const observed = behind ? Math.min(OMEGA_REAR_LOCK_SECONDS, rearSeconds + dt) : 0;
+  const alerted = Boolean(previous.tracking) || observed >= OMEGA_REAR_LOCK_SECONDS;
+  if (!alerted) return { heading, rearSeconds: observed, tracking: false };
+  const nextHeading = chaseOmegaHeading(heading, desired, dt, phase, state);
+  const facingPilot = Math.abs(wrap(desired - nextHeading)) < 0.1;
+  return {
+    heading: nextHeading,
+    rearSeconds: facingPilot ? 0 : observed,
+    tracking: !facingPilot,
+  };
+}
