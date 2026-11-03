@@ -4561,6 +4561,9 @@ export function createGame({
           launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
           launchPose.z + meleePose.lunge,
         );
+        // Use the same center for both inverse world frame and final camera
+        // presentation, even while Omega moves: Saturn/rings stay stationary.
+        if (sectorIndex === 7) world.setOrbit(-orbitAngle, boss.position);
         boss.rotation.z = t.bank;
         // Each real drive valve powers its own reactor-exhaust shock. Breaking
         // that valve removes the plume and its physical attack on that flank.
