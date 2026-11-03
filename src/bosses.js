@@ -775,11 +775,11 @@ export function animateBossSignature(
     const angle = index === 0 ? pose.pincer : pose.broadside;
     if (left) {
       left.rotation.y = angle;
-      left.rotation.x = -pose.ram * 0.28;
+      if (index === 0) left.rotation.x = -pose.ram * 0.28;
     }
     if (right) {
       right.rotation.y = -angle;
-      right.rotation.x = -pose.ram * 0.28;
+      if (index === 0) right.rotation.x = -pose.ram * 0.28;
     }
   } else if (index === 1) {
     const tail = g.getObjectByName('signature-stingray-tail');
