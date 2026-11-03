@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.74 — RPG mobile fecha e órbita permanece acessível (QA)
+
+- O painel RPG preserva o botão de abertura/fechamento no topo; somente o conteúdo tático é expansível/rolável.
+- Removida a regra que ocultava os comandos ORBITAR quando o RPG estava aberto.
+- Iniciar órbita por toque também recolhe o RPG sem perder a pressão do botão. O início de um novo chefe sempre recolhe o painel.
+- Playwright: regressões nos viewports mobile 390x844, 320x568 e 844x390; preserva a órbita real da nave.
+- QA isolada, sem mudanças na arte do boss, mecânicas, saves ou produção.
+
 ## 1.27.73 — Ômega: giro após retaguarda sustentada, Saturno estático (QA)
 
 - Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.

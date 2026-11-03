@@ -32,7 +32,10 @@ test('mobile RPG always closes and does not hide or block either boss orbit cont
     await summary.tap();
     await expect(drawer).toHaveAttribute('open');
     const headerOpen = await summary.boundingBox();
-    expect(Math.abs(headerOpen.y - headerBefore.y), 'RPG toggle must not jump away on open').toBeLessThan(2);
+    expect(
+      Math.abs(headerOpen.y - headerBefore.y),
+      'RPG toggle must not jump away on open',
+    ).toBeLessThan(2);
     await expect(drawer.locator('.rpgDrawerBody')).toBeVisible();
 
     for (const id of ['orbitLeft', 'orbitRight']) {
@@ -72,7 +75,9 @@ test('mobile RPG always closes and does not hide or block either boss orbit cont
     await expect(page.locator('#orbitRight')).toBeVisible();
 
     await page.screenshot({
-      path: info.outputPath('rpg-orbit-available-' + viewport.width + 'x' + viewport.height + '.png'),
+      path: info.outputPath(
+        'rpg-orbit-available-' + viewport.width + 'x' + viewport.height + '.png',
+      ),
     });
   }
   expect(errors).toEqual([]);
