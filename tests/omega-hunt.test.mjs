@@ -8,6 +8,7 @@ import {
   chaseOmegaOffset,
   omegaAppendageAmplitude,
   OMEGA_REAR_LOCK_SECONDS,
+  OMEGA_FLANK_ENTRY_RADIANS,
 } from '../src/omega-hunt.js';
 import { withReactorOrbitPresentation } from '../src/reactor-orbit-presentation.js';
 import { chooseBossIntent, bossMeleePose, bossMeleeHit } from '../src/boss-combat-ai.js';
@@ -180,6 +181,55 @@ test('Omega rear timer resets on early escape and does not track the normal fron
   for (let i = 0; i < 40; i++) response = advanceOmegaRearResponse(response, Math.PI, 1 / 60);
   assert.equal(response.heading, 0, 're-approach must wait through a fresh full rear window');
   assert.throws(() => advanceOmegaRearResponse(response, Math.PI, -1), RangeError);
+});
+
+test('Omega turns toward either flank after the same sustained 1.8 second exposure', () => {
+  const dt = 1 / 60;
+  const lockFrames = Math.ceil(OMEGA_REAR_LOCK_SECONDS / dt);
+  assert.ok(OMEGA_FLANK_ENTRY_RADIANS < Math.PI / 2, '90-degree flanks trigger awareness');
+  for (const side of [-1, 1]) {
+    const pilotAngle = side * Math.PI / 2;
+    let response = { heading: 0, rearSeconds: 0, tracking: false };
+    for (let i = 0; i < lockFrames - 1; i++) {
+      response = advanceOmegaRearResponse(response, pilotAngle, dt, 2);
+      assert.equal(response.heading, 0, 'side is visible and boss does not snap');
+      assert.equal(response.tracking, false, 'each flank has the full damage window');
+    }
+    response = advanceOmegaRearResponse(response, pilotAngle, dt, 2);
+    assert.equal(response.tracking, true, 'held flank should trigger counterturn');
+    assert.ok(response.heading * side > 0, 'boss rotates toward the correct side');
+    assert.ok(Math.abs(response.heading) < 0.025, 'counterturn starts smoothly');
+    for (let i = 0; i < 480; i++)
+      response = advanceOmegaRearResponse(response, pilotAngle, dt, 2);
+    assert.ok(angleDiff(response.heading, pilotAngle) < 0.1, 'boss eventually faces the side');
+    assert.equal(response.tracking, false, 'tracking stops when facing the pilot');
+  }
+});
+
+test('Omega briefly flanked does not turn, and returning to the front resets awareness', () => {
+  let response = { heading: 0, rearSeconds: 0, tracking: false };
+  for (let i = 0; i < 70; i++)
+    response = advanceOmegaRearResponse(response, Math.PI / 2, 1 / 60);
+  assert.ok(response.rearSeconds > 1);
+  assert.equal(response.heading, 0);
+  response = advanceOmegaRearResponse(response, 0.25, 1 / 60);
+  assert.equal(response.rearSeconds, 0, 'frontal escape clears flank exposure');
+  assert.equal(response.tracking, false);
+  for (let i = 0; i < 70; i++)
+    response = advanceOmegaRearResponse(response, -Math.PI / 2, 1 / 60);
+  assert.equal(response.heading, 0, 'opposite flank requires a new full delay');
+  response = advanceOmegaRearResponse(response, -Math.PI / 2, 1 / 60);
+  assert.equal(response.tracking, false);
+});
+
+test('Omega does not pursue the pilot inside its forward 75-degree guard cone', () => {
+  let response = { heading: 0, rearSeconds: 0, tracking: false };
+  const front = OMEGA_FLANK_ENTRY_RADIANS - 0.05;
+  for (let i = 0; i < 360; i++)
+    response = advanceOmegaRearResponse(response, front, 1 / 60);
+  assert.equal(response.heading, 0);
+  assert.equal(response.rearSeconds, 0);
+  assert.equal(response.tracking, false);
 });
 
 test('Saturn stays motionless while ship/camera orbit and Omega independently rotates', () => {
