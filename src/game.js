@@ -4476,16 +4476,19 @@ export function createGame({
         const turn =
           ((keys.has('KeyL') ? 1 : 0) - (keys.has('KeyJ') ? 1 : 0) + orbitTouch) * dt * 0.8;
         orbitAngle = Math.atan2(Math.sin(orbitAngle + turn), Math.cos(orbitAngle + turn));
-        boss.rotation.y =
-          sectorIndex === 7
-            ? chaseOmegaHeading(
-                boss.rotation.y,
-                tactics().heading - orbitAngle,
-                dt,
-                bossCombat.phase,
-                tactics().state,
-              )
-            : tactics().heading - orbitAngle;
+        if (sectorIndex === 7) {
+          // Camera orbit shows the REAR immediately; Omega's own counter-yaw
+          // catches up over seconds instead of snapping to always face us.
+          // The delayed counter-turn preserves real flank/stern hit windows.
+          boss.userData.omegaCounterYaw = chaseOmegaHeading(
+            boss.userData.omegaCounterYaw ?? 0,
+            orbitAngle + tactics().heading,
+            dt,
+            bossCombat.phase,
+            tactics().state,
+          );
+          boss.rotation.y = boss.userData.omegaCounterYaw - orbitAngle;
+        } else boss.rotation.y = tactics().heading - orbitAngle;
         world.setOrbit(-orbitAngle, boss.position);
         // Re-express existing projectiles in the rotating arena frame. New shots retain their aim.
         if (turn)
