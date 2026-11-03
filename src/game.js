@@ -95,6 +95,7 @@ import { createRenderCostAudit } from './render-cost-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
+import { animateBossWeaponVfx, flashBossWeapon, BOSS_WEAPON_COLORS } from './boss-weapon-vfx.js';
 import { createHeroWeaponEffects } from './hero-weapon-vfx.js';
 import {
   difficultyProfile,
@@ -1656,10 +1657,12 @@ export function createGame({
     chargeGlow.visible = false;
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
+  const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
     materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    bossMaterials: bossShotMaterials,
     createHalo: () => halo(0xff4265, 2.6, 0.8),
     maxRetained: 96,
   });
@@ -2082,9 +2085,10 @@ export function createGame({
   function bossMuzzle(side = 0) {
     if (!boss) return null;
     boss.updateMatrixWorld(true);
-    return (
-      boss.getObjectByName(sourceHardpointName(side))?.getWorldPosition(new T.Vector3()) ?? null
-    );
+    const muzzle = boss.getObjectByName(sourceHardpointName(side));
+    if (!muzzle) return null;
+    flashBossWeapon(boss, side);
+    return muzzle.getWorldPosition(new T.Vector3());
   }
   function hostileMuzzles(e) {
     e.o.updateMatrixWorld(true);
@@ -2093,9 +2097,9 @@ export function createGame({
       .map((name) => e.o.getObjectByName(name)?.getWorldPosition(new T.Vector3()))
       .filter(Boolean);
   }
-  function bullet(pos, target, spell = '') {
-    if (hostile.length >= 180) return;
-    hostile.push(hostileShotPool.acquire(pos, target, spell));
+  function bullet(pos, target, spell = '', bossIndex = -1) {
+    if (hostile.length >= 180 || !pos) return;
+    hostile.push(hostileShotPool.acquire(pos, target, spell, bossIndex));
   }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
@@ -4680,7 +4684,7 @@ export function createGame({
               const destination = player.position
                 .clone()
                 .add(new T.Vector3(emission.target[0] * spread, emission.target[1] * spread, 0));
-              bullet(origin, destination, emission.element);
+              bullet(origin, destination, emission.element, sectorIndex);
               fired++;
             }
             // Keep one readable fallback shot from the only live weapon.
@@ -4688,7 +4692,7 @@ export function createGame({
             // the ONLY valid origin; no invisible fire from destroyed guns.
             if (!fired) {
               const survivingSide = generators.some(Boolean) ? budget.sides[0] : 0;
-              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire');
+              bullet(bossMuzzle(survivingSide), player.position.clone(), 'fire', sectorIndex);
             }
           } else {
             for (let n = 0; n < (dangerous ? 3 : 1); n++) {
@@ -4704,7 +4708,7 @@ export function createGame({
                 player.position,
                 dangerous ? 3 : 1,
               ))
-                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire');
+                bullet(origin, target, sectorIndex % 2 ? 'arcane' : 'fire', sectorIndex);
             }
           }
         }
@@ -4805,6 +4809,15 @@ export function createGame({
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= hostileDt;
+      if (!boss.userData.sabotage) {
+        const charging =
+          dynamicFlight && tactics().state === 'windup' && bossIntent?.kind === 'barrage'
+            ? 1
+            : !dynamicFlight || (dynamicFlight && tactics().state === 'maneuver')
+              ? 1 - Math.max(0, Math.min(1, bossCd / 0.9))
+              : 0;
+        animateBossWeaponVfx(boss, bossCombat.age, charging, hostileDt);
+      }
       $('attackWarning').setAttribute?.(
         'data-severity',
         radarPlan?.threatened === false ? 'info' : 'danger',
@@ -4882,7 +4895,7 @@ export function createGame({
                 targetIndex % program.sources.length !== sourceIndex
               )
                 continue;
-              bullet(origin, target, program.type);
+              bullet(origin, target, program.type, sectorIndex);
             }
           }
           bossCd = program.cadence * batteryPlan.cadenceMultiplier;
@@ -4894,7 +4907,7 @@ export function createGame({
             player.position,
             combatPhase,
           ))
-            bullet(origin, target, '');
+            bullet(origin, target, '', sectorIndex);
           bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
         }
       }

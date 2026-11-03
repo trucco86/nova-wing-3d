@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.76 — Boss Weapon Readability 1.0 · canhões e tiros legíveis (QA)
+
+- Dez identidades de cor para projéteis dos chefes, com rastros luminosos e cabeça maior, usando a mesma física, dano e velocidade de antes.
+- Bocais reais das duas baterias de cada chefe e do canhão emergencial: geometria mais marcada, aros, indicador de carga e flash a cada disparo real.
+- Destruir gerador desativa a arma; núcleo só acende depois que as duas baterias foram desativadas. Muzzle, flash e posição de tiro compartilham a mesma transformada física.
+- Contraste das famílias de projétil sem reescrever a IA nem perder a estratégia de flancos, radar e pontos fracos já aprovada.
+- Testes Node de bocais e pool, imagens reais de combate via Playwright desktop/mobile, especificação P1 por chefe; QA isolada, sem merge de produção.
+
 ## 1.27.75 — Ômega acompanha os dois flancos após exposição sustentada (QA)
 
 - Na fase 8, o Ômega passa a reconhecer o flanco esquerdo e o direito, além da retaguarda: após 1,8 s de permanência em ângulo igual ou superior a 75° da proa, gira apenas o casco gradualmente para encarar a nave.
