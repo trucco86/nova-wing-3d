@@ -1,18 +1,25 @@
 // Utility-driven boss combat. Tactics use the pilot's actual movement and
 // orbit rather than random bullets, and telegraph a dodgeable targeted attack.
 const MELEE = Object.freeze({
-  0: ['claw-swipe', 'tentacle-sweep'],
-  1: ['tentacle-grab', 'claw-swipe'],
-  2: ['drill-ram', 'claw-swipe'],
+  0: ['rok-pincer', 'rok-ram'],
+  1: ['stingray-scissor', 'stingray-sting'],
+  2: ['drill-ram', 'drill-crosscut'],
   3: ['reactor-vent', 'hammer-slam'],
   4: ['plasma-dive', 'solar-sweep'],
   5: ['ice-quake', 'cryo-pincer'],
   6: ['tentacle-grab', 'tentacle-sweep'],
   7: ['bite', 'claw-swipe', 'hammer-slam', 'tentacle-grab', 'tentacle-sweep'],
-  8: ['tentacle-sweep', 'tentacle-grab'],
+  8: ['orion-gravity-pulse', 'orion-iris-shear'],
   9: ['bite', 'claw-swipe', 'tentacle-grab'],
 });
 const LABEL = Object.freeze({
+  'rok-pincer': 'ROK · PINÇA DAS ASAS · SUBA DA ZONA VERMELHA',
+  'rok-ram': 'ROK · INVESTIDA FRONTAL · DESVIE DO EIXO',
+  'stingray-scissor': 'STINGRAY · TESOURA VERTICAL · ESQUIVE PELA LATERAL',
+  'stingray-sting': 'STINGRAY · FERRÃO · SAIA DA LINHA DE INVESTIDA',
+  'drill-crosscut': 'CARBIDE · BROCA TRANSVERSAL · MUDE DE ALTURA',
+  'orion-gravity-pulse': 'ÓRION · PULSO GRAVITACIONAL · AFASTE-SE DO CENTRO',
+  'orion-iris-shear': 'ÓRION · RAIO DA ÍRIS · SAIA DA FAIXA VERTICAL',
   'drill-ram': 'INVESTIDA DA BROCA · FUJA DO EIXO',
   'plasma-dive': 'FÊNIX · MERGULHO SOLAR · SAIA DO IMPACTO',
   'solar-sweep': 'FÊNIX · VARREDURA DAS ASAS · SUBA OU DESÇA',
@@ -27,6 +34,20 @@ const LABEL = Object.freeze({
   barrage: 'RAJADA · PROCURE A ABERTURA',
 });
 export const BOSS_MELEE = Object.freeze(Object.keys(MELEE).map(Number));
+
+// Shared collision and HUD footprint. The same dimensions drive both the
+// real hit predicate and the tactical radar: no imaginary green safe zones.
+const EXCLUSIVE_FOOTPRINTS = Object.freeze({
+  'rok-pincer': Object.freeze({ type: 'rect', x: 1.8, y: 0.6 }),
+  'rok-ram': Object.freeze({ type: 'ellipse', x: 1.12, y: 0.84 }),
+  'stingray-scissor': Object.freeze({ type: 'rect', x: 0.65, y: 1.55 }),
+  'stingray-sting': Object.freeze({ type: 'ellipse', x: 0.82, y: 1.16 }),
+  'drill-ram': Object.freeze({ type: 'ellipse', x: 1, y: 1 }),
+  'drill-crosscut': Object.freeze({ type: 'rect', x: 1.55, y: 0.65 }),
+  'orion-gravity-pulse': Object.freeze({ type: 'ellipse', x: 1.18, y: 1.18 }),
+  'orion-iris-shear': Object.freeze({ type: 'rect', x: 0.55, y: 1.9 }),
+});
+export const bossExclusiveFootprint = (kind) => EXCLUSIVE_FOOTPRINTS[kind] ?? null;
 
 export function chooseBossIntent({
   sector,
@@ -45,7 +66,19 @@ export function chooseBossIntent({
   let kind = 'barrage';
   if (options) {
     const flank = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.8;
-    if (sector === 9) {
+    if (sector === 0) {
+      // Rok's converging wing rig cuts a horizontal lane; frontal rushes
+      // instead reward a timely sidestep. The attack locks at windup.
+      kind = flank || cycle % 3 !== 0 ? 'rok-pincer' : 'rok-ram';
+    } else if (sector === 1) {
+      // Stingray punishes low flight with a vertical scissor, while climbing
+      // or boosting exposes the pilot to a narrower tail-sting dive.
+      kind = boosting || playerY >= 25 ? 'stingray-sting' : 'stingray-scissor';
+    } else if (sector === 8) {
+      // Orion alternates a circular gravity pulse and a narrow iris beam.
+      // The latter reacts to high flight and lateral orbit, not random rolls.
+      kind = flank || playerY >= 28 ? 'orion-iris-shear' : 'orion-gravity-pulse';
+    } else if (sector === 9) {
       // Marvin learns the pilot's approach at each *latched* attack window:
       // climbing or boosting attracts a tentacle intercept, a flank or heavy
       // mecha draws his claws, and a low/front approach risks his bite.
@@ -87,7 +120,7 @@ export function chooseBossIntent({
                 ? 'tentacle-sweep'
                 : 'bite';
     } else if (sector === 2)
-      kind = boosting ? 'drill-ram' : cycle % 3 === 0 ? 'claw-swipe' : 'drill-ram';
+      kind = boosting || (!flank && cycle % 3 !== 0) ? 'drill-ram' : 'drill-crosscut';
     else if (sector === 3)
       // A destroyed port/starboard engine can no longer vent its side.
       // When both are broken, the carrier can only fire a core barrage.
@@ -144,35 +177,53 @@ export function chooseBossIntent({
               : 'approach',
     warning: 2.2,
     dodgeRadius:
-      kind === 'reactor-vent' || kind === 'plasma-dive'
+      kind === 'orion-gravity-pulse'
         ? 13
-        : kind === 'solar-sweep' || kind === 'cryo-pincer'
+        : kind === 'rok-pincer' || kind === 'drill-crosscut'
           ? 12
-          : kind === 'ice-quake'
-            ? 13
-            : kind === 'tentacle-sweep'
-              ? 11
-              : kind === 'hammer-slam'
-                ? 14
-                : 9,
+          : kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram'
+            ? 11
+            : kind === 'reactor-vent' || kind === 'plasma-dive'
+              ? 13
+              : kind === 'solar-sweep' || kind === 'cryo-pincer'
+                ? 12
+                : kind === 'ice-quake'
+                  ? 13
+                  : kind === 'tentacle-sweep'
+                    ? 11
+                    : kind === 'hammer-slam'
+                      ? 14
+                      : 9,
     origin:
-      kind === 'reactor-vent'
-        ? ventSide < 0
-          ? 'port-drive-valve'
-          : 'starboard-drive-valve'
-        : kind === 'ice-quake'
-          ? 'colossus-impact-plates'
-          : kind === 'cryo-pincer'
-            ? 'colossus-piston-arms'
-            : kind === 'plasma-dive'
-              ? 'phoenix-solar-core'
-              : kind === 'solar-sweep'
-                ? 'phoenix-wings'
-                : kind === 'bite'
-                  ? 'jaw'
-                  : kind.startsWith('tentacle')
-                    ? 'tentacles'
-                    : 'claws',
+      kind === 'rok-pincer'
+        ? 'signature-rok-left'
+        : kind === 'rok-ram'
+          ? 'signature-rok-right'
+          : kind === 'stingray-scissor'
+            ? 'signature-stingray-tail'
+            : kind === 'stingray-sting'
+              ? 'signature-stingray-tail'
+              : kind === 'drill-crosscut' || kind === 'drill-ram'
+                ? 'signature-drill-bit'
+                : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear'
+                  ? 'signature-orion-lens'
+                  : kind === 'reactor-vent'
+                    ? ventSide < 0
+                      ? 'port-drive-valve'
+                      : 'starboard-drive-valve'
+                    : kind === 'ice-quake'
+                      ? 'colossus-impact-plates'
+                      : kind === 'cryo-pincer'
+                        ? 'colossus-piston-arms'
+                        : kind === 'plasma-dive'
+                          ? 'phoenix-solar-core'
+                          : kind === 'solar-sweep'
+                            ? 'phoenix-wings'
+                            : kind === 'bite'
+                              ? 'jaw'
+                              : kind.startsWith('tentacle')
+                                ? 'tentacles'
+                                : 'claws',
   });
 }
 
@@ -184,6 +235,14 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   const dx = Math.abs(x - intent.targetX);
   const dy = Math.abs(y - intent.targetY);
   const r = intent.dodgeRadius;
+  const footprint = bossExclusiveFootprint(intent.kind);
+  if (footprint) {
+    const radiusX = r * footprint.x;
+    const radiusY = r * footprint.y;
+    return footprint.type === 'rect'
+      ? dx < radiusX && dy < radiusY
+      : (dx / radiusX) ** 2 + (dy / radiusY) ** 2 < 1;
+  }
   if (intent.kind === 'reactor-vent') return dx < r * 1.35 && dy < r * 1.1;
   if (intent.kind === 'tentacle-sweep') return dy < r && dx < r * 2.4;
   if (intent.kind === 'solar-sweep') return dy < r * 0.68 && dx < r * 2.5;
@@ -208,13 +267,24 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
     exhaust:
-      intent.kind === 'reactor-vent' || intent.kind === 'plasma-dive' ? windup * 0.4 + strike : 0,
+      intent.kind === 'reactor-vent' ||
+      intent.kind === 'plasma-dive' ||
+      intent.kind === 'orion-gravity-pulse' ||
+      intent.kind === 'orion-iris-shear'
+        ? windup * 0.4 + strike
+        : 0,
     lunge:
       intent.kind === 'reactor-vent'
         ? 0
-        : strike * (['bite', 'drill-ram', 'plasma-dive'].includes(intent.kind) ? 72 : 48),
+        : strike *
+          (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
+            ? 72
+            : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
+      intent.kind === 'rok-pincer' ||
+      intent.kind === 'stingray-scissor' ||
+      intent.kind === 'drill-crosscut' ||
       intent.kind === 'claw-swipe' ||
       intent.kind === 'hammer-slam' ||
       intent.kind === 'solar-sweep' ||

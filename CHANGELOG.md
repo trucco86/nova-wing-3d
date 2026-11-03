@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.77 — Boss Tactical Identity 1.0 (QA)
+
+- Rok: convergência de duas asas e investida frontal, com fuga por altitude ou lateral.
+- Stingray: tesoura vertical das asas e ferrão, com animações específicas e rota segura pelo radar.
+- Carbide: broca frontal ou varredura transversal; a própria broca inclina na preparação.
+- Orion: pulso gravitacional circular ou faixa estreita da íris, selecionados conforme órbita/altitude.
+- Radar compartilha geometria de colisão real com os oito golpes exclusivos e origem física do modelo, preservando o alvo travado no windup e as janelas de contra-ataque.
+- Testes Node e Playwright para quatro lutas reais, sem alterar Devastador, Phoenix, Europa, Hydra, Ômega, Marvin ou as baterias da v1.27.76.
+- QA apenas; falta homologação visual e desempenho em iPhone físico.
+
 ## 1.27.76 — Boss Weapon Readability 1.0 · canhões e tiros legíveis (QA)
 
 - Dez identidades de cor para projéteis dos chefes, com rastros luminosos e cabeça maior, usando a mesma física, dano e velocidade de antes.

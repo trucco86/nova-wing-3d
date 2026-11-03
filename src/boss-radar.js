@@ -1,4 +1,4 @@
-import { bossMeleeHit } from './boss-combat-ai.js';
+import { bossMeleeHit, bossExclusiveFootprint } from './boss-combat-ai.js';
 
 // World-space X/Y tactical map. The danger footprint reuses the SAME hit
 // predicate as actual boss damage; a green marker must never claim a hit.
@@ -61,15 +61,18 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
     y: INSET + ((MAX_Y - clamp(py, MIN_Y, MAX_Y)) / (MAX_Y - MIN_Y)) * (100 - INSET * 2),
   });
   const r = intent.dodgeRadius;
+  const special = bossExclusiveFootprint(intent.kind);
   const rect =
+    special?.type === 'rect' ||
     intent.kind === 'tentacle-sweep' ||
     intent.kind === 'claw-swipe' ||
     intent.kind === 'solar-sweep' ||
     intent.kind === 'ice-quake' ||
     intent.kind === 'cryo-pincer' ||
     intent.kind === 'reactor-vent';
-  const halfX =
-    intent.kind === 'reactor-vent'
+  const halfX = special
+    ? r * special.x
+    : intent.kind === 'reactor-vent'
       ? r * 1.35
       : intent.kind === 'ice-quake'
         ? r * 2.5
@@ -86,8 +89,9 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
                   : intent.kind === 'tentacle-grab'
                     ? r / 0.7
                     : r;
-  const halfY =
-    intent.kind === 'reactor-vent'
+  const halfY = special
+    ? r * special.y
+    : intent.kind === 'reactor-vent'
       ? r * 1.1
       : intent.kind === 'ice-quake'
         ? r * 0.55
