@@ -67,7 +67,7 @@ export function advanceOmegaRearResponse(
   const angularGap = Math.abs(wrap(desired - heading));
   const behind = angularGap >= (Math.PI * 2) / 3;
   const observed = behind ? Math.min(OMEGA_REAR_LOCK_SECONDS, rearSeconds + dt) : 0;
-  const alerted = Boolean(previous.tracking) || observed >= OMEGA_REAR_LOCK_SECONDS;
+  const alerted = Boolean(previous.tracking) || observed + 1e-9 >= OMEGA_REAR_LOCK_SECONDS;
   if (!alerted) return { heading, rearSeconds: observed, tracking: false };
   const nextHeading = chaseOmegaHeading(heading, desired, dt, phase, state);
   const facingPilot = Math.abs(wrap(desired - nextHeading)) < 0.1;
