@@ -1,6 +1,12 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['01 / MISSÃO', '01 / MISSION', '01 / MISIÓN'],
+  ['02 / HANGAR', '02 / HANGAR', '02 / HANGAR'],
+  ['03 / CENTRAL DO PILOTO', '03 / PILOT HUB', '03 / CENTRO DEL PILOTO'],
+  ['PRESSIONE PARA COMEÇAR', 'PRESS START', 'PULSA PARA EMPEZAR'],
+  ['Pressione para começar, abrir menu', 'Press start, open menu', 'Pulsa para empezar, abrir menú'],
+
   ['PILOTOS', 'PILOTS', 'PILOTOS'],
   ['NAVES', 'SHIPS', 'NAVES'],
   ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],
