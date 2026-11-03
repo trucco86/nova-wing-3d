@@ -4809,6 +4809,15 @@ export function createGame({
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
       bossCd -= hostileDt;
+      if (!boss.userData.sabotage) {
+        const charging =
+          dynamicFlight && tactics().state === 'windup' && bossIntent?.kind === 'barrage'
+            ? 1
+            : !dynamicFlight || (dynamicFlight && tactics().state === 'maneuver')
+              ? 1 - Math.max(0, Math.min(1, bossCd / 0.9))
+              : 0;
+        animateBossWeaponVfx(boss, bossCombat.age, charging, hostileDt);
+      }
       $('attackWarning').setAttribute?.(
         'data-severity',
         radarPlan?.threatened === false ? 'info' : 'danger',
@@ -4898,7 +4907,7 @@ export function createGame({
             player.position,
             combatPhase,
           ))
-            bullet(origin, target, '');
+            bullet(origin, target, '', sectorIndex);
           bossCd = [2.3, 1.8, 1.25][combatPhase - 1];
         }
       }
