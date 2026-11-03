@@ -90,3 +90,27 @@ test('Saturn has deliberate near/far ice-ring geometry, no generic wreck landsca
   setDestinationLandmarkQuality(world, 'high');
   assert.equal(far.visible, true);
 });
+
+test('ring crossing densifies and clears fixed instanced ice without draw-call growth', () => {
+  const root = createDestinationLandmarks(7);
+  const near = root.getObjectByName('saturn-ring-ice-near');
+  const count = near.count;
+  const children = root.children.length;
+  const helper = new T.Object3D();
+  const scaleAt = (t) => {
+    updateDestinationLandmarks(root, t);
+    near.getMatrixAt(0, helper.matrix);
+    helper.matrix.decompose(helper.position, helper.quaternion, helper.scale);
+    return helper.scale.x;
+  };
+  const open = scaleAt(3);
+  const dense = scaleAt(40);
+  const gap = scaleAt(75);
+  const boss = scaleAt(90);
+  assert.ok(dense > open * 2, 'ice grows during the ring crossing');
+  assert.ok(gap < dense, 'Cassini division is a visible opening');
+  assert.ok(boss < dense * 0.5, 'boss arena stays clear');
+  assert.equal(near.count, count);
+  assert.equal(root.children.length, children);
+  assert.equal(scaleAt(90), boss, 'freeze/replay is deterministic');
+});

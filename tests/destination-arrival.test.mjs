@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
+import { saturnPassageAt, saturnObstacleKindAt } from '../src/saturn-ring-passage.js';
 import { SECTORS } from '../src/campaign.js';
 import { STAGE_JOURNEYS } from '../src/stage-journey.js';
 import { createWorld } from '../src/visuals.js';
@@ -131,4 +132,60 @@ test('Saturn stage 8 starts near its rings and reaches combat without an arbitra
   assert.ok(Math.abs(battle.globeScale - 1.4) < 1e-9);
   assert.equal(destinationArrivalAt(6, 8).combatReady, false, 'Neptune pacing unchanged');
   assert.equal(destinationArrivalAt(9, 8).combatReady, false, 'Titan pacing unchanged');
+});
+
+test('Saturn crossing is legible: orbit, icy rings, Cassini opening and Omega blockade', () => {
+  const timeline = [0, 14, 36, 72, 87];
+  const zones = timeline.map((t) => saturnPassageAt(t).zone);
+  assert.deepEqual(zones, ['approach', 'outer', 'ice-field', 'cassini-gap', 'blockade']);
+  const states = timeline.map((t) => saturnPassageAt(t));
+  assert.ok(states[2].density > states[1].density);
+  assert.ok(states[2].density > states[3].density);
+  assert.equal(states[2].meteor, true);
+  assert.equal(states[3].meteor, true);
+  assert.equal(states[4].meteor, false);
+  for (const t of timeline) {
+    assert.equal(destinationArrivalAt(7, t).label, saturnPassageAt(t).label);
+    assert.equal(destinationArrivalAt(7, t).haze, 0);
+  }
+  assert.equal(destinationArrivalAt(7, 87).combatReady, true);
+  assert.equal(destinationArrivalAt(6, 14).phase, 'entry');
+  assert.throws(() => saturnPassageAt(Number.NaN), RangeError);
+  assert.throws(() => saturnPassageAt(-5), RangeError);
+  assert.throws(() => saturnPassageAt(10, 6), RangeError);
+});
+
+test('Saturn hazard schedule leaves the approach and boss arena free of cargo obstacles', () => {
+  for (const t of [0, 5, 9, 16, 23, 80, 87, 98]) {
+    assert.equal(saturnObstacleKindAt(t), null, 'quiet Saturn corridor at ' + t);
+  }
+  assert.equal(saturnObstacleKindAt(25), 'ice-meteor');
+  assert.equal(saturnObstacleKindAt(36), 'ice-meteor');
+  assert.equal(saturnObstacleKindAt(48), 'ice-meteor');
+  assert.equal(saturnObstacleKindAt(56), 'ice-meteor');
+  assert.equal(saturnObstacleKindAt(64), 'carrier', 'one occasional combat cover ship');
+  assert.equal(saturnObstacleKindAt(72), 'ice-meteor');
+  assert.equal(saturnObstacleKindAt(72), saturnObstacleKindAt(72));
+  assert.throws(() => saturnObstacleKindAt(-1), RangeError);
+});
+
+test('Saturn ring depth is clipped by the opaque globe, keeping the front arc visible', () => {
+  const saturn = createDestinationVista(7);
+  const planet = saturn.getObjectByName('destination-celestial-body');
+  const ring = saturn.getObjectByName('saturn-planetary-ring-system');
+  assert.equal(planet.material.transparent, false);
+  assert.equal(planet.material.depthWrite, true);
+  assert.equal(ring.material.depthTest, true);
+  assert.equal(ring.material.depthWrite, false);
+  assert.equal(ring.renderOrder, 2);
+  assert.equal(ring.parent, planet, 'the ring tilts and scales with Saturn');
+  const earthOrOther = createDestinationVista(6);
+  assert.equal(
+    earthOrOther.getObjectByName('destination-celestial-body').material.transparent,
+    true,
+  );
+  assert.equal(
+    earthOrOther.getObjectByName('destination-celestial-body').material.depthWrite,
+    false,
+  );
 });
