@@ -15,6 +15,33 @@ verificado, **nao** um teste deterministico nem evidencia de que um bug existe.
 - P2: scroll exagerado, problemas de idiomas, comunicacao visual pouco clara.
 - P3: microinteracoes e oportunidades de polimento visual.
 
+## Compatibilidade Python (erro de instalacao de deepagents)
+
+O pacote `deepagents` exige **Python 3.11 ou superior**. No macOS,
+`python3` pode apontar para Python 3.9 ou 3.10, mesmo quando outra versao
+estiver instalada. Confira ambos:
+
+```sh
+python3 --version
+.venv/bin/python --version
+```
+
+Se forem anteriores a 3.11, use Python 3.12 (via Homebrew) e recrie **somente**
+o ambiente virtual:
+
+```sh
+brew install python@3.12
+rm -rf .venv
+python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -r qa-agent/requirements.txt
+```
+
+O comando `rm -rf .venv` exclui apenas o virtualenv desta pasta, nao apaga
+codigo do jogo, fontes ou saves. **Nao executar no diretorio errado.**
+Se `brew` nao estiver instalado, baixe o instalador macOS em
+https://www.python.org/downloads/.
+
 ## Executar localmente
 
 Requer Node.js 24, Python 3.12+, Chromium/Chrome disponivel para Stagehand
