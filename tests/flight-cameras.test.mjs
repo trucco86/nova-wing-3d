@@ -93,17 +93,14 @@ test('wide Europa portrait boss framing is opt-in, smooth and restores normal ca
   const pilot = new T.Vector3(0, 6, 9);
   rig.reset(pilot);
   rig.setMode('combat');
-  for (let i = 0; i < 90; i++)
-    rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
   assert.ok(camera.fov > 95 && camera.fov < 100, 'vertical boss camera exposes the wings');
-  for (let i = 0; i < 90; i++)
-    rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 });
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 });
   assert.ok(
     camera.fov > 77 && camera.fov < 81,
     'landscape and other stages keep normal combat lens',
   );
   rig.setMode('cockpit');
-  for (let i = 0; i < 90; i++)
-    rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
   assert.ok(camera.fov > 73 && camera.fov < 76, 'cockpit is never stretched');
 });
