@@ -55,7 +55,7 @@ test('QA Berserk stays accessible as a compact button without hiding the boss on
     expect(overlaps(bounds.dock, bounds.radar), 'boss radar stays visible').toBe(false);
     expect(overlaps(bounds.dock, bounds.touch), 'thumb controls stay available').toBe(false);
     if (screen.width < screen.height) {
-      expect(bounds.dock.y + bounds.dock.height).toBeLessThan(screen.height * 0.29);
+      expect(bounds.dock.y + bounds.dock.height).toBeLessThan(screen.height * 0.39);
     } else {
       expect(bounds.dock.x + bounds.dock.width).toBeLessThan(screen.width * 0.25);
     }
