@@ -10,6 +10,8 @@ import {
   europaBossMinimumCenterHeight,
   europaBossArenaHeight,
   europaBossFloorY,
+  europaBossArenaDepth,
+  EUROPA_ARENA_BOSS_DEPTH,
   EUROPA_ARENA_MIN_CENTER_TARGET,
   EUROPA_ARENA_FLOOR_Y,
   EUROPA_ARENA_FLOOR_GAP,
@@ -104,6 +106,10 @@ test('world hides Europa near-field props but retains remote icy ridges during b
 
 test('Europa floor clamp rejects invalid inputs and never lowers legitimate flight poses', () => {
   assert.equal(europaBossArenaHeight(60, 38), 60);
+  assert.equal(europaBossArenaDepth(-94), EUROPA_ARENA_BOSS_DEPTH);
+  assert.equal(europaBossArenaDepth(-680), -680);
+  assert.ok(9 - EUROPA_ARENA_BOSS_DEPTH < 38 * 6, 'slow arcane bolts still reach the pilot');
+  assert.throws(() => europaBossArenaDepth(Number.NaN), RangeError);
   assert.equal(europaBossArenaHeight(9, 38), 38);
   assert.throws(() => europaBossArenaHeight(Number.NaN, 32), RangeError);
   assert.throws(() => europaBossMinimumCenterHeight(null), RangeError);
