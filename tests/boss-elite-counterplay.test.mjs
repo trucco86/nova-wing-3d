@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { chooseBossIntent, bossExclusiveFootprint, bossMeleeHit, bossMeleePose } from '../src/boss-combat-ai.js';
 import { bossRadarPlan } from '../src/boss-radar.js';
