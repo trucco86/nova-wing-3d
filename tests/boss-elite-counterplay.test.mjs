@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SECTORS } from '../src/campaign.js';
-import { chooseBossIntent, bossExclusiveFootprint, bossMeleeHit, bossMeleePose } from '../src/boss-combat-ai.js';
+import {
+  chooseBossIntent,
+  bossExclusiveFootprint,
+  bossMeleeHit,
+  bossMeleePose,
+} from '../src/boss-combat-ai.js';
 import { bossRadarPlan } from '../src/boss-radar.js';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 

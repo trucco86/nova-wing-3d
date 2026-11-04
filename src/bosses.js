@@ -721,8 +721,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
       sweeper.name = 'marvin-rear-thruster-sweeper';
       sweeper.position.set(0, -0.18, 4.2);
       sweeper.add(box(2.0, 0.8, 2.5, dark));
-      for (const side of [-1, 1])
-        sweeper.add(box(0.5, 1.8, 2.7, hot, side * 1.9, 0, 0.4));
+      for (const side of [-1, 1]) sweeper.add(box(0.5, 1.8, 2.7, hot, side * 1.9, 0, 0.4));
       const plumeGeo = new T.CylinderGeometry(0.45, 1.3, 5, 8);
       plumeGeo.rotateX(Math.PI / 2);
       const plume = new T.Mesh(plumeGeo, hot);
@@ -894,7 +893,8 @@ export function animateBossSignature(
     }
     const sweeper = g.getObjectByName('marvin-rear-thruster-sweeper');
     if (sweeper) {
-      const rear = attackKind === 'marvin-rear-thruster-sweep' &&
+      const rear =
+        attackKind === 'marvin-rear-thruster-sweep' &&
         (attackState === 'windup' || attackState === 'attack');
       sweeper.rotation.z = rear ? (attackState === 'attack' ? 0.64 : -0.32) : 0;
       const plume = sweeper.getObjectByName('marvin-rear-thruster-plume');

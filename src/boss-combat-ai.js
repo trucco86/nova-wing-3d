@@ -103,7 +103,12 @@ export function chooseBossIntent({
       // Two actual heads trap a sustained flank on the third phase; raising
       // altitude escapes. Other angles preserve approved grabs/sweeps.
       kind =
-        p === 3 && generators.every(Boolean) && flank && !boosting && playerY < 28 && cycle % 3 === 0
+        p === 3 &&
+        generators.every(Boolean) &&
+        flank &&
+        !boosting &&
+        playerY < 28 &&
+        cycle % 3 === 0
           ? 'hydra-two-head-crossfire'
           : boosting || flank || playerY >= 28
             ? 'tentacle-grab'
@@ -173,11 +178,17 @@ export function chooseBossIntent({
         ? kind === 'bite'
           ? 'omega-mouth-cavity'
           : kind === 'claw-swipe'
-            ? orbit < 0 ? 'omega-port-talon' : 'omega-starboard-talon'
+            ? orbit < 0
+              ? 'omega-port-talon'
+              : 'omega-starboard-talon'
             : kind.startsWith('tentacle')
               ? generators[orbit < 0 ? 0 : 1] !== false
-                ? orbit < 0 ? 'omega-port-tentacle' : 'omega-starboard-tentacle'
-                : orbit < 0 ? 'omega-starboard-tentacle' : 'omega-port-tentacle'
+                ? orbit < 0
+                  ? 'omega-port-tentacle'
+                  : 'omega-starboard-tentacle'
+                : orbit < 0
+                  ? 'omega-starboard-tentacle'
+                  : 'omega-port-tentacle'
               : kind === 'hammer-slam'
                 ? 'signature-omega-left'
                 : null
@@ -205,70 +216,70 @@ export function chooseBossIntent({
       kind === 'marvin-rear-thruster-sweep'
         ? 'rear'
         : boosting && (sector === 6 || sector === 9)
-        ? 'boost'
-        : playerY >= 28 && (sector === 6 || sector === 9)
-          ? 'altitude'
-          : (sector === 6 || sector === 9) &&
-              Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.8
-            ? 'flank'
-            : robot && sector === 9
-              ? 'mecha'
-              : 'approach',
+          ? 'boost'
+          : playerY >= 28 && (sector === 6 || sector === 9)
+            ? 'altitude'
+            : (sector === 6 || sector === 9) &&
+                Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 0.8
+              ? 'flank'
+              : robot && sector === 9
+                ? 'mecha'
+                : 'approach',
     warning: 2.2,
     dodgeRadius:
       kind === 'orion-gravity-pulse'
         ? 13
         : kind === 'hydra-two-head-crossfire' || kind === 'marvin-rear-thruster-sweep'
           ? 12
-        : kind === 'rok-pincer' || kind === 'drill-crosscut'
-          ? 12
-          : kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram'
-            ? 11
-            : kind === 'reactor-vent' || kind === 'plasma-dive'
-              ? 13
-              : kind === 'solar-sweep' || kind === 'cryo-pincer'
-                ? 12
-                : kind === 'ice-quake'
-                  ? 13
-                  : kind === 'tentacle-sweep'
-                    ? 11
-                    : kind === 'hammer-slam'
-                      ? 14
-                      : 9,
+          : kind === 'rok-pincer' || kind === 'drill-crosscut'
+            ? 12
+            : kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram'
+              ? 11
+              : kind === 'reactor-vent' || kind === 'plasma-dive'
+                ? 13
+                : kind === 'solar-sweep' || kind === 'cryo-pincer'
+                  ? 12
+                  : kind === 'ice-quake'
+                    ? 13
+                    : kind === 'tentacle-sweep'
+                      ? 11
+                      : kind === 'hammer-slam'
+                        ? 14
+                        : 9,
     origin:
       kind === 'hydra-two-head-crossfire'
         ? 'hydra-crossfire-muzzle-0'
         : kind === 'marvin-rear-thruster-sweep'
           ? 'marvin-rear-thruster-sweeper'
           : kind === 'rok-pincer'
-        ? 'signature-rok-left'
-        : kind === 'rok-ram'
-          ? 'signature-rok-right'
-          : kind === 'stingray-scissor'
-            ? 'signature-stingray-tail'
-            : kind === 'stingray-sting'
-              ? 'signature-stingray-tail'
-              : kind === 'drill-crosscut' || kind === 'drill-ram'
-                ? 'signature-drill-bit'
-                : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear'
-                  ? 'signature-orion-lens'
-                  : kind === 'reactor-vent'
-                    ? ventSide < 0
-                      ? 'port-drive-valve'
-                      : 'starboard-drive-valve'
-                    : kind === 'ice-quake'
-                      ? 'colossus-impact-plates'
-                      : kind === 'cryo-pincer'
-                        ? 'colossus-piston-arms'
-                        : kind === 'plasma-dive'
-                          ? 'phoenix-solar-core'
-                          : kind === 'solar-sweep'
-                            ? 'phoenix-wings'
-                            : kind === 'bite'
-                              ? 'jaw'
-                              : kind.startsWith('tentacle')
-                                ? 'tentacles'
-                                : 'claws',
+            ? 'signature-rok-left'
+            : kind === 'rok-ram'
+              ? 'signature-rok-right'
+              : kind === 'stingray-scissor'
+                ? 'signature-stingray-tail'
+                : kind === 'stingray-sting'
+                  ? 'signature-stingray-tail'
+                  : kind === 'drill-crosscut' || kind === 'drill-ram'
+                    ? 'signature-drill-bit'
+                    : kind === 'orion-gravity-pulse' || kind === 'orion-iris-shear'
+                      ? 'signature-orion-lens'
+                      : kind === 'reactor-vent'
+                        ? ventSide < 0
+                          ? 'port-drive-valve'
+                          : 'starboard-drive-valve'
+                        : kind === 'ice-quake'
+                          ? 'colossus-impact-plates'
+                          : kind === 'cryo-pincer'
+                            ? 'colossus-piston-arms'
+                            : kind === 'plasma-dive'
+                              ? 'phoenix-solar-core'
+                              : kind === 'solar-sweep'
+                                ? 'phoenix-wings'
+                                : kind === 'bite'
+                                  ? 'jaw'
+                                  : kind.startsWith('tentacle')
+                                    ? 'tentacles'
+                                    : 'claws',
   });
 }
 
