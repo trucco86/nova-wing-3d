@@ -9436,3 +9436,78 @@ body:not(.developer-session) #qaBerserkDock {
     width: min(206px, calc(100vw - 106px));
   }
 }
+
+
+/* Combat HUD 1.27.82 — one message in the information rail at a time.
+   Emergency > boss attack > low shield > incoming > pickup > pilot radio.
+   Preserve full accessible text in DOM; never block controls/reticle. */
+body.in-mission #hudNotices {
+  gap: 2px;
+  max-height: min(15vh, 76px);
+}
+body.in-mission #hudNotices > #comms {
+  width: fit-content;
+  max-width: min(345px, 65vw);
+  padding: 3px 7px;
+  gap: 5px;
+  border-radius: 5px;
+}
+body.in-mission #hudNotices #comms img,
+body.in-mission #hudNotices #comms #commsPortrait {
+  max-width: 22px;
+  max-height: 22px;
+}
+body.in-mission #hudNotices #message {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: 100%;
+  line-height: 1.18;
+  font-size: 10px;
+}
+body.in-mission #hudNotices > #attackWarning {
+  max-width: min(390px, calc(100vw - 40px));
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.18;
+}
+body.in-mission #hudNotices > #attackWarning:empty {
+  display: none;
+}
+body.in-mission:has(#criticalWarning:not([hidden])) #hudNotices
+  > :is(#shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms),
+body.in-mission:has(#attackWarning:not(:empty):not([data-severity='info'])):not(:has(#criticalWarning:not([hidden]))) #hudNotices
+  > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms),
+body.in-mission:has(#shieldWarning:not([hidden])):not(:has(#criticalWarning:not([hidden]))) #hudNotices
+  > :is(#attackWarning[data-severity='info'], #bossIncoming, #pickupFlash, #comms),
+body.in-mission:has(#bossIncoming:not([hidden])) #hudNotices
+  > :is(#attackWarning[data-severity='info'], #pickupFlash, #comms),
+body.in-mission:has(#pickupFlash:not([hidden])) #hudNotices > #comms {
+  display: none !important;
+}
+@media (pointer: coarse) {
+  body.in-mission #hudNotices {
+    max-height: min(12vh, 52px);
+  }
+  body.in-mission #hudNotices > #comms {
+    max-width: 100%;
+    padding: 2px 6px;
+  }
+  body.in-mission #hudNotices #message {
+    font-size: 9px;
+    -webkit-line-clamp: 2;
+  }
+  body.in-mission #hudNotices > #attackWarning {
+    max-width: 100%;
+    padding: 3px 6px;
+    -webkit-line-clamp: 2;
+  }
+}
+/* Boss combat prioritizes vital information; pet inventory remains in the
+   hangar and between encounters instead of overlaying weak points. */
+body.in-mission:has(#bossHUD:not([hidden])) #petCareHud {
+  display: none !important;
+}
