@@ -67,7 +67,11 @@ import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
-import { europaBossMinimumCenterHeight, europaBossArenaHeight, europaBossFloorY } from './europa-boss-arena.js';
+import {
+  europaBossMinimumCenterHeight,
+  europaBossArenaHeight,
+  europaBossFloorY,
+} from './europa-boss-arena.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   SCATTER_CADENCE_FACTOR,

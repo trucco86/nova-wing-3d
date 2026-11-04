@@ -14,10 +14,8 @@ export const EUROPA_ARENA_MIN_CENTER_TARGET = 7;
 
 export function europaBossFloorY(boss) {
   const originalMinimum = europaBossMinimumCenterHeight(boss);
-  return EUROPA_ARENA_FLOOR_Y -
-    Math.max(0, originalMinimum - EUROPA_ARENA_MIN_CENTER_TARGET);
+  return EUROPA_ARENA_FLOOR_Y - Math.max(0, originalMinimum - EUROPA_ARENA_MIN_CENTER_TARGET);
 }
-
 
 export function europaBossMinimumCenterHeight(
   boss,
