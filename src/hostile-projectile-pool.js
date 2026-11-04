@@ -113,7 +113,10 @@ export function createHostileProjectilePool({
     }
     shot.tether.visible = true;
     shot.tether.position.copy(shot.launchOrigin).addScaledVector(tetherDirection, 0.5);
-    shot.tether.quaternion.setFromUnitVectors(worldUp, tetherDirection.multiplyScalar(1 / distance));
+    shot.tether.quaternion.setFromUnitVectors(
+      worldUp,
+      tetherDirection.multiplyScalar(1 / distance),
+    );
     shot.tether.scale.set(1, distance, 1);
   }
 

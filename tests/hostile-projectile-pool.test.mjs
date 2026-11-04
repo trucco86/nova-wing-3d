@@ -163,8 +163,12 @@ test('physical boss muzzle tether follows the actual projectile only during laun
   const bossMaterials = [new T.MeshBasicMaterial({ color: '#66bbff' })];
   const haloMat = new T.SpriteMaterial({ color: '#ffffff' });
   const pool = createHostileProjectilePool({
-    scene, geometry, materials, bossMaterials,
-    createHalo: () => new T.Sprite(haloMat), maxRetained: 1,
+    scene,
+    geometry,
+    materials,
+    bossMaterials,
+    createHalo: () => new T.Sprite(haloMat),
+    maxRetained: 1,
   });
   try {
     const origin = new T.Vector3(-31, 12, -180);

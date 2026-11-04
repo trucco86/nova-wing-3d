@@ -84,7 +84,11 @@ test('gun charge and muzzle flash halos are anchored to the live cannon and neve
       const burst = barrel.getObjectByName('boss-weapon-muzzle-burst');
       assert.ok(halo?.isSprite && burst?.isSprite);
       barrel.updateMatrixWorld(true);
-      assert.ok(halo.getWorldPosition(new T.Vector3()).distanceTo(muzzle.getWorldPosition(new T.Vector3())) < 1);
+      assert.ok(
+        halo
+          .getWorldPosition(new T.Vector3())
+          .distanceTo(muzzle.getWorldPosition(new T.Vector3())) < 1,
+      );
       animateBossWeaponVfx(boss, 2, 0.1, 0.05);
       assert.equal(halo.visible, false, 'glow requires true charging state');
       animateBossWeaponVfx(boss, 2.1, 0.8, 0.05);

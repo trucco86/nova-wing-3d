@@ -163,8 +163,7 @@ export function animateBossWeaponVfx(g, time, charge = 0, dt = 0) {
     rig.charge.scale.setScalar(rig.scale * (0.65 + preload * 0.85));
     rig.charge.visible = active;
     rig.glow.visible = active && preload > 0.15;
-    if (rig.glow.visible)
-      rig.glow.scale.setScalar(rig.scale * (8 + preload * 9));
+    if (rig.glow.visible) rig.glow.scale.setScalar(rig.scale * (8 + preload * 9));
     rig.flashAge = Math.max(0, rig.flashAge - dt);
     rig.flash.visible = active && rig.flashAge > 0;
     rig.burst.visible = rig.flash.visible;

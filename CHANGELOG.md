@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.78 — Boss Shot Readability 2.0 (QA)
+
+- Canhões de dez chefes com boca física de alto contraste, halo de preparação proporcional à carga e flash luminoso quando o canhão dispara.
+- Projéteis de chefes agora exibem ligação luminosa temporária de até 0,42 segundo entre o ponto real de saída e o projétil; conexão reutilizada com pooling e removida depois do disparo.
+- Materiais, projéteis, colisões, dano, homing, velocidade, limite de projéteis e cadência preservados. Baterias destruídas não brilham nem disparam.
+- Testes unitários validam alinhamento de bocal, flash, reciclagem de projéteis e duração do efeito. Playwright captura tiros reais de Europa e Ômega.
+- Avaliação visual no iPhone físico e FPS Alto/Médio permanecem obrigatórios antes de produção.
+
 ## 1.27.77 — Boss Tactical Identity 1.0 (QA)
 
 - Rok: convergência de duas asas e investida frontal, com fuga por altitude ou lateral.
