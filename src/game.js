@@ -5107,6 +5107,9 @@ export function createGame({
           1 - Math.exp(-2 * hostileDt),
         );
       b.o.position.addScaledVector(b.v, hostileDt * (stasis > 0 ? 0.3 : 1));
+      // Real muzzle-to-shot ribbon lasts only through the first combat beats.
+      // This is presentation-only; swept collision still uses the same positions.
+      hostileShotPool.advanceVisual(b);
       b.life -= hostileDt;
       if (b.life > 0 && projectileOccluded(from, b.o.position)) {
         b.life = 0;
