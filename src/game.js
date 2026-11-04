@@ -5107,6 +5107,9 @@ export function createGame({
           1 - Math.exp(-2 * hostileDt),
         );
       b.o.position.addScaledVector(b.v, hostileDt * (stasis > 0 ? 0.3 : 1));
+      // Real muzzle-to-shot ribbon lasts only through the first combat beats.
+      // This is presentation-only; swept collision still uses the same positions.
+      hostileShotPool.advanceVisual(b);
       b.life -= hostileDt;
       if (b.life > 0 && projectileOccluded(from, b.o.position)) {
         b.life = 0;
@@ -5627,6 +5630,17 @@ export function createGame({
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      // Snapshot-only evidence lets browser QA verify a visible effect without
+      // changing the real projectile's collision, timing or position.
+      bossShotLinks: hostile
+        .filter((b) => b.tether?.visible)
+        .slice(0, 8)
+        .map((b) => ({
+          bossIndex: b.bossIndex,
+          origin: b.launchOrigin.toArray(),
+          projectile: b.o.position.toArray(),
+          length: b.tether.scale.y,
+        })),
       hostileProjectilePool: hostileShotPool.stats(),
       particlePool: particlePool.stats(),
       cameraMode,
