@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.80 — Europa Boss Clear Arena · QA
+
+- Colossus da fase 6 mantém a geometria inteira acima do **piso glacial rebaixado**, com margem dinâmica e chefe enquadrado no centro da tela, evitando tanto o atravessamento do gelo quanto a aparição do modelo acima da câmera em mobile.
+- Os 60 cristais próximos do corredor deixam de cruzar a frente do chefe no combate; glaciares e atividade de fundo são afastados sem perder qualidade visual.
+- Arena mais limpa para mira, canhões, radar, tiros, pontos fracos e órbita 360; desativa nave-mãe genérica apenas em Europa.
+- Testes unitários de clearance, cenário preservado e retorno de cena, além de Playwright real de fase 6 e regressão de outros chefes em mobile/desktop.
+- Sem mudanças na física dos disparos ou progressão; somente QA e inspeção física pendente.
+
 ## 1.27.79 — Elite Boss Counterplay 1.0 (QA)
 
 - Europa: a onda de impacto agora prepara e projeta seis estacas visuais de gelo, enquanto a pinça criogênica mantém seu próprio padrão de esquiva e colisão.

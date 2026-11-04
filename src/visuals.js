@@ -1505,6 +1505,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationEscape = null;
   let destinationLandmarks = null;
   let carrierGrandHallActive = false;
+  let europaBossArenaActive = false;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
@@ -1561,6 +1562,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     for (const child of sectorScenery.children) {
       if (child === destinationVista || child === destinationEscape || child === mothership)
         continue;
+      // The ice corridor is decorative, not a boss hazard. Arrival updates
+      // must never restore foreground objects while Colossus is fighting.
+      if (europaBossArenaActive && child.userData.europaForeground) {
+        child.visible = false;
+        continue;
+      }
       // Record original visibility once. On revealing a destination, restore it
       // exactly once rather than re-enabling props hidden by gameplay, LOD or
       // the authored encounter timeline on every frame.
@@ -1659,6 +1666,37 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
       }
     },
+    setEuropaBossArena(active = false, floorY = -7) {
+      europaBossArenaActive = dynamicFlight && sceneryTheme === 'ice' && !!active;
+      if (europaBossArenaActive && (!Number.isFinite(floorY) || floorY > -7))
+        throw new RangeError('Invalid Europa arena basin depth');
+      // Move only the render floor, not the boss, camera, targets or orbit.
+      ground.position.y = europaBossArenaActive ? floorY : -7;
+      const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
+      if (crystals) crystals.visible = !europaBossArenaActive;
+      // Preserve the glacier skyline, but move its near spires to the second
+      // and third planes so none crosses the camera-to-boss sightline.
+      if (destinationLandmarks) destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
+      const ambient = sectorScenery.getObjectByName('world-living-depth-ice');
+      if (ambient) ambient.position.z = europaBossArenaActive ? -280 : 0;
+      if (europaBossArenaActive) carrier.visible = false;
+      return {
+        active: europaBossArenaActive,
+        foregroundHidden: !crystals || !crystals.visible,
+        backdropDepth: destinationLandmarks?.position.z ?? 0,
+        floorY: ground.position.y,
+      };
+    },
+    europaBossArenaState() {
+      const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
+      return {
+        active: europaBossArenaActive,
+        foregroundHidden: !crystals || !crystals.visible,
+        backdropDepth: destinationLandmarks?.position.z ?? 0,
+        carrierHidden: !carrier.visible,
+        floorY: ground.position.y,
+      };
+    },
     showCarrierForBoss() {
       // Sector 4 has its own continuous Devastador, not the generic
       // faraway carrier originally used in the first boss warning.
@@ -1749,6 +1787,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     setSector(sector, sectorIndex = -1) {
       carrierGrandHallActive = false;
+      europaBossArenaActive = false;
       clearScenery();
       destinationVista = null;
       destinationEscape = null;
@@ -1851,6 +1890,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
       if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {
+        const iceField = sceneryTheme === 'ice' ? new T.Group() : null;
+        if (iceField) {
+          iceField.name = 'europa-near-field-crystals';
+          iceField.userData.europaForeground = true;
+          sectorScenery.add(iceField);
+        }
         const geo =
           sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
         for (let i = 0; i < 60; i++) {
@@ -1862,7 +1907,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           );
           o.scale.setScalar(rnd(0.5, 2.5));
           o.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
-          sectorScenery.add(o);
+          if (iceField) iceField.add(o);
+          else sectorScenery.add(o);
         }
       }
       if (sceneryTheme === 'station' && dynamicFlight) {
