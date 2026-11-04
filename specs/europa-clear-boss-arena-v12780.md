@@ -5,7 +5,7 @@
 - Sessenta cristais do corredor, além de elementos do cenário próximo, continuam se deslocando no mundo durante o combate. Eles podem surgir entre câmera, mira, boss, armas e pontos fracos. A limpeza anterior removia apenas os obstáculos com colisão, não os objetos visuais.
 
 ## Solução
-1. Medir uma vez na criação da luta o bounding box 3D do Colossus e calcular a altitude mínima do centro que deixa **12 unidades de margem** sobre o gelo. Aplicar o mesmo limite a cada fase do movimento (entrada, windup, attack, recovery, 360°).
+1. Medir uma vez na criação da luta o bounding box 3D do Colossus e calcular a altitude mínima do centro que deixa **18 unidades de margem** sobre o gelo. Aplicar o mesmo limite a cada fase do movimento (entrada, windup, attack, recovery, 360°).
 2. Agrupar os sessenta cristais dinâmicos de Europa em `europa-near-field-crystals`, desativando apenas esse grupo na luta. Não remover nem modificar elementos visuais da aproximação.
 3. Mover a vegetação glacial/landmarks e a vida ambiente de segunda/terceira camada **280 unidades para trás** no início da arena, mantendo identidade visual e sensação de escala, sem volumes altos no primeiro plano.
 4. Ocultar a nave-mãe genérica apenas na arena de Europa e evitar que atualizações de chegada reabilitem cristais durante a luta.
