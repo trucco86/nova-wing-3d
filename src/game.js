@@ -4620,8 +4620,9 @@ export function createGame({
         // The tactical arrow points to the actual animated signature weapon
         // when it exists, instead of always pretending the attack comes from
         // the center of the boss. This does not change collision or targeting.
-        const signatureOrigin = bossIntent?.origin
-          ? boss.getObjectByName(bossIntent.origin)?.getWorldPosition(new T.Vector3())
+        const signatureSource = bossIntent?.originMesh ?? bossIntent?.origin;
+        const signatureOrigin = signatureSource
+          ? boss.getObjectByName(signatureSource)?.getWorldPosition(new T.Vector3())
           : null;
         radarPlan =
           ['windup', 'attack'].includes(t.state) && bossIntent
