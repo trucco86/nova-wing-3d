@@ -237,7 +237,7 @@ export function chooseBossIntent({
                       : 9,
     origin:
       kind === 'hydra-two-head-crossfire'
-        ? 'signature-hydra-head-0'
+        ? 'hydra-crossfire-muzzle-0'
         : kind === 'marvin-rear-thruster-sweep'
           ? 'marvin-rear-thruster-sweeper'
           : kind === 'rok-pincer'
