@@ -1,4 +1,5 @@
 deepagents
 langchain-stagehand
 stagehand
-langchain-openai
+langchain-ollama
+ollama
