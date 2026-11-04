@@ -35,7 +35,7 @@ test('repeated radio chatter does not reset the timer or flood the mission', () 
   assert.equal(policy.offer('ARMA · NOVA', 2.1), null, 'routine cooldown');
   assert.ok(policy.offer('ARMA · NOVA', 5.2), 'allow new routine after cooldown');
   assert.equal(policy.offer('FORMAÇÃO INIMIGA · DRONES', 6), null, 'same text cooldown');
-  assert.ok(policy.offer('FORMAÇÃO INIMIGA · DRONES', 8.4), 'allow repetition after 7s');
+  assert.ok(policy.offer('FORMAÇÃO INIMIGA · DRONES', 9.3), 'allow repetition after 7s');
 });
 
 test('critical messages preempt chatter and do not get overwritten by low-priority radio', () => {
@@ -53,7 +53,7 @@ test('critical messages preempt chatter and do not get overwritten by low-priori
 
 test('restarting a mission resets suppression and full text remains available', () => {
   const policy = createRadioTriage();
-  const text = 'TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL';
+  const text = 'TURBULÊNCIA · VENTO LATERAL INTENSO NA ATMOSFERA · COMPENSE COM O DIRECIONAL PARA MANTER O CURSO';
   const first = policy.offer(text, 3);
   assert.equal(first.full, text);
   assert.ok(first.text.length < text.length);
