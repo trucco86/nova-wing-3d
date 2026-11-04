@@ -5,7 +5,7 @@ import * as T from 'three';
 // its legs, weapon chassis and lower armor straight through the terrain.
 // Compute its bound only once on spawn, never every frame on mobile.
 export const EUROPA_ARENA_FLOOR_Y = -7;
-export const EUROPA_ARENA_FLOOR_GAP = 12;
+export const EUROPA_ARENA_FLOOR_GAP = 18;
 export const EUROPA_ARENA_BACKDROP_DEPTH = -280;
 
 export function europaBossMinimumCenterHeight(
