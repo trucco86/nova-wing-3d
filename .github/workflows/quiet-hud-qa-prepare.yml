@@ -1,0 +1,61 @@
+name: One-shot Quiet Combat HUD QA preparation
+on:
+  push:
+    branches: [feat/hud-priority-message-triage-20261104]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  validate-and-capture:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.82
+      - name: Author QA release notes
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const s = readFileSync('CHANGELOG.md', 'utf8');
+          const old = '## 1.27.82 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const replacement = '## 1.27.82 — Quiet Combat HUD · QA\n\n- Avisos críticos prevalecem sobre mensagens secundárias e rádio, com apenas uma prioridade visível no topo da tela.\n- Comunicação compacta e menos frequente: rádio 1,65 s, instrução 2,1 s, perigo 2,5 s; repetições e notificações de contexto são limitadas.\n- Texto original preservado para acessibilidade; o piloto continua identificado, mensagens longas são resumidas sem perder a ação.\n- Boss State reduzido a uma linha, itens de pets fora da arena enquanto o chefe está presente.\n- Radar, HP, controls, mira, física e chefes permanecem inalterados.\n- Testes unitários de arbitragem e Playwright responsive; homologação real no iPhone pendente.';
+          if (!s.includes(old)) throw Error('Missing release placeholder');
+          writeFileSync('CHANGELOG.md', s.replace(old, replacement));
+          writeFileSync('releases/v1.27.82.md', '## Nova Wing 3D 1.27.82 — Quiet Combat HUD · QA\n\n' +
+            '- Uma mensagem crítica por vez, com prioridade sobre rádio e itens.\n' +
+            '- Mensagens mais curtas e menos repetitivas; duração proporcional à urgência.\n' +
+            '- Barra do chefe e alvo livres de inventário e textos longos.\n' +
+            '- Mantenha o texto completo acessível a leitores de tela.\n' +
+            '- Sem mudanças na IA, no dano, nas hitboxes ou nos controles.\n\n' +
+            '**Somente QA; sem publicação em produção.**\n');
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit validated QA release build
+        run: |
+          git config user.name 'nova-wing-qa-bot'
+          git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.82.md src/hud-message-policy.js src/game.js src/styles.css tests/hud-message-policy.test.mjs tests/browser/hud-message-triage.spec.mjs specs/hud-quiet-combat-v12782.md
+          git commit -m 'chore(release): prepare Quiet Combat HUD QA v1.27.82'
+          git push origin HEAD:feat/hud-priority-message-triage-20261104
+      - run: npx playwright install --with-deps chromium
+      - name: Verify responsive UI and first real boss fight
+        run: npx playwright test tests/browser/hud-message-triage.spec.mjs tests/browser/europa-clear-arena.spec.mjs --project=desktop --project=mobile
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: quiet-hud-qa-browser-evidence
+          path: |
+            test-results/**/*.png
+            test-results/**/*.md
+          retention-days: 7
+          if-no-files-found: warn
