@@ -34,7 +34,7 @@ for (const viewport of [
           getComputedStyle(element).visibility !== 'hidden';
         // Simulate simultaneous real alerts: text/ARIA must survive arbitration.
         document.body.classList.remove('stage-intro');
-      $('bossIncoming').hidden = true;
+        $('bossIncoming').hidden = true;
         $('comms').classList.add('active');
         $('message').textContent = 'BOB · FORMATO DE RÁDIO MAIS CURTO';
         $('attackWarning').textContent = '⚠ HIDRA · FOGO CRUZADO · SIGA A ZONA VERDE DO RADAR';
