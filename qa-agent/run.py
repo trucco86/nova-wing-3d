@@ -1,99 +1,133 @@
-"""POC opt-in: exploracao visual do Nova Wing por Deep Agents + Stagehand.
+"""POC QA Nova Wing: Deep Agents + Stagehand + Ollama, 100% inference local.
 
-Este arquivo nao altera o jogo, nao publica releases e nao executa em CI.
+Nenhuma API externa de modelos e usada. Nao faz deploy nem altera o jogo.
 """
 import argparse
 import asyncio
 from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
 import time
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
+OLLAMA_URL = "http://127.0.0.1:11434"
 SCENARIOS = {
-    "menu-desktop": """
-Navegue pela capa, pressione PRESS START, visite o hangar e suas abas
-(PILOTOS, NAVES e ARSENAL), volte ao menu e explore as opcoes.
-Verifique elementos encobertos, scroll excessivo, botoes sem resposta e
-possiveis textos misturados. Nao compre itens nem altere arquivos.
-""",
-    "mobile-hud": """
-Use o viewport horizontal de celular. Inicie uma partida como visitante,
-se possivel, e avalie botoes de TIRO, BOOST, ROBÔ e pausa.
-Verifique se os controles ficam acessiveis, se o HUD encobre a area
-central de jogo e se menus permanecem utilizaveis sem scroll excessivo.
-Se um passo nao for acessivel, registre o bloqueio sem inventar resultados.
-""",
-    "rpg-orbit": """
-Explore a opcao de QA/testar fases SOMENTE se aparecer no menu local.
-Se disponivel, escolha um encontro com chefe, abra o drawer RPG e
-tente fecha-lo para liberar os botoes de orbitar.
-Verifique visibilidade e interacao de orbitLeft e orbitRight.
-Nao declare validada a rotacao do chefe ou seus pontos fracos apenas por
-uma captura do canvas: isso exige instrumentacao/telemetria especifica.
-Se nao puder chegar ao combate, registre como NAO TESTADO.
-""",
+    "menu-desktop": (
+        "Abra PRESS START, visite HANGAR e suas abas PILOTOS/NAVES/ARSENAL, "
+        "volte ao menu e explore OPCOES. Procure botoes inativos, scroll "
+        "excessivo e textos misturados. Nao compre nem modifique nada."
+    ),
+    "mobile-hud": (
+        "No viewport horizontal de celular, inicie como visitante, se "
+        "possivel. Verifique visibilidade e clique de TIRO, BOOST, ROBO, "
+        "pausa, menu e HUD. Busque sobreposicoes e scroll indesejado."
+    ),
+    "rpg-orbit": (
+        "Se TESTAR FASES/QA estiver disponivel no menu local, abra uma batalha "
+        "contra chefe. Teste abrir e fechar RPG, e se ORBITAR fica novamente "
+        "acessivel. Se nao houver o cenario, registre NAO TESTADO; nao "
+        "invente que fisica ou rotacao 3D do chefe foram verificadas."
+    ),
 }
-
-SYSTEM_PROMPT = """
-Voce e um explorador de QA para Nova Wing 3D, em ambiente local.
-Sua unica autorizacao e navegar no aplicativo pelo browser Stagehand.
-Nao altere arquivos, repositorio, preferencias externas, releases ou
-credenciais. Nao abra sites externos, nao use login real e nao tente
-efetuar pagamentos. Nao execute shell ou scripts locais.
-Use screenshots para inspecionar canvas WebGL e snapshots para DOM.
-Nao afirme que um comportamento passou sem observacao direta.
-Ao final, devolva um relatorio em portugues com:
-1. PASSOU / FALHOU / BLOQUEADO / NAO TESTADO por checkpoint.
-2. Passos reproduziveis, comportamento esperado e observado.
-3. Severidade (P0 a P3), evidencias e limitacoes.
-4. Sugestoes de novos testes deterministas Playwright.
-Evite respostas longas e procure defeitos, nao apenas caminhos felizes.
-"""
+SYSTEM = (
+    "Voce e QA exploratorio do jogo Nova Wing. Use SOMENTE o browser local "
+    "Stagehand. Nao use shell, login real, sites externos, links pagos, "
+    "arquivos, contas de usuario ou alteracoes no codigo. Inspecione DOM e "
+    "screenshots WebGL, mas nunca diga que avaliou fisica 3D apenas por imagem. "
+    "Relate PASSOU/FALHOU/BLOQUEADO/NAO TESTADO, passos reproduziveis, "
+    "esperado/observado, severidade P0-P3, evidencias e limites. "
+    "Sugira testes Playwright deterministas para cada falha confirmavel."
+)
 
 
-def validate_local_url(value: str) -> str:
-    parsed = urlparse(value)
+def validate_url(raw: str) -> str:
+    u = urlparse(raw)
     if (
-        parsed.scheme != "http"
-        or parsed.hostname not in {"localhost", "127.0.0.1"}
-        or parsed.username
-        or parsed.password
-        or parsed.query
-        or parsed.fragment
-        or parsed.path not in {"", "/"}
-        or parsed.port is None
+        u.scheme != "http"
+        or u.hostname not in ("127.0.0.1", "localhost")
+        or u.port is None
+        or u.path not in ("", "/")
+        or u.username
+        or u.password
+        or u.fragment
+        or u.query
     ):
-        raise ValueError("Use apenas http://127.0.0.1:4173/ ou outra porta HTTP local.")
-    return value.rstrip("/") + "/"
+        raise ValueError("O jogo deve usar http://127.0.0.1:4173/ (HTTP local).")
+    return raw.rstrip("/") + "/"
 
 
-def preflight(url: str) -> None:
-    if not os.environ.get("OPENAI_API_KEY"):
-        raise RuntimeError("Defina OPENAI_API_KEY no ambiente; nao inclua a chave no repositorio.")
+def preflight(url: str, model: str) -> None:
+    if model.endswith(":cloud") or "/" in model:
+        raise RuntimeError("Modelo nao permitido. Use um modelo Ollama LOCAL, ex: qwen3.5:4b.")
     try:
-        with urlopen(url, timeout=5) as response:
-            if response.status != 200:
-                raise RuntimeError(f"Servidor local retornou HTTP {response.status}.")
+        with urlopen(OLLAMA_URL + "/api/tags", timeout=5) as r:
+            tags = json.load(r)
     except OSError as exc:
+        raise RuntimeError("Ollama local nao responde em 127.0.0.1:11434. Instale e inicie Ollama.") from exc
+    installed = {m.get("name") for m in tags.get("models", [])}
+    if model not in installed:
         raise RuntimeError(
-            "Nova Wing local indisponivel. Rode npm ci && npm run build && npm run dev."
-        ) from exc
+            f"Modelo '{model}' ausente. Execute 'ollama pull {model}'. "
+            f"Modelos locais disponiveis: {sorted(installed)}"
+        )
+    try:
+        with urlopen(url, timeout=5) as r:
+            if r.status != 200:
+                raise RuntimeError(f"Jogo retornou HTTP {r.status}")
+    except OSError as exc:
+        raise RuntimeError("Jogo local indisponivel. Rode npm ci, npm run build e npm run dev.") from exc
 
 
-def last_response(result: dict) -> str:
-    messages = result.get("messages", [])
-    if not messages:
-        return "Sem mensagem final do agente; verificar traces."
-    content = messages[-1].content
-    return content if isinstance(content, str) else repr(content)
+def local_stagehand_model(model: str):
+    from ollama import AsyncClient
+    from stagehand import LLMStructuredGenerateResult
+
+    ollama = AsyncClient(host=OLLAMA_URL)
+
+    async def generate(params):
+        response_format = params.response_format
+        if response_format is None:
+            raise TypeError("Stagehand sem schema: nao habilitar fallback em nuvem.")
+        messages = []
+        if params.system_prompt:
+            messages.append({"role": "system", "content": params.system_prompt})
+        for message in params.messages:
+            blocks = message.content if isinstance(message.content, list) else [message.content]
+            texts, images = [], []
+            for block in blocks:
+                part = block.root
+                if part.type == "text":
+                    texts.append(part.text)
+                elif part.type == "image":
+                    images.append(part.data)
+            m = {"role": message.role.value, "content": "\n".join(texts)}
+            if images:
+                m["images"] = images
+            messages.append(m)
+        reply = await ollama.chat(
+            model=model,
+            messages=messages,
+            format=response_format.schema_.model_dump(),
+            options={"temperature": params.temperature if params.temperature is not None else 0},
+            stream=False,
+        )
+        content = reply.message.content or ""
+        return LLMStructuredGenerateResult.model_validate({
+            "role": "assistant",
+            "content": {"type": "text", "text": content},
+            "output_format": "json_schema",
+            "structured_content": json.loads(content),
+        })
+
+    return generate
 
 
-async def explore(args: argparse.Namespace, url: str) -> str:
-    # Imports tardios: --help e preflight funcionam sem instalar pacotes Python.
+async def explore(args, url: str) -> str:
     from deepagents import create_deep_agent
     from langchain.agents.middleware import ModelCallLimitMiddleware
+    from langchain_ollama import ChatOllama
     from langchain_stagehand import StagehandMiddleware
     from stagehand import Stagehand, local_browser
 
@@ -102,19 +136,22 @@ async def explore(args: argparse.Namespace, url: str) -> str:
         headless=not args.show_browser,
         viewport_width=844 if mobile else 1366,
         viewport_height=390 if mobile else 768,
-        has_touch=mobile,
         device_scale_factor=1.0,
+        has_touch=mobile,
     )
     try:
         stagehand = await Stagehand.create(
-            browser=browser,
-            model=args.browser_model,
-            model_api_key=os.environ["OPENAI_API_KEY"],
+            browser=browser, model=local_stagehand_model(args.model)
         )
         try:
             agent = create_deep_agent(
-                model=args.model,
-                system_prompt=SYSTEM_PROMPT,
+                model=ChatOllama(
+                    model=args.model,
+                    base_url=OLLAMA_URL,
+                    temperature=0,
+                    num_ctx=16384,
+                ),
+                system_prompt=SYSTEM,
                 middleware=[
                     StagehandMiddleware(stagehand=stagehand),
                     ModelCallLimitMiddleware(
@@ -123,68 +160,71 @@ async def explore(args: argparse.Namespace, url: str) -> str:
                     ),
                 ],
             )
-            task = (
-                f"Abra {url} no browser local e execute o cenario "
-                f"{args.scenario}:\n{SCENARIOS[args.scenario]}\n"
-                "Nao navegue para outro host. Use apenas dados sinteticos."
-            )
-            result = await agent.ainvoke(
-                {"messages": [{"role": "user", "content": task}]},
+            response = await agent.ainvoke(
+                {"messages": [{
+                    "role": "user",
+                    "content": (
+                        f"Abra APENAS {url} e execute o cenario "
+                        f"{args.scenario}: {SCENARIOS[args.scenario]}"
+                    ),
+                }]},
                 config={"recursion_limit": 45},
             )
-            return last_response(result)
+            messages = response.get("messages", [])
+            if not messages:
+                return "BLOQUEADO: sem resposta do agente."
+            answer = messages[-1].content
+            return answer if isinstance(answer, str) else repr(answer)
         finally:
             await stagehand.close()
     finally:
         await browser.close()
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Nova Wing: agente exploratorio local")
+def main():
+    parser = argparse.ArgumentParser(description="Nova Wing QA: IA e navegador local")
     parser.add_argument("--scenario", choices=sorted(SCENARIOS), default="menu-desktop")
     parser.add_argument("--url", default="http://127.0.0.1:4173/")
-    parser.add_argument("--model", default=os.getenv("NOVA_QA_MODEL", "openai:gpt-5.5"))
-    parser.add_argument(
-        "--browser-model",
-        default=os.getenv("NOVA_QA_BROWSER_MODEL", "openai/gpt-5.4-mini"),
-        help="Modelo usado pelo Stagehand local, diferente do modelo Deep Agents.",
-    )
-    parser.add_argument("--max-model-calls", type=int, default=10)
+    parser.add_argument("--model", default="qwen3.5:4b")
+    parser.add_argument("--max-model-calls", type=int, default=8)
     parser.add_argument("--show-browser", action="store_true")
     args = parser.parse_args()
     if not 1 <= args.max_model_calls <= 20:
-        parser.error("--max-model-calls deve estar entre 1 e 20.")
+        parser.error("Use --max-model-calls entre 1 e 20.")
+    # Nunca emitir traces para LangSmith; a POC local nao usa nuvem.
+    os.environ["LANGSMITH_TRACING"] = "false"
+    os.environ["LANGCHAIN_TRACING_V2"] = "false"
     try:
-        url = validate_local_url(args.url)
-        preflight(url)
+        url = validate_url(args.url)
+        preflight(url, args.model)
     except (ValueError, RuntimeError) as exc:
         parser.error(str(exc))
-    started = time.perf_counter()
+
+    start = time.perf_counter()
     try:
         report = asyncio.run(explore(args, url))
+        error = False
     except Exception as exc:
-        report = f"EXECUCAO BLOQUEADA: {type(exc).__name__}: {exc}"
-    elapsed = round(time.perf_counter() - started, 1)
-    outdir = Path("artifacts/agent-qa")
-    outdir.mkdir(parents=True, exist_ok=True)
+        report = f"BLOQUEADO: {type(exc).__name__}: {exc}"
+        error = True
+    duration = round(time.perf_counter() - start, 1)
+    folder = Path("artifacts/agent-qa")
+    folder.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    output = outdir / f"{stamp}-{args.scenario}.md"
-    output.write_text(
-        f"# Nova Wing | Deep Agents exploratory QA\n\n"
-        f"- Data UTC: {stamp}\n"
-        f"- Scenario: {args.scenario}\n"
-        f"- Deep Agents model: {args.model}\n"
-        f"- Stagehand model: {args.browser_model}\n"
-        f"- URL: {url}\n"
-        f"- Duration seconds: {elapsed}\n"
-        f"- Model call limit: {args.max_model_calls}\n"
-        f"- API cost: nao apurado (consultar provedor/LangSmith)\n"
-        f"- Status: relatorio exploratorio, NAO e gate de CI\n\n"
-        f"## Observacoes do agente (ainda exigem revisao)\n\n{report}\n",
+    path = folder / f"{stamp}-{args.scenario}.md"
+    path.write_text(
+        "# Nova Wing | QA local (Ollama + Deep Agents + Stagehand)\n\n"
+        f"- Data: {stamp} UTC\n- Cenario: {args.scenario}\n"
+        f"- Modelo local: {args.model}\n- Servico: {OLLAMA_URL}\n"
+        f"- Jogo: {url}\n- Duracao: {duration}s\n"
+        f"- Max. chamadas de modelo: {args.max_model_calls}\n"
+        "- API paga: nenhuma\n- Estado: exploratorio, sem homologacao automatica\n\n"
+        "## Observacoes do agente (exigem reproducao)\n\n"
+        f"{report}\n",
         encoding="utf-8",
     )
-    print(f"Relatorio: {output}\n{report}")
-    if report.startswith("EXECUCAO BLOQUEADA:"):
+    print(f"Relatorio: {path}\n\n{report}")
+    if error:
         raise SystemExit(1)
 
 
