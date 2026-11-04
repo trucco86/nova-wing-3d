@@ -33,7 +33,8 @@ Terminal 2, na mesma raiz:
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -r qa-agent/requirements.txt
-export OPENAI_API_KEY="sua-chave-no-terminal-ou-gerenciador-de-segredos"
+read -s OPENAI_API_KEY  # cole a chave, pressione Enter; nao aparece na tela
+export OPENAI_API_KEY
 .venv/bin/python qa-agent/run.py --scenario menu-desktop --max-model-calls 10
 ```
 
@@ -46,6 +47,15 @@ Para observar o Chrome e outros cenarios:
 
 O modelo e selecionavel com `--model` (padrao experimental
 `openai:gpt-5.5`), dependendo da disponibilidade na conta/API.
+O browser Stagehand usa separadamente `--browser-model openai/gpt-5.4-mini`
+(com a MESMA `OPENAI_API_KEY`), seguindo o SDK Python oficial. Esses
+modelos podem ter cobrancas diferentes. Use `--model openai:gpt-5.4-mini`
+se o projeto/API suportar e quiser experimentar um agente menor.
+A chave e lida apenas da variavel de ambiente do terminal; nao a adicione
+em `src/`, no HTML publico, no GitHub, nem a compartilhe em chats.
+Para evitar grava-la no historico do shell, utilize a leitura interativa acima.
+Em Bash e Zsh, `read -s` oculta a entrada digitada.
+
 O runner aceita somente uma URL HTTP **localhost/127.0.0.1** e exige
 um servidor respondendo antes de iniciar. Nao usa login de producao.
 Apenas execute contra uma versao local sob seu controle.
