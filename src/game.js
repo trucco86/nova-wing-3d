@@ -5630,6 +5630,17 @@ export function createGame({
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      // Snapshot-only evidence lets browser QA verify a visible effect without
+      // changing the real projectile's collision, timing or position.
+      bossShotLinks: hostile
+        .filter((b) => b.tether?.visible)
+        .slice(0, 8)
+        .map((b) => ({
+          bossIndex: b.bossIndex,
+          origin: b.launchOrigin.toArray(),
+          projectile: b.o.position.toArray(),
+          length: b.tether.scale.y,
+        })),
       hostileProjectilePool: hostileShotPool.stats(),
       particlePool: particlePool.stats(),
       cameraMode,
