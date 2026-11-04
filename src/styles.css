@@ -9511,3 +9511,15 @@ body.in-mission:has(#pickupFlash:not([hidden])) #hudNotices > #comms {
 body.in-mission:has(#bossHUD:not([hidden])) #petCareHud {
   display: none !important;
 }
+
+/* Put the state of a large boss in the small HP card, not over its face.
+   The complete state string stays in DOM/assistive reading; the game view gets
+   a single line, its HP bar and its weak-point overlays. */
+body.in-mission #bossHUD #bossState {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  max-height: 1.4em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
