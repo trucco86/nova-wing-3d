@@ -1,0 +1,52 @@
+name: One-shot Elite Boss Counterplay QA release preparation
+on:
+  push:
+    branches: [feat/boss-elite-counterplay-20261104]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.79
+      - name: Write reviewed candidate release notes
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const file = 'CHANGELOG.md';
+          const s = readFileSync(file, 'utf8');
+          const old = '## 1.27.79 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const next = '## 1.27.79 — Elite Boss Counterplay 1.0 (QA)\n\n- Europa: a onda de impacto agora prepara e projeta seis estacas visuais de gelo, enquanto a pinça criogênica mantém seu próprio padrão de esquiva e colisão.\n- Hydra: ataque exclusivo de duas cabeças em fase avançada, com origem física dupla e zona horizontal de dano no radar, cancelado se uma bateria for destruída.\n- Ômega: quando uma arma lateral é destruída, passa a usar o tentáculo sobrevivente; sem as duas armas passa a disparar do núcleo, nunca de um braço inexistente. Radar aponta para a peça real.\n- Marvin: defesa reativa da retaguarda com jato das turbinas visível e esquiva por altitude; mantém contrajogo de robô, boost e flancos.\n- Física de dano do radar igual à zona real, alvo travado durante o aviso, sem mover pontos fracos ou alterar chefes/fases já aprovados.\n- Testes Node para quatro chefes e Playwright de lutas reais, QA isolada, sem aprovação de produção.';
+          if (!s.includes(old)) throw new Error('Missing changelog placeholder');
+          writeFileSync(file, s.replace(old, next));
+          writeFileSync('releases/v1.27.79.md',
+            '## Nova Wing 3D v1.27.79 — Elite Boss Counterplay · QA\n\n' +
+            '- Europa: novos cristais de preparação da onda de gelo e pinça preservada.\n' +
+            '- Hydra: cabeças gêmeas com fogo cruzado legível, disparo físico e esquiva vertical.\n' +
+            '- Ômega: reage à destruição dos canhões, usando apenas garras/tentáculos operacionais; radar aponta peças reais.\n' +
+            '- Marvin: turbina traseira como arma específica, com preparação real e zona segura por altitude.\n' +
+            '- Arquitetura mantém o dano e o radar sincronizados, com luta 360° e controles RPG/ORBITAR intactos.\n' +
+            '- QA: exige CI, screenshots browser e homologação de desempenho em iPhone físico Alto/Médio.\n\n' +
+            '**Somente QA. Não publicar em produção antes de homologação.**\n');
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated QA artifacts
+        run: |
+          git config user.name 'nova-wing-qa-bot'
+          git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.79.md specs/elite-boss-counterplay-v12779.md src/boss-combat-ai.js src/game.js src/bosses.js src/europa-attack-vfx.js tests/boss-elite-counterplay.test.mjs tests/europa-attack-vfx.test.mjs tests/browser/elite-boss-phase-smoke.spec.mjs
+          git commit -m 'chore(release): prepare elite boss counterplay v1.27.79'
+          git push origin HEAD:feat/boss-elite-counterplay-20261104
