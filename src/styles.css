@@ -9437,7 +9437,6 @@ body:not(.developer-session) #qaBerserkDock {
   }
 }
 
-
 /* Combat HUD 1.27.82 — one message in the information rail at a time.
    Emergency > boss attack > low shield > incoming > pickup > pilot radio.
    Preserve full accessible text in DOM; never block controls/reticle. */
@@ -9477,13 +9476,19 @@ body.in-mission #hudNotices > #attackWarning {
 body.in-mission #hudNotices > #attackWarning:empty {
   display: none;
 }
-body.in-mission:has(#criticalWarning:not([hidden])) #hudNotices
+body.in-mission:has(#criticalWarning:not([hidden]))
+  #hudNotices
   > :is(#shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms),
-body.in-mission:has(#attackWarning:not(:empty):not([data-severity='info'])):not(:has(#criticalWarning:not([hidden]))) #hudNotices
+body.in-mission:has(#attackWarning:not(:empty):not([data-severity='info'])):not(
+    :has(#criticalWarning:not([hidden]))
+  )
+  #hudNotices
   > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms),
-body.in-mission:has(#shieldWarning:not([hidden])):not(:has(#criticalWarning:not([hidden]))) #hudNotices
+body.in-mission:has(#shieldWarning:not([hidden])):not(:has(#criticalWarning:not([hidden])))
+  #hudNotices
   > :is(#attackWarning[data-severity='info'], #bossIncoming, #pickupFlash, #comms),
-body.in-mission:has(#bossIncoming:not([hidden])) #hudNotices
+body.in-mission:has(#bossIncoming:not([hidden]))
+  #hudNotices
   > :is(#attackWarning[data-severity='info'], #pickupFlash, #comms),
 body.in-mission:has(#pickupFlash:not([hidden])) #hudNotices > #comms {
   display: none !important;

@@ -15,8 +15,7 @@ test('radio message urgency distinguishes danger, instructions and ambient chatt
 });
 
 test('long contextual radio keeps action and omits repeated pilot name without exceeding two short lines', () => {
-  const original =
-    'FIVE CATS · PROPULSÃO DE EMERGÊNCIA ATIVADA! SAÍDA EM HIPERIMPULSO!';
+  const original = 'FIVE CATS · PROPULSÃO DE EMERGÊNCIA ATIVADA! SAÍDA EM HIPERIMPULSO!';
   const shortened = compactRadioMessage(original, 45);
   assert.ok(shortened.length <= 45);
   assert.ok(!shortened.startsWith('FIVE CATS'));
@@ -48,12 +47,17 @@ test('critical messages preempt chatter and do not get overwritten by low-priori
   assert.equal(policy.offer('FORMAÇÃO INIMIGA · NOVA', 10.1), null);
   assert.equal(policy.offer('NAVE PERDIDA · BOB ASSUME COMANDO', 10.4), null);
   assert.ok(policy.offer('SEGURE BOOST E DESVIE', 12.6), 'instruction after emergency expires');
-  assert.equal(policy.offer('ARMA · PLASMA', 12.7), null, 'no routine overrides active instruction');
+  assert.equal(
+    policy.offer('ARMA · PLASMA', 12.7),
+    null,
+    'no routine overrides active instruction',
+  );
 });
 
 test('restarting a mission resets suppression and full text remains available', () => {
   const policy = createRadioTriage();
-  const text = 'TURBULÊNCIA · VENTO LATERAL INTENSO NA ATMOSFERA · COMPENSE COM O DIRECIONAL PARA MANTER O CURSO';
+  const text =
+    'TURBULÊNCIA · VENTO LATERAL INTENSO NA ATMOSFERA · COMPENSE COM O DIRECIONAL PARA MANTER O CURSO';
   const first = policy.offer(text, 3);
   assert.equal(first.full, text);
   assert.ok(first.text.length < text.length);

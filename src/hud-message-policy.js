@@ -1,7 +1,9 @@
 // One attention channel: survival and control instructions must beat chatter.
 // All durations/cooldowns use mission-time (no timers or allocations per frame).
-const URGENT = /NAVE PERDIDA|N[ÚU]CLEO DESTRU[ÍI]DO|REATOR INST[ÁA]VEL|EMERG[ÊE]NCIA|FUJA|FUGA|N[ÃA]O DEIXE|ALERTA|TURBUL[ÊE]NCIA|PERIGO/iu;
-const ACTION = /SEGURE|SOLTE|DESVIE|EVITE|ENCONTRE|ATIRE|MOVA|ACELERE|COMPENSE|APONTE|ATIV[AE]|BUSQUE|AJUSTE|SUBA|DESC[AE]|ESCAPE|COLETE/iu;
+const URGENT =
+  /NAVE PERDIDA|N[ÚU]CLEO DESTRU[ÍI]DO|REATOR INST[ÁA]VEL|EMERG[ÊE]NCIA|FUJA|FUGA|N[ÃA]O DEIXE|ALERTA|TURBUL[ÊE]NCIA|PERIGO/iu;
+const ACTION =
+  /SEGURE|SOLTE|DESVIE|EVITE|ENCONTRE|ATIRE|MOVA|ACELERE|COMPENSE|APONTE|ATIV[AE]|BUSQUE|AJUSTE|SUBA|DESC[AE]|ESCAPE|COLETE/iu;
 
 export function radioMessagePriority(text) {
   const message = String(text ?? '');
@@ -11,7 +13,9 @@ export function radioMessagePriority(text) {
 }
 
 export function compactRadioMessage(text, maxChars = 58) {
-  const original = String(text ?? '').replace(/\s+/gu, ' ').trim();
+  const original = String(text ?? '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   if (!Number.isInteger(maxChars) || maxChars < 20) throw new RangeError('Invalid HUD width');
   if (original.length <= maxChars) return original;
   const parts = original
@@ -51,14 +55,12 @@ export function createRadioTriage() {
       if (!original) return null;
       const priority = radioMessagePriority(original);
       if (!force) {
-        if ((recent.get(original) ?? -Infinity) + (priority === 3 ? 3 : 7) > now)
-          return null;
+        if ((recent.get(original) ?? -Infinity) + (priority === 3 ? 3 : 7) > now) return null;
         if (now < until && priority < currentPriority) return null;
         if (priority === 1 && now - lastRoutine < 4) return null;
       }
       if (recent.size > 48) {
-        for (const [key, age] of recent)
-          if (now - age > 12) recent.delete(key);
+        for (const [key, age] of recent) if (now - age > 12) recent.delete(key);
       }
       recent.set(original, now);
       if (priority === 1) lastRoutine = now;

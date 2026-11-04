@@ -1510,7 +1510,10 @@ export function createGame({
   }
   function message(t, speakerId = 'bia') {
     const notice = dynamicFlight
-      ? radioTriage.offer(t, visualTime, { compact: true, force: msgTime <= 0 && stageIntroTime > 0 })
+      ? radioTriage.offer(t, visualTime, {
+          compact: true,
+          force: msgTime <= 0 && stageIntroTime > 0,
+        })
       : { text: String(t), full: String(t), duration: 3 };
     if (!notice) return;
     renderRadioSpeaker(document, speakerId);

@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.82 — Quiet Combat HUD · QA
+
+- Avisos críticos prevalecem sobre mensagens secundárias e rádio, com apenas uma prioridade visível no topo da tela.
+- Comunicação compacta e menos frequente: rádio 1,65 s, instrução 2,1 s, perigo 2,5 s; repetições e notificações de contexto são limitadas.
+- Texto original preservado para acessibilidade; o piloto continua identificado, mensagens longas são resumidas sem perder a ação.
+- Boss State reduzido a uma linha, itens de pets fora da arena enquanto o chefe está presente.
+- Radar, HP, controls, mira, física e chefes permanecem inalterados.
+- Testes unitários de arbitragem e Playwright responsive; homologação real no iPhone pendente.
+
 ## 1.27.80 — Europa Boss Clear Arena · QA
 
 - Colossus da fase 6 mantém a geometria inteira acima do **piso glacial rebaixado**, com margem dinâmica e chefe enquadrado no centro da tela, evitando tanto o atravessamento do gelo quanto a aparição do modelo acima da câmera em mobile.
