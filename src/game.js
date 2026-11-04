@@ -67,7 +67,7 @@ import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
-import { europaBossMinimumCenterHeight, europaBossArenaHeight } from './europa-boss-arena.js';
+import { europaBossMinimumCenterHeight, europaBossArenaHeight, europaBossFloorY } from './europa-boss-arena.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   SCATTER_CADENCE_FACTOR,
@@ -2133,16 +2133,21 @@ export function createGame({
     // No instant pop-in to the combat position.
     boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
     if (dynamicFlight && sectorIndex === 5) {
-      // Compute the full Colossus leg/armor clearance once. Every following
-      // animation uses this fixed height bound, so feet never cross ice.
-      boss.userData.europaMinimumCenterY = europaBossMinimumCenterHeight(boss);
+      // Lower the *arena floor* into a glacial basin rather than moving the
+      // enormous Colossus above the camera/reticle. Keep the 18-unit buffer
+      // under its full 3D silhouette during bank and attack animations.
+      boss.userData.europaArenaFloorY = europaBossFloorY(boss);
+      boss.userData.europaMinimumCenterY = europaBossMinimumCenterHeight(
+        boss,
+        boss.userData.europaArenaFloorY,
+      );
       boss.position.y = europaBossArenaHeight(boss.position.y, boss.userData.europaMinimumCenterY);
     }
     if (dynamicFlight) {
       world.showCarrierForBoss?.();
       // Only Europa opens a ground-based grand arena. Its forward crystals
       // and generic carrier must leave the boss firing/camera corridor.
-      world.setEuropaBossArena?.(sectorIndex === 5);
+      world.setEuropaBossArena?.(sectorIndex === 5, boss.userData.europaArenaFloorY);
       // The narrow corridor section ends at the monumental reactor hall:
       // keeping both active would put walls through the 360-degree orbit.
       world.setReactorGrandHall?.(boss.userData.sabotage === true);
@@ -5705,7 +5710,7 @@ export function createGame({
         dynamicFlight && sectorIndex === 5 && boss
           ? {
               ...world.europaBossArenaState(),
-              floorY: -7,
+              floorY: boss.userData.europaArenaFloorY,
               minimumCenterY: boss.userData.europaMinimumCenterY,
               bossCenterY: boss.position.y,
             }
