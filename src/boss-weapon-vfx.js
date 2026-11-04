@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { halo } from './visuals.js';
 
 // Presentation-only weapon signatures. Real muzzle world coordinates remain
 // inside boss-battery-(left|right)-muzzle and boss-core-muzzle, and generator
@@ -45,12 +46,12 @@ export function installBossWeaponVfx(g, index) {
   const coreMat = material('#07111d');
   const flashMat = material(color, 0.85);
   const trimMat = material('#e8faff', 0.92);
-  const bore = new T.CylinderGeometry(2.5, 3.25, 10.8, 12);
+  const bore = new T.CylinderGeometry(3.2, 4.0, 10.8, 12);
   bore.rotateX(Math.PI / 2);
-  const aperture = new T.CircleGeometry(2.4, 16);
-  const ringGeo = new T.TorusGeometry(2.95, 0.62, 8, 24);
-  const innerGeo = new T.TorusGeometry(1.55, 0.36, 7, 20);
-  const flashGeo = new T.SphereGeometry(3.1, 10, 8);
+  const aperture = new T.CircleGeometry(3.3, 20);
+  const ringGeo = new T.TorusGeometry(4.0, 0.88, 8, 28);
+  const innerGeo = new T.TorusGeometry(2.25, 0.55, 8, 24);
+  const flashGeo = new T.SphereGeometry(4.0, 12, 8);
 
   const addRig = (holder, muzzle, scale = 1) => {
     // Boring starts on the parent weapon and terminates at the *actual*
@@ -86,7 +87,22 @@ export function installBossWeaponVfx(g, index) {
     flash.visible = false;
     flash.scale.setScalar(0.1);
     holder.add(flash);
-    holder.userData.weaponVfx = { rim, charge, flash, flashAge: 0, scale };
+    // Additive sprites are visible from every orbit angle and reveal the
+    // physical cannon even when its nose is small on an iPhone viewport.
+    // They never participate in raycasts or damage/hitboxes.
+    const glow = halo(color, 12 * scale, 0.85);
+    glow.name = 'boss-weapon-charge-halo';
+    glow.position.copy(muzzle.position);
+    glow.position.z += 0.24;
+    glow.visible = false;
+    holder.add(glow);
+    const burst = halo('#f6fbff', 15 * scale, 0.94);
+    burst.name = 'boss-weapon-muzzle-burst';
+    burst.position.copy(muzzle.position);
+    burst.position.z += 2.8 * scale;
+    burst.visible = false;
+    holder.add(burst);
+    holder.userData.weaponVfx = { rim, charge, flash, glow, burst, flashAge: 0, scale };
   };
   for (let i = 0; i < 2; i++) {
     const turret = g.userData.batteries[i];
@@ -124,8 +140,9 @@ export function flashBossWeapon(g, side) {
       ? g?.userData.coreWeaponVfx
       : g?.userData.batteries[side < 0 ? 0 : 1]?.userData.weaponVfx;
   if (!rig) return false;
-  rig.flashAge = 0.18;
+  rig.flashAge = 0.24;
   rig.flash.visible = true;
+  rig.burst.visible = true;
   return true;
 }
 
@@ -145,11 +162,16 @@ export function animateBossWeaponVfx(g, time, charge = 0, dt = 0) {
     rig.rim.scale.setScalar(rig.scale * (1 + 0.08 * Math.sin(time * 6) + preload * 0.18));
     rig.charge.scale.setScalar(rig.scale * (0.65 + preload * 0.85));
     rig.charge.visible = active;
+    rig.glow.visible = active && preload > 0.15;
+    if (rig.glow.visible)
+      rig.glow.scale.setScalar(rig.scale * (8 + preload * 9));
     rig.flashAge = Math.max(0, rig.flashAge - dt);
     rig.flash.visible = active && rig.flashAge > 0;
+    rig.burst.visible = rig.flash.visible;
     if (rig.flash.visible) {
-      const pulse = rig.flashAge / 0.18;
-      rig.flash.scale.setScalar(rig.scale * (0.9 + (1 - pulse) * 1.35));
+      const pulse = rig.flashAge / 0.24;
+      rig.flash.scale.setScalar(rig.scale * (1.1 + (1 - pulse) * 1.6));
+      rig.burst.scale.setScalar(rig.scale * (12 + (1 - pulse) * 9));
     }
   }
 }
