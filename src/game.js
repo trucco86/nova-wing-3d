@@ -67,6 +67,7 @@ import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
+import { europaBossMinimumCenterHeight, europaBossArenaHeight } from './europa-boss-arena.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
   SCATTER_CADENCE_FACTOR,
@@ -2131,8 +2132,17 @@ export function createGame({
     // Enter through the illuminated hangar of the mother ship in the distance.
     // No instant pop-in to the combat position.
     boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
+    if (dynamicFlight && sectorIndex === 5) {
+      // Compute the full Colossus leg/armor clearance once. Every following
+      // animation uses this fixed height bound, so feet never cross ice.
+      boss.userData.europaMinimumCenterY = europaBossMinimumCenterHeight(boss);
+      boss.position.y = europaBossArenaHeight(boss.position.y, boss.userData.europaMinimumCenterY);
+    }
     if (dynamicFlight) {
       world.showCarrierForBoss?.();
+      // Only Europa opens a ground-based grand arena. Its forward crystals
+      // and generic carrier must leave the boss firing/camera corridor.
+      world.setEuropaBossArena?.(sectorIndex === 5);
       // The narrow corridor section ends at the monumental reactor hall:
       // keeping both active would put walls through the 360-degree orbit.
       world.setReactorGrandHall?.(boss.userData.sabotage === true);
@@ -4564,7 +4574,9 @@ export function createGame({
         }
         boss.position.set(
           launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0),
-          launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
+          sectorIndex === 5
+            ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
+            : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
           launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
@@ -5689,6 +5701,15 @@ export function createGame({
       music: music?.snapshot() ?? null,
       audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
+      europaArena:
+        dynamicFlight && sectorIndex === 5 && boss
+          ? {
+              ...world.europaBossArenaState(),
+              floorY: -7,
+              minimumCenterY: boss.userData.europaMinimumCenterY,
+              bossCenterY: boss.position.y,
+            }
+          : null,
       bossTargets:
         boss?.userData.parts.map((p, i) => ({
           hp: p.hp,
