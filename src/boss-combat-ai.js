@@ -103,7 +103,7 @@ export function chooseBossIntent({
       // Two actual heads trap a sustained flank on the third phase; raising
       // altitude escapes. Other angles preserve approved grabs/sweeps.
       kind =
-        p === 3 && flank && !boosting && playerY < 28 && cycle % 3 === 0
+        p === 3 && generators.every(Boolean) && flank && !boosting && playerY < 28 && cycle % 3 === 0
           ? 'hydra-two-head-crossfire'
           : boosting || flank || playerY >= 28
             ? 'tentacle-grab'
