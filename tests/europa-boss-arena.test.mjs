@@ -9,6 +9,8 @@ import { createWorld } from '../src/visuals.js';
 import {
   europaBossMinimumCenterHeight,
   europaBossArenaHeight,
+  europaBossFloorY,
+  EUROPA_ARENA_MIN_CENTER_TARGET,
   EUROPA_ARENA_FLOOR_Y,
   EUROPA_ARENA_FLOOR_GAP,
 } from '../src/europa-boss-arena.js';
@@ -16,8 +18,12 @@ import {
 test('Europa Colossus legs, hull and ice-quake visual never penetrate the ice floor', () => {
   const boss = createBossModel(SECTORS[5], 5, true);
   try {
-    const minY = europaBossMinimumCenterHeight(boss);
-    assert.ok(minY > 22, 'the old 12-unit airborne center height clipped the legs');
+    const originalMinY = europaBossMinimumCenterHeight(boss);
+    const floorY = europaBossFloorY(boss);
+    const minY = europaBossMinimumCenterHeight(boss, floorY);
+    assert.ok(originalMinY > 22, 'the old 12-unit airborne center height clipped the legs');
+    assert.ok(floorY < -25, 'sink the glacial floor instead of lifting the entire model');
+    assert.ok(minY <= EUROPA_ARENA_MIN_CENTER_TARGET + 0.001, 'keep real boss at camera eye level');
     const initialBounds = new T.Box3().setFromObject(boss);
     assert.ok(initialBounds.min.y < -18, 'Colossus has a substantial lower body');
     const weak = boss.userData.parts.map((p) => p.mesh.position.clone());
@@ -33,7 +39,7 @@ test('Europa Colossus legs, hull and ice-quake visual never penetrate the ice fl
           animateBossSignature(boss, 5, age, phase, t.state, kind);
           const bounds = new T.Box3().setFromObject(boss);
           assert.ok(
-            bounds.min.y >= EUROPA_ARENA_FLOOR_Y + 2,
+            bounds.min.y >= floorY + 2,
             'Colossus floor clipping during ' +
               kind +
               ' at age ' +
@@ -67,8 +73,11 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   const living = scene.getObjectByName('world-living-depth-ice');
   assert.ok(crystals && landmarks && living);
   assert.equal(crystals.children.length, 60, 'preserve crystals during pre-boss flight');
-  const arena = world.setEuropaBossArena(true);
+  const floor = -83;
+  const arena = world.setEuropaBossArena(true, floor);
   assert.equal(arena.active, true);
+  assert.equal(arena.floorY, floor);
+  assert.equal(world.europaBossArenaState().floorY, floor);
   assert.equal(crystals.visible, false);
   assert.equal(landmarks.position.z, -280);
   assert.equal(living.position.z, -280);
@@ -82,10 +91,11 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   );
   assert.equal(landmarks.visible, true, 'the distant glacial backdrop remains');
   world.setEuropaBossArena(false);
+  assert.equal(world.europaBossArenaState().floorY, EUROPA_ARENA_FLOOR_Y);
   assert.equal(crystals.visible, true);
   assert.equal(landmarks.position.z, 0);
   assert.equal(living.position.z, 0);
-  const other = world.setEuropaBossArena(true);
+  const other = world.setEuropaBossArena(true, floor);
   assert.equal(other.active, true);
   world.setSector(SECTORS[4], 4);
   assert.equal(world.europaBossArenaState().active, false, 'changing mission clears arena state');
@@ -98,4 +108,5 @@ test('Europa floor clamp rejects invalid inputs and never lowers legitimate flig
   assert.throws(() => europaBossArenaHeight(Number.NaN, 32), RangeError);
   assert.throws(() => europaBossMinimumCenterHeight(null), RangeError);
   assert.throws(() => europaBossMinimumCenterHeight(new T.Group()), RangeError);
+  assert.throws(() => europaBossFloorY(null), RangeError);
 });
