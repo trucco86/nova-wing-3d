@@ -1,0 +1,61 @@
+name: One-shot QA Berserk Compact HUD release preparation
+on:
+  push:
+    branches: [fix/qa-berserk-compact-hud-20261104]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.81
+      - name: Record verified QA scope
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          let s = readFileSync('CHANGELOG.md','utf8');
+          const old = '## 1.27.81 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const next = '## 1.27.81 — QA Berserk Compact HUD (QA)\n\n- Painel de ativação Berserk exclusivo do laboratório QA reduzido de 238 px para 124 px, com alvo de toque de 44 px e feedback visual ativo.\n- Mensagens de status longo permanecem acessíveis aos leitores de tela sem bloquear a luta, a mira, o radar ou os pontos fracos.\n- Responsivo em 320×568, 390×844 e 844×390; teste de ativação direta e replay preservado.\n- Sem alterar controles de RPG/ORBITAR, mecânicas de combate, arena Europa, Saturno ou interface de produção.\n- QA isolada com testes Playwright e homologação física pendente.';
+          if (!s.includes(old)) throw new Error('Missing version placeholder');
+          writeFileSync('CHANGELOG.md',s.replace(old,next));
+          writeFileSync('releases/v1.27.81.md',
+            '## Nova Wing v1.27.81 — QA Berserk Compact HUD\n\n' +
+            '- Berserk continua testável diretamente no QA, agora com botão compacto que deixa os chefes visíveis.\n' +
+            '- Status atualizado sem sobreposições: feedback visual ativo e mensagem acessível.\n' +
+            '- Regressão dos três tamanhos mobile e QA launcher.\n' +
+            '- Depende da correção da arena Europa v1.27.80 e das melhorias dos chefes empilhadas.\n\n' +
+            '**Apenas QA. Não publicar em produção sem aceite.**\n');
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit synchronized QA assets
+        run: |
+          git config user.name 'nova-wing-qa-bot'
+          git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.81.md src/styles.css tests/browser/qa-berserk-compact-hud.spec.mjs specs/qa-berserk-compact-hud-v12781.md
+          git commit -m 'chore(release): prepare compact Berserk QA HUD v1.27.81'
+          git push origin HEAD:fix/qa-berserk-compact-hud-20261104
+      - run: npx playwright install --with-deps chromium
+      - name: Verify compact activation and prior QA launcher
+        run: npx playwright test tests/browser/qa-berserk-compact-hud.spec.mjs tests/browser/qa-menu-berserk.spec.mjs --project=mobile
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa-berserk-compact-evidence
+          path: |
+            test-results/**/compact-berserk-boss-*.png
+            test-results/**/*.png
+          if-no-files-found: warn
+          retention-days: 7
