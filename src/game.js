@@ -4600,6 +4600,10 @@ export function createGame({
             !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
             (bossIntent.kind !== 'reactor-vent' ||
               boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
+            // A destroyed Hydra head immediately cancels its paired beam,
+            // never landing invisible damage from an already broken gun.
+            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
+              boss.userData.parts.every((part) => part.hp > 0)) &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
