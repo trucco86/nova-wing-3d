@@ -151,3 +151,49 @@ test('themed boss bolt uses pooled streak and keeps original speed, spell and hi
     for (const m of [...Object.values(materials), ...bossMaterials]) m.dispose();
   }
 });
+
+test('physical boss muzzle tether follows the actual projectile only during launch, then vanishes', () => {
+  const scene = new T.Scene();
+  const geometry = new T.SphereGeometry(0.35, 8, 6);
+  const materials = {
+    normal: new T.MeshBasicMaterial({ color: '#ffffff' }),
+    fire: new T.MeshBasicMaterial({ color: '#ff6633' }),
+    arcane: new T.MeshBasicMaterial({ color: '#bb66ff' }),
+  };
+  const bossMaterials = [new T.MeshBasicMaterial({ color: '#66bbff' })];
+  const haloMat = new T.SpriteMaterial({ color: '#ffffff' });
+  const pool = createHostileProjectilePool({
+    scene, geometry, materials, bossMaterials,
+    createHalo: () => new T.Sprite(haloMat), maxRetained: 1,
+  });
+  try {
+    const origin = new T.Vector3(-31, 12, -180);
+    const target = new T.Vector3(20, 10, 10);
+    const shot = pool.acquire(origin, target, 'arcane', 0);
+    assert.ok(shot.tether && scene.children.includes(shot.tether));
+    assert.equal(shot.tether.visible, false, 'no beam before the bullet leaves muzzle');
+    shot.o.position.addScaledVector(shot.v, 0.1);
+    shot.age = 0.1;
+    pool.advanceVisual(shot);
+    assert.equal(shot.tether.visible, true, 'first beat explicitly connects bullet to barrel');
+    const midpoint = origin.clone().add(shot.o.position).multiplyScalar(0.5);
+    assert.ok(shot.tether.position.distanceTo(midpoint) < 1e-6);
+    assert.ok(Math.abs(shot.tether.scale.y - shot.o.position.distanceTo(origin)) < 1e-6);
+    assert.equal(shot.tether.material, bossMaterials[0]);
+    shot.age = 0.45;
+    pool.advanceVisual(shot);
+    assert.equal(shot.tether.visible, false, 'no permanent beams or mobile overdraw');
+    pool.release(shot);
+    assert.equal(scene.children.length, 0, 'pool cleanup removes burst and bullet');
+    const reused = pool.acquire(origin, target, 'fire');
+    assert.equal(reused, shot);
+    assert.equal(reused.tether.visible, false);
+    assert.equal(scene.children.length, 1, 'normal enemy shots never inherit the boss beam');
+    pool.release(reused);
+  } finally {
+    pool.clear();
+    geometry.dispose();
+    haloMat.dispose();
+    for (const mat of [...Object.values(materials), ...bossMaterials]) mat.dispose();
+  }
+});
