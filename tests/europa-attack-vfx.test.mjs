@@ -6,7 +6,9 @@ import { SECTORS } from '../src/campaign.js';
 
 test('Europa telegraphs are bounded, deterministic, mutually exclusive and cosmetic', () => {
   const effect = createEuropaAttackVfx();
-  assert.equal(effect.children.length, 3);
+  assert.equal(effect.children.length, 9, 'six readable ice spikes plus original three effects');
+  assert.equal(effect.userData.shards.length, 6);
+  assert.ok(effect.userData.shards.every((shard) => shard.name.startsWith('europa-ice-quake-spike-')));
   assert.equal(effect.userData.visualOnly, true);
   assert.ok(
     effect.children.every(
