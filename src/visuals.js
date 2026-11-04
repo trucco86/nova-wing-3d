@@ -1666,8 +1666,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
       }
     },
-    setEuropaBossArena(active = false) {
+    setEuropaBossArena(active = false, floorY = -7) {
       europaBossArenaActive = dynamicFlight && sceneryTheme === 'ice' && !!active;
+      if (europaBossArenaActive && (!Number.isFinite(floorY) || floorY > -7))
+        throw new RangeError('Invalid Europa arena basin depth');
+      // Move only the render floor, not the boss, camera, targets or orbit.
+      ground.position.y = europaBossArenaActive ? floorY : -7;
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
       // Preserve the glacier skyline, but move its near spires to the second
@@ -1680,6 +1684,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         active: europaBossArenaActive,
         foregroundHidden: !crystals || !crystals.visible,
         backdropDepth: destinationLandmarks?.position.z ?? 0,
+        floorY: ground.position.y,
       };
     },
     europaBossArenaState() {
@@ -1689,6 +1694,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         foregroundHidden: !crystals || !crystals.visible,
         backdropDepth: destinationLandmarks?.position.z ?? 0,
         carrierHidden: !carrier.visible,
+        floorY: ground.position.y,
       };
     },
     showCarrierForBoss() {
