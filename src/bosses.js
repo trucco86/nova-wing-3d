@@ -115,6 +115,25 @@ export function createBossModel(sector, index = 0, tactical = false) {
         const head = sphere(6, edge);
         head.position.set(Math.cos(a) * 44, Math.sin(a) * 28, -10);
         arm.add(head);
+        if (i === 0 || i === 3) {
+          // Hydra's two attacking heads have visible, real 3D emitters.
+          // Beams are cosmetic; radar and latched boss intent own collision.
+          const muzzle = new T.Object3D();
+          muzzle.name = 'hydra-crossfire-muzzle-' + i;
+          muzzle.position.copy(head.position);
+          muzzle.position.z += 4;
+          arm.add(muzzle);
+          const beamGeometry = new T.CylinderGeometry(2.2, 4.1, 48, 8);
+          beamGeometry.rotateX(Math.PI / 2);
+          const beam = new T.Mesh(beamGeometry, hot);
+          beam.name = 'hydra-crossfire-beam-' + i;
+          beam.position.copy(muzzle.position);
+          beam.position.z += 23;
+          beam.scale.z = 0.15;
+          beam.visible = false;
+          beam.userData.visualOnly = true;
+          arm.add(beam);
+        }
         g.add(arm);
         rotors.push(arm);
       }
@@ -695,6 +714,26 @@ export function createBossModel(sector, index = 0, tactical = false) {
       shell.position.set(0, 28, 23);
       shell.rotation.y = Math.PI;
     }
+    if (index === 9) {
+      // Marvin's previously unprotected rear engine becomes an actual visible
+      // attack assembly, not a new invisible damage zone.
+      const sweeper = new T.Group();
+      sweeper.name = 'marvin-rear-thruster-sweeper';
+      sweeper.position.set(0, -0.18, 4.2);
+      sweeper.add(box(2.0, 0.8, 2.5, dark));
+      for (const side of [-1, 1])
+        sweeper.add(box(0.5, 1.8, 2.7, hot, side * 1.9, 0, 0.4));
+      const plumeGeo = new T.CylinderGeometry(0.45, 1.3, 5, 8);
+      plumeGeo.rotateX(Math.PI / 2);
+      const plume = new T.Mesh(plumeGeo, hot);
+      plume.name = 'marvin-rear-thruster-plume';
+      plume.position.z = 4.6;
+      plume.visible = false;
+      plume.userData.visualOnly = true;
+      sweeper.add(plume);
+      sweeper.userData.visualOnly = true;
+      shell.add(sweeper);
+    }
     shell.userData.visualOnly = true;
     g.add(shell);
   }
@@ -827,17 +866,42 @@ export function animateBossSignature(
       right.rotation.z = pose.stomp;
     }
   } else if (index === 6) {
+    const crossfire =
+      attackKind === 'hydra-two-head-crossfire' &&
+      (attackState === 'windup' || attackState === 'attack');
     for (let i = 0; i < 7; i++) {
       const head = g.getObjectByName('signature-hydra-head-' + i);
       if (!head) continue;
       head.rotation.z = pose.headSwing * Math.sin(time * 0.6 + i * 1.1);
       head.scale.setScalar(pose.headPulse);
+      if (crossfire && (i === 0 || i === 3)) {
+        head.rotation.z += (i === 0 ? -1 : 1) * (attackState === 'attack' ? 0.58 : 0.31);
+        head.scale.setScalar(attackState === 'attack' ? 1.26 : 1.1);
+      }
+      if (i === 0 || i === 3) {
+        const beam = head.getObjectByName('hydra-crossfire-beam-' + i);
+        if (beam) {
+          beam.visible = crossfire && g.userData.parts[i === 0 ? 1 : 0]?.hp > 0;
+          beam.scale.z = attackState === 'attack' ? 1.15 : 0.15;
+        }
+      }
     }
   } else if (index === 9) {
     const crown = g.getObjectByName('signature-marvin-eclipse');
     if (crown) {
       crown.scale.setScalar(pose.eclipse);
       crown.rotation.z = pose.twist;
+    }
+    const sweeper = g.getObjectByName('marvin-rear-thruster-sweeper');
+    if (sweeper) {
+      const rear = attackKind === 'marvin-rear-thruster-sweep' &&
+        (attackState === 'windup' || attackState === 'attack');
+      sweeper.rotation.z = rear ? (attackState === 'attack' ? 0.64 : -0.32) : 0;
+      const plume = sweeper.getObjectByName('marvin-rear-thruster-plume');
+      if (plume) {
+        plume.visible = rear;
+        plume.scale.z = attackState === 'attack' ? 1.9 : 0.24;
+      }
     }
   }
   return pose;
