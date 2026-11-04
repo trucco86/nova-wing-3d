@@ -11,6 +11,15 @@ export const EUROPA_ARENA_BACKDROP_DEPTH = -280;
 // Keep low tactical poses, attacks and facial weak points inside the reticle.
 // The glacial floor is lowered to fit the actual Colossus silhouette instead.
 export const EUROPA_ARENA_MIN_CENTER_TARGET = 7;
+// The boss is enormous. Keep it behind the aim corridor, not overlapping the
+// player's cockpit. At z=-205, 6-second slow enemy bolts (38 units/s)
+// can still reach the pilot at z≈9: 214 < 228 units.
+export const EUROPA_ARENA_BOSS_DEPTH = -205;
+
+export function europaBossArenaDepth(requestedZ) {
+  if (!Number.isFinite(requestedZ)) throw new RangeError('Invalid Europa boss depth');
+  return Math.min(requestedZ, EUROPA_ARENA_BOSS_DEPTH);
+}
 
 export function europaBossFloorY(boss) {
   const originalMinimum = europaBossMinimumCenterHeight(boss);
