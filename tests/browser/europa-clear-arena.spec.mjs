@@ -22,6 +22,7 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
         age: state.bossAge,
         arena: state.europaArena,
         obstacles: state.entities.obstacles,
+        depth: state.bossZ,
         orbit: state.strategy.orbitAngle,
       };
     }, age);
@@ -35,6 +36,7 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
       snapshot.arena.minimumCenterY - 0.001,
     );
     expect(snapshot.arena.floorY).toBeLessThan(-25);
+    if (snapshot.age > 3) expect(snapshot.depth).toBeLessThanOrEqual(-180);
     if (snapshot.age > 3) {
       expect(snapshot.arena.bossCenterY).toBeLessThan(40);
       expect(snapshot.arena.minimumCenterY).toBeLessThan(15);
@@ -54,6 +56,7 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     expect(state.europaArena.foregroundHidden).toBe(true);
     expect(state.europaArena.floorY).toBeLessThan(-25);
     expect(state.europaArena.bossCenterY).toBeLessThan(40);
+    expect(state.bossZ).toBeLessThan(-180);
     expect(state.entities.obstacles).toBe(0);
     await page.screenshot({
       path: info.outputPath('europa-wide-clear-arena-' + size.width + '.png'),
