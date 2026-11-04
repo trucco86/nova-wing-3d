@@ -1672,8 +1672,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (crystals) crystals.visible = !europaBossArenaActive;
       // Preserve the glacier skyline, but move its near spires to the second
       // and third planes so none crosses the camera-to-boss sightline.
-      if (destinationLandmarks)
-        destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
+      if (destinationLandmarks) destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
       const ambient = sectorScenery.getObjectByName('world-living-depth-ice');
       if (ambient) ambient.position.z = europaBossArenaActive ? -280 : 0;
       if (europaBossArenaActive) carrier.visible = false;

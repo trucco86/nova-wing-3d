@@ -55,7 +55,9 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
   expect(errors).toEqual([]);
 });
 
-test('other bosses retain their environmental states without Europa arena toggles', async ({ page }) => {
+test('other bosses retain their environmental states without Europa arena toggles', async ({
+  page,
+}) => {
   test.setTimeout(80000);
   for (const sector of [4, 7]) {
     await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);

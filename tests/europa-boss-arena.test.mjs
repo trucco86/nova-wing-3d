@@ -27,19 +27,19 @@ test('Europa Colossus legs, hull and ice-quake visual never penetrate the ice fl
         const t = bossTacticsAt(5, age, phase);
         const approach = 1 - Math.pow(1 - Math.min(1, age / 3), 3);
         const pose = bossDepartureAt(age, t, approach);
-        boss.position.set(
-          pose.x,
-          europaBossArenaHeight(pose.y, minY),
-          pose.z,
-        );
+        boss.position.set(pose.x, europaBossArenaHeight(pose.y, minY), pose.z);
         boss.rotation.z = t.bank;
         for (const kind of ['ice-quake', 'cryo-pincer']) {
           animateBossSignature(boss, 5, age, phase, t.state, kind);
           const bounds = new T.Box3().setFromObject(boss);
           assert.ok(
             bounds.min.y >= EUROPA_ARENA_FLOOR_Y + 2,
-            'Colossus floor clipping during ' + kind + ' at age ' + age +
-              ', minY=' + bounds.min.y.toFixed(2),
+            'Colossus floor clipping during ' +
+              kind +
+              ' at age ' +
+              age +
+              ', minY=' +
+              bounds.min.y.toFixed(2),
           );
         }
         boss.userData.parts.forEach((p, i) =>
@@ -75,7 +75,11 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   assert.equal(world.europaBossArenaState().carrierHidden, true);
   world.setDestinationArrival(110);
   world.update(0.2, 110, 480, true);
-  assert.equal(crystals.visible, false, 'arrival or moving world cannot restore foreground clutter');
+  assert.equal(
+    crystals.visible,
+    false,
+    'arrival or moving world cannot restore foreground clutter',
+  );
   assert.equal(landmarks.visible, true, 'the distant glacial backdrop remains');
   world.setEuropaBossArena(false);
   assert.equal(crystals.visible, true);
