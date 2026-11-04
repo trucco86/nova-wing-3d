@@ -30,11 +30,23 @@ export function createEuropaAttackVfx() {
     arm.position.set(side * 42, -11, 23);
     arms.push(arm);
   }
-  for (const node of [quake, ...arms]) {
+  // Grounded spike field grows upward only on a telegraphed ice-quake.
+  // Six shards share one geometry and emissive material for mobile draw cost.
+  const shards = [];
+  const shardGeometry = new T.ConeGeometry(3.3, 23, 6);
+  for (let i = 0; i < 6; i++) {
+    const shard = new T.Mesh(shardGeometry, shock);
+    shard.name = 'europa-ice-quake-spike-' + i;
+    shard.position.set((i - 2.5) * 13, -29, 28 + (i % 2) * 7);
+    shard.rotation.z = (i % 2 ? -1 : 1) * 0.19;
+    shard.scale.y = 0.1;
+    shards.push(shard);
+  }
+  for (const node of [quake, ...arms, ...shards]) {
     node.userData.visualOnly = true;
     root.add(node);
   }
-  Object.assign(root.userData, { shock, pincer, quake, arms, materials: [shock, pincer] });
+  Object.assign(root.userData, { shock, pincer, quake, arms, shards, materials: [shock, pincer] });
   animateEuropaAttackVfx(root, 0);
   return root;
 }
@@ -47,9 +59,16 @@ export function animateEuropaAttackVfx(root, time, phase = 1, state = 'maneuver'
   const striking = state === 'attack';
   const pulse = 0.78 + Math.sin(time * 7) * 0.22;
   const strength = 1 + Math.max(0, Math.min(2, phase - 1)) * 0.1;
-  const { shock, pincer, quake, arms } = root.userData;
+  const { shock, pincer, quake, arms, shards } = root.userData;
   quake.visible = quakeOn;
   for (const arm of arms) arm.visible = pincerOn;
+  for (const [i, shard] of shards.entries()) {
+    shard.visible = quakeOn;
+    if (quakeOn) {
+      shard.scale.y = (striking ? 1.45 : 0.12 + 0.2 * pulse) * strength;
+      shard.rotation.z = (i % 2 ? -1 : 1) * (striking ? 0.32 : 0.17);
+    }
+  }
   shock.opacity = quakeOn ? Math.min(0.9, (striking ? 0.84 : 0.48) * pulse * strength) : 0;
   pincer.opacity = pincerOn ? Math.min(0.9, (striking ? 0.8 : 0.45) * pulse * strength) : 0;
   if (quakeOn) {

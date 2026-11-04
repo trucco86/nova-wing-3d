@@ -4600,6 +4600,10 @@ export function createGame({
             !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
             (bossIntent.kind !== 'reactor-vent' ||
               boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
+            // A destroyed Hydra head immediately cancels its paired beam,
+            // never landing invisible damage from an already broken gun.
+            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
+              boss.userData.parts.every((part) => part.hp > 0)) &&
             bossMeleeHit(bossIntent, {
               x: player.position.x,
               y: player.position.y,
@@ -4620,8 +4624,9 @@ export function createGame({
         // The tactical arrow points to the actual animated signature weapon
         // when it exists, instead of always pretending the attack comes from
         // the center of the boss. This does not change collision or targeting.
-        const signatureOrigin = bossIntent?.origin
-          ? boss.getObjectByName(bossIntent.origin)?.getWorldPosition(new T.Vector3())
+        const signatureSource = bossIntent?.originMesh ?? bossIntent?.origin;
+        const signatureOrigin = signatureSource
+          ? boss.getObjectByName(signatureSource)?.getWorldPosition(new T.Vector3())
           : null;
         radarPlan =
           ['windup', 'attack'].includes(t.state) && bossIntent

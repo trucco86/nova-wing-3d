@@ -6,7 +6,11 @@ import { SECTORS } from '../src/campaign.js';
 
 test('Europa telegraphs are bounded, deterministic, mutually exclusive and cosmetic', () => {
   const effect = createEuropaAttackVfx();
-  assert.equal(effect.children.length, 3);
+  assert.equal(effect.children.length, 9, 'six readable ice spikes plus original three effects');
+  assert.equal(effect.userData.shards.length, 6);
+  assert.ok(
+    effect.userData.shards.every((shard) => shard.name.startsWith('europa-ice-quake-spike-')),
+  );
   assert.equal(effect.userData.visualOnly, true);
   assert.ok(
     effect.children.every(
@@ -16,6 +20,7 @@ test('Europa telegraphs are bounded, deterministic, mutually exclusive and cosme
   animateEuropaAttackVfx(effect, 4, 2, 'windup', 'ice-quake');
   assert.equal(effect.userData.quake.visible, true);
   assert.ok(effect.userData.arms.every((arm) => !arm.visible));
+  assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y < 0.5));
   const before = [
     effect.userData.shock.opacity,
     effect.userData.quake.rotation.z,
@@ -32,6 +37,7 @@ test('Europa telegraphs are bounded, deterministic, mutually exclusive and cosme
   );
   animateEuropaAttackVfx(effect, 6, 3, 'attack', 'cryo-pincer');
   assert.equal(effect.userData.quake.visible, false);
+  assert.ok(effect.userData.shards.every((shard) => !shard.visible));
   assert.ok(effect.userData.arms.every((arm) => arm.visible && Math.abs(arm.position.x) === 23));
   animateEuropaAttackVfx(effect, 8, 3, 'maneuver', 'cryo-pincer');
   assert.ok(effect.children.every((node) => !node.visible));

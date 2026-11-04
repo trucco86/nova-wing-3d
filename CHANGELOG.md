@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.79 — Elite Boss Counterplay 1.0 (QA)
+
+- Europa: a onda de impacto agora prepara e projeta seis estacas visuais de gelo, enquanto a pinça criogênica mantém seu próprio padrão de esquiva e colisão.
+- Hydra: ataque exclusivo de duas cabeças em fase avançada, com origem física dupla e zona horizontal de dano no radar, cancelado se uma bateria for destruída.
+- Ômega: quando uma arma lateral é destruída, passa a usar o tentáculo sobrevivente; sem as duas armas passa a disparar do núcleo, nunca de um braço inexistente. Radar aponta para a peça real.
+- Marvin: defesa reativa da retaguarda com jato das turbinas visível e esquiva por altitude; mantém contrajogo de robô, boost e flancos.
+- Física de dano do radar igual à zona real, alvo travado durante o aviso, sem mover pontos fracos ou alterar chefes/fases já aprovados.
+- Testes Node para quatro chefes e Playwright de lutas reais, QA isolada, sem aprovação de produção.
+
 ## 1.27.78 — Boss Shot Readability 2.0 (QA)
 
 - Canhões de dez chefes com boca física de alto contraste, halo de preparação proporcional à carga e flash luminoso quando o canhão dispara.
