@@ -1,12 +1,23 @@
 import * as T from 'three';
 
-// Europa's fight has a visible ice floor at y=-7. The Colossus is a tall
-// articulated mecha: centering it at the ordinary airborne boss height sends
-// its legs, weapon chassis and lower armor straight through the terrain.
-// Compute its bound only once on spawn, never every frame on mobile.
+// Europa's Colossus extends far below its own origin. Raising the entire
+// boss to avoid the original y=-7 floor moved its head out of the camera.
+// The arena therefore opens into a deep ice basin: lower only its ground
+// surface, while keeping the boss near the flight/reticle center. Compute
+// its bounding box once, never every frame on mobile.
 export const EUROPA_ARENA_FLOOR_Y = -7;
 export const EUROPA_ARENA_FLOOR_GAP = 18;
 export const EUROPA_ARENA_BACKDROP_DEPTH = -280;
+// Keep low tactical poses, attacks and facial weak points inside the reticle.
+// The glacial floor is lowered to fit the actual Colossus silhouette instead.
+export const EUROPA_ARENA_MIN_CENTER_TARGET = 7;
+
+export function europaBossFloorY(boss) {
+  const originalMinimum = europaBossMinimumCenterHeight(boss);
+  return EUROPA_ARENA_FLOOR_Y -
+    Math.max(0, originalMinimum - EUROPA_ARENA_MIN_CENTER_TARGET);
+}
+
 
 export function europaBossMinimumCenterHeight(
   boss,
