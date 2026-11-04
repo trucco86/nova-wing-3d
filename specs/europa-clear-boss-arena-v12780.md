@@ -7,7 +7,7 @@
 
 ## Solução
 
-1. Medir uma vez na criação da luta o bounding box 3D do Colossus e calcular a altitude mínima do centro que deixa **18 unidades de margem** sobre o gelo. Aplicar o mesmo limite a cada fase do movimento (entrada, windup, attack, recovery, 360°).
+1. Medir uma vez na criação da luta o bounding box 3D do Colossus. **Rebaixar o piso glacial para formar uma bacia ampla**, preservando o centro do chefe dentro da câmera, com **18 unidades de margem** sob o corpo mesmo durante windup, attack, recovery e órbita 360°. A primeira solução apenas elevava o chefe e o deixava fora do enquadramento mobile.
 2. Agrupar os sessenta cristais dinâmicos de Europa em `europa-near-field-crystals`, desativando apenas esse grupo na luta. Não remover nem modificar elementos visuais da aproximação.
 3. Mover a vegetação glacial/landmarks e a vida ambiente de segunda/terceira camada **280 unidades para trás** no início da arena, mantendo identidade visual e sensação de escala, sem volumes altos no primeiro plano.
 4. Ocultar a nave-mãe genérica apenas na arena de Europa e evitar que atualizações de chegada reabilitem cristais durante a luta.
@@ -15,7 +15,7 @@
 
 ## Critérios de aceite
 
-- Para todos os estados e fases de ataque, bounding box de Colossus não intersecta o plano y=-7. Seus hardpoints, HP, posição relativa dos geradores e armas não mudam.
+- Para todos os estados e fases de ataque, o bounding box do Colossus não intersecta o **piso rebaixado da arena**, cujo y é calculado pela geometria completa. O centro de combate após a entrada permanece abaixo de y=40. Os hardpoints, HP, posição relativa dos geradores e armas não mudam.
 - `europaArena.active=true`, `foregroundHidden=true`, `carrierHidden=true` e `backdropDepth=-280` desde o surgimento do chefe.
 - Cristais dinâmicos e obstáculos com colisão não entram no corredor de tiro; 360° de órbita mantém a visão do boss e radar.
 - A chegada não reativa os cristais; sair da luta/resetar restaura as propriedades e a aproximação normal.
