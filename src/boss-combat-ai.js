@@ -7,10 +7,10 @@ const MELEE = Object.freeze({
   3: ['reactor-vent', 'hammer-slam'],
   4: ['plasma-dive', 'solar-sweep'],
   5: ['ice-quake', 'cryo-pincer'],
-  6: ['tentacle-grab', 'tentacle-sweep'],
+  6: ['tentacle-grab', 'tentacle-sweep', 'hydra-two-head-crossfire'],
   7: ['bite', 'claw-swipe', 'hammer-slam', 'tentacle-grab', 'tentacle-sweep'],
   8: ['orion-gravity-pulse', 'orion-iris-shear'],
-  9: ['bite', 'claw-swipe', 'tentacle-grab'],
+  9: ['bite', 'claw-swipe', 'tentacle-grab', 'marvin-rear-thruster-sweep'],
 });
 const LABEL = Object.freeze({
   'rok-pincer': 'ROK · PINÇA DAS ASAS · SUBA DA ZONA VERMELHA',
@@ -18,6 +18,8 @@ const LABEL = Object.freeze({
   'stingray-scissor': 'STINGRAY · TESOURA VERTICAL · ESQUIVE PELA LATERAL',
   'stingray-sting': 'STINGRAY · FERRÃO · SAIA DA LINHA DE INVESTIDA',
   'drill-crosscut': 'CARBIDE · BROCA TRANSVERSAL · MUDE DE ALTURA',
+  'hydra-two-head-crossfire': 'HIDRA · FOGO CRUZADO DAS CABEÇAS · SUBA PARA ESCAPAR',
+  'marvin-rear-thruster-sweep': 'MARVIN · VARREDURA DAS TURBINAS · MUDE DE ALTURA',
   'orion-gravity-pulse': 'ÓRION · PULSO GRAVITACIONAL · AFASTE-SE DO CENTRO',
   'orion-iris-shear': 'ÓRION · RAIO DA ÍRIS · SAIA DA FAIXA VERTICAL',
   'drill-ram': 'INVESTIDA DA BROCA · FUJA DO EIXO',
@@ -46,6 +48,8 @@ const EXCLUSIVE_FOOTPRINTS = Object.freeze({
   'drill-crosscut': Object.freeze({ type: 'rect', x: 1.55, y: 0.65 }),
   'orion-gravity-pulse': Object.freeze({ type: 'ellipse', x: 1.18, y: 1.18 }),
   'orion-iris-shear': Object.freeze({ type: 'rect', x: 0.55, y: 1.9 }),
+  'hydra-two-head-crossfire': Object.freeze({ type: 'rect', x: 1.65, y: 0.58 }),
+  'marvin-rear-thruster-sweep': Object.freeze({ type: 'rect', x: 1.8, y: 0.54 }),
 });
 export const bossExclusiveFootprint = (kind) => EXCLUSIVE_FOOTPRINTS[kind] ?? null;
 
@@ -84,18 +88,26 @@ export function chooseBossIntent({
       // mecha draws his claws, and a low/front approach risks his bite.
       // Phase 3 mixes in an intercept after repeated frontal approaches.
       const climbing = playerY >= 28;
+      const behind = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit))) > 2.35;
       kind =
         boosting || climbing
           ? 'tentacle-grab'
-          : flank || robot
-            ? 'claw-swipe'
-            : p === 3 && cycle % 3 === 0
-              ? 'tentacle-grab'
-              : 'bite';
+          : behind && p >= 2 && !robot
+            ? 'marvin-rear-thruster-sweep'
+            : flank || robot
+              ? 'claw-swipe'
+              : p === 3 && cycle % 3 === 0
+                ? 'tentacle-grab'
+                : 'bite';
     } else if (sector === 6)
-      // The Hydra counters high flight, boost and orbiting with a focused grab;
-      // low/front flight must dodge a horizontal tentacle sweep vertically.
-      kind = boosting || flank || playerY >= 28 ? 'tentacle-grab' : 'tentacle-sweep';
+      // Two actual heads trap a sustained flank on the third phase; raising
+      // altitude escapes. Other angles preserve approved grabs/sweeps.
+      kind =
+        p === 3 && flank && !boosting && playerY < 28 && cycle % 3 === 0
+          ? 'hydra-two-head-crossfire'
+          : boosting || flank || playerY >= 28
+            ? 'tentacle-grab'
+            : 'tentacle-sweep';
     else if (sector === 4)
       // Phoenix commits to an aimed plasma dive against high/boosting pilots;
       // low flight triggers a wide but shallow wing sweep. The player can
@@ -109,16 +121,25 @@ export function chooseBossIntent({
       // Omega counters the approach angle chosen by the pilot.
       // Face: jaw; flank: claws; stern: tracking tentacles; heavy: hammer arms.
       const angle = Math.abs(Math.atan2(Math.sin(orbit), Math.cos(orbit)));
+      // Destroyed physical generators really disable their linked claws and
+      // tentacles: Omega switches to a surviving limb or core gun rather than
+      // landing damage from a missing arm.
+      const available = generators.some(Boolean);
+      const approachedSide = orbit < 0 ? 0 : 1;
       kind =
-        angle > 2.1
-          ? 'tentacle-grab'
-          : angle > 0.85
-            ? 'claw-swipe'
-            : robot || cycle % 3 === 2
-              ? 'hammer-slam'
-              : boosting || playerY >= 28 || cycle % 3 === 1
-                ? 'tentacle-sweep'
-                : 'bite';
+        !available && angle > 0.85
+          ? 'barrage'
+          : angle > 2.1
+            ? 'tentacle-grab'
+            : angle > 0.85
+              ? generators[approachedSide] !== false
+                ? 'claw-swipe'
+                : 'tentacle-sweep'
+              : robot || cycle % 3 === 2
+                ? 'hammer-slam'
+                : boosting || playerY >= 28 || cycle % 3 === 1
+                  ? 'tentacle-sweep'
+                  : 'bite';
     } else if (sector === 2)
       kind = boosting || (!flank && cycle % 3 !== 0) ? 'drill-ram' : 'drill-crosscut';
     else if (sector === 3)
@@ -145,6 +166,22 @@ export function chooseBossIntent({
   return Object.freeze({
     kind,
     label: LABEL[kind],
+    // Keep the public attack family stable while anchoring radar to the
+    // visible moving limb, respecting which Omega battery is still alive.
+    originMesh:
+      sector === 7
+        ? kind === 'bite'
+          ? 'omega-mouth-cavity'
+          : kind === 'claw-swipe'
+            ? orbit < 0 ? 'omega-port-talon' : 'omega-starboard-talon'
+            : kind.startsWith('tentacle')
+              ? generators[orbit < 0 ? 0 : 1] !== false
+                ? orbit < 0 ? 'omega-port-tentacle' : 'omega-starboard-tentacle'
+                : orbit < 0 ? 'omega-starboard-tentacle' : 'omega-port-tentacle'
+              : kind === 'hammer-slam'
+                ? 'signature-omega-left'
+                : null
+        : null,
     ventSide,
     sector,
     cycle,
@@ -165,7 +202,9 @@ export function chooseBossIntent({
     // Always commit once at windup: the boss cannot instantly retarget after
     // the player starts dodging the telegraphed danger area.
     counter:
-      boosting && (sector === 6 || sector === 9)
+      kind === 'marvin-rear-thruster-sweep'
+        ? 'rear'
+        : boosting && (sector === 6 || sector === 9)
         ? 'boost'
         : playerY >= 28 && (sector === 6 || sector === 9)
           ? 'altitude'
@@ -179,6 +218,8 @@ export function chooseBossIntent({
     dodgeRadius:
       kind === 'orion-gravity-pulse'
         ? 13
+        : kind === 'hydra-two-head-crossfire' || kind === 'marvin-rear-thruster-sweep'
+          ? 12
         : kind === 'rok-pincer' || kind === 'drill-crosscut'
           ? 12
           : kind === 'stingray-scissor' || kind === 'orion-iris-shear' || kind === 'rok-ram'
@@ -195,7 +236,11 @@ export function chooseBossIntent({
                       ? 14
                       : 9,
     origin:
-      kind === 'rok-pincer'
+      kind === 'hydra-two-head-crossfire'
+        ? 'signature-hydra-head-0'
+        : kind === 'marvin-rear-thruster-sweep'
+          ? 'marvin-rear-thruster-sweeper'
+          : kind === 'rok-pincer'
         ? 'signature-rok-left'
         : kind === 'rok-ram'
           ? 'signature-rok-right'
@@ -270,7 +315,8 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
       intent.kind === 'orion-gravity-pulse' ||
-      intent.kind === 'orion-iris-shear'
+      intent.kind === 'orion-iris-shear' ||
+      intent.kind === 'marvin-rear-thruster-sweep'
         ? windup * 0.4 + strike
         : 0,
     lunge:
@@ -282,6 +328,7 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
             : 48),
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
+      intent.kind === 'hydra-two-head-crossfire' ||
       intent.kind === 'rok-pincer' ||
       intent.kind === 'stingray-scissor' ||
       intent.kind === 'drill-crosscut' ||
