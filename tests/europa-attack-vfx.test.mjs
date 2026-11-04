@@ -18,6 +18,7 @@ test('Europa telegraphs are bounded, deterministic, mutually exclusive and cosme
   animateEuropaAttackVfx(effect, 4, 2, 'windup', 'ice-quake');
   assert.equal(effect.userData.quake.visible, true);
   assert.ok(effect.userData.arms.every((arm) => !arm.visible));
+  assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y < 0.5));
   const before = [
     effect.userData.shock.opacity,
     effect.userData.quake.rotation.z,
