@@ -67,6 +67,7 @@ import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
+import { createRadioTriage } from './hud-message-policy.js';
 import {
   europaBossMinimumCenterHeight,
   europaBossArenaHeight,
@@ -579,6 +580,7 @@ export function createGame({
     visualTime = 0,
     shake = 0,
     lastStage = -1;
+  const radioTriage = createRadioTriage();
   let scatterOwned = false;
   let fireMode = 'pulse';
   let sectorIndex = 0,
@@ -1287,6 +1289,7 @@ export function createGame({
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
+    radioTriage.reset();
     spawnCd = 2;
     fighterSerial = 0;
     fighterWaveSerial = 0;
@@ -1506,10 +1509,17 @@ export function createGame({
     if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
   function message(t, speakerId = 'bia') {
+    const notice = dynamicFlight
+      ? radioTriage.offer(t, visualTime, { compact: true, force: msgTime <= 0 && stageIntroTime > 0 })
+      : { text: String(t), full: String(t), duration: 3 };
+    if (!notice) return;
     renderRadioSpeaker(document, speakerId);
-    $('message').textContent = t;
+    $('message').textContent = notice.text;
+    // Full wording remains available to screen readers and on pointer hover.
+    $('message').setAttribute('aria-label', notice.full);
+    $('message').title = notice.full;
     $('comms').classList.add('active');
-    msgTime = 3;
+    msgTime = notice.duration;
   }
   function dispose(o) {
     scene.remove(o);
