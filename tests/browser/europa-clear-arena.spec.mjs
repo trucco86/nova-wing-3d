@@ -51,8 +51,10 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     { width: 844, height: 390 },
   ]) {
     await page.setViewportSize(size);
-    await page.evaluate(() => window.fixture.advance(0.1));
+    await page.evaluate(() => window.fixture.advance(0.9));
     const state = await page.evaluate(() => window.fixture.game.snapshot());
+    if (size.width < size.height) expect(state.camera.fov).toBeGreaterThan(92);
+    else expect(state.camera.fov).toBeLessThan(86);
     expect(state.europaArena.foregroundHidden).toBe(true);
     expect(state.europaArena.floorY).toBeLessThan(-25);
     expect(state.europaArena.bossCenterY).toBeLessThan(40);
