@@ -3741,6 +3741,7 @@ export function createGame({
       clamp(dx, -1, 1),
       boosting,
       dynamicFlight ? route : undefined,
+      dynamicFlight && sectorIndex === 5 && boss && camera.aspect < 0.72 ? 98 : null,
     );
     if (robotMode) updateMechaLock(dt, dx, dy);
     mechaEngine?.update({
