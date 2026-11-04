@@ -106,7 +106,11 @@ async def explore(args: argparse.Namespace, url: str) -> str:
         device_scale_factor=1.0,
     )
     try:
-        stagehand = await Stagehand.create(browser=browser)
+        stagehand = await Stagehand.create(
+            browser=browser,
+            model=args.browser_model,
+            model_api_key=os.environ["OPENAI_API_KEY"],
+        )
         try:
             agent = create_deep_agent(
                 model=args.model,
@@ -140,6 +144,11 @@ def main() -> None:
     parser.add_argument("--scenario", choices=sorted(SCENARIOS), default="menu-desktop")
     parser.add_argument("--url", default="http://127.0.0.1:4173/")
     parser.add_argument("--model", default=os.getenv("NOVA_QA_MODEL", "openai:gpt-5.5"))
+    parser.add_argument(
+        "--browser-model",
+        default=os.getenv("NOVA_QA_BROWSER_MODEL", "openai/gpt-5.4-mini"),
+        help="Modelo usado pelo Stagehand local, diferente do modelo Deep Agents.",
+    )
     parser.add_argument("--max-model-calls", type=int, default=10)
     parser.add_argument("--show-browser", action="store_true")
     args = parser.parse_args()
@@ -164,7 +173,8 @@ def main() -> None:
         f"# Nova Wing | Deep Agents exploratory QA\n\n"
         f"- Data UTC: {stamp}\n"
         f"- Scenario: {args.scenario}\n"
-        f"- Model: {args.model}\n"
+        f"- Deep Agents model: {args.model}\n"
+        f"- Stagehand model: {args.browser_model}\n"
         f"- URL: {url}\n"
         f"- Duration seconds: {elapsed}\n"
         f"- Model call limit: {args.max_model_calls}\n"
