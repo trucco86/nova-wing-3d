@@ -19,6 +19,7 @@
 - `europaArena.active=true`, `foregroundHidden=true`, `carrierHidden=true` e `backdropDepth=-280` desde o surgimento do chefe.
 - Cristais dinâmicos e obstáculos com colisão não entram no corredor de tiro; 360° de órbita mantém a visão do boss e radar.
 - A chegada não reativa os cristais; sair da luta/resetar restaura as propriedades e a aproximação normal.
-- Playwright mobile 390×844 e 844×390, captura de tela, sem erros de página.
+- A câmera amplia **somente no retrato durante a batalha da fase 6** (FOV alvo 98°), sem alterar mira, hitboxes, outros chefes nem modo cockpit. Em paisagem e fora da arena, a lente retorna suavemente ao padrão original.
+- Playwright mobile 390×844 e 844×390, captura de tela, FOV validado em ambas orientações e sem erros de página.
 - Fases 1/2 previamente aprovadas e Stage 4/8 não mudam.
 - Testes em iPhone físico com gráfico Alto/Médio e revisão visual antes de qualquer merge em produção.
