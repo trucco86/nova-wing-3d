@@ -4587,8 +4587,7 @@ export function createGame({
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
             : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
-          (sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z) +
-            meleePose.lunge,
+          (sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z) + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
         // presentation, even while Omega moves: Saturn/rings stay stationary.
