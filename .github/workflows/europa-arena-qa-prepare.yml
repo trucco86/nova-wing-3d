@@ -1,0 +1,51 @@
+name: One-shot Europa Boss Clear Arena QA
+on:
+  push:
+    branches: [fix/europa-boss-clear-arena-20261104]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.80
+      - name: Write candidate release notes
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const file = 'CHANGELOG.md';
+          let s = readFileSync(file, 'utf8');
+          const old = '## 1.27.80 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const next = '## 1.27.80 — Europa Boss Clear Arena · QA\n\n- Colossus da fase 6 mantém a altura mínima calculada pela geometria completa, evitando que as pernas/armas atravessem o piso de gelo em aproximação, preparação, ataque ou recuperação.\n- Os 60 cristais próximos do corredor deixam de cruzar a frente do chefe no combate; glaciares e atividade de fundo são afastados sem perder qualidade visual.\n- Arena mais limpa para mira, canhões, radar, tiros, pontos fracos e órbita 360; desativa nave-mãe genérica apenas em Europa.\n- Testes unitários de clearance, cenário preservado e retorno de cena, além de Playwright real de fase 6 e regressão de outros chefes em mobile/desktop.\n- Sem mudanças na física dos disparos ou progressão; somente QA e inspeção física pendente.';
+          if (!s.includes(old)) throw new Error('Missing changelog placeholder');
+          writeFileSync(file, s.replace(old, next));
+          writeFileSync('releases/v1.27.80.md',
+            '## Nova Wing 3D v1.27.80 — Europa Arena · QA\n\n' +
+            '- O Colossus não entra mais no solo: altura mínima baseada na geometria completa, sem mover hitboxes ou geradores.\n' +
+            '- A arena glacial da fase 6 tem espaço livre de objetos no primeiro plano; cristais mantidos na aproximação e removidos do campo de tiro somente no combate.\n' +
+            '- Glaciares e elementos dinâmicos permanecem no segundo e terceiro planos para manter o visual premium.\n' +
+            '- Os demais chefes, Saturno, ORBITAR, RPG, tiros e IA permanecem sem alterações.\n' +
+            '- Testes Node, screenshots e Playwright emulado; validar em celular real antes de produção.\n\n' +
+            '**Exclusivamente QA. Não publicar sem homologação.**\n');
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit QA artifacts
+        run: |
+          git config user.name 'nova-wing-qa-bot'
+          git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.80.md specs/europa-clear-boss-arena-v12780.md src/europa-boss-arena.js src/game.js src/visuals.js tests/europa-boss-arena.test.mjs tests/browser/europa-clear-arena.spec.mjs
+          git commit -m 'chore(release): prepare Europa boss clear arena v1.27.80'
+          git push origin HEAD:fix/europa-boss-clear-arena-20261104
