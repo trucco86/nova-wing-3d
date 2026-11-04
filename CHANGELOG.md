@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.81 — QA Berserk Compact HUD (QA)
+
+- Painel de ativação Berserk exclusivo do laboratório QA reduzido de 238 px para 124 px, com alvo de toque de 44 px e feedback visual ativo.
+- Mensagens de status longo permanecem acessíveis aos leitores de tela sem bloquear a luta, a mira, o radar ou os pontos fracos.
+- Responsivo em 320×568, 390×844 e 844×390; teste de ativação direta e replay preservado.
+- Sem alterar controles de RPG/ORBITAR, mecânicas de combate, arena Europa, Saturno ou interface de produção.
+- QA isolada com testes Playwright e homologação física pendente.
+
 ## 1.27.80 — Europa Boss Clear Arena · QA
 
 - Colossus da fase 6 mantém a geometria inteira acima do **piso glacial rebaixado**, com margem dinâmica e chefe enquadrado no centro da tela, evitando tanto o atravessamento do gelo quanto a aparição do modelo acima da câmera em mobile.
