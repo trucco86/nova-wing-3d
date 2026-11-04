@@ -73,3 +73,36 @@ test('destroyed batteries lose charge and flashes, leaving the emergency core we
     disposeBoss(boss);
   }
 });
+
+test('gun charge and muzzle flash halos are anchored to the live cannon and never turn on destroyed guns', () => {
+  const boss = createBossModel(SECTORS[7], 7, true);
+  try {
+    for (const side of [-1, 1]) {
+      const barrel = boss.userData.batteries[side < 0 ? 0 : 1];
+      const muzzle = barrel.getObjectByName(sourceHardpointName(side));
+      const halo = barrel.getObjectByName('boss-weapon-charge-halo');
+      const burst = barrel.getObjectByName('boss-weapon-muzzle-burst');
+      assert.ok(halo?.isSprite && burst?.isSprite);
+      barrel.updateMatrixWorld(true);
+      assert.ok(halo.getWorldPosition(new T.Vector3()).distanceTo(muzzle.getWorldPosition(new T.Vector3())) < 1);
+      animateBossWeaponVfx(boss, 2, 0.1, 0.05);
+      assert.equal(halo.visible, false, 'glow requires true charging state');
+      animateBossWeaponVfx(boss, 2.1, 0.8, 0.05);
+      assert.equal(halo.visible, true);
+      flashBossWeapon(boss, side);
+      animateBossWeaponVfx(boss, 2.2, 0.8, 0.05);
+      assert.equal(burst.visible, true);
+      animateBossWeaponVfx(boss, 2.6, 0, 0.3);
+      assert.equal(burst.visible, false);
+    }
+    boss.userData.parts[0].hp = 0;
+    animateBossWeaponVfx(boss, 4, 1, 0.05);
+    assert.equal(boss.userData.batteries[0].userData.weaponVfx.glow.visible, false);
+    flashBossWeapon(boss, -1);
+    animateBossWeaponVfx(boss, 4.1, 1, 0.05);
+    assert.equal(boss.userData.batteries[0].userData.weaponVfx.burst.visible, false);
+    assert.equal(boss.userData.batteries[1].userData.weaponVfx.glow.visible, true);
+  } finally {
+    disposeBoss(boss);
+  }
+});
