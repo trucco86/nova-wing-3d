@@ -4589,9 +4589,7 @@ export function createGame({
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
             : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
-          sectorIndex === 5
-            ? europaBossArenaDepth(launchPose.z) + Math.min(14, Math.max(0, meleePose.lunge * 0.35))
-            : launchPose.z + meleePose.lunge,
+          sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
         // presentation, even while Omega moves: Saturn/rings stay stationary.
@@ -4782,6 +4780,15 @@ export function createGame({
         }
       }
       if (dynamicFlight && !boss.userData.sabotage) {
+        // Lock the physical claw to the attack's real telegraphed world-space
+        // target. Dodging changes the player's position, NOT the latched aim.
+        // Transforming the point to boss-local space also preserves orbit.
+        const europaTarget =
+          sectorIndex === 5 && bossIntent && ['windup', 'attack'].includes(tactics().state)
+            ? boss.worldToLocal(
+                new T.Vector3(bossIntent.targetX, bossIntent.targetY, player.position.z - 7),
+              )
+            : null;
         animateBossSignature(
           boss,
           sectorIndex,
@@ -4790,6 +4797,8 @@ export function createGame({
           tactics().state,
           bossIntent?.kind,
           melee,
+          sectorIndex === 5 ? bossIntent : null,
+          europaTarget,
         );
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
@@ -5722,6 +5731,25 @@ export function createGame({
               floorY: boss.userData.europaArenaFloorY,
               minimumCenterY: boss.userData.europaMinimumCenterY,
               bossCenterY: boss.position.y,
+              // QA-only snapshot: the strike meshes must visibly reach the
+              // same committed location as the real melee damage footprint.
+              strike:
+                bossIntent && ['ice-quake', 'cryo-pincer'].includes(bossIntent.kind)
+                  ? {
+                      kind: bossIntent.kind,
+                      state: tactics().state,
+                      target: [bossIntent.targetX, bossIntent.targetY],
+                      claws:
+                        boss
+                          .getObjectByName('boss-europa-attack-vfx')
+                          ?.userData.strikers.map((arm) => ({
+                            side: arm.side,
+                            visible: arm.node.visible,
+                            contact: arm.hand.getWorldPosition(new T.Vector3()).toArray(),
+                            flash: arm.impact.visible,
+                          })) ?? [],
+                    }
+                  : null,
             }
           : null,
       bossTargets:

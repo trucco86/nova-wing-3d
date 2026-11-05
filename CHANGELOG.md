@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.85 — Ataques físicos do Colosso Glacial (QA)
+
+- Garra telescópica física na área real de impacto; pinça bilateral e martelada unilateral em coreografias distintas.
+- Corpo estável durante golpes, radar ancorado na garra e geradores destruídos interrompendo o braço correspondente.
+- Validação em celular físico pendente; produção inalterada.
+
 ## 1.27.84 — Colosso Glacial mais próximo (QA)
 
 - Fase 6: profundidade ajustada de -205 para -160 e lente retrato de 98° para 88° sem alterar escala, colisões ou órbita.

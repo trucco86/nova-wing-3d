@@ -174,25 +174,33 @@ export function chooseBossIntent({
     // Keep the public attack family stable while anchoring radar to the
     // visible moving limb, respecting which Omega battery is still alive.
     originMesh:
-      sector === 7
-        ? kind === 'bite'
-          ? 'omega-mouth-cavity'
-          : kind === 'claw-swipe'
-            ? orbit < 0
-              ? 'omega-port-talon'
-              : 'omega-starboard-talon'
-            : kind.startsWith('tentacle')
-              ? generators[orbit < 0 ? 0 : 1] !== false
-                ? orbit < 0
-                  ? 'omega-port-tentacle'
-                  : 'omega-starboard-tentacle'
-                : orbit < 0
-                  ? 'omega-starboard-tentacle'
-                  : 'omega-port-tentacle'
-              : kind === 'hammer-slam'
-                ? 'signature-omega-left'
-                : null
-        : null,
+      sector === 5 && (kind === 'ice-quake' || kind === 'cryo-pincer')
+        ? generators[Math.abs(cycle) % 2] !== false
+          ? Math.abs(cycle) % 2 === 0
+            ? 'europa-left-claw-tip'
+            : 'europa-right-claw-tip'
+          : Math.abs(cycle) % 2 === 0
+            ? 'europa-right-claw-tip'
+            : 'europa-left-claw-tip'
+        : sector === 7
+          ? kind === 'bite'
+            ? 'omega-mouth-cavity'
+            : kind === 'claw-swipe'
+              ? orbit < 0
+                ? 'omega-port-talon'
+                : 'omega-starboard-talon'
+              : kind.startsWith('tentacle')
+                ? generators[orbit < 0 ? 0 : 1] !== false
+                  ? orbit < 0
+                    ? 'omega-port-tentacle'
+                    : 'omega-starboard-tentacle'
+                  : orbit < 0
+                    ? 'omega-starboard-tentacle'
+                    : 'omega-port-tentacle'
+                : kind === 'hammer-slam'
+                  ? 'signature-omega-left'
+                  : null
+          : null,
     ventSide,
     sector,
     cycle,
