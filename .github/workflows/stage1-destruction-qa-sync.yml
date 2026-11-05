@@ -1,0 +1,69 @@
+name: Stage-1 city destruction candidate sync
+on:
+  push:
+    branches:
+      - feat/stage1-city-destruction-train-setpiece-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-destruction-qa-sync
+  cancel-in-progress: true
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format stage-1 authored events and tests
+        run: |
+          npx prettier --write src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs tests/harness.mjs tests/dynamic-scene.js
+      - name: Validate order, physical train obstacle and launch mission continuity
+        run: |
+          node --test tests/city-stage1-destruction.test.mjs tests/city-2-6-transit.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Prepare versioned QA build
+        run: npm run release:prepare -- 1.27.89
+      - name: Record actual stage-1 additions
+        run: |
+          cat > releases/v1.27.89.md <<'NOTES'
+          ## Nova Wing 3D v1.27.89 — Fase 1: cidade sob ataque e trem pendurado (QA)
+
+          - Roteiro único e determinístico na Fase 1: primeiro leitura da cidade viva, depois queda de outdoor/placa, veículo aéreo avariado e explosão lateral, fachada quebrando com fragmentos, aviso do trem, descarrilamento e trem suspenso criando obstáculo.
+          - Trem real de dois vagões, carenagem, janelas, luzes de avaria, trilho rompido, queda animada e colisões só quando o destroço ocupa a rota.
+          - Rota de desvio segura pela direita, destacada por seta luminosa. O jogador consegue passar sem sofrer dano se desviar.
+          - Eventos visuais laterais mantêm o corredor de mira livre. Durante o trem, novas ondas comuns têm janela de respiro para garantir leitura.
+          - O obrigatório Super Boost da ascensão orbital mantém seu início, exigência de energia e transição existentes.
+          - Somente a Fase 1 recebe o roteiro; o restante dos mundos e a sequência de Europa (v1.27.88) permanecem preservados.
+          - Inclui testes Node de ordem temporal, geometria, colisões, rota segura e boost e testes Playwright desktop/mobile com screenshots por trecho.
+
+          **Somente QA; sem merge em produção nem validação visual manual aprovada.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          path=Path("CHANGELOG.md")
+          s=path.read_text()
+          s=s.replace(
+            "## 1.27.89 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.",
+            "## 1.27.89 — Cidade sob ataque e trem avariado (Fase 1, QA)\n\n- Outdoor, carro voador e fachada desmoronam em ordem cinematográfica, sem bloquear o centro.\n- Trem pendurado com rota segura à direita e colisão apenas após a queda.\n- Ascensão orbital com Super Boost preservada; suíte automatizada e homologação visual pendentes.",
+          )
+          path.write_text(s)
+          PY
+      - name: Commit versioned source, tests and distributed HTML
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs tests/harness.mjs tests/dynamic-scene.js package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.89.md index.html
+          if git diff --cached --quiet; then
+            echo 'Already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(stage1): prepare city destruction and hanging maglev QA v1.27.89'
+          git push origin HEAD:feat/stage1-city-destruction-train-setpiece-20261105
