@@ -34,6 +34,7 @@ import {
 } from './destination-vista.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
+import { createCityDestructionScene, updateCityDestructionScene } from './city-destruction.js';
 import {
   createCityUrbanDrones,
   animateCityUrbanDrones,
@@ -1501,6 +1502,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(rain);
   const sectorScenery = new T.Group();
   scene.add(sectorScenery);
+  // Stage-1 scripted event layer stays independent of looping city tiles.
+  // Moving the 1900-unit road loop must never replay a demolition or train crash.
+  const cityDestruction = createCityDestructionScene();
+  scene.add(cityDestruction);
   let sceneryTheme = 'city';
   let destinationIndex = 0;
   let destinationVista = null;
@@ -1661,6 +1666,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
+    setCityDestruction(seconds) {
+      return updateCityDestructionScene(cityDestruction, seconds, sceneryTheme === 'city' && city.visible);
+    },
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
@@ -1800,6 +1808,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const urbanVisible = reveal.cityVisible;
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
+      if (!urbanVisible) cityDestruction.visible = false;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
       // The Moon used in other stages is separate from the real lunar body.
@@ -1900,6 +1909,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.visible = land && sceneryTheme !== 'mars';
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       cityHorizon.visible = sceneryTheme === 'city';
+      updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       for (const tile of [city, cityFar]) {
         tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
@@ -2243,6 +2253,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
+      updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
