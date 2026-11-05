@@ -1,0 +1,68 @@
+name: Stage 1 audio and clear HUD QA release prep
+on:
+  push:
+    branches:
+      - feat/stage1-authored-sfx-clean-hud-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-sfx-hud-qa
+  cancel-in-progress: true
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format staged stage-1 audio and scene source
+        run: |
+          npx prettier --write src/audio-cues.js src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs
+      - name: Validate authored sound, existing audio lifecycle and first-stage gameplay
+        run: |
+          node --test tests/city-stage1-destruction.test.mjs tests/immersive-audio.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Prepare v1.27.92 synchronized QA bundle
+        run: npm run release:prepare -- 1.27.92
+      - name: Release notes and changelog
+        run: |
+          cat > releases/v1.27.92.md <<'NOTES'
+          ## Nova Wing 3D v1.27.92 — Fase 1: áudio de destruição e HUD limpo · QA
+
+          - Audio original e específico para o impacto de placa metálica, colisão do carro aéreo, desabamento de concreto/fachada, sirene do trem, rompimento do trilho e impacto do trem. Cada um tem corpo de graves, textura e posição estéreo próprios.
+          - Cues sintéticos e leves, sem downloads de gravações e limitados pelo gerenciador de até 32 vozes; respeitam volume, mudo, pausa e ciclo de vida do jogo.
+          - As explosões já animadas não tocam mais o efeito genérico junto com o som específico do mesmo acontecimento.
+          - Sem excesso de rádio na Fase 1: apenas um alerta curto quando o trem exige desvio. Legendas PT, EN e ES para a mensagem.
+          - Roteiro e cronologia dos acontecimentos, piso corrigido, visuais de impacto, faixas do trem e Super Boost permanecem idênticos à v1.27.91.
+          - Testes dirigidos de áudio, ordem de sete cues, volume/vozes, alerta localizado único e regresso de colisão e boost.
+
+          **Somente QA. Ainda depende de CI completo e validação visual e sonora pelo usuário; produção inalterada.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('CHANGELOG.md')
+          s = p.read_text()
+          s = s.replace(
+            '## 1.27.92 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '## 1.27.92 — Fase 1: áudio de destruição e HUD limpo (QA)\n\n- Sons próprios da placa, veículo, fachada e trem; explosões não duplicam efeitos genéricos.\n- Somente um aviso textual localizado PT/EN/ES no momento do desvio do trem.\n- Sequência, colisões e Super Boost preservados; homologação manual e CI completo pendentes.',
+          )
+          p.write_text(s)
+          PY
+      - name: Commit source, tests and versioned HTML
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.92.md index.html src/audio-cues.js src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs
+          if git diff --cached --quiet; then
+            echo 'Already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(stage1): prepare authored destruction audio and clear HUD QA v1.27.92'
+          git push origin HEAD:feat/stage1-authored-sfx-clean-hud-20261105
