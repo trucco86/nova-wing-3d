@@ -11,9 +11,12 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   const checkpoints = [
     [3.1, 'city-calm', 0],
     [6.5, 'city-under-fire', 1],
+    [7.35, 'city-under-fire', 2],
     [9.6, 'city-under-fire', 3],
+    [10.25, 'city-under-fire', 4],
     [12.4, 'facade-collapse', 6],
-    [14.6, 'train-failing', 8],
+    [13.2, 'facade-collapse', 7],
+    [14.6, 'train-failing', 9],
   ];
   for (const [seconds, phase, minimumBeats] of checkpoints) {
     const snap = await page.evaluate((at) => {
@@ -32,6 +35,13 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     for (const bottom of clearance.facadeFragmentBottoms) {
       expect(bottom).toBeGreaterThanOrEqual(clearance.floorY - 0.001);
     }
+    const impact =
+      seconds === 7.35 ? 'billboard' : seconds === 10.25 ? 'vehicle' : seconds === 13.2 ? 'facade' : null;
+    if (impact) {
+      expect(snap.cityDestruction.impacts[impact].visible).toBe(true);
+      expect(snap.cityDestruction.impacts[impact].groundY).toBeGreaterThan(clearance.floorY);
+      expect(snap.cityDestruction.impacts[impact].drawCount).toBe(5);
+    }
     await page.screenshot({
       path: info.outputPath('stage1-destruction-' + seconds + '-' + info.project.name + '.png'),
     });
@@ -49,6 +59,8 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   expect(hanging.cityDestruction.wrecks[0].collisionActive).toBe(true);
   expect(hanging.cityDestruction.wrecks[0].solidCount).toBe(2);
   expect(hanging.cityDestruction.wrecks[0].safeLane).toBe('right');
+  expect(hanging.cityDestruction.wrecks[0].laneGuidesVisible).toBe(true);
+  expect(hanging.cityDestruction.wrecks[0].powerlineSparksVisible).toBe(true);
   expect(hanging.player.x).toBeGreaterThan(17);
   expect(hanging.lives).toBe(3);
   await page.screenshot({
