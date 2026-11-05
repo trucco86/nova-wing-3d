@@ -23,11 +23,8 @@ export const EUROPA_ARENA_PORTRAIT_FOV = 88;
 export const EUROPA_ARENA_PORTRAIT_ASPECT_LIMIT = 0.72;
 
 export function europaBossPortraitFov(aspect) {
-  if (!Number.isFinite(aspect) || aspect <= 0)
-    throw new RangeError('Invalid Europa camera aspect');
-  return aspect < EUROPA_ARENA_PORTRAIT_ASPECT_LIMIT
-    ? EUROPA_ARENA_PORTRAIT_FOV
-    : null;
+  if (!Number.isFinite(aspect) || aspect <= 0) throw new RangeError('Invalid Europa camera aspect');
+  return aspect < EUROPA_ARENA_PORTRAIT_ASPECT_LIMIT ? EUROPA_ARENA_PORTRAIT_FOV : null;
 }
 
 export function europaBossArenaDepth(requestedZ) {

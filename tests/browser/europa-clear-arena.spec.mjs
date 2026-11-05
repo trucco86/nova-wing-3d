@@ -62,8 +62,7 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     } else expect(state.camera.fov).toBeLessThan(86);
     // The original scene used -205 depth and 98° in portrait; this should
     // improve apparent size without touching mesh scale or weak-point hitboxes.
-    const oldPresence =
-      1 / ((state.camera.z + 205) * Math.tan((98 * Math.PI) / 360));
+    const oldPresence = 1 / ((state.camera.z + 205) * Math.tan((98 * Math.PI) / 360));
     const actualPresence =
       1 / ((state.camera.z - state.bossZ) * Math.tan((state.camera.fov * Math.PI) / 360));
     if (size.width < size.height) expect(actualPresence).toBeGreaterThan(oldPresence * 1.3);
