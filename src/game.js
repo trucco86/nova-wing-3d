@@ -67,7 +67,11 @@ import { marsSandstormAt } from './mars-sandstorm.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
-import { createRadioTriage } from './hud-message-policy.js';
+import {
+  createRadioTriage,
+  compactBossAttackWarning,
+  compactBossState,
+} from './hud-message-policy.js';
 import {
   europaBossMinimumCenterHeight,
   europaBossArenaHeight,
@@ -4205,9 +4209,9 @@ export function createGame({
       })
     ) {
       bossWarned = true;
-      bossWarningTime = 3.5;
+      bossWarningTime = 2.2;
       world.showCarrierForBoss?.();
-      $('bossIncoming').textContent = '⚠ CHEFE SE APROXIMANDO · SAINDO DA NAVE-MÃE';
+      $('bossIncoming').textContent = '⚠ CHEFE À FRENTE';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
@@ -4858,6 +4862,12 @@ export function createGame({
         $('bossState').textContent +=
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
+      if (dynamicFlight) {
+        const details = $('bossState').textContent;
+        $('bossState').setAttribute('aria-label', details);
+        $('bossState').title = details;
+        $('bossState').textContent = compactBossState(details);
+      }
       bossCd -= hostileDt;
       if (!boss.userData.sabotage) {
         const charging =
@@ -4889,11 +4899,11 @@ export function createGame({
             )?.name
           : null;
       $('attackWarning').textContent = physicalWarning
-        ? '⚠ ' +
-          physicalWarning +
-          (radarPlan?.threatened ? ' · SIGA A ZONA VERDE DO RADAR' : ' · POSIÇÃO SEGURA')
+        ? compactBossAttackWarning(physicalWarning, {
+            threatened: radarPlan?.threatened !== false,
+          })
         : signatureWarning
-          ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+          ? compactBossAttackWarning(signatureWarning)
           : bossCd < 0.65
             ? '⚠ ' +
               [
@@ -4911,9 +4921,9 @@ export function createGame({
             : '';
       if (boss.userData.sabotage)
         $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
-      if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
-        $('attackWarning').textContent +=
-          (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
+      // The physical radar and real cannon flash already communicate where
+      // the next bolt comes from: do not repeat PLASMA/ORBES every volley.
+      // Full tactical labels remain available in the radar and boss help.
       // Only one targeted volley per maneuver; never spray generic bullets
       // over the physical strike window.
       const allowRanged =
