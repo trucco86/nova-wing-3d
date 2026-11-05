@@ -197,6 +197,9 @@ test('train remains suspended above road and its safe collision route is unchang
   const wreck = createCityHangingTrainObstacle();
   for (const at of [14.2, 14.8, 15.6, 16.2, 17.5, 21.5]) {
     animateCityHangingTrainObstacle(wreck, at);
+    // A standalone model has no render loop to propagate parent pivot/world
+    // matrices, so update the hierarchy before reading bounds.
+    wreck.updateMatrixWorld(true);
     const body = wreck.getObjectByName('city-maglev-damaged-carriages');
     const bounds = new T.Box3().setFromObject(body, true);
     assert.ok(bounds.min.y >= CITY_COLLISION_FLOOR_Y - 0.002,
