@@ -82,7 +82,7 @@ export function createRadioTriage() {
 }
 
 
-const BOSS_NAMES = /^(?:ROK|STINGRAY|CARBIDE|DEVASTADOR|PHOENIX|COLOSSUS|HIDRA|HYDRA|ÔMEGA|OMEGA|ÓRION|ORION|MARVIN)\\s*$/iu;
+const BOSS_NAMES = /^(?:ROK|STINGRAY|CARBIDE|DEVASTADOR|PHOENIX|COLOSSUS|HIDRA|HYDRA|ÔMEGA|OMEGA|ÓRION|ORION|MARVIN)\s*$/iu;
 const ATTACK_VERBS = [
   [/SUBA|MUDE DE ALTURA|TROQUE DE ALTURA/iu, 'SUBA'],
   [/AFASTE-SE|SAIA DO CENTRO/iu, 'AFASTE-SE'],
@@ -94,7 +94,7 @@ const ATTACK_VERBS = [
 ];
 
 function shortLabel(text, maxChars) {
-  const value = String(text ?? '').replace(/\\s+/gu, ' ').trim();
+  const value = String(text ?? '').replace(/\s+/gu, ' ').trim();
   if (value.length <= maxChars) return value;
   const cut = value.slice(0, maxChars - 1);
   const word = cut.lastIndexOf(' ');
@@ -107,7 +107,7 @@ function shortLabel(text, maxChars) {
 export function compactBossAttackWarning(label, { threatened = true } = {}) {
   if (!label || !threatened) return '';
   const parts = String(label)
-    .split(/\\s*[·/]\\s*/u)
+    .split(/\s*[·/]\s*/u)
     .map((part) => part.trim())
     .filter(Boolean);
   if (parts.length > 1 && BOSS_NAMES.test(parts[0])) parts.shift();
@@ -127,12 +127,12 @@ export function compactBossState(full, maxChars = 36) {
   if (!original) return '';
   let decision;
   if (/DESATIVE/iu.test(original)) {
-    decision = original.replace(/^DESATIVE\\s+/iu, 'DESATIVE ').replace(/\\s*·.*$/u, '');
+    decision = original.replace(/^DESATIVE\s+/iu, 'DESATIVE ').replace(/\s*·.*$/u, '');
   } else if (/REATOR|N[ÚU]CLEO EXPOSTO|ALVO VULNER[ÁA]VEL.*N[ÚU]CLEO/iu.test(original)) {
     decision = 'NÚCLEO EXPOSTO';
-  } else if (/BATERIA ESQ\\./iu.test(original)) {
+  } else if (/BATERIA ESQ\./iu.test(original)) {
     decision = 'BATERIA ESQ. · FRACA';
-  } else if (/BATERIA DIR\\./iu.test(original)) {
+  } else if (/BATERIA DIR\./iu.test(original)) {
     decision = 'BATERIA DIR. · FRACA';
   } else if (/BLINDAGEM|BLINDADAS/iu.test(original)) {
     decision = /FRENTE/iu.test(original) ? 'BLINDAGEM · FRENTE' : 'BLINDAGEM · ORBITE';
@@ -141,9 +141,9 @@ export function compactBossState(full, maxChars = 36) {
   } else if (/APROXIMA[ÇC][ÃA]O/iu.test(original)) {
     decision = 'APROXIMAÇÃO';
   } else {
-    decision = original.replace(/ÚLTIMA RESIST[ÊE]NCIA DE MARVIN\\s*·\\s*/iu, 'MARVIN · ');
+    decision = original.replace(/ÚLTIMA RESIST[ÊE]NCIA DE MARVIN\s*·\s*/iu, 'MARVIN · ');
   }
-  const elemental = original.match(/FRACO:\\s*([^·]+)/iu)?.[1]?.trim();
+  const elemental = original.match(/FRACO:\s*([^·]+)/iu)?.[1]?.trim();
   const withElement = elemental ? decision + ' · ' + elemental : decision;
   return shortLabel(withElement, maxChars);
 }
