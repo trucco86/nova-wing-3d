@@ -56,6 +56,7 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableCitySetpieces = spawnEncounters,
   enableSquadIntro = false,
   seed = 42,
   storage,
