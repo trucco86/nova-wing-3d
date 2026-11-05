@@ -23,11 +23,16 @@ export function cityDestructionAt(seconds) {
   return Object.freeze({
     seconds,
     phase:
-      seconds < 5.4 ? 'city-calm'
-        : seconds < 11.1 ? 'city-under-fire'
-          : seconds < 13.3 ? 'facade-collapse'
-            : seconds < 16.2 ? 'train-failing'
-              : seconds < 22 ? 'train-obstacle'
+      seconds < 5.4
+        ? 'city-calm'
+        : seconds < 11.1
+          ? 'city-under-fire'
+          : seconds < 13.3
+            ? 'facade-collapse'
+            : seconds < 16.2
+              ? 'train-failing'
+              : seconds < 22
+                ? 'train-obstacle'
                 : 'orbital-handoff',
     billboard: smooth((seconds - 5.4) / 1.7),
     vehicle: smooth((seconds - 8.5) / 1.6),
@@ -39,10 +44,13 @@ export function cityDestructionAt(seconds) {
 }
 
 const boxGeo = new T.BoxGeometry(1, 1, 1);
-const steel = () => new T.MeshStandardMaterial({ color: '#45677f', metalness: 0.8, roughness: 0.37 });
-const glass = () => new T.MeshStandardMaterial({ color: '#11384e', metalness: 0.45, roughness: 0.23 });
+const steel = () =>
+  new T.MeshStandardMaterial({ color: '#45677f', metalness: 0.8, roughness: 0.37 });
+const glass = () =>
+  new T.MeshStandardMaterial({ color: '#11384e', metalness: 0.45, roughness: 0.23 });
 const glow = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
-const char = () => new T.MeshStandardMaterial({ color: '#26313a', roughness: 0.87, metalness: 0.2 });
+const char = () =>
+  new T.MeshStandardMaterial({ color: '#26313a', roughness: 0.87, metalness: 0.2 });
 function block(parent, material, name, x, y, z, w, h, d) {
   const mesh = new T.Mesh(boxGeo, material);
   mesh.name = name;
@@ -58,7 +66,10 @@ export function createCityDestructionScene() {
   root.name = 'city-scripted-destruction';
   root.userData.visualOnly = true;
   root.visible = false;
-  const armor = steel(), dark = char(), lit = glow('#69efff'), orange = glow('#ffb367');
+  const armor = steel(),
+    dark = char(),
+    lit = glow('#69efff'),
+    orange = glow('#ffb367');
 
   const billboard = new T.Group();
   billboard.name = 'city-falling-advertisement';
@@ -79,9 +90,15 @@ export function createCityDestructionScene() {
     block(car, lit, 'city-hovercar-thruster', side * 5.5, -1.9, 4, 1.2, 0.9, 5);
     block(car, orange, 'city-hovercar-warning-light', side * 5, 0.3, 10.5, 1.1, 0.8, 0.3);
   }
-  const carBurst = new T.Mesh(new T.IcosahedronGeometry(6, 1), new T.MeshBasicMaterial({
-    color: '#ffab5e', transparent: true, opacity: 0.82, depthWrite: false,
-  }));
+  const carBurst = new T.Mesh(
+    new T.IcosahedronGeometry(6, 1),
+    new T.MeshBasicMaterial({
+      color: '#ffab5e',
+      transparent: true,
+      opacity: 0.82,
+      depthWrite: false,
+    }),
+  );
   carBurst.name = 'city-hovercar-impact-fireball';
   carBurst.userData.visualOnly = true;
   car.add(carBurst);
@@ -97,16 +114,29 @@ export function createCityDestructionScene() {
   collapse.name = 'city-tower-damaged-crown';
   for (let i = 0; i < 7; i++) {
     const piece = block(
-      collapse, i % 2 ? armor : dark, 'city-tower-falling-facade-fragment',
-      ((i % 3) - 1) * 9, 70 + Math.floor(i / 3) * 10, 17.5 + (i % 2) * 2,
-      7.5, 6 + (i % 2) * 6, 3.1,
+      collapse,
+      i % 2 ? armor : dark,
+      'city-tower-falling-facade-fragment',
+      ((i % 3) - 1) * 9,
+      70 + Math.floor(i / 3) * 10,
+      17.5 + (i % 2) * 2,
+      7.5,
+      6 + (i % 2) * 6,
+      3.1,
     );
     piece.userData.origin = piece.position.clone();
     piece.userData.fall = (i % 3) * 5 + 12;
   }
   facade.add(collapse);
-  const collapseFlash = new T.Mesh(new T.SphereGeometry(13, 8, 6),
-    new T.MeshBasicMaterial({ color: '#ffa65c', transparent: true, opacity: 0.65, depthWrite: false }));
+  const collapseFlash = new T.Mesh(
+    new T.SphereGeometry(13, 8, 6),
+    new T.MeshBasicMaterial({
+      color: '#ffa65c',
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+    }),
+  );
   collapseFlash.name = 'city-tower-impact-flash';
   collapseFlash.position.set(0, 92, 20);
   collapseFlash.userData.visualOnly = true;
@@ -122,14 +152,23 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   if (!root) return null;
   const state = cityDestructionAt(seconds);
   root.visible = Boolean(visible) && seconds < 23.5;
-  const { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash } = root.userData.nodes;
+  const { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash } =
+    root.userData.nodes;
   signRoot.visible = seconds >= 4.8 && seconds < 10.3;
-  signRoot.position.set(-55 + state.billboard * 10, 47 - state.billboard * 44, -195 + Math.max(0, seconds - 5.4) * 48);
+  signRoot.position.set(
+    -55 + state.billboard * 10,
+    47 - state.billboard * 44,
+    -195 + Math.max(0, seconds - 5.4) * 48,
+  );
   billboard.rotation.z = -state.billboard * 1.15;
   billboard.rotation.x = state.billboard * 0.4;
 
   car.visible = seconds >= 8.2 && seconds < 12.3;
-  car.position.set(56 - state.vehicle * 12, 48 - state.vehicle * 56, -185 + Math.max(0, seconds - 8.5) * 48);
+  car.position.set(
+    56 - state.vehicle * 12,
+    48 - state.vehicle * 56,
+    -185 + Math.max(0, seconds - 8.5) * 48,
+  );
   car.rotation.set(state.vehicle * 0.72, 0.14, -state.vehicle * 1.25);
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
@@ -158,7 +197,10 @@ export function createCityHangingTrainObstacle() {
   root.userData.solidOn = false;
   root.userData.safeLane = 'right';
 
-  const armor = steel(), windowMat = glass(), neon = glow('#51f6eb'), warning = glow('#ffca55');
+  const armor = steel(),
+    windowMat = glass(),
+    neon = glow('#51f6eb'),
+    warning = glow('#ffca55');
   const tornGuideway = new T.Group();
   tornGuideway.name = 'city-broken-guideway';
   block(tornGuideway, armor, 'city-twisted-track-section', -11, 11, 0, 39, 3.6, 25);
@@ -178,8 +220,17 @@ export function createCityHangingTrainObstacle() {
     block(train, steel(), 'city-wreck-maglev-roof', 0, 4.1, z, 12.8, 0.65, 30);
     for (const flank of [-1, 1])
       for (let j = 0; j < 4; j++) {
-        block(train, warning, 'city-wreck-maglev-broken-window',
-          flank * 8.05, 1.4, z - 10.5 + j * 7, 0.4, 2.7, 0.4);
+        block(
+          train,
+          warning,
+          'city-wreck-maglev-broken-window',
+          flank * 8.05,
+          1.4,
+          z - 10.5 + j * 7,
+          0.4,
+          2.7,
+          0.4,
+        );
       }
   }
   for (const z of [-36, 36]) {

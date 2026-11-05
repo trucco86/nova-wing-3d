@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.89 — Cidade sob ataque e trem avariado (Fase 1, QA)
+
+- Outdoor, carro voador e fachada desmoronam em ordem cinematográfica, sem bloquear o centro.
+- Trem pendurado com rota segura à direita e colisão apenas após a queda.
+- Ascensão orbital com Super Boost preservada; suíte automatizada e homologação visual pendentes.
+
 ## 1.27.88 — Fissura do túnel glacial (QA)
 
 - Rachaduras 3D progressivas antes do rompimento, mantendo a colisão física até o impacto.

@@ -66,7 +66,9 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   expect(errors).toEqual([]);
 });
 
-test('only the first sector receives city destruction; Mars route has no train', async ({ page }) => {
+test('only the first sector receives city destruction; Mars route has no train', async ({
+  page,
+}) => {
   test.setTimeout(100000);
   await page.goto('/__dynamic.html?sector=1&citySetpieces=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');

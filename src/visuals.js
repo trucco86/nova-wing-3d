@@ -1667,7 +1667,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setDestinationArrival,
     setDestinationExit,
     setCityDestruction(seconds) {
-      return updateCityDestructionScene(cityDestruction, seconds, sceneryTheme === 'city' && city.visible);
+      return updateCityDestructionScene(
+        cityDestruction,
+        seconds,
+        sceneryTheme === 'city' && city.visible,
+      );
     },
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;

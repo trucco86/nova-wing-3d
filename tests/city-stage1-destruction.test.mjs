@@ -16,7 +16,14 @@ import { harness } from './harness.mjs';
 
 test('stage-1 story beats are deterministic and finish before mandatory orbital boost', () => {
   const ids = CITY_DESTRUCTION_BEATS.map(({ id }) => id);
-  assert.deepEqual(ids, ['billboard', 'vehicle', 'facade', 'trainWarning', 'trainSpawn', 'trainImpact']);
+  assert.deepEqual(ids, [
+    'billboard',
+    'vehicle',
+    'facade',
+    'trainWarning',
+    'trainSpawn',
+    'trainImpact',
+  ]);
   const times = CITY_DESTRUCTION_BEATS.map(({ at }) => at);
   assert.ok(times.every((at, i) => i === 0 || at > times[i - 1]));
   assert.ok(times.at(-1) < 23, 'set pieces must not interrupt mandatory boost');
@@ -76,7 +83,8 @@ test('hanging maglev warns from above, then blocks left/center but leaves real r
   assert.ok(wreck.getObjectByName('city-derailed-hanging-maglev').position.y < startY);
   const hits = (x, y = 9) =>
     wreck.userData.solids.some(({ center, half }) =>
-      crossesSolid(new T.Vector3(x, y, -65), new T.Vector3(x, y, 65), center, half, 2.5));
+      crossesSolid(new T.Vector3(x, y, -65), new T.Vector3(x, y, 65), center, half, 2.5),
+    );
   assert.equal(hits(0), true, 'center flight path must require a dodge');
   assert.equal(hits(-20), true, 'left lane is genuinely blocked');
   assert.equal(hits(24), false, 'right path remains wide enough for pilot collision margin');
