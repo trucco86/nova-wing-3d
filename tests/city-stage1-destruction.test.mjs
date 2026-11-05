@@ -4,6 +4,8 @@ import * as T from 'three';
 import { crossesSolid } from '../src/flight.js';
 import {
   CITY_DESTRUCTION_BEATS,
+  CITY_STAGE_AUDIO,
+  cityWarningText,
   cityDestructionAt,
   createCityDestructionScene,
   updateCityDestructionScene,
@@ -18,6 +20,7 @@ import {
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 import { harness } from './harness.mjs';
+import { AUDIO_CUES } from '../src/audio-cues.js';
 
 test('stage-1 story beats are deterministic and finish before mandatory orbital boost', () => {
   const ids = CITY_DESTRUCTION_BEATS.map(({ id }) => id);
@@ -290,4 +293,71 @@ test('train setpiece signals a real right-side route and shows electrical danger
   animateCityHangingTrainObstacle(wreck, 22);
   assert.equal(sparks.visible, false, 'decorative sparks expire after encounter');
   assert.equal(safe.visible, false, 'guides do not persist after the dodge section');
+});
+
+test('stage-1 audio cues follow distinct events and radio only interrupts for actionable train dodge', () => {
+  const audible = [
+    'billboardImpact',
+    'vehicleImpact',
+    'facadeImpact',
+    'facadeDebrisImpact',
+    'trainWarning',
+    'trainSpawn',
+    'trainImpact',
+  ];
+  assert.deepEqual(Object.keys(CITY_STAGE_AUDIO), audible);
+  for (const event of audible) {
+    const signature = AUDIO_CUES[CITY_STAGE_AUDIO[event]];
+    assert.ok(signature, event + ' needs a real synthesizable cue');
+    assert.ok(signature.tones.length >= 1);
+    assert.ok(
+      signature.tones.length + (signature.noises?.length ?? 0) <= 4,
+      event + ' should keep voice allocation bounded on mobile',
+    );
+    assert.ok(signature.cooldown >= 0.2);
+  }
+  assert.notDeepEqual(AUDIO_CUES.cityMetalDrop, AUDIO_CUES.cityTrainCrash);
+  assert.notDeepEqual(AUDIO_CUES.cityVehicleCrash, AUDIO_CUES.cityFacadeCollapse);
+  assert.deepEqual(
+    CITY_DESTRUCTION_BEATS.filter((beat) => beat.message).map((beat) => beat.id),
+    ['trainWarning'],
+    'no repeated radio text during noninteractive background demolition',
+  );
+  assert.equal(cityWarningText('pt'), 'TREM AVARIADO · DESVIE À DIREITA');
+  assert.equal(cityWarningText('en'), 'DAMAGED TRAIN · DODGE RIGHT');
+  assert.equal(cityWarningText('es'), 'TREN AVERIADO · ESQUIVA A LA DERECHA');
+  assert.equal(cityWarningText('unknown'), cityWarningText('pt'));
+});
+
+test('real stage-1 collision timeline triggers each authored sound exactly at event time', (t) => {
+  const h = harness({
+    spawnEncounters: false,
+    enableCitySetpieces: true,
+    enableSquadIntro: false,
+  });
+  t.after(() => h.close());
+  h.game.start(true);
+  for (const [at, name] of [
+    [7.2, 'cityMetalDrop'],
+    [10.15, 'cityVehicleCrash'],
+    [12.15, 'cityFacadeCollapse'],
+    [13.0, 'cityConcreteDebris'],
+    [13.4, 'cityTrainAlarm'],
+    [14.3, 'cityRailTear'],
+    [16.3, 'cityTrainCrash'],
+  ]) {
+    const current = h.game.snapshot().seconds;
+    h.advance(at - current);
+    const snapshot = h.game.snapshot();
+    assert.equal(snapshot.audio?.lastCue, name, 'wrong SFX at t=' + at);
+    assert.ok(snapshot.audio.voices <= 32, 'voice pool budget still enforced');
+  }
+  h.game.pause();
+  assert.equal(h.game.snapshot().audio.voices, 0, 'pause clears scene sounds');
+  h.advance(3);
+  assert.equal(
+    h.game.snapshot().audio.lastCue,
+    'cityTrainCrash',
+    'paused simulation must not replay impact sounds',
+  );
 });
