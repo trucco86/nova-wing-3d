@@ -62,7 +62,7 @@ function poseStriker(striker, target, state, kind, reach, charge) {
   // Windup silhouettes are distinct: high raised hammer vs wide closing
   // pincers. Only the appendage approaches the ship; the body stays put.
   const prepared = quake
-    ? new T.Vector3(target.x + side * 16, target.y + 42, target.z - 82)
+    ? new T.Vector3(target.x + side * 16, target.y + 56, target.z - 82)
     : new T.Vector3(target.x + side * 44, target.y + 8, target.z - 78);
   const contact = quake
     ? new T.Vector3(target.x, target.y - 3, target.z - 8)
