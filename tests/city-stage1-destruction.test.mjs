@@ -24,6 +24,7 @@ test('stage-1 story beats are deterministic and finish before mandatory orbital 
     'facade',
     'facadeImpact',
     'trainWarning',
+    'facadeDebrisImpact',
     'trainSpawn',
     'trainImpact',
   ]);
