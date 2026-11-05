@@ -1,0 +1,69 @@
+name: Stage 1 impact readability candidate sync
+on:
+  push:
+    branches:
+      - feat/stage1-impact-readability-train-safety-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-impact-readability-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format targeted stage-1 VFX and tests
+        run: |
+          npx prettier --write src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+      - name: Verify impact FX, real collision and boost regression
+        run: |
+          node --test tests/city-stage1-destruction.test.mjs tests/city-2-6-transit.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Prepare v1.27.91 candidate and bundled HTML
+        run: npm run release:prepare -- 1.27.91
+      - name: Write truthful release notes
+        run: |
+          cat > releases/v1.27.91.md <<'NOTES'
+          ## Nova Wing 3D v1.27.91 — Fase 1: feedback dos impactos e leitura do trem · QA
+
+          - Impactos dos objetos agora têm efeitos curtos ancorados ao asfalto: onda de choque horizontal, três volumes de poeira e um lote de faíscas por evento.
+          - A placa, o carro aéreo e os destroços da fachada geram efeitos em tempos e posições diferentes, mantendo a mira e o centro da nave livres.
+          - Os efeitos são determinísticos, pré-alocados e desaparecem em pouco mais de um segundo, sem criar dezenas de novas partículas a cada quadro; impacto real segue sobre o chão corrigido em v1.27.90.
+          - Trem suspenso mostra pequenas descargas elétricas no trilho rompido e guias luminosas discretas à direita para indicar a passagem realmente segura, sem hitboxes invisíveis.
+          - Mantidos: colisão real do trem, aviso antes da queda, rota segura, Super Boost obrigatório e demais fases.
+          - Novos testes Node exigem efeitos acima do piso, janela curta e orçamento limitado de draw calls. Playwright captura impactos e desvio com os indicadores visíveis.
+          - CI completo e homologação visual manual ainda necessários antes de qualquer merge/produção.
+
+          **Somente QA; produção inalterada.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('CHANGELOG.md')
+          s = p.read_text()
+          s = s.replace(
+            '## 1.27.91 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '## 1.27.91 — Fase 1: efeitos de impacto e desvio do trem (QA)\n\n- Poeira, faíscas e ondas de choque no asfalto após queda da placa, veículo e fachada.\n- Trem avariado com descargas no trilho e indicação discreta da faixa segura.\n- Sem novos colliders ou mudanças na progressão, demais fases preservadas; homologação visual pendente.',
+          )
+          p.write_text(s)
+          PY
+      - name: Commit versioned output and changed source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.91.md index.html src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+          if git diff --cached --quiet; then
+            echo 'All files synchronized'
+            exit 0
+          fi
+          git commit -m 'build(stage1): prepare grounded impact FX and train warning QA v1.27.91'
+          git push origin HEAD:feat/stage1-impact-readability-train-safety-20261105
