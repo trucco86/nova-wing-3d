@@ -1734,6 +1734,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         floorY: ground.position.y,
       };
     },
+    europaSurfaceState() {
+      if (sceneryTheme !== 'ice') return null;
+      return {
+        groundVisible: ground.visible,
+        orbitalVisible: moon.visible,
+        destinationGlobeVisible:
+          destinationVista?.getObjectByName('destination-celestial-body')?.visible ?? false,
+        frostDensity: scene.fog.density,
+        surfaceVisible: sectorScenery.getObjectByName('europa-frozen-surface')?.visible ?? false,
+        tunnelActive: europaTunnelActive,
+      };
+    },
     europaBossArenaState() {
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       return {
