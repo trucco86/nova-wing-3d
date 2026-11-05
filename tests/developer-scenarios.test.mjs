@@ -84,7 +84,11 @@ test('Europa QA tunnel can be launched and restarted without changing campaign s
   assert.deepEqual(snap.developerScenario, { sector: 5, encounter: 'tunnel' });
   assert.equal(snap.tunnel, true);
   assert.equal(snap.europaTunnel[0].breached, false);
-  assert.equal(h.game.startDeveloperScenario(4, 'tunnel'), false, 'cannot open a Europa tunnel in Venus');
+  assert.equal(
+    h.game.startDeveloperScenario(4, 'tunnel'),
+    false,
+    'cannot open a Europa tunnel in Venus',
+  );
 });
 
 test('public and HML hosts refuse QA navigation, including direct API calls', (t) => {

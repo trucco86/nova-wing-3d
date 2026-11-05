@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.87 — Europa: validação ponta a ponta do túnel (QA)
+
+- Atalho de QA para a ruptura do túnel na fase 6, reutilizando o gameplay real.
+- Testes automatizados da parede intacta, rompimento, destroços, entrada de inimigo e saída para superfície.
+- Sem alterações em produção; homologação visual no celular real pendente.
+
 ## 1.27.86 — Europa: túnel e superfície gelada (QA)
 
 - Fase 6: piso do túnel sem z-fighting; quebra física de parede com destroços e entrada coerente de inimigo.

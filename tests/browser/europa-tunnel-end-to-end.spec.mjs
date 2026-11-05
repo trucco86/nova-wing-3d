@@ -24,7 +24,9 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(start.europaSurface.tunnelActive).toBe(true);
   expect(start.europaSurface.groundVisible).toBe(false);
   expect(start.europaSurface.orbitalVisible).toBe(false);
-  await page.screenshot({ path: info.outputPath('europa-tunnel-intact-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('europa-tunnel-intact-' + info.project.name + '.png'),
+  });
 
   const breach = await page.evaluate(() => {
     const { game, advance } = window.fixture;
@@ -45,24 +47,28 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(breach.europaSurface.tunnelActive).toBe(true);
   expect(breach.europaSurface.groundVisible).toBe(false);
   await page.evaluate(() => window.fixture.advance(0, { renderAfter: true }));
-  await page.screenshot({ path: info.outputPath('europa-tunnel-breach-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('europa-tunnel-breach-' + info.project.name + '.png'),
+  });
 
   const entered = await page.evaluate(() => {
     const { game, advance } = window.fixture;
     for (let i = 0; i < 70; i++) {
       advance(0.05, { renderAfter: false });
       const current = game.snapshot();
-      if (current.targets.some((enemy) => enemy.kind === 'fighter' && enemy.x < 30))
-        return current;
+      if (current.targets.some((enemy) => enemy.kind === 'fighter' && enemy.x < 30)) return current;
     }
     return game.snapshot();
   });
   expect(entered.tunnel).toBe(true);
   expect(entered.targets.some((enemy) => enemy.kind === 'fighter' && enemy.x < 30)).toBe(true);
-  expect(entered.europaTunnel[0].debrisY.some((y, i) => y < breach.europaTunnel[0].debrisY[i]))
-    .toBe(true);
+  expect(
+    entered.europaTunnel[0].debrisY.some((y, i) => y < breach.europaTunnel[0].debrisY[i]),
+  ).toBe(true);
   await page.evaluate(() => window.fixture.advance(0, { renderAfter: true }));
-  await page.screenshot({ path: info.outputPath('europa-tunnel-fighter-entry-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('europa-tunnel-fighter-entry-' + info.project.name + '.png'),
+  });
 
   const exit = await page.evaluate(() => {
     const { game, advance } = window.fixture;
@@ -83,5 +89,7 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(exit.targets.some((enemy) => enemy.kind === 'fighter')).toBe(false);
   expect(errors).toEqual([]);
   await page.evaluate(() => window.fixture.advance(0, { renderAfter: true }));
-  await page.screenshot({ path: info.outputPath('europa-icy-surface-after-tunnel-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('europa-icy-surface-after-tunnel-' + info.project.name + '.png'),
+  });
 });

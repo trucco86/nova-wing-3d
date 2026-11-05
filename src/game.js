@@ -2706,7 +2706,9 @@ export function createGame({
       'QA · SETOR ' +
       String(scenario.sector + 1).padStart(2, '0') +
       ' · ' +
-      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE', tunnel: 'TÚNEL / GELO' }[scenario.encounter] +
+      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE', tunnel: 'TÚNEL / GELO' }[
+        scenario.encounter
+      ] +
       ' · SEM RANK';
     return true;
   }
@@ -6014,8 +6016,9 @@ export function createGame({
                     .getObjectByName('europa-tunnel-falling-debris')
                     ?.children.slice(0, 4)
                     .map((part) => part.position.y) ?? [],
-                remainingSolidPanels: obstacle.o.userData.solids.filter((solid) => solid.breachPanel)
-                  .length,
+                remainingSolidPanels: obstacle.o.userData.solids.filter(
+                  (solid) => solid.breachPanel,
+                ).length,
               }))
           : [],
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
