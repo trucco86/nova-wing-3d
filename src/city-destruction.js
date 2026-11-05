@@ -9,6 +9,7 @@ export const CITY_DESTRUCTION_BEATS = Object.freeze([
   { id: 'vehicleImpact', at: 10.05, message: null },
   { id: 'facade', at: 11.1, message: 'FACHADA EM COLAPSO · MANTENHA A ROTA' },
   { id: 'facadeImpact', at: 12.0, message: null },
+  { id: 'facadeDebrisImpact', at: 12.95, message: null },
   { id: 'trainWarning', at: 13.3, message: 'TREM AVARIADO · DESVIE À DIREITA' },
   { id: 'trainSpawn', at: 14.2, message: null },
   { id: 'trainImpact', at: 16.2, message: null },
@@ -144,8 +145,9 @@ export function createCityDestructionScene() {
   );
   carBurst.name = 'city-hovercar-impact-fireball';
   carBurst.userData.visualOnly = true;
-  car.add(carBurst);
-  root.add(car);
+  // Keep the shockwave in world space: the car rotates, but the blast
+  // must rest on the street, not spin or tunnel into the terrain with it.
+  root.add(car, carBurst);
 
   const facade = new T.Group();
   facade.name = 'city-collapsing-facade';
@@ -220,6 +222,11 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   keepCityDebrisAboveGround(car);
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
+  carBurst.position.set(
+    car.position.x,
+    CITY_STREET_TOP_Y + 6 * carBurst.scale.x,
+    car.position.z,
+  );
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
   facade.position.set(-88, -7, -255 + Math.max(0, seconds - 11.1) * 48);
@@ -244,6 +251,18 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
   return state;
+}
+
+export function cityDestructionGroundState(root) {
+  if (!root?.userData?.nodes) return null;
+  const { signRoot, car, facade, collapse } = root.userData.nodes;
+  return {
+    floorY: CITY_STREET_TOP_Y,
+    billboardBottomY: cityRigidBottomY(signRoot),
+    vehicleBottomY: cityRigidBottomY(car),
+    towerBottomY: cityBoxBottomY(facade.getObjectByName('city-tower-surviving-shell')),
+    facadeFragmentBottoms: collapse.children.map(cityBoxBottomY),
+  };
 }
 
 export function createCityHangingTrainObstacle() {
