@@ -72,6 +72,7 @@ import {
   europaBossArenaHeight,
   europaBossFloorY,
   europaBossArenaDepth,
+  europaBossPortraitFov,
 } from './europa-boss-arena.js';
 import { drawCampaignMap } from './campaign-map.js';
 import {
@@ -3741,7 +3742,7 @@ export function createGame({
       clamp(dx, -1, 1),
       boosting,
       dynamicFlight ? route : undefined,
-      dynamicFlight && sectorIndex === 5 && boss && camera.aspect < 0.72 ? 98 : null,
+      dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
     );
     if (robotMode) updateMechaLock(dt, dx, dy);
     mechaEngine?.update({
