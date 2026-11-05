@@ -16,6 +16,8 @@ test('Europa orbit disappears before the actual surface opens and cannot remain 
   assert.equal(early.groundVisible, false);
   const surface = europaSurfaceAt(26);
   assert.equal(surface.orbitalVisible, false);
+  assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon gone before frozen ground');
+  assert.equal(destinationArrivalAt(5, 18).globeOpacity, 0);
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
