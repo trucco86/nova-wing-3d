@@ -1,0 +1,69 @@
+name: Stage 1 ground contact QA candidate
+on:
+  push:
+    branches:
+      - fix/stage1-grounded-falling-debris-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-ground-contact-qa
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format changed stage-1 impact and regression files
+        run: |
+          npx prettier --write src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+      - name: Validate world-space road contact under rotation and existing gameplay
+        run: |
+          node --test tests/city-stage1-destruction.test.mjs tests/city-2-6-transit.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Versioned QA build 1.27.90
+        run: npm run release:prepare -- 1.27.90
+      - name: Record exact road-contact fixes
+        run: |
+          cat > releases/v1.27.90.md <<'NOTES'
+          ## Nova Wing 3D v1.27.90 — Fase 1: impacto real dos destroços no asfalto · QA
+
+          - Placas/outdoors e carros aéreos em queda agora usam os limites reais da geometria transformada, incluindo inclinação e rotação, para encostar no piso da cidade sem atravessá-lo. Altura do piso ajustada à faixa pavimentada da Fase 1.
+          - Fragmentos da fachada realmente descem dos andares altos até o asfalto, em ordem escalonada; cada peça encontra seu próprio ponto de contato, repica levemente e se estabiliza sem clipping.
+          - Fundação do prédio alinhada ao chão (antes estava embutida no terreno).
+          - Explosões da placa, do carro e dos blocos são posicionadas no solo, exatamente onde os objetos atingem o chão. Fogo do carro não herda rotação do casco capotando.
+          - O trem descarrilado permanece suspenso, com corredor seguro à direita, colisão ativada somente após o aviso e Super Boost mantido.
+          - Testes Node verificam limites tridimensionais em 20 amostras temporais, incluindo ângulos inclinados, retorno determinístico ao instante e colisões do trem.
+          - Playwright mantém a verificação de ritmo da Fase 1 e regressão da Fase 2.
+
+          **Somente QA. Homologação visual desktop/mobile pendente; sem merge em produção.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('CHANGELOG.md')
+          value=p.read_text()
+          value=value.replace(
+            '## 1.27.90 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '## 1.27.90 — Fase 1: destroços finalmente aterrissam (QA)\n\n- Quedas de placas, carros e fachada limitadas pelo contato real com asfalto, com reflexo sutil e explosões no local correto.\n- Fundação de prédio corrigida, fogo do carro preso ao solo e trem suspenso preservado.\n- Testes de limites de geometria 3D em rotação e regressão da progressão orbital; homologação visual pendente.',
+          )
+          p.write_text(value)
+          PY
+      - name: Commit source, tests, version and rebuilt HTML
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.90.md index.html src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+          if git diff --cached --quiet; then
+            echo 'All assets already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(stage1): QA v1.27.90 physical debris ground contact'
+          git push origin HEAD:fix/stage1-grounded-falling-debris-20261105
