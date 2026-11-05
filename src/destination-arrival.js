@@ -129,7 +129,7 @@ export function destinationArrivalAt(index, seconds) {
     // disappear BEFORE the frozen ground fully occupies the viewport.
     globeOpacity:
       index === 5
-        ? 1 - smooth((seconds - 15.5) / 4)
+        ? 1 - smooth((seconds - 14.5) / 2.5)
         : profile.keepGlobe
           ? 1 - 0.28 * reveal
           : 1 - smooth((seconds - 16) / 9),
