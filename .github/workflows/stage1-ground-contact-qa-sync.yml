@@ -1,0 +1,68 @@
+name: Stage-1 grounded debris QA bundle sync
+on:
+  push:
+    branches:
+      - fix/stage1-falling-debris-ground-contact-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-grounded-debris-qa
+  cancel-in-progress: true
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format stage-1 floor-contact fixes and regressions
+        run: |
+          npx prettier --write src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+      - name: Verify ground collision, city narrative, train and Super Boost
+        run: |
+          node --test tests/city-stage1-destruction.test.mjs tests/city-2-6-transit.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Prepare versioned QA build
+        run: npm run release:prepare -- 1.27.90
+      - name: Describe actual fixes and visual QA limits
+        run: |
+          cat > releases/v1.27.90.md <<'NOTES'
+          ## Nova Wing 3D v1.27.90 — Fase 1: destroços atingem o chão (QA)
+
+          - Placas, carros e 7 fragmentos de fachada agora respeitam a superfície real da cidade. As restrições de contato usam a projeção vertical das geometrias 3D já rotacionadas, não o centro aproximado dos meshes.
+          - Queda das fachadas finaliza no piso em vez de afundar ou desaparecer no subsolo; o prédio remanescente também fica nivelado com a via.
+          - Explosões da placa e do veículo acontecem no contato com a rua, nas posições atuais do cenário (e não no antigo ponto de origem); o carro tem fogo visual ancorado na pista.
+          - Separado impacto estrutural e contato do entulho com a via; ordem cinematográfica e trem suspenso com rota segura à direita preservados.
+          - Adicionados testes de altura mínima em múltiplos instantes, testes de pouso completo dos fragmentos e screenshot/asserções em browser.
+          - Requer CI integral e homologação visual em celular/desktop; produção inalterada.
+
+          **Somente QA, não promover para produção sem validação do usuário.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('CHANGELOG.md')
+          c=p.read_text()
+          c=c.replace(
+            '## 1.27.90 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '## 1.27.90 — Destroços no chão da cidade (QA)\n\n- Corrigidas placa, carro, torre e fragmentos que penetravam a via após girar e cair.\n- Explosões e fumaça agora se originam no contato real com a rua.\n- Testes de altura e física visual em diversos instantes; demais fases e boost preservados.\n- Produção inalterada, homologação visual ainda pendente.',
+          )
+          p.write_text(c)
+          PY
+      - name: Commit only versioned build and changed source
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.90.md index.html src/city-destruction.js src/visuals.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+          if git diff --cached --quiet; then
+            echo 'QA bundle synchronized'
+            exit 0
+          fi
+          git commit -m 'build(stage1): prepare grounded city debris QA candidate v1.27.90'
+          git push origin HEAD:fix/stage1-falling-debris-ground-contact-20261105
