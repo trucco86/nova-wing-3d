@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.90 — Fase 1: destroços finalmente aterrissam (QA)
+
+- Quedas de placas, carros e fachada limitadas pelo contato real com asfalto, com reflexo sutil e explosões no local correto.
+- Fundação de prédio corrigida, fogo do carro preso ao solo e trem suspenso preservado.
+- Testes de limites de geometria 3D em rotação e regressão da progressão orbital; homologação visual pendente.
+
 ## 1.27.89 — Cidade sob ataque e trem avariado (Fase 1, QA)
 
 - Outdoor, carro voador e fachada desmoronam em ordem cinematográfica, sem bloquear o centro.

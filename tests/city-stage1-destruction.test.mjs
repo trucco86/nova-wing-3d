@@ -152,14 +152,24 @@ test('falling street objects always land on rotated world-space bounds, never be
   const building = facade.getObjectByName('city-tower-surviving-shell');
   const shards = facade.getObjectByName('city-tower-damaged-crown').children;
   const eps = 0.002;
-  for (const seconds of [5, 5.4, 5.8, 6.6, 7.1, 7.4, 8.5, 9.3, 9.7, 10.05, 10.5, 11.1, 12.0, 12.8, 13.4, 13.65, 14.4, 17.8, 20.3]) {
+  for (const seconds of [
+    5, 5.4, 5.8, 6.6, 7.1, 7.4, 8.5, 9.3, 9.7, 10.05, 10.5, 11.1, 12.0, 12.8, 13.4, 13.65, 14.4,
+    17.8, 20.3,
+  ]) {
     const state = updateCityDestructionScene(root, seconds);
-    for (const [name, node] of [['falling billboard', sign], ['rolling hovercar', car], ['tower foundation', building], ...shards.map((shard, i) => ['facade fragment ' + i, shard])]) {
+    for (const [name, node] of [
+      ['falling billboard', sign],
+      ['rolling hovercar', car],
+      ['tower foundation', building],
+      ...shards.map((shard, i) => ['facade fragment ' + i, shard]),
+    ]) {
       // Three.js calculates bounds from the actual rotated geometry, not
       // object.position.y. This catches corners clipping during roll/tilt.
       const bounds = new T.Box3().setFromObject(node, true);
-      assert.ok(bounds.min.y >= CITY_COLLISION_FLOOR_Y - eps,
-        name + ' crossed road at t=' + seconds + ', bottom=' + bounds.min.y);
+      assert.ok(
+        bounds.min.y >= CITY_COLLISION_FLOOR_Y - eps,
+        name + ' crossed road at t=' + seconds + ', bottom=' + bounds.min.y,
+      );
     }
     assert.ok(Math.abs(state.impacts.billboard.y - (CITY_COLLISION_FLOOR_Y + 0.35)) < eps);
     assert.ok(Math.abs(state.impacts.vehicle.y - (CITY_COLLISION_FLOOR_Y + 0.35)) < eps);
@@ -170,8 +180,12 @@ test('falling street objects always land on rotated world-space bounds, never be
   const first = shards.map((shard) => shard.position.clone());
   updateCityDestructionScene(root, 12.1);
   updateCityDestructionScene(root, 20.3);
-  shards.forEach((shard, i) => assert.ok(shard.position.distanceTo(first[i]) < 0.001,
-    'stage rewind/replay keeps stable deterministic landed position'));
+  shards.forEach((shard, i) =>
+    assert.ok(
+      shard.position.distanceTo(first[i]) < 0.001,
+      'stage rewind/replay keeps stable deterministic landed position',
+    ),
+  );
 });
 
 test('floor contact solver handles rotations, rebounds and empty geometry without tunneling', () => {
@@ -184,7 +198,10 @@ test('floor contact solver handles rotations, rebounds and empty geometry withou
   assert.equal(result.contacted, true);
   assert.ok(result.correction > 0);
   assert.ok(new T.Box3().setFromObject(g, true).min.y >= CITY_COLLISION_FLOOR_Y - 0.002);
-  assert.ok(settleCityDebrisOnFloor(g).correction < 0.001, 'already grounded geometry stays stable');
+  assert.ok(
+    settleCityDebrisOnFloor(g).correction < 0.001,
+    'already grounded geometry stays stable',
+  );
   assert.equal(settleCityDebrisOnFloor(new T.Group()).bottomY, null);
   assert.throws(() => settleCityDebrisOnFloor(g, NaN), RangeError);
   assert.equal(cityImpactBounce(10, 10), 0);
@@ -202,8 +219,10 @@ test('train remains suspended above road and its safe collision route is unchang
     wreck.updateMatrixWorld(true);
     const body = wreck.getObjectByName('city-maglev-damaged-carriages');
     const bounds = new T.Box3().setFromObject(body, true);
-    assert.ok(bounds.min.y >= CITY_COLLISION_FLOOR_Y - 0.002,
-      'train should hang above road instead of clipping into it at ' + at);
+    assert.ok(
+      bounds.min.y >= CITY_COLLISION_FLOOR_Y - 0.002,
+      'train should hang above road instead of clipping into it at ' + at,
+    );
   }
   assert.equal(wreck.userData.safeLane, 'right');
   assert.equal(wreck.userData.solids.length, 2);
