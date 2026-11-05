@@ -88,6 +88,7 @@ import {
   fireGroundRobotEyes,
   robotEyeMuzzles,
   createObstacle,
+  primeEuropaTunnelBreach,
   openEuropaTunnelBreach,
   updateEuropaTunnelBreach,
   isGroundSector,
@@ -5369,6 +5370,16 @@ export function createGame({
       obstacle.o.position.z += travel;
       if (sectorIndex === 5 && dynamicFlight && obstacle.o.userData.europaBreach) {
         const breachDepth = obstacle.o.position.z - 220;
+        if (!obstacle.o.userData.breached) {
+          // Start the fracture ~0.65 seconds before the enemy's opening.
+          // Physical wall and its collision stay intact until impact.
+          const warningLead = Math.max(12, speed * 0.65);
+          const progress = Math.max(
+            0,
+            Math.min(1, (breachDepth + 115 + warningLead) / warningLead),
+          );
+          primeEuropaTunnelBreach(obstacle.o, progress);
+        }
         if (!obstacle.o.userData.breached && breachDepth >= -115) {
           if (openEuropaTunnelBreach(obstacle.o)) {
             explode(new T.Vector3(34, 15, breachDepth), 13, 0xb9f3ff);
@@ -6007,6 +6018,9 @@ export function createGame({
                 // QA evidence: actual wall and panel state, not an animated sprite.
                 breached: obstacle.o.userData.breached,
                 breachDepth: obstacle.o.position.z - 220,
+                warningProgress: obstacle.o.userData.breachWarningProgress,
+                warningVisible:
+                  obstacle.o.getObjectByName('europa-tunnel-breach-warning')?.visible ?? false,
                 panelVisible:
                   obstacle.o.getObjectByName('europa-tunnel-breach-panel')?.visible ?? false,
                 debrisVisible:
