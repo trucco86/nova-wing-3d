@@ -1,0 +1,69 @@
+name: Europa articulated claws QA bundle sync
+on:
+  push:
+    branches:
+      - fix/europa-colossus-articulated-claw-strikes-20261105
+permissions:
+  contents: write
+concurrency:
+  group: europa-claws-qa-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format stage-6 attack code and tests
+        run: |
+          npx prettier --write src/europa-attack-vfx.js src/bosses.js src/boss-combat-ai.js src/game.js tests/europa-attack-vfx.test.mjs tests/boss-combat-ai.test.mjs tests/browser/europa-claw-strikes.spec.mjs
+      - name: Verify newly authored physical strike regressions before shipping
+        run: node --test tests/europa-attack-vfx.test.mjs tests/boss-combat-ai.test.mjs tests/europa-boss-arena.test.mjs
+      - name: Versioned QA web build
+        run: npm run release:prepare -- 1.27.85
+      - name: Describe real changes and remaining visual QA
+        run: |
+          cat > releases/v1.27.85.md <<'NOTES'
+          ## Nova Wing 3D v1.27.85 — Garras físicas do Colosso · QA
+
+          - Fase 6: duas garras mecânicas articuladas substituem as barras luminosas genéricas e avançam até o alvo travado na nave.
+          - Ataque **Pinça Criogênica** converge com os dois braços; ataque **Onda no Gelo** utiliza uma martelada unilateral que sobe e desce e estilhaços junto à área de impacto.
+          - O corpo do chefe deixa de avançar em golpes de braço; posição, escala, câmera proporcional e arena ampla da v1.27.84 permanecem.
+          - O radar aponta para o emissor físico animado; se um gerador for destruído, o braço correspondente não executa o golpe.
+          - Dano e esquiva continuam calculados a partir da área de ataque anunciada e travada no início do windup. O alvo não persegue a nave depois da esquiva.
+          - Testes de alcance, duas coreografias, destruição de módulo, posição do impacto e regressões de outros chefes. Homologação visual em celular real ainda necessária.
+
+          **Exclusivamente QA. Não publicar sem homologação.**
+          NOTES
+      - name: Record accurate changelog
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("CHANGELOG.md")
+          value = path.read_text()
+          value = value.replace(
+            "## 1.27.85 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.",
+            "## 1.27.85 — Ataques físicos do Colosso Glacial (QA)\n\n- Garra telescópica física na área real de impacto; pinça bilateral e martelada unilateral em coreografias distintas.\n- Corpo estável durante golpes, radar ancorado na garra e geradores destruídos interrompendo o braço correspondente.\n- Validação em celular físico pendente; produção inalterada.",
+          )
+          path.write_text(value)
+          PY
+      - name: Commit only versioned source, tests and web bundle
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.85.md index.html src/europa-attack-vfx.js src/bosses.js src/boss-combat-ai.js src/game.js tests/europa-attack-vfx.test.mjs tests/boss-combat-ai.test.mjs tests/browser/europa-claw-strikes.spec.mjs
+          if git diff --cached --quiet; then
+            echo 'Versioned bundle already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(europa): prepare articulated claw QA candidate v1.27.85'
+          git push origin HEAD:fix/europa-colossus-articulated-claw-strikes-20261105
