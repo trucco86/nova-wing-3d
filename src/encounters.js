@@ -274,6 +274,44 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         const panel = box(4, 44, 40, dark, 34, 15, -220);
         panel.name = 'europa-tunnel-breach-panel';
         g.add(panel);
+        // Warning is attached to the inside face (x<32), slightly offset
+        // from the intact panel. All crack segments share one geometry and
+        // material; they have no collision or per-frame allocations.
+        const fracture = new T.Group();
+        fracture.name = 'europa-tunnel-breach-warning';
+        fracture.position.set(31.72, 15, -220);
+        fracture.visible = false;
+        const crackMaterial = new T.MeshBasicMaterial({
+          color: '#bdf6ff',
+          transparent: true,
+          opacity: 0.91,
+          depthWrite: false,
+        });
+        const crackGeometry = new T.CylinderGeometry(0.36, 0.36, 1, 6);
+        const segments = [
+          [[-17, -10], [-7, -5]],
+          [[-7, -5], [4, 0]],
+          [[4, 0], [16, 9]],
+          [[-7, -5], [-14, 3]],
+          [[4, 0], [8, -13]],
+          [[4, 0], [-3, 14]],
+          [[8, -13], [14, -16]],
+          [[-3, 14], [-9, 17]],
+        ];
+        const up = new T.Vector3(0, 1, 0);
+        for (const [[y0, z0], [y1, z1]] of segments) {
+          const from = new T.Vector3(0, y0, z0);
+          const to = new T.Vector3(0, y1, z1);
+          const direction = to.clone().sub(from);
+          const crack = new T.Mesh(crackGeometry, crackMaterial);
+          crack.name = 'europa-ice-fracture-line';
+          crack.position.copy(from).add(to).multiplyScalar(0.5);
+          crack.quaternion.setFromUnitVectors(up, direction.clone().normalize());
+          crack.scale.y = direction.length();
+          crack.userData.visualOnly = true;
+          fracture.add(crack);
+        }
+        g.add(fracture);
         solids.push({
           center: new T.Vector3(34, 15, -220),
           half: new T.Vector3(2, 22, 20),
@@ -289,6 +327,10 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           chunk.position.set(32 + (i % 3) * 3.1, 2 + Math.floor(i / 3) * 10, -232 + (i % 4) * 8);
           chunk.scale.set(0.7 + (i % 3) * 0.15, 0.7 + (i % 4) * 0.2, 0.8);
           chunk.userData.fallSpeed = 4 + (i % 4) * 2;
+          // Give the blocks lateral momentum as well as gravity. The panel
+          // fragments now visibly burst into the corridor before they settle.
+          chunk.userData.breachVx = -3 - (i % 3) * 2;
+          chunk.userData.breachVz = ((i % 5) - 2) * 1.8;
           chunk.userData.visualOnly = true;
           debris.add(chunk);
         }
@@ -460,9 +502,23 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           solids: [...template.userData.solids],
           europaBreach: true,
           breached: false,
+          breachWarningProgress: 0,
         }
       : template.userData;
   return clone;
+}
+
+export function primeEuropaTunnelBreach(tunnel, progress = 0) {
+  if (!tunnel?.userData?.europaBreach || tunnel.userData.breached) return false;
+  if (!Number.isFinite(progress) || progress < 0 || progress > 1)
+    throw new RangeError('Invalid Europa breach warning progress');
+  const warning = tunnel.getObjectByName('europa-tunnel-breach-warning');
+  if (!warning) return false;
+  warning.visible = progress > 0;
+  // Growing fissures make the impact readable before the panel breaks.
+  warning.scale.set(1, 0.1 + 0.9 * progress, 0.1 + 0.9 * progress);
+  tunnel.userData.breachWarningProgress = progress;
+  return true;
 }
 
 export function openEuropaTunnelBreach(tunnel) {
@@ -471,6 +527,8 @@ export function openEuropaTunnelBreach(tunnel) {
   const debris = tunnel.getObjectByName('europa-tunnel-falling-debris');
   if (!panel || !debris) return false;
   panel.visible = false;
+  const warning = tunnel.getObjectByName('europa-tunnel-breach-warning');
+  if (warning) warning.visible = false;
   debris.visible = true;
   tunnel.userData.solids = tunnel.userData.solids.filter((solid) => !solid.breachPanel);
   tunnel.userData.breached = true;
@@ -483,7 +541,12 @@ export function updateEuropaTunnelBreach(tunnel, dt) {
   if (!debris) return;
   for (const part of debris.children) {
     part.userData.fallSpeed = Math.min(38, part.userData.fallSpeed + 24 * dt);
+    const falling = part.position.y > -5;
     part.position.y = Math.max(-5, part.position.y - part.userData.fallSpeed * dt);
+    if (falling) {
+      part.position.x += part.userData.breachVx * dt;
+      part.position.z += part.userData.breachVz * dt;
+    }
     part.rotation.x += dt * 0.7;
     part.rotation.z += dt * 1.1;
   }
