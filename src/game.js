@@ -152,7 +152,9 @@ import {
 import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
   CITY_DESTRUCTION_BEATS,
+  CITY_STAGE_AUDIO,
   CITY_STREET_TOP_Y,
+  cityWarningText,
   cityDestructionAt,
   createCityHangingTrainObstacle,
   animateCityHangingTrainObstacle,
@@ -1531,9 +1533,9 @@ export function createGame({
   function dispose(o) {
     scene.remove(o);
   }
-  function explode(pos, n = 16, color = 0xffa04a) {
-    if (n >= 12 && dynamicFlight) cue('explosion');
-    else if (n > 3) sound(100, 0.2, 'sine', 0.025);
+  function explode(pos, n = 16, color = 0xffa04a, playGenericSound = true) {
+    if (playGenericSound && n >= 12 && dynamicFlight) cue('explosion');
+    else if (playGenericSound && n > 3) sound(100, 0.2, 'sine', 0.025);
     for (let i = 0; i < n; i++)
       particles.push(
         particlePool.spark(pos, color, rnd(-17, 17), rnd(-17, 17), rnd(-17, 17), rnd(0.3, 0.85)),
@@ -3837,25 +3839,29 @@ export function createGame({
       }
       if (beat.id === 'billboardImpact') {
         const impact = cityGroundImpactAt('city-sign-structure');
-        if (impact) explode(impact, 9, 0x7ee9ff);
+        if (impact) explode(impact, 9, 0x7ee9ff, false);
       }
       if (beat.id === 'vehicleImpact') {
         const impact = cityGroundImpactAt('city-falling-hovercar');
-        if (impact) explode(impact, 13, 0xffaa65);
+        if (impact) explode(impact, 13, 0xffaa65, false);
       }
       if (beat.id === 'facadeImpact') {
         const flash = scene.getObjectByName('city-tower-impact-flash');
-        if (flash) explode(flash.getWorldPosition(new T.Vector3()), 15, 0xffaa6a);
+        if (flash) explode(flash.getWorldPosition(new T.Vector3()), 15, 0xffaa6a, false);
       }
       if (beat.id === 'facadeDebrisImpact') {
         const impact = cityGroundImpactAt('city-tower-damaged-crown');
-        if (impact) explode(impact, 11, 0xc6e4eb);
+        if (impact) explode(impact, 11, 0xc6e4eb, false);
       }
       if (beat.id === 'trainImpact') {
         const wreck = obstacles.find(({ o }) => o.userData.kind === 'city-hanging-train');
-        if (wreck) explode(new T.Vector3(-25, 13, wreck.o.position.z + 15), 22, 0xffad64);
+        if (wreck) explode(new T.Vector3(-25, 13, wreck.o.position.z + 15), 22, 0xffad64, false);
       }
-      if (beat.message) message(beat.message);
+      // Sound and radio are authored per beat: no repeated generic explosion
+      // layered with the specific physical impact, and no chatty HUD over the
+      // falling scenery. The train's one actionable warning is localized.
+      if (CITY_STAGE_AUDIO[beat.id]) cue(CITY_STAGE_AUDIO[beat.id]);
+      if (beat.id === 'trainWarning') message(cityWarningText(settings.language));
     }
   }
   function update(dt) {
