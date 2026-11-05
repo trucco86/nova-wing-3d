@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as T from 'three';
+import { crossesSolid } from '../src/flight.js';
 import {
   createObstacle,
   openEuropaTunnelBreach,
@@ -17,6 +19,13 @@ test('Europa tunnel has a real solid wall until rupture and then a traversable a
   assert.equal(panel.visible, true);
   assert.equal(debris.visible, false);
   assert.equal(tunnel.userData.solids.filter((s) => s.breachPanel).length, 1);
+  const outside = new T.Vector3(52, 15, -220);
+  const inside = new T.Vector3(16, 15, -220);
+  const blocked = () =>
+    tunnel.userData.solids.some((solid) =>
+      crossesSolid(outside, inside, solid.center, solid.half, 0.5),
+    );
+  assert.equal(blocked(), true, 'enemy cannot cross intact wall');
 
   // A plane at the corridor entrance can only open when its actual collision
   // panel is removed, not merely when an explosion sprite is drawn.
@@ -28,6 +37,7 @@ test('Europa tunnel has a real solid wall until rupture and then a traversable a
     tunnel.userData.solids.some((s) => s.breachPanel),
     false,
   );
+  assert.equal(blocked(), false, 'opened wall must be traversable by collision engine');
   assert.equal(openEuropaTunnelBreach(tunnel), false, 'breach cannot repeatedly spawn enemies');
 
   const positions = debris.children.map((part) => part.position.y);
