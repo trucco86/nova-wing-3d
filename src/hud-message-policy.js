@@ -31,6 +31,9 @@ export function compactRadioMessage(text, maxChars = 58) {
     : parts.slice(0, 2);
   const sentence = selected.join(' · ') || original;
   if (sentence.length <= maxChars) return sentence;
+  // Keep the actionable direction if a long scene description would push it
+  // out of the tiny mobile rail. Never abbreviate away SEGURE/DESVIE/etc.
+  if (imperative && selected.length > 1) return compactRadioMessage(imperative, maxChars);
   // Cut at a word boundary, never let a long subtitle grow over the reticle.
   const prefix = sentence.slice(0, maxChars - 1);
   const lastSpace = prefix.lastIndexOf(' ');
