@@ -36,7 +36,10 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
       snapshot.arena.minimumCenterY - 0.001,
     );
     expect(snapshot.arena.floorY).toBeLessThan(-25);
-    if (snapshot.age > 3) expect(snapshot.depth).toBeLessThanOrEqual(-180);
+    if (snapshot.age > 3) {
+      expect(snapshot.depth).toBeGreaterThanOrEqual(-175);
+      expect(snapshot.depth).toBeLessThanOrEqual(-145);
+    }
     if (snapshot.age > 3) {
       expect(snapshot.arena.bossCenterY).toBeLessThan(40);
       expect(snapshot.arena.minimumCenterY).toBeLessThan(15);
@@ -53,12 +56,22 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     await page.setViewportSize(size);
     await page.evaluate(() => window.fixture.advance(0.9));
     const state = await page.evaluate(() => window.fixture.game.snapshot());
-    if (size.width < size.height) expect(state.camera.fov).toBeGreaterThan(92);
-    else expect(state.camera.fov).toBeLessThan(86);
+    if (size.width < size.height) {
+      expect(state.camera.fov).toBeGreaterThan(82);
+      expect(state.camera.fov).toBeLessThan(93);
+    } else expect(state.camera.fov).toBeLessThan(86);
+    // The original scene used -205 depth and 98° in portrait; this should
+    // improve apparent size without touching mesh scale or weak-point hitboxes.
+    const oldPresence =
+      1 / ((state.camera.z + 205) * Math.tan((98 * Math.PI) / 360));
+    const actualPresence =
+      1 / ((state.camera.z - state.bossZ) * Math.tan((state.camera.fov * Math.PI) / 360));
+    if (size.width < size.height) expect(actualPresence).toBeGreaterThan(oldPresence * 1.3);
     expect(state.europaArena.foregroundHidden).toBe(true);
     expect(state.europaArena.floorY).toBeLessThan(-25);
     expect(state.europaArena.bossCenterY).toBeLessThan(40);
-    expect(state.bossZ).toBeLessThan(-180);
+    expect(state.bossZ).toBeGreaterThanOrEqual(-175);
+    expect(state.bossZ).toBeLessThanOrEqual(-145);
     expect(state.entities.obstacles).toBe(0);
     await page.screenshot({
       path: info.outputPath('europa-wide-clear-arena-' + size.width + '.png'),
