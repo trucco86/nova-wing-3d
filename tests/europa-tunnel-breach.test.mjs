@@ -24,7 +24,10 @@ test('Europa tunnel has a real solid wall until rupture and then a traversable a
   assert.equal(panel.visible, false);
   assert.equal(debris.visible, true);
   assert.equal(tunnel.userData.solids.length, intact - 1);
-  assert.equal(tunnel.userData.solids.some((s) => s.breachPanel), false);
+  assert.equal(
+    tunnel.userData.solids.some((s) => s.breachPanel),
+    false,
+  );
   assert.equal(openEuropaTunnelBreach(tunnel), false, 'breach cannot repeatedly spawn enemies');
 
   const positions = debris.children.map((part) => part.position.y);

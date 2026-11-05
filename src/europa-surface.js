@@ -8,8 +8,7 @@ const smooth = (value) => {
 // Europe is a grounded frozen world after its fissure descent, not a second
 // orbital globe. Keep the ice-floor swap deterministic in game time.
 export function europaSurfaceAt(seconds, tunnelActive = false) {
-  if (!Number.isFinite(seconds) || seconds < 0)
-    throw new RangeError('Invalid Europa arrival time');
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa arrival time');
   const surface = smooth((seconds - 16) / 7);
   const orbital = 1 - smooth((seconds - 15.5) / 4);
   return Object.freeze({
@@ -71,11 +70,7 @@ export function createEuropaSurface() {
         -115 - i * (name.includes('ridges') ? 65 : 45),
       );
       dummy.rotation.set(0, hash(i * 17) * 2.9, side * hash(i * 7) * 0.14);
-      dummy.scale.set(
-        12 + hash(i * 13) * 31,
-        h,
-        18 + hash(i * 23) * 45,
-      );
+      dummy.scale.set(12 + hash(i * 13) * 31, h, 18 + hash(i * 23) * 45);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
     }

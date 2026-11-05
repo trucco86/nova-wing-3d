@@ -1673,7 +1673,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           sectorScenery.getObjectByName('europa-frozen-surface'),
           europaArrivalSeconds,
           europaSurfaceAt(europaArrivalSeconds, europaTunnelActive).surface > 0.16 &&
-            !europaTunnelActive && !europaBossArenaActive,
+            !europaTunnelActive &&
+            !europaBossArenaActive,
           quality === 'high',
         );
       const high = quality === 'high';
@@ -1697,7 +1698,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
     },
     setEuropaTunnel(active = false) {
-      europaTunnelActive = dynamicFlight && sceneryTheme === 'ice' && !!active && !europaBossArenaActive;
+      europaTunnelActive =
+        dynamicFlight && sceneryTheme === 'ice' && !!active && !europaBossArenaActive;
       if (sceneryTheme === 'ice') {
         const state = europaSurfaceAt(europaArrivalSeconds, europaTunnelActive);
         ground.visible = state.groundVisible && !europaBossArenaActive;

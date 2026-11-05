@@ -36,7 +36,9 @@ test('stage 6 descends to a frozen surface without a second moon or flashing glo
     const snap = await page.evaluate(() => window.fixture.game.snapshot());
     expect(snap.europaSurface?.orbitalVisible).toBe(false);
     expect(snap.europaSurface?.destinationGlobeVisible).toBe(false);
-    await page.screenshot({ path: info.outputPath('europa-frozen-surface-' + size.width + '.png') });
+    await page.screenshot({
+      path: info.outputPath('europa-frozen-surface-' + size.width + '.png'),
+    });
   }
   expect(pageErrors).toEqual([]);
 });

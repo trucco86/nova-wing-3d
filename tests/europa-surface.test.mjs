@@ -4,7 +4,11 @@ import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { destinationArrivalAt } from '../src/destination-arrival.js';
 import { createWorld } from '../src/visuals.js';
-import { createEuropaSurface, europaSurfaceAt, updateEuropaSurface } from '../src/europa-surface.js';
+import {
+  createEuropaSurface,
+  europaSurfaceAt,
+  updateEuropaSurface,
+} from '../src/europa-surface.js';
 
 test('Europa orbit disappears before the actual surface opens and cannot remain above it', () => {
   const early = europaSurfaceAt(9);

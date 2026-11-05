@@ -453,9 +453,15 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
     clone = template.clone(true);
   // The Europa breach removes its own collision panel only. Other tunnel
   // copies and authored obstacles retain immutable shared hitboxes.
-  clone.userData = key === 'europa-tunnel'
-    ? { ...template.userData, solids: [...template.userData.solids], europaBreach: true, breached: false }
-    : template.userData;
+  clone.userData =
+    key === 'europa-tunnel'
+      ? {
+          ...template.userData,
+          solids: [...template.userData.solids],
+          europaBreach: true,
+          breached: false,
+        }
+      : template.userData;
   return clone;
 }
 

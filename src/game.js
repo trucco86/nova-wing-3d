@@ -3793,8 +3793,7 @@ export function createGame({
       dynamicFlight &&
       sectorIndex === 5 &&
       obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel');
-    if (dynamicFlight && sectorIndex === 5)
-      world.setEuropaTunnel?.(europaTunnelCrossing);
+    if (dynamicFlight && sectorIndex === 5) world.setEuropaTunnel?.(europaTunnelCrossing);
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
     const sandstorm = marsArrival?.storm;
     if (sandstorm && sandstorm.phase !== marsStormPhase) {
@@ -4191,7 +4190,10 @@ export function createGame({
       !enemies.some((e) => !e.dead && e.kind === 'subboss')
     ) {
       tunnelDone = true;
-      const o = createObstacle('tunnel', dynamicFlight && sectorIndex === 5 ? 'europa' : 'standard');
+      const o = createObstacle(
+        'tunnel',
+        dynamicFlight && sectorIndex === 5 ? 'europa' : 'standard',
+      );
       o.position.z = -230;
       scene.add(o);
       obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
@@ -5795,7 +5797,7 @@ export function createGame({
       audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
       europaSurface:
-        dynamicFlight && sectorIndex === 5 ? world.europaSurfaceState?.() ?? null : null,
+        dynamicFlight && sectorIndex === 5 ? (world.europaSurfaceState?.() ?? null) : null,
       europaArena:
         dynamicFlight && sectorIndex === 5 && boss
           ? {
