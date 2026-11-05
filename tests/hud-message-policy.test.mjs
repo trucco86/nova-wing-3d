@@ -93,6 +93,8 @@ test('eight unique boss attacks show one short command without inventing a safe 
     ['ÓRION · PULSO GRAVITACIONAL · AFASTE-SE DO CENTRO', 'AFASTE-SE'],
     ['HIDRA · FOGO CRUZADO DAS CABEÇAS · SUBA PARA ESCAPAR', 'SUBA'],
     ['MARVIN · VARREDURA DAS TURBINAS · MUDE DE ALTURA', 'MUDE ALTURA'],
+    ['FÊNIX · MERGULHO SOLAR · SAIA DO IMPACTO', 'AFASTE-SE'],
+    ['COLOSSO · PINÇA CRIOGÊNICA · DESVIE PARA O LADO', 'DESVIE'],
   ];
   for (const [label, action] of examples) {
     const compact = compactBossAttackWarning(label);
@@ -101,6 +103,16 @@ test('eight unique boss attacks show one short command without inventing a safe 
     assert.ok(compact.includes(action), compact);
     assert.equal(compactBossAttackWarning(label, { threatened: false }), '');
   }
+  assert.match(
+    compactBossAttackWarning('FÊNIX · MERGULHO SOLAR · SAIA DO IMPACTO'),
+    /MERGULHO SOLAR/,
+    'Fênix cannot lose its actual attack identity',
+  );
+  assert.match(
+    compactBossAttackWarning('COLOSSO · PINÇA CRIOGÊNICA · DESVIE PARA O LADO'),
+    /PINÇA CRIOGÊNICA/,
+    'Colosso cannot lose its actual attack identity',
+  );
   assert.equal(compactBossAttackWarning(null), '');
 });
 
@@ -125,4 +137,20 @@ test('urgent pilot guidance preempts quiet radio despite recent instruction cool
   assert.equal(policy.offer('ALERTA · REATOR INSTÁVEL', 3.01).priority, 3);
   assert.equal(policy.offer('FORMAÇÃO INIMIGA · DRONES', 3.1), null);
   assert.ok(policy.offer('DESVIE DO NÚCLEO', 6), 'action recovers after emergency');
+});
+
+test('explicit mecha transformation radio bypasses routine cooldown but chatter stays quiet', () => {
+  const policy = createRadioTriage();
+  assert.ok(policy.offer('FORMAÇÃO INIMIGA · DRONES', 0.25));
+  assert.equal(
+    policy.offer('MODO ROBÔ / CANHÕES PESADOS ATIVOS', 0.37),
+    null,
+    'routine message should not interrupt',
+  );
+  const transformation = policy.offer('MODO ROBÔ / CANHÕES PESADOS ATIVOS', 0.37, {
+    force: true,
+  });
+  assert.ok(transformation, 'explicit player mode transition must always be announced');
+  assert.match(transformation.text, /MODO ROBÔ/);
+  assert.equal(policy.offer('DUPLA FORMAÇÃO · NOVOS DRONES', 0.4), null);
 });
