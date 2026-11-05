@@ -520,9 +520,12 @@ export function createGame({
     dashRemaining = 0;
     rollHeld = false;
     cue(robotMode ? 'transformRobot' : 'transformShip');
+    // Mode changes are explicit player actions; never suppress their pilot
+    // cue behind routine mission chatter or a previous instruction cooldown.
     message(
       robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA',
       'christopher',
+      { force: true },
     );
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
@@ -1512,11 +1515,11 @@ export function createGame({
     pickupFeedbackTime = 1;
     if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
-  function message(t, speakerId = 'bia') {
+  function message(t, speakerId = 'bia', { force = false } = {}) {
     const notice = dynamicFlight
       ? radioTriage.offer(t, visualTime, {
           compact: true,
-          force: msgTime <= 0 && stageIntroTime > 0,
+          force: force || (msgTime <= 0 && stageIntroTime > 0),
         })
       : { text: String(t), full: String(t), duration: 3 };
     if (!notice) return;
@@ -4921,6 +4924,13 @@ export function createGame({
             : '';
       if (boss.userData.sabotage)
         $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      // The compact visible banner preserves room for combat. Keep the exact
+      // full warning available for screen readers and deterministic QA.
+      const fullWarning = $('attackWarning').textContent
+        ? physicalWarning ?? signatureWarning ?? $('attackWarning').textContent
+        : '';
+      $('attackWarning').setAttribute('aria-label', fullWarning);
+      $('attackWarning').title = fullWarning;
       // The physical radar and real cannon flash already communicate where
       // the next bolt comes from: do not repeat PLASMA/ORBES every volley.
       // Full tactical labels remain available in the radar and boss help.
