@@ -25,6 +25,13 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     expect(snap.cityDestruction?.phase).toBe(phase);
     expect(snap.cityDestruction?.triggered.length).toBeGreaterThanOrEqual(minimumBeats);
     expect(snap.orbitalLaunch.phase).toBe('city');
+    const clearance = snap.cityDestruction?.ground;
+    expect(clearance).toBeTruthy();
+    expect(clearance.billboardBottomY).toBeGreaterThanOrEqual(clearance.floorY - 0.001);
+    expect(clearance.vehicleBottomY).toBeGreaterThanOrEqual(clearance.floorY - 0.001);
+    for (const bottom of clearance.facadeFragmentBottoms) {
+      expect(bottom).toBeGreaterThanOrEqual(clearance.floorY - 0.001);
+    }
     await page.screenshot({
       path: info.outputPath('stage1-destruction-' + seconds + '-' + info.project.name + '.png'),
     });
@@ -53,7 +60,10 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     return game.snapshot();
   });
   expect(after.cityDestruction.phase).toBe('orbital-handoff');
-  expect(after.cityDestruction.triggered).toHaveLength(9);
+  expect(after.cityDestruction.triggered).toHaveLength(10);
+  expect(after.cityDestruction.ground.facadeFragmentBottoms.every(
+    (bottom) => Math.abs(bottom - after.cityDestruction.ground.floorY) < 0.05,
+  )).toBe(true);
   expect(after.lives).toBe(3);
   const boost = await page.evaluate(() => {
     const { game, advance } = window.fixture;
