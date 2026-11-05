@@ -11,9 +11,12 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   const checkpoints = [
     [3.1, 'city-calm', 0],
     [6.5, 'city-under-fire', 1],
+    [7.35, 'city-under-fire', 2],
     [9.6, 'city-under-fire', 3],
+    [10.25, 'city-under-fire', 4],
     [12.4, 'facade-collapse', 6],
-    [14.6, 'train-failing', 8],
+    [13.75, 'train-failing', 8],
+    [14.6, 'train-failing', 9],
   ];
   for (const [seconds, phase, minimumBeats] of checkpoints) {
     const snap = await page.evaluate((at) => {
@@ -53,7 +56,7 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     return game.snapshot();
   });
   expect(after.cityDestruction.phase).toBe('orbital-handoff');
-  expect(after.cityDestruction.triggered).toHaveLength(9);
+  expect(after.cityDestruction.triggered).toHaveLength(10);
   expect(after.lives).toBe(3);
   const boost = await page.evaluate(() => {
     const { game, advance } = window.fixture;

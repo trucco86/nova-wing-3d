@@ -3825,9 +3825,10 @@ export function createGame({
         scene.add(obstacle);
         obstacles.push({ o: obstacle, life: 1, hp: null });
       }
-      if (beat.id === 'billboardImpact') explode(new T.Vector3(-56, 44, -190), 9, 0x7ee9ff);
-      if (beat.id === 'vehicleImpact') explode(new T.Vector3(49, 29, -172), 9, 0xffaa65);
-      if (beat.id === 'facadeImpact') explode(new T.Vector3(-88, 84, -220), 15, 0xffaa6a);
+      if (beat.id === 'billboardImpact') explode(state.impacts.billboard, 10, 0x7ee9ff);
+      if (beat.id === 'vehicleImpact') explode(state.impacts.vehicle, 14, 0xffaa65);
+      if (beat.id === 'facadeImpact') explode(state.impacts.facade, 15, 0xffaa6a);
+      if (beat.id === 'facadeDebrisImpact') explode(state.impacts.debris, 12, 0xb0c8d8);
       if (beat.id === 'trainImpact') {
         const wreck = obstacles.find(({ o }) => o.userData.kind === 'city-hanging-train');
         if (wreck) explode(new T.Vector3(-25, 13, wreck.o.position.z + 15), 22, 0xffad64);

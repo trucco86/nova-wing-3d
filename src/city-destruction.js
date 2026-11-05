@@ -10,10 +10,14 @@ export const CITY_DESTRUCTION_BEATS = Object.freeze([
   { id: 'facade', at: 11.1, message: 'FACHADA EM COLAPSO · MANTENHA A ROTA' },
   { id: 'facadeImpact', at: 12.0, message: null },
   { id: 'trainWarning', at: 13.3, message: 'TREM AVARIADO · DESVIE À DIREITA' },
+  { id: 'facadeDebrisImpact', at: 13.65, message: null },
   { id: 'trainSpawn', at: 14.2, message: null },
   { id: 'trainImpact', at: 16.2, message: null },
 ]);
 
+// The stage-1 plated road is at y≈-6.8. Align falling solid geometry to its
+// actual upper face, leaving a tiny gap to avoid z-fighting in mobile GPUs.
+export const CITY_COLLISION_FLOOR_Y = -6.7;
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const smooth = (x) => {
   const v = clamp01(x);
@@ -44,6 +48,38 @@ export function cityDestructionAt(seconds) {
     trainSolid: seconds >= 16.2 && seconds < 22,
     safeLane: 'right',
   });
+}
+
+// Use actual world-space rotated geometry, not a center-Y guess. The small
+// scripted set pieces have <12 meshes; scratch bounds are reused each frame.
+const cityContactScratch = new T.Box3();
+export function settleCityDebrisOnFloor(object, floorY = CITY_COLLISION_FLOOR_Y) {
+  if (!object || !Number.isFinite(floorY)) throw new RangeError('Invalid city floor contact');
+  object.updateWorldMatrix(true, true);
+  let bottom = Infinity;
+  object.traverse((node) => {
+    if (!node.isMesh || !node.visible || node.userData.noGroundContact) return;
+    const geometry = node.geometry;
+    if (!geometry.boundingBox) geometry.computeBoundingBox();
+    cityContactScratch.copy(geometry.boundingBox).applyMatrix4(node.matrixWorld);
+    bottom = Math.min(bottom, cityContactScratch.min.y);
+  });
+  if (!Number.isFinite(bottom)) return { contacted: false, bottomY: null, correction: 0 };
+  const correction = Math.max(0, floorY - bottom);
+  if (correction) {
+    object.position.y += correction;
+    object.updateWorldMatrix(true, true);
+  }
+  return { contacted: bottom <= floorY + 0.001, bottomY: bottom + correction, correction };
+}
+
+export function cityImpactBounce(seconds, impactAt, amplitude = 1.2) {
+  if (!Number.isFinite(seconds) || !Number.isFinite(impactAt))
+    throw new RangeError('Invalid impact animation time');
+  const after = seconds - impactAt;
+  if (after <= 0 || after >= 0.72) return 0;
+  const phase = after / 0.72;
+  return amplitude * (1 - phase) * Math.sin(Math.PI * phase) ** 2;
 }
 
 const boxGeo = new T.BoxGeometry(1, 1, 1);
@@ -104,12 +140,15 @@ export function createCityDestructionScene() {
   );
   carBurst.name = 'city-hovercar-impact-fireball';
   carBurst.userData.visualOnly = true;
-  car.add(carBurst);
-  root.add(car);
+  carBurst.userData.noGroundContact = true;
+  // The fireball is fixed to the STREET rather than inheriting the tumbling
+  // car's rotation (which previously buried the explosion below the asphalt).
+  root.add(car, carBurst);
 
   const facade = new T.Group();
   facade.name = 'city-collapsing-facade';
-  block(facade, steel(), 'city-tower-surviving-shell', 0, 50, 0, 30, 114, 32);
+  // Shell bottom is exactly on the city road, never sunk seven units into it.
+  block(facade, steel(), 'city-tower-surviving-shell', 0, 57.3, 0, 30, 114, 32);
   for (let level = 0; level < 9; level++) {
     block(facade, glass(), 'city-tower-lit-windows', 0, 12 + level * 10.5, 16.4, 24, 5.7, 0.55);
   }
@@ -129,6 +168,7 @@ export function createCityDestructionScene() {
     );
     piece.userData.origin = piece.position.clone();
     piece.userData.fall = (i % 3) * 5 + 12;
+    piece.userData.shardIndex = i;
   }
   facade.add(collapse);
   const collapseFlash = new T.Mesh(
@@ -143,10 +183,17 @@ export function createCityDestructionScene() {
   collapseFlash.name = 'city-tower-impact-flash';
   collapseFlash.position.set(0, 92, 20);
   collapseFlash.userData.visualOnly = true;
+  collapseFlash.userData.noGroundContact = true;
   facade.add(collapseFlash);
   root.add(facade);
 
   root.userData.nodes = { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash };
+  root.userData.impactPositions = {
+    billboard: new T.Vector3(),
+    vehicle: new T.Vector3(),
+    facade: new T.Vector3(),
+    debris: new T.Vector3(),
+  };
   updateCityDestructionScene(root, 0);
   return root;
 }
@@ -165,6 +212,10 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   );
   billboard.rotation.z = -state.billboard * 1.15;
   billboard.rotation.x = state.billboard * 0.4;
+  // Billboard can rotate past 60°; its bottommost corner (not its pivot)
+  // must land on the road. Small damped rebound follows the impact.
+  settleCityDebrisOnFloor(signRoot);
+  if (seconds >= 7.1) signRoot.position.y += cityImpactBounce(seconds, 7.1, 1.4);
 
   car.visible = seconds >= 8.2 && seconds < 12.3;
   car.position.set(
@@ -173,22 +224,42 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
     -185 + Math.max(0, seconds - 8.5) * 48,
   );
   car.rotation.set(state.vehicle * 0.72, 0.14, -state.vehicle * 1.25);
+  // The car's rolled hull and canopy have a different footprint every frame.
+  // Clamp their transformed boxes before drawing the ground-level fireball.
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
+  settleCityDebrisOnFloor(car);
+  if (seconds >= 10.05) car.position.y += cityImpactBounce(seconds, 10.05, 0.8);
+  carBurst.position.set(car.position.x, CITY_COLLISION_FLOOR_Y + 2.3, car.position.z);
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
   facade.position.set(-88, -7, -255 + Math.max(0, seconds - 11.1) * 48);
   for (const fragment of collapse.children) {
-    const p = state.facade;
-    fragment.position.copy(fragment.userData.origin);
-    fragment.position.y -= p * (20 + fragment.userData.fall);
-    fragment.position.x -= p * 6;
-    fragment.rotation.z = -p * (0.2 + fragment.userData.fall * 0.01);
-    fragment.rotation.x = p * 0.36;
+    const i = fragment.userData.shardIndex;
+    // A staggered, accelerated fall moves the shards all the way down, not
+    // merely 20–40 units below the upper floors. Each fragment then stops
+    // at its own rotated contact point instead of clipping through the road.
+    const descent = smooth((seconds - 11.1 - i * 0.08) / (2.0 + i * 0.045));
+    const origin = fragment.userData.origin;
+    fragment.position.copy(origin);
+    const localFloorY = CITY_COLLISION_FLOOR_Y - facade.position.y;
+    fragment.position.y = origin.y + (localFloorY - origin.y) * descent;
+    fragment.position.x -= descent * (3 + i * 1.2);
+    fragment.rotation.z = -descent * (0.2 + fragment.userData.fall * 0.01);
+    fragment.rotation.x = descent * 0.36;
+    const ground = settleCityDebrisOnFloor(fragment);
+    if (ground.contacted && seconds >= 13.1 + i * 0.08)
+      fragment.position.y += cityImpactBounce(seconds, 13.1 + i * 0.08, 0.65);
   }
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
-  return state;
+  const impacts = root.userData.impactPositions;
+  impacts.billboard.set(signRoot.position.x, CITY_COLLISION_FLOOR_Y + 0.35, signRoot.position.z);
+  impacts.vehicle.set(car.position.x, CITY_COLLISION_FLOOR_Y + 0.35, car.position.z);
+  // The façade is damaged high up, but the *debris* impact is on the road.
+  impacts.facade.set(facade.position.x, 74, facade.position.z + 19);
+  impacts.debris.set(facade.position.x - 10, CITY_COLLISION_FLOOR_Y + 0.35, facade.position.z + 18);
+  return { ...state, impacts };
 }
 
 export function createCityHangingTrainObstacle() {

@@ -4,6 +4,9 @@ import * as T from 'three';
 import { crossesSolid } from '../src/flight.js';
 import {
   CITY_DESTRUCTION_BEATS,
+  CITY_COLLISION_FLOOR_Y,
+  cityImpactBounce,
+  settleCityDebrisOnFloor,
   cityDestructionAt,
   createCityDestructionScene,
   updateCityDestructionScene,
@@ -24,6 +27,7 @@ test('stage-1 story beats are deterministic and finish before mandatory orbital 
     'facade',
     'facadeImpact',
     'trainWarning',
+    'facadeDebrisImpact',
     'trainSpawn',
     'trainImpact',
   ]);
@@ -138,4 +142,88 @@ test('real stage-1 mission plays wreck only once and preserves the boost challen
   h.advance(1.4);
   state = h.game.snapshot();
   assert.equal(state.orbitalLaunch.phase, 'boost', 'the existing mandatory boost remains intact');
+});
+
+test('falling street objects always land on rotated world-space bounds, never below the road', () => {
+  const root = createCityDestructionScene();
+  const sign = root.getObjectByName('city-sign-structure');
+  const car = root.getObjectByName('city-falling-hovercar');
+  const facade = root.getObjectByName('city-collapsing-facade');
+  const building = facade.getObjectByName('city-tower-surviving-shell');
+  const shards = facade.getObjectByName('city-tower-damaged-crown').children;
+  const eps = 0.002;
+  for (const seconds of [
+    5, 5.4, 5.8, 6.6, 7.1, 7.4, 8.5, 9.3, 9.7, 10.05, 10.5, 11.1, 12.0, 12.8, 13.4, 13.65, 14.4,
+    17.8, 20.3,
+  ]) {
+    const state = updateCityDestructionScene(root, seconds);
+    for (const [name, node] of [
+      ['falling billboard', sign],
+      ['rolling hovercar', car],
+      ['tower foundation', building],
+      ...shards.map((shard, i) => ['facade fragment ' + i, shard]),
+    ]) {
+      // Three.js calculates bounds from the actual rotated geometry, not
+      // object.position.y. This catches corners clipping during roll/tilt.
+      const bounds = new T.Box3().setFromObject(node, true);
+      assert.ok(
+        bounds.min.y >= CITY_COLLISION_FLOOR_Y - eps,
+        name + ' crossed road at t=' + seconds + ', bottom=' + bounds.min.y,
+      );
+    }
+    assert.ok(Math.abs(state.impacts.billboard.y - (CITY_COLLISION_FLOOR_Y + 0.35)) < eps);
+    assert.ok(Math.abs(state.impacts.vehicle.y - (CITY_COLLISION_FLOOR_Y + 0.35)) < eps);
+    assert.ok(Math.abs(state.impacts.debris.y - (CITY_COLLISION_FLOOR_Y + 0.35)) < eps);
+    const effect = root.getObjectByName('city-hovercar-impact-fireball');
+    assert.ok(effect.position.y >= CITY_COLLISION_FLOOR_Y, 'fireball center remains above asphalt');
+  }
+  const first = shards.map((shard) => shard.position.clone());
+  updateCityDestructionScene(root, 12.1);
+  updateCityDestructionScene(root, 20.3);
+  shards.forEach((shard, i) =>
+    assert.ok(
+      shard.position.distanceTo(first[i]) < 0.001,
+      'stage rewind/replay keeps stable deterministic landed position',
+    ),
+  );
+});
+
+test('floor contact solver handles rotations, rebounds and empty geometry without tunneling', () => {
+  const g = new T.Group();
+  const part = new T.Mesh(new T.BoxGeometry(12, 4, 6), new T.MeshBasicMaterial());
+  part.rotation.set(0.4, 0, -0.85);
+  part.position.y = -12;
+  g.add(part);
+  const result = settleCityDebrisOnFloor(g);
+  assert.equal(result.contacted, true);
+  assert.ok(result.correction > 0);
+  assert.ok(new T.Box3().setFromObject(g, true).min.y >= CITY_COLLISION_FLOOR_Y - 0.002);
+  assert.ok(
+    settleCityDebrisOnFloor(g).correction < 0.001,
+    'already grounded geometry stays stable',
+  );
+  assert.equal(settleCityDebrisOnFloor(new T.Group()).bottomY, null);
+  assert.throws(() => settleCityDebrisOnFloor(g, NaN), RangeError);
+  assert.equal(cityImpactBounce(10, 10), 0);
+  assert.ok(cityImpactBounce(10.3, 10, 2.5) > 0);
+  assert.equal(cityImpactBounce(11, 10, 2.5), 0);
+  assert.throws(() => cityImpactBounce(NaN, 10), RangeError);
+});
+
+test('train remains suspended above road and its safe collision route is unchanged', () => {
+  const wreck = createCityHangingTrainObstacle();
+  for (const at of [14.2, 14.8, 15.6, 16.2, 17.5, 21.5]) {
+    animateCityHangingTrainObstacle(wreck, at);
+    // A standalone model has no render loop to propagate parent pivot/world
+    // matrices, so update the hierarchy before reading bounds.
+    wreck.updateMatrixWorld(true);
+    const body = wreck.getObjectByName('city-maglev-damaged-carriages');
+    const bounds = new T.Box3().setFromObject(body, true);
+    assert.ok(
+      bounds.min.y >= CITY_COLLISION_FLOOR_Y - 0.002,
+      'train should hang above road instead of clipping into it at ' + at,
+    );
+  }
+  assert.equal(wreck.userData.safeLane, 'right');
+  assert.equal(wreck.userData.solids.length, 2);
 });
