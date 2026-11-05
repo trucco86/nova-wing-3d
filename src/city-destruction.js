@@ -10,6 +10,7 @@ export const CITY_DESTRUCTION_BEATS = Object.freeze([
   { id: 'facade', at: 11.1, message: 'FACHADA EM COLAPSO · MANTENHA A ROTA' },
   { id: 'facadeImpact', at: 12.0, message: null },
   { id: 'trainWarning', at: 13.3, message: 'TREM AVARIADO · DESVIE À DIREITA' },
+  { id: 'facadeDebrisImpact', at: 13.65, message: null },
   { id: 'trainSpawn', at: 14.2, message: null },
   { id: 'trainImpact', at: 16.2, message: null },
 ]);
