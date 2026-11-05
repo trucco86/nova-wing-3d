@@ -152,6 +152,7 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableCitySetpieces,
     enableSquadIntro,
     nativeLifecycle,
     onStageStarted,
