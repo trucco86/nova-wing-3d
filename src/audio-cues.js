@@ -285,6 +285,14 @@ Object.assign(AUDIO_CUES, {
     ],
     noises: [{ duration: 0.3, gain: 0.075, filterType: 'bandpass', filter: 2900, filterEnd: 390, pan: -0.38 }],
   },
+  cityConcreteDebris: {
+    cooldown: 0.5,
+    tones: [
+      { from: 205, to: 63, duration: 0.4, gain: 0.041, wave: 'triangle', pan: -0.41 },
+      { from: 93, to: 34, duration: 0.7, gain: 0.054, wave: 'sine', pan: -0.41 },
+    ],
+    noises: [{ duration: 0.73, gain: 0.11, color: 'brown', filter: 890, filterEnd: 145, pan: -0.41 }],
+  },
   cityVehicleCrash: {
     cooldown: 0.55,
     tones: [
