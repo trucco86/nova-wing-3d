@@ -1,0 +1,42 @@
+name: Stage-1 impact timing QA bundle sync
+on:
+  push:
+    branches:
+      - feat/stage1-city-destruction-train-setpiece-20261105
+permissions:
+  contents: write
+concurrency:
+  group: stage1-impact-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format only the impact timetable and tests
+        run: npx prettier --write src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs
+      - name: Verify real city timing, train obstacle and existing launch route
+        run: node --test tests/city-stage1-destruction.test.mjs tests/city-2-6-transit.test.mjs tests/launch-pacing-and-fighters.test.mjs
+      - name: Build distribution with synchronized city impact cues
+        run: npm run build
+      - name: Commit precise source/test/build changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- src/city-destruction.js src/game.js tests/city-stage1-destruction.test.mjs tests/browser/stage1-city-destruction.spec.mjs index.html
+          if git diff --cached --quiet; then
+            echo 'Already synced'
+            exit 0
+          fi
+          git commit -m 'build(stage1): synchronize distinct falls and impact explosions'
+          git push origin HEAD:feat/stage1-city-destruction-train-setpiece-20261105
