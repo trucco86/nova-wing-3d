@@ -223,17 +223,28 @@ test('three stage-1 impacts have readable short-lived ground shockwaves without 
     const dust = impact.userData.nodes.dust;
     for (const cloud of dust) {
       const bottom = cloud.position.y - cloud.scale.y;
-      assert.ok(bottom >= CITY_STREET_TOP_Y - 0.001, 'smoke starts on pavement, never buried in it');
+      assert.ok(
+        bottom >= CITY_STREET_TOP_Y - 0.001,
+        'smoke starts on pavement, never buried in it',
+      );
     }
     const original = impact.children.slice();
     updateCityDestructionScene(root, at + 0.7);
-    assert.ok(impact.children.every((node, i) => node === original[i]),
-      'dust effect reuses the same GPU meshes');
+    assert.ok(
+      impact.children.every((node, i) => node === original[i]),
+      'dust effect reuses the same GPU meshes',
+    );
     updateCityDestructionScene(root, at + 1.25);
-    assert.equal(cityDestructionImpactState(root)[event].visible, false,
-      'old visual event clears; no permanent HUD or screen clutter');
+    assert.equal(
+      cityDestructionImpactState(root)[event].visible,
+      false,
+      'old visual event clears; no permanent HUD or screen clutter',
+    );
   }
-  assert.equal(root.userData.impacts.vehicle.getObjectByName('city-ground-impact-sparks').type, 'Points');
+  assert.equal(
+    root.userData.impacts.vehicle.getObjectByName('city-ground-impact-sparks').type,
+    'Points',
+  );
 });
 
 test('impact helpers stay deterministic over pause/seek and discard impossible timing', () => {
@@ -243,7 +254,8 @@ test('impact helpers stay deterministic over pause/seek and discard impossible t
   assert.equal(updateCityRoadImpact(impact, 5.32, 5, 10, -20), true);
   const original = impact.userData.nodes.ring.scale.x;
   const glow = impact.userData.nodes.ring.material.opacity;
-  const x = impact.position.x, z = impact.position.z;
+  const x = impact.position.x,
+    z = impact.position.z;
   updateCityRoadImpact(impact, 5.32, 5, 10, -20);
   assert.equal(impact.userData.nodes.ring.scale.x, original);
   assert.equal(impact.userData.nodes.ring.material.opacity, glow);
@@ -259,8 +271,14 @@ test('train setpiece signals a real right-side route and shows electrical danger
   assert.equal(edges.length, 2);
   assert.ok(edges.every((edge) => edge.userData.visualOnly));
   assert.ok(edges.every((edge) => edge.position.y > CITY_STREET_TOP_Y));
-  assert.deepEqual(edges.map((edge) => edge.position.x), [19, 35]);
-  assert.equal(safe.children.filter((child) => child.name === 'city-train-right-lane-chevron').length, 3);
+  assert.deepEqual(
+    edges.map((edge) => edge.position.x),
+    [19, 35],
+  );
+  assert.equal(
+    safe.children.filter((child) => child.name === 'city-train-right-lane-chevron').length,
+    3,
+  );
   animateCityHangingTrainObstacle(wreck, 15.3);
   const sparks = wreck.getObjectByName('city-train-torn-powerline-sparks');
   assert.ok(sparks.visible, 'sparks expose the broken power line before hitbox activates');

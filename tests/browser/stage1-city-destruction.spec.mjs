@@ -36,7 +36,13 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
       expect(bottom).toBeGreaterThanOrEqual(clearance.floorY - 0.001);
     }
     const impact =
-      seconds === 7.35 ? 'billboard' : seconds === 10.25 ? 'vehicle' : seconds === 13.2 ? 'facade' : null;
+      seconds === 7.35
+        ? 'billboard'
+        : seconds === 10.25
+          ? 'vehicle'
+          : seconds === 13.2
+            ? 'facade'
+            : null;
     if (impact) {
       expect(snap.cityDestruction.impacts[impact].visible).toBe(true);
       expect(snap.cityDestruction.impacts[impact].groundY).toBeGreaterThan(clearance.floorY);

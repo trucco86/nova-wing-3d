@@ -115,7 +115,13 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   root.visible = false;
   const ring = new T.Mesh(
     new T.RingGeometry(0.87, 1, 24),
-    new T.MeshBasicMaterial({ color: '#b7eaff', transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide }),
+    new T.MeshBasicMaterial({
+      color: '#b7eaff',
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      side: T.DoubleSide,
+    }),
   );
   ring.name = 'city-ground-impact-shock-ring';
   ring.rotation.x = -Math.PI / 2;
@@ -125,9 +131,15 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   const cloudGeometry = new T.IcosahedronGeometry(1, 0);
   const dust = [];
   for (let i = 0; i < 3; i++) {
-    const cloud = new T.Mesh(cloudGeometry, new T.MeshBasicMaterial({
-      color: tint, transparent: true, opacity: 0, depthWrite: false,
-    }));
+    const cloud = new T.Mesh(
+      cloudGeometry,
+      new T.MeshBasicMaterial({
+        color: tint,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    );
     cloud.name = 'city-ground-impact-rising-dust';
     cloud.userData.visualOnly = true;
     root.add(cloud);
@@ -136,13 +148,25 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   const vertices = [];
   for (let i = 0; i < 10; i++) {
     const angle = (i / 10) * Math.PI * 2;
-    vertices.push(Math.cos(angle) * (1.5 + i % 3), 1 + i * 0.45, Math.sin(angle) * (1.5 + i % 3));
+    vertices.push(
+      Math.cos(angle) * (1.5 + (i % 3)),
+      1 + i * 0.45,
+      Math.sin(angle) * (1.5 + (i % 3)),
+    );
   }
   const sparkGeometry = new T.BufferGeometry();
   sparkGeometry.setAttribute('position', new T.Float32BufferAttribute(vertices, 3));
-  const sparks = new T.Points(sparkGeometry, new T.PointsMaterial({
-    color: '#ffce80', transparent: true, opacity: 0, size: 2.6, sizeAttenuation: false, depthWrite: false,
-  }));
+  const sparks = new T.Points(
+    sparkGeometry,
+    new T.PointsMaterial({
+      color: '#ffce80',
+      transparent: true,
+      opacity: 0,
+      size: 2.6,
+      sizeAttenuation: false,
+      depthWrite: false,
+    }),
+  );
   sparks.name = 'city-ground-impact-sparks';
   sparks.userData.visualOnly = true;
   root.add(sparks);
@@ -167,7 +191,11 @@ export function updateCityRoadImpact(root, time, started, x, z, strength = 1) {
     const cloud = dust[i];
     const radius = strength * (1.6 + phase * (2.5 + i * 0.65));
     const spread = phase * (3.3 + strength * 2);
-    cloud.position.set((i - 1) * spread, CITY_STREET_TOP_Y + radius * 0.75 + phase * (4 + i), (i - 1) * spread * 0.42);
+    cloud.position.set(
+      (i - 1) * spread,
+      CITY_STREET_TOP_Y + radius * 0.75 + phase * (4 + i),
+      (i - 1) * spread * 0.42,
+    );
     cloud.scale.set(radius, radius * 0.72, radius * 1.15);
     cloud.material.opacity = 0.39 * fade;
   }
@@ -325,22 +353,39 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
   const { impacts } = root.userData;
-  updateCityRoadImpact(impacts.billboard, seconds, 7.1, signRoot.position.x, signRoot.position.z, 1.0);
+  updateCityRoadImpact(
+    impacts.billboard,
+    seconds,
+    7.1,
+    signRoot.position.x,
+    signRoot.position.z,
+    1.0,
+  );
   updateCityRoadImpact(impacts.vehicle, seconds, 10.05, car.position.x, car.position.z, 1.4);
-  updateCityRoadImpact(impacts.facade, seconds, 12.95, facade.position.x - 8, facade.position.z + 18, 1.5);
+  updateCityRoadImpact(
+    impacts.facade,
+    seconds,
+    12.95,
+    facade.position.x - 8,
+    facade.position.z + 18,
+    1.5,
+  );
   return state;
 }
 
 export function cityDestructionImpactState(root) {
   if (!root?.userData?.impacts) return null;
   return Object.fromEntries(
-    Object.entries(root.userData.impacts).map(([key, effect]) => [key, {
-      visible: effect.visible,
-      groundY: effect.userData.nodes.ring.position.y,
-      dustCount: effect.userData.nodes.dust.length,
-      drawCount: effect.children.length,
-      z: effect.position.z,
-    }]),
+    Object.entries(root.userData.impacts).map(([key, effect]) => [
+      key,
+      {
+        visible: effect.visible,
+        groundY: effect.userData.nodes.ring.position.y,
+        dustCount: effect.userData.nodes.dust.length,
+        drawCount: effect.children.length,
+        z: effect.position.z,
+      },
+    ]),
   );
 }
 
@@ -419,7 +464,17 @@ export function createCityHangingTrainObstacle() {
   for (const x of [19, 35])
     block(safe, neon, 'city-train-safe-lane-edge', x, CITY_STREET_TOP_Y + 0.6, -4, 0.8, 0.55, 62);
   for (let i = 0; i < 3; i++) {
-    const chevron = block(safe, neon, 'city-train-right-lane-chevron', 26, CITY_STREET_TOP_Y + 0.85, -24 + i * 20, 8, 0.38, 2);
+    const chevron = block(
+      safe,
+      neon,
+      'city-train-right-lane-chevron',
+      26,
+      CITY_STREET_TOP_Y + 0.85,
+      -24 + i * 20,
+      8,
+      0.38,
+      2,
+    );
     chevron.rotation.y = -0.5;
   }
   block(safe, warning, 'city-train-alert-rib', 25, 24, 15, 2, 28, 2);
@@ -434,7 +489,17 @@ export function createCityHangingTrainObstacle() {
   sparks.name = 'city-train-torn-powerline-sparks';
   const sparkColor = glow('#ffc36b');
   for (let i = 0; i < 4; i++) {
-    const spark = block(sparks, sparkColor, 'city-train-electrical-discharge', -31 + i * 1.3, 29 - i * 2.1, -9 + i * 3.5, 0.4, 3.8, 0.35);
+    const spark = block(
+      sparks,
+      sparkColor,
+      'city-train-electrical-discharge',
+      -31 + i * 1.3,
+      29 - i * 2.1,
+      -9 + i * 3.5,
+      0.4,
+      3.8,
+      0.35,
+    );
     spark.rotation.z = i % 2 ? -0.4 : 0.5;
   }
   root.add(sparks);
