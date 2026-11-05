@@ -11,6 +11,9 @@ import {
   animateCityHangingTrainObstacle,
   cityDestructionGroundState,
   CITY_STREET_TOP_Y,
+  cityDestructionImpactState,
+  createCityRoadImpact,
+  updateCityRoadImpact,
 } from '../src/city-destruction.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
@@ -193,4 +196,80 @@ test('real stage-1 mission plays wreck only once and preserves the boost challen
   h.advance(1.4);
   state = h.game.snapshot();
   assert.equal(state.orbitalLaunch.phase, 'boost', 'the existing mandatory boost remains intact');
+});
+
+test('three stage-1 impacts have readable short-lived ground shockwaves without new per-frame meshes', () => {
+  const root = createCityDestructionScene();
+  const expected = [
+    ['billboard', 7.1, 1],
+    ['vehicle', 10.05, 1.4],
+    ['facade', 12.95, 1.5],
+  ];
+  for (const [event, at] of expected) {
+    updateCityDestructionScene(root, at - 0.06);
+    let effects = cityDestructionImpactState(root);
+    assert.equal(effects[event].visible, false, event + ' must never fire early');
+    updateCityDestructionScene(root, at + 0.22);
+    effects = cityDestructionImpactState(root);
+    assert.equal(effects[event].visible, true);
+    assert.equal(effects[event].dustCount, 3);
+    assert.equal(effects[event].drawCount, 5, 'pooled shock ring, dust and single spark batch');
+    assert.ok(effects[event].groundY > CITY_STREET_TOP_Y);
+    const impact = root.userData.impacts[event];
+    assert.ok(impact.children.every((node) => node.userData.visualOnly));
+    const ring = impact.getObjectByName('city-ground-impact-shock-ring');
+    assert.ok(ring?.material.opacity > 0 && ring.material.opacity <= 0.76);
+    assert.ok(Math.abs(ring.rotation.x + Math.PI / 2) < 1e-6);
+    const dust = impact.userData.nodes.dust;
+    for (const cloud of dust) {
+      const bottom = cloud.position.y - cloud.scale.y;
+      assert.ok(bottom >= CITY_STREET_TOP_Y - 0.001, 'smoke starts on pavement, never buried in it');
+    }
+    const original = impact.children.slice();
+    updateCityDestructionScene(root, at + 0.7);
+    assert.ok(impact.children.every((node, i) => node === original[i]),
+      'dust effect reuses the same GPU meshes');
+    updateCityDestructionScene(root, at + 1.25);
+    assert.equal(cityDestructionImpactState(root)[event].visible, false,
+      'old visual event clears; no permanent HUD or screen clutter');
+  }
+  assert.equal(root.userData.impacts.vehicle.getObjectByName('city-ground-impact-sparks').type, 'Points');
+});
+
+test('impact helpers stay deterministic over pause/seek and discard impossible timing', () => {
+  const impact = createCityRoadImpact('qa-road-shock');
+  assert.equal(updateCityRoadImpact(impact, 4, 5, 10, -20), false);
+  assert.equal(impact.visible, false);
+  assert.equal(updateCityRoadImpact(impact, 5.32, 5, 10, -20), true);
+  const original = impact.userData.nodes.ring.scale.x;
+  const glow = impact.userData.nodes.ring.material.opacity;
+  const x = impact.position.x, z = impact.position.z;
+  updateCityRoadImpact(impact, 5.32, 5, 10, -20);
+  assert.equal(impact.userData.nodes.ring.scale.x, original);
+  assert.equal(impact.userData.nodes.ring.material.opacity, glow);
+  assert.equal(impact.position.x, x);
+  assert.equal(impact.position.z, z);
+  assert.equal(updateCityRoadImpact(impact, 6.2, 5, 10, -20), false);
+});
+
+test('train setpiece signals a real right-side route and shows electrical danger while hanging', () => {
+  const wreck = createCityHangingTrainObstacle();
+  const safe = wreck.getObjectByName('city-train-safe-right-lane-indicator');
+  const edges = safe.children.filter((node) => node.name === 'city-train-safe-lane-edge');
+  assert.equal(edges.length, 2);
+  assert.ok(edges.every((edge) => edge.userData.visualOnly));
+  assert.ok(edges.every((edge) => edge.position.y > CITY_STREET_TOP_Y));
+  assert.deepEqual(edges.map((edge) => edge.position.x), [19, 35]);
+  assert.equal(safe.children.filter((child) => child.name === 'city-train-right-lane-chevron').length, 3);
+  animateCityHangingTrainObstacle(wreck, 15.3);
+  const sparks = wreck.getObjectByName('city-train-torn-powerline-sparks');
+  assert.ok(sparks.visible, 'sparks expose the broken power line before hitbox activates');
+  assert.equal(sparks.children.length, 4);
+  assert.equal(wreck.userData.solids.length, 0, 'warning remains passable until collision');
+  animateCityHangingTrainObstacle(wreck, 16.3);
+  assert.equal(wreck.userData.solids.length, 2);
+  assert.equal(wreck.userData.safeLane, 'right');
+  animateCityHangingTrainObstacle(wreck, 22);
+  assert.equal(sparks.visible, false, 'decorative sparks expire after encounter');
+  assert.equal(safe.visible, false, 'guides do not persist after the dodge section');
 });
