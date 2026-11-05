@@ -68,6 +68,11 @@ import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
 import {
+  createRadioTriage,
+  compactBossAttackWarning,
+  compactBossState,
+} from './hud-message-policy.js';
+import {
   europaBossMinimumCenterHeight,
   europaBossArenaHeight,
   europaBossFloorY,
@@ -515,9 +520,12 @@ export function createGame({
     dashRemaining = 0;
     rollHeld = false;
     cue(robotMode ? 'transformRobot' : 'transformShip');
+    // Mode changes are explicit player actions; never suppress their pilot
+    // cue behind routine mission chatter or a previous instruction cooldown.
     message(
       robotMode ? 'MODO ROBÔ / CANHÕES PESADOS ATIVOS' : 'MODO NAVE / AGILIDADE RESTAURADA',
       'christopher',
+      { force: true },
     );
   }
   const activePilot = () => pilotAt(pilotLoadout.pilot);
@@ -579,6 +587,7 @@ export function createGame({
     visualTime = 0,
     shake = 0,
     lastStage = -1;
+  const radioTriage = createRadioTriage();
   let scatterOwned = false;
   let fireMode = 'pulse';
   let sectorIndex = 0,
@@ -1287,6 +1296,7 @@ export function createGame({
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
+    radioTriage.reset();
     spawnCd = 2;
     fighterSerial = 0;
     fighterWaveSerial = 0;
@@ -1505,11 +1515,21 @@ export function createGame({
     pickupFeedbackTime = 1;
     if (!pet) cue(kind === 'blue' ? 'ringBlue' : 'ringShield');
   }
-  function message(t, speakerId = 'bia') {
+  function message(t, speakerId = 'bia', { force = false } = {}) {
+    const notice = dynamicFlight
+      ? radioTriage.offer(t, visualTime, {
+          compact: true,
+          force: force || (msgTime <= 0 && stageIntroTime > 0),
+        })
+      : { text: String(t), full: String(t), duration: 3 };
+    if (!notice) return;
     renderRadioSpeaker(document, speakerId);
-    $('message').textContent = t;
+    $('message').textContent = notice.text;
+    // Full wording remains available to screen readers and on pointer hover.
+    $('message').setAttribute('aria-label', notice.full);
+    $('message').title = notice.full;
     $('comms').classList.add('active');
-    msgTime = 3;
+    msgTime = notice.duration;
   }
   function dispose(o) {
     scene.remove(o);
@@ -4192,9 +4212,9 @@ export function createGame({
       })
     ) {
       bossWarned = true;
-      bossWarningTime = 3.5;
+      bossWarningTime = 2.2;
       world.showCarrierForBoss?.();
-      $('bossIncoming').textContent = '⚠ CHEFE SE APROXIMANDO · SAINDO DA NAVE-MÃE';
+      $('bossIncoming').textContent = '⚠ CHEFE À FRENTE';
       $('bossIncoming').hidden = false;
       cue('critical');
     }
@@ -4845,6 +4865,12 @@ export function createGame({
         $('bossState').textContent +=
           ' · FRACO: ' +
           ARSENAL.find((w) => w.element === weaknessAt(sectorIndex, combatPhase)).name;
+      if (dynamicFlight) {
+        const details = $('bossState').textContent;
+        $('bossState').setAttribute('aria-label', details);
+        $('bossState').title = details;
+        $('bossState').textContent = compactBossState(details);
+      }
       bossCd -= hostileDt;
       if (!boss.userData.sabotage) {
         const charging =
@@ -4876,11 +4902,11 @@ export function createGame({
             )?.name
           : null;
       $('attackWarning').textContent = physicalWarning
-        ? '⚠ ' +
-          physicalWarning +
-          (radarPlan?.threatened ? ' · SIGA A ZONA VERDE DO RADAR' : ' · POSIÇÃO SEGURA')
+        ? compactBossAttackWarning(physicalWarning, {
+            threatened: radarPlan?.threatened !== false,
+          })
         : signatureWarning
-          ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+          ? compactBossAttackWarning(signatureWarning)
           : bossCd < 0.65
             ? '⚠ ' +
               [
@@ -4898,9 +4924,16 @@ export function createGame({
             : '';
       if (boss.userData.sabotage)
         $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
-      if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
-        $('attackWarning').textContent +=
-          (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
+      // The compact visible banner preserves room for combat. Keep the exact
+      // full warning available for screen readers and deterministic QA.
+      const fullWarning = $('attackWarning').textContent
+        ? (physicalWarning ?? signatureWarning ?? $('attackWarning').textContent)
+        : '';
+      $('attackWarning').setAttribute('aria-label', fullWarning);
+      $('attackWarning').title = fullWarning;
+      // The physical radar and real cannon flash already communicate where
+      // the next bolt comes from: do not repeat PLASMA/ORBES every volley.
+      // Full tactical labels remain available in the radar and boss help.
       // Only one targeted volley per maneuver; never spray generic bullets
       // over the physical strike window.
       const allowRanged =
