@@ -56,8 +56,10 @@ test('Europa tunnel has a real solid wall until rupture and then a traversable a
   const positions = debris.children.map((part) => part.position.clone());
   updateEuropaTunnelBreach(tunnel, 0.25);
   assert.ok(debris.children.every((part, i) => part.position.y < positions[i].y));
-  assert.ok(debris.children.every((part, i) => part.position.x < positions[i].x),
-    'ice fragments visibly burst into the corridor');
+  assert.ok(
+    debris.children.every((part, i) => part.position.x < positions[i].x),
+    'ice fragments visibly burst into the corridor',
+  );
   for (let n = 0; n < 80; n++) updateEuropaTunnelBreach(tunnel, 0.1);
   assert.ok(debris.children.every((part) => part.position.y >= -5));
   assert.ok(debris.children.every((part) => part.userData.visualOnly));

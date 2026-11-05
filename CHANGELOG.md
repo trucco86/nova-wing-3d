@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.88 — Fissura do túnel glacial (QA)
+
+- Rachaduras 3D progressivas antes do rompimento, mantendo a colisão física até o impacto.
+- Fragmentos de gelo com impulso lateral e queda, e testes de alerta e ruptura dentro do jogo.
+- Homologação visual pendente; produção inalterada.
+
 ## 1.27.87 — Europa: validação ponta a ponta do túnel (QA)
 
 - Atalho de QA para a ruptura do túnel na fase 6, reutilizando o gameplay real.
