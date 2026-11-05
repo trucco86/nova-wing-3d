@@ -19,19 +19,19 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run release:prepare -- 1.27.81
+      - run: npm run release:prepare -- 1.27.83
       - name: Release notes
         run: |
           node --input-type=module <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
           const file = 'CHANGELOG.md';
           const s = readFileSync(file, 'utf8');
-          const old = '## 1.27.81 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
-          const next = '## 1.27.81 — Attention-first HUD · mensagens organizadas (QA)\n\n- Alertas de sobrevivência, perigo e ataques têm prioridade sobre falas ambientais, coleta e confirmação de acerto; apenas um aviso por vez, sem esconder informação crítica.\n- Rádio Five Cats resumido, deduplicado, reduzido em duração e espaçado para não encobrir o jogo. Texto completo mantido para tecnologia assistiva.\n- Avisos dos chefes agora mostram o golpe físico e uma defesa curta; estado de bateria, blindagem e núcleo em linha única, com texto completo acessível.\n- Alerta de aproximação mais curto; rótulos de escudo PT/EN/ES revisados; faixa compacta em retrato e paisagem.\n- Suíte Node do triage e Playwright do HUD em jogos reais, preservando mira, HUD de pontos fracos, radar, controles, dano, órbita e fases aprovadas.\n- Versão exclusiva QA. Necessária validação no iPhone físico e revisão antes da produção.';
-          if (!s.includes(old)) throw new Error('Missing 1.27.81 changelog placeholder');
+          const old = '## 1.27.83 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const next = '## 1.27.83 — Attention-first HUD · mensagens organizadas (QA)\n\n- Alertas de sobrevivência, perigo e ataques têm prioridade sobre falas ambientais, coleta e confirmação de acerto; apenas um aviso por vez, sem esconder informação crítica.\n- Rádio Five Cats resumido, deduplicado, reduzido em duração e espaçado para não encobrir o jogo. Texto completo mantido para tecnologia assistiva.\n- Avisos dos chefes agora mostram o golpe físico e uma defesa curta; estado de bateria, blindagem e núcleo em linha única, com texto completo acessível.\n- Alerta de aproximação mais curto; rótulos de escudo PT/EN/ES revisados; faixa compacta em retrato e paisagem.\n- Suíte Node do triage e Playwright do HUD em jogos reais, preservando mira, HUD de pontos fracos, radar, controles, dano, órbita e fases aprovadas.\n- Versão exclusiva QA. Necessária validação no iPhone físico e revisão antes da produção.';
+          if (!s.includes(old)) throw new Error('Missing 1.27.83 changelog placeholder');
           writeFileSync(file, s.replace(old, next));
-          writeFileSync('releases/v1.27.81.md',
-            '## Nova Wing 3D v1.27.81 — HUD com prioridade de atenção · QA\n\n' +
+          writeFileSync('releases/v1.27.83.md',
+            '## Nova Wing 3D v1.27.83 — HUD com prioridade de atenção · QA\n\n' +
             '- Só o aviso mais importante aparece durante o combate. Alertas críticos não são abafados pelo rádio.\n' +
             '- Mensagens do rádio mais curtas e menos frequentes, com prioridade a ações e informação completa preservada em aria-label/title.\n' +
             '- Chefes: ataque e orientação curta, status de bateria/blindagem/núcleo em uma linha; radar e colisões preservados.\n' +
@@ -46,6 +46,6 @@ jobs:
         run: |
           git config user.name 'nova-wing-qa-bot'
           git config user.email 'nova-wing-qa-bot@users.noreply.github.com'
-          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.81.md specs/hud-priority-compact-v12781.md src/game.js src/styles.css src/hud-message-policy.js src/ui-preferences.js tests/hud-message-policy.test.mjs tests/browser/hud-priority-compact.spec.mjs
-          git commit -m 'chore(release): prepare attention-first compact HUD v1.27.81'
+          git add package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj index.html CHANGELOG.md releases/v1.27.83.md specs/hud-priority-compact-v12783.md src/game.js src/styles.css src/hud-message-policy.js src/ui-preferences.js tests/hud-message-policy.test.mjs tests/browser/hud-priority-compact.spec.mjs
+          git commit -m 'chore(release): prepare attention-first compact HUD v1.27.83'
           git push origin HEAD:feat/hud-priority-message-triage-20261104
