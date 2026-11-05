@@ -1,0 +1,65 @@
+name: Europa wall fracture QA bundle sync
+on:
+  push:
+    branches:
+      - fix/europa-tunnel-crack-telegraph-20261105
+permissions:
+  contents: write
+concurrency:
+  group: europa-crack-qa-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format stage-6 wall fracture code and tests
+        run: |
+          npx prettier --write src/encounters.js src/game.js tests/europa-tunnel-breach.test.mjs tests/browser/europa-tunnel-end-to-end.spec.mjs
+      - name: Verify QA fracture mechanics and existing tunnel collision
+        run: |
+          node --test tests/europa-tunnel-breach.test.mjs tests/europa-surface.test.mjs tests/developer-scenarios.test.mjs
+      - name: Prepare versioned QA candidate
+        run: npm run release:prepare -- 1.27.88
+      - name: Describe stage-6 polish without asserting visual homologation
+        run: |
+          cat > releases/v1.27.88.md <<'NOTES'
+          ## Nova Wing 3D v1.27.88 — Europa: fissura visível e destroços com direção · QA
+          - Túnel da fase 6: painel lateral exibe oito rachaduras luminosas progressivas por aproximadamente 0,65 s antes do impacto.
+          - Até o impacto, o painel permanece sólido e seu volume de colisão continua bloqueando a entrada do inimigo. A abertura física ocorre somente ao romper a parede.
+          - No rompimento, rachaduras se apagam, painel é retirado, colisão removida e doze fragmentos têm queda gravitacional e impulso lateral para dentro do corredor.
+          - Playwright registra screenshot adicional no instante de rachaduras, além de parede intacta, abertura, entrada inimiga e retorno ao cenário congelado.
+          - Mantém v1.27.87 (atalho de QA do túnel), v1.27.86 (solo/névoa/transição) e v1.27.85 (garras do Colosso).
+          **Somente QA. Sem publicação em produção. Exige CI e revisão visual no celular.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('CHANGELOG.md')
+          content = path.read_text()
+          content = content.replace(
+            '## 1.27.88 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.',
+            '## 1.27.88 — Fissura do túnel glacial (QA)\n\n- Rachaduras 3D progressivas antes do rompimento, mantendo a colisão física até o impacto.\n- Fragmentos de gelo com impulso lateral e queda, e testes de alerta e ruptura dentro do jogo.\n- Homologação visual pendente; produção inalterada.',
+          )
+          path.write_text(content)
+          PY
+      - name: Commit versioned source, QA tests and generated HTML
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.88.md index.html src/encounters.js src/game.js tests/europa-tunnel-breach.test.mjs tests/browser/europa-tunnel-end-to-end.spec.mjs
+          if git diff --cached --quiet; then
+            echo 'QA candidate already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(europa): version wall fracture QA candidate v1.27.88'
+          git push origin HEAD:fix/europa-tunnel-crack-telegraph-20261105
