@@ -1,0 +1,61 @@
+name: Europa framing QA versioned bundle sync
+on:
+  push:
+    branches:
+      - fix/europa-colossus-camera-framing-20261105
+permissions:
+  contents: write
+concurrency:
+  group: europa-framing-release-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare QA version 1.27.84 and generated web
+        run: npm run release:prepare -- 1.27.84
+      - name: Write accurate stage-6 release notes
+        run: |
+          cat > releases/v1.27.84.md <<'NOTES'
+          ## Nova Wing 3D v1.27.84 — Colosso Glacial · Framing QA
+
+          - Fase 6: Colosso Glacial passa a lutar mais perto da nave (limite z=-205 → -160), aumentando a percepção de ameaça e a leitura das armas.
+          - Em orientação retrato o campo de visão diminui de 98° para 88°. Em paisagem e nos outros setores permanece a câmera original.
+          - A silhueta e a escala física do modelo não mudam; hitboxes, geradores, mira, tiros, órbita 360° e comportamento dos chefes permanecem preservados.
+          - Mantém a arena ampla e o solo glacial afastado implementados na v1.27.80.
+          - Testes de projeção/clearance com o modelo real e Playwright em retrato/paisagem. A homologação visual em celular físico ainda é obrigatória.
+
+          **Exclusivamente QA. Não publicar sem homologação.**
+          NOTES
+      - name: Include accurate changelog entry
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("CHANGELOG.md")
+          text = path.read_text()
+          text = text.replace("## 1.27.84 — Candidata em preparação\n\n- Candidata não homologada; preencher entregas e evidências antes da publicação.",
+            "## 1.27.84 — Colosso Glacial mais próximo (QA)\n\n- Fase 6: profundidade ajustada de -205 para -160 e lente retrato de 98° para 88° sem alterar escala, colisões ou órbita.\n- Testes de presença visual, clearance e câmera em retrato/paisagem. Homologação em celular físico pendente.")
+          path.write_text(text)
+          PY
+      - name: Commit only versioned release artifacts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.84.md index.html
+          if git diff --cached --quiet; then
+            echo 'Versioned bundle already synchronized'
+            exit 0
+          fi
+          git commit -m 'build(europa): prepare versioned QA candidate v1.27.84'
+          git push origin HEAD:fix/europa-colossus-camera-framing-20261105
