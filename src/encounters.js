@@ -254,8 +254,9 @@ export function animateGroundEnemy(model, time, target, age = time, charging = f
   }
 }
 /** Geometry and collision boxes are built together. No invisible solid opening. */
-export function createObstacle(kind = 'gantry') {
-  if (!templates.has(kind)) {
+export function createObstacle(kind = 'gantry', variant = 'standard') {
+  const key = kind === 'tunnel' && variant === 'europa' ? 'europa-tunnel' : kind;
+  if (!templates.has(key)) {
     const g = new T.Group(),
       solids = [];
     const solid = (w, h, d, x, y, z, material = armor) => {
@@ -264,7 +265,37 @@ export function createObstacle(kind = 'gantry') {
     };
     if (kind === 'tunnel') {
       solid(4, 44, 520, -34, 15, -260, dark);
-      solid(4, 44, 520, 34, 15, -260, dark);
+      if (variant === 'europa') {
+        // One authored breach in the *right* wall. The actual collision wall
+        // is split, so opening the panel is physically traversable rather
+        // than a cosmetic explosion over an invisible solid.
+        solid(4, 44, 200, 34, 15, -100, dark);
+        solid(4, 44, 280, 34, 15, -380, dark);
+        const panel = box(4, 44, 40, dark, 34, 15, -220);
+        panel.name = 'europa-tunnel-breach-panel';
+        g.add(panel);
+        solids.push({
+          center: new T.Vector3(34, 15, -220),
+          half: new T.Vector3(2, 22, 20),
+          breachPanel: true,
+        });
+        const debris = new T.Group();
+        debris.name = 'europa-tunnel-falling-debris';
+        debris.visible = false;
+        const ice = metal('#afdce8', 0.1, 0.68);
+        const fragment = new T.IcosahedronGeometry(2.8, 0);
+        for (let i = 0; i < 12; i++) {
+          const chunk = new T.Mesh(fragment, ice);
+          chunk.position.set(32 + (i % 3) * 3.1, 2 + Math.floor(i / 3) * 10, -232 + (i % 4) * 8);
+          chunk.scale.set(0.7 + (i % 3) * 0.15, 0.7 + (i % 4) * 0.2, 0.8);
+          chunk.userData.fallSpeed = 4 + (i % 4) * 2;
+          chunk.userData.visualOnly = true;
+          debris.add(chunk);
+        }
+        g.add(debris);
+      } else solid(4, 44, 520, 34, 15, -260, dark);
+      // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
+      // while its authored 520-unit tunnel owns the real flight floor.
       solid(72, 3, 520, 0, -8.5, -260, armor);
       solid(72, 3, 520, 0, 38.5, -260, dark);
       for (let z = 0; z >= -520; z -= 40) {
@@ -416,10 +447,44 @@ export function createObstacle(kind = 'gantry') {
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
     g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
-    templates.set(kind, g);
+    templates.set(key, g);
   }
-  const template = templates.get(kind),
+  const template = templates.get(key),
     clone = template.clone(true);
-  clone.userData = template.userData; // Immutable shared collision geometry.
+  // The Europa breach removes its own collision panel only. Other tunnel
+  // copies and authored obstacles retain immutable shared hitboxes.
+  clone.userData =
+    key === 'europa-tunnel'
+      ? {
+          ...template.userData,
+          solids: [...template.userData.solids],
+          europaBreach: true,
+          breached: false,
+        }
+      : template.userData;
   return clone;
+}
+
+export function openEuropaTunnelBreach(tunnel) {
+  if (!tunnel?.userData?.europaBreach || tunnel.userData.breached) return false;
+  const panel = tunnel.getObjectByName('europa-tunnel-breach-panel');
+  const debris = tunnel.getObjectByName('europa-tunnel-falling-debris');
+  if (!panel || !debris) return false;
+  panel.visible = false;
+  debris.visible = true;
+  tunnel.userData.solids = tunnel.userData.solids.filter((solid) => !solid.breachPanel);
+  tunnel.userData.breached = true;
+  return true;
+}
+
+export function updateEuropaTunnelBreach(tunnel, dt) {
+  if (!tunnel?.userData?.breached || !Number.isFinite(dt) || dt < 0) return;
+  const debris = tunnel.getObjectByName('europa-tunnel-falling-debris');
+  if (!debris) return;
+  for (const part of debris.children) {
+    part.userData.fallSpeed = Math.min(38, part.userData.fallSpeed + 24 * dt);
+    part.position.y = Math.max(-5, part.position.y - part.userData.fallSpeed * dt);
+    part.rotation.x += dt * 0.7;
+    part.rotation.z += dt * 1.1;
+  }
 }

@@ -84,7 +84,14 @@ test('the scene begins in space, reveals a distinct planetary world, and resets 
     const arrived = world.setDestinationArrival(27);
     assert.equal(arrived.combatReady, true);
     assert.equal(root.userData.arrivalPhase, 'arena');
-    assert.ok(scene.fog.density < 0.002);
+    if (index === 5) {
+      assert.ok(
+        scene.fog.density >= 0.002 && scene.fog.density <= 0.0035,
+        'Europa surface keeps bounded icy haze; combat remains visible',
+      );
+      assert.equal(scene.getObjectByName('world-orbital-globe').visible, false);
+      assert.equal(scene.getObjectByName('destination-celestial-body').visible, false);
+    } else assert.ok(scene.fog.density < 0.002);
     assert.equal(scene.getObjectByName('destination-escape').visible, false);
     world.setDestinationExit(7.7);
     assert.equal(scene.getObjectByName('destination-escape').visible, true);

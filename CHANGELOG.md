@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.86 — Europa: túnel e superfície gelada (QA)
+
+- Fase 6: piso do túnel sem z-fighting; quebra física de parede com destroços e entrada coerente de inimigo.
+- Lua e globo orbital desaparecem na transição de superfície, com névoa azul e cenário glacial detalhado.
+- Testes de piso, colisão, estado da superfície, regressão do Colosso e telas retrato/paisagem.
+- Homologação em celular físico pendente; produção inalterada.
+
 ## 1.27.85 — Ataques físicos do Colosso Glacial (QA)
 
 - Garra telescópica física na área real de impacto; pinça bilateral e martelada unilateral em coreografias distintas.

@@ -13,6 +13,7 @@ import {
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
+import { europaSurfaceAt, createEuropaSurface, updateEuropaSurface } from './europa-surface.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
 import {
@@ -934,6 +935,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel: { value: 0 },
       water: { value: 0 },
       urban: { value: 1 },
+      ice: { value: 0 },
       detail: { value: 0.4 },
       launchGroundAlpha: { value: 1 },
     },
@@ -941,7 +943,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     depthWrite: false,
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float ice;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;if(ice>.5){float fault=1.-smoothstep(.06,.3,abs(sin(p.x*.035+sin(p.y*.023)*1.8)));float frost=fbm(vec3(p*.015,1.))*0.55+.25;vec3 blue=vec3(.078,.16,.19)+vec3(.20,.28,.29)*frost;blue-=vec3(.055,.065,.075)*fault;float ridges=.55+.45*fbm(vec3(p*.066,6.));c=mix(c,blue*ridges,ice);}float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -1506,6 +1508,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   let destinationLandmarks = null;
   let carrierGrandHallActive = false;
   let europaBossArenaActive = false;
+  let europaTunnelActive = false;
+  let europaArrivalSeconds = 0;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
@@ -1548,6 +1552,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         : null;
     const profile = DESTINATION_PROFILES[destinationIndex];
     const target = new T.Color(profile.haze);
+    europaArrivalSeconds = seconds;
     // The opening really starts in space. Each location's dust/cloud color
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
@@ -1558,9 +1563,26 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
     starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
-    if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
+    if (destinationIndex === 5) {
+      const ice = europaSurfaceAt(seconds, europaTunnelActive);
+      ground.visible = ice.groundVisible && !europaBossArenaActive;
+      moon.visible = atmosphere.visible = ice.orbitalVisible;
+      scene.fog.color.lerp(new T.Color(ice.fogTint), ice.surface * 0.87);
+      scene.fog.density = T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface);
+      updateEuropaSurface(
+        sectorScenery.getObjectByName('europa-frozen-surface'),
+        seconds,
+        ice.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+        destinationGraphicsQuality === 'high',
+      );
+    }
     for (const child of sectorScenery.children) {
-      if (child === destinationVista || child === destinationEscape || child === mothership)
+      if (
+        child === destinationVista ||
+        child === destinationEscape ||
+        child === mothership ||
+        child.name === 'europa-frozen-surface'
+      )
         continue;
       // The ice corridor is decorative, not a boss hazard. Arrival updates
       // must never restore foreground objects while Colossus is fighting.
@@ -1646,6 +1668,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
         quality,
       );
+      if (sceneryTheme === 'ice')
+        updateEuropaSurface(
+          sectorScenery.getObjectByName('europa-frozen-surface'),
+          europaArrivalSeconds,
+          europaSurfaceAt(europaArrivalSeconds, europaTunnelActive).surface > 0.16 &&
+            !europaTunnelActive &&
+            !europaBossArenaActive,
+          quality === 'high',
+        );
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
@@ -1666,12 +1697,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
       }
     },
+    setEuropaTunnel(active = false) {
+      europaTunnelActive =
+        dynamicFlight && sceneryTheme === 'ice' && !!active && !europaBossArenaActive;
+      if (sceneryTheme === 'ice') {
+        const state = europaSurfaceAt(europaArrivalSeconds, europaTunnelActive);
+        ground.visible = state.groundVisible && !europaBossArenaActive;
+        updateEuropaSurface(
+          sectorScenery.getObjectByName('europa-frozen-surface'),
+          europaArrivalSeconds,
+          state.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+          destinationGraphicsQuality === 'high',
+        );
+      }
+      return europaTunnelActive;
+    },
     setEuropaBossArena(active = false, floorY = -7) {
       europaBossArenaActive = dynamicFlight && sceneryTheme === 'ice' && !!active;
       if (europaBossArenaActive && (!Number.isFinite(floorY) || floorY > -7))
         throw new RangeError('Invalid Europa arena basin depth');
       // Move only the render floor, not the boss, camera, targets or orbit.
       ground.position.y = europaBossArenaActive ? floorY : -7;
+      if (europaBossArenaActive) europaTunnelActive = false;
+      const surface = sectorScenery.getObjectByName('europa-frozen-surface');
+      if (surface) surface.visible = !europaBossArenaActive && !europaTunnelActive;
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
       // Preserve the glacier skyline, but move its near spires to the second
@@ -1685,6 +1734,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         foregroundHidden: !crystals || !crystals.visible,
         backdropDepth: destinationLandmarks?.position.z ?? 0,
         floorY: ground.position.y,
+      };
+    },
+    europaSurfaceState() {
+      if (sceneryTheme !== 'ice') return null;
+      return {
+        groundVisible: ground.visible,
+        orbitalVisible: moon.visible,
+        destinationGlobeVisible:
+          destinationVista?.getObjectByName('destination-celestial-body')?.visible ?? false,
+        frostDensity: scene.fog.density,
+        surfaceVisible: sectorScenery.getObjectByName('europa-frozen-surface')?.visible ?? false,
+        tunnelActive: europaTunnelActive,
       };
     },
     europaBossArenaState() {
@@ -1788,6 +1849,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setSector(sector, sectorIndex = -1) {
       carrierGrandHallActive = false;
       europaBossArenaActive = false;
+      europaTunnelActive = false;
+      europaArrivalSeconds = 0;
       clearScenery();
       destinationVista = null;
       destinationEscape = null;
@@ -1832,6 +1895,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       terrainMat.uniforms.launchGroundAlpha.value = 1;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
+      terrainMat.uniforms.ice.value = sceneryTheme === 'ice' ? 1 : 0;
       const land = ['city', 'ocean', 'ice', 'mars'].includes(sceneryTheme);
       ground.visible = land && sceneryTheme !== 'mars';
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
@@ -1887,6 +1951,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
       if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());
+      if (dynamicFlight && sceneryTheme === 'ice') sectorScenery.add(createEuropaSurface());
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
       if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {
@@ -2188,6 +2253,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
       updateMarsPremium(sectorScenery.getObjectByName('mars-premium-desert'), 0);
       if (sceneryTheme === 'mars') setMarsDescent(0);
+      europaTunnelActive = false;
       if (destinationVista) setDestinationArrival(0);
       if (destinationEscape) setDestinationExit(0);
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));

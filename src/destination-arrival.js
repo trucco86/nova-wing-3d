@@ -125,7 +125,14 @@ export function destinationArrivalAt(index, seconds) {
     keepGlobe: profile.keepGlobe,
     // For orbital locations Jupiter, Saturn and the anomaly remain in view
     // as distant scenery; ground destinations reveal their own terrain.
-    globeOpacity: profile.keepGlobe ? 1 - 0.28 * reveal : 1 - smooth((seconds - 16) / 9),
+    // Europa is a landing, not an orbit battle: the celestial globe must
+    // disappear BEFORE the frozen ground fully occupies the viewport.
+    globeOpacity:
+      index === 5
+        ? 1 - smooth((seconds - 14.5) / 2.5)
+        : profile.keepGlobe
+          ? 1 - 0.28 * reveal
+          : 1 - smooth((seconds - 16) / 9),
     globeScale: 0.74 + smooth((seconds - 3) / 15) * 1.52 - reveal * (profile.keepGlobe ? 1.2 : 0),
     label:
       phase === 'space'
