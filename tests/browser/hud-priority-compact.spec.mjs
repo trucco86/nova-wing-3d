@@ -88,8 +88,7 @@ test('priority rail shows only urgent event, then the next most important messag
   expect(result.attack).toEqual(['attackWarning']);
   expect(result.shield).toEqual(['shieldWarning']);
   expect(result.incoming).toEqual(['bossIncoming']);
-  expect(result.lowPriority).toContain('comms');
-  expect(result.lowPriority).toContain('pickupFlash');
+  expect(result.lowPriority).toEqual(['comms']);
 });
 
 test('survival text stays localized and full briefing remains available to assistive technology', async ({
