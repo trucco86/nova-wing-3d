@@ -65,8 +65,8 @@ function poseStriker(striker, target, state, kind, reach, charge) {
     ? new T.Vector3(target.x + side * 16, target.y + 56, target.z - 82)
     : new T.Vector3(target.x + side * 44, target.y + 8, target.z - 78);
   const contact = quake
-    ? new T.Vector3(target.x, target.y - 3, target.z - 8)
-    : new T.Vector3(target.x + side * 6.5, target.y, target.z - 8);
+    ? new T.Vector3(target.x, target.y - 3, target.z - 3)
+    : new T.Vector3(target.x + side * 6.5, target.y, target.z - 3);
   const end = rest.clone().lerp(prepared, state === 'windup' ? 0.42 + charge * 0.58 : 1);
   if (state === 'attack') end.lerp(contact, reach);
 
