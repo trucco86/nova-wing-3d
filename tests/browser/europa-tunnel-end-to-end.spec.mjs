@@ -20,12 +20,35 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(start.europaTunnel[0].breached).toBe(false);
   expect(start.europaTunnel[0].remainingSolidPanels).toBe(1);
   expect(start.europaTunnel[0].panelVisible).toBe(true);
+  expect(start.europaTunnel[0].warningVisible).toBe(false);
   expect(start.entities.enemies).toBe(0);
   expect(start.europaSurface.tunnelActive).toBe(true);
   expect(start.europaSurface.groundVisible).toBe(false);
   expect(start.europaSurface.orbitalVisible).toBe(false);
   await page.screenshot({
     path: info.outputPath('europa-tunnel-intact-' + info.project.name + '.png'),
+  });
+
+  const warning = await page.evaluate(() => {
+    const { game, advance } = window.fixture;
+    for (let i = 0; i < 700; i++) {
+      advance(0.05, { renderAfter: false });
+      const current = game.snapshot();
+      if (current.europaTunnel?.[0]?.warningProgress > 0.3) return current;
+      if (!current.tunnel) break;
+    }
+    return game.snapshot();
+  });
+  expect(warning.tunnel).toBe(true);
+  expect(warning.europaTunnel[0].breached).toBe(false);
+  expect(warning.europaTunnel[0].warningVisible).toBe(true);
+  expect(warning.europaTunnel[0].warningProgress).toBeGreaterThan(0.3);
+  expect(warning.europaTunnel[0].remainingSolidPanels).toBe(1);
+  expect(warning.europaTunnel[0].panelVisible).toBe(true);
+  expect(warning.entities.enemies).toBe(0);
+  await page.evaluate(() => window.fixture.advance(0, { renderAfter: true }));
+  await page.screenshot({
+    path: info.outputPath('europa-tunnel-warning-' + info.project.name + '.png'),
   });
 
   const breach = await page.evaluate(() => {
@@ -43,6 +66,7 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(breach.europaTunnel[0].remainingSolidPanels).toBe(0);
   expect(breach.europaTunnel[0].panelVisible).toBe(false);
   expect(breach.europaTunnel[0].debrisVisible).toBe(true);
+  expect(breach.europaTunnel[0].warningVisible).toBe(false);
   expect(breach.targets.some((enemy) => enemy.kind === 'fighter' && enemy.x > 36)).toBe(true);
   expect(breach.europaSurface.tunnelActive).toBe(true);
   expect(breach.europaSurface.groundVisible).toBe(false);
