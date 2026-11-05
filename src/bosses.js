@@ -749,6 +749,8 @@ export function animateBossSignature(
   attackState = 'maneuver',
   attackKind = null,
   attackPose = null,
+  attackIntent = null,
+  attackTarget = null,
 ) {
   const pose = bossSignaturePose(index, time, phase, attackState, attackKind);
   if (!pose || !g) return null;
@@ -760,6 +762,10 @@ export function animateBossSignature(
       phase,
       attackState,
       attackKind,
+      attackPose,
+      attackTarget,
+      g.userData.parts.map((part) => part.hp > 0),
+      attackIntent?.cycle ?? 0,
     );
   if (index === 4)
     animatePhoenixAttackVfx(
@@ -856,13 +862,16 @@ export function animateBossSignature(
   } else if (index === 5) {
     const left = g.getObjectByName('signature-mech-left-arm');
     const right = g.getObjectByName('signature-mech-right-arm');
+    // Shoulders anticipate the strike while the telescoping forearms perform
+    // the actual contact motion. Never swing the entire torso at the pilot.
+    const physical = attackKind === 'ice-quake' || attackKind === 'cryo-pincer';
     if (left) {
-      left.rotation.x = pose.armLeft;
-      left.rotation.z = -pose.stomp;
+      left.rotation.x = physical ? -0.13 : pose.armLeft;
+      left.rotation.z = physical ? 0.14 : -pose.stomp;
     }
     if (right) {
-      right.rotation.x = pose.armRight;
-      right.rotation.z = pose.stomp;
+      right.rotation.x = physical ? -0.13 : pose.armRight;
+      right.rotation.z = physical ? -0.14 : pose.stomp;
     }
   } else if (index === 6) {
     const crossfire =
