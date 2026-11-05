@@ -18,8 +18,11 @@ test('stage-1 story beats are deterministic and finish before mandatory orbital 
   const ids = CITY_DESTRUCTION_BEATS.map(({ id }) => id);
   assert.deepEqual(ids, [
     'billboard',
+    'billboardImpact',
     'vehicle',
+    'vehicleImpact',
     'facade',
+    'facadeImpact',
     'trainWarning',
     'trainSpawn',
     'trainImpact',
