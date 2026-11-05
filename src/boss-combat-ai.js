@@ -174,7 +174,15 @@ export function chooseBossIntent({
     // Keep the public attack family stable while anchoring radar to the
     // visible moving limb, respecting which Omega battery is still alive.
     originMesh:
-      sector === 7
+      sector === 5 && (kind === 'ice-quake' || kind === 'cryo-pincer')
+        ? generators[Math.abs(cycle) % 2] !== false
+          ? Math.abs(cycle) % 2 === 0
+            ? 'europa-left-claw-tip'
+            : 'europa-right-claw-tip'
+          : Math.abs(cycle) % 2 === 0
+            ? 'europa-right-claw-tip'
+            : 'europa-left-claw-tip'
+        : sector === 7
         ? kind === 'bite'
           ? 'omega-mouth-cavity'
           : kind === 'claw-swipe'
