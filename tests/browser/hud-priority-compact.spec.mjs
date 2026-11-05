@@ -52,6 +52,7 @@ test('priority rail shows only urgent event, then the next most important messag
   await page.goto('/__dynamic.html?sector=5&qaBoss=5');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const result = await page.evaluate(() => {
+    window.fixture.advance(4.5);
     const nodes = Object.fromEntries(
       ['criticalWarning', 'launchBoostNotice', 'attackWarning', 'shieldWarning', 'bossIncoming',
         'pickupFlash', 'comms', 'hitFeedback'].map((id) => [id, document.getElementById(id)]),
