@@ -44,64 +44,94 @@ https://www.python.org/downloads/.
 
 ## Executar localmente
 
-Requer Node.js 24, Python 3.12+, Chromium/Chrome disponivel para Stagehand
-e uma **chave de API do provedor do modelo** com credito/limite configurado.
+A POC atual usa **Ollama local** para o agente Deep Agents e para o navegador
+Stagehand. **Nao e necessario OPENAI_API_KEY, LangSmith nem outra API paga.**
+A documentacao anterior descrevia um prototipo de API diferente e nao correspondia
+ao codigo atual. E necessario ter Node.js 24, Python 3.11+ (3.12 recomendado),
+Ollama instalado e Chromium/Chrome local.
 
-Terminal 1 (a partir da raiz do repositorio):
+Na primeira instalacao, inicie o Ollama e instale um modelo local compativel.
+No macOS, o aplicativo Ollama tambem pode manter o servico ativo em segundo plano.
 
-```bash
+```sh
+# Terminal 1, caso o Ollama ainda nao esteja ativo:
+ollama serve
+
+# Terminal 2 (uma unica vez para baixar o modelo):
+ollama pull qwen3.5:4b
+```
+
+Na raiz do repositorio, inicie o jogo no endereco
+`http://127.0.0.1:4173/`:
+
+```sh
 npm ci
 npm run build
 npm run dev
 ```
 
-Terminal 2, na mesma raiz:
+Em outro terminal, sempre na raiz do repositorio:
 
-```bash
-python3 -m venv .venv
+```sh
+python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -r qa-agent/requirements.txt
-read -s OPENAI_API_KEY  # cole a chave, pressione Enter; nao aparece na tela
-export OPENAI_API_KEY
-.venv/bin/python qa-agent/run.py --scenario menu-desktop --max-model-calls 10
+.venv/bin/python qa-agent/run.py --scenario menu-desktop --max-model-calls 8 --show-browser
 ```
 
-Para observar o Chrome e outros cenarios:
+Se o virtualenv ja existir e estiver em Python 3.11+, nao o recrie.
+Se estiver usando outro modelo disponivel localmente, selecione com
+`--model nome:tag`; o preflight verifica se o modelo realmente esta instalado.
 
-```bash
+Para exercitar os demais fluxos:
+
+```sh
 .venv/bin/python qa-agent/run.py --scenario mobile-hud --show-browser
 .venv/bin/python qa-agent/run.py --scenario rpg-orbit --show-browser
 ```
 
-O modelo e selecionavel com `--model` (padrao experimental
-`openai:gpt-5.5`), dependendo da disponibilidade na conta/API.
-O browser Stagehand usa separadamente `--browser-model openai/gpt-5.4-mini`
-(com a MESMA `OPENAI_API_KEY`), seguindo o SDK Python oficial. Esses
-modelos podem ter cobrancas diferentes. Use `--model openai:gpt-5.4-mini`
-se o projeto/API suportar e quiser experimentar um agente menor.
-A chave e lida apenas da variavel de ambiente do terminal; nao a adicione
-em `src/`, no HTML publico, no GitHub, nem a compartilhe em chats.
-Para evitar grava-la no historico do shell, utilize a leitura interativa acima.
-Em Bash e Zsh, `read -s` oculta a entrada digitada.
+O browser so pode visitar a URL do jogo em localhost/127.0.0.1.
+A POC e manual/opt-in e nao altera DEV, HML ou producao.
+A importacao de pacotes Python, a inicializacao do Stagehand e a exploracao
+ponta a ponta ainda exigem um smoke real no seu ambiente.
 
-O runner aceita somente uma URL HTTP **localhost/127.0.0.1** e exige
-um servidor respondendo antes de iniciar. Nao usa login de producao.
-Apenas execute contra uma versao local sob seu controle.
+## Resultados e evidencias
 
-## Observabilidade e custo
+Apos cada execucao, consulte os artefatos em `artifacts/agent-qa/`:
 
-- Deep Agents e Stagehand sao bibliotecas open source; o browser local
-  nao exige uma assinatura de hospedagem.
-- A API de IA **pode cobrar tokens**, inclusive por imagens/acoes.
-  `--max-model-calls 10` limita chamadas do modelo, **nao** impoe um teto
-  monetario de gastos, nem garante que o cenario termine.
-- Para traces em LangSmith (opt-in): configure `LANGSMITH_TRACING=true`,
-  `LANGSMITH_API_KEY` e opcionalmente `LANGSMITH_PROJECT=nova-wing-qa-poc`.
-  Nao habilite tracing com credenciais de usuarios reais.
-- O script salva relato, duracao e limite em `artifacts/agent-qa/`. O campo
-  de custo permanece **nao apurado** ate conferencia com o provedor/LangSmith.
-- Compare taxa de passos reproduzidos, defeitos confirmados, tempo humano
-  economizado, custo por bug valido e falhas regressivas evitadas; nao crie
-  percentuais de ganho antes de uma baseline.
+- `AAAAMMDDTHHMMSSZ-cenario.md`: relato detalhado do agente, **nao homologado**;
+- `AAAAMMDDTHHMMSSZ-cenario.json`: metadados auditaveis (cenario,
+  modelo, duracao, status e caminho do relato).
+
+Visualize as dez ultimas execucoes, sem usar modelo ou chave de API:
+
+```sh
+.venv/bin/python qa-agent/report.py --latest 10
+.venv/bin/python qa-agent/report.py --latest 10 --json
+.venv/bin/python -m unittest discover -s qa-agent -p 'test_*.py'
+```
+
+O JSON pode alimentar dashboards, sem ser tratado como resultado de teste
+funcional. O status `RELATO_NAO_VALIDADO` significa apenas que o agente
+retornou texto. `BLOQUEADO` indica falha de execucao, nao necessariamente
+bug no Nova Wing. Arquivos `.md` anteriores a esta evolucao continuam
+legiveis; o consolidador conta apenas execucoes com sidecar JSON.
+
+## Observabilidade e custo por entrega
+
+Deep Agents, Stagehand, Ollama e o browser local nao exigem chamadas a
+um provedor de modelos na nuvem no fluxo atual. A inferencia local
+**tem custo de hardware, eletricidade e tempo**, mas esse custo nao e
+mensurado automaticamente pelo runner.
+
+- `--max-model-calls` limita chamadas feitas pelo agente principal; pode
+  nao contabilizar todas as chamadas internas do Stagehand.
+- `model_calls_actual`, `tokens_actual` e `cost_usd` sao registrados como
+  `null` ate haver medicao real, nunca como zero estimado.
+- Para medir o valor, confirme manualmente cada achado via Playwright/harness
+  e registre tempo total, bugs reproduzidos e esforco de correcao.
+- Tracing LangSmith fica **desabilitado** por seguranca na POC local. Nao
+  configure chaves de API sem motivo e nao coloque segredos em relatorios.
 
 ## Escopo e limites tecnicos
 
