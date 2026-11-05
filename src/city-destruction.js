@@ -46,7 +46,47 @@ export function cityDestructionAt(seconds) {
   });
 }
 
+// The road plate top is approximately -6.815 (city-premium.js); keep
+// wreckage a hair above it to prevent coplanar shimmer and buried meshes.
+export const CITY_STREET_TOP_Y = -6.7;
 const boxGeo = new T.BoxGeometry(1, 1, 1);
+
+// Exact rotated OBB bottom for authored unit-box pieces. Uses existing mesh
+// world matrices, avoiding per-frame Box3/Vector3 allocations on mobile.
+// This is an explicit ground constraint, not an approximate center-Y clamp.
+export function cityBoxBottomY(mesh) {
+  if (!mesh?.isMesh || mesh.geometry !== boxGeo)
+    throw new TypeError('City debris contact requires an authored rigid box');
+  mesh.updateWorldMatrix(true, false);
+  const m = mesh.matrixWorld.elements;
+  return m[13] - 0.5 * (Math.abs(m[1]) + Math.abs(m[5]) + Math.abs(m[9]));
+}
+
+function cityRigidBottomY(group) {
+  group.updateWorldMatrix(true, true);
+  let bottom = Infinity;
+  group.traverse((node) => {
+    if (node.isMesh && node.geometry === boxGeo)
+      bottom = Math.min(bottom, cityBoxBottomY(node));
+  });
+  return bottom;
+}
+
+export function keepCityDebrisAboveGround(group, groundY = CITY_STREET_TOP_Y) {
+  if (!group?.isObject3D || !Number.isFinite(groundY))
+    throw new TypeError('Invalid city debris floor constraint');
+  const bottom = cityRigidBottomY(group);
+  if (!Number.isFinite(bottom)) return false;
+  if (bottom < groundY) {
+    // This effect layer is scene-rooted with no rotating parents; every
+    // centimeter lifted here is in world-space Y, not a local tilted axis.
+    group.position.y += groundY - bottom;
+    group.updateWorldMatrix(true, true);
+    return true;
+  }
+  return false;
+}
+
 const steel = () =>
   new T.MeshStandardMaterial({ color: '#45677f', metalness: 0.8, roughness: 0.37 });
 const glass = () =>
@@ -109,7 +149,8 @@ export function createCityDestructionScene() {
 
   const facade = new T.Group();
   facade.name = 'city-collapsing-facade';
-  block(facade, steel(), 'city-tower-surviving-shell', 0, 50, 0, 30, 114, 32);
+  // The static tower itself must rest on the elevated road plane, too.
+  block(facade, steel(), 'city-tower-surviving-shell', 0, 57.5, 0, 30, 114, 32);
   for (let level = 0; level < 9; level++) {
     block(facade, glass(), 'city-tower-lit-windows', 0, 12 + level * 10.5, 16.4, 24, 5.7, 0.55);
   }
@@ -129,6 +170,7 @@ export function createCityDestructionScene() {
     );
     piece.userData.origin = piece.position.clone();
     piece.userData.fall = (i % 3) * 5 + 12;
+    piece.userData.fallIndex = i;
   }
   facade.add(collapse);
   const collapseFlash = new T.Mesh(
@@ -147,6 +189,7 @@ export function createCityDestructionScene() {
   root.add(facade);
 
   root.userData.nodes = { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash };
+  root.userData.impactContacts = { billboard: false, vehicle: false, facade: false };
   updateCityDestructionScene(root, 0);
   return root;
 }
@@ -165,6 +208,7 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   );
   billboard.rotation.z = -state.billboard * 1.15;
   billboard.rotation.x = state.billboard * 0.4;
+  keepCityDebrisAboveGround(signRoot);
 
   car.visible = seconds >= 8.2 && seconds < 12.3;
   car.position.set(
@@ -173,19 +217,30 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
     -185 + Math.max(0, seconds - 8.5) * 48,
   );
   car.rotation.set(state.vehicle * 0.72, 0.14, -state.vehicle * 1.25);
+  keepCityDebrisAboveGround(car);
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
   facade.position.set(-88, -7, -255 + Math.max(0, seconds - 11.1) * 48);
   for (const fragment of collapse.children) {
-    const p = state.facade;
+    const i = fragment.userData.fallIndex;
+    // The large pieces tumble from the façade on slightly staggered arcs.
+    // Every shard physically reaches the road instead of hanging in the air
+    // and then penetrating the global ground plane.
+    const p = smooth((seconds - 11.1 - i * 0.035) / 1.7);
     fragment.position.copy(fragment.userData.origin);
-    fragment.position.y -= p * (20 + fragment.userData.fall);
-    fragment.position.x -= p * 6;
+    fragment.position.x -= p * (5 + i * 0.3);
     fragment.rotation.z = -p * (0.2 + fragment.userData.fall * 0.01);
     fragment.rotation.x = p * 0.36;
+    fragment.updateWorldMatrix(true, false);
+    const currentBottom = cityBoxBottomY(fragment);
+    const distanceToRoad = Math.max(0, currentBottom - CITY_STREET_TOP_Y);
+    fragment.position.y -= distanceToRoad * p;
+    keepCityDebrisAboveGround(fragment);
   }
+  // The structural blast happens first; the falling pieces land a moment
+  // later. The flash remains on the tower and never becomes a hidden collider.
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
   return state;
