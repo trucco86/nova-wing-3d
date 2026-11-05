@@ -109,6 +109,7 @@ test('world hides Europa near-field props but retains remote icy ridges during b
 test('Europa Colossus occupies more of portrait combat view without changing physical model', () => {
   const boss = createBossModel(SECTORS[5], 5, true);
   try {
+    const originalScale = boss.scale.clone();
     const bounds = new T.Box3().setFromObject(boss);
     const physicalHeight = bounds.getSize(new T.Vector3()).y;
     assert.ok(physicalHeight > 30, 'test the real Colossus silhouette, not a dummy target');
@@ -126,7 +127,7 @@ test('Europa Colossus occupies more of portrait combat view without changing phy
     boss.updateMatrixWorld(true);
     const closestPoint = new T.Box3().setFromObject(boss).max.z;
     assert.ok(closestPoint < -20, 'keep the boss out of the pilot cockpit at z=9');
-    assert.equal(boss.scale.x, 1, 'do not inflate the boss and its hitboxes');
+    assert.ok(boss.scale.equals(originalScale), 'do not inflate the boss or its hitboxes');
     assert.equal(europaBossPortraitFov(390 / 844), EUROPA_ARENA_PORTRAIT_FOV);
     assert.equal(europaBossPortraitFov(844 / 390), null);
     assert.throws(() => europaBossPortraitFov(0), RangeError);
