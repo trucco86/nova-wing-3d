@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.90 — Destroços no chão da cidade (QA)
+
+- Corrigidas placa, carro, torre e fragmentos que penetravam a via após girar e cair.
+- Explosões e fumaça agora se originam no contato real com a rua.
+- Testes de altura e física visual em diversos instantes; demais fases e boost preservados.
+- Produção inalterada, homologação visual ainda pendente.
+
 ## 1.27.89 — Cidade sob ataque e trem avariado (Fase 1, QA)
 
 - Outdoor, carro voador e fachada desmoronam em ordem cinematográfica, sem bloquear o centro.

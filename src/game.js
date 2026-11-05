@@ -152,6 +152,7 @@ import {
 import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
   CITY_DESTRUCTION_BEATS,
+  CITY_STREET_TOP_Y,
   cityDestructionAt,
   createCityHangingTrainObstacle,
   animateCityHangingTrainObstacle,
@@ -3812,6 +3813,15 @@ export function createGame({
     if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
     return { speed, previousPlayer, holding };
   }
+  function cityGroundImpactAt(objectName) {
+    const object = scene.getObjectByName(objectName);
+    if (!object) return null;
+    // The cue belongs to the piece at its CURRENT animated world position.
+    // Never explode where the object was spawned several seconds earlier.
+    const impact = object.getWorldPosition(new T.Vector3());
+    impact.y = CITY_STREET_TOP_Y + 1.1;
+    return impact;
+  }
   function updateCityStageSetpieces() {
     if (!dynamicFlight || sectorIndex !== 0 || !enableCitySetpieces) return;
     const state = world.setCityDestruction?.(elapsed);
@@ -3825,9 +3835,22 @@ export function createGame({
         scene.add(obstacle);
         obstacles.push({ o: obstacle, life: 1, hp: null });
       }
-      if (beat.id === 'billboardImpact') explode(new T.Vector3(-56, 44, -190), 9, 0x7ee9ff);
-      if (beat.id === 'vehicleImpact') explode(new T.Vector3(49, 29, -172), 9, 0xffaa65);
-      if (beat.id === 'facadeImpact') explode(new T.Vector3(-88, 84, -220), 15, 0xffaa6a);
+      if (beat.id === 'billboardImpact') {
+        const impact = cityGroundImpactAt('city-sign-structure');
+        if (impact) explode(impact, 9, 0x7ee9ff);
+      }
+      if (beat.id === 'vehicleImpact') {
+        const impact = cityGroundImpactAt('city-falling-hovercar');
+        if (impact) explode(impact, 13, 0xffaa65);
+      }
+      if (beat.id === 'facadeImpact') {
+        const flash = scene.getObjectByName('city-tower-impact-flash');
+        if (flash) explode(flash.getWorldPosition(new T.Vector3()), 15, 0xffaa6a);
+      }
+      if (beat.id === 'facadeDebrisImpact') {
+        const impact = cityGroundImpactAt('city-tower-damaged-crown');
+        if (impact) explode(impact, 11, 0xc6e4eb);
+      }
       if (beat.id === 'trainImpact') {
         const wreck = obstacles.find(({ o }) => o.userData.kind === 'city-hanging-train');
         if (wreck) explode(new T.Vector3(-25, 13, wreck.o.position.z + 15), 22, 0xffad64);
@@ -6087,6 +6110,7 @@ export function createGame({
           ? {
               ...cityDestructionAt(elapsed),
               triggered: [...cityDestructionTriggered],
+              ground: world.cityDestructionGroundState?.() ?? null,
               wrecks: obstacles
                 .filter(({ o }) => o.userData.kind === 'city-hanging-train')
                 .map(({ o }) => ({

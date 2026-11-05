@@ -34,7 +34,11 @@ import {
 } from './destination-vista.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
-import { createCityDestructionScene, updateCityDestructionScene } from './city-destruction.js';
+import {
+  createCityDestructionScene,
+  updateCityDestructionScene,
+  cityDestructionGroundState,
+} from './city-destruction.js';
 import {
   createCityUrbanDrones,
   animateCityUrbanDrones,
@@ -1672,6 +1676,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         seconds,
         sceneryTheme === 'city' && city.visible,
       );
+    },
+    cityDestructionGroundState() {
+      return sceneryTheme === 'city' ? cityDestructionGroundState(cityDestruction) : null;
     },
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
