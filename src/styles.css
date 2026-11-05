@@ -9593,6 +9593,14 @@ body.in-mission #hudNotices:not(:has(> #criticalWarning:not([hidden]))):not(
   > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms, #hitFeedback) {
   display: none !important;
 }
+/* Radio wins over small hit/loot confirmations while it speaks. No
+   simultaneous low-priority chips at the bottom of the priority ladder. */
+body.in-mission #hudNotices:has(> #comms.active)
+  > :is(#hitFeedback, #pickupFlash),
+body.in-mission #hudNotices:has(> #hitFeedback:not([hidden]))
+  > #pickupFlash {
+  display: none !important;
+}
 body.in-mission #hudNotices:has(> #shieldWarning:not([hidden]))
   > :is(#attackWarning[data-severity='info'], #bossIncoming, #pickupFlash, #comms),
 body.in-mission #hudNotices:has(> #bossIncoming:not([hidden]))
