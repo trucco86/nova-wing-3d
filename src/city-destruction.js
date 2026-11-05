@@ -21,7 +21,7 @@ export const CITY_STAGE_AUDIO = Object.freeze({
   billboardImpact: 'cityMetalDrop',
   vehicleImpact: 'cityVehicleCrash',
   facadeImpact: 'cityFacadeCollapse',
-  facadeDebrisImpact: 'cityMetalDrop',
+  facadeDebrisImpact: 'cityConcreteDebris',
   trainWarning: 'cityTrainAlarm',
   trainSpawn: 'cityRailTear',
   trainImpact: 'cityTrainCrash',
