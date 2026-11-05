@@ -5794,6 +5794,8 @@ export function createGame({
       music: music?.snapshot() ?? null,
       audio: audioCues?.snapshot() ?? null,
       arena: dynamicFlight && !!boss,
+      europaSurface:
+        dynamicFlight && sectorIndex === 5 ? world.europaSurfaceState?.() ?? null : null,
       europaArena:
         dynamicFlight && sectorIndex === 5 && boss
           ? {
