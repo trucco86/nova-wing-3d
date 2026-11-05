@@ -10,7 +10,7 @@ const smooth = (value) => {
 export function europaSurfaceAt(seconds, tunnelActive = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa arrival time');
   const surface = smooth((seconds - 16) / 7);
-  const orbital = 1 - smooth((seconds - 15.5) / 4);
+  const orbital = 1 - smooth((seconds - 14.5) / 2.5);
   return Object.freeze({
     surface,
     orbitalVisible: orbital > 0.01,
