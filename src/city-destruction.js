@@ -104,6 +104,79 @@ function block(parent, material, name, x, y, z, w, h, d) {
   return mesh;
 }
 
+// Cinematic evidence of an actual street impact: one ring, three bounded
+// dust volumes and one spark batch per event. Effects are deterministic and
+// reused; no spawning dozens of transparent sprites every frame.
+export function createCityRoadImpact(name, tint = '#d7b9a4') {
+  const root = new T.Group();
+  root.name = name;
+  root.userData.visualOnly = true;
+  root.userData.active = false;
+  root.visible = false;
+  const ring = new T.Mesh(
+    new T.RingGeometry(0.87, 1, 24),
+    new T.MeshBasicMaterial({ color: '#b7eaff', transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide }),
+  );
+  ring.name = 'city-ground-impact-shock-ring';
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = CITY_STREET_TOP_Y + 0.18;
+  ring.userData.visualOnly = true;
+  root.add(ring);
+  const cloudGeometry = new T.IcosahedronGeometry(1, 0);
+  const dust = [];
+  for (let i = 0; i < 3; i++) {
+    const cloud = new T.Mesh(cloudGeometry, new T.MeshBasicMaterial({
+      color: tint, transparent: true, opacity: 0, depthWrite: false,
+    }));
+    cloud.name = 'city-ground-impact-rising-dust';
+    cloud.userData.visualOnly = true;
+    root.add(cloud);
+    dust.push(cloud);
+  }
+  const vertices = [];
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2;
+    vertices.push(Math.cos(angle) * (1.5 + i % 3), 1 + i * 0.45, Math.sin(angle) * (1.5 + i % 3));
+  }
+  const sparkGeometry = new T.BufferGeometry();
+  sparkGeometry.setAttribute('position', new T.Float32BufferAttribute(vertices, 3));
+  const sparks = new T.Points(sparkGeometry, new T.PointsMaterial({
+    color: '#ffce80', transparent: true, opacity: 0, size: 2.6, sizeAttenuation: false, depthWrite: false,
+  }));
+  sparks.name = 'city-ground-impact-sparks';
+  sparks.userData.visualOnly = true;
+  root.add(sparks);
+  root.userData.nodes = { ring, dust, sparks };
+  return root;
+}
+
+export function updateCityRoadImpact(root, time, started, x, z, strength = 1) {
+  if (!root?.userData?.nodes) return false;
+  const age = time - started;
+  const active = age >= 0 && age < 1.15;
+  root.visible = active;
+  root.userData.active = active;
+  if (!active) return false;
+  const phase = clamp01(age / 1.15);
+  const fade = (1 - phase) ** 2;
+  root.position.set(x, 0, z);
+  const { ring, dust, sparks } = root.userData.nodes;
+  ring.scale.setScalar(strength * (2 + 15 * smooth(phase)));
+  ring.material.opacity = 0.76 * fade;
+  for (let i = 0; i < dust.length; i++) {
+    const cloud = dust[i];
+    const radius = strength * (1.6 + phase * (2.5 + i * 0.65));
+    const spread = phase * (3.3 + strength * 2);
+    cloud.position.set((i - 1) * spread, CITY_STREET_TOP_Y + radius * 0.75 + phase * (4 + i), (i - 1) * spread * 0.42);
+    cloud.scale.set(radius, radius * 0.72, radius * 1.15);
+    cloud.material.opacity = 0.39 * fade;
+  }
+  sparks.position.y = CITY_STREET_TOP_Y + 0.4 + 7 * phase;
+  sparks.scale.setScalar(strength * (0.85 + 1.4 * phase));
+  sparks.material.opacity = fade;
+  return true;
+}
+
 export function createCityDestructionScene() {
   const root = new T.Group();
   root.name = 'city-scripted-destruction';
@@ -190,7 +263,13 @@ export function createCityDestructionScene() {
   root.add(facade);
 
   root.userData.nodes = { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash };
-  root.userData.impactContacts = { billboard: false, vehicle: false, facade: false };
+  const impacts = {
+    billboard: createCityRoadImpact('city-billboard-road-impact', '#6b97a6'),
+    vehicle: createCityRoadImpact('city-hovercar-road-impact', '#a39d97'),
+    facade: createCityRoadImpact('city-facade-road-impact', '#9aabb4'),
+  };
+  root.add(impacts.billboard, impacts.vehicle, impacts.facade);
+  root.userData.impacts = impacts;
   updateCityDestructionScene(root, 0);
   return root;
 }
@@ -245,7 +324,24 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   // later. The flash remains on the tower and never becomes a hidden collider.
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
+  const { impacts } = root.userData;
+  updateCityRoadImpact(impacts.billboard, seconds, 7.1, signRoot.position.x, signRoot.position.z, 1.0);
+  updateCityRoadImpact(impacts.vehicle, seconds, 10.05, car.position.x, car.position.z, 1.4);
+  updateCityRoadImpact(impacts.facade, seconds, 12.95, facade.position.x - 8, facade.position.z + 18, 1.5);
   return state;
+}
+
+export function cityDestructionImpactState(root) {
+  if (!root?.userData?.impacts) return null;
+  return Object.fromEntries(
+    Object.entries(root.userData.impacts).map(([key, effect]) => [key, {
+      visible: effect.visible,
+      groundY: effect.userData.nodes.ring.position.y,
+      dustCount: effect.userData.nodes.dust.length,
+      drawCount: effect.children.length,
+      z: effect.position.z,
+    }]),
+  );
 }
 
 export function cityDestructionGroundState(root) {
@@ -318,6 +414,14 @@ export function createCityHangingTrainObstacle() {
 
   const safe = new T.Group();
   safe.name = 'city-train-safe-right-lane-indicator';
+  // Two low-profile guides identify the genuinely clear right lane. They are
+  // visual-only, cannot intercept a shot and do not add collision volumes.
+  for (const x of [19, 35])
+    block(safe, neon, 'city-train-safe-lane-edge', x, CITY_STREET_TOP_Y + 0.6, -4, 0.8, 0.55, 62);
+  for (let i = 0; i < 3; i++) {
+    const chevron = block(safe, neon, 'city-train-right-lane-chevron', 26, CITY_STREET_TOP_Y + 0.85, -24 + i * 20, 8, 0.38, 2);
+    chevron.rotation.y = -0.5;
+  }
   block(safe, warning, 'city-train-alert-rib', 25, 24, 15, 2, 28, 2);
   const arrow = new T.Mesh(new T.ConeGeometry(5, 9, 3), neon);
   arrow.name = 'city-train-right-dodge-arrow';
@@ -326,7 +430,15 @@ export function createCityHangingTrainObstacle() {
   arrow.userData.visualOnly = true;
   safe.add(arrow);
   root.add(safe);
-  root.userData.nodes = { pivot, train, tornGuideway, safe };
+  const sparks = new T.Group();
+  sparks.name = 'city-train-torn-powerline-sparks';
+  const sparkColor = glow('#ffc36b');
+  for (let i = 0; i < 4; i++) {
+    const spark = block(sparks, sparkColor, 'city-train-electrical-discharge', -31 + i * 1.3, 29 - i * 2.1, -9 + i * 3.5, 0.4, 3.8, 0.35);
+    spark.rotation.z = i % 2 ? -0.4 : 0.5;
+  }
+  root.add(sparks);
+  root.userData.nodes = { pivot, train, tornGuideway, safe, sparks };
   animateCityHangingTrainObstacle(root, 14.2);
   return root;
 }
@@ -334,7 +446,7 @@ export function createCityHangingTrainObstacle() {
 export function animateCityHangingTrainObstacle(root, seconds) {
   if (!root?.userData?.nodes) return null;
   const state = cityDestructionAt(seconds);
-  const { pivot, tornGuideway, safe } = root.userData.nodes;
+  const { pivot, tornGuideway, safe, sparks } = root.userData.nodes;
   pivot.position.set(-42, 34 - state.train * 8, 0);
   pivot.rotation.z = -state.train * 0.5;
   pivot.rotation.x = state.train * 0.16;
@@ -343,6 +455,10 @@ export function animateCityHangingTrainObstacle(root, seconds) {
   tornGuideway.position.y = 18 * (1 - state.train);
   safe.visible = seconds < 21.8;
   safe.scale.setScalar(0.93 + 0.07 * Math.sin(seconds * 8));
+  sparks.visible = seconds >= 14.4 && seconds < 21.8;
+  if (sparks.visible)
+    for (let i = 0; i < sparks.children.length; i++)
+      sparks.children[i].scale.y = 0.45 + Math.abs(Math.sin(seconds * 20 + i * 1.6)) * 1.4;
   if (state.trainSolid && !root.userData.solidOn) {
     // Visual carriage and torn support become the ACTUAL collision hull.
     // The right-most safe lane (x>=19) is never obstructed.
