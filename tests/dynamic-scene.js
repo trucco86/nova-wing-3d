@@ -93,7 +93,11 @@ window.fixture = {
 // These URLs exist only on the localhost visual fixture server.
 const qaSector = params.get('qaBoss');
 const qaSubboss = params.get('qaSubboss');
-if (qaSubboss !== null) {
+const qaTunnel = params.get('qaTunnel');
+if (qaTunnel !== null) {
+  if (!game.startDeveloperScenario(Number(qaTunnel), 'tunnel'))
+    throw new Error('Developer/QA Europa tunnel fixture unavailable');
+} else if (qaSubboss !== null) {
   if (!game.startDeveloperScenario(Number(qaSubboss), 'subboss'))
     throw new Error('Developer/QA subboss fixture unavailable');
 } else if (qaSector !== null) {
