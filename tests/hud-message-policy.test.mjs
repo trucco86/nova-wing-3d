@@ -23,6 +23,10 @@ test('long contextual radio keeps action and omits repeated pilot name without e
   assert.ok(!shortened.startsWith('FIVE CATS'));
   assert.match(shortened, /PROPULSÃO|SAÍDA/);
   assert.ok(compactRadioMessage('ESCUDO +25').length < 25);
+  assert.match(
+    compactRadioMessage('TEMPESTADE MONUMENTAL QUE OCUPA TODO O HORIZONTE E DESTRÓI A VISÃO · COMPENSE COM O DIRECIONAL', 42),
+    /COMPENSE/,
+  );
   assert.throws(() => compactRadioMessage('test', 4), RangeError);
 });
 
