@@ -53,7 +53,7 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     return game.snapshot();
   });
   expect(after.cityDestruction.phase).toBe('orbital-handoff');
-  expect(after.cityDestruction.triggered).toHaveLength(6);
+  expect(after.cityDestruction.triggered).toHaveLength(9);
   expect(after.lives).toBe(3);
   const boost = await page.evaluate(() => {
     const { game, advance } = window.fixture;
