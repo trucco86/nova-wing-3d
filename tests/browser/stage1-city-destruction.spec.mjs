@@ -11,9 +11,9 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   const checkpoints = [
     [3.1, 'city-calm', 0],
     [6.5, 'city-under-fire', 1],
-    [9.6, 'city-under-fire', 2],
-    [12.4, 'facade-collapse', 3],
-    [14.6, 'train-failing', 5],
+    [9.6, 'city-under-fire', 3],
+    [12.4, 'facade-collapse', 6],
+    [14.6, 'train-failing', 8],
   ];
   for (const [seconds, phase, minimumBeats] of checkpoints) {
     const snap = await page.evaluate((at) => {
