@@ -183,24 +183,24 @@ export function chooseBossIntent({
             ? 'europa-right-claw-tip'
             : 'europa-left-claw-tip'
         : sector === 7
-        ? kind === 'bite'
-          ? 'omega-mouth-cavity'
-          : kind === 'claw-swipe'
-            ? orbit < 0
-              ? 'omega-port-talon'
-              : 'omega-starboard-talon'
-            : kind.startsWith('tentacle')
-              ? generators[orbit < 0 ? 0 : 1] !== false
-                ? orbit < 0
-                  ? 'omega-port-tentacle'
-                  : 'omega-starboard-tentacle'
-                : orbit < 0
-                  ? 'omega-starboard-tentacle'
-                  : 'omega-port-tentacle'
-              : kind === 'hammer-slam'
-                ? 'signature-omega-left'
-                : null
-        : null,
+          ? kind === 'bite'
+            ? 'omega-mouth-cavity'
+            : kind === 'claw-swipe'
+              ? orbit < 0
+                ? 'omega-port-talon'
+                : 'omega-starboard-talon'
+              : kind.startsWith('tentacle')
+                ? generators[orbit < 0 ? 0 : 1] !== false
+                  ? orbit < 0
+                    ? 'omega-port-tentacle'
+                    : 'omega-starboard-tentacle'
+                  : orbit < 0
+                    ? 'omega-starboard-tentacle'
+                    : 'omega-port-tentacle'
+                : kind === 'hammer-slam'
+                  ? 'signature-omega-left'
+                  : null
+          : null,
     ventSide,
     sector,
     cycle,

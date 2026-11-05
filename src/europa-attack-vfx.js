@@ -198,9 +198,7 @@ export function animateEuropaAttackVfx(
   const charge = clamp01((pose?.claw ?? (striking ? 0.85 : 0.22)) / 0.3);
   const reach = striking ? smooth((pose?.claw ?? 0.85) / 0.85) : 0;
   const preferredArm = Math.abs(Math.floor(cycle)) % 2;
-  const strikingArm = generators[preferredArm] !== false
-    ? preferredArm
-    : 1 - preferredArm;
+  const strikingArm = generators[preferredArm] !== false ? preferredArm : 1 - preferredArm;
 
   for (let i = 0; i < arms.length; i++) {
     const enabled = generators[i] !== false;

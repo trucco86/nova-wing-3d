@@ -107,7 +107,11 @@ test('Europa Colossus alternates physical dodge axes and commits its target at w
   const low = chooseBossIntent({ sector: 5, cycle: 1, phase: 2, playerX: 6, playerY: 10 });
   assert.equal(low.kind, 'ice-quake');
   assert.equal(low.origin, 'colossus-impact-plates');
-  assert.equal(low.originMesh, 'europa-right-claw-tip', 'cycle 1 hammer comes from actual right claw');
+  assert.equal(
+    low.originMesh,
+    'europa-right-claw-tip',
+    'cycle 1 hammer comes from actual right claw',
+  );
   assert.match(low.label, /MUDE DE ALTURA/);
   assert.equal(bossMeleeHit(low, { x: 6, y: 10 }), true);
   assert.equal(bossMeleeHit(low, { x: 6, y: 19 }), false);
@@ -117,7 +121,11 @@ test('Europa Colossus alternates physical dodge axes and commits its target at w
   const high = chooseBossIntent({ sector: 5, cycle: 2, phase: 3, playerX: 5, playerY: 30 });
   assert.equal(high.kind, 'cryo-pincer');
   assert.equal(high.origin, 'colossus-piston-arms');
-  assert.equal(high.originMesh, 'europa-left-claw-tip', 'cycle 2 pincer radar follows real left claw');
+  assert.equal(
+    high.originMesh,
+    'europa-left-claw-tip',
+    'cycle 2 pincer radar follows real left claw',
+  );
   assert.equal(
     chooseBossIntent({ sector: 5, cycle: 1, playerY: 10, generators: [true, false] }).originMesh,
     'europa-left-claw-tip',

@@ -40,9 +40,11 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
     // Telegraph and strike use the same point; any new dodge moves *pilot*,
     // not the arm's already committed target.
     animateEuropaAttackVfx(effect, 10.8, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim);
-    assert.ok(effect.userData.strikers[0].hand.position.distanceTo(
-      new T.Vector3(aim.x - 6.5, aim.y, aim.z - 3),
-    ) < 0.01);
+    assert.ok(
+      effect.userData.strikers[0].hand.position.distanceTo(
+        new T.Vector3(aim.x - 6.5, aim.y, aim.z - 3),
+      ) < 0.01,
+    );
     animateEuropaAttackVfx(effect, 12, 3, 'maneuver', 'cryo-pincer');
     assert.ok(effect.children.every((node) => !node.visible));
   } finally {
@@ -55,22 +57,56 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
   const effect = createEuropaAttackVfx();
   const aim = new T.Vector3(-5, 20, 171);
   try {
-    animateEuropaAttackVfx(effect, 8.4, 2, 'windup', 'ice-quake', { claw: 0.22 }, aim, [true, true], 1);
+    animateEuropaAttackVfx(
+      effect,
+      8.4,
+      2,
+      'windup',
+      'ice-quake',
+      { claw: 0.22 },
+      aim,
+      [true, true],
+      1,
+    );
     const hammer = effect.userData.strikers[1];
     assert.equal(effect.userData.strikers[0].node.visible, false);
     assert.equal(hammer.node.visible, true);
     assert.ok(hammer.hand.position.y > aim.y + 35, 'hammer visibly raises overhead');
     assert.ok(effect.userData.quake.visible);
     assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y < 0.5));
-    animateEuropaAttackVfx(effect, 10.8, 2, 'attack', 'ice-quake', { claw: 0.85 }, aim, [true, true], 1);
+    animateEuropaAttackVfx(
+      effect,
+      10.8,
+      2,
+      'attack',
+      'ice-quake',
+      { claw: 0.85 },
+      aim,
+      [true, true],
+      1,
+    );
     assert.ok(hammer.hand.position.y < aim.y);
     assert.ok(hammer.hand.position.z > aim.z - 9, 'hammer reaches the targeted lane');
     assert.equal(hammer.impact.visible, true);
     assert.equal(effect.userData.strikers[0].node.visible, false);
     assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y > 1));
 
-    animateEuropaAttackVfx(effect, 11, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim, [false, true], 1);
-    assert.equal(effect.userData.strikers[0].node.visible, false, 'destroyed left module cannot strike');
+    animateEuropaAttackVfx(
+      effect,
+      11,
+      3,
+      'attack',
+      'cryo-pincer',
+      { claw: 0.85 },
+      aim,
+      [false, true],
+      1,
+    );
+    assert.equal(
+      effect.userData.strikers[0].node.visible,
+      false,
+      'destroyed left module cannot strike',
+    );
     assert.equal(effect.userData.strikers[1].node.visible, true, 'surviving arm still attacks');
     assert.equal(effect.userData.quake.visible, false);
     assert.ok(effect.userData.shards.every((shard) => !shard.visible));
@@ -93,22 +129,49 @@ test('physical Colossus strike honors rotated world target without moving actual
     const worldAim = new T.Vector3(12, 30, 2);
     const localAim = boss.worldToLocal(worldAim.clone());
 
-    animateBossSignature(boss, 5, 9, 2, 'windup', 'ice-quake',
-      { claw: 0.28 }, { cycle: 0 }, localAim);
+    animateBossSignature(
+      boss,
+      5,
+      9,
+      2,
+      'windup',
+      'ice-quake',
+      { claw: 0.28 },
+      { cycle: 0 },
+      localAim,
+    );
     assert.equal(fx.userData.strikers[0].node.visible, true);
     assert.equal(fx.userData.strikers[1].node.visible, false);
-    animateBossSignature(boss, 5, 10.7, 3, 'attack', 'cryo-pincer',
-      { claw: 0.85 }, { cycle: 0 }, localAim);
+    animateBossSignature(
+      boss,
+      5,
+      10.7,
+      3,
+      'attack',
+      'cryo-pincer',
+      { claw: 0.85 },
+      { cycle: 0 },
+      localAim,
+    );
     boss.updateMatrixWorld(true);
     for (const arm of fx.userData.strikers) {
       const tip = arm.hand.getWorldPosition(new T.Vector3());
-      assert.ok(Math.abs(tip.x - (worldAim.x + arm.side * 6.5 * boss.scale.x * Math.cos(boss.rotation.y))) < 4.5,
-        'each physical appendage must converge near the same world-space target');
+      assert.ok(
+        Math.abs(tip.x - (worldAim.x + arm.side * 6.5 * boss.scale.x * Math.cos(boss.rotation.y))) <
+          4.5,
+        'each physical appendage must converge near the same world-space target',
+      );
       assert.ok(Math.abs(tip.y - worldAim.y) < 1);
       assert.ok(Math.abs(tip.z - worldAim.z) < 10);
     }
-    assert.deepEqual(boss.userData.parts.map((p) => p.mesh.position.toArray()), weak);
-    assert.deepEqual(boss.userData.batteries.map((p) => p.position.toArray()), batteries);
+    assert.deepEqual(
+      boss.userData.parts.map((p) => p.mesh.position.toArray()),
+      weak,
+    );
+    assert.deepEqual(
+      boss.userData.batteries.map((p) => p.position.toArray()),
+      batteries,
+    );
     const other = createBossModel(SECTORS[3], 3, true);
     assert.equal(other.getObjectByName('boss-europa-attack-vfx'), undefined);
     disposeBoss(other);

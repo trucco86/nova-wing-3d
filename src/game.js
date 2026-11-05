@@ -4589,9 +4589,7 @@ export function createGame({
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
             : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
-          sectorIndex === 5
-            ? europaBossArenaDepth(launchPose.z)
-            : launchPose.z + meleePose.lunge,
+          sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
         // presentation, even while Omega moves: Saturn/rings stay stationary.
@@ -4786,9 +4784,7 @@ export function createGame({
         // target. Dodging changes the player's position, NOT the latched aim.
         // Transforming the point to boss-local space also preserves orbit.
         const europaTarget =
-          sectorIndex === 5 &&
-          bossIntent &&
-          ['windup', 'attack'].includes(tactics().state)
+          sectorIndex === 5 && bossIntent && ['windup', 'attack'].includes(tactics().state)
             ? boss.worldToLocal(
                 new T.Vector3(bossIntent.targetX, bossIntent.targetY, player.position.z - 7),
               )
