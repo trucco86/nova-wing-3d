@@ -2677,6 +2677,21 @@ export function createGame({
         enemy('subboss');
         $('subHUD').hidden = false;
         music?.start(sectorIndex, 'subboss');
+      } else if (scenario.encounter === 'tunnel') {
+        // Real stage-6 tunnel/ice-breach logic, reached directly for visual
+        // validation. The same obstacle, swept collision, debris animation
+        // and spawn rules run during the normal campaign. No mock scene.
+        elapsed = Math.min(current().duration - 16, ARRIVAL_SECONDS + 10);
+        const crossing = createObstacle('tunnel', 'europa');
+        crossing.position.z = -230;
+        scene.add(crossing);
+        obstacles.push({
+          o: crossing,
+          life: 1,
+          hp: breakableHullHealth(crossing.userData.kind),
+        });
+        world.setDestinationArrival?.(elapsed);
+        world.setEuropaTunnel?.(true);
       } else {
         elapsed = current().duration + 0.1;
         if (sectorIndex === 2) {
@@ -2691,7 +2706,9 @@ export function createGame({
       'QA · SETOR ' +
       String(scenario.sector + 1).padStart(2, '0') +
       ' · ' +
-      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE' }[scenario.encounter] +
+      { stage: 'FASE', subboss: 'SUBCHEFE', boss: 'CHEFE', tunnel: 'TÚNEL / GELO' }[
+        scenario.encounter
+      ] +
       ' · SEM RANK';
     return true;
   }
@@ -3091,6 +3108,19 @@ export function createGame({
       option.textContent = String(index + 1).padStart(2, '0') + ' · ' + sector.name;
       $('developerSector').append(option);
     }
+    const tunnelQaOption = document.createElement('option');
+    tunnelQaOption.value = 'tunnel';
+    tunnelQaOption.textContent = 'TÚNEL DE GELO / RUPTURA DA PAREDE';
+    $('developerEncounter').append(tunnelQaOption);
+    const syncTunnelQaOption = () => {
+      const europa = Number($('developerSector').value) === 5;
+      tunnelQaOption.hidden = !europa;
+      tunnelQaOption.disabled = !europa;
+      if (!europa && $('developerEncounter').value === 'tunnel')
+        $('developerEncounter').value = 'stage';
+    };
+    $('developerSector').onchange = syncTunnelQaOption;
+    syncTunnelQaOption();
     $('developerLaunch').onclick = () =>
       startDeveloperScenario($('developerSector').value, $('developerEncounter').value);
     $('developerBerserkLaunch').onclick = () => {
@@ -5969,6 +5999,28 @@ export function createGame({
           phase: e.combatPhase,
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
+      europaTunnel:
+        dynamicFlight && sectorIndex === 5
+          ? obstacles
+              .filter((obstacle) => obstacle.life > 0 && obstacle.o.userData.europaBreach)
+              .map((obstacle) => ({
+                // QA evidence: actual wall and panel state, not an animated sprite.
+                breached: obstacle.o.userData.breached,
+                breachDepth: obstacle.o.position.z - 220,
+                panelVisible:
+                  obstacle.o.getObjectByName('europa-tunnel-breach-panel')?.visible ?? false,
+                debrisVisible:
+                  obstacle.o.getObjectByName('europa-tunnel-falling-debris')?.visible ?? false,
+                debrisY:
+                  obstacle.o
+                    .getObjectByName('europa-tunnel-falling-debris')
+                    ?.children.slice(0, 4)
+                    .map((part) => part.position.y) ?? [],
+                remainingSolidPanels: obstacle.o.userData.solids.filter(
+                  (solid) => solid.breachPanel,
+                ).length,
+              }))
+          : [],
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {

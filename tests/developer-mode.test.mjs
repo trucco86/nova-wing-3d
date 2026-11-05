@@ -50,6 +50,9 @@ test('developer QA scenarios accept only real campaign sectors and known encount
   assert.deepEqual(parseDeveloperScenario('0', 'stage', 10), { sector: 0, encounter: 'stage' });
   assert.deepEqual(parseDeveloperScenario('9', 'boss', 10), { sector: 9, encounter: 'boss' });
   assert.deepEqual(parseDeveloperScenario(4, 'subboss', 10), { sector: 4, encounter: 'subboss' });
+  assert.deepEqual(parseDeveloperScenario(5, 'tunnel', 10), { sector: 5, encounter: 'tunnel' });
+  assert.equal(parseDeveloperScenario(4, 'tunnel', 10), null);
+  assert.equal(parseDeveloperScenario(6, 'tunnel', 10), null);
   for (const value of [-1, 10, '1.5', 'NaN', Infinity, 'abc'])
     assert.equal(parseDeveloperScenario(value, 'boss', 10), null);
   assert.equal(parseDeveloperScenario(0, 'production', 10), null);
