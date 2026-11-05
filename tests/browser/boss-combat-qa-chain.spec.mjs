@@ -44,6 +44,7 @@ for (const scenario of [
           radarMode: radar.getAttribute('data-mode'),
           radarLabel: radar.getAttribute('aria-label'),
           warning: document.getElementById('attackWarning').textContent,
+          warningFull: document.getElementById('attackWarning').getAttribute('aria-label'),
           rectVisible: rect.style.display === 'block',
           ellipseVisible: ellipse.style.display === 'block',
           safeGuide: document.getElementById('radarGuide').textContent,
@@ -56,7 +57,12 @@ for (const scenario of [
       expect(data.stage).toBe(scenario.sector + 1);
       expect(scenario.kinds).toContain(data.intent.kind);
       expect(data.radarMode).toBe('physical');
-      expect(data.warning).toContain(data.intent.label);
+      // Compact alert identifies the *physical attack*, not the boss name.
+      // The original instruction remains accessible without covering gameplay.
+      expect(data.warning.length).toBeLessThanOrEqual(39);
+      expect(data.warningFull).toBe(data.intent.label);
+      expect(data.warning).toContain(data.intent.label.split(' · ')[1]);
+      expect(data.warning).toMatch(/DESVIE|AFASTE-SE|SUBA|MUDE ALTURA|ORBITE/);
       expect(data.radarLabel).toContain(data.intent.kind);
       expect(data.safePoint, 'a real dodge route is indicated').toBe(true);
       expect(data.safeGuide).toMatch(/ZONA SEGURA|SEGURO/);
