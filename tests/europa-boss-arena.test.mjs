@@ -15,6 +15,8 @@ import {
   EUROPA_ARENA_MIN_CENTER_TARGET,
   EUROPA_ARENA_FLOOR_Y,
   EUROPA_ARENA_FLOOR_GAP,
+  EUROPA_ARENA_PORTRAIT_FOV,
+  europaBossPortraitFov,
 } from '../src/europa-boss-arena.js';
 
 test('Europa Colossus legs, hull and ice-quake visual never penetrate the ice floor', () => {
@@ -102,6 +104,36 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   world.setSector(SECTORS[4], 4);
   assert.equal(world.europaBossArenaState().active, false, 'changing mission clears arena state');
   assert.equal(world.setEuropaBossArena(true).active, false, 'no global environment regression');
+});
+
+test('Europa Colossus occupies more of portrait combat view without changing physical model', () => {
+  const boss = createBossModel(SECTORS[5], 5, true);
+  try {
+    const originalScale = boss.scale.clone();
+    const bounds = new T.Box3().setFromObject(boss);
+    const physicalHeight = bounds.getSize(new T.Vector3()).y;
+    assert.ok(physicalHeight > 30, 'test the real Colossus silhouette, not a dummy target');
+
+    const cameraZ = 62; // combat chase eye: player z=9 + 53
+    const oldDepth = -205;
+    const oldFov = 98;
+    const apparentHeight = (depth, fov) =>
+      physicalHeight / (2 * (cameraZ - depth) * Math.tan(T.MathUtils.degToRad(fov / 2)));
+    const oldPresence = apparentHeight(oldDepth, oldFov);
+    const newPresence = apparentHeight(EUROPA_ARENA_BOSS_DEPTH, EUROPA_ARENA_PORTRAIT_FOV);
+    assert.ok(newPresence > oldPresence * 1.35, 'the new shot should feel substantially closer');
+
+    boss.position.z = EUROPA_ARENA_BOSS_DEPTH;
+    boss.updateMatrixWorld(true);
+    const closestPoint = new T.Box3().setFromObject(boss).max.z;
+    assert.ok(closestPoint < -20, 'keep the boss out of the pilot cockpit at z=9');
+    assert.ok(boss.scale.equals(originalScale), 'do not inflate the boss or its hitboxes');
+    assert.equal(europaBossPortraitFov(390 / 844), EUROPA_ARENA_PORTRAIT_FOV);
+    assert.equal(europaBossPortraitFov(844 / 390), null);
+    assert.throws(() => europaBossPortraitFov(0), RangeError);
+  } finally {
+    disposeBoss(boss);
+  }
 });
 
 test('Europa floor clamp rejects invalid inputs and never lowers legitimate flight poses', () => {

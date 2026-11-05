@@ -1,5 +1,10 @@
 # Histórico
 
+## 1.27.84 — Colosso Glacial mais próximo (QA)
+
+- Fase 6: profundidade ajustada de -205 para -160 e lente retrato de 98° para 88° sem alterar escala, colisões ou órbita.
+- Testes de presença visual, clearance e câmera em retrato/paisagem. Homologação em celular físico pendente.
+
 ## 1.27.80 — Europa Boss Clear Arena · QA
 
 - Colossus da fase 6 mantém a geometria inteira acima do **piso glacial rebaixado**, com margem dinâmica e chefe enquadrado no centro da tela, evitando tanto o atravessamento do gelo quanto a aparição do modelo acima da câmera em mobile.
