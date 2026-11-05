@@ -329,7 +329,7 @@ test('real stage-1 collision timeline triggers each authored sound exactly at ev
     [7.2, 'cityMetalDrop'],
     [10.15, 'cityVehicleCrash'],
     [12.15, 'cityFacadeCollapse'],
-    [13.0, 'cityMetalDrop'],
+    [13.0, 'cityConcreteDebris'],
     [13.4, 'cityTrainAlarm'],
     [14.3, 'cityRailTear'],
     [16.3, 'cityTrainCrash'],
