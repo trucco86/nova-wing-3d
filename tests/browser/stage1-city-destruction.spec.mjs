@@ -11,8 +11,11 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   const checkpoints = [
     [3.1, 'city-calm', 0],
     [6.5, 'city-under-fire', 1],
+    [7.35, 'city-under-fire', 2],
     [9.6, 'city-under-fire', 3],
+    [10.25, 'city-under-fire', 4],
     [12.4, 'facade-collapse', 6],
+    [13.75, 'train-failing', 8],
     [14.6, 'train-failing', 9],
   ];
   for (const [seconds, phase, minimumBeats] of checkpoints) {
