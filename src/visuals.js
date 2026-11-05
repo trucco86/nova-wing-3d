@@ -1577,7 +1577,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       );
     }
     for (const child of sectorScenery.children) {
-      if (child === destinationVista || child === destinationEscape || child === mothership)
+      if (
+        child === destinationVista ||
+        child === destinationEscape ||
+        child === mothership ||
+        child.name === 'europa-frozen-surface'
+      )
         continue;
       // The ice corridor is decorative, not a boss hazard. Arrival updates
       // must never restore foreground objects while Colossus is fighting.
