@@ -33,7 +33,7 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
       assert.ok(arm.hand.position.z > ready[i].z + 55, 'appendage reaches toward the ship');
       assert.ok(Math.abs(arm.hand.position.x - (aim.x + arm.side * 6.5)) < 0.01);
       assert.ok(Math.abs(arm.hand.position.y - aim.y) < 0.01);
-      assert.ok(Math.abs(arm.hand.position.z - (aim.z - 8)) < 0.01);
+      assert.ok(Math.abs(arm.hand.position.z - (aim.z - 3)) < 0.01);
       assert.ok(arm.forearm.scale.z > 35);
       assert.equal(arm.impact.visible, true, 'visible flash attaches to claw tip');
     }
@@ -41,7 +41,7 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
     // not the arm's already committed target.
     animateEuropaAttackVfx(effect, 10.8, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim);
     assert.ok(effect.userData.strikers[0].hand.position.distanceTo(
-      new T.Vector3(aim.x - 6.5, aim.y, aim.z - 8),
+      new T.Vector3(aim.x - 6.5, aim.y, aim.z - 3),
     ) < 0.01);
     animateEuropaAttackVfx(effect, 12, 3, 'maneuver', 'cryo-pincer');
     assert.ok(effect.children.every((node) => !node.visible));
