@@ -75,7 +75,10 @@ test('billboard, falling car, building façade and explosions animate only at au
 
 test('rotated sign, exploding hovercar and all seven facade fragments never enter the city floor', () => {
   const root = createCityDestructionScene();
-  const samples = [0, 5.4, 5.8, 6.5, 7.1, 7.8, 8.5, 9.3, 10.05, 10.4, 11.1, 11.8, 12.1, 12.5, 12.95, 13.2, 15.5, 22.6];
+  const samples = [
+    0, 5.4, 5.8, 6.5, 7.1, 7.8, 8.5, 9.3, 10.05, 10.4, 11.1, 11.8, 12.1, 12.5, 12.95, 13.2, 15.5,
+    22.6,
+  ];
   for (const time of samples) {
     updateCityDestructionScene(root, time);
     const contact = cityDestructionGroundState(root);
@@ -87,25 +90,33 @@ test('rotated sign, exploding hovercar and all seven facade fragments never ente
       ...contact.facadeFragmentBottoms.map((y, i) => ['facade-' + i, y]),
     ]) {
       assert.ok(Number.isFinite(bottom), name + ' has a valid world-space contact');
-      assert.ok(bottom >= contact.floorY - 1e-4,
-        name + ' must never sink below the road at t=' + time + ': ' + bottom);
+      assert.ok(
+        bottom >= contact.floorY - 1e-4,
+        name + ' must never sink below the road at t=' + time + ': ' + bottom,
+      );
     }
   }
   updateCityDestructionScene(root, 7.2);
   let contact = cityDestructionGroundState(root);
-  assert.ok(Math.abs(contact.billboardBottomY - contact.floorY) < 0.03,
-    'rotated advertisement touches the road after its impact');
+  assert.ok(
+    Math.abs(contact.billboardBottomY - contact.floorY) < 0.03,
+    'rotated advertisement touches the road after its impact',
+  );
   updateCityDestructionScene(root, 10.2);
   contact = cityDestructionGroundState(root);
-  assert.ok(Math.abs(contact.vehicleBottomY - contact.floorY) < 0.03,
-    'hovercar cannot fall through the road when overturned');
+  assert.ok(
+    Math.abs(contact.vehicleBottomY - contact.floorY) < 0.03,
+    'hovercar cannot fall through the road when overturned',
+  );
   const blast = root.getObjectByName('city-hovercar-impact-fireball');
   assert.ok(blast.parent === root, 'impact stays in street/world space');
   assert.ok(blast.position.y - blast.scale.x * 6 >= CITY_STREET_TOP_Y - 1e-4);
   updateCityDestructionScene(root, 13.2);
   contact = cityDestructionGroundState(root);
-  assert.ok(contact.facadeFragmentBottoms.every((y) => Math.abs(y - contact.floorY) < 0.04),
-    'all falling façade pieces complete their fall resting on the actual street');
+  assert.ok(
+    contact.facadeFragmentBottoms.every((y) => Math.abs(y - contact.floorY) < 0.04),
+    'all falling façade pieces complete their fall resting on the actual street',
+  );
 });
 
 test('hanging maglev warns from above, then blocks left/center but leaves real right flight lane', () => {
@@ -160,8 +171,11 @@ test('real stage-1 mission plays wreck only once and preserves the boost challen
   assert.ok(state.cityDestruction.triggered.includes('trainWarning'));
   assert.ok(state.cityDestruction.triggered.includes('facadeDebrisImpact'));
   assert.equal(state.cityDestruction.wrecks.length, 0);
-  assert.ok(state.cityDestruction.ground.facadeFragmentBottoms.every((y) =>
-    y >= CITY_STREET_TOP_Y - 0.001 && y <= CITY_STREET_TOP_Y + 0.05));
+  assert.ok(
+    state.cityDestruction.ground.facadeFragmentBottoms.every(
+      (y) => y >= CITY_STREET_TOP_Y - 0.001 && y <= CITY_STREET_TOP_Y + 0.05,
+    ),
+  );
   h.key('ArrowRight');
   h.advance(3.5);
   h.key('ArrowRight', false);

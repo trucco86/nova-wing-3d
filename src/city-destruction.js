@@ -67,8 +67,7 @@ function cityRigidBottomY(group) {
   group.updateWorldMatrix(true, true);
   let bottom = Infinity;
   group.traverse((node) => {
-    if (node.isMesh && node.geometry === boxGeo)
-      bottom = Math.min(bottom, cityBoxBottomY(node));
+    if (node.isMesh && node.geometry === boxGeo) bottom = Math.min(bottom, cityBoxBottomY(node));
   });
   return bottom;
 }
@@ -222,11 +221,7 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   keepCityDebrisAboveGround(car);
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
-  carBurst.position.set(
-    car.position.x,
-    CITY_STREET_TOP_Y + 6 * carBurst.scale.x,
-    car.position.z,
-  );
+  carBurst.position.set(car.position.x, CITY_STREET_TOP_Y + 6 * carBurst.scale.x, car.position.z);
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
   facade.position.set(-88, -7, -255 + Math.max(0, seconds - 11.1) * 48);
