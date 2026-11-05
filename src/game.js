@@ -4927,7 +4927,7 @@ export function createGame({
       // The compact visible banner preserves room for combat. Keep the exact
       // full warning available for screen readers and deterministic QA.
       const fullWarning = $('attackWarning').textContent
-        ? physicalWarning ?? signatureWarning ?? $('attackWarning').textContent
+        ? (physicalWarning ?? signatureWarning ?? $('attackWarning').textContent)
         : '';
       $('attackWarning').setAttribute('aria-label', fullWarning);
       $('attackWarning').title = fullWarning;

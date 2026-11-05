@@ -9610,9 +9610,7 @@ body.in-mission
   > #hitFeedback,
 body.in-mission #hudNotices:has(> #comms.active) > #pickupFlash,
 body.in-mission #hudNotices:has(> #hitFeedback:not([hidden])) > #pickupFlash,
-body.in-mission
-  #hudNotices:has(> #hitFeedback[data-impact='boss']:not([hidden]))
-  > #comms {
+body.in-mission #hudNotices:has(> #hitFeedback[data-impact='boss']:not([hidden])) > #comms {
   display: none !important;
 }
 body.in-mission
