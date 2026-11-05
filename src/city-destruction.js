@@ -140,8 +140,9 @@ export function createCityDestructionScene() {
   carBurst.name = 'city-hovercar-impact-fireball';
   carBurst.userData.visualOnly = true;
   carBurst.userData.noGroundContact = true;
-  car.add(carBurst);
-  root.add(car);
+  // The fireball is fixed to the STREET rather than inheriting the tumbling
+  // car's rotation (which previously buried the explosion below the asphalt).
+  root.add(car, carBurst);
 
   const facade = new T.Group();
   facade.name = 'city-collapsing-facade';
@@ -186,6 +187,12 @@ export function createCityDestructionScene() {
   root.add(facade);
 
   root.userData.nodes = { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash };
+  root.userData.impactPositions = {
+    billboard: new T.Vector3(),
+    vehicle: new T.Vector3(),
+    facade: new T.Vector3(),
+    debris: new T.Vector3(),
+  };
   updateCityDestructionScene(root, 0);
   return root;
 }
@@ -221,6 +228,7 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   carBurst.visible = seconds >= 10.05 && seconds <= 10.65;
   settleCityDebrisOnFloor(car);
   if (seconds >= 10.05) car.position.y += cityImpactBounce(seconds, 10.05, 0.8);
+  carBurst.position.set(car.position.x, CITY_COLLISION_FLOOR_Y + 2.3, car.position.z);
   carBurst.scale.setScalar(0.25 + smooth((seconds - 10.05) / 0.55) * 3.4);
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
@@ -244,7 +252,13 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   }
   collapseFlash.visible = seconds >= 12.0 && seconds < 12.75;
   collapseFlash.scale.setScalar(0.4 + 2.4 * smooth((seconds - 12) / 0.5));
-  return state;
+  const impacts = root.userData.impactPositions;
+  impacts.billboard.set(signRoot.position.x, CITY_COLLISION_FLOOR_Y + 0.35, signRoot.position.z);
+  impacts.vehicle.set(car.position.x, CITY_COLLISION_FLOOR_Y + 0.35, car.position.z);
+  // The façade is damaged high up, but the *debris* impact is on the road.
+  impacts.facade.set(facade.position.x, 74, facade.position.z + 19);
+  impacts.debris.set(facade.position.x - 10, CITY_COLLISION_FLOOR_Y + 0.35, facade.position.z + 18);
+  return { ...state, impacts };
 }
 
 export function createCityHangingTrainObstacle() {
