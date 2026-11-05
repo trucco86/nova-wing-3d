@@ -4,8 +4,11 @@ import * as T from 'three';
 // The launch/orbit state machine remains the authority over flight progression.
 export const CITY_DESTRUCTION_BEATS = Object.freeze([
   { id: 'billboard', at: 5.4, message: 'PLACA SOLTA · ATENÇÃO À ESQUERDA' },
+  { id: 'billboardImpact', at: 7.1, message: null },
   { id: 'vehicle', at: 8.5, message: 'TRÁFEGO EM QUEDA · SETOR LESTE' },
+  { id: 'vehicleImpact', at: 10.05, message: null },
   { id: 'facade', at: 11.1, message: 'FACHADA EM COLAPSO · MANTENHA A ROTA' },
+  { id: 'facadeImpact', at: 12.0, message: null },
   { id: 'trainWarning', at: 13.3, message: 'TREM AVARIADO · DESVIE À DIREITA' },
   { id: 'trainSpawn', at: 14.2, message: null },
   { id: 'trainImpact', at: 16.2, message: null },
