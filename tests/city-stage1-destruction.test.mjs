@@ -297,22 +297,32 @@ test('train setpiece signals a real right-side route and shows electrical danger
 
 test('stage-1 audio cues follow distinct events and radio only interrupts for actionable train dodge', () => {
   const audible = [
-    'billboardImpact', 'vehicleImpact', 'facadeImpact',
-    'facadeDebrisImpact', 'trainWarning', 'trainSpawn', 'trainImpact',
+    'billboardImpact',
+    'vehicleImpact',
+    'facadeImpact',
+    'facadeDebrisImpact',
+    'trainWarning',
+    'trainSpawn',
+    'trainImpact',
   ];
   assert.deepEqual(Object.keys(CITY_STAGE_AUDIO), audible);
   for (const event of audible) {
     const signature = AUDIO_CUES[CITY_STAGE_AUDIO[event]];
     assert.ok(signature, event + ' needs a real synthesizable cue');
     assert.ok(signature.tones.length >= 1);
-    assert.ok(signature.tones.length + (signature.noises?.length ?? 0) <= 4,
-      event + ' should keep voice allocation bounded on mobile');
+    assert.ok(
+      signature.tones.length + (signature.noises?.length ?? 0) <= 4,
+      event + ' should keep voice allocation bounded on mobile',
+    );
     assert.ok(signature.cooldown >= 0.2);
   }
   assert.notDeepEqual(AUDIO_CUES.cityMetalDrop, AUDIO_CUES.cityTrainCrash);
   assert.notDeepEqual(AUDIO_CUES.cityVehicleCrash, AUDIO_CUES.cityFacadeCollapse);
-  assert.deepEqual(CITY_DESTRUCTION_BEATS.filter((beat) => beat.message).map((beat) => beat.id),
-    ['trainWarning'], 'no repeated radio text during noninteractive background demolition');
+  assert.deepEqual(
+    CITY_DESTRUCTION_BEATS.filter((beat) => beat.message).map((beat) => beat.id),
+    ['trainWarning'],
+    'no repeated radio text during noninteractive background demolition',
+  );
   assert.equal(cityWarningText('pt'), 'TREM AVARIADO · DESVIE À DIREITA');
   assert.equal(cityWarningText('en'), 'DAMAGED TRAIN · DODGE RIGHT');
   assert.equal(cityWarningText('es'), 'TREN AVERIADO · ESQUIVA A LA DERECHA');
@@ -321,7 +331,9 @@ test('stage-1 audio cues follow distinct events and radio only interrupts for ac
 
 test('real stage-1 collision timeline triggers each authored sound exactly at event time', (t) => {
   const h = harness({
-    spawnEncounters: false, enableCitySetpieces: true, enableSquadIntro: false,
+    spawnEncounters: false,
+    enableCitySetpieces: true,
+    enableSquadIntro: false,
   });
   t.after(() => h.close());
   h.game.start(true);
@@ -343,6 +355,9 @@ test('real stage-1 collision timeline triggers each authored sound exactly at ev
   h.game.pause();
   assert.equal(h.game.snapshot().audio.voices, 0, 'pause clears scene sounds');
   h.advance(3);
-  assert.equal(h.game.snapshot().audio.lastCue, 'cityTrainCrash',
-    'paused simulation must not replay impact sounds');
+  assert.equal(
+    h.game.snapshot().audio.lastCue,
+    'cityTrainCrash',
+    'paused simulation must not replay impact sounds',
+  );
 });

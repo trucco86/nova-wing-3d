@@ -280,10 +280,27 @@ Object.assign(AUDIO_CUES, {
   cityMetalDrop: {
     cooldown: 0.36,
     tones: [
-      { from: 670, to: 118, duration: 0.22, gain: 0.028, wave: 'triangle', filter: 2100, pan: -0.38 },
+      {
+        from: 670,
+        to: 118,
+        duration: 0.22,
+        gain: 0.028,
+        wave: 'triangle',
+        filter: 2100,
+        pan: -0.38,
+      },
       { from: 172, to: 58, duration: 0.32, gain: 0.033, wave: 'sine', pan: -0.38 },
     ],
-    noises: [{ duration: 0.3, gain: 0.075, filterType: 'bandpass', filter: 2900, filterEnd: 390, pan: -0.38 }],
+    noises: [
+      {
+        duration: 0.3,
+        gain: 0.075,
+        filterType: 'bandpass',
+        filter: 2900,
+        filterEnd: 390,
+        pan: -0.38,
+      },
+    ],
   },
   cityConcreteDebris: {
     cooldown: 0.5,
@@ -291,7 +308,9 @@ Object.assign(AUDIO_CUES, {
       { from: 205, to: 63, duration: 0.4, gain: 0.041, wave: 'triangle', pan: -0.41 },
       { from: 93, to: 34, duration: 0.7, gain: 0.054, wave: 'sine', pan: -0.41 },
     ],
-    noises: [{ duration: 0.73, gain: 0.11, color: 'brown', filter: 890, filterEnd: 145, pan: -0.41 }],
+    noises: [
+      { duration: 0.73, gain: 0.11, color: 'brown', filter: 890, filterEnd: 145, pan: -0.41 },
+    ],
   },
   cityVehicleCrash: {
     cooldown: 0.55,
@@ -299,12 +318,16 @@ Object.assign(AUDIO_CUES, {
       { from: 920, to: 180, duration: 0.28, gain: 0.028, wave: 'sawtooth', filter: 3000, pan: 0.4 },
       { from: 116, to: 35, duration: 0.68, gain: 0.065, wave: 'sine', pan: 0.36 },
     ],
-    noises: [{ duration: 0.68, gain: 0.12, color: 'brown', filter: 1250, filterEnd: 130, pan: 0.38 }],
+    noises: [
+      { duration: 0.68, gain: 0.12, color: 'brown', filter: 1250, filterEnd: 130, pan: 0.38 },
+    ],
   },
   cityFacadeCollapse: {
     cooldown: 0.7,
     tones: [{ from: 145, to: 38, duration: 0.85, gain: 0.064, wave: 'sine', pan: -0.42 }],
-    noises: [{ duration: 0.98, gain: 0.13, color: 'brown', filter: 760, filterEnd: 105, pan: -0.42 }],
+    noises: [
+      { duration: 0.98, gain: 0.13, color: 'brown', filter: 760, filterEnd: 105, pan: -0.42 },
+    ],
   },
   cityTrainAlarm: {
     cooldown: 2.3,
@@ -316,8 +339,27 @@ Object.assign(AUDIO_CUES, {
   },
   cityRailTear: {
     cooldown: 0.8,
-    tones: [{ from: 1250, to: 95, duration: 0.82, gain: 0.038, wave: 'sawtooth', filter: 2200, pan: -0.17 }],
-    noises: [{ duration: 0.75, gain: 0.09, filterType: 'bandpass', filter: 3300, filterEnd: 310, pan: -0.17 }],
+    tones: [
+      {
+        from: 1250,
+        to: 95,
+        duration: 0.82,
+        gain: 0.038,
+        wave: 'sawtooth',
+        filter: 2200,
+        pan: -0.17,
+      },
+    ],
+    noises: [
+      {
+        duration: 0.75,
+        gain: 0.09,
+        filterType: 'bandpass',
+        filter: 3300,
+        filterEnd: 310,
+        pan: -0.17,
+      },
+    ],
   },
   cityTrainCrash: {
     cooldown: 1.1,
@@ -325,7 +367,9 @@ Object.assign(AUDIO_CUES, {
       { from: 105, to: 32, duration: 1.05, gain: 0.082, wave: 'sine', pan: -0.18 },
       { from: 270, to: 65, delay: 0.08, duration: 0.55, gain: 0.04, wave: 'triangle', pan: -0.18 },
     ],
-    noises: [{ duration: 1.12, gain: 0.16, color: 'brown', filter: 1450, filterEnd: 95, pan: -0.18 }],
+    noises: [
+      { duration: 1.12, gain: 0.16, color: 'brown', filter: 1450, filterEnd: 95, pan: -0.18 },
+    ],
   },
 });
 

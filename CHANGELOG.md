@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.92 — Fase 1: áudio de destruição e HUD limpo (QA)
+
+- Sons próprios da placa, veículo, fachada e trem; explosões não duplicam efeitos genéricos.
+- Somente um aviso textual localizado PT/EN/ES no momento do desvio do trem.
+- Sequência, colisões e Super Boost preservados; homologação manual e CI completo pendentes.
+
 ## 1.27.91 — Fase 1: efeitos de impacto e desvio do trem (QA)
 
 - Poeira, faíscas e ondas de choque no asfalto após queda da placa, veículo e fachada.
