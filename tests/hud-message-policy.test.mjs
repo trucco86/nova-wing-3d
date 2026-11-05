@@ -106,11 +106,8 @@ test('boss health card shows only current player decision and keeps full text av
     ['FASE 2 · ORBITE PARA A FRENTE', 'ORBITE À FRENTE'],
     ['APROXIMAÇÃO', 'APROXIMAÇÃO'],
   ];
-  for (const [longLabel, expected] of cases)
-    assert.equal(compactBossState(longLabel), expected);
-  assert.ok(
-    compactBossState('ARMA VULNERÁVEL · BATERIA DIR. · FRACO: PLASMA').includes('PLASMA'),
-  );
+  for (const [longLabel, expected] of cases) assert.equal(compactBossState(longLabel), expected);
+  assert.ok(compactBossState('ARMA VULNERÁVEL · BATERIA DIR. · FRACO: PLASMA').includes('PLASMA'));
   assert.throws(() => compactBossState('TEST', 5), RangeError);
 });
 

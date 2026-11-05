@@ -9536,7 +9536,8 @@ body.in-mission #hudNotices {
   max-height: min(9vh, 50px);
   gap: 0;
 }
-body.in-mission #hudNotices
+body.in-mission
+  #hudNotices
   > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
   max-width: 100%;
   max-height: 48px;
@@ -9579,15 +9580,24 @@ body.in-mission #bossHUD #bossState {
    intact, but only the most urgent actual event is rendered in the notice rail.
    Emergency shield > orbital launch > active strike > low shield > entrance >
    optional reward/radio. Hit confirmation yields to survival or boss danger. */
-body.in-mission #hudNotices:has(> #criticalWarning:not([hidden]))
-  > :is(#shieldWarning, #launchBoostNotice, #attackWarning, #bossIncoming, #pickupFlash, #comms, #hitFeedback),
-body.in-mission #hudNotices:not(:has(> #criticalWarning:not([hidden]))):has(
-    > #launchBoostNotice:not([hidden])
-  )
+body.in-mission
+  #hudNotices:has(> #criticalWarning:not([hidden]))
+  > :is(
+    #shieldWarning,
+    #launchBoostNotice,
+    #attackWarning,
+    #bossIncoming,
+    #pickupFlash,
+    #comms,
+    #hitFeedback
+  ),
+body.in-mission
+  #hudNotices:not(:has(> #criticalWarning:not([hidden]))):has(> #launchBoostNotice:not([hidden]))
   > :is(#shieldWarning, #attackWarning, #bossIncoming, #pickupFlash, #comms, #hitFeedback) {
   display: none !important;
 }
-body.in-mission #hudNotices:not(:has(> #criticalWarning:not([hidden]))):not(
+body.in-mission
+  #hudNotices:not(:has(> #criticalWarning:not([hidden]))):not(
     :has(> #launchBoostNotice:not([hidden]))
   ):has(> #attackWarning:not(:empty):not([data-severity='info']))
   > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms, #hitFeedback) {
@@ -9595,15 +9605,15 @@ body.in-mission #hudNotices:not(:has(> #criticalWarning:not([hidden]))):not(
 }
 /* Radio wins over small hit/loot confirmations while it speaks. No
    simultaneous low-priority chips at the bottom of the priority ladder. */
-body.in-mission #hudNotices:has(> #comms.active)
-  > :is(#hitFeedback, #pickupFlash),
-body.in-mission #hudNotices:has(> #hitFeedback:not([hidden]))
-  > #pickupFlash {
+body.in-mission #hudNotices:has(> #comms.active) > :is(#hitFeedback, #pickupFlash),
+body.in-mission #hudNotices:has(> #hitFeedback:not([hidden])) > #pickupFlash {
   display: none !important;
 }
-body.in-mission #hudNotices:has(> #shieldWarning:not([hidden]))
+body.in-mission
+  #hudNotices:has(> #shieldWarning:not([hidden]))
   > :is(#attackWarning[data-severity='info'], #bossIncoming, #pickupFlash, #comms),
-body.in-mission #hudNotices:has(> #bossIncoming:not([hidden]))
+body.in-mission
+  #hudNotices:has(> #bossIncoming:not([hidden]))
   > :is(#attackWarning[data-severity='info'], #pickupFlash, #comms) {
   display: none !important;
 }
@@ -9613,7 +9623,8 @@ body.in-mission #hudNotices:has(> #bossIncoming:not([hidden]))
     max-height: 42px;
     width: min(214px, calc(100vw - 96px));
   }
-  body.in-mission #hudNotices
+  body.in-mission
+    #hudNotices
     > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
     max-height: 38px;
     padding: 4px 6px;
@@ -9646,7 +9657,8 @@ body.in-mission #hudNotices:has(> #bossIncoming:not([hidden]))
   body.in-mission #hudNotices {
     max-height: 34px;
   }
-  body.in-mission #hudNotices
+  body.in-mission
+    #hudNotices
     > :is(#criticalWarning, #shieldWarning, #bossIncoming, #attackWarning, #pickupFlash, #comms) {
     max-height: 31px;
     font-size: 10px;

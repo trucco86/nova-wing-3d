@@ -1,10 +1,13 @@
 # HUD com prioridade de atenção — Nova Wing 1.27.83 (QA)
 
 ## Problema observado
+
 A tela atual acumula texto do rádio Five Cats, avisos físicos do chefe, saúde do boss, coletáveis e outras informações na mesma faixa. No mobile, tudo concorre com mira, pontos fracos e ataques; algumas frases são muito longas e repetidas.
 
 ## Proposta implementada
+
 **Uma decisão por vez, sem ocultar instruções críticas.**
+
 - P0 sobrevivência: ESCUDO CRÍTICO, subida orbital, ataque real do chefe.
 - P1 tático: ESCUDO BAIXO, aproximação do chefe, instrução de voo/rádio.
 - P2 contextual: evolução, falas ambientais, confirmação visual de acerto e coleta.
@@ -17,6 +20,7 @@ A tela atual acumula texto do rádio Five Cats, avisos físicos do chefe, saúde
 - No mobile, faixa de até 42px, sem empilhar linhas; boss HUD continua no lado direito, RPG e ORBITAR seguem acessíveis. Fontes mantidas legíveis, não simplesmente reduzidas.
 
 ## Critérios de aceite
+
 1. Em uma janela de combate com múltiplos eventos, **exatamente um** aviso da faixa aparece: crítico > boost > ataque > escudo > boss > rádio > hit > coleta.
 2. Ataques fortes continuam telegrafados, não desaparecem por causa do rádio e não mostram 'SEGURO' quando o radar indica perigo.
 3. No boss Omega/Europa, o texto de ataque deve caber em 39 caracteres e o estado em 36; hitboxes, mira, radar e movimentação não mudam.
@@ -26,4 +30,5 @@ A tela atual acumula texto do rádio Five Cats, avisos físicos do chefe, saúde
 7. Regressão nas fases 1/2, fase 4, Europa/fase 6 e Saturno/Ômega/fase 8. **Nenhum merge em produção antes da homologação visual.**
 
 ## Fora do escopo
+
 Não reorganizar o layout físico do RPG ou reduzir o acesso ao teste Berserk; [issue #271](https://github.com/trucco86/nova-wing-3d/issues/271) cuida disso em uma branch independente.

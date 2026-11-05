@@ -40,7 +40,9 @@ test('boss HUD and radio stay compact in actual Europa encounter on both phone o
     expect(snapshot.notice.height).toBeLessThanOrEqual(54);
     if (snapshot.attack) expect(snapshot.attack.length).toBeLessThanOrEqual(39);
     await page.screenshot({
-      path: info.outputPath('hud-single-priority-europa-' + size.width + 'x' + size.height + '.png'),
+      path: info.outputPath(
+        'hud-single-priority-europa-' + size.width + 'x' + size.height + '.png',
+      ),
     });
   }
 });
@@ -54,12 +56,21 @@ test('priority rail shows only urgent event, then the next most important messag
   const result = await page.evaluate(() => {
     window.fixture.advance(4.5);
     const nodes = Object.fromEntries(
-      ['criticalWarning', 'launchBoostNotice', 'attackWarning', 'shieldWarning', 'bossIncoming',
-        'pickupFlash', 'comms', 'hitFeedback'].map((id) => [id, document.getElementById(id)]),
+      [
+        'criticalWarning',
+        'launchBoostNotice',
+        'attackWarning',
+        'shieldWarning',
+        'bossIncoming',
+        'pickupFlash',
+        'comms',
+        'hitFeedback',
+      ].map((id) => [id, document.getElementById(id)]),
     );
-    const active = () => Object.entries(nodes)
-      .filter(([, node]) => getComputedStyle(node).display !== 'none' && !node.hidden)
-      .map(([id]) => id);
+    const active = () =>
+      Object.entries(nodes)
+        .filter(([, node]) => getComputedStyle(node).display !== 'none' && !node.hidden)
+        .map(([id]) => id);
     nodes.criticalWarning.hidden = false;
     nodes.launchBoostNotice.hidden = false;
     nodes.shieldWarning.hidden = false;

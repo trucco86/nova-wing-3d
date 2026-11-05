@@ -81,8 +81,8 @@ export function createRadioTriage() {
   });
 }
 
-
-const BOSS_NAMES = /^(?:ROK|STINGRAY|CARBIDE|DEVASTADOR|PHOENIX|COLOSSUS|HIDRA|HYDRA|ÔMEGA|OMEGA|ÓRION|ORION|MARVIN)\s*$/iu;
+const BOSS_NAMES =
+  /^(?:ROK|STINGRAY|CARBIDE|DEVASTADOR|PHOENIX|COLOSSUS|HIDRA|HYDRA|ÔMEGA|OMEGA|ÓRION|ORION|MARVIN)\s*$/iu;
 const ATTACK_VERBS = [
   [/\bSUBA\b/iu, 'SUBA'],
   [/MUDE DE ALTURA|TROQUE DE ALTURA/iu, 'MUDE ALTURA'],
@@ -95,7 +95,9 @@ const ATTACK_VERBS = [
 ];
 
 function shortLabel(text, maxChars) {
-  const value = String(text ?? '').replace(/\s+/gu, ' ').trim();
+  const value = String(text ?? '')
+    .replace(/\s+/gu, ' ')
+    .trim();
   if (value.length <= maxChars) return value;
   const cut = value.slice(0, maxChars - 1);
   const word = cut.lastIndexOf(' ');
@@ -122,8 +124,7 @@ export function compactBossAttackWarning(label, { threatened = true } = {}) {
 // kept on aria-label/title and in tactical screens rather than piling lines
 // over the boss's weapon muzzles.
 export function compactBossState(full, maxChars = 36) {
-  if (!Number.isInteger(maxChars) || maxChars < 15)
-    throw new RangeError('Invalid boss HUD width');
+  if (!Number.isInteger(maxChars) || maxChars < 15) throw new RangeError('Invalid boss HUD width');
   const original = String(full ?? '').trim();
   if (!original) return '';
   let decision;
