@@ -3781,6 +3781,15 @@ export function createGame({
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
     const destinationArrival =
       dynamicFlight && sectorIndex >= 3 ? world.setDestinationArrival(elapsed) : null;
+    // Europa's real tunnel deck is the only visible floor during traversal.
+    // The global ice terrain is coplanar with its top face (-7): rendering
+    // both caused z-fighting and severe ground flicker on mobile.
+    const europaTunnelCrossing =
+      dynamicFlight &&
+      sectorIndex === 5 &&
+      obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel');
+    if (dynamicFlight && sectorIndex === 5)
+      world.setEuropaTunnel?.(europaTunnelCrossing);
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
     const sandstorm = marsArrival?.storm;
     if (sandstorm && sandstorm.phase !== marsStormPhase) {
@@ -4073,6 +4082,7 @@ export function createGame({
     if (
       spawnEncounters &&
       fighterAllowedDuringArrival(sectorIndex, elapsed, arrivalTransit) &&
+      !europaTunnelCrossing &&
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss
@@ -4098,6 +4108,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !arrivalTransit &&
+      !europaTunnelCrossing &&
       !subDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4113,6 +4124,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !arrivalTransit &&
+      !europaTunnelCrossing &&
       !rivalDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4154,6 +4166,7 @@ export function createGame({
       isGroundSector(current()) &&
       elapsed < current().duration &&
       !arrivalTransit &&
+      !europaTunnelCrossing &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
@@ -4177,7 +4190,18 @@ export function createGame({
       o.position.z = -230;
       scene.add(o);
       obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
-      message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
+      if (dynamicFlight && sectorIndex === 5) {
+        // No fighter is allowed to phase through a solid frozen wall. Clear
+        // only this staged transit and stop spawning until the tunnel passes.
+        // A future breach encounter must physically remove its wall collision
+        // and play falling debris BEFORE allowing an enemy inside.
+        for (const e of enemies) dispose(e.o);
+        enemies = [];
+        for (const shot of hostile) hostileShotPool.release(shot);
+        hostile = [];
+        world.setEuropaTunnel?.(true);
+        message('FENDA GLACIAL · TÚNEL PROTEGIDO · SIGA A ABERTURA');
+      } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const bossBlocked =
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
@@ -5329,6 +5353,10 @@ export function createGame({
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
+    if (dynamicFlight && sectorIndex === 5)
+      world.setEuropaTunnel?.(
+        obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel'),
+      );
     hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
     hud.text(
       'speedValue',
