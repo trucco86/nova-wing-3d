@@ -151,6 +151,12 @@ import {
 } from './hero-dodge-controls.js';
 import { breakableHullHealth, damageBreakableHull } from './breakable-encounters.js';
 import {
+  CITY_DESTRUCTION_BEATS,
+  cityDestructionAt,
+  createCityHangingTrainObstacle,
+  animateCityHangingTrainObstacle,
+} from './city-destruction.js';
+import {
   evolvedShotColor,
   dockedPodPower,
   podLaserMultiplier,
@@ -230,6 +236,9 @@ export function createGame({
   random = Math.random,
   autoLoop = true,
   spawnEncounters = true,
+  // QA fixtures may inspect destruction without spawning hostile formations;
+  // ordinary gameplay inherits the normal encounter toggle.
+  enableCitySetpieces = spawnEncounters,
   enableSquadIntro = true,
   nativeLifecycle = false,
   onStageStarted = () => {},
@@ -403,6 +412,7 @@ export function createGame({
       })
     : null;
   let skipSquadIntro = false;
+  let cityDestructionTriggered = new Set();
   let developerSession = false;
   let developerScenario = null;
   let robotMode = false;
@@ -1291,6 +1301,8 @@ export function createGame({
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
+    cityDestructionTriggered = new Set();
+    world.setCityDestruction?.(0);
     spawnCd = 2;
     fighterSerial = 0;
     fighterWaveSerial = 0;
@@ -3800,6 +3812,29 @@ export function createGame({
     if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
     return { speed, previousPlayer, holding };
   }
+  function updateCityStageSetpieces() {
+    if (!dynamicFlight || sectorIndex !== 0 || !enableCitySetpieces) return;
+    const state = world.setCityDestruction?.(elapsed);
+    if (!state || elapsed >= 23) return;
+    for (const beat of CITY_DESTRUCTION_BEATS) {
+      if (elapsed < beat.at || cityDestructionTriggered.has(beat.id)) continue;
+      cityDestructionTriggered.add(beat.id);
+      if (beat.id === 'trainSpawn') {
+        const obstacle = createCityHangingTrainObstacle();
+        obstacle.position.z = -210;
+        scene.add(obstacle);
+        obstacles.push({ o: obstacle, life: 1, hp: null });
+      }
+      if (beat.id === 'billboardImpact') explode(new T.Vector3(-56, 44, -190), 9, 0x7ee9ff);
+      if (beat.id === 'vehicleImpact') explode(new T.Vector3(49, 29, -172), 9, 0xffaa65);
+      if (beat.id === 'facadeImpact') explode(new T.Vector3(-88, 84, -220), 15, 0xffaa6a);
+      if (beat.id === 'trainImpact') {
+        const wreck = obstacles.find(({ o }) => o.userData.kind === 'city-hanging-train');
+        if (wreck) explode(new T.Vector3(-25, 13, wreck.o.position.z + 15), 22, 0xffad64);
+      }
+      if (beat.message) message(beat.message);
+    }
+  }
   function update(dt) {
     if (state !== 'playing') return;
     if (squad?.snapshot().intro > 0) {
@@ -3813,6 +3848,7 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    updateCityStageSetpieces();
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
     const destinationArrival =
@@ -4113,6 +4149,10 @@ export function createGame({
       spawnCd = Math.max(spawnCd, 1.35);
     const quietFirstSubboss =
       dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
+    // Give the falling train a clean lane: enemies must not obscure the
+    // warning or spawn on the same frame as its collision window.
+    const quietCityWreck =
+      dynamicFlight && sectorIndex === 0 && enableCitySetpieces && elapsed >= 13 && elapsed < 22;
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (
       spawnEncounters &&
@@ -4120,7 +4160,8 @@ export function createGame({
       !europaTunnelCrossing &&
       elapsed < current().duration &&
       spawnCd <= 0 &&
-      !quietFirstSubboss
+      !quietFirstSubboss &&
+      !quietCityWreck
     ) {
       const count =
         dynamicFlight && sectorIndex === 0
@@ -4144,6 +4185,7 @@ export function createGame({
       spawnEncounters &&
       !arrivalTransit &&
       !europaTunnelCrossing &&
+      !quietCityWreck &&
       !subDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4173,6 +4215,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !baseDone &&
+      !quietCityWreck &&
       sectorIndex < 2 &&
       elapsed > 18 &&
       !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration))
@@ -4204,6 +4247,7 @@ export function createGame({
       !europaTunnelCrossing &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
+      !quietCityWreck &&
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
@@ -5368,6 +5412,8 @@ export function createGame({
       if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
+      if (dynamicFlight && sectorIndex === 0 && obstacle.o.userData.kind === 'city-hanging-train')
+        animateCityHangingTrainObstacle(obstacle.o, elapsed);
       if (sectorIndex === 5 && dynamicFlight && obstacle.o.userData.europaBreach) {
         const breachDepth = obstacle.o.position.z - 220;
         if (!obstacle.o.userData.breached) {
@@ -6036,6 +6082,22 @@ export function createGame({
               }))
           : [],
       obstacleKinds: obstacles.map((o) => o.o.userData.kind),
+      cityDestruction:
+        dynamicFlight && sectorIndex === 0 && enableCitySetpieces
+          ? {
+              ...cityDestructionAt(elapsed),
+              triggered: [...cityDestructionTriggered],
+              wrecks: obstacles
+                .filter(({ o }) => o.userData.kind === 'city-hanging-train')
+                .map(({ o }) => ({
+                  z: o.position.z,
+                  collisionActive: o.userData.solidOn,
+                  solidCount: o.userData.solids.length,
+                  safeLane: o.userData.safeLane,
+                  angle: o.userData.nodes.pivot.rotation.z,
+                })),
+            }
+          : null,
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
       entities: {
         enemies: enemies.length,
