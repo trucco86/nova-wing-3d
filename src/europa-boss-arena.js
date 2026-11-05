@@ -11,10 +11,24 @@ export const EUROPA_ARENA_BACKDROP_DEPTH = -280;
 // Keep low tactical poses, attacks and facial weak points inside the reticle.
 // The glacial floor is lowered to fit the actual Colossus silhouette instead.
 export const EUROPA_ARENA_MIN_CENTER_TARGET = 7;
-// The boss is enormous. Keep it behind the aim corridor, not overlapping the
-// player's cockpit. At z=-205, 6-second slow enemy bolts (38 units/s)
-// can still reach the pilot at z≈9: 214 < 228 units.
-export const EUROPA_ARENA_BOSS_DEPTH = -205;
+// The old z=-205 staging made the Colossus read as a tiny, distant target.
+// Bring it 45 world units nearer (~22% of the old depth) without modifying
+// model scale, hitboxes, destructible parts, muzzle anchors or the 360 orbit.
+// The front of the giant model must still leave clear cockpit/aiming space.
+// Slow bolts (38 units/s, 6 s) comfortably travel from z=-160 to pilot z≈9.
+export const EUROPA_ARENA_BOSS_DEPTH = -160;
+// Portrait 98° made the boss look especially far away. The tighter 88° lens
+// increases on-screen presence while leaving the glacial arena unobstructed.
+export const EUROPA_ARENA_PORTRAIT_FOV = 88;
+export const EUROPA_ARENA_PORTRAIT_ASPECT_LIMIT = 0.72;
+
+export function europaBossPortraitFov(aspect) {
+  if (!Number.isFinite(aspect) || aspect <= 0)
+    throw new RangeError('Invalid Europa camera aspect');
+  return aspect < EUROPA_ARENA_PORTRAIT_ASPECT_LIMIT
+    ? EUROPA_ARENA_PORTRAIT_FOV
+    : null;
+}
 
 export function europaBossArenaDepth(requestedZ) {
   if (!Number.isFinite(requestedZ)) throw new RangeError('Invalid Europa boss depth');
