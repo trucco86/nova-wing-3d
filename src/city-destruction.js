@@ -3,17 +3,38 @@ import * as T from 'three';
 // Ordered beats deliberately end before the pre-existing mandatory Super Boost.
 // The launch/orbit state machine remains the authority over flight progression.
 export const CITY_DESTRUCTION_BEATS = Object.freeze([
-  { id: 'billboard', at: 5.4, message: 'PLACA SOLTA · ATENÇÃO À ESQUERDA' },
+  { id: 'billboard', at: 5.4, message: null },
   { id: 'billboardImpact', at: 7.1, message: null },
-  { id: 'vehicle', at: 8.5, message: 'TRÁFEGO EM QUEDA · SETOR LESTE' },
+  { id: 'vehicle', at: 8.5, message: null },
   { id: 'vehicleImpact', at: 10.05, message: null },
-  { id: 'facade', at: 11.1, message: 'FACHADA EM COLAPSO · MANTENHA A ROTA' },
+  { id: 'facade', at: 11.1, message: null },
   { id: 'facadeImpact', at: 12.0, message: null },
   { id: 'facadeDebrisImpact', at: 12.95, message: null },
   { id: 'trainWarning', at: 13.3, message: 'TREM AVARIADO · DESVIE À DIREITA' },
   { id: 'trainSpawn', at: 14.2, message: null },
   { id: 'trainImpact', at: 16.2, message: null },
 ]);
+
+// Each landmark has a distinct physical signature, not the same generic
+// explosion layered 7 times. Triggers are one-shot and time-ordered.
+export const CITY_STAGE_AUDIO = Object.freeze({
+  billboardImpact: 'cityMetalDrop',
+  vehicleImpact: 'cityVehicleCrash',
+  facadeImpact: 'cityFacadeCollapse',
+  facadeDebrisImpact: 'cityMetalDrop',
+  trainWarning: 'cityTrainAlarm',
+  trainSpawn: 'cityRailTear',
+  trainImpact: 'cityTrainCrash',
+});
+
+const CITY_WARNING = Object.freeze({
+  pt: 'TREM AVARIADO · DESVIE À DIREITA',
+  en: 'DAMAGED TRAIN · DODGE RIGHT',
+  es: 'TREN AVERIADO · ESQUIVA A LA DERECHA',
+});
+export function cityWarningText(language = 'pt') {
+  return CITY_WARNING[language] ?? CITY_WARNING.pt;
+}
 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const smooth = (x) => {
