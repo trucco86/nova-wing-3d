@@ -6111,6 +6111,7 @@ export function createGame({
               ...cityDestructionAt(elapsed),
               triggered: [...cityDestructionTriggered],
               ground: world.cityDestructionGroundState?.() ?? null,
+              impacts: world.cityDestructionImpactState?.() ?? null,
               wrecks: obstacles
                 .filter(({ o }) => o.userData.kind === 'city-hanging-train')
                 .map(({ o }) => ({
@@ -6119,6 +6120,8 @@ export function createGame({
                   solidCount: o.userData.solids.length,
                   safeLane: o.userData.safeLane,
                   angle: o.userData.nodes.pivot.rotation.z,
+                  laneGuidesVisible: o.userData.nodes.safe.visible,
+                  powerlineSparksVisible: o.userData.nodes.sparks?.visible ?? false,
                 })),
             }
           : null,

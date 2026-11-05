@@ -38,6 +38,7 @@ import {
   createCityDestructionScene,
   updateCityDestructionScene,
   cityDestructionGroundState,
+  cityDestructionImpactState,
 } from './city-destruction.js';
 import {
   createCityUrbanDrones,
@@ -1679,6 +1680,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     cityDestructionGroundState() {
       return sceneryTheme === 'city' ? cityDestructionGroundState(cityDestruction) : null;
+    },
+    cityDestructionImpactState() {
+      return sceneryTheme === 'city' ? cityDestructionImpactState(cityDestruction) : null;
     },
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;

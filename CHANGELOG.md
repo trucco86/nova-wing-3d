@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.91 — Fase 1: efeitos de impacto e desvio do trem (QA)
+
+- Poeira, faíscas e ondas de choque no asfalto após queda da placa, veículo e fachada.
+- Trem avariado com descargas no trilho e indicação discreta da faixa segura.
+- Sem novos colliders ou mudanças na progressão, demais fases preservadas; homologação visual pendente.
+
 ## 1.27.90 — Destroços no chão da cidade (QA)
 
 - Corrigidas placa, carro, torre e fragmentos que penetravam a via após girar e cair.
