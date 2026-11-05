@@ -27,11 +27,14 @@ export function developerToolsAllowed(hostname, native = false) {
   );
 }
 
-export const DEVELOPER_ENCOUNTERS = Object.freeze(['stage', 'subboss', 'boss']);
+export const DEVELOPER_ENCOUNTERS = Object.freeze(['stage', 'subboss', 'boss', 'tunnel']);
 
 export function parseDeveloperScenario(sector, encounter, sectorCount) {
   const index = Number(sector);
   if (!Number.isInteger(index) || index < 0 || index >= sectorCount) return null;
   if (!DEVELOPER_ENCOUNTERS.includes(encounter)) return null;
+  // This physical tunnel belongs only to the sixth sector (Europa).
+  // Other stages must never acquire a fictitious tunnel QA shortcut.
+  if (encounter === 'tunnel' && index !== 5) return null;
   return { sector: index, encounter };
 }
