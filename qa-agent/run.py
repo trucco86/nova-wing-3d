@@ -208,7 +208,8 @@ def main():
         report = f"BLOQUEADO: {type(exc).__name__}: {exc}"
         error = True
     duration = round(time.perf_counter() - start, 1)
-    folder = Path("artifacts/agent-qa")
+    # Resolve from the repository, not the shell current working directory.
+    folder = Path(__file__).resolve().parents[1] / "artifacts" / "agent-qa"
     folder.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     path = folder / f"{stamp}-{args.scenario}.md"
@@ -223,7 +224,29 @@ def main():
         f"{report}\n",
         encoding="utf-8",
     )
-    print(f"Relatorio: {path}\n\n{report}")
+    # Machine-readable sidecar for reporting; the LLM narrative is NOT a
+    # verified finding. Ollama token/energy usage is not currently instrumented.
+    metadata = {
+        "schema_version": 1,
+        "timestamp_utc": stamp,
+        "scenario": args.scenario,
+        "model": args.model,
+        "provider": "ollama-local",
+        "duration_seconds": duration,
+        "max_model_calls": args.max_model_calls,
+        "status": "BLOQUEADO" if error else "RELATO_NAO_VALIDADO",
+        "report_file": path.name,
+        "model_calls_actual": None,
+        "tokens_actual": None,
+        "cost_usd": None,
+        "automatically_verified": False,
+    }
+    sidecar = path.with_suffix(".json")
+    sidecar.write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    print(f"Relatorio: {path}\nDados: {sidecar}\n\n{report}")
     if error:
         raise SystemExit(1)
 
