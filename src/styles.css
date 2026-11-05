@@ -9603,10 +9603,16 @@ body.in-mission
   > :is(#shieldWarning, #bossIncoming, #pickupFlash, #comms, #hitFeedback) {
   display: none !important;
 }
-/* Radio wins over small hit/loot confirmations while it speaks. No
-   simultaneous low-priority chips at the bottom of the priority ladder. */
-body.in-mission #hudNotices:has(> #comms.active) > :is(#hitFeedback, #pickupFlash),
-body.in-mission #hudNotices:has(> #hitFeedback:not([hidden])) > #pickupFlash {
+/* Confirmed boss hits briefly beat routine chatter, but never survival
+   warnings or real incoming attacks. Exactly one notice stays on screen. */
+body.in-mission
+  #hudNotices:has(> #comms.active):not(:has(> #hitFeedback[data-impact='boss']:not([hidden])))
+  > #hitFeedback,
+body.in-mission #hudNotices:has(> #comms.active) > #pickupFlash,
+body.in-mission #hudNotices:has(> #hitFeedback:not([hidden])) > #pickupFlash,
+body.in-mission
+  #hudNotices:has(> #hitFeedback[data-impact='boss']:not([hidden]))
+  > #comms {
   display: none !important;
 }
 body.in-mission
