@@ -57,7 +57,8 @@ test('premium turbine retains dual vectoring, rotor, glow and warm BOOST plasma'
     assert.ok(drive.rotor.children.length >= 4);
     assert.ok(drive.boostBeam);
     assert.equal(drive.boostBeam.visible, false);
-    assert.equal(drive.nozzle.parent, articulated.torso);
+    assert.equal(drive.nozzle.parent.parent, articulated.torso, 'engine mount follows torso');
+    assert.ok(drive.nozzle.position.y > 1.6, 'dorsal nozzle retains shoulder-height coordinates');
   }
   for (let frame = 0; frame < 20; frame++) {
     const t = frame / 60;
