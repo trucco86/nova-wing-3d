@@ -18,3 +18,10 @@ Priorizar a direção visual premium aprovada para o Nova Wing: armadura metáli
 - Unitários: hierarquia do rig e deslocamento real do muzzle/shin; recuo isolado entre canhões, camadas de propulsão e mudança de cor, rotors, controle direcional, pausa/reset, envelope de silhueta e ritmo 30/60 Hz.
 - CI: format, release prepare, build reproducível, validate Node, Playwright desktop/mobile (screenshots e WebGL).
 - Homologação visual: mecha de frente, perfil e costas em viewport desktop e mobile; BOOST, strafe, subida/descida, tiros normais e precisão, troca nave↔robô e menu hangar. Teste físico com medidor Pausa → FPS. Nenhuma alegação de paridade visual exata com concept sem revisão manual.
+
+## Revisão V4.1 — legibilidade em câmera real
+- Revisão das capturas mobile `mecha-idle.png`, `mecha-boost.png` e `mecha-shooting.png` da CI v1.27.64 identificou exaustão insuficientemente perceptível no ângulo padrão de perseguição. Os testes WebGL passavam, porém não substituíam inspeção de imagem.
+- Turbinas dorsais recebem afterburners de cone cônico transparente com geometria estática, estendidos apenas durante BOOST e com fade na desaceleração. A cor/energia deve ficar clara sem usar luzes dinâmicas nem emitir objetos a cada frame.
+- Tronco, cabeça, braços, asas e suportes dos propulsores passam a compartilhar o mesmo pivô mecânico, preservando a posição do equipamento em repouso via reparenting em coordenadas globais. Posição da mira de precisão deve ser computada no espaço local do torso, não do robô inteiro.
+- Em repouso, o robô deve estabilizar as pernas sem marcha artificial. Manobras aplicam amortecimento de inércia na inclinação do torso. Pausa precisa congelar os efeitos mesmo se os comandos mudarem; reinício precisa zerar emissões.
+- Novo gate: capturas desktop/mobile durante BOOST devem mostrar a exaustão a partir da câmera traseira, e revisão visual deve checar o encontro entre tronco e ombros e a ausência de artefatos de transparência. Não alegar aproximação definitiva ao concept sem inspeção.
