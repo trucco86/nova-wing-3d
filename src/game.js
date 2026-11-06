@@ -67,6 +67,7 @@ import {
   setMarsDustCoating,
 } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
+import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -396,6 +397,8 @@ export function createGame({
   player.add(barrierVisual);
   const marsDust = dynamicFlight ? createMarsDustCoating() : null;
   if (marsDust) player.add(marsDust);
+  const warpStreaks = dynamicFlight ? createWarpStreaks() : null;
+  if (warpStreaks) scene.add(warpStreaks);
   let marsBossAltitude = null;
   let fighterSerial = 0;
   let enemies = [],
@@ -1095,6 +1098,7 @@ export function createGame({
     marsCleanse = 0;
     marsPendingRoll = false;
     setMarsDustCoating(marsDust);
+    updateWarpStreaks(warpStreaks, false, 0, player.position);
     marsBossAltitude = null;
     marsStormDamageCooldown = 0;
     warpDeparture = false;
@@ -2049,16 +2053,20 @@ export function createGame({
       }
     }
     collapseTime += dt;
-    if (dynamicFlight && collapseTime >= 4.9 && (boostRequested() || collapseTime >= 6.4)) {
-      if (!warpDeparture) {
+    if (dynamicFlight) {
+      const jump = warpExitAt(collapseTime, boostRequested());
+      if (jump.active && !warpDeparture) {
         warpDeparture = true;
         cue('boostIgnition');
         $('attackWarning').setAttribute?.('data-severity', 'info');
         $('attackWarning').textContent = 'SALTO DE LUZ · SAINDO DO SETOR';
       }
-      boosting = true;
-      player.position.z -= dt * 380;
-      player.position.y += dt * 7;
+      if (jump.active) {
+        boosting = true;
+        player.position.z -= dt * jump.speed;
+        player.position.y += dt * 7;
+      }
+      updateWarpStreaks(warpStreaks, jump.active, collapseTime, player.position);
     }
     if (dynamicFlight) {
       const exit = world.setDestinationExit(collapseTime);
@@ -4956,6 +4964,8 @@ export function createGame({
       barrierVisual.material.dispose();
       marsDust?.geometry.dispose();
       marsDust?.material.dispose();
+      warpStreaks?.geometry.dispose();
+      warpStreaks?.material.dispose();
       routeRenderer?.destroy();
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
