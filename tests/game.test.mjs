@@ -194,3 +194,13 @@ test('invalid simulation steps fail explicitly', (t) => {
   const h = setup(t);
   for (const dt of [-1, NaN, 2]) assert.throws(() => h.game.step(dt), RangeError);
 });
+
+test('a plasma bomb updates the HUD before the next WebGL frame', (t) => {
+  const h = setup(t);
+  const renders = h.calls.renders;
+  h.game.bomb();
+  assert.equal(h.game.snapshot().bombs, 2);
+  assert.equal(h.elements.get('bombs').textContent.trim(), '◆ ◆');
+  assert.equal(h.elements.get('bombTouch')['data-count'], 2);
+  assert.equal(h.calls.renders, renders, 'HUD feedback does not depend on rendering');
+});
