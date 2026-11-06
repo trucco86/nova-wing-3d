@@ -3400,8 +3400,15 @@ export function createGame({
         charge = 0;
         chargeLatch = false;
         $('attackWarning').setAttribute?.('data-severity', 'warning');
-        $('attackWarning').textContent = 'AREIA NOS CANHÕES · 3 GIROS PARA LIMPAR';
-        message('AREIA NAS ARMAS · EXECUTE 3 GIROS RÁPIDOS (Q)', 'christopher');
+        $('attackWarning').textContent = robotMode
+          ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
+          : 'AREIA NOS CANHÕES · 3 GIROS PARA LIMPAR';
+        message(
+          robotMode
+            ? 'AREIA NAS ARMAS · VOLTE À NAVE E EXECUTE 3 GIROS'
+            : 'AREIA NAS ARMAS · EXECUTE 3 GIROS RÁPIDOS (Q)',
+          'christopher',
+        );
       }
     }
     if (sectorIndex === 1) {
