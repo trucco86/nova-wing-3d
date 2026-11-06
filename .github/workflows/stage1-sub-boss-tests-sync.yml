@@ -1,0 +1,41 @@
+name: Stage 1 revised subboss QA regression sync
+on:
+  push:
+    branches:
+      - fix/stage1-orbital-pacing-train-clean-route-20261106
+permissions:
+  contents: write
+concurrency:
+  group: stage1-subboss-regression-sync
+  cancel-in-progress: true
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format revised real-sub-boss test fixtures
+        run: npx prettier --write tests/strategy.test.mjs tests/subboss-encounter.test.mjs
+      - name: Validate full subboss combat and new orbital schedule
+        run: |
+          node --test tests/strategy.test.mjs tests/subboss-encounter.test.mjs tests/stage-one-pacing.test.mjs tests/developer-scenarios.test.mjs
+      - name: Synchronize QA regression coverage
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- tests/strategy.test.mjs tests/subboss-encounter.test.mjs
+          if git diff --cached --quiet; then
+            echo 'Already formatted'
+            exit 0
+          fi
+          git commit -m 'test(stage1): preserve subboss behavior checks in real QA shortcut'
+          git push origin HEAD:fix/stage1-orbital-pacing-train-clean-route-20261106
