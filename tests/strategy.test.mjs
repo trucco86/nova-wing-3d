@@ -192,11 +192,14 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
   }
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
-  const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 35; i++) {
-    h.game.collect('shield');
-    h.advance(1);
-  }
+  // Encounter balance belongs to its physical subboss, independent of the
+  // revised stage-one schedule that now enters combat only after orbit.
+  const h = setup(t, {
+    spawnEncounters: true,
+    hostname: 'dev.nova-wing-preview.pages.dev',
+  });
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  h.advance(1.1);
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
   assert.ok(before.life >= 360 && before.life < 620);
   h.game.bomb();
