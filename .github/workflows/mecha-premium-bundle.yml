@@ -1,0 +1,57 @@
+name: One-time mecha premium candidate QA
+on:
+  push:
+    branches: [feat/mars-storm-moons-warp-exit]
+    paths:
+      - .github/workflows/mecha-premium-bundle.yml
+permissions:
+  contents: write
+jobs:
+  synchronize:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mars-storm-moons-warp-exit
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.64
+      - name: Record actual changes and open QA limitations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          notes = Path("releases/v1.27.64.md")
+          notes.write_text("""## Nova Wing 3D v1.27.64 — candidata web: Mecha Premium V4
+
+          - Esqueleto com antebraços e joelhos verdadeiramente articulados; balanço do tronco e cabeça estabilizada; asas com resposta às manobras.
+          - Recuo visual independente nos canhões direito e de precisão esquerdo.
+          - Turbinas dorsais vetoriais, rotores e plasma duplo; BOOST com exaustão âmbar/branca e jatos laterais de correção.
+          - Shader do robô oculto pré-compilado quando suportado, sem criar objetos a cada frame.
+          - Controles, colisões, fases e mecânicas de tiro existentes preservados.
+
+          **Candidata para homologação:** ainda requer browser QA, medição perceptual de FPS em dispositivo físico e aprovação visual contra o concept antes de merge/produção.
+          """)
+          ch = Path("CHANGELOG.md")
+          s = ch.read_text()
+          s = s.replace("- Candidata não homologada; preencher entregas e evidências antes da publicação.", "- Mecha Premium V4: cotovelos/joelhos animados, balanço corporal, tiros com recuo, asas responsivas e propulsores vetoriais ciano/âmbar. QA visual/mobile pendente.", 1)
+          ch.write_text(s)
+          PY
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - run: npm run build:check
+      - name: Commit synchronized release and generated distribution
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md index.html package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj releases/v1.27.64.md specs/mecha-premium-v4.md src/mecha-motion.js src/visuals.js src/game.js tests/mecha-premium-motion.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "build(mecha): prepare reproducible v1.27.64 premium-motion candidate"
+            git push origin HEAD:feat/mars-storm-moons-warp-exit
+          fi
