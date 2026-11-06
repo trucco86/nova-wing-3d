@@ -14,7 +14,7 @@
 
 ## 1.27.63 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Modo robo: DASH lateral direcional substitui giro; nave mantem barrel roll; controles PT/EN/ES, cooldown, colisao e protecao testados. QA visual pendente.
 
 ## 1.27.62 — Layout compacto de Hangar e QA (release Web)
 
