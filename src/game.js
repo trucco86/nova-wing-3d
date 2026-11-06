@@ -57,6 +57,7 @@ import {
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
+import { compoundSolidsOverlap, resolveMovingObstacle } from './scene-collision.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
@@ -3546,12 +3547,23 @@ export function createGame({
       elapsed >= 24 &&
       !enemies.some((e) => !e.dead && e.kind === 'subboss')
     ) {
-      tunnelDone = true;
       const o = createObstacle('tunnel');
       o.position.z = -230;
-      scene.add(o);
-      obstacles.push({ o, life: 1 });
-      message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
+      if (
+        !obstacles.some(({ o: other }) =>
+          compoundSolidsOverlap(
+            o.userData.solids,
+            o.position,
+            other.userData.solids,
+            other.position,
+          ),
+        )
+      ) {
+        tunnelDone = true;
+        scene.add(o);
+        obstacles.push({ o, life: 1 });
+        message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
+      }
     }
     const bossBlocked =
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
@@ -4405,9 +4417,20 @@ export function createGame({
       // their physical collision volume matches their visible station props.
       const gate = createObstacle('reactor');
       gate.position.set([-17, 18, -12, 13][reactorGridWave], 8, player.position.z - 82);
-      scene.add(gate);
-      obstacles.push({ o: gate, life: 1 });
-      reactorGridWave++;
+      if (
+        !obstacles.some(({ o: other }) =>
+          compoundSolidsOverlap(
+            gate.userData.solids,
+            gate.position,
+            other.userData.solids,
+            other.position,
+          ),
+        )
+      ) {
+        scene.add(gate);
+        obstacles.push({ o: gate, life: 1 });
+        reactorGridWave++;
+      }
     }
     // Preserve a clear view during BOOST ascent and the atmospheric crossing.
     // Orbital debris/carriers enter only once the player has reached real orbit.
@@ -4442,24 +4465,43 @@ export function createGame({
         kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
         -230,
       );
-      scene.add(o);
-      obstacles.push({ o, life: 1 });
-      obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
+      // Keep scripted scenery and existing obstacles out of each other's solid space.
+      if (
+        !obstacles.some(({ o: other }) =>
+          compoundSolidsOverlap(
+            o.userData.solids,
+            o.position,
+            other.userData.solids,
+            other.position,
+          ),
+        )
+      ) {
+        scene.add(o);
+        obstacles.push({ o, life: 1 });
+        obstacleCd = dynamicFlight ? obstacleInterval(sectorIndex, settings.difficulty) : 8;
+      } else {
+        obstacleCd = 0.6; // Recheck placement after nearby structures scroll away.
+      }
     }
     for (const obstacle of obstacles) {
       const travel = speed * dt;
+      const obstacleBefore = obstacle.o.position.clone();
       obstacle.o.position.z += travel;
-      const from = previousPlayer
-        .clone()
-        .sub(obstacle.o.position)
-        .add(new T.Vector3(0, 0, travel));
-      const to = player.position.clone().sub(obstacle.o.position);
-      if (
-        obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
-        )
-      )
+      // Damage alone did not stop meshes passing through each other.
+      // Resolve player vs. scrolling compound solids using the complete
+      // relative sweep, including obstacle movement at low frame rates.
+      const contact = resolveMovingObstacle(
+        previousPlayer,
+        player.position,
+        obstacle.o.userData.solids,
+        obstacleBefore,
+        obstacle.o.position,
+        robotMode ? 1.6 : 1.3,
+      );
+      if (contact.collided) {
+        player.position.set(contact.position.x, contact.position.y, contact.position.z);
         hit(30);
+      }
       // Stop allied and hostile rounds at actual solid geometry, not after it.
       for (const b of [...shots, ...hostile]) {
         if (b.life <= 0 || !b.previousPosition) continue;
