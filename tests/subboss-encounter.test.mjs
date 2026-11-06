@@ -11,10 +11,13 @@ function advanceProtected(h, seconds) {
 }
 
 test('web subboss approaches, signals its attack, freezes on pause and resets', (t) => {
-  const h = harness({ spawnEncounters: true });
+  const h = harness({ spawnEncounters: true, hostname: 'dev.nova-wing-preview.pages.dev' });
   t.after(() => h.close());
-  h.game.start();
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 1.1);
+  // The first subboss now enters AFTER the real orbital climb. For testing
+  // its attack behavior, use the real encounter QA shortcut, not an old
+  // fixed elapsed-time spawn assumption.
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  advanceProtected(h, 1.1);
   const charging = h.game.snapshot();
   const subboss = charging.targets.find((enemy) => enemy.kind === 'subboss');
   assert.equal(subboss.tactic, 'strafe');
