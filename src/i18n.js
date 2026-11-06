@@ -150,11 +150,7 @@ const ROWS = [
     'ship roll / robot lateral dash ·',
     'giro de nave / dash lateral del robot ·',
   ],
-  [
-    'Giro defensivo da nave',
-    'Ship defensive roll',
-    'Giro defensivo de la nave',
-  ],
+  ['Giro defensivo da nave', 'Ship defensive roll', 'Giro defensivo de la nave'],
   [
     'Esquiva lateral do robô na direção do direcional',
     'Robot lateral dodge in steering direction',

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.66 — Candidata em preparação
+
+- Modo robo: DASH lateral direcional substitui giro; nave mantem barrel roll; controles PT/EN/ES, cooldown, colisao e protecao testados. QA visual pendente.
+
 ## 1.27.65 — Candidata em preparação
 
 - Mecha V4.1: afterburners legíveis na câmera, upper-body rig conectado, mira em coordenadas do torso, idle estável e redução de trabalho no hot path; homologação visual pendente.

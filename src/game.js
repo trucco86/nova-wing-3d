@@ -368,13 +368,22 @@ export function createGame({
       uiText(settings.language, robotMode ? 'mechaDashAria' : 'rollAria'),
     );
     $('rollHint').textContent = uiText(settings.language, robotMode ? 'mechaDashHint' : 'rollHint');
-    for (const node of document.querySelectorAll?.('[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]') ?? []) {
+    for (const node of document.querySelectorAll?.(
+      '[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]',
+    ) ?? []) {
       node.dataset.helpKey = robotMode ? 'helpMechaDash' : 'helpRoll';
       node.textContent = uiText(settings.language, node.dataset.helpKey);
     }
   }
   function toggleRobot() {
-    if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15 || mechaDash.active) return;
+    if (
+      !dynamicFlight ||
+      state !== 'playing' ||
+      robotCooldown > 0 ||
+      energy < 15 ||
+      mechaDash.active
+    )
+      return;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = 0.7;
@@ -1415,7 +1424,8 @@ export function createGame({
       invuln > 0 ||
       roll > 0 ||
       (robotMode && mechaDash.active)
-    ) return;
+    )
+      return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -3266,8 +3276,7 @@ export function createGame({
     );
     // Preserve the swept collision segment: the dash moves within the normal
     // piloting step, before walls and moving enemy projectiles are resolved.
-    if (robotMode)
-      player.position.x = mechaDash.advance(dt, player.position.x, flightLimit());
+    if (robotMode) player.position.x = mechaDash.advance(dt, player.position.x, flightLimit());
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
@@ -3322,8 +3331,12 @@ export function createGame({
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
       const bankTarget = robotMode
-        ? (mechaDash.active ? -mechaDash.direction * 0.2 : -dx * 0.36)
-        : rollHeld ? -Math.PI / 2 : -dx * 0.48;
+        ? mechaDash.active
+          ? -mechaDash.direction * 0.2
+          : -dx * 0.36
+        : rollHeld
+          ? -Math.PI / 2
+          : -dx * 0.48;
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;

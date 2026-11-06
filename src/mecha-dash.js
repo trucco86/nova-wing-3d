@@ -12,11 +12,15 @@ export const MECHA_DASH = Object.freeze({
  * explicit left/right fallbacks when steering is neutral; Z/touch use the last
  * selected side. This makes the existing GIRO control directional in robot mode.
  */
-export function mechaDashDirection(
-  { stickX = 0, left = false, right = false, key = '', previous = 1 } = {},
-) {
-  const steer = clamp(Number.isFinite(stickX) ? stickX : 0, -1, 1) +
-    (right ? 1 : 0) - (left ? 1 : 0);
+export function mechaDashDirection({
+  stickX = 0,
+  left = false,
+  right = false,
+  key = '',
+  previous = 1,
+} = {}) {
+  const steer =
+    clamp(Number.isFinite(stickX) ? stickX : 0, -1, 1) + (right ? 1 : 0) - (left ? 1 : 0);
   if (Math.abs(steer) >= 0.2) return Math.sign(steer);
   if (key === 'KeyQ') return -1;
   if (key === 'KeyE') return 1;
@@ -42,8 +46,7 @@ export function createMechaDash() {
     )
       return false;
     const requested = side < 0 ? -1 : 1;
-    if ((requested < 0 && x <= -limit + 0.1) ||
-        (requested > 0 && x >= limit - 0.1)) return false;
+    if ((requested < 0 && x <= -limit + 0.1) || (requested > 0 && x >= limit - 0.1)) return false;
     direction = lastDirection = requested;
     remaining = MECHA_DASH.duration;
     cooldown = MECHA_DASH.cooldown;
@@ -51,8 +54,7 @@ export function createMechaDash() {
   }
 
   function advance(dt, x, limit) {
-    if (!Number.isFinite(dt) || dt < 0 || !Number.isFinite(x) || !Number.isFinite(limit))
-      return x;
+    if (!Number.isFinite(dt) || dt < 0 || !Number.isFinite(x) || !Number.isFinite(limit)) return x;
     const elapsed = Math.min(dt, remaining);
     if (elapsed > 0) {
       const start = 1 - remaining / MECHA_DASH.duration;
@@ -78,9 +80,15 @@ export function createMechaDash() {
     begin,
     advance,
     reset,
-    get active() { return remaining > 0; },
-    get direction() { return direction; },
-    get lastDirection() { return lastDirection; },
+    get active() {
+      return remaining > 0;
+    },
+    get direction() {
+      return direction;
+    },
+    get lastDirection() {
+      return lastDirection;
+    },
     snapshot: () => ({
       active: remaining > 0,
       remaining,
