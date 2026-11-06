@@ -20,6 +20,8 @@ export function updateMechaPose(
     transforming = 0,
     recoil = 0,
     precisionRecoil = 0,
+    dashing = false,
+    dashDirection = 1,
   } = {},
 ) {
   const rig = robot.userData.mecha;
@@ -32,6 +34,7 @@ export function updateMechaPose(
   const power = boosting ? 1 : clamp(0.29 + move * 0.27, 0, 0.72);
   const fireKick = clamp(recoil, 0, 1);
   const precisionKick = clamp(precisionRecoil, 0, 1);
+  const dashSide = dashing ? (dashDirection < 0 ? -1 : 1) : 0;
   const breathing = Math.sin(time * 2.2);
   const stride = Math.sin(time * (boosting ? 7.3 : 4.5));
   const motion = rig.motion;
@@ -86,7 +89,7 @@ export function updateMechaPose(
   if (torso) {
     torso.rotation.z = ease(
       torso.rotation.z,
-      -sensedStrafe * 0.11 - turnImpulse * 0.085 + breathing * 0.014,
+      -sensedStrafe * 0.11 - turnImpulse * 0.085 - dashSide * 0.18 + breathing * 0.014,
       step,
       7,
     );
@@ -148,7 +151,11 @@ export function updateMechaPose(
   for (let i = 0; i < (rig.hipJets?.length ?? 0); i++) {
     const jet = rig.hipJets[i];
     const side = i === 0 ? -1 : 1;
-    const thrust = Math.max(boosting ? 0.2 : 0, side * s < 0 ? Math.abs(s) : 0);
+    const thrust = Math.max(
+      boosting ? 0.2 : 0,
+      side * s < 0 ? Math.abs(s) : 0,
+      dashSide !== 0 && side === -dashSide ? 1 : 0,
+    );
     jet.visible = thrust > 0.04;
     jet.material.opacity = ease(jet.material.opacity, thrust * 0.7, step, 12);
     jet.scale.y = ease(jet.scale.y, 0.6 + thrust * 1.4, step, 10);
@@ -212,7 +219,12 @@ export function updateMechaPose(
     20,
   );
 
-  robot.rotation.z = ease(robot.rotation.z, -s * 0.12 + breathing * 0.012, step, 6);
+  robot.rotation.z = ease(
+    robot.rotation.z,
+    -s * 0.12 - dashSide * 0.3 + breathing * 0.012,
+    step,
+    dashing ? 14 : 6,
+  );
   robot.rotation.x = ease(robot.rotation.x, v * 0.045 + (boosting ? -0.055 : 0), step, 6);
   const scale = rig.baseScale * (1 + clamp(transforming, 0, 1) * 0.14);
   robot.scale.setScalar(scale);
