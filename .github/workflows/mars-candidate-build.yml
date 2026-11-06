@@ -1,4 +1,5 @@
 name: One-time Mars candidate release preparation
+# Run after PR creation to synchronize the candidate.
 on:
   push:
     branches: [feat/mars-storm-moons-warp-exit]
