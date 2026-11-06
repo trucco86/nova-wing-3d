@@ -86,6 +86,7 @@ import { createMusic } from './audio.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
+import { prewarmSceneShaders } from './scene-prewarm.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
@@ -396,6 +397,11 @@ export function createGame({
   const warpStreaks = dynamicFlight ? createWarpStreaks() : null;
   if (warpStreaks) scene.add(warpStreaks);
   let marsBossAltitude = null;
+  // CPU geometry generation and shader compilation belong to stage loading,
+  // never to the critical frame where the boss appears.
+  let preparedBoss = null;
+  let prepareGeneration = 0;
+  let bossShadersWarm = false;
   let fighterSerial = 0;
   let enemies = [],
     shots = [],
@@ -1088,6 +1094,7 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current(), sectorIndex);
+    prepareUpcomingBoss();
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
@@ -1878,6 +1885,25 @@ export function createGame({
       age: 0,
     });
   }
+  function prepareUpcomingBoss() {
+    if (!dynamicFlight) return;
+    // The stage/briefing is still loading. Never build a multi-hundred-mesh
+    // procedural model on the frame that starts the boss encounter.
+    const generation = ++prepareGeneration;
+    preparedBoss = createBossModel(current(), sectorIndex, true);
+    if (sectorIndex === 1) marsBossAltitude = marsBossAltitudeConstraint(preparedBoss);
+    bossShadersWarm = false;
+    // Precompile future-visible terrain, orbital sky, core and both markers
+    // while they are offscreen. Shader warmup is asynchronous when supported;
+    // there is deliberately no blocking synchronous compile fallback.
+    void prewarmSceneShaders(renderer, world.transitionShaderRoot?.(), camera, scene).then(() => {
+      if (!running || generation !== prepareGeneration || !preparedBoss) return;
+      const model = preparedBoss;
+      return prewarmSceneShaders(renderer, model, camera, scene).then((ready) => {
+        if (running && generation === prepareGeneration) bossShadersWarm = ready;
+      });
+    });
+  }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
@@ -1894,8 +1920,10 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
-    boss = createBossModel(current(), sectorIndex, dynamicFlight);
-    marsBossAltitude = dynamicFlight && sectorIndex === 1 ? marsBossAltitudeConstraint(boss) : null;
+    boss = preparedBoss ?? createBossModel(current(), sectorIndex, dynamicFlight);
+    preparedBoss = null;
+    if (dynamicFlight && sectorIndex === 1 && !marsBossAltitude)
+      marsBossAltitude = marsBossAltitudeConstraint(boss);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
@@ -2136,6 +2164,12 @@ export function createGame({
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
+    prepareGeneration++;
+    bossShadersWarm = false;
+    if (preparedBoss) {
+      disposeBoss(preparedBoss);
+      preparedBoss = null;
+    }
     if (collapse) {
       dispose(collapse);
       disposeCollapse(collapse);
@@ -4875,6 +4909,10 @@ export function createGame({
       boss: !!boss,
       bossHp,
       bossPhase: bossCombat?.phase ?? 0,
+      bossPrepared: !!preparedBoss,
+      bossShadersWarm,
+      bossModelId: boss?.uuid ?? null,
+      preparedBossModelId: preparedBoss?.uuid ?? null,
       bossAge: bossCombat?.age ?? 0,
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
