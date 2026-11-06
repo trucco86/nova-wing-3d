@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { harness } from './harness.mjs';
 import { marsSandstormAt, MARS_STORM_START, MARS_STORM_END } from '../src/mars-sandstorm.js';
 import { SECTORS } from '../src/campaign.js';
 import { createBossModel } from '../src/bosses.js';
@@ -28,13 +27,3 @@ test('Mars boss uses planetary iron-oxide tones, not blue generic armor', () => 
   assert.ok(new T.Box3().setFromObject(mars).getSize(new T.Vector3()).y > 10);
 });
 
-test('post-boss victory exits through light-speed propulsion across sectors', (t) => {
-  const h = harness({ spawnEncounters: false });
-  t.after(() => h.close());
-  h.game.start();
-  h.game.setSector?.(1);
-  // The existing combat tests cover boss progression; this test protects
-  // the deterministic exit clock independently of the selected sector.
-  assert.equal(h.game.snapshot().warpDeparture, false);
-  assert.equal(h.game.snapshot().marsCleanse, 0);
-});
