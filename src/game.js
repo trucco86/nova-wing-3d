@@ -61,11 +61,7 @@ import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
-import {
-  marsSandstormAt,
-  createMarsDustCoating,
-  setMarsDustCoating,
-} from './mars-sandstorm.js';
+import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
 import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
@@ -1893,8 +1889,7 @@ export function createGame({
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex, dynamicFlight);
-    marsBossAltitude =
-      dynamicFlight && sectorIndex === 1 ? marsBossAltitudeConstraint(boss) : null;
+    marsBossAltitude = dynamicFlight && sectorIndex === 1 ? marsBossAltitudeConstraint(boss) : null;
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);

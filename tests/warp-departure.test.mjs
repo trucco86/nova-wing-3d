@@ -1,11 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {
-  warpExitAt,
-  createWarpStreaks,
-  updateWarpStreaks,
-} from '../src/warp-departure.js';
+import { warpExitAt, createWarpStreaks, updateWarpStreaks } from '../src/warp-departure.js';
 
 test('a defeated boss can trigger the light-speed jump only after the explosion', () => {
   assert.equal(warpExitAt(4.7, true).active, false);

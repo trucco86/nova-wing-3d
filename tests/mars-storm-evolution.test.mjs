@@ -33,7 +33,12 @@ test('Mars boss uses planetary iron-oxide tones, not blue generic armor', () => 
 test('Martian colossus stays above terrain at varied banking and headings', () => {
   const boss = createBossModel(SECTORS[1], 1, true);
   const altitude = marsBossAltitudeConstraint(boss, { groundY: -8, clearance: 5 });
-  for (const [bank, heading] of [[0, 0], [0.35, 1.1], [-0.6, -1.5], [0.52, 2.2]]) {
+  for (const [bank, heading] of [
+    [0, 0],
+    [0.35, 1.1],
+    [-0.6, -1.5],
+    [0.52, 2.2],
+  ]) {
     boss.rotation.z = bank;
     boss.rotation.y = heading;
     boss.position.set(12, altitude(10, bank), -65);
@@ -87,5 +92,8 @@ test('Mars dust jams direct fire until three completed rolls; pause cannot advan
     assert.equal(h.game.snapshot().marsPendingRoll, false);
   }
   h.game.fire();
-  assert.ok(h.game.snapshot().entities.shots > beforeShots, 'weapons recover after third full spin');
+  assert.ok(
+    h.game.snapshot().entities.shots > beforeShots,
+    'weapons recover after third full spin',
+  );
 });

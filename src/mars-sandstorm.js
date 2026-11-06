@@ -115,7 +115,6 @@ export function updateMarsSandstorm(root, seconds) {
   return wind;
 }
 
-
 /** In-world sand accumulation on the hull and cannon tips, not a HUD overlay. */
 export function createMarsDustCoating() {
   const count = 84;
