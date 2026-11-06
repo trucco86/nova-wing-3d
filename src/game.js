@@ -61,7 +61,12 @@ import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
-import { marsSandstormAt } from './mars-sandstorm.js';
+import {
+  marsSandstormAt,
+  createMarsDustCoating,
+  setMarsDustCoating,
+} from './mars-sandstorm.js';
+import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { bossDepartureAt } from './boss-departure.js';
 import { drawCampaignMap } from './campaign-map.js';
@@ -389,6 +394,9 @@ export function createGame({
   );
   barrierVisual.visible = false;
   player.add(barrierVisual);
+  const marsDust = dynamicFlight ? createMarsDustCoating() : null;
+  if (marsDust) player.add(marsDust);
+  let marsBossAltitude = null;
   let fighterSerial = 0;
   let enemies = [],
     shots = [],
@@ -471,6 +479,7 @@ export function createGame({
     marsArrivalPhase = 'space',
     marsStormPhase = 'clear',
     marsCleanse = 0,
+    marsPendingRoll = false,
     marsStormDamageCooldown = 0,
     warpDeparture = false,
     sectorStart = null,
@@ -1084,6 +1093,9 @@ export function createGame({
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
     marsCleanse = 0;
+    marsPendingRoll = false;
+    setMarsDustCoating(marsDust);
+    marsBossAltitude = null;
     marsStormDamageCooldown = 0;
     warpDeparture = false;
     asteroidInterior?.reset(sectorIndex === 2);
@@ -1413,15 +1425,8 @@ export function createGame({
     roll = 0.65;
     rollAngle = 0;
     rollCd = marsCleanse > 0 ? 0.72 : 1.6;
-    if (marsCleanse > 0) {
-      marsCleanse--;
-      if (marsCleanse === 0) {
-        message('ARMAS LIMPAS · CANHÕES OPERACIONAIS', 'christopher');
-        $('attackWarning').textContent = '';
-      } else {
-        $('attackWarning').textContent = 'AREIA NOS CANHÕES · GIROS RESTANTES: ' + marsCleanse;
-      }
-    }
+    // The objective counts a full 360-degree roll, not merely pressing Q.
+    marsPendingRoll = marsCleanse > 0;
     sound(230, 0.25, 'sine');
   }
   function bomb() {
@@ -1536,7 +1541,12 @@ export function createGame({
     });
   }
   function fire() {
-    if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
+    if (
+      (state !== 'playing' && !(dynamicFlight && state === 'collapsing')) ||
+      shotCd > 0 ||
+      (state === 'playing' && marsCleanse > 0)
+    )
+      return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
     heroEffects.pulse({ robot: robotMode, color: selectedWeapon().color });
@@ -1879,13 +1889,19 @@ export function createGame({
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex, dynamicFlight);
+    marsBossAltitude =
+      dynamicFlight && sectorIndex === 1 ? marsBossAltitudeConstraint(boss) : null;
     for (const e of enemies) dispose(e.o);
     enemies = [];
     for (const e of hostile) dispose(e.o);
     hostile = [];
     // Enter through the illuminated hangar of the mother ship in the distance.
     // No instant pop-in to the combat position.
-    boss.position.set(0, dynamicFlight ? 57 : 10, dynamicFlight ? -680 : -230);
+    boss.position.set(
+      0,
+      marsBossAltitude ? marsBossAltitude(57) : dynamicFlight ? 57 : 10,
+      dynamicFlight ? -680 : -230,
+    );
     if (dynamicFlight) {
       world.showCarrierForBoss?.();
       for (const o of obstacles) dispose(o.o);
@@ -2051,8 +2067,9 @@ export function createGame({
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
-    boss.position.y =
-      sectorIndex === 1 ? Math.max(66, boss.position.y - dt * 0.55) : boss.position.y - dt * 0.55;
+    boss.position.y = marsBossAltitude
+      ? marsBossAltitude(boss.position.y - dt * 0.55, boss.rotation.z)
+      : boss.position.y - dt * 0.55;
     if (collapseTime < 4.7 && collapseBurst <= 0) {
       collapseBurst = Math.max(0.12, 0.5 - collapseTime * 0.07);
       explode(boss.position.clone().add(new T.Vector3(rnd(-36, 36), rnd(-12, 20), 23)), 18);
@@ -3167,6 +3184,18 @@ export function createGame({
       roll = Math.max(0, roll - dt);
       rollAngle = Math.PI * 2 * (1 - roll / 0.65);
       player.rotation.z = rollAngle;
+      if (roll === 0 && marsPendingRoll) {
+        marsPendingRoll = false;
+        marsCleanse = Math.max(0, marsCleanse - 1);
+        setMarsDustCoating(marsDust, 0, marsCleanse);
+        explode(player.position, 7, 0xc58b5d);
+        if (marsCleanse > 0) {
+          $('attackWarning').textContent = 'AREIA NAS ARMAS · GIROS: ' + marsCleanse;
+        } else {
+          $('attackWarning').textContent = '';
+          message('ARMAS LIMPAS · CANHÕES OPERACIONAIS', 'christopher');
+        }
+      }
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
@@ -3243,12 +3272,16 @@ export function createGame({
         message('TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL', 'christopher');
       else if (previousStorm === 'active') {
         marsCleanse = 3;
+        marsPendingRoll = false;
         charge = 0;
         chargeLatch = false;
         $('attackWarning').setAttribute?.('data-severity', 'warning');
         $('attackWarning').textContent = 'AREIA NOS CANHÕES · 3 GIROS PARA LIMPAR';
         message('AREIA NAS ARMAS · EXECUTE 3 GIROS RÁPIDOS (Q)', 'christopher');
       }
+    }
+    if (sectorIndex === 1) {
+      setMarsDustCoating(marsDust, sandstorm?.intensity ?? 0, marsCleanse);
     }
     if (sandstorm?.active && marsCleanse === 0 && !boss) {
       $('attackWarning').setAttribute?.('data-severity', sandstorm.hazard ? 'danger' : 'warning');
@@ -3676,7 +3709,7 @@ export function createGame({
     });
     if (podsArrived) podMode = podsDetached ? 'deployed' : 'docked';
     $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'PODS';
-    if (podCount > 0 && podCd <= 0 && (podsDetached || holding)) {
+    if (podCount > 0 && podCd <= 0 && (podsDetached || holding) && marsCleanse === 0) {
       podCd = 0.72 - podCount * 0.1;
       for (const p of podMeshes) {
         for (const spread of podsDetached ? [-1, 0, 1] : [0]) {
@@ -3948,7 +3981,7 @@ export function createGame({
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
         boss.position.set(
           launchPose.x,
-          sectorIndex === 1 ? Math.max(66, launchPose.y) : launchPose.y,
+          marsBossAltitude ? marsBossAltitude(launchPose.y, t.bank) : launchPose.y,
           launchPose.z + meleePose.lunge,
         );
         boss.rotation.z = t.bank;
@@ -4838,6 +4871,7 @@ export function createGame({
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
       marsCleanse,
+      marsPendingRoll,
       warpDeparture,
       podsDetached,
       podMode,
@@ -4920,6 +4954,8 @@ export function createGame({
       squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
+      marsDust?.geometry.dispose();
+      marsDust?.material.dispose();
       routeRenderer?.destroy();
       asteroidInterior?.destroy();
       player.userData.paint?.forEach((m) => m.dispose());
