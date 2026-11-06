@@ -36,6 +36,11 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
   assert.equal(fired.targets.find((enemy) => enemy.kind === 'subboss').charging, false);
   assert.ok(fired.entities.hostile > charging.entities.hostile);
 
+  // QA scenarios can only launch from the menu, never overwrite a live run.
+  h.game.pause();
+  h.elements.get('pauseExit').onclick();
+  h.elements.get('pauseConfirmOk').onclick();
+  assert.equal(h.game.snapshot().state, 'menu');
   assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
   assert.ok(h.game.snapshot().targets.some((enemy) => enemy.kind === 'subboss'));
   advanceProtected(h, 0.5);
