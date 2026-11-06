@@ -128,7 +128,9 @@ export function updateMechaPose(
     step,
     12,
   );
-  right.shoulder.rotation.y = ease(right.shoulder.rotation.y, -s * 0.11, step, 8);
+  // Right cannon stays on its forward axis; the torso absorbs the turn.
+  // The left arm alone yaws to lock-on targets, per the dual-aim contract.
+  right.shoulder.rotation.y = ease(right.shoulder.rotation.y, 0, step, 8);
   right.shoulder.rotation.z = ease(
     right.shoulder.rotation.z,
     -0.05 + s * 0.1 + breathing * 0.016,
