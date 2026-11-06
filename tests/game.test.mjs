@@ -197,6 +197,7 @@ test('invalid simulation steps fail explicitly', (t) => {
 
 test('a plasma bomb updates the HUD before the next WebGL frame', (t) => {
   const h = setup(t);
+  h.game.start();
   const renders = h.calls.renders;
   h.game.bomb();
   assert.equal(h.game.snapshot().bombs, 2);
