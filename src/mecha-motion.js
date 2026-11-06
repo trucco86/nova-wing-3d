@@ -25,6 +25,7 @@ export function updateMechaPose(
   const rig = robot.userData.mecha;
   if (!rig) return;
   const step = clamp(dt, 0, 0.05);
+  if (step === 0) return { thrust: 0, tracking: !!targetWorld, moving: false };
   const s = clamp(strafe, -1, 1);
   const v = clamp(vertical, -1, 1);
   const move = Math.min(1, Math.hypot(s, v));
@@ -33,10 +34,22 @@ export function updateMechaPose(
   const precisionKick = clamp(precisionRecoil, 0, 1);
   const breathing = Math.sin(time * 2.2);
   const stride = Math.sin(time * (boosting ? 7.3 : 4.5));
+  const motion = rig.motion;
+  const previousStrafe = motion?.strafe ?? s;
+  const sensedStrafe = motion ? (motion.strafe = ease(previousStrafe, s, step, 8)) : s;
+  const turnImpulse = s - sensedStrafe;
+  const sensedVertical = motion ? (motion.vertical = ease(motion.vertical, v, step, 8)) : v;
 
   // Dorsal gimbals react to lateral flight and vertical steering separately;
   // layered blue plasma becomes warm at full BOOST, like the concept's engine.
-  rig.thrusters.forEach(({ nozzle, plume, innerPlume, exhaustCore, rotor }, i) => {
+  if (rig.boostPalette !== boosting) {
+    rig.boostPalette = boosting;
+    for (const { plume, innerPlume } of rig.thrusters) {
+      plume.material.color.set(boosting ? '#ff9750' : '#4fd5ff');
+      innerPlume?.material.color.set(boosting ? '#fff0be' : '#d7faff');
+    }
+  }
+  rig.thrusters.forEach(({ nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor }, i) => {
     const side = i === 0 ? -1 : 1;
     nozzle.rotation.y = ease(nozzle.rotation.y, -s * 0.31 - side * move * 0.035, step, 8);
     nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.22 - (boosting ? 0.16 : 0), step, 8);
@@ -46,13 +59,23 @@ export function updateMechaPose(
     plume.scale.x = ease(plume.scale.x, 0.77 + power * 0.48, step, 10);
     plume.scale.z = plume.scale.x;
     plume.material.opacity = 0.32 + power * 0.5;
-    plume.material.color.set(boosting ? '#ff9750' : '#4fd5ff');
     if (innerPlume) {
       innerPlume.scale.y = ease(innerPlume.scale.y, length * 1.16, step, 14);
       innerPlume.scale.x = 0.62 + power * 0.19;
       innerPlume.scale.z = innerPlume.scale.x;
       innerPlume.material.opacity = 0.52 + power * 0.38;
-      innerPlume.material.color.set(boosting ? '#fff0be' : '#d7faff');
+    }
+    if (boostBeam) {
+      boostBeam.material.opacity = ease(
+        boostBeam.material.opacity,
+        boosting ? 0.76 : 0,
+        step,
+        boosting ? 12 : 16,
+      );
+      boostBeam.scale.y = ease(boostBeam.scale.y, boosting ? 1.25 : 0.55, step, 11);
+      boostBeam.scale.x = ease(boostBeam.scale.x, boosting ? 1.12 : 0.7, step, 9);
+      boostBeam.scale.z = boostBeam.scale.x;
+      boostBeam.visible = boostBeam.material.opacity > 0.015;
     }
     exhaustCore.scale.setScalar(0.92 + power * 0.18 + pulse * 0.25);
     if (rotor) rotor.rotation.z = (rotor.rotation.z + step * (11 + 20 * power)) % (2 * Math.PI);
@@ -61,14 +84,19 @@ export function updateMechaPose(
   // The body counters momentum; the head stabilizes sight independently.
   const torso = rig.torso;
   if (torso) {
-    torso.rotation.z = ease(torso.rotation.z, -s * 0.11 + breathing * 0.014, step, 7);
-    torso.rotation.x = ease(
-      torso.rotation.x,
-      v * 0.065 + (boosting ? 0.06 : 0) + fireKick * 0.065,
+    torso.rotation.z = ease(
+      torso.rotation.z,
+      -sensedStrafe * 0.11 - turnImpulse * 0.085 + breathing * 0.014,
       step,
       7,
     );
-    torso.rotation.y = ease(torso.rotation.y, s * 0.058, step, 7);
+    torso.rotation.x = ease(
+      torso.rotation.x,
+      sensedVertical * 0.065 + (boosting ? 0.06 : 0) + fireKick * 0.065,
+      step,
+      7,
+    );
+    torso.rotation.y = ease(torso.rotation.y, sensedStrafe * 0.058, step, 7);
   }
   if (rig.head) {
     rig.head.rotation.y = ease(
@@ -86,7 +114,8 @@ export function updateMechaPose(
     const side = i === 0 ? -1 : 1;
     const leg = rig.legs[i];
     const knee = rig.knees?.[i];
-    const pedal = stride * (0.07 + move * 0.035) * side;
+    // Idle mechs hover with stabilized legs, rather than marching in place.
+    const pedal = stride * move * (0.025 + move * 0.055) * side;
     leg.rotation.x = ease(
       leg.rotation.x,
       (boosting ? -0.19 : -0.07) + v * 0.11 + pedal + fireKick * 0.08,
@@ -156,7 +185,11 @@ export function updateMechaPose(
   let leftZ = -0.04;
   if (targetWorld?.isVector3) {
     robot.updateMatrixWorld(true);
-    const target = robot.worldToLocal(targetWorld.clone()).sub(left.shoulder.position);
+    // The left shoulder is now anchored to the moving torso. Project the
+    // target into that parent's local space so aim does not drift with sway.
+    const target = left.shoulder.parent
+      .worldToLocal(targetWorld.clone())
+      .sub(left.shoulder.position);
     const yaw = Math.atan2(target.x, Math.max(1, -target.z));
     const elevation = Math.atan2(target.y, Math.max(1, -target.z));
     leftY = clamp(yaw, -0.7, 0.7);
@@ -197,7 +230,7 @@ export function resetMechaPose(robot) {
     arm.elbow.rotation.set(0, 0, 0);
     arm.muzzle.position.z = arm.muzzle.userData.restBarrelZ;
   }
-  for (const { nozzle, plume, innerPlume, exhaustCore, rotor } of rig.thrusters) {
+  for (const { nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor } of rig.thrusters) {
     nozzle.rotation.set(0, 0, 0);
     plume.scale.set(1, 1, 1);
     plume.material.opacity = 0.46;
@@ -206,9 +239,19 @@ export function resetMechaPose(robot) {
       innerPlume.scale.set(1, 1, 1);
       innerPlume.material.color.set('#d7faff');
     }
+    if (boostBeam) {
+      boostBeam.visible = false;
+      boostBeam.material.opacity = 0;
+      boostBeam.scale.set(1, 1, 1);
+    }
     exhaustCore.scale.setScalar(1);
     if (rotor) rotor.rotation.z = 0;
   }
+  if (rig.motion) {
+    rig.motion.strafe = 0;
+    rig.motion.vertical = 0;
+  }
+  rig.boostPalette = null;
   for (const jet of rig.hipJets ?? []) {
     jet.visible = false;
     jet.material.opacity = 0;
