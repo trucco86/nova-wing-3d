@@ -199,6 +199,11 @@ test('web subboss survives two bombs, changes phases, and native retains prior b
     hostname: 'dev.nova-wing-preview.pages.dev',
   });
   t.after(() => h.close());
+  // QA defaults to an overpowered level-10 loadout; the legacy balance
+  // assertion must select the equivalent level-1 pilot and ship first.
+  h.elements.get('developerTier').value = '0';
+  h.elements.get('developerArsenal').value = '0';
+  h.elements.get('developerSpecial').value = '0';
   assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
   h.advance(1.1);
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
