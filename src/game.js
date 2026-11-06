@@ -2101,6 +2101,7 @@ export function createGame({
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
     camera.position.y += Math.cos(collapseTime * 27) * vibration * 0.4;
     if (collapseTime >= COLLAPSE_SECONDS) {
+      updateWarpStreaks(warpStreaks, false, collapseTime, player.position);
       dispose(boss);
       disposeBoss(boss);
       boss = null;
