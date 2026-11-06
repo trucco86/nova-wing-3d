@@ -103,6 +103,7 @@ import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
+import { createMechaDash, mechaDashDirection, MECHA_DASH } from './mecha-dash.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
@@ -335,6 +336,7 @@ export function createGame({
   let developerSession = false;
   let developerScenario = null;
   let robotMode = false;
+  const mechaDash = createMechaDash();
   let robotFireKick = 0;
   let robotPrecisionKick = 0;
   let robotCooldown = 0;
@@ -358,12 +360,36 @@ export function createGame({
     if (!lockEnabled) resetMechaLock();
     else $('lockTouch').ariaPressed = 'true';
   }
+  function syncDodgeControl() {
+    const button = $('rollTouch');
+    button.textContent = uiText(settings.language, robotMode ? 'mechaDashButton' : 'rollButton');
+    button.setAttribute?.(
+      'aria-label',
+      uiText(settings.language, robotMode ? 'mechaDashAria' : 'rollAria'),
+    );
+    $('rollHint').textContent = uiText(settings.language, robotMode ? 'mechaDashHint' : 'rollHint');
+    for (const node of document.querySelectorAll?.('[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]') ?? []) {
+      node.dataset.helpKey = robotMode ? 'helpMechaDash' : 'helpRoll';
+      node.textContent = uiText(settings.language, node.dataset.helpKey);
+    }
+  }
   function toggleRobot() {
-    if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
+    if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15 || mechaDash.active) return;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = 0.7;
     robotMode = !robotMode;
+    // Ship barrel roll and robot lateral dash are mutually exclusive moves.
+    roll = rollAngle = 0;
+    marsPendingRoll = false;
+    rollHeld = false;
+    mechaDash.reset();
+    syncDodgeControl();
+    if (marsCleanse > 0) {
+      $('attackWarning').textContent = robotMode
+        ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
+        : 'AREIA NOS CANHÕES · GIROS: ' + marsCleanse;
+    }
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
     $('lockTouch').hidden = !robotMode;
@@ -1079,6 +1105,7 @@ export function createGame({
     route = routeAt(sectorIndex, 0, current().duration);
     resetMechPower(robot);
     resetMechaPose(robot);
+    mechaDash.reset();
     robotFireKick = 0;
     robotPrecisionKick = 0;
     robotMode = false;
@@ -1092,6 +1119,7 @@ export function createGame({
     $('lockTouch').hidden = true;
     $('robotTouch').ariaPressed = 'false';
     $('robotTouch').textContent = 'ROBÔ';
+    syncDodgeControl();
     robot.visible = false;
     for (const part of shipParts) part.visible = true;
     routeRenderer?.update(route);
@@ -1164,6 +1192,7 @@ export function createGame({
     roll = 0;
     rollHeld = false;
     rollAngle = 0;
+    mechaDash.reset();
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
@@ -1379,7 +1408,14 @@ export function createGame({
   }
   function hit(d) {
     if (dynamicFlight && barrier > 0) return;
-    if (state !== 'playing' || !Number.isFinite(d) || d <= 0 || invuln > 0 || roll > 0) return;
+    if (
+      state !== 'playing' ||
+      !Number.isFinite(d) ||
+      d <= 0 ||
+      invuln > 0 ||
+      roll > 0 ||
+      (robotMode && mechaDash.active)
+    ) return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
@@ -1431,14 +1467,31 @@ export function createGame({
     dispose(e.o);
     e.dead = true;
   }
-  function doRoll() {
-    if (state !== 'playing' || rollCd > 0) return;
+  function doRoll(key = '') {
+    if (state !== 'playing') return false;
+    if (robotMode) {
+      if (energy < MECHA_DASH.energy) return false;
+      const direction = mechaDashDirection({
+        stickX: stick.x,
+        left: keys.has('KeyA') || keys.has('ArrowLeft'),
+        right: keys.has('KeyD') || keys.has('ArrowRight'),
+        key,
+        previous: mechaDash.lastDirection,
+      });
+      if (!mechaDash.begin(direction, player.position.x, flightLimit())) return false;
+      energy -= MECHA_DASH.energy;
+      cue('boostIgnition');
+      if (settings.vibration) window.navigator?.vibrate?.(38);
+      return true;
+    }
+    if (rollCd > 0 || roll > 0) return false;
     roll = 0.65;
     rollAngle = 0;
     rollCd = marsCleanse > 0 ? 0.72 : 1.6;
-    // The objective counts a full 360-degree roll, not merely pressing Q.
+    // Only a completed ship barrel roll removes Mars dust; a robot dash does not.
     marsPendingRoll = marsCleanse > 0;
     sound(230, 0.25, 'sine');
+    return true;
   }
   function renderBombCount() {
     $('bombs').textContent = '◆ '.repeat(bombs) || '—';
@@ -1663,6 +1716,8 @@ export function createGame({
       transforming: robotTransition,
       recoil: robotFireKick,
       precisionRecoil: robotPrecisionKick,
+      dashing: mechaDash.active,
+      dashDirection: mechaDash.direction,
     });
     robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
     robotPrecisionKick = Math.max(0, robotPrecisionKick - dt * 3.5);
@@ -2633,6 +2688,7 @@ export function createGame({
     music?.setVolume(settings.master * settings.music);
     audioCues?.setVolume(settings.master * settings.sfx);
     localization.setLanguage(settings.language);
+    syncDodgeControl();
     renderFrameAudit();
   }
   function openSettings() {
@@ -2923,7 +2979,7 @@ export function createGame({
     if (e.code === 'KeyO') castSquadSpecial('overdrive');
     if (e.code === 'KeyV') togglePods();
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
-    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll();
+    if (e.code === 'KeyQ' || e.code === 'KeyE' || e.code === 'KeyZ') doRoll(e.code);
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
   });
@@ -3027,12 +3083,17 @@ export function createGame({
   const rollButton = $('rollTouch');
   let rollPointerId = null;
   let rollPressStarted = 0;
+  let rollPressStartedAsRobot = false;
   rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
     rollPressStarted = performance.now();
-    rollHeld = true;
+    rollPressStartedAsRobot = robotMode;
+    // Dash fires on touch-down (not touch-up); the stick selects left/right.
+    // Ship still supports holding to bank or tapping to execute a 360 roll.
+    if (robotMode) doRoll();
+    else rollHeld = true;
     rollButton.setPointerCapture?.(e.pointerId);
   };
   const finishRollPress = (e) => {
@@ -3040,7 +3101,7 @@ export function createGame({
     const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
     rollPointerId = null;
     rollHeld = false;
-    if (tap) doRoll();
+    if (tap && !rollPressStartedAsRobot && !robotMode) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
@@ -3203,6 +3264,10 @@ export function createGame({
       -flightLimit(),
       flightLimit(),
     );
+    // Preserve the swept collision segment: the dash moves within the normal
+    // piloting step, before walls and moving enemy projectiles are resolved.
+    if (robotMode)
+      player.position.x = mechaDash.advance(dt, player.position.x, flightLimit());
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
@@ -3256,7 +3321,9 @@ export function createGame({
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
-      const bankTarget = rollHeld ? -Math.PI / 2 : -dx * 0.48;
+      const bankTarget = robotMode
+        ? (mechaDash.active ? -mechaDash.direction * 0.2 : -dx * 0.36)
+        : rollHeld ? -Math.PI / 2 : -dx * 0.48;
       const currentBank = rollAngle > 0 ? 0 : player.rotation.z;
       player.rotation.z = T.MathUtils.lerp(currentBank, bankTarget, Math.min(1, dt * 12));
       rollAngle = 0;
@@ -4893,6 +4960,7 @@ export function createGame({
       fireMode,
       mecha: {
         active: robotMode,
+        dash: mechaDash.snapshot(),
         lockEnabled,
         lockProgress,
         thrustLength: robot.userData.mecha?.thrusters[0]?.plume.scale.y ?? 0,
