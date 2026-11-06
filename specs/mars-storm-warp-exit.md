@@ -10,6 +10,7 @@
 - Preservar controles, modo nativo, 10 chefes, progressão, áudio e performance WebGL.
 
 ## QA
+
 - Testar fases de Marte em 0, 14, 23, 27 e 31 segundos para visibilidade lunar.
 - Testar tempestade em 57, 61, 71, 83 e 85 segundos e contraposição à força do vento.
 - Validar três giros, cooldown, reinício, pausa, toque e teclado; regressão de tiro carregado.

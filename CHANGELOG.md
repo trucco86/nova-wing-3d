@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.63 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.62 — Layout compacto de Hangar e QA (release Web)
 
 - Hangar em abas Pilotos/Naves/Arsenal, com os cinco gatos e o preview 360° organizados em mobile/desktop.

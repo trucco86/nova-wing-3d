@@ -2051,9 +2051,8 @@ export function createGame({
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
-    boss.position.y = sectorIndex === 1
-      ? Math.max(66, boss.position.y - dt * 0.55)
-      : boss.position.y - dt * 0.55;
+    boss.position.y =
+      sectorIndex === 1 ? Math.max(66, boss.position.y - dt * 0.55) : boss.position.y - dt * 0.55;
     if (collapseTime < 4.7 && collapseBurst <= 0) {
       collapseBurst = Math.max(0.12, 0.5 - collapseTime * 0.07);
       explode(boss.position.clone().add(new T.Vector3(rnd(-36, 36), rnd(-12, 20), 23)), 18);
@@ -3253,8 +3252,9 @@ export function createGame({
     }
     if (sandstorm?.active && marsCleanse === 0 && !boss) {
       $('attackWarning').setAttribute?.('data-severity', sandstorm.hazard ? 'danger' : 'warning');
-      $('attackWarning').textContent =
-        sandstorm.hazard ? 'TURBULÊNCIA · COMPENSE O VENTO!' : 'TEMPESTADE DE AREIA · VENTO LATERAL';
+      $('attackWarning').textContent = sandstorm.hazard
+        ? 'TURBULÊNCIA · COMPENSE O VENTO!'
+        : 'TEMPESTADE DE AREIA · VENTO LATERAL';
     } else if (sectorIndex === 1 && marsCleanse === 0 && !boss && !sandstorm?.active) {
       $('attackWarning').textContent = '';
     }
@@ -3946,7 +3946,11 @@ export function createGame({
         // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
-        boss.position.set(launchPose.x, sectorIndex === 1 ? Math.max(66, launchPose.y) : launchPose.y, launchPose.z + meleePose.lunge);
+        boss.position.set(
+          launchPose.x,
+          sectorIndex === 1 ? Math.max(66, launchPose.y) : launchPose.y,
+          launchPose.z + meleePose.lunge,
+        );
         boss.rotation.z = t.bank;
         if (
           t.state === 'attack' &&

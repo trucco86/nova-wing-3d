@@ -26,4 +26,3 @@ test('Mars boss uses planetary iron-oxide tones, not blue generic armor', () => 
   mars.updateMatrixWorld(true);
   assert.ok(new T.Box3().setFromObject(mars).getSize(new T.Vector3()).y > 10);
 });
-
