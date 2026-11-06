@@ -4275,6 +4275,7 @@ export function createGame({
       spawnEncounters &&
       sectorIndex === 0 &&
       orbitalLaunch &&
+      !quietCityWreck &&
       !quietFirstSubboss &&
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
