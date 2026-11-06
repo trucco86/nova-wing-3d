@@ -192,11 +192,22 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
   }
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
-  const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 35; i++) {
-    h.game.collect('shield');
-    h.advance(1);
-  }
+  // Encounter balance belongs to its physical subboss, independent of the
+  // revised stage-one schedule that now enters combat only after orbit.
+  const h = harness({
+    spawnEncounters: true,
+    hostname: 'dev.nova-wing-preview.pages.dev',
+  });
+  t.after(() => h.close());
+  // QA defaults to an overpowered level-10 loadout; the legacy balance
+  // assertion must select the equivalent level-1 pilot and ship first.
+  h.elements.get('developerTier').value = '0';
+  h.elements.get('developerArsenal').value = '0';
+  h.elements.get('developerSpecial').value = '0';
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  // The actual subboss has a three-second armored entry that rejects all
+  // damage. The two-bomb durability check must begin after that real guard.
+  h.advance(3.25);
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
   assert.ok(before.life >= 360 && before.life < 620);
   h.game.bomb();
