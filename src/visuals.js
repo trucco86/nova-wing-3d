@@ -1521,9 +1521,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // The mid-mission storm still adds its own stronger ochre visibility loss.
     scene.fog.density =
       T.MathUtils.lerp(0.00017, 0.00095, state.skyMix) + state.sandHaze * 0.00145 + sand * 0.0034;
-    scene.fog.color.set('#251625').lerp(new T.Color('#a16b57'), state.skyMix);
-    scene.fog.color.lerp(new T.Color('#d4ad7e'), state.sandHaze * 0.84);
-    scene.fog.color.lerp(new T.Color('#c38a61'), sand * 0.8);
+    scene.fog.color.set('#251625').lerp(marsOrbitFog, state.skyMix);
+    scene.fog.color.lerp(marsSandHazeFog, state.sandHaze * 0.84);
+    scene.fog.color.lerp(marsStormFog, sand * 0.8);
     return state;
   }
   function setDestinationArrival(seconds) {
@@ -1531,7 +1531,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     const state = updateDestinationVista(destinationVista, destinationIndex, seconds);
     updateDestinationLandmarks(destinationLandmarks, seconds);
     const profile = DESTINATION_PROFILES[destinationIndex];
-    const target = new T.Color(profile.haze);
+    const target = destinationHazeFog.set(profile.haze);
     // The opening really starts in space. Each location's dust/cloud color
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
@@ -1563,6 +1563,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Repeated calls for the same mission time must never cumulatively darken fog.
   const exitBaseFog = new T.Color();
   const exitSpaceFog = new T.Color('#111a35');
+  // Reuse fog palette vectors across every simulated frame (including the
+  // orbit-to-ground boundary); new Color() per frame caused GC pressure.
+  const marsOrbitFog = new T.Color('#a16b57');
+  const marsSandHazeFog = new T.Color('#d4ad7e');
+  const marsStormFog = new T.Color('#c38a61');
+  const destinationHazeFog = new T.Color();
   let exitBaseDensity = 0.00045;
   let exitBaseStars = 0.75;
   function setDestinationExit(seconds) {
@@ -1587,6 +1593,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    // For renderer.compileAsync: this subtree contains future-visible orbital
+    // scenery, terrain and atmosphere without the expensive city base meshes.
+    transitionShaderRoot: () => sectorScenery,
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
