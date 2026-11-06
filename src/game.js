@@ -1429,9 +1429,15 @@ export function createGame({
     marsPendingRoll = marsCleanse > 0;
     sound(230, 0.25, 'sine');
   }
+  function renderBombCount() {
+    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
+    $('bombTouch').setAttribute?.('data-count', bombs);
+  }
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
+    // Immediate visual feedback, even if a slow WebGL frame is still rendering.
+    renderBombCount();
     if (stagePerformance) {
       stagePerformance.bombsUsed = true;
       if (boss) stagePerformance.primaryOnly = false;
@@ -4582,10 +4588,9 @@ export function createGame({
     $('petCareHud').textContent =
       'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / ');
     $('score').textContent = String(score).padStart(3, '0');
-    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
+    renderBombCount();
     $('energy').style.width = energy + '%';
     $('boostTouch').style.setProperty?.('--meter', energy + '%');
-    $('bombTouch').setAttribute?.('data-count', bombs);
     $('progress').style.width = Math.min(100, (elapsed / current().duration) * 100) + '%';
     $('bossHealth').style.width = Math.max(0, (bossHp / (bossCombat?.max ?? 1400)) * 100) + '%';
   }
