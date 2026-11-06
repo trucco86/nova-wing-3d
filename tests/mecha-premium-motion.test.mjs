@@ -16,6 +16,10 @@ test('actual cannon and lower armor follow animated elbow and knee joints', () =
   const { robot, articulated } = rig();
   const right = articulated.arms.right;
   const left = articulated.arms.left;
+  assert.equal(left.shoulder.parent, articulated.torso, 'left arm follows upper body');
+  assert.equal(right.shoulder.parent, articulated.torso, 'right arm follows upper body');
+  assert.equal(articulated.head.parent, articulated.torso, 'head belongs to upper-body rig');
+  assert.ok(articulated.wingPivots.every((wing) => wing.parent === articulated.torso));
   assert.equal(right.muzzle.parent, right.elbow, 'weapon barrel must be inside the elbow joint');
   assert.equal(left.muzzle.parent, left.elbow, 'precision barrel must have an articulated elbow');
   assert.ok(right.elbow.children.length >= 4, 'right wrist carries actual armor and muzzle');
@@ -51,6 +55,9 @@ test('premium turbine retains dual vectoring, rotor, glow and warm BOOST plasma'
     assert.ok(drive.innerPlume);
     assert.ok(drive.outerRim);
     assert.ok(drive.rotor.children.length >= 4);
+    assert.ok(drive.boostBeam);
+    assert.equal(drive.boostBeam.visible, false);
+    assert.equal(drive.nozzle.parent, articulated.torso);
   }
   for (let frame = 0; frame < 20; frame++) {
     const t = frame / 60;
@@ -65,6 +72,9 @@ test('premium turbine retains dual vectoring, rotor, glow and warm BOOST plasma'
   assert.ok(articulated.thrusters[0].innerPlume.scale.y > 1.1);
   assert.ok(articulated.thrusters[0].nozzle.rotation.y < -0.1);
   assert.ok(articulated.thrusters[0].rotor.rotation.z !== 0);
+  assert.ok(articulated.thrusters.every(({ boostBeam }) => boostBeam.visible));
+  assert.ok(articulated.thrusters.every(({ boostBeam }) => boostBeam.material.opacity > 0.6));
+  assert.ok(articulated.thrusters.every(({ boostBeam }) => boostBeam.scale.y > 1.2));
   assert.ok(articulated.hipJets.some((jet) => jet.visible));
   assert.ok(articulated.wingPivots.some((wing) => Math.abs(wing.rotation.z) > 0.03));
 });
@@ -92,6 +102,8 @@ test('pause freezes all bones and turbine rotor; reset removes residual recoil a
   approx(articulated.thrusters[0].rotor.rotation.z, 0);
   approx(legacy.turbineRotor.rotation.z, 0);
   assert.ok(articulated.hipJets.every((jet) => !jet.visible));
+  assert.ok(articulated.thrusters.every(({ boostBeam }) => !boostBeam.visible));
+  assert.ok(articulated.thrusters.every(({ boostBeam }) => boostBeam.material.opacity === 0));
   approx(
     articulated.arms.right.muzzle.position.z,
     articulated.arms.right.muzzle.userData.restBarrelZ,
@@ -123,4 +135,24 @@ test('premium animation is frame-rate stable and does not deform the robot colli
   const slow = simulate(30);
   approx(fast.torso, slow.torso, 0.012);
   approx(fast.knee, slow.knee, 0.03);
+});
+
+test('rear-camera afterburners stop cleanly after BOOST and freeze during pause', () => {
+  const { robot, articulated } = rig();
+  for (let i = 0; i < 20; i++)
+    updateMechaPose(robot, { dt: 1 / 60, time: i / 60, boosting: true, strafe: 0.8 });
+  const [left, right] = articulated.thrusters;
+  assert.equal(left.boostBeam.visible, true);
+  assert.equal(right.boostBeam.visible, true);
+  assert.ok(left.boostBeam.geometry.parameters.height >= 5, 'beam long enough for chase camera');
+  const opacity = left.boostBeam.material.opacity;
+  const pose = articulated.torso.rotation.z;
+  updateMechaPose(robot, { dt: 0, time: 99, boosting: false, strafe: -1 });
+  approx(left.boostBeam.material.opacity, opacity);
+  approx(articulated.torso.rotation.z, pose);
+  for (let i = 0; i < 40; i++)
+    updateMechaPose(robot, { dt: 1 / 60, time: (i + 20) / 60, boosting: false });
+  assert.equal(left.boostBeam.visible, false);
+  assert.equal(right.boostBeam.visible, false);
+  assert.ok(left.boostBeam.material.opacity < 0.015);
 });
