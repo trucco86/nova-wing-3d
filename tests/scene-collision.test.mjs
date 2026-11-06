@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createObstacle } from '../src/encounters.js';
 import {
+  compoundSolidsOverlap,
   intersectsSolid,
   resolveMovingObstacle,
   sweepSphereAabb,
@@ -111,4 +112,12 @@ test('solid registry preserves translated obstacle mesh bounds', () => {
     obstacle.userData.solids.map((s) => s.center.toArray()),
     cloned.userData.solids.map((s) => s.center.toArray()),
   );
+});
+
+test('compound obstacles cannot spawn inside occupied scenery space', () => {
+  const wall = cube(point(0, 0, 0), point(5, 5, 5));
+  const crate = cube(point(0, 0, 0), point(3, 3, 3));
+  assert.equal(compoundSolidsOverlap(wall, origin, crate, point(7, 0, 0)), true);
+  assert.equal(compoundSolidsOverlap(wall, origin, crate, point(9, 0, 0)), false);
+  assert.equal(compoundSolidsOverlap([], origin, crate, origin), false);
 });
