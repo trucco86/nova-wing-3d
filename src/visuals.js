@@ -733,9 +733,16 @@ export function createFlyingRobot() {
   torso.attach(head);
   for (const arm of arms) torso.attach(arm);
   for (const wing of wingPivots) torso.attach(wing);
-  for (const { nozzle } of independentThrusters) torso.attach(nozzle);
-  torso.attach(turbineHousing);
-  torso.attach(turbineGimbal);
+  // Preserve the original model-local mount coordinates for engine modules:
+  // existing HUD/design contracts explicitly inspect shoulder-height mounts.
+  // The nested rest-space compensator still moves together with the torso.
+  const engineMount = new T.Group();
+  engineMount.name = 'mech-upper-back-engine-mount';
+  engineMount.position.y = -torso.position.y;
+  torso.add(engineMount);
+  for (const { nozzle } of independentThrusters) engineMount.attach(nozzle);
+  engineMount.attach(turbineHousing);
+  engineMount.attach(turbineGimbal);
   for (const strip of progressionNeons.map(({ mesh }) => mesh)) torso.attach(strip);
   for (const part of robot.children.filter((mesh) => mesh.name.startsWith('mech-wing'))) {
     torso.attach(part);
