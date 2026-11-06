@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('stage 1 does not insert new combat during hanging train, mandatory Super Boost and atmospheric climb', async ({ page }, info) => {
+test('stage 1 does not insert new combat during hanging train, mandatory Super Boost and atmospheric climb', async ({
+  page,
+}, info) => {
   test.setTimeout(160000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -16,7 +18,9 @@ test('stage 1 does not insert new combat during hanging train, mandatory Super B
   expect(warning.cityDestruction.pacing.canSpawnSubboss).toBe(false);
   expect(warning.cityDestruction.pacing.canSpawnBase).toBe(false);
   expect(warning.cityDestruction.wrecks[0].collisionActive).toBe(true);
-  await page.screenshot({ path: info.outputPath('stage1-maglev-exclusive-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('stage1-maglev-exclusive-' + info.project.name + '.png'),
+  });
 
   const boost = await page.evaluate(() => {
     window.fixture.advance(4.05);
@@ -25,7 +29,9 @@ test('stage 1 does not insert new combat during hanging train, mandatory Super B
   expect(boost.orbitalLaunch.phase).toBe('boost');
   expect(boost.cityDestruction.pacing.exclusiveTransit).toBe(true);
   expect(boost.cityDestruction.pacing.canSpawnGround).toBe(false);
-  await page.screenshot({ path: info.outputPath('stage1-boost-gate-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('stage1-boost-gate-' + info.project.name + '.png'),
+  });
 
   await page.keyboard.down('ShiftLeft');
   const climb = await page.evaluate(() => {
@@ -44,7 +50,9 @@ test('stage 1 does not insert new combat during hanging train, mandatory Super B
   expect(orbit.orbitalLaunch.phase).toBe('orbit');
   expect(orbit.cityDestruction.pacing.exclusiveTransit).toBe(true);
   expect(orbit.cityDestruction.pacing.canSpawnBase).toBe(false);
-  await page.screenshot({ path: info.outputPath('stage1-earth-orbit-recovery-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('stage1-earth-orbit-recovery-' + info.project.name + '.png'),
+  });
 
   const reenter = await page.evaluate(() => {
     window.fixture.advance(5.1);

@@ -17,13 +17,20 @@ test('the train, mandatory Super Boost and atmospheric climb form an exclusive p
   assert.equal(train.exclusiveTransit, true);
   for (const phase of ['boost', 'atmosphere']) {
     const state = stageOneEncounterWindows(38, phase, null);
-    assert.equal(state.exclusiveTransit, true, phase + ' must not spawn a surprise enemy or obstacle');
+    assert.equal(
+      state.exclusiveTransit,
+      true,
+      phase + ' must not spawn a surprise enemy or obstacle',
+    );
     assert.equal(state.canSpawnSubboss, false);
     assert.equal(state.canSpawnBase, false);
     assert.equal(state.canSpawnGround, false);
   }
-  assert.equal(stageOneEncounterWindows(18, 'city', null, false).exclusiveTransit, false,
-    'legacy/non-scripted stages retain existing spawning rules');
+  assert.equal(
+    stageOneEncounterWindows(18, 'city', null, false).exclusiveTransit,
+    false,
+    'legacy/non-scripted stages retain existing spawning rules',
+  );
   assert.equal(stageOneEncounterWindows(18, 'city', null, false).canSpawnSubboss, true);
   assert.throws(() => stageOneEncounterWindows(-0.1), RangeError);
   assert.throws(() => stageOneEncounterWindows(NaN), RangeError);
@@ -45,10 +52,16 @@ test('post-orbit rhythm stages recovery, fighter re-entry, subboss and base indi
   assert.equal(at(22.99).canSpawnBase, false);
   assert.equal(at(23).canSpawnBase, true);
   assert.equal(at(23).canSpawnGround, false, 'city tanks and walkers never float in orbit');
-  assert.equal(stageOneEncounterWindows(100, 'boost', 61.4).exclusiveTransit, true,
-    'a fake orbit timestamp cannot skip the real boost phase');
-  assert.equal(stageOneEncounterWindows(10, 'orbit', 100).orbitAge, null,
-    'invalid future orbit timestamp never unlocks combat');
+  assert.equal(
+    stageOneEncounterWindows(100, 'boost', 61.4).exclusiveTransit,
+    true,
+    'a fake orbit timestamp cannot skip the real boost phase',
+  );
+  assert.equal(
+    stageOneEncounterWindows(10, 'orbit', 100).orbitAge,
+    null,
+    'invalid future orbit timestamp never unlocks combat',
+  );
 });
 
 test('real stage-1 gameplay waits for actual BOOST exhaustion then grants orbit encounter windows', (t) => {

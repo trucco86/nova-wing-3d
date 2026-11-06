@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.93 — Fase 1: ritmo do trem, boost e órbita (QA)
+
+- Encerrada a sobreposição de base e subchefe com trem e travessia atmosférica.
+- Entrada de combate somente após recuperação orbital e com subchefe/base em momentos distintos.
+- Super Boost continua obrigatório; fases 2+ preservadas. Homologação manual pendente.
+
 ## 1.27.92 — Fase 1: áudio de destruição e HUD limpo (QA)
 
 - Sons próprios da placa, veículo, fachada e trem; explosões não duplicam efeitos genéricos.

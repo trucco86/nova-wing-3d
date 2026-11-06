@@ -9,7 +9,12 @@ export const STAGE_ONE_PACING = Object.freeze({
   baseAfterOrbitSeconds: 23,
 });
 
-export function stageOneEncounterWindows(seconds, launchPhase = 'city', orbitReachedAt = null, scripted = true) {
+export function stageOneEncounterWindows(
+  seconds,
+  launchPhase = 'city',
+  orbitReachedAt = null,
+  scripted = true,
+) {
   if (!Number.isFinite(seconds) || seconds < 0)
     throw new RangeError('Invalid stage-one elapsed seconds');
   if (!['city', 'boost', 'atmosphere', 'orbit'].includes(launchPhase))
@@ -22,20 +27,24 @@ export function stageOneEncounterWindows(seconds, launchPhase = 'city', orbitRea
     orbitReachedAt >= 0 &&
     orbitReachedAt <= seconds;
   const orbitAge = ready ? Math.max(0, seconds - orbitReachedAt) : null;
-  const cooldown = active && seconds >= STAGE_ONE_PACING.trainWarningAt &&
+  const cooldown =
+    active &&
+    seconds >= STAGE_ONE_PACING.trainWarningAt &&
     (orbitAge === null || orbitAge < STAGE_ONE_PACING.orbitRecoverySeconds);
-  const subbossIntro = active && orbitAge !== null &&
+  const subbossIntro =
+    active &&
+    orbitAge !== null &&
     orbitAge >= STAGE_ONE_PACING.subbossAfterOrbitSeconds &&
     orbitAge <
-      STAGE_ONE_PACING.subbossAfterOrbitSeconds +
-      STAGE_ONE_PACING.subbossIntroductionSeconds;
+      STAGE_ONE_PACING.subbossAfterOrbitSeconds + STAGE_ONE_PACING.subbossIntroductionSeconds;
   return {
     orbitAge,
     // The hanging maglev is the ONLY authored obstacle during the ground
     // climax. Keep any later atmospheric climb free of random collisions.
     exclusiveTransit: cooldown,
     subbossIntroQuiet: subbossIntro,
-    canSpawnGround: !active || (seconds < STAGE_ONE_PACING.trainWarningAt && launchPhase === 'city'),
+    canSpawnGround:
+      !active || (seconds < STAGE_ONE_PACING.trainWarningAt && launchPhase === 'city'),
     canSpawnSubboss:
       !active || (orbitAge !== null && orbitAge >= STAGE_ONE_PACING.subbossAfterOrbitSeconds),
     canSpawnBase:
