@@ -1,5 +1,6 @@
 name: One-time mecha premium candidate QA
 on:
+  pull_request:
   push:
     branches: [feat/mars-storm-moons-warp-exit]
     paths:
