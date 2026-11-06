@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.65 — Candidata em preparação
+
+- Mecha V4.1: afterburners legíveis na câmera, upper-body rig conectado, mira em coordenadas do torso, idle estável e redução de trabalho no hot path; homologação visual pendente.
+
 ## 1.27.64 — Candidata em preparação
 
 - Mecha Premium V4: cotovelos/joelhos animados, balanço corporal, tiros com recuo, asas responsivas e propulsores vetoriais ciano/âmbar. QA visual/mobile pendente.

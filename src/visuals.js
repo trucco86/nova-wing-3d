@@ -929,8 +929,7 @@ export function animateMechPower(
     rig.boostPalette = boosting;
     rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#4dd8ff');
     rig.turbineInnerFlame?.material.color.set(boosting ? '#fff2b8' : '#b7faff');
-    for (const plume of rig.sidePlumes)
-      plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+    for (const plume of rig.sidePlumes) plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
   }
   if (rig.turbineInnerFlame) {
     rig.turbineInnerFlame.scale.y = rig.turbineFlame.scale.y * 1.15;

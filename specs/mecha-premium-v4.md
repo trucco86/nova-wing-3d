@@ -20,6 +20,7 @@ Priorizar a direção visual premium aprovada para o Nova Wing: armadura metáli
 - Homologação visual: mecha de frente, perfil e costas em viewport desktop e mobile; BOOST, strafe, subida/descida, tiros normais e precisão, troca nave↔robô e menu hangar. Teste físico com medidor Pausa → FPS. Nenhuma alegação de paridade visual exata com concept sem revisão manual.
 
 ## Revisão V4.1 — legibilidade em câmera real
+
 - Revisão das capturas mobile `mecha-idle.png`, `mecha-boost.png` e `mecha-shooting.png` da CI v1.27.64 identificou exaustão insuficientemente perceptível no ângulo padrão de perseguição. Os testes WebGL passavam, porém não substituíam inspeção de imagem.
 - Turbinas dorsais recebem afterburners de cone cônico transparente com geometria estática, estendidos apenas durante BOOST e com fade na desaceleração. A cor/energia deve ficar clara sem usar luzes dinâmicas nem emitir objetos a cada frame.
 - Tronco, cabeça, braços, asas e suportes dos propulsores passam a compartilhar o mesmo pivô mecânico, preservando a posição do equipamento em repouso via reparenting em coordenadas globais. Posição da mira de precisão deve ser computada no espaço local do torso, não do robô inteiro.
