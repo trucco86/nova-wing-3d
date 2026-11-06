@@ -94,6 +94,7 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
+import { stageOneEncounterWindows } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
@@ -416,6 +417,7 @@ export function createGame({
     : null;
   let skipSquadIntro = false;
   let cityDestructionTriggered = new Set();
+  let cityOrbitReadyAt = null;
   let developerSession = false;
   let developerScenario = null;
   let robotMode = false;
@@ -1305,6 +1307,7 @@ export function createGame({
     lastStage = -1;
     elapsed = 0;
     cityDestructionTriggered = new Set();
+    cityOrbitReadyAt = null;
     world.setCityDestruction?.(0);
     spawnCd = 2;
     fighterSerial = 0;
@@ -3630,6 +3633,7 @@ export function createGame({
       if (needsBoost && boosting) document.body.classList.add('orbital-super-boost');
       else document.body.classList.remove('orbital-super-boost');
       if (launchState.phase !== beforeLaunch) {
+        if (launchState.phase === 'orbit') cityOrbitReadyAt = elapsed;
         if (launchState.phase === 'boost')
           message('FUGA ORBITAL · SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA', 'jenifer');
         else if (launchState.phase === 'atmosphere')
@@ -4176,12 +4180,18 @@ export function createGame({
     // synchronized pop immediately after an arrival gate becomes false.
     if (shouldKeepArrivalCooldown(sectorIndex, elapsed, arrivalTransit))
       spawnCd = Math.max(spawnCd, 1.35);
+    // Keep the authored train and Super Boost readable; allow a short recovery
+    // after reaching real orbit, then stage combat in separate beats.
+    const cityPacing = stageOneEncounterWindows(
+      elapsed,
+      sectorIndex === 0 ? orbitalLaunchSequence.snapshot().phase : 'city',
+      cityOrbitReadyAt,
+      dynamicFlight && sectorIndex === 0 && enableCitySetpieces,
+    );
     const quietFirstSubboss =
-      dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration);
-    // Give the falling train a clean lane: enemies must not obscure the
-    // warning or spawn on the same frame as its collision window.
-    const quietCityWreck =
-      dynamicFlight && sectorIndex === 0 && enableCitySetpieces && elapsed >= 13 && elapsed < 22;
+      (dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
+      cityPacing.subbossIntroQuiet;
+    const quietCityWreck = cityPacing.exclusiveTransit;
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
     if (
       spawnEncounters &&
@@ -4215,6 +4225,7 @@ export function createGame({
       !arrivalTransit &&
       !europaTunnelCrossing &&
       !quietCityWreck &&
+      cityPacing.canSpawnSubboss &&
       !subDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4231,6 +4242,7 @@ export function createGame({
       spawnEncounters &&
       !arrivalTransit &&
       !europaTunnelCrossing &&
+      cityPacing.canSpawnSubboss &&
       !rivalDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4245,6 +4257,10 @@ export function createGame({
       spawnEncounters &&
       !baseDone &&
       !quietCityWreck &&
+      cityPacing.canSpawnBase &&
+      // Post-orbit base encounter must not overlap the first subboss.
+      (!(dynamicFlight && sectorIndex === 0 && enableCitySetpieces) ||
+        (subDone && !enemies.some((enemy) => !enemy.dead && enemy.kind === 'subboss'))) &&
       sectorIndex < 2 &&
       elapsed > 18 &&
       !(dynamicFlight && firstSubbossObstacleQuiet(sectorIndex, elapsed, current().duration))
@@ -4274,6 +4290,7 @@ export function createGame({
       elapsed < current().duration &&
       !arrivalTransit &&
       !europaTunnelCrossing &&
+      cityPacing.canSpawnGround &&
       groundCd <= 0 &&
       !quietFirstSubboss &&
       !quietCityWreck &&
@@ -5404,6 +5421,7 @@ export function createGame({
     if (
       spawnEncounters &&
       !launchTransit &&
+      !quietCityWreck &&
       !arrivalTransit &&
       (sectorIndex !== 7 || saturnHazard !== null) &&
       !(dynamicFlight && sectorIndex === 1) &&
@@ -6115,6 +6133,12 @@ export function createGame({
         dynamicFlight && sectorIndex === 0 && enableCitySetpieces
           ? {
               ...cityDestructionAt(elapsed),
+              pacing: stageOneEncounterWindows(
+                elapsed,
+                orbitalLaunchSequence.snapshot().phase,
+                cityOrbitReadyAt,
+                true,
+              ),
               triggered: [...cityDestructionTriggered],
               ground: world.cityDestructionGroundState?.() ?? null,
               impacts: world.cityDestructionImpactState?.() ?? null,
