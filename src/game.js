@@ -101,7 +101,7 @@ import {
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
-import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { mechaShotDamage, mechaShotCooldown, mechaShotScale } from './mecha-heavy-fire.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
@@ -336,6 +336,7 @@ export function createGame({
   let developerScenario = null;
   let robotMode = false;
   let robotFireKick = 0;
+  let robotPrecisionKick = 0;
   let robotCooldown = 0;
   let robotTransition = 0;
   let mechaEngine = null;
@@ -1076,7 +1077,9 @@ export function createGame({
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
     resetMechPower(robot);
+    resetMechaPose(robot);
     robotFireKick = 0;
+    robotPrecisionKick = 0;
     robotMode = false;
     shipModule.visible = true;
     if (evolution) evolution.visible = true;
@@ -1658,8 +1661,10 @@ export function createGame({
       targetWorld: position,
       transforming: robotTransition,
       recoil: robotFireKick,
+      precisionRecoil: robotPrecisionKick,
     });
     robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
+    robotPrecisionKick = Math.max(0, robotPrecisionKick - dt * 3.5);
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
     if (lockEnabled)
@@ -1702,6 +1707,7 @@ export function createGame({
       energy -= 10;
       precisionCd = 2;
       lockProgress = 0;
+      robotPrecisionKick = 0.48;
       heroEffects.pulse({ robot: true, precisionShot: true, color: '#b6f9ff' });
       cue('mechaPrecision');
     }
