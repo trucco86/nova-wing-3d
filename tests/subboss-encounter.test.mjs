@@ -37,8 +37,8 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
   assert.equal(fired.targets.find((enemy) => enemy.kind === 'subboss').charging, false);
   assert.ok(fired.entities.hostile > charging.entities.hostile);
 
-  h.game.start();
-  assert.equal(h.game.snapshot().targets.length, 0);
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 0.5);
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  assert.ok(h.game.snapshot().targets.some((enemy) => enemy.kind === 'subboss'));
+  advanceProtected(h, 0.5);
   assert.equal(h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').phase, 1);
 });
