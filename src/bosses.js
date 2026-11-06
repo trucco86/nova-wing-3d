@@ -608,7 +608,7 @@ export function disposeBoss(g) {
   geos.forEach((x) => {
     // This unit cube is shared across stages and must not be invalidated by
     // disposing one boss; all unique authoring geometries are still released.
-    if (x !== bossUnitBox) x.dispose();
+    if (x !== bossUnitBox && !x.userData.bossShared) x.dispose();
   });
   g.userData.materials?.forEach((x) => x.dispose());
 }
