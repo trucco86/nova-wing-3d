@@ -86,3 +86,18 @@ test('boss procedural armor shares buffer geometry without changing visible size
   assert.equal(saturn.children[0].parent, saturn);
   disposeBoss(saturn);
 });
+
+test('weak-point markers share GPU buffer data without sharing activation state', () => {
+  const boss = createBossModel(SECTORS[1], 1, true);
+  const [left, right] = boss.userData.parts.map((part) => part.marker);
+  assert.equal(left.children.length, right.children.length);
+  assert.equal(left.children[0].geometry, right.children[0].geometry, 'outer ring is shared');
+  assert.equal(left.children[1].geometry, right.children[1].geometry, 'ticks are shared');
+  assert.equal(left.children[5].geometry, right.children[5].geometry, 'inner ring is shared');
+  assert.equal(left.children[6].geometry, right.children[6].geometry, 'chevrons are shared');
+  assert.equal(left.visible, false);
+  assert.equal(right.visible, false);
+  left.visible = true;
+  assert.equal(right.visible, false, 'left/right hitbox visibility remains independent');
+  disposeBoss(boss);
+});
