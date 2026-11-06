@@ -107,3 +107,17 @@ export function intersectsSolid(position, solids, origin, radius = 0) {
     AXES.every((k) => Math.abs(position[k] - origin[k] - center[k]) <= half[k] + radius),
   );
 }
+
+/** Reject scripted obstacle placement when two compound solid volumes overlap. */
+export function compoundSolidsOverlap(a, aOrigin, b, bOrigin) {
+  if (!a?.length || !b?.length) return false;
+  return a.some((first) =>
+    b.some((second) =>
+      AXES.every(
+        (k) =>
+          Math.abs(first.center[k] + aOrigin[k] - second.center[k] - bOrigin[k]) <
+          first.half[k] + second.half[k] - SKIN,
+      ),
+    ),
+  );
+}
