@@ -205,7 +205,9 @@ test('web subboss survives two bombs, changes phases, and native retains prior b
   h.elements.get('developerArsenal').value = '0';
   h.elements.get('developerSpecial').value = '0';
   assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
-  h.advance(1.1);
+  // The actual subboss has a three-second armored entry that rejects all
+  // damage. The two-bomb durability check must begin after that real guard.
+  h.advance(3.25);
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
   assert.ok(before.life >= 360 && before.life < 620);
   h.game.bomb();
