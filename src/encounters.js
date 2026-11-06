@@ -258,10 +258,20 @@ export function createObstacle(kind = 'gantry') {
   if (!templates.has(kind)) {
     const g = new T.Group(),
       solids = [];
-    const solid = (w, h, d, x, y, z, material = armor) => {
-      g.add(box(w, h, d, material, x, y, z));
-      solids.push({ center: new T.Vector3(x, y, z), half: new T.Vector3(w / 2, h / 2, d / 2) });
+    // All structural meshes register their transformed bounds at construction.
+    // Decorative emissive strips remain non-solid by explicit role.
+    const structural = (mesh) => {
+      g.add(mesh);
+      mesh.userData.collisionRole = 'solid';
+      const bounds = new T.Box3().setFromObject(mesh);
+      solids.push({
+        center: bounds.getCenter(new T.Vector3()),
+        half: bounds.getSize(new T.Vector3()).multiplyScalar(0.5),
+      });
+      return mesh;
     };
+    const solid = (w, h, d, x, y, z, material = armor) =>
+      structural(box(w, h, d, material, x, y, z));
     if (kind === 'tunnel') {
       solid(4, 44, 520, -34, 15, -260, dark);
       solid(4, 44, 520, 34, 15, -260, dark);
@@ -269,10 +279,10 @@ export function createObstacle(kind = 'gantry') {
       solid(72, 3, 520, 0, 38.5, -260, dark);
       for (let z = 0; z >= -520; z -= 40) {
         for (const s of [-1, 1]) {
-          g.add(box(2, 40, 2, armor, s * 31, 15, z));
+          structural(box(2, 40, 2, armor, s * 31, 15, z));
           g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
         }
-        g.add(box(64, 2, 3, armor, 0, 36, z));
+        structural(box(64, 2, 3, armor, 0, 36, z));
         g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
       }
       for (let i = 0; i < 3; i++) {
@@ -306,7 +316,7 @@ export function createObstacle(kind = 'gantry') {
       g.add(bridge);
       const hangar = box(17, 6, 0.8, joint, 0, 13, 21.6);
       hangar.name = 'carrier-hangar-gate';
-      g.add(hangar);
+      structural(hangar);
       for (const side of [-1, 1]) {
         solid(6, 5, 8, side * 13, 14, 18, dark);
         const thruster = new T.Mesh(new T.TorusGeometry(2.45, 0.55, 6, 14), cyan);
@@ -318,7 +328,7 @@ export function createObstacle(kind = 'gantry') {
         solid(4, 2, 6, side * 12, 22, -16, armor);
         const cannon = box(1.3, 1.3, 8, joint, side * 12, 22.6, -21);
         cannon.name = 'carrier-defense-cannon';
-        g.add(cannon);
+        structural(cannon);
       }
       for (let i = 0; i < 5; i++) {
         g.add(box(3, 0.7, 1.3, dark, 0, 20.8, -12 + i * 6));
@@ -329,7 +339,7 @@ export function createObstacle(kind = 'gantry') {
       solid(2, 9, 2, 0, 22, 0, joint);
       const antenna = ball(3.6, cyan);
       antenna.position.y = 28;
-      g.add(antenna);
+      structural(antenna);
       for (const side of [-1, 1]) {
         solid(19, 1.5, 14, side * 15, 15, 0, dark);
         for (const z of [-5, 0, 5]) g.add(box(18, 0.2, 0.35, cyan, side * 15, 16, z));
@@ -337,7 +347,7 @@ export function createObstacle(kind = 'gantry') {
           g.add(box(0.32, 0.18, 12, joint, side * 15 + i * 2.2, 16, 0));
         const panel = box(3, 0.35, 10, armor, side * 23, 16.4, 0);
         panel.name = 'satellite-array-rib';
-        g.add(panel);
+        structural(panel);
       }
       const uplink = new T.Mesh(new T.TorusGeometry(2.6, 0.35, 6, 12), cyan);
       uplink.name = 'satellite-telemetry-ring';
@@ -349,13 +359,8 @@ export function createObstacle(kind = 'gantry') {
       for (const side of [-1, 1]) {
         const shard = box(8, 2, 12, armor, side * 8, 21, -3);
         shard.rotation.z = side * 0.35;
-        g.add(shard);
-        // Physical debris fins: include the rotated shard's conservative AABB,
-        // so the ship and projectiles cannot pass through visible wreckage.
-        solids.push({
-          center: new T.Vector3(side * 8, 21, -3),
-          half: new T.Vector3(5, 3, 6),
-        });
+        // Rotated fins register a conservative AABB after rotation.
+        structural(shard);
       }
       g.add(box(6, 2, 4, red, 0, 18, 9));
       // Debris must read as a destroyed ship, not an anonymous floating box.
@@ -363,7 +368,7 @@ export function createObstacle(kind = 'gantry') {
         const brokenFin = box(4, 1, 11, armor, side * 5, 22, -2);
         brokenFin.rotation.y = side * 0.2;
         brokenFin.name = 'debris-broken-ship-fin';
-        g.add(brokenFin);
+        structural(brokenFin);
         g.add(box(1.2, 0.6, 5, red, side * 5, 23, 0));
       }
       const hullMarking = box(10, 0.6, 3, joint, 0, 24.1, -4);
@@ -372,7 +377,7 @@ export function createObstacle(kind = 'gantry') {
     } else if (kind === 'gantry') {
       for (const s of [-1, 1]) {
         solid(7, 38, 10, s * 28, 12, 0);
-        g.add(beam([s * 28, -7, 4], [s * 15, 28, 4], 0.6, hazard));
+        structural(beam([s * 28, -7, 4], [s * 15, 28, 4], 0.6, hazard));
         g.add(box(1, 28, 1, cyan, s * 24, 12, 5.1));
       }
       solid(63, 5, 10, 0, 29, 0);
@@ -388,6 +393,9 @@ export function createObstacle(kind = 'gantry') {
       }
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
+    g.traverse((mesh) => {
+      if (mesh.isMesh && !mesh.userData.collisionRole) mesh.userData.collisionRole = 'decoration';
+    });
     g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
     templates.set(kind, g);
   }
