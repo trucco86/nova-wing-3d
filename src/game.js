@@ -1094,7 +1094,6 @@ export function createGame({
     clearWorld();
     world.reset();
     world.setSector(current(), sectorIndex);
-    prepareUpcomingBoss();
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
@@ -1165,6 +1164,7 @@ export function createGame({
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
+    prepareUpcomingBoss();
     state = 'playing';
     $('shop').hidden = true;
     $('campaignMap').hidden = true;
