@@ -1,6 +1,7 @@
 name: One-time Mars candidate release preparation
 # Run after PR creation to synchronize the candidate.
 on:
+  pull_request:
   push:
     branches: [feat/mars-storm-moons-warp-exit]
     paths:
@@ -9,7 +10,7 @@ permissions:
   contents: write
 jobs:
   prepare:
-    if: github.repository == 'trucco86/nova-wing-3d'
+    if: github.repository == 'trucco86/nova-wing-3d' && github.head_ref == 'feat/mars-storm-moons-warp-exit'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
