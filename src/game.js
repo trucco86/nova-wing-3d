@@ -470,6 +470,9 @@ export function createGame({
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
     marsStormPhase = 'clear',
+    marsCleanse = 0,
+    marsStormDamageCooldown = 0,
+    warpDeparture = false,
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -1080,6 +1083,9 @@ export function createGame({
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
+    marsCleanse = 0;
+    marsStormDamageCooldown = 0;
+    warpDeparture = false;
     asteroidInterior?.reset(sectorIndex === 2);
     asteroidWallCooldown = 0;
     squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
@@ -1406,7 +1412,16 @@ export function createGame({
     if (state !== 'playing' || rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
-    rollCd = 1.6;
+    rollCd = marsCleanse > 0 ? 0.72 : 1.6;
+    if (marsCleanse > 0) {
+      marsCleanse--;
+      if (marsCleanse === 0) {
+        message('ARMAS LIMPAS · CANHÕES OPERACIONAIS', 'christopher');
+        $('attackWarning').textContent = '';
+      } else {
+        $('attackWarning').textContent = 'AREIA NOS CANHÕES · GIROS RESTANTES: ' + marsCleanse;
+      }
+    }
     sound(230, 0.25, 'sine');
   }
   function bomb() {
@@ -1991,6 +2006,7 @@ export function createGame({
       }
       collapseTime = collapseBurst = 0;
       collapseFinal = false;
+      warpDeparture = false;
       collapse = createCollapse(boss.position, { final: sectorIndex === SECTORS.length - 1 });
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
@@ -2017,6 +2033,17 @@ export function createGame({
       }
     }
     collapseTime += dt;
+    if (dynamicFlight && collapseTime >= 4.9 && (boostRequested() || collapseTime >= 6.4)) {
+      if (!warpDeparture) {
+        warpDeparture = true;
+        cue('boostIgnition');
+        $('attackWarning').setAttribute?.('data-severity', 'info');
+        $('attackWarning').textContent = 'SALTO DE LUZ · SAINDO DO SETOR';
+      }
+      boosting = true;
+      player.position.z -= dt * 380;
+      player.position.y += dt * 7;
+    }
     if (dynamicFlight) {
       const exit = world.setDestinationExit(collapseTime);
       if (exit?.active) $('routeLabel').textContent = exit.label;
@@ -2024,7 +2051,9 @@ export function createGame({
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
-    boss.position.y -= dt * 0.55;
+    boss.position.y = sectorIndex === 1
+      ? Math.max(66, boss.position.y - dt * 0.55)
+      : boss.position.y - dt * 0.55;
     if (collapseTime < 4.7 && collapseBurst <= 0) {
       collapseBurst = Math.max(0.12, 0.5 - collapseTime * 0.07);
       explode(boss.position.clone().add(new T.Vector3(rnd(-36, 36), rnd(-12, 20), 23)), 18);
@@ -3040,12 +3069,12 @@ export function createGame({
     const speed =
       (superBoost ? 114 : boosting ? 90 : 48) * (1 + Math.min(30, stage()) * 0.02) * profileSpeed;
     const holding = keys.has('Space') || touchFire;
-    if (holding) {
+    if (holding && marsCleanse === 0) {
       charge = Math.min(1.5, charge + dt);
       if (dynamicFlight && charge > 0.15 && charge - dt <= 0.15) cue('plasmaCharge');
       chargeLatch = true;
     } else if (chargeLatch) {
-      if (charge >= 0.8) {
+      if (charge >= 0.8 && marsCleanse === 0) {
         // The charged cannon must originate at the same articulated right wrist
         // as the mecha's primary fire, never from the hidden ship's center.
         if (robotMode) robot.updateMatrixWorld(true);
@@ -3087,6 +3116,13 @@ export function createGame({
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
     const gustX = storm?.windX ?? 0;
+    marsStormDamageCooldown = Math.max(0, marsStormDamageCooldown - dt);
+    if (storm?.hazard && marsStormDamageCooldown <= 0 && Math.sign(dx) !== -Math.sign(gustX)) {
+      marsStormDamageCooldown = 3.2;
+      hit(6);
+      shake = Math.max(shake, 0.28);
+      if (settings.vibration) window.navigator?.vibrate?.(70);
+    }
     player.position.x = clamp(
       player.position.x +
         (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed + gustX) *
@@ -3177,7 +3213,7 @@ export function createGame({
       camera.position.x += Math.sin(visualTime * 70) * shake * 0.3;
       camera.position.y += Math.cos(visualTime * 65) * shake * 0.2;
     }
-    if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
+    if ((keys.has('Space') || touchFire) && shotCd <= 0 && marsCleanse === 0) fire();
     return { speed, previousPlayer, holding };
   }
   function update(dt) {
@@ -3206,8 +3242,21 @@ export function createGame({
         message('ALERTA MARTE · TEMPESTADE DE AREIA À FRENTE', 'bob');
       else if (sandstorm.phase === 'active')
         message('TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL', 'christopher');
-      else if (previousStorm === 'active')
-        message('TEMPESTADE SUPERADA · VISIBILIDADE RESTABELECIDA', 'bia');
+      else if (previousStorm === 'active') {
+        marsCleanse = 3;
+        charge = 0;
+        chargeLatch = false;
+        $('attackWarning').setAttribute?.('data-severity', 'warning');
+        $('attackWarning').textContent = 'AREIA NOS CANHÕES · 3 GIROS PARA LIMPAR';
+        message('AREIA NAS ARMAS · EXECUTE 3 GIROS RÁPIDOS (Q)', 'christopher');
+      }
+    }
+    if (sandstorm?.active && marsCleanse === 0 && !boss) {
+      $('attackWarning').setAttribute?.('data-severity', sandstorm.hazard ? 'danger' : 'warning');
+      $('attackWarning').textContent =
+        sandstorm.hazard ? 'TURBULÊNCIA · COMPENSE O VENTO!' : 'TEMPESTADE DE AREIA · VENTO LATERAL';
+    } else if (sectorIndex === 1 && marsCleanse === 0 && !boss && !sandstorm?.active) {
+      $('attackWarning').textContent = '';
     }
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
@@ -3897,7 +3946,7 @@ export function createGame({
         // Cinematic 3 s launch: boss exits the ship's central bay in the
         // background before following its existing tactic trajectory.
         const launchPose = bossDepartureAt(bossCombat.age, t, approach);
-        boss.position.set(launchPose.x, launchPose.y, launchPose.z + meleePose.lunge);
+        boss.position.set(launchPose.x, sectorIndex === 1 ? Math.max(66, launchPose.y) : launchPose.y, launchPose.z + meleePose.lunge);
         boss.rotation.z = t.bank;
         if (
           t.state === 'attack' &&
@@ -4784,6 +4833,8 @@ export function createGame({
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
+      marsCleanse,
+      warpDeparture,
       podsDetached,
       podMode,
       podBlocks,
