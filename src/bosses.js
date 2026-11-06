@@ -6,8 +6,8 @@ import { createBossVisualIdentity } from './boss-visual-identity.js';
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const g = new T.Group(),
-    armor = metal('#344658', 0.8, 0.3),
-    dark = metal('#111b2c'),
+    armor = metal(index === 1 ? '#9c573c' : '#344658', 0.73, 0.48),
+    dark = metal(index === 1 ? '#523326' : '#111b2c'),
     edge = glowMaterial(sector.accent, 2),
     hot = glowMaterial('#ff574b', 3);
   const rotors = [];
@@ -191,7 +191,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   const organicStart = g.children.length;
   // Living tissue grafted onto the existing ten mechanical silhouettes.
   const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
-    bone = metal('#cfb59b', 0.18, 0.62),
+    bone = metal(index === 1 ? '#d6a078' : '#cfb59b', 0.18, 0.62),
     vein = glowMaterial('#d95b91', 1.1);
   const organic = [];
   const tissue = add(sphere(13, flesh, 2), 0, 3, 10);
@@ -276,7 +276,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   flesh.color.set(
     [
       '#652e58',
-      '#245a63',
+      '#9d553d',
       '#6e392b',
       '#37495e',
       '#a02d1d',
