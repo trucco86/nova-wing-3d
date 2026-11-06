@@ -124,7 +124,7 @@ test('mobile DASH reacts at touch-down and uses the direction selected by the vi
     clientY: 50,
     preventDefault() {},
   });
-  stick.emit('pointermove', { pointerId: 13, clientX: 0, clientY: 50, preventDefault() {} });
+  stick.onpointermove({ pointerId: 13, clientX: 0, clientY: 50, preventDefault() {} });
   const start = h.game.snapshot().player.x;
   button.onpointerdown({ pointerId: 17, preventDefault() {} });
   assert.equal(h.game.snapshot().mecha.dash.direction, -1);
