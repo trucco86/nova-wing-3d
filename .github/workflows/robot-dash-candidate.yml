@@ -1,0 +1,61 @@
+name: One-time robot dash QA and release candidate
+on:
+  pull_request:
+  push:
+    branches: [feat/mars-storm-moons-warp-exit]
+    paths:
+      - .github/workflows/robot-dash-candidate.yml
+permissions:
+  contents: write
+jobs:
+  synchronize:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.head_ref == 'feat/mars-storm-moons-warp-exit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mars-storm-moons-warp-exit
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.66
+      - name: Describe actual candidate and gate
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("releases/v1.27.66.md")
+          p.write_text("""## Nova Wing 3D v1.27.66 — Robot Directional Dash candidate
+
+          - Robo: Q/E/Z ou botao DASH + direcional executam esquiva real lateral; nao gira 360 graus.
+          - Nave preserva giro 360, hold-to-bank e limpeza de tres giros da tempestade de Marte.
+          - Dash: 13 unidades em 0,24s, janela curta de esquiva, limite da arena, custo de 12 de energia e recarga de 1,45s.
+          - Mobile inicia no pointerdown e seleciona o lado pelo direcional; teclado usa WASD/setas com Q/E/Z, com Q/E fallback lateral.
+          - Animacao usa inclinacao e jatos laterais existentes, sem novas malhas por frame.
+          - Legendas e ajuda especificas por modo em PT/EN/ES; pausa, reset e colisao preservados.
+          - Validacoes: teste de comando de toque, tecla, dano e energia, cooldown, frame rate, bordas, objetivo de Marte e pausa.
+
+          **Apenas QA:** homologacao visual desktop/mobile, desempenho em hardware e aprovacao antes de merge ou producao.
+          """)
+          ch=Path("CHANGELOG.md")
+          s=ch.read_text()
+          ch.write_text(s.replace("- Candidata não homologada; preencher entregas e evidências antes da publicação.", "- Modo robo: DASH lateral direcional substitui giro; nave mantem barrel roll; controles PT/EN/ES, cooldown, colisao e protecao testados. QA visual pendente.", 1))
+          PY
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - run: npm run build:check
+      - name: Commit reproducible generated bundle and release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md index.html package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj releases/v1.27.66.md specs/robot-directional-dash.md src/mecha-dash.js src/mecha-motion.js src/game.js src/i18n.js src/ui-preferences.js src/shell.html tests/mecha-directional-dash.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "build(dash): sync candidate v1.27.66 and deterministic QA"
+            git fetch origin feat/mars-storm-moons-warp-exit
+            git rebase origin/feat/mars-storm-moons-warp-exit
+            git push origin HEAD:feat/mars-storm-moons-warp-exit
+          fi
