@@ -1,0 +1,36 @@
+name: One-time performance candidate generation
+on:
+  pull_request:
+  push:
+    branches: [feat/mars-storm-moons-warp-exit]
+    paths:
+      - .github/workflows/performance-candidate-bundle.yml
+permissions:
+  contents: write
+jobs:
+  synchronize:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.head_ref == 'feat/mars-storm-moons-warp-exit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mars-storm-moons-warp-exit
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - name: Commit generated candidate and formatting
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/game.js src/visuals.js src/bosses.js src/boss-visual-identity.js src/premium-model-details.js src/scene-prewarm.js tests/boss-prewarm.test.mjs tests/scene-prewarm.test.mjs specs/frame-pacing-and-shader-prewarm.md
+          if ! git diff --cached --quiet; then
+            git commit -m "build(performance): synchronize smooth-transition candidate"
+            git push origin HEAD:feat/mars-storm-moons-warp-exit
+          fi
