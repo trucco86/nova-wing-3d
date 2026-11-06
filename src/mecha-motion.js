@@ -71,7 +71,12 @@ export function updateMechaPose(
     torso.rotation.y = ease(torso.rotation.y, s * 0.058, step, 7);
   }
   if (rig.head) {
-    rig.head.rotation.y = ease(rig.head.rotation.y, -s * 0.1 + Math.sin(time * 1.2) * 0.015, step, 6);
+    rig.head.rotation.y = ease(
+      rig.head.rotation.y,
+      -s * 0.1 + Math.sin(time * 1.2) * 0.015,
+      step,
+      6,
+    );
     rig.head.rotation.x = ease(rig.head.rotation.x, -v * 0.045 - fireKick * 0.035, step, 7);
   }
 

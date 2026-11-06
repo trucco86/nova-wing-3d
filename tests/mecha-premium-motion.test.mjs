@@ -92,7 +92,10 @@ test('pause freezes all bones and turbine rotor; reset removes residual recoil a
   approx(articulated.thrusters[0].rotor.rotation.z, 0);
   approx(legacy.turbineRotor.rotation.z, 0);
   assert.ok(articulated.hipJets.every((jet) => !jet.visible));
-  approx(articulated.arms.right.muzzle.position.z, articulated.arms.right.muzzle.userData.restBarrelZ);
+  approx(
+    articulated.arms.right.muzzle.position.z,
+    articulated.arms.right.muzzle.userData.restBarrelZ,
+  );
 });
 
 test('premium animation is frame-rate stable and does not deform the robot collider envelope', () => {

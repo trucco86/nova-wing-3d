@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.64 — Candidata em preparação
+
+- Mecha Premium V4: cotovelos/joelhos animados, balanço corporal, tiros com recuo, asas responsivas e propulsores vetoriais ciano/âmbar. QA visual/mobile pendente.
+
 ## 1.27.63 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
