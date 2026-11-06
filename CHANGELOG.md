@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.63 — Candidata: Física e colisões do cenário (P0)
+
+- Contatos físicos de nave/robô contra obstáculos, com varredura contínua e correção de posição; preserva dano e abertura de túneis.
+- Volumes compostos para estruturas visíveis dos obstáculos e regra para evitar spawn em espaço ocupado.
+- Regressões para travessia rápida, obstáculos móveis, volumes estruturais e passagens.
+- Ainda pendente: física de destroços sobre o chão, colisores completos da cidade e inimigos/chefes com o ambiente.
+- **Candidata não homologada; não publicar em produção antes de CI e testes visuais/mobile.**
+
 ## 1.27.62 — Layout compacto de Hangar e QA (release Web)
 
 - Hangar em abas Pilotos/Naves/Arsenal, com os cinco gatos e o preview 360° organizados em mobile/desktop.
