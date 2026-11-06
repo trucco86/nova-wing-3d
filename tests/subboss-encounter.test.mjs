@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
-import { SECTORS } from '../src/campaign.js';
 
 function advanceProtected(h, seconds) {
   for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += 0.1) {
