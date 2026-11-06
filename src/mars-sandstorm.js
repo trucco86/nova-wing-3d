@@ -114,3 +114,45 @@ export function updateMarsSandstorm(root, seconds) {
   root.userData.windX = wind.windX;
   return wind;
 }
+
+
+/** In-world sand accumulation on the hull and cannon tips, not a HUD overlay. */
+export function createMarsDustCoating() {
+  const count = 84;
+  const coords = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const t = (i * 37) % 83;
+    const side = i % 2 ? 1 : -1;
+    coords[i * 3] = side * (0.3 + (t % 21) * 0.25);
+    coords[i * 3 + 1] = -0.2 + ((t * 7) % 11) * 0.15;
+    coords[i * 3 + 2] = -5.4 + ((t * 3) % 73) * 0.13;
+  }
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.BufferAttribute(coords, 3));
+  const material = new T.PointsMaterial({
+    color: '#b9794b',
+    size: 0.65,
+    sizeAttenuation: true,
+    opacity: 0,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const dust = new T.Points(geometry, material);
+  dust.name = 'mars-hull-dust-coating';
+  dust.userData.visualOnly = true;
+  dust.frustumCulled = false;
+  dust.visible = false;
+  return dust;
+}
+
+export function setMarsDustCoating(dust, stormIntensity = 0, remainingRolls = 0) {
+  if (!dust) return 0;
+  const intensity = Math.max(
+    Math.max(0, Math.min(1, stormIntensity)) * 0.72,
+    Math.max(0, Math.min(3, remainingRolls)) / 3,
+  );
+  dust.material.opacity = intensity * 0.85;
+  dust.visible = intensity > 0.025;
+  return intensity;
+}
