@@ -449,6 +449,7 @@ export function createFlyingRobot() {
     shoulderBlade.rotation.y = Math.PI / 4;
     shoulderBlade.position.set(side * 2.55, 3.85, 0.84);
     robot.add(shoulderBlade);
+    torsoParts.push(shoulderBlade);
     const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
     arm.attach(upperArm);
     const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
@@ -485,6 +486,7 @@ export function createFlyingRobot() {
     nozzle.rotation.x = Math.PI / 2;
     nozzle.position.set(side * 1.4, 2.23, 1.85);
     robot.add(nozzle);
+    torsoParts.push(nozzle);
     const plume = new T.Mesh(
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
@@ -492,6 +494,7 @@ export function createFlyingRobot() {
     plume.rotation.x = Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
+    torsoParts.push(plume);
     sidePlumes.push(plume);
   }
   // The exact same mesh profile as the ship, rotated into the mecha back plane.
@@ -610,6 +613,7 @@ export function createFlyingRobot() {
     sidePlumes,
     propulsionPower: 0,
     progressionNeons,
+    boostPalette: null,
   };
   robot.userData.mechPaint = { primary: armor, accent };
   // Reconcile the original angular flight-mech and its animated rotor with
@@ -675,6 +679,25 @@ export function createFlyingRobot() {
     innerPlume.rotation.x = Math.PI / 2;
     innerPlume.position.z = 1.25;
     nozzle.add(innerPlume);
+    // Extended afterburner: a lightweight, authored cone rather than
+    // per-frame particles. This remains legible from the standard rear camera.
+    const boostBeam = new T.Mesh(
+      new T.ConeGeometry(0.28, 5.6, 10, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#ff9954',
+        transparent: true,
+        opacity: 0,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        side: T.DoubleSide,
+        toneMapped: false,
+      }),
+    );
+    boostBeam.name = side < 0 ? 'mecha-left-afterburner' : 'mecha-right-afterburner';
+    boostBeam.rotation.x = Math.PI / 2;
+    boostBeam.position.z = 3.6;
+    boostBeam.visible = false;
+    nozzle.add(boostBeam);
     // Embedded nozzle vane acts as a gimballed acceleration cue, without
     // introducing expensive real-time lights or particle allocations.
     const rotor = new T.Group();
@@ -690,7 +713,7 @@ export function createFlyingRobot() {
     }
     nozzle.add(rotor);
     robot.add(nozzle);
-    return { nozzle, plume, innerPlume, exhaustCore, rotor, outerRim };
+    return { nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor, outerRim };
   });
   // Articulated reactor shell: tiny counter-sway conveys mass while keeping
   // the approved fighter-wing profile, collisions and muzzle references.
@@ -704,6 +727,19 @@ export function createFlyingRobot() {
   head.position.set(0, 3.45, -0.1);
   robot.add(head);
   for (const part of headParts) head.attach(part);
+  // Keep the fighter-like silhouette mechanically connected: the shoulders,
+  // head, wings and engine mount follow the same upper-body compensation.
+  // Object3D.attach preserves each component's exact approved rest position.
+  torso.attach(head);
+  for (const arm of arms) torso.attach(arm);
+  for (const wing of wingPivots) torso.attach(wing);
+  for (const { nozzle } of independentThrusters) torso.attach(nozzle);
+  torso.attach(turbineHousing);
+  torso.attach(turbineGimbal);
+  for (const strip of progressionNeons.map(({ mesh }) => mesh)) torso.attach(strip);
+  for (const part of robot.children.filter((mesh) => mesh.name.startsWith('mech-wing'))) {
+    torso.attach(part);
+  }
   for (const side of [-1, 1]) {
     const jet = new T.Mesh(
       new T.ConeGeometry(0.13, 0.72, 8),
@@ -731,6 +767,8 @@ export function createFlyingRobot() {
     wingPivots,
     hipJets,
     baseScale: 0.94,
+    motion: { strafe: 0, vertical: 0 },
+    boostPalette: null,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   // Modest presence increase without changing player collider physics.
@@ -832,6 +870,7 @@ export function resetMechPower(robot) {
   rig.turbineFlame.position.z = 1.6;
   rig.turbineFlame.material.opacity = 0.78;
   rig.turbineFlame.material.color.set('#53dfff');
+  rig.boostPalette = null;
   if (rig.turbineInnerFlame) {
     rig.turbineInnerFlame.scale.y = 1;
     rig.turbineInnerFlame.position.z = 1.7;
@@ -879,17 +918,21 @@ export function animateMechPower(
   rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.95) * pulse;
   rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
   rig.turbineFlame.material.opacity = 0.7 + rig.propulsionPower * 0.26;
-  rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#4dd8ff');
+  if (rig.boostPalette !== boosting) {
+    rig.boostPalette = boosting;
+    rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#4dd8ff');
+    rig.turbineInnerFlame?.material.color.set(boosting ? '#fff2b8' : '#b7faff');
+    for (const plume of rig.sidePlumes)
+      plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+  }
   if (rig.turbineInnerFlame) {
     rig.turbineInnerFlame.scale.y = rig.turbineFlame.scale.y * 1.15;
     rig.turbineInnerFlame.position.z = 0.725 + 1.05 * rig.turbineInnerFlame.scale.y;
     rig.turbineInnerFlame.material.opacity = 0.65 + rig.propulsionPower * 0.28;
-    rig.turbineInnerFlame.material.color.set(boosting ? '#fff2b8' : '#b7faff');
   }
   for (const plume of rig.sidePlumes) {
     plume.scale.y = (1 + rig.propulsionPower * 0.72) * pulse;
     plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
-    plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
     plume.material.opacity = 0.55 + rig.propulsionPower * 0.33;
   }
 }
