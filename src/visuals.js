@@ -831,9 +831,16 @@ export function resetMechPower(robot) {
   rig.turbineFlame.scale.y = 1;
   rig.turbineFlame.position.z = 1.6;
   rig.turbineFlame.material.opacity = 0.78;
+  rig.turbineFlame.material.color.set('#53dfff');
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = 1;
+    rig.turbineInnerFlame.position.z = 1.7;
+    rig.turbineInnerFlame.material.color.set('#b7faff');
+  }
   for (const plume of rig.sidePlumes) {
     plume.scale.y = 1;
     plume.position.z = 2.9;
+    plume.material.color.set('#53dfff');
   }
 }
 
@@ -869,12 +876,21 @@ export function animateMechPower(
     (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
 
   const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
-  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
+  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.95) * pulse;
   rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
-  rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
+  rig.turbineFlame.material.opacity = 0.7 + rig.propulsionPower * 0.26;
+  rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#4dd8ff');
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = rig.turbineFlame.scale.y * 1.15;
+    rig.turbineInnerFlame.position.z = 0.725 + 1.05 * rig.turbineInnerFlame.scale.y;
+    rig.turbineInnerFlame.material.opacity = 0.65 + rig.propulsionPower * 0.28;
+    rig.turbineInnerFlame.material.color.set(boosting ? '#fff2b8' : '#b7faff');
+  }
   for (const plume of rig.sidePlumes) {
-    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
+    plume.scale.y = (1 + rig.propulsionPower * 0.72) * pulse;
     plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
+    plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+    plume.material.opacity = 0.55 + rig.propulsionPower * 0.33;
   }
 }
 const variants = new Map();
