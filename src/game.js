@@ -403,6 +403,7 @@ export function createGame({
   let preparedBoss = null;
   let prepareGeneration = 0;
   let bossShadersWarm = false;
+  let mechaWarmupScheduled = false;
   let fighterSerial = 0;
   let enemies = [],
     shots = [],
@@ -1893,6 +1894,12 @@ export function createGame({
   }
   function prepareUpcomingBoss() {
     if (!dynamicFlight) return;
+    if (!mechaWarmupScheduled) {
+      mechaWarmupScheduled = true;
+      // The entire articulated robot starts hidden; precompile its future
+      // plasma/glow/armor materials before the first transformation.
+      void prewarmSceneShaders(renderer, robot, camera, scene);
+    }
     // The stage/briefing is still loading. Never build a multi-hundred-mesh
     // procedural model on the frame that starts the boss encounter.
     const generation = ++prepareGeneration;
