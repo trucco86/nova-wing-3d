@@ -17,13 +17,19 @@ test('hidden boss weak-point meshes are included in asynchronous compilation wit
       assert.equal(object, root);
       assert.equal(view, camera);
       assert.equal(target, scene);
-      assert.ok(markers.every((marker) => marker.visible), 'compiler must see future weak points');
+      assert.ok(
+        markers.every((marker) => marker.visible),
+        'compiler must see future weak points',
+      );
       compiled++;
       return Promise.resolve();
     },
   };
   const pending = prewarmSceneShaders(renderer, root, camera, scene);
-  assert.ok(markers.every((marker) => !marker.visible), 'nothing flashes during prewarm');
+  assert.ok(
+    markers.every((marker) => !marker.visible),
+    'nothing flashes during prewarm',
+  );
   assert.equal(await pending, true);
   assert.equal(compiled, 1);
   disposeBoss(root);
@@ -40,12 +46,23 @@ test('unsupported or failed shader compilation does not alter visibility or cras
   assert.equal(await prewarmSceneShaders({}, root, new T.Camera(), new T.Scene()), false);
   assert.equal(hidden.visible, false);
   assert.equal(mesh.visible, false);
-  const rejected = { compileAsync() { throw new Error('unsupported GPU extension'); } };
+  const rejected = {
+    compileAsync() {
+      throw new Error('unsupported GPU extension');
+    },
+  };
   assert.equal(await prewarmSceneShaders(rejected, root, new T.Camera(), new T.Scene()), false);
   assert.equal(hidden.visible, false);
   assert.equal(mesh.visible, false);
-  const asynchronousError = { compileAsync() { return Promise.reject(Error('WebGL context lost')); } };
-  assert.equal(await prewarmSceneShaders(asynchronousError, root, new T.Camera(), new T.Scene()), false);
+  const asynchronousError = {
+    compileAsync() {
+      return Promise.reject(Error('WebGL context lost'));
+    },
+  };
+  assert.equal(
+    await prewarmSceneShaders(asynchronousError, root, new T.Camera(), new T.Scene()),
+    false,
+  );
   assert.equal(hidden.visible, false);
   assert.equal(mesh.visible, false);
   mesh.geometry.dispose();
