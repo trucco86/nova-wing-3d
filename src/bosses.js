@@ -3,8 +3,17 @@ import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity } from './boss-visual-identity.js';
+// Reuse a single GPU vertex buffer for all rectangular boss armor plates.
+// Dimensions move to mesh.scale, preserving world-space shape and collisions.
+const bossUnitBox = new T.BoxGeometry(1, 1, 1);
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
+  const box = (w, h, d, material, x = 0, y = 0, z = 0) => {
+    const mesh = new T.Mesh(bossUnitBox, material);
+    mesh.scale.set(w, h, d);
+    mesh.position.set(x, y, z);
+    return mesh;
+  };
   const g = new T.Group(),
     armor = metal(index === 1 ? '#9c573c' : '#344658', 0.73, 0.48),
     dark = metal(index === 1 ? '#523326' : '#111b2c'),
@@ -596,7 +605,11 @@ export function disposeBoss(g) {
   g.traverse((o) => {
     if (o.geometry) geos.add(o.geometry);
   });
-  geos.forEach((x) => x.dispose());
+  geos.forEach((x) => {
+    // This unit cube is shared across stages and must not be invalidated by
+    // disposing one boss; all unique authoring geometries are still released.
+    if (x !== bossUnitBox) x.dispose();
+  });
   g.userData.materials?.forEach((x) => x.dispose());
 }
 
