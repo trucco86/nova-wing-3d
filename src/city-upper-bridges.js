@@ -13,7 +13,7 @@ const glass = new T.MeshStandardMaterial({
 });
 const neon = new T.MeshBasicMaterial({ color: '#83e8f7', toneMapped: false });
 const BRIDGES = Object.freeze([
-  { z: -205, y: 92, width: 126, depth: 12 },
+  { z: -285, y: 92, width: 126, depth: 12 },
   { z: -605, y: 123, width: 134, depth: 16 },
   { z: -1005, y: 151, width: 138, depth: 11 },
 ]);
