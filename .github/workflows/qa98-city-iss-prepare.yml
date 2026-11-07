@@ -1,0 +1,68 @@
+name: Prepare QA v1.27.98 - physical city debris and ISS
+on:
+  push:
+    branches: [fix/stage1-falling-collisions-iss-v12798-20261107]
+    paths: [.github/workflows/qa98-city-iss-prepare.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/stage1-falling-collisions-iss-v12798-20261107
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare coherent version 1.27.98
+        run: |
+          npm run release:prepare -- 1.27.98
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const notes = [
+            '## Nova Wing 3D v1.27.98 — Stage 1 physical debris, orbital variation and ISS (QA)',
+            '',
+            '- Repair missing physics hulls for the actual cinematic billboard, hovercar and 7 building facade fragments; no invisible global walls.',
+            '- Sample current and previous mesh-world positions to keep moving-geometry CCD and bullets accurate, including X/Y/Z falls.',
+            '- Falling items now cross the central lane with real evasive choices while both wide flanks remain accessible.',
+            '- Preallocated randomized metal/ceramic/hull fragments drift independently during the ascent; Medium mode reduces count.',
+            '- A recognizable International Space Station passes near Earth’s limb once for around 6.5 seconds, then disappears.',
+            '- Preserve premium city/robot/cockpit, mandatory Super Boost and the existing ten-sector progression.',
+            '',
+            '**Isolated QA only: full desktop/mobile browser gates and physical-device visual/FPS review required before release.**',
+            '',
+          ].join('\n');
+          writeFileSync('releases/v1.27.98.md', notes);
+          let changelog = readFileSync('CHANGELOG.md', 'utf8');
+          const heading = changelog.indexOf('## 1.27.98');
+          if (heading < 0) throw new Error('v1.27.98 changelog header missing');
+          const marker = '- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          const where = changelog.indexOf(marker, heading);
+          if (where < 0) throw new Error('v1.27.98 changelog placeholder missing');
+          changelog = changelog.slice(0, where) +
+            '- QA da fase 1: colisão real em placa, carro e 7 fragmentos visíveis, CCD XYZ, posições que exigem desvio, destroços orbitais aleatorizados e ISS orbitando brevemente a Terra; homologação WebGL pendente.' +
+            changelog.slice(where + marker.length);
+          writeFileSync('CHANGELOG.md', changelog);
+          NODE
+      - name: Format, build, and validate all Node regressions
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+          git diff --check
+      - name: Commit the tested and versioned isolated QA candidate
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.98.md index.html src/city-falling-solids.js src/orbital-ascent-encounter.js src/city-destruction.js src/visuals.js src/game.js tests/city-falling-solids.test.mjs tests/orbital-ascent-encounter.test.mjs tests/browser/city-falling-iss.spec.mjs specs/stage1-falling-iss-v12798.md
+          git diff --cached --check
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA98): version and validate collision and ISS candidate'
+          git push origin HEAD:fix/stage1-falling-collisions-iss-v12798-20261107
