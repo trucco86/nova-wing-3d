@@ -1,5 +1,5 @@
 name: Prepare QA v1.27.98 - physical city debris and ISS
-# Rerun after strict ESLint cleanup of the orbital test and module.
+# Rerun after adjusting the legacy stage-one navigation tests to dodge newly solid wreckage.
 on:
   push:
     branches: [fix/stage1-falling-collisions-iss-v12798-20261107]
@@ -60,7 +60,7 @@ jobs:
           git diff --check
       - name: Commit the tested and versioned isolated QA candidate
         run: |
-          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.98.md index.html src/city-falling-solids.js src/orbital-ascent-encounter.js src/city-destruction.js src/visuals.js src/game.js tests/city-falling-solids.test.mjs tests/orbital-ascent-encounter.test.mjs tests/browser/city-falling-iss.spec.mjs specs/stage1-falling-iss-v12798.md
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.98.md index.html src/city-falling-solids.js src/orbital-ascent-encounter.js src/city-destruction.js src/visuals.js src/game.js tests/city-falling-solids.test.mjs tests/city-stage1-destruction.test.mjs tests/orbital-ascent-encounter.test.mjs tests/browser/stage1-city-destruction.spec.mjs tests/browser/city-falling-iss.spec.mjs specs/stage1-falling-iss-v12798.md
           git diff --cached --check
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
