@@ -1,0 +1,44 @@
+name: QA v1.27.94 browser repair preparation
+on:
+  push:
+    branches:
+      - fix/qa94-browser-gates-and-dash-20261107
+    paths:
+      - .github/workflows/qa94-browser-prepare.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/qa94-browser-gates-and-dash-20261107
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format source, regenerate web bundle, run strict Node validation
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+          git diff --check
+      - name: Commit verified web candidate ONLY on isolated QA repair branch
+        run: |
+          git add -- index.html src/styles.css src/game.js tests/dynamic-scene.js tests/browser/mission-balance.spec.mjs tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs specs/qa-integrated-v1.27.94.md
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Build already synchronized.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa94): synchronize repaired browser candidate with source'
+            git push origin HEAD:fix/qa94-browser-gates-and-dash-20261107
+          fi
