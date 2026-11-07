@@ -1,0 +1,36 @@
+name: Probe unified QA merge
+on:
+  push:
+    branches: [qa/integrated-premium-v12794-20261107]
+    paths:
+      - .github/workflows/unified-integration-probe.yml
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: qa/integrated-premium-v12794-20261107
+      - name: Show actual integration blockers without changing branch
+        run: |
+          git config user.name "nova-wing-integration-probe"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin feat/mars-storm-moons-warp-exit
+          set +e
+          git merge --no-commit --no-ff origin/feat/mars-storm-moons-warp-exit > /tmp/integration-merge.log 2>&1
+          rc=$?
+          set -e
+          echo "UNIFIED_MERGE_RC=$rc"
+          cat /tmp/integration-merge.log | tail -100
+          echo "UNIFIED_MERGE_CONFLICTS_BEGIN"
+          git diff --name-only --diff-filter=U
+          echo "UNIFIED_MERGE_CONFLICTS_END"
+          echo "UNIFIED_MERGE_STATUS_BEGIN"
+          git status --short | head -150
+          echo "UNIFIED_MERGE_STATUS_END"
+          git merge --abort || true
+          test "$rc" -eq 0 || true
