@@ -353,6 +353,7 @@ export function createGame({
   scene.add(player);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
+  let selectedMissionLoadout = { ...pilotLoadout };
   const pilotRelay = createPilotRelay(pilotLoadout);
   let pendingPilotRelay = null;
   let lastFlightSpeed = 48;
@@ -1030,12 +1031,14 @@ export function createGame({
     if (!dynamicFlight || state !== 'menu' || !PILOT_PROFILES.some((p) => p.id === id))
       return false;
     pilotLoadout.pilot = id;
+    selectedMissionLoadout = { ...pilotLoadout };
     renderPilotSelection();
     return true;
   }
   function selectShip(id) {
     if (!dynamicFlight || state !== 'menu' || !SHIP_MODELS.some((p) => p.id === id)) return false;
     pilotLoadout.ship = id;
+    selectedMissionLoadout = { ...pilotLoadout };
     applyShipModel();
     renderPilotSelection();
     return true;
@@ -1044,6 +1047,7 @@ export function createGame({
     if (!dynamicFlight || state !== 'menu' || !SHIP_COLORS.some((entry) => entry.id === id))
       return false;
     pilotLoadout.color = id;
+    selectedMissionLoadout = { ...pilotLoadout };
     applySkin();
     renderPilotSelection();
     return true;
@@ -2739,7 +2743,7 @@ export function createGame({
     scatterOwned = dynamicFlight && scatterLoadout.owned;
     fireMode = dynamicFlight ? scatterLoadout.mode : 'pulse';
     pilotLoadout = dynamicFlight
-      ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
+      ? readPilotLoadout(checkpoint ? checkpoint.loadout : selectedMissionLoadout)
       : readPilotLoadout(null);
     pilotRelay.reset(pilotLoadout);
     pendingPilotRelay = null;
@@ -6065,12 +6069,14 @@ export function createGame({
       );
       hud.attribute('qaBerserkDock', 'data-active', String(berserk > 0));
     }
+    // Keep shield telemetry synchronized even while the cockpit is hidden:
+    // switching camera must never show stale integrity from a previous frame.
+    hud.text('cockpitReadout',
+      'ESCUDO ' + Math.ceil((hp / maxHp()) * 100) + '% · ENERGIA ' + Math.ceil(energy) + '%');
     if (inside) {
       hud.text('cockpitPilot', activePilot().name);
       hud.text('cockpitShip', activeShip().name);
       hud.text('cockpitWeapon', selectedWeapon().name + (fireMode === 'scatter' ? ' / SCATTER' : ''));
-      hud.text('cockpitReadout',
-        'ESCUDO ' + Math.ceil((hp / maxHp()) * 100) + '% · ENERGIA ' + Math.ceil(energy) + '%');
       hud.text('cockpitSpeedValue', String(Math.round(lastFlightSpeed * 10)));
       hud.text('cockpitNav',
         'SETOR ' + String(sectorIndex + 1).padStart(2, '0') +
