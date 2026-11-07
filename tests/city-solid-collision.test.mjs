@@ -135,7 +135,8 @@ test('stage 1 can travel freely beyond the old 36-unit invisible corridor on bot
   t.after(() => h.close());
   h.game.start();
   h.key('KeyD', true);
-  h.advance(3.5, 0.04);
+  // Reach beyond the false ±36 wall without timing it to an actual pillar.
+  h.advance(2.65, 0.04);
   h.key('KeyD', false);
   let snap = h.game.snapshot();
   assert.equal(snap.sector, 1);
