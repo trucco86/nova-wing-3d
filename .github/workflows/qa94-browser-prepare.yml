@@ -32,7 +32,7 @@ jobs:
           git diff --check
       - name: Commit verified web candidate ONLY on isolated QA repair branch
         run: |
-          git add -- index.html src/styles.css src/game.js tests/dynamic-scene.js tests/browser/mission-balance.spec.mjs tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs specs/qa-integrated-v1.27.94.md
+          git add -- index.html src/styles.css src/game.js tests/dynamic-scene.js tests/browser/mission-balance.spec.mjs tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs tests/hero-dash-breakables.test.mjs specs/qa-integrated-v1.27.94.md
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'Build already synchronized.'
