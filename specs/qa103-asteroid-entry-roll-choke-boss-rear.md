@@ -8,6 +8,26 @@
 
 A imagem-conceito premium aprovada anteriormente pelo usuário é a referência visual de densidade, acabamento, iluminação e composição. O arquivo dessa imagem **não está versionado no repositório** no estado da baseline. Não inventar que o Codex tem acesso à referência ou substituir por uma imagem aleatória. Na ausência do arquivo de referência, usar a direção já registrada aqui e anexar as capturas atuais do jogo como antes/depois; solicitar o arquivo apenas antes de uma decisão de fidelidade visual exata.
 
+### Referências visuais originais localizadas (07/11/2026)
+
+Foram recuperados da biblioteca da conversa do usuário dois arquivos de arte conceitual do Nova Wing:
+
+- `Corrida Nova Wing sob a Lua Gigante.png`: referência prioritária de ambiente e composição, com avenida futurista densa, camadas de arquitetura, trem suspenso, fachadas iluminadas, letreiros, tráfego aéreo, lua de grande escala e acabamento cinemático da nave.
+- `Cidade das Máquinas_ Nova Wing.png`: a mesma direção de cenário aplicada a uma simulação de HUD e enquadramento da nave em gameplay.
+
+**Importante:** as imagens originais foram recuperadas ao usuário nesta conversa, mas os PNGs não foram versionados neste repositório. Logo, nenhum agente deve declarar comparação visual pixel a pixel, acesso local a esses arquivos ou fidelidade já homologada até que eles sejam anexados explicitamente ao workspace de QA. As imagens são concept art, **não** capturas do build.
+
+**Critérios de direção visual ao comparar com o concept:**
+1. **Profundidade de cena:** três planos legíveis (primeiro plano com estruturas, plano de ação livre, skyline com estruturas distantes e escala); evitar repetições de corredores/anéis idênticos.
+2. **Materialidade e luz:** metal com relevo e juntas, reflexos moderados, emissivos ciano/azul e pontos âmbar, névoa volumétrica localizada e contraste legível; não resolver apenas com aumento de bloom.
+3. **Vida e escala:** trem elevado e infraestrutura com movimento, anúncios e janelas iluminadas, pequenos veículos ao fundo, objetos destruíveis com colisão real; evitar elementos que bloqueiem mira ou movimento sem avisar.
+4. **Nave e chefes:** silhueta mecânica reconhecível em 360°, propulsores e módulos articulados, detalhes coerentes também na traseira; materiais premium devem ser testados com rotação real.
+5. **HUD:** o concept traz muitos rótulos apenas como sugestão editorial. Respeitar o pedido atual do usuário por menos mensagens e interface periférica transparente, sem replicar o HUD da arte literalmente.
+6. **Fases temáticas:** usar a qualidade de execução do concept, não copiar a cidade/neon para Marte, o asteroide, Europa e Saturno.
+7. **Performance:** perfis Médio/Alto, LOD/instancing/pools e validação desktop/mobile com medições; não associar screenshot bonito a FPS aprovado.
+
+A etapa de fidelidade visual exata só pode ser aceita depois que as artes forem fornecidas aos agentes/runner de QA como arquivos reais e as capturas WebGL forem feitas nos checkpoints definidos abaixo.
+
 Preservar os elementos e chefes da fase 3 já aprovados; ampliar identidade e detalhe sem desfigurar o chefe. Referências de feeling: Panzer Dragoon/Star Fox para sensação de corredor e esquiva; não copiar assets de propriedade de terceiros.
 
 ## P0-A | Entrada real no asteroide
