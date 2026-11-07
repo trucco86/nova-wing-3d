@@ -41,3 +41,22 @@ test('phase 1 city destruction stays grounded, hangs the train, and renders on d
   expect(stats.calls).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test('stage 1 roadside rails physically block ship instead of just reducing shield', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto('/__dynamic.html?sector=0');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.keyboard.down('KeyD');
+  await page.evaluate(() => window.fixture.advance(3.0));
+  await page.keyboard.up('KeyD');
+  const ship = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(ship.player.x).toBeLessThanOrEqual(36.05);
+  expect(ship.cityImpactCount).toBeGreaterThan(0);
+  expect(ship.cityDestruction.length).toBe(4);
+  await page.screenshot({ path: info.outputPath('city-road-solid-rail.png') });
+  expect(errors).toEqual([]);
+});
