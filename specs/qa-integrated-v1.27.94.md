@@ -37,6 +37,7 @@ O próximo preview precisa apresentar uma **única versão integrada** com todas
 Históricos unidos no PR #288 (merge local): reparos de compatibilidade e gates em andamento. Não confundir histórico de branch integrado com funcionalidade pronta/homologada sem testes.
 
 ## QA browser gate follow-up — isolated correction
+
 - The compact QA menu remains collapsed on entry. Browser checks explicitly open its native `details` section before choosing encounters; no production-only shortcuts.
 - The back action remains reachable at the top of the QA scrollport at desktop and phone aspect ratios. Hangar PILOTOS/NAVES/ARSENAL actually hide off-tab content while keeping the 360° preview visible.
 - The robot's touch/Z dash with a neutral joystick uses the last horizontal direction. The ship's 360° roll and Mars sand removal are unchanged.

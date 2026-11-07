@@ -9454,7 +9454,9 @@ body:not(.developer-session) #qaBerserkDock {
   margin: 0 auto;
   text-align: left;
 }
-#menu[data-screen='qa'] .title-content > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
+#menu[data-screen='qa']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
   display: none !important;
 }
 #menu.title-screen[data-screen='qa'] #menuBack {
