@@ -10,6 +10,11 @@ function rigidBoxes(node) {
   });
   return result;
 }
+function visibleToRoot(node, root) {
+  for (let cursor = node; cursor && cursor !== root; cursor = cursor.parent)
+    if (!cursor.visible) return false;
+  return !!node;
+}
 function boundsFor(meshes, destination) {
   let minX = Infinity, minY = Infinity, minZ = Infinity;
   let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
@@ -61,7 +66,7 @@ export function createCityFallingSolids(root) {
     for (const c of colliders) {
       const wasActive = c.active;
       const lastX = c.center.x, lastY = c.center.y, lastZ = c.center.z;
-      c.active = !!c.node?.visible && c.meshes.length > 0 && boundsFor(c.meshes, c);
+      c.active = visibleToRoot(c.node, root) && c.meshes.length > 0 && boundsFor(c.meshes, c);
       if (!c.active) continue;
       c.previousX = wasActive ? lastX : c.center.x;
       c.previousY = wasActive ? lastY : c.center.y;
