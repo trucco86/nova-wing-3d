@@ -253,6 +253,7 @@ export function createCityCatastrophe() {
     }
   }
   reset();
+  root.visible = false; // No urban rubble floating in the main menu or non-city sectors.
   return {
     root, reset, update,
     colliders() {
