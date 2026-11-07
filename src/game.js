@@ -1699,18 +1699,30 @@ export function createGame({
     else sound(60, 0.25);
     if (hp <= 0) {
       lives--;
-      if (lives <= 0) finish(false);
-      else {
+      pendingPilotRelay = dynamicFlight && lives > 0 ? pilotRelay.retire() : null;
+      if (lives <= 0 || (dynamicFlight && !pendingPilotRelay)) {
+        message('NAVE AVARIADA · SEM RESERVAS DISPONÍVEIS');
+        finish(false);
+      } else {
         state = 'respawning';
         releaseControls();
         respawnTime = 1.5;
-        explode(player.position, 40);
+        if (damagedCraft) {
+          damagedCraft.position.copy(player.position);
+          damagedCraft.rotation.copy(player.rotation);
+          damagedCraft.visible = true;
+        }
+        explode(player.position, 12, 0xffb16d, false);
         player.visible = false;
         keys.clear();
         touchFire = touchBoost = false;
         charge = 0;
         music?.pause();
-        message('NAVE PERDIDA · ' + PILOTS[3 - lives] + ' ASSUMINDO O COMANDO');
+        message(
+          'NAVE AVARIADA · ' +
+            (pendingPilotRelay ? pilotAt(pendingPilotRelay.next.pilot).name : PILOTS[3 - lives]) +
+            ' VAI ASSUMIR',
+        );
       }
     }
   }
@@ -5824,13 +5836,23 @@ export function createGame({
     if (state === 'respawning') {
       respawnTime -= dt;
       player.rotation.z += dt * 7;
+      if (damagedCraft?.visible) {
+        damagedCraft.position.x += dt * 15;
+        damagedCraft.position.y += dt * 8;
+        damagedCraft.position.z += dt * 12;
+        damagedCraft.rotation.z += dt * 0.55;
+      }
       if (respawnTime <= 0) {
+        if (pendingPilotRelay) adoptRelayPilot(pendingPilotRelay.next, true);
+        pendingPilotRelay = null;
+        if (damagedCraft) damagedCraft.visible = false;
+        player.rotation.set(0, 0, 0);
         hp = maxHp();
         invuln = 3;
         state = 'playing';
         player.visible = true;
         music?.resume();
-        message(PILOTS[3 - lives] + ' / ASSUMINDO A NOVA-7. VAMOS CONTINUAR.');
+        message(activePilot().name + ' / ' + activeShip().name + ' ASSUMIU O COMANDO', activePilot().id);
       }
     }
     if (state !== 'paused' && state !== 'arcade') {
@@ -5914,6 +5936,7 @@ export function createGame({
         message('SAÍDA DA FENDA / +' + data.credits + ' CR · ROTA 3D RETOMADA');
       }
     } else if (state === 'playing') {
+      pilotRelay.advance(dt);
       cityPlayerBefore.copy(player.position);
       update(dt);
       if (dynamicFlight && sectorIndex === 0 && state === 'playing') {
@@ -5965,8 +5988,20 @@ export function createGame({
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
     barrierVisual.visible =
       dynamicFlight && barrier > 0 && !inside && ['playing', 'paused'].includes(state);
-    cockpit?.update(state === 'paused' ? 0 : dt, inside, charge);
+    cockpit?.update(state === 'paused' ? 0 : dt, inside, charge, {
+      pilot: activePilot().id,
+      steer:
+        (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
+        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + stick.x,
+      boosting,
+    });
     hud.hidden('cockpitPanel', !inside);
+    hud.hidden('pilotSwitch', !dynamicFlight || state !== 'playing');
+    const relayStatus = pilotRelay.snapshot();
+    hud.disabled('pilotSwitch', state !== 'playing' || !relayStatus.canSwitch);
+    if (state === 'playing')
+      hud.text('pilotSwitch', relayStatus.cooldown > 0
+        ? 'TROCA · ' + Math.ceil(relayStatus.cooldown) + 's' : 'M · TROCAR');
     hud.hidden('tacticalPanel', !dynamicFlight || !boss || !['playing', 'paused'].includes(state));
     hud.hidden(
       'hitFeedback',
@@ -6030,14 +6065,33 @@ export function createGame({
       );
       hud.attribute('qaBerserkDock', 'data-active', String(berserk > 0));
     }
-    hud.text(
-      'cockpitReadout',
-      Math.ceil(hp) +
-        '% ESCUDO · ' +
-        Math.ceil(energy) +
-        '% ENERGIA · ' +
-        (boosting ? '890' : '480'),
-    );
+    if (inside) {
+      hud.text('cockpitPilot', activePilot().name);
+      hud.text('cockpitShip', activeShip().name);
+      hud.text('cockpitWeapon', selectedWeapon().name + (fireMode === 'scatter' ? ' / SCATTER' : ''));
+      hud.text('cockpitReadout',
+        'ESCUDO ' + Math.ceil((hp / maxHp()) * 100) + '% · ENERGIA ' + Math.ceil(energy) + '%');
+      hud.text('cockpitSpeedValue', String(Math.round(lastFlightSpeed * 10)));
+      hud.text('cockpitNav',
+        'SETOR ' + String(sectorIndex + 1).padStart(2, '0') +
+        ' · ' + Math.round((elapsed / current().duration) * 100) + '%');
+      hud.text('cockpitSwapStatus', relayStatus.cooldown > 0
+        ? 'PRÓXIMA TROCA ' + Math.ceil(relayStatus.cooldown) + 's' : 'M · TROCAR PILOTO');
+      // Four reusable DOM pips, grounded in actual enemy/boss coordinates.
+      let count = 0;
+      const threats = boss ? [{ o: boss }] : enemies.filter((enemy) => !enemy.dead);
+      for (const threat of threats) {
+        if (count >= 4) break;
+        const dx = threat.o.position.x - player.position.x;
+        const dz = player.position.z - threat.o.position.z;
+        if (Math.abs(dx) > 80 || dz < -6 || dz > 200) continue;
+        const blip = $('cockpitBlip' + count++);
+        blip.hidden = false;
+        blip.style.left = 50 + (dx / 160) * 100 + '%';
+        blip.style.top = 90 - (Math.max(0, dz) / 200) * 82 + '%';
+      }
+      for (; count < 4; count++) $('cockpitBlip' + count).hidden = true;
+    }
     // The opaque web cover/hangar owns the menu frame; keep the live GPU idle.
     if (!(dynamicFlight && state === 'menu' && document.body.classList.contains('showroom-web'))) {
       routeRenderer?.prepare();
@@ -6094,6 +6148,7 @@ export function createGame({
   return {
     start,
     cycleCamera,
+    switchPilot,
     orbit,
     cycleArsenal,
     cycleSpecial,
@@ -6172,6 +6227,17 @@ export function createGame({
       petCare: { ...petCare },
       cinematic: cinematic ? { elapsed: cinematic.elapsed, duration: cinematic.duration } : null,
       loadout: { ...pilotLoadout, pilotName: activePilot().name, shipName: activeShip().name },
+      pilotRelay: pilotRelay.snapshot(),
+      cockpit: cockpit?.snapshot() ?? null,
+      flightSpeed: Math.round(lastFlightSpeed * 10),
+      maxShield: maxHp(),
+      combatMultipliers: {
+        speed: activePilot().bonuses.speed * (1 + activeShip().stats.agility * 0.08),
+        damage: activePilot().bonuses.damage * (1 + activeShip().stats.attack * 0.06),
+        shield: activePilot().bonuses.shield,
+        arcana: activePilot().bonuses.arcana,
+        bomb: activePilot().bonuses.bomb,
+      },
       sector: sectorIndex + 1,
       lives,
       credits,
