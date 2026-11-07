@@ -14,18 +14,14 @@ function cityTile() {
   const high = new T.Group();
   high.name = 'city-high-details';
   high.visible = false;
-  const viaduct = new T.InstancedMesh(
-    new T.BoxGeometry(1, 1, 1), new T.MeshBasicMaterial(), 1,
-  );
+  const viaduct = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), new T.MeshBasicMaterial(), 1);
   viaduct.name = 'city-elevated-crossings';
   high.add(viaduct);
   tile.add(high);
   const life = new T.Group();
   life.name = 'city-urban-life';
   const bridge = new T.Group();
-  const crossing = new T.Mesh(
-    new T.BoxGeometry(266, 3.1, 12), new T.MeshBasicMaterial(),
-  );
+  const crossing = new T.Mesh(new T.BoxGeometry(266, 3.1, 12), new T.MeshBasicMaterial());
   crossing.name = 'city32-maglev-crossing-guideway';
   crossing.position.set(0, 59, -345);
   bridge.add(crossing);
@@ -41,7 +37,8 @@ test('high-only viaduct deck is a localized real obstruction, not a full-height 
   const physics = createCityLocalSolids([tile]);
   physics.update();
   assert.equal(
-    physics.colliders().filter((c) => c.kind === 'overpass-deck').length, 0,
+    physics.colliders().filter((c) => c.kind === 'overpass-deck').length,
+    0,
     'hidden premium bridges must not generate invisible collision',
   );
   high.visible = true;
@@ -98,7 +95,8 @@ test('transverse maglev guideway physically blocks its real Medium-quality deck'
   life.visible = false;
   physics.update();
   assert.equal(
-    physics.colliders().filter((c) => c.kind === 'cross-city-guideway').length, 0,
+    physics.colliders().filter((c) => c.kind === 'cross-city-guideway').length,
+    0,
     'hidden bridge parent cannot leave a ghost collider',
   );
 });
@@ -118,7 +116,10 @@ test('moving/cycling city tile moves only corresponding visible bridge colliders
   assert.equal(deck.center.z, initialZ + 12);
   tile.scale.setScalar(0.72);
   physics.update();
-  assert.ok(Math.abs(deck.half.x - 71 * 0.72) < 0.01, 'collider shrinks with visible city on ascent');
+  assert.ok(
+    Math.abs(deck.half.x - 71 * 0.72) < 0.01,
+    'collider shrinks with visible city on ascent',
+  );
   assert.ok(Math.abs(deck.center.y - 59 * 0.72) < 0.01);
   tile.position.z += 1900;
   physics.update();
@@ -135,7 +136,8 @@ test('old city demolition remains physically active until visible city actually 
   world.setLaunchAscent(0.36, true);
   assert.equal(scene.getObjectByName('launch-city').visible, true);
   assert.equal(
-    world.cityRoadActive(), true,
+    world.cityRoadActive(),
+    true,
     'visual city still on screen despite receding beyond previous y=-35 threshold',
   );
   world.setLaunchAscent(0.81, true);
@@ -154,9 +156,15 @@ test('the directional control climbs the full stage-one skyline with tracking ca
   assert.equal(before.flightBounds.maxY, 116);
   assert.ok(before.player.y > 90, 'pilot may fly well above the former y=46 ceiling');
   assert.ok(before.player.y <= 116);
-  assert.ok(before.camera.y > 64, 'camera moves upward with pilot rather than leaving ship offscreen');
+  assert.ok(
+    before.camera.y > 64,
+    'camera moves upward with pilot rather than leaving ship offscreen',
+  );
   h.advance(0.5, 0.05);
-  assert.ok(Math.abs(h.game.snapshot().player.y - before.player.y) < 0.15, 'letting go holds altitude');
+  assert.ok(
+    Math.abs(h.game.snapshot().player.y - before.player.y) < 0.15,
+    'letting go holds altitude',
+  );
   h.key('KeyW', true);
   h.advance(12, 0.05);
   h.key('KeyW', false);

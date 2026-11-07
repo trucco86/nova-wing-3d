@@ -117,12 +117,15 @@ test('falling hovercar stays visible and solid at the actual pilot flight depth 
       reachable.push(time);
       assert.ok(
         Math.abs(after.x - car.center.x) >= car.half.x + CITY_SHIP_CLEARANCE.x ||
-        Math.abs(after.y - car.center.y) >= car.half.y + CITY_SHIP_CLEARANCE.y,
+          Math.abs(after.y - car.center.y) >= car.half.y + CITY_SHIP_CLEARANCE.y,
         'actual crash physically ejects the ship outside the visible vehicle',
       );
     }
   }
   assert.ok(reachable.length >= 2, 'hovercar must offer more than a one-frame collision chance');
   updateCityDestructionScene(visual, 13);
-  assert.equal(physics.update().some((c) => c.kind === 'falling-hovercar'), false);
+  assert.equal(
+    physics.update().some((c) => c.kind === 'falling-hovercar'),
+    false,
+  );
 });

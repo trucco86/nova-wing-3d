@@ -26,7 +26,9 @@ test('flight stick/keyboard can reach the skyline, camera follows, flight remain
   expect(state.flightBounds.maxY).toBe(116);
   expect(state.player.y).toBeGreaterThan(80);
   expect(state.camera.y).toBeGreaterThan(55);
-  await page.screenshot({ path: info.outputPath('skyline-open-vertical-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('skyline-open-vertical-' + info.project.name + '.png'),
+  });
   await page.keyboard.down('KeyD');
   await page.evaluate(() => window.fixture.advance(3));
   await page.keyboard.up('KeyD');
@@ -34,7 +36,9 @@ test('flight stick/keyboard can reach the skyline, camera follows, flight remain
   expect(state.player.x).toBeGreaterThan(36);
   expect(state.player.x).toBeLessThanOrEqual(72);
   expect(state.player.y).toBeGreaterThan(80);
-  await page.screenshot({ path: info.outputPath('skyline-high-right-flank-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('skyline-high-right-flank-' + info.project.name + '.png'),
+  });
   expect(errors).toEqual([]);
 });
 
@@ -60,7 +64,9 @@ test('a visible elevated overpass deck stops a climbing ship instead of allowing
     'the real overpass is visible and physically active',
   ).toBe(true);
   expect(near.player.y).toBeLessThan(59, 'ship cannot cross the overhead deck');
-  await page.screenshot({ path: info.outputPath('overpass-physical-contact-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('overpass-physical-contact-' + info.project.name + '.png'),
+  });
   expect(errors).toEqual([]);
 });
 

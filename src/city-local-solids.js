@@ -87,9 +87,7 @@ export function createCityLocalSolids(tiles) {
     // premium elevated crossings. Its solid is the actual mesh footprint.
     const crossGuideway = tile.getObjectByName('city32-maglev-crossing-guideway');
     if (crossGuideway)
-      objects.push(
-        solid(tile, 'cross-city-guideway', 0, 59, -345, 133, 1.55, 6, crossGuideway),
-      );
+      objects.push(solid(tile, 'cross-city-guideway', 0, 59, -345, 133, 1.55, 6, crossGuideway));
     const life = tile.getObjectByName('city-urban-life');
     for (const node of life?.children ?? []) {
       if (node.userData.role !== 'maglev') continue;
