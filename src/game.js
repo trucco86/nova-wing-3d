@@ -21,6 +21,7 @@ import {
 } from './tactics.js';
 import { createEvolution } from './evolution.js';
 import { createCockpit } from './cockpit.js';
+import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
@@ -352,6 +353,9 @@ export function createGame({
   scene.add(player);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
+  const pilotRelay = createPilotRelay(pilotLoadout);
+  let pendingPilotRelay = null;
+  let lastFlightSpeed = 48;
   let shipModule = dynamicFlight ? createShipModule(pilotLoadout.ship) : new T.Group();
   player.add(shipModule);
   // Grow visible NOVA-7 by 11% (a ~6% gain vs Graphics 3.6), preserving root/hitbox.
@@ -361,6 +365,14 @@ export function createGame({
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  // A damaged ship retreats instead of depicting a dead cat.
+  const damagedCraft = dynamicFlight ? fighter() : null;
+  if (damagedCraft) {
+    damagedCraft.name = 'five-cats-damaged-craft-retreat';
+    damagedCraft.visible = false;
+    damagedCraft.scale.setScalar(0.85);
+    scene.add(damagedCraft);
+  }
   const heroEffects = createHeroWeaponEffects(player, robot);
   const reflexBoost = createReflexBoost();
   const squad = dynamicFlight
@@ -759,6 +771,7 @@ export function createGame({
         (strategy.specialty === 'attack' ? 1.15 : 1) *
         activePilot().bonuses.damage *
         dockedPodPower(podCount, stage(), podsDetached) *
+        (1 + activeShip().stats.attack * 0.06) *
         (berserk > 0 ? 1.6 : 1)
       : 1;
   const selectedWeapon = () => ARSENAL[dynamicFlight ? strategy.arsenal : 0];
@@ -989,6 +1002,10 @@ export function createGame({
       .join('');
     $('selectedShipName').textContent = ship.name;
     $('selectedShipDescription').textContent = ship.role + ' · ' + ship.description;
+    $('shipStats').textContent =
+      'ATAQUE ' + (ship.stats.attack > 0 ? '+' : '') + ship.stats.attack +
+      ' · DEFESA ' + (ship.stats.defense > 0 ? '+' : '') + ship.stats.defense +
+      ' · AGILIDADE ' + (ship.stats.agility > 0 ? '+' : '') + ship.stats.agility;
     $('specialty').value = pilot.specialty;
     for (const entry of PILOT_PROFILES) {
       const button = $('pilot-' + entry.id),
@@ -1031,6 +1048,39 @@ export function createGame({
     renderPilotSelection();
     return true;
   }
+  function adoptRelayPilot(nextLoadout, restoreHull = false) {
+    const ratio = maxHp() > 0 ? hp / maxHp() : 1;
+    pilotLoadout = { ...nextLoadout };
+    robotMode = false;
+    robotTransition = 0;
+    dashRemaining = dashCooldown = 0;
+    roll = rollAngle = 0;
+    rollHeld = false;
+    robot.visible = false;
+    for (const part of shipParts) part.visible = true;
+    $('robotTouch').ariaPressed = 'false';
+    $('robotTouch').textContent = 'ROBÔ';
+    $('lockTouch').hidden = true;
+    syncDodgeControl();
+    applyShipModel();
+    renderPilotSelection();
+    cockpit?.setPilot(activePilot().id);
+    hp = restoreHull ? maxHp() : Math.max(1, Math.min(maxHp(), Math.round(ratio * maxHp())));
+    $('criticalWarning').hidden = hp > maxHp() * 0.25;
+    $('pilotName').textContent = activePilot().name + ' / ' + lives + ' NAVES';
+  }
+  function switchPilot() {
+    if (!dynamicFlight || state !== 'playing' || hp <= 0 || squad?.snapshot().intro > 0)
+      return false;
+    const handoff = pilotRelay.switchPilot();
+    if (!handoff) return false;
+    adoptRelayPilot(handoff.next);
+    invuln = Math.max(invuln, 0.8);
+    cue('boostIgnition');
+    message('TROCA DE COMANDO · ' + activePilot().name + ' / ' + activeShip().name, activePilot().id);
+    return true;
+  }
+  $('pilotSwitch').onclick = () => switchPilot();
   for (const pilot of PILOT_PROFILES) $('pilot-' + pilot.id).onclick = () => selectPilot(pilot.id);
   for (const ship of SHIP_MODELS) $('ship-' + ship.id).onclick = () => selectShip(ship.id);
   for (const color of SHIP_COLORS)
@@ -1310,6 +1360,10 @@ export function createGame({
     saveCheckpoint();
   }
   function enterSector(resupply = true) {
+    // Repair previously disabled crafts between stages without replenishing lives.
+    if (dynamicFlight) pilotRelay.reset(pilotLoadout);
+    pendingPilotRelay = null;
+    if (damagedCraft) damagedCraft.visible = false;
     setIntermissionUI(false);
     document.body.classList.remove('ranking-intermission');
     orbitalLaunchSequence.reset();
@@ -1505,7 +1559,7 @@ export function createGame({
       }
     }
     music?.start(sectorIndex);
-    message(PILOTS[3 - lives] + ' / ' + current().brief);
+    message((dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + current().brief);
   }
   const keys = new Set(),
     stick = { x: 0, y: 0 };
@@ -2675,6 +2729,9 @@ export function createGame({
     pilotLoadout = dynamicFlight
       ? readPilotLoadout(checkpoint ? checkpoint.loadout : pilotLoadout)
       : readPilotLoadout(null);
+    pilotRelay.reset(pilotLoadout);
+    pendingPilotRelay = null;
+    if (damagedCraft) damagedCraft.visible = false;
     applyShipModel();
     strategy = dynamicFlight
       ? readStrategy(checkpoint ? checkpoint.strategy : { specialty: activePilot().specialty })
@@ -2745,7 +2802,7 @@ export function createGame({
     // The selected Five Cats pilot is already the active player on frame zero.
     // Do not leave the previous/default pilot on the HUD until the first tick.
     $('pilotName').textContent =
-      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + ' VIDAS';
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + (dynamicFlight ? ' NAVES' : ' VIDAS');
     renderPilotSelection();
   }
   function startDeveloperScenario(sector, encounter, fromRestart = false) {
@@ -3526,6 +3583,7 @@ export function createGame({
     if (e.code === 'KeyR') tacticalAction('repair');
     if (e.code === 'KeyU') tacticalAction('barrage');
     if (e.code === 'KeyC') cycleCamera();
+    if (e.code === 'KeyM') switchPilot();
     if (e.code === 'KeyT') toggleRobot();
     if (e.code === 'KeyN') startMechaMultiLock();
     if (e.code === 'KeyY') castSquadSpecial('plasma');
@@ -3794,6 +3852,7 @@ export function createGame({
       (1 + Math.min(30, stage()) * 0.02) *
       profileSpeed *
       progressionSpeed(stage());
+    lastFlightSpeed = speed;
     const holding = keys.has('Space') || touchFire;
     if (holding && marsCleanse === 0) {
       charge = Math.min(1.5, charge + dt);
@@ -4563,7 +4622,7 @@ export function createGame({
       lastStage = phase;
     }
     $('pilotName').textContent =
-      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + ' VIDAS';
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + (dynamicFlight ? ' NAVES' : ' VIDAS');
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     podCd -= dt;
     if (dynamicFlight && podsDetached) {
@@ -5721,14 +5780,7 @@ export function createGame({
         obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel'),
       );
     hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
-    hud.text(
-      'speedValue',
-      boosting && sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost'
-        ? '1140'
-        : boosting
-          ? '890'
-          : '480',
-    );
+    hud.text('speedValue', String(Math.round(lastFlightSpeed * 10)));
     hud.style('shield', 'width', (hp / maxHp()) * 100 + '%');
     hud.hidden('criticalWarning', !dynamicFlight || hp <= 0 || hp > maxHp() * 0.25);
     hud.hidden('shieldWarning', !dynamicFlight || hp <= maxHp() * 0.25 || hp > maxHp() * 0.45);
