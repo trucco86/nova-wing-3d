@@ -1,5 +1,5 @@
 name: Prepare QA v1.27.98 - physical city debris and ISS
-# Rerun after fixing the orbital regression test string literal.
+# Rerun after strict ESLint cleanup of the orbital test and module.
 on:
   push:
     branches: [fix/stage1-falling-collisions-iss-v12798-20261107]
