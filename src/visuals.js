@@ -2330,6 +2330,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHorizon.visible = sceneryTheme === 'city';
       cityCatastrophe?.reset();
       cityReactive?.reset();
+      cityLocalSolids?.reset();
       cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
