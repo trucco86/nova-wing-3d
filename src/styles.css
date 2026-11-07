@@ -9511,3 +9511,178 @@ body:not(.developer-session) #qaBerserkDock {
   order: 50;
   min-width: 0;
 }
+
+/* v1.27.96: Compact flight-deck instrumentation and pilot handoff.
+   Only the lower edge receives hardware; never cover the center reticle. */
+#cockpitPanel:not([hidden]) {
+  display: block;
+  position: fixed;
+  bottom: max(8%, 74px);
+  left: 50%;
+  width: min(760px, calc(100vw - 42px));
+  max-width: 92vw;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid #5ad6c5a3;
+  border-radius: 13px;
+  background: linear-gradient(150deg, #071a23ed, #071827e8);
+  box-shadow: 0 0 22px #4cf6ca22, inset 0 0 0 1px #8af6ce18;
+  pointer-events: none;
+  font: 10px/1.3 monospace;
+  text-align: left;
+  color: #d5fff4;
+  letter-spacing: 0.025em;
+}
+#cockpitPanel .cockpit-instruments {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(115px, 1.07fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 15px;
+}
+#cockpitPanel .cockpit-left,
+#cockpitPanel .cockpit-right,
+#cockpitPanel .cockpit-radar-wrap {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+#cockpitPanel .cockpit-label {
+  font: 700 9px/1.2 monospace;
+  color: #82c4bf;
+  letter-spacing: 0.045em;
+}
+#cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+  margin: 0;
+  color: #f1fffb;
+  font: 800 22px/1.08 monospace;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#cockpitPanel #cockpitWeapon,
+#cockpitPanel #cockpitShip {
+  font: 800 11px/1.25 monospace;
+  color: #81f0d8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#cockpitPanel :is(#cockpitReadout, #cockpitSwapStatus, #cockpitNav) {
+  color: #b7ccd4;
+  font: 700 9px/1.25 monospace;
+  white-space: normal;
+  margin: 0;
+}
+#cockpitMap {
+  position: relative;
+  width: min(100%, 178px);
+  height: 68px;
+  margin: 3px auto 1px;
+  overflow: hidden;
+  border: 1px solid #4da9a4;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 90%, #174a4b, #061820);
+}
+#cockpitMap .cockpit-map-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49.5%, #83eccc2b 50%, transparent 50.5%),
+    linear-gradient(0deg, transparent 49.5%, #83eccc2b 50%, transparent 50.5%),
+    repeating-linear-gradient(90deg, transparent 0 24%, #53a89922 25% 25.5%, transparent 26% 50%),
+    repeating-linear-gradient(0deg, transparent 0 24%, #53a89922 25% 25.5%, transparent 26% 50%);
+}
+#cockpitMap #cockpitOwn {
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 11px;
+  height: 11px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 100% 100%, 50% 73%, 0 100%);
+  background: #78ffe0;
+  filter: drop-shadow(0 0 5px #67ffe0);
+}
+#cockpitMap .cockpit-blip:not([hidden]) {
+  display: block;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff8b65;
+  box-shadow: 0 0 8px #ff825c;
+}
+#pilotSwitch:not([hidden]) {
+  display: block;
+  position: fixed;
+  top: 154px;
+  right: 22px;
+  z-index: 24;
+  padding: 9px 11px;
+  min-height: 40px;
+  max-width: 165px;
+  border: 1px solid #78d8ca;
+  border-radius: 9px;
+  color: #effffb;
+  background: #092530e8;
+  font: 800 11px/1.2 monospace;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#pilotSwitch[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+#pilotSwitch:focus-visible {
+  outline: 2px solid #b3ffe9;
+}
+#shipStats {
+  display: block;
+  font: 800 11px/1.3 monospace;
+  color: #8fead9;
+}
+@media (max-width: 700px), (max-height: 540px) {
+  #cockpitPanel:not([hidden]) {
+    width: min(560px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+    bottom: max(18%, 86px);
+    padding: 7px;
+  }
+  #cockpitPanel .cockpit-instruments {
+    grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
+    gap: 5px;
+  }
+  #cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+    font-size: 14px;
+  }
+  #cockpitPanel .cockpit-label {
+    font-size: 7px;
+  }
+  #cockpitPanel :is(#cockpitReadout, #cockpitSwapStatus, #cockpitNav) {
+    font-size: 7px;
+  }
+  #cockpitPanel #cockpitMap {
+    height: 48px;
+    width: 88px;
+  }
+  #cockpitPanel #cockpitWeapon,
+  #cockpitPanel #cockpitShip {
+    font-size: 8px;
+  }
+  #pilotSwitch:not([hidden]) {
+    top: 113px;
+    right: 12px;
+    min-height: 39px;
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  #cockpitPanel:not([hidden]) {
+    bottom: max(24%, 125px);
+  }
+  #pilotSwitch:not([hidden]) {
+    top: 113px;
+  }
+}
