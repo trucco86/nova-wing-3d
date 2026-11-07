@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createMechaDash, mechaDashDirection, MECHA_DASH } from '../src/mecha-dash.js';
+import { MECHA_DASH as CAMPAIGN_DASH } from '../src/hero-dodge-controls.js';
 import { harness } from './harness.mjs';
 
 const setup = (t) => {
@@ -61,7 +62,7 @@ test('robot uses a lateral dash instead of barrel roll and becomes briefly evasi
   assert.equal(dodge.mecha.dash.active, true);
   assert.equal(dodge.mecha.dash.direction, -1);
   assert.equal(dodge.rolling, false, 'robot must never execute ship barrel roll');
-  assert.equal(before.energy - dodge.energy, MECHA_DASH.energy);
+  assert.equal(before.energy - dodge.energy, CAMPAIGN_DASH.energyCost);
   const shield = dodge.shield;
   h.game.damage(15);
   assert.equal(h.game.snapshot().shield, shield, 'dash grants brief dodge i-frames');
@@ -86,6 +87,7 @@ test('ship retains the original defensive 360 roll and Mars objective rejects ro
   h.advance(0.7, 0.05);
   h.key('KeyT');
   const before = h.game.snapshot();
+  h.key('KeyD');
   h.game.roll();
   assert.equal(h.game.snapshot().rolling, false);
   assert.equal(h.game.snapshot().mecha.dash.active, true);
