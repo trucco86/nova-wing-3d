@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createPilotRelay, PILOT_SWAP_COOLDOWN } from '../src/pilot-relay.js';
 import { createCockpit } from '../src/cockpit.js';
-import { pilotAt, shipAt } from '../src/pilots.js';
+import { pilotAt } from '../src/pilots.js';
 import { harness } from './harness.mjs';
 
 test('pilot relay swaps craft with cooldown, distinct ship class and persistent avaria', () => {
