@@ -1,4 +1,4 @@
-name: Unified candidate merged-source validation audit
+name: Unified candidate combined-code test
 on:
   pull_request:
     paths:
@@ -39,3 +39,11 @@ jobs:
             echo "INTEGRATION_MERGE_TREE_READY"
             git diff --stat HEAD^1 HEAD | tail -70
           fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
