@@ -897,6 +897,7 @@ export function resetMechPower(robot) {
   rig.turbineFlame.material.opacity = 0.78;
   rig.turbineFlame.material.color.set('#53dfff');
   rig.boostPalette = null;
+  rig.legacyBoostPalette = null;
   if (rig.turbineInnerFlame) {
     rig.turbineInnerFlame.scale.y = 1;
     rig.turbineInnerFlame.position.z = 1.7;
@@ -928,6 +929,13 @@ export function animateMechPower(
   const previous = rig.propulsionPower;
   const response = 1 - Math.exp(-10 * delta);
   rig.propulsionPower += (target - previous) * response;
+  if (rig.legacyBoostPalette !== boosting) {
+    rig.legacyBoostPalette = boosting;
+    rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#53dfff');
+    rig.turbineInnerFlame?.material.color.set(boosting ? '#fff2b8' : '#b7faff');
+    for (const plume of rig.sidePlumes)
+      plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+  }
   // Integrate angular velocity, including the exact exponential acceleration.
   // Multiplying mission time by the current speed makes BOOST jump rotor phase.
   const poweredTime = target * delta + ((previous - target) * response) / 10;
@@ -2121,6 +2129,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityLocalSolids?.reset();
+      cityHazardsCache.length = 0;
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || (sceneryTheme === 'station' && !dynamicFlight);
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
@@ -2499,6 +2513,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
       updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
+      cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityLocalSolids?.reset();
+      cityHazardsCache.length = 0;
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
