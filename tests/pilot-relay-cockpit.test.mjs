@@ -11,7 +11,7 @@ test('pilot relay swaps craft with cooldown, distinct ship class and persistent 
   assert.equal(relay.current().ship, 'nova7');
   const first = relay.switchPilot();
   assert.equal(first.next.pilot, 'bob');
-  assert.equal(first.next.ship, 'specter');
+  assert.equal(first.next.ship, 'aegis');
   assert.equal(relay.switchPilot(), null);
   relay.advance(PILOT_SWAP_COOLDOWN);
   const second = relay.switchPilot();
@@ -52,7 +52,7 @@ test('in-battle relay changes actual speed, damage and shield while retaining in
   assert.equal(h.game.switchPilot(), true);
   const after = h.game.snapshot();
   assert.equal(after.loadout.pilot, 'bob');
-  assert.equal(after.loadout.ship, 'specter');
+  assert.equal(after.loadout.ship, 'aegis');
   assert.ok(after.maxShield > before.maxShield);
   assert.notEqual(after.combatMultipliers.speed, before.combatMultipliers.speed);
   assert.notEqual(after.combatMultipliers.damage, before.combatMultipliers.damage);
