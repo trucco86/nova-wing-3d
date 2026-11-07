@@ -57,7 +57,9 @@ export function updateMechaPose(
     nozzle.rotation.y = ease(nozzle.rotation.y, -s * 0.31 - side * move * 0.035, step, 8);
     nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.22 - (boosting ? 0.16 : 0), step, 8);
     const pulse = Math.sin(time * (boosting ? 25 : 13) + side * 1.2) * 0.07;
-    const length = 0.55 + power * 1.35 + pulse;
+    // BOOST must read from the chase camera, not only as an emissive dot.
+    // The long exhaust uses the existing preallocated plume geometry.
+    const length = (boosting ? 8.7 : 0.55 + power * 1.35) + pulse;
     plume.scale.y = ease(plume.scale.y, length, step, 12);
     plume.scale.x = ease(plume.scale.x, 0.77 + power * 0.48, step, 10);
     plume.scale.z = plume.scale.x;
