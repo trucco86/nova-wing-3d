@@ -54,24 +54,113 @@ export function updateMechaPose(
   }
   rig.thrusters.forEach(({ nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor }, i) => {
     const side = i === 0 ? -1 : 1;
-    nozzle.rotation.y = ease(nozzle.rotation.y, -s * 0.26, dt, 6);
-    nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.19 + (boosting ? -0.14 : 0), dt, 6);
-    plume.scale.y = ease(
-      plume.scale.y,
-      0.42 +
-        thrust * (boosting ? 4.35 : 1.45) +
-        Math.sin(time * (boosting ? 27 : 12) + side) * 0.08,
-      dt,
-      12,
-    );
-    // Rotate cone toward -Z at authoring time and translate its center
-    // so the narrow nozzle tip stays at the actual engine outlet.
-    plume.position.z = 0.6 + plume.scale.y * 0.675;
-    plume.scale.x = ease(plume.scale.x, 0.72 + thrust * (boosting ? 0.78 : 0.26), dt, 10);
+    nozzle.rotation.y = ease(nozzle.rotation.y, -s * 0.31 - side * move * 0.035, step, 8);
+    nozzle.rotation.x = ease(nozzle.rotation.x, v * 0.22 - (boosting ? 0.16 : 0), step, 8);
+    const pulse = Math.sin(time * (boosting ? 25 : 13) + side * 1.2) * 0.07;
+    const length = 0.55 + power * 1.35 + pulse;
+    plume.scale.y = ease(plume.scale.y, length, step, 12);
+    plume.scale.x = ease(plume.scale.x, 0.77 + power * 0.48, step, 10);
     plume.scale.z = plume.scale.x;
-    plume.material.opacity = 0.44 + thrust * 0.48;
-    exhaustCore.scale.setScalar(boosting ? 1.28 : 1);
+    plume.material.opacity = 0.32 + power * 0.5;
+    if (innerPlume) {
+      innerPlume.scale.y = ease(innerPlume.scale.y, length * 1.16, step, 14);
+      innerPlume.scale.x = 0.62 + power * 0.19;
+      innerPlume.scale.z = innerPlume.scale.x;
+      innerPlume.material.opacity = 0.52 + power * 0.38;
+    }
+    if (boostBeam) {
+      boostBeam.material.opacity = ease(
+        boostBeam.material.opacity,
+        boosting ? 0.76 : 0,
+        step,
+        boosting ? 12 : 16,
+      );
+      boostBeam.scale.y = ease(boostBeam.scale.y, boosting ? 1.25 : 0.55, step, 11);
+      boostBeam.scale.x = ease(boostBeam.scale.x, boosting ? 1.12 : 0.7, step, 9);
+      boostBeam.scale.z = boostBeam.scale.x;
+      boostBeam.visible = boostBeam.material.opacity > 0.015;
+    }
+    exhaustCore.scale.setScalar(0.92 + power * 0.18 + pulse * 0.25);
+    if (rotor) rotor.rotation.z = (rotor.rotation.z + step * (11 + 20 * power)) % (2 * Math.PI);
   });
+
+  // The body counters momentum; the head stabilizes sight independently.
+  const torso = rig.torso;
+  if (torso) {
+    torso.rotation.z = ease(
+      torso.rotation.z,
+      -sensedStrafe * 0.11 - turnImpulse * 0.085 - dashSide * 0.18 + breathing * 0.014,
+      step,
+      7,
+    );
+    torso.rotation.x = ease(
+      torso.rotation.x,
+      sensedVertical * 0.065 + (boosting ? 0.06 : 0) + fireKick * 0.065,
+      step,
+      7,
+    );
+    torso.rotation.y = ease(torso.rotation.y, sensedStrafe * 0.058, step, 7);
+  }
+  if (rig.head) {
+    rig.head.rotation.y = ease(
+      rig.head.rotation.y,
+      -s * 0.1 + Math.sin(time * 1.2) * 0.015,
+      step,
+      6,
+    );
+    rig.head.rotation.x = ease(rig.head.rotation.x, -v * 0.045 - fireKick * 0.035, step, 7);
+  }
+
+  // Real hip and knee pivots make the silhouette visibly mobile, particularly
+  // when the player strafes. All motion is within the existing collider.
+  for (let i = 0; i < (rig.legs?.length ?? 0); i++) {
+    const side = i === 0 ? -1 : 1;
+    const leg = rig.legs[i];
+    const knee = rig.knees?.[i];
+    // Idle mechs hover with stabilized legs, rather than marching in place.
+    const pedal = stride * move * (0.025 + move * 0.055) * side;
+    leg.rotation.x = ease(
+      leg.rotation.x,
+      (boosting ? -0.19 : -0.07) + v * 0.11 + pedal + fireKick * 0.08,
+      step,
+      8,
+    );
+    leg.rotation.z = ease(leg.rotation.z, -s * 0.1 + side * (boosting ? 0.1 : 0.045), step, 8);
+    if (knee)
+      knee.rotation.x = ease(
+        knee.rotation.x,
+        (boosting ? -0.34 : -0.13) + Math.max(0, side * stride) * move * 0.13,
+        step,
+        10,
+      );
+  }
+  for (let i = 0; i < (rig.wingPivots?.length ?? 0); i++) {
+    const side = i === 0 ? -1 : 1;
+    const wing = rig.wingPivots[i];
+    wing.rotation.z = ease(
+      wing.rotation.z,
+      side * (0.015 + (boosting ? 0.1 : 0.025)) + s * 0.03,
+      step,
+      6,
+    );
+    wing.rotation.x = ease(wing.rotation.x, (boosting ? -0.09 : 0) + v * 0.03, step, 6);
+  }
+
+  // RCS hip jets only light up during a real maneuver or boost. No particles,
+  // lights or new meshes are instantiated during gameplay.
+  for (let i = 0; i < (rig.hipJets?.length ?? 0); i++) {
+    const jet = rig.hipJets[i];
+    const side = i === 0 ? -1 : 1;
+    const thrust = Math.max(
+      boosting ? 0.2 : 0,
+      side * s < 0 ? Math.abs(s) : 0,
+      dashSide !== 0 && side === -dashSide ? 1 : 0,
+    );
+    jet.visible = thrust > 0.04;
+    jet.material.opacity = ease(jet.material.opacity, thrust * 0.7, step, 12);
+    jet.scale.y = ease(jet.scale.y, 0.6 + thrust * 1.4, step, 10);
+  }
+
   const { left, right } = rig.arms;
   const firePulse = firing ? 0.042 + Math.sin(time * 32) * 0.025 : 0;
   right.shoulder.rotation.x = ease(
