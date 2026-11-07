@@ -66,7 +66,7 @@ test('animated exterior lift has synchronized hull/glazing/beacons and different
     const window = pose(glass, i);
     assert.ok(Math.abs(body.y - window.y + 0.1) < 0.00001);
     assert.equal(body.x, window.x);
-    assert.equal(body.z + 1.48, window.z);
+    assert.ok(Math.abs(body.z + 1.48 - window.z) < 0.00005, 'lift glazing follows body within Float32 GPU precision');
     for (let k = 0; k < 2; k++) {
       const signal = pose(lights, i * 2 + k);
       assert.ok(Math.abs(signal.y - body.y - 1.52) < 0.00001);
