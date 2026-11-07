@@ -3,11 +3,6 @@ import * as T from 'three';
 // Stage-one ascent only. An authored station stays in the planetary backdrop;
 // scattered debris uses a seeded variation of independent trajectories, not a
 // synchronized sheet of triangles moving in one direction.
-const clamp01 = (n) => T.MathUtils.clamp(n, 0, 1);
-const easing = (n) => {
-  const t = clamp01(n);
-  return t * t * (3 - 2 * t);
-};
 const ISS_SECONDS = 6.5;
 const ISS_START = 0.9;
 const metal = (color) => new T.MeshStandardMaterial({ color, roughness: 0.32, metalness: 0.72 });
