@@ -14,8 +14,11 @@ function makeISS() {
   const white = metal('#f4f5eb');
   const dark = metal('#28374d');
   const solar = new T.MeshStandardMaterial({
-    color: '#143b75', metalness: 0.22, roughness: 0.28,
-    emissive: '#102d57', emissiveIntensity: 0.45,
+    color: '#143b75',
+    metalness: 0.22,
+    roughness: 0.28,
+    emissive: '#102d57',
+    emissiveIntensity: 0.45,
     side: T.DoubleSide,
   });
   const gold = metal('#bb9e5c');
@@ -44,8 +47,11 @@ function makeISS() {
     for (let r = 0; r < 2; r++) box(side * (12 + r * 9), -0.4, 8, 7.5, 8, 0.28, white);
   }
   const cylinders = [
-    [0, 0, 0, 7, 29], [0, -1.3, 17, 5, 12],
-    [0, 0.8, -16, 6, 18], [8.5, -3, 1, 4, 13], [-8.5, -3, -3, 4, 13],
+    [0, 0, 0, 7, 29],
+    [0, -1.3, 17, 5, 12],
+    [0, 0.8, -16, 6, 18],
+    [8.5, -3, 1, 4, 13],
+    [-8.5, -3, -3, 4, 13],
   ];
   for (const [x, y, z, radius, length] of cylinders) {
     const module = new T.Mesh(new T.CylinderGeometry(radius, radius, length, 12), silver);
@@ -82,20 +88,29 @@ export function createOrbitalAscentEncounter(scene, random = Math.random) {
     new T.TetrahedronGeometry(1, 0),
     new T.BoxGeometry(1, 0.2, 1.5),
   ];
-  const materials = [
-    metal('#678297'),
-    metal('#2f4858'),
-    metal('#baac9c'),
-    metal('#b48a62'),
-  ];
+  const materials = [metal('#678297'), metal('#2f4858'), metal('#baac9c'), metal('#b48a62')];
   const pieces = Array.from({ length: 24 }, (_, index) => {
     const mesh = new T.Mesh(geometries[index % geometries.length], materials[index % 4]);
     mesh.name = 'stage1-ascent-fragment-' + index;
     mesh.userData.visualOnly = true;
     mesh.visible = false;
     root.add(mesh);
-    return { mesh, start: 0, life: 0, x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0,
-      spinX: 0, spinY: 0, spinZ: 0, scale: 1, phase: 0 };
+    return {
+      mesh,
+      start: 0,
+      life: 0,
+      x: 0,
+      y: 0,
+      z: 0,
+      vx: 0,
+      vy: 0,
+      vz: 0,
+      spinX: 0,
+      spinY: 0,
+      spinZ: 0,
+      scale: 1,
+      phase: 0,
+    };
   });
   const range = (low, high) => low + (high - low) * random();
   let quality = 'high';
@@ -161,7 +176,7 @@ export function createOrbitalAscentEncounter(scene, random = Math.random) {
         -925 + 18 * Math.sin(orbitalAngle * 2),
       );
       station.rotation.set(-0.18, -0.17 + age * 0.12, 0.07 + age * 0.018);
-      station.scale.setScalar(1.05 + 0.13 * Math.sin(Math.PI * age / ISS_SECONDS));
+      station.scale.setScalar(1.05 + 0.13 * Math.sin((Math.PI * age) / ISS_SECONDS));
     }
     latest = { active, near, iss: station.visible, issSeconds: age };
     return latest;
@@ -169,10 +184,15 @@ export function createOrbitalAscentEncounter(scene, random = Math.random) {
   function snapshot() {
     return {
       ...latest,
-      fragments: pieces.filter(({ mesh }) => mesh.visible).map(({ mesh }) => ({
-        x: mesh.position.x, y: mesh.position.y, z: mesh.position.z,
-        scale: mesh.scale.x, kind: mesh.geometry.type,
-      })),
+      fragments: pieces
+        .filter(({ mesh }) => mesh.visible)
+        .map(({ mesh }) => ({
+          x: mesh.position.x,
+          y: mesh.position.y,
+          z: mesh.position.z,
+          scale: mesh.scale.x,
+          kind: mesh.geometry.type,
+        })),
       stationPosition: station.position.toArray(),
     };
   }

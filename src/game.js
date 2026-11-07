@@ -6493,7 +6493,8 @@ export function createGame({
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityPhysicsDebris: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
-      cityFallingSolids: dynamicFlight && sectorIndex === 0 ? world.cityScriptedFallingSnapshot() : [],
+      cityFallingSolids:
+        dynamicFlight && sectorIndex === 0 ? world.cityScriptedFallingSnapshot() : [],
       orbitalAscentCinematic:
         dynamicFlight && sectorIndex === 0 ? world.orbitalAscentSnapshot() : null,
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],

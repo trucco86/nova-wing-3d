@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.98 — Candidata em preparação
+
+- QA da fase 1: colisão real em placa, carro e 7 fragmentos visíveis, CCD XYZ, posições que exigem desvio, destroços orbitais aleatorizados e ISS orbitando brevemente a Terra; homologação WebGL pendente.
+
 ## 1.27.97 — Candidata em preparação
 
 - QA cockpit e relay: módulo atual da nave não sobrepõe o robô após troca, lock e cooldown reiniciam com o novo chassi e a nave avariada preserva pintura escolhida. Testes browser ainda necessários.

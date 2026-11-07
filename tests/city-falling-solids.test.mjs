@@ -15,10 +15,16 @@ test('falling scripted sign, hovercar and seven real facade shards have individu
 
   updateCityDestructionScene(scene, 6.5);
   let active = solids.update();
-  assert.deepEqual(active.map((c) => c.kind), ['falling-billboard']);
+  assert.deepEqual(
+    active.map((c) => c.kind),
+    ['falling-billboard'],
+  );
   assert.ok(active.every((c) => c.solid && c.half.lengthSq() > 0));
   // No invisible facade volume when parent facade is hidden.
-  assert.equal(active.some((c) => c.kind.startsWith('falling-facade')), false);
+  assert.equal(
+    active.some((c) => c.kind.startsWith('falling-facade')),
+    false,
+  );
 
   updateCityDestructionScene(scene, 9.65);
   active = solids.update();
@@ -86,8 +92,11 @@ test('world hazard list includes cinematic falling objects in the same frame, wi
   assert.ok(falling.some((c) => c.kind === 'falling-billboard'));
   const snapshots = world.cityScriptedFallingSnapshot();
   assert.equal(snapshots.length, 9);
-  assert.ok(snapshots.every(({ center, half }) =>
-    center.every(Number.isFinite) && half.every(Number.isFinite)));
+  assert.ok(
+    snapshots.every(
+      ({ center, half }) => center.every(Number.isFinite) && half.every(Number.isFinite),
+    ),
+  );
   world.setCityDestruction(24);
   assert.equal(world.cityHazards().filter((c) => c.kind.startsWith('falling-')).length, 0);
   world.setSector(SECTORS[1], 1);

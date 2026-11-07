@@ -16,9 +16,14 @@ test('stage-one falling billboard forces an actual dodge; empty flank remains fr
   const sign = hit.cityFallingSolids.find((piece) => piece.kind === 'falling-billboard');
   expect(sign).toBeTruthy();
   expect(sign.active).toBe(true);
-  expect(hit.cityImpactCount, 'flying straight into an actual falling sign must cause contact').toBeGreaterThan(0);
+  expect(
+    hit.cityImpactCount,
+    'flying straight into an actual falling sign must cause contact',
+  ).toBeGreaterThan(0);
   expect(Math.abs(hit.player.x - sign.center[0])).toBeGreaterThanOrEqual(sign.half[0] + 5.3);
-  await page.screenshot({ path: info.outputPath('falling-sign-solid-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('falling-sign-solid-' + info.project.name + '.png'),
+  });
 
   // The pilot may take the wide right flank, past the former invisible ±36 wall.
   await page.reload();
@@ -32,7 +37,9 @@ test('stage-one falling billboard forces an actual dodge; empty flank remains fr
   const dodged = await page.evaluate(() => window.fixture.game.snapshot());
   expect(dodged.cityImpactCount).toBe(0);
   expect(dodged.lives).toBe(3);
-  await page.screenshot({ path: info.outputPath('falling-sign-free-flank-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('falling-sign-free-flank-' + info.project.name + '.png'),
+  });
   expect(errors).toEqual([]);
 });
 
@@ -60,7 +67,9 @@ test('Earth ascent shows varied drifting debris and a brief recognizable ISS orb
   const debris = state.orbitalAscentCinematic.fragments;
   expect(debris.length).toBeGreaterThan(0);
   expect(new Set(debris.map((piece) => Math.round(piece.x))).size).toBeGreaterThan(1);
-  await page.screenshot({ path: info.outputPath('ascent-diverse-debris-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('ascent-diverse-debris-' + info.project.name + '.png'),
+  });
 
   state = await page.evaluate(() => {
     window.fixture.advance(10);

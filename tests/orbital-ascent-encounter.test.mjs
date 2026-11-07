@@ -27,7 +27,11 @@ test('ascent debris uses bounded independently randomized trajectories and preal
     const state = effect.update(p, 40 + index * 0.045);
     seen += state.active;
     near += state.near;
-    assert.equal(effect.root.children.length, count, 'no allocation of new scene meshes on a frame');
+    assert.equal(
+      effect.root.children.length,
+      count,
+      'no allocation of new scene meshes on a frame',
+    );
     for (const part of effect.snapshot().fragments) {
       positions.add(Math.round(part.x) + ':' + Math.round(part.y) + ':' + Math.round(part.z));
       types.add(part.kind);
