@@ -1,0 +1,56 @@
+name: QA100 prepare version before playable skyline changes
+on:
+  push:
+    branches: [feat/qa100-upper-skybridges-20261107]
+    paths: [.github/workflows/qa100-version-prepare.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/qa100-upper-skybridges-20261107
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare QA v1.27.100
+        run: npm run release:prepare -- 1.27.100
+      - name: Release notes and changelog
+        run: |
+          cat > releases/v1.27.100.md <<'NOTES'
+          ## Nova Wing 3D v1.27.100 — Accessible upper skyline and localized skybridge collision (QA)
+
+          - Bring three upper-level city skybridges into the actual approaching stage tiles, each with visible localized structural elements and matching physical solids.
+          - Extend the vertical fighter ceiling to clear every near playable overpass without constraining the open lateral sky.
+          - Preserve the v1.27.99 low-opacity armored HUD, lower overpass colliders, city debris and ISS.
+          - Remove redundant software-WebGL rendering in the genuine sector-one subboss telegraph validation while simulating the same physical ticks.
+
+          **Draft QA only: full browser shards, visual and real-device checks required.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('CHANGELOG.md')
+          s=p.read_text()
+          i=s.find('## 1.27.100')
+          if i<0: raise Exception('v1.27.100 changelog header missing')
+          a='- Candidata não homologada; preencher entregas e evidências antes da publicação.'
+          j=s.find(a,i)
+          if j<0: raise Exception('v1.27.100 changelog placeholder missing')
+          s=s[:j]+'- QA: viadutos superiores visíveis e sólidos na rota, alcance vertical estendido, teste determinístico do subchefe sem renderizações WebGL redundantes; homologação pendente.'+s[j+len(a):]
+          p.write_text(s)
+          PY
+      - name: Commit version metadata before source changes
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.100.md index.html
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA100): prepare new release before new skyline collision source'
+          git push origin HEAD:feat/qa100-upper-skybridges-20261107
