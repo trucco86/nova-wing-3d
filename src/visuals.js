@@ -19,6 +19,12 @@ import {
   updateCity32Living,
 } from './city-32-living.js';
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
+import {
+  createCity35LivedIn,
+  setCity35LivedInQuality,
+  updateCity35LivedIn,
+  city35LivedInSnapshot,
+} from './city-35-lived-in.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
 import { europaSurfaceAt, createEuropaSurface, updateEuropaSurface } from './europa-surface.js';
@@ -1486,6 +1492,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCity30DistrictLife(buildingAnchors));
   city.add(createCity32Living(buildingAnchors));
   city.add(createCity33Premium(buildingAnchors));
+  // Affordable inhabited-city depth: building-anchored landing pads, moving
+  // lift services and HVAC. All details stay outside the x±72 flight area.
+  if (dynamicFlight) city.add(createCity35LivedIn(buildingAnchors));
   // The far background's high architectural skybridges are not playable.
   // These three approaching tile-level bridges are: visible physical decks,
   // matching collision shapes, and a high route to fly above or below them.
@@ -1501,7 +1510,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityFar.getObjectByName('city-matrix-rooftop-taxis').userData.phase = 1.8;
   cityFar.getObjectByName('city32-living-metropolis').userData.phase = 2.8;
   cityFar.getObjectByName('city33-premium-urban-life').userData.phase = 2.1;
+  if (dynamicFlight) cityFar.getObjectByName('city35-lived-in-metropolis').userData.phase = 2.8;
   updateCity33Premium(cityFar.getObjectByName('city33-premium-urban-life'), 0);
+  if (dynamicFlight) updateCity35LivedIn(cityFar.getObjectByName('city35-lived-in-metropolis'), 0);
   updateCity32Living(cityFar.getObjectByName('city32-living-metropolis'), 0);
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
@@ -1907,6 +1918,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
     cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
     cityCameraOcclusionSnapshot: () => cityBridgeCameraFade?.snapshot() ?? [],
+    city35DetailSnapshot: () =>
+      dynamicFlight
+        ? [city, cityFar].map((tile) =>
+            city35LivedInSnapshot(tile.getObjectByName('city35-lived-in-metropolis')),
+          )
+        : [],
     updateCityCameraOcclusion(camera, pilot, dt) {
       return (
         cityBridgeCameraFade?.update(
@@ -1981,6 +1998,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity30Quality(tile.getObjectByName('city-matrix-streets'), quality);
         setCity32Quality(tile.getObjectByName('city32-living-metropolis'), quality);
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
+        if (dynamicFlight)
+          setCity35LivedInQuality(tile.getObjectByName('city35-lived-in-metropolis'), quality);
       }
     },
     setEuropaTunnel(active = false) {
@@ -2208,6 +2227,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-matrix-streets').visible = sceneryTheme === 'city';
         tile.getObjectByName('city32-living-metropolis').visible = sceneryTheme === 'city';
         tile.getObjectByName('city33-premium-urban-life').visible = sceneryTheme === 'city';
+        if (dynamicFlight)
+          tile.getObjectByName('city35-lived-in-metropolis').visible = sceneryTheme === 'city';
       }
       near.forEach((o) => (o.visible = city.visible));
       rain.visible = land && sceneryTheme !== 'mars';
@@ -2468,6 +2489,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
             updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
+            if (dynamicFlight)
+              updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), travel);
           }
           for (const vehicle of tile.getObjectByName('city-urban-life').children) {
             if (vehicle.userData.role === 'maglev-infrastructure') continue;
@@ -2548,6 +2571,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         animateCity30(tile.getObjectByName('city-matrix-streets'), 0);
         updateCity32Living(tile.getObjectByName('city32-living-metropolis'), 0);
         updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), 0);
+        if (dynamicFlight)
+          updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), 0);
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
       }
