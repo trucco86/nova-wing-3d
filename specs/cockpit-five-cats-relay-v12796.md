@@ -1,6 +1,7 @@
 # Nova Wing QA v1.27.96 — cockpit Five Cats e troca de comando
 
 ## Requisitos confirmados
+
 - O cockpit mantém a visão de voo livre e ganha telemetria REAL: velocidade de deslocamento calculada pelo jogo, arma equipada, integridade, energia, piloto e radar tático de ameaças relativas.
 - Patas 3D sobre comandos aparecem dentro da câmera e acompanham movimento e boost; cor do pelo e escala são definidas pelo piloto (não o matiz genérico do HUD). Geometria reaproveitada, sem criar malhas por quadro.
 - Ao pedir TROCAR / tecla M durante a luta, a próxima nave do esquadrão assume após troca instantânea, com invulnerabilidade curta (0,8s) e cooldown de 9s. Pilotos mantêm seu próprio chassi e cor associados à missão, selecionados deterministicamente a partir da configuração inicial. O casco ativo mantém o **percentual** de integridade, evitando cura infinita.
@@ -10,6 +11,7 @@
 - Troca exige missão em execução; bloqueada em menu, pausa, animação inicial e cooldown. Desativa transitoriamente forma robô para substituir a nave com segurança. Não substitui mecânicas de orbitar ou lock-on.
 
 ## Critérios de aceite
+
 1. Troca durante batalha altera piloto, HUD, visual, modelo, força, velocidade e escudo; mantém posição, % de integridade e não duplica rewards; segunda troca imediata bloqueada.
 2. Dano terminal avaria nave, troca por outro gato, preserva 3 chances e não emite mensagem de morte. Pausa, novo setor e reinício não conservam cooldown/retirados inconsistentes.
 3. Cockpit desktop e mobile mostram dados coerentes com snapshot da partida, ameaças no radar e duas patas específicas ao piloto, sem bloquear mira.

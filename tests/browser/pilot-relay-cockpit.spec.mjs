@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('cockpit instruments show real speed, weapon, map and active cat-specific paws', async ({ page }, info) => {
+test('cockpit instruments show real speed, weapon, map and active cat-specific paws', async ({
+  page,
+}, info) => {
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.evaluate(() => window.fixture.advance(3.2));
@@ -33,7 +35,9 @@ test('cockpit instruments show real speed, weapon, map and active cat-specific p
   expect(await page.evaluate(() => window.fixture.game.switchPilot())).toBe(false);
 });
 
-test('fatal damage means craft retreat, not a dead cat; a reserve pilot takes command', async ({ page }, info) => {
+test('fatal damage means craft retreat, not a dead cat; a reserve pilot takes command', async ({
+  page,
+}, info) => {
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const damaged = await page.evaluate(() => {

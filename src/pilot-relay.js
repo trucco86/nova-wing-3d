@@ -26,7 +26,10 @@ export function createPilotRelay(initial = { pilot: 'bia', ship: 'nova7', color:
   function reset(loadout = initial) {
     cooldown = 0;
     damaged.clear();
-    const pilotIndex = Math.max(0, PILOT_PROFILES.findIndex((p) => p.id === loadout.pilot));
+    const pilotIndex = Math.max(
+      0,
+      PILOT_PROFILES.findIndex((p) => p.id === loadout.pilot),
+    );
     active = PILOT_PROFILES[pilotIndex].id;
     assigned.clear();
     PILOT_PROFILES.forEach((pilot, index) => {

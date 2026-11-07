@@ -8,8 +8,16 @@ const ROWS = [
   ['M · TROCAR', 'M · SWITCH', 'M · CAMBIAR'],
   ['ESCUDO 100% · ENERGIA 100%', 'SHIELD 100% · ENERGY 100%', 'ESCUDO 100% · ENERGÍA 100%'],
   ['SETOR 01 · 0%', 'SECTOR 01 · 0%', 'SECTOR 01 · 0%'],
-  ['Patinhas do comandante sobre os controles de voo', 'Commander paws on flight controls', 'Patitas del comandante en los controles de vuelo'],
-  ['Trocar piloto e nave durante a batalha', 'Switch pilot and ship during combat', 'Cambiar piloto y nave durante el combate'],
+  [
+    'Patinhas do comandante sobre os controles de voo',
+    'Commander paws on flight controls',
+    'Patitas del comandante en los controles de vuelo',
+  ],
+  [
+    'Trocar piloto e nave durante a batalha',
+    'Switch pilot and ship during combat',
+    'Cambiar piloto y nave durante el combate',
+  ],
   ['PILOTOS', 'PILOTS', 'PILOTOS'],
   ['NAVES', 'SHIPS', 'NAVES'],
   ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],

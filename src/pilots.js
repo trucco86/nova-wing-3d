@@ -1,7 +1,8 @@
 export const PILOT_PROFILES = [
   {
     id: 'bia',
-    fur: '#1c232b', pawScale: 0.89,
+    fur: '#1c232b',
+    pawScale: 0.89,
     name: 'BIA',
     role: 'COMANDANTE VANGUARDA',
     specialty: 'attack',
@@ -13,7 +14,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'bob',
-    fur: '#222a30', pawScale: 1.02,
+    fur: '#222a30',
+    pawScale: 1.02,
     name: 'BOB',
     role: 'GUARDIÃO DE CERCO',
     specialty: 'defense',
@@ -26,7 +28,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'christopher',
-    fur: '#454046', pawScale: 1.22,
+    fur: '#454046',
+    pawScale: 1.22,
     name: 'CHRISTOPHER',
     role: 'ARTILHEIRO PESADO',
     specialty: 'attack',
@@ -38,7 +41,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'calvin',
-    fur: '#17151b', pawScale: 0.78,
+    fur: '#17151b',
+    pawScale: 0.78,
     name: 'CALVINHO',
     role: 'MÍSTICO DO VAZIO',
     specialty: 'spirit',
@@ -51,7 +55,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'jenifer',
-    fur: '#969ca5', pawScale: 0.98,
+    fur: '#969ca5',
+    pawScale: 0.98,
     name: 'JENIFER',
     role: 'INTERCEPTADORA',
     specialty: 'attack',

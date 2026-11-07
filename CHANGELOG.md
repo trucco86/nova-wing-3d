@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.96 — Candidata em preparação
+
+- Cockpit Five Cats com patas por piloto, telemetria real, radar e troca de comandante/nave; avaria retira a nave, não mata o gato. Habilidades e classes passam a impactar dano, velocidade e defesa; QA pendente.
+
 ## 1.27.95 — Candidata em preparação
 
 - QA integrada 1.27.95: corrigidos hangar/QA compactos, direção do DASH e regressões do navegador, preservando todos os setores e o ritmo orbital. Homologação pendente.

@@ -1004,9 +1004,15 @@ export function createGame({
     $('selectedShipName').textContent = ship.name;
     $('selectedShipDescription').textContent = ship.role + ' · ' + ship.description;
     $('shipStats').textContent =
-      'ATAQUE ' + (ship.stats.attack > 0 ? '+' : '') + ship.stats.attack +
-      ' · DEFESA ' + (ship.stats.defense > 0 ? '+' : '') + ship.stats.defense +
-      ' · AGILIDADE ' + (ship.stats.agility > 0 ? '+' : '') + ship.stats.agility;
+      'ATAQUE ' +
+      (ship.stats.attack > 0 ? '+' : '') +
+      ship.stats.attack +
+      ' · DEFESA ' +
+      (ship.stats.defense > 0 ? '+' : '') +
+      ship.stats.defense +
+      ' · AGILIDADE ' +
+      (ship.stats.agility > 0 ? '+' : '') +
+      ship.stats.agility;
     $('specialty').value = pilot.specialty;
     for (const entry of PILOT_PROFILES) {
       const button = $('pilot-' + entry.id),
@@ -1081,7 +1087,10 @@ export function createGame({
     adoptRelayPilot(handoff.next);
     invuln = Math.max(invuln, 0.8);
     cue('boostIgnition');
-    message('TROCA DE COMANDO · ' + activePilot().name + ' / ' + activeShip().name, activePilot().id);
+    message(
+      'TROCA DE COMANDO · ' + activePilot().name + ' / ' + activeShip().name,
+      activePilot().id,
+    );
     return true;
   }
   $('pilotSwitch').onclick = () => switchPilot();
@@ -2818,7 +2827,10 @@ export function createGame({
     // The selected Five Cats pilot is already the active player on frame zero.
     // Do not leave the previous/default pilot on the HUD until the first tick.
     $('pilotName').textContent =
-      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + (dynamicFlight ? ' NAVES' : ' VIDAS');
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) +
+      ' / ' +
+      lives +
+      (dynamicFlight ? ' NAVES' : ' VIDAS');
     renderPilotSelection();
   }
   function startDeveloperScenario(sector, encounter, fromRestart = false) {
@@ -4638,7 +4650,10 @@ export function createGame({
       lastStage = phase;
     }
     $('pilotName').textContent =
-      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) + ' / ' + lives + (dynamicFlight ? ' NAVES' : ' VIDAS');
+      (dynamicFlight ? activePilot().name : PILOTS[3 - lives]) +
+      ' / ' +
+      lives +
+      (dynamicFlight ? ' NAVES' : ' VIDAS');
     $('weaponLabel').textContent = WEAPONS[weapon] + ' · ' + credits + ' CR · PODS ' + podCount;
     podCd -= dt;
     if (dynamicFlight && podsDetached) {
@@ -5856,7 +5871,10 @@ export function createGame({
         state = 'playing';
         player.visible = true;
         music?.resume();
-        message(activePilot().name + ' / ' + activeShip().name + ' ASSUMIU O COMANDO', activePilot().id);
+        message(
+          activePilot().name + ' / ' + activeShip().name + ' ASSUMIU O COMANDO',
+          activePilot().id,
+        );
       }
     }
     if (state !== 'paused' && state !== 'arcade') {
@@ -5996,7 +6014,8 @@ export function createGame({
       pilot: activePilot().id,
       steer:
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
-        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + stick.x,
+        (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
+        stick.x,
       boosting,
     });
     hud.hidden('cockpitPanel', !inside);
@@ -6004,8 +6023,12 @@ export function createGame({
     const relayStatus = pilotRelay.snapshot();
     hud.disabled('pilotSwitch', state !== 'playing' || !relayStatus.canSwitch);
     if (state === 'playing')
-      hud.text('pilotSwitch', relayStatus.cooldown > 0
-        ? 'TROCA · ' + Math.ceil(relayStatus.cooldown) + 's' : 'M · TROCAR');
+      hud.text(
+        'pilotSwitch',
+        relayStatus.cooldown > 0
+          ? 'TROCA · ' + Math.ceil(relayStatus.cooldown) + 's'
+          : 'M · TROCAR',
+      );
     hud.hidden('tacticalPanel', !dynamicFlight || !boss || !['playing', 'paused'].includes(state));
     hud.hidden(
       'hitFeedback',
@@ -6071,18 +6094,32 @@ export function createGame({
     }
     // Keep shield telemetry synchronized even while the cockpit is hidden:
     // switching camera must never show stale integrity from a previous frame.
-    hud.text('cockpitReadout',
-      'ESCUDO ' + Math.ceil((hp / maxHp()) * 100) + '% · ENERGIA ' + Math.ceil(energy) + '%');
+    hud.text(
+      'cockpitReadout',
+      'ESCUDO ' + Math.ceil((hp / maxHp()) * 100) + '% · ENERGIA ' + Math.ceil(energy) + '%',
+    );
     if (inside) {
       hud.text('cockpitPilot', activePilot().name);
       hud.text('cockpitShip', activeShip().name);
-      hud.text('cockpitWeapon', selectedWeapon().name + (fireMode === 'scatter' ? ' / SCATTER' : ''));
+      hud.text(
+        'cockpitWeapon',
+        selectedWeapon().name + (fireMode === 'scatter' ? ' / SCATTER' : ''),
+      );
       hud.text('cockpitSpeedValue', String(Math.round(lastFlightSpeed * 10)));
-      hud.text('cockpitNav',
-        'SETOR ' + String(sectorIndex + 1).padStart(2, '0') +
-        ' · ' + Math.round((elapsed / current().duration) * 100) + '%');
-      hud.text('cockpitSwapStatus', relayStatus.cooldown > 0
-        ? 'PRÓXIMA TROCA ' + Math.ceil(relayStatus.cooldown) + 's' : 'M · TROCAR PILOTO');
+      hud.text(
+        'cockpitNav',
+        'SETOR ' +
+          String(sectorIndex + 1).padStart(2, '0') +
+          ' · ' +
+          Math.round((elapsed / current().duration) * 100) +
+          '%',
+      );
+      hud.text(
+        'cockpitSwapStatus',
+        relayStatus.cooldown > 0
+          ? 'PRÓXIMA TROCA ' + Math.ceil(relayStatus.cooldown) + 's'
+          : 'M · TROCAR PILOTO',
+      );
       // Four reusable DOM pips, grounded in actual enemy/boss coordinates.
       let count = 0;
       const threats = boss ? [{ o: boss }] : enemies.filter((enemy) => !enemy.dead);
