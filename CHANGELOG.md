@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.101 — Candidata em preparação
+
+- QA: fade local dos viadutos que obstruem a câmera, mantendo suas colisões físicas e o voo totalmente livre; testes browser e visual pendentes.
+
 ## 1.27.100 — Candidata em preparação
 
 - QA: viadutos superiores visíveis e sólidos na rota, alcance vertical estendido, teste determinístico do subchefe sem renderizações WebGL redundantes; homologação pendente.
