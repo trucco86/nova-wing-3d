@@ -5,6 +5,8 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
+import { createCityFallingSolids } from './city-falling-solids.js';
+import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
 import { createCityReactiveDamage } from './city-reactive-damage.js';
 import { createCityLocalSolids } from './city-local-solids.js';
 import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
@@ -1606,6 +1608,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const refreshCityHazards = () => {
     cityHazardsCache.length = 0;
     for (const collision of cityCatastrophe?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityFallingSolids?.colliders() ?? []) cityHazardsCache.push(collision);
     for (const collision of cityReactive?.colliders() ?? []) cityHazardsCache.push(collision);
     for (const collision of cityLocalSolids?.colliders() ?? []) cityHazardsCache.push(collision);
   };
@@ -1676,6 +1679,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(carrier);
   const orbitalSatellite = dynamicFlight ? createOrbitalSatellite() : null;
   if (orbitalSatellite) scene.add(orbitalSatellite);
+  const orbitalAscent = dynamicFlight ? createOrbitalAscentEncounter(scene, random) : null;
   const dustGeo = new T.BufferGeometry(),
     dustPos = new Float32Array(240 * 3);
   for (let i = 0; i < 240; i++) {
@@ -1722,6 +1726,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Moving the 1900-unit road loop must never replay a demolition or train crash.
   const cityDestruction = createCityDestructionScene();
   scene.add(cityDestruction);
+  // Legacy falling facade/sign/car were rendered without any physical hulls.
+  const cityFallingSolids = dynamicFlight ? createCityFallingSolids(cityDestruction) : null;
   let sceneryTheme = 'city';
   let destinationIndex = 0;
   let destinationVista = null;
@@ -1744,6 +1750,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     sectorScenery.clear();
   }
   let travel = 0;
+  let stageClock = 0;
   // Simulated-time Mars transition: fully reproducible after pause or reset.
   function setMarsDescent(seconds) {
     if (sceneryTheme !== 'mars') return null;
@@ -1894,15 +1901,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
     cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
     cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
+    cityScriptedFallingSnapshot: () => cityFallingSolids?.snapshot() ?? [],
+    orbitalAscentSnapshot: () => orbitalAscent?.snapshot() ?? null,
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
     setCityDestruction(seconds) {
-      return updateCityDestructionScene(
+      const state = updateCityDestructionScene(
         cityDestruction,
         seconds,
         sceneryTheme === 'city' && city.visible,
       );
+      cityFallingSolids?.update();
+      // The scripted animation runs after world.update in the same tick.
+      refreshCityHazards();
+      return state;
     },
     cityDestructionGroundState() {
       return sceneryTheme === 'city' ? cityDestructionGroundState(cityDestruction) : null;
@@ -1917,6 +1930,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
         quality,
       );
+      orbitalAscent?.setQuality(quality);
       if (sceneryTheme === 'ice')
         updateEuropaSurface(
           sectorScenery.getObjectByName('europa-frozen-surface'),
@@ -2063,6 +2077,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       starfield.material.opacity = 0.14 + 0.61 * reveal.stars;
       skyMat.uniforms.launchHaze.value = 1.55 * reveal.haze;
       launchCelestials.update(progress);
+      orbitalAscent?.update(progress, stageClock);
       const orbital = launchOrbitReady(progress);
       carrier.visible = orbital && progress > ORBIT_REVEAL.firstEarth;
       if (orbitalSatellite) {
@@ -2129,6 +2144,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
       cityCatastrophe?.reset();
+      cityFallingSolids?.reset();
+      orbitalAscent?.reset();
       cityReactive?.reset();
       cityLocalSolids?.reset();
       cityHazardsCache.length = 0;
@@ -2395,6 +2412,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
     update(dt, time, speed, playing, stageTime = time) {
+      stageClock = stageTime;
       terrainMat.uniforms.time.value = time;
       if (sceneryTheme === 'city' && playing) {
         cityCatastrophe?.update(dt, stageTime, speed, city.visible);
@@ -2498,6 +2516,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         orbitalFrame.rotation.set(0, 0, 0);
       }
       travel = 0;
+      stageClock = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
       for (const tile of [city, cityFar]) {
@@ -2513,6 +2532,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHorizon.visible = sceneryTheme === 'city';
       updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       cityCatastrophe?.reset();
+      cityFallingSolids?.reset();
+      orbitalAscent?.reset();
       cityReactive?.reset();
       cityLocalSolids?.reset();
       cityHazardsCache.length = 0;
