@@ -121,7 +121,8 @@ import {
 } from './difficulty.js';
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
-import { updateMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { prewarmSceneShaders } from './scene-prewarm.js';
 import {
   mechaMultiLockCapacity,
   availableMechaTargets,
@@ -347,16 +348,6 @@ export function createGame({
   const citySolidFrom = new T.Vector3();
   const citySolidTo = new T.Vector3();
   const citySolidOrigin = new T.Vector3();
-  const cityObstacleSolid = {
-    active: true,
-    solid: true,
-    kind: 'obstacle',
-    center: new T.Vector3(),
-    half: new T.Vector3(),
-    previousX: 0,
-    previousY: 0,
-    previousZ: 0,
-  };
   let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
@@ -439,7 +430,6 @@ export function createGame({
   let developerSession = false;
   let developerScenario = null;
   let robotMode = false;
-  const mechaDash = createMechaDash();
   let robotFireKick = 0;
   let robotPrecisionKick = 0;
   let robotCooldown = 0;
@@ -531,13 +521,28 @@ export function createGame({
     }
     resetMechaLock();
   }
+  function syncDodgeControl() {
+    const rollButton = $('rollTouch');
+    const key = robotMode ? 'mechaDashButton' : 'rollButton';
+    rollButton.textContent = uiText(settings.language, key);
+    rollButton.setAttribute?.(
+      'aria-label',
+      uiText(settings.language, robotMode ? 'mechaDashAria' : 'rollAria'),
+    );
+    const hint = document.getElementById('rollHint');
+    if (hint) hint.textContent = uiText(settings.language, robotMode ? 'mechaDashHint' : 'rollHint');
+    for (const node of document.querySelectorAll?.('[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]') ?? []) {
+      node.dataset.helpKey = robotMode ? 'helpMechaDash' : 'helpRoll';
+      node.textContent = uiText(settings.language, node.dataset.helpKey);
+    }
+  }
   function toggleRobot() {
     if (
       !dynamicFlight ||
       state !== 'playing' ||
       robotCooldown > 0 ||
       energy < 15 ||
-      mechaDash.active
+      dashRemaining > 0
     )
       return;
     energy -= 15;
@@ -548,7 +553,7 @@ export function createGame({
     roll = rollAngle = 0;
     marsPendingRoll = false;
     rollHeld = false;
-    mechaDash.reset();
+    dashRemaining = dashCooldown = 0;
     syncDodgeControl();
     if (marsCleanse > 0) {
       $('attackWarning').textContent = robotMode
@@ -1329,7 +1334,7 @@ export function createGame({
     route = routeAt(sectorIndex, 0, current().duration);
     resetMechPower(robot);
     resetMechaPose(robot);
-    mechaDash.reset();
+    dashRemaining = dashCooldown = 0;
     robotFireKick = 0;
     robotPrecisionKick = 0;
     robotMode = false;
@@ -1424,7 +1429,7 @@ export function createGame({
     rollHeld = false;
     dashRemaining = dashCooldown = 0;
     rollAngle = 0;
-    mechaDash.reset();
+    dashRemaining = dashCooldown = 0;
     cityImpactCount = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
@@ -1709,10 +1714,6 @@ export function createGame({
     sound(230, 0.25, 'sine');
     return true;
   }
-  function renderBombCount() {
-    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
-    $('bombTouch').setAttribute?.('data-count', bombs);
-  }
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
     bombs--;
@@ -1980,8 +1981,8 @@ export function createGame({
       transforming: robotTransition,
       recoil: robotFireKick,
       precisionRecoil: robotPrecisionKick,
-      dashing: mechaDash.active,
-      dashDirection: mechaDash.direction,
+      dashing: dashRemaining > 0,
+      dashDirection: dashSide,
     });
     robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
     robotPrecisionKick = Math.max(0, robotPrecisionKick - dt * 3.5);
@@ -3658,6 +3659,7 @@ export function createGame({
     if (state !== 'playing' || rollPointerId !== null) return;
     rollPointerId = e.pointerId;
     rollPressStarted = performance.now();
+    rollPressStartedAsRobot = robotMode;
     rollHeld = !robotMode;
     if (robotMode) doRoll();
     rollButton.setPointerCapture?.(e.pointerId);
@@ -3667,7 +3669,7 @@ export function createGame({
     const tap = e.type === 'pointerup' && performance.now() - rollPressStarted < 240;
     rollPointerId = null;
     rollHeld = false;
-    if (tap && !robotMode) doRoll();
+    if (tap && !rollPressStartedAsRobot && !robotMode) doRoll();
   };
   for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
     rollButton.addEventListener(event, finishRollPress);
@@ -3853,7 +3855,6 @@ export function createGame({
     );
     // Preserve the swept collision segment: the dash moves within the normal
     // piloting step, before walls and moving enemy projectiles are resolved.
-    if (robotMode) player.position.x = mechaDash.advance(dt, player.position.x, flightLimit());
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
@@ -6126,7 +6127,13 @@ export function createGame({
       fireMode,
       mecha: {
         active: robotMode,
-        dash: mechaDash.snapshot(),
+        dash: {
+        active: dashRemaining > 0,
+        remaining: dashRemaining,
+        cooldown: dashCooldown,
+        direction: dashSide,
+        progress: 1 - dashRemaining / MECHA_DASH.duration,
+      },
         lockEnabled,
         lockProgress,
         multiLockHeld: lockHeld,
@@ -6304,7 +6311,7 @@ export function createGame({
         bank: camera.rotation.z,
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
-      cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
+      cityPhysicsDebris: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
       cityImpactCount,
