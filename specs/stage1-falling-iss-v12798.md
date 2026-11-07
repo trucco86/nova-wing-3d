@@ -25,3 +25,7 @@ A camada `createCityDestructionScene` desenhava placa, hovercar e sete fragmento
 2. Teste WebGL desktop/mobile começa na fase 1 real, comprova contato, registra frames da cidade e valida desvio sem perdas no flanco livre.
 3. Teste orbital comprova densidade/variedade do enxame e passagem curta da ISS, com screenshot sobre a Terra e nenhum objeto exibido em Marte.
 4. Gate Node + quatro shards Playwright sobre SHA final e revisão visual/FPS em celular antes de produção. PR draft sobre QA v1.27.97, sem alteração de main.
+
+## Refinamento de densidade (QA98)
+
+As datas de entrada das 24 partículas são estratificadas com jitter por missão, mantendo coordenadas, materiais, escala, giros e direção aleatórios. Isso evita longos intervalos com somente um destroço visível na subida. A seleção no perfil Médio distribui as 14 peças ao longo de toda a janela, não apenas no começo.
