@@ -1,0 +1,61 @@
+name: One-time City Freedom and Local Solids release candidate
+on:
+  pull_request:
+  push:
+    branches: [feat/mars-storm-moons-warp-exit]
+    paths:
+      - .github/workflows/city-freedom-candidate.yml
+permissions:
+  contents: write
+jobs:
+  synchronize:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mars-storm-moons-warp-exit
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.69
+      - name: Record specific scope and outstanding visual gate
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          notes=Path("releases/v1.27.69.md")
+          notes.write_text("""## Nova Wing 3D v1.27.69 — Free-flight City / Object-only Physics / Reactive Facades
+
+          - Removida a caixa invisivel de navegacao da fase 1 (±36); liberdade original de pilotagem em todo x=±72.
+          - Colisao apenas nos objetos visiveis: guardrails sao baixos e podem ser sobrevoados; pilares ocupam suas coordenadas reais e aparecem so no perfil Alto; maglev e trilhos ocupam apenas a sua geometria elevada e seguem a animacao do objeto.
+          - Reaproveita resolvedor de colisao por varredura de objetos para impedir atravessar fachadas, destrocos e trens sem restringir o corredor inteiro.
+          - Duas fachadas laterais reagem a tiros com rachaduras, tubulacoes expostas, explosao localizada e desabamento com apoio no solo.
+          - Sem criacao de malhas ou materiais por frame; colliders reutilizados e sincronizados ao loop de tiles e movimento de trens.
+          - Testes: extremos da navegacao, sobrevôo dos corrimaos, solidos de cenarios, deslocamento de trens, colunas em Alto/Medio e dano local de tiros.
+
+          **Nao aprovada para producao.** Homologacao WebGL/desktop/mobile, inspecao visual do concept e benchmark de FPS fisico pendentes.
+          """)
+          ch=Path("CHANGELOG.md")
+          s=ch.read_text()
+          s=s.replace("- Candidata não homologada; preencher entregas e evidências antes da publicação.", "- Fase 1: exploracao lateral original ±72 restaurada, colisao somente sobre objetos visiveis, tuneis livres fora de objetos; novas fachadas destrutiveis por tiros. Browser e mobile pendentes.", 1)
+          ch.write_text(s)
+          PY
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - run: npm run build:check
+      - name: Commit checked release and generated distribution
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md index.html package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj releases/v1.27.69.md specs/city-phase1-premium-destruction.md src/city-collision.js src/city-local-solids.js src/city-reactive-damage.js src/visuals.js src/game.js tests/city-solid-collision.test.mjs tests/city-local-solids.test.mjs tests/city-reactive-damage.test.mjs
+          if ! git diff --cached --quiet; then
+            git commit -m "build(city): synchronize reproducible v1.27.69 free-flight city candidate"
+            git fetch origin feat/mars-storm-moons-warp-exit
+            git rebase origin/feat/mars-storm-moons-warp-exit
+            git push origin HEAD:feat/mars-storm-moons-warp-exit
+          fi
