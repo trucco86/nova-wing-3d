@@ -20,7 +20,7 @@ test('falling scripted sign, hovercar and seven real facade shards have individu
   // No invisible facade volume when parent facade is hidden.
   assert.equal(active.some((c) => c.kind.startsWith('falling-facade')), false);
 
-  updateCityDestructionScene(scene, 9.5);
+  updateCityDestructionScene(scene, 9.65);
   active = solids.update();
   const sign = active.find((c) => c.kind === 'falling-billboard');
   assert.ok(sign, 'visible falling sign has a physical hull');
