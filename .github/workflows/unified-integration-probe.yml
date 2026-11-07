@@ -1,7 +1,6 @@
 name: Probe unified QA merge v2
 on:
-  push:
-    branches: [qa/integrated-premium-v12794-20261107]
+  pull_request:
     paths:
       - .github/workflows/unified-integration-probe.yml
 permissions:
