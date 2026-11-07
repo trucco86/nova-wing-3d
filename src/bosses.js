@@ -3,11 +3,20 @@ import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial, halo } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
 import { createBossVisualIdentity } from './boss-visual-identity.js';
+// Reuse a single GPU vertex buffer for all rectangular boss armor plates.
+// Dimensions move to mesh.scale, preserving world-space shape and collisions.
+const bossUnitBox = new T.BoxGeometry(1, 1, 1);
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
+  const box = (w, h, d, material, x = 0, y = 0, z = 0) => {
+    const mesh = new T.Mesh(bossUnitBox, material);
+    mesh.scale.set(w, h, d);
+    mesh.position.set(x, y, z);
+    return mesh;
+  };
   const g = new T.Group(),
-    armor = metal('#344658', 0.8, 0.3),
-    dark = metal('#111b2c'),
+    armor = metal(index === 1 ? '#9c573c' : '#344658', 0.73, 0.48),
+    dark = metal(index === 1 ? '#523326' : '#111b2c'),
     edge = glowMaterial(sector.accent, 2),
     hot = glowMaterial('#ff574b', 3);
   const rotors = [];
@@ -191,7 +200,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   const organicStart = g.children.length;
   // Living tissue grafted onto the existing ten mechanical silhouettes.
   const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
-    bone = metal('#cfb59b', 0.18, 0.62),
+    bone = metal(index === 1 ? '#d6a078' : '#cfb59b', 0.18, 0.62),
     vein = glowMaterial('#d95b91', 1.1);
   const organic = [];
   const tissue = add(sphere(13, flesh, 2), 0, 3, 10);
@@ -276,7 +285,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   flesh.color.set(
     [
       '#652e58',
-      '#245a63',
+      '#9d553d',
       '#6e392b',
       '#37495e',
       '#a02d1d',
@@ -362,33 +371,44 @@ export function createBossModel(sector, index = 0, tactical = false) {
       g.add(new T.Mesh(new T.TubeGeometry(cable, 12, 0.32, 5, false), j === 1 ? vein : dark));
     }
   }
-  const markerMaterial = glowMaterial('#fff27a', 5),
-    targetMarker = (radius) => {
-      const marker = new T.Group();
-      marker.name = 'vulnerable-target';
-      marker.add(new T.Mesh(new T.TorusGeometry(radius, 0.32, 6, 40), markerMaterial));
-      for (let i = 0; i < 4; i++) {
-        const tick = new T.Mesh(new T.BoxGeometry(0.65, 2.8, 0.35), markerMaterial);
-        const angle = (i * Math.PI) / 2;
-        tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
-        tick.rotation.z = -angle;
-        marker.add(tick);
-      }
-      // Two nested rotating frames plus chevrons make the exposed hitbox readable
-      // against highly detailed bosses even at phone resolution.
-      const inner = new T.Mesh(new T.TorusGeometry(radius * 0.7, 0.35, 6, 30), markerMaterial);
-      inner.name = 'weak-point-inner-reticle';
-      marker.add(inner);
-      for (const side of [-1, 1]) {
-        const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
-        chevron.position.set(side * (radius + 3), 0, 0.2);
-        chevron.rotation.z = (side * Math.PI) / 2;
-        marker.add(chevron);
-      }
-      marker.visible = false;
-      return marker;
-    },
-    coreMarker = targetMarker(8.5);
+  // All reticles share their ticks/chevrons, and left/right targets share
+  // matching rings. First exposure no longer uploads a new buffer per tick.
+  const markerMaterial = glowMaterial('#fff27a', 5);
+  const markerTickGeometry = new T.BoxGeometry(0.65, 2.8, 0.35);
+  const markerChevronGeometry = new T.ConeGeometry(1.2, 3.5, 3);
+  const markerRingCache = new Map();
+  const targetMarker = (radius) => {
+    let rings = markerRingCache.get(radius);
+    if (!rings) {
+      rings = {
+        outer: new T.TorusGeometry(radius, 0.32, 6, 40),
+        inner: new T.TorusGeometry(radius * 0.7, 0.35, 6, 30),
+      };
+      markerRingCache.set(radius, rings);
+    }
+    const marker = new T.Group();
+    marker.name = 'vulnerable-target';
+    marker.add(new T.Mesh(rings.outer, markerMaterial));
+    for (let i = 0; i < 4; i++) {
+      const tick = new T.Mesh(markerTickGeometry, markerMaterial);
+      const angle = (i * Math.PI) / 2;
+      tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
+      tick.rotation.z = -angle;
+      marker.add(tick);
+    }
+    const inner = new T.Mesh(rings.inner, markerMaterial);
+    inner.name = 'weak-point-inner-reticle';
+    marker.add(inner);
+    for (const side of [-1, 1]) {
+      const chevron = new T.Mesh(markerChevronGeometry, markerMaterial);
+      chevron.position.set(side * (radius + 3), 0, 0.2);
+      chevron.rotation.z = (side * Math.PI) / 2;
+      marker.add(chevron);
+    }
+    marker.visible = false;
+    return marker;
+  };
+  const coreMarker = targetMarker(8.5);
   const coreMuzzle = new T.Object3D();
   coreMuzzle.name = 'boss-core-muzzle';
   coreMuzzle.position.set(0, 12, 27);
@@ -596,7 +616,11 @@ export function disposeBoss(g) {
   g.traverse((o) => {
     if (o.geometry) geos.add(o.geometry);
   });
-  geos.forEach((x) => x.dispose());
+  geos.forEach((x) => {
+    // This unit cube is shared across stages and must not be invalidated by
+    // disposing one boss; all unique authoring geometries are still released.
+    if (x !== bossUnitBox && !x.userData.bossShared) x.dispose();
+  });
   g.userData.materials?.forEach((x) => x.dispose());
 }
 

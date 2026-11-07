@@ -1,5 +1,33 @@
 # Histórico
 
+## 1.27.69 — Candidata em preparação
+
+- Fase 1: exploracao lateral original ±72 restaurada, colisao somente sobre objetos visiveis, tuneis livres fora de objetos; novas fachadas destrutiveis por tiros. Browser e mobile pendentes.
+
+## 1.27.68 — Candidata em preparação
+
+- Fase 1: colisão sólida da nave com destroços, estruturas, obstáculos e guardrails; CCD com deflexão real, mantendo i-frames apenas para dano. Browser/QA visual pendente.
+
+## 1.27.67 — Candidata em preparação
+
+- Fase 1: destruição urbana roteirizada com física de solo, colisão de destroços, explosões pré-alocadas e skyline mais fiel ao concept; aprovação visual e FPS pendentes.
+
+## 1.27.66 — Candidata em preparação
+
+- Modo robo: DASH lateral direcional substitui giro; nave mantem barrel roll; controles PT/EN/ES, cooldown, colisao e protecao testados. QA visual pendente.
+
+## 1.27.65 — Candidata em preparação
+
+- Mecha V4.1: afterburners legíveis na câmera, upper-body rig conectado, mira em coordenadas do torso, idle estável e redução de trabalho no hot path; homologação visual pendente.
+
+## 1.27.64 — Candidata em preparação
+
+- Mecha Premium V4: cotovelos/joelhos animados, balanço corporal, tiros com recuo, asas responsivas e propulsores vetoriais ciano/âmbar. QA visual/mobile pendente.
+
+## 1.27.63 — Candidata em preparação
+
+- Candidata não homologada; documentação histórica preservada. Melhorias de Marte, transições e desempenho seguem em QA.
+
 ## 1.27.62 — Layout compacto de Hangar e QA (release Web)
 
 - Hangar em abas Pilotos/Naves/Arsenal, com os cinco gatos e o preview 360° organizados em mobile/desktop.

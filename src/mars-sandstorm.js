@@ -17,8 +17,8 @@ export function marsSandstormAt(seconds) {
   // Slow crosswind reversals with short gusts. Max < pilot acceleration.
   const prevailing = Math.sin((seconds - MARS_STORM_START) * 0.48 + 0.9);
   const gust = Math.sin(seconds * 1.71) * Math.sin(seconds * 0.31 + 1.7);
-  const windX = intensity === 0 ? 0 : intensity * (8.2 * prevailing + 3.7 * gust);
-  const sway = intensity * (0.13 * Math.sin(seconds * 1.17) + 0.04 * Math.sin(seconds * 3.3));
+  const windX = intensity === 0 ? 0 : intensity * (11.4 * prevailing + 5.2 * gust);
+  const sway = intensity * (0.18 * Math.sin(seconds * 1.17) + 0.075 * Math.sin(seconds * 3.3));
   return {
     phase: prewarn ? 'warning' : intensity > 0.02 ? 'active' : 'clear',
     warning: prewarn,
@@ -26,7 +26,8 @@ export function marsSandstormAt(seconds) {
     intensity,
     windX,
     roll: -windX * 0.022 + sway,
-    visibility: 1 - intensity * 0.56,
+    visibility: 1 - intensity * 0.68,
+    hazard: intensity > 0.65 && Math.abs(windX) >= 7,
     label: prewarn
       ? 'TEMPESTADE DE AREIA À FRENTE · PREPARE-SE'
       : intensity > 0.02
@@ -100,16 +101,57 @@ export function updateMarsSandstorm(root, seconds) {
   if (!root) return wind;
   root.visible = wind.active;
   const particles = root.getObjectByName('mars-sandstorm-particle-field');
-  particles.material.opacity = wind.intensity * 0.73;
+  particles.material.opacity = wind.intensity * 0.88;
   // Visual drift and rolling banks follow the same deterministic wind clock.
   particles.position.x = Math.sin(seconds * 0.35) * 12 + wind.windX * 1.5;
   particles.position.z = ((seconds * 21) % 150) - 75;
   root.children.forEach((child, i) => {
     if (!child.name.startsWith('mars-rolling-sand-haze-bank')) return;
-    child.material.uniforms.alpha.value = wind.intensity * (0.32 - (i - 1) * 0.04);
+    child.material.uniforms.alpha.value = wind.intensity * (0.43 - (i - 1) * 0.04);
     child.position.x = (i - 2) * 62 + Math.sin(seconds * 0.32 + i) * 16;
   });
   root.userData.intensity = wind.intensity;
   root.userData.windX = wind.windX;
   return wind;
+}
+
+/** In-world sand accumulation on the hull and cannon tips, not a HUD overlay. */
+export function createMarsDustCoating() {
+  const count = 84;
+  const coords = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const t = (i * 37) % 83;
+    const side = i % 2 ? 1 : -1;
+    coords[i * 3] = side * (0.3 + (t % 21) * 0.25);
+    coords[i * 3 + 1] = -0.2 + ((t * 7) % 11) * 0.15;
+    coords[i * 3 + 2] = -5.4 + ((t * 3) % 73) * 0.13;
+  }
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.BufferAttribute(coords, 3));
+  const material = new T.PointsMaterial({
+    color: '#b9794b',
+    size: 0.65,
+    sizeAttenuation: true,
+    opacity: 0,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
+  });
+  const dust = new T.Points(geometry, material);
+  dust.name = 'mars-hull-dust-coating';
+  dust.userData.visualOnly = true;
+  dust.frustumCulled = false;
+  dust.visible = false;
+  return dust;
+}
+
+export function setMarsDustCoating(dust, stormIntensity = 0, remainingRolls = 0) {
+  if (!dust) return 0;
+  const intensity = Math.max(
+    Math.max(0, Math.min(1, stormIntensity)) * 0.72,
+    Math.max(0, Math.min(3, remainingRolls)) / 3,
+  );
+  dust.material.opacity = intensity * 0.85;
+  dust.visible = intensity > 0.025;
+  return intensity;
 }

@@ -85,6 +85,7 @@ function detailRail(parent, name, material, x, y, z, w, h, d, yaw = 0) {
 // Graphics 3.7: small premium surface features in a few instanced GPU draws.
 // These decorate approved hero contours, never introduce new silhouette plates.
 const finishBox = new T.BoxGeometry(1, 1, 1);
+finishBox.userData.bossShared = true;
 const finishTransform = new T.Object3D();
 function finishBatch(parent, name, material, parts) {
   const batch = new T.InstancedMesh(finishBox, material, parts.length);

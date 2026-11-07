@@ -214,8 +214,10 @@ export function createMarsPremium() {
   root.add(surface);
   // Both moons remain independent real-world objects: visible in orbit and
   // above the landscape, never reusing the Earth's cracked moon.
-  root.add(makeMarsMoon('phobos', 35, [-340, 250, -1050], '#a29c94'));
-  root.add(makeMarsMoon('deimos', 17, [260, 330, -1250], '#c5afa1'));
+  // Keep the moons in front of the orbital globe's depth plane. The old
+  // coordinates left them hidden behind Mars during the approach.
+  root.add(makeMarsMoon('phobos', 34, [-295, 175, -570], '#a29c94'));
+  root.add(makeMarsMoon('deimos', 19, [315, 220, -640], '#c5afa1'));
   root.add(createMarsApproach());
   updateMarsArrival(root, 0);
   return root;
@@ -227,6 +229,13 @@ export function updateMarsArrival(root, seconds) {
   surface.visible = state.terrainVisible;
   surface.position.y = state.terrainLift;
   updateMarsApproach(root.getObjectByName('mars-orbital-approach'), state);
+  for (const name of ['phobos', 'deimos']) {
+    const moon = root.getObjectByName('mars-moon-' + name);
+    // Orbital companions are readable from space through re-entry, then
+    // recede into the dusty sky rather than disappearing on the first frame.
+    moon.visible = seconds < 30;
+    moon.scale.setScalar(seconds < 20 ? 1 : Math.max(0.1, 1 - (seconds - 20) / 11));
+  }
   const wind = updateMarsSandstorm(surface.getObjectByName('mars-sandstorm'), seconds);
   state.storm = wind;
   root.userData.arrivalPhase = state.phase;
