@@ -209,10 +209,12 @@ export function createCityCatastrophe() {
       wasActive: false,
     };
   });
+  const activeColliders = [];
   const up = new T.Vector3(0, 1, 0);
   const tmp = new T.Vector3();
   const cableVector = new T.Vector3();
   function reset() {
+    activeColliders.length = 0;
     for (const b of beats) {
       b.o.position.set(b.spec.x, b.spec.y, b.spec.z);
       b.o.rotation.set(0, 0, 0);
@@ -230,6 +232,7 @@ export function createCityCatastrophe() {
   function update(dt, elapsed, speed, enabled = true) {
     root.visible = enabled;
     if (!enabled || !Number.isFinite(dt) || dt < 0) return;
+    activeColliders.length = 0;
     for (const b of beats) {
       const { spec, o, collider } = b;
       collider.previousZ = o.position.z;
@@ -241,6 +244,7 @@ export function createCityCatastrophe() {
       o.position.y = pose.y;
       o.rotation.z = pose.tilt;
       collider.active = pose.active && o.position.z < 55 && o.position.z > -570;
+      if (collider.active) activeColliders.push(collider);
       // Conservative AABB for the actual rotated box (not an invisible wall).
       collider.half.set(
         (Math.abs(Math.cos(pose.tilt)) * spec.w) / 2 + (Math.abs(Math.sin(pose.tilt)) * spec.h) / 2,
@@ -274,13 +278,12 @@ export function createCityCatastrophe() {
   }
   reset();
   root.visible = false; // No urban rubble floating in the main menu or non-city sectors.
-  const colliderList = beats.map((b) => b.collider);
   return {
     root,
     reset,
     update,
     colliders() {
-      return colliderList; // Reuse the array; callers filter by collider.active.
+      return activeColliders; // Reused array; no frame-loop allocation.
     },
     snapshot() {
       return beats.map((b) => ({
