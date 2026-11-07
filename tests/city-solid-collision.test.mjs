@@ -88,12 +88,16 @@ test('a visible road rail stops the wing before it clips into the side wall', ()
 test('all four authored fallen props have real colliders, no pre-impact invisible volume', () => {
   const city = createCityCatastrophe();
   assert.equal(city.colliders().length, 0);
-  city.update(1 / 60, 20, 48, true);
-  assert.deepEqual(city.colliders().map((c) => c.kind),
-    ['billboard', 'car', 'facade', 'train']);
-  assert.ok(city.colliders().every((c) =>
-    c.solid && c.half.x > 0 && c.half.y > 0 &&
-    Number.isFinite(c.previousZ) && Number.isFinite(c.previousY)));
+  const touchedKinds = new Set();
+  for (let i = 0; i < 1250; i++) {
+    city.update(1 / 60, i / 60, 48, true);
+    for (const c of city.colliders()) {
+      touchedKinds.add(c.kind);
+      assert.ok(c.solid && c.half.x > 0 && c.half.y > 0 &&
+        Number.isFinite(c.previousZ) && Number.isFinite(c.previousY));
+    }
+  }
+  assert.deepEqual([...touchedKinds].sort(), ['billboard', 'car', 'facade', 'train'].sort());
 });
 
 test('stage 1 physically prevents ship from flying through roadside rail with damage feedback', (t) => {
