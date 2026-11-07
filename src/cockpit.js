@@ -4,6 +4,7 @@ import { pilotAt } from './pilots.js';
 /** Camera-mounted cockpit geometry; never participates in world collision or route bending. */
 export function createCockpit(camera) {
   const group = new T.Group();
+  group.name = 'five-cats-cockpit';
   const hull = new T.MeshBasicMaterial({ color: '#142f40' });
   const edge = new T.MeshBasicMaterial({ color: '#51cbb8' });
   const flashMat = new T.MeshBasicMaterial({ color: '#baffec', transparent: true, opacity: 0 });
