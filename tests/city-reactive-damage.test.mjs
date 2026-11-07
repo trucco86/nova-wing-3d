@@ -11,14 +11,22 @@ test('two authored facades visibly receive projectiles only at their local hitbo
   const first = city.snapshot()[0];
   assert.ok(first.active);
   assert.equal(first.hp, CITY_DAMAGE_SITES[0].hp);
-  assert.equal(city.strike(
-    new T.Vector3(0, first.y, first.z + 18),
-    new T.Vector3(0, first.y, first.z - 18), 2, 0.1,
-  ), null, 'empty roadway and remote facade must remain untouched');
+  assert.equal(
+    city.strike(
+      new T.Vector3(0, first.y, first.z + 18),
+      new T.Vector3(0, first.y, first.z - 18),
+      2,
+      0.1,
+    ),
+    null,
+    'empty roadway and remote facade must remain untouched',
+  );
   assert.equal(city.snapshot()[0].hp, CITY_DAMAGE_SITES[0].hp);
   const hit = city.strike(
     new T.Vector3(first.x, first.y, first.z + 18),
-    new T.Vector3(first.x, first.y, first.z - 18), 2, 0.1,
+    new T.Vector3(first.x, first.y, first.z - 18),
+    2,
+    0.1,
   );
   assert.equal(hit.kind, 'bay-0');
   assert.equal(hit.destroyed, false);
@@ -66,8 +74,11 @@ test('each standing or collapsed bay has a local collision volume, never the ful
   const bay = city.colliders()[0];
   assert.ok(bay.active && bay.solid);
   const open = new T.Vector3(60, 6, 9);
-  assert.equal(resolveCitySolidContact(open, open.clone(), bay), false,
-    'no invisible boundary around the urban stage');
+  assert.equal(
+    resolveCitySolidContact(open, open.clone(), bay),
+    false,
+    'no invisible boundary around the urban stage',
+  );
   const front = new T.Vector3(bay.center.x, bay.center.y, bay.center.z + 22);
   const inStructure = new T.Vector3(bay.center.x, bay.center.y, bay.center.z);
   assert.equal(resolveCitySolidContact(front, inStructure, bay), true);
@@ -86,9 +97,13 @@ test('each standing or collapsed bay has a local collision volume, never the ful
 test('consecutive strikes and visual damage never allocate a new child mesh per frame', () => {
   const city = createCityReactiveDamage();
   const total = [];
-  city.root.traverse(() => { total.push(true); });
+  city.root.traverse(() => {
+    total.push(true);
+  });
   for (let i = 0; i < 90; i++) city.update(1 / 60, i / 60, 48, true);
   const second = [];
-  city.root.traverse(() => { second.push(true); });
+  city.root.traverse(() => {
+    second.push(true);
+  });
   assert.equal(second.length, total.length);
 });

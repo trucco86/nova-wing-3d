@@ -95,4 +95,3 @@ export function resolveCitySolidContact(
   next.z = c.z + hz + epsilon;
   return true;
 }
-

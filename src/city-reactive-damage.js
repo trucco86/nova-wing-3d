@@ -32,25 +32,48 @@ function panel(group, mat, x, y, z, w, h, d, name) {
 function buildDamageBay(spec, mats, index) {
   const shell = new T.Group();
   shell.name = 'city-reactive-bay-' + index;
-  panel(shell, mats.steel, 0, 0, 0, spec.w, spec.h, spec.d,
-    'city-reactive-shootable-facade');
-  panel(shell, mats.glass, 0, 0, -spec.d / 2 - 0.18,
-    spec.w - 1.6, spec.h - 2, 0.3);
-  panel(shell, mats.orange, 0, spec.h / 2 - 1.05, -spec.d / 2 - 0.4,
-    spec.w - 0.7, 0.65, 0.28, 'city-reactive-weakpoint-marker');
+  panel(shell, mats.steel, 0, 0, 0, spec.w, spec.h, spec.d, 'city-reactive-shootable-facade');
+  panel(shell, mats.glass, 0, 0, -spec.d / 2 - 0.18, spec.w - 1.6, spec.h - 2, 0.3);
+  panel(
+    shell,
+    mats.orange,
+    0,
+    spec.h / 2 - 1.05,
+    -spec.d / 2 - 0.4,
+    spec.w - 0.7,
+    0.65,
+    0.28,
+    'city-reactive-weakpoint-marker',
+  );
   for (const x of [-spec.w / 2 + 1.3, spec.w / 2 - 1.3]) {
     panel(shell, mats.dark, x, 0, -spec.d / 2 - 0.6, 0.85, spec.h - 1.4, 0.35);
   }
   for (let i = 0; i < 4; i++)
-    panel(shell, mats.cyan, 0, -spec.h / 2 + 3 + i * 4,
-      -spec.d / 2 - 0.4, spec.w - 2.8, 0.33, 0.24);
+    panel(
+      shell,
+      mats.cyan,
+      0,
+      -spec.h / 2 + 3 + i * 4,
+      -spec.d / 2 - 0.4,
+      spec.w - 2.8,
+      0.33,
+      0.24,
+    );
   // Distinct persistent damage states: fractured glazing, exposed armored
   // frame, glowing severed conduit. No textures/meshes added on hit.
   const crack = new T.Group();
   crack.name = 'city-reactive-bullet-scars';
   for (let i = 0; i < 5; i++) {
-    const segment = panel(crack, mats.dark, -3 + i * 1.55,
-      2 - i * 1.85, -spec.d / 2 - 0.76, 0.56, 5, 0.18);
+    const segment = panel(
+      crack,
+      mats.dark,
+      -3 + i * 1.55,
+      2 - i * 1.85,
+      -spec.d / 2 - 0.76,
+      0.56,
+      5,
+      0.18,
+    );
     segment.rotation.z = (i % 2 ? 1 : -1) * 0.58;
   }
   crack.visible = false;
@@ -67,10 +90,8 @@ function buildDamageBay(spec, mats, index) {
   const scaffold = new T.Group();
   scaffold.name = 'city-reactive-broken-structure';
   for (const side of [-1, 1]) {
-    panel(scaffold, mats.dark, side * (spec.w / 2 - 0.9), 0, 0,
-      1.4, spec.h, 4);
-    panel(scaffold, mats.red, side * (spec.w / 2 - 1.4), 1, -2.4,
-      0.3, spec.h - 3, 0.3);
+    panel(scaffold, mats.dark, side * (spec.w / 2 - 0.9), 0, 0, 1.4, spec.h, 4);
+    panel(scaffold, mats.red, side * (spec.w / 2 - 1.4), 1, -2.4, 0.3, spec.h - 3, 0.3);
   }
   panel(scaffold, mats.steel, 0, spec.h / 2 - 1.3, 0, spec.w, 2.6, 4);
   scaffold.position.set(spec.x, spec.y, spec.z);
@@ -81,24 +102,35 @@ function buildDamageBay(spec, mats, index) {
   const flash = new T.Mesh(
     new T.IcosahedronGeometry(1, 1),
     new T.MeshBasicMaterial({
-      color: '#ffae6e', transparent: true, opacity: 0,
-      blending: T.AdditiveBlending, depthWrite: false, toneMapped: false,
+      color: '#ffae6e',
+      transparent: true,
+      opacity: 0,
+      blending: T.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
     }),
   );
   flash.name = 'city-reactive-explosion-flash';
   const shock = new T.Mesh(
     new T.TorusGeometry(1, 0.17, 6, 20),
     new T.MeshBasicMaterial({
-      color: '#ffdba5', transparent: true, opacity: 0,
-      blending: T.AdditiveBlending, depthWrite: false, toneMapped: false,
+      color: '#ffdba5',
+      transparent: true,
+      opacity: 0,
+      blending: T.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
     }),
   );
   shock.name = 'city-reactive-shockwave';
   const smoke = new T.Mesh(
     new T.IcosahedronGeometry(1, 1),
     new T.MeshBasicMaterial({
-      color: '#3c5364', transparent: true, opacity: 0,
-      depthWrite: false, toneMapped: false,
+      color: '#3c5364',
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      toneMapped: false,
     }),
   );
   smoke.name = 'city-reactive-smoke';
@@ -128,12 +160,21 @@ export function createCityReactiveDamage() {
       kind: 'bay-' + index,
       center: models.shell.position,
       half: new T.Vector3(spec.w / 2, spec.h / 2, spec.d / 2),
-      previousX: spec.x, previousY: spec.y, previousZ: spec.z,
-      active: false, solid: true,
+      previousX: spec.x,
+      previousY: spec.y,
+      previousZ: spec.z,
+      active: false,
+      solid: true,
     };
     return {
-      ...models, spec, index, collider, hp: spec.hp, hits: 0,
-      destroyedAt: -1, lastImpactAt: -1,
+      ...models,
+      spec,
+      index,
+      collider,
+      hp: spec.hp,
+      hits: 0,
+      destroyedAt: -1,
+      lastImpactAt: -1,
     };
   });
   const activeColliders = [];
@@ -182,7 +223,7 @@ export function createCityReactiveDamage() {
         shell.rotation.z = tilt;
         shell.position.x = spec.x - spec.side * 10 * progress;
         const support = cityDebrisSupportY(spec.w, spec.h, tilt);
-        const fall = spec.y - 42 * Math.min(age, 0.9) ** 2 / 2;
+        const fall = spec.y - (42 * Math.min(age, 0.9) ** 2) / 2;
         const after = Math.max(0, age - 0.8);
         const rebound = Math.sin(after * 8) ** 2 * Math.exp(-after * 4.1) * 0.9;
         shell.position.y = Math.max(fall, support) + rebound;
@@ -247,16 +288,26 @@ export function createCityReactiveDamage() {
   }
   reset();
   return {
-    root, reset, update, strike,
+    root,
+    reset,
+    update,
+    strike,
     colliders: () => activeColliders,
-    snapshot: () => nodes.map((n) => ({
-      kind: n.collider.kind,
-      x: n.shell.position.x, y: n.shell.position.y, z: n.shell.position.z,
-      active: n.collider.active, hp: n.hp, hits: n.hits,
-      destroyed: n.destroyedAt >= 0, impact: n.fx.visible,
-      groundClearance: n.shell.position.y -
-        cityDebrisSupportY(n.spec.w, n.spec.h, n.shell.rotation.z),
-      cracks: n.crack.visible, exposed: n.exposed.visible,
-    })),
+    snapshot: () =>
+      nodes.map((n) => ({
+        kind: n.collider.kind,
+        x: n.shell.position.x,
+        y: n.shell.position.y,
+        z: n.shell.position.z,
+        active: n.collider.active,
+        hp: n.hp,
+        hits: n.hits,
+        destroyed: n.destroyedAt >= 0,
+        impact: n.fx.visible,
+        groundClearance:
+          n.shell.position.y - cityDebrisSupportY(n.spec.w, n.spec.h, n.shell.rotation.z),
+        cracks: n.crack.visible,
+        exposed: n.exposed.visible,
+      })),
   };
 }

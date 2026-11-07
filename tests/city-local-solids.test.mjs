@@ -37,8 +37,11 @@ test('the whole pilot volume beyond ±36 is free when there is no object at flig
     const from = new T.Vector3(lane, 6, 9);
     const desired = from.clone();
     for (const hazard of city.colliders()) {
-      assert.equal(resolveCitySolidContact(from, desired, hazard), false,
-        `false invisible wall at x=${lane} from ${hazard.kind}`);
+      assert.equal(
+        resolveCitySolidContact(from, desired, hazard),
+        false,
+        `false invisible wall at x=${lane} from ${hazard.kind}`,
+      );
     }
     assert.equal(desired.x, lane);
   }
@@ -100,8 +103,11 @@ test('moving maglev collision follows the rendered carriage and ignores hidden t
   assert.equal(maglev.previousZ, 10);
   before = new T.Vector3(60, 6, 9);
   proposed = new T.Vector3(72, 6, 9);
-  assert.equal(resolveCitySolidContact(before, proposed, maglev), false,
-    'piloting below the elevated train is permitted');
+  assert.equal(
+    resolveCitySolidContact(before, proposed, maglev),
+    false,
+    'piloting below the elevated train is permitted',
+  );
   west.visible = true;
   west.position.z = -142;
   city.update(true);

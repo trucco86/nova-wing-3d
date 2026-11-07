@@ -34,26 +34,48 @@ export function createCityLocalSolids(tiles) {
       // Exact visible street-furniture location: x=±47, y roughly -7..-2.
       // This is NOT a vertical wall. At normal altitude (y≈6) the fighter
       // crosses freely; at road level the guardrail is physically solid.
-      objects.push(solid(tile, 'avenue-rail', side * 47, -4.34, -959.5,
-        0.9, 2.38, 950));
+      objects.push(solid(tile, 'avenue-rail', side * 47, -4.34, -959.5, 0.9, 2.38, 950));
       // Suspended transit guideway: only obstructs high-altitude flight.
-      objects.push(solid(tile, 'elevated-rail', side * 80, 32.1, -948,
-        4, 2.6, 947));
+      objects.push(solid(tile, 'elevated-rail', side * 80, 32.1, -948, 4, 2.6, 947));
     }
     // These real pillars are rendered only on the High graphics profile.
     for (let i = 0; i < 9; i++) {
       const z = -160 - i * 204;
       const y = 59 + (i % 3) * 7;
       for (const side of [-1, 1])
-        objects.push(solid(tile, 'overpass-pillar', side * 70, (y - 7) / 2,
-          z, 2.5, (y + 7) / 2, 2.5, null, true));
+        objects.push(
+          solid(
+            tile,
+            'overpass-pillar',
+            side * 70,
+            (y - 7) / 2,
+            z,
+            2.5,
+            (y + 7) / 2,
+            2.5,
+            null,
+            true,
+          ),
+        );
     }
     const life = tile.getObjectByName('city-urban-life');
     for (const node of life?.children ?? []) {
       if (node.userData.role !== 'maglev') continue;
       // Three carriages with ends and fins, actual width ~13 and length ~108.
-      objects.push(solid(tile, 'maglev-train', node.position.x, node.position.y,
-        node.position.z, 6.8, 4.6, 55, node, !!node.userData.highOnly));
+      objects.push(
+        solid(
+          tile,
+          'maglev-train',
+          node.position.x,
+          node.position.y,
+          node.position.z,
+          6.8,
+          4.6,
+          55,
+          node,
+          !!node.userData.highOnly,
+        ),
+      );
     }
   }
   const active = [];
@@ -78,7 +100,9 @@ export function createCityLocalSolids(tiles) {
       return;
     }
     for (const o of objects) {
-      const oldX = o.center.x, oldY = o.center.y, oldZ = o.center.z;
+      const oldX = o.center.x,
+        oldY = o.center.y,
+        oldZ = o.center.z;
       const { tile, node } = o;
       o.center.set(
         (node?.position.x ?? o.localX) + tile.position.x,
@@ -87,16 +111,14 @@ export function createCityLocalSolids(tiles) {
       );
       // Road tiles and trains wrap far away. Never sweep the invisible jump
       // across the playfield as though it were a physical moving object.
-      const wrapped = Math.abs(o.center.z - oldZ) > 130 ||
-        Math.abs(o.center.x - oldX) > 130;
+      const wrapped = Math.abs(o.center.z - oldZ) > 130 || Math.abs(o.center.x - oldX) > 130;
       o.previousX = wrapped ? o.center.x : oldX;
       o.previousY = wrapped ? o.center.y : oldY;
       o.previousZ = wrapped ? o.center.z : oldZ;
-      const visible = tile.visible &&
+      const visible =
+        tile.visible &&
         (!o.highOnly || (node ? node.visible : tile.getObjectByName('city-high-details')?.visible));
-      o.active = !!visible &&
-        o.center.z + o.half.z >= NEAR_Z &&
-        o.center.z - o.half.z <= REAR_Z;
+      o.active = !!visible && o.center.z + o.half.z >= NEAR_Z && o.center.z - o.half.z <= REAR_Z;
       if (o.active) active.push(o);
     }
   }
@@ -105,9 +127,16 @@ export function createCityLocalSolids(tiles) {
     update,
     reset,
     colliders: () => active,
-    snapshot: () => objects.map((o) => ({
-      kind: o.kind, active: o.active, x: o.center.x, y: o.center.y, z: o.center.z,
-      halfX: o.half.x, halfY: o.half.y, halfZ: o.half.z,
-    })),
+    snapshot: () =>
+      objects.map((o) => ({
+        kind: o.kind,
+        active: o.active,
+        x: o.center.x,
+        y: o.center.y,
+        z: o.center.z,
+        halfX: o.half.x,
+        halfY: o.half.y,
+        halfZ: o.half.z,
+      })),
   };
 }

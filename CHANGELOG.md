@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.69 — Candidata em preparação
+
+- Fase 1: exploracao lateral original ±72 restaurada, colisao somente sobre objetos visiveis, tuneis livres fora de objetos; novas fachadas destrutiveis por tiros. Browser e mobile pendentes.
+
 ## 1.27.68 — Candidata em preparação
 
 - Fase 1: colisão sólida da nave com destroços, estruturas, obstáculos e guardrails; CCD com deflexão real, mantendo i-frames apenas para dano. Browser/QA visual pendente.

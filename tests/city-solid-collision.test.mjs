@@ -1,10 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import {
-  CITY_SHIP_CLEARANCE,
-  resolveCitySolidContact,
-} from '../src/city-collision.js';
+import { CITY_SHIP_CLEARANCE, resolveCitySolidContact } from '../src/city-collision.js';
 import { createCityCatastrophe } from '../src/city-catastrophe.js';
 import { harness } from './harness.mjs';
 
@@ -38,7 +35,10 @@ test('a moving maglev physically redirects a ship instead of dealing damage whil
   const before = new T.Vector3(24, 6, 9);
   const proposed = before.clone();
   assert.equal(resolveCitySolidContact(before, proposed, train), true);
-  assert.ok(proposed.x > 36, 'ship may evade into the open right flank, beyond the old false limit');
+  assert.ok(
+    proposed.x > 36,
+    'ship may evade into the open right flank, beyond the old false limit',
+  );
   assert.ok(proposed.x <= 72 && proposed.x >= -72);
   assert.ok(
     proposed.x - CITY_SHIP_CLEARANCE.x > train.center.x + train.half.x,
@@ -113,8 +113,11 @@ test('space outside a solid stays free up to the original 72-unit flight boundar
   }
   const side = new T.Vector3(-65, 6, 9);
   const next = new T.Vector3(65, 6, 9);
-  assert.equal(resolveCitySolidContact(side, next, wreck), false,
-    'passing an actual object on a different depth plane remains free');
+  assert.equal(
+    resolveCitySolidContact(side, next, wreck),
+    false,
+    'passing an actual object on a different depth plane remains free',
+  );
 });
 
 test('all four authored fallen props have real colliders, no pre-impact invisible volume', () => {

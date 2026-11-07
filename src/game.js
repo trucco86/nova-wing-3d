@@ -4728,7 +4728,11 @@ export function createGame({
           cityObstacleSolid.previousX = cityObstacleSolid.center.x;
           cityObstacleSolid.previousY = cityObstacleSolid.center.y;
           cityObstacleSolid.previousZ = cityObstacleSolid.center.z - travel;
-          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid, { laneLimit: flightLimit() })) {
+          if (
+            resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid, {
+              laneLimit: flightLimit(),
+            })
+          ) {
             cityImpactCount++;
             collided = true;
           }
@@ -4891,7 +4895,11 @@ export function createGame({
           citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
           citySolidFrom.z += hazard.center.z - hazard.previousZ;
           citySolidTo.copy(player.position).sub(hazard.center);
-          if (resolveCitySolidContact(cityPlayerBefore, player.position, hazard, { laneLimit: flightLimit() })) {
+          if (
+            resolveCitySolidContact(cityPlayerBefore, player.position, hazard, {
+              laneLimit: flightLimit(),
+            })
+          ) {
             cityImpactCount++;
             hit(26);
             shake = Math.max(shake, 0.28);
@@ -5127,9 +5135,7 @@ export function createGame({
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
-      cityPhysicalSolids: dynamicFlight && sectorIndex === 0
-        ? world.cityLocalSolidsSnapshot()
-        : [],
+      cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
       cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
