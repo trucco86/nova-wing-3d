@@ -57,11 +57,7 @@ import {
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
-import {
-  CITY_ROAD_LIMIT,
-  keepInsideCityRoad,
-  resolveCitySolidContact,
-} from './city-collision.js';
+import { CITY_ROAD_LIMIT, keepInsideCityRoad, resolveCitySolidContact } from './city-collision.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';

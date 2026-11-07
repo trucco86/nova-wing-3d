@@ -2,23 +2,36 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
-  CITY_ROAD_LIMIT, CITY_SHIP_CLEARANCE,
-  keepInsideCityRoad, resolveCitySolidContact,
+  CITY_ROAD_LIMIT,
+  CITY_SHIP_CLEARANCE,
+  keepInsideCityRoad,
+  resolveCitySolidContact,
 } from '../src/city-collision.js';
 import { createCityCatastrophe } from '../src/city-catastrophe.js';
 import { harness } from './harness.mjs';
 
 function solid({
-  x = 24, y = 14, z = 0,
-  prevX = x, prevY = y, prevZ = z,
-  hx = 8.5, hy = 6.1, hz = 21.5,
-  kind = 'train', active = true,
+  x = 24,
+  y = 14,
+  z = 0,
+  prevX = x,
+  prevY = y,
+  prevZ = z,
+  hx = 8.5,
+  hy = 6.1,
+  hz = 21.5,
+  kind = 'train',
+  active = true,
 } = {}) {
   return {
-    active, solid: true, kind,
+    active,
+    solid: true,
+    kind,
     center: new T.Vector3(x, y, z),
     half: new T.Vector3(hx, hy, hz),
-    previousX: prevX, previousY: prevY, previousZ: prevZ,
+    previousX: prevX,
+    previousY: prevY,
+    previousZ: prevZ,
   };
 }
 
@@ -29,10 +42,15 @@ test('a moving maglev physically redirects a ship instead of dealing damage whil
   assert.equal(resolveCitySolidContact(before, proposed, train), true);
   assert.ok(proposed.x < 15, 'right edge cannot be used, so escape via open center-left lane');
   assert.ok(proposed.x <= CITY_ROAD_LIMIT && proposed.x >= -CITY_ROAD_LIMIT);
-  assert.ok(proposed.x + CITY_SHIP_CLEARANCE.x < train.center.x - train.half.x,
-    'final ship is outside the actual train hitbox');
-  assert.equal(resolveCitySolidContact(proposed, proposed, train), false,
-    'post-contact position remains outside; no jitter or repeated snap');
+  assert.ok(
+    proposed.x + CITY_SHIP_CLEARANCE.x < train.center.x - train.half.x,
+    'final ship is outside the actual train hitbox',
+  );
+  assert.equal(
+    resolveCitySolidContact(proposed, proposed, train),
+    false,
+    'post-contact position remains outside; no jitter or repeated snap',
+  );
 });
 
 test('60/30/120 Hz sweeps keep the ship out of an approaching wide city obstacle', () => {
@@ -46,11 +64,14 @@ test('60/30/120 Hz sweeps keep the ship out of an approaching wide city obstacle
       const next = player.clone();
       if (resolveCitySolidContact(player, next, wreck)) deflections++;
       player = next;
-      assert.ok(!(
-        Math.abs(player.x - wreck.center.x) < wreck.half.x + CITY_SHIP_CLEARANCE.x &&
-        Math.abs(player.y - wreck.center.y) < wreck.half.y + CITY_SHIP_CLEARANCE.y &&
-        Math.abs(player.z - wreck.center.z) < wreck.half.z + CITY_SHIP_CLEARANCE.z
-      ), `ship penetrated solid at ${hz} Hz frame ${i}`);
+      assert.ok(
+        !(
+          Math.abs(player.x - wreck.center.x) < wreck.half.x + CITY_SHIP_CLEARANCE.x &&
+          Math.abs(player.y - wreck.center.y) < wreck.half.y + CITY_SHIP_CLEARANCE.y &&
+          Math.abs(player.z - wreck.center.z) < wreck.half.z + CITY_SHIP_CLEARANCE.z
+        ),
+        `ship penetrated solid at ${hz} Hz frame ${i}`,
+      );
     }
     assert.ok(deflections >= 1, `solid collision resolved at ${hz} Hz`);
   }
@@ -71,8 +92,10 @@ test('a ship can freely exit overlap and evade vertically without sticky damage'
   assert.equal(resolveCitySolidContact(previous, escaping, block), false);
   const next = new T.Vector3(0, 6, 9);
   assert.equal(resolveCitySolidContact(previous, next, block), true);
-  assert.ok(next.y > block.center.y + block.half.y,
-    'when neither flank fits, the ship must evade above the solid');
+  assert.ok(
+    next.y > block.center.y + block.half.y,
+    'when neither flank fits, the ship must evade above the solid',
+  );
 });
 
 test('a visible road rail stops the wing before it clips into the side wall', () => {
@@ -93,8 +116,13 @@ test('all four authored fallen props have real colliders, no pre-impact invisibl
     city.update(1 / 60, i / 60, 48, true);
     for (const c of city.colliders()) {
       touchedKinds.add(c.kind);
-      assert.ok(c.solid && c.half.x > 0 && c.half.y > 0 &&
-        Number.isFinite(c.previousZ) && Number.isFinite(c.previousY));
+      assert.ok(
+        c.solid &&
+          c.half.x > 0 &&
+          c.half.y > 0 &&
+          Number.isFinite(c.previousZ) &&
+          Number.isFinite(c.previousY),
+      );
     }
   }
   assert.deepEqual([...touchedKinds].sort(), ['billboard', 'car', 'facade', 'train'].sort());

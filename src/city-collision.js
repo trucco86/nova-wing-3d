@@ -29,8 +29,7 @@ function sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz) {
   return true;
 }
 
-const inside = (x, y, z, hx, hy, hz) =>
-  Math.abs(x) < hx && Math.abs(y) < hy && Math.abs(z) < hz;
+const inside = (x, y, z, hx, hy, hz) => Math.abs(x) < hx && Math.abs(y) < hy && Math.abs(z) < hz;
 
 /**
  * Mutates next only on impact; returns true for actual swept contact.
@@ -38,12 +37,12 @@ const inside = (x, y, z, hx, hy, hz) =>
  * flank, or above/below the obstruction if no side exists within the road.
  * A start-inside ship can escape freely, avoiding sticky collision barriers.
  */
-export function resolveCitySolidContact(previous, next, solid, {
-  clearance = CITY_SHIP_CLEARANCE,
-  laneLimit = CITY_ROAD_LIMIT,
-  minY = -1,
-  maxY = 46,
-} = {}) {
+export function resolveCitySolidContact(
+  previous,
+  next,
+  solid,
+  { clearance = CITY_SHIP_CLEARANCE, laneLimit = CITY_ROAD_LIMIT, minY = -1, maxY = 46 } = {},
+) {
   if (!solid?.active || !solid?.solid) return false;
   const c = solid.center;
   const sx = previous.x - (solid.previousX ?? c.x);
@@ -58,8 +57,7 @@ export function resolveCitySolidContact(previous, next, solid, {
   const atStart = inside(sx, sy, sz, hx, hy, hz);
   const atEnd = inside(tx, ty, tz, hx, hy, hz);
   if (atStart && !atEnd) return false;
-  if (!atEnd && !sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz))
-    return false;
+  if (!atEnd && !sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz)) return false;
 
   const epsilon = 0.08;
   const left = c.x - hx - epsilon;

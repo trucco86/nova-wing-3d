@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.68 — Candidata em preparação
+
+- Fase 1: colisão sólida da nave com destroços, estruturas, obstáculos e guardrails; CCD com deflexão real, mantendo i-frames apenas para dano. Browser/QA visual pendente.
+
 ## 1.27.67 — Candidata em preparação
 
 - Fase 1: destruição urbana roteirizada com física de solo, colisão de destroços, explosões pré-alocadas e skyline mais fiel ao concept; aprovação visual e FPS pendentes.

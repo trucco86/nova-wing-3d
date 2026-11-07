@@ -33,11 +33,13 @@ The old city layers already provided trains, billboards, traffic and a deep skyl
 - Wet pavement/metal/glazing physically-based reflections tuned against actual image comparison, with a low-cost fallback for mobile.
 
 ## Collision integrity follow-up — ship passing through scenery (v1.27.68)
+
 A reported defect was verified in source: the previous stage-1 rubble collision merely called `hit(26)`; invulnerability/dash/roll could suppress damage, but neither result prevented the ship from ending inside the rendered mesh. Only maglev and facade had physical volumes, while roadside guardrails and generic city obstacles still used damage-only checks. The original stage-1 dynamics were not a true solid collision system.
 
 **Corrective rules**
+
 - Every falling authored billboard, hovercar, facade and suspended maglev has a real collider. Previous and current XYZ positions are recorded so scenery scrolling and falling are included in the relative sweep.
-- Resolve the ship's swept path against fighter-sized expanded AABBs. The collision response *moves the ship outside the obstacle* onto the entry-side lane, or above/below the hazard if a side is unavailable; never merely call `hit()`. Damage and screen effects remain independent, so temporary invulnerability or robot dash does not produce phasing.
+- Resolve the ship's swept path against fighter-sized expanded AABBs. The collision response _moves the ship outside the obstacle_ onto the entry-side lane, or above/below the hazard if a side is unavailable; never merely call `hit()`. Damage and screen effects remain independent, so temporary invulnerability or robot dash does not produce phasing.
 - Reuse identical solver for existing stage-1 gantries/reactors. The city avenue has physical side constraints before ascent: visible guardrails at x=±47 imply ship-center limit ±36 with room for wings. Outside city/ascent the previous flight arena is restored.
 - Do not inject new GPU/physics geometry on the frame hot path. Use a single scratch hazard and reuse city hazard arrays. No array allocations in per-axis sweep.
 - Tests must establish actual final position outside solid at different frame rates, moving obstacle CCD, dash/boost tunneling, wall response, and pause/reset; the prior assertion that damage changed alone is insufficient.
