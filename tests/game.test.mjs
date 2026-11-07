@@ -25,14 +25,14 @@ test('user starts a mission and unlocks audio once', (t) => {
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.elements.get('menu').hidden, true);
 });
-test('keyboard movement respects the solid city rails and diagonal input remains finite', (t) => {
+test('keyboard explores the full original city arena and diagonal input stays finite', (t) => {
   const h = setup(t);
   h.game.start();
   h.key('KeyD');
   h.key('KeyW');
   h.advance(4);
   const s = h.game.snapshot();
-  assert.equal(s.player.x, 36, 'city rail at ±47 leaves room for fighter wings');
+  assert.equal(s.player.x, 72, 'open air above rails must allow full original lateral freedom');
   assert.equal(s.player.y, 46);
   h.key('KeyD', false);
   h.key('KeyW', false);
