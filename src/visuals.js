@@ -1908,10 +1908,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
     cityCameraOcclusionSnapshot: () => cityBridgeCameraFade?.snapshot() ?? [],
     updateCityCameraOcclusion(camera, pilot, dt) {
-      return cityBridgeCameraFade?.update(
-        camera, pilot, cityLocalSolids?.colliders(), dt,
-        sceneryTheme === 'city' && city.visible,
-      ) ?? [];
+      return (
+        cityBridgeCameraFade?.update(
+          camera,
+          pilot,
+          cityLocalSolids?.colliders(),
+          dt,
+          sceneryTheme === 'city' && city.visible,
+        ) ?? []
+      );
     },
     // An arbitrary -35 vertical retreat gate made visible falling objects
     // intangible before the city actually vanished. Geometry visibility is

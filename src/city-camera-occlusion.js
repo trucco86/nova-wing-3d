@@ -27,8 +27,7 @@ const BRIDGE_GROUPS = [
 ];
 
 export function bridgeOccludesSight(camera, pilot, obstacle) {
-  if (!obstacle?.active || !obstacle.solid || !obstacle.half || !obstacle.center)
-    return false;
+  if (!obstacle?.active || !obstacle.solid || !obstacle.half || !obstacle.center) return false;
   const c = obstacle.center;
   const half = obstacle.half;
   // Small extra Y margin covers a slab that fills the upper screen without

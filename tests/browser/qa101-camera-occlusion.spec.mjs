@@ -24,10 +24,11 @@ test('underpass becomes translucent only while camera sightline is blocked; phys
   const result = await page.evaluate(() => {
     let mostObscured = null;
     for (let i = 0; i < 65; i++) {
-      window.fixture.advance(0.10, { renderAfter: false });
+      window.fixture.advance(0.1, { renderAfter: false });
       const state = window.fixture.game.snapshot();
-      const fade = state.cityCameraOcclusion.find((item) =>
-        item.tile === 'launch-city' && item.kind === 'lower');
+      const fade = state.cityCameraOcclusion.find(
+        (item) => item.tile === 'launch-city' && item.kind === 'lower',
+      );
       if (fade && (!mostObscured || fade.fade > mostObscured.fade))
         mostObscured = { ...fade, impacts: state.cityImpactCount, player: state.player };
       if (fade?.fade > 0.7) break;
@@ -36,7 +37,10 @@ test('underpass becomes translucent only while camera sightline is blocked; phys
     return { mostObscured, state: window.fixture.game.snapshot() };
   });
   expect(result.mostObscured).toBeTruthy();
-  expect(result.mostObscured.fade, 'camera must detect the actual overhead structure').toBeGreaterThan(0.1);
+  expect(
+    result.mostObscured.fade,
+    'camera must detect the actual overhead structure',
+  ).toBeGreaterThan(0.1);
   expect(result.mostObscured.opacity).toBeLessThan(0.91);
   expect(
     result.state.cityPhysicalSolids.some((solid) => solid.kind === 'overpass-deck' && solid.active),
@@ -50,10 +54,13 @@ test('underpass becomes translucent only while camera sightline is blocked; phys
     window.fixture.advance(0);
   });
   const clear = await page.evaluate(() => window.fixture.game.snapshot());
-  const material = clear.cityCameraOcclusion.find((item) =>
-    item.tile === 'launch-city' && item.kind === 'lower');
+  const material = clear.cityCameraOcclusion.find(
+    (item) => item.tile === 'launch-city' && item.kind === 'lower',
+  );
   expect(material.opacity).toBeGreaterThan(0.95);
-  await page.screenshot({ path: info.outputPath('clear-city-after-underpass-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('clear-city-after-underpass-' + info.project.name + '.png'),
+  });
   expect(errors).toEqual([]);
 });
 
@@ -75,5 +82,7 @@ test('flying above a bridge never fades it or creates an invisible blocking volu
     state.cityCameraOcclusion.every((item) => item.opacity > 0.96),
     'open air must stay fully opaque and should not be faded by distant bridges',
   ).toBe(true);
-  await page.screenshot({ path: info.outputPath('clean-upper-city-flyover-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('clean-upper-city-flyover-' + info.project.name + '.png'),
+  });
 });

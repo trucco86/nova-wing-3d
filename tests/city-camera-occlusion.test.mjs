@@ -24,10 +24,15 @@ const pilot = new T.Vector3(0, 53, 9);
 
 function obstacle(tile, kind = 'overpass-deck') {
   return {
-    tile, kind, center: new T.Vector3(0, 59, 24),
+    tile,
+    kind,
+    center: new T.Vector3(0, 59, 24),
     half: new T.Vector3(71, 3, 6.5),
-    previousX: 0, previousY: 59, previousZ: 24,
-    active: true, solid: true,
+    previousX: 0,
+    previousY: 59,
+    previousZ: 24,
+    active: true,
+    solid: true,
   };
 }
 
@@ -39,14 +44,18 @@ test('only a physical bridge between camera and pilot can obscure chase vision',
   assert.equal(bridgeOccludesSight(camera, pilot, { ...blocker, solid: false }), false);
   assert.equal(
     bridgeOccludesSight(camera, pilot, {
-      ...blocker, center: new T.Vector3(0, 59, -250),
-    }), false,
+      ...blocker,
+      center: new T.Vector3(0, 59, -250),
+    }),
+    false,
     'far background must not trigger an unrelated fade',
   );
   assert.equal(
     bridgeOccludesSight(camera, pilot, {
-      ...blocker, center: new T.Vector3(160, 59, 24),
-    }), false,
+      ...blocker,
+      center: new T.Vector3(160, 59, 24),
+    }),
+    false,
     'structures on another street must remain opaque',
   );
   assert.equal(
@@ -65,7 +74,11 @@ test('faded upper/lower/transit materials never mutate physical collision or hid
   const lower = near.getObjectByName('city-elevated-crossings');
   const farLower = far.getObjectByName('city-elevated-crossings');
   assert.notEqual(lower.material, originalSteel, 'only camera-aware surfaces use cloned materials');
-  assert.notEqual(lower.material, farLower.material, 'fading one tile must not fade distant cloned city');
+  assert.notEqual(
+    lower.material,
+    farLower.material,
+    'fading one tile must not fade distant cloned city',
+  );
   const hull = obstacle(near);
   fade.update(camera, pilot, [hull], 0.5);
   assert.ok(lower.material.opacity < 0.25);

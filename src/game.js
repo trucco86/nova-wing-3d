@@ -6507,7 +6507,8 @@ export function createGame({
         dynamicFlight && sectorIndex === 0 ? world.orbitalAscentSnapshot() : null,
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
-      cityCameraOcclusion: dynamicFlight && sectorIndex === 0 ? world.cityCameraOcclusionSnapshot() : [],
+      cityCameraOcclusion:
+        dynamicFlight && sectorIndex === 0 ? world.cityCameraOcclusionSnapshot() : [],
       cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
