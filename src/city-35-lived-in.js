@@ -178,10 +178,14 @@ export function setCity35LivedInQuality(root, quality) {
   cabins.count = glass.count = count;
   beacons.count = count * 2;
   exhaust.count = high.visible ? root.userData.vents.length : 0;
+  // Newly enabled instances must have a real transform before the next
+  // render; otherwise the extra High lifts flash at the world origin.
+  updateCity35LivedIn(root, root.userData.travel ?? 0);
 }
 
 export function updateCity35LivedIn(root, travel = 0) {
   if (!root || !Number.isFinite(travel)) return;
+  root.userData.travel = travel;
   const { lifts, vents, cabins, glass, beacons, exhaust } = refs(root);
   const phase = root.userData.phase || 0;
   for (let i = 0; i < cabins.count; i++) {
