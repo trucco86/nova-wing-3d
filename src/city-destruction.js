@@ -330,8 +330,10 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   const { signRoot, billboard, car, carBurst, facade, collapse, collapseFlash } =
     root.userData.nodes;
   signRoot.visible = seconds >= 4.8 && seconds < 10.3;
+  // Move across the real central flight lane rather than falling exclusively
+  // outside the playable road. Both flanks remain available for avoidance.
   signRoot.position.set(
-    -55 + state.billboard * 10,
+    -32 + state.billboard * 27,
     47 - state.billboard * 44,
     -195 + Math.max(0, seconds - 5.4) * 48,
   );
@@ -341,7 +343,7 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
 
   car.visible = seconds >= 8.2 && seconds < 12.3;
   car.position.set(
-    56 - state.vehicle * 12,
+    35 - state.vehicle * 28,
     48 - state.vehicle * 56,
     -185 + Math.max(0, seconds - 8.5) * 48,
   );
@@ -352,7 +354,7 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   carBurst.position.set(car.position.x, CITY_STREET_TOP_Y + 6 * carBurst.scale.x, car.position.z);
 
   facade.visible = seconds >= 10.2 && seconds < 20.5;
-  facade.position.set(-88, -7, -255 + Math.max(0, seconds - 11.1) * 48);
+  facade.position.set(-68, -7, -255 + Math.max(0, seconds - 11.1) * 48);
   for (const fragment of collapse.children) {
     const i = fragment.userData.fallIndex;
     // The large pieces tumble from the façade on slightly staggered arcs.

@@ -5992,8 +5992,11 @@ export function createGame({
           }
           for (const shot of [...shots, ...hostile]) {
             if (shot.life <= 0 || !shot.previousPosition) continue;
-            citySolidFrom.copy(shot.previousPosition).sub(hazard.center);
-            citySolidFrom.z += hazard.center.z - hazard.previousZ;
+            citySolidFrom.set(
+              shot.previousPosition.x - (hazard.previousX ?? hazard.center.x),
+              shot.previousPosition.y - (hazard.previousY ?? hazard.center.y),
+              shot.previousPosition.z - (hazard.previousZ ?? hazard.center.z),
+            );
             citySolidTo.copy(shot.o.position).sub(hazard.center);
             if (crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 0.3)) {
               shot.life = 0;
@@ -6490,6 +6493,10 @@ export function createGame({
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityPhysicsDebris: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
+      cityFallingSolids:
+        dynamicFlight && sectorIndex === 0 ? world.cityScriptedFallingSnapshot() : [],
+      orbitalAscentCinematic:
+        dynamicFlight && sectorIndex === 0 ? world.orbitalAscentSnapshot() : null,
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
       cityImpactCount,

@@ -172,7 +172,12 @@ test('real stage-1 mission plays wreck only once and preserves the boost challen
   const h = harness({ spawnEncounters: false, enableCitySetpieces: true, enableSquadIntro: false });
   t.after(() => h.close());
   h.game.start(true);
-  h.advance(13.45);
+  // After making falling objects genuinely solid, the old idle-at-center
+  // fixture must evade them. The approved right lane stays navigable.
+  h.key('ArrowRight');
+  h.advance(2.4);
+  h.key('ArrowRight', false);
+  h.advance(11.05);
   let state = h.game.snapshot();
   assert.ok(state.cityDestruction.triggered.includes('trainWarning'));
   assert.ok(state.cityDestruction.triggered.includes('facadeDebrisImpact'));
