@@ -1,4 +1,5 @@
 name: Targeted QA98 City Physics and ISS WebGL
+# Rerun after randomized stratum-density fix, with synced 1.27.98 HTML.
 on:
   push:
     branches: [fix/stage1-falling-collisions-iss-v12798-20261107]
