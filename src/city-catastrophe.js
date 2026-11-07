@@ -231,7 +231,12 @@ export function createCityCatastrophe() {
   }
   function update(dt, elapsed, speed, enabled = true) {
     root.visible = enabled;
-    if (!enabled || !Number.isFinite(dt) || dt < 0) return;
+    if (!enabled) {
+      activeColliders.length = 0;
+      for (const b of beats) b.collider.active = false;
+      return;
+    }
+    if (!Number.isFinite(dt) || dt < 0) return;
     activeColliders.length = 0;
     for (const b of beats) {
       const { spec, o, collider } = b;
