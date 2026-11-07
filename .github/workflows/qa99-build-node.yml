@@ -1,4 +1,5 @@
 name: QA99 versioned full Node gate and bundle sync
+# Re-run after restoring maglev visibility and giving the car a durable collision window.
 on:
   push:
     branches: [fix/qa99-free-vertical-overpass-physical-20261107]
@@ -29,7 +30,7 @@ jobs:
           git diff --check
       - name: Commit QA99 sources, tests, spec and generated HTML
         run: |
-          git add -- src/game.js src/visuals.js src/styles.css src/city-local-solids.js tests/qa99-vertical-overpass.test.mjs tests/browser/qa99-open-flight-and-viaduct.spec.mjs specs/qa99-vertical-flight-overpass-and-hud.md index.html
+          git add -- src/game.js src/visuals.js src/styles.css src/city-local-solids.js src/city-destruction.js tests/game.test.mjs tests/city-falling-solids.test.mjs tests/qa99-vertical-overpass.test.mjs tests/browser/qa99-open-flight-and-viaduct.spec.mjs specs/qa99-vertical-flight-overpass-and-hud.md index.html
           git diff --cached --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
