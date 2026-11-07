@@ -57,6 +57,11 @@ import {
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
+import {
+  CITY_ROAD_LIMIT,
+  keepInsideCityRoad,
+  resolveCitySolidContact,
+} from './city-collision.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
@@ -259,6 +264,17 @@ export function createGame({
   const citySolidFrom = new T.Vector3();
   const citySolidTo = new T.Vector3();
   const citySolidOrigin = new T.Vector3();
+  const cityObstacleSolid = {
+    active: true,
+    solid: true,
+    kind: 'obstacle',
+    center: new T.Vector3(),
+    half: new T.Vector3(),
+    previousX: 0,
+    previousY: 0,
+    previousZ: 0,
+  };
+  let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
@@ -1206,6 +1222,7 @@ export function createGame({
     rollHeld = false;
     rollAngle = 0;
     mechaDash.reset();
+    cityImpactCount = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
@@ -4688,12 +4705,23 @@ export function createGame({
         .sub(obstacle.o.position)
         .add(new T.Vector3(0, 0, travel));
       const to = player.position.clone().sub(obstacle.o.position);
-      if (
-        obstacle.o.userData.solids.some((solid) =>
-          crossesSolid(from, to, solid.center, solid.half, 1.3),
-        )
-      )
-        hit(30);
+      let collided = false;
+      for (const solid of obstacle.o.userData.solids) {
+        const touching = crossesSolid(from, to, solid.center, solid.half, 1.3);
+        if (!touching) continue;
+        collided = true;
+        if (dynamicFlight && sectorIndex === 0 && world.cityRoadActive()) {
+          // Existing gantries/reactors must stop the player, not merely deal damage.
+          cityObstacleSolid.center.copy(obstacle.o.position).add(solid.center);
+          cityObstacleSolid.half.copy(solid.half);
+          cityObstacleSolid.previousX = cityObstacleSolid.center.x;
+          cityObstacleSolid.previousY = cityObstacleSolid.center.y;
+          cityObstacleSolid.previousZ = cityObstacleSolid.center.z - travel;
+          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid))
+            cityImpactCount++;
+        }
+      }
+      if (collided) hit(30);
       // Stop allied and hostile rounds at actual solid geometry, not after it.
       for (const b of [...shots, ...hostile]) {
         if (b.life <= 0 || !b.previousPosition) continue;
@@ -4838,6 +4866,13 @@ export function createGame({
       cityPlayerBefore.copy(player.position);
       update(dt);
       if (dynamicFlight && sectorIndex === 0 && state === 'playing') {
+        // Roadside guardrails occupy x=±47; the ship's wings need clearance.
+        // This constraint disappears once the road retreats into orbit.
+        if (world.cityRoadActive() && keepInsideCityRoad(player.position, CITY_ROAD_LIMIT)) {
+          cityImpactCount++;
+          hit(8);
+          shake = Math.max(shake, 0.16);
+        }
         // Scripted urban rubble shares its visible collision geometry. Resolve
         // swept motion against the same city travel as the scene, not a
         // teleporting obstacle or an invisible trigger plane.
@@ -4846,7 +4881,11 @@ export function createGame({
           citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
           citySolidFrom.z += hazard.center.z - hazard.previousZ;
           citySolidTo.copy(player.position).sub(hazard.center);
-          if (crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 1.3)) hit(26);
+          if (resolveCitySolidContact(cityPlayerBefore, player.position, hazard)) {
+            cityImpactCount++;
+            hit(26);
+            shake = Math.max(shake, 0.28);
+          }
           for (const shot of [...shots, ...hostile]) {
             if (shot.life <= 0 || !shot.previousPosition) continue;
             citySolidFrom.copy(shot.previousPosition).sub(hazard.center);
@@ -5077,6 +5116,7 @@ export function createGame({
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
+      cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
