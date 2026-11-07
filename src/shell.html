@@ -27,8 +27,33 @@
       <canvas id="arcadeCanvas"></canvas><strong id="arcadeStatus"></strong>
       <p>WASD / SETAS · ESPAÇO / TIRO · DOURADO = CRÉDITOS</p>
     </section>
-    <div id="cockpitPanel" hidden>
-      <span>NOVA-7 / SISTEMAS DE VOO</span><strong id="cockpitReadout"></strong>
+    <div id="cockpitPanel" hidden role="group" aria-label="Instrumentos da cabine">
+      <div class="cockpit-instruments">
+        <div class="cockpit-left">
+          <span class="cockpit-label">FIVE CATS / COMANDANTE</span>
+          <strong id="cockpitPilot">BIA</strong>
+          <span id="cockpitWeapon">PULSO</span>
+          <small id="cockpitReadout">ESCUDO 100% · ENERGIA 100%</small>
+        </div>
+        <div class="cockpit-radar-wrap">
+          <span class="cockpit-label">RADAR DE AMEAÇAS</span>
+          <div id="cockpitMap" aria-label="Radar relativo, com marcação da nave e ameaças próximas">
+            <div class="cockpit-map-grid"></div>
+            <i id="cockpitOwn" title="Nave ativa"></i>
+            <i class="cockpit-blip" id="cockpitBlip0" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip1" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip2" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip3" hidden></i>
+          </div>
+          <small id="cockpitNav">SETOR 01 · 0%</small>
+        </div>
+        <div class="cockpit-right">
+          <span class="cockpit-label">VELOCIDADE / NÓS DE VOO</span>
+          <strong id="cockpitSpeedValue">480</strong>
+          <span id="cockpitShip">NOVA-7</span>
+          <small id="cockpitSwapStatus">M · TROCAR PILOTO</small>
+        </div>
+      </div>
     </div>
     <div id="strategyControls">
       <details id="strategyDrawer">
@@ -78,6 +103,9 @@
       </div>
     </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
+    <button id="pilotSwitch" hidden aria-label="Trocar piloto e nave durante a batalha">
+      M · TROCAR
+    </button>
     <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
       <div id="battleRadar" role="img" aria-label="Radar orbital">
         <i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b>
@@ -504,6 +532,9 @@
               class="ship-description"
               data-hangar-section="ships"
             ></p>
+            <small id="shipStats" data-hangar-section="ships"
+              >ATAQUE 0 · DEFESA 0 · AGILIDADE 0</small
+            >
             <details id="loadoutCatalog" data-hangar-section="arsenal">
               <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
               <div class="loadout-catalog">

@@ -6,7 +6,9 @@ test('subboss reaches combat quickly and telegraphs its distinct attack', async 
   test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/__dynamic.html?sector=0&encounters=1');
+  // Isolate the historic subboss telegraph from the separately approved
+  // train -> Super Boost -> orbit pacing. The normal path remains unchanged.
+  await page.goto('/__dynamic.html?sector=0&encounters=1&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   // Seek the real windup frame after the longer first-sector approach.
   // The subboss now spawns after 22% of a 130-second level, not at 19.8s.

@@ -1,6 +1,8 @@
 export const PILOT_PROFILES = [
   {
     id: 'bia',
+    fur: '#1c232b',
+    pawScale: 0.89,
     name: 'BIA',
     role: 'COMANDANTE VANGUARDA',
     specialty: 'attack',
@@ -12,6 +14,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'bob',
+    fur: '#222a30',
+    pawScale: 1.02,
     name: 'BOB',
     role: 'GUARDIÃO DE CERCO',
     specialty: 'defense',
@@ -24,6 +28,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'christopher',
+    fur: '#454046',
+    pawScale: 1.22,
     name: 'CHRISTOPHER',
     role: 'ARTILHEIRO PESADO',
     specialty: 'attack',
@@ -35,6 +41,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'calvin',
+    fur: '#17151b',
+    pawScale: 0.78,
     name: 'CALVINHO',
     role: 'MÍSTICO DO VAZIO',
     specialty: 'spirit',
@@ -47,6 +55,8 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'jenifer',
+    fur: '#969ca5',
+    pawScale: 0.98,
     name: 'JENIFER',
     role: 'INTERCEPTADORA',
     specialty: 'attack',
@@ -72,14 +82,14 @@ export const SHIP_MODELS = [
     name: 'SPECTER-X',
     role: 'INTERCEPTADOR',
     description: 'Asas compactas, aceleração superior e menor blindagem.',
-    stats: { attack: 0, defense: -1, agility: 1 },
+    stats: { attack: 1, defense: -1, agility: 1 },
   },
   {
     id: 'aegis',
     name: 'AEGIS-R',
     role: 'FORTALEZA',
     description: 'Placas reforçadas e estabilidade, com resposta mais pesada.',
-    stats: { attack: 0, defense: 1, agility: -1 },
+    stats: { attack: -1, defense: 1, agility: -1 },
   },
 ];
 
