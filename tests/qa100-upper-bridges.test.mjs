@@ -88,6 +88,7 @@ test('hidden or wrapped bridges never leave phantom colliders or teleporting col
   assert.equal(physical.colliders().filter((s) => s.kind.startsWith('upper-bridge-')).length, 0);
   architecture.visible = true;
   tile.scale.setScalar(0.6);
+  tile.position.z = 180; // first deck returns to reachable depth after scale
   physical.update();
   deck = physical.colliders().find((s) => s.kind === 'upper-bridge-deck');
   assert.ok(deck && Math.abs(deck.half.x - 37.8) < 0.001);
