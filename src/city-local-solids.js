@@ -47,20 +47,26 @@ export function createCityLocalSolids(tiles) {
       // Suspended transit guideway: only obstructs high-altitude flight.
       objects.push(solid(tile, 'elevated-rail', side * 80, 32.1, -948, 4, 2.6, 947));
     }
+    // Bind viaduct volumes only when their actual instanced mesh exists.
+    // Absent / stripped detail must not leave phantom collision in empty air.
+    const crossingMesh = tile.getObjectByName('city-elevated-crossings');
     // These deck and truss volumes correspond to the exact authored High-only
-    // instances in visuals.js (city-elevated-crossings). Previously ONLY
-    // their pillars were physical, so the player could fly through the spans.
+    // instances in visuals.js. Previously ONLY the pillars were physical.
     for (let i = 0; i < 9; i++) {
       const z = -160 - i * 204;
       const y = 59 + (i % 3) * 7;
       const depth = i % 3 === 0 ? 13 : i % 3 === 1 ? 8 : 5;
       const thick = i % 3 === 0 ? 6 : 3.5;
-      objects.push(solid(tile, 'overpass-deck', 0, y, z, 71, thick / 2, depth / 2, null, true));
-      objects.push(
-        solid(tile, 'overpass-underbrace', 0, y - 3.2, z, 55, 0.6, depth * 0.36, null, true),
-      );
-      if (i % 3 === 0)
-        objects.push(solid(tile, 'overpass-upperbeam', 0, y + 7, z, 37.5, 1.5, depth * 0.25, null, true));
+      if (crossingMesh) {
+        objects.push(solid(tile, 'overpass-deck', 0, y, z, 71, thick / 2, depth / 2, null, true));
+        objects.push(
+          solid(tile, 'overpass-underbrace', 0, y - 3.2, z, 55, 0.6, depth * 0.36, null, true),
+        );
+        if (i % 3 === 0)
+          objects.push(
+            solid(tile, 'overpass-upperbeam', 0, y + 7, z, 37.5, 1.5, depth * 0.25, null, true),
+          );
+      }
       for (const side of [-1, 1])
         objects.push(
           solid(
