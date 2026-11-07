@@ -60,7 +60,7 @@ jobs:
           git diff --check
       - name: Commit versioned and validated candidate only to isolated feature branch
         run: |
-          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.96.md index.html src/pilot-relay.js src/pilots.js src/cockpit.js src/game.js src/input.js src/shell.html src/styles.css tests/pilot-relay-cockpit.test.mjs tests/browser/pilot-relay-cockpit.spec.mjs specs/cockpit-five-cats-relay-v12796.md
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.96.md index.html src/pilot-relay.js src/pilots.js src/cockpit.js src/game.js src/input.js src/i18n.js src/shell.html src/styles.css tests/flight-force-variety.test.mjs tests/pilot-relay-cockpit.test.mjs tests/browser/pilot-relay-cockpit.spec.mjs specs/cockpit-five-cats-relay-v12796.md
           git diff --cached --check
           if git diff --cached --quiet; then exit 0; fi
           git config user.name 'github-actions[bot]'
