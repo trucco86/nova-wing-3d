@@ -9,6 +9,7 @@ import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
 import { createCityReactiveDamage } from './city-reactive-damage.js';
 import { createCityLocalSolids } from './city-local-solids.js';
+import { createCityUpperBridges } from './city-upper-bridges.js';
 import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
@@ -1484,6 +1485,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCity30DistrictLife(buildingAnchors));
   city.add(createCity32Living(buildingAnchors));
   city.add(createCity33Premium(buildingAnchors));
+  // The far background's high architectural skybridges are not playable.
+  // These three approaching tile-level bridges are: visible physical decks,
+  // matching collision shapes, and a high route to fly above or below them.
+  if (dynamicFlight) city.add(createCityUpperBridges());
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';

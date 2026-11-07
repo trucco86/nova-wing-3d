@@ -61,6 +61,28 @@ export function resolveCitySolidContact(
   if (!atEnd && !sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz)) return false;
 
   const epsilon = 0.08;
+  // On wide horizontal decks, a vertical impact must NOT teleport the
+  // player the full width of the bridge. Stop against the approached face.
+  // Players can still clear either edge and climb over the structure.
+  const isHorizontalBridge =
+    solid.kind === 'upper-bridge-deck' ||
+    solid.kind === 'upper-bridge-truss' ||
+    solid.kind === 'overpass-deck' ||
+    solid.kind === 'overpass-underbrace' ||
+    solid.kind === 'overpass-upperbeam' ||
+    solid.kind === 'cross-city-guideway';
+  if (isHorizontalBridge) {
+    const below = c.y - hy - epsilon;
+    const above = c.y + hy + epsilon;
+    if (previous.y <= c.y && below >= minY) {
+      next.y = below;
+      return true;
+    }
+    if (previous.y > c.y && above <= maxY) {
+      next.y = above;
+      return true;
+    }
+  }
   const left = c.x - hx - epsilon;
   const right = c.x + hx + epsilon;
   // Keep the closest original side, not the new side a high-speed dash may

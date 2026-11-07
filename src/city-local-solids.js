@@ -7,11 +7,24 @@ import * as T from 'three';
 const NEAR_Z = -178;
 const REAR_Z = 52;
 
-function solid(tile, kind, x, y, z, halfX, halfY, halfZ, node = null, highOnly = false) {
+function solid(
+  tile,
+  kind,
+  x,
+  y,
+  z,
+  halfX,
+  halfY,
+  halfZ,
+  node = null,
+  highOnly = false,
+  visibilityNode = node,
+) {
   const center = new T.Vector3(x, y, z);
   return {
     tile,
     node,
+    visibilityNode,
     highOnly,
     kind,
     center,
@@ -83,6 +96,27 @@ export function createCityLocalSolids(tiles) {
           ),
         );
     }
+    // Upper city structures are real, approaching parts of the looping
+    // stage, not the never-reachable scenic horizon. The authored instance
+    // data exactly matches the 12 prebuilt steel meshes and remains allocation-
+    // free during frame updates.
+    const playableSkybridges = tile.getObjectByName('city-upper-skybridge-solids');
+    for (const instance of playableSkybridges?.userData.solidInstances ?? [])
+      objects.push(
+        solid(
+          tile,
+          instance.kind,
+          instance.x,
+          instance.y,
+          instance.z,
+          instance.halfX,
+          instance.halfY,
+          instance.halfZ,
+          null,
+          false,
+          playableSkybridges,
+        ),
+      );
     // A cross-city transit deck exists in both Medium and High, unlike the
     // premium elevated crossings. Its solid is the actual mesh footprint.
     const crossGuideway = tile.getObjectByName('city32-maglev-crossing-guideway');
@@ -149,7 +183,7 @@ export function createCityLocalSolids(tiles) {
       o.previousZ = wrapped ? o.center.z : oldZ;
       const visible =
         tile.visible &&
-        visibleInTile(node, tile) &&
+        visibleInTile(o.visibilityNode, tile) &&
         (!o.highOnly || (node ? node.visible : tile.getObjectByName('city-high-details')?.visible));
       o.active = !!visible && o.center.z + o.half.z >= NEAR_Z && o.center.z - o.half.z <= REAR_Z;
       if (o.active) active.push(o);

@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.100 — Candidata em preparação
+
+- QA: viadutos superiores visíveis e sólidos na rota, alcance vertical estendido, teste determinístico do subchefe sem renderizações WebGL redundantes; homologação pendente.
+
 ## 1.27.99 — Candidata em preparação
 
 - QA em desenvolvimento: liberdade vertical, volumes físicos dos viadutos e trilho transversal, destroços sólidos e etiqueta BLINDADO menos intrusiva; testes completos pendentes.

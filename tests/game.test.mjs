@@ -34,7 +34,7 @@ test('keyboard explores the full original city arena and diagonal input stays fi
   const s = h.game.snapshot();
   assert.equal(s.player.x, 72, 'open air above rails must allow full original lateral freedom');
   assert.ok(s.player.y > 46, 'vertical flight must no longer stop below visible viaducts');
-  assert.ok(s.player.y <= 116, 'the expanded sky flight safety bound remains finite');
+  assert.ok(s.player.y <= 184, 'the playable skyflight safety bound remains finite');
   h.key('KeyD', false);
   h.key('KeyW', false);
   h.advance(1);

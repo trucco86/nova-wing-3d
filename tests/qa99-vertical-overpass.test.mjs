@@ -54,7 +54,7 @@ test('high-only viaduct deck is a localized real obstruction, not a full-height 
   const below = new T.Vector3(0, 47, 9);
   const passThrough = new T.Vector3(0, 69, 9);
   assert.equal(
-    resolveCitySolidContact(below, passThrough, deck, { maxY: 116 }),
+    resolveCitySolidContact(below, passThrough, deck, { maxY: 184 }),
     true,
     'ascending through the actual deck must collide',
   );
@@ -64,16 +64,16 @@ test('high-only viaduct deck is a localized real obstruction, not a full-height 
   );
   const clearAbove = new T.Vector3(0, 90, 9);
   const clearAfter = clearAbove.clone();
-  assert.equal(resolveCitySolidContact(clearAbove, clearAfter, deck, { maxY: 116 }), false);
+  assert.equal(resolveCitySolidContact(clearAbove, clearAfter, deck, { maxY: 184 }), false);
   assert.equal(clearAfter.y, 90);
   const clearBelow = new T.Vector3(0, 20, 9);
   assert.equal(
-    resolveCitySolidContact(clearBelow, clearBelow, deck, { maxY: 116 }),
+    resolveCitySolidContact(clearBelow, clearBelow, deck, { maxY: 184 }),
     false,
     'flying under the viaduct is allowed',
   );
   const farSide = new T.Vector3(70, 10, 9);
-  assert.equal(resolveCitySolidContact(farSide, farSide, deck, { maxY: 116 }), false);
+  assert.equal(resolveCitySolidContact(farSide, farSide, deck, { maxY: 184 }), false);
 });
 
 test('transverse maglev guideway physically blocks its real Medium-quality deck', () => {
@@ -88,10 +88,10 @@ test('transverse maglev guideway physically blocks its real Medium-quality deck'
   assert.equal(crossing.half.y, 1.55);
   const previous = new T.Vector3(0, 48, 9);
   const next = new T.Vector3(0, 70, 9);
-  assert.equal(resolveCitySolidContact(previous, next, crossing, { maxY: 116 }), true);
+  assert.equal(resolveCitySolidContact(previous, next, crossing, { maxY: 184 }), true);
   assert.ok(next.y < 58, 'the deck cannot be crossed vertically');
   const high = new T.Vector3(0, 88, 9);
-  assert.equal(resolveCitySolidContact(high, high, crossing, { maxY: 116 }), false);
+  assert.equal(resolveCitySolidContact(high, high, crossing, { maxY: 184 }), false);
   life.visible = false;
   physics.update();
   assert.equal(
@@ -153,9 +153,9 @@ test('the directional control climbs the full stage-one skyline with tracking ca
   h.advance(7.5, 0.05);
   h.key('KeyW', false);
   const before = h.game.snapshot();
-  assert.equal(before.flightBounds.maxY, 116);
+  assert.equal(before.flightBounds.maxY, 184);
   assert.ok(before.player.y > 90, 'pilot may fly well above the former y=46 ceiling');
-  assert.ok(before.player.y <= 116);
+  assert.ok(before.player.y <= 184);
   assert.ok(
     before.camera.y > 64,
     'camera moves upward with pilot rather than leaving ship offscreen',
@@ -168,7 +168,7 @@ test('the directional control climbs the full stage-one skyline with tracking ca
   h.key('KeyW', true);
   h.advance(12, 0.05);
   h.key('KeyW', false);
-  assert.equal(h.game.snapshot().player.y, 116, 'only the expanded stage safety bound remains');
+  assert.equal(h.game.snapshot().player.y, 184, 'only the expanded stage safety bound remains');
 });
 
 test('other 3D stages expand vertical piloting too, without changing lateral space', (t) => {
