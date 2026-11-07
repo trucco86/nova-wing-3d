@@ -9278,9 +9278,19 @@ body.devastador-escape:not(.devastador-warp) #attackWarning {
   box-shadow: 0 0 9px #fff18355;
 }
 .weak-point-tag[data-state='armored'] {
-  color: #ffba85;
-  border-color: #ed8855;
+  /* Shielded is guidance, not an interactive weak-point target. Keep it
+     legible but substantially lighter than the true vulnerable marker. */
+  transform: translate(-50%, -125%);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font: 700 9px/1.1 monospace;
+  letter-spacing: 0.015em;
+  color: #ffd2ac;
+  background: rgb(17 27 37 / 46%);
+  border-color: rgb(237 136 85 / 44%);
+  box-shadow: 0 0 4px rgb(237 136 85 / 16%);
   text-shadow: none;
+  opacity: 0.8;
 }
 .weak-point-tag[hidden] {
   display: none !important;
