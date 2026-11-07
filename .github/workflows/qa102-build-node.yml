@@ -1,4 +1,5 @@
 name: QA102 premium inhabited city build and Node gate
+# Rerun after removing unused model allocation bindings reported by strict lint.
 on:
   push:
     branches: [feat/qa102-premium-city-life-20261107]
