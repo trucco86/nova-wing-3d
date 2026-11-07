@@ -35,3 +35,10 @@ O próximo preview precisa apresentar uma **única versão integrada** com todas
 ## Estado de integração
 
 Históricos unidos no PR #288 (merge local): reparos de compatibilidade e gates em andamento. Não confundir histórico de branch integrado com funcionalidade pronta/homologada sem testes.
+
+## QA browser gate follow-up — isolated correction
+- The compact QA menu remains collapsed on entry. Browser checks explicitly open its native `details` section before choosing encounters; no production-only shortcuts.
+- The back action remains reachable at the top of the QA scrollport at desktop and phone aspect ratios. Hangar PILOTOS/NAVES/ARSENAL actually hide off-tab content while keeping the 360° preview visible.
+- The robot's touch/Z dash with a neutral joystick uses the last horizontal direction. The ship's 360° roll and Mars sand removal are unchanged.
+- The existing legacy subboss-retreat probe runs with an explicit scripted-city opt-out, **only in its isolated fixture**. The dedicated stage-one orbital pacing test still requires the complete maglev → Super Boost → atmosphere → orbit sequence before hostile encounters.
+- Browser and real-device gates must be re-executed on the final build SHA. Source changes require the normal `npm run build` and committed regenerated `index.html` before the strict CI quality gate can pass.
