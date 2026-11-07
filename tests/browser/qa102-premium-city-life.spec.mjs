@@ -65,6 +65,8 @@ test('sector change isolates visual-only metropolis without changing ship collis
   });
   expect(state.player.y).toBeGreaterThan(init.player.y);
   expect(state.flightBounds.maxY).toBe(184);
-  expect(state.cityImpactCount).toBe(0);
+  // Existing overpasses correctly collide if the pilot climbs into them.
+  // Decorative rooftop facilities must not invent new city collision types.
+  expect(state.cityPhysicalSolids.some((solid) => solid.kind.startsWith('city35'))).toBe(false);
   expect(state.city35Details).toHaveLength(2);
 });
