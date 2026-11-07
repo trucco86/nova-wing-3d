@@ -4455,6 +4455,23 @@ export function createGame({
         if (dynamicFlight) cue('armorHit');
         continue;
       }
+      // The two marked structural weak points are targetable by actual
+      // projectiles. Their damage state is persistent and the broken wall falls
+      // into a physically solid obstacle. The VFX meshes are pooled in world.
+      if (b.life > 0 && sectorIndex === 0 && dynamicFlight && world.cityRoadActive()) {
+        const structure = world.strikeCityArchitecture(
+          previousShot,
+          b.o.position,
+          (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
+          elapsed,
+        );
+        if (structure) {
+          b.life = 0;
+          cue(structure.destroyed ? 'explosion' : 'armorHit');
+          shake = Math.max(shake, structure.destroyed ? 0.27 : 0.08);
+          continue;
+        }
+      }
       for (let e of enemies) {
         if (
           !e.dead &&
@@ -5114,6 +5131,7 @@ export function createGame({
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
+      cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
