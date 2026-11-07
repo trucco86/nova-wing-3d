@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.102 — Candidata em preparação
+
+- QA: novos detalhes industriais e heliportos nos telhados, elevadores de manutenção animados, placas de serviço e exaustão leve em High; física e câmera previamente homologadas preservadas; validação WebGL pendente.
+
 ## 1.27.101 — Candidata em preparação
 
 - QA: fade local dos viadutos que obstruem a câmera, mantendo suas colisões físicas e o voo totalmente livre; testes browser e visual pendentes.

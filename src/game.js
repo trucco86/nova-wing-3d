@@ -6506,6 +6506,7 @@ export function createGame({
       orbitalAscentCinematic:
         dynamicFlight && sectorIndex === 0 ? world.orbitalAscentSnapshot() : null,
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
+      city35Details: dynamicFlight && sectorIndex === 0 ? world.city35DetailSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
       cityCameraOcclusion:
         dynamicFlight && sectorIndex === 0 ? world.cityCameraOcclusionSnapshot() : [],
