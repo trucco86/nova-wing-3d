@@ -64,7 +64,14 @@ export function createCityBridgeCameraFade(tiles) {
       // Distant tile clones share material instances by default. Clone only
       // these nine (max) small groups so a nearby structure cannot fade both
       // distant and local geometry or change unrelated metal materials.
-      for (const mesh of meshes) mesh.material = mesh.material.clone();
+      for (const mesh of meshes) {
+        mesh.material = mesh.material.clone();
+        mesh.userData.bridgeFadeBase = {
+          opacity: mesh.material.opacity,
+          transparent: mesh.material.transparent,
+          depthWrite: mesh.material.depthWrite,
+        };
+      }
       return { tile, key: entry.key, kinds: entry.kinds, meshes, blend: 0 };
     }),
   );
@@ -72,16 +79,18 @@ export function createCityBridgeCameraFade(tiles) {
     const fade = Math.max(0, Math.min(1, group.blend));
     for (const mesh of group.meshes) {
       const mat = mesh.material;
-      // Opaque most of the time; transparency and depth-writing change only
-      // while the actual camera sightline is blocked by a physical deck.
-      const transparent = fade > 0.01;
-      const depthWrite = !transparent;
+      const base = mesh.userData.bridgeFadeBase;
+      // Restore the actual authored material when the view clears. Glazing
+      // starts translucent even before any occlusion; never turn it opaque.
+      const fading = fade > 0.01;
+      const transparent = fading || base.transparent;
+      const depthWrite = fading ? false : base.depthWrite;
       if (mat.transparent !== transparent || mat.depthWrite !== depthWrite) {
         mat.transparent = transparent;
         mat.depthWrite = depthWrite;
         mat.needsUpdate = true;
       }
-      mat.opacity = 1 - fade * (1 - FADE_OPACITY);
+      mat.opacity = base.opacity * (1 - fade * (1 - FADE_OPACITY));
     }
   };
   function reset() {
