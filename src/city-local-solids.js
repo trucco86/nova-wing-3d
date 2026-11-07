@@ -152,7 +152,7 @@ export function createCityLocalSolids(tiles) {
       const visible =
         tile.visible &&
         visibleInTile(node, tile) &&
-        (!o.highOnly || tile.getObjectByName('city-high-details')?.visible);
+        (!o.highOnly || (node ? node.visible : tile.getObjectByName('city-high-details')?.visible));
       o.active = !!visible && o.center.z + o.half.z >= NEAR_Z && o.center.z - o.half.z <= REAR_Z;
       if (o.active) active.push(o);
     }
