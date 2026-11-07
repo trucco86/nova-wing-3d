@@ -13,6 +13,9 @@ test('QA launcher is visible in the home menu, opens the lab, and starts Berserk
   await qa.click();
   const panel = page.locator('#developerPanel');
   await expect(panel).toBeVisible();
+  // The modern QA entry is intentionally compact; the tester opens details.
+  await expect(panel).not.toHaveAttribute('open', '');
+  await panel.locator('summary').click();
   await expect(panel).toHaveAttribute('open', '');
   await expect(page.locator('#developerBerserkLaunch')).toBeVisible();
   await page.locator('#developerSector').selectOption('1');

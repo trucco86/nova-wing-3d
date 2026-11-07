@@ -33,13 +33,13 @@ test('Options starts in Normal and changes actual damage without persisting the 
   expect(runtimeErrors).toEqual([]);
 });
 
-test('first subboss remains visible with a protected opening and quieter escort traffic', async ({
+test('unscripted first subboss remains visible with a protected opening and quieter escort traffic', async ({
   page,
 }, info) => {
   test.setTimeout(120000);
   const runtimeErrors = [];
   page.on('pageerror', (error) => runtimeErrors.push(error.message));
-  await page.goto('/__dynamic.html?sector=0&encounters=1');
+  await page.goto('/__dynamic.html?sector=0&encounters=1&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
   const firstArrival = SECTORS[0].duration * 0.22;
@@ -67,13 +67,13 @@ test('first subboss remains visible with a protected opening and quieter escort 
   expect(runtimeErrors).toEqual([]);
 });
 
-test('undefeated city subboss visibly retreats without rewards or blocking the orbital boss', async ({
+test('unscripted city subboss retreats without rewards or blocking the orbital boss', async ({
   page,
 }, info) => {
   test.setTimeout(180000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/__dynamic.html?sector=0&encounters=1');
+  await page.goto('/__dynamic.html?sector=0&encounters=1&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const arrival = SECTORS[0].duration * 0.22;
   const engaged = await page.evaluate((target) => {

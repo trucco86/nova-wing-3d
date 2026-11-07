@@ -93,7 +93,11 @@ test('mobile QA Berserk is actionable and cannot persist power into campaign sav
   const checkpoint = await page.evaluate(() => localStorage.getItem('nova-wing-3d-v1'));
   await openMenu(page, 'home');
   await page.locator('#menuQA').click();
-  await expect(page.locator('#developerPanel')).toBeVisible();
+  const panel = page.locator('#developerPanel');
+  await expect(panel).toBeVisible();
+  await expect(panel).not.toHaveAttribute('open', '');
+  await panel.locator('summary').click();
+  await expect(panel).toHaveAttribute('open', '');
   await page.locator('#developerSector').selectOption('5');
   await page.locator('#developerEncounter').selectOption('boss');
   await page.locator('#developerBerserkLaunch').click();

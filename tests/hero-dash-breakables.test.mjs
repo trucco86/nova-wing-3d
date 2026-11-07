@@ -225,24 +225,36 @@ test('a depleted mecha cannot repeatedly dash without enough energy', (t) => {
   h.key('KeyZ', false);
 });
 
-test('DASH without left/right input does not pick a direction or spend energy', (t) => {
+test('neutral robot DASH repeats the last side and live stick overrides it', (t) => {
   const h = harness();
   t.after(() => h.close());
   h.game.start();
   h.key('KeyT');
   h.advance(1.4);
+
+  // The approved mobile contract uses the previously chosen direction,
+  // defaulting to right on a fresh robot session.
   const before = h.game.snapshot();
   h.game.roll();
   const neutral = h.game.snapshot();
-  assert.equal(neutral.dash.active, false);
-  assert.equal(neutral.dash.cooldown, 0);
-  assert.equal(neutral.energy, before.energy);
-  h.key('KeyW');
-  h.game.roll();
-  assert.equal(h.game.snapshot().dash.active, false, 'upward-only input is not lateral');
-  h.key('KeyW', false);
+  assert.equal(neutral.dash.active, true);
+  assert.equal(neutral.dash.direction, 1);
+  assert.equal(neutral.energy, before.energy - MECHA_DASH.energyCost);
 
-  // Actual touch joystick explicitly points left before DASH button fires.
+  // Vertical-only input does not change the last horizontal direction.
+  h.advance(1.55);
+  h.key('KeyW');
+  const beforeVertical = h.game.snapshot();
+  h.game.roll();
+  const vertical = h.game.snapshot();
+  assert.equal(vertical.dash.active, true);
+  assert.equal(vertical.dash.direction, 1);
+  assert.equal(vertical.energy, beforeVertical.energy - MECHA_DASH.energyCost);
+  h.key('KeyW', false);
+  h.advance(1.55);
+
+  // Live touch joystick explicitly points left and takes priority.
+  const beforeTouch = h.game.snapshot();
   const stick = h.elements.get('stick');
   stick.onpointerdown({
     pointerId: 22,
@@ -257,11 +269,11 @@ test('DASH without left/right input does not pick a direction or spend energy', 
   const dash = h.game.snapshot();
   assert.equal(dash.dash.active, true);
   assert.equal(dash.dash.direction, -1);
-  assert.equal(dash.energy, before.energy - MECHA_DASH.energyCost);
+  assert.equal(dash.energy, beforeTouch.energy - MECHA_DASH.energyCost);
   stick.emit('pointercancel', { pointerId: 22 });
   h.elements.get('rollTouch').emit('pointerup', { pointerId: 23, type: 'pointerup' });
   h.advance(0.1);
-  assert.ok(h.game.snapshot().player.x < before.player.x - 3);
+  assert.ok(h.game.snapshot().player.x < beforeTouch.player.x - 3);
   assert.ok(h.game.snapshot().dash.trail.visible > 0);
   h.advance(0.55);
   assert.equal(h.game.snapshot().dash.trail.visible, 0);

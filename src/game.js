@@ -1688,13 +1688,10 @@ export function createGame({
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
         stick.x;
-      // Q/E explicitly select a side on desktop. Touch/Z need a real
-      // joystick direction, never silently teleport in neutral.
-      const direction = dashDirection(steer) || (key === 'KeyQ' ? -1 : key === 'KeyE' ? 1 : 0);
-      if (!direction) {
-        message('DASH · APONTE ESQUERDA OU DIREITA + DASH');
-        return;
-      }
+      // Q/E select explicit sides when steering is neutral; touch/Z repeat
+      // the previously chosen side. Live stick or held movement always wins.
+      const direction =
+        dashDirection(steer) || (key === 'KeyQ' ? -1 : key === 'KeyE' ? 1 : dashSide);
       if (Math.abs(player.position.x - direction * flightLimit()) < 0.1) return;
       if (energy < MECHA_DASH.energyCost) {
         message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
