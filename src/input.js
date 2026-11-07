@@ -10,6 +10,7 @@ const gameKeys = new Set([
   'KeyD',
   'KeyV',
   'KeyC',
+  'KeyM',
   'KeyF',
   'KeyG',
   'KeyH',
