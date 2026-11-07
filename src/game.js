@@ -4878,8 +4878,8 @@ export function createGame({
         // Scripted urban rubble shares its visible collision geometry. Resolve
         // swept motion against the same city travel as the scene, not a
         // teleporting obstacle or an invisible trigger plane.
-        for (const hazard of world.cityHazards()) {
-          if (!hazard.solid) continue;
+        for (const hazard of world.cityRoadActive() ? world.cityHazards() : []) {
+          if (!hazard.active || !hazard.solid) continue;
           citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
           citySolidFrom.z += hazard.center.z - hazard.previousZ;
           citySolidTo.copy(player.position).sub(hazard.center);
