@@ -11,25 +11,25 @@ test('phase 1 city destruction stays grounded, hangs the train, and renders on d
   });
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  const initial = await page.evaluate(() => window.fixture.game.snapshot().cityDestruction);
+  const initial = await page.evaluate(() => window.fixture.game.snapshot().cityPhysicsDebris);
   expect(initial.map((item) => item.kind)).toEqual(['billboard', 'car', 'facade', 'train']);
   expect(initial.every((item) => !item.impact)).toBe(true);
 
   await page.evaluate(() => window.fixture.advance(5.85));
-  const billboard = await page.evaluate(() => window.fixture.game.snapshot().cityDestruction);
+  const billboard = await page.evaluate(() => window.fixture.game.snapshot().cityPhysicsDebris);
   expect(billboard[0].impact).toBe(true);
   expect(billboard[0].groundClearance).toBeGreaterThanOrEqual(-0.001);
   await page.screenshot({ path: info.outputPath('city-billboard-impact.png') });
 
   await page.evaluate(() => window.fixture.advance(7.25));
-  const wreckage = await page.evaluate(() => window.fixture.game.snapshot().cityDestruction);
+  const wreckage = await page.evaluate(() => window.fixture.game.snapshot().cityPhysicsDebris);
   expect(wreckage[1].impact).toBe(true);
   expect(wreckage[2].impact).toBe(true);
   expect(wreckage.slice(0, 3).every((part) => part.groundClearance >= -0.001)).toBe(true);
   await page.screenshot({ path: info.outputPath('city-fallen-car-and-facade.png') });
 
   await page.evaluate(() => window.fixture.advance(4.25));
-  const train = await page.evaluate(() => window.fixture.game.snapshot().cityDestruction[3]);
+  const train = await page.evaluate(() => window.fixture.game.snapshot().cityPhysicsDebris[3]);
   expect(train.active).toBe(true);
   expect(train.cable).toBe(true);
   expect(train.y).toBeGreaterThan(1);
@@ -60,7 +60,7 @@ test('stage 1 ship flies above low rails and is only blocked by actual objects',
   expect(ship.cityPhysicalSolids.some((solid) =>
     solid.kind === 'avenue-rail' && solid.y < -2 && solid.halfY < 3
   )).toBe(true);
-  expect(ship.cityDestruction.length).toBe(4);
+  expect(ship.cityPhysicsDebris.length).toBe(4);
   await page.screenshot({ path: info.outputPath('city-open-rail-free-flight.png') });
   expect(errors).toEqual([]);
 });
