@@ -25,6 +25,7 @@ const game = createGame({
   // for dedicated browser assertions of the real Five Cats opening.
   enableSquadIntro: params.get('intro') === '1',
   spawnEncounters: params.get('arcade') === '1' || params.get('encounters') === '1',
+  enableCitySetpieces: params.get('citySetpieces') === '1' || params.get('encounters') === '1',
   rendererFactory(options) {
     const renderer = new T.WebGLRenderer(options);
     const render = renderer.render.bind(renderer);
@@ -93,7 +94,11 @@ window.fixture = {
 // These URLs exist only on the localhost visual fixture server.
 const qaSector = params.get('qaBoss');
 const qaSubboss = params.get('qaSubboss');
-if (qaSubboss !== null) {
+const qaTunnel = params.get('qaTunnel');
+if (qaTunnel !== null) {
+  if (!game.startDeveloperScenario(Number(qaTunnel), 'tunnel'))
+    throw new Error('Developer/QA Europa tunnel fixture unavailable');
+} else if (qaSubboss !== null) {
   if (!game.startDeveloperScenario(Number(qaSubboss), 'subboss'))
     throw new Error('Developer/QA subboss fixture unavailable');
 } else if (qaSector !== null) {

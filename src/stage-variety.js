@@ -14,7 +14,12 @@ export const STAGE_VISUALS = Object.freeze(
     { location: 'plasma-storm', globe: 'sun', motif: 'plasma-streams', encounter: 'solar-dive' },
     { location: 'frozen-moon', globe: 'ice-world', motif: 'crystal-rifts', encounter: 'stomp' },
     { location: 'bio-nebula', globe: 'none', motif: 'bio-spires', encounter: 'swarm' },
-    { location: 'mothership-battle', globe: 'none', motif: 'fleet-wrecks', encounter: 'broadside' },
+    {
+      location: 'saturn-ring-battle',
+      globe: 'saturn',
+      motif: 'icy-ring-crossing',
+      encounter: 'broadside',
+    },
     {
       location: 'orion-gravity-well',
       globe: 'none',
@@ -38,12 +43,12 @@ export function stageVisualAt(index) {
 
 // No camera cuts on elapsed percentage: a viewpoint must correspond to a
 // deliberate mission mechanic, with matching controls and safe ship framing.
-// Overhead is exclusive to station reactor-grid traversal; all other sectors
-// retain the pilot's chase/cockpit/combat choice until dedicated mechanics exist.
+// The Devastador interior is always piloted in forward perspective. The
+// abandoned top-down reactor view is not part of the stage 4 experience.
 export function stagePerspectiveAt(index, seconds, duration, boss = false, context = {}) {
   if (boss || !Number.isFinite(duration) || duration <= 0 || !Number.isFinite(seconds))
     return 'chase';
-  if (index === 3 && context.mission === 'reactor-grid') return 'overhead';
+  if (index === 3) return 'chase';
   if (index === 2 && context.mission === 'asteroid-escape') return 'combat';
   return 'chase';
 }

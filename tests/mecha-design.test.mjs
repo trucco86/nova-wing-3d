@@ -158,11 +158,11 @@ test('propulsion keeps equivalent phase at 30/60/120 Hz and anchors exhaust at e
         elapsed += 1 / fps;
         animateMechPower(robot, elapsed, boosting, 0, { x: 1, y: -1 }, 1 / fps);
         assert.ok(
-          Math.abs(rig.turbineFlame.position.z - (1.75 * rig.turbineFlame.scale.y) / 2 - 0.725) <
+          Math.abs(rig.turbineFlame.position.z - (1.75 * rig.turbineFlame.scale.y) / 2 - 0.85) <
             1e-10,
         );
         for (const plume of rig.sidePlumes) {
-          assert.ok(Math.abs(plume.position.z - (1.4 * plume.scale.y) / 2 - 2.2) < 1e-10);
+          assert.ok(Math.abs(plume.position.z - (1.4 * plume.scale.y) / 2 - 2.45) < 1e-10);
         }
       }
     }

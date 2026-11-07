@@ -37,14 +37,14 @@ export const SECTORS = [
       'Da órbita de Marte ao mega-asteroide: encontre a abertura, lute no interior e escape do colapso.',
   },
   {
-    name: 'ESTAÇÃO ÓRBITA-9',
+    name: 'INTERIOR DA NAVE-MÃE',
     boss: 'FORTALEZA ÓRBITA',
     kind: 'station',
     theme: 'station',
     accent: '#57d9ff',
     sky: '#1c365e',
     duration: 88,
-    brief: 'A Estação Órbita-9 gira diante de Júpiter. Entre pelo hangar e desative os geradores.',
+    brief: 'Em Júpiter, atravesse o hangar da nave-mãe Devastador e sabote seu reator.',
   },
   {
     name: 'TEMPESTADE DE DADOS',
@@ -79,7 +79,7 @@ export const SECTORS = [
       'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
   },
   {
-    name: 'GRADE DE BATALHA',
+    name: 'ANÉIS DE SATURNO',
     boss: 'COURAÇADO ÔMEGA',
     kind: 'dreadnought',
     theme: 'fleet',
@@ -87,7 +87,7 @@ export const SECTORS = [
     sky: '#302d65',
     duration: 98,
     brief:
-      'Saturno ao fundo: rompa a frota inimiga perto dos anéis planetários e enfrente o couraçado.',
+      'Atravesse os anéis de Saturno e seus meteoros de gelo. Rompa o bloqueio da frota e enfrente o couraçado.',
   },
   {
     name: 'ABISMO DE ÓRION',
@@ -97,17 +97,18 @@ export const SECTORS = [
     accent: '#76d7ff',
     sky: '#2b315b',
     duration: 98,
-    brief: 'Entre no Abismo de Órion, atravesse a anomalia gravitacional e enfrente o Bastião.',
+    brief: 'Marvin assume o controle do Bastião: sobreviva ao monstro mecanizado e liberte Órion.',
   },
   {
-    name: 'TRONO DE MARVIN',
-    boss: 'IMPERADOR MARVIN',
+    name: 'CAÇADA FINAL · MARVIN',
+    boss: 'CAÇA OBSIDIAN DE MARVIN',
     kind: 'emperor',
     theme: 'throne',
     accent: '#ff6e99',
     sky: '#5d2548',
-    duration: 104,
-    brief: 'Em Titã, entre nos portões da fortaleza de Marvin e conclua a guerra dos Five Cats.',
+    duration: 150,
+    brief:
+      'Persiga Marvin em Titã, enfrente seu caça negro e vermelho e conclua a guerra dos Five Cats.',
   },
 ];
 export const PILOTS = ['BIA', 'BOB', 'CHRISTOPHER'];

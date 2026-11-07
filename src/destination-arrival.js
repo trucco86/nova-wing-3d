@@ -1,3 +1,5 @@
+import { saturnPassageAt } from './saturn-ring-passage.js';
+
 // The authored 10-sector itinerary: Earth and Mars keep their bespoke
 // transitions; asteroid traversal is already controlled by stage-journey.
 export const DESTINATION_PROFILES = Object.freeze({
@@ -6,9 +8,9 @@ export const DESTINATION_PROFILES = Object.freeze({
     type: 'station',
     colors: ['#ad6e4b', '#d7aa75', '#805244'],
     haze: '#7a8aa4',
-    label: 'ÓRBITA-9 · JÚPITER',
-    entry: 'APROXIMAÇÃO · HANGAR DA ESTAÇÃO',
-    exit: 'SAÍDA DA ESTAÇÃO · RUMO A VÊNUS',
+    label: 'NAVE-MÃE DEVASTADOR · JÚPITER',
+    entry: 'INFILTRAÇÃO · HANGAR INTERNO DA NAVE-MÃE',
+    exit: 'SAÍDA DA NAVE-MÃE · RUMO A VÊNUS',
     keepGlobe: true,
   }),
   4: Object.freeze({
@@ -44,10 +46,11 @@ export const DESTINATION_PROFILES = Object.freeze({
   7: Object.freeze({
     location: 'SATURNO',
     type: 'rings',
-    colors: ['#8d795d', '#e0c79c', '#b49a75'],
+    // Pale cream/yellow-beige from Cassini natural-color observations.
+    colors: ['#aea08a', '#f3e5be', '#b5aa96'],
     haze: '#888ba5',
-    label: 'SATURNO · CINTURÃO DA FROTA',
-    entry: 'INTERCEPTAÇÃO · FROTA DE MARVIN',
+    label: 'SATURNO · BATALHA NOS ANÉIS',
+    entry: 'INTERCEPTAÇÃO · CAMPOS DE GELO DE SATURNO',
     exit: 'ROMPENDO O BLOQUEIO DE SATURNO',
     keepGlobe: true,
   }),
@@ -66,8 +69,8 @@ export const DESTINATION_PROFILES = Object.freeze({
     type: 'haze',
     colors: ['#855333', '#dba366', '#a56f49'],
     haze: '#a47d66',
-    label: 'TITÃ · FORTALEZA DE MARVIN',
-    entry: 'DESCIDA · PORTÕES DA FORTALEZA',
+    label: 'TITÃ · CAÇADA A MARVIN',
+    entry: 'PERSIGA O CAÇA OBSIDIAN · MARVIN EM FUGA',
     exit: 'VITÓRIA · FIVE CATS RETORNAM',
     keepGlobe: false,
   }),
@@ -82,6 +85,25 @@ export function destinationArrivalAt(index, seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid destination time');
   const profile = DESTINATION_PROFILES[index];
   if (!profile) return null;
+  // Saturn is an orbital battle, not another compulsory atmosphere/ship entry.
+  // Enter the ice-ring region with the planet already visible, and unlock
+  // encounters after a short orienting beat. All other journeys stay intact.
+  if (index === 7) {
+    const reveal = smooth(seconds / 8);
+    const passage = saturnPassageAt(seconds);
+    const phase = seconds < 3 ? 'space' : seconds < 8 ? 'orbit' : 'arena';
+    return {
+      phase,
+      combatReady: seconds >= 8,
+      reveal,
+      haze: 0,
+      seconds,
+      keepGlobe: true,
+      globeOpacity: 1,
+      globeScale: 1.12 + 0.28 * reveal,
+      label: passage.label,
+    };
+  }
   const phase =
     seconds < 6
       ? 'space'
@@ -103,7 +125,14 @@ export function destinationArrivalAt(index, seconds) {
     keepGlobe: profile.keepGlobe,
     // For orbital locations Jupiter, Saturn and the anomaly remain in view
     // as distant scenery; ground destinations reveal their own terrain.
-    globeOpacity: profile.keepGlobe ? 1 - 0.28 * reveal : 1 - smooth((seconds - 16) / 9),
+    // Europa is a landing, not an orbit battle: the celestial globe must
+    // disappear BEFORE the frozen ground fully occupies the viewport.
+    globeOpacity:
+      index === 5
+        ? 1 - smooth((seconds - 14.5) / 2.5)
+        : profile.keepGlobe
+          ? 1 - 0.28 * reveal
+          : 1 - smooth((seconds - 16) / 9),
     globeScale: 0.74 + smooth((seconds - 3) / 15) * 1.52 - reveal * (profile.keepGlobe ? 1.2 : 0),
     label:
       phase === 'space'

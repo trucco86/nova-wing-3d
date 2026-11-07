@@ -204,3 +204,22 @@ test('three homing pods damage elevated tank and walker hulls from normal flight
     assert.ok(!after || after.life < before.life, kind + ' receives homing pod damage');
   }
 });
+
+test('Saturn ice meteors are visible and physically breakable, never generic metallic debris', () => {
+  const ice = createObstacle('ice-meteor');
+  assert.ok(ice.getObjectByName('saturn-breakable-ice-meteor')?.isMesh);
+  assert.equal(ice.userData.kind, 'ice-meteor');
+  assert.equal(ice.userData.solids.length, 1);
+  const solid = ice.userData.solids[0];
+  assert.equal(
+    crossesSolid(
+      new T.Vector3(0, 17, 19),
+      new T.Vector3(0, 17, -19),
+      solid.center,
+      solid.half,
+      1.3,
+    ),
+    true,
+  );
+  assert.ok(ice.userData.solids.every((v) => v.half.x >= 10));
+});

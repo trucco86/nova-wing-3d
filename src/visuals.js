@@ -1,8 +1,13 @@
 import * as T from 'three';
+import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityCatastrophe } from './city-catastrophe.js';
+import { createCityReactiveDamage } from './city-reactive-damage.js';
+import { createCityLocalSolids } from './city-local-solids.js';
+import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
   createCity32Skyline,
@@ -12,6 +17,14 @@ import {
 import { createCity33Premium, setCity33Quality, updateCity33Premium } from './city-33-premium.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
+import { europaSurfaceAt, createEuropaSurface, updateEuropaSurface } from './europa-surface.js';
+import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
+import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
+import {
+  createLivingWorldLayers,
+  updateLivingWorldLayers,
+  setLivingWorldQuality,
+} from './living-world-depth.js';
 import {
   createDestinationLandmarks,
   updateDestinationLandmarks,
@@ -25,6 +38,12 @@ import {
 } from './destination-vista.js';
 import { createCityCommerce, createCityHorizonMegastructure } from './city-commerce.js';
 import { createCityTraffic, animateCityTraffic, setCityTrafficQuality } from './city-traffic.js';
+import {
+  createCityDestructionScene,
+  updateCityDestructionScene,
+  cityDestructionGroundState,
+  cityDestructionImpactState,
+} from './city-destruction.js';
 import {
   createCityUrbanDrones,
   animateCityUrbanDrones,
@@ -345,6 +364,13 @@ export function createFlyingRobot() {
   const accent = metal('#ffb36b', 0.75, 0.25);
   accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
+  // Only these articulated surfaces sway. Hit volumes and player collider stay unchanged.
+  const torsoParts = [];
+  const headParts = [];
+  const forearmParts = [];
+  const kneeJoints = [];
+  const wingPivots = [];
+  const hipJets = [];
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
     const width = radius * 1.6;
     const height = radius * 1.7;
@@ -385,31 +411,39 @@ export function createFlyingRobot() {
     const chestCut = box(0.15, 1.2, 0.16, luminous, side * 0.83, 1.36, -0.92);
     chestCut.rotation.z = side * 0.35;
     robot.add(chestCut);
+    torsoParts.push(chestCut);
     const collar = box(0.54, 0.22, 0.72, armor, side * 0.93, 2.63, -0.24);
     collar.rotation.z = side * 0.28;
     robot.add(collar);
+    torsoParts.push(collar);
   }
   // Angular fighter-style chest, layered breastplate and recessed reactor.
   const backArmor = plating(1.4, 0, 1.48, 1.08, 1.02, 1.08, 0.38, graphite);
   backArmor.name = 'mech-rear-armor-facets';
+  torsoParts.push(backArmor);
   const cranialCrest = new T.Mesh(new T.ConeGeometry(0.34, 1.25, 4), accent);
   cranialCrest.name = 'mech-cranial-crest';
   cranialCrest.position.set(0, 4.16, -0.13);
   cranialCrest.rotation.y = Math.PI / 4;
   robot.add(cranialCrest);
-  robot.add(box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02));
+  headParts.push(cranialCrest);
+  const opticalVisor = box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02);
+  robot.add(opticalVisor);
+  headParts.push(opticalVisor);
   for (const side of [-1, 1]) {
     const rearRidge = box(0.16, 1.73, 0.19, luminous, side * 0.92, 1.65, 1.65);
     rearRidge.rotation.z = side * 0.18;
     robot.add(rearRidge);
+    torsoParts.push(rearRidge);
     const sidePlating = plating(0.76, side * 1.19, 1.57, 1.02, 0.42, 1.0, 0.51);
     sidePlating.rotation.z = side * 0.2;
+    torsoParts.push(sidePlating);
   }
-  plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
-  plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
-  plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
-  plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite);
-  plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous);
+  torsoParts.push(plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62));
+  torsoParts.push(plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite));
+  torsoParts.push(plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous));
+  headParts.push(plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite));
+  headParts.push(plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous));
   plating(0.85, 0, 0, 0.18, 0.78, 0.72, 0.58, graphite);
   const arms = [];
   const legs = [];
@@ -434,6 +468,7 @@ export function createFlyingRobot() {
     shoulderBlade.rotation.y = Math.PI / 4;
     shoulderBlade.position.set(side * 2.55, 3.85, 0.84);
     robot.add(shoulderBlade);
+    torsoParts.push(shoulderBlade);
     const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
     arm.attach(upperArm);
     const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
@@ -446,6 +481,7 @@ export function createFlyingRobot() {
     const muzzle = plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
     arm.attach(muzzle);
     armMuzzles.push(muzzle);
+    forearmParts.push({ gauntlet, cannonFin, forearmRail, muzzle });
     const thigh = plating(0.9, side * 0.73, -1.75, 0.15, 0.6, 1.8, 0.72);
     leg.attach(thigh);
     const shin = plating(0.7, side * 0.75, -3.5, -0.65, 0.72, 0.58, 1.25, graphite);
@@ -457,27 +493,43 @@ export function createFlyingRobot() {
     leg.attach(calfFin);
     const knee = plating(0.48, side * 0.75, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
     leg.attach(knee);
+    // Actual knee hinge: the shin, calf fin and stabilizer light now follow
+    // the lower joint rather than remaining welded to the upper leg.
+    const kneeJoint = new T.Group();
+    kneeJoint.name = side < 0 ? 'mech-knee-left' : 'mech-knee-right';
+    kneeJoint.position.set(side * 0.05, -1.58, -0.34);
+    leg.add(kneeJoint);
+    for (const part of [shin, shinLight, calfFin]) kneeJoint.attach(part);
+    kneeJoints.push(kneeJoint);
     const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
     nozzle.rotation.x = Math.PI / 2;
     nozzle.position.set(side * 1.4, 2.23, 1.85);
     robot.add(nozzle);
+    torsoParts.push(nozzle);
     const plume = new T.Mesh(
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
+    torsoParts.push(plume);
     sidePlumes.push(plume);
   }
   // The exact same mesh profile as the ship, rotated into the mecha back plane.
   // No independent enlarged mecha wing geometry: transformation preserves identity.
   for (const side of [-1, 1]) {
+    const wingPivot = new T.Group();
+    wingPivot.name = side < 0 ? 'mech-wing-root-left' : 'mech-wing-root-right';
+    wingPivot.position.set(side * 1.1, 2.2, 1.36);
+    robot.add(wingPivot);
+    wingPivots.push(wingPivot);
     const panel = sharedFighterWing(side, armor);
     panel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
     panel.rotation.x = -Math.PI / 2;
     panel.position.set(0, 2.2, 1.36);
     robot.add(panel);
+    wingPivot.attach(panel);
     const trim = line(
       [
         [side * 1.65, 1.5, 1.65],
@@ -487,6 +539,7 @@ export function createFlyingRobot() {
       '#66ebff',
     );
     robot.add(trim);
+    wingPivot.attach(trim);
   }
   // Main turbine sits between the shoulder blades rather than low at the hips.
   const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
@@ -518,9 +571,22 @@ export function createFlyingRobot() {
     new T.ConeGeometry(0.43, 1.75, 20),
     new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.8 }),
   );
-  turbineFlame.rotation.x = Math.PI / 2;
+  turbineFlame.rotation.x = -Math.PI / 2;
   turbineFlame.position.set(0, 0, 1.6);
   turbineGimbal.add(turbineFlame);
+  const turbineInnerFlame = new T.Mesh(
+    new T.ConeGeometry(0.22, 2.1, 12),
+    new T.MeshBasicMaterial({
+      color: '#b7faff',
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+    }),
+  );
+  turbineInnerFlame.name = 'mech-reactor-inner-plasma';
+  turbineInnerFlame.rotation.x = Math.PI / 2;
+  turbineInnerFlame.position.set(0, 0, 1.7);
+  turbineGimbal.add(turbineInnerFlame);
   // Exposed mechanical fan blades make the turbine visibly rotate during flight.
   const turbineRotor = new T.Group();
   turbineRotor.name = 'mech-turbine-rotor';
@@ -556,12 +622,17 @@ export function createFlyingRobot() {
     arms,
     legs,
     armMuzzles,
+    knees: kneeJoints,
+    wingPivots,
+    hipJets,
     turbineRotor,
     turbineGimbal,
     turbineFlame,
+    turbineInnerFlame,
     sidePlumes,
     propulsionPower: 0,
     progressionNeons,
+    boostPalette: null,
   };
   robot.userData.mechPaint = { primary: armor, accent };
   // Reconcile the original angular flight-mech and its animated rotor with
@@ -578,6 +649,10 @@ export function createFlyingRobot() {
     shoulder.add(elbow);
     const muzzle = armMuzzles[i];
     muzzle.name = 'mecha-' + side + '-muzzle';
+    // The previous elbow moved as an empty group. Reparent the actual
+    // gauntlet, cannon and muzzle to make recoil visibly articulate the arm.
+    for (const part of Object.values(forearmParts[i])) elbow.attach(part);
+    muzzle.userData.restBarrelZ = muzzle.position.z;
     articulatedArms[side] = { shoulder, elbow, muzzle };
   }
   const independentThrusters = [-1, 1].map((side) => {
@@ -587,27 +662,143 @@ export function createFlyingRobot() {
     const casing = new T.Mesh(new T.CylinderGeometry(0.37, 0.44, 0.58, 12), graphite);
     casing.rotation.x = Math.PI / 2;
     nozzle.add(casing);
+    const outerRim = new T.Mesh(new T.TorusGeometry(0.4, 0.075, 6, 18), accent);
+    outerRim.name = 'mech-dorsal-machined-nozzle-ring';
+    outerRim.position.z = 0.4;
+    nozzle.add(outerRim);
+    const innerRim = new T.Mesh(new T.TorusGeometry(0.26, 0.05, 6, 18), luminous);
+    innerRim.position.z = 0.49;
+    nozzle.add(innerRim);
     const exhaustCore = new T.Mesh(new T.SphereGeometry(0.28, 10, 8), luminous);
     exhaustCore.position.z = 0.47;
     nozzle.add(exhaustCore);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.31, 1.35, 12),
-      new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.46 }),
+      new T.ConeGeometry(0.34, 1.55, 12),
+      new T.MeshBasicMaterial({
+        color: '#53dfff',
+        transparent: true,
+        opacity: 0.5,
+        depthWrite: false,
+      }),
     );
-    plume.rotation.x = Math.PI / 2;
+    plume.rotation.x = -Math.PI / 2;
     plume.position.z = 1.1;
     nozzle.add(plume);
+    const innerPlume = new T.Mesh(
+      new T.ConeGeometry(0.18, 1.75, 10),
+      new T.MeshBasicMaterial({
+        color: '#d4fcff',
+        transparent: true,
+        opacity: 0.82,
+        depthWrite: false,
+      }),
+    );
+    innerPlume.name = 'mech-dorsal-inner-plasma';
+    innerPlume.rotation.x = Math.PI / 2;
+    innerPlume.position.z = 1.25;
+    nozzle.add(innerPlume);
+    // Extended afterburner: a lightweight, authored cone rather than
+    // per-frame particles. This remains legible from the standard rear camera.
+    const boostBeam = new T.Mesh(
+      new T.ConeGeometry(0.28, 5.6, 10, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#ff9954',
+        transparent: true,
+        opacity: 0,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        side: T.DoubleSide,
+        toneMapped: false,
+      }),
+    );
+    boostBeam.name = side < 0 ? 'mecha-left-afterburner' : 'mecha-right-afterburner';
+    boostBeam.rotation.x = Math.PI / 2;
+    boostBeam.position.z = 3.6;
+    boostBeam.visible = false;
+    nozzle.add(boostBeam);
+    // Embedded nozzle vane acts as a gimballed acceleration cue, without
+    // introducing expensive real-time lights or particle allocations.
+    const rotor = new T.Group();
+    rotor.name = 'mech-dorsal-fan';
+    rotor.position.z = 0.5;
+    for (let j = 0; j < 4; j++) {
+      const vane = box(0.13, 0.33, 0.08, j % 2 ? accent : luminous, 0, 0.18, 0);
+      vane.rotation.z = -0.32;
+      const pivot = new T.Group();
+      pivot.rotation.z = (j * Math.PI) / 2;
+      pivot.add(vane);
+      rotor.add(pivot);
+    }
+    nozzle.add(rotor);
     robot.add(nozzle);
-    return { nozzle, plume, exhaustCore };
+    return { nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor, outerRim };
   });
+  // Articulated reactor shell: tiny counter-sway conveys mass while keeping
+  // the approved fighter-wing profile, collisions and muzzle references.
+  const torso = new T.Group();
+  torso.name = 'mech-articulated-upper-body';
+  torso.position.set(0, 1.65, 0);
+  robot.add(torso);
+  for (const part of torsoParts) torso.attach(part);
+  const head = new T.Group();
+  head.name = 'mech-articulated-head';
+  head.position.set(0, 3.45, -0.1);
+  robot.add(head);
+  for (const part of headParts) head.attach(part);
+  // Keep the fighter-like silhouette mechanically connected: the shoulders,
+  // head, wings and engine mount follow the same upper-body compensation.
+  // Object3D.attach preserves each component's exact approved rest position.
+  torso.attach(head);
+  for (const arm of arms) torso.attach(arm);
+  for (const wing of wingPivots) torso.attach(wing);
+  // Preserve the original model-local mount coordinates for engine modules:
+  // existing HUD/design contracts explicitly inspect shoulder-height mounts.
+  // The nested rest-space compensator still moves together with the torso.
+  const engineMount = new T.Group();
+  engineMount.name = 'mech-upper-back-engine-mount';
+  engineMount.position.y = -torso.position.y;
+  torso.add(engineMount);
+  for (const { nozzle } of independentThrusters) engineMount.attach(nozzle);
+  engineMount.attach(turbineHousing);
+  engineMount.attach(turbineGimbal);
+  for (const strip of progressionNeons.map(({ mesh }) => mesh)) torso.attach(strip);
+  for (const part of robot.children.filter((mesh) => mesh.name.startsWith('mech-wing'))) {
+    torso.attach(part);
+  }
+  for (const side of [-1, 1]) {
+    const jet = new T.Mesh(
+      new T.ConeGeometry(0.13, 0.72, 8),
+      new T.MeshBasicMaterial({
+        color: '#77e8ff',
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    );
+    jet.name = side < 0 ? 'mech-hip-dash-jet-left' : 'mech-hip-dash-jet-right';
+    jet.rotation.x = Math.PI / 2;
+    jet.position.set(side * 1.1, -0.6, 1.1);
+    jet.visible = false;
+    robot.add(jet);
+    hipJets.push(jet);
+  }
   robot.userData.mecha = {
     arms: articulatedArms,
     thrusters: independentThrusters,
+    torso,
+    head,
+    knees: kneeJoints,
+    legs,
+    wingPivots,
+    hipJets,
     baseScale: 0.94,
+    motion: { strafe: 0, vertical: 0 },
+    boostPalette: null,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
+  installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
   // Modest presence increase without changing player collider physics.
-  robot.scale.setScalar(1.04);
+  robot.scale.setScalar(1.0);
   return robot;
 }
 
@@ -704,9 +895,18 @@ export function resetMechPower(robot) {
   rig.turbineFlame.scale.y = 1;
   rig.turbineFlame.position.z = 1.6;
   rig.turbineFlame.material.opacity = 0.78;
+  rig.turbineFlame.material.color.set('#53dfff');
+  rig.boostPalette = null;
+  rig.legacyBoostPalette = null;
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = 1;
+    rig.turbineInnerFlame.position.z = 1.7;
+    rig.turbineInnerFlame.material.color.set('#b7faff');
+  }
   for (const plume of rig.sidePlumes) {
     plume.scale.y = 1;
     plume.position.z = 2.9;
+    plume.material.color.set('#53dfff');
   }
 }
 
@@ -729,6 +929,12 @@ export function animateMechPower(
   const previous = rig.propulsionPower;
   const response = 1 - Math.exp(-10 * delta);
   rig.propulsionPower += (target - previous) * response;
+  if (rig.legacyBoostPalette !== boosting) {
+    rig.legacyBoostPalette = boosting;
+    rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#53dfff');
+    rig.turbineInnerFlame?.material.color.set(boosting ? '#fff2b8' : '#b7faff');
+    for (const plume of rig.sidePlumes) plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+  }
   // Integrate angular velocity, including the exact exponential acceleration.
   // Multiplying mission time by the current speed makes BOOST jump rotor phase.
   const poweredTime = target * delta + ((previous - target) * response) / 10;
@@ -742,12 +948,17 @@ export function animateMechPower(
     (-climb * 0.11 - (boosting ? 0.1 : 0.015) - rig.turbineGimbal.rotation.x) * steeringResponse;
 
   const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
-  rig.turbineFlame.scale.y = (1 + rig.propulsionPower * 0.75) * pulse;
-  rig.turbineFlame.position.z = 0.725 + (1.75 * rig.turbineFlame.scale.y) / 2;
+  rig.turbineFlame.scale.y = (0.85 + rig.propulsionPower * 3.25) * pulse;
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = (0.8 + rig.propulsionPower * 2.9) * pulse;
+    rig.turbineInnerFlame.position.z = 0.95 + (1.35 * rig.turbineInnerFlame.scale.y) / 2;
+  }
+  // Base tip stays attached to the gimballed reactor; exhaust stretches away.
+  rig.turbineFlame.position.z = 0.85 + (1.75 * rig.turbineFlame.scale.y) / 2;
   rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
   for (const plume of rig.sidePlumes) {
-    plume.scale.y = (1 + rig.propulsionPower * 0.6) * pulse;
-    plume.position.z = 2.2 + (1.4 * plume.scale.y) / 2;
+    plume.scale.y = (0.85 + rig.propulsionPower * 2.85) * pulse;
+    plume.position.z = 2.45 + (1.4 * plume.scale.y) / 2;
   }
 }
 const variants = new Map();
@@ -924,6 +1135,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       travel: { value: 0 },
       water: { value: 0 },
       urban: { value: 1 },
+      ice: { value: 0 },
       detail: { value: 0.4 },
       launchGroundAlpha: { value: 1 },
     },
@@ -931,7 +1143,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     depthWrite: false,
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float ice;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;if(ice>.5){float fault=1.-smoothstep(.06,.3,abs(sin(p.x*.035+sin(p.y*.023)*1.8)));float frost=fbm(vec3(p*.015,1.))*0.55+.25;vec3 blue=vec3(.078,.16,.19)+vec3(.20,.28,.29)*frost;blue-=vec3(.055,.065,.075)*fault;float ridges=.55+.45*fbm(vec3(p*.066,6.));c=mix(c,blue*ridges,ice);}float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -1285,6 +1497,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   updateCity32Living(cityFar.getObjectByName('city32-living-metropolis'), 0);
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
+  const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
   // A persistent, layered urban horizon gives the flight a destination instead
@@ -1379,7 +1592,23 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityHorizon.add(skylineGate);
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
+  const conceptCity = createCity34Concept();
+  cityHorizon.add(conceptCity);
   scene.add(cityHorizon);
+  // Scripted urban destruction has its own physically grounded world-space
+  // objects. It follows the same forward travel as the city tiles, but its
+  // rubble never inherits the looping tile transform (which caused clipping).
+  const cityCatastrophe = dynamicFlight ? createCityCatastrophe() : null;
+  if (cityCatastrophe) scene.add(cityCatastrophe.root);
+  const cityReactive = dynamicFlight ? createCityReactiveDamage() : null;
+  if (cityReactive) scene.add(cityReactive.root);
+  const cityHazardsCache = [];
+  const refreshCityHazards = () => {
+    cityHazardsCache.length = 0;
+    for (const collision of cityCatastrophe?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityReactive?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityLocalSolids?.colliders() ?? []) cityHazardsCache.push(collision);
+  };
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1489,11 +1718,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   scene.add(rain);
   const sectorScenery = new T.Group();
   scene.add(sectorScenery);
+  // Stage-1 scripted event layer stays independent of looping city tiles.
+  // Moving the 1900-unit road loop must never replay a demolition or train crash.
+  const cityDestruction = createCityDestructionScene();
+  scene.add(cityDestruction);
   let sceneryTheme = 'city';
   let destinationIndex = 0;
   let destinationVista = null;
   let destinationEscape = null;
   let destinationLandmarks = null;
+  let carrierGrandHallActive = false;
+  let europaBossArenaActive = false;
+  let europaTunnelActive = false;
+  let europaArrivalSeconds = 0;
   let destinationGraphicsQuality = 'high';
   function clearScenery() {
     const geometries = new Set(),
@@ -1521,29 +1758,59 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // The mid-mission storm still adds its own stronger ochre visibility loss.
     scene.fog.density =
       T.MathUtils.lerp(0.00017, 0.00095, state.skyMix) + state.sandHaze * 0.00145 + sand * 0.0034;
-    scene.fog.color.set('#251625').lerp(new T.Color('#a16b57'), state.skyMix);
-    scene.fog.color.lerp(new T.Color('#d4ad7e'), state.sandHaze * 0.84);
-    scene.fog.color.lerp(new T.Color('#c38a61'), sand * 0.8);
+    scene.fog.color.set('#251625').lerp(marsOrbitFog, state.skyMix);
+    scene.fog.color.lerp(marsSandHazeFog, state.sandHaze * 0.84);
+    scene.fog.color.lerp(marsStormFog, sand * 0.8);
     return state;
   }
   function setDestinationArrival(seconds) {
     if (!dynamicFlight || !destinationVista) return null;
     const state = updateDestinationVista(destinationVista, destinationIndex, seconds);
     updateDestinationLandmarks(destinationLandmarks, seconds);
+    const mothership =
+      destinationIndex === 3
+        ? sectorScenery.getObjectByName('devastador-mothership-boarding')
+        : null;
     const profile = DESTINATION_PROFILES[destinationIndex];
     const target = new T.Color(profile.haze);
+    europaArrivalSeconds = seconds;
     // The opening really starts in space. Each location's dust/cloud color
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
-    const normalDensity = destinationIndex === 5 ? 0.0014 : 0.00045;
+    const normalDensity =
+      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : 0.00045;
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
     starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
-    if (destinationIndex === 5) ground.visible = state.reveal >= 0.3;
+    if (destinationIndex === 5) {
+      const ice = europaSurfaceAt(seconds, europaTunnelActive);
+      ground.visible = ice.groundVisible && !europaBossArenaActive;
+      moon.visible = atmosphere.visible = ice.orbitalVisible;
+      scene.fog.color.lerp(new T.Color(ice.fogTint), ice.surface * 0.87);
+      scene.fog.density = T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface);
+      updateEuropaSurface(
+        sectorScenery.getObjectByName('europa-frozen-surface'),
+        seconds,
+        ice.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+        destinationGraphicsQuality === 'high',
+      );
+    }
     for (const child of sectorScenery.children) {
-      if (child === destinationVista || child === destinationEscape) continue;
+      if (
+        child === destinationVista ||
+        child === destinationEscape ||
+        child === mothership ||
+        child.name === 'europa-frozen-surface'
+      )
+        continue;
+      // The ice corridor is decorative, not a boss hazard. Arrival updates
+      // must never restore foreground objects while Colossus is fighting.
+      if (europaBossArenaActive && child.userData.europaForeground) {
+        child.visible = false;
+        continue;
+      }
       // Record original visibility once. On revealing a destination, restore it
       // exactly once rather than re-enabling props hidden by gameplay, LOD or
       // the authored encounter timeline on every frame.
@@ -1557,12 +1824,42 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         child.userData.arrivalWasRevealed = true;
       }
     }
+    if (destinationIndex === 3) {
+      // Do not let the generic orbital reveal hide the mothership for 18s.
+      // This continuous physically moving model is visible from the first
+      // frame and grows by real perspective until it crosses the camera.
+      const boarding = updateMothershipApproach(mothership, seconds);
+      const carrierCorridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      updateMothershipInterior(carrierCorridors, seconds);
+      // The narrow corridor modules must never occupy the final 360-degree hall.
+      // Their own timeline can continue for the next stage transition,
+      // but scenery remains suppressed while the wide arena is active.
+      if (carrierGrandHallActive && carrierCorridors) carrierCorridors.visible = false;
+      // The old freestanding station gantries obscure the hangar and appear
+      // to float inside the ship. The new exterior has its own scale cues.
+      if (destinationLandmarks) destinationLandmarks.visible = false;
+      // Keep the approach crystal clear; interior fog grows only after the
+      // hangar fills the view. Planet visibility is no longer a fog trigger.
+      const retreat = Math.max(0, Math.min(1, (seconds - 13) / 11));
+      starfield.visible = seconds < 22;
+      starfield.material.opacity *= 1 - retreat;
+      scene.fog.color.set('#101b30').lerp(new T.Color('#293447'), retreat * 0.8);
+      scene.fog.density = T.MathUtils.lerp(0.00007, 0.0003, retreat);
+      state.label = boarding.label;
+      state.boardingPhase = boarding.phase;
+      state.boardingInside = boarding.inside;
+    }
     return state;
   }
   // Capture the established destination scene at the start of the boss exit.
   // Repeated calls for the same mission time must never cumulatively darken fog.
   const exitBaseFog = new T.Color();
   const exitSpaceFog = new T.Color('#111a35');
+  // Reuse fog palette vectors across every simulated frame (including the
+  // orbit-to-ground boundary); new Color() per frame caused GC pressure.
+  const marsOrbitFog = new T.Color('#a16b57');
+  const marsSandHazeFog = new T.Color('#d4ad7e');
+  const marsStormFog = new T.Color('#c38a61');
   let exitBaseDensity = 0.00045;
   let exitBaseStars = 0.75;
   function setDestinationExit(seconds) {
@@ -1587,17 +1884,54 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    // For renderer.compileAsync: this subtree contains future-visible orbital
+    // scenery, terrain and atmosphere without the expensive city base meshes.
+    transitionShaderRoot: () => sectorScenery,
+    cityHazards: () => cityHazardsCache,
+    strikeCityArchitecture: (from, to, damage, seconds) =>
+      cityReactive?.strike(from, to, damage, seconds) ?? null,
+    cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
+    cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
+    cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
+    cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
+    setCityDestruction(seconds) {
+      return updateCityDestructionScene(
+        cityDestruction,
+        seconds,
+        sceneryTheme === 'city' && city.visible,
+      );
+    },
+    cityDestructionGroundState() {
+      return sceneryTheme === 'city' ? cityDestructionGroundState(cityDestruction) : null;
+    },
+    cityDestructionImpactState() {
+      return sceneryTheme === 'city' ? cityDestructionImpactState(cityDestruction) : null;
+    },
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
+      setLivingWorldQuality(
+        sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
+        quality,
+      );
+      if (sceneryTheme === 'ice')
+        updateEuropaSurface(
+          sectorScenery.getObjectByName('europa-frozen-surface'),
+          europaArrivalSeconds,
+          europaSurfaceAt(europaArrivalSeconds, europaTunnelActive).surface > 0.16 &&
+            !europaTunnelActive &&
+            !europaBossArenaActive,
+          quality === 'high',
+        );
       const high = quality === 'high';
       terrainMat.uniforms.detail.value = high ? 1 : 0.4;
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      setCity34ConceptQuality(conceptCity, quality);
       cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
       launchCelestials.setGraphicsQuality(quality);
       for (const tile of [city, cityFar]) {
@@ -1613,8 +1947,71 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
       }
     },
+    setEuropaTunnel(active = false) {
+      europaTunnelActive =
+        dynamicFlight && sceneryTheme === 'ice' && !!active && !europaBossArenaActive;
+      if (sceneryTheme === 'ice') {
+        const state = europaSurfaceAt(europaArrivalSeconds, europaTunnelActive);
+        ground.visible = state.groundVisible && !europaBossArenaActive;
+        updateEuropaSurface(
+          sectorScenery.getObjectByName('europa-frozen-surface'),
+          europaArrivalSeconds,
+          state.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+          destinationGraphicsQuality === 'high',
+        );
+      }
+      return europaTunnelActive;
+    },
+    setEuropaBossArena(active = false, floorY = -7) {
+      europaBossArenaActive = dynamicFlight && sceneryTheme === 'ice' && !!active;
+      if (europaBossArenaActive && (!Number.isFinite(floorY) || floorY > -7))
+        throw new RangeError('Invalid Europa arena basin depth');
+      // Move only the render floor, not the boss, camera, targets or orbit.
+      ground.position.y = europaBossArenaActive ? floorY : -7;
+      if (europaBossArenaActive) europaTunnelActive = false;
+      const surface = sectorScenery.getObjectByName('europa-frozen-surface');
+      if (surface) surface.visible = !europaBossArenaActive && !europaTunnelActive;
+      const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
+      if (crystals) crystals.visible = !europaBossArenaActive;
+      // Preserve the glacier skyline, but move its near spires to the second
+      // and third planes so none crosses the camera-to-boss sightline.
+      if (destinationLandmarks) destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
+      const ambient = sectorScenery.getObjectByName('world-living-depth-ice');
+      if (ambient) ambient.position.z = europaBossArenaActive ? -280 : 0;
+      if (europaBossArenaActive) carrier.visible = false;
+      return {
+        active: europaBossArenaActive,
+        foregroundHidden: !crystals || !crystals.visible,
+        backdropDepth: destinationLandmarks?.position.z ?? 0,
+        floorY: ground.position.y,
+      };
+    },
+    europaSurfaceState() {
+      if (sceneryTheme !== 'ice') return null;
+      return {
+        groundVisible: ground.visible,
+        orbitalVisible: moon.visible,
+        destinationGlobeVisible:
+          destinationVista?.getObjectByName('destination-celestial-body')?.visible ?? false,
+        frostDensity: scene.fog.density,
+        surfaceVisible: sectorScenery.getObjectByName('europa-frozen-surface')?.visible ?? false,
+        tunnelActive: europaTunnelActive,
+      };
+    },
+    europaBossArenaState() {
+      const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
+      return {
+        active: europaBossArenaActive,
+        foregroundHidden: !crystals || !crystals.visible,
+        backdropDepth: destinationLandmarks?.position.z ?? 0,
+        carrierHidden: !carrier.visible,
+        floorY: ground.position.y,
+      };
+    },
     showCarrierForBoss() {
-      carrier.visible = true;
+      // Sector 4 has its own continuous Devastador, not the generic
+      // faraway carrier originally used in the first boss warning.
+      if (sceneryTheme !== 'station' || !dynamicFlight) carrier.visible = true;
     },
     setAscent(amount, enabled) {
       if (!dynamicFlight) return;
@@ -1653,6 +2050,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const urbanVisible = reveal.cityVisible;
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
+      if (!urbanVisible) cityDestruction.visible = false;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
       // The Moon used in other stages is separate from the real lunar body.
@@ -1680,6 +2078,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moon.visible = atmosphere.visible = !active;
       scene.fog.density = active ? 0.0015 : 0.00045;
     },
+    setReactorGrandHall(active) {
+      carrierGrandHallActive = dynamicFlight && sceneryTheme === 'station' && !!active;
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      if (corridors && carrierGrandHallActive) corridors.visible = false;
+    },
+    reactorGrandHallState() {
+      const corridors = sectorScenery.getObjectByName('marvin-mothership-interior');
+      return {
+        active: carrierGrandHallActive,
+        corridorsHidden: !!corridors && !corridors.visible,
+      };
+    },
     setOrbit(angle, center) {
       if (!orbitalFrame) return;
       orbitalFrame.rotation.y = angle;
@@ -1688,6 +2098,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         .sub(center.clone().applyAxisAngle(new T.Vector3(0, 1, 0), angle));
     },
     setSector(sector, sectorIndex = -1) {
+      carrierGrandHallActive = false;
+      europaBossArenaActive = false;
+      europaTunnelActive = false;
+      europaArrivalSeconds = 0;
       clearScenery();
       destinationVista = null;
       destinationEscape = null;
@@ -1714,7 +2128,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
-      carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
+      cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityLocalSolids?.reset();
+      cityHazardsCache.length = 0;
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
+      carrier.visible = sceneryTheme === 'fleet' || (sceneryTheme === 'station' && !dynamicFlight);
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
@@ -1732,10 +2152,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       terrainMat.uniforms.launchGroundAlpha.value = 1;
       terrainMat.uniforms.water.value = sceneryTheme === 'ocean' ? 1 : 0;
       terrainMat.uniforms.urban.value = sceneryTheme === 'city' ? 1 : 0;
+      terrainMat.uniforms.ice.value = sceneryTheme === 'ice' ? 1 : 0;
       const land = ['city', 'ocean', 'ice', 'mars'].includes(sceneryTheme);
       ground.visible = land && sceneryTheme !== 'mars';
       city.visible = cityFar.visible = sceneryTheme === 'city' || sceneryTheme === 'ocean';
       cityHorizon.visible = sceneryTheme === 'city';
+      updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       for (const tile of [city, cityFar]) {
         tile.getObjectByName('city-urban-life').visible = sceneryTheme === 'city';
         tile.getObjectByName('city-architectural-districts').visible = sceneryTheme === 'city';
@@ -1787,9 +2209,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
       if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());
+      if (dynamicFlight && sceneryTheme === 'ice') sectorScenery.add(createEuropaSurface());
       const mat = metal(sceneryTheme === 'ice' ? '#82bace' : '#293447', 0.6, 0.45),
         light = glowMaterial(sector.accent, 1.3);
       if (['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) {
+        const iceField = sceneryTheme === 'ice' ? new T.Group() : null;
+        if (iceField) {
+          iceField.name = 'europa-near-field-crystals';
+          iceField.userData.europaForeground = true;
+          sectorScenery.add(iceField);
+        }
         const geo =
           sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
         for (let i = 0; i < 60; i++) {
@@ -1801,19 +2230,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           );
           o.scale.setScalar(rnd(0.5, 2.5));
           o.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
-          sectorScenery.add(o);
+          if (iceField) iceField.add(o);
+          else sectorScenery.add(o);
         }
       }
-      if (sceneryTheme === 'station')
-        for (let i = 0; i < 10; i++) {
-          const g = new T.Group();
-          const ring = new T.Mesh(new T.TorusGeometry(78, 2.2, 6, 8), mat);
-          g.add(ring);
-          g.add(new T.Mesh(new T.TorusGeometry(74, 0.4, 6, 8), light));
-          g.position.set(0, 0, -i * 150 - 100);
-          g.rotation.z = i * 0.13;
-          sectorScenery.add(g);
-        }
+      if (sceneryTheme === 'station' && dynamicFlight) {
+        // Mission 4 is INSIDE Marvin's mothership; do not reuse a generic
+        // corridor of space rings as the main environmental geometry.
+        sectorScenery.add(createMothershipInterior());
+        sectorScenery.add(createMothershipApproach());
+      }
       if (
         ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&
         !(dynamicFlight && sceneryTheme === 'throne')
@@ -1883,29 +2309,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
-      if (dynamicFlight && sceneryTheme === 'station') {
-        for (let i = 0; i < 7; i++) {
-          const ring = new T.Mesh(new T.TorusGeometry(43, 1.5, 6, 24), mat);
-          ring.add(new T.Mesh(new T.TorusGeometry(40.5, 0.32, 4, 48), light));
-          ring.position.set(0, 10, -800 - i * 22);
-          ring.userData.conduit = true;
-          sectorScenery.add(ring);
-        }
-      }
+      // The station is now a physical hangar/engine room, not extra torus rings.
       // Each non-Earth location has a different silhouette, palette and traversal
       // grammar. No universal orbital torus corridor or broken moon in every stage.
-      if (dynamicFlight && sceneryTheme === 'fleet') {
-        for (let i = 0; i < 7; i++) {
-          const wreck = new T.Group();
-          wreck.name = 'fleet-destroyed-frigate';
-          wreck.add(box(35, 7, 80, mat));
-          wreck.add(box(12, 4, 45, light, -13, 5, -8));
-          wreck.add(box(18, 1, 50, mat, 20, -6, 12));
-          wreck.position.set((i % 2 ? 1 : -1) * (78 + (i % 3) * 25), 35 + i * 12, -170 - i * 185);
-          wreck.rotation.set(i * 0.15, i * 0.4, i * 0.2);
-          sectorScenery.add(wreck);
-        }
-      }
+      // Saturn: the abandoned seven-frigate debris field obscured the rings.
+      // The singular distant warship and authored icy landmark layers remain;
+      // scattered wrecks do not repeat throughout this orbital battlefield.
       if (dynamicFlight && sceneryTheme === 'nebula') {
         for (let i = 0; i < 12; i++) {
           const root = new T.Group();
@@ -1981,10 +2390,22 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         destinationEscape = createDestinationEscape(destinationIndex);
         sectorScenery.add(destinationEscape);
       }
+      if (dynamicFlight)
+        sectorScenery.add(createLivingWorldLayers(sceneryTheme, destinationGraphicsQuality));
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
-    update(dt, time, speed, playing) {
+    update(dt, time, speed, playing, stageTime = time) {
       terrainMat.uniforms.time.value = time;
+      if (sceneryTheme === 'city' && playing) {
+        cityCatastrophe?.update(dt, stageTime, speed, city.visible);
+        cityReactive?.update(dt, stageTime, speed, city.visible);
+      }
+      // Independent, low-draw-call depth planes remain animated during boss
+      // fights while the near collision corridor is intentionally frozen.
+      updateLivingWorldLayers(sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme), {
+        time,
+        travel,
+      });
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
@@ -1995,6 +2416,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         cityHorizon.position.x = Math.sin(travel / 3400) * 9;
         cityHorizon.position.z = -Math.min(85, travel * 0.012);
         for (const tile of [city, cityFar]) {
+          // These are visual-only tiles. Once the launch city is hidden in
+          // orbit or another mission, do not animate its entire traffic graph.
+          // Travel still advances, so the visible tile catches up instantly.
+          if (sceneryTheme !== 'city' || !tile.visible) continue;
           if (sceneryTheme === 'city') {
             animateCityBillboards(tile, travel);
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
@@ -2040,6 +2465,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         }
         dustGeo.attributes.position.needsUpdate = true;
       }
+      if (sceneryTheme === 'city' && playing) {
+        // Tile positions and real moving trains were updated above. Compute
+        // collisions in their final world-space pose, not the prior frame's.
+        cityLocalSolids?.update(city.visible);
+        refreshCityHazards();
+      }
       if (playing)
         for (const o of sectorScenery.children) {
           if (o.userData.conduit) {
@@ -2080,6 +2511,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
+      updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
+      cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityLocalSolids?.reset();
+      cityHazardsCache.length = 0;
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
@@ -2090,6 +2528,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       skyMat.uniforms.marsGlow.value = sceneryTheme === 'mars' ? 1 : 0;
       updateMarsPremium(sectorScenery.getObjectByName('mars-premium-desert'), 0);
       if (sceneryTheme === 'mars') setMarsDescent(0);
+      europaTunnelActive = false;
       if (destinationVista) setDestinationArrival(0);
       if (destinationEscape) setDestinationExit(0);
       near.forEach((g, i) => g.position.set(g.position.x, 0, -i * 65));

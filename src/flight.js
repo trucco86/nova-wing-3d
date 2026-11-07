@@ -70,7 +70,7 @@ export function createFlightCamera(camera, wideFlight = false) {
       camera.lookAt(aim);
       camera.updateProjectionMatrix();
     },
-    update(dt, player, steering, boosting, route = { bank: 0, ascent: 0 }) {
+    update(dt, player, steering, boosting, route = { bank: 0, ascent: 0 }, arenaFov = null) {
       const a = 1 - Math.exp(-4 * dt);
       if (wideFlight) {
         const shot = mode === 'chase' ? directedShot : mode;
@@ -105,7 +105,13 @@ export function createFlightCamera(camera, wideFlight = false) {
         camera.rotateZ(bank);
         const fov =
           shot === 'combat' ? 78 : shot === 'cockpit' ? 74 : shot === 'overhead' ? 65 : 64;
-        camera.fov += (fov + (boosting ? 6 : 0) - camera.fov) * a;
+        // Arena-specific, purely visual portrait framing. No target or hitbox
+        // changes; cockpit and overhead modes retain their authored lenses.
+        const focal =
+          Number.isFinite(arenaFov) && shot !== 'cockpit' && shot !== 'overhead'
+            ? Math.max(fov, Math.min(105, arenaFov))
+            : fov;
+        camera.fov += (focal + (boosting ? 6 : 0) - camera.fov) * a;
         camera.updateProjectionMatrix();
         return;
       }
