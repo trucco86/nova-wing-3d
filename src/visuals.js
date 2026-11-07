@@ -942,6 +942,10 @@ export function animateMechPower(
 
   const pulse = 0.94 + Math.sin(elapsed * 16) * 0.06;
   rig.turbineFlame.scale.y = (0.85 + rig.propulsionPower * 3.25) * pulse;
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = (0.8 + rig.propulsionPower * 2.9) * pulse;
+    rig.turbineInnerFlame.position.z = 0.95 + (1.35 * rig.turbineInnerFlame.scale.y) / 2;
+  }
   // Base tip stays attached to the gimballed reactor; exhaust stretches away.
   rig.turbineFlame.position.z = 0.85 + (1.75 * rig.turbineFlame.scale.y) / 2;
   rig.turbineFlame.material.opacity = 0.78 + rig.propulsionPower * 0.18;
