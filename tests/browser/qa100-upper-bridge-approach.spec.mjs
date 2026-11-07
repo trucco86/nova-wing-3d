@@ -29,7 +29,10 @@ test('stage-one upper skybridge physically stops the ship in its real approachin
   await page.evaluate(() => window.fixture.advance(4.0));
   state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.cityImpactCount).toBeGreaterThan(beforeImpact);
-  expect(Math.abs(state.player.x)).toBeLessThan(5, 'bridge contact may not teleport the ship sideways');
+  expect(Math.abs(state.player.x)).toBeLessThan(
+    5,
+    'bridge contact may not teleport the ship sideways',
+  );
   expect(state.player.y).toBeLessThan(92 - 2.1 - 2.3 + 0.2);
   await page.screenshot({
     path: info.outputPath('upper-bridge-physical-intercept-' + info.project.name + '.png'),

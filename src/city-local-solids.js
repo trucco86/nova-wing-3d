@@ -8,8 +8,17 @@ const NEAR_Z = -178;
 const REAR_Z = 52;
 
 function solid(
-  tile, kind, x, y, z, halfX, halfY, halfZ,
-  node = null, highOnly = false, visibilityNode = node,
+  tile,
+  kind,
+  x,
+  y,
+  z,
+  halfX,
+  halfY,
+  halfZ,
+  node = null,
+  highOnly = false,
+  visibilityNode = node,
 ) {
   const center = new T.Vector3(x, y, z);
   return {
@@ -95,9 +104,17 @@ export function createCityLocalSolids(tiles) {
     for (const instance of playableSkybridges?.userData.solidInstances ?? [])
       objects.push(
         solid(
-          tile, instance.kind, instance.x, instance.y, instance.z,
-          instance.halfX, instance.halfY, instance.halfZ,
-          null, false, playableSkybridges,
+          tile,
+          instance.kind,
+          instance.x,
+          instance.y,
+          instance.z,
+          instance.halfX,
+          instance.halfY,
+          instance.halfZ,
+          null,
+          false,
+          playableSkybridges,
         ),
       );
     // A cross-city transit deck exists in both Medium and High, unlike the

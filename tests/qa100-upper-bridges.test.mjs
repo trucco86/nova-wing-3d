@@ -21,10 +21,20 @@ test('three distinct premium skyline decks have 12 visible preallocated solid st
   const steel = architecture.getObjectByName('city-upper-skybridge-solids');
   assert.equal(steel.count, 12);
   assert.equal(steel.userData.solidInstances.length, 12);
-  assert.equal(architecture.children.length, 3, 'one structural and two decorative instanced draw calls');
+  assert.equal(
+    architecture.children.length,
+    3,
+    'one structural and two decorative instanced draw calls',
+  );
   const decks = physical.snapshot().filter((s) => s.kind === 'upper-bridge-deck');
-  assert.deepEqual(decks.map((s) => s.y), [92, 123, 151]);
-  assert.deepEqual(decks.map((s) => s.z), [9, -311, -711]);
+  assert.deepEqual(
+    decks.map((s) => s.y),
+    [92, 123, 151],
+  );
+  assert.deepEqual(
+    decks.map((s) => s.z),
+    [9, -311, -711],
+  );
   const first = physical.colliders().find((s) => s.kind === 'upper-bridge-deck');
   assert.ok(first && first.solid);
   assert.equal(first.center.z, 9);
@@ -59,10 +69,14 @@ test('climbing into a skybridge stops at the actual lower face without sideways 
 });
 
 test('second and third reachable skyline bridges block only at their actual depth', () => {
-  for (const [z, y] of [[614, 123], [1014, 151]]) {
+  for (const [z, y] of [
+    [614, 123],
+    [1014, 151],
+  ]) {
     const { physical } = fixture(z);
-    const deck = physical.colliders().find((s) =>
-      s.kind === 'upper-bridge-deck' && s.center.z === 9);
+    const deck = physical
+      .colliders()
+      .find((s) => s.kind === 'upper-bridge-deck' && s.center.z === 9);
     assert.ok(deck && deck.center.y === y);
     const from = new T.Vector3(0, y - 18, 9);
     const desired = new T.Vector3(0, y + 17, 9);

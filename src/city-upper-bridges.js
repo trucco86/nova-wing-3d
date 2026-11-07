@@ -5,11 +5,16 @@ import * as T from 'three';
 // All steel pieces use one instance draw per tile and have matching solids.
 const unit = new T.BoxGeometry(1, 1, 1);
 const steel = new T.MeshStandardMaterial({
-  color: '#7794a9', metalness: 0.7, roughness: 0.32,
+  color: '#7794a9',
+  metalness: 0.7,
+  roughness: 0.32,
 });
 const glass = new T.MeshStandardMaterial({
-  color: '#2c5870', metalness: 0.5, roughness: 0.2,
-  transparent: true, opacity: 0.84,
+  color: '#2c5870',
+  metalness: 0.5,
+  roughness: 0.2,
+  transparent: true,
+  opacity: 0.84,
 });
 const neon = new T.MeshBasicMaterial({ color: '#83e8f7', toneMapped: false });
 const BRIDGES = Object.freeze([
@@ -30,16 +35,23 @@ export function createCityUpperBridges() {
   lights.name = 'city-upper-skybridge-lights';
   const dummy = new T.Object3D();
   const add = (mesh, kind, x, y, z, width, height, depth) => {
-    const index = mesh.count === 0 ? 0 : mesh.userData.nextIndex ?? 0;
+    const index = mesh.count === 0 ? 0 : (mesh.userData.nextIndex ?? 0);
     dummy.position.set(x, y, z);
     dummy.rotation.set(0, 0, 0);
     dummy.scale.set(width, height, depth);
     dummy.updateMatrix();
     mesh.setMatrixAt(index, dummy.matrix);
     mesh.userData.nextIndex = index + 1;
-    if (kind) mesh.userData.solidInstances.push({
-      kind, x, y, z, halfX: width / 2, halfY: height / 2, halfZ: depth / 2,
-    });
+    if (kind)
+      mesh.userData.solidInstances.push({
+        kind,
+        x,
+        y,
+        z,
+        halfX: width / 2,
+        halfY: height / 2,
+        halfZ: depth / 2,
+      });
   };
   for (let i = 0; i < BRIDGES.length; i++) {
     const { z, y, width, depth } = BRIDGES[i];
@@ -47,16 +59,13 @@ export function createCityUpperBridges() {
     // or around each physical piece; no invisible tall collision plane.
     add(structure, 'upper-bridge-deck', 0, y, z, width, 4.2, depth);
     for (const side of [-1, 1])
-      add(structure, 'upper-bridge-bracket', side * (width / 2 - 3), y - 8, z,
-        5, 15, depth * 0.8);
+      add(structure, 'upper-bridge-bracket', side * (width / 2 - 3), y - 8, z, 5, 15, depth * 0.8);
     add(structure, 'upper-bridge-truss', 0, y + 10, z, width * 0.73, 2, depth * 0.7);
     add(glazing, null, 0, y + 3.3, z + depth * 0.43, width * 0.91, 1.3, 0.45);
     add(glazing, null, 0, y + 3.3, z - depth * 0.43, width * 0.91, 1.3, 0.45);
     for (const side of [-1, 1]) {
-      add(lights, null, side * (width / 2 - 1), y + 2.6,
-        z + depth * 0.46, 0.85, 0.9, 0.35);
-      add(lights, null, side * (width / 2 - 1), y + 2.6,
-        z - depth * 0.46, 0.85, 0.9, 0.35);
+      add(lights, null, side * (width / 2 - 1), y + 2.6, z + depth * 0.46, 0.85, 0.9, 0.35);
+      add(lights, null, side * (width / 2 - 1), y + 2.6, z - depth * 0.46, 0.85, 0.9, 0.35);
     }
     add(lights, null, 0, y + 2.2, z + depth * 0.51, width * 0.68, 0.35, 0.25);
   }
