@@ -7,7 +7,7 @@ async function ready(page, suffix = '') {
   await page.evaluate(() => {
     const selector = document.getElementById('settingGraphics');
     selector.value = 'high';
-    selector.dispatchEvent(new Event('change', { bubbles: true }));
+    selector.dispatchEvent(new Event('input', { bubbles: true }));
   });
   await expect(page.locator('body')).toHaveAttribute('data-graphics-quality', 'high');
 }
