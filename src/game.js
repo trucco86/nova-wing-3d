@@ -916,7 +916,7 @@ export function createGame({
   const flightLimit = () => (dynamicFlight ? 72 : Math.min(25, camera.aspect * 20));
   // The previous y=46 ceiling sat BELOW visible viaducts. The camera follows
   // all altitudes, and only actual geometry should block the pilot's climb.
-  const verticalFlightLimit = () => (dynamicFlight ? (sectorIndex === 0 ? 116 : 96) : 23);
+  const verticalFlightLimit = () => (dynamicFlight ? (sectorIndex === 0 ? 184 : 96) : 23);
   let storage;
   try {
     storage = window.localStorage;
