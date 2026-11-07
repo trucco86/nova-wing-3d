@@ -1,5 +1,5 @@
 name: QA99 versioned full Node gate and bundle sync
-# Re-run after restoring maglev visibility and giving the car a durable collision window.
+# Re-run after fixing release-note invariant and using the real graphics-setting input event.
 on:
   push:
     branches: [fix/qa99-free-vertical-overpass-physical-20261107]
@@ -26,6 +26,7 @@ jobs:
           npm run format
           npm run build
           npm run build:check
+          npm run check:repo
           npm run validate
           git diff --check
       - name: Commit QA99 sources, tests, spec and generated HTML
