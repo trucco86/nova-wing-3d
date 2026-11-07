@@ -45,3 +45,13 @@ A reported defect was verified in source: the previous stage-1 rubble collision 
 - Tests must establish actual final position outside solid at different frame rates, moving obstacle CCD, dash/boost tunneling, wall response, and pause/reset; the prior assertion that damage changed alone is insufficient.
 
 **Validation status:** code and tests are candidate only until full Node and WebGL CI, physical mobile visual review and comparison to the approved concept. The previous v1.27.67 cannot be classified as collision-complete.
+
+## Freedom of flight / object-only collision — revised V1.27.69
+- Reverted unintended `x=±36` global avenue clamp from 1.27.68. The existing 3D pilot area remains `x=±72`, consistently across the city and later phases.
+- **Collision never applies to empty air.** Only visible meshes with localized actual solid volume can block the player; the hard global air wall has been removed.
+- Existing collision solver continues to sweep between prior and next positions to avoid passing through actual geometry during dash, boost and invulnerability; its lane fallback may use the full 72 units instead of assuming a 36-unit road.
+- City solid shapes added from **visible geometry**: roadside guardrails have low y support only (ship can fly *over* them at standard altitude), elevated guideways block only when pilot reaches their physical height, overpass support columns obstruct only their local x/y/z footprint when high-quality meshes are actually visible, and the maglev moves with its rendered carriage. No fake full-height corridor boundary; graphics Medium omits high-only pillar and west train colliders.
+- Cached transforms track the actual 1,900-unit city tile loop and maglev wrap. Discontinuities reset sweep history to avoid teleporting phantom collision planes. All colliders and their arrays are created once, outside the update loop.
+- Added two *localized* shootable side-facade bays in stage 1. Repeated projectile impacts change persistent crack/exposed-core visuals; destruction results in grounded falling masonry and a pooled flash/smoke/impact wave. Their collision footprint remains limited to the visible bays and rubble.
+- Regression tests: east and west navigation past ±36 to the original area; crossing x47 above low rail versus hitting it at ground height; actual obstacle avoidance versus empty air; high-quality columns only when rendered; moving train and wrapping stage; projectile/local bay damage and persistent grounded destruction.
+- **Release only after CI browser/Desktop/Mobile plus hardware FPS and visual sign-off.** Stage-1 exploration may not be reduced by a global collision volume again.
