@@ -9,6 +9,7 @@ import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
 import { createCityReactiveDamage } from './city-reactive-damage.js';
 import { createCityLocalSolids } from './city-local-solids.js';
+import { createCityBridgeCameraFade } from './city-camera-occlusion.js';
 import { createCityUpperBridges } from './city-upper-bridges.js';
 import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
@@ -1505,6 +1506,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
   const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
+  const cityBridgeCameraFade = dynamicFlight ? createCityBridgeCameraFade([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
   // A persistent, layered urban horizon gives the flight a destination instead
@@ -1904,6 +1906,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityReactive?.strike(from, to, damage, seconds) ?? null,
     cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
     cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
+    cityCameraOcclusionSnapshot: () => cityBridgeCameraFade?.snapshot() ?? [],
+    updateCityCameraOcclusion(camera, pilot, dt) {
+      return (
+        cityBridgeCameraFade?.update(
+          camera,
+          pilot,
+          cityLocalSolids?.colliders(),
+          dt,
+          sceneryTheme === 'city' && city.visible,
+        ) ?? []
+      );
+    },
     // An arbitrary -35 vertical retreat gate made visible falling objects
     // intangible before the city actually vanished. Geometry visibility is
     // authoritative; every solid also checks its own active/visible state.
@@ -2156,6 +2170,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       orbitalAscent?.reset();
       cityReactive?.reset();
       cityLocalSolids?.reset();
+      cityBridgeCameraFade?.reset();
       cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
@@ -2544,6 +2559,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       orbitalAscent?.reset();
       cityReactive?.reset();
       cityLocalSolids?.reset();
+      cityBridgeCameraFade?.reset();
       cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
