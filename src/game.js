@@ -5127,6 +5127,9 @@ export function createGame({
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
       cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
+      cityPhysicalSolids: dynamicFlight && sectorIndex === 0
+        ? world.cityLocalSolidsSnapshot()
+        : [],
       cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
