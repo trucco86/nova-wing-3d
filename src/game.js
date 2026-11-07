@@ -583,6 +583,8 @@ export function createGame({
     if (!mechaEngine && audioCtx && robotMode) mechaEngine = createMechaThrusterAudio(audioCtx);
     cue('mechaTransform');
     for (const part of shipParts) part.visible = !robotMode;
+    // shipParts captured the original module; every replacement must also follow the transformation.
+    shipModule.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
     syncDodgeControl();
@@ -1063,6 +1065,8 @@ export function createGame({
     pilotLoadout = { ...nextLoadout };
     robotMode = false;
     robotTransition = 0;
+    robotCooldown = 0;
+    resetMechaLock();
     dashRemaining = dashCooldown = 0;
     roll = rollAngle = 0;
     rollHeld = false;
@@ -1723,6 +1727,11 @@ export function createGame({
         if (damagedCraft) {
           damagedCraft.position.copy(player.position);
           damagedCraft.rotation.copy(player.rotation);
+          // A broken craft retains the actual pilot's selected livery.
+          const livePaint = player.userData.paint ?? [];
+          damagedCraft.userData.paint?.forEach((material, i) => {
+            if (livePaint[i]) material.color.copy(livePaint[i].color);
+          });
           damagedCraft.visible = true;
         }
         explode(player.position, 12, 0xffb16d, false);
@@ -6458,6 +6467,8 @@ export function createGame({
       },
       heroScale: player.scale.x,
       shipScale: shipModule.scale.x,
+      shipModuleVisible: shipModule.visible,
+      robotVisible: robot.visible,
       robotScale: robot.scale.x,
       breakableTargets: obstacles
         .filter((o) => o.hp !== null && o.life > 0)

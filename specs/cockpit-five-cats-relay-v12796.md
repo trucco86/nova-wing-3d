@@ -16,3 +16,10 @@
 2. Dano terminal avaria nave, troca por outro gato, preserva 3 chances e não emite mensagem de morte. Pausa, novo setor e reinício não conservam cooldown/retirados inconsistentes.
 3. Cockpit desktop e mobile mostram dados coerentes com snapshot da partida, ameaças no radar e duas patas específicas ao piloto, sem bloquear mira.
 4. Testes Node, CI browser desktop/mobile, screenshots comparados e FPS em dispositivo real antes de qualquer homologação; preview separado de PROD.
+
+## Correção complementar QA v1.27.97
+
+- Após cada troca, a transformação em robô deve ocultar o **módulo de nave atual** e restaurá-lo na volta; o módulo original removido nunca substitui essa lógica.
+- A troca encerra lock-on e cooldown de transformação ligados ao chassi anterior.
+- A nave que sai avariada preserva a paleta real escolhida pelo jogador.
+- Node regression verifica as duas transformações e o chassi substituto.

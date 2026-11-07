@@ -79,3 +79,29 @@ test('fatal damage withdraws damaged ship and hands command to a surviving cat',
   assert.ok(replaced.shield > 0);
   assert.equal(replaced.pilotRelay.damaged.includes('bia'), true);
 });
+
+test('transforming after pilot replacement hides the actual new ship module', (t) => {
+  const h = harness();
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(0.3);
+  h.key('KeyT');
+  h.advance(1.3);
+  const firstRobot = h.game.snapshot();
+  assert.equal(firstRobot.mecha.active, true);
+  assert.equal(firstRobot.shipModuleVisible, false);
+  assert.equal(firstRobot.robotVisible, true);
+  h.key('KeyT', false);
+  assert.equal(h.game.switchPilot(), true);
+  const replacedShip = h.game.snapshot();
+  assert.equal(replacedShip.loadout.ship, 'aegis');
+  assert.equal(replacedShip.mecha.active, false);
+  assert.equal(replacedShip.shipModuleVisible, true);
+  assert.equal(replacedShip.robotVisible, false);
+  h.key('KeyT');
+  h.advance(1.3);
+  const nextRobot = h.game.snapshot();
+  assert.equal(nextRobot.mecha.active, true);
+  assert.equal(nextRobot.shipModuleVisible, false);
+  assert.equal(nextRobot.robotVisible, true);
+});

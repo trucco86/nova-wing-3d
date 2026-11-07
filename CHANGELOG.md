@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.97 — Candidata em preparação
+
+- QA cockpit e relay: módulo atual da nave não sobrepõe o robô após troca, lock e cooldown reiniciam com o novo chassi e a nave avariada preserva pintura escolhida. Testes browser ainda necessários.
+
 ## 1.27.96 — Candidata em preparação
 
 - Cockpit Five Cats com patas por piloto, telemetria real, radar e troca de comandante/nave; avaria retira a nave, não mata o gato. Habilidades e classes passam a impactar dano, velocidade e defesa; QA pendente.
