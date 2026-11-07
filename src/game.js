@@ -4707,18 +4707,20 @@ export function createGame({
       const to = player.position.clone().sub(obstacle.o.position);
       let collided = false;
       for (const solid of obstacle.o.userData.solids) {
-        const touching = crossesSolid(from, to, solid.center, solid.half, 1.3);
-        if (!touching) continue;
-        collided = true;
         if (dynamicFlight && sectorIndex === 0 && world.cityRoadActive()) {
-          // Existing gantries/reactors must stop the player, not merely deal damage.
+          // A wide fighter cannot fit through the decorative gap of an
+          // obstacle tested with the old 1.3-radius projectile collider.
           cityObstacleSolid.center.copy(obstacle.o.position).add(solid.center);
           cityObstacleSolid.half.copy(solid.half);
           cityObstacleSolid.previousX = cityObstacleSolid.center.x;
           cityObstacleSolid.previousY = cityObstacleSolid.center.y;
           cityObstacleSolid.previousZ = cityObstacleSolid.center.z - travel;
-          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid))
+          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid)) {
             cityImpactCount++;
+            collided = true;
+          }
+        } else if (crossesSolid(from, to, solid.center, solid.half, 1.3)) {
+          collided = true;
         }
       }
       if (collided) hit(30);
