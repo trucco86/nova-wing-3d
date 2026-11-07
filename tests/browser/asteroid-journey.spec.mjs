@@ -15,13 +15,20 @@ test('sector 3 approaches, enters and fights within the mega-asteroid before unl
   expect(initial.journey.phase).toBe('approach');
   expect(initial.asteroidInterior.entranceVisible).toBe(true);
 
-  await page.evaluate(() => window.fixture.advance(18));
+  await page.evaluate(() => window.fixture.advance(14));
+  await page.screenshot({ path: info.outputPath('asteroid-approach.png') });
+  await page.evaluate(() => window.fixture.advance(4));
   const entrance = await page.evaluate(() => window.fixture.game.snapshot());
   expect(entrance.journey.phase).toBe('transition');
   expect(entrance.asteroidInterior.cavernVisible).toBe(true);
   await page.screenshot({ path: info.outputPath('asteroid-entrance.png') });
 
-  await page.evaluate(() => window.fixture.advance(14));
+  expect(entrance.asteroidInterior.nearestSectionZ).toBeLessThan(
+    entrance.asteroidInterior.entranceZ,
+  );
+  await page.evaluate(() => window.fixture.advance(3));
+  await page.screenshot({ path: info.outputPath('asteroid-threshold.png') });
+  await page.evaluate(() => window.fixture.advance(11));
   const cavern = await page.evaluate(() => window.fixture.game.snapshot());
   expect(cavern.journey.phase).toBe('interior');
   expect(cavern.asteroidInterior.cavernVisible).toBe(true);

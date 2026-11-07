@@ -7,6 +7,8 @@ const PILOT_RADIUS = 27;
 const SHOT_RADIUS = 37;
 const RING_COUNT = 8;
 const RING_GAP = 110;
+const THROAT_DEPTH = 140;
+const ENTRANCE_CLEAR_Z = 230;
 
 export function constrainCavernPosition(position, radius = PILOT_RADIUS) {
   const dy = position.y - CENTER_Y;
@@ -86,6 +88,29 @@ export function createAsteroidInterior(scene) {
   }
   portal.instanceMatrix.needsUpdate = true;
   mouth.add(portal);
+  // Three overlapping, tapered rock shelves connect the exterior to the
+  // first cavern section. Their inner faces keep the flight corridor open.
+  const throat = new T.InstancedMesh(rockGeometry, rockMaterial, 54);
+  throat.name = 'asteroid-entrance-throat';
+  for (let layer = 0; layer < 3; layer++) {
+    for (let j = 0; j < 18; j++) {
+      const angle = (j / 18) * Math.PI * 2 + layer * 0.08;
+      const radius = 57 - layer * 4 + Math.sin(j * 2.7) * 2;
+      entranceDummy.position.set(
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius,
+        -35 - layer * 40,
+      );
+      entranceDummy.rotation.set(0, 0, angle);
+      entranceDummy.scale.set(9, 17, 30);
+      entranceDummy.updateMatrix();
+      throat.setMatrixAt(layer * 18 + j, entranceDummy.matrix);
+      throat.setColorAt(layer * 18 + j, new T.Color(['#817273', '#685967', '#53636d'][layer]));
+    }
+  }
+  throat.instanceMatrix.needsUpdate = true;
+  throat.instanceColor.needsUpdate = true;
+  mouth.add(throat);
   mouth.position.set(0, CENTER_Y, -630);
   scene.add(mouth);
 
@@ -162,52 +187,55 @@ export function createAsteroidInterior(scene) {
 
   let phase = 'inactive';
   let runTime = 0;
-  let entryFromZ = -630;
-  let entryAge = 0;
+  function placeApproach() {
+    mouth.position.z = -630 + Math.min(1, runTime / 16) * 370;
+    mouth.scale.setScalar(1);
+    for (let i = 0; i < rings.length; i++) {
+      rings[i].position.z = mouth.position.z - THROAT_DEPTH - i * RING_GAP;
+      rings[i].rotation.z = 0;
+    }
+  }
   function setPhase(next) {
-    if (next === 'transition') {
-      // Preserve the last visible approach frame: no geometry teleport.
-      entryFromZ = mouth.position.z;
-      entryAge = 0;
-    }
     phase = next;
-    mouth.visible = next === 'approach' || next === 'transition';
-    tunnel.visible = next === 'transition' || next === 'interior' || next === 'escape';
+    mouth.visible =
+      next === 'approach' ||
+      (['transition', 'interior'].includes(next) && mouth.position.z <= ENTRANCE_CLEAR_Z);
+    // The cavern is already behind the aperture during approach; changing
+    // the journey phase must never spawn a corridor in front of the pilot.
+    tunnel.visible = ['approach', 'transition', 'interior', 'escape'].includes(next);
     arena.visible = next === 'boss';
-    if (next === 'approach') {
-      mouth.position.z = -630;
-      mouth.scale.setScalar(1);
-    }
+    if (next === 'approach') placeApproach();
   }
   setPhase('inactive');
   return {
     setPhase,
     reset(active) {
       runTime = 0;
-      entryAge = 0;
-      entryFromZ = -630;
-      for (let i = 0; i < rings.length; i++) rings[i].position.z = -115 - i * RING_GAP;
+      placeApproach();
+      arena.rotation.z = 0;
       setPhase(active ? 'approach' : 'inactive');
     },
     update(dt, speed) {
       if (!tunnel.visible && !mouth.visible && !arena.visible) return;
       runTime += dt;
-      if (mouth.visible && phase === 'approach') {
-        mouth.position.z = -630 + Math.min(1, runTime / 16) * 370;
-      } else if (mouth.visible && phase === 'transition') {
-        // Fly through the asteroid over the existing transition window.
-        // Uses the simulation clock: pause/reset/replay never drift.
-        entryAge += dt;
-        const linear = Math.max(0, Math.min(1, entryAge / 11));
-        const eased = linear * linear * (3 - 2 * linear);
-        mouth.position.z = entryFromZ + (55 - entryFromZ) * eased;
-        mouth.scale.setScalar(1 + 0.22 * eased);
-      }
-      if (tunnel.visible) {
+      if (phase === 'approach') {
+        placeApproach();
+      } else if (tunnel.visible) {
+        const distance = dt * speed * (phase === 'escape' ? 1.8 : 1);
+        if (phase === 'transition' || phase === 'interior') {
+          mouth.position.z += distance;
+          // Keep the thick lip and throat until they are behind the chase
+          // camera, including when the timed journey enters its next phase.
+          mouth.visible = mouth.position.z <= ENTRANCE_CLEAR_Z;
+        }
         for (const section of rings) {
-          section.position.z += dt * speed * (phase === 'escape' ? 1.8 : 1);
-          if (section.position.z > 70) section.position.z -= RING_COUNT * RING_GAP;
-          section.rotation.z += dt * (phase === 'escape' ? 0.075 : 0.012);
+          section.position.z += distance;
+          if (section.position.z > ENTRANCE_CLEAR_Z)
+            section.position.z -=
+              Math.ceil((section.position.z - ENTRANCE_CLEAR_Z) / (RING_COUNT * RING_GAP)) *
+              RING_COUNT *
+              RING_GAP;
+          if (phase === 'escape') section.rotation.z += dt * 0.075;
         }
       }
       if (arena.visible) arena.rotation.z = Math.sin(runTime * 0.3) * 0.04;
@@ -230,26 +258,27 @@ export function createAsteroidInterior(scene) {
         entranceVisible: mouth.visible,
         arenaVisible: arena.visible,
         rings: rings.length,
+        entranceZ: mouth.position.z,
+        nearestSectionZ: Math.max(...rings.map((section) => section.position.z)),
       };
     },
     destroy() {
       scene.remove(mouth, tunnel, arena);
-      for (const mesh of [
-        outerShell,
-        portal,
-        ...rings.flatMap((r) => r.children),
-        ...arena.children,
-      ]) {
-        mesh.geometry?.dispose();
-      }
-      rockGeometry.dispose();
+      const geometries = new Set([
+        rockGeometry,
+        crystalGeo,
+        braceGeo,
+        ...rings.flatMap((ring) => ring.children.map((mesh) => mesh.geometry)),
+        ...arena.children.map((mesh) => mesh.geometry),
+      ]);
+      for (const geometry of geometries) geometry.dispose();
+      for (const mesh of [outerShell, portal, throat, ...rings.flatMap((ring) => ring.children)])
+        if (mesh.isInstancedMesh) mesh.dispose();
       rockMaterial.dispose();
       veinMaterial.dispose();
       gateMaterial.dispose();
       oreMaterial.dispose();
       braceMaterial.dispose();
-      crystalGeo.dispose();
-      braceGeo.dispose();
     },
   };
 }
