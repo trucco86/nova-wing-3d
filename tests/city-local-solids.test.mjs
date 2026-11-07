@@ -63,7 +63,7 @@ test('street-level collision follows the narrow visible guardrail only, not an i
 
 test('overpass pillars are local objects active only when their real geometry is visible in High', () => {
   const { root, high } = tile();
-  root.position.z = 154; // first pillar enters actual flight depth
+  root.position.z = 169; // first pillar directly crosses the player depth z=9
   const city = createCityLocalSolids([root]);
   city.update(true);
   assert.equal(city.colliders().filter((c) => c.kind === 'overpass-pillar').length, 0);
