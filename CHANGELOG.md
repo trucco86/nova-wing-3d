@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.99 — Candidata em preparação
+
+- QA em desenvolvimento: liberdade vertical, volumes físicos dos viadutos e trilho transversal, destroços sólidos e etiqueta BLINDADO menos intrusiva; testes completos pendentes.
+
 ## 1.27.98 — Candidata em preparação
 
 - QA da fase 1: colisão real em placa, carro e 7 fragmentos visíveis, CCD XYZ, posições que exigem desvio, destroços orbitais aleatorizados e ISS orbitando brevemente a Terra; homologação WebGL pendente.

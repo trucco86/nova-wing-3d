@@ -341,11 +341,14 @@ export function updateCityDestructionScene(root, seconds, visible = true) {
   billboard.rotation.x = state.billboard * 0.4;
   keepCityDebrisAboveGround(signRoot);
 
-  car.visible = seconds >= 8.2 && seconds < 12.3;
+  // Previously the falling car reached player depth only as it vanished
+  // at 12.3s. Move the same rendered vehicle into the play lane earlier so
+  // a real visible obstacle persists long enough to dodge.
+  car.visible = seconds >= 8.2 && seconds < 12.8;
   car.position.set(
     35 - state.vehicle * 28,
     48 - state.vehicle * 56,
-    -185 + Math.max(0, seconds - 8.5) * 48,
+    -140 + Math.max(0, seconds - 8.5) * 48,
   );
   car.rotation.set(state.vehicle * 0.72, 0.14, -state.vehicle * 1.25);
   keepCityDebrisAboveGround(car);

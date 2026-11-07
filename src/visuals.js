@@ -1899,7 +1899,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityReactive?.strike(from, to, damage, seconds) ?? null,
     cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
     cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
-    cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
+    // An arbitrary -35 vertical retreat gate made visible falling objects
+    // intangible before the city actually vanished. Geometry visibility is
+    // authoritative; every solid also checks its own active/visible state.
+    cityRoadActive: () => sceneryTheme === 'city' && city.visible,
     cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     cityScriptedFallingSnapshot: () => cityFallingSolids?.snapshot() ?? [],
     orbitalAscentSnapshot: () => orbitalAscent?.snapshot() ?? null,

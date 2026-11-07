@@ -914,6 +914,9 @@ export function createGame({
     podAnchor.z -= 42;
   }
   const flightLimit = () => (dynamicFlight ? 72 : Math.min(25, camera.aspect * 20));
+  // The previous y=46 ceiling sat BELOW visible viaducts. The camera follows
+  // all altitudes, and only actual geometry should block the pilot's climb.
+  const verticalFlightLimit = () => (dynamicFlight ? (sectorIndex === 0 ? 116 : 96) : 23);
   let storage;
   try {
     storage = window.localStorage;
@@ -3969,7 +3972,7 @@ export function createGame({
         player.position.y +
           dy * dt * 20 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
         -1,
-        dynamicFlight ? 46 : 23,
+        verticalFlightLimit(),
       );
     }
     dashCooldown = Math.max(0, dashCooldown - dt);
@@ -5984,6 +5987,7 @@ export function createGame({
           if (
             resolveCitySolidContact(cityPlayerBefore, player.position, hazard, {
               laneLimit: flightLimit(),
+              maxY: verticalFlightLimit(),
             })
           ) {
             cityImpactCount++;
@@ -6483,6 +6487,7 @@ export function createGame({
           z: o.o.position.z,
         })),
       player: { x: player.position.x, y: player.position.y },
+      flightBounds: { horizontal: flightLimit(), minY: -1, maxY: verticalFlightLimit() },
       playerDepth: player.position.z,
       camera: {
         x: camera.position.x,
