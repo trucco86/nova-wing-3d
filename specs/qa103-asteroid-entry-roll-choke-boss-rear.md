@@ -18,6 +18,7 @@ Foram recuperados da biblioteca da conversa do usuário dois arquivos de arte co
 **Importante:** as imagens originais foram recuperadas ao usuário nesta conversa, mas os PNGs não foram versionados neste repositório. Logo, nenhum agente deve declarar comparação visual pixel a pixel, acesso local a esses arquivos ou fidelidade já homologada até que eles sejam anexados explicitamente ao workspace de QA. As imagens são concept art, **não** capturas do build.
 
 **Critérios de direção visual ao comparar com o concept:**
+
 1. **Profundidade de cena:** três planos legíveis (primeiro plano com estruturas, plano de ação livre, skyline com estruturas distantes e escala); evitar repetições de corredores/anéis idênticos.
 2. **Materialidade e luz:** metal com relevo e juntas, reflexos moderados, emissivos ciano/azul e pontos âmbar, névoa volumétrica localizada e contraste legível; não resolver apenas com aumento de bloom.
 3. **Vida e escala:** trem elevado e infraestrutura com movimento, anúncios e janelas iluminadas, pequenos veículos ao fundo, objetos destruíveis com colisão real; evitar elementos que bloqueiem mira ou movimento sem avisar.
@@ -37,6 +38,7 @@ Preservar os elementos e chefes da fase 3 já aprovados; ampliar identidade e de
 Hoje a abertura é modelada por 56 rochas instanciadas, mas o túnel inteiro fica visível assim que `setPhase('transition')` é chamado. A boca segue interpolação temporal até z=55 e a seção interna se move em paralelo, o que pode causar troca de escala, salto de composição e sensação de teleporte visual.
 
 **Resultado esperado:**
+
 1. Aproximação progressiva à massa do asteroide e à fenda irregular: manter a rocha externa visível até a câmera/nave atravessar a boca, sem pop-in nem relâmpago de cor.
 2. Zona de profundidade intermediária conectada geometricamente à fenda: volumes da borda, taludes de rocha, sombras, poeira mineral, reflexos/veios de cristais e variação de materiais entre exterior e interior.
 3. Entrada em etapas perceptíveis (exterior→limiar→garganta→caverna), mas pilotagem não pausa e não troca a câmera sem motivo. Criar transição espacial coerente com speed/elapsed, não somente mostrar/ocultar grupos inteiros.
@@ -53,6 +55,7 @@ Hoje a abertura é modelada por 56 rochas instanciadas, mas o túnel inteiro fic
 **Definição de design:** o jogador deve precisar reduzir a largura projetada da nave com o **giro pressionado e mantido**, orientando com direcional para atravessar **ao menos um** estreitamento. Isso NÃO é o giro completo de um toque curto e não deve ser confundido com dash do robô. Um trecho posterior deve permitir desviar de rochas/espinhos em múltiplas rotas, sem tornar todo o túnel estreito ou tirar a liberdade de pilotagem.
 
 **Requisitos funcionais:**
+
 - O espaço seguro, o visual do vão e seu colisor vêm da **mesma definição de geometria**. Nada de obstáculos apenas decorativos na trajetória, caixa invisível larga, túnel circular rígido que impeça ir ao limite permitido onde visualmente exista espaço, ou colisão no cenário ausente.
 - Integrar hitbox real da nave à orientação visual durante `rollHeld` (OBB ou cálculo de projeção do casco). O giro altera a ocupação lateral apenas de forma fisicamente fundamentada, sem criar invulnerabilidade ou reduzir o collider arbitrariamente. Robô/dash precisa ter regras explícitas de largura e forma.
 - Ao encostar em saliências e espinhos: colisão com resposta clara, empurrão/limite físico localizado, efeito de impacto e dano compatível com cooldown, não teleporte entre paredes, atravessamento ou dano repetido por frame. `Boost` não atravessa rocha.
@@ -88,9 +91,16 @@ Documentar uma checklist separada por tema: Marte (poeira/alien), interior da na
 ## Estrutura de execução no Codex
 
 Criar três worktrees/branches independentes a partir da baseline QA102:
+
 1. `codex/qa103-asteroid-entry`: P0-A, módulo de entrada, snapshots, quatro checkpoints.
 2. `codex/qa103-asteroid-obstacle-roll`: P0-B+C, geometria física, rochas e mecânica de hold-giro, desktop/mobile.
 3. `codex/qa103-boss-rear`: P0-D, modelagem traseira e animações vinculadas a estado real, sem modificar hitbox.
-O integrador revisa conflitos em `src/asteroid-interior.js` e `src/game.js`, funde os PRs **somente em uma branch QA** e atualiza versão e HTML uma única vez via `npm run release:prepare -- 1.27.103` antes de alterar src (ou conforme fluxo de release aprovado). Não misturar merges individuais em produção.
+   O integrador revisa conflitos em `src/asteroid-interior.js` e `src/game.js`, funde os PRs **somente em uma branch QA** e atualiza versão e HTML uma única vez via `npm run release:prepare -- 1.27.103` antes de alterar src (ou conforme fluxo de release aprovado). Não misturar merges individuais em produção.
 
 **Gates obrigatórios:** `npm ci`, `npm run format`, `npm run build`, `npm run validate`, `npm run validate -- --browser`, todos os quatro shards e inspeção manual das capturas desktop/mobile. Aplicar `docs/QA-AGENT.md`, sem enfraquecer testes existentes. Manter PR draft até homologação.
+
+## Iteração Codex: P0-A isolado
+
+A candidata `codex/qa103-asteroid-entry` implementa apenas a conexão espacial da entrada. A caverna permanece atrás da abertura desde a aproximação, com garganta de três camadas instanciadas. Durante a travessia, boca e seções usam o mesmo deslocamento `dt * speed`; não há escala temporal. A boca permanece até z=230 para retirar sua espessura de trás da câmera, independentemente da mudança temporal para interior. Reset restaura também rotações. Geometrias compartilhadas são descartadas uma única vez.
+
+Esta branch deriva do handoff #299, cujo único delta sobre QA102 é esta especificação. Prepara versão 1.27.103 para build isolado; não equivale à integração completa do pacote. P0-B/C/D continuam pendentes. Não modifica física, controles, chefes ou as outras fases.

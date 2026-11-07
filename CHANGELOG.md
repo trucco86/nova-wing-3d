@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.103 — Candidata em preparação
+
+- QA P0-A: entrada da fase 3 com boca, garganta rochosa e caverna conectadas espacialmente; avanço compartilhado com a velocidade do cenário, sem ampliação artificial. Reinício restaura rotações. Hold-giro, obstáculos e traseiras dos chefes permanecem em tarefas separadas. Homologação visual pendente.
+
 ## 1.27.102 — Candidata em preparação
 
 - QA: novos detalhes industriais e heliportos nos telhados, elevadores de manutenção animados, placas de serviço e exaustão leve em High; física e câmera previamente homologadas preservadas; validação WebGL pendente.
