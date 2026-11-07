@@ -8,6 +8,11 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&citySetpieces=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  // The billboard/hovercar are no longer ghost meshes. Dodge them while
+  // reviewing visual beats and preserve the no-death orbital pacing contract.
+  await page.keyboard.down('ArrowRight');
+  await page.evaluate(() => window.fixture.advance(2.4));
+  await page.keyboard.up('ArrowRight');
   const checkpoints = [
     [3.1, 'city-calm', 0],
     [6.5, 'city-under-fire', 1],
