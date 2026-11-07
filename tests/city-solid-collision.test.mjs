@@ -91,8 +91,15 @@ test('a ship can freely exit overlap and evade vertically without sticky damage'
   const next = new T.Vector3(0, 6, 9);
   assert.equal(resolveCitySolidContact(previous, next, block), true);
   assert.ok(
-    next.y > block.center.y + block.half.y,
-    'when neither flank fits, the ship must evade above the solid',
+    next.x > block.center.x + block.half.x,
+    'with the original 72-unit space restored, the ship may bypass the wide obstacle laterally',
+  );
+  const trulyFullWidth = solid({ x: 0, y: 6, z: 9, hx: 69, hy: 4, hz: 4 });
+  const vertical = previous.clone();
+  assert.equal(resolveCitySolidContact(previous, vertical, trulyFullWidth), true);
+  assert.ok(
+    vertical.y > trulyFullWidth.center.y + trulyFullWidth.half.y,
+    'only actual geometry spanning the entire lane requires vertical evasion',
   );
 });
 
