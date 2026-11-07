@@ -255,6 +255,10 @@ export function createGame({
   scene.add(reticle);
   reticle.visible = false;
   const player = fighter();
+  const cityPlayerBefore = new T.Vector3();
+  const citySolidFrom = new T.Vector3();
+  const citySolidTo = new T.Vector3();
+  const citySolidOrigin = new T.Vector3();
   scene.add(player);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
@@ -4768,7 +4772,7 @@ export function createGame({
       const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
         (dynamicFlight && state === 'collapsing');
-      world.update(dt, visualTime, scenerySpeed, sceneryMoving);
+      world.update(dt, visualTime, scenerySpeed, sceneryMoving, elapsed);
       if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
         asteroidInterior.update(dt, scenerySpeed);
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
@@ -4830,8 +4834,33 @@ export function createGame({
         $('arcadePanel').hidden = true;
         message('SAÍDA DA FENDA / +' + data.credits + ' CR · ROTA 3D RETOMADA');
       }
-    } else if (state === 'playing') update(dt);
-    else if (state === 'menu') {
+    } else if (state === 'playing') {
+      cityPlayerBefore.copy(player.position);
+      update(dt);
+      if (dynamicFlight && sectorIndex === 0 && state === 'playing') {
+        // Scripted urban rubble shares its visible collision geometry. Resolve
+        // swept motion against the same city travel as the scene, not a
+        // teleporting obstacle or an invisible trigger plane.
+        for (const hazard of world.cityHazards()) {
+          if (!hazard.solid) continue;
+          citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
+          citySolidFrom.z += hazard.center.z - hazard.previousZ;
+          citySolidTo.copy(player.position).sub(hazard.center);
+          if (
+            crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 1.3)
+          ) hit(26);
+          for (const shot of [...shots, ...hostile]) {
+            if (shot.life <= 0 || !shot.previousPosition) continue;
+            citySolidFrom.copy(shot.previousPosition).sub(hazard.center);
+            citySolidFrom.z += hazard.center.z - hazard.previousZ;
+            citySolidTo.copy(shot.o.position).sub(hazard.center);
+            if (crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 0.3)) {
+              shot.life = 0;
+            }
+          }
+        }
+      }
+    } else if (state === 'menu') {
       player.visible = true;
       const small = camera.aspect < 1;
       player.position.set(small ? 0 : 9, small ? 12 : 7, small ? -3 : 5);
@@ -5049,6 +5078,9 @@ export function createGame({
         bank: camera.rotation.z,
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
+      cityDestruction: dynamicFlight && sectorIndex === 0
+        ? world.cityDestructionSnapshot()
+        : [],
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
