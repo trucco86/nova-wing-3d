@@ -1,4 +1,5 @@
 name: QA101 camera occlusion build and full Node gate
+# Rerun after preserving authored glass opacity and depth-write baseline.
 on:
   push:
     branches: [fix/qa101-camera-occlusion-20261107]
