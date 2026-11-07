@@ -1,0 +1,35 @@
+name: Unified candidate merge conflict audit
+on:
+  pull_request:
+    paths:
+      - .github/workflows/unified-merge-conflicts-qa.yml
+      - tests/browser/city-premium-destruction.spec.mjs
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.event.pull_request.number == 287
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          ref: qa/integrated-premium-v12794-20261107
+      - name: Evaluate merging recent premium city/mecha into full v1.27.93 suite
+        run: |
+          git config user.name "nova-wing-qa-auditor"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin feat/mars-storm-moons-warp-exit
+          set +e
+          git merge --no-commit --no-ff origin/feat/mars-storm-moons-warp-exit > /tmp/conflicts.log 2>&1
+          rc=$?
+          set -e
+          echo "INTEGRATION_RESULT=$rc"
+          echo "INTEGRATION_CONFLICTS_BEGIN"
+          git diff --name-only --diff-filter=U
+          echo "INTEGRATION_CONFLICTS_END"
+          echo "INTEGRATION_LOG_BEGIN"
+          tail -75 /tmp/conflicts.log
+          echo "INTEGRATION_LOG_END"
+          git merge --abort || true
