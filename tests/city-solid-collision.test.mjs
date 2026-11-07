@@ -2,9 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
-  CITY_ROAD_LIMIT,
   CITY_SHIP_CLEARANCE,
-  keepInsideCityRoad,
   resolveCitySolidContact,
 } from '../src/city-collision.js';
 import { createCityCatastrophe } from '../src/city-catastrophe.js';
@@ -40,10 +38,10 @@ test('a moving maglev physically redirects a ship instead of dealing damage whil
   const before = new T.Vector3(24, 6, 9);
   const proposed = before.clone();
   assert.equal(resolveCitySolidContact(before, proposed, train), true);
-  assert.ok(proposed.x < 15, 'right edge cannot be used, so escape via open center-left lane');
-  assert.ok(proposed.x <= CITY_ROAD_LIMIT && proposed.x >= -CITY_ROAD_LIMIT);
+  assert.ok(proposed.x > 36, 'ship may evade into the open right flank, beyond the old false limit');
+  assert.ok(proposed.x <= 72 && proposed.x >= -72);
   assert.ok(
-    proposed.x + CITY_SHIP_CLEARANCE.x < train.center.x - train.half.x,
+    proposed.x - CITY_SHIP_CLEARANCE.x > train.center.x + train.half.x,
     'final ship is outside the actual train hitbox',
   );
   assert.equal(
@@ -98,14 +96,18 @@ test('a ship can freely exit overlap and evade vertically without sticky damage'
   );
 });
 
-test('a visible road rail stops the wing before it clips into the side wall', () => {
-  const pos = new T.Vector3(59, 6, 9);
-  assert.equal(keepInsideCityRoad(pos), true);
-  assert.equal(pos.x, CITY_ROAD_LIMIT);
-  assert.equal(keepInsideCityRoad(pos), false);
-  pos.x = -77;
-  assert.equal(keepInsideCityRoad(pos), true);
-  assert.equal(pos.x, -CITY_ROAD_LIMIT);
+test('space outside a solid stays free up to the original 72-unit flight boundary', () => {
+  const wreck = solid({ x: 11, y: 6, z: -40, hx: 3, hy: 4, hz: 3 });
+  for (const x of [-72, -58, -48, -37, 37, 48, 58, 72]) {
+    const from = new T.Vector3(x, 6, 9);
+    const desired = from.clone();
+    assert.equal(resolveCitySolidContact(from, desired, wreck), false);
+    assert.equal(desired.x, x, 'empty corridors must have no invisible collision limit');
+  }
+  const side = new T.Vector3(-65, 6, 9);
+  const next = new T.Vector3(65, 6, 9);
+  assert.equal(resolveCitySolidContact(side, next, wreck), false,
+    'passing an actual object on a different depth plane remains free');
 });
 
 test('all four authored fallen props have real colliders, no pre-impact invisible volume', () => {
@@ -128,17 +130,23 @@ test('all four authored fallen props have real colliders, no pre-impact invisibl
   assert.deepEqual([...touchedKinds].sort(), ['billboard', 'car', 'facade', 'train'].sort());
 });
 
-test('stage 1 physically prevents ship from flying through roadside rail with damage feedback', (t) => {
+test('stage 1 can travel freely beyond the old 36-unit invisible corridor on both sides', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: false });
   t.after(() => h.close());
   h.game.start();
   h.key('KeyD', true);
-  h.advance(2.8, 0.04);
+  h.advance(3.5, 0.04);
   h.key('KeyD', false);
-  const snap = h.game.snapshot();
+  let snap = h.game.snapshot();
   assert.equal(snap.sector, 1);
-  assert.ok(snap.player.x <= CITY_ROAD_LIMIT + 0.01);
-  assert.ok(snap.cityImpactCount > 0, 'rail physically blocked and registered impact');
+  assert.ok(snap.player.x > 60, 'right side must remain freely explorable');
+  assert.ok(snap.player.x <= 72.001, 'original 72-unit flight boundary remains');
+  assert.equal(snap.cityImpactCount, 0, 'empty air has no collision/damage');
+  h.key('KeyA', true);
+  h.advance(6.8, 0.04);
+  h.key('KeyA', false);
+  snap = h.game.snapshot();
+  assert.ok(snap.player.x < -60, 'left side must also remain freely explorable');
 });
 
 test('Mars flight retains the 72-unit arena; only stage 1 has solid city guardrails', (t) => {
