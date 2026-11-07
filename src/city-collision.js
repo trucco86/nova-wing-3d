@@ -5,7 +5,8 @@
 // wreckage); segment intersection is solved in obstacle-relative coordinates.
 // No Three.js allocation or mesh creation in the hot path.
 export const CITY_SHIP_CLEARANCE = Object.freeze({ x: 5.4, y: 2.3, z: 3.2 });
-export const CITY_ROAD_LIMIT = 36;
+// The existing flight controls own the arena limit (72 in 3D mode).
+// Collision may only change motion on contact with an actual visible solid.
 
 function sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz) {
   let lo = 0;
@@ -34,14 +35,14 @@ const inside = (x, y, z, hx, hy, hz) => Math.abs(x) < hx && Math.abs(y) < hy && 
 /**
  * Mutates next only on impact; returns true for actual swept contact.
  * Solids are not teleported away or hidden. The ship is deflected onto a free
- * flank, or above/below the obstruction if no side exists within the road.
+ * flank, or above/below the obstruction if no side fits the full flight arena.
  * A start-inside ship can escape freely, avoiding sticky collision barriers.
  */
 export function resolveCitySolidContact(
   previous,
   next,
   solid,
-  { clearance = CITY_SHIP_CLEARANCE, laneLimit = CITY_ROAD_LIMIT, minY = -1, maxY = 46 } = {},
+  { clearance = CITY_SHIP_CLEARANCE, laneLimit = 72, minY = -1, maxY = 46 } = {},
 ) {
   if (!solid?.active || !solid?.solid) return false;
   const c = solid.center;
@@ -95,14 +96,3 @@ export function resolveCitySolidContact(
   return true;
 }
 
-export function keepInsideCityRoad(position, limit = CITY_ROAD_LIMIT) {
-  if (position.x < -limit) {
-    position.x = -limit;
-    return true;
-  }
-  if (position.x > limit) {
-    position.x = limit;
-    return true;
-  }
-  return false;
-}
