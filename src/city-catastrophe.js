@@ -183,8 +183,10 @@ export function createCityCatastrophe() {
       center: o.position,
       half: new T.Vector3(spec.w / 2, spec.h / 2, spec.d / 2),
       previousZ: spec.z,
+      previousX: spec.x,
+      previousY: spec.y,
       active: false,
-      solid: spec.kind === 'train' || spec.kind === 'facade',
+      solid: true, // Every visible falling object is physically solid.
     };
     const cable =
       spec.kind === 'train'
@@ -219,6 +221,8 @@ export function createCityCatastrophe() {
       if (b.cable) b.cable.visible = true;
       b.collider.active = false;
       b.collider.previousZ = b.spec.z;
+      b.collider.previousX = b.spec.x;
+      b.collider.previousY = b.spec.y;
       b.impactTime = null;
       b.wasActive = false;
     }
@@ -229,6 +233,8 @@ export function createCityCatastrophe() {
     for (const b of beats) {
       const { spec, o, collider } = b;
       collider.previousZ = o.position.z;
+      collider.previousX = o.position.x;
+      collider.previousY = o.position.y;
       o.position.z += Math.max(0, speed) * dt;
       const pose = cityDebrisPose(spec, elapsed);
       o.position.x = pose.x;
@@ -268,12 +274,13 @@ export function createCityCatastrophe() {
   }
   reset();
   root.visible = false; // No urban rubble floating in the main menu or non-city sectors.
+  const colliderList = beats.map((b) => b.collider);
   return {
     root,
     reset,
     update,
     colliders() {
-      return beats.map((b) => b.collider).filter((c) => c.active && c.solid);
+      return colliderList; // Reuse the array; callers filter by collider.active.
     },
     snapshot() {
       return beats.map((b) => ({
