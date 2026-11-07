@@ -1,0 +1,33 @@
+name: QA99 physical overpass and free vertical flight WebGL
+on:
+  push:
+    branches: [fix/qa99-free-vertical-overpass-physical-20261107]
+    paths: [.github/workflows/qa99-browser-targeted.yml]
+permissions:
+  contents: read
+jobs:
+  flight-and-collision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npx playwright install chromium
+      - name: Verify climb, real overpass contact, falling debris and flight freedom
+        run: npx playwright test tests/browser/qa99-open-flight-and-viaduct.spec.mjs tests/browser/city-falling-iss.spec.mjs tests/browser/city-free-flight.spec.mjs tests/browser/stage1-city-destruction.spec.mjs --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa99-free-flight-collision-${{ matrix.project }}
+          path: |
+            test-results/
+            playwright-report/
