@@ -38,6 +38,8 @@ test('ascent debris uses bounded independently randomized trajectories and preal
       assert.ok(Number.isFinite(part.scale) && part.scale > 0);
     }
   }
+  for (let p = 0.42; p <= 0.83; p += 0.025)
+    assert.ok(effect.update(p, 40 + p * 20).active >= 2, 'random debris density must not drop to one lonely fragment at ' + p);
   assert.ok(seen > 50, 'scattered pieces cross the scene at distinct times');
   assert.ok(near > 0, 'at least some debris passes visibly in the near foreground');
   assert.ok(positions.size > 100, 'independent trajectories, not a static triangular pattern');
