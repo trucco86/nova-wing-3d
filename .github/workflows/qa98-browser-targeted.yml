@@ -1,0 +1,33 @@
+name: Targeted QA98 City Physics and ISS WebGL
+on:
+  push:
+    branches: [fix/stage1-falling-collisions-iss-v12798-20261107]
+    paths: [.github/workflows/qa98-browser-targeted.yml]
+permissions:
+  contents: read
+jobs:
+  physics-and-iss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npx playwright install chromium
+      - name: Validate physical wreck contact, free flight, Earth flyby, and existing boost beats
+        run: npx playwright test tests/browser/city-falling-iss.spec.mjs tests/browser/stage1-city-destruction.spec.mjs tests/browser/city-free-flight.spec.mjs tests/browser/stage1-orbit-encounter-pacing.spec.mjs --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa98-physics-iss-${{ matrix.project }}
+          path: |
+            test-results/
+            playwright-report/
