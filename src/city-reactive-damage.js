@@ -1,6 +1,6 @@
 import * as T from 'three';
 import { crossesSolid } from './flight.js';
-import { CITY_GROUND_Y, cityDebrisSupportY } from './city-catastrophe.js';
+import { cityDebrisSupportY } from './city-catastrophe.js';
 
 // Two authored, reachable side-facade hardpoints. The street/rail layout from
 // the approved concept remains intact; these structures sit beside its lane.
