@@ -403,38 +403,49 @@ export function createBossModel(sector, index = 0, tactical = false) {
       g.add(new T.Mesh(new T.TubeGeometry(cable, 12, 0.32, 5, false), j === 1 ? vein : dark));
     }
   }
-  const markerMaterial = glowMaterial('#fff27a', 5),
-    targetMarker = (radius) => {
-      const marker = new T.Group();
-      marker.name = 'vulnerable-target';
-      marker.add(new T.Mesh(new T.TorusGeometry(radius, 0.32, 6, 40), markerMaterial));
-      for (let i = 0; i < 4; i++) {
-        const tick = new T.Mesh(new T.BoxGeometry(0.65, 2.8, 0.35), markerMaterial);
-        const angle = (i * Math.PI) / 2;
-        tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
-        tick.rotation.z = -angle;
-        marker.add(tick);
-      }
-      // Two nested rotating frames plus chevrons make the exposed hitbox readable
-      // against highly detailed bosses even at phone resolution.
-      const inner = new T.Mesh(new T.TorusGeometry(radius * 0.7, 0.35, 6, 30), markerMaterial);
-      inner.name = 'weak-point-inner-reticle';
-      marker.add(inner);
-      for (const side of [-1, 1]) {
-        const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
-        chevron.position.set(side * (radius + 3), 0, 0.2);
-        chevron.rotation.z = (side * Math.PI) / 2;
-        marker.add(chevron);
-      }
-      marker.visible = false;
-      const signalMaterial = markerMaterial.clone();
-      marker.traverse((part) => {
-        if (part.isMesh) part.material = signalMaterial;
-      });
-      marker.userData.signalMaterial = signalMaterial;
-      return marker;
-    },
-    coreMarker = targetMarker(8.5);
+  // Shared GPU buffers per ring radius; each weakpoint retains its own
+  // material and visibility state, so damage feedback never leaks sideways.
+  const markerMaterial = glowMaterial('#fff27a', 5);
+  const markerTickGeometry = new T.BoxGeometry(0.65, 2.8, 0.35);
+  const markerChevronGeometry = new T.ConeGeometry(1.2, 3.5, 3);
+  const markerRingCache = new Map();
+  const targetMarker = (radius) => {
+    let rings = markerRingCache.get(radius);
+    if (!rings) {
+      rings = {
+        outer: new T.TorusGeometry(radius, 0.32, 6, 40),
+        inner: new T.TorusGeometry(radius * 0.7, 0.35, 6, 30),
+      };
+      markerRingCache.set(radius, rings);
+    }
+    const marker = new T.Group();
+    marker.name = 'vulnerable-target';
+    marker.add(new T.Mesh(rings.outer, markerMaterial));
+    for (let i = 0; i < 4; i++) {
+      const tick = new T.Mesh(markerTickGeometry, markerMaterial);
+      const angle = (i * Math.PI) / 2;
+      tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
+      tick.rotation.z = -angle;
+      marker.add(tick);
+    }
+    const inner = new T.Mesh(rings.inner, markerMaterial);
+    inner.name = 'weak-point-inner-reticle';
+    marker.add(inner);
+    for (const side of [-1, 1]) {
+      const chevron = new T.Mesh(markerChevronGeometry, markerMaterial);
+      chevron.position.set(side * (radius + 3), 0, 0.2);
+      chevron.rotation.z = (side * Math.PI) / 2;
+      marker.add(chevron);
+    }
+    marker.visible = false;
+    const signalMaterial = markerMaterial.clone();
+    marker.traverse((part) => {
+      if (part.isMesh) part.material = signalMaterial;
+    });
+    marker.userData.signalMaterial = signalMaterial;
+    return marker;
+  };
+  const coreMarker = targetMarker(8.5);
   const coreMuzzle = new T.Object3D();
   coreMuzzle.name = 'boss-core-muzzle';
   coreMuzzle.position.set(0, 12, 27);
