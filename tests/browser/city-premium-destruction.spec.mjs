@@ -57,9 +57,11 @@ test('stage 1 ship flies above low rails and is only blocked by actual objects',
   expect(ship.player.x).toBeGreaterThan(60);
   expect(ship.player.x).toBeLessThanOrEqual(72.05);
   expect(ship.cityImpactCount).toBe(0);
-  expect(ship.cityPhysicalSolids.some((solid) =>
-    solid.kind === 'avenue-rail' && solid.y < -2 && solid.halfY < 3
-  )).toBe(true);
+  expect(
+    ship.cityPhysicalSolids.some(
+      (solid) => solid.kind === 'avenue-rail' && solid.y < -2 && solid.halfY < 3,
+    ),
+  ).toBe(true);
   expect(ship.cityPhysicsDebris.length).toBe(4);
   await page.screenshot({ path: info.outputPath('city-open-rail-free-flight.png') });
   expect(errors).toEqual([]);

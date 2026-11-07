@@ -933,8 +933,7 @@ export function animateMechPower(
     rig.legacyBoostPalette = boosting;
     rig.turbineFlame.material.color.set(boosting ? '#ff9750' : '#53dfff');
     rig.turbineInnerFlame?.material.color.set(boosting ? '#fff2b8' : '#b7faff');
-    for (const plume of rig.sidePlumes)
-      plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
+    for (const plume of rig.sidePlumes) plume.material.color.set(boosting ? '#ffad61' : '#53dfff');
   }
   // Integrate angular velocity, including the exact exponential acceleration.
   // Multiplying mission time by the current speed makes BOOST jump rotor phase.

@@ -530,8 +530,11 @@ export function createGame({
       uiText(settings.language, robotMode ? 'mechaDashAria' : 'rollAria'),
     );
     const hint = document.getElementById('rollHint');
-    if (hint) hint.textContent = uiText(settings.language, robotMode ? 'mechaDashHint' : 'rollHint');
-    for (const node of document.querySelectorAll?.('[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]') ?? []) {
+    if (hint)
+      hint.textContent = uiText(settings.language, robotMode ? 'mechaDashHint' : 'rollHint');
+    for (const node of document.querySelectorAll?.(
+      '[data-help-key="helpRoll"], [data-help-key="helpMechaDash"]',
+    ) ?? []) {
       node.dataset.helpKey = robotMode ? 'helpMechaDash' : 'helpRoll';
       node.textContent = uiText(settings.language, node.dataset.helpKey);
     }
@@ -1687,8 +1690,7 @@ export function createGame({
         stick.x;
       // Q/E explicitly select a side on desktop. Touch/Z need a real
       // joystick direction, never silently teleport in neutral.
-      const direction =
-        dashDirection(steer) || (key === 'KeyQ' ? -1 : key === 'KeyE' ? 1 : 0);
+      const direction = dashDirection(steer) || (key === 'KeyQ' ? -1 : key === 'KeyE' ? 1 : 0);
       if (!direction) {
         message('DASH · APONTE ESQUERDA OU DIREITA + DASH');
         return;
@@ -2263,7 +2265,7 @@ export function createGame({
     if (bossUsesSabotageCore && preparedBoss) disposeBoss(preparedBoss);
     boss = bossUsesSabotageCore
       ? createDevastadorSabotageCore()
-      : preparedBoss ?? createBossModel(current(), sectorIndex, dynamicFlight);
+      : (preparedBoss ?? createBossModel(current(), sectorIndex, dynamicFlight));
     preparedBoss = null;
     weakpointEvidence = newWeakpointEvidence(boss.userData.parts);
     bossHitPulse = 0;
@@ -6132,12 +6134,12 @@ export function createGame({
       mecha: {
         active: robotMode,
         dash: {
-        active: dashRemaining > 0,
-        remaining: dashRemaining,
-        cooldown: dashCooldown,
-        direction: dashSide,
-        progress: 1 - dashRemaining / MECHA_DASH.duration,
-      },
+          active: dashRemaining > 0,
+          remaining: dashRemaining,
+          cooldown: dashCooldown,
+          direction: dashSide,
+          progress: 1 - dashRemaining / MECHA_DASH.duration,
+        },
         lockEnabled,
         lockProgress,
         multiLockHeld: lockHeld,

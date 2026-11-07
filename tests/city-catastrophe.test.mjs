@@ -172,7 +172,9 @@ test('phase 1 integrates falling scenery and isolates it from Mars and other sec
   assert.equal(frame.sector, 1);
   assert.equal(frame.cityPhysicsDebris.length, 4);
   assert.ok(frame.cityPhysicsDebris.filter((e) => e.impact).length >= 2);
-  assert.ok(frame.cityPhysicsDebris.every((e) => e.kind === 'train' || e.groundClearance >= -0.001));
+  assert.ok(
+    frame.cityPhysicsDebris.every((e) => e.kind === 'train' || e.groundClearance >= -0.001),
+  );
   h.game.pause();
   const paused = h.game.snapshot();
   h.advance(1.2, 0.1);

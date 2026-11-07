@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.94 — Candidata em preparação
+
+- União das linhas completas de fases 1–10, boss, Europa, Saturno, HUD, áudio e mecânicas v1.27.93 com Mecha Premium, física da cidade e Marte v1.27.69. Homologação ainda pendente.
+
 ## 1.27.93 — Fase 1: ritmo do trem, boost e órbita (QA)
 
 - Encerrada a sobreposição de base e subchefe com trem e travessia atmosférica.
