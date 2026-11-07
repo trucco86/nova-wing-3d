@@ -4057,6 +4057,9 @@ export function createGame({
       dynamicFlight ? route : undefined,
       dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
     );
+    // Keep a true solid in the game world but render the nearby underside
+    // translucent when it would eclipse the pilot and the gameplay corridor.
+    if (dynamicFlight) world.updateCityCameraOcclusion(camera.position, player.position, dt);
     if (robotMode) updateMechaLock(dt, dx, dy);
     mechaEngine?.update({
       dt,
@@ -6504,6 +6507,7 @@ export function createGame({
         dynamicFlight && sectorIndex === 0 ? world.orbitalAscentSnapshot() : null,
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
+      cityCameraOcclusion: dynamicFlight && sectorIndex === 0 ? world.cityCameraOcclusionSnapshot() : [],
       cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
