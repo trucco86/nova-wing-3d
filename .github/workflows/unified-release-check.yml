@@ -1,8 +1,6 @@
 name: Unified premium ten-sector release validation
 on:
   pull_request:
-    paths:
-      - .github/workflows/unified-release-check.yml
 permissions:
   contents: write
 jobs:
