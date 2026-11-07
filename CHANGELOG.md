@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.95 — Candidata em preparação
+
+- QA integrada 1.27.95: corrigidos hangar/QA compactos, direção do DASH e regressões do navegador, preservando todos os setores e o ritmo orbital. Homologação pendente.
+
 ## 1.27.94 — Candidata em preparação
 
 - União das linhas completas de fases 1–10, boss, Europa, Saturno, HUD, áudio e mecânicas v1.27.93 com Mecha Premium, física da cidade e Marte v1.27.69. Homologação ainda pendente.
