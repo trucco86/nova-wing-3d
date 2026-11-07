@@ -1,6 +1,13 @@
-import { PILOT_PROFILES, SHIP_MODELS } from './pilots.js';
+import { PILOT_PROFILES } from './pilots.js';
 
 export const PILOT_SWAP_COOLDOWN = 9;
+const roleShips = Object.freeze({
+  bia: 'nova7',
+  bob: 'aegis',
+  christopher: 'aegis',
+  calvin: 'nova7',
+  jenifer: 'specter',
+});
 const colors = Object.freeze({
   bia: 'mint',
   bob: 'cobalt',
@@ -20,14 +27,13 @@ export function createPilotRelay(initial = { pilot: 'bia', ship: 'nova7', color:
     cooldown = 0;
     damaged.clear();
     const pilotIndex = Math.max(0, PILOT_PROFILES.findIndex((p) => p.id === loadout.pilot));
-    const shipIndex = Math.max(0, SHIP_MODELS.findIndex((p) => p.id === loadout.ship));
     active = PILOT_PROFILES[pilotIndex].id;
     assigned.clear();
     PILOT_PROFILES.forEach((pilot, index) => {
       const offset = (index - pilotIndex + PILOT_PROFILES.length) % PILOT_PROFILES.length;
       assigned.set(pilot.id, {
         pilot: pilot.id,
-        ship: SHIP_MODELS[(shipIndex + offset) % SHIP_MODELS.length].id,
+        ship: offset === 0 ? loadout.ship : roleShips[pilot.id],
         color: offset === 0 ? loadout.color : colors[pilot.id],
       });
     });
