@@ -9,6 +9,17 @@ import { createCity34Concept, setCity34ConceptQuality } from '../src/city-34-con
 import { crossesSolid } from '../src/flight.js';
 import { harness } from './harness.mjs';
 
+test('analytical motion keeps tilted contact above the road after first impact', () => {
+  const facade = CITY_DESTRUCTION_BEATS.find((beat) => beat.kind === 'facade');
+  assert.equal(cityDebrisPose(facade, facade.at - 0.1).active, false);
+  assert.ok(cityDebrisSupportY(facade.w, facade.h, facade.tilt) > CITY_GROUND_Y);
+  for (let i = 0; i < 150; i++) {
+    const pose = cityDebrisPose(facade, facade.at + i * 0.025);
+    const support = cityDebrisSupportY(facade.w, facade.h, pose.tilt);
+    assert.ok(pose.y >= support - 1e-9, `no negative support clearance at ${i}`);
+  }
+});
+
 test('authored urban crashes include signage, falling car, facade and hanging maglev', () => {
   assert.deepEqual(CITY_DESTRUCTION_BEATS.map((beat) => beat.kind),
     ['billboard', 'car', 'facade', 'train']);
