@@ -1,4 +1,4 @@
-name: Unified candidate merge conflict audit
+name: Unified candidate merged-source validation audit
 on:
   pull_request:
     paths:
@@ -22,7 +22,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin feat/mars-storm-moons-warp-exit
           set +e
-          git merge --no-commit --no-ff origin/feat/mars-storm-moons-warp-exit > /tmp/conflicts.log 2>&1
+          git merge --no-ff -X ours origin/feat/mars-storm-moons-warp-exit -m "qa(probe): integrate premium city/robot line into 10-stage v1.27.93" > /tmp/conflicts.log 2>&1
           rc=$?
           set -e
           echo "INTEGRATION_RESULT=$rc"
@@ -32,4 +32,10 @@ jobs:
           echo "INTEGRATION_LOG_BEGIN"
           tail -75 /tmp/conflicts.log
           echo "INTEGRATION_LOG_END"
-          git merge --abort || true
+          echo "INTEGRATION_SOURCE_SUMMARY_BEGIN"
+          git status --short
+          echo "INTEGRATION_SOURCE_SUMMARY_END"
+          if [ "$rc" -eq 0 ]; then
+            echo "INTEGRATION_MERGE_TREE_READY"
+            git diff --stat HEAD^1 HEAD | tail -70
+          fi
