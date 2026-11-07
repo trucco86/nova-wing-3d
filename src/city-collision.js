@@ -10,8 +10,10 @@ export const CITY_ROAD_LIMIT = 36;
 function sweepPointBox(sx, sy, sz, tx, ty, tz, hx, hy, hz) {
   let lo = 0;
   let hi = 1;
-  const axes = [[sx, tx, hx], [sy, ty, hy], [sz, tz, hz]];
-  for (const [start, end, half] of axes) {
+  for (let axis = 0; axis < 3; axis++) {
+    const start = axis === 0 ? sx : axis === 1 ? sy : sz;
+    const end = axis === 0 ? tx : axis === 1 ? ty : tz;
+    const half = axis === 0 ? hx : axis === 1 ? hy : hz;
     const delta = end - start;
     if (Math.abs(delta) < 1e-9) {
       if (start < -half || start > half) return false;
