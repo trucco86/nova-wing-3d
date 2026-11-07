@@ -2,6 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { harness } from './harness.mjs';
+import { pilotAt } from '../src/pilots.js';
+const INITIAL_CRUISE = String(Math.round(48 * pilotAt('bia').bonuses.speed * 10));
 import { createSubboss, createBossModel, disposeBoss, encounterPattern } from '../src/bosses.js';
 import { SECTORS } from '../src/campaign.js';
 function setup(t, options) {
@@ -39,11 +41,11 @@ for (const dt of [1 / 60, 0.035, 0.05]) {
     h.key('ShiftLeft');
     h.advance(4, dt);
     const before = h.game.snapshot().energy;
-    assert.equal(h.elements.get('speedValue').textContent, '480');
+    assert.equal(h.elements.get('speedValue').textContent, INITIAL_CRUISE);
     for (let i = 0; i < 30; i++) {
       h.advance(dt, dt);
       assert.equal(h.document.body.classList.contains('boosting'), false);
-      assert.equal(h.elements.get('speedValue').textContent, '480');
+      assert.equal(h.elements.get('speedValue').textContent, INITIAL_CRUISE);
     }
     assert.match(h.elements.get('message').textContent, /SOLTE.*BOOST/);
     assert.ok(Math.abs(h.game.snapshot().energy - before - 30 * dt * 15) < 1e-7);
@@ -62,7 +64,7 @@ test('touch depletion shares rearm rules, including mixed controls, cancel, paus
   const boost = h.elements.get('boostTouch');
   boost.onpointerdown({ pointerId: 3, preventDefault() {} });
   h.advance(4);
-  assert.equal(h.elements.get('speedValue').textContent, '480');
+  assert.equal(h.elements.get('speedValue').textContent, INITIAL_CRUISE);
   h.key('ShiftLeft');
   boost.emit('pointercancel', { pointerId: 3 });
   h.advance(0.3);
