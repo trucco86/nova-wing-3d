@@ -156,10 +156,10 @@ export function createCity35LivedIn(buildings = []) {
   batch(high, 'city35-roof-fan-housings', boxGeometry, paint, roofFans);
   const blades = batch(high, 'city35-moving-turbine-rotors', boxGeometry, blue, fanBlades);
   blades.userData.fanAnchors = vents;
-  const exhaust = moving(high, 'city35-ventilated-vapour', vapour, vents.length, smokeGeometry);
-  const cabins = moving(services, 'city35-facade-service-cabins', graphite, lifts.length);
-  const glass = moving(services, 'city35-facade-service-glazing', glazing, lifts.length);
-  const beacons = moving(services, 'city35-moving-lift-beacons', yellow, lifts.length * 2);
+  moving(high, 'city35-ventilated-vapour', vapour, vents.length, smokeGeometry);
+  moving(services, 'city35-facade-service-cabins', graphite, lifts.length);
+  moving(services, 'city35-facade-service-glazing', glazing, lifts.length);
+  moving(services, 'city35-moving-lift-beacons', yellow, lifts.length * 2);
   root.add(medium, high, services);
   root.userData.lifts = lifts;
   root.userData.vents = vents;
@@ -216,7 +216,7 @@ export function updateCity35LivedIn(root, travel = 0) {
 }
 export function city35LivedInSnapshot(root) {
   if (!root) return null;
-  const { cabins, lifts, beacons } = refs(root);
+  const { cabins, beacons } = refs(root);
   const mat = new T.Matrix4();
   const heights = [];
   for (let i = 0; i < cabins.count; i++) {
