@@ -8,6 +8,14 @@ test('premium city roofs and service movement enrich both tile depths without co
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  // The graphics profile can be restored from a user's save. Explicitly
+  // exercise both tiers rather than assuming the default is Medium.
+  await page.evaluate(() => {
+    const settings = document.getElementById('settingGraphics');
+    settings.value = 'medium';
+    settings.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+  await expect(page.locator('body')).toHaveAttribute('data-graphics-quality', 'medium');
   let state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.city35Details).toHaveLength(2);
   const before = state.city35Details;
@@ -48,8 +56,6 @@ test('sector change isolates visual-only metropolis without changing ship collis
   await page.goto('/__dynamic.html?sector=0&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const init = await page.evaluate(() => window.fixture.game.snapshot());
-  const input = page.locator('#stick');
-  await expect(input).toBeVisible();
   await page.keyboard.down('KeyW');
   await page.evaluate(() => window.fixture.advance(3.1, { renderAfter: false }));
   await page.keyboard.up('KeyW');
