@@ -23,7 +23,7 @@ test('flight stick/keyboard can reach the skyline, camera follows, flight remain
   await page.evaluate(() => window.fixture.advance(7.8));
   await page.keyboard.up('KeyW');
   let state = await page.evaluate(() => window.fixture.game.snapshot());
-  expect(state.flightBounds.maxY).toBe(116);
+  expect(state.flightBounds.maxY).toBe(184);
   expect(state.player.y).toBeGreaterThan(80);
   expect(state.camera.y).toBeGreaterThan(55);
   await page.screenshot({
