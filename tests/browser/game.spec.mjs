@@ -78,7 +78,8 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
       )
       .toContain('conic-gradient');
   }
-  await expect(page.locator('#speedValue')).toHaveText('890');
+  // First-sector speed includes the selected commander's real +4% bonus.
+  await expect(page.locator('#speedValue')).toHaveText(String(Math.round(90 * 10 * 1.04)));
   await page.evaluate(() => window.fixture.advance(3.8));
   await expect(page.locator('#message')).toContainText('IMPULSO ESGOTADO');
   // A held boost must exhaust; recovery is tested against real game time,
@@ -88,7 +89,7 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
     .poll(() => page.locator('#energy').evaluate((el) => parseFloat(el.style.width)))
     .toBeGreaterThan(20);
   await expect(page.locator('body')).not.toHaveClass(/boosting/);
-  await expect(page.locator('#speedValue')).toHaveText('480');
+  await expect(page.locator('#speedValue')).toHaveText(String(Math.round(48 * 10 * 1.04)));
   await page.screenshot({ path: info.outputPath('boost-depleted.png') });
   if (mobile) {
     await page.mouse.up();
@@ -99,7 +100,8 @@ test('held depleted boost settles at cruise and rearms on keyboard and touch', a
   }
   await page.evaluate(() => window.fixture.advance(0.2));
   await expect(page.locator('body')).toHaveClass(/boosting/, { timeout: 20000 });
-  await expect(page.locator('#speedValue')).toHaveText('890');
+  // First-sector speed includes the selected commander's real +4% bonus.
+  await expect(page.locator('#speedValue')).toHaveText(String(Math.round(90 * 10 * 1.04)));
   await page.screenshot({ path: info.outputPath('boost-rearmed.png') });
   if (mobile) await page.mouse.up();
   else await page.keyboard.up('Shift');
