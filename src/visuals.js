@@ -4,6 +4,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
+import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
   createCity32Skyline,
@@ -1572,6 +1573,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityHorizon.add(skylineGate);
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
+  const conceptCity = createCity34Concept();
+  cityHorizon.add(conceptCity);
   scene.add(cityHorizon);
   // Scripted urban destruction has its own physically grounded world-space
   // objects. It follows the same forward travel as the city tiles, but its
@@ -1807,6 +1810,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      setCity34ConceptQuality(conceptCity, quality);
       cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
       launchCelestials.setGraphicsQuality(quality);
       for (const tile of [city, cityFar]) {
