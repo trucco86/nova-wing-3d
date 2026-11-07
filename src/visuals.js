@@ -4,6 +4,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
+import { createCityReactiveDamage } from './city-reactive-damage.js';
 import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
@@ -1581,6 +1582,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // rubble never inherits the looping tile transform (which caused clipping).
   const cityCatastrophe = dynamicFlight ? createCityCatastrophe() : null;
   if (cityCatastrophe) scene.add(cityCatastrophe.root);
+  const cityReactive = dynamicFlight ? createCityReactiveDamage() : null;
+  if (cityReactive) scene.add(cityReactive.root);
+  const cityHazardsCache = [];
+  const refreshCityHazards = () => {
+    cityHazardsCache.length = 0;
+    for (const collision of cityCatastrophe?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityReactive?.colliders() ?? []) cityHazardsCache.push(collision);
+  };
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1797,7 +1806,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // For renderer.compileAsync: this subtree contains future-visible orbital
     // scenery, terrain and atmosphere without the expensive city base meshes.
     transitionShaderRoot: () => sectorScenery,
-    cityHazards: () => cityCatastrophe?.colliders() ?? [],
+    cityHazards: () => cityHazardsCache,
+    strikeCityArchitecture: (from, to, damage, seconds) =>
+      cityReactive?.strike(from, to, damage, seconds) ?? null,
+    cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
     cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
     cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
@@ -1868,6 +1880,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
       if (cityCatastrophe) cityCatastrophe.root.visible = urbanVisible;
+      if (cityReactive) cityReactive.root.visible = urbanVisible;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
       // The Moon used in other stages is separate from the real lunar body.
@@ -1930,7 +1943,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
       cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
@@ -2202,8 +2218,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     update(dt, time, speed, playing, stageTime = time) {
       terrainMat.uniforms.time.value = time;
-      if (cityCatastrophe && sceneryTheme === 'city' && playing)
-        cityCatastrophe.update(dt, stageTime, speed, city.visible);
+      if (sceneryTheme === 'city' && playing) {
+        cityCatastrophe?.update(dt, stageTime, speed, city.visible);
+        cityReactive?.update(dt, stageTime, speed, city.visible);
+        refreshCityHazards();
+      }
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
@@ -2300,7 +2319,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
       cityCatastrophe?.reset();
+      cityReactive?.reset();
+      cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
+      if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
