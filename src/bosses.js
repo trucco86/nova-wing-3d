@@ -9,6 +9,7 @@ import { omegaAppendageAmplitude } from './omega-hunt.js';
 import { createEuropaAttackVfx, animateEuropaAttackVfx } from './europa-attack-vfx.js';
 import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
 import { installBossWeaponVfx } from './boss-weapon-vfx.js';
+const bossUnitBox = new T.BoxGeometry(1, 1, 1);
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
   const box = (w, h, d, material, x = 0, y = 0, z = 0) => {
