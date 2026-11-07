@@ -4,6 +4,10 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityCatastrophe } from './city-catastrophe.js';
+import { createCityReactiveDamage } from './city-reactive-damage.js';
+import { createCityLocalSolids } from './city-local-solids.js';
+import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
   createCity32Skyline,
@@ -360,6 +364,13 @@ export function createFlyingRobot() {
   const accent = metal('#ffb36b', 0.75, 0.25);
   accent.userData.mechPaint = 'accent';
   const luminous = glowMaterial('#62eaff', 2.4);
+  // Only these articulated surfaces sway. Hit volumes and player collider stay unchanged.
+  const torsoParts = [];
+  const headParts = [];
+  const forearmParts = [];
+  const kneeJoints = [];
+  const wingPivots = [];
+  const hipJets = [];
   const plating = (radius, x, y, z, sx, sy, sz, material = armor) => {
     const width = radius * 1.6;
     const height = radius * 1.7;
@@ -400,31 +411,39 @@ export function createFlyingRobot() {
     const chestCut = box(0.15, 1.2, 0.16, luminous, side * 0.83, 1.36, -0.92);
     chestCut.rotation.z = side * 0.35;
     robot.add(chestCut);
+    torsoParts.push(chestCut);
     const collar = box(0.54, 0.22, 0.72, armor, side * 0.93, 2.63, -0.24);
     collar.rotation.z = side * 0.28;
     robot.add(collar);
+    torsoParts.push(collar);
   }
   // Angular fighter-style chest, layered breastplate and recessed reactor.
   const backArmor = plating(1.4, 0, 1.48, 1.08, 1.02, 1.08, 0.38, graphite);
   backArmor.name = 'mech-rear-armor-facets';
+  torsoParts.push(backArmor);
   const cranialCrest = new T.Mesh(new T.ConeGeometry(0.34, 1.25, 4), accent);
   cranialCrest.name = 'mech-cranial-crest';
   cranialCrest.position.set(0, 4.16, -0.13);
   cranialCrest.rotation.y = Math.PI / 4;
   robot.add(cranialCrest);
-  robot.add(box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02));
+  headParts.push(cranialCrest);
+  const opticalVisor = box(0.94, 0.17, 0.12, luminous, 0, 3.56, -1.02);
+  robot.add(opticalVisor);
+  headParts.push(opticalVisor);
   for (const side of [-1, 1]) {
     const rearRidge = box(0.16, 1.73, 0.19, luminous, side * 0.92, 1.65, 1.65);
     rearRidge.rotation.z = side * 0.18;
     robot.add(rearRidge);
+    torsoParts.push(rearRidge);
     const sidePlating = plating(0.76, side * 1.19, 1.57, 1.02, 0.42, 1.0, 0.51);
     sidePlating.rotation.z = side * 0.2;
+    torsoParts.push(sidePlating);
   }
-  plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62);
-  plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite);
-  plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous);
-  plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite);
-  plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous);
+  torsoParts.push(plating(1.5, 0, 1.4, 0, 1.08, 1.18, 0.62));
+  torsoParts.push(plating(1.05, 0, 1.45, -0.7, 1.14, 0.72, 0.3, graphite));
+  torsoParts.push(plating(0.64, 0, 1.75, -1.02, 0.95, 0.48, 0.28, luminous));
+  headParts.push(plating(0.95, 0, 3.45, -0.1, 0.9, 0.85, 0.8, graphite));
+  headParts.push(plating(0.6, 0, 3.5, -0.66, 0.98, 0.3, 0.34, luminous));
   plating(0.85, 0, 0, 0.18, 0.78, 0.72, 0.58, graphite);
   const arms = [];
   const legs = [];
@@ -449,6 +468,7 @@ export function createFlyingRobot() {
     shoulderBlade.rotation.y = Math.PI / 4;
     shoulderBlade.position.set(side * 2.55, 3.85, 0.84);
     robot.add(shoulderBlade);
+    torsoParts.push(shoulderBlade);
     const upperArm = plating(0.85, side * 1.88, 0.95, -0.05, 0.57, 1.8, 0.62);
     arm.attach(upperArm);
     const gauntlet = plating(0.8, side * 1.9, -0.48, -0.7, 0.72, 0.65, 1.05, graphite);
@@ -461,6 +481,7 @@ export function createFlyingRobot() {
     const muzzle = plating(0.55, side * 1.9, -0.55, -1.45, 0.48, 0.45, 0.65, luminous);
     arm.attach(muzzle);
     armMuzzles.push(muzzle);
+    forearmParts.push({ gauntlet, cannonFin, forearmRail, muzzle });
     const thigh = plating(0.9, side * 0.73, -1.75, 0.15, 0.6, 1.8, 0.72);
     leg.attach(thigh);
     const shin = plating(0.7, side * 0.75, -3.5, -0.65, 0.72, 0.58, 1.25, graphite);
@@ -472,10 +493,19 @@ export function createFlyingRobot() {
     leg.attach(calfFin);
     const knee = plating(0.48, side * 0.75, -2.1, -0.82, 0.48, 0.55, 0.35, accent);
     leg.attach(knee);
+    // Actual knee hinge: the shin, calf fin and stabilizer light now follow
+    // the lower joint rather than remaining welded to the upper leg.
+    const kneeJoint = new T.Group();
+    kneeJoint.name = side < 0 ? 'mech-knee-left' : 'mech-knee-right';
+    kneeJoint.position.set(side * 0.05, -1.58, -0.34);
+    leg.add(kneeJoint);
+    for (const part of [shin, shinLight, calfFin]) kneeJoint.attach(part);
+    kneeJoints.push(kneeJoint);
     const nozzle = new T.Mesh(new T.CylinderGeometry(0.32, 0.43, 1.15, 12), graphite);
     nozzle.rotation.x = Math.PI / 2;
     nozzle.position.set(side * 1.4, 2.23, 1.85);
     robot.add(nozzle);
+    torsoParts.push(nozzle);
     const plume = new T.Mesh(
       new T.ConeGeometry(0.28, 1.4, 12),
       new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.75 }),
@@ -483,16 +513,23 @@ export function createFlyingRobot() {
     plume.rotation.x = -Math.PI / 2;
     plume.position.set(side * 1.4, 2.23, 2.9);
     robot.add(plume);
+    torsoParts.push(plume);
     sidePlumes.push(plume);
   }
   // The exact same mesh profile as the ship, rotated into the mecha back plane.
   // No independent enlarged mecha wing geometry: transformation preserves identity.
   for (const side of [-1, 1]) {
+    const wingPivot = new T.Group();
+    wingPivot.name = side < 0 ? 'mech-wing-root-left' : 'mech-wing-root-right';
+    wingPivot.position.set(side * 1.1, 2.2, 1.36);
+    robot.add(wingPivot);
+    wingPivots.push(wingPivot);
     const panel = sharedFighterWing(side, armor);
     panel.name = side < 0 ? 'mech-wing-left' : 'mech-wing-right';
     panel.rotation.x = -Math.PI / 2;
     panel.position.set(0, 2.2, 1.36);
     robot.add(panel);
+    wingPivot.attach(panel);
     const trim = line(
       [
         [side * 1.65, 1.5, 1.65],
@@ -502,6 +539,7 @@ export function createFlyingRobot() {
       '#66ebff',
     );
     robot.add(trim);
+    wingPivot.attach(trim);
   }
   // Main turbine sits between the shoulder blades rather than low at the hips.
   const turbineHousing = new T.Mesh(new T.CylinderGeometry(0.58, 0.72, 1.15, 20), graphite);
@@ -536,6 +574,19 @@ export function createFlyingRobot() {
   turbineFlame.rotation.x = -Math.PI / 2;
   turbineFlame.position.set(0, 0, 1.6);
   turbineGimbal.add(turbineFlame);
+  const turbineInnerFlame = new T.Mesh(
+    new T.ConeGeometry(0.22, 2.1, 12),
+    new T.MeshBasicMaterial({
+      color: '#b7faff',
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+    }),
+  );
+  turbineInnerFlame.name = 'mech-reactor-inner-plasma';
+  turbineInnerFlame.rotation.x = Math.PI / 2;
+  turbineInnerFlame.position.set(0, 0, 1.7);
+  turbineGimbal.add(turbineInnerFlame);
   // Exposed mechanical fan blades make the turbine visibly rotate during flight.
   const turbineRotor = new T.Group();
   turbineRotor.name = 'mech-turbine-rotor';
@@ -571,12 +622,17 @@ export function createFlyingRobot() {
     arms,
     legs,
     armMuzzles,
+    knees: kneeJoints,
+    wingPivots,
+    hipJets,
     turbineRotor,
     turbineGimbal,
     turbineFlame,
+    turbineInnerFlame,
     sidePlumes,
     propulsionPower: 0,
     progressionNeons,
+    boostPalette: null,
   };
   robot.userData.mechPaint = { primary: armor, accent };
   // Reconcile the original angular flight-mech and its animated rotor with
@@ -593,6 +649,10 @@ export function createFlyingRobot() {
     shoulder.add(elbow);
     const muzzle = armMuzzles[i];
     muzzle.name = 'mecha-' + side + '-muzzle';
+    // The previous elbow moved as an empty group. Reparent the actual
+    // gauntlet, cannon and muzzle to make recoil visibly articulate the arm.
+    for (const part of Object.values(forearmParts[i])) elbow.attach(part);
+    muzzle.userData.restBarrelZ = muzzle.position.z;
     articulatedArms[side] = { shoulder, elbow, muzzle };
   }
   const independentThrusters = [-1, 1].map((side) => {
@@ -602,23 +662,138 @@ export function createFlyingRobot() {
     const casing = new T.Mesh(new T.CylinderGeometry(0.37, 0.44, 0.58, 12), graphite);
     casing.rotation.x = Math.PI / 2;
     nozzle.add(casing);
+    const outerRim = new T.Mesh(new T.TorusGeometry(0.4, 0.075, 6, 18), accent);
+    outerRim.name = 'mech-dorsal-machined-nozzle-ring';
+    outerRim.position.z = 0.4;
+    nozzle.add(outerRim);
+    const innerRim = new T.Mesh(new T.TorusGeometry(0.26, 0.05, 6, 18), luminous);
+    innerRim.position.z = 0.49;
+    nozzle.add(innerRim);
     const exhaustCore = new T.Mesh(new T.SphereGeometry(0.28, 10, 8), luminous);
     exhaustCore.position.z = 0.47;
     nozzle.add(exhaustCore);
     const plume = new T.Mesh(
-      new T.ConeGeometry(0.31, 1.35, 12),
-      new T.MeshBasicMaterial({ color: '#53dfff', transparent: true, opacity: 0.46 }),
+      new T.ConeGeometry(0.34, 1.55, 12),
+      new T.MeshBasicMaterial({
+        color: '#53dfff',
+        transparent: true,
+        opacity: 0.5,
+        depthWrite: false,
+      }),
     );
     plume.rotation.x = -Math.PI / 2;
     plume.position.z = 1.1;
     nozzle.add(plume);
+    const innerPlume = new T.Mesh(
+      new T.ConeGeometry(0.18, 1.75, 10),
+      new T.MeshBasicMaterial({
+        color: '#d4fcff',
+        transparent: true,
+        opacity: 0.82,
+        depthWrite: false,
+      }),
+    );
+    innerPlume.name = 'mech-dorsal-inner-plasma';
+    innerPlume.rotation.x = Math.PI / 2;
+    innerPlume.position.z = 1.25;
+    nozzle.add(innerPlume);
+    // Extended afterburner: a lightweight, authored cone rather than
+    // per-frame particles. This remains legible from the standard rear camera.
+    const boostBeam = new T.Mesh(
+      new T.ConeGeometry(0.28, 5.6, 10, 1, true),
+      new T.MeshBasicMaterial({
+        color: '#ff9954',
+        transparent: true,
+        opacity: 0,
+        blending: T.AdditiveBlending,
+        depthWrite: false,
+        side: T.DoubleSide,
+        toneMapped: false,
+      }),
+    );
+    boostBeam.name = side < 0 ? 'mecha-left-afterburner' : 'mecha-right-afterburner';
+    boostBeam.rotation.x = Math.PI / 2;
+    boostBeam.position.z = 3.6;
+    boostBeam.visible = false;
+    nozzle.add(boostBeam);
+    // Embedded nozzle vane acts as a gimballed acceleration cue, without
+    // introducing expensive real-time lights or particle allocations.
+    const rotor = new T.Group();
+    rotor.name = 'mech-dorsal-fan';
+    rotor.position.z = 0.5;
+    for (let j = 0; j < 4; j++) {
+      const vane = box(0.13, 0.33, 0.08, j % 2 ? accent : luminous, 0, 0.18, 0);
+      vane.rotation.z = -0.32;
+      const pivot = new T.Group();
+      pivot.rotation.z = (j * Math.PI) / 2;
+      pivot.add(vane);
+      rotor.add(pivot);
+    }
+    nozzle.add(rotor);
     robot.add(nozzle);
-    return { nozzle, plume, exhaustCore };
+    return { nozzle, plume, innerPlume, boostBeam, exhaustCore, rotor, outerRim };
   });
+  // Articulated reactor shell: tiny counter-sway conveys mass while keeping
+  // the approved fighter-wing profile, collisions and muzzle references.
+  const torso = new T.Group();
+  torso.name = 'mech-articulated-upper-body';
+  torso.position.set(0, 1.65, 0);
+  robot.add(torso);
+  for (const part of torsoParts) torso.attach(part);
+  const head = new T.Group();
+  head.name = 'mech-articulated-head';
+  head.position.set(0, 3.45, -0.1);
+  robot.add(head);
+  for (const part of headParts) head.attach(part);
+  // Keep the fighter-like silhouette mechanically connected: the shoulders,
+  // head, wings and engine mount follow the same upper-body compensation.
+  // Object3D.attach preserves each component's exact approved rest position.
+  torso.attach(head);
+  for (const arm of arms) torso.attach(arm);
+  for (const wing of wingPivots) torso.attach(wing);
+  // Preserve the original model-local mount coordinates for engine modules:
+  // existing HUD/design contracts explicitly inspect shoulder-height mounts.
+  // The nested rest-space compensator still moves together with the torso.
+  const engineMount = new T.Group();
+  engineMount.name = 'mech-upper-back-engine-mount';
+  engineMount.position.y = -torso.position.y;
+  torso.add(engineMount);
+  for (const { nozzle } of independentThrusters) engineMount.attach(nozzle);
+  engineMount.attach(turbineHousing);
+  engineMount.attach(turbineGimbal);
+  for (const strip of progressionNeons.map(({ mesh }) => mesh)) torso.attach(strip);
+  for (const part of robot.children.filter((mesh) => mesh.name.startsWith('mech-wing'))) {
+    torso.attach(part);
+  }
+  for (const side of [-1, 1]) {
+    const jet = new T.Mesh(
+      new T.ConeGeometry(0.13, 0.72, 8),
+      new T.MeshBasicMaterial({
+        color: '#77e8ff',
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+      }),
+    );
+    jet.name = side < 0 ? 'mech-hip-dash-jet-left' : 'mech-hip-dash-jet-right';
+    jet.rotation.x = Math.PI / 2;
+    jet.position.set(side * 1.1, -0.6, 1.1);
+    jet.visible = false;
+    robot.add(jet);
+    hipJets.push(jet);
+  }
   robot.userData.mecha = {
     arms: articulatedArms,
     thrusters: independentThrusters,
+    torso,
+    head,
+    knees: kneeJoints,
+    legs,
+    wingPivots,
+    hipJets,
     baseScale: 0.94,
+    motion: { strafe: 0, vertical: 0 },
+    boostPalette: null,
   };
   addMechDetail(robot, { armor, graphite, accent, emission: luminous });
   installPremiumMechaDetails(robot, { armor, graphite, accent, luminous });
@@ -720,9 +895,17 @@ export function resetMechPower(robot) {
   rig.turbineFlame.scale.y = 1;
   rig.turbineFlame.position.z = 1.6;
   rig.turbineFlame.material.opacity = 0.78;
+  rig.turbineFlame.material.color.set('#53dfff');
+  rig.boostPalette = null;
+  if (rig.turbineInnerFlame) {
+    rig.turbineInnerFlame.scale.y = 1;
+    rig.turbineInnerFlame.position.z = 1.7;
+    rig.turbineInnerFlame.material.color.set('#b7faff');
+  }
   for (const plume of rig.sidePlumes) {
     plume.scale.y = 1;
     plume.position.z = 2.9;
+    plume.material.color.set('#53dfff');
   }
 }
 
@@ -1303,6 +1486,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   updateCity32Living(cityFar.getObjectByName('city32-living-metropolis'), 0);
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
+  const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
   // A persistent, layered urban horizon gives the flight a destination instead
@@ -1397,7 +1581,23 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityHorizon.add(skylineGate);
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
+  const conceptCity = createCity34Concept();
+  cityHorizon.add(conceptCity);
   scene.add(cityHorizon);
+  // Scripted urban destruction has its own physically grounded world-space
+  // objects. It follows the same forward travel as the city tiles, but its
+  // rubble never inherits the looping tile transform (which caused clipping).
+  const cityCatastrophe = dynamicFlight ? createCityCatastrophe() : null;
+  if (cityCatastrophe) scene.add(cityCatastrophe.root);
+  const cityReactive = dynamicFlight ? createCityReactiveDamage() : null;
+  if (cityReactive) scene.add(cityReactive.root);
+  const cityHazardsCache = [];
+  const refreshCityHazards = () => {
+    cityHazardsCache.length = 0;
+    for (const collision of cityCatastrophe?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityReactive?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityLocalSolids?.colliders() ?? []) cityHazardsCache.push(collision);
+  };
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1547,9 +1747,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // The mid-mission storm still adds its own stronger ochre visibility loss.
     scene.fog.density =
       T.MathUtils.lerp(0.00017, 0.00095, state.skyMix) + state.sandHaze * 0.00145 + sand * 0.0034;
-    scene.fog.color.set('#251625').lerp(new T.Color('#a16b57'), state.skyMix);
-    scene.fog.color.lerp(new T.Color('#d4ad7e'), state.sandHaze * 0.84);
-    scene.fog.color.lerp(new T.Color('#c38a61'), sand * 0.8);
+    scene.fog.color.set('#251625').lerp(marsOrbitFog, state.skyMix);
+    scene.fog.color.lerp(marsSandHazeFog, state.sandHaze * 0.84);
+    scene.fog.color.lerp(marsStormFog, sand * 0.8);
     return state;
   }
   function setDestinationArrival(seconds) {
@@ -1644,6 +1844,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Repeated calls for the same mission time must never cumulatively darken fog.
   const exitBaseFog = new T.Color();
   const exitSpaceFog = new T.Color('#111a35');
+  // Reuse fog palette vectors across every simulated frame (including the
+  // orbit-to-ground boundary); new Color() per frame caused GC pressure.
+  const marsOrbitFog = new T.Color('#a16b57');
+  const marsSandHazeFog = new T.Color('#d4ad7e');
+  const marsStormFog = new T.Color('#c38a61');
+  const destinationHazeFog = new T.Color();
   let exitBaseDensity = 0.00045;
   let exitBaseStars = 0.75;
   function setDestinationExit(seconds) {
@@ -1668,6 +1874,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     nodes.forEach((o) => orbitalFrame.add(o));
   }
   return {
+    // For renderer.compileAsync: this subtree contains future-visible orbital
+    // scenery, terrain and atmosphere without the expensive city base meshes.
+    transitionShaderRoot: () => sectorScenery,
+    cityHazards: () => cityHazardsCache,
+    strikeCityArchitecture: (from, to, damage, seconds) =>
+      cityReactive?.strike(from, to, damage, seconds) ?? null,
+    cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
+    cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
+    cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
+    cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
@@ -1705,6 +1921,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      setCity34ConceptQuality(conceptCity, quality);
       cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
       launchCelestials.setGraphicsQuality(quality);
       for (const tile of [city, cityFar]) {
@@ -2161,7 +2378,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sectorScenery.add(createLivingWorldLayers(sceneryTheme, destinationGraphicsQuality));
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
-    update(dt, time, speed, playing) {
+    update(dt, time, speed, playing, stageTime = time) {
       terrainMat.uniforms.time.value = time;
       // Independent, low-draw-call depth planes remain animated during boss
       // fights while the near collision corridor is intentionally frozen.
@@ -2227,6 +2444,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           if (dustPos[i * 3 + 2] > 30) dustPos[i * 3 + 2] = -700;
         }
         dustGeo.attributes.position.needsUpdate = true;
+      }
+      if (sceneryTheme === 'city' && playing) {
+        // Tile positions and real moving trains were updated above. Compute
+        // collisions in their final world-space pose, not the prior frame's.
+        cityLocalSolids?.update(city.visible);
+        refreshCityHazards();
       }
       if (playing)
         for (const o of sectorScenery.children) {

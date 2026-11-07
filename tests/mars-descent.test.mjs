@@ -133,3 +133,21 @@ test('sand fog follows mission time smoothly and is stable under pause or replay
   world.setMarsDescent(18);
   assert.equal(first.position.x, x, 'replay reproduces the same atmospheric animation');
 });
+
+test('Phobos and Deimos remain in front of the Mars orbital globe and persist during entry', () => {
+  const scene = createMarsPremium();
+  const planet = scene.getObjectByName('mars-orbit-visible-planet');
+  const phobos = scene.getObjectByName('mars-moon-phobos');
+  const deimos = scene.getObjectByName('mars-moon-deimos');
+  assert.ok(phobos.position.z > planet.position.z, 'Phobos should not hide behind Mars');
+  assert.ok(deimos.position.z > planet.position.z, 'Deimos should not hide behind Mars');
+  assert.ok(phobos.visible && deimos.visible);
+  const worldScene = new T.Scene();
+  const world = createWorld(worldScene, () => 0.5, true);
+  world.setSector(SECTORS[1]);
+  world.setMarsDescent(14);
+  assert.ok(worldScene.getObjectByName('mars-moon-phobos').visible);
+  assert.ok(worldScene.getObjectByName('mars-moon-deimos').visible);
+  world.setMarsDescent(31);
+  assert.equal(worldScene.getObjectByName('mars-moon-phobos').visible, false);
+});

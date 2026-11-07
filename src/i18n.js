@@ -1,6 +1,9 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['PILOTOS', 'PILOTS', 'PILOTOS'],
+  ['NAVES', 'SHIPS', 'NAVES'],
+  ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],
   ['CANHÃO · PRÓXIMA CLASSE', 'CANNON · NEXT CLASS', 'CAÑÓN · SIGUIENTE CLASE'],
   ['MULTITIRO · +1 PROJÉTIL', 'MULTISHOT · +1 PROJECTILE', 'MULTIDISPARO · +1 PROYECTIL'],
   [
@@ -140,6 +143,24 @@ const ROWS = [
   ['IMPULSO', 'BOOST', 'IMPULSO'],
   ['Q / E / Z · GIRO DEFENSIVO', 'Q / E / Z · DEFENSIVE ROLL', 'Q / E / Z · GIRO DEFENSIVO'],
   ['GIRO', 'ROLL', 'GIRO'],
+  ['DASH', 'DASH', 'DASH'],
+  ['GIRO / DASH', 'ROLL / DASH', 'GIRO / DASH'],
+  [
+    'giro na nave / dash lateral no robô ·',
+    'ship roll / robot lateral dash ·',
+    'giro de nave / dash lateral del robot ·',
+  ],
+  ['Giro defensivo da nave', 'Ship defensive roll', 'Giro defensivo de la nave'],
+  [
+    'Esquiva lateral do robô na direção do direcional',
+    'Robot lateral dodge in steering direction',
+    'Esquiva lateral del robot en la dirección elegida',
+  ],
+  [
+    'ROBÔ · Q ← / E → · DASH LATERAL',
+    'ROBOT · Q ← / E → · LATERAL DASH',
+    'ROBOT · Q ← / E → · DASH LATERAL',
+  ],
   ['BOMBA', 'BOMB', 'BOMBA'],
   ['TIRO', 'FIRE', 'DISPARO'],
   ['FLIGHT SQUADRON', 'FLIGHT SQUADRON', 'ESCUADRÓN DE VUELO'],

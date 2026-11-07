@@ -57,13 +57,16 @@ import {
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
+import { resolveCitySolidContact } from './city-collision.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
-import { marsSandstormAt } from './mars-sandstorm.js';
+import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
+import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
+import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
@@ -340,6 +343,21 @@ export function createGame({
   scene.add(reticle);
   reticle.visible = false;
   const player = fighter();
+  const cityPlayerBefore = new T.Vector3();
+  const citySolidFrom = new T.Vector3();
+  const citySolidTo = new T.Vector3();
+  const citySolidOrigin = new T.Vector3();
+  const cityObstacleSolid = {
+    active: true,
+    solid: true,
+    kind: 'obstacle',
+    center: new T.Vector3(),
+    half: new T.Vector3(),
+    previousX: 0,
+    previousY: 0,
+    previousZ: 0,
+  };
+  let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
   let pilotLoadout = readPilotLoadout(null);
@@ -421,7 +439,9 @@ export function createGame({
   let developerSession = false;
   let developerScenario = null;
   let robotMode = false;
+  const mechaDash = createMechaDash();
   let robotFireKick = 0;
+  let robotPrecisionKick = 0;
   let robotCooldown = 0;
   let robotTransition = 0;
   const transformDuration = 1.25;
@@ -512,11 +532,29 @@ export function createGame({
     resetMechaLock();
   }
   function toggleRobot() {
-    if (!dynamicFlight || state !== 'playing' || robotCooldown > 0 || energy < 15) return;
+    if (
+      !dynamicFlight ||
+      state !== 'playing' ||
+      robotCooldown > 0 ||
+      energy < 15 ||
+      mechaDash.active
+    )
+      return;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = transformDuration;
     robotMode = !robotMode;
+    // Ship barrel roll and robot lateral dash are mutually exclusive moves.
+    roll = rollAngle = 0;
+    marsPendingRoll = false;
+    rollHeld = false;
+    mechaDash.reset();
+    syncDodgeControl();
+    if (marsCleanse > 0) {
+      $('attackWarning').textContent = robotMode
+        ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
+        : 'AREIA NOS CANHÕES · GIROS: ' + marsCleanse;
+    }
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
     $('lockTouch').hidden = !robotMode;
@@ -553,6 +591,17 @@ export function createGame({
   );
   barrierVisual.visible = false;
   player.add(barrierVisual);
+  const marsDust = dynamicFlight ? createMarsDustCoating() : null;
+  if (marsDust) player.add(marsDust);
+  const warpStreaks = dynamicFlight ? createWarpStreaks() : null;
+  if (warpStreaks) scene.add(warpStreaks);
+  let marsBossAltitude = null;
+  // CPU geometry generation and shader compilation belong to stage loading,
+  // never to the critical frame where the boss appears.
+  let preparedBoss = null;
+  let prepareGeneration = 0;
+  let bossShadersWarm = false;
+  let mechaWarmupScheduled = false;
   let fighterSerial = 0;
   let enemies = [],
     shots = [],
@@ -642,6 +691,10 @@ export function createGame({
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
     marsStormPhase = 'clear',
+    marsCleanse = 0,
+    marsPendingRoll = false,
+    marsStormDamageCooldown = 0,
+    warpDeparture = false,
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -1275,7 +1328,10 @@ export function createGame({
     $('arcadePanel').hidden = true;
     route = routeAt(sectorIndex, 0, current().duration);
     resetMechPower(robot);
+    resetMechaPose(robot);
+    mechaDash.reset();
     robotFireKick = 0;
+    robotPrecisionKick = 0;
     robotMode = false;
     shipModule.visible = true;
     if (evolution) evolution.visible = true;
@@ -1299,6 +1355,13 @@ export function createGame({
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
     marsStormPhase = 'clear';
+    marsCleanse = 0;
+    marsPendingRoll = false;
+    setMarsDustCoating(marsDust);
+    updateWarpStreaks(warpStreaks, false, 0, player.position);
+    marsBossAltitude = null;
+    marsStormDamageCooldown = 0;
+    warpDeparture = false;
     asteroidInterior?.reset(sectorIndex === 2);
     marvinRival?.reset();
     asteroidWallCooldown = 0;
@@ -1361,10 +1424,13 @@ export function createGame({
     rollHeld = false;
     dashRemaining = dashCooldown = 0;
     rollAngle = 0;
+    mechaDash.reset();
+    cityImpactCount = 0;
     player.position.set(0, 6, 9);
     player.rotation.set(0, 0, 0);
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
+    prepareUpcomingBoss();
     state = 'playing';
     $('shop').hidden = true;
     $('campaignMap').hidden = true;
@@ -1637,8 +1703,15 @@ export function createGame({
     if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
-    rollCd = 1.6;
+    rollCd = marsCleanse > 0 ? 0.72 : 1.6;
+    // Only a completed ship barrel roll removes Mars dust; a robot dash does not.
+    marsPendingRoll = marsCleanse > 0;
     sound(230, 0.25, 'sine');
+    return true;
+  }
+  function renderBombCount() {
+    $('bombs').textContent = '◆ '.repeat(bombs) || '—';
+    $('bombTouch').setAttribute?.('data-count', bombs);
   }
   function bomb() {
     if (state !== 'playing' || bombs <= 0) return;
@@ -1771,7 +1844,12 @@ export function createGame({
     });
   }
   function fire() {
-    if ((state !== 'playing' && !(dynamicFlight && state === 'collapsing')) || shotCd > 0) return;
+    if (
+      (state !== 'playing' && !(dynamicFlight && state === 'collapsing')) ||
+      shotCd > 0 ||
+      (state === 'playing' && marsCleanse > 0)
+    )
+      return;
     green.color.set(WEAPON_COLORS[weapon]).multiplyScalar(3);
     cockpit?.fire();
     heroEffects.pulse({ robot: robotMode, color: berserk > 0 ? '#ff913e' : shotColor() });
@@ -1901,8 +1979,12 @@ export function createGame({
       targetWorld: position,
       transforming: robotTransition,
       recoil: robotFireKick,
+      precisionRecoil: robotPrecisionKick,
+      dashing: mechaDash.active,
+      dashDirection: mechaDash.direction,
     });
     robotFireKick = Math.max(0, robotFireKick - dt * 2.8);
+    robotPrecisionKick = Math.max(0, robotPrecisionKick - dt * 3.5);
     const status = $('mechaLockStatus');
     status.hidden = !lockEnabled;
     if (lockEnabled)
@@ -2132,6 +2214,31 @@ export function createGame({
     if (hostile.length >= 180 || !pos) return;
     hostile.push(hostileShotPool.acquire(pos, target, spell, bossIndex));
   }
+  function prepareUpcomingBoss() {
+    if (!dynamicFlight) return;
+    if (!mechaWarmupScheduled) {
+      mechaWarmupScheduled = true;
+      // The entire articulated robot starts hidden; precompile its future
+      // plasma/glow/armor materials before the first transformation.
+      void prewarmSceneShaders(renderer, robot, camera, scene);
+    }
+    // The stage/briefing is still loading. Never build a multi-hundred-mesh
+    // procedural model on the frame that starts the boss encounter.
+    const generation = ++prepareGeneration;
+    preparedBoss = createBossModel(current(), sectorIndex, true);
+    if (sectorIndex === 1) marsBossAltitude = marsBossAltitudeConstraint(preparedBoss);
+    bossShadersWarm = false;
+    // Precompile future-visible terrain, orbital sky, core and both markers
+    // while they are offscreen. Shader warmup is asynchronous when supported;
+    // there is deliberately no blocking synchronous compile fallback.
+    void prewarmSceneShaders(renderer, world.transitionShaderRoot?.(), camera, scene).then(() => {
+      if (!running || generation !== prepareGeneration || !preparedBoss) return;
+      const model = preparedBoss;
+      return prewarmSceneShaders(renderer, model, camera, scene).then((ready) => {
+        if (running && generation === prepareGeneration) bossShadersWarm = ready;
+      });
+    });
+  }
   function makeBoss() {
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
@@ -2346,6 +2453,7 @@ export function createGame({
       }
       collapseTime = collapseBurst = 0;
       collapseFinal = false;
+      warpDeparture = false;
       collapse = createCollapse(boss.position, { final: sectorIndex === SECTORS.length - 1 });
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
@@ -2372,6 +2480,21 @@ export function createGame({
       }
     }
     collapseTime += dt;
+    if (dynamicFlight) {
+      const jump = warpExitAt(collapseTime, boostRequested());
+      if (jump.active && !warpDeparture) {
+        warpDeparture = true;
+        cue('boostIgnition');
+        $('attackWarning').setAttribute?.('data-severity', 'info');
+        $('attackWarning').textContent = 'SALTO DE LUZ · SAINDO DO SETOR';
+      }
+      if (jump.active) {
+        boosting = true;
+        player.position.z -= dt * jump.speed;
+        player.position.y += dt * 7;
+      }
+      updateWarpStreaks(warpStreaks, jump.active, collapseTime, player.position);
+    }
     if (dynamicFlight) {
       const exit = world.setDestinationExit(collapseTime);
       if (exit?.active) $('routeLabel').textContent = exit.label;
@@ -2424,7 +2547,9 @@ export function createGame({
     collapseBurst -= dt;
     updateCollapse(collapse, collapseTime);
     boss.rotation.z = Math.sin(collapseTime * 9) * 0.015 + collapseTime * 0.014;
-    boss.position.y -= dt * 0.55;
+    boss.position.y = marsBossAltitude
+      ? marsBossAltitude(boss.position.y - dt * 0.55, boss.rotation.z)
+      : boss.position.y - dt * 0.55;
     if (collapseTime < 4.7 && collapseBurst <= 0) {
       collapseBurst = Math.max(0.12, 0.5 - collapseTime * 0.07);
       explode(boss.position.clone().add(new T.Vector3(rnd(-36, 36), rnd(-12, 20), 23)), 18);
@@ -2490,6 +2615,12 @@ export function createGame({
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
+    prepareGeneration++;
+    bossShadersWarm = false;
+    if (preparedBoss) {
+      disposeBoss(preparedBoss);
+      preparedBoss = null;
+    }
     if (collapse) {
       dispose(collapse);
       disposeCollapse(collapse);
@@ -3012,6 +3143,7 @@ export function createGame({
     music?.setVolume(settings.master * settings.music);
     audioCues?.setVolume(settings.master * settings.sfx);
     localization.setLanguage(settings.language);
+    syncDodgeControl();
     renderFrameAudit();
   }
   function openSettings() {
@@ -3520,6 +3652,7 @@ export function createGame({
   const rollButton = $('rollTouch');
   let rollPointerId = null;
   let rollPressStarted = 0;
+  let rollPressStartedAsRobot = false;
   rollButton.onpointerdown = (e) => {
     e.preventDefault?.();
     if (state !== 'playing' || rollPointerId !== null) return;
@@ -3657,12 +3790,12 @@ export function createGame({
       profileSpeed *
       progressionSpeed(stage());
     const holding = keys.has('Space') || touchFire;
-    if (holding) {
+    if (holding && marsCleanse === 0) {
       charge = Math.min(1.5, charge + dt);
       if (dynamicFlight && charge > 0.15 && charge - dt <= 0.15) cue('plasmaCharge');
       chargeLatch = true;
     } else if (chargeLatch) {
-      if (charge >= 0.8) {
+      if (charge >= 0.8 && marsCleanse === 0) {
         // The charged cannon must originate at the same articulated right wrist
         // as the mecha's primary fire, never from the hidden ship's center.
         if (robotMode) robot.updateMatrixWorld(true);
@@ -3704,6 +3837,13 @@ export function createGame({
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
     const gustX = storm?.windX ?? 0;
+    marsStormDamageCooldown = Math.max(0, marsStormDamageCooldown - dt);
+    if (storm?.hazard && marsStormDamageCooldown <= 0 && Math.sign(dx) !== -Math.sign(gustX)) {
+      marsStormDamageCooldown = 3.2;
+      hit(6);
+      shake = Math.max(shake, 0.28);
+      if (settings.vibration) window.navigator?.vibrate?.(70);
+    }
     player.position.x = clamp(
       player.position.x +
         (dx * 24 * dodgeMultiplier * (1 + Math.min(30, stage()) * 0.03) * profileSpeed + gustX) *
@@ -3711,6 +3851,9 @@ export function createGame({
       -flightLimit(),
       flightLimit(),
     );
+    // Preserve the swept collision segment: the dash moves within the normal
+    // piloting step, before walls and moving enemy projectiles are resolved.
+    if (robotMode) player.position.x = mechaDash.advance(dt, player.position.x, flightLimit());
     const overheadControls = dynamicFlight && flightCamera.getShot() === 'overhead';
     if (overheadControls) {
       // UP/DOWN become depth movement for a real, playable tactical corridor.
@@ -3769,6 +3912,18 @@ export function createGame({
       roll = Math.max(0, roll - dt);
       rollAngle = Math.PI * 2 * (1 - roll / 0.65);
       player.rotation.z = rollAngle;
+      if (roll === 0 && marsPendingRoll) {
+        marsPendingRoll = false;
+        marsCleanse = Math.max(0, marsCleanse - 1);
+        setMarsDustCoating(marsDust, 0, marsCleanse);
+        explode(player.position, 7, 0xc58b5d);
+        if (marsCleanse > 0) {
+          $('attackWarning').textContent = 'AREIA NAS ARMAS · GIROS: ' + marsCleanse;
+        } else {
+          $('attackWarning').textContent = '';
+          message('ARMAS LIMPAS · CANHÕES OPERACIONAIS', 'christopher');
+        }
+      }
     } else {
       // A held button banks smoothly; a quick tap triggers a full 360-degree roll.
       // Keep the bank continuous and return to neutral smoothly after release.
@@ -3816,7 +3971,7 @@ export function createGame({
       camera.position.x += Math.sin(visualTime * 70) * shake * 0.3;
       camera.position.y += Math.cos(visualTime * 65) * shake * 0.2;
     }
-    if ((keys.has('Space') || touchFire) && shotCd <= 0) fire();
+    if ((keys.has('Space') || touchFire) && shotCd <= 0 && marsCleanse === 0) fire();
     return { speed, previousPlayer, holding };
   }
   function cityGroundImpactAt(objectName) {
@@ -3903,8 +4058,33 @@ export function createGame({
         message('ALERTA MARTE · TEMPESTADE DE AREIA À FRENTE', 'bob');
       else if (sandstorm.phase === 'active')
         message('TURBULÊNCIA · VENTO LATERAL · COMPENSE COM O DIRECIONAL', 'christopher');
-      else if (previousStorm === 'active')
-        message('TEMPESTADE SUPERADA · VISIBILIDADE RESTABELECIDA', 'bia');
+      else if (previousStorm === 'active') {
+        marsCleanse = 3;
+        marsPendingRoll = false;
+        charge = 0;
+        chargeLatch = false;
+        $('attackWarning').setAttribute?.('data-severity', 'warning');
+        $('attackWarning').textContent = robotMode
+          ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
+          : 'AREIA NOS CANHÕES · 3 GIROS PARA LIMPAR';
+        message(
+          robotMode
+            ? 'AREIA NAS ARMAS · VOLTE À NAVE E EXECUTE 3 GIROS'
+            : 'AREIA NAS ARMAS · EXECUTE 3 GIROS RÁPIDOS (Q)',
+          'christopher',
+        );
+      }
+    }
+    if (sectorIndex === 1) {
+      setMarsDustCoating(marsDust, sandstorm?.intensity ?? 0, marsCleanse);
+    }
+    if (sandstorm?.active && marsCleanse === 0 && !boss) {
+      $('attackWarning').setAttribute?.('data-severity', sandstorm.hazard ? 'danger' : 'warning');
+      $('attackWarning').textContent = sandstorm.hazard
+        ? 'TURBULÊNCIA · COMPENSE O VENTO!'
+        : 'TEMPESTADE DE AREIA · VENTO LATERAL';
+    } else if (sectorIndex === 1 && marsCleanse === 0 && !boss && !sandstorm?.active) {
+      $('attackWarning').textContent = '';
     }
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
@@ -4410,7 +4590,7 @@ export function createGame({
     });
     if (podsArrived) podMode = podsDetached ? 'deployed' : 'docked';
     $('podsTouch').textContent = podsDetached ? 'VOLTAR' : 'PODS';
-    if (podCount > 0 && podCd <= 0 && (podsDetached || holding)) {
+    if (podCount > 0 && podCd <= 0 && (podsDetached || holding) && marsCleanse === 0) {
       podCd = 0.72 - podCount * 0.1;
       for (const p of podMeshes) {
         for (const spread of podsDetached ? [-1, 0, 1] : [0]) {
@@ -5606,7 +5786,7 @@ export function createGame({
       const sceneryMoving =
         (state === 'playing' && !(dynamicFlight && boss)) ||
         (dynamicFlight && state === 'collapsing');
-      world.update(dt, visualTime, scenerySpeed, sceneryMoving);
+      world.update(dt, visualTime, scenerySpeed, sceneryMoving, elapsed);
       if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
         asteroidInterior.update(dt, scenerySpeed);
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
@@ -5677,8 +5857,41 @@ export function createGame({
         $('arcadePanel').hidden = true;
         message('SAÍDA DA FENDA / +' + data.credits + ' CR · ROTA 3D RETOMADA');
       }
-    } else if (state === 'playing') update(dt);
-    else if (state === 'menu') {
+    } else if (state === 'playing') {
+      cityPlayerBefore.copy(player.position);
+      update(dt);
+      if (dynamicFlight && sectorIndex === 0 && state === 'playing') {
+        // No global roadway wall: the ship may fly around and beyond the
+        // roadside structures throughout the original stage flight arena.
+        // Scripted urban rubble shares its visible collision geometry. Resolve
+        // swept motion against the same city travel as the scene, not a
+        // teleporting obstacle or an invisible trigger plane.
+        for (const hazard of world.cityRoadActive() ? world.cityHazards() : []) {
+          if (!hazard.active || !hazard.solid) continue;
+          citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
+          citySolidFrom.z += hazard.center.z - hazard.previousZ;
+          citySolidTo.copy(player.position).sub(hazard.center);
+          if (
+            resolveCitySolidContact(cityPlayerBefore, player.position, hazard, {
+              laneLimit: flightLimit(),
+            })
+          ) {
+            cityImpactCount++;
+            hit(26);
+            shake = Math.max(shake, 0.28);
+          }
+          for (const shot of [...shots, ...hostile]) {
+            if (shot.life <= 0 || !shot.previousPosition) continue;
+            citySolidFrom.copy(shot.previousPosition).sub(hazard.center);
+            citySolidFrom.z += hazard.center.z - hazard.previousZ;
+            citySolidTo.copy(shot.o.position).sub(hazard.center);
+            if (crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 0.3)) {
+              shot.life = 0;
+            }
+          }
+        }
+      }
+    } else if (state === 'menu') {
       player.visible = true;
       const small = camera.aspect < 1;
       player.position.set(small ? 0 : 9, small ? 12 : 7, small ? -3 : 5);
@@ -5913,6 +6126,7 @@ export function createGame({
       fireMode,
       mecha: {
         active: robotMode,
+        dash: mechaDash.snapshot(),
         lockEnabled,
         lockProgress,
         multiLockHeld: lockHeld,
@@ -6023,6 +6237,10 @@ export function createGame({
         ? bossIntegrityRatio(boss.userData.parts, bossHp, bossCombat?.max ?? 1400)
         : 0,
       bossPhase: bossCombat?.phase ?? 0,
+      bossPrepared: !!preparedBoss,
+      bossShadersWarm,
+      bossModelId: boss?.uuid ?? null,
+      preparedBossModelId: preparedBoss?.uuid ?? null,
       bossAge: bossCombat?.age ?? 0,
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
@@ -6086,6 +6304,10 @@ export function createGame({
         bank: camera.rotation.z,
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
+      cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
+      cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
+      cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
+      cityImpactCount,
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
@@ -6195,6 +6417,10 @@ export function createGame({
       squad?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
+      marsDust?.geometry.dispose();
+      marsDust?.material.dispose();
+      warpStreaks?.geometry.dispose();
+      warpStreaks?.material.dispose();
       routeRenderer?.destroy();
       dashTrail.destroy();
       asteroidInterior?.destroy();

@@ -15,6 +15,7 @@ export const BOSS_SHAPES = Object.freeze([
   'marvin-imperial-crown',
 ]);
 const geo = new T.BoxGeometry(1, 1, 1);
+geo.userData.bossShared = true;
 function slab(g, mat, name, x, y, z, w, h, d, rz = 0) {
   const mesh = new T.Mesh(geo, mat);
   mesh.name = name;
