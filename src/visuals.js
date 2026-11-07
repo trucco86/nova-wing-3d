@@ -3,6 +3,7 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityCatastrophe } from './city-catastrophe.js';
 import {
   createCity32Living,
   createCity32Skyline,
@@ -1572,6 +1573,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
   scene.add(cityHorizon);
+  // Scripted urban destruction has its own physically grounded world-space
+  // objects. It follows the same forward travel as the city tiles, but its
+  // rubble never inherits the looping tile transform (which caused clipping).
+  const cityCatastrophe = dynamicFlight ? createCityCatastrophe() : null;
+  if (cityCatastrophe) scene.add(cityCatastrophe.root);
   const near = [];
   for (let i = 0; i < 18; i++) {
     let g = new T.Group(),
@@ -1788,6 +1794,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // For renderer.compileAsync: this subtree contains future-visible orbital
     // scenery, terrain and atmosphere without the expensive city base meshes.
     transitionShaderRoot: () => sectorScenery,
+    cityHazards: () => cityCatastrophe?.colliders() ?? [],
+    cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
     setDestinationArrival,
     setDestinationExit,
@@ -1854,6 +1862,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       const urbanVisible = reveal.cityVisible;
       city.visible = cityFar.visible = urbanVisible;
       cityHorizon.visible = urbanVisible;
+      if (cityCatastrophe) cityCatastrophe.root.visible = urbanVisible;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
       // The Moon used in other stages is separate from the real lunar body.
@@ -1915,6 +1924,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      cityCatastrophe?.reset();
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || sceneryTheme === 'station';
       moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
@@ -2184,8 +2195,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       if (sceneryTheme === 'mars') setMarsDescent(0);
     },
-    update(dt, time, speed, playing) {
+    update(dt, time, speed, playing, stageTime = time) {
       terrainMat.uniforms.time.value = time;
+      if (cityCatastrophe && sceneryTheme === 'city' && playing)
+        cityCatastrophe.update(dt, stageTime, speed, city.visible);
       if (playing) {
         travel += speed * dt;
         terrainMat.uniforms.travel.value = travel;
@@ -2281,6 +2294,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       cityHorizon.position.set(0, 0, 0);
       cityHorizon.visible = sceneryTheme === 'city';
+      cityCatastrophe?.reset();
+      if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       ground.position.y = -7;
