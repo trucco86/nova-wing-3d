@@ -1798,6 +1798,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // scenery, terrain and atmosphere without the expensive city base meshes.
     transitionShaderRoot: () => sectorScenery,
     cityHazards: () => cityCatastrophe?.colliders() ?? [],
+    cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
     cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
     setDestinationArrival,
