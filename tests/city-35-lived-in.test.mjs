@@ -12,7 +12,7 @@ import { SECTORS } from '../src/campaign.js';
 
 const buildings = Array.from({ length: 200 }, (_, i) => ({
   x: (i % 2 ? 1 : -1) * (105 + (i % 5) * 24),
-  h: 38 + (i * 13) % 67,
+  h: 38 + ((i * 13) % 67),
   z: -30 - Math.floor(i / 2) * 19,
   w: 8 + (i % 10),
   depth: 8 + (i % 9),
@@ -59,14 +59,20 @@ test('animated exterior lift has synchronized hull/glazing/beacons and different
   const atStart = city35LivedInSnapshot(root).heights;
   updateCity35LivedIn(root, 37.7);
   const after = city35LivedInSnapshot(root).heights;
-  assert.ok(after.some((y, i) => Math.abs(y - atStart[i]) > 1.5), 'real vertical animation');
+  assert.ok(
+    after.some((y, i) => Math.abs(y - atStart[i]) > 1.5),
+    'real vertical animation',
+  );
   assert.ok(new Set(after.map((y) => Math.round(y))).size >= 4, 'independent lift phases');
   for (let i = 0; i < hull.count; i++) {
     const body = pose(hull, i);
     const window = pose(glass, i);
     assert.ok(Math.abs(body.y - window.y + 0.1) < 0.00001);
     assert.equal(body.x, window.x);
-    assert.ok(Math.abs(body.z + 1.48 - window.z) < 0.00005, 'lift glazing follows body within Float32 GPU precision');
+    assert.ok(
+      Math.abs(body.z + 1.48 - window.z) < 0.00005,
+      'lift glazing follows body within Float32 GPU precision',
+    );
     for (let k = 0; k < 2; k++) {
       const signal = pose(lights, i * 2 + k);
       assert.ok(Math.abs(signal.y - body.y - 1.52) < 0.00001);
@@ -91,11 +97,15 @@ test('quality Medium retains key details while High adds subtle vents and more l
   assert.ok(high.vents > 0);
   assert.equal(high.beacons, high.lifts * 2);
   const children = [];
-  root.traverse((child) => { if (child.isMesh) children.push(child); });
+  root.traverse((child) => {
+    if (child.isMesh) children.push(child);
+  });
   const count = children.length;
   for (let t = 0; t < 600; t++) updateCity35LivedIn(root, t * 0.05);
   const same = [];
-  root.traverse((child) => { if (child.isMesh) same.push(child); });
+  root.traverse((child) => {
+    if (child.isMesh) same.push(child);
+  });
   assert.deepEqual(same, children, '600 frame updates must reuse all previously-created meshes');
   assert.equal(same.length, count);
   setCity35LivedInQuality(root, 'medium');

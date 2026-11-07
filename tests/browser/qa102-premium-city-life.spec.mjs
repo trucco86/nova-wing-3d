@@ -22,7 +22,9 @@ test('premium city roofs and service movement enrich both tile depths without co
   expect(before.every((tile) => tile.pads >= 8 && tile.lifts > 0 && tile.vents === 0)).toBe(true);
   expect(before.every((tile) => tile.quality === 'medium')).toBe(true);
   expect(state.cityImpactCount).toBe(0);
-  await page.screenshot({ path: info.outputPath('city35-medium-detailed-roofs-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('city35-medium-detailed-roofs-' + info.project.name + '.png'),
+  });
 
   state = await page.evaluate(() => {
     window.fixture.advance(9.0, { renderAfter: false });
@@ -32,7 +34,9 @@ test('premium city roofs and service movement enrich both tile depths without co
   expect(state.city35Details[0].heights).not.toEqual(before[0].heights);
   expect(state.city35Details[0].heights).not.toEqual(state.city35Details[1].heights);
   expect(state.cityImpactCount).toBe(0);
-  await page.screenshot({ path: info.outputPath('city35-service-lifts-parallax-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('city35-service-lifts-parallax-' + info.project.name + '.png'),
+  });
 
   await page.evaluate(() => {
     const settings = document.getElementById('settingGraphics');
@@ -46,7 +50,9 @@ test('premium city roofs and service movement enrich both tile depths without co
   });
   expect(state.city35Details.every((tile) => tile.quality === 'high')).toBe(true);
   expect(state.city35Details.every((tile) => tile.vents > 0 && tile.lifts >= 8)).toBe(true);
-  await page.screenshot({ path: info.outputPath('city35-high-industrial-layer-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('city35-high-industrial-layer-' + info.project.name + '.png'),
+  });
   expect(errors).toEqual([]);
 });
 

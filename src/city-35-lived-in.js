@@ -17,8 +17,11 @@ const glazing = metallic('#4d8498', 0.42, 0.2);
 const yellow = new T.MeshBasicMaterial({ color: '#ffd68e', toneMapped: false });
 const blue = new T.MeshBasicMaterial({ color: '#78f2fa', toneMapped: false });
 const vapour = new T.MeshBasicMaterial({
-  color: '#c1e7ed', transparent: true, opacity: 0.11,
-  depthWrite: false, side: T.DoubleSide,
+  color: '#c1e7ed',
+  transparent: true,
+  opacity: 0.11,
+  depthWrite: false,
+  side: T.DoubleSide,
 });
 const entry = (x, y, z, w, h, d, rx = 0) => ({ x, y, z, w, h, d, rx });
 function batch(group, name, geometry, material, items) {
@@ -53,8 +56,10 @@ function serviceAnchors(buildings) {
     .map((b, i) => ({
       x: b.x - Math.sign(b.x) * (b.w * 0.5 + 1.4),
       z: b.z + b.depth * 0.5 + 1.1,
-      low: 3.5, height: b.h - 15,
-      phase: i * 1.57, speed: 0.65 + (i % 4) * 0.13,
+      low: 3.5,
+      height: b.h - 15,
+      phase: i * 1.57,
+      speed: 0.65 + (i % 4) * 0.13,
       side: Math.sign(b.x),
     }));
 }
@@ -95,9 +100,16 @@ export function createCity35LivedIn(buildings = []) {
   const services = new T.Group();
   services.name = 'city35-animated-building-services';
 
-  const pads = [], rings = [], runwayLights = [], warningStripes = [];
-  const conduits = [], roofMachines = [], ventStacks = [], serviceRails = [];
-  const roofFans = [], fanBlades = [];
+  const pads = [],
+    rings = [],
+    runwayLights = [],
+    warningStripes = [];
+  const conduits = [],
+    roofMachines = [],
+    ventStacks = [],
+    serviceRails = [];
+  const roofFans = [],
+    fanBlades = [];
   const vents = [];
   const lifts = serviceAnchors(buildings);
   buildings.forEach((b, i) => {
@@ -108,14 +120,13 @@ export function createCity35LivedIn(buildings = []) {
     if (i % 10 === 3 && b.h >= 47) {
       const radius = Math.min(b.w * 0.21, b.depth * 0.25, 4.1);
       pads.push(entry(b.x, roofY + 0.18, b.z, radius, 1, radius));
-      rings.push(entry(b.x, roofY + 0.46, b.z, radius * 0.75, radius * 0.75,
-        radius * 0.75, -Math.PI / 2));
+      rings.push(
+        entry(b.x, roofY + 0.46, b.z, radius * 0.75, radius * 0.75, radius * 0.75, -Math.PI / 2),
+      );
       warningStripes.push(entry(b.x, roofY + 0.48, b.z, radius * 0.34, 0.09, 0.3));
       for (const sign of [-1, 1]) {
-        runwayLights.push(entry(b.x + sign * radius * 0.85, roofY + 0.52,
-          b.z, 0.32, 0.32, 0.32));
-        runwayLights.push(entry(b.x, roofY + 0.52, b.z + sign * radius * 0.85,
-          0.32, 0.32, 0.32));
+        runwayLights.push(entry(b.x + sign * radius * 0.85, roofY + 0.52, b.z, 0.32, 0.32, 0.32));
+        runwayLights.push(entry(b.x, roofY + 0.52, b.z + sign * radius * 0.85, 0.32, 0.32, 0.32));
       }
     }
     if (i % 7 === 2 && b.h >= 31) {
@@ -131,16 +142,19 @@ export function createCity35LivedIn(buildings = []) {
     // Electrical conduits and rooftop service cabinets share the exact
     // building position. These are NOT spans crossing the flight corridor.
     if (i % 5 === 1 && b.h >= 29) {
-      conduits.push(entry(b.x - side * (b.w * 0.49), -7 + b.h * 0.43,
-        front + 0.4, 0.28, b.h * 0.57, 0.4));
-      conduits.push(entry(b.x - side * (b.w * 0.49), -7 + b.h * 0.73,
-        front + 0.75, 2.1, 0.25, 1.0));
+      conduits.push(
+        entry(b.x - side * (b.w * 0.49), -7 + b.h * 0.43, front + 0.4, 0.28, b.h * 0.57, 0.4),
+      );
+      conduits.push(
+        entry(b.x - side * (b.w * 0.49), -7 + b.h * 0.73, front + 0.75, 2.1, 0.25, 1.0),
+      );
     }
   });
   for (const p of lifts) {
     for (const sign of [-1, 1])
-      serviceRails.push(entry(p.x + sign * 1.7, 3.5 + p.height * 0.5,
-        p.z - 1.1, 0.3, p.height, 0.35));
+      serviceRails.push(
+        entry(p.x + sign * 1.7, 3.5 + p.height * 0.5, p.z - 1.1, 0.3, p.height, 0.35),
+      );
   }
   for (const v of vents) {
     fanBlades.push(entry(v.x - 1.7, v.y - 2.9, v.z, 2.35, 0.13, 0.36));
@@ -196,21 +210,49 @@ export function updateCity35LivedIn(root, travel = 0) {
     transform(glass, i, p.x, height + 0.1, p.z + 1.48, 2.38, 1.8, 0.18);
     for (const sign of [-1, 1]) {
       const signal = i * 2 + (sign > 0 ? 1 : 0);
-      transform(beacons, signal, p.x + sign * 1.18, height + 1.52,
-        p.z + 0.5, 0.37, 0.24 + 0.08 * Math.sin(travel * 0.05 + p.phase), 0.34);
+      transform(
+        beacons,
+        signal,
+        p.x + sign * 1.18,
+        height + 1.52,
+        p.z + 0.5,
+        0.37,
+        0.24 + 0.08 * Math.sin(travel * 0.05 + p.phase),
+        0.34,
+      );
     }
   }
-  if (cabins.count) for (const mesh of [cabins, glass, beacons]) mesh.instanceMatrix.needsUpdate = true;
+  if (cabins.count)
+    for (const mesh of [cabins, glass, beacons]) mesh.instanceMatrix.needsUpdate = true;
   const fanMeshes = root.getObjectByName('city35-moving-turbine-rotors');
   if (root.getObjectByName('city35-industrial-high').visible) {
     for (let i = 0; i < vents.length; i++) {
       const v = vents[i];
       const pulse = 0.6 + 0.4 * Math.sin(travel * 0.012 + v.phase);
       const rise = (travel * 0.017 + v.phase * 5) % 7;
-      transform(exhaust, i, v.x, v.y + rise, v.z,
-        1.9 + pulse * 0.8, 5.4 + pulse * 2.1, 1.9 + pulse * 0.8, Math.PI);
-      transform(fanMeshes, i, v.x - 1.7, v.y - 2.9, v.z,
-        2.35, 0.13, 0.36, 0, travel * 0.025 + v.phase);
+      transform(
+        exhaust,
+        i,
+        v.x,
+        v.y + rise,
+        v.z,
+        1.9 + pulse * 0.8,
+        5.4 + pulse * 2.1,
+        1.9 + pulse * 0.8,
+        Math.PI,
+      );
+      transform(
+        fanMeshes,
+        i,
+        v.x - 1.7,
+        v.y - 2.9,
+        v.z,
+        2.35,
+        0.13,
+        0.36,
+        0,
+        travel * 0.025 + v.phase,
+      );
     }
     if (vents.length) {
       exhaust.instanceMatrix.needsUpdate = true;
