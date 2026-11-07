@@ -1,0 +1,53 @@
+name: QA101 prepare camera occlusion version
+on:
+  push:
+    branches: [fix/qa101-camera-occlusion-20261107]
+    paths: [.github/workflows/qa101-version-prepare.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/qa101-camera-occlusion-20261107
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.101
+      - name: Release notes and changelog
+        run: |
+          cat > releases/v1.27.101.md <<'NOTES'
+          ## Nova Wing 3D v1.27.101 — Occlusion-aware playable city viaducts (QA)
+
+          - When a physical bridge passes between the chase camera and the ship, fade only its local visible surface, preserving collision, damage, speed and exact geometry.
+          - Smooth the camera sightline without hiding entire city blocks or affecting the distant skyline.
+          - Preserve the existing real bridge, falling debris, pilot relay, ISS, robot and HUD gameplay.
+          - Validate the effect in desktop and mobile WebGL with before/after pixel and screenshot evidence.
+
+          **QA only. Full browser gates, visuals and physical-device FPS review remain release prerequisites.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          f=Path('CHANGELOG.md')
+          s=f.read_text()
+          v=s.index('## 1.27.101')
+          marker='- Candidata não homologada; preencher entregas e evidências antes da publicação.'
+          i=s.index(marker,v)
+          s=s[:i]+'- QA: fade local dos viadutos que obstruem a câmera, mantendo suas colisões físicas e o voo totalmente livre; testes browser e visual pendentes.'+s[i+len(marker):]
+          f.write_text(s)
+          PY
+      - name: Commit version metadata prior to source modifications
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.101.md index.html
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA101): prepare occlusion-aware release before source changes'
+          git push origin HEAD:fix/qa101-camera-occlusion-20261107
