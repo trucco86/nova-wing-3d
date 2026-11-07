@@ -1,0 +1,56 @@
+name: Prepare isolated QA99 vertical-flight and overpass physics version
+on:
+  push:
+    branches: [fix/qa99-free-vertical-overpass-physical-20261107]
+    paths: [.github/workflows/qa99-version-prepare.yml]
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/qa99-free-vertical-overpass-physical-20261107
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.99
+      - name: Draft QA99 release notes
+        run: |
+          cat > releases/v1.27.99.md <<'NOTES'
+          ## Nova Wing 3D 1.27.99 — Full vertical flight, tangible overpasses and lightweight boss armor labels (QA)
+
+          - Lift the previous invisible y=46 flight ceiling with safe chase/cockpit follow framing.
+          - Add solid collision to visible overhead viaduct decks, crossbars and cross-city guideway.
+          - Keep the entire open flight volume navigable except physical objects; no global x clamps.
+          - Preserve falling-prop physics throughout the visible urban transition.
+          - Make the armored weak-point marker smaller and more translucent without hiding weak targets.
+          - Add deterministic Node and desktop/mobile WebGL collision and movement regressions.
+
+          **QA candidate only. Browser and physical device visual approval required.**
+          NOTES
+          python3 - <<'PY'
+          from pathlib import Path
+          f=Path("CHANGELOG.md")
+          s=f.read_text()
+          head=s.index("## 1.27.99")
+          p="- Candidata não homologada; preencher entregas e evidências antes da publicação."
+          at=s.find(p,head)
+          if at<0: raise Exception("expected v1.27.99 changelog draft")
+          s=s[:at]+"- QA em desenvolvimento: liberdade vertical, volumes físicos dos viadutos e trilho transversal, destroços sólidos e etiqueta BLINDADO menos intrusiva; testes completos pendentes."+s[at+len(p):]
+          f.write_text(s)
+          PY
+      - name: Commit version metadata before source changes
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.99.md index.html
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA99): prepare v1.27.99 before gameplay physics changes'
+          git push origin HEAD:fix/qa99-free-vertical-overpass-physical-20261107
