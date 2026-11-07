@@ -14,8 +14,7 @@ const clamp01 = (v) => Math.min(1, Math.max(0, v));
 const ease = (t) => t * t * (3 - 2 * t);
 const metal = (color, roughness = 0.4) =>
   new T.MeshStandardMaterial({ color, metalness: 0.72, roughness });
-const emissive = (color) =>
-  new T.MeshBasicMaterial({ color, toneMapped: false });
+const emissive = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
 const unitBox = new T.BoxGeometry(1, 1, 1);
 function block(group, material, x, y, z, w, h, d, name) {
   const mesh = new T.Mesh(unitBox, material);
@@ -28,8 +27,7 @@ function block(group, material, x, y, z, w, h, d, name) {
 
 export function cityDebrisSupportY(width, height, tilt, groundY = CITY_GROUND_Y) {
   // A rotated rectangle's support extent, including the pivot/feet.
-  return groundY + Math.abs(Math.cos(tilt)) * height / 2 +
-    Math.abs(Math.sin(tilt)) * width / 2;
+  return groundY + (Math.abs(Math.cos(tilt)) * height) / 2 + (Math.abs(Math.sin(tilt)) * width) / 2;
 }
 
 export function cityDebrisPose(beat, elapsed, groundY = CITY_GROUND_Y) {
@@ -41,7 +39,8 @@ export function cityDebrisPose(beat, elapsed, groundY = CITY_GROUND_Y) {
     // dampens into an exposed, dodgeable obstruction on the right lane.
     const t = clamp01(age / 1.45);
     return {
-      active: true, x: beat.x + beat.drift * ease(t),
+      active: true,
+      x: beat.x + beat.drift * ease(t),
       y: 48 - 34 * ease(t) + Math.sin(age * 7) * 2.2 * Math.exp(-age * 1.45),
       tilt: beat.tilt * ease(t) + Math.sin(age * 6) * 0.11 * Math.exp(-age * 1.3),
       landing: false,
@@ -51,11 +50,11 @@ export function cityDebrisPose(beat, elapsed, groundY = CITY_GROUND_Y) {
   const gravity = 59;
   const targetTilt = beat.tilt;
   const originalDrop = beat.y - cityDebrisSupportY(beat.w, beat.h, targetTilt, groundY);
-  const contact = Math.sqrt(2 * Math.max(0, originalDrop) / gravity);
+  const contact = Math.sqrt((2 * Math.max(0, originalDrop)) / gravity);
   const t = clamp01(age / Math.max(0.01, contact));
   const tilt = targetTilt * ease(t);
   const support = cityDebrisSupportY(beat.w, beat.h, tilt, groundY);
-  const ballistic = beat.y - gravity * Math.min(age, contact) ** 2 / 2;
+  const ballistic = beat.y - (gravity * Math.min(age, contact) ** 2) / 2;
   const after = Math.max(0, age - contact);
   // Positive-only impact rebound avoids the floor-penetration defect.
   const bounce = Math.pow(Math.sin(after * 8), 2) * Math.exp(-after * 4) * 1.45;
@@ -79,8 +78,7 @@ function buildProp(group, beat, mats) {
     block(group, cyan, 0, 3.7, -1.5, 16.5, 0.38, 0.33);
     block(group, amber, -6.8, 0, -1.5, 0.4, 7, 0.35);
     block(group, amber, 6.8, 0, -1.5, 0.4, 7, 0.35);
-    for (let i = 0; i < 4; i++)
-      block(group, cyan, -4.9 + i * 3.1, -1.5, -1.52, 1.4, 2.2, 0.12);
+    for (let i = 0; i < 4; i++) block(group, cyan, -4.9 + i * 3.1, -1.5, -1.52, 1.4, 2.2, 0.12);
   } else if (beat.kind === 'car') {
     block(group, armor, 0, 0, 0, 9.4, 4.4, 17, 'city-falling-hovercar-hull');
     block(group, glass, 0, 2.1, -1.1, 7, 1.2, 10.5);
@@ -129,8 +127,12 @@ function buildImpactFX(beat) {
   const ring = new T.Mesh(
     new T.TorusGeometry(1, 0.19, 6, 22),
     new T.MeshBasicMaterial({
-      color: '#ffb36a', transparent: true, opacity: 0,
-      depthWrite: false, blending: T.AdditiveBlending, toneMapped: false,
+      color: '#ffb36a',
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      blending: T.AdditiveBlending,
+      toneMapped: false,
     }),
   );
   ring.name = 'city-impact-shockwave';
@@ -184,14 +186,26 @@ export function createCityCatastrophe() {
       active: false,
       solid: spec.kind === 'train' || spec.kind === 'facade',
     };
-    const cable = spec.kind === 'train'
-      ? new T.Mesh(new T.CylinderGeometry(0.21, 0.29, 1, 7), mats.dark)
-      : null;
+    const cable =
+      spec.kind === 'train'
+        ? new T.Mesh(new T.CylinderGeometry(0.21, 0.29, 1, 7), mats.dark)
+        : null;
     if (cable) {
       cable.name = 'city-maglev-torn-suspension-cable';
       root.add(cable);
     }
-    return { spec, o, fx, flash, ring, sparks, collider, cable, impactTime: null, wasActive: false };
+    return {
+      spec,
+      o,
+      fx,
+      flash,
+      ring,
+      sparks,
+      collider,
+      cable,
+      impactTime: null,
+      wasActive: false,
+    };
   });
   const up = new T.Vector3(0, 1, 0);
   const tmp = new T.Vector3();
@@ -223,8 +237,8 @@ export function createCityCatastrophe() {
       collider.active = pose.active && o.position.z < 55 && o.position.z > -570;
       // Conservative AABB for the actual rotated box (not an invisible wall).
       collider.half.set(
-        Math.abs(Math.cos(pose.tilt)) * spec.w / 2 + Math.abs(Math.sin(pose.tilt)) * spec.h / 2,
-        Math.abs(Math.cos(pose.tilt)) * spec.h / 2 + Math.abs(Math.sin(pose.tilt)) * spec.w / 2,
+        (Math.abs(Math.cos(pose.tilt)) * spec.w) / 2 + (Math.abs(Math.sin(pose.tilt)) * spec.h) / 2,
+        (Math.abs(Math.cos(pose.tilt)) * spec.h) / 2 + (Math.abs(Math.sin(pose.tilt)) * spec.w) / 2,
         spec.d / 2,
       );
       if (pose.landing && b.impactTime === null) b.impactTime = elapsed;
@@ -255,7 +269,9 @@ export function createCityCatastrophe() {
   reset();
   root.visible = false; // No urban rubble floating in the main menu or non-city sectors.
   return {
-    root, reset, update,
+    root,
+    reset,
+    update,
     colliders() {
       return beats.map((b) => b.collider).filter((c) => c.active && c.solid);
     },

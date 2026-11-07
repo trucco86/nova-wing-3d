@@ -13,15 +13,23 @@ function instance(mesh, index, x, y, z, w, h, d) {
   dummy.updateMatrix();
   mesh.setMatrixAt(index, dummy.matrix);
 }
-const architecture = () => new T.MeshStandardMaterial({
-  color: '#667f97', metalness: 0.78, roughness: 0.29,
-});
-const glass = () => new T.MeshStandardMaterial({
-  color: '#274b70', metalness: 0.62, roughness: 0.18,
-});
-const accent = (color) => new T.MeshBasicMaterial({
-  color, toneMapped: false,
-});
+const architecture = () =>
+  new T.MeshStandardMaterial({
+    color: '#667f97',
+    metalness: 0.78,
+    roughness: 0.29,
+  });
+const glass = () =>
+  new T.MeshStandardMaterial({
+    color: '#274b70',
+    metalness: 0.62,
+    roughness: 0.18,
+  });
+const accent = (color) =>
+  new T.MeshBasicMaterial({
+    color,
+    toneMapped: false,
+  });
 function finish(mesh, used, host) {
   mesh.count = used;
   mesh.instanceMatrix.needsUpdate = true;
@@ -47,7 +55,13 @@ export function createCity34Concept() {
   bridges.name = 'city34-multilevel-skybridges';
   const bridgeLights = new T.InstancedMesh(unit, accent('#4ef5df'), 36);
   bridgeLights.name = 'city34-bridge-wayfinding-lights';
-  let n = 0, g = 0, c = 0, w = 0, b = 0, bl = 0, cl = 0;
+  let n = 0,
+    g = 0,
+    c = 0,
+    w = 0,
+    b = 0,
+    bl = 0,
+    cl = 0;
   const towersPlan = [];
   for (const side of [-1, 1])
     for (let tier = 0; tier < 3; tier++)
@@ -61,15 +75,13 @@ export function createCity34Concept() {
         instance(glazing, g++, x, h / 2 - 6, z + 12.3 + tier * 2, width * 0.81, h * 0.78, 0.7);
         instance(crowns, c++, x, h - 5, z, width * 0.83, 1.7, 25);
         for (let level = 1; level <= 6; level++) {
-          const y = -4 + level * h / 7;
+          const y = -4 + (level * h) / 7;
           const lit = (i + level) % 3;
           if (lit === 0) {
             if (w < warmLights.count)
-              instance(warmLights, w++, x, y, z + 13.4 + tier * 2,
-                width * 0.65, 0.65, 0.14);
+              instance(warmLights, w++, x, y, z + 13.4 + tier * 2, width * 0.65, 0.65, 0.14);
           } else if (cl < coolLights.count) {
-            instance(coolLights, cl++, x, y, z + 13.4 + tier * 2,
-              width * 0.7, 0.47, 0.14);
+            instance(coolLights, cl++, x, y, z + 13.4 + tier * 2, width * 0.7, 0.47, 0.14);
           }
         }
       }
@@ -108,7 +120,8 @@ export function createCity34Concept() {
       new T.PlaneGeometry(22.6, 34.6),
       new T.MeshBasicMaterial({
         map: advertisingTexture(brand, tagline, color),
-        side: T.DoubleSide, toneMapped: false,
+        side: T.DoubleSide,
+        toneMapped: false,
       }),
     );
     face.position.z = 0.86;

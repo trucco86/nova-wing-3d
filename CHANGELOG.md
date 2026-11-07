@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.67 — Candidata em preparação
+
+- Fase 1: destruição urbana roteirizada com física de solo, colisão de destroços, explosões pré-alocadas e skyline mais fiel ao concept; aprovação visual e FPS pendentes.
+
 ## 1.27.66 — Candidata em preparação
 
 - Modo robo: DASH lateral direcional substitui giro; nave mantem barrel roll; controles PT/EN/ES, cooldown, colisao e protecao testados. QA visual pendente.

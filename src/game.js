@@ -4846,9 +4846,7 @@ export function createGame({
           citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
           citySolidFrom.z += hazard.center.z - hazard.previousZ;
           citySolidTo.copy(player.position).sub(hazard.center);
-          if (
-            crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 1.3)
-          ) hit(26);
+          if (crossesSolid(citySolidFrom, citySolidTo, citySolidOrigin, hazard.half, 1.3)) hit(26);
           for (const shot of [...shots, ...hostile]) {
             if (shot.life <= 0 || !shot.previousPosition) continue;
             citySolidFrom.copy(shot.previousPosition).sub(hazard.center);
@@ -5078,9 +5076,7 @@ export function createGame({
         bank: camera.rotation.z,
       },
       fighterWave: lastFighterWave ? { ...lastFighterWave } : null,
-      cityDestruction: dynamicFlight && sectorIndex === 0
-        ? world.cityDestructionSnapshot()
-        : [],
+      cityDestruction: dynamicFlight && sectorIndex === 0 ? world.cityDestructionSnapshot() : [],
       encounterKinds: enemies.filter((e) => !e.dead).map((e) => e.kind),
       targets: enemies
         .filter((e) => !e.dead)
