@@ -53,7 +53,7 @@ test('ISS briefly crosses the Earth limb after reveal, then exits without gamepl
   assert.equal(effect.update(0.89, 100).iss, false);
   const entering = effect.update(0.92, 101);
   assert.equal(entering.iss, true);
-  assert.ok(effect.station.position.y < 0, 'ISS flies close to Earth's visible upper limb');
+  assert.ok(effect.station.position.y < 0, "ISS flies close to Earth\'s visible upper limb");
   const initialX = effect.station.position.x;
   const next = effect.update(0.98, 104);
   assert.equal(next.iss, true);
