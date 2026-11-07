@@ -1,0 +1,33 @@
+name: QA100 upper skybridge real WebGL acceptance
+on:
+  push:
+    branches: [feat/qa100-upper-skybridges-20261107]
+    paths: [.github/workflows/qa100-browser-physics.yml]
+permissions:
+  contents: read
+jobs:
+  visual-physical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop, mobile]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npx playwright install chromium
+      - name: Verify real stage-one skyline contact, flight freedoms, debris and HUD
+        run: npx playwright test tests/browser/qa100-upper-bridge-approach.spec.mjs tests/browser/qa99-open-flight-and-viaduct.spec.mjs tests/browser/city-falling-iss.spec.mjs --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa100-skyline-physics-${{ matrix.project }}
+          path: |
+            test-results/
+            playwright-report/
