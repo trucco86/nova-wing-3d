@@ -57,7 +57,7 @@ import {
   projectileHitsObstacle,
   projectileHitsApproachingObstacle,
 } from './flight.js';
-import { CITY_ROAD_LIMIT, keepInsideCityRoad, resolveCitySolidContact } from './city-collision.js';
+import { resolveCitySolidContact } from './city-collision.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
@@ -4721,14 +4721,14 @@ export function createGame({
       let collided = false;
       for (const solid of obstacle.o.userData.solids) {
         if (dynamicFlight && sectorIndex === 0 && world.cityRoadActive()) {
-          // A wide fighter cannot fit through the decorative gap of an
-          // obstacle tested with the old 1.3-radius projectile collider.
+          // Resolve only the actual gantry/reactor solid. Preserve exploration
+          // across the original 72-unit flight arena, not a smaller road box.
           cityObstacleSolid.center.copy(obstacle.o.position).add(solid.center);
           cityObstacleSolid.half.copy(solid.half);
           cityObstacleSolid.previousX = cityObstacleSolid.center.x;
           cityObstacleSolid.previousY = cityObstacleSolid.center.y;
           cityObstacleSolid.previousZ = cityObstacleSolid.center.z - travel;
-          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid)) {
+          if (resolveCitySolidContact(previousPlayer, player.position, cityObstacleSolid, { laneLimit: flightLimit() })) {
             cityImpactCount++;
             collided = true;
           }
@@ -4881,13 +4881,8 @@ export function createGame({
       cityPlayerBefore.copy(player.position);
       update(dt);
       if (dynamicFlight && sectorIndex === 0 && state === 'playing') {
-        // Roadside guardrails occupy x=±47; the ship's wings need clearance.
-        // This constraint disappears once the road retreats into orbit.
-        if (world.cityRoadActive() && keepInsideCityRoad(player.position, CITY_ROAD_LIMIT)) {
-          cityImpactCount++;
-          hit(8);
-          shake = Math.max(shake, 0.16);
-        }
+        // No global roadway wall: the ship may fly around and beyond the
+        // roadside structures throughout the original stage flight arena.
         // Scripted urban rubble shares its visible collision geometry. Resolve
         // swept motion against the same city travel as the scene, not a
         // teleporting obstacle or an invisible trigger plane.
@@ -4896,7 +4891,7 @@ export function createGame({
           citySolidFrom.copy(cityPlayerBefore).sub(hazard.center);
           citySolidFrom.z += hazard.center.z - hazard.previousZ;
           citySolidTo.copy(player.position).sub(hazard.center);
-          if (resolveCitySolidContact(cityPlayerBefore, player.position, hazard)) {
+          if (resolveCitySolidContact(cityPlayerBefore, player.position, hazard, { laneLimit: flightLimit() })) {
             cityImpactCount++;
             hit(26);
             shake = Math.max(shake, 0.28);
