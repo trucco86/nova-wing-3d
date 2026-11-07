@@ -102,3 +102,27 @@ test('world hazard list includes cinematic falling objects in the same frame, wi
   world.setSector(SECTORS[1], 1);
   assert.equal(world.cityHazards().filter((c) => c.kind.startsWith('falling-')).length, 0);
 });
+
+test('falling hovercar stays visible and solid at the actual pilot flight depth before leaving', () => {
+  const visual = createCityDestructionScene();
+  const physics = createCityFallingSolids(visual);
+  const reachable = [];
+  for (const time of [11.2, 11.4, 11.55, 11.7, 11.9]) {
+    updateCityDestructionScene(visual, time);
+    const car = physics.update().find((c) => c.kind === 'falling-hovercar');
+    assert.ok(car, 'crashing car remains solid at t=' + time);
+    const from = new T.Vector3(7, 6, 9);
+    const after = from.clone();
+    if (resolveCitySolidContact(from, after, car, { maxY: 116 })) {
+      reachable.push(time);
+      assert.ok(
+        Math.abs(after.x - car.center.x) >= car.half.x + CITY_SHIP_CLEARANCE.x ||
+        Math.abs(after.y - car.center.y) >= car.half.y + CITY_SHIP_CLEARANCE.y,
+        'actual crash physically ejects the ship outside the visible vehicle',
+      );
+    }
+  }
+  assert.ok(reachable.length >= 2, 'hovercar must offer more than a one-frame collision chance');
+  updateCityDestructionScene(visual, 13);
+  assert.equal(physics.update().some((c) => c.kind === 'falling-hovercar'), false);
+});
