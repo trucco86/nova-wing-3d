@@ -1849,7 +1849,6 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const marsOrbitFog = new T.Color('#a16b57');
   const marsSandHazeFog = new T.Color('#d4ad7e');
   const marsStormFog = new T.Color('#c38a61');
-  const destinationHazeFog = new T.Color();
   let exitBaseDensity = 0.00045;
   let exitBaseStars = 0.75;
   function setDestinationExit(seconds) {
@@ -2380,6 +2379,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     },
     update(dt, time, speed, playing, stageTime = time) {
       terrainMat.uniforms.time.value = time;
+      if (sceneryTheme === 'city' && playing) {
+        cityCatastrophe?.update(dt, stageTime, speed, city.visible);
+        cityReactive?.update(dt, stageTime, speed, city.visible);
+      }
       // Independent, low-draw-call depth planes remain animated during boss
       // fights while the near collision corridor is intentionally frozen.
       updateLivingWorldLayers(sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme), {
