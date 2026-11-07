@@ -96,6 +96,9 @@ test('faded upper/lower/transit materials never mutate physical collision or hid
   assert.equal(hull.active, true);
 
   const upper = near.getObjectByName('city-upper-skybridge-solids');
+  const originalGlass = near.getObjectByName('city-upper-skybridge-glazing').material;
+  assert.equal(originalGlass.opacity, 0.84);
+  assert.equal(originalGlass.transparent, true);
   const sky = {
     ...obstacle(near, 'upper-bridge-deck'),
     center: new T.Vector3(0, 92, 24),
@@ -108,6 +111,9 @@ test('faded upper/lower/transit materials never mutate physical collision or hid
   fade.reset();
   assert.equal(upper.material.opacity, 1);
   assert.equal(upper.material.transparent, false);
+  assert.equal(originalGlass.opacity, 0.84, 'original architect glass stays translucent');
+  assert.equal(originalGlass.transparent, true, 'camera return cannot make glass opaque');
+  assert.equal(originalGlass.depthWrite, true, 'normal material depth policy is restored');
 });
 
 test('real upper bridge solidity stays active even while its camera-facing render material fades', () => {
