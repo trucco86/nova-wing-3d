@@ -35,11 +35,16 @@ test('mobile: hold fighter 90 degrees, transform, dash with real side movement a
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   await button.tap();
   const neutral = await page.evaluate(() => window.fixture.game.snapshot());
-  expect(neutral.dash.active).toBe(false);
-  expect(neutral.energy).toBe(before.energy);
+  // Approved behavior: neutral touch DASH uses the previous steering side,
+  // defaulting to right on a fresh robot session, and consumes real energy.
+  expect(neutral.dash.active).toBe(true);
+  expect(neutral.dash.direction).toBe(1);
+  expect(neutral.energy).toBeLessThan(before.energy);
+  await page.evaluate(() => window.fixture.advance(1.55));
+  const beforeDirectional = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(beforeDirectional.dash.cooldown).toBe(0);
 
-  // Hold the actual touch stick to the right while tapping DASH with a
-  // different touch pointer: no automatic direction from player position.
+  // Live stick direction takes precedence over stored dash direction.
   const stick = page.locator('#stick');
   const stickBounds = await stick.boundingBox();
   await page.mouse.move(
@@ -55,9 +60,9 @@ test('mobile: hold fighter 90 degrees, transform, dash with real side movement a
   const during = await page.evaluate(() => window.fixture.game.snapshot());
   await page.mouse.up();
   expect(during.dash.active).toBe(true);
-  expect(Math.abs(during.player.x - before.player.x)).toBeGreaterThan(3);
+  expect(Math.abs(during.player.x - beforeDirectional.player.x)).toBeGreaterThan(3);
   expect(during.mecha.dashJetSide).toBe(-during.dash.direction);
-  expect(during.energy).toBeLessThan(before.energy);
+  expect(during.energy).toBeLessThan(beforeDirectional.energy);
   expect(during.dash.trail.visible).toBeGreaterThan(0);
   expect(during.mecha.boostCoreCount).toBe(0);
   await page.screenshot({ path: info.outputPath('mecha-lateral-dash.png') });
