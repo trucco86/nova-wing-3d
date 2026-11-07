@@ -5,6 +5,7 @@ import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityReactiveDamage } from './city-reactive-damage.js';
+import { createCityLocalSolids } from './city-local-solids.js';
 import { createCity34Concept, setCity34ConceptQuality } from './city-34-concept.js';
 import {
   createCity32Living,
@@ -1480,6 +1481,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   updateCity32Living(cityFar.getObjectByName('city32-living-metropolis'), 0);
   animateCity30(cityFar.getObjectByName('city-matrix-streets'), 0);
   scene.add(cityFar);
+  const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
 
   // A persistent, layered urban horizon gives the flight a destination instead
@@ -1589,6 +1591,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     cityHazardsCache.length = 0;
     for (const collision of cityCatastrophe?.colliders() ?? []) cityHazardsCache.push(collision);
     for (const collision of cityReactive?.colliders() ?? []) cityHazardsCache.push(collision);
+    for (const collision of cityLocalSolids?.colliders() ?? []) cityHazardsCache.push(collision);
   };
   const near = [];
   for (let i = 0; i < 18; i++) {
@@ -1810,6 +1813,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     strikeCityArchitecture: (from, to, damage, seconds) =>
       cityReactive?.strike(from, to, damage, seconds) ?? null,
     cityArchitectureSnapshot: () => cityReactive?.snapshot() ?? [],
+    cityLocalSolidsSnapshot: () => cityLocalSolids?.snapshot() ?? [],
     cityRoadActive: () => sceneryTheme === 'city' && city.visible && city.position.y > -35,
     cityDestructionSnapshot: () => cityCatastrophe?.snapshot() ?? [],
     setMarsDescent,
@@ -1944,6 +1948,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       sceneryTheme = sector.theme;
       cityCatastrophe?.reset();
       cityReactive?.reset();
+      cityLocalSolids?.reset();
       cityHazardsCache.length = 0;
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
@@ -2221,7 +2226,6 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (sceneryTheme === 'city' && playing) {
         cityCatastrophe?.update(dt, stageTime, speed, city.visible);
         cityReactive?.update(dt, stageTime, speed, city.visible);
-        refreshCityHazards();
       }
       if (playing) {
         travel += speed * dt;
@@ -2277,6 +2281,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           if (dustPos[i * 3 + 2] > 30) dustPos[i * 3 + 2] = -700;
         }
         dustGeo.attributes.position.needsUpdate = true;
+      }
+      if (sceneryTheme === 'city' && playing) {
+        // Tile positions and real moving trains were updated above. Compute
+        // collisions in their final world-space pose, not the prior frame's.
+        cityLocalSolids?.update(city.visible);
+        refreshCityHazards();
       }
       if (playing)
         for (const o of sectorScenery.children) {
