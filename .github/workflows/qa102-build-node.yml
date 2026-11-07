@@ -1,4 +1,5 @@
 name: QA102 premium inhabited city build and Node gate
+# Rerun after initializing the newly enabled High lift instance matrices before rendering.
 # Rerun after aligning instance-matrix assertions to Float32 precision.
 # Rerun after removing unused model allocation bindings reported by strict lint.
 on:
