@@ -119,9 +119,13 @@ export function createOrbitalAscentEncounter(scene, random = Math.random) {
   function reset() {
     firstISS = null;
     station.visible = false;
-    for (const d of pieces) {
-      d.start = range(0.27, 0.88);
-      d.life = range(0.075, 0.18);
+    for (const [index, d] of pieces.entries()) {
+      // Jittered temporal strata avoid empty stretches while remaining
+      // non-repeating and asymmetric across each flight. Coprime stepping
+      // spreads the Medium-quality subset across the entire ascent window.
+      const slot = (index * 7) % pieces.length;
+      d.start = 0.27 + ((slot + random() * 0.72) / pieces.length) * 0.58;
+      d.life = range(0.13, 0.23);
       d.x = range(-150, 150);
       if (Math.abs(d.x) < 18) d.x += d.x < 0 ? -25 : 25;
       d.y = range(-17, 102);
