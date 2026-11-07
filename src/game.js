@@ -569,11 +569,7 @@ export function createGame({
     for (const part of shipParts) part.visible = !robotMode;
     $('robotTouch').ariaPressed = String(robotMode);
     $('robotTouch').textContent = robotMode ? 'NAVE' : 'ROBÔ';
-    $('rollTouch').textContent = robotMode ? 'DASH' : 'GIRO';
-    $('rollTouch').setAttribute(
-      'aria-label',
-      robotMode ? 'Dash lateral do robô' : 'Giro e inclinação vertical da nave',
-    );
+    syncDodgeControl();
     dashRemaining = 0;
     rollHeld = false;
     cue(robotMode ? 'transformRobot' : 'transformShip');
@@ -1681,19 +1677,17 @@ export function createGame({
     dispose(e.o);
     e.dead = true;
   }
-  function doRoll() {
+  function doRoll(key = '') {
     if (state !== 'playing') return;
     if (robotMode) {
-      if (dashCooldown > 0 || robotTransition > 0) return;
+      if (dashCooldown > 0) return;
       const steer =
         (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) -
         (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) +
         stick.x;
-      const direction = dashDirection(steer);
-      if (!direction) {
-        message('DASH · APONTE ESQUERDA OU DIREITA + DASH');
-        return;
-      }
+      const direction =
+        dashDirection(steer) || (key === 'KeyQ' ? -1 : key === 'KeyE' ? 1 : dashSide);
+      if (Math.abs(player.position.x - direction * flightLimit()) < 0.1) return;
       if (energy < MECHA_DASH.energyCost) {
         message('DASH INDISPONÍVEL · ENERGIA INSUFICIENTE');
         return;
@@ -2257,10 +2251,14 @@ export function createGame({
     bossIntent = null;
     reactorGridSeconds = 0;
     bossHp = bossCombat.max;
-    boss =
-      dynamicFlight && sectorIndex === 3
-        ? createDevastadorSabotageCore()
-        : createBossModel(current(), sectorIndex, dynamicFlight);
+    // Preserve the already warmed GPU model; rebuilding on boss arrival
+    // causes stutter and defeats the stage-loading shader prewarm.
+    const bossUsesSabotageCore = dynamicFlight && sectorIndex === 3;
+    if (bossUsesSabotageCore && preparedBoss) disposeBoss(preparedBoss);
+    boss = bossUsesSabotageCore
+      ? createDevastadorSabotageCore()
+      : preparedBoss ?? createBossModel(current(), sectorIndex, dynamicFlight);
+    preparedBoss = null;
     weakpointEvidence = newWeakpointEvidence(boss.userData.parts);
     bossHitPulse = 0;
     for (const e of enemies) dispose(e.o);
@@ -3531,7 +3529,7 @@ export function createGame({
     if (e.code === 'KeyB' || e.code === 'KeyX') bomb();
     if (rollKeys.has(e.code) && state === 'playing') {
       rollKeyDownAt.set(e.code, now());
-      if (robotMode) doRoll();
+      if (robotMode) doRoll(e.code);
     }
     if (e.code === 'KeyP' || e.code === 'Escape') pause();
     if (e.code === 'Enter' && state === 'menu') settings.intro ? beginCinematic() : start();
@@ -6252,6 +6250,9 @@ export function createGame({
       bossZ: boss?.position.z ?? null,
       coreOpen: bossCombat?.coreOpen ?? false,
       collapseTime,
+      warpDeparture,
+      marsCleanse,
+      marsPendingRoll,
       devastadorEscape:
         boss?.userData.sabotage && state === 'collapsing'
           ? {
