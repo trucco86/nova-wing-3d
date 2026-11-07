@@ -112,3 +112,17 @@ test('stage 1 physically prevents ship from flying through roadside rail with da
   assert.ok(snap.player.x <= CITY_ROAD_LIMIT + 0.01);
   assert.ok(snap.cityImpactCount > 0, 'rail physically blocked and registered impact');
 });
+
+test('Mars flight retains the 72-unit arena; only stage 1 has solid city guardrails', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: false, hostname: 'localhost' });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(1, 'stage'), true);
+  h.key('KeyD');
+  h.key('KeyW');
+  h.advance(4, 0.04);
+  h.key('KeyD', false);
+  h.key('KeyW', false);
+  const snap = h.game.snapshot();
+  assert.equal(snap.sector, 2);
+  assert.equal(snap.player.x, 72, 'do not narrow piloting outside the city');
+});
