@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.105 — Candidata em preparação
+
+- QA105: subchefe obrigatório após percurso de obstáculos da fase 3, bloqueio do chefe principal até o encontro, teste automatizado do cenário de subchefe. Validação completa da campanha e QA visual pendentes.
+
 ## 1.27.104 — Candidata em preparação
 
 - QA104: fenda física para GIRO segurado na fase 3, projeção do casco real, blocos minerais e dentes com rotas alternativas, frenagem no contato e recuperação contínua após avaria/transformação. Validação visual e homologação pendentes.
