@@ -5,6 +5,9 @@ on:
       - fix/qa105-stage3-subchief-gate-20261108
     paths:
       - .github/workflows/qa105-prepare.yml
+      - package.json
+      - package-lock.json
+      - CHANGELOG.md
   workflow_dispatch:
 permissions:
   contents: write
