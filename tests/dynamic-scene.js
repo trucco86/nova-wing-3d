@@ -24,6 +24,7 @@ const game = createGame({
   // Existing gameplay probes skip the pre-mission film; opt in with ?intro=1
   // for dedicated browser assertions of the real Five Cats opening.
   enableSquadIntro: params.get('intro') === '1',
+  enableAsteroidCourse: params.get('asteroidCourse') === '1' || params.get('encounters') === '1',
   spawnEncounters: params.get('arcade') === '1' || params.get('encounters') === '1',
   // Explicit opt-out keeps legacy encounter tests isolated. In ordinary
   // gameplay and encounter-enabled fixtures, the authored train/boost path remains on.

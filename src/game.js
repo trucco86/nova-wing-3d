@@ -69,6 +69,7 @@ import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './ma
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
 import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
+import { measurePilotHull, projectPilotHull } from './asteroid-course.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
 import {
@@ -248,6 +249,7 @@ export function createGame({
   // QA fixtures may inspect destruction without spawning hostile formations;
   // ordinary gameplay inherits the normal encounter toggle.
   enableCitySetpieces = spawnEncounters,
+  enableAsteroidCourse = spawnEncounters,
   enableSquadIntro = true,
   nativeLifecycle = false,
   onStageStarted = () => {},
@@ -320,7 +322,9 @@ export function createGame({
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
   const dashTrail = createMechaDashTrail(scene);
-  const asteroidInterior = dynamicFlight ? createAsteroidInterior(scene) : null;
+  const asteroidInterior = dynamicFlight
+    ? createAsteroidInterior(scene, { obstacles: enableAsteroidCourse })
+    : null;
   const marvinRival = dynamicFlight ? createMarvinRival(scene) : null;
   let journey = initialJourney(0);
   let asteroidWallCooldown = 0;
@@ -366,6 +370,24 @@ export function createGame({
   const robot = createFlyingRobot();
   robot.visible = false;
   player.add(robot);
+  let asteroidShipHull = measurePilotHull(player, robot);
+  const asteroidRobotHull = measurePilotHull(robot);
+  const asteroidPriorRotation = new T.Euler();
+  let pendingAsteroidTransform = null;
+  function asteroidPilotHalf(mode = robotMode) {
+    return projectPilotHull(
+      mode ? asteroidRobotHull : asteroidShipHull,
+      player.rotation,
+      player.scale.x,
+    );
+  }
+  function asteroidImpact() {
+    if (asteroidWallCooldown > 0) return;
+    asteroidWallCooldown = 1.25;
+    hit(12);
+    cue('armorHit');
+    shake = Math.max(shake, 0.25);
+  }
   // A damaged ship retreats instead of depicting a dead cat.
   const damagedCraft = dynamicFlight ? fighter() : null;
   if (damagedCraft) {
@@ -561,6 +583,14 @@ export function createGame({
       dashRemaining > 0
     )
       return;
+    if (
+      sectorIndex === 2 &&
+      asteroidInterior.course.overlaps(player.position, asteroidPilotHalf(!robotMode))
+    ) {
+      pendingAsteroidTransform = !robotMode;
+      return;
+    }
+    pendingAsteroidTransform = null;
     energy -= 15;
     robotCooldown = 2.5;
     robotTransition = transformDuration;
@@ -965,6 +995,7 @@ export function createGame({
     player.add(shipModule);
     shipModule.scale.setScalar(1.02);
     shipModule.visible = !robotMode;
+    asteroidShipHull = measurePilotHull(player, robot);
     setFighterEvolution(shipModule, Math.max(0, evolutionStage));
     robot.userData.mecha.baseScale =
       pilotLoadout.ship === 'aegis' ? 0.94 : pilotLoadout.ship === 'specter' ? 0.85 : 0.91;
@@ -3661,6 +3692,7 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    pendingAsteroidTransform = null;
     audioCues?.silence();
     orbitTouch = 0;
     boosting = false;
@@ -3938,6 +3970,7 @@ export function createGame({
     }
     reticle.visible = true;
     const previousPlayer = player.position.clone();
+    asteroidPriorRotation.copy(player.rotation);
     const dodgeMultiplier = reflexBoost.snapshot().dodgeMultiplier;
     const storm = dynamicFlight && sectorIndex === 1 ? marsSandstormAt(elapsed) : null;
     const gustX = storm?.windX ?? 0;
@@ -3996,11 +4029,7 @@ export function createGame({
       if (wall.collided) {
         player.position.x = wall.x;
         player.position.y = wall.y;
-        if (asteroidWallCooldown <= 0) {
-          asteroidWallCooldown = 1.25;
-          hit(12);
-          cue('armorHit');
-        }
+        asteroidImpact();
       }
     }
     if (dashStart) dashTrail.emit(dashStart, player.position);
@@ -4038,6 +4067,18 @@ export function createGame({
       // remain fully responsive and can counter-steer against the gust.
       if (storm?.active && !rollHeld)
         player.rotation.z = clamp(player.rotation.z + storm.roll, -0.75, 0.75);
+    }
+    if (dynamicFlight && sectorIndex === 2 && enableAsteroidCourse) {
+      let half = asteroidPilotHalf();
+      // A hull cannot unfold inside solid rock. Controls remain released;
+      // the bank can return to neutral as soon as the opening is cleared.
+      if (asteroidInterior.course.overlaps(previousPlayer, half)) {
+        player.rotation.copy(asteroidPriorRotation);
+        half = asteroidPilotHalf();
+      }
+      const contact = asteroidInterior.course.constrain(previousPlayer, player.position, half);
+      player.position.set(contact.x, contact.y, contact.z);
+      if (contact.collided) asteroidImpact();
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -4620,7 +4661,8 @@ export function createGame({
     }
     const bossBlocked =
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
-      obstacles.some((o) => o.o.userData.kind === 'tunnel');
+      obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
+      (dynamicFlight && sectorIndex === 2 && !asteroidInterior.course.snapshot().complete);
     if (
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
       shouldWarnBoss({
@@ -4646,7 +4688,7 @@ export function createGame({
       elapsed >= current().duration &&
       !boss &&
       !enemies.some((e) => !e.dead && e.kind === 'subboss') &&
-      !obstacles.some((o) => o.o.userData.kind === 'tunnel')
+      !bossBlocked
     )
       makeBoss();
     const phase = boss
@@ -5902,8 +5944,27 @@ export function createGame({
         (state === 'playing' && !(dynamicFlight && boss)) ||
         (dynamicFlight && state === 'collapsing');
       world.update(dt, visualTime, scenerySpeed, sceneryMoving, elapsed);
-      if (sectorIndex === 2 && dynamicFlight && sceneryMoving)
-        asteroidInterior.update(dt, scenerySpeed);
+      if (sectorIndex === 2 && dynamicFlight && sceneryMoving) {
+        const contact = asteroidInterior.update(dt, scenerySpeed, {
+          position: player.position,
+          half: asteroidPilotHalf(),
+          clearanceHalf:
+            pendingAsteroidTransform === null
+              ? undefined
+              : asteroidPilotHalf(pendingAsteroidTransform),
+        });
+        if (contact?.collided) asteroidImpact();
+        if (
+          pendingAsteroidTransform !== null &&
+          !asteroidInterior.course.overlaps(
+            player.position,
+            asteroidPilotHalf(pendingAsteroidTransform),
+          )
+        ) {
+          pendingAsteroidTransform = null;
+          toggleRobot();
+        }
+      }
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
