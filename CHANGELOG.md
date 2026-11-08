@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.104 — Candidata em preparação
+
+- QA104: fenda física para GIRO segurado na fase 3, projeção do casco real, blocos minerais e dentes com rotas alternativas, frenagem no contato e recuperação contínua após avaria/transformação. Validação visual e homologação pendentes.
+
 ## 1.27.103 — Candidata em preparação
 
 - QA P0-A: entrada da fase 3 com boca, garganta rochosa e caverna conectadas espacialmente; avanço compartilhado com a velocidade do cenário, sem ampliação artificial. Reinício restaura rotações. Hold-giro, obstáculos e traseiras dos chefes permanecem em tarefas separadas. Homologação visual pendente.

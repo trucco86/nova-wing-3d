@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createAsteroidCourse } from './asteroid-course.js';
 
 // Web sector 3: a light-weight, GPU-instanced corridor rather than hundreds of draw calls.
 // The central tunnel stays free for aiming, enemies and cockpit/chase cameras.
@@ -26,7 +27,8 @@ export function crossesCavernWall(from, to, radius = SHOT_RADIUS) {
   return false;
 }
 
-export function createAsteroidInterior(scene) {
+export function createAsteroidInterior(scene, { obstacles = false } = {}) {
+  const course = createAsteroidCourse(scene, obstacles);
   const rockGeometry = new T.IcosahedronGeometry(1, 1);
   const rockMaterial = new T.MeshStandardMaterial({
     color: '#4b3c54',
@@ -197,6 +199,7 @@ export function createAsteroidInterior(scene) {
   }
   function setPhase(next) {
     phase = next;
+    course.setPhase(next);
     mouth.visible =
       next === 'approach' ||
       (['transition', 'interior'].includes(next) && mouth.position.z <= ENTRANCE_CLEAR_Z);
@@ -211,17 +214,26 @@ export function createAsteroidInterior(scene) {
     setPhase,
     reset(active) {
       runTime = 0;
+      course.reset();
       placeApproach();
       arena.rotation.z = 0;
       setPhase(active ? 'approach' : 'inactive');
     },
-    update(dt, speed) {
+    update(dt, speed, pilot = null) {
+      let collision = false;
       if (!tunnel.visible && !mouth.visible && !arena.visible) return;
       runTime += dt;
       if (phase === 'approach') {
         placeApproach();
       } else if (tunnel.visible) {
-        const distance = dt * speed * (phase === 'escape' ? 1.8 : 1);
+        const advance = course.advance(
+          dt * speed * (phase === 'escape' ? 1.8 : 1),
+          pilot?.position,
+          pilot?.half,
+          pilot?.clearanceHalf,
+        );
+        const distance = advance.distance;
+        collision = advance.collided;
         if (phase === 'transition' || phase === 'interior') {
           mouth.position.z += distance;
           // Keep the thick lip and throat until they are behind the chase
@@ -239,7 +251,9 @@ export function createAsteroidInterior(scene) {
         }
       }
       if (arena.visible) arena.rotation.z = Math.sin(runTime * 0.3) * 0.04;
+      return { collided: collision };
     },
+    course,
     constrain(position) {
       return phase === 'transition' || phase === 'interior' || phase === 'escape'
         ? constrainCavernPosition(position)
@@ -248,12 +262,13 @@ export function createAsteroidInterior(scene) {
     projectileBlocked(from, to) {
       return (
         (phase === 'transition' || phase === 'interior' || phase === 'escape') &&
-        crossesCavernWall(from, to)
+        (crossesCavernWall(from, to) || course.projectileBlocked(from, to))
       );
     },
     snapshot() {
       return {
         phase,
+        course: course.snapshot(),
         cavernVisible: tunnel.visible,
         entranceVisible: mouth.visible,
         arenaVisible: arena.visible,
@@ -263,6 +278,7 @@ export function createAsteroidInterior(scene) {
       };
     },
     destroy() {
+      course.destroy();
       scene.remove(mouth, tunnel, arena);
       const geometries = new Set([
         rockGeometry,
