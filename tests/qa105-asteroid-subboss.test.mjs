@@ -14,7 +14,7 @@ test('QA105: asteroid sector has a visible, sector-specific subboss encounter', 
   assert.ok(targets[0].attack, 'sector-specific attack is configured');
   assert.ok(targets[0].tactic, 'sector-specific movement is configured');
   assert.equal(h.elements.get('subHUD').hidden, false, 'subboss HUD is visible');
-  assert.equal(first.bossHp ?? 0, 0, 'main boss must not overlap the subboss');
+  assert.equal(first.boss, false, 'main boss must not overlap the subboss');
 
   h.game.pause();
   const paused = h.game.snapshot();
