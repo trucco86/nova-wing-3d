@@ -78,7 +78,7 @@ jobs:
               '@trucco86', '',
               'Monitor automático da release Nova Wing. Revisão humana necessária.',
               '',
-              '**HEAD main:** \`' + sha + '\`',
+              '**HEAD main:** `' + sha + '`',
               '**CI:** ' + (ci ? ci.html_url + ' (' + ci.status + ', ' + (ci.conclusion || 'pendente') + ')' : 'não encontrada'),
               '**Pages:** ' + (pages ? pages.conclusion || pages.status : 'sem confirmação'),
               '**Produção HTTP:** ' + siteStatus,
@@ -87,7 +87,7 @@ jobs:
               ...blockers.map(blocker => '- ' + blocker),
               '',
               '<!-- monitor-fingerprint:' + Buffer.from(fingerprint).toString('base64') + ' -->'
-            ].join('\\n');
+            ].join('\n');
             if (blockers.length) {
               if (!previous || previous.state === 'closed') {
                 const created = await github.rest.issues.create({ owner, repo, title, body });
@@ -105,7 +105,7 @@ jobs:
             } else if (previous && previous.state === 'open') {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: previous.number,
-                body: '@trucco86 Recuperação confirmada: CI e GitHub Pages aprovados, produção HTTP ' + siteStatus + ', main \`' + sha.slice(0, 12) + '\`.'
+                body: '@trucco86 Recuperação confirmada: CI e GitHub Pages aprovados, produção HTTP ' + siteStatus + ', main `' + sha.slice(0, 12) + '`.'
               });
               await github.rest.issues.update({ owner, repo, issue_number: previous.number, state: 'closed' });
               core.info('Recuperação confirmada e issue fechada.');
