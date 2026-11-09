@@ -25,7 +25,16 @@ test('Control Center uses public read-only GitHub API without tokens', () => {
 });
 
 test('Control Center has real work, deployment and release views', () => {
-  for (const id of ['tasks', 'prs', 'ci', 'deploy', 'work-list', 'runs', 'releases', 'environments']) {
+  for (const id of [
+    'tasks',
+    'prs',
+    'ci',
+    'deploy',
+    'work-list',
+    'runs',
+    'releases',
+    'environments',
+  ]) {
     assert.match(html, new RegExp('id="' + id + '"'));
   }
   assert.match(html, /nova-release-monitor\.yml/);
@@ -34,6 +43,12 @@ test('Control Center has real work, deployment and release views', () => {
 
 test('GitHub Pages packages Control Center without modifying the game artifact', () => {
   assert.match(ci, /mkdir -p public-site\/control-center/);
-  assert.match(ci, /cp docs\/control-center\/index\.html public-site\/control-center\/index\.html/);
-  assert.match(ci, /cp index\.html \.nojekyll LICENSE docs\/THREE-LICENSE\.txt public-site\//);
+  assert.match(
+    ci,
+    /cp docs\/control-center\/index\.html public-site\/control-center\/index\.html/,
+  );
+  assert.match(
+    ci,
+    /cp index\.html \.nojekyll LICENSE docs\/THREE-LICENSE\.txt public-site\//,
+  );
 });
