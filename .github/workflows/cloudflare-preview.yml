@@ -23,18 +23,26 @@ jobs:
     environment: nova-preview
     steps:
       - uses: actions/checkout@v4
+        with:
+          # For conservative changed-file selection in the preview-only lane.
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - name: Install
         run: npm ci
-      - name: Build web
-        run: npm run build:check
-      - name: Reproduce verified web build
-        run: npm run build
-      - name: Validate source and generated output
-        run: npm run validate
+      # Preview is an experiment, not an approved release. Build current
+      # sources directly so developers do not wait for a bot-synced index.html.
+      # Main/release still require strict CI with the committed HTML.
+      - name: Build current QA preview
+        run: |
+          npm run build
+          npm run build:check
+      - name: FAST source checks and impacted regression tests
+        run: npm run test:fast -- --scope=auto
+      - name: State fast-lane limitations
+        run: echo 'Preview-only gate. Full Node and browser CI remain required before merge.'
       - name: Prepare static website
         run: |
           mkdir -p dist

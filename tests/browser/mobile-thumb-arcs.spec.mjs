@@ -77,7 +77,10 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
       expect(rect.right, id + ' inside screen').toBeLessThanOrEqual(viewport.width + 1);
       expect(rect.bottom, id + ' inside screen').toBeLessThanOrEqual(viewport.height + 1);
       expect(opacity, id + ' transparent but readable').toBeGreaterThan(0.35);
-      expect(opacity).toBeLessThanOrEqual(id === 'boostTouch' ? 0.9 : 0.76);
+      expect(opacity).toBeLessThanOrEqual(['boostTouch', 'fireTouch'].includes(id) ? 1 : 0.76);
+      if (id === 'fireTouch' || id === 'boostTouch') {
+        expect(opacity, id + ' primary action must be readable').toBeGreaterThanOrEqual(0.8);
+      }
       if (id === 'boostTouch') {
         expect(opacity).toBeGreaterThan(0.74);
         expect(rect.width).toBeGreaterThanOrEqual(60);
@@ -97,4 +100,71 @@ test('ergonomic thumb arcs maintain 7 touch targets, safe areas and clear center
     });
   }
   expect(errors).toEqual([]);
+});
+
+test('both fingers hold FIRE and BOOST independently without ghost taps', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile');
+  test.setTimeout(90000);
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/__dynamic.html?sector=0');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    const fire = page.locator('#fireTouch');
+    const boost = page.locator('#boostTouch');
+    const [fireBox, boostBox] = await Promise.all([fire.boundingBox(), boost.boundingBox()]);
+    expect(fireBox).not.toBeNull();
+    expect(boostBox).not.toBeNull();
+
+    const firePoint = {
+      x: fireBox.x + fireBox.width / 2,
+      y: fireBox.y + fireBox.height / 2,
+      id: 1,
+    };
+    const boostPoint = {
+      x: boostBox.x + boostBox.width / 2,
+      y: boostBox.y + boostBox.height / 2,
+      id: 2,
+    };
+    const client = await page.context().newCDPSession(page);
+    try {
+      const centerTargets = await page.evaluate(
+        ({ fireX, fireY, boostX, boostY }) => ({
+          fire: document.elementFromPoint(fireX, fireY)?.closest('#fireTouch')?.id,
+          boost: document.elementFromPoint(boostX, boostY)?.closest('#boostTouch')?.id,
+        }),
+        {
+          fireX: firePoint.x,
+          fireY: firePoint.y,
+          boostX: boostPoint.x,
+          boostY: boostPoint.y,
+        },
+      );
+      expect(centerTargets).toEqual({ fire: 'fireTouch', boost: 'boostTouch' });
+
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [firePoint],
+      });
+      await expect(fire).toHaveClass(/pressed/);
+      await client.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [firePoint, boostPoint],
+      });
+      await expect(fire).toHaveClass(/pressed/);
+      await expect(boost).toHaveClass(/pressed/);
+      await page.evaluate(() => window.fixture.advance(0.3));
+      await expect(fire).toHaveClass(/pressed/);
+      await expect(boost).toHaveClass(/pressed/);
+    } finally {
+      await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await client.detach();
+    }
+    await expect(fire).not.toHaveClass(/pressed/);
+    await expect(boost).not.toHaveClass(/pressed/);
+  }
 });

@@ -37,7 +37,7 @@ test('campaign route shows ten real levels with completed/current/future progres
   assert.match(map[1].threat, /Tempestades de areia/);
   assert.equal(map[1].boss, 'COLOSSO DAS DUNAS');
   assert.notEqual(map[1].icon, '◆', 'Mars has a unique map symbol');
-  assert.equal(map[9].name, 'TRONO DE MARVIN');
+  assert.equal(map[9].name, 'CAÇADA FINAL · MARVIN');
 });
 
 test('hangar upgrades add real projectiles and increase cadence without changing native mode', () => {

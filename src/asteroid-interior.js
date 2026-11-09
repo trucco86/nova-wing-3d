@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createAsteroidCourse } from './asteroid-course.js';
 
 // Web sector 3: a light-weight, GPU-instanced corridor rather than hundreds of draw calls.
 // The central tunnel stays free for aiming, enemies and cockpit/chase cameras.
@@ -7,6 +8,8 @@ const PILOT_RADIUS = 27;
 const SHOT_RADIUS = 37;
 const RING_COUNT = 8;
 const RING_GAP = 110;
+const THROAT_DEPTH = 140;
+const ENTRANCE_CLEAR_Z = 230;
 
 export function constrainCavernPosition(position, radius = PILOT_RADIUS) {
   const dy = position.y - CENTER_Y;
@@ -24,7 +27,8 @@ export function crossesCavernWall(from, to, radius = SHOT_RADIUS) {
   return false;
 }
 
-export function createAsteroidInterior(scene) {
+export function createAsteroidInterior(scene, { obstacles = false } = {}) {
+  const course = createAsteroidCourse(scene, obstacles);
   const rockGeometry = new T.IcosahedronGeometry(1, 1);
   const rockMaterial = new T.MeshStandardMaterial({
     color: '#4b3c54',
@@ -50,11 +54,65 @@ export function createAsteroidInterior(scene) {
   });
   const mouth = new T.Group();
   mouth.name = 'asteroid-entrance';
-  const outerShell = new T.Mesh(new T.TorusGeometry(106, 65, 7, 19), gateMaterial);
-  outerShell.scale.y = 0.82;
+  // A real irregular rock aperture, not a bright circular portal/ring.
+  // Instancing retains two draw calls and a clear central flight corridor.
+  const entranceDummy = new T.Object3D();
+  const outerShell = new T.InstancedMesh(rockGeometry, gateMaterial, 56);
+  outerShell.name = 'asteroid-entrance-jagged-rock-face';
+  for (let i = 0; i < 56; i++) {
+    const a = (i / 56) * Math.PI * 2;
+    const radius = 76 + Math.sin(i * 2.37) * 7;
+    entranceDummy.position.set(
+      Math.cos(a) * radius,
+      Math.sin(a) * radius * 0.88,
+      Math.sin(i * 1.7) * 22,
+    );
+    entranceDummy.rotation.set(i * 0.37, i * 0.18, a);
+    entranceDummy.scale.set(31 + (i % 4) * 4, 30 + (i % 3) * 5, 36 + (i % 5) * 6);
+    entranceDummy.updateMatrix();
+    outerShell.setMatrixAt(i, entranceDummy.matrix);
+    outerShell.setColorAt(i, new T.Color(['#68505b', '#7b6269', '#584956', '#817273'][i % 4]));
+  }
+  outerShell.instanceMatrix.needsUpdate = true;
+  outerShell.instanceColor.needsUpdate = true;
   mouth.add(outerShell);
-  const portal = new T.Mesh(new T.TorusGeometry(42, 2, 5, 24), veinMaterial);
+  // Sparse mineral faults follow separate rock faces, not a concentric hoop.
+  const portal = new T.InstancedMesh(braceGeo, veinMaterial, 12);
+  portal.name = 'asteroid-entrance-mineral-faults';
+  for (let i = 0; i < 12; i++) {
+    const a = (i * 2.399963) % (Math.PI * 2);
+    const radius = 53 + (i % 3) * 5;
+    entranceDummy.position.set(Math.cos(a) * radius, Math.sin(a) * radius, 17 + (i % 4));
+    entranceDummy.rotation.set(0, 0, a + 0.24);
+    entranceDummy.scale.set(1.1, 7 + (i % 4) * 3, 1.4);
+    entranceDummy.updateMatrix();
+    portal.setMatrixAt(i, entranceDummy.matrix);
+  }
+  portal.instanceMatrix.needsUpdate = true;
   mouth.add(portal);
+  // Three overlapping, tapered rock shelves connect the exterior to the
+  // first cavern section. Their inner faces keep the flight corridor open.
+  const throat = new T.InstancedMesh(rockGeometry, rockMaterial, 54);
+  throat.name = 'asteroid-entrance-throat';
+  for (let layer = 0; layer < 3; layer++) {
+    for (let j = 0; j < 18; j++) {
+      const angle = (j / 18) * Math.PI * 2 + layer * 0.08;
+      const radius = 57 - layer * 4 + Math.sin(j * 2.7) * 2;
+      entranceDummy.position.set(
+        Math.cos(angle) * radius,
+        Math.sin(angle) * radius,
+        -35 - layer * 40,
+      );
+      entranceDummy.rotation.set(0, 0, angle);
+      entranceDummy.scale.set(9, 17, 30);
+      entranceDummy.updateMatrix();
+      throat.setMatrixAt(layer * 18 + j, entranceDummy.matrix);
+      throat.setColorAt(layer * 18 + j, new T.Color(['#817273', '#685967', '#53636d'][layer]));
+    }
+  }
+  throat.instanceMatrix.needsUpdate = true;
+  throat.instanceColor.needsUpdate = true;
+  mouth.add(throat);
   mouth.position.set(0, CENTER_Y, -630);
   scene.add(mouth);
 
@@ -131,39 +189,71 @@ export function createAsteroidInterior(scene) {
 
   let phase = 'inactive';
   let runTime = 0;
+  function placeApproach() {
+    mouth.position.z = -630 + Math.min(1, runTime / 16) * 370;
+    mouth.scale.setScalar(1);
+    for (let i = 0; i < rings.length; i++) {
+      rings[i].position.z = mouth.position.z - THROAT_DEPTH - i * RING_GAP;
+      rings[i].rotation.z = 0;
+    }
+  }
   function setPhase(next) {
     phase = next;
-    mouth.visible = next === 'approach' || next === 'transition';
-    tunnel.visible = next === 'transition' || next === 'interior' || next === 'escape';
+    course.setPhase(next);
+    mouth.visible =
+      next === 'approach' ||
+      (['transition', 'interior'].includes(next) && mouth.position.z <= ENTRANCE_CLEAR_Z);
+    // The cavern is already behind the aperture during approach; changing
+    // the journey phase must never spawn a corridor in front of the pilot.
+    tunnel.visible = ['approach', 'transition', 'interior', 'escape'].includes(next);
     arena.visible = next === 'boss';
-    if (mouth.visible) {
-      mouth.position.z = next === 'transition' ? -220 : -630;
-      mouth.scale.setScalar(next === 'transition' ? 1.2 : 1);
-    }
+    if (next === 'approach') placeApproach();
   }
   setPhase('inactive');
   return {
     setPhase,
     reset(active) {
       runTime = 0;
-      for (let i = 0; i < rings.length; i++) rings[i].position.z = -115 - i * RING_GAP;
+      course.reset();
+      placeApproach();
+      arena.rotation.z = 0;
       setPhase(active ? 'approach' : 'inactive');
     },
-    update(dt, speed) {
+    update(dt, speed, pilot = null) {
+      let collision = false;
       if (!tunnel.visible && !mouth.visible && !arena.visible) return;
       runTime += dt;
-      if (mouth.visible && phase === 'approach') {
-        mouth.position.z = -630 + Math.min(1, runTime / 16) * 370;
-      }
-      if (tunnel.visible) {
+      if (phase === 'approach') {
+        placeApproach();
+      } else if (tunnel.visible) {
+        const advance = course.advance(
+          dt * speed * (phase === 'escape' ? 1.8 : 1),
+          pilot?.position,
+          pilot?.half,
+          pilot?.clearanceHalf,
+        );
+        const distance = advance.distance;
+        collision = advance.collided;
+        if (phase === 'transition' || phase === 'interior') {
+          mouth.position.z += distance;
+          // Keep the thick lip and throat until they are behind the chase
+          // camera, including when the timed journey enters its next phase.
+          mouth.visible = mouth.position.z <= ENTRANCE_CLEAR_Z;
+        }
         for (const section of rings) {
-          section.position.z += dt * speed * (phase === 'escape' ? 1.8 : 1);
-          if (section.position.z > 70) section.position.z -= RING_COUNT * RING_GAP;
-          section.rotation.z += dt * (phase === 'escape' ? 0.075 : 0.012);
+          section.position.z += distance;
+          if (section.position.z > ENTRANCE_CLEAR_Z)
+            section.position.z -=
+              Math.ceil((section.position.z - ENTRANCE_CLEAR_Z) / (RING_COUNT * RING_GAP)) *
+              RING_COUNT *
+              RING_GAP;
+          if (phase === 'escape') section.rotation.z += dt * 0.075;
         }
       }
       if (arena.visible) arena.rotation.z = Math.sin(runTime * 0.3) * 0.04;
+      return { collided: collision };
     },
+    course,
     constrain(position) {
       return phase === 'transition' || phase === 'interior' || phase === 'escape'
         ? constrainCavernPosition(position)
@@ -172,36 +262,39 @@ export function createAsteroidInterior(scene) {
     projectileBlocked(from, to) {
       return (
         (phase === 'transition' || phase === 'interior' || phase === 'escape') &&
-        crossesCavernWall(from, to)
+        (crossesCavernWall(from, to) || course.projectileBlocked(from, to))
       );
     },
     snapshot() {
       return {
         phase,
+        course: course.snapshot(),
         cavernVisible: tunnel.visible,
         entranceVisible: mouth.visible,
         arenaVisible: arena.visible,
         rings: rings.length,
+        entranceZ: mouth.position.z,
+        nearestSectionZ: Math.max(...rings.map((section) => section.position.z)),
       };
     },
     destroy() {
+      course.destroy();
       scene.remove(mouth, tunnel, arena);
-      for (const mesh of [
-        outerShell,
-        portal,
-        ...rings.flatMap((r) => r.children),
-        ...arena.children,
-      ]) {
-        mesh.geometry?.dispose();
-      }
-      rockGeometry.dispose();
+      const geometries = new Set([
+        rockGeometry,
+        crystalGeo,
+        braceGeo,
+        ...rings.flatMap((ring) => ring.children.map((mesh) => mesh.geometry)),
+        ...arena.children.map((mesh) => mesh.geometry),
+      ]);
+      for (const geometry of geometries) geometry.dispose();
+      for (const mesh of [outerShell, portal, throat, ...rings.flatMap((ring) => ring.children)])
+        if (mesh.isInstancedMesh) mesh.dispose();
       rockMaterial.dispose();
       veinMaterial.dispose();
       gateMaterial.dispose();
       oreMaterial.dispose();
       braceMaterial.dispose();
-      crystalGeo.dispose();
-      braceGeo.dispose();
     },
   };
 }

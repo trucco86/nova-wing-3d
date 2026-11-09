@@ -1,0 +1,50 @@
+name: Prepare QA browser regression candidate
+on:
+  push:
+    branches:
+      - fix/qa-browser-stage4-lab-regression-20261101
+    paths:
+      - .github/workflows/qa-stage4-browser-regression.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/qa-browser-stage4-lab-regression-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Validate QA and reproducible build
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit verified web and isolated QA changes
+        run: |
+          git add -- index.html src/game.js src/encounter-arrival-flow.js src/styles.css tests/stage4-flow-and-developer-lab.test.mjs src/developer-mode.js tests/developer-mode.test.mjs tests/browser/developer-lab-mobile.spec.mjs tests/browser/destination-journeys.spec.mjs tests/browser/game.spec.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No generated changes.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified mobile laboratory and stage 4 encounter flow'
+            git push origin HEAD:fix/qa-browser-stage4-lab-regression-20261101
+          fi
+      - name: Launch independent browser CI and preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref fix/qa-browser-stage4-lab-regression-20261101
+          gh workflow run cloudflare-preview.yml --ref fix/qa-browser-stage4-lab-regression-20261101

@@ -30,7 +30,9 @@ test('worlds have identifiable, non-colliding geometry and distinct silhouettes'
     assert.equal(createDestinationLandmarks(world - 0)?.userData.world, world);
   }
   assert.ok(createDestinationLandmarks(0) === null);
-  assert.ok(createDestinationLandmarks(8) === null);
+  assert.ok(
+    createDestinationLandmarks(8).getObjectByName('orion-gravitational-spires')?.isInstancedMesh,
+  );
 });
 
 test('Venus lightning pulses, Neptune clouds drift, and pause reproduces a frame', () => {
@@ -118,4 +120,22 @@ test('planetary horizon objects never spin or drift with generic obstacle travel
     before,
     'pausing/re-rendering the same mission time is deterministic',
   );
+});
+
+test('Saturn replaces a uniform field of broken ships with a moving ring ice field', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[7], 7);
+  assert.equal(scene.getObjectByName('fleet-destroyed-frigate'), undefined);
+  assert.ok(scene.getObjectByName('saturn-ring-ice-near')?.isInstancedMesh);
+  assert.ok(scene.getObjectByName('saturn-ring-ice-far-high')?.isInstancedMesh);
+  world.setDestinationArrival(8);
+  const globe = scene.getObjectByName('destination-celestial-body');
+  assert.ok(globe.visible && globe.material.uniforms.alpha.value > 0.99);
+  assert.ok(Math.abs(globe.position.x) < 85, 'Saturn remains visible in portrait');
+  world.setDestinationArrival(98);
+  assert.ok(globe.visible);
+  assert.ok(scene.fog.density < 0.0002, 'no fake atmospheric fog at ring plane');
+  world.setSector(SECTORS[0], 0);
+  assert.equal(scene.getObjectByName('saturn-ring-ice-near'), undefined);
 });

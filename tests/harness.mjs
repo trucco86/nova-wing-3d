@@ -56,6 +56,8 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableCitySetpieces = spawnEncounters,
+  enableAsteroidCourse = spawnEncounters,
   enableSquadIntro = false,
   seed = 42,
   storage,
@@ -151,6 +153,8 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableCitySetpieces,
+    enableAsteroidCourse,
     enableSquadIntro,
     nativeLifecycle,
     onStageStarted,

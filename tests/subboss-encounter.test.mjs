@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
-import { SECTORS } from '../src/campaign.js';
 
 function advanceProtected(h, seconds) {
   for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += 0.1) {
@@ -11,10 +10,13 @@ function advanceProtected(h, seconds) {
 }
 
 test('web subboss approaches, signals its attack, freezes on pause and resets', (t) => {
-  const h = harness({ spawnEncounters: true });
+  const h = harness({ spawnEncounters: true, hostname: 'dev.nova-wing-preview.pages.dev' });
   t.after(() => h.close());
-  h.game.start();
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 1.1);
+  // The first subboss now enters AFTER the real orbital climb. For testing
+  // its attack behavior, use the real encounter QA shortcut, not an old
+  // fixed elapsed-time spawn assumption.
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  advanceProtected(h, 1.1);
   const charging = h.game.snapshot();
   const subboss = charging.targets.find((enemy) => enemy.kind === 'subboss');
   assert.equal(subboss.tactic, 'strafe');
@@ -34,8 +36,13 @@ test('web subboss approaches, signals its attack, freezes on pause and resets', 
   assert.equal(fired.targets.find((enemy) => enemy.kind === 'subboss').charging, false);
   assert.ok(fired.entities.hostile > charging.entities.hostile);
 
-  h.game.start();
-  assert.equal(h.game.snapshot().targets.length, 0);
-  advanceProtected(h, SECTORS[0].duration * 0.22 + 0.5);
+  // QA scenarios can only launch from the menu, never overwrite a live run.
+  h.game.pause();
+  h.elements.get('pauseExit').onclick();
+  h.elements.get('pauseConfirmOk').onclick();
+  assert.equal(h.game.snapshot().state, 'menu');
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  assert.ok(h.game.snapshot().targets.some((enemy) => enemy.kind === 'subboss'));
+  advanceProtected(h, 0.5);
   assert.equal(h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').phase, 1);
 });

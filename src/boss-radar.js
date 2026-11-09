@@ -1,4 +1,4 @@
-import { bossMeleeHit } from './boss-combat-ai.js';
+import { bossMeleeHit, bossExclusiveFootprint } from './boss-combat-ai.js';
 
 // World-space X/Y tactical map. The danger footprint reuses the SAME hit
 // predicate as actual boss damage; a green marker must never claim a hit.
@@ -61,16 +61,47 @@ export function bossRadarPlan(intent, { x, y, orbit = 0, originX = 0, originY = 
     y: INSET + ((MAX_Y - clamp(py, MIN_Y, MAX_Y)) / (MAX_Y - MIN_Y)) * (100 - INSET * 2),
   });
   const r = intent.dodgeRadius;
-  const rect = intent.kind === 'tentacle-sweep' || intent.kind === 'claw-swipe';
-  const halfX =
-    intent.kind === 'tentacle-sweep'
-      ? r * 2.4
-      : intent.kind === 'claw-swipe'
-        ? r * 1.7
-        : intent.kind === 'tentacle-grab'
-          ? r / 0.7
-          : r;
-  const halfY = r;
+  const special = bossExclusiveFootprint(intent.kind);
+  const rect =
+    special?.type === 'rect' ||
+    intent.kind === 'tentacle-sweep' ||
+    intent.kind === 'claw-swipe' ||
+    intent.kind === 'solar-sweep' ||
+    intent.kind === 'ice-quake' ||
+    intent.kind === 'cryo-pincer' ||
+    intent.kind === 'reactor-vent';
+  const halfX = special
+    ? r * special.x
+    : intent.kind === 'reactor-vent'
+      ? r * 1.35
+      : intent.kind === 'ice-quake'
+        ? r * 2.5
+        : intent.kind === 'cryo-pincer'
+          ? r * 0.75
+          : intent.kind === 'solar-sweep'
+            ? r * 2.5
+            : intent.kind === 'plasma-dive'
+              ? r / 0.8
+              : intent.kind === 'tentacle-sweep'
+                ? r * 2.4
+                : intent.kind === 'claw-swipe'
+                  ? r * 1.7
+                  : intent.kind === 'tentacle-grab'
+                    ? r / 0.7
+                    : r;
+  const halfY = special
+    ? r * special.y
+    : intent.kind === 'reactor-vent'
+      ? r * 1.1
+      : intent.kind === 'ice-quake'
+        ? r * 0.55
+        : intent.kind === 'cryo-pincer'
+          ? r * 1.75
+          : intent.kind === 'solar-sweep'
+            ? r * 0.68
+            : intent.kind === 'plasma-dive'
+              ? r / 1.15
+              : r;
   const dangerActive = bossMeleeHit(intent, {
     x: intent.targetX,
     y: intent.targetY,

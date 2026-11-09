@@ -6,20 +6,27 @@ test('subboss reaches combat quickly and telegraphs its distinct attack', async 
   test.setTimeout(90000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/__dynamic.html?sector=0&encounters=1');
+  // Isolate the historic subboss telegraph from the separately approved
+  // train -> Super Boost -> orbit pacing. The normal path remains unchanged.
+  await page.goto('/__dynamic.html?sector=0&encounters=1&citySetpieces=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   // Seek the real windup frame after the longer first-sector approach.
   // The subboss now spawns after 22% of a 130-second level, not at 19.8s.
   const before = await page.evaluate(() => {
     for (let i = 0; i < 48; i++) {
       window.fixture.game.collect('shield');
-      window.fixture.advance(1);
+      // Keep all actual 20 Hz physics and AI updates, but render only the
+      // verified telegraph checkpoint. Forty-eight SwiftShader frame draws
+      // previously exhausted CI time despite the subboss behavior passing.
+      window.fixture.advance(1, { renderAfter: false });
       const state = window.fixture.game.snapshot();
       const subboss = state.targets.find((enemy) => enemy.kind === 'subboss');
       if (subboss?.charging && subboss.z > -100 && subboss.z < -75) return state;
     }
     return window.fixture.game.snapshot();
   });
+  // Render the actual current state once before HUD/screenshot assertions.
+  await page.evaluate(() => window.fixture.advance(0));
   const subboss = before.targets.find((enemy) => enemy.kind === 'subboss');
   expect(subboss).toMatchObject({
     tactic: 'strafe',

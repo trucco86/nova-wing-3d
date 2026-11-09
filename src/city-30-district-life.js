@@ -5,6 +5,9 @@ import * as T from 'three';
 // pedestrian routes, reconstruction platforms and taxis stay inexpensive.
 const unit = new T.BoxGeometry(1, 1, 1);
 const frame = new T.Object3D();
+// Cache animation nodes per root, not in userData: the near-city is cloned for
+// the far tile and live Object3D references must never leak across clones.
+const taxiAnimation = new WeakMap();
 const steel = new T.MeshStandardMaterial({ color: '#719aaa', metalness: 0.81, roughness: 0.27 });
 const glass = new T.MeshStandardMaterial({ color: '#27788d', metalness: 0.57, roughness: 0.23 });
 const green = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
@@ -189,8 +192,19 @@ export function setCity30Quality(group, quality) {
 }
 export function animateCity30(group, travel) {
   if (!group || !Number.isFinite(travel)) return;
-  const taxis = group.getObjectByName('city-matrix-rooftop-taxis');
-  const count = taxis.userData.origin.length;
+  let refs = taxiAnimation.get(group);
+  if (!refs) {
+    const taxis = group.getObjectByName('city-matrix-rooftop-taxis');
+    refs = {
+      taxis,
+      cabs: taxis.getObjectByName('city-matrix-taxi-cabs'),
+      thrusters: taxis.getObjectByName('city-matrix-taxi-thrusters'),
+    };
+    taxiAnimation.set(group, refs);
+  }
+  const { taxis, cabs, thrusters } = refs;
+  // High animates every 3D taxi; Medium updates only the five displayed.
+  const count = Math.min(taxis.userData.origin.length, cabs.count, thrusters.count);
   const phase = taxis.userData.phase ?? 0;
   for (let i = 0; i < count; i++) {
     const { x, y, z } = taxis.userData.origin[i];
@@ -198,12 +212,20 @@ export function animateCity30(group, travel) {
     const progress = Math.sin(travel * (0.006 + (i % 3) * 0.001) + phase + i * 1.7);
     const offset = 5 * progress;
     const lift = 1.7 * Math.sin(travel * 0.009 + i);
-    taxis
-      .getObjectByName('city-matrix-taxi-cabs')
-      .setMatrixAt(i, matrix(x + offset, y + lift, z, 5.2, 2, 8.5, 0.2 * progress));
-    taxis
-      .getObjectByName('city-matrix-taxi-thrusters')
-      .setMatrixAt(i, matrix(x + offset, y - 1.35 + lift, z + 2.2, 4, 0.45, 1.4, 0.2 * progress));
+    // Use one borrowed matrix for all setMatrixAt calls, not two Matrix4
+    // allocations per taxi per frame. No interpolation or FPS reduction.
+    frame.position.set(x + offset, y + lift, z);
+    frame.rotation.set(0, 0.2 * progress, 0);
+    frame.scale.set(5.2, 2, 8.5);
+    frame.updateMatrix();
+    cabs.setMatrixAt(i, frame.matrix);
+    frame.position.set(x + offset, y - 1.35 + lift, z + 2.2);
+    frame.scale.set(4, 0.45, 1.4);
+    frame.updateMatrix();
+    thrusters.setMatrixAt(i, frame.matrix);
   }
-  for (const mesh of taxis.children) mesh.instanceMatrix.needsUpdate = true;
+  if (count) {
+    cabs.instanceMatrix.needsUpdate = true;
+    thrusters.instanceMatrix.needsUpdate = true;
+  }
 }

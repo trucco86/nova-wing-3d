@@ -11,7 +11,7 @@ export const SECTOR_WAVE_PROGRAMS = Object.freeze(
     ['MERGULHO SOLAR', 'high-low', 'vee', 'pincer'],
     ['PATRULHA GLACIAL', 'vee', 'wall', 'escort'],
     ['ENXAME ORGÂNICO', 'pincer', 'high-low', 'stagger'],
-    ['GUARDA DA NAVE-MÃE', 'wall', 'escort', 'pincer'],
+    ['BATALHA NOS ANÉIS', 'wall', 'escort', 'pincer'],
     ['CERCO DE ÓRION', 'stagger', 'pincer', 'wall'],
     ['DEFESA DE MARVIN', 'escort', 'vee', 'wall'],
   ].map(([name, ...rhythms]) => Object.freeze({ name, rhythms: Object.freeze(rhythms) })),

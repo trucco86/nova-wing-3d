@@ -62,6 +62,35 @@ test('DEV QA can inspect a mid-sector subboss and restart the same scenario', (t
   assert.ok(h.game.snapshot().encounterKinds.includes('subboss'));
 });
 
+test('Europa QA tunnel can be launched and restarted without changing campaign saves', (t) => {
+  const h = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+  });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(5, 'tunnel'), true);
+  let snap = h.game.snapshot();
+  assert.deepEqual(snap.developerScenario, { sector: 5, encounter: 'tunnel' });
+  assert.equal(snap.boss, false);
+  assert.equal(snap.tunnel, true);
+  assert.equal(snap.europaTunnel[0].panelVisible, true);
+  assert.equal(snap.europaTunnel[0].remainingSolidPanels, 1);
+  assert.equal(snap.europaSurface.tunnelActive, true);
+  assert.equal(snap.europaSurface.groundVisible, false);
+  h.game.pause();
+  h.elements.get('pauseRestart').onclick();
+  h.elements.get('pauseConfirmOk').onclick();
+  snap = h.game.snapshot();
+  assert.deepEqual(snap.developerScenario, { sector: 5, encounter: 'tunnel' });
+  assert.equal(snap.tunnel, true);
+  assert.equal(snap.europaTunnel[0].breached, false);
+  assert.equal(
+    h.game.startDeveloperScenario(4, 'tunnel'),
+    false,
+    'cannot open a Europa tunnel in Venus',
+  );
+});
+
 test('public and HML hosts refuse QA navigation, including direct API calls', (t) => {
   const h = harness({ hostname: 'hml.nova-wing-preview.pages.dev' });
   t.after(() => h.close());
