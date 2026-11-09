@@ -4553,6 +4553,9 @@ export function createGame({
       !europaTunnelCrossing &&
       !quietCityWreck &&
       cityPacing.canSpawnSubboss &&
+      // In the asteroid sector, the subboss must follow the completed
+      // obstacle course, never appear inside its narrow passages.
+      (sectorIndex !== 2 || !dynamicFlight || asteroidInterior.course.snapshot().complete) &&
       !subDone &&
       elapsed >
         (sectorIndex === 1 && dynamicFlight
@@ -4662,7 +4665,9 @@ export function createGame({
     const bossBlocked =
       enemies.some((e) => !e.dead && e.kind === 'subboss') ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
-      (dynamicFlight && sectorIndex === 2 && !asteroidInterior.course.snapshot().complete);
+      (dynamicFlight &&
+        sectorIndex === 2 &&
+        (!asteroidInterior.course.snapshot().complete || (spawnEncounters && !subDone)));
     if (
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
       shouldWarnBoss({

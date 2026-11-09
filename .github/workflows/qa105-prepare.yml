@@ -1,0 +1,48 @@
+name: QA105 prepare and validate asteroid subboss
+on:
+  push:
+    branches:
+      - fix/qa105-stage3-subchief-gate-20261108
+    paths:
+      - .github/workflows/qa105-prepare.yml
+      - package.json
+      - package-lock.json
+      - CHANGELOG.md
+      - ios/App/App.xcodeproj/project.pbxproj
+      - releases/v1.27.105.md
+      - tests/browser/europa-clear-arena.spec.mjs
+      - tests/qa105-asteroid-subboss.test.mjs
+      - src/game.js
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/qa105-stage3-subchief-gate-20261108
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run check:repo
+      - name: Commit formatted QA105 source and generated bundle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/game.js specs/qa105-stage3-subchief-gate.md tests/qa105-asteroid-subboss.test.mjs tests/browser/europa-clear-arena.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "build(qa105): format and synchronize generated game bundle"
+            git push origin HEAD:fix/qa105-stage3-subchief-gate-20261108
+          fi
