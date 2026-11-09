@@ -3692,6 +3692,8 @@ export function createGame({
     return keys.has('ShiftLeft') || keys.has('ShiftRight') || touchBoost;
   }
   function releaseControls() {
+    // Blur/pause can swallow keyup: never retain a held multi-lock or fire on release.
+    if (lockHeld) finishMechaMultiLock(true);
     pendingAsteroidTransform = null;
     audioCues?.silence();
     orbitTouch = 0;

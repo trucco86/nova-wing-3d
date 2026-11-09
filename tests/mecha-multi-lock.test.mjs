@@ -72,3 +72,45 @@ test('short LOCK press preserves the existing toggle-to-auto-aim behavior', (t) 
   h.key('KeyN', false);
   assert.equal(h.game.snapshot().mecha.lockEnabled, false);
 });
+
+test('blur cancels held multi-lock without firing and allows a fresh lock on resume', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
+  h.key('KeyT');
+  h.advance(6, 0.1);
+  h.key('KeyN');
+  h.advance(0.7, 0.1);
+  const before = h.game.snapshot();
+  assert.equal(before.mecha.multiLockHeld, true);
+  assert.ok(before.mecha.multiLockTargets > 0);
+
+  h.window.emit('blur');
+  const paused = h.game.snapshot();
+  assert.equal(paused.state, 'paused');
+  assert.equal(paused.mecha.multiLockHeld, false);
+  assert.equal(paused.mecha.multiLockTargets, 0);
+  assert.equal(paused.mecha.lockEnabled, false);
+  assert.equal(paused.energy, before.energy);
+  assert.deepEqual(paused.shotDirections, before.shotDirections);
+
+  h.game.pause();
+  assert.equal(h.game.snapshot().state, 'playing');
+  h.key('KeyN');
+  assert.equal(h.game.snapshot().mecha.multiLockHeld, true);
+  h.key('KeyN', false);
+  assert.equal(h.game.snapshot().mecha.multiLockHeld, false);
+});
+
+test('manual pause cancels held multi-lock before resuming combat', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'boss'), true);
+  h.key('KeyT');
+  h.key('KeyN');
+  assert.equal(h.game.snapshot().mecha.multiLockHeld, true);
+  h.game.pause();
+  assert.equal(h.game.snapshot().mecha.multiLockHeld, false);
+  assert.equal(h.game.snapshot().mecha.lockEnabled, false);
+  assert.equal(h.game.snapshot().mecha.multiLockTargets, 0);
+});

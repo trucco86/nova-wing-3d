@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.106 — Candidata em preparação
+
+- Cancelamento seguro de multi-lock ao liberar controles, perder foco ou pausar. Regressão determinística incluída. Candidata pendente dos gates browser e homologação.
+
 ## 1.27.105 — Candidata em preparação
 
 - QA105: subchefe obrigatório após percurso de obstáculos da fase 3, bloqueio do chefe principal até o encontro, teste automatizado do cenário de subchefe. Validação completa da campanha e QA visual pendentes.
