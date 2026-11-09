@@ -54,7 +54,9 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     { width: 844, height: 390 },
   ]) {
     await page.setViewportSize(size);
-    await page.evaluate(() => window.fixture.advance(0.9));
+    // Camera FOV interpolates after viewport rotation. Let the actual rig settle
+    // before asserting its final landscape framing on slower mobile runners.
+    await page.evaluate(() => window.fixture.advance(3.5));
     const state = await page.evaluate(() => window.fixture.game.snapshot());
     if (size.width < size.height) {
       expect(state.camera.fov).toBeGreaterThan(82);
