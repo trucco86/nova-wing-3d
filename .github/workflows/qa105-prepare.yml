@@ -11,6 +11,8 @@ on:
       - ios/App/App.xcodeproj/project.pbxproj
       - releases/v1.27.105.md
       - tests/browser/europa-clear-arena.spec.mjs
+      - tests/qa105-asteroid-subboss.test.mjs
+      - src/game.js
   workflow_dispatch:
 permissions:
   contents: write
