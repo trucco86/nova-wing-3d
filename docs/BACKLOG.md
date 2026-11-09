@@ -1,5 +1,21 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Retomada local — 09/11/2026
+
+- **NW-14 — Orquestrador de agentes:** primeiro incremento local de coordenação de
+  validação e handoff, descrito na [spec](../specs/nw-14-local-orchestrator.md).
+  `agent:orchestrate plan|check` registra SHA/digest, gates e próximo responsável.
+  Não chama modelos nem executa agentes autônomos. Validação local e revisão não
+  equivalem a CI, merge, publicação ou homologação. Continuação: experimentar o
+  contrato em tarefas pequenas antes de automatizar delegação e medir custo.
+- **NW-14 — segundo incremento:** [handoff para revisão por agente](../specs/nw-14-agent-review-handoff.md)
+  com solicitação versionada, identidade declarada, parecer estruturado e retorno
+  PASS/FAIL/BLOCKED. O runtime do chat coordena o agente; o repositório valida e
+  preserva a passagem, sem bot residente ou publicação automática.
+- A ordem e os estados remotos abaixo são **snapshots históricos de 30/10**;
+  não foram revalidados nesta retomada. Não reaplicar os incrementos descritos
+  apenas por aparecerem neste índice. Publicação não faz parte deste trabalho.
+
 ## Estado de integração — 30/10/2026 (referência mais recente)
 
 **Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.

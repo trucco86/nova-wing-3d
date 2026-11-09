@@ -25,6 +25,7 @@
     "hooks:install": "git config core.hooksPath .githooks",
     "agent:context": "node tools/context.mjs",
     "agent:new": "node tools/task.mjs",
+    "agent:orchestrate": "node tools/orchestrator-cli.mjs",
     "android:prepare": "node tools/android.mjs prepare",
     "android:sync": "node tools/android.mjs sync",
     "android:apk": "node tools/android.mjs apk",

@@ -19,6 +19,13 @@ As specs se complementam. A evolução de pods em `flight-force-variety` detalha
 
 ## Antes de encerrar uma mudança
 
+- [NW-14 — Orquestrador local](nw-14-local-orchestrator.md): validação com SHA/digest,
+  evidência por execução e handoff para revisão; `tools/orchestrator.mjs` e
+  `tests/orchestrator.test.mjs`.
+- [NW-14 — Handoff para agente revisor](nw-14-agent-review-handoff.md): solicitação
+  por versão validada e registro de PASS/FAIL/BLOCKED; `tools/agent-review.mjs` e
+  `tests/agent-review.test.mjs`.
+
 - O problema e o resultado esperado estão claros?
 - O teste reproduz o risco real ou apenas repete a implementação?
 - A CI executou no commit final?

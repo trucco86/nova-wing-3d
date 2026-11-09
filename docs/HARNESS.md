@@ -27,6 +27,58 @@ O [case Nova Wing](case/README.md) relaciona esse harness a ciclos de prototipa�
 
 ## Gates
 
+### Orquestração local — NW-14
+
+O primeiro incremento executável coordena **validação e handoff**, sem chamar
+modelos ou agentes independentes:
+
+```sh
+npm run agent:orchestrate -- plan specs/nw-14-local-orchestrator.md
+npm run agent:orchestrate -- check specs/nw-14-local-orchestrator.md
+# Para tarefas visuais/de entrada, exigir também o navegador:
+npm run agent:orchestrate -- check specs/sua-tarefa.md --browser
+```
+
+`plan` é somente leitura. `check` executa o validador existente e preserva plano,
+relatório e handoff em `artifacts/orchestrator/<runId>/`. Gates verdes e evidência
+coerente com SHA/digest levam a `awaiting-review`; falha ou alteração da fonte
+durante a execução levam a `blocked`. Nenhum estado autoriza publicação:
+`releaseReady` permanece `false`. Revisão independente, CI e homologação continuam
+pendentes; a ferramenta não decide o próximo ticket pelo snapshot histórico.
+
+Um lock impede validações concorrentes **por este comando**. Evite rodar
+`npm run validate` separado ao mesmo tempo, pois o relatório intermediário é
+compartilhado. Se o processo for encerrado abruptamente, confira que não há
+validação ativa antes de remover `artifacts/orchestrator/.lock` e repetir.
+Os artefatos são locais e não assinados. Veja o
+[contrato observável](../specs/nw-14-local-orchestrator.md).
+
+### Handoff para um agente revisor
+
+Depois de `check` gerar `awaiting-review`, use o `runId` retornado:
+
+```sh
+npm run agent:orchestrate -- request-review <runId> <identidade-do-implementador>
+# O runtime entrega request.json a outro agente, que escreve response.json.
+npm run agent:orchestrate -- record-review <runId> <requestId>
+```
+
+`request.json` fica em `artifacts/orchestrator/<runId>/reviews/<requestId>/` e contém
+contexto, limites e exemplo do formato de resposta. O agente revisor deve devolver
+`response.json` nesse diretório. A chamada ao agente é feita pelo runtime do chat
+ou pelo integrador; os comandos não chamam um provedor de modelos.
+
+`record-review` preserva o parecer e gera `outcome.json`: PASS encaminha para
+`awaiting-ci`, FAIL retorna ao implementador como `changes-requested`, e erro de
+contrato, BLOCKED ou fonte alterada gera `blocked`. O handoff original da validação
+é preservado. Uma tentativa registrada não pode ser sobrescrita; correções usam
+uma nova solicitação, ou nova validação quando a fonte mudar.
+
+Identidades são declaradas pelo runtime: o contrato rejeita o mesmo ID, mas os
+arquivos locais não autenticam quem executou o agente. CI e homologação seguem
+pendentes, e nenhum parecer autoriza publicação. Consulte a
+[spec do segundo incremento](../specs/nw-14-agent-review-handoff.md).
+
 `npm run validate` executa, em ordem, formatação, lint, testes determinísticos, invariantes e consistência do build. Interrompe no primeiro erro. `--browser` acrescenta os testes Playwright.
 
 O relatório em `artifacts/validation.json` inclui horários, commit, hash do conteúdo e resultados por comando. Os logs completos ficam ao lado. O digest inclui os links de descoberta sem seguir recursivamente diretórios. Relatórios não são versionados; a CI os preserva como artefatos quando disponíveis.
