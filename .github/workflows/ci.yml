@@ -42,7 +42,9 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Four independent real-browser shards need headroom for software WebGL
+    # screenshots; preserve every assertion instead of timing out the job.
+    timeout-minutes: 25
     env:
       NOVA_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
       NOVA_BROWSER_SHARD: ${{ matrix.shard }}/4
@@ -58,11 +60,13 @@ jobs:
       # Keep the browser gate strict; avoid repeating apt dependency installation on each
       # hosted runner. Missing runtime libraries still fail the real Playwright tests.
       - run: npx playwright install chromium
+      # The quality job already ran format, lint, Node tests, invariants and
+      # reproducible build. Never re-run that full suite in four browser jobs.
       - run: npm run build:check
-      # Reproduce only after checking the committed artifact matches the sources.
-      # Pages deploys this same committed HTML from a fresh checkout.
+      # Rebuild after verifying committed HTML: existing security contract retained.
       - run: npm run build
-      - run: npm run validate -- --browser
+      - name: Run browser-only shard (full release assertions preserved)
+        run: npm run test:browser -- --shard="$NOVA_BROWSER_SHARD"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -177,12 +181,6 @@ jobs:
         run: |
           mkdir public-site
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
-      - name: Public PROD Firebase and ranking config (fail closed if unavailable)
-        env:
-          NOVA_ENV: prod
-          NOVA_FIREBASE_CONFIG_JSON: ${{ vars.NOVA_FIREBASE_PROD_CONFIG_JSON }}
-          NOVA_RANKING_API_URL: ${{ vars.NOVA_RANKING_PROD_API_URL }}
-        run: node tools/write-public-config.mjs public-site/nova-config.json
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: public-site

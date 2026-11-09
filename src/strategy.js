@@ -2,14 +2,15 @@ export const XP_STAGES = [0, 8, 24, 52, 96, 160, 250, 370, 530, 740];
 export const ARSENAL = [
   { name: 'PULSO', element: 'kinetic', color: '#62ffe0', stage: 0, cadence: 0.135, damage: 1 },
   { name: 'GEADA', element: 'ice', color: '#82dfff', stage: 2, cadence: 0.22, damage: 1.2 },
-  { name: 'PLASMA', element: 'fire', color: '#ff994a', stage: 4, cadence: 0.25, damage: 1.6 },
+  { name: 'PLASMA', element: 'fire', color: '#ff994a', stage: 4, cadence: 0.25, damage: 2.4 },
   { name: 'ARCANO', element: 'arcane', color: '#c57bff', stage: 6, cadence: 0.3, damage: 1.3 },
   { name: 'VAZIO', element: 'void', color: '#f15aca', stage: 8, cadence: 0.36, damage: 2.2 },
 ];
 export const SPECIALS = [
-  { name: 'BARREIRA', stage: 0, cost: 30 },
-  { name: 'NOVA', stage: 3, cost: 55 },
-  { name: 'ESTASE', stage: 5, cost: 65 },
+  { name: 'BARREIRA', stage: 0, cost: 30, duration: 12, cooldown: 16 },
+  { name: 'NOVA', stage: 3, cost: 55, duration: 0, cooldown: 14 },
+  { name: 'ESTASE', stage: 5, cost: 65, duration: 11, cooldown: 19 },
+  { name: 'BERSERK', stage: 12, cost: 75, duration: 10, cooldown: 26 },
 ];
 export const xpForStage = (n) => (n < 10 ? XP_STAGES[n] : 740 + 250 * (n - 9) + 30 * (n - 9) ** 2);
 export const stageAt = (xp) =>
@@ -51,7 +52,10 @@ export function readStrategy(value) {
       ? value.specialty
       : 'attack',
     arsenal: valid(value?.arsenal, 4) && ARSENAL[value.arsenal].stage <= stage ? value.arsenal : 0,
-    special: valid(value?.special, 2) && SPECIALS[value.special].stage <= stage ? value.special : 0,
+    special:
+      valid(value?.special, SPECIALS.length - 1) && SPECIALS[value.special].stage <= stage
+        ? value.special
+        : 0,
   };
 }
 export const weaknessAt = (index, phase = 1) =>

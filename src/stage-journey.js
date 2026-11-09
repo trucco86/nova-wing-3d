@@ -1,0 +1,116 @@
+/** Declarative, side-effect-free stage journey planner. No scene objects are created here. */
+export const JOURNEY_PHASES = Object.freeze([
+  'approach',
+  'transition',
+  'interior',
+  'boss',
+  'escape',
+]);
+
+export const STAGE_JOURNEYS = Object.freeze(
+  [
+    { destination: 'orbital-ascent', entry: 'atmosphere', arena: 'orbit', exit: 'deep-space' },
+    {
+      destination: 'mars-descent',
+      entry: 'orbit-atmosphere-landing',
+      arena: 'red-desert',
+      exit: 'martian-ascent',
+    },
+    {
+      destination: 'mega-asteroid',
+      entry: 'cavern-mouth',
+      arena: 'asteroid-core',
+      exit: 'collapse-tunnel',
+    },
+    {
+      destination: 'devastador-mothership',
+      world: 'jupiter-orbit',
+      entry: 'boarding-hangar',
+      arena: 'reactor',
+      exit: 'airlock',
+    },
+    {
+      destination: 'storm-planet',
+      world: 'venus',
+      entry: 'atmospheric-descent',
+      arena: 'plasma-clouds',
+      exit: 'orbit',
+    },
+    {
+      destination: 'frozen-moon',
+      world: 'europa',
+      entry: 'ice-rift',
+      arena: 'glacial-cavern',
+      exit: 'surface',
+    },
+    {
+      destination: 'living-hive',
+      world: 'neptune-clouds',
+      entry: 'organic-tunnel',
+      arena: 'hive-heart',
+      exit: 'breach',
+    },
+    {
+      destination: 'saturn-ring-battle',
+      world: 'saturn-orbit',
+      entry: 'outer-ring-ice-field',
+      arena: 'cassini-division-blockade',
+      exit: 'breakthrough-the-rings',
+    },
+    {
+      destination: 'orion-abyss',
+      world: 'orion-anomaly',
+      entry: 'accretion-corridor',
+      arena: 'gravity-anomaly',
+      exit: 'portal',
+    },
+    {
+      destination: 'marvin-obsidian-chase',
+      world: 'titan',
+      entry: 'pursuit',
+      arena: 'final-fighter-duel',
+      exit: 'victory',
+    },
+  ].map((journey) => Object.freeze(journey)),
+);
+
+export function journeyForSector(sectorIndex) {
+  if (!Number.isInteger(sectorIndex) || sectorIndex < 0 || sectorIndex >= STAGE_JOURNEYS.length) {
+    throw new RangeError('Invalid journey sector');
+  }
+  return STAGE_JOURNEYS[sectorIndex];
+}
+
+/**
+ * Deterministic transition rules for the stage director.
+ * The boss gate cannot be bypassed by elapsed time or distance.
+ */
+export function advanceJourney(state, event) {
+  if (!state || !JOURNEY_PHASES.includes(state.phase)) throw new TypeError('Invalid journey state');
+  const transitions = {
+    approach: { destinationReached: 'transition' },
+    transition: { entryCompleted: 'interior' },
+    interior: { arenaReached: 'boss' },
+    boss: { bossDefeated: 'escape' },
+    escape: { exitReached: 'complete' },
+  };
+  const next = transitions[state.phase]?.[event];
+  return next ? { ...state, phase: next } : state;
+}
+
+/** Time gates are intentionally capped before the boss; defeating the boss is an explicit event. */
+export function journeyPhaseAt(elapsedSeconds, stageDuration) {
+  if (!Number.isFinite(elapsedSeconds) || elapsedSeconds < 0)
+    throw new RangeError('Invalid elapsed time');
+  if (!Number.isFinite(stageDuration) || stageDuration <= 0)
+    throw new RangeError('Invalid stage duration');
+  const progress = Math.min(1, elapsedSeconds / stageDuration);
+  if (progress < 0.2) return 'approach';
+  if (progress < 0.35) return 'transition';
+  if (progress < 0.78) return 'interior';
+  return 'boss';
+}
+
+export function initialJourney(sectorIndex) {
+  return { sectorIndex, destination: journeyForSector(sectorIndex).destination, phase: 'approach' };
+}

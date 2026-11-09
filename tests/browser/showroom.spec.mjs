@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('approved artwork and 360 hangar support selection, touch drag, zoom and reduced motion', async ({
@@ -25,11 +26,13 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
     .locator('#menu')
     .evaluate((e) => getComputedStyle(e, '::before').animationName);
   expect(cover).toBe('none');
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     await expect(page.locator('#pilot-' + id + ' .cat-avatar')).toBeVisible();
   }
   const canvas = page.locator('#hangarCanvas');
+  await expect(canvas).toHaveAttribute('data-model', 'bia');
+  await page.locator('#hangarTabShips').click();
   await expect(canvas).toHaveAttribute('data-model', 'nova7');
   await expect(page.locator('#hangarAuto')).toHaveAttribute('aria-pressed', 'false');
   // Observe a settled static scene long enough to catch a render loop or body mutations.
@@ -52,7 +55,8 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   await expect(canvas).toHaveAttribute('data-zoom', '1.15');
   await page.locator('#hangarReset').click();
   await expect(canvas).toHaveAttribute('data-zoom', '1.00');
-  await page.locator('#hangarPilot').click();
+  await page.locator('#hangarTabPilots').click();
+  await expect(canvas).toHaveAttribute('data-subject', 'pilot');
   for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     await page.locator('#pilot-' + id).click();
     await expect(canvas).toHaveAttribute('data-model', id);
@@ -80,7 +84,7 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   await page.screenshot({ path: info.outputPath('hangar-pilot.png') });
   await page.locator('#hangarShip').click();
   await page.screenshot({ path: info.outputPath('hangar-ship.png') });
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#menu')).toBeHidden();
   expect(errors).toEqual([]);

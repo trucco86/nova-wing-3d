@@ -37,19 +37,14 @@ export function installGoogleLogin({
     panel.hidden = true;
     return () => {};
   }
-  const style = document.createElement('style');
-  style.textContent = `
-    #novaAuth { position: fixed; z-index: 110; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); width: max-content; max-width: calc(100vw - 24px); color: #e0f0f7; font: 600 13px Arial, sans-serif; }
-    #novaAuth[open] { width: min(300px, calc(100vw - 24px)); }
-    body:not(.menu) #novaAuth { display: none !important; }
-    #novaAuth summary { cursor: pointer; display: inline-block; border: 1px solid #55c6c4; border-radius: 9px; background: #071b2de8; padding: 9px 13px; }
-    #novaAuth .nova-auth-content { display: grid; gap: 10px; margin-top: 5px; padding: 14px; background: #071b2df5; border: 1px solid #55c6c4; border-radius: 10px; }
-    #novaAuth .nova-auth-content p { margin: 0; color: #a4c6ce; }
-    #novaAuth .nova-auth-content button { min-height: 40px; cursor: pointer; }
-    #novaAuth .nova-auth-content small { color: #a4c6ce; }
-    #novaAuth [hidden] { display: none !important; }
-  `;
-  document.head.append(style);
+  // All layout belongs to the responsive title-menu stylesheet. Dynamic fixed
+  // positioning previously detached Google login from the menu on small screens.
+  const summary = panel.querySelector('[data-auth-summary]');
+  const ranking = document.getElementById('novaRanking');
+  const collapseRanking = () => {
+    if (panel.open && ranking?.open) ranking.open = false;
+  };
+  panel.addEventListener?.('toggle', collapseRanking);
   const status = panel.querySelector('[data-auth-status]');
   const login = panel.querySelector('[data-auth-login]');
   const logout = panel.querySelector('[data-auth-logout]');
@@ -70,6 +65,7 @@ export function installGoogleLogin({
   const setUser = (user) => {
     if (disposed) return;
     name.textContent = user ? user.displayName || 'Piloto Google' : 'Piloto visitante';
+    if (summary) summary.textContent = user ? 'GOOGLE · CONECTADO' : 'LOGIN SOCIAL · GOOGLE';
     login.hidden = !!user;
     logout.hidden = !user;
     setStatus(user ? 'Sessão Google ativa' : 'Modo visitante · progresso local');
@@ -175,7 +171,7 @@ export function installGoogleLogin({
     }
   })().finally(() => resolveInitialization());
   return () => {
-    style.remove();
+    panel.removeEventListener?.('toggle', collapseRanking);
     disposed = true;
     unsubscribe();
   };

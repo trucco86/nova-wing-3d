@@ -1,6 +1,7 @@
 import * as T from 'three';
+import { addGroundEnemyDetail } from './premium-model-details.js';
 import { box, metal, glowMaterial } from './visuals.js';
-export const isGroundSector = (sector) => ['city', 'ocean', 'ice'].includes(sector.theme);
+export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
   dark = metal('#101d2b'),
   joint = metal('#a9aeb7', 0.85),
@@ -62,6 +63,28 @@ export function createGroundEnemy(kind, variant = -1) {
       turret.position.y = 25;
       turret.add(box(7, 4, 6, dark));
       turret.add(box(5.5, 1, 0.4, red, 0, 0.4, 3.1));
+      // Two actual emitter sockets on the head, in the same +Z direction
+      // as the visible face. Projectiles and warning beams start here.
+      for (const side of [-1, 1]) {
+        const eye = new T.Mesh(new T.SphereGeometry(0.68, 10, 7), red);
+        eye.name = side < 0 ? 'enemy-robot-eye-left' : 'enemy-robot-eye-right';
+        eye.position.set(side * 1.75, 0.46, 3.45);
+        turret.add(eye);
+        const ray = new T.Mesh(
+          new T.CylinderGeometry(0.12, 0.26, 1, 8),
+          new T.MeshBasicMaterial({
+            color: '#ff4055',
+            transparent: true,
+            opacity: 0.76,
+            depthWrite: false,
+            blending: T.AdditiveBlending,
+            toneMapped: false,
+          }),
+        );
+        ray.name = side < 0 ? 'enemy-robot-eye-ray-left' : 'enemy-robot-eye-ray-right';
+        ray.visible = false;
+        turret.add(ray);
+      }
       turret.add(beam([0, 1, 0], [0, 5, 0], 0.25, joint));
     }
     if (variant >= 0) {
@@ -163,26 +186,77 @@ export function createGroundEnemy(kind, variant = -1) {
       }
     }
     g.add(turret);
+    addGroundEnemyDetail(g, { armor, dark, warning: red, kind });
     templates.set(key, g);
   }
   const model = templates.get(key).clone(true);
-  model.userData = { turret: model.getObjectByName('turret'), kind, variant };
+  model.userData = { turret: model.getObjectByName('turret'), kind, variant, eyeBeamUntil: 0 };
+  // Cloned mechs must not mutate one another's alpha when firing.
+  if (kind === 'walker') {
+    for (const side of ['left', 'right']) {
+      const ray = model.getObjectByName('enemy-robot-eye-ray-' + side);
+      if (ray) ray.material = ray.material.clone();
+    }
+  }
   return model;
 }
-export function animateGroundEnemy(model, time, target) {
+export function fireGroundRobotEyes(model, age) {
+  if (model.userData.kind !== 'walker') return;
+  model.userData.eyeBeamUntil = age + 0.33;
+}
+
+export function robotEyeMuzzles(model) {
+  if (model.userData.kind !== 'walker') return [];
+  model.updateMatrixWorld(true);
+  return ['left', 'right']
+    .map((side) =>
+      model.getObjectByName('enemy-robot-eye-' + side)?.getWorldPosition(new T.Vector3()),
+    )
+    .filter(Boolean);
+}
+
+export function animateGroundEnemy(model, time, target, age = time, charging = false) {
   const turret = model.userData.turret;
   turret.rotation.y = T.MathUtils.clamp(
     Math.atan2(target.x - model.position.x, target.z - model.position.z),
     -0.7,
     0.7,
   );
-  if (model.userData.kind === 'walker')
-    for (const s of [-1, 1])
-      model.getObjectByName('leg' + s).rotation.x = Math.sin(time * 2.5 + s) * 0.07;
+  if (model.userData.kind === 'walker') {
+    // Giant robot has articulated alternating strides and aims its upper turret
+    // independently; changes stay visual and do not alter the tested hitboxes.
+    const stride = time * (1.75 + model.userData.variant * 0.14);
+    for (const side of [-1, 1]) {
+      const leg = model.getObjectByName('leg' + side);
+      leg.rotation.x = Math.sin(stride + (side > 0 ? Math.PI : 0)) * 0.24;
+      leg.rotation.z = Math.sin(stride * 0.5 + side) * 0.075;
+    }
+    turret.rotation.x = -0.07 + Math.sin(time * 0.9 + model.userData.variant) * 0.12;
+    turret.rotation.z = Math.sin(stride * 0.55) * 0.11;
+    const firing = age < (model.userData.eyeBeamUntil ?? 0);
+    model.updateMatrixWorld(true);
+    const localTarget = turret.worldToLocal(target.clone());
+    for (const side of ['left', 'right']) {
+      const eye = turret.getObjectByName('enemy-robot-eye-' + side);
+      const ray = turret.getObjectByName('enemy-robot-eye-ray-' + side);
+      if (!eye || !ray) continue;
+      eye.scale.setScalar(charging ? 1.25 + 0.25 * Math.sin(age * 28) : 1);
+      ray.visible = firing;
+      if (!firing) continue;
+      const vector = localTarget.clone().sub(eye.position);
+      const length = Math.min(250, vector.length());
+      if (length < 0.1) continue;
+      ray.scale.set(1, length, 1);
+      ray.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), vector.normalize());
+      ray.position.copy(eye.position).addScaledVector(vector, length * 0.5);
+      // The impact is computed by the real hostile projectile collision path.
+    }
+  }
 }
 /** Geometry and collision boxes are built together. No invisible solid opening. */
-export function createObstacle(kind = 'gantry') {
-  if (!templates.has(kind)) {
+export function createObstacle(kind = 'gantry', variant = 'standard') {
+  const key = kind === 'tunnel' && variant === 'europa' ? 'europa-tunnel' : kind;
+  if (!templates.has(key)) {
     const g = new T.Group(),
       solids = [];
     const solid = (w, h, d, x, y, z, material = armor) => {
@@ -191,7 +265,103 @@ export function createObstacle(kind = 'gantry') {
     };
     if (kind === 'tunnel') {
       solid(4, 44, 520, -34, 15, -260, dark);
-      solid(4, 44, 520, 34, 15, -260, dark);
+      if (variant === 'europa') {
+        // One authored breach in the *right* wall. The actual collision wall
+        // is split, so opening the panel is physically traversable rather
+        // than a cosmetic explosion over an invisible solid.
+        solid(4, 44, 200, 34, 15, -100, dark);
+        solid(4, 44, 280, 34, 15, -380, dark);
+        const panel = box(4, 44, 40, dark, 34, 15, -220);
+        panel.name = 'europa-tunnel-breach-panel';
+        g.add(panel);
+        // Warning is attached to the inside face (x<32), slightly offset
+        // from the intact panel. All crack segments share one geometry and
+        // material; they have no collision or per-frame allocations.
+        const fracture = new T.Group();
+        fracture.name = 'europa-tunnel-breach-warning';
+        fracture.position.set(31.72, 15, -220);
+        fracture.visible = false;
+        const crackMaterial = new T.MeshBasicMaterial({
+          color: '#bdf6ff',
+          transparent: true,
+          opacity: 0.91,
+          depthWrite: false,
+        });
+        const crackGeometry = new T.CylinderGeometry(0.36, 0.36, 1, 6);
+        const segments = [
+          [
+            [-17, -10],
+            [-7, -5],
+          ],
+          [
+            [-7, -5],
+            [4, 0],
+          ],
+          [
+            [4, 0],
+            [16, 9],
+          ],
+          [
+            [-7, -5],
+            [-14, 3],
+          ],
+          [
+            [4, 0],
+            [8, -13],
+          ],
+          [
+            [4, 0],
+            [-3, 14],
+          ],
+          [
+            [8, -13],
+            [14, -16],
+          ],
+          [
+            [-3, 14],
+            [-9, 17],
+          ],
+        ];
+        const up = new T.Vector3(0, 1, 0);
+        for (const [[y0, z0], [y1, z1]] of segments) {
+          const from = new T.Vector3(0, y0, z0);
+          const to = new T.Vector3(0, y1, z1);
+          const direction = to.clone().sub(from);
+          const crack = new T.Mesh(crackGeometry, crackMaterial);
+          crack.name = 'europa-ice-fracture-line';
+          crack.position.copy(from).add(to).multiplyScalar(0.5);
+          crack.quaternion.setFromUnitVectors(up, direction.clone().normalize());
+          crack.scale.y = direction.length();
+          crack.userData.visualOnly = true;
+          fracture.add(crack);
+        }
+        g.add(fracture);
+        solids.push({
+          center: new T.Vector3(34, 15, -220),
+          half: new T.Vector3(2, 22, 20),
+          breachPanel: true,
+        });
+        const debris = new T.Group();
+        debris.name = 'europa-tunnel-falling-debris';
+        debris.visible = false;
+        const ice = metal('#afdce8', 0.1, 0.68);
+        const fragment = new T.IcosahedronGeometry(2.8, 0);
+        for (let i = 0; i < 12; i++) {
+          const chunk = new T.Mesh(fragment, ice);
+          chunk.position.set(32 + (i % 3) * 3.1, 2 + Math.floor(i / 3) * 10, -232 + (i % 4) * 8);
+          chunk.scale.set(0.7 + (i % 3) * 0.15, 0.7 + (i % 4) * 0.2, 0.8);
+          chunk.userData.fallSpeed = 4 + (i % 4) * 2;
+          // Give the blocks lateral momentum as well as gravity. The panel
+          // fragments now visibly burst into the corridor before they settle.
+          chunk.userData.breachVx = -3 - (i % 3) * 2;
+          chunk.userData.breachVz = ((i % 5) - 2) * 1.8;
+          chunk.userData.visualOnly = true;
+          debris.add(chunk);
+        }
+        g.add(debris);
+      } else solid(4, 44, 520, 34, 15, -260, dark);
+      // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
+      // while its authored 520-unit tunnel owns the real flight floor.
       solid(72, 3, 520, 0, -8.5, -260, armor);
       solid(72, 3, 520, 0, 38.5, -260, dark);
       for (let z = 0; z >= -520; z -= 40) {
@@ -271,6 +441,33 @@ export function createObstacle(kind = 'gantry') {
       uplink.position.set(0, 27.7, 0);
       g.add(uplink);
       g.add(box(4, 0.4, 7, red, 0, 18.7, 0));
+    } else if (kind === 'ice-meteor') {
+      // Saturn: icy, faceted rocks in the actual flight corridor.
+      // A conservative bounding box encloses the visible object; unlike the
+      // background ring layers these meteors are real, breakable hazards.
+      const ice = new T.Mesh(
+        new T.IcosahedronGeometry(9, 1),
+        new T.MeshStandardMaterial({
+          color: '#badce7',
+          metalness: 0.06,
+          roughness: 0.54,
+          flatShading: true,
+          emissive: '#254259',
+          emissiveIntensity: 0.09,
+        }),
+      );
+      ice.name = 'saturn-breakable-ice-meteor';
+      ice.position.set(0, 17, 0);
+      g.add(ice);
+      for (const side of [-1, 1]) {
+        const chip = new T.Mesh(new T.TetrahedronGeometry(2.6, 0), ice.material);
+        chip.position.set(side * 7.5, 20, side * 3);
+        g.add(chip);
+      }
+      solids.push({
+        center: new T.Vector3(0, 17, 0),
+        half: new T.Vector3(12, 11, 12),
+      });
     } else if (kind === 'debris') {
       solid(14, 12, 16, 0, 18, 0, dark);
       for (const side of [-1, 1]) {
@@ -316,10 +513,65 @@ export function createObstacle(kind = 'gantry') {
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
     g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
-    templates.set(kind, g);
+    templates.set(key, g);
   }
-  const template = templates.get(kind),
+  const template = templates.get(key),
     clone = template.clone(true);
-  clone.userData = template.userData; // Immutable shared collision geometry.
+  // The Europa breach removes its own collision panel only. Other tunnel
+  // copies and authored obstacles retain immutable shared hitboxes.
+  clone.userData =
+    key === 'europa-tunnel'
+      ? {
+          ...template.userData,
+          solids: [...template.userData.solids],
+          europaBreach: true,
+          breached: false,
+          breachWarningProgress: 0,
+        }
+      : template.userData;
   return clone;
+}
+
+export function primeEuropaTunnelBreach(tunnel, progress = 0) {
+  if (!tunnel?.userData?.europaBreach || tunnel.userData.breached) return false;
+  if (!Number.isFinite(progress) || progress < 0 || progress > 1)
+    throw new RangeError('Invalid Europa breach warning progress');
+  const warning = tunnel.getObjectByName('europa-tunnel-breach-warning');
+  if (!warning) return false;
+  warning.visible = progress > 0;
+  // Growing fissures make the impact readable before the panel breaks.
+  warning.scale.set(1, 0.1 + 0.9 * progress, 0.1 + 0.9 * progress);
+  tunnel.userData.breachWarningProgress = progress;
+  return true;
+}
+
+export function openEuropaTunnelBreach(tunnel) {
+  if (!tunnel?.userData?.europaBreach || tunnel.userData.breached) return false;
+  const panel = tunnel.getObjectByName('europa-tunnel-breach-panel');
+  const debris = tunnel.getObjectByName('europa-tunnel-falling-debris');
+  if (!panel || !debris) return false;
+  panel.visible = false;
+  const warning = tunnel.getObjectByName('europa-tunnel-breach-warning');
+  if (warning) warning.visible = false;
+  debris.visible = true;
+  tunnel.userData.solids = tunnel.userData.solids.filter((solid) => !solid.breachPanel);
+  tunnel.userData.breached = true;
+  return true;
+}
+
+export function updateEuropaTunnelBreach(tunnel, dt) {
+  if (!tunnel?.userData?.breached || !Number.isFinite(dt) || dt < 0) return;
+  const debris = tunnel.getObjectByName('europa-tunnel-falling-debris');
+  if (!debris) return;
+  for (const part of debris.children) {
+    part.userData.fallSpeed = Math.min(38, part.userData.fallSpeed + 24 * dt);
+    const falling = part.position.y > -5;
+    part.position.y = Math.max(-5, part.position.y - part.userData.fallSpeed * dt);
+    if (falling) {
+      part.position.x += part.userData.breachVx * dt;
+      part.position.z += part.userData.breachVz * dt;
+    }
+    part.rotation.x += dt * 0.7;
+    part.rotation.z += dt * 1.1;
+  }
 }

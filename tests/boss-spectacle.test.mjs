@@ -28,7 +28,10 @@ test('boss armor sustains combat across three stages even against extreme damage
     phases.add(h.game.snapshot().bossPhase);
   }
   assert.equal(h.game.snapshot().state, 'collapsing');
-  assert.ok(combatSeconds > 40 && combatSeconds < 90, 'bounded sustained encounter');
+  assert.ok(
+    combatSeconds > 40 && combatSeconds < 90,
+    'bounded sustained encounter: ' + combatSeconds.toFixed(1) + 's',
+  );
   assert.deepEqual([...phases], [1, 2, 3]);
 });
 test('native subboss retains previous two-bomb balance and tunnel sequencing', (t) => {
@@ -185,4 +188,19 @@ test('boss approaches from the horizon without an instant arena teleport', (t) =
   assert.ok(approach.bossZ < -110);
   h.advance(2.1);
   assert.ok(h.game.snapshot().bossZ > -110);
+});
+
+test('all sectors can leave a defeated boss through an automatic light-speed boost', (t) => {
+  const h = setup(t);
+  reachSectorBoss(h, { bossAge: 20, dt: 0.1 });
+  defeatBoss(h, { stopAtCollapse: true });
+  h.advance(4.8);
+  assert.equal(h.game.snapshot().warpDeparture, false, 'explosion must be visible first');
+  h.advance(1.8);
+  assert.equal(h.game.snapshot().warpDeparture, true, 'automatic safe exit follows explosion');
+  assert.equal(h.game.snapshot().state, 'collapsing');
+  h.advance(1.6);
+  assert.equal(h.game.snapshot().state, 'shop');
+  h.game.start();
+  assert.equal(h.game.snapshot().warpDeparture, false, 'new sector resets the warp state');
 });

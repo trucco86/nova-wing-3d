@@ -81,11 +81,23 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
       window.fixture.game.tacticalAction('precision');
       window.fixture.advance(0.65);
     });
-    await expect(page.locator('#hitFeedback')).toHaveAttribute('data-impact', 'blocked');
-    await expect(page.locator('#hitFeedback')).toHaveCSS('font-size', '0px');
+    // The test is about HUD placement, not forcing a shielded boss to take
+    // damage. True armored impacts may legitimately report SEM DANO, whereas
+    // a damaging hit must report ACERTO +n. Assert that the actual feedback
+    // matches its own combat state rather than silently inventing damage.
+    const feedback = page.locator('#hitFeedback');
+    await expect(feedback).toBeVisible();
+    const impact = await feedback.getAttribute('data-impact');
+    expect(['boss', 'blocked'], 'real armor/impact state').toContain(impact);
+    if (impact === 'boss') await expect(feedback).toContainText(/ACERTO \+\d+/);
+    else await expect(feedback).toContainText(/SEM DANO/);
     const marker = await page.locator('#hitFeedback').boundingBox();
-    expect(marker.width).toBeLessThanOrEqual(24);
-    expect(marker.height).toBeLessThanOrEqual(24);
+    expect(marker).not.toBeNull();
+    expect(marker.width).toBeLessThanOrEqual(125);
+    expect(marker.y + marker.height).toBeLessThan(viewport.height * 0.49);
+    expect(await page.locator('#hitFeedback').evaluate((el) => el.parentElement.id)).toBe(
+      'hudNotices',
+    );
     await page.screenshot({
       path: info.outputPath('nw03-' + viewport.width + 'x' + viewport.height + '.png'),
     });

@@ -15,6 +15,7 @@ Este roteiro ajuda alguém externo a **experimentar, investigar e verificar** o 
 git clone https://github.com/trucco86/nova-wing-3d.git
 cd nova-wing-3d
 npm ci
+npm run build
 npm run dev
 ```
 

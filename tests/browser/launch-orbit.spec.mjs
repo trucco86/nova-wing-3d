@@ -16,7 +16,7 @@ test('sector 1 needs BOOST depletion, then spends time climbing above the city',
   const city = await page.evaluate(() => window.fixture.game.snapshot());
   expect(city.orbitalLaunch.phase).toBe('boost');
   expect(city.route.ascent).toBe(0);
-  await expect(page.locator('#routeLabel')).toContainText('SEGURE BOOST');
+  await expect(page.locator('#routeLabel')).toContainText('SUPER BOOST');
   await page.screenshot({ path: info.outputPath('launch-city-before-boost.png') });
 
   await page.keyboard.down('Shift');

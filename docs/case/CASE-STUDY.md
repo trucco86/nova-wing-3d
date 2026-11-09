@@ -70,6 +70,16 @@ O valor migra para qualidade do upstream — problema, regras e critérios — e
 
 **[Explorar o fluxo](ARQUITETURA-DO-CASE.md)** · **[Ver evidências](EVIDENCIAS.md)** · **[Assistir ao roteiro](VIDEO.md)**
 
+## 9. O case também mostra falhas — e isso é parte da evidência
+
+Em 28/10/2026, as versões do menu, da experiência mobile e do áudio produziram um ciclo especialmente útil para estudar AI SDLC. A sequência envolveu um artefato HTML gerado fora de sincronia com a fonte, falhas de conformidade de release, um controle inacessível em paisagem mobile e feedback subjetivo sobre o ruído da turbina do robô.
+
+Cada desvio teve uma natureza diferente: build, processo, interação e percepção. As correções foram distribuídas entre [PR #132](https://github.com/trucco86/nova-wing-3d/pull/132), [PR #133](https://github.com/trucco86/nova-wing-3d/pull/133) e [PR #134](https://github.com/trucco86/nova-wing-3d/pull/134). O conjunto mostra por que qualidade exige mais de uma técnica: um teste de unidade não demonstra a ergonomia de uma tela, e um check Playwright verde não comprova conforto auditivo.
+
+**O resultado que podemos afirmar:** código e testes foram alterados, o CI e o deploy têm rastros por commit e os problemas encontrados produziram regressões específicas. **O resultado que ainda não podemos afirmar:** economia de horas, ganhos percentuais ou autonomia do processo sem instrumentação.
+
+[Leia a linha do tempo com execuções e limitações](CICLO-REAL-OUTUBRO-2026.md).
+
 ### English executive abstract
 
 Nova Wing began as a playable idea and became a transparent experiment in AI-assisted software delivery. The core lesson is not “AI writes games”; it is that faster iteration requires explicit context, verifiable specifications, a deterministic test harness, real-browser validation and accountable CI/CD. Specialized agent roles are a proposed operating model rather than a claim of an already autonomous multi-agent system. The repository provides inspectable artifacts and release evidence, while productivity gains remain to be measured.

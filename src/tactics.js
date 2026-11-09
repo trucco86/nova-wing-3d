@@ -48,8 +48,23 @@ export function bossTacticsAt(index, age, phase = 1) {
           : beat < 6
             ? 'recovery'
             : 'maneuver';
-  // Stationary initial orientation teaches the first orbit; then the boss turns continuously.
-  const heading = Math.sin(time * (0.12 + index * 0.009)) * (index === 0 ? 0.75 : 1.35);
+  // Bosses choose a flank, telegraph it, then HOLD their facing during the
+  // strike. Continuous aimless spinning made every fight feel identical.
+  const committedHeading =
+    Math.sin((cycle + 1) * (0.52 + index * 0.041)) * (index === 0 ? 0.55 : 0.95);
+  // Interpolate the facing across combat-state boundaries. Snapping from
+  // maneuver to windup (and back after recovery) previously caused a visible
+  // jump while the player was orbiting the arena. This changes only facing:
+  // hit volumes, attacks, timing, manual orbit and camera framing stay intact.
+  const freeHeading = Math.sin(time * (0.065 + index * 0.003)) * 0.4;
+  const smooth = (v) => {
+    const x = Math.max(0, Math.min(1, v));
+    return x * x * (3 - 2 * x);
+  };
+  const lockIn = smooth(beat / 0.85);
+  const release = 1 - smooth((beat - 6) / 1.1);
+  const committedWeight = Math.min(lockIn, release);
+  const heading = freeHeading + wrapAngle(committedHeading - freeHeading) * committedWeight;
   const dangerAngle = wrapAngle(profile.angle + (cycle * Math.PI) / 2 + heading);
   const pulse = state === 'attack' ? Math.sin(((beat - 2.2) / 1.4) * Math.PI) : 0;
   const amplitude = 9 + (index % 3) * 3;

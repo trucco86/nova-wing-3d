@@ -25,15 +25,16 @@ test('user starts a mission and unlocks audio once', (t) => {
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.elements.get('menu').hidden, true);
 });
-test('keyboard movement is bounded and diagonal input remains finite', (t) => {
+test('keyboard explores the full original city arena and diagonal input stays finite', (t) => {
   const h = setup(t);
   h.game.start();
   h.key('KeyD');
   h.key('KeyW');
   h.advance(4);
   const s = h.game.snapshot();
-  assert.equal(s.player.x, 72);
-  assert.equal(s.player.y, 46);
+  assert.equal(s.player.x, 72, 'open air above rails must allow full original lateral freedom');
+  assert.ok(s.player.y > 46, 'vertical flight must no longer stop below visible viaducts');
+  assert.ok(s.player.y <= 184, 'the playable skyflight safety bound remains finite');
   h.key('KeyD', false);
   h.key('KeyW', false);
   h.advance(1);
@@ -193,4 +194,15 @@ test('frame-rate variation does not change movement distance', (t) => {
 test('invalid simulation steps fail explicitly', (t) => {
   const h = setup(t);
   for (const dt of [-1, NaN, 2]) assert.throws(() => h.game.step(dt), RangeError);
+});
+
+test('a plasma bomb updates the HUD before the next WebGL frame', (t) => {
+  const h = setup(t);
+  h.game.start();
+  const renders = h.calls.renders;
+  h.game.bomb();
+  assert.equal(h.game.snapshot().bombs, 2);
+  assert.equal(h.elements.get('bombs').textContent.trim(), '◆ ◆');
+  assert.equal(h.elements.get('bombTouch')['data-count'], 2);
+  assert.equal(h.calls.renders, renders, 'HUD feedback does not depend on rendering');
 });

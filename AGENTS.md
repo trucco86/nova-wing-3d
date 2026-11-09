@@ -6,12 +6,14 @@ Leia este arquivo, a especificação da tarefa e somente os módulos necessário
 
 1. Execute `npm run agent:context -- --mapa`; consulte `docs/ARQUITETURA.md`.
 2. Para mudança funcional, crie ou atualize uma especificação em `specs/` com comportamento esperado e critérios observáveis.
-3. Leia **sempre** `skills/nova-wing-qa/SKILL.md` para mudanças funcionais e a skill de domínio em `skills/`; as cópias descobertas em `.agents/skills/` são links, não fontes independentes.
+3. Leia **sempre** `skills/nova-wing-qa/SKILL.md` para mudanças funcionais e a skill de domínio em `skills/`. Para entregas frequentes e orçamento de contexto, consulte `skills/nova-wing-aceleracao/SKILL.md`; as cópias em `.agents/skills/` das skills antigas são links de descoberta.
 4. Edite `src/`, nunca o bundle gerado `index.html` nem `node_modules/`. O build é unidirecional.
 5. Preserve teclado, toque, pausa, reinício, limites de movimento e orçamento do HTML de 2 MB. Mudanças intencionais nesses contratos exigem atualizar especificação, teste e documentação com justificativa.
 6. Acrescente testes quando houver risco comportamental. Não escreva testes que só reproduzem a implementação nem remova gates para obter verde.
 7. Antes de alterar `src/` para uma nova release, execute `npm run release:prepare -- X.Y.Z` e revise o changelog, as notas e o bundle; isso sincroniza pacote, lockfile, versões iOS e `index.html`. Consulte [o guia de release](docs/RELEASE-PREPARATION.md). Depois execute `npm run format`, `npm run build`, `npm run validate`. Mudanças visuais ou de entrada precisam também de `npm run validate -- --browser` na CI ou em ambiente compatível.
 8. Antes de propor merge, aplique o parecer de QA definido em `docs/QA-AGENT.md` ao SHA final e revise o diff; informe evidências, limitações e riscos concretos. Nunca declare teste executado apenas porque o arquivo existe.
+9. Para iteração use `npm run test:fast` com escopo definido; esse resultado autoriza somente feedback/preview isolado. O gate de merge e produção continua exigindo `npm run validate`, browser FULL (quatro shards) e evidência visual quando aplicável. Evite repetir Node/lint/invariantes em cada shard Playwright.
+10. Use `npm run agent:brief -- --area=<área> --symbol=<símbolo>` e snippets por linha. Não leia `src/game.js` inteiro sem justificativa. Não invente consumo de tokens; o orçamento de contexto é um limite de caracteres, não uma fatura do provedor.
 
 ## Limites operacionais
 

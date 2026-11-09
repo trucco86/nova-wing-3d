@@ -1,5 +1,59 @@
 # Backlog mestre — Nova Wing Five Cats
 
+> **Estado vigente (01/11/2026):** consulte [ROADMAP-STATUS-20261101.md](ROADMAP-STATUS-20261101.md) para inventário auditado, prioridades P0/P1/P2, critérios de aceite e itens redundantes. O conteúdo abaixo é **histórico**, mantido para rastreabilidade; referências a produção v1.24.x, apenas seis issues, e flags "não iniciado" de outubro não representam o estado atual. Produção confirmada em v1.27.61; QA #239 é candidata v1.27.62, não produção.
+>
+> **Regra:** PR draft/preview/CI não são sinônimos de feature publicada. Não promover sem revisão de diffs encadeados, 4 shards e aceite visual móvel.
+
+## Estado de integração — 30/10/2026 (histórico)
+
+**Ambientes não equivalentes:** produção está na linha `v1.24.18`; os incrementos `v1.27.x` estão em PRs draft/QA com bases encadeadas. Aprovação de testes em um branch não promove automaticamente DEV, HML ou produção. Validar SHA exato.
+
+| Ordem | Frente                                                   | Candidata                                                 | Situação / próximo gate                                                                                                                       |
+| ----- | -------------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| P0.1  | Cinco Cats / menu com capa ampliada, medalhas e patentes | [#167](https://github.com/trucco86/nova-wing-3d/pull/167) | QA isolado, comparar layout e regressões; manter troféus e save                                                                               |
+| P0.2  | Mecha Heavy Fire, braços, mira e áudio de canhão         | [#168](https://github.com/trucco86/nova-wing-3d/pull/168) | Baseado na #167; homologar nave ágil vs robô potente e desempenho mobile                                                                      |
+| P0.3  | Marvin / Hidra: combate reativo e esquiva                | [#169](https://github.com/trucco86/nova-wing-3d/pull/169) | Baseado na #168; validar telegraph, golpes corpo a corpo, weak points, ritmo e dano                                                           |
+| P0.4  | Capa original fullscreen, portraits e diálogos           | [#171](https://github.com/trucco86/nova-wing-3d/pull/171) | Baseado na #169; validar mobile retrato/paisagem e CTA sem cobrir a arte                                                                      |
+| P0.5  | Abertura Five Cats em formação com Bia líder             | [#173](https://github.com/trucco86/nova-wing-3d/pull/173) | Baseado na #171; texto no topo, portraits 2D coerentes, naves/mecha 3D; validar abertura e pular                                              |
+| P0.6  | Graphics 2.0: Automático / Médio / Alto                  | [#175](https://github.com/trucco86/nova-wing-3d/pull/175) | Baseado na #173; `v1.27.26` vertical slice cidade em QA; corrigido teste que abria Opções em tela oculta; repetir 4 shards e medir frame-time |
+| P0.7  | Integração única DEV→HML→PROD                            | **Ainda não promovido**                                   | Fazer uma candidata composta dos commits **sem duplicar features**; quality, browser, preview, diff, testes físicos e autorização humana      |
+
+### Próximas ondas, ainda não concluídas
+
+1. **Qualidade gráfica:** após aprovar a cidade nos dois perfis, estender a outras fases, otimizar draw calls, luz e modelos, sem trocar WebGL por app.
+2. **Gameplay:** variedade de objetivos e biomas; IA de chefes, minigames e transições de câmera contextuais; melhorar a legibilidade sem invadir o centro do gameplay.
+3. **Progressão:** troféus, conquistas, patentes, medalhas, evolução RPG, loja, mapa, ranking e login Google exigem testes de persistência e UX integrados. Banco do ranking HML e configuração Firebase/Cloudflare dependem de credenciais e infraestrutura do mantenedor.
+4. **Áudio e narrativa:** mix de menu, turbina do robô, boost, transformação, ataque especial dos cinco gatos, diálogos e final de chefe; usar apenas áudio original/licenciado.
+5. **Case profissional:** vídeo real de gameplay, arquitetura, harness, responsabilidades por etapa, evidências da entrega integrada.
+6. **Mobile nativo:** validar Android/iOS após versão web estável; não declarar publicação nativa sem gates e distribuição reais.
+
+### Checklist de aceite por ambiente
+
+- [ ] **DEV isolado:** código e bundle sincronizados; quality e quatro shards Playwright verdes **no SHA final**.
+- [ ] **Graphics 2.0:** comparar `Automático`, `Médio` e `Alto` em 1366×768, 844×390, 390×844; medir 30 segundos de FPS/frame-time e documentar GPU.
+- [ ] **UX:** capa fullscreen, texto de abertura no topo sem bloquear 5 naves, Bia liderando, pilotos/portrait/radio funcionando.
+- [ ] **Gameplay:** chefes reagem e telegrafam golpes; mecha forte, nave ágil; mira, controles, anéis e HUD preservados.
+- [ ] **Persistência:** saves, troféus, patentes, idioma/qualidade gráfica sem reset acidental.
+- [ ] **HML:** revisão visual e aprovação humana em dispositivos reais; sem promover apenas com testes sintéticos.
+- [ ] **Produção:** publicar um único commit validado, verificar Pages e manter plano de rollback.
+
+As seções seguintes documentam snapshots anteriores e **não substituem esta ordem atualizada**. A preview da [PR #175](https://pr-175.nova-wing-preview.pages.dev/) é laboratório, não HML/PROD.
+
+## Estado vigente — 27/10/2026 (substitui prioridades desatualizadas abaixo)
+
+- **Áudio — nova prioridade do mantenedor:** candidata v1.26.0 sobre o Mecha integrado ao DEV: trilha mais grave/imersiva, servo e travas da transformação, turbina contínua e impactos reais. Composição original inspirada no clima pedido; exige renderização sonora real e avaliação de mixagem, sem homologação auditiva presumida.
+- **Atualização desta integração:** v1.24.18 publicada em produção (main `5345128`, CI `40491623959` verde); #80/#85 encerradas por substituição nas #98/#99. DEV já contém dispersão (#100) e paletas (#103), v1.24.20. Candidata Mecha #102 reconciliada com este DEV para CI e preview integrados; não equivale a novo aceite visual humano.
+- **Mobile v1.24.17:** release nas PRs [#96](https://github.com/trucco86/nova-wing-3d/pull/96)/[#97](https://github.com/trucco86/nova-wing-3d/pull/97), com quality/4 shards/Pages aprovados; **homologação funcional em celular confirmada pelo mantenedor em 27/10**. Esta confirmação não é medição instrumentada de FPS/bateria/temperatura.
+- **Arsenal e mapa v1.24.18:** escopo das antigas #80/#85 consolidado nas [#98](https://github.com/trucco86/nova-wing-3d/pull/98) (HML) e [#99](https://github.com/trucco86/nova-wing-3d/pull/99) (main), com merge confirmado e versões main/dev/hml em v1.24.18. Multitiro, cadência, bombas e mapa foram incluídos. **Aceite visual específico da v1.24.18 não inferido** da aprovação mobile anterior.
+- **Arma diferenciada (#84):** [#100](https://github.com/trucco86/nova-wing-3d/pull/100) candidata draft v1.24.19: dispersão comprável/equipável, cone de cinco projéteis, dano por alcance, salva/recarrega progresso. CI e balanceamento específicos obrigatórios; mísseis, feixe e bombas especializadas seguem pendentes.
+- **Mecha/Fighter (#66):** a [#91](https://github.com/trucco86/nova-wing-3d/pull/91), com CI verde, foi integrada **somente à branch candidata da #69**, incluindo correções de propulsão e boost touch. Reconciliar #69 com a base atual antes de criar candidato DEV; validação estética/animada segue pendente.
+- **Paletas/cidade-órbita:** [#90](https://github.com/trucco86/nova-wing-3d/pull/90) mantém CI verde no SHA original; requer rebase, revisão visual de todos os setores e aceitação antes de DEV/HML.
+- **Identidade/ranking/áudio:** [issue #63](https://github.com/trucco86/nova-wing-3d/issues/63) (logout de convidado), Workers/D1 e efeitos/trilha cinematográfica seguem frentes P1 sem homologação de infraestrutura/áudio nesta onda.
+
+**Sequência para novas funcionalidades:** branch isolada → CI completo no SHA final → DEV → preview e QA visual → HML → aceite humano da nova release → produção. Os snapshots anteriores abaixo são históricos.
+
+---
+
 ## Integração Arsenal / mapa — v1.24.18
 
 - Escopo de Arsenal/Mapa das PRs #80/#85 portado sobre produção v1.24.17, preservando órbita à esquerda acima do direcional.

@@ -1,8 +1,46 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['FIVE CATS / COMANDANTE', 'FIVE CATS / COMMANDER', 'FIVE CATS / COMANDANTE'],
+  ['RADAR DE AMEAÇAS', 'THREAT RADAR', 'RADAR DE AMENAZAS'],
+  ['VELOCIDADE / NÓS DE VOO', 'FLIGHT SPEED / UNITS', 'VELOCIDAD / UNIDADES'],
+  ['M · TROCAR PILOTO', 'M · SWITCH PILOT', 'M · CAMBIAR PILOTO'],
+  ['M · TROCAR', 'M · SWITCH', 'M · CAMBIAR'],
+  ['ESCUDO 100% · ENERGIA 100%', 'SHIELD 100% · ENERGY 100%', 'ESCUDO 100% · ENERGÍA 100%'],
+  ['SETOR 01 · 0%', 'SECTOR 01 · 0%', 'SECTOR 01 · 0%'],
+  [
+    'Patinhas do comandante sobre os controles de voo',
+    'Commander paws on flight controls',
+    'Patitas del comandante en los controles de vuelo',
+  ],
+  [
+    'Trocar piloto e nave durante a batalha',
+    'Switch pilot and ship during combat',
+    'Cambiar piloto y nave durante el combate',
+  ],
+  ['PILOTOS', 'PILOTS', 'PILOTOS'],
+  ['NAVES', 'SHIPS', 'NAVES'],
+  ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],
   ['CANHÃO · PRÓXIMA CLASSE', 'CANNON · NEXT CLASS', 'CAÑÓN · SIGUIENTE CLASE'],
   ['MULTITIRO · +1 PROJÉTIL', 'MULTISHOT · +1 PROJECTILE', 'MULTIDISPARO · +1 PROYECTIL'],
+  [
+    'CANHÃO DE DISPERSÃO · CURTO ALCANCE',
+    'SCATTER CANNON · CLOSE RANGE',
+    'CAÑÓN DE DISPERSIÓN · CORTO ALCANCE',
+  ],
+  ['CANHÃO DE DISPERSÃO', 'SCATTER CANNON', 'CAÑÓN DE DISPERSIÓN'],
+  [
+    'DISPARO EQUIPADO: PULSO · ALCANCE LONGO',
+    'EQUIPPED: PULSE · LONG RANGE',
+    'EQUIPADO: PULSO · LARGO ALCANCE',
+  ],
+  [
+    'DISPARO EQUIPADO: DISPERSÃO · CURTO ALCANCE',
+    'EQUIPPED: SCATTER · CLOSE RANGE',
+    'EQUIPADO: DISPERSIÓN · CORTO ALCANCE',
+  ],
+  ['EQUIPAR DISPERSÃO', 'EQUIP SCATTER', 'EQUIPAR DISPERSIÓN'],
+  ['EQUIPAR PULSO', 'EQUIP PULSE', 'EQUIPAR PULSO'],
   ['NÚCLEO RÁPIDO · CADÊNCIA +', 'RAPID CORE · FIRE RATE +', 'NÚCLEO RÁPIDO · CADENCIA +'],
   ['PACOTE BOMBAS ×3', 'BOMB PACK ×3', 'PAQUETE BOMBAS ×3'],
   ['PRECISA DE 3 VAGAS', 'NEEDS 3 FREE SLOTS', 'NECESITA 3 ESPACIOS LIBRES'],
@@ -122,6 +160,24 @@ const ROWS = [
   ['IMPULSO', 'BOOST', 'IMPULSO'],
   ['Q / E / Z · GIRO DEFENSIVO', 'Q / E / Z · DEFENSIVE ROLL', 'Q / E / Z · GIRO DEFENSIVO'],
   ['GIRO', 'ROLL', 'GIRO'],
+  ['DASH', 'DASH', 'DASH'],
+  ['GIRO / DASH', 'ROLL / DASH', 'GIRO / DASH'],
+  [
+    'giro na nave / dash lateral no robô ·',
+    'ship roll / robot lateral dash ·',
+    'giro de nave / dash lateral del robot ·',
+  ],
+  ['Giro defensivo da nave', 'Ship defensive roll', 'Giro defensivo de la nave'],
+  [
+    'Esquiva lateral do robô na direção do direcional',
+    'Robot lateral dodge in steering direction',
+    'Esquiva lateral del robot en la dirección elegida',
+  ],
+  [
+    'ROBÔ · Q ← / E → · DASH LATERAL',
+    'ROBOT · Q ← / E → · LATERAL DASH',
+    'ROBOT · Q ← / E → · DASH LATERAL',
+  ],
   ['BOMBA', 'BOMB', 'BOMBA'],
   ['TIRO', 'FIRE', 'DISPARO'],
   ['FLIGHT SQUADRON', 'FLIGHT SQUADRON', 'ESCUADRÓN DE VUELO'],
@@ -169,6 +225,29 @@ const ROWS = [
   ['ESPECIAIS', 'SPECIALS', 'ESPECIALES'],
   ['Barreira / Nova / Estase', 'Barrier / Nova / Stasis', 'Barrera / Nova / Estasis'],
   ['PILOTO E NAVE', 'PILOT & SHIP', 'PILOTO Y NAVE'],
+  ['MISSÃO PRINCIPAL', 'MAIN MISSION', 'MISIÓN PRINCIPAL'],
+  ['ESCOLHER PILOTO E NAVE', 'CHOOSE PILOT & SHIP', 'ELEGIR PILOTO Y NAVE'],
+  [
+    'DEVELOPER / QA · TESTAR CENÁRIOS',
+    'DEVELOPER / QA · TEST SCENARIOS',
+    'DEVELOPER / QA · PROBAR ESCENARIOS',
+  ],
+  [
+    'Disponível apenas em DEV. Testes isolados: sem ranking, sem salvamento e sem afetar a campanha.',
+    'DEV only. Isolated tests: no leaderboard, no saves and no campaign progress.',
+    'Solo en DEV. Pruebas aisladas: sin ranking, sin guardar ni alterar la campaña.',
+  ],
+  ['FASE / SETOR', 'STAGE / SECTOR', 'FASE / SECTOR'],
+  ['PONTO DE ENTRADA', 'ENTRY POINT', 'PUNTO DE ENTRADA'],
+  ['COMEÇO DA FASE', 'START OF STAGE', 'INICIO DE FASE'],
+  ['CHEFE PRINCIPAL', 'MAIN BOSS', 'JEFE PRINCIPAL'],
+  ['INICIAR TESTE ↗', 'START TEST ↗', 'INICIAR PRUEBA ↗'],
+  [
+    'QA · Sem pontuação no ranking. Para voltar, use Pausar → Sair → Confirmar.',
+    'QA · No leaderboard score. To return, choose Pause → Exit → Confirm.',
+    'QA · Sin puntos de ranking. Para volver, usa Pausa → Salir → Confirmar.',
+  ],
+
   ['INICIAR MISSÃO', 'START MISSION', 'INICIAR MISIÓN'],
   ['CONTINUAR CAMPANHA ↗', 'CONTINUE CAMPAIGN ↗', 'CONTINUAR CAMPAÑA ↗'],
   ['♪ OUVIR TEMA', '♪ PLAY THEME', '♪ ESCUCHAR TEMA'],
@@ -731,6 +810,19 @@ const ADDITIONAL = [
 for (const [pt, en, es] of ADDITIONAL) MAP.set(pt, { en, es });
 const RANKING_TRANSLATIONS = [
   // Google login, guest mode, settings and accessible labels.
+  ['Login social do Google', 'Google social sign-in', 'Inicio de sesión social con Google'],
+  ['LOGIN SOCIAL · GOOGLE', 'SOCIAL SIGN-IN · GOOGLE', 'ACCESO SOCIAL · GOOGLE'],
+  ['GOOGLE · CONECTADO', 'GOOGLE · CONNECTED', 'GOOGLE · CONECTADO'],
+  [
+    'Use sua conta Google para identificar seu piloto e participar do ranking quando estiver disponível.',
+    'Use your Google account to identify your pilot and join the ranking when it becomes available.',
+    'Usa tu cuenta de Google para identificar a tu piloto y participar en la clasificación cuando esté disponible.',
+  ],
+  [
+    'Login opcional. Você pode jogar sem entrar no Google.',
+    'Signing in is optional. You can play without a Google account.',
+    'El inicio de sesión es opcional. Puedes jugar sin entrar con Google.',
+  ],
   ['Conta do piloto', 'Pilot account', 'Cuenta del piloto'],
   ['CONTA · PILOTO', 'ACCOUNT · PILOT', 'CUENTA · PILOTO'],
   ['Piloto visitante', 'Guest pilot', 'Piloto invitado'],
@@ -817,6 +909,19 @@ const RANKING_TRANSLATIONS = [
     '0 fases · recorde 0 pts · total 0',
     '0 stages · best 0 pts · total 0',
     '0 fases · récord 0 pts · total 0',
+  ],
+  ['partidas', 'matches', 'partidas'],
+  ['DERROTA', 'DEFEAT', 'DERROTA'],
+  ['CONCLUÍDO', 'COMPLETED', 'COMPLETADO'],
+  [
+    'Nenhuma partida registrada neste dispositivo.',
+    'No matches recorded on this device.',
+    'No hay partidas registradas en este dispositivo.',
+  ],
+  [
+    'Derrota registrada no histórico deste navegador.',
+    'Defeat saved in this browser history.',
+    'Derrota registrada en el historial de este navegador.',
   ],
   ['fases', 'stages', 'fases'],
   ['recorde', 'best', 'récord'],
@@ -983,6 +1088,40 @@ const RANKING_TRANSLATIONS = [
   ],
 ];
 for (const [pt, en, es] of RANKING_TRANSLATIONS) MAP.set(pt, { en, es });
+
+const FIVE_CATS_TRANSLATIONS = [
+  [
+    'FIVE CATS · BIA NO COMANDO · FORMAÇÃO EM V',
+    'FIVE CATS · BIA IN COMMAND · V FORMATION',
+    'FIVE CATS · BIA AL MANDO · FORMACIÓN EN V',
+  ],
+  [
+    'FIVE CATS · FORMAÇÃO DESFEITA · INICIAR MISSÃO',
+    'FIVE CATS · FORMATION BREAK · START MISSION',
+    'FIVE CATS · FORMACIÓN DISUELTA · INICIAR MISIÓN',
+  ],
+  [
+    'PLASMA TITAN · SUPERFEIXE INICIADO',
+    'PLASMA TITAN · ENERGY BEAM ACTIVATED',
+    'PLASMA TITAN · RAYO DE ENERGÍA ACTIVADO',
+  ],
+  [
+    'FIVE CATS OVERDRIVE · TODOS ÀS ARMAS',
+    'FIVE CATS OVERDRIVE · ALL WEAPONS ACTIVE',
+    'FIVE CATS OVERDRIVE · TODAS LAS ARMAS ACTIVADAS',
+  ],
+  [
+    'PLASMA TITAN · ENERGIA CONCENTRADA',
+    'PLASMA TITAN · CONCENTRATED ENERGY',
+    'PLASMA TITAN · ENERGÍA CONCENTRADA',
+  ],
+  [
+    'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO',
+    'FIVE CATS OVERDRIVE · FORMATION ATTACK',
+    'FIVE CATS OVERDRIVE · ATAQUE EN FORMACIÓN',
+  ],
+];
+for (const [pt, en, es] of FIVE_CATS_TRANSLATIONS) MAP.set(pt, { en, es });
 
 const TOKEN_KEYS = [...MAP.keys()].filter((s) => s.length >= 4).sort((a, b) => b.length - a.length);
 const escapePattern = (s) =>

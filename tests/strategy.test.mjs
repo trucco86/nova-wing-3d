@@ -36,7 +36,8 @@ test('RPG summary explains effective bonuses and the next real unlock', () => {
   });
   assert.deepEqual(nextRpgUnlock(0), { type: 'ARMA', name: 'GEADA', stage: 2 });
   assert.deepEqual(nextRpgUnlock(2), { type: 'ESPECIAL', name: 'NOVA', stage: 3 });
-  assert.equal(nextRpgUnlock(9), null);
+  assert.deepEqual(nextRpgUnlock(9), { type: 'ESPECIAL', name: 'BERSERK', stage: 12 });
+  assert.equal(nextRpgUnlock(12), null);
   assert.ok(progressionBenefits(160, 'defense').shield > 25);
   assert.ok(progressionBenefits(160, 'spirit').arcana >= 30);
 });
@@ -103,8 +104,15 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   h.game.pause();
   h.advance(4.6);
   h.game.damage(30);
-  assert.ok(h.game.snapshot().shield < shield);
-  h.advance(4);
+  assert.equal(
+    h.game.snapshot().shield,
+    shield,
+    'barrier must remain active after several seconds',
+  );
+  h.advance(8);
+  h.game.damage(30);
+  assert.ok(h.game.snapshot().shield < shield, 'barrier expires after twelve seconds');
+  h.advance(9);
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);
   assert.equal(h.game.snapshot().entities.shots, 9);
@@ -113,10 +121,10 @@ test('barrier consumes arcana, blocks real damage, pauses and expires; nova crea
   assert.ok(directions.some((v) => v[2] > 100) && directions.some((v) => v[2] < -100));
   assert.ok(directions.some((v) => v[0] > 100) && directions.some((v) => v[0] < -100));
   assert.ok(directions.every((v) => Math.abs(Math.hypot(...v) - 130) < 1e-8));
-  h.advance(8);
+  h.advance(15);
   h.game.cycleSpecial();
   assert.equal(h.game.castSpecial(), true);
-  assert.equal(h.game.snapshot().strategy.stasis, 5);
+  assert.equal(h.game.snapshot().strategy.stasis, 11);
 });
 test('docked pods amplify actual shots and deployed pods pursue moving targets', (t) => {
   const a = setup(t, { storage: save({ xp: 24, arsenal: 0, special: 0 }) });
@@ -184,11 +192,22 @@ test('orbital flanks reject frontal damage, accept exposed generator hits and re
   }
 });
 test('web subboss survives two bombs, changes phases, and native retains prior balance', (t) => {
-  const h = setup(t, { spawnEncounters: true });
-  for (let i = 0; i < 35; i++) {
-    h.game.collect('shield');
-    h.advance(1);
-  }
+  // Encounter balance belongs to its physical subboss, independent of the
+  // revised stage-one schedule that now enters combat only after orbit.
+  const h = harness({
+    spawnEncounters: true,
+    hostname: 'dev.nova-wing-preview.pages.dev',
+  });
+  t.after(() => h.close());
+  // QA defaults to an overpowered level-10 loadout; the legacy balance
+  // assertion must select the equivalent level-1 pilot and ship first.
+  h.elements.get('developerTier').value = '0';
+  h.elements.get('developerArsenal').value = '0';
+  h.elements.get('developerSpecial').value = '0';
+  assert.equal(h.game.startDeveloperScenario(0, 'subboss'), true);
+  // The actual subboss has a three-second armored entry that rejects all
+  // damage. The two-bomb durability check must begin after that real guard.
+  h.advance(3.25);
   const before = h.game.snapshot().targets.find((e) => e.kind === 'subboss');
   assert.ok(before.life >= 360 && before.life < 620);
   h.game.bomb();

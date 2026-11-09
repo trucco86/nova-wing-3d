@@ -1,0 +1,50 @@
+name: Prepare Devastador boarding QA
+on:
+  push:
+    branches:
+      - feat/mothership-boarding-cinematic-qa-20261101
+    paths:
+      - .github/workflows/mothership-boarding-qa-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/mothership-boarding-cinematic-qa-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Validate stage 4 and whole campaign
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Publish verified generated HTML to isolated branch only
+        run: |
+          git add -- index.html src/mothership-approach.js src/mothership-interior.js src/destination-vista.js src/visuals.js tests/mothership-boarding.test.mjs tests/destination-arrival.test.mjs src/developer-mode.js tests/developer-mode.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No scoped changes to commit.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified continuous Devastador boarding candidate'
+            git push origin HEAD:feat/mothership-boarding-cinematic-qa-20261101
+          fi
+      - name: Trigger browser and isolated preview workflows
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/mothership-boarding-cinematic-qa-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/mothership-boarding-cinematic-qa-20261101

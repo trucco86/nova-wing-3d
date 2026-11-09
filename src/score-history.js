@@ -21,10 +21,13 @@ export function readLocalHistory(storage) {
           Number.isInteger(entry.durationMs) &&
           entry.durationMs >= 0 &&
           entry.durationMs <= 7200000 &&
+          (entry.outcome === undefined || ['cleared', 'defeated'].includes(entry.outcome)) &&
           typeof entry.completedAt === 'string' &&
           Number.isFinite(Date.parse(entry.completedAt)),
       )
-      .slice(0, MAX_ENTRIES);
+      .sort((a, b) => Date.parse(b.completedAt) - Date.parse(a.completedAt))
+      .slice(0, MAX_ENTRIES)
+      .map((entry) => ({ ...entry, outcome: entry.outcome ?? 'cleared' }));
   } catch {
     return [];
   }
@@ -36,6 +39,7 @@ export function recordLocalResult(storage, entry) {
     sector: entry.sector,
     points: entry.points,
     durationMs: entry.durationMs,
+    outcome: entry.outcome ?? 'cleared',
     completedAt: entry.completedAt,
   };
   if (readLocalHistory({ getItem: () => JSON.stringify([candidate]) }).length !== 1) return false;

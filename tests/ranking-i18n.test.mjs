@@ -130,7 +130,7 @@ test('score dates follow global language setting without changing score or stora
   app.document.documentElement.lang = 'es';
   app.client.refreshLocal();
   assert.match(app.field('local').children[0].textContent, /27\/10\/2026/);
-  assert.equal(app.field('summary').textContent, '1 fases · recorde 80 pts · total 80');
+  assert.equal(app.field('summary').textContent, '1 partidas · recorde 80 pts · total 80');
   app.document.documentElement.lang = 'pt-BR';
   app.client.refreshLocal();
   assert.match(app.field('local').children[0].textContent, /27\/10\/2026/);

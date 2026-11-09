@@ -73,3 +73,46 @@ test('history is bounded to the latest 100 recorded games', () => {
   assert.equal(history[0].id, 'run-109');
   assert.equal(history.at(-1).id, 'run-10');
 });
+
+test('defeated attempts are saved and legacy victories remain readable', () => {
+  const storage = fakeStorage();
+  const original = entry('legacy', 27);
+  storage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([original]));
+  assert.equal(readLocalHistory(storage)[0].outcome, 'cleared');
+  assert.equal(
+    recordLocalResult(storage, {
+      ...entry('defeat', 9),
+      outcome: 'defeated',
+    }),
+    true,
+  );
+  const history = readLocalHistory(storage);
+  assert.deepEqual(
+    history.map((row) => row.outcome),
+    ['defeated', 'cleared'],
+  );
+  assert.deepEqual(localScoreSummary(storage), { count: 2, best: 27, total: 36 });
+  assert.equal(
+    recordLocalResult(storage, {
+      ...entry('invalid', 11),
+      outcome: 'unknown',
+    }),
+    false,
+  );
+});
+
+test('unsorted imported histories are displayed newest first without reordering equal timestamps', () => {
+  const storage = fakeStorage();
+  storage.setItem(
+    HISTORY_STORAGE_KEY,
+    JSON.stringify([
+      { ...entry('older', 41), completedAt: '2026-10-27T18:10:00.000Z' },
+      { ...entry('latest', 13), outcome: 'defeated', completedAt: '2026-10-27T18:20:00.000Z' },
+    ]),
+  );
+  assert.deepEqual(
+    readLocalHistory(storage).map(({ id }) => id),
+    ['latest', 'older'],
+  );
+  assert.deepEqual(localScoreSummary(storage), { count: 2, best: 41, total: 54 });
+});

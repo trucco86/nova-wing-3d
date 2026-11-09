@@ -1,45 +1,102 @@
-# Nova Wing — um case de engenharia de software assistida por IA
+<div align="center">
 
-> O produto é um jogo. O case é como uma ideia virou protótipo, ganhou feedback, evoluiu com controle de qualidade e tornou visível um processo de engenharia apoiado por IA.
+# CASE STUDY · NOVA WING 3D
 
-**[Jogar](https://trucco86.github.io/nova-wing-3d/)** · **[Narrativa](CASE-STUDY.md)** · **[Modelo de agentes](PAPEIS-E-HANDOFFS.md)** · **[Evidências](EVIDENCIAS.md)** · **[Roteiro do vídeo](VIDEO.md)** · **[Métricas](METRICAS.md)**
+### AI-Assisted Software Development Lifecycle
 
-![Gameplay real capturado em WebGL](../images/boost.png)
+**O jogo é o produto. A engenharia da mudança é o experimento.**
 
-_Captura real do jogo; não é uma ilustração sintética de gameplay._
+[![Ver gameplay](https://img.shields.io/badge/▶-Jogar%20agora-147d75)](https://trucco86.github.io/nova-wing-3d/)
+[![Ver pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-28354e?logo=githubactions)](../../.github/workflows/ci.yml)
+[![Explorar as evidências](https://img.shields.io/badge/PRs-Evidências-5157a9)](EVIDENCIAS.md)
 
-## A ideia em 30 segundos
+![Captura real do Nova Wing 3D em WebGL](../images/boost.png)
 
-O Nova Wing 3D começou como uma hipótese: seria possível usar IA para encurtar o caminho entre uma ideia, um protótipo jogável e novas iterações? Conforme surgiram personagens, controles mobile, novas mecânicas, HUD, áudio e chefes, a pergunta mudou: **como evoluir mais rápido sem perder previsibilidade?**
+<sub>Captura real de gameplay WebGL. Este case distingue o que foi implementado, testado, publicado e homologado.</sub>
 
-A resposta investigada neste repositório é um fluxo com intenção clara, `specs/`, `AGENTS.md`, skills de domínio, testes determinísticos, navegador real, revisão de PR e CI/CD. O projeto é um **laboratório público, auditável e supervisionado por pessoas**, não um experimento controlado com prova de ROI nem uma fábrica de agentes totalmente autônoma.
+</div>
 
-## O que demonstramos
+---
 
-| Capacidade                                  | Evidência no repositório                                                                                                   |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Ideia → protótipo → ciclos incrementais     | [histórico](../../CHANGELOG.md), [releases](https://github.com/trucco86/nova-wing-3d/releases)                             |
-| Contexto explícito para mudança             | [instruções](../../AGENTS.md), [skills](../../skills/README.md), [specs](../../specs/README.md)                            |
-| Testabilidade sem reimplementar o jogo      | [harness determinístico](../../tests/harness.mjs), [testes](../TESTES.md)                                                  |
-| Validação real de WebGL e mobile em browser | [suíte Playwright](../../tests/browser/)                                                                                   |
-| Qualidade antes de publicar                 | [CI/CD](../../.github/workflows/ci.yml), [run da v1.15](https://github.com/trucco86/nova-wing-3d/actions/runs/39591873578) |
-| Limites e aprendizado                       | [decisões](DECISOES.md), [evidências](EVIDENCIAS.md)                                                                       |
+## A hipótese que virou um produto
 
-## Navegação do case
+O Nova Wing começou como um exercício criativo: construir um jogo de nave inspirado em experiências clássicas de combate, usando IA como apoio ao desenvolvimento.
 
-1. [CASE-STUDY.md](CASE-STUDY.md): história, problema, decisões e mensagem executiva.
-2. [PAPEIS-E-HANDOFFS.md](PAPEIS-E-HANDOFFS.md): desenho de responsabilidade por etapa e critérios de passagem.
-3. [ARQUITETURA-DO-CASE.md](ARQUITETURA-DO-CASE.md): fluxo verificável, limites do harness e desenho técnico.
-4. [EVIDENCIAS.md](EVIDENCIAS.md): alegações, URLs, SHA e ressalvas.
-5. [DECISOES.md](DECISOES.md): escolhas técnicas, ganhos e trade-offs.
-6. [METRICAS.md](METRICAS.md): como medir velocidade sem inventar percentuais.
-7. [REPRODUZIR.md](REPRODUZIR.md): como executar e verificar.
-8. [VIDEO.md](VIDEO.md): roteiro de narração e storyboard.
-9. [CAPTURA.md](CAPTURA.md): plano para gravar gameplay autêntico e editar posteriormente.
-10. [DECK.md](DECK.md): estrutura de apresentação de 8 telas.
+O desafio mudou com o crescimento do produto: **como adicionar fases, chefes, modos de combate, controles mobile e áudio sem transformar cada nova entrega em uma nova regressão?**
 
-## Transparência
+A resposta trabalhada no repositório é organizar o caminho **intenção → spec → implementação → testes → entrega → feedback** com regras, artefatos e pontos de verificação.
 
-As skills e instruções são reais; a **orquestração automática de vários agentes por etapa** é o modelo de evolução proposto. Ganhos de produtividade, DORA, qualidade absoluta, redução de custo ou múltiplos agentes executando autonomamente **não são resultados medidos** neste case.
+> [!IMPORTANT]
+> Este é um **case real e auditável de engenharia assistida por IA**, supervisionada por pessoas. Não é uma demonstração de uma fábrica de agentes autônomos já operante, nem um estudo controlado que tenha medido ROI ou percentuais de produtividade.
 
-[README principal](../../README.md) · [AGENTS.md](../../AGENTS.md) · [Código](../../src/)
+## O ciclo em uma imagem
+
+```mermaid
+flowchart LR
+  I["Ideia + feedback"] --> S["Spec e aceite"]
+  S --> C["AGENTS + skills"]
+  C --> D["Código real"]
+  D --> T["Harness + Playwright"]
+  T --> G{"Gates"}
+  G -->|Falha| S
+  G -->|Passou| R["PR + DEV"]
+  R --> H["Aceite humano"]
+  H -->|Ajuste| I
+  H -->|Aprovado| P["Promover release"]
+```
+
+### Cinco pilares documentados
+
+| Pilar                        | Artefato                                                                  | Por que importa                                                  |
+| :--------------------------- | :------------------------------------------------------------------------ | :--------------------------------------------------------------- |
+| **Contexto explícito**       | [AGENTS.md](../../AGENTS.md) + [skills](../../skills/)                    | Agentes e humanos encontram premissas, limites e critérios       |
+| **Intenção verificável**     | [specs](../../specs/)                                                     | Requisito deixa de ser somente uma conversa                      |
+| **Harness reprodutível**     | [tests/harness.mjs](../../tests/harness.mjs)                              | Regressões de estado e lógica sem obrigar GPU real               |
+| **Validação de experiência** | [Playwright](../../tests/browser/)                                        | Browser real cobre clique, layout, cenas e controles             |
+| **Release rastreável**       | [CI/CD](../../.github/workflows/ci.yml) + [changelog](../../CHANGELOG.md) | Cada decisão pode ser relacionada a PR, SHA, execução e ambiente |
+
+## Case concreto: uma mudança de menu atravessa o pipeline
+
+O histórico de **outubro de 2026** contém exemplos de problemas que apareceram depois de uma implementação inicial: build gerado divergente, regras de versão e formatação, botão inacessível em paisagem e feedback sobre som cansativo de turbina.
+
+Esses problemas levaram a correções incrementalmente entregues nas versões 1.27.2–1.27.4, com PRs e logs de CI. O objetivo da narrativa não é esconder falhas: é mostrar **como elas se tornaram tarefas testáveis e mudanças rastreáveis**.
+
+[**Abrir o ciclo completo de outubro, com evidências**](CICLO-REAL-OUTUBRO-2026.md)
+
+## Escolha como explorar o estudo
+
+| Trilha                          | Documento                                                      | Leitura                                                   |
+| :------------------------------ | :------------------------------------------------------------- | :-------------------------------------------------------- |
+| **Narrativa executiva**         | [CASE-STUDY.md](CASE-STUDY.md)                                 | Problema, decisões, implicações e aprendizados            |
+| **Uma entrega auditável**       | [Ciclo real de outubro](CICLO-REAL-OUTUBRO-2026.md)            | PRs, falhas, CI e deploy                                  |
+| **Arquitetura do processo**     | [ARQUITETURA-DO-CASE.md](ARQUITETURA-DO-CASE.md)               | Ciclo e fronteiras de qualidade                           |
+| **Papel dos agentes**           | [PAPEIS-E-HANDOFFS.md](PAPEIS-E-HANDOFFS.md)                   | Modelo futuro de handoffs, sem alegar automação existente |
+| **Evidência e limites**         | [EVIDENCIAS.md](EVIDENCIAS.md)                                 | Fatos, rastreabilidade e o que não se pode afirmar        |
+| **Decisões**                    | [DECISOES.md](DECISOES.md)                                     | Trade-offs e riscos                                       |
+| **Métricas**                    | [METRICAS.md](METRICAS.md)                                     | Como medir produtividade, qualidade e DORA                |
+| **Reproduzir**                  | [REPRODUZIR.md](REPRODUZIR.md)                                 | Rodar, inspecionar e verificar                            |
+| **Evidência em novas entregas** | [TEMPLATE-EVIDENCIA-ENTREGA.md](TEMPLATE-EVIDENCIA-ENTREGA.md) | Registro de SHA, gates, validação humana e limites        |
+| **Apresentação**                | [DECK.md](DECK.md) / [VIDEO.md](VIDEO.md)                      | Roteiros para contar a história                           |
+
+### O que foi desenvolvido e o que é proposta
+
+**Hoje:** contexto versionado, skills, specs, ferramentas, harness determinístico, suíte browser, releases e ambientes separados.
+
+**Em evolução:** qualidade gráfica/mobile baseada em mais dispositivos, melhores dados para comparação de eficiência, identidade/ranking com infraestrutura e testes específicos, maior automação de QA.
+
+**Proposto:** agentes independentes por etapa, handoffs automáticos observáveis e medição de custo/eficiência por papel.
+
+## Por que importa além do jogo?
+
+Um protótipo rápido ensina o que pode ser construído. Um ciclo verificável ensina **o que pode ser alterado com confiança**.
+
+Em produtos corporativos, o mesmo princípio vale para checkout, APIs, plataformas e automação: regras explícitas, isolamento de ambiente, testes observáveis e revisão humana continuam sendo essenciais quando a implementação é assistida por IA.
+
+**[Ver a visão executiva para portfólio](../PORTFOLIO-AI-SDLC.md)** · [README do projeto](../../README.md) · [Evidências](EVIDENCIAS.md)
+
+<details>
+<summary><strong>English abstract</strong></summary>
+
+Nova Wing is a working WebGL game and an inspectable AI-assisted software engineering case. The main challenge is not code generation; it is converting subjective feedback into scoped, tested and traceable changes. The repository documents actual context files, domain skills, tests, CI, PRs and deploys. Autonomous multi-agent handoffs and productivity gains remain hypotheses to evaluate.
+
+</details>

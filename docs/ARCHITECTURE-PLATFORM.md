@@ -2,6 +2,20 @@
 
 > **Fonte de verdade:** este documento distingue estado **implementado**, **publicado**, **homologado** e **proposto**. CI verde valida código/testes; não comprova login OAuth real, qualidade visual/sonora nem segurança de um ranking ainda não implantado.
 
+## Estado de referência mais recente — 28/10/2026
+
+> Esta seção atualiza o panorama de versões sem apagar a matriz histórica abaixo. Para o status de um recurso específico, consulte o SHA correspondente e os gates do próprio ambiente.
+
+| Branch | Versão na consulta | Uso / evidência                                                                                                                          |
+| :----- | :----------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev`  | **1.27.4**         | [Cloudflare DEV](https://dev.nova-wing-preview.pages.dev/) · [deploy](https://github.com/trucco86/nova-wing-3d/actions/runs/40744797302) |
+| `hml`  | **1.24.24**        | [Cloudflare HML](https://hml.nova-wing-preview.pages.dev/)                                                                               |
+| `main` | **1.24.18**        | [GitHub Pages PROD](https://trucco86.github.io/nova-wing-3d/)                                                                            |
+
+A candidata [PR #135](https://github.com/trucco86/nova-wing-3d/pull/135) introduz cenário de Developer/QA e nova hierarquia de piloto na missão, **sem pressupor publicação definitiva em DEV**. A API de ranking possui módulos no repositório, mas a existência da fonte não comprova D1 provisionado ou serviço operacional.
+
+**Visão do case:** [Portfólio AI SDLC](PORTFOLIO-AI-SDLC.md) · [Ciclo auditável](case/CICLO-REAL-OUTUBRO-2026.md) · [Matriz de evidências](case/EVIDENCIAS.md)
+
 ## 1. Visão executiva
 
 O jogo é um cliente WebGL/Three.js, com HTML estático produzido por esbuild. A evolução separa três responsabilidades:

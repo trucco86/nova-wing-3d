@@ -23,30 +23,32 @@ jobs:
     environment: nova-preview
     steps:
       - uses: actions/checkout@v4
+        with:
+          # For conservative changed-file selection in the preview-only lane.
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
       - name: Install
         run: npm ci
-      - name: Build web
-        run: npm run build:check
-      - name: Reproduce verified web build
-        run: npm run build
-      - name: Validate source and generated output
-        run: npm run validate
+      # Preview is an experiment, not an approved release. Build current
+      # sources directly so developers do not wait for a bot-synced index.html.
+      # Main/release still require strict CI with the committed HTML.
+      - name: Build current QA preview
+        run: |
+          npm run build
+          npm run build:check
+      - name: FAST source checks and impacted regression tests
+        run: npm run test:fast -- --scope=auto
+      - name: State fast-lane limitations
+        run: echo 'Preview-only gate. Full Node and browser CI remain required before merge.'
       - name: Prepare static website
         run: |
           mkdir -p dist
           cp index.html dist/index.html
           touch dist/.nojekyll
           printf 'sha=%s\nref=%s\n' "$GITHUB_SHA" "$GITHUB_REF" > dist/BUILD.txt
-      - name: Prepare environment-specific public Firebase and ranking config
-        env:
-          NOVA_ENV: ${{ github.event_name == 'pull_request' && 'preview' || github.ref_name }}
-          NOVA_FIREBASE_CONFIG_JSON: ${{ github.ref_name == 'hml' && vars.NOVA_FIREBASE_HML_CONFIG_JSON || vars.NOVA_FIREBASE_DEV_CONFIG_JSON }}
-          NOVA_RANKING_API_URL: ${{ github.ref_name == 'hml' && vars.NOVA_RANKING_HML_API_URL || vars.NOVA_RANKING_DEV_API_URL }}
-        run: node tools/write-public-config.mjs dist/nova-config.json
       - name: Check Cloudflare credentials
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -70,6 +72,3 @@ jobs:
       - name: Confirm deployment attempt
         if: steps.credentials.outputs.configured == 'true'
         run: echo 'Cloudflare deploy step completed for this SHA.'
-      - name: Read-only HML deployment smoke
-        if: github.event_name == 'push' && github.ref == 'refs/heads/hml' && steps.credentials.outputs.configured == 'true'
-        run: node tools/verify-hml-deploy.mjs

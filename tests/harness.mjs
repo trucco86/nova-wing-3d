@@ -56,10 +56,15 @@ function element() {
 }
 export function harness({
   spawnEncounters = false,
+  enableCitySetpieces = spawnEncounters,
+  enableAsteroidCourse = spawnEncounters,
+  enableSquadIntro = false,
   seed = 42,
   storage,
   nativeLifecycle = false,
   coarsePointer = false,
+  hostname,
+  observeScene = () => {},
   onStageStarted = () => {},
   onStageFinished = () => {},
 } = {}) {
@@ -120,6 +125,7 @@ export function harness({
       matches: coarsePointer && query.replaceAll(' ', '') === '(pointer:coarse)',
     }),
     AudioContext,
+    location: hostname ? { hostname } : undefined,
     localStorage: storage,
   };
   const renderer = {
@@ -128,8 +134,9 @@ export function harness({
     getPixelRatio: () => 1,
     setSize() {},
     setRenderTarget() {},
-    render() {
+    render(scene, camera) {
       calls.renders++;
+      observeScene(scene, camera);
     },
     dispose() {},
   };
@@ -146,6 +153,9 @@ export function harness({
     now: () => clock * 1000,
     random,
     spawnEncounters,
+    enableCitySetpieces,
+    enableAsteroidCourse,
+    enableSquadIntro,
     nativeLifecycle,
     onStageStarted,
     onStageFinished,
