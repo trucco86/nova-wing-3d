@@ -5,7 +5,7 @@ on:
       - .github/workflows/compare-dev-hml.yml
   workflow_dispatch:
   push:
-    branches: [hml]
+    branches: [dev, hml]
 permissions:
   contents: read
 jobs:
@@ -21,6 +21,39 @@ jobs:
       - run: npm ci
       - name: Verify local source and generated HTML
         run: npm run build:check
+      - name: Wait for DEV and HML deployments to match branch heads
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/environment-parity
+          for env in dev hml; do
+            branch_ref="refs/heads/${env}"
+            expected_sha="$(git ls-remote --exit-code origin "${branch_ref}" | cut -f1)"
+            test "${#expected_sha}" -eq 40
+            if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "${branch_ref}" && "${GITHUB_SHA}" != "${expected_sha}" ]]; then
+              echo "::error::Stale push workflow: branch ${env} has moved since ${GITHUB_SHA}"
+              exit 1
+            fi
+            matched=false
+            for attempt in $(seq 1 30); do
+              curl --fail --location --max-time 15 --silent --show-error \
+                "https://${env}.nova-wing-preview.pages.dev/BUILD.txt" \
+                -o "artifacts/environment-parity/${env}.build" || true
+              if [[ -s "artifacts/environment-parity/${env}.build" ]] &&
+                 grep -Fxq "sha=${expected_sha}" "artifacts/environment-parity/${env}.build" &&
+                 grep -Fxq "ref=${branch_ref}" "artifacts/environment-parity/${env}.build"; then
+                matched=true
+                break
+              fi
+              echo "Waiting for ${env} deploy at ${expected_sha} (${attempt}/30)"
+              sleep 10
+            done
+            if [[ "${matched}" != "true" ]]; then
+              echo "::error::${env} published artifact does not match current branch head ${expected_sha}"
+              exit 1
+            fi
+            echo "VERIFIED ${env} published SHA ${expected_sha}"
+          done
       - name: Compare DEV and HML remote build and web content
         shell: bash
         run: |
@@ -39,6 +72,10 @@ jobs:
           done
           grep -qx 'ref=refs/heads/dev' artifacts/environment-parity/dev.build
           grep -qx 'ref=refs/heads/hml' artifacts/environment-parity/hml.build
+          for env in dev hml; do
+            expected_sha="$(git ls-remote --exit-code origin "refs/heads/${env}" | cut -f1)"
+            grep -Fxq "sha=${expected_sha}" "artifacts/environment-parity/${env}.build"
+          done
           cmp artifacts/environment-parity/dev.html artifacts/environment-parity/hml.html
           echo 'PASS: identical published HTML and correct independent branch references'
       - name: Browser smoke for both live environments
