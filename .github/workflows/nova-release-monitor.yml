@@ -110,5 +110,16 @@ jobs:
               await github.rest.issues.update({ owner, repo, issue_number: previous.number, state: 'closed' });
               core.info('Recuperação confirmada e issue fechada.');
             } else {
-              core.info('Release saudável. CI, Pages e produção verificados. Sem alerta.');
+              const releaseTitle = '[monitor] Nova Wing: release concluída ' + sha.slice(0, 12);
+              const alreadyNotified = issues.some(issue => !issue.pull_request && issue.title === releaseTitle);
+              if (ci?.conclusion === 'success' && pages?.conclusion === 'success' && !alreadyNotified) {
+                const created = await github.rest.issues.create({
+                  owner, repo, title: releaseTitle,
+                  body: '@trucco86 Release concluída: CI aprovada, Pages publicado e produção HTTP ' + siteStatus + '.\\n\\nSHA main: `' + sha + '`\\nCI: ' + ci.html_url
+                });
+                await github.rest.issues.update({ owner, repo, issue_number: created.data.number, state: 'closed' });
+                core.info('Conclusão notificada: ' + created.data.html_url);
+              } else {
+                core.info('Release saudável. Sem novidade para notificar.');
+              }
             }
