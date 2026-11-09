@@ -75,6 +75,8 @@ test('pausing a 2D rift keeps the cockpit hidden and restores it only on return 
   h.advance(0.1);
   assert.equal(h.elements.get('cockpitPanel').hidden, false);
   h.advance(8);
+  assert.equal(h.game.snapshot().state, 'playing');
+  h.advance(21);
   assert.equal(h.game.snapshot().state, 'arcade');
   h.game.pause();
   h.advance(0.1);
@@ -83,4 +85,22 @@ test('pausing a 2D rift keeps the cockpit hidden and restores it only on return 
   h.advance(19);
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.elements.get('cockpitPanel').hidden, false);
+});
+
+test('wide Europa portrait boss framing is opt-in, smooth and restores normal cameras', () => {
+  const camera = new T.PerspectiveCamera(60, 390 / 844, 0.1, 2500);
+  const rig = createFlightCamera(camera, true);
+  const pilot = new T.Vector3(0, 6, 9);
+  rig.reset(pilot);
+  rig.setMode('combat');
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
+  assert.ok(camera.fov > 95 && camera.fov < 100, 'vertical boss camera exposes the wings');
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 });
+  assert.ok(
+    camera.fov > 77 && camera.fov < 81,
+    'landscape and other stages keep normal combat lens',
+  );
+  rig.setMode('cockpit');
+  for (let i = 0; i < 90; i++) rig.update(1 / 60, pilot, 0, false, { bank: 0, ascent: 0 }, 98);
+  assert.ok(camera.fov > 73 && camera.fov < 76, 'cockpit is never stretched');
 });

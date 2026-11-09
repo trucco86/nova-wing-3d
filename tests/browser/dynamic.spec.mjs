@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import {
   reachBrowserBoss,
@@ -9,8 +10,9 @@ import {
 test('Five Cats selection compares pilots, ships and illustrated loadout before flight', async ({
   page,
 }, info) => {
-  // Two screenshots took over 20s on the software-rendered CI runner.
-  test.setTimeout(60000);
+  // WebGL screenshots + illustrated hangar may exceed 60s on CI SwiftShader;
+  // preserve all visual/control checks, without timing out mid-flight.
+  test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => {
@@ -19,19 +21,23 @@ test('Five Cats selection compares pilots, ships and illustrated loadout before 
   await page.goto('/');
   await expect(page.locator('#squadSelection')).toBeHidden();
   await page.screenshot({ path: info.outputPath('cover.png') });
-  await page.locator('#prepareSquad').click();
+  await openMenu(page, 'hangar');
   await expect(page.locator('#squadSelection')).toBeVisible();
   await page.locator('#pilot-calvin').click();
   await expect(page.locator('#profileName')).toHaveText('CALVINHO');
   await expect(page.locator('#profileSkill')).toHaveText('FLUXO ARCANO');
+  await page.locator('#hangarTabShips').click();
+  await expect(page.locator('#ship-aegis')).toBeVisible();
   await page.locator('#ship-aegis').click();
   await expect(page.locator('#selectedShipName')).toHaveText('AEGIS-R');
   await page.locator('#ship-color-gold').click();
   await expect(page.locator('#ship-color-gold')).toHaveClass(/selected/);
+  await page.locator('#hangarTabArsenal').click();
+  await expect(page.locator('#loadoutCatalog')).toBeVisible();
   await page.locator('#loadoutCatalog summary').click();
   await expect(page.locator('.loadout-catalog article')).toHaveCount(8);
   await page.screenshot({ path: info.outputPath('five-cats-selection.png'), fullPage: true });
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#pilotName')).toContainText('CALVINHO');
   await expect(page.locator('#rpgLevel')).toContainText('EV 1');
@@ -48,10 +54,10 @@ test('web route, orbital ascent and final black hole render without shader error
     if (m.type() === 'error') errors.push(m.text());
   });
   for (const [sector, time, expected] of [
-    [0, 28, 'SEGURE BOOST'],
-    [1, 30, 'CURVA'],
+    [0, 28, 'SUPER BOOST'],
+    [1, 30, 'SUPERFÍCIE DE MARTE'],
     [2, 30, 'INTERIOR DO ASTEROIDE'],
-    [9, 10, 'ROTA DE APROXIMAÇÃO'],
+    [9, 10, 'TITÃ'],
   ]) {
     await page.goto('/__dynamic.html?sector=' + sector);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
@@ -69,6 +75,9 @@ test('2D perspective supports controls, pause and return to the same mission', a
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/__dynamic.html?sector=6&arcade=1');
   await page.evaluate(() => window.fixture.advance(8.1));
+  await expect(page.locator('#arcadePanel')).toBeHidden();
+  await expect(page.locator('#routeLabel')).toContainText('NETUNO');
+  await page.evaluate(() => window.fixture.advance(21.1));
   await expect(page.locator('#arcadePanel')).toBeVisible();
   await expect(page.locator('#arcadePanel')).toHaveCSS('opacity', '1');
   await expect(page.locator('#comms')).toHaveCSS('visibility', 'hidden');
@@ -122,7 +131,7 @@ test('hangar equips purchased paint and preserves it on reload', async ({ page }
   await page.evaluate(() => window.fixture.advance(0.1));
   await page.screenshot({ path: info.outputPath('paint-equipped.png') });
   await page.goto('/');
-  await page.locator('#continue').click();
+  await clickMenu(page, '#continue');
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('nova-wing-3d-v1')).cosmetics.skin),
   ).toBe('ember');

@@ -4871,11 +4871,6 @@ body.in-mission #tacticalPanel {
   body.in-mission #tacticalPanel {
     top: max(112px, calc(env(safe-area-inset-top, 0px) + 95px));
   }
-  /* Opening the RPG drawer must never make orbit buttons intercept SCAN. */
-  body.in-mission:has(#strategyDrawer[open]) #orbitControls {
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
 }
 @media (pointer: coarse) and (max-width: 550px) {
   #hudNotices {
@@ -5940,7 +5935,10 @@ body:not(.menu):not(.ranking-intermission) #novaRanking {
   }
   .showroom-web #menu.title-screen:not(.selecting) {
     display: flex;
-    align-items: flex-end;
+    /* A tall trophy + service menu cannot bottom-align an overflowed flex item:
+       its first actions become unreachable and a scrollIntoView may target
+       the wrong surface. Anchor at the scrollable top, retain cover spacing. */
+    align-items: flex-start;
     padding: max(210px, 38dvh) 6vw max(22px, env(safe-area-inset-bottom, 0px));
     min-height: 100dvh;
     max-height: 100dvh;
@@ -6637,5 +6635,3066 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   body.in-mission #radarGuide {
     max-width: 94px;
     font-size: 8px;
+  }
+}
+
+/* Nova Wing trophy panel: only the top rail may show toasts during combat. */
+.nova-trophies-panel {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #47778088;
+  background: #081c2fe9;
+  border-radius: 10px;
+  color: #d3f5ff;
+  padding: 11px 13px;
+  box-sizing: border-box;
+}
+.nova-trophies-panel summary {
+  cursor: pointer;
+  font: 700 12px/1.4 monospace;
+  letter-spacing: 0.08em;
+}
+#novaTrophyCounter {
+  float: right;
+  color: #a4d5d9;
+}
+#novaTrophyPoints {
+  font-size: 11px;
+  color: #91d8cf;
+  margin: 8px 0;
+}
+#novaTrophyList {
+  padding: 0;
+  margin: 8px 0 0;
+  list-style: none;
+  max-height: min(48vh, 330px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+#novaTrophyList li {
+  padding: 9px 3px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #5c819b48;
+  align-items: flex-start;
+}
+#novaTrophyList li .trophy-mark {
+  flex: 0 0 auto;
+  font-size: 19px;
+  line-height: 1.2;
+}
+#novaTrophyList li[data-tier='bronze'] .trophy-mark {
+  color: #bf8755;
+}
+#novaTrophyList li[data-tier='silver'] .trophy-mark {
+  color: #c1d3dc;
+}
+#novaTrophyList li[data-tier='gold'] .trophy-mark {
+  color: #ffcf5c;
+}
+#novaTrophyList li[data-tier='platinum'] .trophy-mark {
+  color: #70e3ff;
+}
+#novaTrophyList li:not([data-earned='true']) {
+  opacity: 0.73;
+}
+#novaTrophyList li .trophy-copy {
+  min-width: 0;
+}
+#novaTrophyList li strong {
+  font: 700 11px/1.4 monospace;
+  color: inherit;
+}
+#novaTrophyList li p {
+  font: 10px/1.4 sans-serif;
+  margin: 2px 0;
+  color: #b5cfdd;
+}
+#novaTrophyList li small {
+  font: 10px/1.3 monospace;
+  color: #a2eadc;
+}
+#novaTrophyToast {
+  position: fixed;
+  z-index: 80;
+  top: max(8px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 340px);
+  padding: 9px 14px;
+  border: 1px solid #69b9b9;
+  border-radius: 10px;
+  background: #071d2ef5;
+  box-shadow: 0 0 18px #15acb825;
+  color: #fff3ba;
+  text-align: center;
+  font: 700 12px/1.4 monospace;
+  pointer-events: none;
+}
+#novaTrophyToast[hidden] {
+  display: none;
+}
+
+/* Five Cats Service Corps. Cosmetic cat-head crests, collar and military ribbons. */
+.pilot-profile .profile-portrait {
+  position: relative;
+  min-height: 106px;
+}
+#pilotRankInsignia.pilot-rank-line {
+  margin-top: 4px;
+  font: 700 10px/1.4 monospace;
+  letter-spacing: 0.06em;
+  color: #f5dba0;
+  text-wrap: balance;
+}
+#pilotRankProgress.pilot-rank-progress {
+  font: 700 9px/1.3 monospace;
+  color: #a5c9d6;
+  letter-spacing: 0.01em;
+}
+#pilotServiceMeter.pilot-service-meter,
+.cat-service-meter {
+  width: 100%;
+  height: 7px;
+  display: block;
+  accent-color: var(--profile-color, #67ffe0);
+}
+.cat-uniform {
+  position: absolute;
+  width: 77px;
+  height: 34px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(128deg, #26394b, #132331 60%, #243e4d);
+  clip-path: polygon(12% 0, 28% 0, 50% 24%, 72% 0, 88% 0, 100% 100%, 0 100%);
+  border-bottom: 3px solid #5dd9c1;
+  isolation: isolate;
+}
+.cat-uniform:after {
+  content: '';
+  position: absolute;
+  inset: auto 4px 2px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #adcedb, transparent);
+}
+.cat-uniform-collar {
+  position: absolute;
+  top: 4px;
+  width: 27px;
+  height: 17px;
+  border-left: 3px solid #6bbcad;
+  border-right: 3px solid #6bbcad;
+  transform: perspective(25px) rotateX(12deg);
+}
+.cat-uniform-crest {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  left: 50%;
+  top: 13px;
+  transform: translateX(-50%);
+  border: 2px solid #b2ced6;
+  background: #132a33;
+  clip-path: polygon(5% 30%, 12% 0, 40% 18%, 60% 18%, 88% 0, 95% 30%, 96% 85%, 50% 100%, 4% 85%);
+}
+.cat-uniform-stripes {
+  position: absolute;
+  width: 18px;
+  height: 6px;
+  top: 17px;
+  left: 10px;
+  border-top: 2px solid #c1d5d9;
+  border-bottom: 2px solid #c1d5d9;
+  transform: rotate(22deg);
+  opacity: 0.72;
+}
+.cat-uniform[data-grade='1'] {
+  border-color: #79c5ff;
+  background: linear-gradient(135deg, #254c64, #132537);
+}
+.cat-uniform[data-grade='2'] {
+  border-color: #cbd5e2;
+  background: linear-gradient(135deg, #2d5363, #0f2f44);
+}
+.cat-uniform[data-grade='3'] {
+  border-color: #ffc85a;
+  background: linear-gradient(135deg, #3f4e6b, #0e283e);
+}
+.cat-uniform[data-grade='4'] {
+  border-color: #f7eab9;
+  background: linear-gradient(135deg, #5368a0, #162b52);
+  box-shadow: 0 0 15px #b4f3ff60;
+}
+.cat-uniform[data-grade='3'] .cat-uniform-crest,
+.cat-uniform[data-grade='4'] .cat-uniform-crest {
+  background: #e4ba5b;
+  border-color: #fff1bc;
+}
+.pilot-rank-medals {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-top: 3px;
+  min-height: 25px;
+}
+.pilot-rank-medals small {
+  font: 9px/1.3 monospace;
+  color: #8cb2bb;
+}
+.cat-crest {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cat-medal-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  flex: 0 0 auto;
+  border: 1px solid #809aa1;
+  border-radius: 50%;
+  color: #bd8451;
+  background: radial-gradient(circle, #35516d, #0b1d2e);
+}
+.cat-medal-chip[data-grade='silver'] {
+  color: #d3e1ec;
+}
+.cat-medal-chip[data-grade='gold'] {
+  color: #f2c865;
+}
+.cat-medal-chip[data-earned='false'] {
+  color: #557381;
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.cat-ranks-panel {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #778d9f88;
+  border-radius: 10px;
+  margin-top: 9px;
+  background: #071a2af0;
+  color: #e4f6ff;
+  padding: 11px 13px;
+}
+.cat-ranks-panel summary {
+  cursor: pointer;
+  font: 700 12px/1.4 monospace;
+  letter-spacing: 0.05em;
+}
+#catSquadRank {
+  float: right;
+  font: 700 9px/1.6 monospace;
+  color: #d1c4a0;
+}
+.cat-ranks-intro {
+  margin: 10px 0;
+  font: 11px/1.5 sans-serif;
+  color: #a0b7ca;
+}
+.cat-rank-cards {
+  max-height: min(57vh, 470px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.cat-service-card {
+  --pilot-color: #7be2c9;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 3px;
+  border-top: 1px solid #466b7b66;
+  border-left: 2px solid var(--pilot-color);
+}
+.cat-service-avatar {
+  width: 47px;
+  height: 47px;
+  padding: 7px;
+  flex: 0 0 auto;
+  border: 1px solid var(--pilot-color);
+  border-radius: 8px;
+  color: var(--pilot-color);
+  background: #142a3b;
+}
+.cat-service-details {
+  flex: 1;
+  min-width: 0;
+}
+.cat-service-details > strong {
+  display: block;
+  font: 700 13px monospace;
+  color: var(--pilot-color);
+}
+.cat-service-title {
+  display: block;
+  font: 10px/1.4 monospace;
+  color: #e0d3af;
+}
+.cat-service-meter {
+  margin: 8px 0 5px;
+  accent-color: var(--pilot-color);
+}
+.cat-service-details > small {
+  display: block;
+  font: 10px/1.5 monospace;
+  color: #9bbbc9;
+}
+.cat-service-medals {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+#catRankToast {
+  position: fixed;
+  z-index: 82;
+  top: max(52px, calc(env(safe-area-inset-top, 0px) + 48px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(90vw, 335px);
+  padding: 8px 12px;
+  border: 1px solid #e8c573;
+  border-radius: 9px;
+  background: #111d30fa;
+  color: #ffedb3;
+  text-align: center;
+  font: 700 11px/1.4 monospace;
+  pointer-events: none;
+  box-shadow: 0 0 18px #d6ac6440;
+}
+#catRankToast[hidden] {
+  display: none;
+}
+@media (max-width: 650px) {
+  #catSquadRank {
+    float: none;
+    display: block;
+    margin-top: 4px;
+    font-size: 8px;
+  }
+  .cat-service-avatar {
+    width: 35px;
+    height: 35px;
+  }
+  .cat-service-medals {
+    gap: 4px;
+  }
+  .cat-medal-chip {
+    width: 24px;
+    height: 24px;
+    padding: 3px;
+  }
+  .cat-uniform {
+    width: 62px;
+    height: 29px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #catRankToast,
+  .cat-uniform,
+  .cat-medal-chip {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Preview rank uniforms without claiming that cosmetic designs were earned. */
+.pilot-uniform-inspect {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+  align-items: center;
+}
+#pilotUniformPreview {
+  flex: 0 0 auto;
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid #689f9c;
+  border-radius: 7px;
+  color: #b5f2ed;
+  background: #0a2835;
+  font: 700 9px/1.3 monospace;
+  cursor: pointer;
+}
+#pilotUniformPreviewStatus {
+  display: block;
+  color: #edcb87;
+  font: 10px/1.4 monospace;
+}
+
+/* Persistent post-mission service debrief (not gameplay-center HUD). */
+.cat-service-result {
+  box-sizing: border-box;
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid #87c6b48a;
+  border-left: 3px solid #e6c079;
+  border-radius: 8px;
+  background: linear-gradient(120deg, #0d2832e8, #142239ed);
+  color: #d7f4ed;
+  text-align: left;
+}
+.cat-service-result[hidden] {
+  display: none !important;
+}
+.cat-service-result strong {
+  display: block;
+  color: #f6d693;
+  font: 700 12px/1.4 monospace;
+}
+.cat-service-result p {
+  margin: 5px 0;
+  font: 11px/1.5 monospace;
+}
+.cat-service-result small {
+  display: block;
+  color: #9bdddf;
+  font: 10px/1.4 monospace;
+}
+.cat-earned-ribbons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 7px 0;
+}
+.cat-earned-ribbon {
+  border: 1px solid #b9955a;
+  border-radius: 16px;
+  padding: 4px 8px;
+  color: #ffe3a6;
+  background: #3f3425aa;
+  font: 700 9px/1.2 monospace;
+}
+.cat-earned-ribbon[data-grade='silver'] {
+  border-color: #afc1d0;
+  color: #e0e9f7;
+}
+.cat-earned-ribbon[data-grade='gold'] {
+  border-color: #f1c65f;
+  color: #ffe4a0;
+}
+
+/* Medal gallery: touch-accessible mission conditions and 40px targets. */
+.cat-medal-details {
+  margin: 7px 0 12px;
+  padding: 7px 9px;
+  font: 11px/1.5 sans-serif;
+  color: #d5e7e6;
+  border-left: 2px solid #d4b979;
+  background: #113049c9;
+}
+.cat-service-medals .cat-medal-chip {
+  cursor: pointer;
+  min-height: 38px;
+  min-width: 38px;
+  width: 38px;
+  height: 38px;
+  box-sizing: border-box;
+  appearance: none;
+  font: inherit;
+}
+.cat-service-medals .cat-medal-chip:focus-visible {
+  outline: 2px solid #f0da95;
+  outline-offset: 2px;
+}
+.cat-service-medals .cat-medal-chip:hover {
+  background: #23506b;
+}
+@media (pointer: coarse) {
+  .cat-service-medals .cat-medal-chip {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* v1.27.21: Progressive console-style title / 3-button hub; keep original cover art. */
+#menu.title-screen[data-screen] {
+  background: #030b16;
+  isolation: isolate;
+  align-items: center;
+  justify-content: center;
+  padding: max(52px, 7dvh) 5vw max(34px, 6dvh);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  box-sizing: border-box;
+  touch-action: pan-y;
+}
+#menu.title-screen[data-screen]:not(.selecting)::before {
+  background:
+    linear-gradient(180deg, #030b1620 8%, #030b1612 42%, #030b16bd 90%),
+    var(--cover-art) center 46% / contain no-repeat;
+  inset: 0;
+  animation: none;
+}
+#menu.title-screen[data-screen]:not(.selecting)::after {
+  opacity: 0.65;
+  animation-duration: 28s;
+}
+#menu.title-screen[data-screen] .title-content {
+  width: min(100%, 470px);
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  flex: 0 0 auto;
+  text-align: center;
+  box-sizing: border-box;
+}
+#menu.title-screen[data-screen] h1 {
+  font-size: clamp(46px, 8vw, 80px);
+  line-height: 0.96;
+  text-align: center;
+  margin: 0 auto 22px;
+  text-shadow: 0 3px 28px #030b16c0;
+}
+#menu.title-screen[data-screen] .title-brand {
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 90%;
+  text-align: center;
+  font-size: 10px;
+}
+#menu.title-screen[data-screen] .title-brand span {
+  display: none;
+}
+#menu[data-screen='splash'] .title-content > :not(#menuStartGate):not(#menuHero),
+#menu[data-screen='home'] .title-content > :not(#menuHero):not(h1):not(#menuPrimary),
+#menu[data-screen='play']
+  .title-content
+  > :not(h1):not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras),
+#menu[data-screen='hangar']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#squadSelection),
+#menu[data-screen='central']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras):not(#novaAuth):not(
+    .title-help
+  ):not(#catRanks):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
+  display: none !important;
+}
+#menu.title-screen[data-screen='splash'] {
+  padding: max(20px, 4dvh) 5vw;
+  overflow: hidden;
+}
+#menu[data-screen='splash'] .title-brand,
+#menu[data-screen='splash'] .title-footer,
+#menu[data-screen='splash'] #gameVersion,
+#menu[data-screen='splash'] .title-content > h1 {
+  display: none !important;
+}
+#menu[data-screen='splash'] .title-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+#menuStartGate {
+  width: min(420px, 94%);
+  padding: 0 0 clamp(54px, 12dvh, 120px);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+#menuStartGate small {
+  color: #b7cbd9;
+  font: 700 10px/1.5 monospace;
+  letter-spacing: 0.23em;
+  text-shadow: 0 1px 8px #020913;
+}
+#pressStart.press-start {
+  width: min(320px, 85vw);
+  min-height: 62px;
+  padding: 14px 30px;
+  border: 1px solid #b5eced;
+  border-radius: 12px;
+  background: #051522d9;
+  color: #f2ffff;
+  font: 800 clamp(16px, 3vw, 22px)/1.3 monospace;
+  letter-spacing: 0.19em;
+  box-shadow:
+    0 0 28px #58bcd340,
+    inset 0 0 22px #356b7645;
+  cursor: pointer;
+  text-shadow: 0 0 15px #92efff77;
+  touch-action: manipulation;
+}
+#pressStart:focus-visible,
+#menuPrimary button:focus-visible,
+#menuBack:focus-visible {
+  outline: 3px solid #9deaff;
+  outline-offset: 4px;
+}
+#pressStart span {
+  margin-left: 8px;
+  color: #65e9dc;
+}
+.menu-primary {
+  width: min(100%, 360px);
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+.menu-primary button,
+#menuBack.menu-back {
+  box-sizing: border-box;
+  border: 1px solid #82a6bb9a;
+  border-radius: 12px;
+  min-height: 56px;
+  width: 100%;
+  color: #eefaff;
+  background: #061c2ce8;
+  cursor: pointer;
+  font: 800 16px/1.3 monospace;
+  letter-spacing: 0.16em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 19px;
+  touch-action: manipulation;
+}
+.menu-primary button:first-child {
+  color: #eafffa;
+  border-color: #6be7ce;
+  background: linear-gradient(105deg, #10554ce8, #073342e8);
+}
+.menu-primary button span {
+  font-size: 17px;
+  color: #a6dadc;
+}
+#menuBack.menu-back {
+  font-size: 12px;
+  width: min(100%, 420px);
+  min-height: 45px;
+  margin: 0 auto 12px;
+  padding: 8px 12px;
+  justify-content: center;
+}
+#menuScreenLabel.menu-screen-label {
+  margin: 0 auto 22px;
+  font: 700 11px/1.4 monospace;
+  letter-spacing: 0.18em;
+  color: #b5d5e1;
+  text-transform: uppercase;
+}
+#menu[data-screen='play'] .mission-entry,
+#menu[data-screen='play'] .title-actions,
+#menu[data-screen='central'] .title-actions,
+#menu[data-screen='central'] .title-extras {
+  max-width: 420px;
+  width: 100%;
+}
+#menu[data-screen='play'] #prepareSquad,
+#menu[data-screen='play'] #optionsFromMenu,
+#menu[data-screen='play'] #menuMusic,
+#menu[data-screen='central'] .mission-entry,
+#menu[data-screen='central'] #continue,
+#menu[data-screen='central'] #start,
+#menu[data-screen='central'] #prepareSquad {
+  display: none !important;
+}
+#menu[data-screen='central'] #optionsFromMenu {
+  display: block !important;
+  width: 100%;
+  min-height: 50px;
+}
+#menu[data-screen='central'] .title-help,
+#menu[data-screen='central'] #novaAuth,
+#menu[data-screen='central'] #catRanks,
+#menu[data-screen='central'] #novaTrophies,
+#menu[data-screen='central'] #novaRanking,
+#menu[data-screen='central'] #developerPanel {
+  width: 100%;
+  max-width: 420px;
+  margin: 10px auto 0;
+  text-align: left;
+  box-sizing: border-box;
+}
+#menu[data-screen='central'] #novaRanking {
+  position: relative;
+  inset: auto;
+}
+#menu[data-screen='central'] .title-help {
+  width: 100%;
+  padding: 6px 12px;
+}
+#menu[data-screen='central'] .title-help > summary {
+  min-height: 44px;
+  text-align: left;
+}
+#menu[data-screen='central'] .title-extras {
+  margin-top: 10px;
+}
+#menu.title-screen[data-screen='hangar'].selecting {
+  display: block;
+  padding: max(40px, 5dvh) max(14px, 4vw) 40px;
+}
+#menu.title-screen[data-screen='hangar'].selecting .title-content {
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  gap: 2px;
+  text-align: left;
+}
+#menu.title-screen[data-screen='hangar'].selecting #menuBack,
+#menu.title-screen[data-screen='hangar'].selecting #menuScreenLabel,
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection {
+  grid-column: 1 / -1 !important;
+  grid-row: auto !important;
+  max-width: 100%;
+}
+#menu.title-screen[data-screen='hangar'].selecting #menuScreenLabel {
+  text-align: center;
+}
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+#menu.title-screen[data-screen='splash']::before,
+#menu.title-screen[data-screen='splash']::after {
+  pointer-events: none;
+}
+@media (max-width: 600px) {
+  #menu.title-screen[data-screen]:not(.selecting) {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    padding: max(74px, 12dvh) 5vw max(26px, env(safe-area-inset-bottom, 0px));
+    align-items: flex-start;
+  }
+  #menu.title-screen[data-screen='splash'] {
+    padding: max(12px, 2dvh) 3vw;
+    align-items: center;
+  }
+  #menu.title-screen[data-screen='splash']::before {
+    background:
+      linear-gradient(180deg, #030b160a 5%, #030b1620 55%, #030b16ac 95%),
+      var(--cover-art) center 42% / contain no-repeat;
+  }
+  #menu.title-screen[data-screen='home'] .title-content {
+    margin-top: max(16px, 2dvh);
+  }
+  #menu.title-screen[data-screen] .title-content {
+    width: min(100%, 420px);
+  }
+  .menu-primary button {
+    min-height: 54px;
+  }
+  #menu.title-screen[data-screen='hangar'].selecting {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    padding: max(46px, 6dvh) 3vw 25px;
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen[data-screen]:not(.selecting) {
+    align-items: flex-start;
+    padding: 36px 5vw 24px;
+  }
+  #menu.title-screen[data-screen='splash'] {
+    align-items: center;
+    padding: 10px 4vw;
+  }
+  #menuStartGate {
+    padding-bottom: 9vh;
+  }
+  #menu[data-screen='home'] h1 {
+    margin-bottom: 14px;
+  }
+  .menu-primary {
+    gap: 6px;
+  }
+  .menu-primary button {
+    min-height: 45px;
+    padding: 8px 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #pressStart,
+  .menu-primary button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Preserve contextual mission briefing only inside JOGAR, not on splash/home. */
+#menu[data-screen='play'] .title-content > #brief {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+/* v1.27.21 QA visual revision: uncropped Five Cats artwork is the hero;
+   start/navigation remain below it, including small-screen landscape. */
+#menu.title-screen[data-screen='splash'],
+#menu.title-screen[data-screen='home'] {
+  justify-content: center;
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='splash'] .title-content,
+#menu.title-screen[data-screen='home'] .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(9px, 1.5dvh, 16px);
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+#menu.title-screen[data-screen='splash']::before,
+#menu.title-screen[data-screen='home']::before {
+  background:
+    linear-gradient(180deg, #030b1675 5%, #030b1699 100%),
+    var(--cover-art) center / contain no-repeat;
+  opacity: 0.24;
+  filter: blur(20px);
+  transform: scale(1.06);
+}
+#menu.title-screen[data-screen='splash'] .menu-cover-hero,
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  display: block;
+  flex: 0 0 auto;
+  width: min(100%, 110dvh, 1080px);
+  aspect-ratio: 1672 / 941;
+  background: var(--cover-art) center / contain no-repeat;
+  border: 1px solid #77d6c844;
+  border-radius: clamp(10px, 2vw, 18px);
+  box-shadow:
+    0 0 0 1px #07151bbb,
+    0 24px 62px #000b,
+    0 0 48px #29cad51a;
+  pointer-events: none;
+}
+#menu.title-screen[data-screen='splash'] #menuStartGate {
+  width: min(100%, 440px);
+  padding: 0;
+  margin: 0 auto;
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] h1 {
+  font-size: clamp(32px, 4.5vw, 56px);
+  margin: 0;
+  line-height: 1;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary {
+  width: min(100%, 470px);
+  gap: 8px;
+}
+#menu.title-screen[data-screen='home'] #menuPrimary button {
+  min-height: 49px;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    justify-content: flex-start;
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    width: 100%;
+    gap: 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(92vw, 420px);
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    padding: 8px 12px;
+  }
+  #menu.title-screen[data-screen='splash'] .title-content,
+  #menu.title-screen[data-screen='home'] .title-content {
+    gap: 5px;
+  }
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: min(75vw, 68dvh);
+  }
+  #menu.title-screen[data-screen='home'] h1 {
+    font-size: 30px;
+    margin: 0;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(96vw, 650px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary button {
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    min-height: 44px;
+  }
+}
+
+/* Final specificity: override older showroom portrait spacing without cropping the poster. */
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+  padding: clamp(14px, 2.5dvh, 26px) 12px max(18px, env(safe-area-inset-bottom, 0px));
+  align-items: center;
+  justify-content: center;
+}
+.showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+.showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: min(98vw, 1120px);
+  height: auto;
+  margin: auto;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: max(20px, env(safe-area-inset-top, 0px)) 8px
+      max(16px, env(safe-area-inset-bottom, 0px));
+  }
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting) .title-content,
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) .title-content {
+    width: 100%;
+  }
+}
+@media (max-height: 550px) and (min-aspect-ratio: 1/1) {
+  .showroom-web #menu.title-screen[data-screen='splash']:not(.selecting),
+  .showroom-web #menu.title-screen[data-screen='home']:not(.selecting) {
+    padding: 8px 12px;
+  }
+}
+
+/* P0 QA: keep all three home actions inside the first 1366x768 desktop viewport.
+   Splash artwork may remain larger; home reserves actual room for navigation. */
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(100%, 94dvh, 960px);
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+}
+
+/* v1.27.24: original-art cinema surround. The sharp Five Cats artwork
+   remains complete (contain); only its enlarged atmospheric backdrop
+   extends edge to edge, avoiding distorted or cropped characters. */
+#menu.title-screen[data-screen='splash']:not(.selecting)::before,
+#menu.title-screen[data-screen='home']:not(.selecting)::before {
+  background:
+    linear-gradient(180deg, #030b1699 0%, #030b1620 29%, #030b16d1 96%),
+    var(--cover-art) center / cover no-repeat;
+  opacity: 0.64;
+  filter: blur(17px);
+  transform: scale(1.08);
+}
+#menu.title-screen[data-screen='splash'] .title-content,
+#menu.title-screen[data-screen='home'] .title-content {
+  position: relative;
+  z-index: 1;
+  width: min(100vw, 1350px);
+  gap: clamp(5px, 1dvh, 11px);
+}
+#menu.title-screen[data-screen='splash'] .menu-cover-hero,
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(99vw, 120dvh, 1260px);
+  background-size: contain;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 22px 32px #020913aa);
+}
+#menu.title-screen[data-screen='home'] .menu-cover-hero {
+  width: min(99vw, 118dvh, 1220px);
+}
+@media (min-width: 700px), (orientation: landscape) {
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(94vw, 920px);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary button {
+    min-height: 47px;
+  }
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: 100%;
+  }
+  #menu.title-screen[data-screen='splash'],
+  #menu.title-screen[data-screen='home'] {
+    background: radial-gradient(ellipse at 50% 42%, #173b4f, #030b16 72%);
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  #menu.title-screen[data-screen='splash'] .menu-cover-hero,
+  #menu.title-screen[data-screen='home'] .menu-cover-hero {
+    width: min(92vw, 105dvh, 780px);
+  }
+  #menu.title-screen[data-screen='home'] .title-content {
+    gap: 5px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary {
+    width: min(94vw, 740px);
+  }
+}
+
+/* Cat radio portraits reuse the exact Five Cats poster crops already
+   used by the hangar. Never place text or alerts over the center aim lane. */
+#comms {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  border-radius: 9px;
+  background: linear-gradient(100deg, #041722ed, #072332dd);
+  box-shadow: 0 10px 25px #0009;
+}
+#comms .comms-copy {
+  min-width: 0;
+  flex: 1;
+}
+#comms #commsPortrait {
+  flex: 0 0 52px;
+  width: 52px;
+  height: 52px;
+  display: block;
+  border: 1px solid #78d6d6;
+  border-radius: 8px;
+  background-image: var(--cover-art);
+  background-size: 836% auto;
+  background-position: 57.75% 40.5%;
+}
+#comms #commsPortrait::before,
+#comms #commsPortrait::after {
+  display: none;
+}
+#comms #commsPortrait[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+}
+#comms #commsPortrait[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+}
+#comms #commsPortrait[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+}
+#comms #commsPortrait[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+}
+
+#comms #commsSpeaker {
+  font: inherit;
+  color: #ebfffd;
+}
+#comms #message {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) and (orientation: portrait) {
+  #comms {
+    width: min(370px, calc(100vw - 20px));
+    left: 10px;
+    bottom: max(141px, calc(env(safe-area-inset-bottom, 0px) + 125px));
+    padding: 7px;
+  }
+  #comms #commsPortrait {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  #comms {
+    top: 72px;
+    bottom: auto;
+    left: 8px;
+    width: min(300px, 42vw);
+    transform: none;
+    padding: 5px 7px;
+    gap: 8px;
+  }
+  #comms.active {
+    transform: none;
+  }
+  #comms #commsPortrait {
+    display: block;
+    flex-basis: 34px;
+    width: 34px;
+    height: 34px;
+  }
+  #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+  }
+  #comms #message {
+    font-size: 10px;
+    line-height: 1.3;
+  }
+}
+
+/* v1.27.24 P0: the radio must not escape the upper info rail on 320px phones.
+   Use an identifiable compact portrait + name; clamp only low-priority chatter.
+   Dangerous alerts retain the existing higher-priority arbitration. */
+@media (pointer: coarse) and (max-width: 550px) {
+  #hudNotices > #comms {
+    width: min(100%, 340px);
+    min-height: 0;
+    max-height: 68px;
+    padding: 3px 6px;
+    gap: 6px;
+    overflow: hidden;
+  }
+  #hudNotices > #comms #commsPortrait {
+    display: block;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+  }
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+  #hudNotices #comms #message {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: left;
+    font-size: 9px;
+    line-height: 1.2;
+    margin: 2px 0 0;
+  }
+}
+
+/* v1.27.25: actual Five Cats portraits in the remastered intro.
+   Portrait crops use the same approved cover as the in-game radio. */
+.cinematic-story .cinematic-speaker-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 56px;
+  margin-top: 8px;
+}
+.cinematic-story .cinematic-speaker-row strong {
+  margin: 0;
+}
+#cinematicPortrait {
+  display: block;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  border: 1px solid #72f5d9;
+  border-radius: 12px;
+  background-image: var(--cover-art);
+  background-size: 836% auto;
+  background-position: 57.75% 40.5%;
+  box-shadow: 0 0 18px #48dcce45;
+}
+#cinematicPortrait[hidden] {
+  display: none !important;
+}
+#cinematicPortrait::before,
+#cinematicPortrait::after {
+  display: none;
+}
+#cinematicPortrait[data-pilot='christopher'] {
+  background-position: 56.4% 13.5%;
+}
+#cinematicPortrait[data-pilot='bob'] {
+  background-position: 74% 17.5%;
+}
+#cinematicPortrait[data-pilot='calvin'] {
+  background-position: 44.2% 54%;
+}
+#cinematicPortrait[data-pilot='jenifer'] {
+  background-position: 73.4% 41.8%;
+}
+#cinematic.hide-subtitles #cinematicPortrait {
+  display: none !important;
+}
+@media (max-width: 600px) {
+  .cinematic-story .cinematic-speaker-row {
+    min-height: 44px;
+    gap: 8px;
+  }
+  #cinematicPortrait {
+    flex-basis: 42px;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Ensure cutscene branch inherits accessible landscape in-flight radio from
+   the approved QA composition; cat names are visible on touch devices. */
+@media (pointer: coarse) {
+  #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 8px;
+    line-height: 1.1;
+  }
+  #hudNotices #comms #commsSpeaker {
+    display: inline;
+  }
+  #hudNotices #comms b {
+    display: none;
+  }
+}
+
+/* Graphics 3.6 — Reflex Boost status stays beside the BOOST control, never
+   in the central aiming lane. No canvas filter or extra GPU post-pass. */
+body.reflex-boost #boostTouch {
+  box-shadow:
+    0 0 0 2px #75faff,
+    0 0 16px #53dce877,
+    inset 0 0 12px #3cbed477;
+}
+body.reflex-boost #boostTouch::after {
+  content: 'REFLEX';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  pointer-events: none;
+  color: #abfaff;
+  text-shadow: 0 0 8px #45ccef;
+}
+
+/* Mobile Controls 3.0 — transparent thumb arcs at the bottom corners.
+   Override the older 3-row rectangular grids rather than adding overlays.
+   Every real button keeps its pointer/hit area; transparency affects paint only. */
+@media (pointer: coarse) {
+  body.in-mission #touch {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    left: max(9px, env(safe-area-inset-left, 0px));
+    right: max(9px, env(safe-area-inset-right, 0px));
+    bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    gap: 8px;
+  }
+  body.in-mission #touch #stick {
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border-color: #8dece588;
+    background: radial-gradient(circle at 48% 50%, #10556840 10%, #08243130 65%, #05131e35 100%);
+    box-shadow:
+      inset 0 0 0 2px #66cfd825,
+      0 0 0 4px #091e2d25;
+    opacity: 0.55;
+    transition: opacity 100ms ease;
+  }
+  body.in-mission #touch #stick:active {
+    opacity: 0.92;
+  }
+  body.in-mission #touch #nub {
+    background: #8af9e455;
+    box-shadow: 0 0 10px #62eaff33;
+  }
+  body.in-mission #touch .actions {
+    position: relative;
+    display: block;
+    flex: 0 0 auto;
+    width: 242px;
+    height: 136px;
+    margin: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  body.in-mission #touch .actions button {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0 !important;
+    width: 52px;
+    height: 52px;
+    min-width: 48px;
+    min-height: 48px;
+    max-width: none;
+    border: 1px solid #86e4d56b;
+    border-radius: 46% 54% 44% 56%;
+    background: #08223173;
+    box-shadow:
+      inset 0 0 10px #6ee8f01b,
+      0 3px 12px #01050e38;
+    color: #e7fffc;
+    text-shadow: 0 1px 4px #000c;
+    opacity: 0.55;
+    font-size: 10px !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    touch-action: none;
+    pointer-events: auto;
+    transition:
+      opacity 90ms ease,
+      box-shadow 90ms ease;
+  }
+  body.in-mission #touch .actions button:active,
+  body.in-mission #touch .actions button.pressed,
+  body.in-mission #touch .actions button:focus-visible,
+  body.in-mission #touch #robotTouch[aria-pressed='true'] {
+    opacity: 0.94;
+    border-color: #adfff4;
+    box-shadow:
+      inset 0 0 15px #55ddd655,
+      0 0 12px #5fffe966;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 19px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 56px;
+    top: 2px;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 4px;
+    top: 80px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 63px;
+    top: 76px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 122px;
+    top: 67px;
+    width: 56px;
+    height: 62px;
+    border-radius: 42% 58% 44% 56% !important;
+    background: conic-gradient(#ffd07a var(--meter, 100%), #374137 var(--meter, 100%));
+    font-size: 11px !important;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 181px;
+    top: 46px;
+    width: 61px;
+    height: 82px;
+    min-width: 61px;
+    max-width: 61px;
+    border-radius: 52% 48% 42% 58% !important;
+    background: conic-gradient(#72ffe0 var(--meter, 0%), #163b43 var(--meter, 0%));
+    font-size: 12px !important;
+  }
+  body.in-mission #touch #fireTouch::before,
+  body.in-mission #touch #boostTouch::before {
+    inset: 3px;
+    border-color: #a5fff054;
+    background: #082332a0;
+    border-radius: inherit;
+  }
+  /* The orbit buttons stay at the LEFT thumb, immediately above the joystick. */
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 123px);
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 184px;
+    height: 164px;
+  }
+  body.in-mission #touch #stick {
+    width: clamp(88px, 27vw, 112px);
+    height: clamp(88px, 27vw, 112px);
+  }
+  body.in-mission #touch .actions button {
+    width: 54px;
+    height: 52px;
+    min-height: 48px;
+    font-size: 9px !important;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 10px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 58px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 70px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 58px;
+    top: 60px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 49px;
+    top: 114px;
+    width: 62px;
+    height: 49px;
+    font-size: 10px !important;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 122px;
+    top: 66px;
+    width: 62px;
+    height: 97px;
+    min-width: 62px;
+    max-width: 62px;
+    font-size: 11px !important;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 100px);
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission #touch {
+    left: max(7px, env(safe-area-inset-left, 0px));
+    right: max(7px, env(safe-area-inset-right, 0px));
+    gap: 4px;
+  }
+  body.in-mission #touch .actions {
+    width: 177px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 116px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 46px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 57px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 57px;
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #touch #stick {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* The independent LEFT-ARM lock is a seventh control in mech mode.
+   Reserve a real hit target in the arc instead of letting it sit at 0,0. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    display: grid;
+    left: 120px;
+    top: 7px;
+    width: 52px;
+    height: 52px;
+    border-radius: 45% 55% 48% 52%;
+  }
+  body.in-mission #touch .actions #lockTouch[aria-pressed='true'] {
+    opacity: 0.94;
+    background: #16657595;
+    border-color: #96faff;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 181px;
+    height: 168px;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 10px;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 65px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 58px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 58px;
+    top: 58px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 58px;
+    top: 117px;
+    width: 58px;
+    height: 50px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 120px;
+    top: 65px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
+    height: 102px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 0;
+    top: 119px;
+    width: 52px;
+    height: 48px;
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission #touch .actions {
+    width: 177px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 58px;
+    width: 54px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 116px;
+    width: 61px;
+    min-width: 61px;
+    max-width: 61px;
+  }
+}
+
+/* City 3.0 P0: resolve overlapping legacy and thumb-arc rules. Keep BOOST
+   as a real button above nearby HUD paint in every in-flight state. */
+@media (pointer: coarse) {
+  body.in-mission #touch {
+    z-index: 55;
+    isolation: isolate;
+    opacity: 1 !important; /* each key owns its opacity; root never fades taps */
+  }
+  body.in-mission #touch .actions #boostTouch {
+    display: grid !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 4;
+    opacity: 0.82 !important;
+    outline: 1px solid #ffe2a66b;
+    font-size: 11px !important;
+  }
+  body.in-mission #touch .actions #boostTouch:active,
+  body.in-mission #touch .actions #boostTouch.pressed {
+    opacity: 1 !important;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    z-index: 3;
+    opacity: 0.75;
+  }
+  body.in-mission #touch #stick {
+    pointer-events: auto;
+    opacity: 0.65;
+  }
+  body.in-mission #touch .actions #lockTouch[hidden] {
+    display: none !important;
+  }
+  /* Screen readers and pointer hitboxes use the actual button rectangles. */
+}
+
+/* Options 3.0: one compact screen, not a scroll-heavy settings document.
+   Native language select is visible immediately in the first cell. */
+#settingsMenu {
+  padding: max(8px, env(safe-area-inset-top, 0px)) max(8px, env(safe-area-inset-right, 0px))
+    max(8px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  overflow: hidden;
+}
+#settingsMenu .nw-settings-card {
+  width: min(790px, 100%);
+  max-height: calc(100dvh - 16px);
+  padding: clamp(10px, 2.3vh, 17px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#settingsMenu .nw-settings-card h2 {
+  margin: 0;
+  font-size: clamp(16px, 2.8vh, 22px);
+  line-height: 1.1;
+}
+#settingsMenu .nw-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+}
+#settingsMenu .nw-settings-grid label {
+  min-width: 0;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  padding: 6px 8px;
+  border: 1px solid #50bcaa2e;
+  border-radius: 8px;
+  background: #051a267a;
+}
+#settingsMenu .nw-settings-grid label:has(#settingLanguage) {
+  border-color: #61d8b7ad;
+  background: #0b3137a1;
+}
+#settingsMenu .nw-settings-grid select {
+  min-width: 0;
+  min-height: 31px;
+  width: 100%;
+  padding: 4px 20px 4px 6px;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #e6fff6;
+  background-color: #103c39;
+}
+#settingsMenu .nw-settings-grid input[type='range'] {
+  height: 27px;
+  min-height: 27px;
+}
+#settingsMenu .nw-setting-check {
+  min-height: 32px;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+}
+#settingsMenu .nw-setting-check input {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+#settingsMenu .nw-modal-actions {
+  display: flex;
+  margin: 0;
+  justify-content: flex-end;
+}
+#settingsMenu .nw-modal-actions button {
+  width: min(200px, 100%);
+  min-height: 38px;
+  padding: 7px 12px;
+}
+@media (max-width: 550px) {
+  #settingsMenu .nw-settings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 7px;
+  }
+  #settingsMenu .nw-settings-card {
+    gap: 5px;
+  }
+  #settingsMenu .nw-settings-grid label {
+    padding: 4px 5px;
+    font-size: 9px;
+  }
+  #settingsMenu .nw-settings-grid select {
+    min-height: 30px;
+  }
+  #settingsMenu .nw-settings-grid input[type='range'] {
+    height: 21px;
+    min-height: 21px;
+  }
+  #settingsMenu .nw-setting-check {
+    min-height: 25px;
+  }
+}
+@media (max-height: 450px) {
+  #settingsMenu .nw-settings-card {
+    width: min(860px, 100%);
+    padding: 7px 12px;
+    gap: 3px;
+  }
+  #settingsMenu .nw-settings-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px 8px;
+  }
+  #settingsMenu .nw-settings-grid label {
+    padding: 3px 6px;
+    font-size: 9px;
+    gap: 2px;
+  }
+  #settingsMenu .nw-settings-grid select {
+    min-height: 27px;
+    padding-block: 2px;
+  }
+  #settingsMenu .nw-settings-grid input[type='range'] {
+    height: 20px;
+    min-height: 20px;
+  }
+  #settingsMenu .nw-setting-check {
+    min-height: 25px;
+  }
+  #settingsMenu .nw-modal-actions button {
+    min-height: 30px;
+    padding-block: 4px;
+  }
+}
+
+/* Regression gate: all six right-thumb controls retain >=60px physical width
+   in portrait, with the seventh LOCK beneath the left column. The visual
+   opacity never changes pointer reachability or the BOOST z-order. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 183px;
+    height: 190px;
+  }
+  body.in-mission #touch .actions button {
+    width: 60px;
+    min-width: 60px;
+    min-height: 52px;
+    height: 52px;
+    box-sizing: border-box;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 11px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 61px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 75px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 61px;
+    top: 61px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 61px;
+    top: 124px;
+    width: 60px;
+    min-width: 60px;
+    height: 54px;
+    min-height: 54px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 123px;
+    top: 63px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 115px;
+    min-height: 115px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 0;
+    top: 138px;
+    width: 60px;
+    min-width: 60px;
+    height: 52px;
+    min-height: 52px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + clamp(88px, 27vw, 112px) + 12px);
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission #touch .actions {
+    width: 183px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 61px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 123px;
+  }
+  body.in-mission #touch #stick {
+    width: 88px;
+    height: 88px;
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #touch #stick {
+    width: 98px;
+    height: 98px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 110px);
+  }
+}
+
+/* Options opacity remains functional after the BOOST z-index safety fix.
+   Primary input is never dimmed below a usable threshold. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions button {
+    opacity: clamp(0.42, calc(var(--nw-touch-preference, 0.9) * 0.62), 0.68);
+  }
+  body.in-mission #touch #stick {
+    opacity: clamp(0.46, calc(var(--nw-touch-preference, 0.9) * 0.72), 0.72);
+  }
+  body.in-mission #touch .actions #fireTouch {
+    opacity: clamp(0.6, calc(var(--nw-touch-preference, 0.9) * 0.83), 0.88);
+  }
+  body.in-mission #touch .actions #boostTouch {
+    opacity: clamp(0.78, calc(var(--nw-touch-preference, 0.9) * 0.92), 0.9) !important;
+  }
+  body.in-mission #touch .actions button.pressed,
+  body.in-mission #touch .actions button:active {
+    opacity: 0.96 !important;
+  }
+}
+
+/* P0 mobile BOOST layout regression (3.0.1).
+   Legacy #touch #boostTouch/#fireTouch sets position:relative with TWO ID
+   selectors, outranking the new .actions button { position:absolute } rule.
+   When .actions became display:block this placed BOOST after FIRE in normal
+   flow, then displaced it with left/top offsets, often off-screen.
+   Explicitly restore absolute positioning at a higher specificity.
+   Keep the visual half-moon, original control ids and touch event listeners. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions #boostTouch,
+  body.in-mission #touch .actions #fireTouch {
+    position: absolute !important;
+    margin: 0 !important;
+    display: grid;
+    place-items: center;
+    transform-origin: center center;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 8;
+    color: #fff3d2;
+    text-shadow:
+      0 1px 4px #03131a,
+      0 0 7px #ffeab055;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    z-index: 7;
+  }
+}
+
+/* Mobile Controls 3.1: consistent real thumb targets after comprehensive
+   browser QA. Each action uses a non-overlapping 60px hit area in both
+   landscape and portrait; no grid/relative positioning leaks into the arc. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions {
+    display: block;
+    width: 248px;
+    height: 138px;
+    overflow: visible;
+  }
+  body.in-mission #touch .actions button {
+    position: absolute !important;
+    box-sizing: border-box;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 60px;
+    min-height: 60px;
+    margin: 0 !important;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 65px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 62px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 62px;
+    top: 65px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 124px;
+    top: 0;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 124px;
+    top: 65px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 186px;
+    top: 18px;
+    width: 62px;
+    min-width: 62px;
+    max-width: 62px;
+    height: 107px;
+    min-height: 107px;
+  }
+  /* The bonus 2D minigame intentionally disables BOOST and PODS. Do not
+     override that rule with the in-flight BOOST visibility hotfix. */
+  body.in-mission:has(#arcadePanel:not([hidden])) #touch .actions #boostTouch {
+    display: none !important;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 123px);
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #touch .actions {
+    width: 183px;
+    height: 190px;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 0;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 64px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 61px;
+    top: 0;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 61px;
+    top: 64px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 0;
+    top: 128px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 61px;
+    top: 128px;
+    width: 60px;
+    min-width: 60px;
+    height: 60px;
+    min-height: 60px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 123px;
+    top: 51px;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 137px;
+    min-height: 137px;
+  }
+  /* The active flight stick must match actual thumb reach. */
+  body.in-mission #touch #stick {
+    width: 102px;
+    height: 102px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 114px);
+  }
+}
+@media (pointer: coarse) and (min-width: 391px) and (max-width: 550px) {
+  body.in-mission #touch #stick {
+    width: 128px;
+    height: 128px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 140px);
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  body.in-mission #touch #stick {
+    width: 88px;
+    height: 88px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 100px);
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #touch #stick {
+    width: 91px;
+    height: 91px;
+  }
+  body.in-mission #orbitControls:not([hidden]) {
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 103px);
+  }
+}
+
+/* Mobile Controls 3.3 — thumb-first ergonomics.
+   FIRE and BOOST are adjacent, anchored at the bottom/right where the right
+   thumb naturally rests; rarely used actions sit on the upper/inward arc.
+   All seven controls retain real non-overlapping hit targets of >=60px.
+   The input IDs, multi-touch handlers, orbital SUPER BOOST and left-hand mode
+   are unchanged. No new overlay enters the central aiming lane. */
+@media (pointer: coarse) {
+  body.in-mission #touch .actions {
+    width: 270px;
+    height: 164px;
+    overflow: visible;
+    pointer-events: none;
+  }
+  body.in-mission #touch .actions button {
+    position: absolute !important;
+    width: 60px;
+    min-width: 60px;
+    max-width: 60px;
+    height: 60px;
+    min-height: 60px;
+    border-radius: 50% 50% 45% 55% !important;
+    background-color: #072e3499;
+    border-color: #82eac866;
+    box-shadow:
+      inset 0 0 12px #67ffe016,
+      0 1px 9px #010a1344;
+    font-size: 10px !important;
+    pointer-events: auto;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 25px;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 90px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 62px;
+    top: 2px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 62px;
+    top: 86px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 126px;
+    top: 4px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 126px;
+    top: 96px;
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    height: 64px;
+    min-height: 64px;
+    border-radius: 45% 55% 48% 52% !important;
+    border-color: #ffe0a6;
+    opacity: 0.92 !important;
+    z-index: 10;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 198px;
+    top: 62px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    height: 98px;
+    min-height: 98px;
+    border-radius: 55% 45% 48% 52% !important;
+    border-color: #9fffe2;
+    opacity: 0.96 !important;
+    z-index: 11;
+    font-size: 12px !important;
+    box-shadow:
+      inset 0 0 17px #42ffd82f,
+      0 0 14px #07cca53c;
+  }
+  body.in-mission #touch .actions button:not(#fireTouch):not(#boostTouch) {
+    opacity: 0.52;
+  }
+  body.left-handed.in-mission #touch .actions {
+    transform: scaleX(-1);
+  }
+  body.left-handed.in-mission #touch .actions button {
+    transform: scaleX(-1);
+  }
+  /* Keep SUPER BOOST in the same physical touch target to avoid input loss
+     when the mission changes the button label. No scale transform. */
+  body.in-mission #touch .actions #boostTouch.launch-required {
+    opacity: 1 !important;
+    z-index: 9;
+    outline: 2px solid #ffe6a0;
+    border-color: #fff2bc !important;
+    color: #ffefc2;
+    font-size: 9px !important;
+    font-weight: 900;
+    line-height: 1.03;
+    white-space: normal;
+    text-shadow:
+      0 0 8px #fff7b0aa,
+      0 1px 3px #081216;
+    background: conic-gradient(#ffda82 var(--meter, 100%), #263f40 var(--meter, 100%));
+    box-shadow:
+      inset 0 0 19px #ffac4663,
+      0 0 18px #ffd57b73;
+    animation: nova-super-boost-aura 700ms ease-in-out infinite alternate;
+  }
+  body.orbital-super-boost #boostTouch.launch-required {
+    outline-color: #ffffff;
+    box-shadow:
+      inset 0 0 22px #fff7b277,
+      0 0 23px #ffe8a2b0;
+  }
+  @keyframes nova-super-boost-aura {
+    from {
+      box-shadow:
+        inset 0 0 11px #f9a74244,
+        0 0 7px #ffce6355;
+    }
+    to {
+      box-shadow:
+        inset 0 0 24px #ffe6a477,
+        0 0 24px #ffe6a477;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.in-mission #touch .actions #boostTouch.launch-required {
+      animation: none;
+    }
+  }
+  body.in-mission #touch .actions #boostTouch.launch-required {
+    z-index: 12;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  /* Portrait: two high-frequency actions together along the lower thumb
+     sweep; top controls never crowd their hitboxes, even in MECHA mode. */
+  body.in-mission #touch .actions {
+    width: 198px;
+    height: 213px;
+  }
+  body.in-mission #touch .actions #robotTouch {
+    left: 0;
+    top: 17px;
+  }
+  body.in-mission #touch .actions #podsTouch {
+    left: 0;
+    top: 82px;
+  }
+  body.in-mission #touch .actions #rollTouch {
+    left: 62px;
+    top: 2px;
+  }
+  body.in-mission #touch .actions #bombTouch {
+    left: 62px;
+    top: 75px;
+  }
+  body.in-mission #touch .actions #lockTouch:not([hidden]) {
+    left: 125px;
+    top: 33px;
+  }
+  body.in-mission #touch .actions #boostTouch {
+    left: 49px;
+    top: 146px;
+    width: 72px;
+    min-width: 72px;
+    max-width: 72px;
+    height: 64px;
+    min-height: 64px;
+  }
+  body.in-mission #touch .actions #fireTouch {
+    left: 125px;
+    top: 117px;
+    width: 73px;
+    min-width: 73px;
+    max-width: 73px;
+    height: 93px;
+    min-height: 93px;
+  }
+}
+@media (pointer: coarse) and (max-width: 340px) {
+  /* At 320px: 198px actions + 88px stick + insets fit without collision. */
+  body.in-mission #touch #stick {
+    width: 88px;
+    height: 88px;
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #touch #stick {
+    width: 91px;
+    height: 91px;
+  }
+}
+
+/* The arcade is an exception: SUPER BOOST never appears during 2D minigames. */
+@media (pointer: coarse) {
+  body.in-mission:has(#arcadePanel:not([hidden])) #touch .actions #boostTouch {
+    display: none !important;
+  }
+}
+
+/* P0 Intermission isolation 3.9 — combat controls cannot paint or receive
+   touches above the hangar/map. Inert is also applied in game.js on state
+   changes to protect focus/keyboard access. This intentionally comes AFTER
+   all legacy body.in-mission #touch !important overrides. */
+body.intermission-active
+  :is(
+    #hud,
+    #hudNotices,
+    #touch,
+    #bottom,
+    #loadout,
+    #sectorTag,
+    #bossHUD,
+    #subHUD,
+    #petCareHud,
+    #orbitControls,
+    #strategyControls,
+    #cameraView,
+    #aimReticle,
+    #mechaLockReticle,
+    #tacticalPanel,
+    #cockpitPanel,
+    #hitFeedback,
+    #battleRadar,
+    #pickupFlash
+  ) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+body.intermission-active #game {
+  pointer-events: none;
+}
+body.intermission-active #shop:not([hidden]),
+body.intermission-active #campaignMap:not([hidden]) {
+  z-index: 110;
+  pointer-events: auto;
+  isolation: isolate;
+}
+
+/* Hangar 3.9 — prioritize readable purchase states and genuinely scrollable
+   content on iOS portrait and compact landscape, above touch safe areas. */
+body.intermission-active #shop {
+  place-items: start center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px))
+    max(24px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: radial-gradient(ellipse at 65% 13%, #1d4c55f2, #071722fa 61%, #030b16 100%);
+}
+body.intermission-active #shop .hangar-card {
+  margin: auto;
+  width: min(760px, 100%);
+  min-width: 0;
+  border: 1px solid #65b6b7aa;
+  border-radius: 14px;
+  padding: clamp(14px, 3vw, 26px);
+  background: linear-gradient(145deg, #102c3af5, #081725fa);
+  box-shadow:
+    0 18px 65px #000a,
+    inset 0 1px #8bdcdb22;
+}
+body.intermission-active #shop .hangar-card h2 {
+  margin: 8px 0;
+  color: #f2fcff;
+}
+body.intermission-active #shop .hangar-card p {
+  color: #c4dce1;
+  line-height: 1.4;
+}
+body.intermission-active #shop .shop-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin: 15px 0;
+}
+body.intermission-active #shop .shop-grid button {
+  min-width: 0;
+  min-height: 68px;
+  padding: 11px 12px;
+  font-size: clamp(11px, 1.55vw, 13px);
+  line-height: 1.3;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border-radius: 11px;
+  background: #133747;
+  border-color: #5eaeb9;
+  color: #e7fcff;
+  touch-action: manipulation;
+}
+body.intermission-active #shop .shop-grid button:disabled {
+  opacity: 0.78;
+  background: #142a34;
+  border-color: #44616b;
+  color: #aabfc7;
+  cursor: not-allowed;
+}
+body.intermission-active #shop .shop-grid button:not(:disabled):active {
+  background: #27646a;
+  border-color: #b4fff2;
+}
+body.intermission-active #shop :is(#equipScatter, #nextSector, .skin-grid button) {
+  touch-action: manipulation;
+}
+body.intermission-active #shop .scatter-loadout {
+  position: relative;
+  max-width: 100%;
+}
+body.intermission-active #shop #scatterInfo {
+  display: block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-size: clamp(11px, 1.7vw, 14px);
+  line-height: 1.4;
+}
+@media (max-width: 550px) {
+  body.intermission-active #shop .shop-grid button {
+    min-height: 65px;
+  }
+  body.intermission-active #shop .hangar-card > strong {
+    font-size: 22px;
+  }
+  body.intermission-active #shop .hangar-card > small {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+}
+@media (max-height: 550px) and (min-width: 551px) {
+  body.intermission-active #shop .shop-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  body.intermission-active #shop .shop-grid button {
+    min-height: 54px;
+  }
+}
+
+/* Graphics 3.10 — the first-stage metropolis is electric twilight, not a
+   near-black tunnel. Soften only that stage's vignette; never brighten HUD,
+   menu, other sectors, or fire/impact effects with a global CSS filter. */
+body.in-mission.city-bright #vignette {
+  background: linear-gradient(#10284424, transparent 24%, transparent 80%, #0a173c40);
+}
+
+/* City 3.4: fleeting upper-edge orbital alert; no persistent screen-blocking card. */
+body.in-mission #hudNotices > #launchBoostNotice {
+  position: relative !important;
+  inset: auto !important;
+  order: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: min(410px, calc(100vw - 36px));
+  min-height: 0;
+  padding: 4px 9px;
+  margin: 0 auto;
+  color: #ffebac;
+  background: #32270be8;
+  border: 1px solid #ffda76;
+  border-radius: 7px;
+  font: 800 10px/1.3 sans-serif;
+  letter-spacing: 0.025em;
+  text-align: center;
+  text-shadow: none;
+  box-shadow: none;
+  animation: none;
+  pointer-events: none;
+}
+body.in-mission #hudNotices > #launchBoostNotice[hidden] {
+  display: none !important;
+}
+body.in-mission #hudNotices > #launchBoostNotice strong {
+  white-space: nowrap;
+  font: inherit;
+}
+body.in-mission #hudNotices > #launchBoostNotice span {
+  font: 600 9px/1.3 sans-serif;
+}
+@media (max-width: 550px) {
+  body.in-mission #hudNotices > #launchBoostNotice {
+    flex-direction: column;
+    gap: 1px;
+    padding: 3px 8px;
+    font-size: 9px;
+  }
+  body.in-mission #hudNotices > #launchBoostNotice span {
+    font-size: 8px;
+  }
+}
+
+/* Explicit, one-tap QA entry on authorized preview builds only. */
+#menuPrimary #menuQA[hidden] {
+  display: none !important;
+}
+#menu[data-screen='home'] #menuQA:not([hidden]) {
+  background: #124b50ee;
+  border: 1px solid #64e4d3a1;
+  color: #dcfff7;
+  min-height: 46px;
+}
+#menu[data-screen='central'] #developerPanel[open] {
+  border-color: #69e7cf;
+  box-shadow: 0 0 18px #18c8ab26;
+}
+
+/* QA menu regression v1.27.60: the fourth action stays on the first row
+   in landscape while the three-action production menu is unchanged. */
+@media (min-width: 700px), (orientation: landscape) {
+  #menu.title-screen[data-screen='home'] #menuPrimary:has(#menuQA:not([hidden])) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 7px;
+  }
+  #menu.title-screen[data-screen='home'] #menuPrimary:has(#menuQA:not([hidden])) button {
+    min-width: 0;
+    padding: 8px 10px;
+    letter-spacing: 0.035em;
+    font-size: clamp(10px, 1vw, 13px);
+  }
+}
+
+/* The central QA panel is deliberately scrolled into view on entry.
+   Keep the return control inside the scrollport instead of centering a
+   taller-than-viewport flex column with an unreachable top. */
+#menu.title-screen[data-screen='central']:not(.selecting) {
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='central']:not(.selecting) .title-content {
+  margin: 0 auto;
+  justify-content: flex-start;
+}
+#menu.title-screen[data-screen='central'] #menuBack {
+  position: sticky;
+  top: max(4px, env(safe-area-inset-top, 0px));
+  z-index: 9;
+  background: #071d2a;
+}
+
+/* Developer equipment lab is a genuine touch-friendly form inside the pause
+   scrollport. Only shown when the dev session is explicitly authorized. */
+#pauseMenu #developerFlightLab:not([hidden]) {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 10px 0;
+  border: 1px solid #68cfc18a;
+  border-radius: 10px;
+  background: #081d2c;
+}
+#pauseMenu #developerFlightLab[hidden] {
+  display: none !important;
+}
+#pauseMenu #developerFlightLab > summary {
+  display: block;
+  padding: 12px;
+  min-height: 44px;
+  box-sizing: border-box;
+  color: #b5f6e7;
+  font:
+    700 12px/1.4 system-ui,
+    sans-serif;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#pauseMenu #developerFlightLab .developer-panel-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  padding: 12px;
+  min-width: 0;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > label {
+  grid-column: span 1;
+  color: #87ead9;
+  align-self: end;
+  font:
+    700 11px/1.4 system-ui,
+    sans-serif;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > select {
+  grid-column: span 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 9px;
+  color: #e5faff;
+  background: #143447;
+  border: 1px solid #649ca9;
+  border-radius: 6px;
+  font:
+    600 13px system-ui,
+    sans-serif;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > button,
+#pauseMenu #developerFlightLab .developer-panel-content > small {
+  grid-column: 1 / -1;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > button {
+  min-height: 48px;
+  touch-action: manipulation;
+}
+#pauseMenu #developerFlightLab .developer-panel-content > small {
+  color: #afcfd5;
+  line-height: 1.45;
+}
+@media (max-width: 550px) {
+  #pauseMenu #developerFlightLab .developer-panel-content {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 10px;
+  }
+  #pauseMenu #developerFlightLab .developer-panel-content > label,
+  #pauseMenu #developerFlightLab .developer-panel-content > select {
+    grid-column: 1;
+  }
+  #pauseMenu #developerFlightLab > summary {
+    font-size: 11px;
+  }
+}
+
+/* Robô: lock-on multi-alvo responsivo. Os indicadores seguem alvos 3D reais;
+   nenhum painel ocupa o centro de gameplay ou captura toques. */
+#mechaMultiTargets {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  pointer-events: none;
+}
+#mechaMultiTargets .nw-mecha-target {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: -12px;
+  border: 2px solid #9cfaff;
+  border-radius: 6px;
+  background: #052635aa;
+  color: #fff6a0;
+  box-shadow:
+    0 0 12px #34e4ff88,
+    inset 0 0 9px #34e4ff55;
+  font: 800 11px/1 monospace;
+  transform: rotate(45deg);
+}
+#mechaMultiTargets .nw-mecha-target[hidden] {
+  display: none;
+}
+body:not(.in-mission) #mechaMultiTargets,
+body.intermission-active #mechaMultiTargets {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  #mechaMultiTargets .nw-mecha-target {
+    box-shadow: none;
+  }
+}
+
+/* Phase 4: limited-cost original hyperspace streaks during the Devastador escape.
+   HUD / controls remain above the effect; no extra WebGL particles or pointers. */
+body.devastador-warp::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 42;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 48%,
+    transparent 0deg 9deg,
+    rgb(152 235 255 / 0.23) 9.1deg 9.55deg,
+    transparent 9.85deg 19deg
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse at 50% 48%,
+    transparent 0 20%,
+    #000 49%,
+    transparent 91%
+  );
+  mask-image: radial-gradient(ellipse at 50% 48%, transparent 0 20%, #000 49%, transparent 91%);
+  animation: devastador-escape-streak 0.62s linear infinite;
+}
+body.devastador-escape:not(.devastador-warp) #attackWarning {
+  text-shadow: 0 0 12px rgb(255 95 52 / 0.5);
+}
+@keyframes devastador-escape-streak {
+  0% {
+    transform: scale(0.94);
+    opacity: 0.36;
+  }
+  100% {
+    transform: scale(1.19);
+    opacity: 0.75;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.devastador-warp::after {
+    animation: none;
+    opacity: 0.35;
+  }
+}
+
+/* Boss clarity: damage to real generators reduces total displayed integrity. */
+#bossHealthReadout {
+  display: block;
+  margin-top: 3px;
+  color: #fff0bf;
+  font: 700 10px/1.15 monospace;
+  letter-spacing: 0.07em;
+}
+#bossHUD[data-hit='true'] .bar {
+  outline: 2px solid #fff39b;
+  box-shadow: 0 0 15px #ffe36e88;
+}
+#bossHUD[data-hit='true'] #bossHealth {
+  filter: brightness(1.65);
+}
+#weakPointCues {
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+}
+.weak-point-tag {
+  position: absolute;
+  transform: translate(-50%, -150%);
+  background: #111b25e8;
+  border: 1px solid #f6df68;
+  border-radius: 5px;
+  padding: 4px 7px;
+  white-space: nowrap;
+  color: #fff6aa;
+  text-shadow: 0 0 6px #feeb77;
+  font: 800 11px/1.1 monospace;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 9px #fff18355;
+}
+.weak-point-tag[data-state='armored'] {
+  /* Shielded is guidance, not an interactive weak-point target. Keep it
+     legible but substantially lighter than the true vulnerable marker. */
+  transform: translate(-50%, -125%);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font: 700 9px/1.1 monospace;
+  letter-spacing: 0.015em;
+  color: #ffd2ac;
+  background: rgb(17 27 37 / 46%);
+  border-color: rgb(237 136 85 / 44%);
+  box-shadow: 0 0 4px rgb(237 136 85 / 16%);
+  text-shadow: none;
+  opacity: 0.8;
+}
+.weak-point-tag[hidden] {
+  display: none !important;
+}
+.qa-berserk-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 12px;
+  color: #ffdf9b;
+}
+.qa-berserk-toggle input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+#quickRpg[data-selected='BERSERK'] #specialSwitch {
+  border-color: #f7a354;
+  color: #ffe1ae;
+}
+#quickRpg #specialCast:not(:disabled) {
+  border-color: #8bfbd7;
+  box-shadow: inset 0 0 8px #45ffb422;
+}
+body.berserk-active #quickRpg #specialCast {
+  border-color: #ffb14f;
+  color: #ffe4a2;
+  box-shadow: 0 0 14px #ff7f3266;
+}
+body.berserk-active #rpgLevel {
+  color: #ffb45a;
+}
+@media (pointer: coarse) {
+  body.in-mission #strategyControls #quickRpg button {
+    font-size: 9px;
+    line-height: 1.18;
+  }
+}
+
+/* QA-only, one-tap Berserk activation beneath the existing approved RPG rail.
+   Never cover the aim reticle or enable this dock in normal/production sessions. */
+#qaBerserkDock[hidden],
+body:not(.developer-session) #qaBerserkDock {
+  display: none !important;
+}
+#qaBerserkDock {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 46;
+  width: min(238px, calc(100vw - 100px));
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+  box-sizing: border-box;
+  border: 1px solid #ffa461;
+  border-radius: 10px;
+  padding: 5px;
+  background: #20140fef;
+  box-shadow: 0 4px 20px #0008;
+  pointer-events: auto;
+}
+#strategyControls #qaBerserkAction {
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid #ffd076;
+  border-radius: 7px;
+  background: linear-gradient(110deg, #713a1d, #b54b27);
+  color: #fff6e3;
+  font:
+    800 12px/1.2 Arial,
+    sans-serif;
+  letter-spacing: 0.03em;
+  touch-action: manipulation;
+}
+#qaBerserkStatus {
+  color: #ffdba8;
+  font: 700 10px/1.25 monospace;
+}
+#qaBerserkDock[data-active='true'] {
+  border-color: #ffee8a;
+  box-shadow: 0 0 15px #ff962b88;
+}
+#qaBerserkDock[data-active='true'] #qaBerserkAction {
+  background: linear-gradient(110deg, #a13a18, #f27e2b);
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    top: max(245px, calc(env(safe-area-inset-top, 0px) + 215px));
+  }
+}
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    left: max(260px, calc(env(safe-area-inset-left, 0px) + 250px));
+    top: max(150px, calc(env(safe-area-inset-top, 0px) + 135px));
+  }
+}
+
+/* QA P0: RPG stays anchored in the top rail when expanded. The native
+   <summary> must NEVER move into a scroll box, or iOS players cannot close
+   it. Only its optional tactical CONTENT expands below the pinned header.
+   Do not hide ORBIT as a workaround: the ship must always be steerable. */
+@media (pointer: coarse) {
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+    box-shadow: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary {
+    position: relative;
+    z-index: 4;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer:not([open]) > .rpgDrawerBody {
+    display: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
+    position: absolute;
+    display: block;
+    box-sizing: border-box;
+    top: calc(100% + 5px);
+    left: 0;
+    z-index: 3;
+    width: min(238px, calc(100vw - 106px));
+    max-height: min(32dvh, 245px);
+    margin: 0;
+    padding: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid #4eb5ad88;
+    border-radius: 10px;
+    background: #061522f5;
+    box-shadow: 0 6px 18px #010811aa;
+  }
+  /* ORBIT remains above the optional RPG content when screen space is tight.
+     Holding either arrow also folds RPG, freeing the entire lower HUD. */
+  body.in-mission #orbitControls:not([hidden]) {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
+    width: min(206px, calc(100vw - 106px));
+  }
+}
+
+/* v1.27.94 QA integrated: compact menus must remain operable without
+   scrolling past unrelated hero art, and only the selected hangar tab is visible. */
+#menu.title-screen[data-screen='qa']:not(.selecting) {
+  display: block;
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(12px, 4vw)
+    max(20px, env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+#menu.title-screen[data-screen='qa'] .title-content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: min(100%, 620px);
+  margin: 0 auto;
+  text-align: left;
+}
+#menu[data-screen='qa']
+  .title-content
+  > :not(#menuBack):not(#menuScreenLabel):not(#developerPanel) {
+  display: none !important;
+}
+#menu.title-screen[data-screen='qa'] #menuBack {
+  position: sticky;
+  top: max(0px, env(safe-area-inset-top, 0px));
+  z-index: 12;
+  flex-shrink: 0;
+  background: #071d2a;
+}
+#menu.title-screen[data-screen='qa'] #developerPanel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+#menu.title-screen[data-screen='hangar'].selecting #hangarSectionTabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+#menu.title-screen[data-screen='hangar'].selecting #hangarSectionTabs button {
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid #557789;
+  border-radius: 9px;
+  background: #0a2232;
+  color: #deeff5;
+  font: 700 clamp(10px, 2.5vw, 13px)/1.3 sans-serif;
+}
+#menu.title-screen[data-screen='hangar'].selecting #hangarSectionTabs button[aria-pressed='true'] {
+  border-color: #70ead1;
+  background: #14514e;
+  color: #f3fffa;
+}
+#squadSelection[data-hangar-tab='pilots'] > [data-hangar-section='ships'],
+#squadSelection[data-hangar-tab='pilots'] > [data-hangar-section='arsenal'],
+#squadSelection[data-hangar-tab='ships'] > [data-hangar-section='pilots'],
+#squadSelection[data-hangar-tab='ships'] > [data-hangar-section='arsenal'],
+#squadSelection[data-hangar-tab='arsenal'] > [data-hangar-section='pilots'],
+#squadSelection[data-hangar-tab='arsenal'] > [data-hangar-section='ships'] {
+  display: none !important;
+}
+#menu.title-screen[data-screen='hangar'].selecting #squadSelection > .hangar-preview {
+  order: 50;
+  min-width: 0;
+}
+
+/* v1.27.96: Compact flight-deck instrumentation and pilot handoff.
+   Only the lower edge receives hardware; never cover the center reticle. */
+#cockpitPanel:not([hidden]) {
+  display: block;
+  position: fixed;
+  bottom: max(8%, 74px);
+  left: 50%;
+  width: min(760px, calc(100vw - 42px));
+  max-width: 92vw;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid #5ad6c5a3;
+  border-radius: 13px;
+  background: linear-gradient(150deg, #071a23ed, #071827e8);
+  box-shadow:
+    0 0 22px #4cf6ca22,
+    inset 0 0 0 1px #8af6ce18;
+  pointer-events: none;
+  font: 10px/1.3 monospace;
+  text-align: left;
+  color: #d5fff4;
+  letter-spacing: 0.025em;
+}
+#cockpitPanel .cockpit-instruments {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(115px, 1.07fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 15px;
+}
+#cockpitPanel .cockpit-left,
+#cockpitPanel .cockpit-right,
+#cockpitPanel .cockpit-radar-wrap {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+#cockpitPanel .cockpit-label {
+  font: 700 9px/1.2 monospace;
+  color: #82c4bf;
+  letter-spacing: 0.045em;
+}
+#cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+  margin: 0;
+  color: #f1fffb;
+  font: 800 22px/1.08 monospace;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#cockpitPanel #cockpitWeapon,
+#cockpitPanel #cockpitShip {
+  font: 800 11px/1.25 monospace;
+  color: #81f0d8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#cockpitPanel :is(#cockpitReadout, #cockpitSwapStatus, #cockpitNav) {
+  color: #b7ccd4;
+  font: 700 9px/1.25 monospace;
+  white-space: normal;
+  margin: 0;
+}
+#cockpitMap {
+  position: relative;
+  width: min(100%, 178px);
+  height: 68px;
+  margin: 3px auto 1px;
+  overflow: hidden;
+  border: 1px solid #4da9a4;
+  border-radius: 8px;
+  background: radial-gradient(ellipse at 50% 90%, #174a4b, #061820);
+}
+#cockpitMap .cockpit-map-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, transparent 49.5%, #83eccc2b 50%, transparent 50.5%),
+    linear-gradient(0deg, transparent 49.5%, #83eccc2b 50%, transparent 50.5%),
+    repeating-linear-gradient(90deg, transparent 0 24%, #53a89922 25% 25.5%, transparent 26% 50%),
+    repeating-linear-gradient(0deg, transparent 0 24%, #53a89922 25% 25.5%, transparent 26% 50%);
+}
+#cockpitMap #cockpitOwn {
+  position: absolute;
+  left: 50%;
+  bottom: 9px;
+  width: 11px;
+  height: 11px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0, 100% 100%, 50% 73%, 0 100%);
+  background: #78ffe0;
+  filter: drop-shadow(0 0 5px #67ffe0);
+}
+#cockpitMap .cockpit-blip:not([hidden]) {
+  display: block;
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff8b65;
+  box-shadow: 0 0 8px #ff825c;
+}
+#pilotSwitch:not([hidden]) {
+  display: block;
+  position: fixed;
+  top: 154px;
+  right: 22px;
+  z-index: 24;
+  padding: 9px 11px;
+  min-height: 40px;
+  max-width: 165px;
+  border: 1px solid #78d8ca;
+  border-radius: 9px;
+  color: #effffb;
+  background: #092530e8;
+  font: 800 11px/1.2 monospace;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#pilotSwitch[disabled] {
+  opacity: 0.55;
+  cursor: default;
+}
+#pilotSwitch:focus-visible {
+  outline: 2px solid #b3ffe9;
+}
+#shipStats {
+  display: block;
+  font: 800 11px/1.3 monospace;
+  color: #8fead9;
+}
+@media (max-width: 700px), (max-height: 540px) {
+  #cockpitPanel:not([hidden]) {
+    width: min(560px, calc(100vw - 16px));
+    max-width: calc(100vw - 16px);
+    bottom: max(18%, 86px);
+    padding: 7px;
+  }
+  #cockpitPanel .cockpit-instruments {
+    grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
+    gap: 5px;
+  }
+  #cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+    font-size: 14px;
+  }
+  #cockpitPanel .cockpit-label {
+    font-size: 7px;
+  }
+  #cockpitPanel :is(#cockpitReadout, #cockpitSwapStatus, #cockpitNav) {
+    font-size: 7px;
+  }
+  #cockpitPanel #cockpitMap {
+    height: 48px;
+    width: 88px;
+  }
+  #cockpitPanel #cockpitWeapon,
+  #cockpitPanel #cockpitShip {
+    font-size: 8px;
+  }
+  #pilotSwitch:not([hidden]) {
+    top: 113px;
+    right: 12px;
+    min-height: 39px;
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  #cockpitPanel:not([hidden]) {
+    bottom: max(24%, 125px);
+  }
+  #pilotSwitch:not([hidden]) {
+    top: 113px;
   }
 }

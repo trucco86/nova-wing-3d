@@ -1,3 +1,4 @@
+import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('guest ranking shows victories and defeats locally without showing over gameplay', async ({
@@ -28,6 +29,7 @@ test('guest ranking shows victories and defeats locally without showing over gam
     localStorage.setItem('nova-wing-score-history-v1', JSON.stringify(history));
   });
   await page.goto('/');
+  await openMenu(page, 'central');
   const ranking = page.locator('#novaRanking');
   await expect(ranking.locator(':scope > summary')).toBeVisible();
   await ranking.locator(':scope > summary').click();
@@ -45,7 +47,7 @@ test('guest ranking shows victories and defeats locally without showing over gam
   // before starting gameplay, then assert that live combat hides all account UI.
   await ranking.locator(':scope > summary').click();
   await expect(ranking).not.toHaveAttribute('open', '');
-  await page.locator('#start').click();
+  await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await expect(ranking).toBeHidden();
   expect(errors).toEqual([]);

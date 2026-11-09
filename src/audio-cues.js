@@ -89,11 +89,49 @@ export const AUDIO_CUES = {
 // Physical transients and staged mechanical events replace electronic beeps.
 Object.assign(AUDIO_CUES, {
   shot: {
-    cooldown: 0.07,
-    tones: [{ from: 260, to: 105, duration: 0.105, gain: 0.025, wave: 'triangle', filter: 850 }],
-    noises: [
-      { duration: 0.055, gain: 0.045, filterType: 'bandpass', filter: 1650, filterEnd: 550 },
+    cooldown: 0.085,
+    tones: [
+      { from: 1120, to: 320, duration: 0.075, gain: 0.029, wave: 'sawtooth', filter: 2900 },
+      { from: 290, to: 96, duration: 0.145, gain: 0.052, wave: 'triangle', filter: 1350 },
+      { from: 135, to: 65, duration: 0.12, gain: 0.021, wave: 'sine' },
     ],
+    noises: [{ duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 }],
+  },
+  // The mecha has a slower, heavier cannon, not the fighter's quick laser.
+  mechaShot: {
+    cooldown: 0.125,
+    tones: [
+      { from: 840, to: 175, duration: 0.14, gain: 0.044, wave: 'sawtooth', filter: 2800 },
+      { from: 220, to: 62, duration: 0.24, gain: 0.082, wave: 'triangle', filter: 1100 },
+      { from: 115, to: 47, duration: 0.22, gain: 0.052, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.12, gain: 0.075, filterType: 'bandpass', filter: 2100, filterEnd: 390 }],
+  },
+  mechaImpact: {
+    cooldown: 0.18,
+    tones: [
+      { from: 170, to: 48, duration: 0.19, gain: 0.058, wave: 'triangle' },
+      { from: 920, to: 260, duration: 0.085, gain: 0.022, wave: 'sawtooth', filter: 2400 },
+    ],
+    noises: [{ duration: 0.13, gain: 0.09, filterType: 'bandpass', filter: 1700, filterEnd: 320 }],
+  },
+  mechaPrecision: {
+    cooldown: 0.5,
+    tones: [
+      { from: 1350, to: 350, duration: 0.19, gain: 0.053, wave: 'sawtooth', filter: 3000 },
+      { from: 280, to: 52, duration: 0.34, gain: 0.092, wave: 'triangle', filter: 1600 },
+      { from: 100, to: 38, duration: 0.4, gain: 0.072, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.25, gain: 0.11, filterType: 'bandpass', filter: 2350, filterEnd: 370 }],
+  },
+  mechaChargeRelease: {
+    cooldown: 0.28,
+    tones: [
+      { from: 1250, to: 180, duration: 0.33, gain: 0.065, wave: 'sawtooth', filter: 2900 },
+      { from: 245, to: 48, duration: 0.46, gain: 0.095, wave: 'triangle', filter: 1200 },
+      { from: 90, to: 32, duration: 0.48, gain: 0.082, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.34, gain: 0.12, filterType: 'bandpass', filter: 2600, filterEnd: 180 }],
   },
   plasmaCharge: {
     cooldown: 0.5,
@@ -234,6 +272,107 @@ Object.assign(AUDIO_CUES, {
     ],
   },
 });
+// Stage-1 destruction sound design. Synthetic originals keep the game fully
+// offline, avoid large downloaded recordings and respect the existing SFX bus.
+// Each event has a deliberately different body (metal, vehicle, concrete,
+// electrical alert, rail scrape, train collapse).
+Object.assign(AUDIO_CUES, {
+  cityMetalDrop: {
+    cooldown: 0.36,
+    tones: [
+      {
+        from: 670,
+        to: 118,
+        duration: 0.22,
+        gain: 0.028,
+        wave: 'triangle',
+        filter: 2100,
+        pan: -0.38,
+      },
+      { from: 172, to: 58, duration: 0.32, gain: 0.033, wave: 'sine', pan: -0.38 },
+    ],
+    noises: [
+      {
+        duration: 0.3,
+        gain: 0.075,
+        filterType: 'bandpass',
+        filter: 2900,
+        filterEnd: 390,
+        pan: -0.38,
+      },
+    ],
+  },
+  cityConcreteDebris: {
+    cooldown: 0.5,
+    tones: [
+      { from: 205, to: 63, duration: 0.4, gain: 0.041, wave: 'triangle', pan: -0.41 },
+      { from: 93, to: 34, duration: 0.7, gain: 0.054, wave: 'sine', pan: -0.41 },
+    ],
+    noises: [
+      { duration: 0.73, gain: 0.11, color: 'brown', filter: 890, filterEnd: 145, pan: -0.41 },
+    ],
+  },
+  cityVehicleCrash: {
+    cooldown: 0.55,
+    tones: [
+      { from: 920, to: 180, duration: 0.28, gain: 0.028, wave: 'sawtooth', filter: 3000, pan: 0.4 },
+      { from: 116, to: 35, duration: 0.68, gain: 0.065, wave: 'sine', pan: 0.36 },
+    ],
+    noises: [
+      { duration: 0.68, gain: 0.12, color: 'brown', filter: 1250, filterEnd: 130, pan: 0.38 },
+    ],
+  },
+  cityFacadeCollapse: {
+    cooldown: 0.7,
+    tones: [{ from: 145, to: 38, duration: 0.85, gain: 0.064, wave: 'sine', pan: -0.42 }],
+    noises: [
+      { duration: 0.98, gain: 0.13, color: 'brown', filter: 760, filterEnd: 105, pan: -0.42 },
+    ],
+  },
+  cityTrainAlarm: {
+    cooldown: 2.3,
+    tones: [
+      { from: 520, to: 520, duration: 0.14, gain: 0.034, wave: 'triangle', pan: 0.3 },
+      { from: 520, to: 520, delay: 0.23, duration: 0.14, gain: 0.034, wave: 'triangle', pan: 0.3 },
+      { from: 410, to: 390, delay: 0.48, duration: 0.2, gain: 0.03, wave: 'sine', pan: 0.3 },
+    ],
+  },
+  cityRailTear: {
+    cooldown: 0.8,
+    tones: [
+      {
+        from: 1250,
+        to: 95,
+        duration: 0.82,
+        gain: 0.038,
+        wave: 'sawtooth',
+        filter: 2200,
+        pan: -0.17,
+      },
+    ],
+    noises: [
+      {
+        duration: 0.75,
+        gain: 0.09,
+        filterType: 'bandpass',
+        filter: 3300,
+        filterEnd: 310,
+        pan: -0.17,
+      },
+    ],
+  },
+  cityTrainCrash: {
+    cooldown: 1.1,
+    tones: [
+      { from: 105, to: 32, duration: 1.05, gain: 0.082, wave: 'sine', pan: -0.18 },
+      { from: 270, to: 65, delay: 0.08, duration: 0.55, gain: 0.04, wave: 'triangle', pan: -0.18 },
+    ],
+    noises: [
+      { duration: 1.12, gain: 0.16, color: 'brown', filter: 1450, filterEnd: 95, pan: -0.18 },
+    ],
+  },
+});
+
 const LIMIT = 32;
 
 export function createAudioCues(context) {

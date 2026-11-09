@@ -63,7 +63,10 @@ test('mecha wings reuse the exact fighter wing geometry rather than a larger rou
   const mechaPoints = mechaWing.geometry.attributes.position.array;
   const fighterPoints = fighterWing.geometry.attributes.position.array;
   assert.deepEqual(Array.from(mechaPoints), Array.from(fighterPoints));
-  assert.ok(robot.scale.x <= 1, 'mecha chassis must not be artificially enlarged');
+  assert.ok(
+    robot.scale.x >= 1 && robot.scale.x <= 1.05,
+    'mecha may grow only subtly without toy-like bulk',
+  );
 });
 
 test('turbine has visible moving rotor and boost lengthens propulsion plume', () => {
@@ -155,11 +158,11 @@ test('propulsion keeps equivalent phase at 30/60/120 Hz and anchors exhaust at e
         elapsed += 1 / fps;
         animateMechPower(robot, elapsed, boosting, 0, { x: 1, y: -1 }, 1 / fps);
         assert.ok(
-          Math.abs(rig.turbineFlame.position.z - (1.75 * rig.turbineFlame.scale.y) / 2 - 0.725) <
+          Math.abs(rig.turbineFlame.position.z - (1.75 * rig.turbineFlame.scale.y) / 2 - 0.85) <
             1e-10,
         );
         for (const plume of rig.sidePlumes) {
-          assert.ok(Math.abs(plume.position.z - (1.4 * plume.scale.y) / 2 - 2.2) < 1e-10);
+          assert.ok(Math.abs(plume.position.z - (1.4 * plume.scale.y) / 2 - 2.45) < 1e-10);
         }
       }
     }

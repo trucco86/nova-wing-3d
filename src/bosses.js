@@ -1,11 +1,26 @@
 import * as T from 'three';
-import { box, metal, glowMaterial, halo } from './visuals.js';
+import { addBossDetail, addSubbossDetail } from './premium-model-details.js';
+import { box, metal, glowMaterial, halo, fighter, createFlyingRobot } from './visuals.js';
 import { bossSignaturePose } from './boss-signature.js';
+import { createBossVisualIdentity, animateBossVisualIdentity } from './boss-visual-identity.js';
+import { createBossKineticDetails, animateBossKineticDetails } from './boss-kinetic-details.js';
+import { createPhoenixAttackVfx, animatePhoenixAttackVfx } from './phoenix-attack-vfx.js';
+import { omegaAppendageAmplitude } from './omega-hunt.js';
+import { createEuropaAttackVfx, animateEuropaAttackVfx } from './europa-attack-vfx.js';
+import { bossWeakPointPlan } from './boss-weakpoint-layout.js';
+import { installBossWeaponVfx } from './boss-weapon-vfx.js';
+const bossUnitBox = new T.BoxGeometry(1, 1, 1);
 // Every silhouette is authored procedurally; the red generators are actual targets.
 export function createBossModel(sector, index = 0, tactical = false) {
+  const box = (w, h, d, material, x = 0, y = 0, z = 0) => {
+    const mesh = new T.Mesh(bossUnitBox, material);
+    mesh.scale.set(w, h, d);
+    mesh.position.set(x, y, z);
+    return mesh;
+  };
   const g = new T.Group(),
-    armor = metal('#344658', 0.8, 0.3),
-    dark = metal('#111b2c'),
+    armor = metal(index === 1 ? '#9c573c' : '#344658', 0.73, 0.48),
+    dark = metal(index === 1 ? '#523326' : '#111b2c'),
     edge = glowMaterial(sector.accent, 2),
     hot = glowMaterial('#ff574b', 3);
   const rotors = [];
@@ -107,6 +122,25 @@ export function createBossModel(sector, index = 0, tactical = false) {
         const head = sphere(6, edge);
         head.position.set(Math.cos(a) * 44, Math.sin(a) * 28, -10);
         arm.add(head);
+        if (i === 0 || i === 3) {
+          // Hydra's two attacking heads have visible, real 3D emitters.
+          // Beams are cosmetic; radar and latched boss intent own collision.
+          const muzzle = new T.Object3D();
+          muzzle.name = 'hydra-crossfire-muzzle-' + i;
+          muzzle.position.copy(head.position);
+          muzzle.position.z += 4;
+          arm.add(muzzle);
+          const beamGeometry = new T.CylinderGeometry(2.2, 4.1, 48, 8);
+          beamGeometry.rotateX(Math.PI / 2);
+          const beam = new T.Mesh(beamGeometry, hot);
+          beam.name = 'hydra-crossfire-beam-' + i;
+          beam.position.copy(muzzle.position);
+          beam.position.z += 23;
+          beam.scale.z = 0.15;
+          beam.visible = false;
+          beam.userData.visualOnly = true;
+          arm.add(beam);
+        }
         g.add(arm);
         rotors.push(arm);
       }
@@ -148,6 +182,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
     tail.add(new T.Mesh(new T.ConeGeometry(5, 36, 5), armor));
     tail.add(box(14, 2, 20, edge, 0, -14, 10));
     add(tail, 0, -14, -18);
+    // Two visible scissor vanes fold independently around the player during
+    // Stingray's physical blade attack; collision remains the authored radar.
+    for (const side of [-1, 1]) {
+      const vane = new T.Group();
+      vane.name = side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right';
+      vane.add(box(17, 3.5, 28, armor, side * 7, 0, 1));
+      vane.add(box(19, 0.9, 25, edge, side * 7, 2.2, 1));
+      add(vane, side * 38, 0, 13);
+    }
   }
   if (index === 3) {
     const iris = new T.Group();
@@ -189,7 +232,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   const organicStart = g.children.length;
   // Living tissue grafted onto the existing ten mechanical silhouettes.
   const flesh = new T.MeshStandardMaterial({ color: '#652e58', roughness: 0.72, metalness: 0.08 }),
-    bone = metal('#cfb59b', 0.18, 0.62),
+    bone = metal(index === 1 ? '#d6a078' : '#cfb59b', 0.18, 0.62),
     vein = glowMaterial('#d95b91', 1.1);
   const organic = [];
   const tissue = add(sphere(13, flesh, 2), 0, 3, 10);
@@ -274,7 +317,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   flesh.color.set(
     [
       '#652e58',
-      '#245a63',
+      '#9d553d',
       '#6e392b',
       '#37495e',
       '#a02d1d',
@@ -312,6 +355,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   add(halo(sector.accent, 21, 0.7), 0, 0, 20);
   // Layered armor and exposed machinery stay behind the three aiming zones.
   const vents = [];
+  const batteries = [];
   for (const side of [-1, 1]) {
     for (let i = 0; i < 5; i++) {
       const plate = add(box(5.5, 6, 2, armor), side * (25 + i * 5), 1 + (i % 2) * 5, 18 - i);
@@ -322,6 +366,8 @@ export function createBossModel(sector, index = 0, tactical = false) {
       vents.push(vent);
     }
     const turret = new T.Group();
+    turret.name = side < 0 ? 'boss-battery-left' : 'boss-battery-right';
+    turret.userData.batterySide = side;
     turret.position.set(side * 29, 12, 17);
     turret.add(sphere(4, dark, 1));
     for (const x of [-1.2, 1.2]) {
@@ -331,6 +377,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
       turret.add(barrel);
       turret.add(box(1, 1, 0.3, hot, x, 0, 9));
     }
+    const muzzle = new T.Object3D();
+    muzzle.name = side < 0 ? 'boss-battery-left-muzzle' : 'boss-battery-right-muzzle';
+    muzzle.position.set(0, 0, 10.5);
+    turret.add(muzzle);
+    const activation = new T.Mesh(new T.TorusGeometry(3.3, 0.48, 7, 24), hot);
+    activation.name = 'boss-battery-charging-ring';
+    activation.position.z = 9.8;
+    turret.add(activation);
+    batteries.push(turret);
     g.add(turret);
     const engine = new T.Mesh(new T.CylinderGeometry(4, 5, 12, 16), dark);
     engine.rotation.x = Math.PI / 2;
@@ -348,43 +403,83 @@ export function createBossModel(sector, index = 0, tactical = false) {
       g.add(new T.Mesh(new T.TubeGeometry(cable, 12, 0.32, 5, false), j === 1 ? vein : dark));
     }
   }
-  const markerMaterial = glowMaterial('#fff27a', 5),
-    targetMarker = (radius) => {
-      const marker = new T.Group();
-      marker.name = 'vulnerable-target';
-      marker.add(new T.Mesh(new T.TorusGeometry(radius, 0.32, 6, 40), markerMaterial));
-      for (let i = 0; i < 4; i++) {
-        const tick = new T.Mesh(new T.BoxGeometry(0.65, 2.8, 0.35), markerMaterial);
-        const angle = (i * Math.PI) / 2;
-        tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
-        tick.rotation.z = -angle;
-        marker.add(tick);
-      }
-      // Two nested rotating frames plus chevrons make the exposed hitbox readable
-      // against highly detailed bosses even at phone resolution.
-      const inner = new T.Mesh(new T.TorusGeometry(radius * 0.7, 0.35, 6, 30), markerMaterial);
-      inner.name = 'weak-point-inner-reticle';
-      marker.add(inner);
-      for (const side of [-1, 1]) {
-        const chevron = new T.Mesh(new T.ConeGeometry(1.2, 3.5, 3), markerMaterial);
-        chevron.position.set(side * (radius + 3), 0, 0.2);
-        chevron.rotation.z = (side * Math.PI) / 2;
-        marker.add(chevron);
-      }
-      marker.visible = false;
-      return marker;
-    },
-    coreMarker = targetMarker(8.5);
+  // Shared GPU buffers per ring radius; each weakpoint retains its own
+  // material and visibility state, so damage feedback never leaks sideways.
+  const markerMaterial = glowMaterial('#fff27a', 5);
+  const markerTickGeometry = new T.BoxGeometry(0.65, 2.8, 0.35);
+  const markerChevronGeometry = new T.ConeGeometry(1.2, 3.5, 3);
+  const markerRingCache = new Map();
+  const targetMarker = (radius) => {
+    let rings = markerRingCache.get(radius);
+    if (!rings) {
+      rings = {
+        outer: new T.TorusGeometry(radius, 0.32, 6, 40),
+        inner: new T.TorusGeometry(radius * 0.7, 0.35, 6, 30),
+      };
+      markerRingCache.set(radius, rings);
+    }
+    const marker = new T.Group();
+    marker.name = 'vulnerable-target';
+    marker.add(new T.Mesh(rings.outer, markerMaterial));
+    for (let i = 0; i < 4; i++) {
+      const tick = new T.Mesh(markerTickGeometry, markerMaterial);
+      const angle = (i * Math.PI) / 2;
+      tick.position.set(Math.sin(angle) * (radius + 1.3), Math.cos(angle) * (radius + 1.3), 0);
+      tick.rotation.z = -angle;
+      marker.add(tick);
+    }
+    const inner = new T.Mesh(rings.inner, markerMaterial);
+    inner.name = 'weak-point-inner-reticle';
+    marker.add(inner);
+    for (const side of [-1, 1]) {
+      const chevron = new T.Mesh(markerChevronGeometry, markerMaterial);
+      chevron.position.set(side * (radius + 3), 0, 0.2);
+      chevron.rotation.z = (side * Math.PI) / 2;
+      marker.add(chevron);
+    }
+    marker.visible = false;
+    const signalMaterial = markerMaterial.clone();
+    marker.traverse((part) => {
+      if (part.isMesh) part.material = signalMaterial;
+    });
+    marker.userData.signalMaterial = signalMaterial;
+    return marker;
+  };
+  const coreMarker = targetMarker(8.5);
+  const coreMuzzle = new T.Object3D();
+  coreMuzzle.name = 'boss-core-muzzle';
+  coreMuzzle.position.set(0, 12, 27);
+  g.add(coreMuzzle);
+  const coreBarrel = add(box(4.6, 3.1, 8, dark), 0, 12, 21);
+  coreBarrel.name = 'boss-core-emergency-weapon';
   coreMarker.position.set(0, 0, 21);
   g.add(coreMarker);
   const parts = [];
-  for (const s of [-1, 1]) {
-    const p = add(sphere(4, hot), s * 17, 4, 19);
-    add(ring(5), s * 17, 4, 18);
-    const marker = targetMarker(6.5);
-    marker.position.set(s * 17, 4, 22);
+  for (const [i, entry] of bossWeakPointPlan(index).entries()) {
+    const side = i === 0 ? -1 : 1;
+    const mechanical = [3, 5].includes(index);
+    const p = add(mechanical ? box(10, 8, 7, hot) : sphere(4, hot), entry.x, entry.y, entry.z);
+    p.name = 'boss-breakable-' + entry.type;
+    if (mechanical) {
+      // Industrial vents, gears and exhaust shafts instead of identical
+      // floating luminous eye rings. These are REAL damage targets.
+      const casing = add(box(15, 12, 3.5, dark), entry.x, entry.y, entry.z - 3);
+      casing.name = 'boss-valve-base-' + entry.type;
+      const brace = add(box(3, 14, 9, armor), entry.x + side * 9, entry.y, entry.z - 2);
+      brace.name = 'boss-valve-side-armor-' + entry.type;
+    } else add(ring(5), entry.x, entry.y, entry.z - 1);
+    const marker = targetMarker(mechanical ? 5.2 : 6.5);
+    marker.position.set(entry.x, entry.y, entry.z + (mechanical ? 4 : 3));
+    marker.rotation.y = mechanical ? entry.yaw * 0.48 : 0;
     g.add(marker);
-    parts.push({ mesh: p, marker, hp: 180 + index * 25, max: 180 + index * 25 });
+    parts.push({
+      mesh: p,
+      marker,
+      type: entry.type,
+      battery: batteries[i],
+      hp: 180 + index * 25,
+      max: 180 + index * 25,
+    });
   }
   if (tactical) {
     const proportions = [
@@ -481,35 +576,282 @@ export function createBossModel(sector, index = 0, tactical = false) {
     }
     g.add(face);
   }
+  if (index === 7 && tactical) {
+    // Omega is a living dreadnought. Its jaw opens over a recessed mouth;
+    // two articulated talon limbs and two rear-firing tentacles telegraph
+    // real, dodgeable attacks without relocating generator hitboxes.
+    const maw = sphere(7.5, dark, 1);
+    maw.name = 'omega-mouth-cavity';
+    maw.scale.set(1.4, 0.6, 0.35);
+    maw.position.set(0, -11, 17);
+    g.add(maw);
+    for (const side of [-1, 1]) {
+      const claw = new T.Group();
+      claw.name = side < 0 ? 'omega-port-talon' : 'omega-starboard-talon';
+      claw.position.set(side * 33, -7, 20);
+      const upper = box(10, 25, 12, armor);
+      upper.position.set(0, -10, 0);
+      claw.add(upper);
+      for (let i = -1; i <= 1; i++) {
+        const digit = new T.Mesh(new T.ConeGeometry(2, 15, 6), bone);
+        digit.position.set(i * 5, -27, 10);
+        digit.rotation.x = Math.PI / 2;
+        claw.add(digit);
+      }
+      g.add(claw);
+      const tentacle = new T.Group();
+      tentacle.name = side < 0 ? 'omega-port-tentacle' : 'omega-starboard-tentacle';
+      tentacle.position.set(side * 62, -10, -21);
+      const curve = new T.CatmullRomCurve3([
+        new T.Vector3(0, 0, 0),
+        new T.Vector3(side * 8, -12, 14),
+        new T.Vector3(side * 10, -21, 33),
+        new T.Vector3(side * 4, -19, 52),
+      ]);
+      tentacle.add(new T.Mesh(new T.TubeGeometry(curve, 12, 2.9, 6, false), flesh));
+      const tip = new T.Mesh(new T.ConeGeometry(3, 10, 6), bone);
+      tip.rotation.x = Math.PI / 2;
+      tip.position.set(side * 4, -19, 53);
+      tentacle.add(tip);
+      g.add(tentacle);
+    }
+  }
+  g.add(createBossVisualIdentity(index, { armor, dark, edge, hot }));
+  addBossDetail(g, { armor, dark, edge, hot, index, kind: sector.kind });
+  const kineticDetails = createBossKineticDetails(index, { armor, dark, edge, hot });
+  g.add(kineticDetails);
+  const phoenixVfx = index === 4 && tactical ? createPhoenixAttackVfx() : null;
+  if (phoenixVfx) g.add(phoenixVfx);
+  const europaVfx = index === 5 && tactical ? createEuropaAttackVfx() : null;
+  if (europaVfx) g.add(europaVfx);
+  // Devastador's twin exhaust valves are real named launch points. The
+  // translucent shock jets exist only during a telegraphed reactor attack.
+  // They are visual-only: collision uses the exact same intent as the radar.
+  const driveShockPlumes = [];
+  if (index === 3 && tactical) {
+    for (let sideIndex = 0; sideIndex < 2; sideIndex++) {
+      const valve = parts[sideIndex];
+      const plume = new T.Mesh(
+        new T.ConeGeometry(3.6, 32, 12),
+        new T.MeshBasicMaterial({
+          color: sideIndex ? '#ffb17a' : '#73eaff',
+          transparent: true,
+          opacity: 0.65,
+          blending: T.AdditiveBlending,
+          depthWrite: false,
+        }),
+      );
+      plume.name = sideIndex ? 'devastador-drive-shock-starboard' : 'devastador-drive-shock-port';
+      plume.rotation.x = -Math.PI / 2;
+      plume.position.copy(valve.mesh.position);
+      plume.position.z += 16;
+      plume.visible = false;
+      plume.userData.visualOnly = true;
+      g.add(plume);
+      driveShockPlumes.push(plume);
+    }
+  }
   g.userData = {
     parts,
+    batteries,
+    coreMuzzle,
     coreMarker,
     vents,
+    driveShockPlumes,
     core,
     rotors,
     organic,
     jaw,
     coreZ: 18,
     owned: true,
-    materials: [armor, dark, edge, hot, flesh, bone, vein, markerMaterial],
+    materials: [
+      armor,
+      dark,
+      edge,
+      hot,
+      flesh,
+      bone,
+      vein,
+      markerMaterial,
+      coreMarker.userData.signalMaterial,
+      ...parts.map((part) => part.marker.userData.signalMaterial),
+      ...driveShockPlumes.map((plume) => plume.material),
+      ...(phoenixVfx?.userData.materials ?? []),
+      ...(europaVfx?.userData.materials ?? []),
+    ],
   };
+  // The penultimate biomechanical monster is piloted by Marvin, while the
+  // FINAL boss is his Obsidian fighter — not the same monstrous shape reused.
+  // Preserve physical generators, original boss AI, damage budgets and the
+  // battle radar. Added geometry is isolated from cached player ship assets.
+  if (tactical && (index === 8 || index === 9)) {
+    const shell = index === 9 ? fighter(true) : createFlyingRobot();
+    shell.name = index === 9 ? 'marvin-final-obsidian-fighter' : 'marvin-bastion-mecha-pilot';
+    const independent = new Map();
+    const geometries = new Map();
+    shell.traverse((o) => {
+      if (o.geometry) {
+        if (!geometries.has(o.geometry)) geometries.set(o.geometry, o.geometry.clone());
+        o.geometry = geometries.get(o.geometry);
+      }
+      if (!o.material) return;
+      const list = Array.isArray(o.material) ? o.material : [o.material];
+      const copies = list.map((m) => {
+        if (!independent.has(m)) {
+          const copy = m.clone();
+          if (copy.isMeshStandardMaterial || copy.isMeshPhysicalMaterial) {
+            copy.color.set(index === 9 ? '#10131e' : '#21212c');
+            if (copy.emissive) copy.emissive.set('#5a0b1d');
+            copy.metalness = 0.87;
+            copy.roughness = 0.22;
+          }
+          independent.set(m, copy);
+          return copy;
+        }
+        return independent.get(m);
+      });
+      o.material = Array.isArray(o.material) ? copies : copies[0];
+    });
+    g.userData.materials.push(...independent.values());
+    shell.scale.setScalar(index === 9 ? 11.5 : 2.8);
+    if (index === 9) {
+      shell.rotation.y = Math.PI;
+      shell.position.set(0, 2, 0);
+      const keep = new Set([
+        core,
+        coreMarker,
+        coreMuzzle,
+        kineticDetails,
+        ...batteries,
+        ...parts.flatMap((part) => [part.mesh, part.marker]),
+      ]);
+      for (const child of g.children) if (!keep.has(child)) child.visible = false;
+      // Existing weak points remain visible on the face of the carrier fighter.
+      // Side batteries remain the actual physical projectile origins.
+    } else {
+      shell.position.set(0, 28, 23);
+      shell.rotation.y = Math.PI;
+    }
+    if (index === 9) {
+      // Marvin's previously unprotected rear engine becomes an actual visible
+      // attack assembly, not a new invisible damage zone.
+      const sweeper = new T.Group();
+      sweeper.name = 'marvin-rear-thruster-sweeper';
+      sweeper.position.set(0, -0.18, 4.2);
+      sweeper.add(box(2.0, 0.8, 2.5, dark));
+      for (const side of [-1, 1]) sweeper.add(box(0.5, 1.8, 2.7, hot, side * 1.9, 0, 0.4));
+      const plumeGeo = new T.CylinderGeometry(0.45, 1.3, 5, 8);
+      plumeGeo.rotateX(Math.PI / 2);
+      const plume = new T.Mesh(plumeGeo, hot);
+      plume.name = 'marvin-rear-thruster-plume';
+      plume.position.z = 4.6;
+      plume.visible = false;
+      plume.userData.visualOnly = true;
+      sweeper.add(plume);
+      sweeper.userData.visualOnly = true;
+      shell.add(sweeper);
+    }
+    shell.userData.visualOnly = true;
+    g.add(shell);
+  }
+  g.userData.materials.push(...installBossWeaponVfx(g, index));
   return g;
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
  * with the simulation clock; never moves the actual generator hit volumes. */
-export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
-  const pose = bossSignaturePose(index, time, phase, attackState);
+export function animateBossSignature(
+  g,
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
+  attackPose = null,
+  attackIntent = null,
+  attackTarget = null,
+) {
+  const pose = bossSignaturePose(index, time, phase, attackState, attackKind);
   if (!pose || !g) return null;
+  animateBossVisualIdentity(g, index, time, phase, attackState);
+  if (index === 5)
+    animateEuropaAttackVfx(
+      g.getObjectByName('boss-europa-attack-vfx'),
+      time,
+      phase,
+      attackState,
+      attackKind,
+      attackPose,
+      attackTarget,
+      g.userData.parts.map((part) => part.hp > 0),
+      attackIntent?.cycle ?? 0,
+    );
+  if (index === 4)
+    animatePhoenixAttackVfx(
+      g.getObjectByName('boss-phoenix-attack-vfx'),
+      time,
+      phase,
+      attackState,
+      attackKind,
+    );
+  animateBossKineticDetails(
+    g.getObjectByName('boss-premium-kinetic-' + index),
+    index,
+    time,
+    phase,
+    attackState,
+  );
+  if (index === 7) {
+    const effort = omegaAppendageAmplitude(attackKind, attackState, attackPose ?? {});
+    const jaw = g.userData.jaw;
+    if (jaw) jaw.rotation.x = Math.sin(time * 2) * 0.12 + effort.jaw;
+    for (const side of [-1, 1]) {
+      const prefix = side < 0 ? 'omega-port-' : 'omega-starboard-';
+      const claw = g.getObjectByName(prefix + 'talon');
+      const tentacle = g.getObjectByName(prefix + 'tentacle');
+      const battery = g.getObjectByName('signature-omega-' + (side < 0 ? 'left' : 'right'));
+      const operational = g.userData.parts[side < 0 ? 0 : 1]?.hp > 0;
+      if (claw) {
+        // A destroyed real generator leaves its linked limb hanging damaged,
+        // not miraculously attacking from a hidden duplicate hitbox.
+        claw.rotation.z = operational
+          ? side * (0.07 * Math.sin(time * 1.2 + side) + effort.claw * 0.8)
+          : side * 0.95;
+        claw.rotation.x = operational ? effort.claw * 0.38 : -0.32;
+      }
+      if (tentacle) {
+        tentacle.rotation.z = operational
+          ? side * (0.11 * Math.sin(time * 1.1 + side) + effort.tentacle * 0.72)
+          : side * 0.82;
+        tentacle.rotation.x = operational ? effort.tentacle * 0.42 : -0.45;
+      }
+      if (battery) {
+        battery.rotation.x = operational ? effort.arm * 0.55 : -0.42;
+        battery.rotation.z = operational ? -side * effort.arm * 0.36 : side * 0.3;
+      }
+    }
+  }
   if (index === 0 || index === 7) {
     const prefix = index === 0 ? 'signature-rok' : 'signature-omega';
     const left = g.getObjectByName(prefix + '-left');
     const right = g.getObjectByName(prefix + '-right');
     const angle = index === 0 ? pose.pincer : pose.broadside;
-    if (left) left.rotation.y = angle;
-    if (right) right.rotation.y = -angle;
+    if (left) {
+      left.rotation.y = angle;
+      if (index === 0) left.rotation.x = -pose.ram * 0.28;
+    }
+    if (right) {
+      right.rotation.y = -angle;
+      if (index === 0) right.rotation.x = -pose.ram * 0.28;
+    }
   } else if (index === 1) {
     const tail = g.getObjectByName('signature-stingray-tail');
     if (tail) tail.rotation.z = pose.tail;
+    for (const side of [-1, 1]) {
+      const vane = g.getObjectByName(
+        side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right',
+      );
+      if (vane) vane.rotation.z = side * pose.scissor;
+    }
   } else if (index === 3) {
     const iris = g.getObjectByName('signature-orbit-iris');
     if (iris) {
@@ -525,37 +867,68 @@ export function animateBossSignature(g, index, time, phase = 1, attackState = 'm
     const lens = g.getObjectByName('signature-orion-lens');
     if (lens) {
       lens.rotation.z = pose.lens;
+      lens.rotation.y = pose.shear;
       lens.scale.setScalar(pose.pulse);
     }
   } else if (index === 2) {
     const bit = g.getObjectByName('signature-drill-bit');
     if (bit) {
       bit.rotation.z = pose.spin;
+      bit.rotation.y = pose.crosscut;
       bit.position.z = -8 + pose.extension;
     }
   } else if (index === 5) {
     const left = g.getObjectByName('signature-mech-left-arm');
     const right = g.getObjectByName('signature-mech-right-arm');
+    // Shoulders anticipate the strike while the telescoping forearms perform
+    // the actual contact motion. Never swing the entire torso at the pilot.
+    const physical = attackKind === 'ice-quake' || attackKind === 'cryo-pincer';
     if (left) {
-      left.rotation.x = pose.armLeft;
-      left.rotation.z = -pose.stomp;
+      left.rotation.x = physical ? -0.13 : pose.armLeft;
+      left.rotation.z = physical ? 0.14 : -pose.stomp;
     }
     if (right) {
-      right.rotation.x = pose.armRight;
-      right.rotation.z = pose.stomp;
+      right.rotation.x = physical ? -0.13 : pose.armRight;
+      right.rotation.z = physical ? -0.14 : pose.stomp;
     }
   } else if (index === 6) {
+    const crossfire =
+      attackKind === 'hydra-two-head-crossfire' &&
+      (attackState === 'windup' || attackState === 'attack');
     for (let i = 0; i < 7; i++) {
       const head = g.getObjectByName('signature-hydra-head-' + i);
       if (!head) continue;
       head.rotation.z = pose.headSwing * Math.sin(time * 0.6 + i * 1.1);
       head.scale.setScalar(pose.headPulse);
+      if (crossfire && (i === 0 || i === 3)) {
+        head.rotation.z += (i === 0 ? -1 : 1) * (attackState === 'attack' ? 0.58 : 0.31);
+        head.scale.setScalar(attackState === 'attack' ? 1.26 : 1.1);
+      }
+      if (i === 0 || i === 3) {
+        const beam = head.getObjectByName('hydra-crossfire-beam-' + i);
+        if (beam) {
+          beam.visible = crossfire && g.userData.parts[i === 0 ? 1 : 0]?.hp > 0;
+          beam.scale.z = attackState === 'attack' ? 1.15 : 0.15;
+        }
+      }
     }
   } else if (index === 9) {
     const crown = g.getObjectByName('signature-marvin-eclipse');
     if (crown) {
       crown.scale.setScalar(pose.eclipse);
       crown.rotation.z = pose.twist;
+    }
+    const sweeper = g.getObjectByName('marvin-rear-thruster-sweeper');
+    if (sweeper) {
+      const rear =
+        attackKind === 'marvin-rear-thruster-sweep' &&
+        (attackState === 'windup' || attackState === 'attack');
+      sweeper.rotation.z = rear ? (attackState === 'attack' ? 0.64 : -0.32) : 0;
+      const plume = sweeper.getObjectByName('marvin-rear-thruster-plume');
+      if (plume) {
+        plume.visible = rear;
+        plume.scale.z = attackState === 'attack' ? 1.9 : 0.24;
+      }
     }
   }
   return pose;
@@ -566,7 +939,11 @@ export function disposeBoss(g) {
   g.traverse((o) => {
     if (o.geometry) geos.add(o.geometry);
   });
-  geos.forEach((x) => x.dispose());
+  geos.forEach((x) => {
+    // This unit cube is shared across stages and must not be invalidated by
+    // disposing one boss; all unique authoring geometries are still released.
+    if (x !== bossUnitBox && !x.userData.bossShared) x.dispose();
+  });
   g.userData.materials?.forEach((x) => x.dispose());
 }
 
@@ -687,6 +1064,7 @@ export function createSubboss(index = 0) {
         }
         break;
     }
+    addSubbossDetail(g, { armor, dark, hot, index });
     g.userData.variant = index;
     cruiserTemplates.set(index, g);
   }

@@ -1,6 +1,26 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['FIVE CATS / COMANDANTE', 'FIVE CATS / COMMANDER', 'FIVE CATS / COMANDANTE'],
+  ['RADAR DE AMEAÇAS', 'THREAT RADAR', 'RADAR DE AMENAZAS'],
+  ['VELOCIDADE / NÓS DE VOO', 'FLIGHT SPEED / UNITS', 'VELOCIDAD / UNIDADES'],
+  ['M · TROCAR PILOTO', 'M · SWITCH PILOT', 'M · CAMBIAR PILOTO'],
+  ['M · TROCAR', 'M · SWITCH', 'M · CAMBIAR'],
+  ['ESCUDO 100% · ENERGIA 100%', 'SHIELD 100% · ENERGY 100%', 'ESCUDO 100% · ENERGÍA 100%'],
+  ['SETOR 01 · 0%', 'SECTOR 01 · 0%', 'SECTOR 01 · 0%'],
+  [
+    'Patinhas do comandante sobre os controles de voo',
+    'Commander paws on flight controls',
+    'Patitas del comandante en los controles de vuelo',
+  ],
+  [
+    'Trocar piloto e nave durante a batalha',
+    'Switch pilot and ship during combat',
+    'Cambiar piloto y nave durante el combate',
+  ],
+  ['PILOTOS', 'PILOTS', 'PILOTOS'],
+  ['NAVES', 'SHIPS', 'NAVES'],
+  ['QA / CENÁRIOS DE TESTE', 'QA / TEST SCENARIOS', 'QA / ESCENARIOS DE PRUEBA'],
   ['CANHÃO · PRÓXIMA CLASSE', 'CANNON · NEXT CLASS', 'CAÑÓN · SIGUIENTE CLASE'],
   ['MULTITIRO · +1 PROJÉTIL', 'MULTISHOT · +1 PROJECTILE', 'MULTIDISPARO · +1 PROYECTIL'],
   [
@@ -140,6 +160,24 @@ const ROWS = [
   ['IMPULSO', 'BOOST', 'IMPULSO'],
   ['Q / E / Z · GIRO DEFENSIVO', 'Q / E / Z · DEFENSIVE ROLL', 'Q / E / Z · GIRO DEFENSIVO'],
   ['GIRO', 'ROLL', 'GIRO'],
+  ['DASH', 'DASH', 'DASH'],
+  ['GIRO / DASH', 'ROLL / DASH', 'GIRO / DASH'],
+  [
+    'giro na nave / dash lateral no robô ·',
+    'ship roll / robot lateral dash ·',
+    'giro de nave / dash lateral del robot ·',
+  ],
+  ['Giro defensivo da nave', 'Ship defensive roll', 'Giro defensivo de la nave'],
+  [
+    'Esquiva lateral do robô na direção do direcional',
+    'Robot lateral dodge in steering direction',
+    'Esquiva lateral del robot en la dirección elegida',
+  ],
+  [
+    'ROBÔ · Q ← / E → · DASH LATERAL',
+    'ROBOT · Q ← / E → · LATERAL DASH',
+    'ROBOT · Q ← / E → · DASH LATERAL',
+  ],
   ['BOMBA', 'BOMB', 'BOMBA'],
   ['TIRO', 'FIRE', 'DISPARO'],
   ['FLIGHT SQUADRON', 'FLIGHT SQUADRON', 'ESCUADRÓN DE VUELO'],

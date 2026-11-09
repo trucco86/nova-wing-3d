@@ -1,3 +1,4 @@
+import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('portrait cover keeps full artwork fit and menu actions inside a phone viewport', async ({
@@ -8,13 +9,15 @@ test('portrait cover keeps full artwork fit and menu actions inside a phone view
   await page.goto('/');
   await expect(page.locator('#menu')).toBeVisible();
   await expect(page.locator('body')).toHaveClass(/showroom-web/);
-  const fit = await page.locator('#menu').evaluate((node) => {
-    const style = getComputedStyle(node, '::before');
-    return { bgSize: style.backgroundSize, content: getComputedStyle(node).overflowY };
-  });
-  expect(fit.bgSize).toContain('contain');
-  expect(fit.content).toBe('auto');
-  const bounds = await page.locator('#start').boundingBox();
+  const fit = await page.locator('#menu').evaluate((node) => ({
+    atmosphere: getComputedStyle(node, '::before').backgroundSize,
+    original: getComputedStyle(node.querySelector('#menuHero')).backgroundSize,
+  }));
+  // The new full-screen scenery extends to the edges, while the sharp
+  // original poster remains uncut with all five cats visible.
+  expect(fit.atmosphere).toContain('cover');
+  expect(fit.original).toContain('contain');
+  const bounds = await page.locator('#pressStart').boundingBox();
   expect(bounds).not.toBeNull();
   expect(bounds.x).toBeGreaterThanOrEqual(0);
   expect(bounds.x + bounds.width).toBeLessThanOrEqual(390);
@@ -28,6 +31,7 @@ test('ranking prioritizes scores, with consent and explanations behind collapsib
   test.setTimeout(90000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await openMenu(page, 'central');
   const ranking = page.locator('#novaRanking');
   await ranking.locator(':scope > summary').click();
   await expect(ranking).toHaveAttribute('open', '');
@@ -55,7 +59,10 @@ test('first stage shows persistent boost instruction only in the upper HUD', asy
   await page.evaluate(() => window.fixture.advance(23));
   const notice = page.locator('#launchBoostNotice');
   await expect(notice).toBeVisible();
-  await expect(notice).toContainText('SHIFT / BOOST');
+  // Instructions use the platform-neutral action (also valid for touch);
+  // the required SUPER BOOST remains on the visible lower-right control.
+  await expect(notice).toContainText('SEGURE SUPER BOOST');
+  await expect(page.locator('#boostTouch')).toContainText('SUPER BOOST');
   const box = await notice.boundingBox();
   expect(box).not.toBeNull();
   expect(box.y + box.height).toBeLessThan(844 * 0.48);

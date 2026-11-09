@@ -27,34 +27,74 @@
       <canvas id="arcadeCanvas"></canvas><strong id="arcadeStatus"></strong>
       <p>WASD / SETAS · ESPAÇO / TIRO · DOURADO = CRÉDITOS</p>
     </section>
-    <div id="cockpitPanel" hidden>
-      <span>NOVA-7 / SISTEMAS DE VOO</span><strong id="cockpitReadout"></strong>
+    <div id="cockpitPanel" hidden role="group" aria-label="Instrumentos da cabine">
+      <div class="cockpit-instruments">
+        <div class="cockpit-left">
+          <span class="cockpit-label">FIVE CATS / COMANDANTE</span>
+          <strong id="cockpitPilot">BIA</strong>
+          <span id="cockpitWeapon">PULSO</span>
+          <small id="cockpitReadout">ESCUDO 100% · ENERGIA 100%</small>
+        </div>
+        <div class="cockpit-radar-wrap">
+          <span class="cockpit-label">RADAR DE AMEAÇAS</span>
+          <div id="cockpitMap" aria-label="Radar relativo, com marcação da nave e ameaças próximas">
+            <div class="cockpit-map-grid"></div>
+            <i id="cockpitOwn" title="Nave ativa"></i>
+            <i class="cockpit-blip" id="cockpitBlip0" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip1" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip2" hidden></i>
+            <i class="cockpit-blip" id="cockpitBlip3" hidden></i>
+          </div>
+          <small id="cockpitNav">SETOR 01 · 0%</small>
+        </div>
+        <div class="cockpit-right">
+          <span class="cockpit-label">VELOCIDADE / NÓS DE VOO</span>
+          <strong id="cockpitSpeedValue">480</strong>
+          <span id="cockpitShip">NOVA-7</span>
+          <small id="cockpitSwapStatus">M · TROCAR PILOTO</small>
+        </div>
+      </div>
     </div>
     <div id="strategyControls">
       <details id="strategyDrawer">
         <summary><span>⚙ RPG</span><b id="rpgLevel">EV 1</b></summary>
-        <span id="strategyStatus"></span
-        ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
-        <div class="rpgProgress" aria-label="Progresso de evolução">
-          <i id="rpgProgressBar"></i>
-        </div>
-        <small id="rpgNext">PRÓXIMO · ARMA GEADA · EV 3</small>
-        <div class="tacticButtons">
-          <button id="scanBoss">I · SCAN</button><button id="precisionShot">K · PRECISÃO ◆</button>
-          <button id="repairPulse">R · REPARO ◆◆</button
-          ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
-        </div>
-        <div class="squadSuperActions" role="group" aria-label="Superespeciais dos Five Cats">
-          <button id="plasmaTitan" aria-label="Disparar canhão de plasma Titan">Y · PLASMA</button>
-          <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
-            O · FIVE CATS
-          </button>
+        <div class="rpgDrawerBody">
+          <span id="strategyStatus"></span
+          ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
+          <div class="rpgProgress" aria-label="Progresso de evolução">
+            <i id="rpgProgressBar"></i>
+          </div>
+          <small id="rpgNext">PRÓXIMO · ARMA GEADA · EV 3</small>
+          <div class="tacticButtons">
+            <button id="scanBoss">I · SCAN</button
+            ><button id="precisionShot">K · PRECISÃO ◆</button>
+            <button id="repairPulse">R · REPARO ◆◆</button
+            ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
+          </div>
+          <div class="squadSuperActions" role="group" aria-label="Superespeciais dos Five Cats">
+            <button id="plasmaTitan" aria-label="Disparar canhão de plasma Titan">
+              Y · PLASMA
+            </button>
+            <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
+              O · FIVE CATS
+            </button>
+          </div>
         </div>
       </details>
       <div id="quickRpg" aria-label="Ações rápidas de RPG">
         <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
         ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
         ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+      </div>
+      <div id="qaBerserkDock" hidden role="group" aria-label="Controle exclusivo de teste Berserk">
+        <button
+          type="button"
+          id="qaBerserkAction"
+          aria-label="Ativar ou repetir o modo Berserk em QA"
+        >
+          ATIVAR BERSERK
+        </button>
+        <span id="qaBerserkStatus">QA · PRONTO PARA ATIVAR</span>
       </div>
       <div id="orbitControls" hidden>
         <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
@@ -63,6 +103,9 @@
       </div>
     </div>
     <button id="cameraView" aria-label="Alternar câmera">C · PERSEGUIÇÃO</button>
+    <button id="pilotSwitch" hidden aria-label="Trocar piloto e nave durante a batalha">
+      M · TROCAR
+    </button>
     <aside id="tacticalPanel" hidden aria-label="Radar de combate orbital">
       <div id="battleRadar" role="img" aria-label="Radar orbital">
         <i id="radarPlayer">▲</i><i id="radarWeak" hidden>◆</i><b>◎</b>
@@ -134,6 +177,20 @@
     </aside>
     <div id="aimReticle" hidden aria-label="Direção dos disparos" aria-hidden="true"><i></i></div>
     <div id="mechaLockReticle" hidden aria-hidden="true"></div>
+    <div id="mechaMultiTargets" aria-hidden="true">
+      <span id="mechaMultiTarget0" hidden class="nw-mecha-target" aria-hidden="true">1</span>
+      <span id="mechaMultiTarget1" hidden class="nw-mecha-target" aria-hidden="true">2</span>
+      <span id="mechaMultiTarget2" hidden class="nw-mecha-target" aria-hidden="true">3</span>
+      <span id="mechaMultiTarget3" hidden class="nw-mecha-target" aria-hidden="true">4</span>
+      <span id="mechaMultiTarget4" hidden class="nw-mecha-target" aria-hidden="true">5</span>
+      <span id="mechaMultiTarget5" hidden class="nw-mecha-target" aria-hidden="true">6</span>
+      <span id="mechaMultiTarget6" hidden class="nw-mecha-target" aria-hidden="true">7</span>
+      <span id="mechaMultiTarget7" hidden class="nw-mecha-target" aria-hidden="true">8</span>
+      <span id="mechaMultiTarget8" hidden class="nw-mecha-target" aria-hidden="true">9</span>
+      <span id="mechaMultiTarget9" hidden class="nw-mecha-target" aria-hidden="true">10</span>
+      <span id="mechaMultiTarget10" hidden class="nw-mecha-target" aria-hidden="true">11</span>
+      <span id="mechaMultiTarget11" hidden class="nw-mecha-target" aria-hidden="true">12</span>
+    </div>
     <div id="petCareHud" hidden aria-label="Itens resgatados para cuidar dos gatos"></div>
     <div id="vignette"></div>
     <div id="flash"></div>
@@ -148,17 +205,25 @@
         ⚠ ESCUDO BAIXO · BUSQUE REPARO
       </div>
       <div id="launchBoostNotice" hidden role="alert" aria-live="assertive">
-        <strong>⚠ SAÍDA DA TERRA</strong>
-        <span>SUBA E SEGURE <b>SHIFT / BOOST</b> ATÉ ESGOTAR O IMPULSO</span>
+        <strong>⚠ SUBIDA ORBITAL</strong>
+        <span>SEGURE SUPER BOOST ATÉ ESGOTAR A ENERGIA</span>
       </div>
       <div id="bossIncoming" hidden role="status" aria-live="polite"></div>
       <div id="attackWarning" role="status"></div>
       <div id="pickupFlash" hidden aria-live="polite" aria-atomic="true"></div>
       <div id="hitFeedback" hidden aria-label="Confirmação de impacto"></div>
-      <div id="comms">
-        <img src="BUILD:PILOT" alt="Bia, piloto dos Five Cats" />
-        <div>
-          <span class="eyebrow">BIA <b> / CANAL FIVE CATS</b></span>
+      <div id="comms" aria-label="Rádio Five Cats">
+        <i
+          id="commsPortrait"
+          class="cat-avatar"
+          data-pilot="bia"
+          role="img"
+          aria-label="BIA, transmissão Five Cats"
+        ></i>
+        <div class="comms-copy">
+          <span class="eyebrow"
+            ><strong id="commsSpeaker">BIA</strong> <b>/ CANAL FIVE CATS</b></span
+          >
           <p id="message" aria-live="polite"></p>
         </div>
       </div>
@@ -198,6 +263,11 @@
           ><strong id="bossName">CAÇA-LÍDER ROK</strong> <b id="bossState">GERADORES 2/2</b></span
         >
         <div class="bar"><i id="bossHealth"></i></div>
+        <small id="bossHealthReadout" aria-live="off">100% INTEGRIDADE</small>
+      </div>
+      <div id="weakPointCues" aria-hidden="true">
+        <b id="weakCue0" class="weak-point-tag" hidden></b
+        ><b id="weakCue1" class="weak-point-tag" hidden></b>
       </div>
       <div id="subHUD" hidden>
         <span>SUBCHEFE <b id="subState">CRUZADOR DE INTERCEPTAÇÃO</b></span>
@@ -217,7 +287,7 @@
         <div class="boost">
           <div class="shield-head"><span>IMPULSO</span><strong>SHIFT</strong></div>
           <div class="bar"><i id="energy"></i></div>
-          <small>Q / E / Z · GIRO DEFENSIVO</small>
+          <small id="rollHint">Q / E / Z · GIRO DEFENSIVO</small>
         </div>
       </div>
       <div id="touch">
@@ -231,15 +301,43 @@
             aria-label="Ativar mira de precisão do robô"
           >
             LOCK</button
-          ><button id="podsTouch">PODS</button><button id="rollTouch">GIRO</button
+          ><button id="podsTouch">PODS</button
+          ><button id="rollTouch" aria-label="Giro defensivo da nave">GIRO</button
           ><button id="bombTouch">BOMBA</button><button id="fireTouch">TIRO</button
           ><button id="boostTouch">BOOST</button>
         </div>
       </div>
-      <section id="menu" class="title-screen" aria-label="Menu principal">
+      <section id="menu" class="title-screen" data-screen="splash" aria-label="Menu principal">
         <div class="title-brand">FIVE CATS <span>FLIGHT SQUADRON</span></div>
         <div class="title-content">
+          <div
+            id="menuHero"
+            class="menu-cover-hero"
+            role="img"
+            aria-label="Capa original Nova Wing com os cinco gatos da esquadrilha"
+          ></div>
+          <div id="menuStartGate" class="menu-start-gate" aria-label="Tela de título">
+            <button
+              type="button"
+              id="pressStart"
+              class="press-start"
+              aria-label="Press start, abrir menu"
+            >
+              PRESS START <span aria-hidden="true">▶</span>
+            </button>
+            <small>FIVE CATS · NOVA WING</small>
+          </div>
           <h1>NOVA<span>WING</span></h1>
+          <nav id="menuPrimary" class="menu-primary" aria-label="Menu principal Nova Wing">
+            <button type="button" id="menuPlay">JOGAR <span aria-hidden="true">↗</span></button>
+            <button type="button" id="menuHangar">HANGAR <span aria-hidden="true">⌁</span></button>
+            <button type="button" id="menuHub">CENTRAL <span aria-hidden="true">◆</span></button>
+            <button type="button" id="menuQA" hidden>
+              TESTAR FASES · QA <span aria-hidden="true">↗</span>
+            </button>
+          </nav>
+          <button type="button" id="menuBack" class="menu-back">← VOLTAR AO MENU</button>
+          <p id="menuScreenLabel" class="menu-screen-label" aria-live="polite"></p>
           <p id="brief">Cinco gatos. Suprimentos roubados. Uma perseguição galáctica.</p>
           <label id="specialtyChoice" hidden
             >ESPECIALIDADE
@@ -249,12 +347,53 @@
               <option value="spirit">Espiritual · magia</option>
             </select></label
           >
-          <section hidden id="squadSelection" aria-label="Seleção dos Five Cats">
-            <div class="selection-head">
+          <section
+            hidden
+            id="squadSelection"
+            data-hangar-tab="pilots"
+            aria-label="Seleção dos Five Cats"
+          >
+            <nav
+              id="hangarSectionTabs"
+              class="hangar-section-switch"
+              role="group"
+              aria-label="Áreas do hangar"
+            >
+              <button
+                id="hangarTabPilots"
+                type="button"
+                data-hangar-target="pilots"
+                aria-pressed="true"
+              >
+                PILOTOS
+              </button>
+              <button
+                id="hangarTabShips"
+                type="button"
+                data-hangar-target="ships"
+                aria-pressed="false"
+              >
+                NAVES
+              </button>
+              <button
+                id="hangarTabArsenal"
+                type="button"
+                data-hangar-target="arsenal"
+                aria-pressed="false"
+              >
+                ARSENAL
+              </button>
+            </nav>
+            <div class="selection-head" data-hangar-section="pilots">
               <span class="eyebrow">01 / ESCOLHA O PILOTO</span>
               <strong>FIVE CATS</strong>
             </div>
-            <div class="pilot-roster" role="group" aria-label="Pilotos disponíveis">
+            <div
+              class="pilot-roster"
+              data-hangar-section="pilots"
+              role="group"
+              aria-label="Pilotos disponíveis"
+            >
               <button id="pilot-bia" class="pilot-choice selected" aria-pressed="true">
                 <i class="cat-avatar" style="--pilot: #67ffe0">B</i><span>BIA</span>
               </button>
@@ -298,21 +437,59 @@
               </div>
               <p id="hangarHint">ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO</p>
             </section>
-            <div class="pilot-profile">
-              <div class="profile-portrait"><i id="profileAvatar" class="cat-avatar">B</i></div>
+            <div class="pilot-profile" data-hangar-section="pilots">
+              <div class="profile-portrait">
+                <i id="profileAvatar" class="cat-avatar">B</i>
+                <div
+                  id="pilotUniform"
+                  class="cat-uniform"
+                  data-grade="0"
+                  aria-label="Uniforme de recruta"
+                >
+                  <span class="cat-uniform-collar" aria-hidden="true"></span>
+                  <span class="cat-uniform-stripes" aria-hidden="true"></span>
+                  <span class="cat-uniform-crest" aria-hidden="true"></span>
+                </div>
+              </div>
               <div class="profile-copy">
                 <span id="profileRole">COMANDANTE VANGUARDA</span>
+                <div class="pilot-rank-line" id="pilotRankInsignia">
+                  RECRUTA · PRIMEIRA PATRULHA
+                </div>
                 <h2 id="profileName">BIA</h2>
                 <strong id="profileSkill">SOBRECARGA</strong>
                 <p id="profileDescription"></p>
+                <meter
+                  id="pilotServiceMeter"
+                  class="pilot-service-meter"
+                  min="0"
+                  max="1"
+                  value="0"
+                  aria-label="Progresso de patente"
+                ></meter>
+                <div id="pilotRankProgress" class="pilot-rank-progress">0 / 120 PS</div>
+                <div
+                  id="pilotRankMedals"
+                  class="pilot-rank-medals"
+                  aria-label="Medalhas do piloto"
+                ></div>
+                <div class="pilot-uniform-inspect">
+                  <button type="button" id="pilotUniformPreview">VISUALIZAR UNIFORMES</button>
+                  <small id="pilotUniformPreviewStatus"> Uniforme conquistado: Mk-1 </small>
+                </div>
               </div>
               <div id="profileStats" class="profile-stats" aria-label="Atributos do piloto"></div>
             </div>
-            <div class="selection-head ship-head">
+            <div class="selection-head ship-head" data-hangar-section="ships">
               <span class="eyebrow">02 / ESCOLHA A NAVE</span
               ><strong id="selectedShipName">NOVA-7</strong>
             </div>
-            <div class="ship-roster" role="group" aria-label="Modelos de nave">
+            <div
+              class="ship-roster"
+              data-hangar-section="ships"
+              role="group"
+              aria-label="Modelos de nave"
+            >
               <button id="ship-nova7" class="ship-choice selected" aria-pressed="true">
                 <i class="ship-silhouette nova7"></i><span>NOVA-7</span><small>EQUILÍBRIO</small>
               </button>
@@ -324,7 +501,12 @@
                 <i class="ship-silhouette aegis"></i><span>AEGIS-R</span><small>DEFESA +</small>
               </button>
             </div>
-            <div class="color-roster" role="group" aria-label="Cor base da nave">
+            <div
+              class="color-roster"
+              data-hangar-section="ships"
+              role="group"
+              aria-label="Cor base da nave"
+            >
               <span>COR BASE</span
               ><button
                 id="ship-color-polar"
@@ -345,8 +527,15 @@
               ></button
               ><button id="ship-color-gold" style="--swatch: #e7bd63" aria-label="Ouro"></button>
             </div>
-            <p id="selectedShipDescription" class="ship-description"></p>
-            <details id="loadoutCatalog">
+            <p
+              id="selectedShipDescription"
+              class="ship-description"
+              data-hangar-section="ships"
+            ></p>
+            <small id="shipStats" data-hangar-section="ships"
+              >ATAQUE 0 · DEFESA 0 · AGILIDADE 0</small
+            >
+            <details id="loadoutCatalog" data-hangar-section="arsenal">
               <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
               <div class="loadout-catalog">
                 <article>
@@ -427,7 +616,12 @@
             <div class="help-panel">
               <p><b>WASD / setas</b> pilotar · <b>Espaço</b> atirar</p>
               <p><b>C</b> câmera: perseguição / cockpit / combate</p>
-              <p><b>Shift</b> boost · <b>Q / E</b> giro · <b>B</b> bomba</p>
+              <p><b>Shift</b> boost · <b>Q / E</b> giro (nave) ou dash (robô) · <b>B</b> bomba</p>
+              <p>
+                <b>GIRO</b> segure para inclinar a nave 90°; toque rápido para 360°. No robô,
+                mantenha o direcional para esquerda ou direita e toque <b>DASH</b> para esquivar com
+                rastro de velocidade. Segure <b>BOOST</b> para alongar o jato das turbinas.
+              </p>
               <p><b>V</b> lançar/recolher pods · <b>P</b> pausar</p>
               <p>No celular, use os controles de toque. Jogue na horizontal.</p>
             </div>
@@ -437,6 +631,30 @@
               perfura. Pods acoplados amplificam tiros; lançados perseguem alvos. Chefes: flancos
               ±60° para geradores e frente 0° para núcleo.
             </p>
+          </details>
+          <details
+            id="catRanks"
+            class="cat-ranks-panel"
+            aria-label="Patentes e medalhas dos Five Cats"
+          >
+            <summary>✦ HALL DA PATRULHA <span id="catSquadRank">PATRULHA ORBITAL</span></summary>
+            <p class="cat-ranks-intro">
+              Conclua missões para promover cada gato. Medalhas, uniformes e insígnias evoluem sem
+              afetar os atributos de combate.
+            </p>
+            <p id="catMedalDetails" class="cat-medal-details" role="status" aria-live="polite">
+              Toque em uma medalha para consultar como conquistá-la.
+            </p>
+            <div
+              id="catRankCards"
+              class="cat-rank-cards"
+              aria-label="Patentes individuais dos cinco pilotos"
+            ></div>
+          </details>
+          <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
+            <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
+            <p id="novaTrophyPoints">0 pontos de troféu</p>
+            <ol id="novaTrophyList" aria-label="Lista de troféus e conquistas"></ol>
           </details>
           <details id="novaRanking" aria-label="Ranking e histórico de pontuação">
             <summary aria-label="Abrir ranking Five Cats">
@@ -534,8 +752,8 @@
             <summary>DEVELOPER / QA · TESTAR CENÁRIOS</summary>
             <div class="developer-panel-content">
               <p>
-                Disponível apenas em DEV. Testes isolados: sem ranking, sem salvamento e sem afetar
-                a campanha.
+                Disponível em DEV e previews QA autorizados. Testes isolados: sem ranking, sem
+                salvamento e sem afetar a campanha.
               </p>
               <label for="developerSector">FASE / SETOR</label>
               <select id="developerSector" aria-label="Escolher fase para teste"></select>
@@ -545,7 +763,57 @@
                 <option value="subboss">SUBCHEFE</option>
                 <option value="boss">CHEFE PRINCIPAL</option>
               </select>
+              <fieldset id="developerLabLoadout" aria-label="Laboratório de evolução e arsenal">
+                <legend>LABORATÓRIO DE NAVE / RPG · QA</legend>
+                <label for="developerTier">EVOLUÇÃO DA NAVE</label>
+                <select id="developerTier" aria-label="Evolução inicial da nave">
+                  <option value="0">NÍVEL 1 · ORIGINAL</option>
+                  <option value="3">NÍVEL 4 · PRIMEIROS UPGRADES</option>
+                  <option value="6">NÍVEL 7 · ARMAMENTO AVANÇADO</option>
+                  <option value="9" selected>NÍVEL 10 · PODS / RPG AVANÇADO</option>
+                  <option value="12">NÍVEL 13 · EVOLUÇÃO SUPERIOR</option>
+                  <option value="18">NÍVEL 19 · EVOLUÇÃO MÁXIMA VISUAL</option>
+                </select>
+                <label for="developerShip">MODELO DE NAVE</label>
+                <select id="developerShip">
+                  <option value="nova7">NOVA-7 · MULTIFUNÇÃO</option>
+                  <option value="specter">SPECTER-X · INTERCEPTADOR</option>
+                  <option value="aegis">AEGIS-R · FORTALEZA</option>
+                </select>
+                <label for="developerArsenal">ARMA INICIAL</label>
+                <select id="developerArsenal">
+                  <option value="0">PULSO</option>
+                  <option value="1">GEADA</option>
+                  <option value="2">PLASMA</option>
+                  <option value="3">ARCANO</option>
+                  <option value="4">VAZIO</option>
+                </select>
+                <label for="developerSpecial">RPG INICIAL</label>
+                <select id="developerSpecial">
+                  <option value="0">BARREIRA</option>
+                  <option value="1">NOVA</option>
+                  <option value="2">ESTASE</option>
+                  <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
+                </select>
+                <small
+                  >Neste teste, níveis, armas, pods e bombas são liberados sem gastar créditos.
+                  Durante o voo, pressione ROBÔ, PODS, H/G e os especiais dos Five Cats para testar
+                  efeitos reais.</small
+                >
+              </fieldset>
               <button id="developerLaunch" type="button">INICIAR TESTE ↗</button>
+              <button
+                id="developerBerserkLaunch"
+                type="button"
+                class="primary"
+                aria-label="Testar modo Berserk diretamente nesta fase ou chefe"
+              >
+                PREPARAR TESTE BERSERK
+              </button>
+              <small
+                >Atalho QA: escolhe evolução 13 e Berserk. Ative e repita o poder pelo botão no HUD
+                da fase. Escolha o setor e o chefe acima.</small
+              >
               <button id="developerExplore" type="button" hidden>
                 EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D
               </button>
@@ -574,7 +842,17 @@
         </div>
         <div class="cinematic-story">
           <span class="eyebrow">NOVA WING / FIVE CATS</span>
-          <strong id="cinematicSpeaker">NARRADOR</strong>
+          <div class="cinematic-speaker-row">
+            <i
+              id="cinematicPortrait"
+              class="cat-avatar"
+              data-pilot="bia"
+              role="img"
+              aria-label="BIA, diálogo Five Cats"
+              hidden
+            ></i>
+            <strong id="cinematicSpeaker">NARRADOR</strong>
+          </div>
           <p id="cinematicCaption" aria-live="polite"></p>
           <div class="cinematic-track"><i id="cinematicProgress"></i></div>
           <button id="cinematicSkip" class="secondary" aria-label="Pular abertura">
@@ -601,6 +879,61 @@
             <button class="secondary" id="pauseOptions">⚙ OPÇÕES</button>
             <button class="secondary" id="pauseExit">SAIR PARA O MENU</button>
           </div>
+          <details id="developerFlightLab" hidden>
+            <summary>LABORATÓRIO QA · TROCAR UPGRADE / ARMA / PODER SEM REINICIAR</summary>
+            <div class="developer-panel-content">
+              <label for="qaLabLevel">EVOLUÇÃO VISUAL</label>
+              <select id="qaLabLevel">
+                <option value="0">NÍVEL 1</option>
+                <option value="3">NÍVEL 4</option>
+                <option value="6">NÍVEL 7</option>
+                <option value="9">NÍVEL 10</option>
+                <option value="12">NÍVEL 13</option>
+                <option value="18">NÍVEL 19</option>
+              </select>
+              <label for="qaLabArsenal">ARMA</label>
+              <select id="qaLabArsenal">
+                <option value="0">PULSO</option>
+                <option value="1">GEADA</option>
+                <option value="2">PLASMA</option>
+                <option value="3">ARCANO</option>
+                <option value="4">VAZIO</option>
+              </select>
+              <label for="qaLabSpecial">PODER RPG</label>
+              <select id="qaLabSpecial">
+                <option value="0">BARREIRA</option>
+                <option value="1">NOVA</option>
+                <option value="2">ESTASE</option>
+                <option value="3">BERSERK · POTÊNCIA / CADÊNCIA</option>
+              </select>
+              <label for="qaLabShip">CHASSI / MODELO</label>
+              <select id="qaLabShip">
+                <option value="nova7">NOVA-7</option>
+                <option value="specter">SPECTER-X</option>
+                <option value="aegis">AEGIS-R</option>
+              </select>
+              <label for="qaLabForm">MODO AO RETOMAR</label>
+              <select id="qaLabForm">
+                <option value="ship">NAVE</option>
+                <option value="robot">ROBÔ TRANSFORMADO</option>
+              </select>
+              <label for="qaLabPods">PODS AO RETOMAR</label>
+              <select id="qaLabPods">
+                <option value="docked">ACOPLADOS</option>
+                <option value="deployed">DESTACADOS</option>
+              </select>
+              <label class="qa-berserk-toggle" for="qaLabBerserk"
+                ><input type="checkbox" id="qaLabBerserk" /> ATIVAR BERSERK AO RETOMAR · QA</label
+              >
+              <button type="button" class="primary" id="qaLabApply">
+                APLICAR E RETOMAR O VOO ↗
+              </button>
+              <small
+                >Recarga RPG, bombas, escudo e energia completos só nesta sessão QA. Para acionar o
+                poder real, use G / ATIVAR.</small
+              >
+            </div>
+          </details>
           <div id="pausePanelTabs" role="group" aria-label="Ajuda de jogo e diagnóstico">
             <button id="pauseTabControls" type="button" aria-pressed="true" data-help-key="helpTab">
               CONTROLES
@@ -687,7 +1020,7 @@
                     <kbd>BOMBA</kbd><span data-help-key="helpBomb"></span>
                   </div>
                   <div class="nw-control-row">
-                    <kbd>GIRO</kbd><span data-help-key="helpRoll"></span>
+                    <kbd>GIRO / DASH</kbd><span data-help-key="helpRoll"></span>
                   </div>
                   <div class="nw-control-row">
                     <kbd>ÓRBITA ↶ ↷</kbd><span data-help-key="helpOrbit"></span>
@@ -747,6 +1080,14 @@
               </select></label
             >
             <label
+              ><span id="labelGraphics">GRÁFICOS</span>
+              <select id="settingGraphics" aria-label="Qualidade gráfica">
+                <option value="auto" selected>AUTOMÁTICO</option>
+                <option value="medium">MÉDIO</option>
+                <option value="high">ALTO</option>
+              </select></label
+            >
+            <label
               ><span id="labelMaster">VOLUME GERAL</span
               ><input id="settingMaster" type="range" min="0" max="1" step="0.05" value="0.85"
             /></label>
@@ -801,6 +1142,12 @@
           <h2 id="shopTitle">SETOR LIBERTADO</h2>
           <p id="shopNext"></p>
           <strong id="shopCredits">0 CR</strong>
+          <div
+            id="shopServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Condecorações da missão"
+          ></div>
           <p>
             Equipe a NOVA-7 antes do próximo salto. Melhorias e créditos acompanham seu checkpoint.
           </p>
@@ -858,6 +1205,12 @@
           <div class="eyebrow" id="resultLabel">MISSÃO ENCERRADA</div>
           <h2 id="resultTitle"></h2>
           <p id="resultText"></p>
+          <div
+            id="resultServiceSummary"
+            class="cat-service-result"
+            hidden
+            aria-label="Patentes e medalhas da missão"
+          ></div>
           <button class="primary" id="restart">VOAR NOVAMENTE ↗</button>
         </div>
       </section>

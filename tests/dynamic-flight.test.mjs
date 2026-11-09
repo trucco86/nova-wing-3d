@@ -54,6 +54,8 @@ test('2D interruption freezes campaign, pauses on blur, accepts touch and return
   t.after(() => h.close());
   h.game.start(true);
   h.advance(8.1);
+  assert.equal(h.game.snapshot().state, 'playing', 'planetary entry precedes the bonus');
+  h.advance(21.1);
   const entry = h.game.snapshot();
   assert.equal(entry.state, 'arcade');
   h.elements

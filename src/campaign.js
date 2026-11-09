@@ -16,14 +16,14 @@ export const SECTORS = [
     brief: 'Bia, liberte a costa. As torres alimentam a frota de Marvin.',
   },
   {
-    name: 'DISTRITO PORTUÁRIO',
-    boss: 'NAVE-FERRÃO',
+    name: 'DESERTO DE MARTE',
+    boss: 'COLOSSO DAS DUNAS',
     kind: 'stingray',
-    theme: 'ocean',
-    accent: '#5be8ef',
-    sky: '#153e60',
-    duration: 80,
-    brief: 'Bob detectou uma máquina colossal sob o porto. Proteja a rota de fuga.',
+    theme: 'mars',
+    accent: '#ffbc80',
+    sky: '#9c594a',
+    duration: 107,
+    brief: 'Marte à vista: atravesse o deserto vermelho, aviste Fobos, Deimos e o Curiosity.',
   },
   {
     name: 'CINTURÃO DE DESTROÇOS',
@@ -33,17 +33,18 @@ export const SECTORS = [
     accent: '#e8a0ff',
     sky: '#30225d',
     duration: 82,
-    brief: 'Subindo para a órbita. Atravesse os destroços sem perder os pods.',
+    brief:
+      'Da órbita de Marte ao mega-asteroide: encontre a abertura, lute no interior e escape do colapso.',
   },
   {
-    name: 'ESTAÇÃO ÓRBITA-9',
+    name: 'INTERIOR DA NAVE-MÃE',
     boss: 'FORTALEZA ÓRBITA',
     kind: 'station',
     theme: 'station',
     accent: '#57d9ff',
     sky: '#1c365e',
     duration: 88,
-    brief: 'Christopher encontrou o núcleo da estação. Desative os geradores externos.',
+    brief: 'Em Júpiter, atravesse o hangar da nave-mãe Devastador e sabote seu reator.',
   },
   {
     name: 'TEMPESTADE DE DADOS',
@@ -53,7 +54,7 @@ export const SECTORS = [
     accent: '#ffbb58',
     sky: '#663039',
     duration: 88,
-    brief: 'A rede entrou em colapso. Cuidado com as rajadas de plasma.',
+    brief: 'Vênus: atravesse nuvens densas, tempestades elétricas e descargas de plasma.',
   },
   {
     name: 'SETOR CONGELADO',
@@ -63,7 +64,8 @@ export const SECTORS = [
     accent: '#9feeff',
     sky: '#28527d',
     duration: 92,
-    brief: 'Bloco dois. Um colosso protege os depósitos de energia de Marvin.',
+    brief:
+      'Europa, lua de Júpiter: pouse nas geleiras, cruze fissuras e enfrente o colosso glacial.',
   },
   {
     name: 'NÚCLEO PÚRPURA',
@@ -73,17 +75,19 @@ export const SECTORS = [
     accent: '#f18bff',
     sky: '#482b78',
     duration: 92,
-    brief: 'A biofrota reage aos nossos sinais. Quebre as cabeças da colmeia.',
+    brief:
+      'Netuno: mergulhe nas camadas azuis, encontre a colmeia suspensa e destrua seus núcleos.',
   },
   {
-    name: 'GRADE DE BATALHA',
+    name: 'ANÉIS DE SATURNO',
     boss: 'COURAÇADO ÔMEGA',
     kind: 'dreadnought',
     theme: 'fleet',
     accent: '#ff9e73',
     sky: '#302d65',
     duration: 98,
-    brief: 'Toda a frota está aqui. Guarde uma bomba para a barragem.',
+    brief:
+      'Atravesse os anéis de Saturno e seus meteoros de gelo. Rompa o bloqueio da frota e enfrente o couraçado.',
   },
   {
     name: 'ABISMO DE ÓRION',
@@ -93,17 +97,18 @@ export const SECTORS = [
     accent: '#76d7ff',
     sky: '#2b315b',
     duration: 98,
-    brief: 'Sem sinal da Terra. Siga o disco de acreção até o Bastião.',
+    brief: 'Marvin assume o controle do Bastião: sobreviva ao monstro mecanizado e liberte Órion.',
   },
   {
-    name: 'TRONO DE MARVIN',
-    boss: 'IMPERADOR MARVIN',
+    name: 'CAÇADA FINAL · MARVIN',
+    boss: 'CAÇA OBSIDIAN DE MARVIN',
     kind: 'emperor',
     theme: 'throne',
     accent: '#ff6e99',
     sky: '#5d2548',
-    duration: 104,
-    brief: 'Five Cats reunidos. A Devastador está à frente. Termine esta guerra.',
+    duration: 150,
+    brief:
+      'Persiga Marvin em Titã, enfrente seu caça negro e vermelho e conclua a guerra dos Five Cats.',
   },
 ];
 export const PILOTS = ['BIA', 'BOB', 'CHRISTOPHER'];

@@ -1,0 +1,51 @@
+name: Prepare Nova Wing premium P0 QA
+on:
+  push:
+    branches:
+      - feat/p0-mecha-arsenal-carrier-variety-20261101
+    paths:
+      - .github/workflows/p0-premium-qa-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/p0-mecha-arsenal-carrier-variety-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # P0 v3: side-specific articulating-foot regression fixed
+      - name: Validate premium P0 source and reproducible output
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit verified isolated branch only
+        run: |
+          git add -- index.html src/mecha-premium.js src/visuals.js src/game.js src/combat-progression.js src/mothership-interior.js src/boss-weakpoint-layout.js src/bosses.js src/boss-visual-identity.js tests/p0-mecha-corridors-progression.test.mjs src/developer-mode.js tests/developer-mode.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'No output changes.'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): verified premium P0 mecha, weapons and drive chamber'
+            git push origin HEAD:feat/p0-mecha-arsenal-carrier-variety-20261101
+          fi
+      - name: Launch independent full browser CI and Cloudflare preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/p0-mecha-arsenal-carrier-variety-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/p0-mecha-arsenal-carrier-variety-20261101

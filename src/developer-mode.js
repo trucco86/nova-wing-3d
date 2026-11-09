@@ -5,17 +5,36 @@ export function developerToolsAllowed(hostname, native = false) {
   const host = hostname.toLowerCase();
   return (
     host === 'dev.nova-wing-preview.pages.dev' ||
+    // Dedicated branch alias used by the stage-4, boss and Berserk QA preview.
+    host === 'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev' ||
+    // Approved QA build and its stable branch alias; never enable HML or PROD.
+    host === '52fd04c6.nova-wing-preview.pages.dev' ||
+    host === 'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev' ||
+    host === 'feat-planetary-journeys-2026.nova-wing-preview.pages.dev' ||
+    host === 'feat-planetary-visual-polish.nova-wing-preview.pages.dev' ||
+    // Strictly this integrated QA alias; production and HML remain blocked.
+    host === 'integration-boss-worlds-qa-2.nova-wing-preview.pages.dev' ||
+    // Only the verified rival/mothership candidate is allowed to launch QA stages.
+    host === 'feat-mothership-marvin-rival.nova-wing-preview.pages.dev' ||
+    host === 'feat-mothership-boarding-cin.nova-wing-preview.pages.dev' ||
+    host === 'fix-stage4-camera-encounter.nova-wing-preview.pages.dev' ||
+    host === 'fix-qa-browser-stage4-lab-re.nova-wing-preview.pages.dev' ||
+    host === 'feat-p0-mecha-arsenal-carrie.nova-wing-preview.pages.dev' ||
+    host === 'fix-hero-scale-dash-and-dest.nova-wing-preview.pages.dev' ||
     /^pr-[0-9]+\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'localhost' ||
     host === '127.0.0.1'
   );
 }
 
-export const DEVELOPER_ENCOUNTERS = Object.freeze(['stage', 'subboss', 'boss']);
+export const DEVELOPER_ENCOUNTERS = Object.freeze(['stage', 'subboss', 'boss', 'tunnel']);
 
 export function parseDeveloperScenario(sector, encounter, sectorCount) {
   const index = Number(sector);
   if (!Number.isInteger(index) || index < 0 || index >= sectorCount) return null;
   if (!DEVELOPER_ENCOUNTERS.includes(encounter)) return null;
+  // This physical tunnel belongs only to the sixth sector (Europa).
+  // Other stages must never acquire a fictitious tunnel QA shortcut.
+  if (encounter === 'tunnel' && index !== 5) return null;
   return { sector: index, encounter };
 }

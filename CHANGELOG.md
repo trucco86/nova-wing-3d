@@ -1,5 +1,493 @@
 # Histórico
 
+## 1.27.105 — Candidata em preparação
+
+- QA105: subchefe obrigatório após percurso de obstáculos da fase 3, bloqueio do chefe principal até o encontro, teste automatizado do cenário de subchefe. Validação completa da campanha e QA visual pendentes.
+
+## 1.27.104 — Candidata em preparação
+
+- QA104: fenda física para GIRO segurado na fase 3, projeção do casco real, blocos minerais e dentes com rotas alternativas, frenagem no contato e recuperação contínua após avaria/transformação. Validação visual e homologação pendentes.
+
+## 1.27.103 — Candidata em preparação
+
+- QA P0-A: entrada da fase 3 com boca, garganta rochosa e caverna conectadas espacialmente; avanço compartilhado com a velocidade do cenário, sem ampliação artificial. Reinício restaura rotações. Hold-giro, obstáculos e traseiras dos chefes permanecem em tarefas separadas. Homologação visual pendente.
+
+## 1.27.102 — Candidata em preparação
+
+- QA: novos detalhes industriais e heliportos nos telhados, elevadores de manutenção animados, placas de serviço e exaustão leve em High; física e câmera previamente homologadas preservadas; validação WebGL pendente.
+
+## 1.27.101 — Candidata em preparação
+
+- QA: fade local dos viadutos que obstruem a câmera, mantendo suas colisões físicas e o voo totalmente livre; testes browser e visual pendentes.
+
+## 1.27.100 — Candidata em preparação
+
+- QA: viadutos superiores visíveis e sólidos na rota, alcance vertical estendido, teste determinístico do subchefe sem renderizações WebGL redundantes; homologação pendente.
+
+## 1.27.99 — Candidata em preparação
+
+- QA em desenvolvimento: liberdade vertical, volumes físicos dos viadutos e trilho transversal, destroços sólidos e etiqueta BLINDADO menos intrusiva; testes completos pendentes.
+
+## 1.27.98 — Candidata em preparação
+
+- QA da fase 1: colisão real em placa, carro e 7 fragmentos visíveis, CCD XYZ, posições que exigem desvio, destroços orbitais aleatorizados e ISS orbitando brevemente a Terra; homologação WebGL pendente.
+
+## 1.27.97 — Candidata em preparação
+
+- QA cockpit e relay: módulo atual da nave não sobrepõe o robô após troca, lock e cooldown reiniciam com o novo chassi e a nave avariada preserva pintura escolhida. Testes browser ainda necessários.
+
+## 1.27.96 — Candidata em preparação
+
+- Cockpit Five Cats com patas por piloto, telemetria real, radar e troca de comandante/nave; avaria retira a nave, não mata o gato. Habilidades e classes passam a impactar dano, velocidade e defesa; QA pendente.
+
+## 1.27.95 — Candidata em preparação
+
+- QA integrada 1.27.95: corrigidos hangar/QA compactos, direção do DASH e regressões do navegador, preservando todos os setores e o ritmo orbital. Homologação pendente.
+
+## 1.27.94 — Candidata em preparação
+
+- União das linhas completas de fases 1–10, boss, Europa, Saturno, HUD, áudio e mecânicas v1.27.93 com Mecha Premium, física da cidade e Marte v1.27.69. Homologação ainda pendente.
+
+## 1.27.93 — Fase 1: ritmo do trem, boost e órbita (QA)
+
+- Encerrada a sobreposição de base e subchefe com trem e travessia atmosférica.
+- Entrada de combate somente após recuperação orbital e com subchefe/base em momentos distintos.
+- Super Boost continua obrigatório; fases 2+ preservadas. Homologação manual pendente.
+
+## 1.27.92 — Fase 1: áudio de destruição e HUD limpo (QA)
+
+- Sons próprios da placa, veículo, fachada e trem; explosões não duplicam efeitos genéricos.
+- Somente um aviso textual localizado PT/EN/ES no momento do desvio do trem.
+- Sequência, colisões e Super Boost preservados; homologação manual e CI completo pendentes.
+
+## 1.27.91 — Fase 1: efeitos de impacto e desvio do trem (QA)
+
+- Poeira, faíscas e ondas de choque no asfalto após queda da placa, veículo e fachada.
+- Trem avariado com descargas no trilho e indicação discreta da faixa segura.
+- Sem novos colliders ou mudanças na progressão, demais fases preservadas; homologação visual pendente.
+
+## 1.27.90 — Destroços no chão da cidade (QA)
+
+- Corrigidas placa, carro, torre e fragmentos que penetravam a via após girar e cair.
+- Explosões e fumaça agora se originam no contato real com a rua.
+- Testes de altura e física visual em diversos instantes; demais fases e boost preservados.
+- Produção inalterada, homologação visual ainda pendente.
+
+## 1.27.89 — Cidade sob ataque e trem avariado (Fase 1, QA)
+
+- Outdoor, carro voador e fachada desmoronam em ordem cinematográfica, sem bloquear o centro.
+- Trem pendurado com rota segura à direita e colisão apenas após a queda.
+- Ascensão orbital com Super Boost preservada; suíte automatizada e homologação visual pendentes.
+
+## 1.27.88 — Fissura do túnel glacial (QA)
+
+- Rachaduras 3D progressivas antes do rompimento, mantendo a colisão física até o impacto.
+- Fragmentos de gelo com impulso lateral e queda, e testes de alerta e ruptura dentro do jogo.
+- Homologação visual pendente; produção inalterada.
+
+## 1.27.87 — Europa: validação ponta a ponta do túnel (QA)
+
+- Atalho de QA para a ruptura do túnel na fase 6, reutilizando o gameplay real.
+- Testes automatizados da parede intacta, rompimento, destroços, entrada de inimigo e saída para superfície.
+- Sem alterações em produção; homologação visual no celular real pendente.
+
+## 1.27.86 — Europa: túnel e superfície gelada (QA)
+
+- Fase 6: piso do túnel sem z-fighting; quebra física de parede com destroços e entrada coerente de inimigo.
+- Lua e globo orbital desaparecem na transição de superfície, com névoa azul e cenário glacial detalhado.
+- Testes de piso, colisão, estado da superfície, regressão do Colosso e telas retrato/paisagem.
+- Homologação em celular físico pendente; produção inalterada.
+
+## 1.27.85 — Ataques físicos do Colosso Glacial (QA)
+
+- Garra telescópica física na área real de impacto; pinça bilateral e martelada unilateral em coreografias distintas.
+- Corpo estável durante golpes, radar ancorado na garra e geradores destruídos interrompendo o braço correspondente.
+- Validação em celular físico pendente; produção inalterada.
+
+## 1.27.84 — Colosso Glacial mais próximo (QA)
+
+- Fase 6: profundidade ajustada de -205 para -160 e lente retrato de 98° para 88° sem alterar escala, colisões ou órbita.
+- Testes de presença visual, clearance e câmera em retrato/paisagem. Homologação em celular físico pendente.
+
+## 1.27.80 — Europa Boss Clear Arena · QA
+
+- Colossus da fase 6 mantém a geometria inteira acima do **piso glacial rebaixado**, com margem dinâmica e chefe enquadrado no centro da tela, evitando tanto o atravessamento do gelo quanto a aparição do modelo acima da câmera em mobile.
+- Os 60 cristais próximos do corredor deixam de cruzar a frente do chefe no combate; glaciares e atividade de fundo são afastados sem perder qualidade visual.
+- Arena mais limpa para mira, canhões, radar, tiros, pontos fracos e órbita 360; desativa nave-mãe genérica apenas em Europa.
+- Testes unitários de clearance, cenário preservado e retorno de cena, além de Playwright real de fase 6 e regressão de outros chefes em mobile/desktop.
+- Sem mudanças na física dos disparos ou progressão; somente QA e inspeção física pendente.
+
+## 1.27.79 — Elite Boss Counterplay 1.0 (QA)
+
+- Europa: a onda de impacto agora prepara e projeta seis estacas visuais de gelo, enquanto a pinça criogênica mantém seu próprio padrão de esquiva e colisão.
+- Hydra: ataque exclusivo de duas cabeças em fase avançada, com origem física dupla e zona horizontal de dano no radar, cancelado se uma bateria for destruída.
+- Ômega: quando uma arma lateral é destruída, passa a usar o tentáculo sobrevivente; sem as duas armas passa a disparar do núcleo, nunca de um braço inexistente. Radar aponta para a peça real.
+- Marvin: defesa reativa da retaguarda com jato das turbinas visível e esquiva por altitude; mantém contrajogo de robô, boost e flancos.
+- Física de dano do radar igual à zona real, alvo travado durante o aviso, sem mover pontos fracos ou alterar chefes/fases já aprovados.
+- Testes Node para quatro chefes e Playwright de lutas reais, QA isolada, sem aprovação de produção.
+
+## 1.27.78 — Boss Shot Readability 2.0 (QA)
+
+- Canhões de dez chefes com boca física de alto contraste, halo de preparação proporcional à carga e flash luminoso quando o canhão dispara.
+- Projéteis de chefes agora exibem ligação luminosa temporária de até 0,42 segundo entre o ponto real de saída e o projétil; conexão reutilizada com pooling e removida depois do disparo.
+- Materiais, projéteis, colisões, dano, homing, velocidade, limite de projéteis e cadência preservados. Baterias destruídas não brilham nem disparam.
+- Testes unitários validam alinhamento de bocal, flash, reciclagem de projéteis e duração do efeito. Playwright captura tiros reais de Europa e Ômega.
+- Avaliação visual no iPhone físico e FPS Alto/Médio permanecem obrigatórios antes de produção.
+
+## 1.27.77 — Boss Tactical Identity 1.0 (QA)
+
+- Rok: convergência de duas asas e investida frontal, com fuga por altitude ou lateral.
+- Stingray: tesoura vertical das asas e ferrão, com animações específicas e rota segura pelo radar.
+- Carbide: broca frontal ou varredura transversal; a própria broca inclina na preparação.
+- Orion: pulso gravitacional circular ou faixa estreita da íris, selecionados conforme órbita/altitude.
+- Radar compartilha geometria de colisão real com os oito golpes exclusivos e origem física do modelo, preservando o alvo travado no windup e as janelas de contra-ataque.
+- Testes Node e Playwright para quatro lutas reais, sem alterar Devastador, Phoenix, Europa, Hydra, Ômega, Marvin ou as baterias da v1.27.76.
+- QA apenas; falta homologação visual e desempenho em iPhone físico.
+
+## 1.27.76 — Boss Weapon Readability 1.0 · canhões e tiros legíveis (QA)
+
+- Dez identidades de cor para projéteis dos chefes, com rastros luminosos e cabeça maior, usando a mesma física, dano e velocidade de antes.
+- Bocais reais das duas baterias de cada chefe e do canhão emergencial: geometria mais marcada, aros, indicador de carga e flash a cada disparo real.
+- Destruir gerador desativa a arma; núcleo só acende depois que as duas baterias foram desativadas. Muzzle, flash e posição de tiro compartilham a mesma transformada física.
+- Contraste das famílias de projétil sem reescrever a IA nem perder a estratégia de flancos, radar e pontos fracos já aprovada.
+- Testes Node de bocais e pool, imagens reais de combate via Playwright desktop/mobile, especificação P1 por chefe; QA isolada, sem merge de produção.
+
+## 1.27.75 — Ômega acompanha os dois flancos após exposição sustentada (QA)
+
+- Na fase 8, o Ômega passa a reconhecer o flanco esquerdo e o direito, além da retaguarda: após 1,8 s de permanência em ângulo igual ou superior a 75° da proa, gira apenas o casco gradualmente para encarar a nave.
+- Aproximações rápidas e retorno à frente reiniciam a percepção; a área frontal não dispara perseguição. Velocidade de rotação limitada e menor durante o ataque.
+- Preservados a órbita 360° da nave, o cenário e Saturno imóveis, os pontos fracos, os ataques travados e a correção dos botões RPG/ORBITAR da v1.27.74.
+- Novos testes Node dos dois flancos, atraso, reset e ângulo frontal. Testes browser e homologação visual ainda necessários.
+- QA isolada; não publicar em produção sem aprovação.
+
+## 1.27.74 — RPG mobile fecha e órbita permanece acessível (QA)
+
+- O painel RPG preserva o botão de abertura/fechamento no topo; somente o conteúdo tático é expansível/rolável.
+- Removida a regra que ocultava os comandos ORBITAR quando o RPG estava aberto.
+- Iniciar órbita por toque também recolhe o RPG sem perder a pressão do botão. O início de um novo chefe sempre recolhe o painel.
+- Playwright: regressões nos viewports mobile 390x844, 320x568 e 844x390; preserva a órbita real da nave.
+- QA isolada, sem mudanças na arte do boss, mecânicas, saves ou produção.
+
+## 1.27.73 — Ômega: giro após retaguarda sustentada, Saturno estático (QA)
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.72 — Saturno Cassini + Couraçado Ômega 4.0 (QA)
+
+- Saturno em paleta de cores naturais inspiradas em imagens Cassini NASA/JPL: nuvens suaves amarelo-creme e bege, divisão de Cassini escura, anéis em tons contidos de gelo e poeira.
+- Correção geométrica: anéis no plano equatorial do planeta, planeta e anéis inclinados como um conjunto, oclusão real atrás da esfera; evita desenho de discos independentes.
+- Fase 8: Couraçado Ômega persegue angularmente a órbita do piloto com atraso e velocidade limitados. A visão traseira aparece imediatamente ao orbitar e o chefe tenta virar-se progressivamente, sem teleporte de frente.
+- Moveset conforme direção e modo: mordida frontal com mandíbula, garras de flanco, braços em pancada e tentáculos de interceptação pela retaguarda; telegraph e dano seguem intent travado.
+- Duas peças destrutíveis reais recebem sinalização azul quando blindadas, âmbar após contato e amarela quando vulneráveis; mensagem no HUD explica o flanco ou costas. Radar usa ângulo físico atual do casco, não ângulo teórico.
+- Preservados Terra, cena 4 de sabotagem, demais chefes, save, câmera e economia de projéteis. Regressões Node contra giro instantâneo, falso ponto fraco, geometria anelar e animações.
+- QA isolada. Requer CI Node/Playwright 4 shards, inspeção visual no iPhone e FPS Alto/Médio antes da integração.
+
+## 1.27.71 — Saturno: travessia coreografada pelos anéis (QA)
+
+- Fase 8 em cinco trechos: aproximação orbital, anel externo, campo denso de gelo, divisão de Cassini e bloqueio do Couraçado Ômega. Rótulos do HUD acompanham a região percorrida.
+- A intensidade visual do gelo aumenta e diminui para abrir a arena do chefe, com **o mesmo número de meshes/instâncias** da 1.27.70.
+- Meteoros de gelo com colisão só aparecem durante a travessia e a passagem pela Cassini; abertura e arena de chefe ficam sem sucata.
+- Testes de fase, determinismo, budget de draw calls e checkpoints de navegador desktop/mobile. Sem alterar Terra, controles, progressão ou IA do chefe.
+- QA isolada: FPS físico e avaliação estética ainda necessários.
+
+## 1.27.70 — Saturno: batalha orbital nos anéis de gelo (QA)
+
+- Fase 8 passa a ser combate orbital junto a Saturno: entrada curta de 8 segundos, sem transição genérica atmosférica; o planeta permanece em quadro inclusive no mobile.
+- Saturno redesenhado com faixas gasosas em múltiplas frequências, sombra sutil dos anéis e disco anelar com divisão de Cassini, mais detalhe radial e cores em camadas. O shader também aprimora a definição dos outros gigantes e luas sem tocar a Terra.
+- Removidos sete cascos destruídos repetitivos e reduzida a frota decorativa. Duas camadas instanciadas de gelo orbital se movem em diferentes velocidades; a nave atravessa a região dos anéis, sem arcos artificiais no corredor.
+- Meteoros de gelo sólidos e destrutíveis substituem sucata/satélites genéricos na fase 8, mantendo os mesmos controles, combate, câmera e chefe Couraçado Ômega.
+- Qualidades Alto/Médio preservadas: partículas extras de gelo apenas em Alto; sem novos timers, storage, saves ou métricas falsas de FPS.
+- Candidata QA: CI Node/Playwright e verificação visual/FPS Alto/Médio em celular físico antes de integração.
+
+## 1.27.69 — Evidência FPS reproduzível por fase e preset (QA)
+
+- Relatório de FPS explicita fase, perfil de qualidade selecionado e versão do build capturados ao iniciar medição.
+- Ao trocar manualmente entre Alto, Médio e Auto, ambas as amostragens são invalidadas: evita misturar frames/triângulos de perfis diferentes.
+- Evidências continuam somente na memória local, copiadas pelo jogador, sem dados de identificação nem telemetria externa.
+- Testes Node de contexto/localização e Playwright do reset de medição durante opções.
+- Sem alteração na física, chefes, controles ou qualidade gráfica em si. Candidata QA, não produção.
+
+## 1.27.68 — Europa Combat 4.0: onda de gelo e pinça criogênica (QA)
+
+- Colosso de Europa (fase 6): onda de gelo exige esquiva vertical; pinça criogênica exige deslocamento lateral. Alternância reage à altitude e modo robô.
+- Telegraph físico com alvo travado durante windup; radar e dano compartilham a mesma área horizontal ou vertical.
+- Três meshes e dois materiais visuais reutilizáveis, sem novos colisores, projéteis ou timers.
+- Fases 1–4, mecânicas da Fênix e coordenadas de baterias/pontos fracos preservadas.
+- Somente QA: CI completa, testes visuais e FPS mobile antes de integração.
+
+## 1.27.67 — Phoenix VFX: telegraph físico com custo controlado (QA)
+
+- Núcleo solar e cone de plasma indicam mergulho; duas asas sinalizam varredura antes da colisão.
+- Quatro meshes leves, duas materiais aditivas, sem partículas novas, colisores ou alocação por frame.
+- Efeitos sincronizados com o ataque existente e desligados no estado de manobra; fase 4 preservada.
+- QA: testes Node, Playwright 4 shards, preview e validação visual mobile antes de produção.
+
+## 1.27.66 — Phoenix Combat 4.0: golpes solares físicos (QA)
+
+- Fase 5 (Vênus): mergulho de plasma quando piloto está alto/impulsionando e varredura horizontal quando voa baixo; zonas de perigo travadas no início do aviso.
+- Radar usa a mesma área de colisão das duas novas manobras; sair da região evita dano real, com sinalização e recuperação.
+- Preservados ataques e gameplay aprovados das fases 1–4, incluindo sabotagem da Devastador.
+- Candidata QA isolada; CI FULL, visual desktop/mobile e teste físico pendentes antes de integração.
+
+## 1.27.65 — Worlds 2.1: ritmo e silhueta próprios por setor (QA)
+
+- Dez ambientes agora têm silhuetas e padrões de movimento distintos nas duas camadas de profundidade; nenhum é apenas recoloração da mesma forma.
+- Dois draw calls por tema, contagens Alto/Médio preservadas, sem adicionar alvo, obstáculo ou colisão.
+- Testes de assinatura por planeta, corredor central livre, determinismo e troca de qualidade.
+- Candidata isolada em QA; confirmar visual em desktop/mobile e impacto FPS antes de integrar.
+
+## 1.27.64 — Controles Mobile 3.3: ergonomia de tiro e boost
+
+- TIRO e BOOST como ações principais do polegar direito, adjacentes no arco inferior; hitboxes maiores, sem sobreposição em retrato e paisagem.
+- Ações secundárias acima, suporte canhoto preservado e SUPER BOOST no mesmo comando.
+- Testes de geometria das sete ações e regressão do arco, mais preview isolado.
+- Apenas candidata QA: não promover sem CI completa, Playwright mobile e validação real de multi-touch.
+
+## 1.27.63 — Candidata de QA: reator em órbita e cenários vivos
+
+- Fase 4: apresentação da nave e câmera orbitando o reator estacionário, com salão fixo; colisões e tiros preservados no referencial de gameplay.
+- Dez fases: segundo e terceiro planos animados, qualidade Alto/Médio e objetos exclusivamente visuais.
+- Dez chefes: mecanismos e blindagem articulados sem mudanças de hitbox ou origem dos disparos.
+- Apenas QA: Playwright FULL, testes visuais desktop/mobile e aceite ainda são exigidos antes de produção.
+
+## 1.27.62 — Candidata em preparação
+
+- Nave: GIRO de 90° enquanto Q/E/Z ou toque são segurados; toque curto mantém giro defensivo de 360°.
+- Robô: dash lateral com gasto de energia, cooldown, jato direcional e núcleo luminoso duplo no boost.
+- Correção de colisão do dash nas paredes do asteroide e aumento da cobertura Node/Playwright.
+- Alvos hostis destrutíveis e redução de escala de nave/robô preservados da candidata anterior.
+- Exclusivo para QA: não publicar sem CI completa, Playwright e aceite visual mobile.
+
+## 1.27.61 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
+## 1.27.60 — Candidata em preparação
+
+- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.
+
+## 1.27.59 — Candidata em preparação
+
+- Planetary Visual Polish: marcos próprios para cada planeta, testes WebGL e otimização Alto/Médio, sem alterar produção.
+
+## 1.27.58 — Candidata em preparação
+
+- Planetary Journeys: chegada e escape cinematográficos específicos por destino, sem alterar produção.
+
+## 1.27.57 — Candidata em preparação
+
+- Marte 4.3: névoa de areia animada e seletor de fases acessível no preview QA. QA visual e browser ainda dependem de execução.
+
+## 1.27.56 — Candidata em preparação
+
+- Marte 4.3: troca dos anéis da reentrada por névoa de areia animada. QA visual e browser ainda dependem de execução.
+
+## 1.27.55 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.54 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.53 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.52 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.51 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.50 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.49 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.48 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.47 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.46 — Graphics 3.8 / arco meia-lua, SUPER BOOST e revelação orbital (QA)
+
+- Arco anatômico mobile escalonado com botões não sobrepostos >=60px, FIRE maior e BOOST legível. Durante a saída orbital, botão muda para SUPER BOOST dourado com aviso, aceleração elevada e gasto de energia obrigatório; depois retorna ao normal.
+- Cidade desaparece até 0,73; intervalo somente céu escurecendo, estrelas e névoa; Terra só surge depois de 0,855, seguida de Lua craterizada e Sol. Nenhuma cidade e planeta podem coexistir visualmente.
+- 410 unitários e 3 testes Playwright mobile de preparo passaram. CI final e homologação Galaxy S21 pendentes. PR #199 draft sem promoção à produção.
+
+## 1.27.45 — Mobile Controls 3.1 / BOOST, ergonomia e Arcade (QA)
+
+- Corrigidos posicionamentos absolutos de BOOST e TIRO e consolidada a distribuição em meia-lua com hit targets mínimos 60×60px e LOCK do mecha sem sobreposição. Joystick responsivo (88/102/128/91px) e órbita 12px acima.
+- Arcade 2D volta a esconder BOOST quando desabilitado; testes WebGL aceitam resolução adaptativa sem cortar canvas. 405 testes unitários e 10 Playwright direcionados passaram. QA final em shards e aceite no S21 pendentes. PR #198 draft, produção intacta.
+
+## 1.27.44 — P0 Mobile BOOST / correção definitiva do conflito CSS (QA)
+
+- Corrigida disputa de especificidade entre CSS antigo (`position:relative` para BOOST/TIRO) e controles novos em meia-lua (`position:absolute`). Os botões permanecem em posições absolutas, com alvos clicáveis corretos e sem sobreposição.
+- Evidência: 405 unitários e 2 testes Playwright mobile, cobrindo BOOST com LOCK, posição computada absoluta, `elementFromPoint`, 320×568/390×844/844×390 e tela Options. Validação física no S21 e os shards completos ainda são pendências. PR #198 draft, sem promoção a produção.
+
+## 1.27.43 — Cidade 3.0 / BOOST, Matrix e Options compacto (QA)
+
+- Corrigida visibilidade e captura de toque do BOOST no celular, inclusive no mecha com LOCK, mantendo alvos de 60px em portrait e transparência configurável sem ocultar botões críticos.
+- Cidade em verde/ciano e grafite mais elaborada: +janelas em Médio, fachada variada, trechos danificados com andaimes, passarelas com piso/guarda-corpos conectando prédios e plataformas de táxis animados, com grupos instanciados e LOD.
+- Options reorganizado numa tela compacta sem scroll, idioma visível como dropdown e manutenção das 12 configurações/salvamento. 405 testes unitários aprovados; testes de navegador e aceite de FPS/ergonomia do Galaxy S21 pendentes. PR #196 draft.
+
+## 1.27.42 — Graphics 3.7 / NOVA-7, mecha e controles em meia-lua (QA)
+
+- NOVA-7 visualmente maior (1,05→1,11), com 24 detalhes instanciados de carenagem rasa, frisos e LEDs, preservando a silhueta clean. Robô passa a 1,04 de escala (corrigida uma instrução antes comentada), com detalhes mecânicos de peito/pernas e acabamento articulado das duas armas.
+- Controles touchscreen com áreas em arcos inferiores, 55% opacos em repouso e 94% ao pressionar; sete botões acomodados inclusive o LOCK do robô, joystick esquerdo, TIRO/BOOST direitos, safe areas e alvos ≥48px.
+- 403 testes unitários passaram; browsers e homologação de ergonomia/FPS em Samsung Galaxy S21 pendentes. PR #195 draft, sem promoção a produção.
+
+## 1.27.41 — Graphics 3.6 / Reflex Boost e tiro luminoso seletivo (QA)
+
+- Clarões de disparo e reflexos emissivos locais na fuselagem da NOVA-7 e nos canhões e peito do mecha, inclusive tiros carregados e de precisão. Mobile sem bloom pesado; desktop Alto pode usar uma luz pontual temporária.
+- Reflex Boost ativado via SHIFT/BOOST sob ameaça de 4 projéteis próximos: 1,55s de ataque hostil a 38% de velocidade, esquiva 40% mais rápida, energia extra 14 (mínimo 45) e cooldown 9s. Não interfere no BOOST obrigatório da fase 1.
+- Indicador REFLEX junto ao botão de BOOST, sem invadir gameplay. 400 testes unitários aprovados em validação isolada; revisão de FPS, browsers e homologação humanas pendentes, PR #194 draft.
+
+## 1.27.40 — City 2.9 / Orçamento de GPU mobile e drones detalhados (QA)
+
+- Dispositivos touch e desktop Médio renderizam a cena 3D diretamente, evitando três passes de bloom e buffers offscreen por frame. Desktop Alto preserva o visual cinematográfico.
+- Diagnóstico de FPS agora inclui chamadas de desenho, triângulos e passes de pós-processamento quando disponíveis no renderizador.
+- Drones de serviço com fuselagem, asas, propulsores e compartimento de carga mais detalhados, mantendo dois batches GPU instanciados por trecho.
+- 395 testes unitários passaram em workspace de QA; browser, FPS medido no S21 e homologação visual pendentes. PR #193 draft sobre #192.
+
+## 1.27.39 — City 2.8 / FPS adaptativo e trânsito urbano realista (QA)
+
+- Proteção de desempenho medida durante o gameplay, com resolução renderizada ajustável, downgrade de Alto para Médio se necessário e limites iniciais mais econômicos em aparelhos touch como Galaxy S21; as escolhas salvas permanecem intactas.
+- Carros terrestres, táxis aéreos e naves agora apresentam rodas, acabamento e propulsores realistas em malhas combinadas por tipo; mais 12 drones de serviço animados (6 em Médio) em cada trecho da cidade.
+- Novos testes de FPS adaptativo, Pause, qualidade gráfica, integridade de geometria, trajetórias e orçamento de draw calls. Candidata PR #192 para validação em S21, sem promoção de produção.
+
+## 1.27.38 — Graphics 3.4 / NOVA-7 futurista clean e mecha (QA)
+
+- Revertido o excesso de carenagens e pods do fighter na 3.3, preservando a silhueta anterior. Frisos discretos na fuselagem, entradas de ar compactas e motores refinados com anéis, aletas e núcleos luminosos.
+- NOVA-7 principal com aumento visual de 5% sem alterar raiz física do jogador; mecha um pouco maior, com acabamento e turbinas mais elaboradas, sem modificar o rig de combate.
+- 386 testes unitários passaram na candidata; validação de navegador, FPS e homologação visual pendentes. PR #191 draft sobre #190.
+
+## 1.27.37 — Graphics 3.3 / Fleet Detail Pass (QA)
+
+- Modelos 3D aprimorados da NOVA-7, mecha, inimigos aéreos/terrestres, dez chefes e dez subchefes: carenagens, placas de blindagem chanfradas, entradas de ar, turbinas, reatores e partes mecânicas adicionais.
+- Tráfego da Cidade 2.7 passa a ter cabine e capô aerodinâmicos reais, mantendo a movimentação GPU instanciada (19 batches por trecho).
+- Novos testes de geometria, pintura, rig, geradores dos chefes, hitboxes e orçamento de desenho.
+- PR #190 draft sobre #189, sem homologação humana, sem promoção de ambientes e sem integração automática da PR GLB #187.
+
+## 1.27.36 — City 2.7: comércio urbano e saída orbital cinematográfica (QA)
+
+- Incluídos três shoppings futuristas, 16 lojas com fachadas distintas, praças e sinalização, e megaconstrução ao fundo com ponte, torres e anel.
+- Terra procedural, Lua e Sol com flare aditivo aparecem gradualmente após o BOOST, enquanto cidade e trilhos recuam no enquadramento; a travessia atmosférica permanece em 38 segundos.
+- Renderização otimizada com instancing e detalhes por perfil Médio/Alto. Testes de progressão, visibilidade, limites de corredor e isolamento de setores atualizados.
+- PR draft empilhada sobre #188, sem homologação visual/FPS nem promoção para DEV, HML ou produção.
+
+- Tráfego urbano agora inclui carros futuristas nas ruas, táxis voadores e naves que evacuam a cidade rumo ao espaço. Movimentação determinística por progresso da fase, com congelamento no Pause, sem colisores e em lotes GPU conforme qualidade Alto/Médio.
+- Piso urbano deixa de cortar a Terra durante a subida graças ao fade do terreno, mantendo o tempo da fase e a mecânica de BOOST.
+
+## 1.27.35 — Cidade das Máquinas 2.6 / QA Web
+
+- Trem maglev de três vagões com malhas aerodinâmicas nas duas pontas, chassis de levitação, luzes e acabamento lateral; colisões e trajeto preservados.
+- Seis beacons de outdoors animados pelo progresso da fase, sem recriação de texturas ou animação durante Pause.
+- Suite de regressão para geometria 3D, billboard, Pause, transição orbital e integridade dos assets.
+- Build HTML sincronizado. Candidata draft sobre #175, com QA de navegador, FPS, performance e homologação visual pendentes; sem promoção para DEV/HML/produção.
+
+## 1.27.26 — Candidata em preparação
+
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
+
+## 1.27.25 — Abertura Five Cats remasterizada (candidata QA)
+
+- Cinemática passa a renderizar cinco naves distintas (Bia na liderança central, Jenifer e Bob nos flancos internos, Christopher e Calvinho nas laterais externas), respeitando telas retrato e paisagem.
+- O robô de combate atual aparece brevemente na perseguição, usando a mesma malha e turbinas do gameplay, sem criar design desatualizado.
+- Diálogos de abertura agora incluem os cinco gatos e retratos individuais derivados da arte original; narração sem retrato indevido.
+- Entrada e botão de pular continuam funcionando; nenhum impacto em saves, ranking, login ou missão.
+- Candidata QA sobre PR #171, separada da homologação da home. HML, DEV oficial e produção inalterados.
+
+## 1.27.24 — Five Cats Original Cover & Radio Portraits (candidata QA)
+
+- Opção A, primeira etapa visual: reaproveita a capa original sem recortar nem distorcer os cinco gatos; uma camada atmosférica ampliada preenche o fundo da home e o pôster original permanece completo em primeiro plano.
+- Menu JOGAR/HANGAR/CENTRAL pode usar uma linha no desktop e celular paisagem, criando espaço para a arte dominante sem comprometer os botões.
+- Rádio de missão usa recortes da arte oficial dos cinco gatos e atribuição explícita de falas a Bia, Bob, Christopher, Calvinho e Jenifer; sem downloads externos.
+- Testes unitários garantem identities/fallback; Playwright verifica três viewports e portrait real após transformação para robô.
+- Expansão verdadeira do canvas/outpainting e reformulação da abertura ficam fora deste pacote e exigem homologação visual específica. DEV/HML/produção inalterados.
+
+## 1.27.23 — Boss Adaptive Counterplay (candidata QA)
+
+- Marvin e Hidra passam a reagir à altura real de voo, boost e posição orbital do jogador no instante do telegraph.
+- Tentáculos interceptam o piloto em altitude, garras respondem ao flanco/robô, e Marvin alterna a pressão frontal na fase 3 sem eliminar as janelas de ataque à distância.
+- O alvo é fixado no início do aviso; desviar da área indicada continua evitando o golpe, sem retarget invisível ou golpes aleatórios.
+- Testes determinísticos validam seleção, altura, hitbox, esquiva, comportamento em robô e fase 3.
+- Isolado em QA sobre PR #168; sem mudanças em DEV oficial, HML ou produção. Home e retratos permanecem backlog separado.
+
+## 1.27.22 — Mecha Heavy Fire (candidata isolada QA)
+
+- Nave mantém agilidade e a cadência original; robô recebe 2,35× no dano por disparo com intervalo 20% maior entre tiros (DPS ~1,96× na mesma arma).
+- Tiro carregado do robô recebe 2,1×; precisão do braço esquerdo aplica 7× dano base mantendo trava, custo de energia e cooldown.
+- Projétil pesado 1,6× maior, recuo e flash de saída, impactos mais evidentes e efeitos sonoros próprios para tiros, precisão e colisões. O disparo carregado nasce do canhão do punho direito (não do centro da nave), com escala reforçada e teste real de teclado/toque.
+- Respeita colisões e armadura/pontos fracos dos chefes; nenhuma alteração na pontuação, ranking, saves, login ou nave.
+- QA isolada baseada no PR #167; sem integração em DEV/HML/prod antes de CI e avaliação visual/sonora humana.
+
+## 1.27.21 — Console Start & Three-Menu Hub (candidata QA)
+
+- Capa original Web centralizada, com PRESS START como único comando inicial e sem rolagem de configurações.
+- Segunda tela apresenta apenas JOGAR, HANGAR e CENTRAL; recursos antigos preservados e organizados em submenus.
+- JOGAR: início de missão, checkpoint e abertura; HANGAR: seleção e inspeção 360°; CENTRAL: opções, músicas, Google, patentes, troféus, ranking e QA.
+- Teclado Enter abre o primeiro menu em vez de pular a tela de título; Escape volta do submenu.
+- Interface responsiva, touch target >=44px, sem duplicar lógica de save/ranking/autenticação.
+- Isolada sobre PR #160; revisão visual e Playwright obrigatórios antes de DEV/HML/PROD.
+
+## 1.27.20 — Patentes e Condecorações Five Cats (candidata QA)
+
+- Dez patentes e cinco uniformes por piloto, cada um com pontos de serviço independentes.
+- Medalhas felinas e insígnias em formato de gato com origens verificáveis nas missões.
+- Hall da Patrulha com cinco fichas, graduação coletiva e evolução de uniforme 3D no hangar.
+- Notificação pós-fase de promoções/medalhas; no gameplay normal, não altera dano, velocidade nem ranking.
+- Baseada na PR de troféus #159; HML e produção não alterados.
+
+## 1.27.19 — Troféus Five Cats (candidata em QA)
+
+- 41 conquistas com raridades Bronze/Prata/Ouro/Platina; ranking e moedas permanecem independentes.
+- Conquistas por chefe, recorde real, pontuação, dano, armas primárias, dificuldade, robô e equipe.
+- Hall da Fama no menu, pop-up de desbloqueio no HUD superior e progresso offline local versionado.
+- Sem recompensas em sessões de QA/dev; testes Playwright e localização obrigatórios antes de DEV.
+
 ## 1.27.14 — Dez formações táticas por setor (candidata)
 
 - Adiciona dez programas de ondas de caças por destino, variando papéis, entradas e posicionamentos.
@@ -124,7 +612,10 @@
 
 ## 1.24.20 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.24.18 — Arsenal do hangar e rota da campanha
 
@@ -153,7 +644,10 @@
 
 ## 1.24.14 — Candidata em preparação
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 8: nave/câmera orbitam o Ômega mantendo Saturno, anéis e a arena estacionários.
+- Ômega só gira o próprio casco após o jogador permanecer 1,8 s atrás dele; sair antes reinicia a percepção. Ao encarar a nave, encerra o rastreamento até nova incursão traseira.
+- Preservados ataques, módulos destrutíveis, pontos fracos, UI e gameplay específico do núcleo da fase 4.
+- Testes de duração da retaguarda, reinício, giro limitado, órbita da nave e invariância do planeta. Em QA; não publicar sem homologação visual e FPS Alto/Médio.
 
 ## 1.24.13 — Medição local de FPS na pausa (DEV)
 

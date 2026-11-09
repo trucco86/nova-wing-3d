@@ -16,8 +16,8 @@ test('ten campaign sectors use distinct sky and accent palettes without altering
   assert.equal(new Set(signatures).size, 10);
   assert.deepEqual(
     SECTORS.map(({ duration }) => duration),
-    [145, 80, 82, 88, 88, 92, 92, 98, 98, 104],
-    'preserve the existing v1.24.19 mission durations exactly',
+    [145, 107, 82, 88, 88, 92, 92, 98, 98, 150],
+    'preserve missions 1–9 exactly; the requested final Marvin chase is longer',
   );
 });
 
@@ -30,7 +30,7 @@ test('sector lighting really changes background, not just the HUD color', () => 
   }
 });
 
-test('city, harbor and planetary globes are mutually exclusive', () => {
+test('city, Mars and planetary globes are mutually exclusive', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   const globe = scene.getObjectByName('world-orbital-globe');
@@ -39,13 +39,23 @@ test('city, harbor and planetary globes are mutually exclusive', () => {
   const earth = scene.getObjectByName('launch-earth-horizon');
   assert.ok(globe && city && cityFar && earth);
 
-  for (const sector of [SECTORS[0], SECTORS[1]]) {
-    world.setSector(sector);
-    assert.equal(globe.visible, false, 'globe must be hidden during city or port sectors');
-    assert.equal(city.visible, true, 'urban architecture is visible');
-    world.setAscent(0.4, true);
-    assert.equal(globe.visible, false, 'generic ascent cannot bypass the urban lockout');
-  }
+  world.setSector(SECTORS[0]);
+  assert.equal(globe.visible, false);
+  assert.equal(city.visible, true, 'urban architecture is visible on Earth only');
+  world.setAscent(0.4, true);
+  assert.equal(globe.visible, false, 'generic ascent cannot bypass the urban lockout');
+
+  world.setSector(SECTORS[1]);
+  assert.equal(city.visible, false, 'no Earth metropolis on Mars');
+  assert.equal(globe.visible, false, 'Mars has two authored moons, not a generic globe');
+  assert.ok(scene.getObjectByName('mars-moon-phobos'));
+  assert.ok(scene.getObjectByName('mars-moon-deimos'));
+  assert.ok(scene.getObjectByName('mars-curiosity-rover'));
+  assert.equal(
+    scene.getObjectByName('launch-ground').visible,
+    false,
+    'the Mars surface replaces the generic ocean/avenue plane',
+  );
   world.setSector(SECTORS[0]);
   world.setLaunchAscent(1, true);
   assert.equal(city.visible, false, 'city disappears during orbital exit');

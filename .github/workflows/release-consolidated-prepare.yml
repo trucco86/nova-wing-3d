@@ -1,0 +1,103 @@
+name: Prepare consolidated Nova Wing release QA v1.27.61
+on:
+  push:
+    branches:
+      - release/planetary-consolidated-v1.27.61-20261101
+    paths:
+      - .github/workflows/release-consolidated-prepare.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: release/planetary-consolidated-v1.27.61-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare unapproved web candidate
+        run: npm run release:prepare -- 1.27.61
+      - name: Describe real changes and QA limitations
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const notesPath = 'releases/v1.27.61.md';
+          writeFileSync(notesPath, [
+            '## Nova Wing 3D v1.27.61 — Consolidated Planetary Production Candidate',
+            '',
+            '- Authored atmospheric landmarks for Venus, Europa, Neptune and Titan with bounded instancing.',
+            '- Great Red Spot, Neptunian dark storm, fractured Europan ice and Saturnian ring gaps.',
+            '- High/Medium graphics detail tiers; non-colliding geometry and deterministic effects.',
+            '- Browser regressions: QA entry after PRESS START, stage 2 is Mars, and BOOST remains legible on phones.',
+            '- Prevents scenic landmarks from rotating with obstacles or restoring hidden LOD assets every frame.',
+            '- QA smoke verifies the real menu, campaign map and mandatory orbital BOOST on desktop/mobile.',
+            '- Existing Earth launch, Mars sand descent and asteroid interiors remain independent.',
+            '- Boss escape accelerates with deterministic visual streaks and route-specific calls; progression still requires the shop/map.',
+            '- Delays combat spawns until planetary arrivals end, keeps QA scenarios isolated and all ten destinations selectable.',
+            '',
+            '- Browser regressions preserve real keyboard/touch controls and use deterministic QA time for charge and shield.',
+            '- Runner permits complete software WebGL screenshots; no assertions or branch protection checks disabled.',
+            '**Release candidate only — full browser CI and rollout verification required before production.**',
+            ''
+          ].join('\n'));
+          let log = readFileSync('CHANGELOG.md', 'utf8');
+          const marker = '- Candidata não homologada; preencher entregas e evidências antes da publicação.';
+          if (log.includes('## 1.27.61') && log.includes(marker)) {
+            const start = log.indexOf('## 1.27.61');
+            const idx = log.indexOf(marker, start);
+            if (idx >= 0) log = log.slice(0,idx) + '- Planetary Visual Polish: estabilização de cenários, mapa de Marte e regressões do menu e Boost no browser QA; sem alterar produção.' + log.slice(idx+marker.length);
+          }
+          writeFileSync('CHANGELOG.md', log);
+          NODE
+      - run: npm run format
+      - run: npm run build
+      - run: npm run build:check
+      - run: npm run validate
+      - run: npx playwright install chromium
+      - name: Focused browser regression check — QA menu, Marte map, orbital boost
+        run: >-
+          npx playwright test
+          tests/browser/compact-menu-smoke-v12721.spec.mjs
+          tests/browser/menu-uniform-ranking.spec.mjs
+          tests/browser/intermission-map.spec.mjs
+          tests/browser/orbit-cover-rank-v12425.spec.mjs
+          --grep "Five Cats start|cover centers original artwork|intermission hangar|first stage shows persistent boost"
+          --project=desktop --project=mobile --workers=1
+      - name: Focused browser regression check — historical blockers for production
+        run: >-
+          npx playwright test
+          tests/browser/dynamic.spec.mjs
+          tests/browser/game.spec.mjs
+          tests/browser/subboss-edge-hud.spec.mjs
+          --grep "Five Cats selection compares|WebGL starts, renders|held depleted boost settles|held mobile controls suppress|first subboss health stays"
+          --project=desktop --project=mobile --workers=1
+      # Re-run after fixing Calvinho HUD identity and direct real QA subboss view.
+      # Enforce lint and deterministic planet regression tests before publishing.
+      # Recheck responsive QA back navigation and four-column landscape menu after the 12/16 focused results.
+      # Run from current branch head after fixing the source/bundle race.
+      # Repeat the complete gate after updating the timing contracts.
+      - run: git diff --check
+      - name: Commit validated, generated web candidate only
+        run: |
+          git add -- package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.61.md index.html src/campaign-map.js src/destination-arrival.js src/destination-vista.js src/destination-landmarks.js src/developer-mode.js src/visuals.js src/styles.css src/game.js src/campaign.js src/stage-journey.js tests/intermission-campaign-map.test.mjs tests/destination-arrival.test.mjs tests/destination-landmarks.test.mjs tests/dynamic-flight.test.mjs tests/flight-cameras.test.mjs tests/sector-waves.test.mjs tests/browser/destination-journeys.spec.mjs tests/browser/dynamic.spec.mjs tests/browser/game.spec.mjs tests/browser/subboss-edge-hud.spec.mjs tests/dynamic-scene.js tests/browser/compact-menu-smoke-v12721.spec.mjs tests/browser/menu-uniform-ranking.spec.mjs tests/browser/intermission-map.spec.mjs tests/browser/orbit-cover-rank-v12425.spec.mjs specs/planetary-journeys-v5.md specs/release-consolidated-v1.27.61.md .github/workflows/ci.yml
+          git diff --cached --stat
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(planetary): sync candidate v1.27.61 web bundle'
+          git push origin HEAD:release/planetary-consolidated-v1.27.61-20261101
+      - name: Request strict CI and isolated Cloudflare preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref release/planetary-consolidated-v1.27.61-20261101
+          gh workflow run cloudflare-preview.yml --ref release/planetary-consolidated-v1.27.61-20261101

@@ -1,0 +1,50 @@
+name: Prepare Nova Wing boss and worlds integrated QA
+on:
+  push:
+    branches:
+      - integration/boss-worlds-qa-20261101
+    paths:
+      - .github/workflows/nova-wing-qa-bundle-20261101.yml
+permissions:
+  contents: write
+  actions: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: integration/boss-worlds-qa-20261101
+          persist-credentials: true
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format, regenerate the single-file game and validate the full source
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit only the QA-generated game and its scoped source/tests
+        run: |
+          git add -- index.html src/tactics.js src/asteroid-interior.js src/boss-visual-identity.js src/bosses.js src/destination-landmarks.js tests/boss-heading-stability.test.mjs tests/asteroid-entry-cinematic.test.mjs tests/boss-late-game-articulation.test.mjs tests/destination-landmarks.test.mjs tests/late-world-landmarks.test.mjs src/developer-mode.js tests/developer-mode.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo "The QA source and distributable are already synchronized."
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): sync integrated bosses and planetary WebGL candidate'
+            git push origin HEAD:integration/boss-worlds-qa-20261101
+          fi
+      - name: Request strict browser CI and isolated Cloudflare QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref integration/boss-worlds-qa-20261101
+          gh workflow run cloudflare-preview.yml --ref integration/boss-worlds-qa-20261101

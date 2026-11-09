@@ -1,0 +1,59 @@
+name: Prepare orbit and living worlds QA
+
+on:
+  push:
+    branches:
+      - feat/stage4-orbit-and-living-worlds-20261101
+    paths:
+      - .github/workflows/living-worlds-qa.yml
+      - src/**
+      - tests/**
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: living-worlds-prepare
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/stage4-orbit-and-living-worlds-20261101
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize formatting and preview bundle
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run validate
+      - name: Commit verified source and HTML only
+        run: |
+          git add -- index.html src/reactor-orbit-presentation.js src/devastador-grand-hall.js src/living-world-depth.js src/boss-kinetic-details.js src/game.js src/visuals.js src/bosses.js tests/reactor-orbit-presentation.test.mjs tests/devastador-grand-hall.test.mjs tests/living-world-depth.test.mjs tests/city-distance-update.test.mjs tests/boss-kinetic-details.test.mjs tests/fast-plan.test.mjs tools/fast-plan.mjs docs/FAST-DELIVERY-AGENTS.md src/audio-session.js tests/ios-speaker-audio.test.mjs specs/ios-speaker-audio.md src/boss-weakpoint-feedback.js src/hostile-projectile-pool.js tests/hostile-projectile-pool.test.mjs src/particle-pool.js tests/particle-pool.test.mjs tests/particle-pool-integration.test.mjs src/hud-write-guard.js tests/hud-write-guard.test.mjs tests/hud-write-guard-integration.test.mjs src/render-cost-audit.js tests/render-cost-audit.test.mjs src/strategy.js src/shell.html src/styles.css tests/boss-weakpoint-feedback.test.mjs tests/stage4-flow-and-developer-lab.test.mjs tests/strategy.test.mjs src/boss-weakpoint-layout.js tests/boss-weakpoint-orbit-layout.test.mjs src/devastador-sabotage.js tests/devastador-sabotage.test.mjs src/developer-mode.js tests/developer-mode.test.mjs tests/browser/qa-menu-berserk.spec.mjs docs/QA-RENDER-BUDGET-20261102.md
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'Candidate synchronized'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(qa): synchronized orbit, living worlds and premium bosses'
+            git push origin HEAD:feat/stage4-orbit-and-living-worlds-20261101
+          fi
+      - name: Run full browser CI and isolated preview on verified head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run ci.yml --ref feat/stage4-orbit-and-living-worlds-20261101
+          gh workflow run cloudflare-preview.yml --ref feat/stage4-orbit-and-living-worlds-20261101
