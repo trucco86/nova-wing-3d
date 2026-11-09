@@ -77,6 +77,17 @@ As skills [gráficos](../../skills/nova-wing-graficos/SKILL.md), [áudio](../../
 
 ## Caminho de evolução para múltiplos agentes reais
 
+O [primeiro incremento NW-14](../../specs/nw-14-local-orchestrator.md) fornece
+`agent:orchestrate plan|check`: validação determinística com evidência por execução
+e passagem explícita para revisão. Não executa os papéis do diagrama nem aprova
+release. O YAML acima continua sendo um exemplo de contrato futuro.
+
+O [segundo incremento](../../specs/nw-14-agent-review-handoff.md) torna o handoff
+de revisão consumível por um agente: `request-review` exporta contexto e contrato;
+o runtime aciona outro agente; `record-review` verifica e preserva seu parecer.
+PASS encaminha para CI, FAIL volta ao implementador e evidência divergente bloqueia
+o fluxo. A identidade efetiva e as permissões do revisor pertencem ao runtime.
+
 - Primeiro, aplicar esse contrato em tarefas pequenas e registrar revisões.
 - Depois, instrumentar tool calls, custo, duração, taxa de retrabalho e IDs de execução por papel.
 - Somente então delegar handoffs automáticos, com limites de acesso, sandbox, revisão humana e recuperação.

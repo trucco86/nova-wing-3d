@@ -1,5 +1,19 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Integração NW-14 — 10/11/2026
+
+- Orquestrador local integrado em branch dedicada sobre `main` `ec37d55`, versão
+  `1.27.106`, preservando o jogo e o workflow FULL atuais. A CI anterior do NW-14
+  em `2f4f054` não substitui os gates desta candidata integrada.
+- [Validação local](../specs/nw-14-local-orchestrator.md) e
+  [handoff para agente revisor](../specs/nw-14-agent-review-handoff.md):
+  `agent:orchestrate plan|check|request-review|record-review` registra SHA/digest,
+  evidências e passagem de responsabilidade. A solicitação identifica a base do
+  diff para revisões de alterações locais e de commits já concluídos.
+- A chamada ao agente fica no runtime; os arquivos locais não autenticam o
+  revisor. CI, integração em `main`, homologação e publicação são etapas distintas.
+  Esta retomada não autoriza merge, preview nem deploy.
+
 > **Estado vigente (01/11/2026):** consulte [ROADMAP-STATUS-20261101.md](ROADMAP-STATUS-20261101.md) para inventário auditado, prioridades P0/P1/P2, critérios de aceite e itens redundantes. O conteúdo abaixo é **histórico**, mantido para rastreabilidade; referências a produção v1.24.x, apenas seis issues, e flags "não iniciado" de outubro não representam o estado atual. Produção confirmada em v1.27.61; QA #239 é candidata v1.27.62, não produção.
 >
 > **Regra:** PR draft/preview/CI não são sinônimos de feature publicada. Não promover sem revisão de diffs encadeados, 4 shards e aceite visual móvel.

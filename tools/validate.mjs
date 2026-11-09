@@ -1,48 +1,9 @@
 import { spawnSync } from 'node:child_process';
-import {
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-  readdirSync,
-  lstatSync,
-  readlinkSync,
-} from 'node:fs';
-import { createHash } from 'node:crypto';
-import { join } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { sourceDigest } from './source-digest.mjs';
 const started = new Date().toISOString();
 mkdirSync('artifacts', { recursive: true });
-const excludes = new Set([
-  '.git',
-  'node_modules',
-  'artifacts',
-  'test-results',
-  'playwright-report',
-  'android-web',
-  '.gradle',
-  'build',
-  'capacitor-cordova-android-plugins',
-  'capacitor-cordova-ios-plugins',
-  'DerivedData',
-  '.build',
-]);
-function files(dir = '.') {
-  return readdirSync(dir, { withFileTypes: true })
-    .flatMap((e) =>
-      excludes.has(e.name) ||
-      join(dir, e.name).startsWith('android/app/src/main/assets') ||
-      join(dir, e.name).startsWith('ios/App/App/public') ||
-      ['ios/App/App/capacitor.config.json', 'ios/App/App/config.xml'].includes(join(dir, e.name)) ||
-      join(dir, e.name) === 'android/app/src/main/res/xml/config.xml'
-        ? []
-        : e.isDirectory()
-          ? files(join(dir, e.name))
-          : [join(dir, e.name)],
-    )
-    .sort();
-}
-const hash = createHash('sha256');
-for (const f of files())
-  hash.update(f).update(lstatSync(f).isSymbolicLink() ? readlinkSync(f) : readFileSync(f));
+const digest = sourceDigest();
 const commit = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim() || null;
 const commands = ['format:check', 'lint', 'test', 'check:repo', 'build:check'];
 if (process.argv.includes('--browser')) commands.push('test:browser');
@@ -86,7 +47,7 @@ writeFileSync(
       started,
       finished: new Date().toISOString(),
       commit,
-      sourceDigest: hash.digest('hex'),
+      sourceDigest: digest,
       passed,
       checks,
       browser: process.argv.includes('--browser') ? 'executed' : 'not-run',
