@@ -52,7 +52,7 @@ const owner='trucco86', repo='nova-wing-3d';
 const api='https://api.github.com/repos/'+owner+'/'+repo;
 const url='https://github.com/'+owner+'/'+repo;
 const $=id=>document.getElementById(id);
-const state={issues:[],prs:[],runs:[],releases:[],branch:null,tab:'tasks',timer:null,loading:false};
+const state={issues:[],prs:[],runs:[],releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false};
 const link=(href,label)=>{const a=document.createElement('a');a.href=href;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';return a};
 const text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e};
 const label=(value,kind)=>text('span',value,'pill '+(kind||''));
@@ -69,13 +69,13 @@ const environments=$('environments');environments.replaceChildren();const main=s
 item(environments,'Produção: jogar', 'https://trucco86.github.io/nova-wing-3d/','HEAD main: '+main.slice(0,12),'Site','');
 item(environments,'DEV: testar','https://dev.nova-wing-preview.pages.dev/','Ambiente isolado','DEV','');
 item(environments,'Monitor de 30 minutos',url+'/actions/workflows/nova-release-monitor.yml','Ativo somente após merge do workflow na main','Actions','');
-const pages=state.runs.find(r=>r.name==='CI'&&r.head_branch==='main'&&r.status==='completed');$('deploy').textContent=pages?status(pages):'Pendente';$('deploy-meta').textContent='CI main, não confirma Pages isoladamente';
+const pages=state.pages;$('deploy').textContent=pages?status(pages):'Sem dados';$('deploy-meta').textContent=pages?date(pages.started_at):'Job Pages ainda não disponível';
 const runs=$('runs');runs.replaceChildren();for(const r of state.runs.slice(0,10))item(runs,r.name,r.html_url,r.head_branch+' · '+date(r.created_at),status(r),kind(r));if(!state.runs.length)runs.append(text('div','Sem execuções recentes.','empty'));
-const releases=$('releases');releases.replaceChildren();for(const r of state.releases.slice(0,8))item(releases,r.name||r.tag_name,r.html_url,date(r.published_at||r.created_at),r.tag_name,'good');if(!state.releases.length)releases.append(text('div','Nenhuma release encontrada.','empty'));
+const releases=$('releases');releases.replaceChildren();for(const r of state.releases.slice(0,5))item(releases,r.name||r.tag_name,r.html_url,date(r.published_at||r.created_at),r.tag_name,'good');for(const p of state.history.slice(0,6))item(releases,p.title,p.html_url,'PR #'+p.number+' · '+date(p.merged_at),'Integrada','good');if(!state.releases.length&&!state.history.length)releases.append(text('div','Nenhuma entrega encontrada.','empty'));
 renderWork()}
 async function refresh(){if(state.loading)return;state.loading=true;$('refresh').disabled=true;$('error').hidden=true;
-try{const [issues,prs,runs,releases,branch]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main')]);
-state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
+try{const [issues,prs,runs,releases,branch,closed]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main'),get('/pulls?state=closed&sort=updated&direction=desc&per_page=30')]);
+const latestMain=(runs.workflow_runs||[]).find(r=>r.name==='CI'&&r.head_branch==='main');const jobs=latestMain?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
 catch(error){$('error').hidden=false;$('error').className='error';$('error').textContent='Não foi possível atualizar: '+error.message+'. Os dados anteriores foram mantidos.';$('updated').textContent='Falha na atualização';}
 finally{state.loading=false;$('refresh').disabled=false}}
 function schedule(){if(state.timer)clearInterval(state.timer);const ms=Number($('interval').value);if(ms)state.timer=setInterval(refresh,ms)}
