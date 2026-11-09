@@ -25,3 +25,31 @@ test('QA105: asteroid sector has a visible, sector-specific subboss encounter', 
   h.advance(0.5, 0.1);
   assert.ok(h.game.snapshot().targets.some((target) => target.kind === 'subboss'));
 });
+
+test('QA105: normal asteroid stage begins with the course gate, not an injected subboss', (t) => {
+  const h = harness({ spawnEncounters: true, hostname: 'dev.nova-wing-preview.pages.dev' });
+  t.after(() => h.close());
+
+  assert.equal(h.game.startDeveloperScenario(2, 'stage'), true);
+  const initial = h.game.snapshot();
+  assert.equal(initial.sector, 3);
+  assert.equal(initial.developerScenario.encounter, 'stage');
+  assert.equal(initial.asteroidInterior.course.enabled, true);
+  assert.equal(initial.asteroidInterior.course.complete, false);
+  assert.equal(initial.boss, false);
+  assert.equal(
+    initial.targets.filter((target) => target.kind === 'subboss').length,
+    0,
+    'subboss must not be injected at the start of the stage',
+  );
+
+  h.advance(1, 0.1);
+  const playing = h.game.snapshot();
+  assert.equal(playing.asteroidInterior.course.complete, false);
+  assert.equal(playing.boss, false, 'main boss cannot bypass the course');
+  assert.equal(
+    playing.targets.filter((target) => target.kind === 'subboss').length,
+    0,
+    'subboss cannot appear before the obstacle course is completed',
+  );
+});
