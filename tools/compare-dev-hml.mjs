@@ -2,7 +2,10 @@ import { chromium } from '@playwright/test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 
 const environments = ['dev', 'hml'];
-const browser = await chromium.launch({ headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'] });
+const browser = await chromium.launch({
+  headless: true,
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'],
+});
 const results = [];
 try {
   for (const environment of environments) {
@@ -21,14 +24,19 @@ try {
     }));
     const screenshot = `artifacts/environment-parity/${environment}.png`;
     await page.screenshot({ path: screenshot, fullPage: false });
-    if (!state.game || !state.menu || !state.canvas) throw new Error(`${environment}: missing game UI ${JSON.stringify(state)}`);
+    if (!state.game || !state.menu || !state.canvas)
+      throw new Error(`${environment}: missing game UI ${JSON.stringify(state)}`);
     if (errors.length) throw new Error(`${environment}: JS errors ${JSON.stringify(errors)}`);
     results.push({ environment, ...state, errors });
     await page.close();
   }
-  if (results[0].title !== results[1].title) throw new Error('DEV/HML page titles differ');
+  if (results[0].title !== results[1].title)
+    throw new Error('DEV/HML page titles differ');
   mkdirSync('artifacts/environment-parity', { recursive: true });
-  writeFileSync('artifacts/environment-parity/browser-smoke.json', JSON.stringify(results, null, 2));
+  writeFileSync(
+    'artifacts/environment-parity/browser-smoke.json',
+    JSON.stringify(results, null, 2),
+  );
   console.log('PASS: DEV/HML live browser smoke', JSON.stringify(results));
 } finally {
   await browser.close();
