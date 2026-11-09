@@ -1,0 +1,114 @@
+name: Nova Wing release monitor (30 min)
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+  issues: write
+concurrency:
+  group: nova-wing-release-monitor
+  cancel-in-progress: false
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check CI, Pages deployment and actionable blockers
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const title = '[monitor] Nova Wing: bloqueio de release';
+            const now = Date.now();
+            const { data: branch } = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
+            const sha = branch.commit.sha;
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner, repo, branch: 'main', per_page: 50
+            });
+            const ci = runs.workflow_runs.find(run => run.name === 'CI' && run.head_sha === sha);
+            const blockers = [];
+            let pages = null;
+            if (!ci) {
+              blockers.push('Nenhuma execução CI encontrada para o HEAD atual de main: ' + sha.slice(0, 12));
+            } else {
+              const ageMinutes = (now - Date.parse(ci.created_at)) / 60000;
+              if (ci.status === 'completed' && ci.conclusion !== 'success') {
+                blockers.push('CI terminou com ' + ci.conclusion + ': ' + ci.html_url);
+              } else if (ci.status !== 'completed' && ageMinutes > 90) {
+                blockers.push('CI sem concluir há ' + Math.round(ageMinutes) + ' min: ' + ci.html_url);
+              }
+              const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+                owner, repo, run_id: ci.id, per_page: 100
+              });
+              pages = jobs.jobs.find(job => job.name === 'pages');
+              if (ci.status === 'completed' && ci.conclusion === 'success' && (!pages || pages.conclusion !== 'success')) {
+                blockers.push('CI verde, mas job pages não confirmou publicação: ' + ci.html_url);
+              }
+              const failed = jobs.jobs.filter(job => job.conclusion === 'failure');
+              if (failed.length) {
+                blockers.push('Jobs falharam: ' + failed.map(job => job.name).join(', '));
+              }
+            }
+            let siteStatus = 'indisponível';
+            try {
+              const response = await fetch('https://trucco86.github.io/nova-wing-3d/', {
+                signal: AbortSignal.timeout(12000),
+                headers: { 'User-Agent': 'Nova-Wing-Release-Monitor' }
+              });
+              siteStatus = String(response.status);
+              if (!response.ok) blockers.push('Produção HTTP ' + response.status);
+              else {
+                const html = await response.text();
+                if (!html.includes('Nova Wing') && !html.includes('NOVA WING')) {
+                  blockers.push('Produção HTTP 200, mas assinatura Nova Wing ausente do HTML');
+                }
+              }
+            } catch (error) {
+              blockers.push('Produção inacessível: ' + String(error.message).slice(0, 160));
+            }
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'all', per_page: 100
+            });
+            const previous = issues.find(issue => !issue.pull_request && issue.title === title);
+            const fingerprint = blockers.slice().sort().join(' | ');
+            const body = [
+              '@trucco86', '',
+              'Monitor automático da release Nova Wing. Revisão humana necessária.',
+              '',
+              '**HEAD main:** \`' + sha + '\`',
+              '**CI:** ' + (ci ? ci.html_url + ' (' + ci.status + ', ' + (ci.conclusion || 'pendente') + ')' : 'não encontrada'),
+              '**Pages:** ' + (pages ? pages.conclusion || pages.status : 'sem confirmação'),
+              '**Produção HTTP:** ' + siteStatus,
+              '',
+              '**Bloqueios:**',
+              ...blockers.map(blocker => '- ' + blocker),
+              '',
+              '<!-- monitor-fingerprint:' + Buffer.from(fingerprint).toString('base64') + ' -->'
+            ].join('\\n');
+            if (blockers.length) {
+              if (!previous || previous.state === 'closed') {
+                const created = await github.rest.issues.create({ owner, repo, title, body });
+                core.warning('Novo bloqueio: ' + created.data.html_url);
+              } else if (!previous.body?.includes('monitor-fingerprint:' + Buffer.from(fingerprint).toString('base64'))) {
+                await github.rest.issues.update({ owner, repo, issue_number: previous.number, body });
+                await github.rest.issues.createComment({
+                  owner, repo, issue_number: previous.number,
+                  body: '@trucco86 Mudança nos bloqueios da release. Consulte a descrição atualizada.'
+                });
+                core.warning('Bloqueio atualizado: ' + previous.html_url);
+              } else {
+                core.info('Bloqueios conhecidos, sem nova notificação: ' + previous.html_url);
+              }
+            } else if (previous && previous.state === 'open') {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: previous.number,
+                body: '@trucco86 Recuperação confirmada: CI e GitHub Pages aprovados, produção HTTP ' + siteStatus + ', main \`' + sha.slice(0, 12) + '\`.'
+              });
+              await github.rest.issues.update({ owner, repo, issue_number: previous.number, state: 'closed' });
+              core.info('Recuperação confirmada e issue fechada.');
+            } else {
+              core.info('Release saudável. CI, Pages e produção verificados. Sem alerta.');
+            }
