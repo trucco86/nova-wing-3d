@@ -1,0 +1,53 @@
+name: Compare DEV and HML published artifacts
+on:
+  pull_request:
+    paths:
+      - .github/workflows/compare-dev-hml.yml
+  workflow_dispatch:
+  push:
+    branches: [hml]
+permissions:
+  contents: read
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Verify local source and generated HTML
+        run: npm run build:check
+      - name: Compare DEV and HML remote build and web content
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/environment-parity
+          for env in dev hml; do
+            host="https://${env}.nova-wing-preview.pages.dev"
+            curl --fail --location --retry 4 --retry-delay 3 --max-time 30 --silent --show-error "${host}/BUILD.txt" -o "artifacts/environment-parity/${env}.build"
+            curl --fail --location --retry 4 --retry-delay 3 --max-time 60 --silent --show-error "${host}/" -o "artifacts/environment-parity/${env}.html"
+            grep -q '^sha=[0-9a-f]\{40\}$' "artifacts/environment-parity/${env}.build"
+            grep -q '^ref=refs/heads/' "artifacts/environment-parity/${env}.build"
+            grep -q 'nova-wing' "artifacts/environment-parity/${env}.html"
+            test "$(wc -c < "artifacts/environment-parity/${env}.html")" -gt 100000
+            sha256sum "artifacts/environment-parity/${env}.html"
+            cat "artifacts/environment-parity/${env}.build"
+          done
+          grep -qx 'ref=refs/heads/dev' artifacts/environment-parity/dev.build
+          grep -qx 'ref=refs/heads/hml' artifacts/environment-parity/hml.build
+          cmp artifacts/environment-parity/dev.html artifacts/environment-parity/hml.html
+          echo 'PASS: identical published HTML and correct independent branch references'
+      - name: Browser smoke for both live environments
+        shell: bash
+        run: |
+          npx playwright install chromium
+          node tools/compare-dev-hml.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: environment-parity
+          path: artifacts/environment-parity/
