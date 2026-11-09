@@ -181,6 +181,8 @@ jobs:
         run: |
           mkdir public-site
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
+          mkdir -p public-site/control-center
+          cp docs/control-center/index.html public-site/control-center/index.html
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: public-site
