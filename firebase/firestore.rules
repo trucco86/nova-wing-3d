@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public ranking may be read by visitors. Writes are server-only.
+    match /leaderboards/{season}/entries/{uid} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Players may view their own profile, but cannot impersonate others
+    // or elevate their score through a client-side write.
+    match /players/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nickname', 'createdAt'])
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 2
+        && request.resource.data.nickname.size() <= 24;
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nickname'])
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 2
+        && request.resource.data.nickname.size() <= 24;
+      allow delete: if false;
+    }
+    // Scores and game sessions are accepted only by privileged backend.
+    match /scores/{document=**} {
+      allow read, write: if false;
+    }
+    match /sessions/{document=**} {
+      allow read, write: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
