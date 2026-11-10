@@ -1,0 +1,35 @@
+name: QA107 temporary release build sync
+on:
+  push:
+    branches:
+      - fix/city-phase1-coherence-20261110
+permissions:
+  contents: write
+jobs:
+  synchronize:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/fix/city-phase1-coherence-20261110'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run release:prepare -- 1.27.107
+      - run: npm run format
+      - run: npm run validate
+      - name: Commit deterministic generated web after validation
+        run: |
+          git add -- index.html src/visuals.js specs/qa107-city-spatial-coherence.md CHANGELOG.md releases/v1.27.107.md
+          if git diff --cached --quiet; then
+            echo 'No changes after QA107 release preparation'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(qa107): synchronize v1.27.107 candidate'
+          git push origin HEAD:fix/city-phase1-coherence-20261110
