@@ -4,6 +4,7 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
+import { cityAscentGroundFlow } from './city-spatial-layout.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1484,7 +1485,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     urbanLife.add(craft);
   }
   city.add(urbanLife);
-  city.add(createCityDistricts());
+  city.add(createCityDistricts(buildingAnchors));
   city.add(createCityPremiumInfrastructure());
   city.add(createCityCommerce());
   city.add(createCityTraffic());
@@ -1768,6 +1769,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     sectorScenery.clear();
   }
   let travel = 0;
+  let cityVisualTravel = 0;
+  let launchAscentProgress = 0;
   let stageClock = 0;
   // Simulated-time Mars transition: fully reproducible after pause or reset.
   function setMarsDescent(seconds) {
@@ -2083,6 +2086,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setLaunchAscent(amount, enabled) {
       if (!dynamicFlight || sceneryTheme !== 'city' || !enabled) return;
       const progress = T.MathUtils.clamp(amount, 0, 1);
+      launchAscentProgress = progress;
       const t = progress * progress * (3 - 2 * progress);
       // Retain the architectural silhouette while the craft climbs. Buildings,
       // rails and distant terminus physically sink below the camera instead of
@@ -2184,6 +2188,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      launchAscentProgress = 0;
+      cityVisualTravel = travel;
       cityCatastrophe?.reset();
       cityFallingSolids?.reset();
       orbitalAscent?.reset();
@@ -2470,8 +2476,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       });
       if (playing) {
         travel += speed * dt;
-        terrainMat.uniforms.travel.value = travel;
-        city.position.z = travel % 1900;
+        // Ease the *visual* street motion out during vertical climb. The
+        // flight clock and combat movement still advance at the real speed,
+        // while terrain, buildings and foreground share one scenic travel.
+        const scenicDelta =
+          speed * dt *
+          (sceneryTheme === 'city' ? cityAscentGroundFlow(launchAscentProgress) : 1);
+        if (sceneryTheme === 'city') cityVisualTravel += scenicDelta;
+        const scenicTravel = sceneryTheme === 'city' ? cityVisualTravel : travel;
+        terrainMat.uniforms.travel.value = scenicTravel;
+        city.position.z = scenicTravel % 1900;
         cityFar.position.z = city.position.z - 1900;
         // Persistent skyline remains distant while roads and trains move at
         // different speeds: multiple parallax rates reinforce urban scale.
@@ -2520,7 +2534,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           }
         }
         for (let g of near) {
-          g.position.z += speed * dt;
+          g.position.z += scenicDelta;
           if (g.position.z > 50) g.position.z -= 1170;
         }
         for (let i = 0; i < 240; i++) {
@@ -2562,6 +2576,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         orbitalFrame.rotation.set(0, 0, 0);
       }
       travel = 0;
+      cityVisualTravel = 0;
+      launchAscentProgress = 0;
       stageClock = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
