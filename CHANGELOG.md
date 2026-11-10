@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.107 — Candidata em preparação
+
+- QA107: torres distritais respeitam volumes ocupados da cidade; solo, edifícios e primeiro plano desaceleram juntos durante a ascensão orbital. Testes de regressão incluídos. Revisão visual High/Medium e gates browser pendentes.
+
 ## 1.27.106 — Candidata em preparação
 
 - Cancelamento seguro de multi-lock ao liberar controles, perder foco ou pausar. Regressão determinística incluída. Candidata pendente dos gates browser e homologação.
