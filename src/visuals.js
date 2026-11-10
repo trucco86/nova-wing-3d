@@ -2480,8 +2480,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // flight clock and combat movement still advance at the real speed,
         // while terrain, buildings and foreground share one scenic travel.
         const scenicDelta =
-          speed * dt *
-          (sceneryTheme === 'city' ? cityAscentGroundFlow(launchAscentProgress) : 1);
+          speed * dt * (sceneryTheme === 'city' ? cityAscentGroundFlow(launchAscentProgress) : 1);
         if (sceneryTheme === 'city') cityVisualTravel += scenicDelta;
         const scenicTravel = sceneryTheme === 'city' ? cityVisualTravel : travel;
         terrainMat.uniforms.travel.value = scenicTravel;
