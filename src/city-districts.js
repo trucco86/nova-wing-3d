@@ -1,9 +1,10 @@
 import * as T from 'three';
+import { placeCityDistrictTower } from './city-spatial-layout.js';
 
 // City 2.4 architectural districts deliberately have no physics colliders.
 // Instancing keeps the city recognizable in Medium without spawning hundreds
 // of standalone Mesh draw calls. Coordinates are relative to a 1,900-unit tile.
-export function createCityDistricts() {
+export function createCityDistricts(buildingAnchors = []) {
   const group = new T.Group();
   group.name = 'city-architectural-districts';
   const premium = new T.Group();
@@ -35,6 +36,8 @@ export function createCityDistricts() {
   premiumAccents.name = 'city-district-premium-accents';
   const matrix = new T.Object3D();
   const counts = { bodies: 0, trim: 0, lights: 0, windows: 0, accents: 0 };
+  const occupied = buildingAnchors.map(({ x, z, w, depth }) => ({ x, z, w, depth }));
+  const towerFootprints = [];
 
   function place(mesh, counter, x, y, z, w, h, d) {
     const i = counts[counter]++;
@@ -61,7 +64,7 @@ export function createCityDistricts() {
     group.add(marker);
     for (const side of [-1, 1]) {
       for (let lane = 0; lane < 4; lane++) {
-        const x = side * (121 + lane * 43);
+        const plannedX = side * (121 + lane * 43);
         const z = district.z - 54 + lane * 30;
         const height = district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
         const width =
@@ -71,6 +74,17 @@ export function createCityDistricts() {
               ? 42
               : 18 + lane * 3;
         const topHeight = district.name === 'spaceport' ? 10 : 6;
+        // Base towers and district landmarks share a single occupied footprint
+        // map. A facade must never move through another building when the
+        // 1,900-unit city tiles wrap during flight.
+        const footprint = placeCityDistrictTower(
+          { x: plannedX, z, w: width, depth: 29 },
+          occupied,
+          side,
+        );
+        const x = footprint.x;
+        occupied.push(footprint);
+        towerFootprints.push(footprint);
         place(bodyMesh, 'bodies', x, height / 2 - 7, z, width, height, 29);
         place(trimMesh, 'trim', x, height - 7, z, width * 0.88, topHeight, 31);
         // Side-lit vertical features mark the district's identity without
@@ -188,5 +202,6 @@ export function createCityDistricts() {
   }
   group.add(premium);
   group.userData.districts = districts.map((x) => x.name);
+  group.userData.towerFootprints = towerFootprints;
   return group;
 }
