@@ -2579,6 +2579,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityVisualTravel = 0;
       launchAscentProgress = 0;
       stageClock = 0;
+      terrainMat.uniforms.travel.value = 0;
       city.position.set(0, 0, 0);
       cityFar.position.set(0, 0, -1900);
       for (const tile of [city, cityFar]) {
