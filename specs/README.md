@@ -19,6 +19,9 @@ As specs se complementam. A evolução de pods em `flight-force-variety` detalha
 
 ## Antes de encerrar uma mudança
 
+- [NW-14/NW-15 — Pacote de maturidade](nw-14-maturity-pack.md): fila durável,
+  pilotos, medição, avaliações e operação, com limites e evidências por versão.
+
 - [NW-14 — Orquestrador local](nw-14-local-orchestrator.md): validação com SHA/digest,
   evidência por execução e handoff para revisão; `tools/orchestrator.mjs` e
   `tests/orchestrator.test.mjs`.

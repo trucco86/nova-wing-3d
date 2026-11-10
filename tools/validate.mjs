@@ -1,8 +1,11 @@
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { sourceDigest } from './source-digest.mjs';
+import { validationOutput, writeValidationFile } from './validation-output.mjs';
 const started = new Date().toISOString();
-mkdirSync('artifacts', { recursive: true });
+const outputDirectory = validationOutput({
+  requested: process.env.NOVA_VALIDATION_DIR ?? 'artifacts',
+});
 const digest = sourceDigest();
 const commit = spawnSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout.trim() || null;
 const commands = ['format:check', 'lint', 'test', 'check:repo', 'build:check'];
@@ -29,7 +32,7 @@ for (const command of commands) {
     timeout: command === 'test:browser' ? 1200000 : 180000,
   });
   const output = (r.stdout ?? '') + (r.stderr ?? '');
-  writeFileSync(`artifacts/${command.replaceAll(':', '-')}.log`, output);
+  writeValidationFile(outputDirectory, `${command.replaceAll(':', '-')}.log`, output);
   process.stdout.write(output);
   checks.push({
     command,
@@ -40,8 +43,9 @@ for (const command of commands) {
   if (r.error || r.status !== 0) break;
 }
 const passed = checks.length === commands.length && checks.every((c) => c.exitCode === 0);
-writeFileSync(
-  'artifacts/validation.json',
+writeValidationFile(
+  outputDirectory,
+  'validation.json',
   JSON.stringify(
     {
       started,
@@ -56,5 +60,7 @@ writeFileSync(
     2,
   ) + '\n',
 );
-console.log(`Validation ${passed ? 'PASSED' : 'FAILED'}; evidence: artifacts/validation.json`);
+console.log(
+  `Validation ${passed ? 'PASSED' : 'FAILED'}; evidence: ${relative(process.cwd(), join(outputDirectory, 'validation.json'))}`,
+);
 process.exitCode = passed ? 0 : 1;

@@ -1,6 +1,18 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import {
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+  writeFileSync,
+  openSync,
+  closeSync,
+  fsyncSync,
+  linkSync,
+  rmSync,
+  existsSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { plan, validationProblem } from './orchestrator.mjs';
 
@@ -27,7 +39,19 @@ function readJson(directory, name) {
 }
 
 function save(directory, name, data) {
-  writeFileSync(join(directory, name), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' });
+  const temporary = join(directory, '.' + randomUUID() + '.tmp');
+  try {
+    const fd = openSync(temporary, 'wx', 0o600);
+    try {
+      writeFileSync(fd, JSON.stringify(data, null, 2) + '\n');
+      fsyncSync(fd);
+    } finally {
+      closeSync(fd);
+    }
+    linkSync(temporary, join(directory, name));
+  } finally {
+    rmSync(temporary, { force: true });
+  }
 }
 
 function runAt(root, runId) {
@@ -63,6 +87,13 @@ function assertValidated(root, runId, run) {
     throw new Error('A fonte mudou; execute uma nova validação antes de revisar.');
 }
 
+export function reviewContext({ root = process.cwd(), runId }) {
+  root = realpathSync(resolve(root));
+  const run = runAt(root, runId);
+  assertValidated(root, runId, run);
+  return { spec: run.task.spec, commit: run.task.commit, sourceDigest: run.task.sourceDigest };
+}
+
 function reviewDiff(root, headCommit) {
   const status = spawnSync('git', ['status', '--porcelain', '--untracked-files=normal'], {
     cwd: root,
@@ -91,17 +122,39 @@ function reviewDiff(root, headCommit) {
   return { mode: parent ? 'commit' : 'initial-tree', baseCommit: parent, headCommit };
 }
 
-export function requestReview({ root = process.cwd(), runId, implementerId }) {
+export function requestReview({
+  root = process.cwd(),
+  runId,
+  implementerId,
+  requestId = randomUUID(),
+}) {
   root = realpathSync(resolve(root));
   if (!actorId(implementerId)) throw new Error('Informe a identidade do implementador.');
+  if (!uuid.test(requestId)) throw new Error('requestId inválido.');
   const run = runAt(root, runId);
   assertValidated(root, runId, run);
   const reviews = join(run.directory, 'reviews');
   mkdirSync(reviews, { recursive: true });
   directoryAt(root, runId, 'reviews');
-  const requestId = randomUUID();
   const directory = join(reviews, requestId);
-  mkdirSync(directory);
+  mkdirSync(directory, { recursive: true });
+  directoryAt(root, runId, 'reviews', requestId);
+  const existing = () => {
+    const saved = readJson(directory, 'request.json');
+    if (
+      saved.requestId !== requestId ||
+      saved.runId !== runId ||
+      saved.spec !== run.task.spec ||
+      saved.implementerId !== implementerId ||
+      saved.commit !== run.task.commit ||
+      saved.sourceDigest !== run.task.sourceDigest ||
+      saved.role !== 'independent-review' ||
+      saved.releaseReady !== false
+    )
+      throw new Error('Solicitação existente tem outro contrato.');
+    return { ...saved, directory };
+  };
+  if (existsSync(join(directory, 'request.json'))) return existing();
   const request = {
     schemaVersion: 1,
     requestId,
@@ -139,11 +192,16 @@ export function requestReview({ root = process.cwd(), runId, implementerId }) {
     },
     releaseReady: false,
   };
-  save(directory, 'request.json', request);
+  try {
+    save(directory, 'request.json', request);
+  } catch (error) {
+    if (error.code === 'EEXIST') return existing();
+    throw error;
+  }
   return { ...request, directory };
 }
 
-function responseProblem(response, request) {
+export function responseProblem(response, request) {
   if (
     response?.schemaVersion !== 1 ||
     ['requestId', 'runId', 'commit', 'sourceDigest'].some((key) => response[key] !== request[key])
@@ -213,6 +271,7 @@ export function recordReview({ root = process.cwd(), runId, requestId }) {
         : 'awaiting-ci';
   const outcome = {
     schemaVersion: 1,
+    spec: run.task.spec,
     runId,
     requestId,
     commit: run.task.commit,

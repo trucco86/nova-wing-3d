@@ -1,5 +1,18 @@
 # Backlog mestre — Nova Wing Five Cats
 
+## Maturidade NW-14/NW-15 — 10/11/2026
+
+- [Pacote de execução](../specs/nw-14-maturity-pack.md): pilotos reais,
+  fila SQLite com leases/fencing e retomada limitada, métricas observadas,
+  avaliações de contrato e auditoria/ensaio de recuperação. Operação e comandos:
+  [guia da fila](ORCHESTRATOR-QUEUE.md).
+- A avaliação sintética não certifica qualidade geral de modelo; não há ROI nem
+  custo de inferência conhecido sem recibos. A primeira auditoria encontrou 403
+  na leitura de proteção clássica: proteção remota não comprovada, sem inferir
+  ausência de proteção nem alterar permissões.
+- Entrega permanece em branch dedicada; merge, preview e publicação continuam
+  fora do escopo. Baseline longitudinal e ensaio de produção exigem dados futuros.
+
 ## Integração NW-14 — 10/11/2026
 
 - Orquestrador local integrado em branch dedicada sobre `main` `ec37d55`, versão

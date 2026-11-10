@@ -1,8 +1,17 @@
 import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, realpathSync, statSync, rmSync } from 'node:fs';
+import {
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  realpathSync,
+  statSync,
+  lstatSync,
+  rmSync,
+} from 'node:fs';
 import { resolve, relative, isAbsolute, join } from 'node:path';
 import { sourceDigest } from './source-digest.mjs';
+import { validationOutput } from './validation-output.mjs';
 
 const gates = ['format:check', 'lint', 'test', 'check:repo', 'build:check'];
 const commitAt = (root) => {
@@ -77,12 +86,16 @@ export function check(
   execute = (command, args, settings) => spawnSync(command, args, settings),
 ) {
   const root = resolve(options.root ?? process.cwd());
+  const isolated = options.isolated === true;
+  if (isolated && options.browser)
+    throw new Error(
+      'Isolamento disponível somente para validação Node; browser usa o gate dedicado.',
+    );
   const task = plan({ ...options, root });
-  const base = join(root, 'artifacts', 'orchestrator');
-  mkdirSync(base, { recursive: true });
+  const base = validationOutput({ root, requested: 'artifacts/orchestrator' });
   const lock = join(base, '.lock');
   try {
-    mkdirSync(lock);
+    if (!isolated) mkdirSync(lock);
   } catch (error) {
     if (error.code === 'EEXIST')
       throw new Error('Outra execução está ativa; verifique artifacts/orchestrator/.lock.', {
@@ -95,6 +108,7 @@ export function check(
     const runId = randomUUID();
     const directory = join(base, runId);
     mkdirSync(directory);
+    const validationDirectory = isolated ? directory : join(root, 'artifacts');
     const save = (name, value) =>
       writeFileSync(join(directory, name), JSON.stringify(value, null, 2) + '\n');
     save('plan.json', task);
@@ -103,9 +117,9 @@ export function check(
       result = execute(task.command[0], task.command.slice(1), {
         cwd: root,
         stdio: 'inherit',
-        timeout: 2160000,
+        timeout: Math.min(options.timeoutMs ?? 2160000, 2160000),
         // A handoff must cover the complete browser suite, never one CI shard.
-        env: { ...process.env, NOVA_BROWSER_SHARD: '' },
+        env: { ...process.env, NOVA_BROWSER_SHARD: '', NOVA_VALIDATION_DIR: validationDirectory },
       });
     } catch (error) {
       result = { status: null, error };
@@ -114,8 +128,10 @@ export function check(
     let reason =
       result.error?.message ?? (result.status !== 0 ? 'Validação retornou falha.' : null);
     try {
-      evidence = JSON.parse(readFileSync(join(root, 'artifacts', 'validation.json'), 'utf8'));
-      save('validation.json', evidence);
+      const reportPath = join(validationDirectory, 'validation.json');
+      if (!lstatSync(reportPath).isFile()) throw new Error('Relatório de validação redirecionado.');
+      evidence = JSON.parse(readFileSync(reportPath, 'utf8'));
+      if (!isolated) save('validation.json', evidence);
       reason ??= validationProblem(evidence, task, started);
     } catch {
       reason ??= 'Relatório de validação ausente ou inválido.';
@@ -148,6 +164,6 @@ export function check(
     save('handoff.json', handoff);
     return { ...handoff, directory };
   } finally {
-    rmSync(lock, { recursive: true, force: true });
+    if (!isolated) rmSync(lock, { recursive: true, force: true });
   }
 }

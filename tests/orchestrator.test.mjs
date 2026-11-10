@@ -198,3 +198,36 @@ test('digest ignores artifacts and hashes symlinks without following them', (t) 
   symlinkSync('different-target', join(options.root, 'link'));
   assert.notEqual(sourceDigest(options.root), linked);
 });
+
+test('isolated Node validation bypasses but never removes the legacy lock or report', (t) => {
+  const options = fixture(t);
+  const lock = join(options.root, 'artifacts', 'orchestrator', '.lock');
+  mkdirSync(lock, { recursive: true });
+  const shared = join(options.root, 'artifacts', 'validation.json');
+  writeFileSync(shared, 'preserve legacy report');
+  const result = check({ ...options, isolated: true }, (_command, _args, settings) => {
+    const snapshot = plan(options);
+    writeFileSync(
+      join(settings.env.NOVA_VALIDATION_DIR, 'validation.json'),
+      JSON.stringify({
+        started: new Date().toISOString(),
+        finished: new Date().toISOString(),
+        commit: snapshot.commit,
+        sourceDigest: snapshot.sourceDigest,
+        passed: true,
+        browser: 'not-run',
+        checks: ['format:check', 'lint', 'test', 'check:repo', 'build:check'].map((command) => ({
+          command,
+          exitCode: 0,
+          error: null,
+        })),
+      }),
+    );
+    return { status: 0 };
+  });
+  assert.equal(result.status, 'awaiting-review');
+  assert.ok(existsSync(lock));
+  assert.equal(readFileSync(shared, 'utf8'), 'preserve legacy report');
+  assert.ok(existsSync(join(result.directory, 'validation.json')));
+  assert.throws(() => check({ ...options, isolated: true, browser: true }), /somente/);
+});

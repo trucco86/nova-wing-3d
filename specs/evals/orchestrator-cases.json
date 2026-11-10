@@ -1,0 +1,672 @@
+{
+  "schemaVersion": 1,
+  "corpusVersion": "2026-11-10.1",
+  "evaluationType": "contract",
+  "synthetic": true,
+  "cases": [
+    {
+      "id": "validation-valid",
+      "description": "Evidência completa da versão esperada.",
+      "validator": "validation",
+      "expectedAccept": true,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "validation-stale-source",
+      "description": "Digest de fonte obsoleto é rejeitado.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "validation-missing-evidence",
+      "description": "Checks ausentes não constituem evidência.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": []
+        }
+      }
+    },
+    {
+      "id": "validation-stale-time",
+      "description": "Evidência anterior ao começo da execução é rejeitada.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2019-12-31T23:59:59.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "validation-failed-check",
+      "description": "PASS geral não supera check que falhou.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 1,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "validation-mismatched-commit",
+      "description": "SHA divergente é rejeitado.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "dddddddddddddddddddddddddddddddddddddddd",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "validation-browser-missing",
+      "description": "Requisito browser exige evidência browser real.",
+      "validator": "validation",
+      "expectedAccept": false,
+      "input": {
+        "task": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": true
+        },
+        "started": "2020-01-01T00:00:00.000Z",
+        "evidence": {
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "browserRequired": false,
+          "passed": true,
+          "started": "2020-01-01T00:00:00.000Z",
+          "finished": "2020-01-01T00:00:02.000Z",
+          "checks": [
+            {
+              "command": "format:check",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "lint",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "test",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "check:repo",
+              "exitCode": 0,
+              "error": null
+            },
+            {
+              "command": "build:check",
+              "exitCode": 0,
+              "error": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "review-valid-pass",
+      "description": "Parecer independente consistente é aceito.",
+      "validator": "review",
+      "expectedAccept": true,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-valid-fail",
+      "description": "FAIL fundamentado também é um contrato válido.",
+      "validator": "review",
+      "expectedAccept": true,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "FAIL",
+          "summary": "Correção necessária.",
+          "findings": [
+            {
+              "severity": "high",
+              "file": "tools/fixture.mjs",
+              "message": "Falha observável."
+            }
+          ],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "failed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-self-review",
+      "description": "Identidade do implementador não pode revisar a própria tarefa.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/implementer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-mismatched-request",
+      "description": "ID de solicitação divergente é rejeitado.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "33333333-3333-4333-8333-333333333333",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-mismatched-run",
+      "description": "ID de execução divergente é rejeitado.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "33333333-3333-4333-8333-333333333333",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-stale-source",
+      "description": "Digest do parecer deve corresponder à solicitação.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-missing-checks",
+      "description": "Parecer sem checks é incompleto.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-contradictory-finding",
+      "description": "PASS com achado high é contraditório.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [
+            {
+              "severity": "high",
+              "file": "tools/fixture.mjs",
+              "message": "Falha observável."
+            }
+          ],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "passed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-contradictory-check",
+      "description": "PASS com check que falhou é contraditório.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "failed"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    },
+    {
+      "id": "review-no-executed-check",
+      "description": "PASS exige ao menos um check executado com sucesso.",
+      "validator": "review",
+      "expectedAccept": false,
+      "input": {
+        "request": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "implementerId": "/root/implementer"
+        },
+        "response": {
+          "schemaVersion": 1,
+          "requestId": "11111111-1111-4111-8111-111111111111",
+          "runId": "22222222-2222-4222-8222-222222222222",
+          "commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "sourceDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "reviewerId": "/root/reviewer",
+          "verdict": "PASS",
+          "summary": "Contratos revisados.",
+          "findings": [],
+          "checks": [
+            {
+              "command": "node --test tests/fixture.test.mjs",
+              "outcome": "not-run"
+            }
+          ],
+          "limitations": ["Caso sintético; sem CI."]
+        }
+      }
+    }
+  ]
+}

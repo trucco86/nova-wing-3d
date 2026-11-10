@@ -27,6 +27,11 @@ O [case Nova Wing](case/README.md) relaciona esse harness a ciclos de prototipa�
 
 ## Gates
 
+O [pacote de maturidade NW-14/NW-15](../specs/nw-14-maturity-pack.md) acrescenta
+[fila persistente](ORCHESTRATOR-QUEUE.md), métricas, avaliações de contrato e
+auditoria/recuperação locais. O runtime continua responsável pela chamada aos
+agentes; o worker executa somente ações permitidas e não publica.
+
 ### Orquestração local — NW-14
 
 O primeiro incremento executável coordena **validação e handoff**, sem chamar

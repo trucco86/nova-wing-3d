@@ -267,6 +267,17 @@ test('recording cannot overwrite prior evidence, while a new attempt has a uniqu
   assert.notEqual(requestReview(options).requestId, request.requestId);
 });
 
+test('a deterministic dispatch request is idempotent and rejects a different implementer', (t) => {
+  const options = fixture(t);
+  const first = requestReview(options);
+  const repeated = requestReview({ ...options, requestId: first.requestId });
+  assert.deepEqual(repeated, first);
+  assert.throws(
+    () => requestReview({ ...options, requestId: first.requestId, implementerId: '/root/other' }),
+    /outro contrato/,
+  );
+});
+
 test('path traversal and symlinked run/response artifacts are rejected', (t) => {
   const options = fixture(t);
   assert.throws(() => requestReview({ ...options, runId: '../outside' }), /runId inválido/);
