@@ -10,22 +10,36 @@ const workflow = YAML.parse(
 const script = workflow.jobs.monitor.steps[0].with.script;
 assert.ok(script.includes('listWorkflowRuns'), 'tests execute actual workflow logic');
 
-function makeHarness({ ciStatus = 'completed', ciConclusion = 'success', ciAge = 20,
-  pagesStatus = 'completed', pagesConclusion = 'success', existingBlocker = false,
-  siteStatus = 200 } = {}) {
+function makeHarness({
+  ciStatus = 'completed',
+  ciConclusion = 'success',
+  ciAge = 20,
+  pagesStatus = 'completed',
+  pagesConclusion = 'success',
+  existingBlocker = false,
+  siteStatus = 200,
+} = {}) {
   let now = Date.parse('2026-11-10T20:00:00Z');
   const sha = '0123456789abcdef0123456789abcdef01234567';
   let nextNumber = 600;
-  const issues = existingBlocker ? [{
-    number: 500,
-    title: '[monitor] Nova Wing: bloqueio de release',
-    body: 'Problema anterior',
-    state: 'open',
-    html_url: 'https://github.com/example/issues/500',
-  }] : [];
+  const issues = existingBlocker
+    ? [
+        {
+          number: 500,
+          title: '[monitor] Nova Wing: bloqueio de release',
+          body: 'Problema anterior',
+          state: 'open',
+          html_url: 'https://github.com/example/issues/500',
+        },
+      ]
+    : [];
   const calls = { ci: [], searches: [], updates: [], comments: [], created: [] };
   const ci = {
-    id: 77, head_sha: sha, name: 'CI', status: ciStatus, conclusion: ciConclusion,
+    id: 77,
+    head_sha: sha,
+    name: 'CI',
+    status: ciStatus,
+    conclusion: ciConclusion,
     created_at: new Date(now - ciAge * 60000).toISOString(),
     html_url: 'https://github.com/example/actions/runs/77',
   };
@@ -50,7 +64,10 @@ function makeHarness({ ciStatus = 'completed', ciConclusion = 'success', ciAge =
       issues: {
         create: async (args) => {
           const issue = {
-            number: ++nextNumber, title: args.title, body: args.body, state: 'open',
+            number: ++nextNumber,
+            title: args.title,
+            body: args.body,
+            state: 'open',
             html_url: 'https://github.com/example/issues/' + nextNumber,
           };
           issues.push(issue);
@@ -74,7 +91,9 @@ function makeHarness({ ciStatus = 'completed', ciConclusion = 'success', ciAge =
   };
   const core = { info() {}, warning() {} };
   const FakeDate = class extends Date {
-    static now() { return now; }
+    static now() {
+      return now;
+    }
   };
   const sandbox = {
     github,
@@ -95,7 +114,9 @@ function makeHarness({ ciStatus = 'completed', ciConclusion = 'success', ciAge =
     calls,
     issues,
     run: () => vm.runInNewContext('(async () => {\n' + script + '\n})()', sandbox),
-    advance: (minutes) => { now += minutes * 60000; },
+    advance: (minutes) => {
+      now += minutes * 60000;
+    },
   };
 }
 
@@ -112,8 +133,11 @@ test('CI is selected by workflow and SHA, not confused with monitor executions',
 
 test('pending CI and queued Pages cannot close or recreate an existing blocker', async () => {
   const h = makeHarness({
-    ciStatus: 'in_progress', ciConclusion: null,
-    pagesStatus: 'queued', pagesConclusion: null, existingBlocker: true,
+    ciStatus: 'in_progress',
+    ciConclusion: null,
+    pagesStatus: 'queued',
+    pagesConclusion: null,
+    existingBlocker: true,
   });
   await h.run();
   assert.equal(h.issues[0].state, 'open');
@@ -124,8 +148,11 @@ test('pending CI and queued Pages cannot close or recreate an existing blocker',
 
 test('elapsed minutes never change the identity of an unresolved stuck CI', async () => {
   const h = makeHarness({
-    ciStatus: 'in_progress', ciConclusion: null, ciAge: 100,
-    pagesStatus: 'queued', pagesConclusion: null,
+    ciStatus: 'in_progress',
+    ciConclusion: null,
+    ciAge: 100,
+    pagesStatus: 'queued',
+    pagesConclusion: null,
   });
   await h.run();
   assert.equal(h.calls.created.length, 1);
@@ -141,8 +168,11 @@ test('elapsed minutes never change the identity of an unresolved stuck CI', asyn
 
 test('only full CI, Pages and site recovery closes the same old issue', async () => {
   const h = makeHarness({
-    ciStatus: 'completed', ciConclusion: 'success',
-    pagesStatus: 'in_progress', pagesConclusion: null, existingBlocker: true,
+    ciStatus: 'completed',
+    ciConclusion: 'success',
+    pagesStatus: 'in_progress',
+    pagesConclusion: null,
+    existingBlocker: true,
   });
   await h.run();
   assert.equal(h.issues[0].state, 'open');
