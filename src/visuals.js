@@ -1504,7 +1504,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // These three approaching tile-level bridges are: visible physical decks,
   // matching collision shapes, and a high route to fly above or below them.
   if (dynamicFlight) city.add(createCityUpperBridges());
-  city.userData.buildingFootprints = buildingAnchors.map(({ x, z, w, depth, h }) => ({ x, z, w, depth, h }));
+  city.userData.buildingFootprints = buildingAnchors.map(({ x, z, w, depth, h }) => ({
+    x,
+    z,
+    w,
+    depth,
+    h,
+  }));
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';

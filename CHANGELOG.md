@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.109 — Candidata em preparação
+
+- QA109: separar prédios e estruturas urbanas por zonas de ocupação; ancorar sinais, holofotes e plataformas; testes geométricos e visuais. Homologação e CI FULL pendentes.
+
 ## 1.27.108 — Candidata em preparação
 
 - QA107/QA108: cidade mais coerente na ascensão orbital, torres distritais sem interpenetração com edifícios-base e colisão de destroços limitada à geometria visível.

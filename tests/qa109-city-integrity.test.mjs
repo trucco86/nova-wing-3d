@@ -41,17 +41,27 @@ test('QA109: full game city has 200 unique building parcels clear of rail, malls
     const far = scene.getObjectByName('launch-city-far');
     const base = city.userData.buildingFootprints;
     assert.equal(base.length, 200);
-    assert.deepEqual(far.userData.buildingFootprints, base, 'cloned tiles use the exact approved parcels');
+    assert.deepEqual(
+      far.userData.buildingFootprints,
+      base,
+      'cloned tiles use the exact approved parcels',
+    );
     const previouslyPlaced = [];
     for (const parcel of base) {
-      assert.ok(cityBuildingHasClearFootprint(parcel, previouslyPlaced), 'no building/track/mall overlap');
+      assert.ok(
+        cityBuildingHasClearFootprint(parcel, previouslyPlaced),
+        'no building/track/mall overlap',
+      );
       assert.ok(Math.abs(parcel.x) + parcel.w / 2 <= CITY_BUILDING_OUTER_LIMIT);
       previouslyPlaced.push(parcel);
     }
     const towers = city.getObjectByName('city-architectural-districts').userData.towerFootprints;
     assert.equal(towers.length, 24);
     for (const tower of towers) {
-      assert.ok(cityBuildingHasClearFootprint(tower, previouslyPlaced), 'districts keep the city free of overlap');
+      assert.ok(
+        cityBuildingHasClearFootprint(tower, previouslyPlaced),
+        'districts keep the city free of overlap',
+      );
       previouslyPlaced.push(tower);
     }
     assert.ok(
@@ -89,7 +99,8 @@ test('QA109: searchlight mounts and holograms belong to visible building rooftop
         const sign = living.getObjectByName('city32-hologram-' + i);
         assert.ok(sign, 'sign is present in both tiles');
         const building = buildings.find(
-          (b) => b.x === sign.position.x && Math.abs(b.z + b.depth / 2 + 1.8 - sign.position.z) < 1e-5,
+          (b) =>
+            b.x === sign.position.x && Math.abs(b.z + b.depth / 2 + 1.8 - sign.position.z) < 1e-5,
         );
         assert.ok(building, 'hologram is physically anchored to its facade');
         assert.ok(sign.position.y > -7 && sign.position.y < building.h - 7);
