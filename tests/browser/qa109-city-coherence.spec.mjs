@@ -16,6 +16,11 @@ test('QA109: the city retains meaningful architecture, visible transit and groun
   await page.screenshot({ path: info.outputPath('qa109-02-maglev-and-street-supports.png') });
   await page.evaluate(() => window.fixture.advance(7));
   await page.screenshot({ path: info.outputPath('qa109-03-anchored-district-details.png') });
+  // Show the repeated road's second visual profile after travelling farther.
+  // The screenshot is evidence for a visual reviewer, not an automatic claim
+  // that the game looks premium or that the seam is imperceptible.
+  await page.evaluate(() => window.fixture.advance(16));
+  await page.screenshot({ path: info.outputPath('qa109-04-second-district-identity.png') });
 
   const stats = await page.evaluate(() => window.fixture.renderStats());
   expect(stats?.calls, 'WebGL must draw the real scene').toBeGreaterThan(0);
