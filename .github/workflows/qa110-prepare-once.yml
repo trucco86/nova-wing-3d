@@ -32,3 +32,5 @@ jobs:
             git push origin HEAD:feat/qa110-premium-city-ads-physics-20261111
           fi
           npm run validate
+
+# Rebuild candidate after atlas consolidation and balanced three-format slot allocation.
