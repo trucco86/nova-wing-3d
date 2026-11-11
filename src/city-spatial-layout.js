@@ -50,24 +50,29 @@ export function cityBuildingHasClearFootprint(plan, occupied = []) {
 function placeOutward(plan, occupied, side, stepSize, label) {
   const outward = side < 0 ? -1 : 1;
   const first = Math.max(Math.abs(plan.x), CITY_TRANSIT_RESERVED_EDGE + plan.w / 2 + 0.01);
-  for (let step = 0; step <= 70; step++) {
-    const x = first + step * stepSize;
-    if (x + plan.w / 2 > CITY_BUILDING_OUTER_LIMIT) break;
-    const candidate = { ...plan, x: outward * x };
-    if (!cityBuildingHasClearFootprint(candidate, occupied)) continue;
-    // A spaceport is not just a tower: its landing slab is real architecture,
-    // and must fit the same reserved plan before either piece is placed.
-    if (plan.spaceportPad) {
-      const pad = {
-        x: candidate.x + outward * 13,
-        z: candidate.z + 25,
-        w: 47,
-        depth: 49,
-        h: 16,
-      };
-      if (!cityBuildingHasClearFootprint(pad, occupied)) continue;
+  // A city district can use a neighbouring street block if the ideal plot
+  // is occupied. Do not push an entire tower hundreds of units offscreen.
+  const zOffsets = label === 'district tower' ? [0, 42, -42, 84, -84, 126, -126] : [0];
+  for (const offset of zOffsets) {
+    for (let step = 0; step <= 70; step++) {
+      const x = first + step * stepSize;
+      if (x + plan.w / 2 > CITY_BUILDING_OUTER_LIMIT) break;
+      const candidate = { ...plan, x: outward * x, z: plan.z + offset };
+      if (!cityBuildingHasClearFootprint(candidate, occupied)) continue;
+      // A spaceport is not just a tower: its landing slab is real architecture,
+      // and must fit the same reserved plan before either piece is placed.
+      if (plan.spaceportPad) {
+        const pad = {
+          x: candidate.x + outward * 13,
+          z: candidate.z + 25,
+          w: 47,
+          depth: 49,
+          h: 16,
+        };
+        if (!cityBuildingHasClearFootprint(pad, occupied)) continue;
+      }
+      return candidate;
     }
-    return candidate;
   }
   throw new Error('Cannot fit ' + label + ' without intersecting the tram or urban structures');
 }
