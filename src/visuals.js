@@ -6,6 +6,7 @@ import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
+import { cityTilePositions } from './city-tile-scroll.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -2513,8 +2514,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         if (sceneryTheme === 'city') cityVisualTravel += scenicDelta;
         const scenicTravel = sceneryTheme === 'city' ? cityVisualTravel : travel;
         terrainMat.uniforms.travel.value = scenicTravel;
-        city.position.z = scenicTravel % 1900;
-        cityFar.position.z = city.position.z - 1900;
+        // Never replace the building currently approaching the camera at a
+        // 1,900-unit wrap. The departing tile returns to the rear while the
+        // previous far tile continues forward uninterrupted.
+        const tiles = cityTilePositions(scenicTravel);
+        city.position.z = tiles.civic;
+        cityFar.position.z = tiles.industrial;
         // The distant skyline is a STATIC architectural backdrop. Previously
         // it slid laterally within the near city's blocks and appeared to
         // penetrate the scrolling buildings, even as the road was coherent.
