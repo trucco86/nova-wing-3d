@@ -64,6 +64,13 @@ trem, objetos flutuam e a cidade perdeu densidade visual e legibilidade.
 
 - Parcelamento 2D não resolve todas as possíveis colisões de cenário
   (pilares, skyline decorativo, passarelas e outras camadas da issue #285).
+- A continuidade visual mantém os mesmos colisores dos dois tiles, mas
+  cada trecho recebeu fachadas e coroas arquitetônicas diferentes, fixadas
+  aos 200 edifícios já existentes, com materiais/paletas independentes e
+  detalhes Alto/Médio suportados por cobertura real.
+- O horizonte cenográfico foi afastado e não oscila lateralmente, para
+  eliminar a passagem visual de torres distantes por dentro das próximas.
+- Hologramas animados agora permanecem dentro da largura real da fachada.
 - A malha de tiles clonados permanece. Caso a esteira ainda seja
   perceptível, tratar continuidade/cinematografia e variedade de
   fachadas por tile em um corte seguinte, sem mascarar por velocidade
