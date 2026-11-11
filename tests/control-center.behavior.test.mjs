@@ -38,27 +38,78 @@ class Node {
 
 const responseData = {
   '/issues?state=open&per_page=100': [
-    { number: 285, title: 'Corrigir colisões', state: 'open', html_url: 'https://github.com/example/285', updated_at: '2026-11-10T12:00:00Z', user: { login: 'qa' } },
-    { number: 500, title: '[monitor] CI bloqueada', state: 'open', html_url: 'https://github.com/example/500', updated_at: '2026-11-10T12:00:00Z', user: { login: 'ci' } },
-    { number: 501, title: 'PR duplicada na API de issues', pull_request: { url: 'https://api.github.com/prs/1' } },
+    {
+      number: 285,
+      title: 'Corrigir colisões',
+      state: 'open',
+      html_url: 'https://github.com/example/285',
+      updated_at: '2026-11-10T12:00:00Z',
+      user: { login: 'qa' },
+    },
+    {
+      number: 500,
+      title: '[monitor] CI bloqueada',
+      state: 'open',
+      html_url: 'https://github.com/example/500',
+      updated_at: '2026-11-10T12:00:00Z',
+      user: { login: 'ci' },
+    },
+    {
+      number: 501,
+      title: 'PR duplicada na API de issues',
+      pull_request: { url: 'https://api.github.com/prs/1' },
+    },
   ],
   '/pulls?state=open&per_page=100': [
-    { number: 317, title: 'QA107', state: 'open', draft: true, html_url: 'https://github.com/example/317', updated_at: '2026-11-10T12:00:00Z', user: { login: 'qa' } },
+    {
+      number: 317,
+      title: 'QA107',
+      state: 'open',
+      draft: true,
+      html_url: 'https://github.com/example/317',
+      updated_at: '2026-11-10T12:00:00Z',
+      user: { login: 'qa' },
+    },
   ],
   '/actions/runs?per_page=40': {
     workflow_runs: [
-      { id: 88, name: 'CI', head_branch: 'main', status: 'completed', conclusion: 'success', html_url: 'https://github.com/example/runs/88', created_at: '2026-11-10T12:00:00Z' },
+      {
+        id: 88,
+        name: 'CI',
+        head_branch: 'main',
+        status: 'completed',
+        conclusion: 'success',
+        html_url: 'https://github.com/example/runs/88',
+        created_at: '2026-11-10T12:00:00Z',
+      },
     ],
   },
   '/actions/runs/88/jobs?per_page=100': {
-    jobs: [{ name: 'pages', status: 'completed', conclusion: 'success', started_at: '2026-11-10T12:15:00Z' }],
+    jobs: [
+      {
+        name: 'pages',
+        status: 'completed',
+        conclusion: 'success',
+        started_at: '2026-11-10T12:15:00Z',
+      },
+    ],
   },
   '/releases?per_page=20': [
-    { name: 'Release 1.27', tag_name: '1.27', html_url: 'https://github.com/example/release', published_at: '2026-11-10T12:00:00Z' },
+    {
+      name: 'Release 1.27',
+      tag_name: '1.27',
+      html_url: 'https://github.com/example/release',
+      published_at: '2026-11-10T12:00:00Z',
+    },
   ],
   '/branches/main': { commit: { sha: 'abcdef1234567890' } },
   '/pulls?state=closed&sort=updated&direction=desc&per_page=30': [
-    { number: 312, title: 'Release QA106', merged_at: '2026-11-10T11:00:00Z', html_url: 'https://github.com/example/312' },
+    {
+      number: 312,
+      title: 'Release QA106',
+      merged_at: '2026-11-10T11:00:00Z',
+      html_url: 'https://github.com/example/312',
+    },
   ],
 };
 
@@ -85,13 +136,21 @@ function harness() {
   const sandbox = {
     document,
     fetch: async (url) => {
-      const route = new URL(url).pathname.replace('/repos/trucco86/nova-wing-3d', '') + new URL(url).search;
+      const route =
+        new URL(url).pathname.replace('/repos/trucco86/nova-wing-3d', '') + new URL(url).search;
       calls.push(route);
       const data = responseData[route];
       return {
         ok: !fail && data !== undefined,
         status: fail ? 503 : data === undefined ? 404 : 200,
-        headers: { get: (name) => name === 'x-ratelimit-remaining' ? remaining : name === 'x-ratelimit-reset' ? reset : null },
+        headers: {
+          get: (name) =>
+            name === 'x-ratelimit-remaining'
+              ? remaining
+              : name === 'x-ratelimit-reset'
+                ? reset
+                : null,
+        },
         json: async () => structuredClone(data),
       };
     },
@@ -110,8 +169,12 @@ function harness() {
     tabs,
     calls,
     timers,
-    setFail: (value) => { fail = value; },
-    setRemaining: (value) => { remaining = String(value); },
+    setFail: (value) => {
+      fail = value;
+    },
+    setRemaining: (value) => {
+      remaining = String(value);
+    },
   };
 }
 
@@ -143,10 +206,16 @@ test('real dashboard loads data and filters PRs, tasks and monitor blockers', as
 test('refresh cadence is exclusive and API failures keep previously rendered data', async () => {
   const app = harness();
   await settle();
-  assert.deepEqual([...app.timers.values()].map((x) => x.ms), [1800000]);
+  assert.deepEqual(
+    [...app.timers.values()].map((x) => x.ms),
+    [1800000],
+  );
   app.ids.interval.value = '3600000';
   app.ids.interval.emit('change');
-  assert.deepEqual([...app.timers.values()].map((x) => x.ms), [3600000]);
+  assert.deepEqual(
+    [...app.timers.values()].map((x) => x.ms),
+    [3600000],
+  );
   app.ids.interval.value = '0';
   app.ids.interval.emit('change');
   assert.equal(app.timers.size, 0);

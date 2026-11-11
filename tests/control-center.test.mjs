@@ -43,12 +43,6 @@ test('Control Center has real work, deployment and release views', () => {
 
 test('GitHub Pages packages Control Center without modifying the game artifact', () => {
   assert.match(ci, /mkdir -p public-site\/control-center/);
-  assert.match(
-    ci,
-    /cp docs\/control-center\/index\.html public-site\/control-center\/index\.html/,
-  );
-  assert.match(
-    ci,
-    /cp index\.html \.nojekyll LICENSE docs\/THREE-LICENSE\.txt public-site\//,
-  );
+  assert.match(ci, /cp docs\/control-center\/index\.html public-site\/control-center\/index\.html/);
+  assert.match(ci, /cp index\.html \.nojekyll LICENSE docs\/THREE-LICENSE\.txt public-site\//);
 });

@@ -1,10 +1,12 @@
 # Nova Wing Control Center | Contrato funcional v1
 
 ## Objetivo
+
 Oferecer acompanhamento público e responsivo do estado do projeto, sem interpretar
 a dashboard como um agente que desenvolve o jogo ou modifica deploys.
 
 ## Dados, origem e semântica
+
 - Consultar apenas endpoints públicos do repositório `trucco86/nova-wing-3d`.
 - Exibir issues abertas separadas de PRs, PRs abertas e histórico de PRs integradas.
 - Exibir CI da branch `main`, job Pages associado e SHA da `main` quando disponíveis.
@@ -14,6 +16,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
   não representar seus totais como inventário exaustivo enquanto não houver paginação.
 
 ## Interação e acessibilidade
+
 - Português do Brasil, layout legível em 390px e desktop, navegação por teclado,
   indicadores de atualização e erro acessíveis.
 - Abas Tarefas, PRs e Bloqueios filtram dados já carregados sem novas consultas.
@@ -22,6 +25,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
   devem ser inseridos via textContent e links HTTPS.
 
 ## Controle da API e falhas
+
 - A opção padrão de 30 minutos demanda cerca de 14 requisições/hora por aba
   quando a consulta ao job CI é necessária, abaixo das 60/h públicas por IP
   em uso isolado. Abas e usuários no mesmo IP compartilham esse orçamento.
@@ -34,6 +38,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
   esgotam o limite público no cenário normal.
 
 ## Critérios de aceite
+
 1. Respostas GitHub simuladas preenchem tarefas, PRs, CI, Pages e entregas.
 2. As três abas filtram issues/PRs em memória; bloqueios ficam separados.
 3. Erro da API preserva os indicadores anteriores e mostra alerta.
@@ -43,6 +48,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
    browser são aprovados antes de merge; Pages deve ser verificado após deploy.
 
 ## Limitações
+
 Este painel não executa desenvolvimento, não automatiza aprovação de PRs e
 não substitui GitHub Actions nem homologação de gameplay. O monitor de 30 minutos
 é uma dependência separada, proposta na PR #315, que deve passar por revisão.
