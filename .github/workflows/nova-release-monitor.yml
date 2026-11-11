@@ -25,7 +25,7 @@ jobs:
             const now = Date.now();
             const { data: branch } = await github.rest.repos.getBranch({ owner, repo, branch: 'main' });
             const sha = branch.commit.sha;
-            
+
             // This workflow must not mistake its own 30-minute runs for missing CI.
             const { data: runs } = await github.rest.actions.listWorkflowRuns({
               owner, repo, workflow_id: 'ci.yml', head_sha: sha, per_page: 20
@@ -89,7 +89,7 @@ jobs:
             } catch (error) {
               block('site-unreachable', 'Produção inacessível: ' + String(error.message).slice(0, 160));
             }
-            
+
             // Targeted search avoids losing the tracking issue after 100 unrelated PRs/issues.
             async function findIssueByTitle(wanted) {
               const query = 'repo:' + owner + '/' + repo + ' is:issue in:title "' + wanted + '"';
