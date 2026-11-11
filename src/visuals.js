@@ -7,6 +7,7 @@ import { createCityDistricts } from './city-districts.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { cityTilePositions } from './city-tile-scroll.js';
+import { createCityAdInventory } from './city-ad-inventory.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1174,8 +1175,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityNeon = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
   const unit = new T.BoxGeometry(1, 1, 1),
     // City 3.3: brushed steel, slate, limestone and tempered glazing.
-    bodyMat = metal('#e7edf0', 0.65, 0.36),
-    roofMat = metal('#d9e1e4', 0.68, 0.31);
+    bodyMat = metal('#dceaf0', 0.78, 0.235),
+    roofMat = metal('#e0eef3', 0.81, 0.2);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
@@ -1533,6 +1534,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // Every new volume rests on a real roof or the actual building facade.
   applyCityTileIdentity(city, 'civic');
   applyCityTileIdentity(cityFar, 'industrial');
+  // QA110: every placement is selected from actual zoned building parcels.
+  // The inventory is decorative; no broad invisible blocker enters gameplay.
+  createCityAdInventory(city, 'civic');
+  createCityAdInventory(cityFar, 'industrial');
   cityFar.getObjectByName('city-active-traffic').userData.trafficPhase = 870;
   cityFar.getObjectByName('city-urban-drones').userData.phase = 2.4;
   animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
