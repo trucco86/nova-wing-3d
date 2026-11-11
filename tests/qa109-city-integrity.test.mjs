@@ -47,6 +47,14 @@ test('QA109: full game city has 200 unique building parcels clear of rail, malls
       'cloned tiles use the exact approved parcels',
     );
     const previouslyPlaced = [];
+    const seamFirst = base.filter((building) => building.z > -95);
+    const seamLast = base.filter((building) => building.z < -1840);
+    for (const last of seamLast)
+      for (const first of seamFirst)
+        assert.ok(
+          !cityFootprintsOverlap(last, { ...first, z: first.z - 1900 }),
+          'tile repetition cannot cause end-of-road towers to cross next tile',
+        );
     for (const parcel of base) {
       assert.ok(
         cityBuildingHasClearFootprint(parcel, previouslyPlaced),
