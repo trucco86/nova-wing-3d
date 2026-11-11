@@ -5,6 +5,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
+import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1178,6 +1179,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     caps = new T.InstancedMesh(unit, roofMat, 200),
     edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
     windows = new T.InstancedMesh(unit, cityNeon('#8de3ff'), 4800);
+  bodies.name = 'city-base-building-bodies';
+  caps.name = 'city-base-building-roofs';
   // Rich high-quality architecture in three additional GPU-instanced draw calls.
   // Decoration stays outside the flight corridor and adds no collision volumes.
   const cityHighDetails = new T.Group();
@@ -1524,6 +1527,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
+  // The original road geometry can repeat, but civic and industrial street
+  // identities must not be the same cloned skyline and advertising accents.
+  // Every new volume rests on a real roof or the actual building facade.
+  applyCityTileIdentity(city, 'civic');
+  applyCityTileIdentity(cityFar, 'industrial');
   cityFar.getObjectByName('city-active-traffic').userData.trafficPhase = 870;
   cityFar.getObjectByName('city-urban-drones').userData.phase = 2.4;
   animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
@@ -2014,6 +2022,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
         tile.getObjectByName('city-district-high-details').visible = high;
+        setCityTileIdentityQuality(tile, quality);
         tile.getObjectByName('city-premium-high-details').visible = high;
         tile.getObjectByName('city-commerce-high-detail').visible = high;
         setCityTrafficQuality(tile.getObjectByName('city-active-traffic'), quality);
@@ -2224,7 +2233,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
-      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
@@ -2506,10 +2515,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         terrainMat.uniforms.travel.value = scenicTravel;
         city.position.z = scenicTravel % 1900;
         cityFar.position.z = city.position.z - 1900;
-        // Persistent skyline remains distant while roads and trains move at
-        // different speeds: multiple parallax rates reinforce urban scale.
-        cityHorizon.position.x = Math.sin(travel / 3400) * 9;
-        cityHorizon.position.z = -Math.min(85, travel * 0.012);
+        // The distant skyline is a STATIC architectural backdrop. Previously
+        // it slid laterally within the near city's blocks and appeared to
+        // penetrate the scrolling buildings, even as the road was coherent.
+        cityHorizon.position.x = 0;
+        cityHorizon.position.z = sceneryTheme === 'city' ? -900 : 0;
         for (const tile of [city, cityFar]) {
           // These are visual-only tiles. Once the launch city is hidden in
           // orbit or another mission, do not animate its entire traffic graph.
@@ -2612,7 +2622,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
       }
-      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       cityHorizon.visible = sceneryTheme === 'city';
       updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       cityCatastrophe?.reset();
