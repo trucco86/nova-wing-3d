@@ -1,0 +1,36 @@
+name: Format Nova Wing monitor candidate once
+
+on:
+  push:
+    branches:
+      - ops/nova-monitor-30min-20261109
+    paths:
+      - .github/workflows/release-monitor-format-once.yml
+      - .github/workflows/nova-release-monitor.yml
+      - tests/release-monitor-30m.test.mjs
+      - specs/release-monitor-30m.md
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Format monitor workflow, tests and spec
+        run: |
+          npx prettier --write .github/workflows/nova-release-monitor.yml tests/release-monitor-30m.test.mjs specs/release-monitor-30m.md
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/nova-release-monitor.yml tests/release-monitor-30m.test.mjs specs/release-monitor-30m.md
+          if ! git diff --cached --quiet; then
+            git commit -m "style(monitor): apply Prettier to candidate files"
+            git push origin HEAD:ops/nova-monitor-30min-20261109
+          fi
