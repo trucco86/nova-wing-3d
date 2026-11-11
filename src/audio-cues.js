@@ -405,7 +405,11 @@ export function createAudioCues(context) {
     level = 1,
     lastCue = null,
     engine,
-    engineActive = false;
+    engineActive = false,
+    chargeLoop,
+    chargeActive = false,
+    chargeProgress = -1,
+    shotVariant = 0;
   function engineOff() {
     if (!engineActive) return;
     engineActive = false;
@@ -466,6 +470,85 @@ export function createAudioCues(context) {
     smooth(engine.hum.frequency, boosting ? 145 : robot ? 62 : 82, 0.13);
     smooth(engine.noise.playbackRate, boosting ? 1.45 : robot ? 0.85 : 1, 0.16);
   }
+  // Unlike a one-shot beep, charging has continuous timbre and amplitude.
+  // One set of cached Web Audio nodes follows the real charge meter, with
+  // no interval, no per-frame source creation and no sound after pause.
+  function prepareCharge() {
+    if (chargeLoop) return true;
+    const buffer = noiseBuffer(context, 'white');
+    if (!buffer || !context.createBiquadFilter || !context.createOscillator) return false;
+    const bass = context.createOscillator();
+    const flux = context.createOscillator();
+    const hiss = context.createBufferSource();
+    const fluxFilter = context.createBiquadFilter();
+    const hissFilter = context.createBiquadFilter();
+    const bassGain = context.createGain();
+    const fluxGain = context.createGain();
+    const hissGain = context.createGain();
+    bass.type = 'triangle';
+    flux.type = 'sawtooth';
+    hiss.buffer = buffer;
+    hiss.loop = true;
+    fluxFilter.type = 'lowpass';
+    fluxFilter.frequency.value = 800;
+    hissFilter.type = 'bandpass';
+    hissFilter.frequency.value = 450;
+    hissFilter.Q.value = 0.65;
+    bassGain.gain.value = fluxGain.gain.value = hissGain.gain.value = 0;
+    bass.connect(bassGain);
+    bassGain.connect(bus);
+    flux.connect(fluxFilter);
+    fluxFilter.connect(fluxGain);
+    fluxGain.connect(bus);
+    hiss.connect(hissFilter);
+    hissFilter.connect(hissGain);
+    hissGain.connect(bus);
+    bass.start();
+    flux.start();
+    hiss.start();
+    chargeLoop = {
+      bass, flux, hiss, fluxFilter, hissFilter,
+      bassGain, fluxGain, hissGain,
+    };
+    return true;
+  }
+  function chargeOff() {
+    if (!chargeActive) return;
+    chargeActive = false;
+    chargeProgress = -1;
+    const now = context.currentTime || 0;
+    for (const node of [chargeLoop.bassGain, chargeLoop.fluxGain, chargeLoop.hissGain]) {
+      if (node.gain.setTargetAtTime) node.gain.setTargetAtTime(0, now, 0.018);
+      else node.gain.value = 0;
+    }
+  }
+  function setCharge({ active = false, progress = 0 } = {}) {
+    const suspended = context.state === 'suspended' && typeof context.startRendering !== 'function';
+    if (!active || !enabled || destroyed || !level || suspended) {
+      chargeOff();
+      return;
+    }
+    if (!prepareCharge()) return;
+    const p = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
+    if (chargeActive && Math.abs(p - chargeProgress) < 0.045) return;
+    chargeActive = true;
+    chargeProgress = p;
+    const now = context.currentTime || 0;
+    const smooth = (param, value) => {
+      if (param.setTargetAtTime) param.setTargetAtTime(value, now, 0.055);
+      else param.value = value;
+    };
+    // Rising, filtered bass/metallic current/hiss build physical pressure.
+    // Energy ramps continuously until FIRE is released or the game pauses.
+    smooth(chargeLoop.bass.frequency, 68 + 105 * p);
+    smooth(chargeLoop.flux.frequency, 190 + 360 * p);
+    smooth(chargeLoop.fluxFilter.frequency, 770 + 1620 * p);
+    smooth(chargeLoop.hissFilter.frequency, 430 + 2200 * p);
+    smooth(chargeLoop.bassGain.gain, 0.012 + 0.028 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.010 + 0.024 * p);
+    smooth(chargeLoop.hissGain.gain, 0.012 + 0.026 * p);
+  }
+
   function play(name, { enabled: allowed = true, active = true } = {}) {
     const cue = AUDIO_CUES[name];
     if (
@@ -491,23 +574,35 @@ export function createAudioCues(context) {
     }
     lastPlayed.set(name, now);
     lastCue = name;
-    for (const tone of cue.tones) pool.tone(tone);
+    // A subtle, deterministic ±2% pitch rotation gives rapid volleys some
+    // natural articulation without random bursts or extra source allocation.
+    const pitch =
+      name === 'shot'
+        ? [0.982, 1.014, 0.991, 1.024][shotVariant++ % 4]
+        : name === 'mechaShot'
+          ? [0.988, 1.012][shotVariant++ % 2]
+          : 1;
+    for (const tone of cue.tones)
+      pool.tone(pitch === 1 ? tone : { ...tone, from: tone.from * pitch, to: tone.to * pitch });
     for (const noise of cue.noises || []) pool.noise(noise);
     return true;
   }
   function silence() {
     pool.silence();
     engineOff();
+    chargeOff();
   }
   return {
     play,
     setFlight,
+    setCharge,
     silence,
     setEnabled(value) {
       enabled = !!value;
       if (!enabled) {
         pool.silence();
         engineOff();
+        chargeOff();
       }
     },
     setVolume(value) {
@@ -516,6 +611,7 @@ export function createAudioCues(context) {
       if (level === 0) {
         pool.silence();
         engineOff();
+        chargeOff();
       }
     },
     destroy() {
@@ -523,6 +619,12 @@ export function createAudioCues(context) {
       destroyed = true;
       pool.silence();
       engineOff();
+      chargeOff();
+      if (chargeLoop) {
+        for (const source of [chargeLoop.bass, chargeLoop.flux, chargeLoop.hiss]) source.stop();
+        for (const node of Object.values(chargeLoop)) node.disconnect?.();
+        chargeLoop = null;
+      }
       if (engine) {
         engine.noise.stop();
         engine.hum.stop();
@@ -539,6 +641,8 @@ export function createAudioCues(context) {
       destroyed,
       engineActive,
       engineMode: engineActive ? engine.mode : null,
+      chargeActive,
+      chargeProgress: chargeActive ? chargeProgress : 0,
       lastCue,
     }),
   };
