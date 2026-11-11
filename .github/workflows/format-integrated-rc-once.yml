@@ -1,0 +1,34 @@
+name: Format integrated 1.27.108 release candidate once
+
+on:
+  push:
+    branches:
+      - release/1.27.108-integrated-rc-20261111
+    paths:
+      - .github/workflows/format-integrated-rc-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Normalize only the integration candidate files
+        run: |
+          npx prettier --write tests/control-center.test.mjs releases/v1.27.108.md specs/release-1.27.108-integrated-gate.md CHANGELOG.md .github/workflows/cloudflare-preview.yml
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/control-center.test.mjs releases/v1.27.108.md specs/release-1.27.108-integrated-gate.md CHANGELOG.md .github/workflows/cloudflare-preview.yml
+          if ! git diff --cached --quiet; then
+            git commit -m "style(release-1.27.108): normalize preview regression and release documentation"
+            git push origin HEAD:release/1.27.108-integrated-rc-20261111
+          fi
