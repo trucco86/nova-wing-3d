@@ -1,0 +1,36 @@
+name: Sync QA109 validated game bundle once
+
+on:
+  push:
+    branches:
+      - fix/qa109-city-layout-transit-anchors-20261111
+    paths:
+      - .github/workflows/qa109-sync-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Format and regenerate the browser artifact
+        run: |
+          npm run format
+          npm run build
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "build(QA109): synchronize the sealed 1.27.109 artifact"
+            git push origin HEAD:fix/qa109-city-layout-transit-anchors-20261111
+          fi
+          npm run validate
