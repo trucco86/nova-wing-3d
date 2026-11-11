@@ -16,6 +16,7 @@ test('Control Center is responsive, accessible and Portuguese', () => {
 test('Control Center uses public read-only GitHub API without tokens', () => {
   assert.match(html, /https:\/\/api\.github\.com\/repos\//);
   assert.match(html, /\/actions\/runs\?per_page=40/);
+  assert.match(html, /\/actions\/workflows\/ci\.yml\/runs\?branch=main&per_page=1/);
   assert.match(html, /\/issues\?state=open/);
   assert.match(html, /\/pulls\?state=open/);
   assert.match(html, /\/releases\?per_page=20/);
