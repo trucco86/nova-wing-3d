@@ -82,3 +82,23 @@ Referência Firebase: https://firebase.google.com/docs/auth/admin/verify-id-toke
 - [ ] Confirmar que nenhum token ou dado pessoal aparece em artefatos e logs.
 
 **Critério de pronto:** executar os testes no host autorizado e anexar evidências à PR/issue. Não marcar OAuth homologado só porque Playwright executou com Firebase desativado.
+
+## Ativação controlada do login Google em produção
+
+O job GitHub Pages pode gerar `public-site/nova-config.json` por meio de
+`tools/write-public-config.mjs` **somente** quando a variável do repositório
+`NOVA_FIREBASE_PROD_CONFIG_JSON` contém uma configuração pública válida de
+Firebase Web de um projeto PROD diferente de `nova-wing-dev`, **e**
+`NOVA_GOOGLE_LOGIN_PROD_ENABLED` esteja explicitamente igual a `true`.
+Sem essas duas variáveis, o login permanece indisponível e o jogo segue como visitante.
+Apenas cadastrar o projeto Firebase não ativa contas reais acidentalmente.
+Se ela apontar para DEV ou for inválida, a publicação falha com erro.
+
+Habilitação real requer projeto Firebase PROD, provedor Google ativo,
+`trucco86.github.io` em Authorized domains e smoke com popup/redirect,
+recarregamento, logout, cancelamento e navegação mobile. O ranking remoto
+permanece desligado nesta mudança; login não sincroniza checkpoints.
+Não colocar JSON de conta de serviço, chaves privadas ou tokens na variável.
+
+Este gate será promovido **após** a release planetária v1.27.61; OAuth real
+não está homologado apenas porque o código e os testes simulados passaram.
