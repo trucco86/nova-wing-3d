@@ -121,7 +121,7 @@ export function planCityAdSlots(
           Math.sign(b.x) === side &&
           !excluded.has(index) &&
           !used.has(index) &&
-          b.h >= (type === 'roof' ? 56 : type === 'facade' ? 35 : 29) &&
+          b.h >= (type === 'roof' ? 42 : type === 'facade' ? 35 : 29) &&
           b.w >= 9.5 &&
           b.depth >= 8 &&
           Math.abs(b.x) - b.w / 2 >= CITY_TRANSIT_RESERVED_EDGE &&
@@ -130,7 +130,7 @@ export function planCityAdSlots(
       )
       .sort((left, right) => Math.abs(left.b.z - targetZ) - Math.abs(right.b.z - targetZ));
     for (const { b: host, index } of candidates) {
-      if (Math.abs(host.z - targetZ) > 130) continue;
+      if (Math.abs(host.z - targetZ) > (type === 'roof' ? 420 : 130)) continue;
       const slot = candidate(host, index, type, variant, step);
       if (
         // A side of the footprint must be outside the flight corridor.
