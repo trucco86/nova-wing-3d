@@ -34,3 +34,5 @@ jobs:
             git push origin HEAD:fix/qa109-city-layout-transit-anchors-20261111
           fi
           npm run validate
+
+# QA109: rerun synchronized build after spatial layout repair
