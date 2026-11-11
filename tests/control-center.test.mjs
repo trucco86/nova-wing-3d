@@ -54,9 +54,6 @@ test('Cloudflare preview exposes the dashboard for QA before promoting to main',
     'utf8',
   );
   assert.match(preview, /if \[ -f docs\/control-center\/index\.html \]/);
-  assert.match(
-    preview,
-    /cp docs\/control-center\/index\.html dist\/control-center\/index\.html/,
-  );
+  assert.match(preview, /cp docs\/control-center\/index\.html dist\/control-center\/index\.html/);
   assert.match(preview, /pages deploy dist --project-name=nova-wing-preview/);
 });
