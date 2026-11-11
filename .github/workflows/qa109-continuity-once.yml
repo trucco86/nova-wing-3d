@@ -32,3 +32,5 @@ jobs:
             git push origin HEAD:fix/qa109-city-layout-transit-anchors-20261111
           fi
           npm run validate
+
+# Retrigger after correcting invalid optional-chain assignment in city identity
