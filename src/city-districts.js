@@ -65,7 +65,9 @@ export function createCityDistricts(buildingAnchors = []) {
     for (const side of [-1, 1]) {
       for (let lane = 0; lane < 4; lane++) {
         const plannedX = side * (121 + lane * 43);
-        const z = district.z - 54 + lane * 30;
+        // A 38-unit stagger gives each 29-unit footprint real lateral air,
+        // rather than making four tall slabs read as one overlapping wall.
+        const z = district.z - 54 + lane * 38;
         const height = district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
         const width =
           district.name === 'industrial'
@@ -130,8 +132,13 @@ export function createCityDistricts(buildingAnchors = []) {
         } else {
           // Wide tiered launch platforms and raised fuel gantries remain outside
           // the gameplay corridor, not floating over the player.
-          place(bodyMesh, 'bodies', x - side * 13, 9, z + 25, 47, 5, 49);
-          place(lightMesh, 'lights', x - side * 13, 12.5, z + 25, 36, 0.6, 38);
+          // A functional pad extends OUTWARD from the supported spire, not
+          // inward across the maglev rail. Real support piers reach the road.
+          const padX = x + side * 13;
+          place(bodyMesh, 'bodies', padX, 9, z + 25, 47, 5, 49);
+          for (const end of [-1, 1])
+            place(bodyMesh, 'bodies', padX + side * 18.5, -0.25, z + 25 + end * 17, 3.2, 13.5, 3.2);
+          place(lightMesh, 'lights', padX, 12.5, z + 25, 36, 0.6, 38);
           place(
             premiumAccents,
             'accents',
