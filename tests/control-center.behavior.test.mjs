@@ -220,7 +220,6 @@ test('real dashboard loads data and filters PRs, tasks and monitor blockers', as
   assert.equal(app.ids.error.hidden, true);
 });
 
-
 test('dashboard never shows stale CI from a previous main commit', async () => {
   const app = harness({ staleMainCi: true });
   await settle();
