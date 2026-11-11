@@ -30,7 +30,7 @@ footer{margin-top:24px;font-size:12px;color:#8ea1bf}
 <main class="wrap">
 <header>
 <div><div class="brand">FIVE CATS / ENGINEERING</div><h1 class="heading">Nova Wing Control Center</h1><div class="muted" id="updated" role="status" aria-live="polite">Carregando dados públicos do GitHub…</div></div>
-<div class="actions"><select id="interval" aria-label="Intervalo de atualização"><option value="300000">Atualizar a cada 5 min</option><option value="60000">A cada 1 min</option><option value="0">Somente manual</option></select><button id="refresh" type="button">Atualizar agora</button><a href="https://github.com/trucco86/nova-wing-3d" target="_blank" rel="noopener noreferrer">Repositório</a></div>
+<div class="actions"><select id="interval" aria-label="Intervalo de atualização"><option value="1800000">Atualizar a cada 30 min</option><option value="3600000">A cada 1 hora</option><option value="0">Somente manual</option></select><button id="refresh" type="button">Atualizar agora</button><a href="https://github.com/trucco86/nova-wing-3d" target="_blank" rel="noopener noreferrer">Repositório</a></div>
 </header>
 <div id="error" role="alert" hidden></div>
 <section class="grid" aria-label="Indicadores">
@@ -45,21 +45,31 @@ footer{margin-top:24px;font-size:12px;color:#8ea1bf}
 <section class="panel"><h2>Histórico de CI e deploy</h2><div id="runs"></div></section>
 <section class="panel"><h2>Histórico de entregas</h2><div id="releases"></div></section>
 </div>
-<footer>Fonte: API pública do GitHub. Dados somente leitura. Sem token ou credenciais. O agendamento de 30 minutos é executado separadamente pelo GitHub Actions após ativação do monitor. Atualização da tela: 5 minutos por padrão. A API pública possui limite de requisições e o cron pode sofrer atrasos.</footer>
+<footer>Fonte: API pública do GitHub. Dados somente leitura. Sem token ou credenciais. O agendamento de 30 minutos é executado separadamente pelo GitHub Actions após ativação do monitor. Atualização da tela: 30 minutos por padrão, respeitando o limite público da API. A API pública possui limite de requisições e o cron pode sofrer atrasos.</footer>
 </main>
 <script type="module">
 const owner='trucco86', repo='nova-wing-3d';
 const api='https://api.github.com/repos/'+owner+'/'+repo;
 const url='https://github.com/'+owner+'/'+repo;
 const $=id=>document.getElementById(id);
-const state={issues:[],prs:[],runs:[],releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false};
+const state={issues:[],prs:[],runs:[],releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false,rateLimitUntil:0,rateLimitRemaining:null};
 const link=(href,label)=>{const a=document.createElement('a');a.href=href;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';return a};
 const text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e};
 const label=(value,kind)=>text('span',value,'pill '+(kind||''));
 const date=value=>value?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Sem data';
 const status=run=>run?.status!=='completed'?'Executando':run.conclusion==='success'?'Aprovado':run.conclusion==='failure'?'Falhou':run.conclusion==='cancelled'?'Cancelado':run.conclusion||'Pendente';
 const kind=run=>run?.conclusion==='success'?'good':run?.conclusion==='failure'?'bad':'wait';
-async function get(path){const response=await fetch(api+path,{headers:{Accept:'application/vnd.github+json'}});if(!response.ok)throw new Error('GitHub API HTTP '+response.status+' em '+path);return response.json()}
+async function get(path){
+if(Date.now()<state.rateLimitUntil)throw new Error('Limite de consultas atingido; tente novamente após '+date(new Date(state.rateLimitUntil).toISOString()));
+const response=await fetch(api+path,{headers:{Accept:'application/vnd.github+json'}});
+const remainingRaw=response.headers?.get?.('x-ratelimit-remaining');
+const resetRaw=response.headers?.get?.('x-ratelimit-reset');
+if(remainingRaw!==null&&remainingRaw!==undefined&&Number.isFinite(Number(remainingRaw)))state.rateLimitRemaining=Number(remainingRaw);
+const reset=Number(resetRaw);
+if(Number.isFinite(reset)&&reset>0&&(state.rateLimitRemaining!==null&&state.rateLimitRemaining<8||response.status===403||response.status===429))state.rateLimitUntil=Math.max(state.rateLimitUntil,reset*1000);
+if(!response.ok)throw new Error('GitHub API HTTP '+response.status+' em '+path+(state.rateLimitUntil>Date.now()?' (limite até '+date(new Date(state.rateLimitUntil).toISOString())+')':''));
+return response.json()
+}
 function item(parent,title,href,meta,badgeText,badgeKind){const row=text('div','','item'),main=text('div','','main');main.append(link(href,title),text('div',meta,'meta'));row.append(main);if(badgeText)row.append(label(badgeText,badgeKind));parent.append(row)}
 function renderWork(){const el=$('work-list');el.replaceChildren();const list=state.tab==='prs'?state.prs:state.tab==='blockers'?state.issues.filter(i=>i.title.startsWith('[monitor]')&&i.state==='open'):state.issues.filter(i=>!i.title.startsWith('[monitor]'));if(!list.length){el.append(text('div','Nenhum item nesta categoria.','empty'));return}
 for(const entry of list.slice(0,12)){const isPr=state.tab==='prs';item(el,entry.title,entry.html_url,'#'+entry.number+' · '+(entry.user?.login||'GitHub')+' · '+date(entry.updated_at),isPr?(entry.draft?'Draft':'Aberta'):'Aberta',state.tab==='blockers'?'bad':'')}}
@@ -75,7 +85,7 @@ const releases=$('releases');releases.replaceChildren();for(const r of state.rel
 renderWork()}
 async function refresh(){if(state.loading)return;state.loading=true;$('refresh').disabled=true;$('error').hidden=true;
 try{const [issues,prs,runs,releases,branch,closed]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main'),get('/pulls?state=closed&sort=updated&direction=desc&per_page=30')]);
-const latestMain=(runs.workflow_runs||[]).find(r=>r.name==='CI'&&r.head_branch==='main');const jobs=latestMain?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
+const latestMain=(runs.workflow_runs||[]).find(r=>r.name==='CI'&&r.head_branch==='main');const jobs=latestMain&&Date.now()>=state.rateLimitUntil?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
 catch(error){$('error').hidden=false;$('error').className='error';$('error').textContent='Não foi possível atualizar: '+error.message+'. Os dados anteriores foram mantidos.';$('updated').textContent='Falha na atualização';}
 finally{state.loading=false;$('refresh').disabled=false}}
 function schedule(){if(state.timer)clearInterval(state.timer);const ms=Number($('interval').value);if(ms)state.timer=setInterval(refresh,ms)}
