@@ -147,7 +147,13 @@ effectsButton.onclick = async () => {
         [7, () => cues.play('shipImpact')],
         [8, () => cues.play('explosion')],
         [9, () => cues.play('plasmaCharge')],
-        [10, () => cues.play('plasmaRelease')],
+        [
+          10,
+          () => {
+            cues.setCharge({ active: false });
+            cues.play('plasmaRelease');
+          },
+        ],
         [11, () => cues.play('shot')],
         [11.3, () => cues.play('shot')],
         [11.6, () => cues.play('shot')],
@@ -188,6 +194,11 @@ effectsButton.onclick = async () => {
       music = createMusic(context);
       return (tick, dt) => {
         events.get(tick)?.();
+        if (tick >= 9 * HZ && tick < 10 * HZ)
+          cues.setCharge({
+            active: true,
+            progress: 0.15 + (tick / HZ - 9) * 0.85,
+          });
         if (tick >= 12 * HZ && tick < 17 * HZ) music.update(dt);
       };
     });
@@ -201,6 +212,10 @@ effectsButton.onclick = async () => {
         ['shipImpact', 7, 7.7],
         ['explosion', 8, 8.9],
         ['plasma', 9, 10.9],
+        ['plasmaRiser', 9.25, 9.9],
+        ['plasmaRelease', 10.02, 10.72],
+        ['shotAttack', 11.01, 11.10],
+        ['shotBody', 11.11, 11.28],
         ['shots', 11, 11.9],
         ['combatMix', 12, 16.9],
         ['mute', 17.2, 19],
