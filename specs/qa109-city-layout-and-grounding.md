@@ -32,10 +32,10 @@ trem, objetos flutuam e a cidade perdeu densidade visual e legibilidade.
    impedindo colisão de prédios na borda repetida do percurso.
 5. Suportar os pads do espaçoporto por colunas reais até a rua, sem
    cruzar o trem.
-5. Ancorar os painéis comerciais, hologramas e holofotes a paredes e
+6. Ancorar os painéis comerciais, hologramas e holofotes a paredes e
    coberturas reais dos prédios.
-6. Sustentar os viadutos de ônibus com colunas externas à área de voo.
-7. Preservar a identidade premium existente, o trem, o trânsito, as
+7. Sustentar os viadutos de ônibus com colunas externas à área de voo.
+8. Preservar a identidade premium existente, o trem, o trânsito, as
    vitrines e detalhes, com perfis Alto/Médio, sem esconder a cidade
    inteira como falso conserto.
 

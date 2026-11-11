@@ -81,7 +81,14 @@ export function createCityDistricts(buildingAnchors = []) {
         // map. A facade must never move through another building when the
         // 1,900-unit city tiles wrap during flight.
         const footprint = placeCityDistrictTower(
-          { x: plannedX, z, w: width, depth: 29, h: height, spaceportPad: district.name === 'spaceport' },
+          {
+            x: plannedX,
+            z,
+            w: width,
+            depth: 29,
+            h: height,
+            spaceportPad: district.name === 'spaceport',
+          },
           occupied,
           side,
         );

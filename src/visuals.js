@@ -1233,16 +1233,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // Adjacent 1,900-unit tiles share the exact same architecture. Protect
     // the seam as well: final blocks may not pierce the next tile's first
     // buildings when the stage scrolls through the wrap boundary.
-    const seam = z < -1840
-      ? buildingAnchors
-          .filter((building) => building.z > -95)
-          .map((building) => ({ ...building, z: building.z - 1900 }))
-      : [];
-    const parcel = placeCityBaseBuilding(
-      { x, z, w, depth, h },
-      [...buildingAnchors, ...seam],
-      s,
-    );
+    const seam =
+      z < -1840
+        ? buildingAnchors
+            .filter((building) => building.z > -95)
+            .map((building) => ({ ...building, z: building.z - 1900 }))
+        : [];
+    const parcel = placeCityBaseBuilding({ x, z, w, depth, h }, [...buildingAnchors, ...seam], s);
     x = parcel.x;
     buildingAnchors.push({ ...parcel, h });
     const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
