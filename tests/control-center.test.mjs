@@ -47,3 +47,16 @@ test('GitHub Pages packages Control Center without modifying the game artifact',
   assert.match(ci, /cp docs\/control-center\/index\.html public-site\/control-center\/index\.html/);
   assert.match(ci, /cp index\.html \.nojekyll LICENSE docs\/THREE-LICENSE\.txt public-site\//);
 });
+
+test('Cloudflare preview exposes the dashboard for QA before promoting to main', () => {
+  const preview = readFileSync(
+    new URL('../.github/workflows/cloudflare-preview.yml', import.meta.url),
+    'utf8',
+  );
+  assert.match(preview, /if \[ -f docs\/control-center\/index\.html \]/);
+  assert.match(
+    preview,
+    /cp docs\/control-center\/index\.html dist\/control-center\/index\.html/,
+  );
+  assert.match(preview, /pages deploy dist --project-name=nova-wing-preview/);
+});
