@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.108 — Candidata em preparação
+
+- QA108: colisores dos destroços usam apenas malhas visíveis na hierarquia da cena; testes de regressão adicionados. CI FULL e homologação pendentes.
+
 ## 1.27.107 — Candidata em preparação
 
 - QA107: torres distritais respeitam volumes ocupados da cidade; solo, edifícios e primeiro plano desaceleram juntos durante a ascensão orbital. Testes de regressão incluídos. Revisão visual High/Medium e gates browser pendentes.

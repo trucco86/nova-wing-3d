@@ -1,11 +1,13 @@
 # QA108 | Colisão somente em geometria visível dos destroços
 
 ## Problema
+
 O cálculo de AABB em `city-falling-solids.js` usa todas as partes de um
 destroço, mesmo quando a malha ou algum grupo ancestral está oculto. Isso
 pode deixar colisão ativa em uma região sem objeto renderizado.
 
 ## Comportamento esperado
+
 - O billboard, hovercar e fragmentos da fase 1 só são sólidos enquanto
   possuem geometria visível até a raiz do cenário.
 - Malhas ocultas não ampliam o AABB de malhas remanescentes.
@@ -17,6 +19,7 @@ pode deixar colisão ativa em uma região sem objeto renderizado.
   fases 1 e 2, controles ou efeito da subida orbital aprovado na QA107.
 
 ## Aceite
+
 1. Destroço com grupo visível mas todas as malhas ocultas não possui collider.
 2. Ocultação por ancestral remove collider mesmo com malha filha visível.
 3. Malha visível isolada mantém AABB real e finito.
@@ -26,5 +29,6 @@ pode deixar colisão ativa em uma região sem objeto renderizado.
    colisões em fase 1 aprovados no SHA final antes de merge.
 
 ## Restrição de release
+
 Candidata empilhada sobre QA107 (`fix/city-phase1-coherence-20261110`);
 proposta para 1.27.108. Nunca publicar sem promoção validada de QA107.
