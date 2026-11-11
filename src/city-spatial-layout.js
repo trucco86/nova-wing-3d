@@ -5,6 +5,13 @@
 export const CITY_BUILDING_CLEARANCE = 2;
 export const CITY_TRANSIT_RESERVED_EDGE = 118;
 export const CITY_BUILDING_OUTER_LIMIT = 420;
+export const CITY_CROSSING_GUIDEWAY = Object.freeze({
+  x: 0,
+  z: -345,
+  w: 266,
+  depth: 12,
+  y: 59,
+});
 
 // Retail centres include their podiums, wings, kiosks and public walkways.
 // Reserve the whole complexes BEFORE adding procedural or district towers.
@@ -30,6 +37,12 @@ export function cityBuildingHasClearFootprint(plan, occupied = []) {
   // Landmark footprints are static obstacles, not hidden scenery colliders.
   return (
     !CITY_RETAIL_RESERVATIONS.some((reserved) => cityFootprintsOverlap(plan, reserved)) &&
+    // The central overhead train at y=59 cannot pass through a tall roof.
+    !(
+      Number.isFinite(plan.h) &&
+      plan.h - 7 > CITY_CROSSING_GUIDEWAY.y - 2 &&
+      cityFootprintsOverlap(plan, CITY_CROSSING_GUIDEWAY)
+    ) &&
     !occupied.some((building) => cityFootprintsOverlap(plan, building))
   );
 }
