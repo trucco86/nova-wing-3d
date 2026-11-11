@@ -28,7 +28,9 @@ trem, objetos flutuam e a cidade perdeu densidade visual e legibilidade.
 2. Distribuir os 200 edifícios existentes sem reduzir a quantidade.
 3. Usar o mesmo mapa de ocupação para as 24 torres distritais; afastar
    footprints em Z para evitar sobreposição de fachadas.
-4. Suportar os pads do espaçoporto por colunas reais até a rua, sem
+4. Proteger o encaixe entre os dois tiles clonados de 1.900 unidades,
+   impedindo colisão de prédios na borda repetida do percurso.
+5. Suportar os pads do espaçoporto por colunas reais até a rua, sem
    cruzar o trem.
 5. Ancorar os painéis comerciais, hologramas e holofotes a paredes e
    coberturas reais dos prédios.
