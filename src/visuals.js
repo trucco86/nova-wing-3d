@@ -4,7 +4,7 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { createCityDistricts } from './city-districts.js';
-import { cityAscentGroundFlow } from './city-spatial-layout.js';
+import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1228,7 +1228,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       h = rnd(16, 105),
       w = rnd(7, 19),
       depth = rnd(8, 18);
-    buildingAnchors.push({ x, h, z, w, depth });
+    // Shared city parcels: no procedural office block may cover a maglev
+    // station, the reserved train approach, or an authored shopping centre.
+    const parcel = placeCityBaseBuilding({ x, z, w, depth }, buildingAnchors, s);
+    x = parcel.x;
+    buildingAnchors.push({ ...parcel, h });
     const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
     bodies.setColorAt(
       i,
