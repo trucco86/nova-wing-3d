@@ -124,3 +124,34 @@ test('QA109 continuity: holograms never overhang the real host facade when anima
     }
   }
 });
+
+
+test('QA109: the approaching district stays continuous through both city wraps', () => {
+  const tileLength = 1900;
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.52, true);
+  world.setSector(SECTORS[0]);
+  const civic = scene.getObjectByName('launch-city');
+  const industrial = scene.getObjectByName('launch-city-far');
+
+  // Advance to one second before the first 1,900-unit handoff.
+  world.update(1, 1, tileLength - 10, true);
+  assert.equal(civic.position.z, tileLength - 10);
+  assert.equal(industrial.position.z, -10);
+  world.update(1, 2, 20, true);
+  assert.equal(industrial.position.z, 10, 'the arriving industrial city must not teleport');
+  assert.equal(civic.position.z, -1890, 'only the departing civic city wraps behind');
+  assert.equal(industrial.userData.buildingFootprints.length, 200);
+  world.update(1, 3, tileLength - 20, true);
+  assert.equal(industrial.position.z, tileLength - 10);
+  assert.equal(civic.position.z, -10);
+  world.update(1, 4, 20, true);
+  assert.equal(civic.position.z, 10, 'the arriving civic city stays continuous on the next lap');
+  assert.equal(industrial.position.z, -1890, 'industrial returns to rear only after departure');
+  world.update(1, 5, 20, false);
+  assert.equal(civic.position.z, 10, 'pause never moves a tile');
+  assert.equal(industrial.position.z, -1890);
+  world.reset();
+  assert.equal(civic.position.z, 0);
+  assert.equal(industrial.position.z, -tileLength);
+});
