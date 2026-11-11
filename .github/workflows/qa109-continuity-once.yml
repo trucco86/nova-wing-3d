@@ -34,3 +34,5 @@ jobs:
           npm run validate
 
 # Retrigger after correcting invalid optional-chain assignment in city identity
+
+# Repeat after reusing the existing district batches to honor GPU budget.
