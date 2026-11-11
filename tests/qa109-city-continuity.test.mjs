@@ -37,10 +37,15 @@ test('QA109 continuity: two road tiles have different anchored architecture and 
     for (let i = 0; i < roofs.count; i++) {
       const m = matrixAt(roofs, i);
       const e = m.elements;
-      const building = anchors.find((b) => Math.abs(b.x - e[12]) < 0.001 && Math.abs(b.z - e[14]) < 0.001);
+      const building = anchors.find(
+        (b) => Math.abs(b.x - e[12]) < 0.001 && Math.abs(b.z - e[14]) < 0.001,
+      );
       assert.ok(building, 'roof crown belongs to a real city building');
       const bottom = e[13] - Math.abs(e[5]) / 2;
-      assert.ok(Math.abs(bottom - (building.h - 3)) < 0.001, 'roof crown starts on the existing roof cap');
+      assert.ok(
+        Math.abs(bottom - (building.h - 3)) < 0.001,
+        'roof crown starts on the existing roof cap',
+      );
       assert.ok(Math.abs(e[0]) <= building.w, 'roof structure fits its real parcel');
     }
   }
