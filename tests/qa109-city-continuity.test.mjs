@@ -30,23 +30,33 @@ test('QA109 continuity: two road tiles have different anchored architecture and 
   );
   for (const tile of [near, far]) {
     const anchors = tile.userData.buildingFootprints;
-    const roofs = tile.getObjectByName('city-tile-supported-roof-crowns');
-    const details = tile.getObjectByName('city-tile-facade-light-strips');
-    assert.ok(roofs.count >= 15, 'keep visible rooftop architectural variation in Medium');
-    assert.ok(details.count >= 30, 'real facade details remain visible in Medium');
-    for (let i = 0; i < roofs.count; i++) {
-      const m = matrixAt(roofs, i);
-      const e = m.elements;
-      const building = anchors.find(
-        (b) => Math.abs(b.x - e[12]) < 0.001 && Math.abs(b.z - e[14]) < 0.001,
-      );
-      assert.ok(building, 'roof crown belongs to a real city building');
-      const bottom = e[13] - Math.abs(e[5]) / 2;
+    const identity = tile.getObjectByName('city-tile-local-identity');
+    const district = tile.getObjectByName('city-architectural-districts');
+    const roofs = district.getObjectByName('city-district-towers-and-infrastructure');
+    const lights = district.getObjectByName('city-district-wayfinding-lights');
+    const ledges = district.getObjectByName('city-district-crowns-and-gantries');
+    const premium = district.getObjectByName('city-district-premium-windows');
+    const original = identity.userData.originalCounts;
+
+    assert.ok(identity.userData.crowns >= 15, 'keep supported roof variation in Medium');
+    assert.ok(identity.userData.facadeDetails >= 30, 'real facade details remain in Medium');
+    assert.equal(roofs.count, original.bodies + identity.userData.crowns);
+    assert.equal(lights.count, original.lights + identity.userData.facadeIndices.length * 2);
+    assert.equal(ledges.count, original.ledges + identity.userData.facadeIndices.length);
+    assert.equal(premium.count, original.highLights + identity.userData.crowns);
+    for (const { building: anchorIndex, index } of identity.userData.crownIndices) {
+      assert.ok(index >= original.bodies, 'existing district tower geometry is retained');
+      const e = matrixAt(roofs, index).elements;
+      const building = anchors[anchorIndex];
       assert.ok(
-        Math.abs(bottom - (building.h - 3)) < 0.001,
-        'roof crown starts on the existing roof cap',
+        Math.abs(building.x - e[12]) < 0.001 && Math.abs(building.z - e[14]) < 0.001,
+        'roof crown belongs to its real building',
       );
-      assert.ok(Math.abs(e[0]) <= building.w, 'roof structure fits its real parcel');
+      assert.ok(
+        Math.abs(e[13] - Math.abs(e[5]) / 2 - (building.h - 3)) < 0.001,
+        'roof crown starts exactly on existing roof',
+      );
+      assert.ok(Math.abs(e[0]) <= building.w, 'roof detail stays inside real parcel');
     }
   }
   const nearBody = near.getObjectByName('city-base-building-bodies');
@@ -59,11 +69,15 @@ test('QA109 continuity: two road tiles have different anchored architecture and 
   farBody.getColorAt(0, b);
   assert.notEqual(a.getHex(), b.getHex(), 'separate palettes distinguish both city stretches');
   world.setGraphicsQuality('high');
-  assert.equal(near.getObjectByName('city-tile-identity-high').visible, true);
-  assert.equal(far.getObjectByName('city-tile-identity-high').visible, true);
+  assert.equal(nearIdentity.userData.quality, 'high');
+  assert.equal(farIdentity.userData.quality, 'high');
+  assert.equal(near.getObjectByName('city-district-high-details').visible, true);
+  assert.equal(far.getObjectByName('city-district-high-details').visible, true);
   world.setGraphicsQuality('medium');
-  assert.equal(near.getObjectByName('city-tile-identity-high').visible, false);
-  assert.equal(far.getObjectByName('city-tile-identity-high').visible, false);
+  assert.equal(nearIdentity.userData.quality, 'medium');
+  assert.equal(farIdentity.userData.quality, 'medium');
+  assert.equal(near.getObjectByName('city-district-high-details').visible, false);
+  assert.equal(far.getObjectByName('city-district-high-details').visible, false);
 });
 
 test('QA109 continuity: horizon stays behind tiles instead of sliding through buildings', () => {
