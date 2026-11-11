@@ -31,6 +31,10 @@ produção é permitida antes de CI FULL, captura visual e aprovação humana.
 
 ## Aceite verificável
 
+- Os 3 criativos locais compartilham um atlas de texturas em um único
+  InstancedMesh, e estruturas metálicas usam um segundo batch por tile.
+  O orçamento medido no cenário padrão permanece em 259 meshes
+  instanciadas contra limite existente de 260, sem relaxar testes.
 - Há slots dos três formatos em **ambos** os tiles da fase 1, sem
   duplicar IDs, entre 7 e 12 por tile, com suporte real.
 - Outdoors iniciam sobre a linha superior do telhado, banners e
