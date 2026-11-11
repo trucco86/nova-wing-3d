@@ -144,5 +144,6 @@ export function applyCityTileIdentity(tile, variant = 'civic') {
 }
 
 export function setCityTileIdentityQuality(tile, quality) {
-  tile?.getObjectByName('city-tile-identity-high')?.visible = quality === 'high';
+  const details = tile?.getObjectByName('city-tile-identity-high');
+  if (details) details.visible = quality === 'high';
 }
