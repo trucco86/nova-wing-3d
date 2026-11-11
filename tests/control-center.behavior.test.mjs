@@ -74,9 +74,23 @@ const responseData = {
   '/actions/runs?per_page=40': {
     workflow_runs: [
       {
+        id: 90,
+        name: 'CI',
+        head_branch: 'feature/noisy-build',
+        status: 'completed',
+        conclusion: 'failure',
+        html_url: 'https://github.com/example/runs/90',
+        created_at: '2026-11-10T12:30:00Z',
+      },
+    ],
+  },
+  '/actions/workflows/ci.yml/runs?branch=main&per_page=1': {
+    workflow_runs: [
+      {
         id: 88,
         name: 'CI',
         head_branch: 'main',
+        head_sha: 'abcdef1234567890',
         status: 'completed',
         conclusion: 'success',
         html_url: 'https://github.com/example/runs/88',
@@ -113,7 +127,7 @@ const responseData = {
   ],
 };
 
-function harness() {
+function harness({ staleMainCi = false } = {}) {
   const ids = {};
   const getNode = (id) => (ids[id] ??= new Node());
   const tabs = ['tasks', 'prs', 'blockers'].map((tab) => {
@@ -139,7 +153,9 @@ function harness() {
       const route =
         new URL(url).pathname.replace('/repos/trucco86/nova-wing-3d', '') + new URL(url).search;
       calls.push(route);
-      const data = responseData[route];
+      const data = structuredClone(responseData[route]);
+      if (staleMainCi && route === '/actions/workflows/ci.yml/runs?branch=main&per_page=1')
+        data.workflow_runs[0].head_sha = 'outdated-commit';
       return {
         ok: !fail && data !== undefined,
         status: fail ? 503 : data === undefined ? 404 : 200,
@@ -199,8 +215,18 @@ test('real dashboard loads data and filters PRs, tasks and monitor blockers', as
   app.tabs[2].emit('click');
   assert.match(labels(app.ids['work-list']), /CI bloqueada/);
   assert.doesNotMatch(labels(app.ids['work-list']), /Corrigir colisões/);
-  assert.equal(app.calls.length, 7);
+  assert.equal(app.calls.length, 8);
+  assert.ok(app.calls.includes('/actions/workflows/ci.yml/runs?branch=main&per_page=1'));
   assert.equal(app.ids.error.hidden, true);
+});
+
+
+test('dashboard never shows stale CI from a previous main commit', async () => {
+  const app = harness({ staleMainCi: true });
+  await settle();
+  assert.equal(app.ids.ci.textContent, 'Sem dados');
+  assert.equal(app.ids.deploy.textContent, 'Sem dados');
+  assert.equal(app.calls.length, 7, 'no Pages lookup for an outdated CI');
 });
 
 test('refresh cadence is exclusive and API failures keep previously rendered data', async () => {
