@@ -214,7 +214,7 @@ effectsButton.onclick = async () => {
         ['plasma', 9, 10.9],
         ['plasmaRiser', 9.25, 9.9],
         ['plasmaRelease', 10.02, 10.72],
-        ['shotAttack', 11.01, 11.10],
+        ['shotAttack', 11.01, 11.1],
         ['shotBody', 11.11, 11.28],
         ['shots', 11, 11.9],
         ['combatMix', 12, 16.9],

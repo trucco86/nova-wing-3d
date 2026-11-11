@@ -94,12 +94,35 @@ Object.assign(AUDIO_CUES, {
   shot: {
     cooldown: 0.088,
     tones: [
-      { from: 1470, to: 470, duration: 0.055, gain: 0.032, wave: 'sawtooth', filter: 3800, attack: 0.002 },
-      { from: 410, to: 112, duration: 0.155, gain: 0.064, wave: 'triangle', filter: 1450, attack: 0.004 },
+      {
+        from: 1470,
+        to: 470,
+        duration: 0.055,
+        gain: 0.032,
+        wave: 'sawtooth',
+        filter: 3800,
+        attack: 0.002,
+      },
+      {
+        from: 410,
+        to: 112,
+        duration: 0.155,
+        gain: 0.064,
+        wave: 'triangle',
+        filter: 1450,
+        attack: 0.004,
+      },
       { from: 145, to: 61, duration: 0.19, gain: 0.041, wave: 'sine', attack: 0.006 },
     ],
     noises: [
-      { duration: 0.044, gain: 0.082, filterType: 'bandpass', filter: 3100, filterEnd: 960, q: 0.75 },
+      {
+        duration: 0.044,
+        gain: 0.082,
+        filterType: 'bandpass',
+        filter: 3100,
+        filterEnd: 960,
+        q: 0.75,
+      },
       { color: 'brown', duration: 0.15, gain: 0.06, filter: 850, filterEnd: 210, attack: 0.009 },
     ],
   },
@@ -107,13 +130,36 @@ Object.assign(AUDIO_CUES, {
   mechaShot: {
     cooldown: 0.125,
     tones: [
-      { from: 960, to: 215, duration: 0.11, gain: 0.045, wave: 'sawtooth', filter: 2600, attack: 0.003 },
-      { from: 275, to: 59, duration: 0.255, gain: 0.078, wave: 'triangle', filter: 1050, attack: 0.004 },
+      {
+        from: 960,
+        to: 215,
+        duration: 0.11,
+        gain: 0.045,
+        wave: 'sawtooth',
+        filter: 2600,
+        attack: 0.003,
+      },
+      {
+        from: 275,
+        to: 59,
+        duration: 0.255,
+        gain: 0.078,
+        wave: 'triangle',
+        filter: 1050,
+        attack: 0.004,
+      },
       { from: 106, to: 42, duration: 0.285, gain: 0.063, wave: 'sine', attack: 0.005 },
     ],
     noises: [
-      { duration: 0.066, gain: 0.085, filterType: 'bandpass', filter: 2400, filterEnd: 560, q: 0.7 },
-      { color: 'brown', delay: 0.024, duration: 0.20, gain: 0.07, filter: 760, filterEnd: 130 },
+      {
+        duration: 0.066,
+        gain: 0.085,
+        filterType: 'bandpass',
+        filter: 2400,
+        filterEnd: 560,
+        q: 0.7,
+      },
+      { color: 'brown', delay: 0.024, duration: 0.2, gain: 0.07, filter: 760, filterEnd: 130 },
     ],
   },
   mechaImpact: {
@@ -147,11 +193,27 @@ Object.assign(AUDIO_CUES, {
   plasmaCharge: {
     cooldown: 0.4,
     tones: [
-      { from: 125, to: 320, duration: 0.24, gain: 0.031, wave: 'triangle', filter: 920, attack: 0.075 },
+      {
+        from: 125,
+        to: 320,
+        duration: 0.24,
+        gain: 0.031,
+        wave: 'triangle',
+        filter: 920,
+        attack: 0.075,
+      },
       { from: 70, to: 115, duration: 0.26, gain: 0.024, wave: 'sine', attack: 0.06 },
     ],
     noises: [
-      { duration: 0.27, gain: 0.042, attack: 0.095, filterType: 'bandpass', filter: 320, filterEnd: 1650, q: 0.62 },
+      {
+        duration: 0.27,
+        gain: 0.042,
+        attack: 0.095,
+        filterType: 'bandpass',
+        filter: 320,
+        filterEnd: 1650,
+        q: 0.62,
+      },
     ],
   },
   // The release must feel larger than the charging sound: initial magnetic
@@ -159,13 +221,37 @@ Object.assign(AUDIO_CUES, {
   plasmaRelease: {
     cooldown: 0.16,
     tones: [
-      { from: 1220, to: 330, duration: 0.12, gain: 0.048, wave: 'sawtooth', filter: 3300, attack: 0.002 },
-      { from: 370, to: 67, duration: 0.39, gain: 0.083, wave: 'triangle', filter: 1450, attack: 0.004 },
+      {
+        from: 1220,
+        to: 330,
+        duration: 0.12,
+        gain: 0.048,
+        wave: 'sawtooth',
+        filter: 3300,
+        attack: 0.002,
+      },
+      {
+        from: 370,
+        to: 67,
+        duration: 0.39,
+        gain: 0.083,
+        wave: 'triangle',
+        filter: 1450,
+        attack: 0.004,
+      },
       { from: 118, to: 37, duration: 0.53, gain: 0.078, wave: 'sine', attack: 0.006 },
     ],
     noises: [
       { duration: 0.13, gain: 0.12, filterType: 'bandpass', filter: 2800, filterEnd: 460, q: 0.62 },
-      { color: 'brown', delay: 0.027, duration: 0.47, gain: 0.095, filter: 1050, filterEnd: 135, attack: 0.012 },
+      {
+        color: 'brown',
+        delay: 0.027,
+        duration: 0.47,
+        gain: 0.095,
+        filter: 1050,
+        filterEnd: 135,
+        attack: 0.012,
+      },
     ],
   },
   explosion: {
@@ -507,8 +593,14 @@ export function createAudioCues(context) {
     flux.start();
     hiss.start();
     chargeLoop = {
-      bass, flux, hiss, fluxFilter, hissFilter,
-      bassGain, fluxGain, hissGain,
+      bass,
+      flux,
+      hiss,
+      fluxFilter,
+      hissFilter,
+      bassGain,
+      fluxGain,
+      hissGain,
     };
     return true;
   }
@@ -545,7 +637,7 @@ export function createAudioCues(context) {
     smooth(chargeLoop.fluxFilter.frequency, 770 + 1620 * p);
     smooth(chargeLoop.hissFilter.frequency, 430 + 2200 * p);
     smooth(chargeLoop.bassGain.gain, 0.012 + 0.028 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.010 + 0.024 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.01 + 0.024 * p);
     smooth(chargeLoop.hissGain.gain, 0.012 + 0.026 * p);
   }
 

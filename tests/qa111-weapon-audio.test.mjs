@@ -6,24 +6,58 @@ function fakeAudio() {
   const events = { sources: [], stopped: 0, params: [] };
   const param = () => ({
     value: 0,
-    setValueAtTime(value) { this.value = value; events.params.push(['set', value]); },
-    exponentialRampToValueAtTime(value) { this.value = value; },
-    setTargetAtTime(value) { this.value = value; events.params.push(['target', value]); },
+    setValueAtTime(value) {
+      this.value = value;
+      events.params.push(['set', value]);
+    },
+    exponentialRampToValueAtTime(value) {
+      this.value = value;
+    },
+    setTargetAtTime(value) {
+      this.value = value;
+      events.params.push(['target', value]);
+    },
     cancelScheduledValues() {},
   });
   const node = (kind = 'utility') => ({
-    kind, frequency: param(), gain: param(), Q: param(), playbackRate: param(),
-    threshold: param(), knee: param(), ratio: param(), attack: param(), release: param(),
-    connect() {}, disconnect() {}, start() {},
-    stop() { events.stopped++; },
+    kind,
+    frequency: param(),
+    gain: param(),
+    Q: param(),
+    playbackRate: param(),
+    threshold: param(),
+    knee: param(),
+    ratio: param(),
+    attack: param(),
+    release: param(),
+    connect() {},
+    disconnect() {},
+    start() {},
+    stop() {
+      events.stopped++;
+    },
   });
   const context = {
-    state: 'running', currentTime: 0, sampleRate: 8000, destination: {},
-    createGain: () => node(), createBiquadFilter: () => node(),
+    state: 'running',
+    currentTime: 0,
+    sampleRate: 8000,
+    destination: {},
+    createGain: () => node(),
+    createBiquadFilter: () => node(),
     createDynamicsCompressor: () => node(),
-    createOscillator() { const n = node('osc'); events.sources.push(n); return n; },
-    createBufferSource() { const n = node('noise'); events.sources.push(n); return n; },
-    createBuffer(_channels, length) { return { getChannelData: () => new Float32Array(length) }; },
+    createOscillator() {
+      const n = node('osc');
+      events.sources.push(n);
+      return n;
+    },
+    createBufferSource() {
+      const n = node('noise');
+      events.sources.push(n);
+      return n;
+    },
+    createBuffer(_channels, length) {
+      return { getChannelData: () => new Float32Array(length) };
+    },
   };
   return { context, events };
 }
@@ -41,9 +75,15 @@ test('QA111: shot, robot cannon and plasma use layered cinematic attack rather t
   assert.ok(AUDIO_CUES.plasmaCharge.noises.some((x) => x.attack >= 0.09));
   for (const name of ['shot', 'mechaShot', 'plasmaCharge', 'plasmaRelease']) {
     const cue = AUDIO_CUES[name];
-    assert.ok(cue.tones.length + cue.noises.length <= 6, 'reserve voices for music and concurrent battle');
+    assert.ok(
+      cue.tones.length + cue.noises.length <= 6,
+      'reserve voices for music and concurrent battle',
+    );
     for (const layer of [...cue.tones, ...cue.noises])
-      assert.ok(layer.gain > 0 && layer.gain < 0.2, 'avoid a clipping-prone single loud oscillator');
+      assert.ok(
+        layer.gain > 0 && layer.gain < 0.2,
+        'avoid a clipping-prone single loud oscillator',
+      );
   }
 });
 
@@ -60,13 +100,21 @@ test('QA111: real charge meter drives ONE rising plasma engine and stops cleanly
     context.currentTime += 0.05;
     cues.setCharge({ active: true, progress: Math.min(1, 0.12 + i * 0.05) });
   }
-  assert.equal(events.sources.length, activeSources, 'do not allocate a fresh oscillator each frame');
+  assert.equal(
+    events.sources.length,
+    activeSources,
+    'do not allocate a fresh oscillator each frame',
+  );
   assert.ok(bass.frequency.value > initial, 'plasma gains audible pressure while charging');
   assert.ok(cues.snapshot().chargeProgress >= 0.9);
   cues.setCharge({ active: false });
   assert.equal(cues.snapshot().chargeActive, false);
   const targets = events.params.filter((entry) => entry[0] === 'target').slice(-3);
-  assert.deepEqual(targets.map((x) => x[1]), [0, 0, 0], 'release silences all charge layers');
+  assert.deepEqual(
+    targets.map((x) => x[1]),
+    [0, 0, 0],
+    'release silences all charge layers',
+  );
   cues.setCharge({ active: true, progress: 0.3 });
   assert.equal(events.sources.length, activeSources, 'reuse charge synth when a new hold begins');
   cues.silence();
@@ -94,7 +142,10 @@ test('QA111: repeated shots rotate slight deterministic pitch without stacking e
   assert.equal(cues.play('shot'), false, 'rapid duplicate gets suppressed');
   context.currentTime += 0.09;
   assert.equal(cues.play('shot'), true);
-  const second = events.sources.filter((node) => node.kind === 'osc').slice(-3).map((n) => n.frequency.value);
+  const second = events.sources
+    .filter((node) => node.kind === 'osc')
+    .slice(-3)
+    .map((n) => n.frequency.value);
   assert.notDeepEqual(first, second, 'neighboring impacts have a subtle different character');
   for (let i = 0; i < 30; i++) {
     context.currentTime += 0.09;
