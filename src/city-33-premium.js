@@ -240,7 +240,9 @@ function elevatedBusRoute(root) {
   const roadway = [],
     tracks = [],
     guard = [],
-    station = [];
+    station = [],
+    piers = [],
+    cantilevers = [];
   // Side-running busways at mid-stage, with open bridges to the transport
   // district. They remain out of the player lane and have no collision.
   for (const side of [-1, 1]) {
@@ -250,6 +252,12 @@ function elevatedBusRoute(root) {
       roadway.push(part(x, 13.2, z, 17, 2.2, 32.2));
       tracks.push(part(x - side * 7.7, 15, z, 0.62, 0.5, 32));
       tracks.push(part(x + side * 7.7, 15, z, 0.62, 0.5, 32));
+      // The busway is supported from outside the flight corridor.
+      // Piers touch street y=-7 and cantilevers meet the real deck underside.
+      if (i % 4 === 0) {
+        piers.push(part(side * 85, 1.5, z, 2.8, 17, 3.2));
+        cantilevers.push(part(side * 76, 11.15, z, 20, 2.15, 3.5));
+      }
       if (i % 3 === 0) {
         guard.push(part(x - side * 8.8, 20, z, 0.7, 7, 0.7));
         guard.push(part(x + side * 8.8, 20, z, 0.7, 7, 0.7));
@@ -264,6 +272,8 @@ function elevatedBusRoute(root) {
   batch(group, 'city33-suspended-busway-lights', cyan, tracks);
   batch(group, 'city33-suspended-busway-guardrails', fineMetal, guard);
   batch(group, 'city33-busway-platforms', cladding, station);
+  batch(group, 'city33-busway-grounded-piers', machinery, piers);
+  batch(group, 'city33-busway-cantilever-braces', fineMetal, cantilevers);
   const traffic = new T.Group();
   traffic.name = 'city33-moving-futuristic-buses';
   traffic.userData.visualOnly = true;
