@@ -6,6 +6,10 @@ test('QA110: premium city has grounded generic ads and a readable WebGL flight p
   test.setTimeout(180000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /WebGLProgram|Shader Error|VALIDATE_STATUS false|shader compilation/i.test(message.text()))
+      errors.push(message.text());
+  });
   const mobile = info.project.name === 'mobile';
   await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1366, height: 768 });
   await page.goto('/__dynamic.html?sector=0');
