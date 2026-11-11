@@ -37,3 +37,5 @@ jobs:
             console.log('QA110_SLOTS_' + name + '=' + JSON.stringify({total:ads.userData.total,counts:ads.userData.counts,hostIds:ads.userData.slots.map(x=>x.hostIndex),ids:ads.userData.slots.map(x=>x.id)}));
           }
           EOF
+
+# Recheck QA110 counts after consolidated atlas rendering and rooftop placement.
