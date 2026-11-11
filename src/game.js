@@ -6092,6 +6092,19 @@ export function createGame({
       boosting,
       robot: robotMode,
     });
+    // Match the continuous charging sound to the real on-screen plasma meter.
+    // Release, pause, blur, mute or a blocked cannon ends the rise immediately.
+    audioCues?.setCharge({
+      active:
+        dynamicFlight &&
+        appActive &&
+        !muted &&
+        state === 'playing' &&
+        marsCleanse === 0 &&
+        charge > 0.15 &&
+        (keys.has('Space') || touchFire),
+      progress: charge / 1.5,
+    });
     const inside =
       cameraMode === 'cockpit' &&
       (state === 'playing' || (state === 'paused' && pausedFrom === 'playing'));
