@@ -57,6 +57,15 @@ test('QA109: full game city has 200 unique building parcels clear of rail, malls
     }
     const towers = city.getObjectByName('city-architectural-districts').userData.towerFootprints;
     assert.equal(towers.length, 24);
+    const pads = city.getObjectByName('city-architectural-districts').userData.platformFootprints;
+    assert.equal(pads.length, 8, 'two supported launch platforms per district lane');
+    for (const pad of pads) {
+      assert.ok(cityBuildingHasClearFootprint(pad, base), 'platforms cannot invade shops or train');
+      assert.ok(
+        pads.filter((other) => other !== pad).every((other) => !cityFootprintsOverlap(pad, other)),
+        'launch platforms never run through one another',
+      );
+    }
     for (const tower of towers) {
       assert.ok(
         cityBuildingHasClearFootprint(tower, previouslyPlaced),
