@@ -27,9 +27,10 @@ jobs:
         run: |
           npx prettier --write .github/workflows/nova-release-monitor.yml tests/release-monitor-30m.test.mjs specs/release-monitor-30m.md
           git diff --check
+          node -e 'console.log("FORMATTED_WORKFLOW_JSON=" + JSON.stringify(require("fs").readFileSync(".github/workflows/nova-release-monitor.yml", "utf8")))'
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/workflows/nova-release-monitor.yml tests/release-monitor-30m.test.mjs specs/release-monitor-30m.md
+          git add tests/release-monitor-30m.test.mjs specs/release-monitor-30m.md
           if ! git diff --cached --quiet; then
             git commit -m "style(monitor): apply Prettier to candidate files"
             git push origin HEAD:ops/nova-monitor-30min-20261109
