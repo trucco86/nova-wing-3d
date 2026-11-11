@@ -12,7 +12,7 @@ O pipeline mantém o jogo em /nova-wing-3d/ e copia este painel separadamente pa
 
 ## Dados
 
-O navegador consulta a API pública do GitHub para issues, PRs abertas e integradas, execuções de Actions, jobs da última CI da main, releases e SHA da main. Atualização padrão a cada 5 minutos, com controle manual. Não usa token nem expõe dados privados. O limite público da API pode restringir consultas intensivas.
+O navegador consulta a API pública do GitHub para issues, PRs abertas e integradas, execuções de Actions, jobs da última CI da main, releases e SHA da main. Atualização padrão a cada 30 minutos, com opções de 60 minutos ou somente manual. O painel respeita os headers de limite da API e bloqueia novas consultas até o reset quando o orçamento público fica baixo. Não usa token nem expõe dados privados. O limite público de 60 requisições por hora e por IP é compartilhado por abas e dispositivos na mesma rede.
 
 O indicador Pages é baseado no job real de deploy da última CI main. O status HTTP do site de produção é verificado pelo monitor agendado, não pelo painel.
 
