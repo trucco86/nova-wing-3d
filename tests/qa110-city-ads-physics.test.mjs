@@ -96,7 +96,10 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
     assert.ok(
       inventory.getObjectByName('city-ad-grounded-metal-frames-and-mounts')?.isInstancedMesh,
     );
-    assert.ok(inventory.getObjectByName('city-ad-illuminated-sign-borders')?.isInstancedMesh);
+    const artwork = inventory.getObjectByName('city-ad-atlas-generic-artwork');
+    assert.ok(artwork?.isInstancedMesh, 'three generic creatives share one WebGL artwork batch');
+    assert.equal(artwork.count, slots.length);
+    assert.equal(artwork.geometry.getAttribute('adCreativeIndex').count, slots.length);
     for (const child of inventory.children) {
       assert.equal(child.userData.visualOnly, true, 'outdoor decor is not a phantom collider');
       assert.equal(child.userData.solid, undefined);
