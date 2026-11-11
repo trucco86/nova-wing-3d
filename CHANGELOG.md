@@ -2,7 +2,9 @@
 
 ## 1.27.108 — Candidata em preparação
 
-- QA108: colisores dos destroços usam apenas malhas visíveis na hierarquia da cena; testes de regressão adicionados. CI FULL e homologação pendentes.
+- QA107/QA108: cidade mais coerente na ascensão orbital, torres distritais sem interpenetração com edifícios-base e colisão de destroços limitada à geometria visível.
+- Control Center responsivo para status público de PRs, CI da main, Pages e releases; monitor GitHub Actions 30 minutos com alertas deduplicados.
+- Candidata integrada com gates CI FULL, visual desktop/mobile e autorização de produção pendentes.
 
 ## 1.27.107 — Candidata em preparação
 
