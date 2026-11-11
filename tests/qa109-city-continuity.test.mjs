@@ -125,7 +125,6 @@ test('QA109 continuity: holograms never overhang the real host facade when anima
   }
 });
 
-
 test('QA109: the approaching district stays continuous through both city wraps', () => {
   const tileLength = 1900;
   const scene = new T.Scene();
