@@ -47,12 +47,12 @@ function existingAdHosts(tile, buildings) {
       !/^(city32-sign-\d+|city32-hologram-\d+|city33-building-campaign-\d+|city32-district-.*-billboard)$/.test(
         object.name,
       )
-    ) return;
+    )
+      return;
     object.getWorldPosition(p).applyMatrix4(inverse);
     for (let i = 0; i < buildings.length; i++) {
       const b = buildings[i];
-      if (Math.abs(b.x - p.x) < 0.4 && Math.abs(b.z + b.depth / 2 - p.z) < 3.5)
-        marked.add(i);
+      if (Math.abs(b.x - p.x) < 0.4 && Math.abs(b.z + b.depth / 2 - p.z) < 3.5) marked.add(i);
     }
   });
   return [...marked];
@@ -84,8 +84,12 @@ export function createCityAdInventory(tile, variant = 'civic') {
     const brand = CITY_AD_CREATIVES.find((ad) => ad.id === slot.creativeId);
     // Opaque, grounded backplate and four genuinely continuous frame rails.
     metal.push({
-      x: slot.x, y: slot.y, z: slot.z - 0.37,
-      w: slot.w + 1.1, h: slot.h + 1.0, depth: 0.58,
+      x: slot.x,
+      y: slot.y,
+      z: slot.z - 0.37,
+      w: slot.w + 1.1,
+      h: slot.h + 1.0,
+      depth: 0.58,
     });
     for (const support of slot.supports) metal.push(support);
     if (slot.kind !== 'roof') {
@@ -98,16 +102,28 @@ export function createCityAdInventory(tile, variant = 'civic') {
           x: slot.x + direction * slot.w * 0.42,
           y: slot.y,
           z: wallZ + 1,
-          w: 0.34, h: 0.34, depth: 2,
+          w: 0.34,
+          h: 0.34,
+          depth: 2,
         });
     }
     accent.push({
-      x: slot.x, y: slot.y + slot.h / 2 + 0.33, z: slot.z + 0.18,
-      w: slot.w + 0.45, h: 0.24, depth: 0.22, color: brand.color,
+      x: slot.x,
+      y: slot.y + slot.h / 2 + 0.33,
+      z: slot.z + 0.18,
+      w: slot.w + 0.45,
+      h: 0.24,
+      depth: 0.22,
+      color: brand.color,
     });
     accent.push({
-      x: slot.x, y: slot.y - slot.h / 2 - 0.33, z: slot.z + 0.18,
-      w: slot.w + 0.45, h: 0.24, depth: 0.22, color: brand.color,
+      x: slot.x,
+      y: slot.y - slot.h / 2 - 0.33,
+      z: slot.z + 0.18,
+      w: slot.w + 0.45,
+      h: 0.24,
+      depth: 0.22,
+      color: brand.color,
     });
   }
 
@@ -127,13 +143,23 @@ export function createCityAdInventory(tile, variant = 'civic') {
     );
   }
   root.userData.slots = slots.map((slot) => ({
-    id: slot.id, type: slot.kind, creative: slot.creativeId,
-    hostIndex: slot.hostIndex, surface: slot.surface,
-    x: slot.x, y: slot.y, z: slot.z, width: slot.w, height: slot.h,
+    id: slot.id,
+    type: slot.kind,
+    creative: slot.creativeId,
+    hostIndex: slot.hostIndex,
+    surface: slot.surface,
+    x: slot.x,
+    y: slot.y,
+    z: slot.z,
+    width: slot.w,
+    height: slot.h,
   }));
   root.userData.total = slots.length;
   root.userData.counts = Object.fromEntries(
-    ['facade', 'roof', 'banner'].map((type) => [type, slots.filter((slot) => slot.kind === type).length]),
+    ['facade', 'roof', 'banner'].map((type) => [
+      type,
+      slots.filter((slot) => slot.kind === type).length,
+    ]),
   );
   // Future asset swaps can target these stable IDs. Do not use real ad server
   // URLs, user tracking or partner creative assets in the public QA preview.

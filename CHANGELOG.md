@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.110 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.109 — Candidata em preparação
 
 - QA109: separar prédios e estruturas urbanas por zonas de ocupação; ancorar sinais, holofotes e plataformas; testes geométricos e visuais. Homologação e CI FULL pendentes.

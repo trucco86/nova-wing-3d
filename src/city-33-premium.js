@@ -38,7 +38,11 @@ const busGlass = new T.MeshStandardMaterial({
   roughness: 0.19,
 });
 const busLight = new T.MeshBasicMaterial({ color: '#c3f8ff', toneMapped: false });
-const cladding = new T.MeshStandardMaterial({ color: '#e1edf1', metalness: 0.77, roughness: 0.245 });
+const cladding = new T.MeshStandardMaterial({
+  color: '#e1edf1',
+  metalness: 0.77,
+  roughness: 0.245,
+});
 const panelGlass = new T.MeshStandardMaterial({
   color: '#9bc5d3',
   metalness: 0.58,

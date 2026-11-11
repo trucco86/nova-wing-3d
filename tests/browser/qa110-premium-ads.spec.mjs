@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('QA110: premium city has grounded generic ads and a readable WebGL flight path', async ({ page }, info) => {
+test('QA110: premium city has grounded generic ads and a readable WebGL flight path', async ({
+  page,
+}, info) => {
   test.setTimeout(180000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));

@@ -6,7 +6,12 @@ import { createWorld } from '../src/visuals.js';
 import { CITY_AD_CREATIVES, cityVolumesOverlap, planCityAdSlots } from '../src/city-ad-slots.js';
 
 const volume = (b) => ({
-  x: b.x, y: b.h / 2 - 7, z: b.z, w: b.w, h: b.h, depth: b.depth,
+  x: b.x,
+  y: b.h / 2 - 7,
+  z: b.z,
+  w: b.w,
+  h: b.h,
+  depth: b.depth,
 });
 
 test('QA110: 3D overlap rejects penetrations at any axis and accepts clearance in height', () => {
@@ -35,7 +40,9 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
     const buildings = tile.userData.buildingFootprints;
     const district = tile.getObjectByName('city-architectural-districts');
     const structures = [
-      ...buildings, ...district.userData.towerFootprints, ...district.userData.platformFootprints,
+      ...buildings,
+      ...district.userData.towerFootprints,
+      ...district.userData.platformFootprints,
     ];
     for (const slot of slots) {
       assert.ok(!allIds.has(slot.id), 'slot ID is globally stable and never reused between tiles');
@@ -53,18 +60,36 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
         assert.ok(slot.y - slot.height / 2 >= host.h - 3 + 3.9);
       }
       const panel = {
-        x: slot.x, y: slot.y, z: slot.z,
-        w: slot.width, h: slot.height, depth: 0.36,
+        x: slot.x,
+        y: slot.y,
+        z: slot.z,
+        w: slot.width,
+        h: slot.height,
+        depth: 0.36,
       };
       assert.ok(
-        structures.every((solid) => solid === host || !cityVolumesOverlap(panel, volume(solid), 0.72)),
+        structures.every(
+          (solid) => solid === host || !cityVolumesOverlap(panel, volume(solid), 0.72),
+        ),
         'new ad cannot interpenetrate an unrelated building or support',
       );
       assert.ok(
-        slots.every((other) =>
-          other === slot || !cityVolumesOverlap(panel, {
-            x: other.x, y: other.y, z: other.z, w: other.width, h: other.height, depth: 0.36,
-          }, 1.2)),
+        slots.every(
+          (other) =>
+            other === slot ||
+            !cityVolumesOverlap(
+              panel,
+              {
+                x: other.x,
+                y: other.y,
+                z: other.z,
+                w: other.width,
+                h: other.height,
+                depth: 0.36,
+              },
+              1.2,
+            ),
+        ),
         'new ads cannot intersect one another',
       );
     }
