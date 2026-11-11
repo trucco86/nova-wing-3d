@@ -17,6 +17,14 @@ test('mechanical effects and turbine mix render audibly with exact mute and paus
     if (['pause', 'mute'].includes(segment.name)) expect(segment.rms).toBeLessThan(0.00001);
     else expect(segment.rms, segment.name + ' must produce actual samples').toBeGreaterThan(0.001);
   }
+  // Keep the impact distinct from its powered-up riser and ensure
+  // neither moment becomes a clipped, full-scale square-wave burst.
+  for (const cue of ['plasmaRiser', 'plasmaRelease', 'shotAttack', 'shotBody']) {
+    const segment = metrics.segments.find((entry) => entry.name === cue);
+    expect(segment, cue + ' must have rendered audio evidence').toBeTruthy();
+    expect(segment.rms, cue + ' must remain audible at nominal volume').toBeGreaterThan(0.001);
+    expect(segment.peak, cue + ' must not clip').toBeLessThan(0.98);
+  }
   expect(metrics.afterDestroy.voices).toBe(0);
   expect(metrics.afterDestroy.engineActive).toBe(false);
   expect(metrics.afterDestroy.destroyed).toBe(true);
