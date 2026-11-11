@@ -71,6 +71,10 @@ trem, objetos flutuam e a cidade perdeu densidade visual e legibilidade.
 - O horizonte cenográfico foi afastado e não oscila lateralmente, para
   eliminar a passagem visual de torres distantes por dentro das próximas.
 - Hologramas animados agora permanecem dentro da largura real da fachada.
+- A continuidade do percurso agora alterna explicitamente o tile que está
+  se aproximando da câmera a cada 1.900 unidades. Apenas o tile já
+  ultrapassado pela nave retorna à retaguarda: o próximo bairro não
+  desaparece nem é teleportado na troca.
 - A malha de tiles clonados permanece. Caso a esteira ainda seja
   perceptível, tratar continuidade/cinematografia e variedade de
   fachadas por tile em um corte seguinte, sem mascarar por velocidade
