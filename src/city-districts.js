@@ -68,7 +68,7 @@ export function createCityDistricts(buildingAnchors = []) {
         const plannedX = side * (121 + lane * 43);
         // A 38-unit stagger gives each 29-unit footprint real lateral air,
         // rather than making four tall slabs read as one overlapping wall.
-        const z = district.z - 54 + lane * 38;
+        const plannedZ = district.z - 54 + lane * 38;
         const height = district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
         const width =
           district.name === 'industrial'
@@ -83,7 +83,7 @@ export function createCityDistricts(buildingAnchors = []) {
         const footprint = placeCityDistrictTower(
           {
             x: plannedX,
-            z,
+            z: plannedZ,
             w: width,
             depth: 29,
             h: height,
@@ -93,6 +93,7 @@ export function createCityDistricts(buildingAnchors = []) {
           side,
         );
         const x = footprint.x;
+        const z = footprint.z;
         occupied.push(footprint);
         towerFootprints.push(footprint);
         place(bodyMesh, 'bodies', x, height / 2 - 7, z, width, height, 29);
