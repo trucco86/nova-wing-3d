@@ -25,7 +25,12 @@ jobs:
           createWorld(scene, () => 0.43, true);
           let batches = 0;
           scene.traverse(o => { if (o.isInstancedMesh) batches++; });
-          console.log('QA110_BATCH_COUNT=' + batches);
+          console.log('QA110_BATCH_COUNT_DYNAMIC=' + batches);
+          const staticScene = new T.Scene();
+          createWorld(staticScene, () => 0.5);
+          let staticCount = 0;
+          staticScene.traverse(o => { if(o.isInstancedMesh) staticCount++; });
+          console.log('QA110_BATCH_COUNT_DEFAULT=' + staticCount);
           for (const name of ['launch-city','launch-city-far']) {
             const tile=scene.getObjectByName(name);
             const ads=tile.getObjectByName('city-premium-ad-inventory');
