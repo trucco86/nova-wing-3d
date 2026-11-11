@@ -52,7 +52,7 @@ const owner='trucco86', repo='nova-wing-3d';
 const api='https://api.github.com/repos/'+owner+'/'+repo;
 const url='https://github.com/'+owner+'/'+repo;
 const $=id=>document.getElementById(id);
-const state={issues:[],prs:[],runs:[],releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false,rateLimitUntil:0,rateLimitRemaining:null};
+const state={issues:[],prs:[],runs:[],mainRun:null,releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false,rateLimitUntil:0,rateLimitRemaining:null};
 const link=(href,label)=>{const a=document.createElement('a');a.href=href;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';return a};
 const text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e};
 const label=(value,kind)=>text('span',value,'pill '+(kind||''));
@@ -74,7 +74,7 @@ function item(parent,title,href,meta,badgeText,badgeKind){const row=text('div','
 function renderWork(){const el=$('work-list');el.replaceChildren();const list=state.tab==='prs'?state.prs:state.tab==='blockers'?state.issues.filter(i=>i.title.startsWith('[monitor]')&&i.state==='open'):state.issues.filter(i=>!i.title.startsWith('[monitor]'));if(!list.length){el.append(text('div','Nenhum item nesta categoria.','empty'));return}
 for(const entry of list.slice(0,12)){const isPr=state.tab==='prs';item(el,entry.title,entry.html_url,'#'+entry.number+' · '+(entry.user?.login||'GitHub')+' · '+date(entry.updated_at),isPr?(entry.draft?'Draft':'Aberta'):'Aberta',state.tab==='blockers'?'bad':'')}}
 function render(){const openIssues=state.issues.filter(i=>i.state==='open');$('tasks').textContent=openIssues.filter(i=>!i.title.startsWith('[monitor]')).length;$('prs').textContent=state.prs.filter(p=>p.state==='open').length;
-const mainRun=state.runs.find(r=>r.name==='CI'&&r.head_branch==='main');$('ci').textContent=mainRun?status(mainRun):'Sem dados';$('ci-meta').textContent=mainRun?date(mainRun.created_at):'Sem CI main';
+const mainRun=state.mainRun;$('ci').textContent=mainRun?status(mainRun):'Sem dados';$('ci-meta').textContent=mainRun?date(mainRun.created_at):'Sem CI main';
 const environments=$('environments');environments.replaceChildren();const main=state.branch?.commit?.sha||'desconhecido';
 item(environments,'Produção: jogar', 'https://trucco86.github.io/nova-wing-3d/','HEAD main: '+main.slice(0,12),'Site','');
 item(environments,'DEV: testar','https://dev.nova-wing-preview.pages.dev/','Ambiente isolado','DEV','');
@@ -84,8 +84,9 @@ const runs=$('runs');runs.replaceChildren();for(const r of state.runs.slice(0,10
 const releases=$('releases');releases.replaceChildren();for(const r of state.releases.slice(0,5))item(releases,r.name||r.tag_name,r.html_url,date(r.published_at||r.created_at),r.tag_name,'good');for(const p of state.history.slice(0,6))item(releases,p.title,p.html_url,'PR #'+p.number+' · '+date(p.merged_at),'Integrada','good');if(!state.releases.length&&!state.history.length)releases.append(text('div','Nenhuma entrega encontrada.','empty'));
 renderWork()}
 async function refresh(){if(state.loading)return;state.loading=true;$('refresh').disabled=true;$('error').hidden=true;
-try{const [issues,prs,runs,releases,branch,closed]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main'),get('/pulls?state=closed&sort=updated&direction=desc&per_page=30')]);
-const latestMain=(runs.workflow_runs||[]).find(r=>r.name==='CI'&&r.head_branch==='main');const jobs=latestMain&&Date.now()>=state.rateLimitUntil?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
+try{const [issues,prs,runs,releases,branch,closed,mainCi]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main'),get('/pulls?state=closed&sort=updated&direction=desc&per_page=30'),get('/actions/workflows/ci.yml/runs?branch=main&per_page=1')]);
+// Only a CI built for the published main HEAD can certify this state. Other branch runs never substitute for it.
+const latestMain=(mainCi.workflow_runs||[]).find(r=>r.head_branch==='main'&&r.head_sha===branch?.commit?.sha)||null;const jobs=latestMain&&Date.now()>=state.rateLimitUntil?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.mainRun=latestMain;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
 catch(error){$('error').hidden=false;$('error').className='error';$('error').textContent='Não foi possível atualizar: '+error.message+'. Os dados anteriores foram mantidos.';$('updated').textContent='Falha na atualização';}
 finally{state.loading=false;$('refresh').disabled=false}}
 function schedule(){if(state.timer)clearInterval(state.timer);const ms=Number($('interval').value);if(ms)state.timer=setInterval(refresh,ms)}
