@@ -1,0 +1,49 @@
+name: Prepare QA109 versioned preview once
+
+on:
+  push:
+    branches:
+      - fix/qa109-city-layout-transit-anchors-20261111
+    paths:
+      - .github/workflows/qa109-prepare-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Version and format the QA109 candidate
+        run: |
+          npm run release:prepare -- 1.27.109
+          cat > releases/v1.27.109.md <<'EOF'
+          ## Nova Wing 3D v1.27.109 | QA109 candidata
+
+          - Reserva de espaço real para maglev, shopping centers e edifícios altos antes da criação dos 200 prédios-base.
+          - As 24 torres distritais respeitam o zoneamento, com espaçamento seguro e plataformas de espaçoporto apoiadas.
+          - Painéis de distritos, hologramas e searchlights usam prédios reais como suporte.
+          - Busways suspensos recebem pilares e cantilevers ancorados ao solo, fora do corredor de voo.
+          - Testes determinísticos de footprint, fachada, telhado, suportes e capturas Playwright no desktop/mobile.
+
+          **Não homologada visualmente.** A sensação de esteira e os layers de tiles duplicados ainda exigem inspeção humana. Nenhum merge ou deploy em produção deve ocorrer sem aceite visual e CI completa.
+          EOF
+          node --input-type=module -e 'import{readFileSync,writeFileSync}from"node:fs";const p="CHANGELOG.md";const s=readFileSync(p,"utf8").replace("- Candidata não homologada; preencher entregas e evidências antes da publicação.","- QA109: separar prédios e estruturas urbanas por zonas de ocupação; ancorar sinais, holofotes e plataformas; testes geométricos e visuais. Homologação e CI FULL pendentes.");writeFileSync(p,s)'
+          npm run format
+          npm run build
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "build(QA109): prepare versioned candidate and format new city tests"
+            git push origin HEAD:fix/qa109-city-layout-transit-anchors-20261111
+          fi
+          npm run validate
