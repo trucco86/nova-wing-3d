@@ -1230,7 +1230,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       depth = rnd(8, 18);
     // Shared city parcels: no procedural office block may cover a maglev
     // station, the reserved train approach, or an authored shopping centre.
-    const parcel = placeCityBaseBuilding({ x, z, w, depth }, buildingAnchors, s);
+    const parcel = placeCityBaseBuilding({ x, z, w, depth, h }, buildingAnchors, s);
     x = parcel.x;
     buildingAnchors.push({ ...parcel, h });
     const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
