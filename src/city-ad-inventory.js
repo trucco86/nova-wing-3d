@@ -15,9 +15,14 @@ const CREATIVE_COUNT = CITY_AD_CREATIVES.length;
 function genericAdAtlas() {
   if (typeof document === 'undefined' || !document.createElement) {
     const colors = CITY_AD_CREATIVES.map(({ color }) => new T.Color(color));
-    const data = new Uint8Array(colors.flatMap((c) =>
-      [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255), 255],
-    ));
+    const data = new Uint8Array(
+      colors.flatMap((c) => [
+        Math.round(c.r * 255),
+        Math.round(c.g * 255),
+        Math.round(c.b * 255),
+        255,
+      ]),
+    );
     const texture = new T.DataTexture(data, CREATIVE_COUNT, 1);
     texture.needsUpdate = true;
     texture.colorSpace = T.SRGBColorSpace;
@@ -44,8 +49,7 @@ function genericAdAtlas() {
     ctx.fillRect(x, 0, width, 512);
     ctx.fillStyle = ad.color;
     ctx.globalAlpha = 0.14;
-    for (let j = 0; j < 7; j++)
-      ctx.fillRect(x + 35 + j * 55, 75 + j * 43, 24, 310 - j * 24);
+    for (let j = 0; j < 7; j++) ctx.fillRect(x + 35 + j * 55, 75 + j * 43, 24, 310 - j * 24);
     ctx.globalAlpha = 1;
     ctx.strokeStyle = ad.color;
     ctx.lineWidth = 10;
@@ -87,8 +91,14 @@ function atlasMaterial() {
   });
   material.onBeforeCompile = (shader) => {
     shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute float adCreativeIndex;\nvarying float vAdCreativeIndex;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvAdCreativeIndex = adCreativeIndex;');
+      .replace(
+        '#include <common>',
+        '#include <common>\nattribute float adCreativeIndex;\nvarying float vAdCreativeIndex;',
+      )
+      .replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\nvAdCreativeIndex = adCreativeIndex;',
+      );
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying float vAdCreativeIndex;')
       .replace(
@@ -143,14 +153,13 @@ function existingAdHosts(tile, buildings) {
       !/^(city32-sign-\d+|city32-hologram-\d+|city33-building-campaign-\d+|city32-district-.*-billboard)$/.test(
         node.name,
       )
-    ) return;
+    )
+      return;
     node.getWorldPosition(p).applyMatrix4(inverse);
     for (let i = 0; i < buildings.length; i++) {
       const building = buildings[i];
-      if (
-        Math.abs(building.x - p.x) < 0.4 &&
-        Math.abs(building.z + building.depth / 2 - p.z) < 3.5
-      ) taken.add(i);
+      if (Math.abs(building.x - p.x) < 0.4 && Math.abs(building.z + building.depth / 2 - p.z) < 3.5)
+        taken.add(i);
     }
   });
   return [...taken];
@@ -176,11 +185,17 @@ export function createCityAdInventory(tile, variant = 'civic') {
   const creativeIndices = [];
   for (const slot of slots) {
     panels.push(slot.panel);
-    creativeIndices.push(CITY_AD_CREATIVES.findIndex((creative) => creative.id === slot.creativeId));
+    creativeIndices.push(
+      CITY_AD_CREATIVES.findIndex((creative) => creative.id === slot.creativeId),
+    );
     const b = buildings[slot.hostIndex];
     metalParts.push({
-      x: slot.x, y: slot.y, z: slot.z - 0.36,
-      w: slot.w + 1.05, h: slot.h + 1.05, depth: 0.55,
+      x: slot.x,
+      y: slot.y,
+      z: slot.z - 0.36,
+      w: slot.w + 1.05,
+      h: slot.h + 1.05,
+      depth: 0.55,
     });
     for (const support of slot.supports) metalParts.push(support);
     if (slot.kind !== 'roof') {
@@ -189,28 +204,42 @@ export function createCityAdInventory(tile, variant = 'civic') {
           x: slot.x + side * slot.w * 0.42,
           y: slot.y,
           z: b.z + b.depth / 2 + 1.0,
-          w: 0.34, h: 0.34, depth: 2,
+          w: 0.34,
+          h: 0.34,
+          depth: 2,
         });
     }
     // Structural metal rails on both sides frame a luminous texture; no
     // additional neon draw call is introduced in Medium or High.
     for (const side of [-1, 1])
       metalParts.push({
-        x: slot.x, y: slot.y + side * (slot.h / 2 + 0.34), z: slot.z + 0.1,
-        w: slot.w + 0.48, h: 0.25, depth: 0.3,
+        x: slot.x,
+        y: slot.y + side * (slot.h / 2 + 0.34),
+        z: slot.z + 0.1,
+        w: slot.w + 0.48,
+        h: 0.25,
+        depth: 0.3,
       });
   }
   batch(root, 'city-ad-grounded-metal-frames-and-mounts', unit, metal, metalParts);
   batch(root, 'city-ad-atlas-generic-artwork', plane, atlasMaterial(), panels, creativeIndices);
   root.userData.slots = slots.map((slot) => ({
-    id: slot.id, type: slot.kind, creative: slot.creativeId, hostIndex: slot.hostIndex,
-    surface: slot.surface, x: slot.x, y: slot.y, z: slot.z,
-    width: slot.w, height: slot.h,
+    id: slot.id,
+    type: slot.kind,
+    creative: slot.creativeId,
+    hostIndex: slot.hostIndex,
+    surface: slot.surface,
+    x: slot.x,
+    y: slot.y,
+    z: slot.z,
+    width: slot.w,
+    height: slot.h,
   }));
   root.userData.total = slots.length;
   root.userData.counts = Object.fromEntries(
     ['facade', 'roof', 'banner'].map((type) => [
-      type, slots.filter((slot) => slot.kind === type).length,
+      type,
+      slots.filter((slot) => slot.kind === type).length,
     ]),
   );
   // All QA creative is fictitious and local; no ad server or user tracking.
