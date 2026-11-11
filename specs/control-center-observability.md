@@ -10,6 +10,8 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
 - Consultar apenas endpoints públicos do repositório `trucco86/nova-wing-3d`.
 - Exibir issues abertas separadas de PRs, PRs abertas e histórico de PRs integradas.
 - Exibir CI da branch `main`, job Pages associado e SHA da `main` quando disponíveis.
+- Consultar o workflow `ci.yml` diretamente na `main` e exigir o mesmo SHA do
+  HEAD antes de exibir seu resultado, mesmo com muitas CI de branches recentes.
 - Exibir bloqueios apenas de issues abertas com prefixo `[monitor]`.
 - Não inventar sucesso de deploy: ausência de job ou execução deve aparecer como "Sem dados".
 - As listas de issues, PRs e execuções são recortes da primeira página consultada;
@@ -26,7 +28,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
 
 ## Controle da API e falhas
 
-- A opção padrão de 30 minutos demanda cerca de 14 requisições/hora por aba
+- A opção padrão de 30 minutos demanda cerca de 16 requisições/hora por aba
   quando a consulta ao job CI é necessária, abaixo das 60/h públicas por IP
   em uso isolado. Abas e usuários no mesmo IP compartilham esse orçamento.
 - Quando o header X-RateLimit-Remaining for inferior a oito, respeitar
@@ -34,7 +36,7 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
   esse limite quando o servidor informar o instante de recuperação.
 - Se um endpoint falhar, mostrar aviso explícito, preservar os dados anteriores
   e permitir nova tentativa quando o limite liberar.
-- Não fazer polling automático de um minuto: sete endpoints a cada minuto
+- Não fazer polling automático de um minuto: oito endpoints a cada minuto
   esgotam o limite público no cenário normal.
 
 ## Critérios de aceite
@@ -46,6 +48,8 @@ a dashboard como um agente que desenvolve o jogo ou modifica deploys.
 5. Headers do limite suspendem novas consultas até o reset informado.
 6. CI Node, testes comportamentais reais, build do repositório e verificação
    browser são aprovados antes de merge; Pages deve ser verificado após deploy.
+7. Uma CI antiga da `main` ou recente de outra branch não aparece como
+   aprovação para o HEAD atual de produção.
 
 ## Limitações
 
