@@ -408,8 +408,9 @@ function holograms(parent, buildings) {
     sign.userData.visualOnly = true;
     sign.userData.index = i;
     sign.userData.anchor = { x: wall.x, z: wall.z };
+    sign.userData.facadeWidth = Math.min(21, wall.w * 0.87);
     sign.position.set(wall.x, -7 + wall.h * 0.55, wall.z + wall.depth / 2 + 1.8);
-    sign.scale.set(Math.min(21, wall.w * 0.87), Math.min(25, wall.h * 0.42), 1);
+    sign.scale.set(sign.userData.facadeWidth, Math.min(25, wall.h * 0.42), 1);
     group.add(sign);
   }
   parent.add(group);
@@ -483,7 +484,9 @@ export function updateCity32Living(root, travel) {
   holograms.forEach((mesh, i) => {
     if (!mesh.visible) return;
     mesh.rotation.y = Math.sin(travel * 0.004 + i) * 0.12;
-    mesh.scale.x = 19 + 2 * Math.sin(travel * 0.007 + i);
+    // The old 19..21-unit animation stretched narrow wall-mounted signs
+    // outside their support. Pulse within the actual facade instead.
+    mesh.scale.x = mesh.userData.facadeWidth * (0.95 + 0.05 * Math.sin(travel * 0.007 + i));
   });
 }
 
