@@ -38,6 +38,7 @@ export function createCityDistricts(buildingAnchors = []) {
   const counts = { bodies: 0, trim: 0, lights: 0, windows: 0, accents: 0 };
   const occupied = buildingAnchors.map(({ x, z, w, depth }) => ({ x, z, w, depth }));
   const towerFootprints = [];
+  const platformFootprints = [];
 
   function place(mesh, counter, x, y, z, w, h, d) {
     const i = counts[counter]++;
@@ -80,7 +81,7 @@ export function createCityDistricts(buildingAnchors = []) {
         // map. A facade must never move through another building when the
         // 1,900-unit city tiles wrap during flight.
         const footprint = placeCityDistrictTower(
-          { x: plannedX, z, w: width, depth: 29, h: height },
+          { x: plannedX, z, w: width, depth: 29, h: height, spaceportPad: district.name === 'spaceport' },
           occupied,
           side,
         );
@@ -135,6 +136,9 @@ export function createCityDistricts(buildingAnchors = []) {
           // A functional pad extends OUTWARD from the supported spire, not
           // inward across the maglev rail. Real support piers reach the road.
           const padX = x + side * 13;
+          const pad = { x: padX, z: z + 25, w: 47, depth: 49, h: 16 };
+          platformFootprints.push(pad);
+          occupied.push(pad);
           place(bodyMesh, 'bodies', padX, 9, z + 25, 47, 5, 49);
           for (const end of [-1, 1])
             place(bodyMesh, 'bodies', padX + side * 18.5, -0.25, z + 25 + end * 17, 3.2, 13.5, 3.2);
@@ -210,5 +214,6 @@ export function createCityDistricts(buildingAnchors = []) {
   group.add(premium);
   group.userData.districts = districts.map((x) => x.name);
   group.userData.towerFootprints = towerFootprints;
+  group.userData.platformFootprints = platformFootprints;
   return group;
 }
