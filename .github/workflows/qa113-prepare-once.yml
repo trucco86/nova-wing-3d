@@ -1,0 +1,34 @@
+name: QA113 prepare premium graphics once
+on:
+  push:
+    branches:
+      - feat/qa113-city40-materials-detail-perf-20261111
+    paths:
+      - .github/workflows/qa113-prepare-once.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prepare v1.27.113 and validate Graphics 4.0 PBR
+        run: |
+          npm run release:prepare -- 1.27.113
+          npm run format
+          npm run build
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "build(QA113): synchronize 1.27.113 premium PBR candidate"
+            git push origin HEAD:feat/qa113-city40-materials-detail-perf-20261111
+          fi
+          npm run validate
