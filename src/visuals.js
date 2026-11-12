@@ -3,6 +3,7 @@ import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
@@ -2322,6 +2323,23 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.density =
         sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
+      // A different physical daylight / bounce / haze signature per planet.
+      // Retain the approved city lighting and all existing combat colour cues.
+      const premiumGrade = dynamicFlight && !illuminatedCity ? premiumWorldGrade(sceneryTheme) : null;
+      if (premiumGrade) {
+        hemisphere.color.set(premiumGrade.sky);
+        hemisphere.groundColor.set(premiumGrade.ground);
+        hemisphere.intensity = sceneryTheme === 'ice' ? 2.12 : 2.05;
+        key.color.set(premiumGrade.sun);
+        key.intensity = premiumGrade.key;
+        rim.color.set(premiumGrade.rim);
+        rim.intensity = premiumGrade.rimEnergy;
+        purple.color.set(premiumGrade.fill);
+        purple.intensity = premiumGrade.fillEnergy;
+        scene.fog.color.set(premiumGrade.fog);
+        scene.fog.density = premiumGrade.haze;
+        skyMat.uniforms.ambient.value.set(premiumGrade.fog);
+      }
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
@@ -2336,20 +2354,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           iceField.userData.europaForeground = true;
           sectorScenery.add(iceField);
         }
+        // Legacy: sixty separate low-detail meshes cost sixty draw calls.
+        // Preserve their authored positions/rotations in ONE instanced batch,
+        // outside the x±72 flight lane, with no invisible collision surfaces.
         const geo =
           sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
+        const field = new T.InstancedMesh(geo, mat, 60);
+        field.name = 'premium-instanced-' + sceneryTheme + '-far-field';
+        field.userData.visualOnly = true;
+        field.frustumCulled = false;
+        const transform = new T.Object3D();
         for (let i = 0; i < 60; i++) {
-          const o = new T.Mesh(geo, mat);
-          o.position.set(
-            (i % 2 ? 1 : -1) * rnd(38, 180),
+          transform.position.set(
+            (i % 2 ? 1 : -1) * rnd(125, 260),
             sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
             -i * 22,
           );
-          o.scale.setScalar(rnd(0.5, 2.5));
-          o.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
-          if (iceField) iceField.add(o);
-          else sectorScenery.add(o);
+          transform.scale.setScalar(rnd(0.5, 2.5));
+          transform.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+          transform.updateMatrix();
+          field.setMatrixAt(i, transform.matrix);
         }
+        field.instanceMatrix.needsUpdate = true;
+        if (iceField) iceField.add(field);
+        else sectorScenery.add(field);
       }
       if (sceneryTheme === 'station' && dynamicFlight) {
         // Mission 4 is INSIDE Marvin's mothership; do not reuse a generic
