@@ -19,6 +19,7 @@ localStorage.setItem(
 let rendering = true,
   capture = true;
 let lastRenderStats = null;
+let lastScene = null;
 const game = createGame({
   autoLoop: false,
   // Existing gameplay probes skip the pre-mission film; opt in with ?intro=1
@@ -36,6 +37,7 @@ const game = createGame({
     const render = renderer.render.bind(renderer);
     renderer.render = (...args) => {
       if (!rendering) return;
+      lastScene = args[0];
       render(...args);
       // Actual WebGL stats from the final rendered frame, not an FPS guess.
       // Capture only immutable scalar values; renderer.info resets per frame.
@@ -62,6 +64,20 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  // Private QA fixture only: render exact same camera and clock with and
+  // without the new 285m architecture; production has no such debug switch.
+  graphics40Visible(enabled) {
+    if (!lastScene) throw new Error('QA visual scene was not initialized');
+    let roots = 0;
+    lastScene.traverse((node) => {
+      if (node.name !== 'city40-hero-architecture') return;
+      node.visible = !!enabled;
+      roots++;
+    });
+    rendering = true;
+    game.step(0);
+    return { roots, stats: lastRenderStats ? { ...lastRenderStats } : null };
+  },
   hangar() {
     capture = false;
     // Exercise the first-sector launch with the same keyboard controls as the
