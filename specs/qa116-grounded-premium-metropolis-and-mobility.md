@@ -36,3 +36,5 @@ A extensão dos decks muda a colisão lateral próximo às extremidades: testar 
 ## Roteiro obrigatório de revisão visual
 
 Comparar screenshots reais de desktop e celular nos perfis Médio e Alto, utilizando exatamente a mesma trajetória de voo: aproximação de cada uma das três pontes, ônibus próximos ao chão, carros voadores em profundidade e outdoors vistos de frente, lateral e por trás. Registrar clipping, interferência no HUD, iluminação, materiais, FPS e draw calls reais. A melhoria cromática não deve reduzir o contraste de ataques ou dos alertas de colisão. A observação de uma imagem conceitual isolada não substitui o teste WebGL.
+
+Na revisão dos outdoors traseiros, verificar se a campanha é legível sem espelhamento pela câmera da nave, se os suportes não atravessam as coberturas e se a face da peça permanece voltada para fora da construção. A aprovação visual deve usar o preview do mesmo SHA validado pela CI.
