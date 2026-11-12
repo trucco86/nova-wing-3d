@@ -107,6 +107,7 @@ function geometryBuilder() {
     result.setAttribute('uv', new T.Float32BufferAttribute(uvs, 2));
     result.setIndex(indices);
     result.computeBoundingSphere();
+    result.computeBoundingBox();
     return {
       geometry: result,
       vertices: positions.length / 3,
@@ -362,6 +363,29 @@ function makeFacade(host, style, groups) {
     p.trim,
   );
   glass.box(x, y0 + doorHeight * 0.47, z + 1.49, bayWidth * 0.92, doorHeight * 0.7, 0.26, p.glass);
+  // Supported, multi-level commercial entrance: chamfered awning,
+  // recessed glass storefront, structural struts and soffit shadows.
+  // Unlike floating decorative props, all details are part of a host.
+  const canopy = y0 + doorHeight + 2.7;
+  masonry.polygonPrism(
+    [
+      [x - width * 0.42, canopy - 0.65],
+      [x + width * 0.42, canopy - 0.65],
+      [x + width * 0.36, canopy + 0.72],
+      [x - width * 0.36, canopy + 0.72],
+    ],
+    z + 1.8,
+    1.5,
+    p.bright,
+  );
+  shadow.box(x, canopy - 0.79, z + 1.68, width * 0.67, 0.22, 0.54, p.shade);
+  // Inner display bays read as retail space instead of an unbroken wall.
+  for (const wing of [-1, 1]) {
+    const sx = x + wing * width * 0.235;
+    glass.box(sx, y0 + 3.25, z + 1.43, width * 0.28, 4.1, 0.23, p.glass);
+    masonry.box(sx, y0 + 5.52, z + 1.7, width * 0.31, 0.4, 0.3, p.trim);
+    fine.box(sx, y0 + 2.25, z + 1.73, width * 0.27, 0.19, 0.26, p.trim);
+  }
 
   // The new glass is visibly in front of legacy City33 glazing at z+1.18,
   // preventing old windows from intersecting the new bay design.
@@ -388,6 +412,11 @@ function makeFacade(host, style, groups) {
         (level + col + host.band) % 5 === 0 ? p.lit : p.glass,
       );
       fine.box(px, floorY + glazingHeight * 0.47, z + 1.72, pitch * 0.83, 0.19, 0.26, p.trim);
+      // A narrow secondary shadow reveal visibly separates the glazing from
+      // the structural extrusion. It is merged with the existing material
+      // draw call; fine mullions only appear in the High profile.
+      if ((host.band + col) % 2 === 0)
+        fine.box(px + pitch * 0.34, floorY, z + 1.75, 0.15, glazingHeight * 0.83, 0.19, p.bright);
     }
     masonry.box(x, floorY - step * 0.43, z + 1.67, width * 0.77, 0.37, 0.79, p.bright);
     if (level % 2 === 0)
@@ -409,6 +438,44 @@ function makeFacade(host, style, groups) {
     p.bright,
   );
   fine.box(x, yTop + crownHeight * 0.65, z + 1.61, width * 0.55, 0.36, 0.24, p.trim);
+  // Roof architecture differs materially between district identities.
+  // Civic buildings carry asymmetric sculptural shoulders; industrial
+  // buildings expose supported structural fins and ventilation slats.
+  if (style === 'civic') {
+    masonry.polygonPrism(
+      [
+        [x - width * 0.31, yTop + 0.5],
+        [x + width * 0.21, yTop + 0.5],
+        [x + width * 0.13, yTop + crownHeight + 2.2],
+        [x - width * 0.17, yTop + crownHeight + 2.2],
+      ],
+      z + 1.23,
+      0.82,
+      p.trim,
+    );
+    for (const side of [-1, 1])
+      fine.box(x + side * width * 0.31, yTop - 1.05, z + 1.75,
+        width * 0.08, 1.8, 0.25, p.lit);
+  } else {
+    for (const side of [-1, 1]) {
+      masonry.polygonPrism(
+        [
+          [x + side * width * 0.35, yTop + 0.3],
+          [x + side * width * 0.19, yTop + 0.3],
+          [x + side * width * 0.22, yTop + crownHeight + 1.8],
+        ],
+        z + 1.18,
+        0.93,
+        p.trim,
+      );
+      // Shallow service ventilation remains attached to a load-bearing roof
+      // wall and never stretches between unrelated buildings.
+      for (let fin = 0; fin < 3; fin++)
+        fine.box(x + side * width * 0.31,
+          yTop - 2.0 - fin * 1.15, z + 1.67,
+          width * 0.11, 0.25, 0.28, p.trim);
+    }
+  }
   if (theme === 1) {
     // Engineering truss makes industrial towers materially different.
     for (const side of [-1, 1])
@@ -469,10 +536,16 @@ export function createCity40HeroSection(tile, variant = 'civic') {
     const mesh = new T.Mesh(finished.geometry, material);
     mesh.name = name;
     mesh.userData.visualOnly = true;
+    // Coarse-grained section culling protects both devices when this
+    // 285m prototype exits the view; no extra object per window is needed.
+    mesh.frustumCulled = true;
     parent.add(mesh);
     metrics.triangles += finished.triangles;
     metrics.vertices += finished.vertices;
     metrics.drawUnits++;
+    metrics.bytes = (metrics.bytes ?? 0) +
+      Object.values(finished.geometry.attributes).reduce((n, a) => n + a.array.byteLength, 0) +
+      finished.geometry.index.array.byteLength;
   }
   root.add(standard, high);
   root.userData.buildings = selected.map(({ index, x, z, w, h, depth, envelope }) => ({
