@@ -139,9 +139,12 @@ test('QA111: repeated shots rotate slight deterministic pitch without stacking e
   assert.equal(cues.play('shot'), true);
   const first = events.sources.filter((node) => node.kind === 'osc').map((n) => n.frequency.value);
   assert.equal(first.length, 4, 'the cannon includes its delayed pressure rebound layer');
-  assert.ok(AUDIO_CUES.shot.tones.some((tone) =>
-    tone.delay >= 0.06 && tone.duration >= 0.25 && tone.to < 90
-  ), 'the fourth oscillator must actually sustain the audible post-attack body');
+  assert.ok(
+    AUDIO_CUES.shot.tones.some(
+      (tone) => tone.delay >= 0.06 && tone.duration >= 0.25 && tone.to < 90,
+    ),
+    'the fourth oscillator must actually sustain the audible post-attack body',
+  );
   assert.equal(cues.play('shot'), false, 'rapid duplicate gets suppressed');
   context.currentTime += 0.09;
   assert.equal(cues.play('shot'), true);
