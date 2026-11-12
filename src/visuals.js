@@ -1859,11 +1859,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
     const normalDensity =
-      destinationIndex === 5
-        ? 0.0014
-        : destinationIndex === 7
-          ? 0.00012
-          : (grade?.haze ?? 0.00045);
+      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : (grade?.haze ?? 0.00045);
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
@@ -2333,7 +2329,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
       // A different physical daylight / bounce / haze signature per planet.
       // Retain the approved city lighting and all existing combat colour cues.
-      const premiumGrade = dynamicFlight && !illuminatedCity ? premiumWorldGrade(sceneryTheme) : null;
+      const premiumGrade =
+        dynamicFlight && !illuminatedCity ? premiumWorldGrade(sceneryTheme) : null;
       if (premiumGrade) {
         hemisphere.color.set(premiumGrade.sky);
         hemisphere.groundColor.set(premiumGrade.ground);

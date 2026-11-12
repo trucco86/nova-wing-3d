@@ -117,8 +117,7 @@ function geometry(shape) {
     geometry.setAttribute('color', new T.BufferAttribute(rgb, 3));
     parts.push(geometry);
   };
-  const block = (c, x, y, z, w, h, d) =>
-    add(new T.BoxGeometry(1, 1, 1), c, x, y, z, w, h, d);
+  const block = (c, x, y, z, w, h, d) => add(new T.BoxGeometry(1, 1, 1), c, x, y, z, w, h, d);
   switch (shape) {
     case 'commuter':
       // Compact flying transport, supported by actual wings and twin drives.
@@ -161,7 +160,16 @@ function geometry(shape) {
     case 'ice':
       add(new T.OctahedronGeometry(4.1, 0), 0, 0, 0, 0, 1.1, 1.5, 1);
       for (const side of [-1, 1])
-        add(new T.OctahedronGeometry(2.3, 0), side < 0 ? 1 : 2, side * 2.6, -1.0, 1.1, 0.5, 1.1, 0.7);
+        add(
+          new T.OctahedronGeometry(2.3, 0),
+          side < 0 ? 1 : 2,
+          side * 2.6,
+          -1.0,
+          1.1,
+          0.5,
+          1.1,
+          0.7,
+        );
       break;
     case 'spore':
       add(new T.DodecahedronGeometry(3.1, 0), 0);

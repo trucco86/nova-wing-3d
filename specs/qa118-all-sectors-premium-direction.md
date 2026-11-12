@@ -1,9 +1,11 @@
 # QA118 | Padrão premium transversal às dez fases
 
 ## Direção aprovada
+
 Usar a Fase 1 premium como referência de composição, mas cada planeta/fase precisa de materiais, estrutura, iluminação, tráfego ambiental e cores próprios. Evitar objetos flutuantes sem sustentação, cenários genéricos, neon rosa/ciano dominante, atravessamento de objetos e perda de performance em celulares. Os modelos devem ser WebGL reais, não uma imagem conceitual estática.
 
 ## Primeira implementação transversal
+
 1. **Fase 1, cidade:** preservar QA116/QA117: ruas, ônibus, fachadas, anúncios, pontes sustentadas, caças. Consolidar módulos de janelas PBR com menos triângulos sem mudar o limite QA114 (menos de 3% de geometria incremental).
 2. **Fase 2, Marte:** veículos de exploração com sensores, outriggers e carenagem, paleta de argila, luz ambar e visibilidade na poeira. Preservar Fobos/Deimos, Curiosity, Olympus e tempestade.
 3. **Fase 3, asteroides:** rocha fraturada com veio metálico esculpido e ambiente de mineração distante, sem impactar curso de obstáculos, subchefe ou transição do túnel.
@@ -16,6 +18,7 @@ Usar a Fase 1 premium como referência de composição, mas cada planeta/fase pr
 10. **Fase 10, Marvin/Titã:** interceptores imperiais negros com detalhes vermelhos e motores, iluminação de fortaleza; preservar perseguição e chefe final.
 
 ## Engenharia e performance
+
 - As dez silhuetas ambientais são compostas por peças coloridas em geometria mesclada, com **um material PBR e dois lotes instanciados por fase**. Zero materiais, draw calls ou colisores extras por peça.
 - Os campos de detritos rochosos, gelo, matéria orgânica e plasma, antes com 60 objetos individuais cada, passam a usar **um InstancedMesh por ambiente**: aproximadamente 59 chamadas de renderização a menos em cada uma das fases 3, 5, 6 e 7 quando visíveis.
 - Ambientação de fundo sempre fora do corredor central de voo, sem hitbox falsa, com desenho determinístico durante Pause.
@@ -23,6 +26,7 @@ Usar a Fase 1 premium como referência de composição, mas cada planeta/fase pr
 - Luz, fill, rim e névoa em nove fases não urbanas têm parâmetros PBR coerentes, sem full-screen filter ou novos passes.
 
 ## Critérios de aceite
+
 - Verificar no **SHA final**: lint, build, Node, Playwright FULL (quatro shards), navegação das 10 fases, modo Médio/Alto e pausa.
 - Não afrouxar o teste de custo da cidade QA114 nem outras asserções.
 - Renderizar screenshots comparáveis na mesma rota/câmera para desktop e mobile. Medir FPS p95, draw calls e triângulos reais. Contagens de entidades isoladas não comprovam a fluidez.
@@ -30,4 +34,5 @@ Usar a Fase 1 premium como referência de composição, mas cada planeta/fase pr
 - Não realizar merge ou deploy de produção sem autorização.
 
 ## Próximo lote planejado
+
 Refinar por fase geometria de primeiro plano, texturas procedurais, animações, materiais, superfícies/impactos e chefes. Ordem de risco: Marte e asteroides (transições/colisão), Europa (túnel/garra), nave-mãe (salões/reator), Saturno (anéis/gelo), Vênus/Netuno/Órion/Titã. Nunca substituir estruturas necessárias por decoração ou refazer mecânicas aprovadas sem QA.

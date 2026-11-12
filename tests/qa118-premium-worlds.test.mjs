@@ -4,7 +4,12 @@ import * as T from 'three';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 import { PREMIUM_WORLD_GRADES, premiumWorldGrade } from '../src/premium-world-grading.js';
-import { createLivingWorldLayers, LIVING_WORLD_PROFILES, setLivingWorldQuality, updateLivingWorldLayers } from '../src/living-world-depth.js';
+import {
+  createLivingWorldLayers,
+  LIVING_WORLD_PROFILES,
+  setLivingWorldQuality,
+  updateLivingWorldLayers,
+} from '../src/living-world-depth.js';
 
 test('QA118: every mission uses a distinct physical ambient signature within two GPU batches', () => {
   assert.equal(SECTORS.length, 10);
@@ -14,23 +19,45 @@ test('QA118: every mission uses a distinct physical ambient signature within two
     assert.ok(world, theme + ' requires a dedicated premium asset');
     assert.equal(world.children.length, 2, theme + ' preserves near/far batch budget');
     const g = world.userData.geometry;
-    assert.ok(g.index && g.getAttribute('normal') && g.getAttribute('color'), theme + ' requires genuine 3D PBR geometry');
-    assert.ok(g.getAttribute('position').count > 55, theme + ' cannot be one featureless primitive');
+    assert.ok(
+      g.index && g.getAttribute('normal') && g.getAttribute('color'),
+      theme + ' requires genuine 3D PBR geometry',
+    );
+    assert.ok(
+      g.getAttribute('position').count > 55,
+      theme + ' cannot be one featureless primitive',
+    );
     assert.ok(g.getAttribute('position').count < 400, theme + ' must stay mobile-budgeted');
-    assert.ok(world.userData.layers.every(({ mesh }) => mesh.isInstancedMesh && mesh.material.vertexColors));
+    assert.ok(
+      world.userData.layers.every(({ mesh }) => mesh.isInstancedMesh && mesh.material.vertexColors),
+    );
     assert.ok(world.userData.layers.every(({ mesh }) => mesh.material.roughness >= 0.3));
-    signatures.add(theme + ':' + g.getAttribute('position').count + ':' + LIVING_WORLD_PROFILES[theme].shape);
+    signatures.add(
+      theme + ':' + g.getAttribute('position').count + ':' + LIVING_WORLD_PROFILES[theme].shape,
+    );
     const original = Array.from(world.children[0].instanceMatrix.array);
     updateLivingWorldLayers(world, { time: 10, travel: 450 });
     assert.notDeepEqual(Array.from(world.children[0].instanceMatrix.array), original);
     const sameTime = Array.from(world.children[0].instanceMatrix.array);
     updateLivingWorldLayers(world, { time: 10, travel: 450 });
-    assert.deepEqual(Array.from(world.children[0].instanceMatrix.array), sameTime, theme + ': deterministic animation');
+    assert.deepEqual(
+      Array.from(world.children[0].instanceMatrix.array),
+      sameTime,
+      theme + ': deterministic animation',
+    );
     setLivingWorldQuality(world, 'medium');
-    assert.deepEqual(world.userData.layers.map(({ mesh }) => mesh.count), [10, 14]);
+    assert.deepEqual(
+      world.userData.layers.map(({ mesh }) => mesh.count),
+      [10, 14],
+    );
     setLivingWorldQuality(world, 'high');
-    assert.deepEqual(world.userData.layers.map(({ mesh }) => mesh.count), [18, 28]);
-    assert.ok(world.children.every((child) => child.userData.visualOnly && !child.userData.collider));
+    assert.deepEqual(
+      world.userData.layers.map(({ mesh }) => mesh.count),
+      [18, 28],
+    );
+    assert.ok(
+      world.children.every((child) => child.userData.visualOnly && !child.userData.collider),
+    );
     g.dispose();
     world.userData.materials.forEach((material) => material.dispose());
   }
@@ -75,7 +102,10 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
       assert.ok(sun.color.equals(new T.Color(grade.sun)), theme + ': grade key light');
       if (sector >= 3) {
         const arrival = world.setDestinationArrival(60);
-        assert.ok(arrival?.reveal >= 0.99, 'grade must be checked after the actual destination reveals');
+        assert.ok(
+          arrival?.reveal >= 0.99,
+          'grade must be checked after the actual destination reveals',
+        );
       }
       if (['mars', 'ice', 'station'].includes(theme)) {
         // Mars' storm, Europa's frost and the Devastador's interior visibility
@@ -83,7 +113,10 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
         assert.ok(scene.fog.density > 0 && Number.isFinite(scene.fog.density));
         if (theme === 'station') {
           const indoorFog = new T.Color('#101b30').lerp(new T.Color('#293447'), 0.8);
-          assert.ok(scene.fog.color.equals(indoorFog), 'mothership interior must preserve readable hangar fog');
+          assert.ok(
+            scene.fog.color.equals(indoorFog),
+            'mothership interior must preserve readable hangar fog',
+          );
         }
       } else {
         const referenceFog = new T.Color(grade.fog);
@@ -106,13 +139,22 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
       const m = new T.Matrix4();
       for (let i = 0; i < field.count; i++) {
         field.getMatrixAt(i, m);
-        assert.ok(Math.abs(m.elements[12]) >= 125, 'field must not clip through player flight area');
+        assert.ok(
+          Math.abs(m.elements[12]) >= 125,
+          'field must not clip through player flight area',
+        );
       }
     }
     world.setGraphicsQuality('medium');
-    assert.deepEqual(ambient.userData.layers.map(({ mesh }) => mesh.count), [10, 14]);
+    assert.deepEqual(
+      ambient.userData.layers.map(({ mesh }) => mesh.count),
+      [10, 14],
+    );
     world.setGraphicsQuality('high');
-    assert.deepEqual(ambient.userData.layers.map(({ mesh }) => mesh.count), [18, 28]);
+    assert.deepEqual(
+      ambient.userData.layers.map(({ mesh }) => mesh.count),
+      [18, 28],
+    );
   }
   world.destroy?.();
 });
