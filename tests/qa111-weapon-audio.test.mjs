@@ -109,7 +109,7 @@ test('QA111: real charge meter drives ONE rising plasma engine and stops cleanly
   assert.ok(cues.snapshot().chargeProgress >= 0.9);
   cues.setCharge({ active: false });
   assert.equal(cues.snapshot().chargeActive, false);
-  const targets = events.params.filter((entry) => entry[0] === 'target').slice(-4);
+  const targets = events.params.filter((entry) => entry[0] === 'target').slice(-3);
   assert.deepEqual(
     targets.map((x) => x[1]),
     [0, 0, 0],
