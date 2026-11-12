@@ -333,9 +333,9 @@ export function planCity40HeroBuildings(tile, variant = 'civic') {
             b.z <= CITY40_HERO_RANGE.frontZ &&
             b.z >= CITY40_HERO_RANGE.backZ &&
             b.w >= 10 &&
-            b.h >= 38 &&
+            b.h >= 35 &&
             Math.abs(b.x) < 245 &&
-            Math.abs(b.z - z) < 49,
+            Math.abs(b.z - z) < 57,
         )
         .sort(
           (a, b) =>
