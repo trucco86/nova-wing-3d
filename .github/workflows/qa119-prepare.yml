@@ -11,6 +11,7 @@ on:
       - src/europa-surface.js
       - tests/qa119-geology-and-caverns.test.mjs
       - specs/qa119-geology-and-caverns-premium.md
+      - docs/QA119-VALIDATION.md
 
 permissions:
   contents: write
