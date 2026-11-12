@@ -367,10 +367,41 @@ function makeCorridorSideFacade(host, style, groups) {
       fine.box(sideX - side * 0.15, y, host.z + depth * 0.21, 0.16, pitch * 0.64, 0.19, tone.rim);
     }
   }
+  // QA114: the camera-facing side has two full-height architectural
+  // buttresses and continuous vertical window ribbons. They are supported
+  // by the host's existing wall and merged into the original four material
+  // families, so finer silhouettes do not add draw calls.
+  const sideProfile = style === 'civic'
+    ? { structural: '#d5e2e3', glazing: '#88d6e5', cap: '#e5f0ef' }
+    : { structural: '#b1a99f', glazing: '#a8c9c9', cap: '#e2c3a0' };
+  const sideColumns = [];
+  for (const zSide of [-1, 1]) {
+    const columnZ = host.z + zSide * depth * 0.43;
+    masonry.box(sideX - side * 0.065, bottom + host.h * 0.49, columnZ,
+      0.16, host.h * 0.70, 0.38, sideProfile.structural);
+    glass.box(sideX - side * 0.10, bottom + host.h * 0.48,
+      host.z + zSide * depth * 0.32, 0.15, host.h * 0.52,
+      depth * 0.11, sideProfile.glazing);
+    // The cornice is bounded inside the same host footprint, with no
+    // cantilever over the pilot lane or an unrelated tower.
+    masonry.box(sideX - side * 0.08, bottom + host.h * 0.855, columnZ,
+      0.16, 0.35, depth * 0.12, sideProfile.cap);
+    sideColumns.push(columnZ);
+  }
+  if (style === 'industrial') {
+    // Supported alternating mechanical spandrels distinguish the industrial
+    // quarter without an additional material, particle or postprocess pass.
+    for (const direction of [-1, 1])
+      fine.box(sideX - side * 0.12,
+        bottom + host.h * 0.69,
+        host.z + direction * depth * 0.15,
+        0.16, 0.29, depth * 0.22, sideProfile.cap);
+  }
   const minLaneAbsX = Math.abs(sideX) - 0.16;
   if (minLaneAbsX < SIDE_CLEARANCE)
     throw new Error('Graphics 4.0 side skin entered the reserved flight lane');
-  return { hostIndex: host.index, x: sideX, depth, floors, minLaneAbsX };
+  return { hostIndex: host.index, x: sideX, depth, floors, minLaneAbsX,
+    sideColumns, supportedRibbonCount: sideColumns.length };
 }
 
 function makeFacade(host, style, groups) {
@@ -694,6 +725,39 @@ export function createCity40SkylineLandmark() {
     glass.box(x, 190, z + 7.6, 2.9, 103, 0.5, side < 0 ? '#a9e2ed' : '#efc5a8');
     trim.box(x, 255.5, z + 7.9, 5, 0.8, 0.38, '#eff4f4');
   }
+  // QA114: a faceted orbital aperture gives the city a distinctive,
+  // readable silhouette while adding ZERO draw calls. Twelve angled
+  // architectural panels are attached across the existing 157m skyway,
+  // far outside the playable road and flight volume.
+  const aperture = { radius: 43, innerRadius: 36.5, y: 178, segments: 12, frontZ: z + 11 };
+  for (let i = 0; i < aperture.segments; i++) {
+    const start = i * Math.PI * 2 / aperture.segments;
+    const end = (i + 1) * Math.PI * 2 / aperture.segments;
+    const polar = (r, angle) => [
+      Math.cos(angle) * r,
+      aperture.y + Math.sin(angle) * r,
+    ];
+    const outerStart = polar(aperture.radius, start);
+    const outerEnd = polar(aperture.radius, end);
+    const innerStart = polar(aperture.innerRadius, start);
+    const innerEnd = polar(aperture.innerRadius, end);
+    // Winding follows a convex quad around the aperture's hollow center.
+    const facet = [outerStart, outerEnd, innerEnd, innerStart];
+    frame.polygonPrism(facet, aperture.frontZ, 2.6, '#c4d8e1');
+    // The narrow colored sub-panel is integrated into the same glass batch.
+    // Neither side owns a new light source, shader variant or texture.
+    if (i % 2 === 0) {
+      const glassInnerStart = polar(aperture.innerRadius + 0.4, start);
+      const glassInnerEnd = polar(aperture.innerRadius + 0.4, end);
+      const glassOuterStart = polar(aperture.innerRadius + 2.5, start);
+      const glassOuterEnd = polar(aperture.innerRadius + 2.5, end);
+      glass.polygonPrism(
+        [glassOuterStart, glassOuterEnd, glassInnerEnd, glassInnerStart],
+        aperture.frontZ + 0.22, 0.3,
+        i % 4 === 0 ? '#a6e5ef' : '#e8c8ab',
+      );
+    }
+  }
   // The skyway is actually connected to BOTH towers at y~157. Its stepped
   // steel truss spans only the far-background structure, not playable space.
   frame.polygonPrism(
@@ -753,6 +817,13 @@ export function createCity40SkylineLandmark() {
   root.add(standard, high);
   root.userData.metrics = metrics;
   root.userData.localZ = z;
+  root.userData.aperture = {
+    radius: aperture.radius,
+    innerRadius: aperture.innerRadius,
+    segments: aperture.segments,
+    supportedSkywayY: 157,
+    nonPlayable: true,
+  };
   return root;
 }
 
