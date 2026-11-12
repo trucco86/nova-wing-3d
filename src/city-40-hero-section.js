@@ -129,17 +129,9 @@ function geometryBuilder() {
       else indices.push(front, front + i, front + i + 1);
     }
     const innerX = outerX + side * inset;
-    const rear = positions.length / 3;
-    for (const [z, y] of corners) {
-      positions.push(innerX, y, z);
-      normals.push(side, 0, 0);
-      colors.push(...color);
-      uvs.push(z / 12, y / 12);
-    }
-    for (let i = 1; i < corners.length - 1; i++) {
-      if (invert) indices.push(rear, rear + i, rear + i + 1);
-      else indices.push(rear, rear + i + 1, rear + i);
-    }
+    // The rear cap would be permanently buried inside the real building.
+    // Keep the four side walls that provide actual relief, but avoid
+    // generating invisible triangles and vertex buffers per facade pod.
     for (let i = 0; i < corners.length; i++) {
       const j = (i + 1) % corners.length;
       const p = corners[i],
