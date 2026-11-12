@@ -12,17 +12,17 @@ export function createCityDistricts(buildingAnchors = []) {
   premium.visible = false;
   const unit = new T.BoxGeometry(1, 1, 1);
   const frame = new T.MeshStandardMaterial({
-    color: '#527d9b',
+    color: '#687a81',
     metalness: 0.74,
     roughness: 0.42,
   });
   const cap = new T.MeshStandardMaterial({
-    color: '#96bfd2',
+    color: '#aab9b8',
     metalness: 0.76,
     roughness: 0.34,
   });
   const lowLight = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-  const highLight = new T.MeshBasicMaterial({ color: '#92eff1', toneMapped: false });
+  const highLight = new T.MeshBasicMaterial({ color: '#cce1e2', toneMapped: false });
   const amber = new T.MeshBasicMaterial({ color: '#ffca87', toneMapped: false });
   const bodyMesh = new T.InstancedMesh(unit, frame, 125);
   bodyMesh.name = 'city-district-towers-and-infrastructure';
@@ -201,9 +201,9 @@ export function createCityDistricts(buildingAnchors = []) {
   station(-1, -585);
   station(1, -1315);
 
-  // Street identifiers on Medium get cyan, warm amber and magenta accents
+  // Street identifiers on Medium use daylight glass, muted steel and warm accents
   // without new materials, lights or draw calls.
-  const urbanColors = ['#4af8ff', '#ff8bd0', '#ffd38a', '#7effdf'].map((c) => new T.Color(c));
+  const urbanColors = ['#d5e4e6', '#e5c98f', '#b6c9d0', '#a7d4bf'].map((c) => new T.Color(c));
   for (let i = 0; i < counts.lights; i++) {
     lightMesh.setColorAt(i, urbanColors[(i * 3 + Math.floor(i / 6)) % urbanColors.length]);
   }
