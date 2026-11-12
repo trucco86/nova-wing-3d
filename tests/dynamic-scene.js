@@ -66,10 +66,26 @@ window.fixture = {
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
   // Private QA fixture only: render exact same camera and clock with and
   // without the new 285m architecture; production has no such debug switch.
+  graphics40Horizon() {
+    if (!lastScene) throw new Error('QA visual scene was not initialized');
+    const landmark = lastScene.getObjectByName('city40-distant-signature');
+    return landmark ? {
+      visible: landmark.visible,
+      metrics: { ...landmark.userData.metrics },
+      localZ: landmark.userData.localZ,
+      visualOnly: landmark.userData.visualOnly,
+    } : null;
+  },
   graphics40Details() {
     const tiles = [];
     if (!lastScene) throw new Error('QA scene not rendered');
     lastScene.traverse((node) => {
+      // A/B covers both near-route facades and the new portrait-visible,
+      // non-collidable scenic landmark. Only tile roots count as roots.
+      if (node.name === 'city40-distant-signature') {
+        node.visible = !!enabled;
+        return;
+      }
       if (node.name !== 'city40-hero-architecture') return;
       const masonry = node.getObjectByName('city40-sculpted-masonry')?.material;
       const glass = node.getObjectByName('city40-deep-bay-glazing')?.material;
