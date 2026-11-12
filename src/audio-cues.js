@@ -155,7 +155,7 @@ Object.assign(AUDIO_CUES, {
       { from: 147, to: 158, duration: 0.13, gain: 0.007, wave: 'triangle', filter: 390, attack: 0.036 },
     ],
     noises: [
-      { duration: 0.13, gain: 0.009, attack: 0.055,
+      { duration: 0.15, gain: 0.009, attack: 0.095,
         filterType: 'bandpass', filter: 510, filterEnd: 650, q: 0.58 },
     ],
   },
