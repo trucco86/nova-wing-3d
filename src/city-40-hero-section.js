@@ -102,6 +102,58 @@ function geometryBuilder() {
     }
     elements++;
   }
+  // Convex Y/Z silhouettes are extruded along X instead of the old Z-only
+  // prisms. This is real camera-facing massing, not another flat facade decal.
+  // Coordinates are [z, y]; the outward side uses a safe 12cm-equivalent
+  // protrusion and the other face sits INSIDE the approved host building.
+  function sidePrism(corners, outerX, inset, side, tint) {
+    if (corners.length < 3 || !(inset > 0) || ![-1, 1].includes(side))
+      throw new Error('Invalid camera-facing architectural profile');
+    const front = positions.length / 3;
+    const color = rgb(tint);
+    let winding = 0;
+    for (let i = 0; i < corners.length; i++) {
+      const [z0, y0] = corners[i];
+      const [z1, y1] = corners[(i + 1) % corners.length];
+      winding += z0 * y1 - z1 * y0;
+    }
+    const invert = (winding > 0) !== (side > 0);
+    for (const [z, y] of corners) {
+      positions.push(outerX, y, z);
+      normals.push(-side, 0, 0);
+      colors.push(...color);
+      uvs.push(z / 12, y / 12);
+    }
+    for (let i = 1; i < corners.length - 1; i++) {
+      if (invert) indices.push(front, front + i + 1, front + i);
+      else indices.push(front, front + i, front + i + 1);
+    }
+    const innerX = outerX + side * inset;
+    const rear = positions.length / 3;
+    for (const [z, y] of corners) {
+      positions.push(innerX, y, z);
+      normals.push(side, 0, 0);
+      colors.push(...color);
+      uvs.push(z / 12, y / 12);
+    }
+    for (let i = 1; i < corners.length - 1; i++) {
+      if (invert) indices.push(rear, rear + i, rear + i + 1);
+      else indices.push(rear, rear + i + 1, rear + i);
+    }
+    for (let i = 0; i < corners.length; i++) {
+      const j = (i + 1) % corners.length;
+      const p = corners[i], q = corners[j];
+      quad(
+        [outerX, p[1], p[0]],
+        [innerX, p[1], p[0]],
+        [innerX, q[1], q[0]],
+        [outerX, q[1], q[0]],
+        tint,
+      );
+    }
+    elements++;
+  }
+
   function finish() {
     if (!positions.length) return null;
     const result = new T.BufferGeometry();
@@ -119,7 +171,7 @@ function geometryBuilder() {
       elements,
     };
   }
-  return { box, polygonPrism, finish };
+  return { box, polygonPrism, sidePrism, finish };
 }
 
 function finishMaterialMap(type) {
@@ -423,6 +475,36 @@ function makeCorridorSideFacade(host, style, groups) {
         sideProfile.cap,
       );
   }
+  // QA115: chamfered storefront shoulders and inset glass panels are
+  // actually modelled along the X-facing facade, where the player sees them.
+  // Each panel projects only 0.11 units beyond the approved sideX; its rear
+  // penetrates the owning building, not the flight corridor or its neighbors.
+  const pods = [];
+  for (const direction of [-1, 1]) {
+    const centerZ = host.z + direction * depth * 0.20;
+    const width = depth * 0.26;
+    const yBase = bottom + 11.5;
+    const yPeak = bottom + Math.min(host.h * 0.75, host.h - 10);
+    const profile = [
+      [centerZ - width * 0.49, yBase],
+      [centerZ + width * 0.49, yBase],
+      [centerZ + width * 0.36, yPeak - 4],
+      [centerZ + width * 0.18, yPeak],
+      [centerZ - width * 0.18, yPeak],
+      [centerZ - width * 0.36, yPeak - 4],
+    ];
+    masonry.sidePrism(profile, sideX - side * 0.10, 0.29, side,
+      style === 'civic' ? '#c8dbe4' : '#9eabb3');
+    const innerProfile = [
+      [centerZ - width * 0.30, yBase + 5],
+      [centerZ + width * 0.30, yBase + 5],
+      [centerZ + width * 0.21, yPeak - 7],
+      [centerZ - width * 0.21, yPeak - 7],
+    ];
+    glass.sidePrism(innerProfile, sideX - side * 0.12, 0.15, side,
+      style === 'civic' ? '#9fdfeb' : '#9ab9be');
+    pods.push({ centerZ, outerX: sideX - side * 0.12, height: yPeak - yBase });
+  }
   const minLaneAbsX = Math.abs(sideX) - 0.16;
   if (minLaneAbsX < SIDE_CLEARANCE)
     throw new Error('Graphics 4.0 side skin entered the reserved flight lane');
@@ -434,6 +516,7 @@ function makeCorridorSideFacade(host, style, groups) {
     minLaneAbsX,
     sideColumns,
     supportedRibbonCount: sideColumns.length,
+    sculptedPodiums: pods,
   };
 }
 
