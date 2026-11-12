@@ -88,3 +88,57 @@ test('QA113: reflection resources are shared and fallback rendering needs no doc
   world.setGraphicsQuality('high');
   assert.equal(near.getObjectByName('city40-precision-high').visible, true);
 });
+
+test('QA113: corridor-facing premium glass occupies supported building sides, never the flight lane', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.47, true);
+  world.setSector(SECTORS[0]);
+  let visible = 0;
+  for (const name of ['launch-city', 'launch-city-far']) {
+    const tile = scene.getObjectByName(name);
+    const hero = tile.getObjectByName('city40-hero-architecture');
+    const hosts = new Set(hero.userData.buildings.map(h => h.index));
+    const sideFacades = hero.userData.corridorFacades;
+    assert.ok(Array.isArray(sideFacades));
+    assert.ok(sideFacades.length >= 2, 'premium surfaces must face the pilot in both districts');
+    visible += sideFacades.length;
+    for (const face of sideFacades) {
+      assert.ok(hosts.has(face.hostIndex), 'side facade belongs to a real approved building');
+      assert.ok(face.minLaneAbsX >= 118, 'side glazing cannot cross the flight lane');
+      assert.ok(face.depth > 0 && face.depth < tile.userData.buildingFootprints[face.hostIndex].depth);
+      assert.ok(face.floors >= 4);
+    }
+  }
+  assert.ok(visible >= 6, 'architectural pilot needs several visible flight-facing buildings');
+});
+
+test('QA113: portrait-visible skyline landmark stays distant and non-collidable with bounded rendering', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.47, true);
+  world.setSector(SECTORS[0]);
+  const skyline = scene.getObjectByName('city-distant-horizon');
+  const landmark = skyline?.getObjectByName('city40-distant-signature');
+  assert.ok(landmark?.isGroup);
+  assert.equal(landmark.userData.visualOnly, true);
+  assert.equal(landmark.parent, skyline, 'signature landmark must be only in scenic horizon');
+  assert.equal(landmark.userData.localZ, -450);
+  assert.equal(landmark.userData.metrics.drawUnits, 3);
+  assert.ok(landmark.userData.metrics.triangles > 100);
+  assert.ok(landmark.userData.metrics.triangles < 5000);
+  assert.ok(landmark.userData.metrics.bytes < 256 * 1024);
+  const frame = landmark.getObjectByName('city40-landmark-faceted-spires');
+  const glass = landmark.getObjectByName('city40-landmark-glazing');
+  assert.ok(frame?.isMesh && glass?.isMesh);
+  for (const mesh of [frame, glass]) {
+    assert.equal(mesh.frustumCulled, true);
+    assert.ok(mesh.geometry.boundingSphere?.radius > 0);
+  }
+  landmark.traverse(node => {
+    assert.equal(node.userData.solid, undefined);
+    assert.equal(node.userData.hitbox, undefined);
+  });
+  world.setGraphicsQuality('medium');
+  assert.equal(landmark.getObjectByName('city40-landmark-high').visible, false);
+  world.setGraphicsQuality('high');
+  assert.equal(landmark.getObjectByName('city40-landmark-high').visible, true);
+});
