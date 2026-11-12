@@ -60,7 +60,7 @@ test('three skyline decks remain collidable and gain real grounded external supp
     decks.map((s) => s.z),
     [9, -311, -711],
   );
-  const extensions = physical.colliders().filter((s) => s.kind === 'upper-bridge-extension');
+  const extensions = physical.snapshot().filter((s) => s.kind === 'upper-bridge-extension');
   assert.equal(extensions.length, 6, 'approach arms must have real colliders');
   const first = physical.colliders().find((s) => s.kind === 'upper-bridge-deck');
   assert.ok(first && first.solid);
