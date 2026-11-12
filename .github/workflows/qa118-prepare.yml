@@ -6,6 +6,12 @@ on:
       - feat/qa118-premium-worlds-20261112
     paths:
       - .github/workflows/qa118-prepare.yml
+      - src/premium-world-grading.js
+      - src/living-world-depth.js
+      - src/visuals.js
+      - src/city-40-hero-section.js
+      - tests/qa118-premium-worlds.test.mjs
+      - specs/qa118-all-sectors-premium-direction.md
 
 permissions:
   contents: write
