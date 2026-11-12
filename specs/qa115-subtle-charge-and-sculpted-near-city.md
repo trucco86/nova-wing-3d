@@ -30,8 +30,8 @@ A QA114 PR #325 tinha Node 778 PASS e WebGL direcionado 6 PASS, mas **CI FULL fa
 
 Nenhuma publicação na main até CI FULL verde e aceitação visual/auditiva explícita.
 
-
 ## Evidência da rodada QA115, 12/11/2026
+
 - Node: **782 PASS, 0 FAIL**, build sincronizado em
   https://github.com/trucco86/nova-wing-3d/actions/runs/43230488399 .
 - Browser real `OfflineAudioContext`, desktop/mobile, Europa e PBR:
