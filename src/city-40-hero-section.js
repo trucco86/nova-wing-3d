@@ -24,15 +24,23 @@ function geometryBuilder() {
   let elements = 0;
 
   function quad(a, b, c, d, tint) {
-    const normal = new T.Vector3()
-      .subVectors(new T.Vector3(...b), new T.Vector3(...a))
-      .cross(new T.Vector3().subVectors(new T.Vector3(...c), new T.Vector3(...a)))
-      .normalize();
+    // This builder emits hundreds of facade quads at startup. Compute the
+    // cross product in scalars, avoiding three transient Vector3 allocations
+    // for every face and reducing GC pressure on mobile initial load.
+    const abx = b[0] - a[0], aby = b[1] - a[1], abz = b[2] - a[2];
+    const acx = c[0] - a[0], acy = c[1] - a[1], acz = c[2] - a[2];
+    let nx = aby * acz - abz * acy;
+    let ny = abz * acx - abx * acz;
+    let nz = abx * acy - aby * acx;
+    const magnitude = Math.hypot(nx, ny, nz) || 1;
+    nx /= magnitude;
+    ny /= magnitude;
+    nz /= magnitude;
     const base = positions.length / 3;
     const color = rgb(tint);
     for (const [i, p] of [a, b, c, d].entries()) {
       positions.push(...p);
-      normals.push(normal.x, normal.y, normal.z);
+      normals.push(nx, ny, nz);
       colors.push(...color);
       uvs.push(i === 1 || i === 2 ? 1 : 0, i >= 2 ? 1 : 0);
     }
@@ -137,11 +145,52 @@ function finishMaterialMap(type) {
   return texture;
 }
 
+// A tiny, locally generated reflection probe. Three converts this shared
+// cubemap into a filtered environment once; the city doesn't need six dynamic
+// cameras, screen-space reflections or new runtime render passes. Six 32px
+// faces contain low-frequency skyline/sky highlights, not sharp fake mirrors.
+function createCity40ReflectionProbe() {
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function')
+    return null;
+  const side = 32;
+  const faces = [];
+  for (let face = 0; face < 6; face++) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = side;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const grade = ctx.createLinearGradient(0, 0, 0, side);
+    grade.addColorStop(0, face === 2 ? '#a5dff7' : '#5f9cc6');
+    grade.addColorStop(0.47, '#8ab7c7');
+    grade.addColorStop(0.58, '#3c687c');
+    grade.addColorStop(1, face === 3 ? '#202936' : '#263c52');
+    ctx.fillStyle = grade;
+    ctx.fillRect(0, 0, side, side);
+    // Reflect an urban skyline and two broad warm/cool luminaires.
+    ctx.globalAlpha = 0.22;
+    for (let column = 0; column < 7; column++) {
+      const height = 7 + ((face * 7 + column * 13) % 12);
+      ctx.fillStyle = column % 2 ? '#182c43' : '#23445a';
+      ctx.fillRect(column * 5, 18 - height * 0.3, 4, height);
+    }
+    ctx.globalAlpha = 0.68;
+    ctx.fillStyle = face % 2 ? '#d9f5ff' : '#ffe0b2';
+    ctx.fillRect(5 + (face % 3) * 6, 7, 7, 3);
+    faces.push(canvas);
+  }
+  const probe = new T.CubeTexture(faces);
+  probe.mapping = T.CubeReflectionMapping;
+  probe.colorSpace = T.SRGBColorSpace;
+  probe.needsUpdate = true;
+  return probe;
+}
+
 let materials;
 function sharedMaterials() {
   if (materials) return materials;
   const normals = finishMaterialMap('normal');
   const roughness = finishMaterialMap('roughness');
+  const reflection = createCity40ReflectionProbe();
   const masonry = new T.MeshPhysicalMaterial({
     vertexColors: true,
     metalness: 0.66,
@@ -151,6 +200,8 @@ function sharedMaterials() {
     roughnessMap: roughness,
     clearcoat: 0.26,
     clearcoatRoughness: 0.31,
+    envMap: reflection,
+    envMapIntensity: 0.68,
   });
   const glass = new T.MeshPhysicalMaterial({
     vertexColors: true,
@@ -160,6 +211,8 @@ function sharedMaterials() {
     clearcoatRoughness: 0.12,
     emissive: '#1e5266',
     emissiveIntensity: 0.27,
+    envMap: reflection,
+    envMapIntensity: 1.0,
   });
   const shadow = new T.MeshStandardMaterial({
     vertexColors: true,
@@ -172,8 +225,12 @@ function sharedMaterials() {
     roughness: 0.24,
     clearcoat: 0.56,
     clearcoatRoughness: 0.18,
+    envMap: reflection,
+    envMapIntensity: 0.72,
   });
   materials = { masonry, glass, shadow, fine };
+  // Material and reflection resources remain shared by both city tiles.
+  // There is no texture creation or GPU allocation in the per-frame update.
   return materials;
 }
 
