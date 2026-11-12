@@ -322,7 +322,7 @@ function makeCorridorSideFacade(host, style, groups) {
   const innerWallX = host.x - side * host.w / 2;
   const clearance = Math.abs(innerWallX) - SIDE_CLEARANCE;
   if (clearance < 0.38) return null;
-  const projection = Math.min(0.32, clearance - 0.15);
+  const projection = Math.min(0.32, clearance - 0.22);
   const sideX = innerWallX - side * projection;
   const { masonry, glass, shadow, fine } = groups;
   const tone = style === 'civic'
