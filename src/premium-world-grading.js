@@ -1,0 +1,45 @@
+// Filmic colour direction for every non-Earth environment. These are actual
+// PBR light and fog parameters, not fullscreen filters or extra draw passes.
+// Distinct keys preserve important enemy telegraphs against every background.
+export const PREMIUM_WORLD_GRADES = Object.freeze({
+  mars: Object.freeze({
+    sky: '#e8be93', ground: '#755342', sun: '#ffe0b5', rim: '#c6a58b',
+    fill: '#cfb0a5', fog: '#97745f', key: 3.35, rimEnergy: 1.55, fillEnergy: 0.36, haze: 0.00092,
+  }),
+  asteroids: Object.freeze({
+    sky: '#adc0cb', ground: '#222b36', sun: '#d7e3e8', rim: '#c4a987',
+    fill: '#95a4be', fog: '#35404c', key: 2.9, rimEnergy: 1.55, fillEnergy: 0.4, haze: 0.00042,
+  }),
+  station: Object.freeze({
+    sky: '#b5c9cc', ground: '#263745', sun: '#e8eef0', rim: '#c6a47e',
+    fill: '#91b6c5', fog: '#344352', key: 3.05, rimEnergy: 1.45, fillEnergy: 0.36, haze: 0.00052,
+  }),
+  sun: Object.freeze({
+    sky: '#ffe1b1', ground: '#7a483c', sun: '#fff0d0', rim: '#ffad80',
+    fill: '#d5a397', fog: '#9f5d50', key: 3.75, rimEnergy: 1.65, fillEnergy: 0.38, haze: 0.00072,
+  }),
+  ice: Object.freeze({
+    sky: '#e2eff3', ground: '#638d9d', sun: '#f2f9fb', rim: '#a8d0dc',
+    fill: '#9fc3d4', fog: '#789eaa', key: 2.95, rimEnergy: 1.6, fillEnergy: 0.3, haze: 0.00122,
+  }),
+  nebula: Object.freeze({
+    sky: '#d7bfd5', ground: '#3d354c', sun: '#eee5ec', rim: '#bd98c3',
+    fill: '#91b4b5', fog: '#4c3b57', key: 2.75, rimEnergy: 1.45, fillEnergy: 0.37, haze: 0.00046,
+  }),
+  fleet: Object.freeze({
+    sky: '#dce5e2', ground: '#404b54', sun: '#f1e6d5', rim: '#e4b590',
+    fill: '#aec4ca', fog: '#535d65', key: 3.05, rimEnergy: 1.65, fillEnergy: 0.4, haze: 0.00037,
+  }),
+  void: Object.freeze({
+    sky: '#bfd0db', ground: '#2a3145', sun: '#d9e4eb', rim: '#a6c1d0',
+    fill: '#978fb9', fog: '#34394b', key: 2.75, rimEnergy: 1.6, fillEnergy: 0.43, haze: 0.0004,
+  }),
+  throne: Object.freeze({
+    sky: '#e4cece', ground: '#322531', sun: '#f6e0d1', rim: '#d58e93',
+    fill: '#b598a6', fog: '#482f3b', key: 3, rimEnergy: 1.65, fillEnergy: 0.4, haze: 0.00043,
+  }),
+});
+
+export function premiumWorldGrade(theme) {
+  return PREMIUM_WORLD_GRADES[theme] ?? null;
+}
