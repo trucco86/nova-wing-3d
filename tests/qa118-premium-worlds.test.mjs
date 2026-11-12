@@ -55,12 +55,15 @@ test('QA118: nine off-Earth sectors have distinct filmic sky, fog and light grad
 test('QA118: actual stage transitions use ambient grading and one distant-field mesh instead of 60 draws', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.46, true);
-  const hemisphere = scene.children.find((obj) => obj instanceof T.HemisphereLight);
-  const sun = scene.children.find((obj) => obj instanceof T.DirectionalLight);
-  assert.ok(
-    hemisphere && sun,
-    'Scene must retain real PBR lights: ' + scene.children.map((obj) => obj.type).join(','),
-  );
+  // createWorld groups all authored objects beneath a scene container.
+  // Inspect the actual nested light nodes, not only scene.children.
+  let hemisphere = null;
+  let sun = null;
+  scene.traverse((obj) => {
+    if (obj instanceof T.HemisphereLight) hemisphere = obj;
+    if (!sun && obj instanceof T.DirectionalLight) sun = obj;
+  });
+  assert.ok(hemisphere && sun, 'all stage grades must preserve real scene lighting');
   for (let sector = 0; sector < SECTORS.length; sector++) {
     const theme = SECTORS[sector].theme;
     world.setSector(SECTORS[sector], sector);
