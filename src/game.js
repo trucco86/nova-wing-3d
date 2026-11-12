@@ -4622,10 +4622,16 @@ export function createGame({
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
     ) {
-      // Orbital combat gets actual spacecraft, never ground robots floating in space.
-      groundWave++;
-      enemy('fighter');
-      groundCd = 7.5;
+      // Orbital patrols share the same GPU-safe active-fighter budget as the
+      // authored formations, so neither spawn path can bypass the cap.
+      const activeFighters = enemies.filter((target) => !target.dead && target.kind === 'fighter').length;
+      if (stageOneCombatDensity(settings.difficulty, true, activeFighters).count > 0) {
+        groundWave++;
+        enemy('fighter');
+        groundCd = 7.5;
+      } else {
+        groundCd = 1.25;
+      }
     }
     if (
       spawnEncounters &&
