@@ -12,8 +12,11 @@ test('QA115: angled corridor-facing bay geometry is anchored to actual buildings
   for (const tileName of ['launch-city', 'launch-city-far']) {
     const tile = scene.getObjectByName(tileName);
     const hero = tile.getObjectByName('city40-hero-architecture');
-    assert.equal(hero.userData.metrics.drawUnits, 4,
-      '3D sculpted bays are merged, not one GPU call per window');
+    assert.equal(
+      hero.userData.metrics.drawUnits,
+      4,
+      '3D sculpted bays are merged, not one GPU call per window',
+    );
     assert.ok(hero.userData.metrics.bytes < 3 * 1024 * 1024);
     assert.ok(hero.userData.metrics.triangles < 45000);
     for (const face of hero.userData.corridorFacades) {
@@ -33,7 +36,7 @@ test('QA115: angled corridor-facing bay geometry is anchored to actual buildings
     assert.ok([...glass.geometry.getAttribute('position').array].every(Number.isFinite));
     const masonry = hero.getObjectByName('city40-sculpted-masonry');
     assert.ok([...masonry.geometry.getAttribute('normal').array].every(Number.isFinite));
-    hero.traverse(node => {
+    hero.traverse((node) => {
       assert.equal(node.userData.solid, undefined);
       assert.equal(node.userData.hitbox, undefined);
     });
@@ -45,9 +48,9 @@ test('QA115: medium/high changes only precision geometry, not host positions', (
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.47, true);
   world.setSector(SECTORS[0]);
-  const tiles = ['launch-city', 'launch-city-far'].map(name => scene.getObjectByName(name));
-  const footprints = tiles.map(tile => tile.userData.buildingFootprints.map(v => ({ ...v })));
-  for (const tier of ['high','medium','high']) {
+  const tiles = ['launch-city', 'launch-city-far'].map((name) => scene.getObjectByName(name));
+  const footprints = tiles.map((tile) => tile.userData.buildingFootprints.map((v) => ({ ...v })));
+  for (const tier of ['high', 'medium', 'high']) {
     world.setGraphicsQuality(tier);
     for (const tile of tiles) {
       const hero = tile.getObjectByName('city40-hero-architecture');

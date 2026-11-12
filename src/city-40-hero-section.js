@@ -117,7 +117,7 @@ function geometryBuilder() {
       const [z1, y1] = corners[(i + 1) % corners.length];
       winding += z0 * y1 - z1 * y0;
     }
-    const invert = (winding > 0) !== (side > 0);
+    const invert = winding > 0 !== side > 0;
     for (const [z, y] of corners) {
       positions.push(outerX, y, z);
       normals.push(-side, 0, 0);
@@ -142,7 +142,8 @@ function geometryBuilder() {
     }
     for (let i = 0; i < corners.length; i++) {
       const j = (i + 1) % corners.length;
-      const p = corners[i], q = corners[j];
+      const p = corners[i],
+        q = corners[j];
       quad(
         [outerX, p[1], p[0]],
         [innerX, p[1], p[0]],
@@ -481,7 +482,7 @@ function makeCorridorSideFacade(host, style, groups) {
   // penetrates the owning building, not the flight corridor or its neighbors.
   const pods = [];
   for (const direction of [-1, 1]) {
-    const centerZ = host.z + direction * depth * 0.20;
+    const centerZ = host.z + direction * depth * 0.2;
     const width = depth * 0.26;
     const yBase = bottom + 11.5;
     const yPeak = bottom + Math.min(host.h * 0.75, host.h - 10);
@@ -493,16 +494,26 @@ function makeCorridorSideFacade(host, style, groups) {
       [centerZ - width * 0.18, yPeak],
       [centerZ - width * 0.36, yPeak - 4],
     ];
-    masonry.sidePrism(profile, sideX - side * 0.10, 0.29, side,
-      style === 'civic' ? '#c8dbe4' : '#9eabb3');
+    masonry.sidePrism(
+      profile,
+      sideX - side * 0.1,
+      0.29,
+      side,
+      style === 'civic' ? '#c8dbe4' : '#9eabb3',
+    );
     const innerProfile = [
-      [centerZ - width * 0.30, yBase + 5],
-      [centerZ + width * 0.30, yBase + 5],
+      [centerZ - width * 0.3, yBase + 5],
+      [centerZ + width * 0.3, yBase + 5],
       [centerZ + width * 0.21, yPeak - 7],
       [centerZ - width * 0.21, yPeak - 7],
     ];
-    glass.sidePrism(innerProfile, sideX - side * 0.12, 0.15, side,
-      style === 'civic' ? '#9fdfeb' : '#9ab9be');
+    glass.sidePrism(
+      innerProfile,
+      sideX - side * 0.12,
+      0.15,
+      side,
+      style === 'civic' ? '#9fdfeb' : '#9ab9be',
+    );
     pods.push({ centerZ, outerX: sideX - side * 0.12, height: yPeak - yBase });
   }
   const minLaneAbsX = Math.abs(sideX) - 0.16;

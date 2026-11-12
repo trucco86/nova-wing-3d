@@ -166,21 +166,27 @@ test('QA111: repeated shots rotate slight deterministic pitch without stacking e
 test('QA115: charge is a quiet filtered power-up, not a harsh sawtooth sweep', () => {
   const { context, events } = fakeAudio();
   const cue = AUDIO_CUES.plasmaCharge;
-  assert.ok(cue.tones.every(t => t.wave !== 'sawtooth'));
-  assert.ok(cue.tones.every(t => Math.abs(t.to - t.from) < 30));
-  assert.ok(cue.tones.every(t => t.gain <= 0.01));
-  assert.ok(cue.noises.every(n => n.gain <= 0.01));
+  assert.ok(cue.tones.every((t) => t.wave !== 'sawtooth'));
+  assert.ok(cue.tones.every((t) => Math.abs(t.to - t.from) < 30));
+  assert.ok(cue.tones.every((t) => t.gain <= 0.01));
+  assert.ok(cue.noises.every((n) => n.gain <= 0.01));
   const sound = createAudioCues(context);
   sound.setCharge({ active: true, progress: 0 });
-  const [bass, flux] = events.sources.filter(n => n.kind === 'osc');
+  const [bass, flux] = events.sources.filter((n) => n.kind === 'osc');
   assert.equal(bass.type, 'sine');
   assert.equal(flux.type, 'triangle');
   assert.ok(bass.frequency.value >= 82 && bass.frequency.value <= 95);
   sound.setCharge({ active: true, progress: 1 });
   assert.ok(bass.frequency.value <= 115, 'hold has restrained pitch movement');
   assert.ok(flux.frequency.value <= 215, 'no shrill charging whistle');
-  const gains = events.params.filter(v => v[0] === 'target').slice(-3).map(v => v[1]);
-  assert.ok(gains.every(v => v <= 0.012), 'subtle hold remains under 1.2% per layer');
+  const gains = events.params
+    .filter((v) => v[0] === 'target')
+    .slice(-3)
+    .map((v) => v[1]);
+  assert.ok(
+    gains.every((v) => v <= 0.012),
+    'subtle hold remains under 1.2% per layer',
+  );
   sound.setCharge({ active: false });
   assert.equal(sound.snapshot().chargeActive, false);
   sound.destroy();
@@ -188,12 +194,12 @@ test('QA115: charge is a quiet filtered power-up, not a harsh sawtooth sweep', (
 
 test('QA115: normal shot uses a shorter filtered attack and a warm mechanical body', () => {
   const shot = AUDIO_CUES.shot;
-  const snap = shot.tones.find(t => t.wave === 'sawtooth');
+  const snap = shot.tones.find((t) => t.wave === 'sawtooth');
   assert.ok(snap.duration <= 0.05 && snap.filter <= 1200);
   assert.ok(snap.gain <= 0.02);
-  assert.ok(shot.tones.some(t => t.wave === 'triangle' && t.gain >= 0.055));
-  assert.ok(shot.noises.every(n => n.duration < 0.15));
+  assert.ok(shot.tones.some((t) => t.wave === 'triangle' && t.gain >= 0.055));
+  assert.ok(shot.noises.every((n) => n.duration < 0.15));
   const release = AUDIO_CUES.plasmaRelease;
-  assert.ok(release.tones.find(t => t.wave === 'sawtooth').gain <= 0.035);
-  assert.ok(release.tones.some(t => t.wave === 'sine' && t.duration >= 0.5));
+  assert.ok(release.tones.find((t) => t.wave === 'sawtooth').gain <= 0.035);
+  assert.ok(release.tones.some((t) => t.wave === 'sine' && t.duration >= 0.5));
 });

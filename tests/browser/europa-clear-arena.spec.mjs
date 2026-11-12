@@ -54,18 +54,24 @@ test('Europa stage 6 boss arena remains open and its Colossus never clips the ic
     { width: 844, height: 390 },
   ]) {
     const beforeViewport = await page.evaluate(() => ({
-      width: window.innerWidth, height: window.innerHeight,
+      width: window.innerWidth,
+      height: window.innerHeight,
     }));
     // Wait for the actual resize event used by the game's camera.aspect
     // listener before fast-forwarding simulation. Otherwise an orientation
     // change can leave arenaFov targeting portrait 88 degrees in landscape.
     await page.evaluate(() => {
       window.__europaQaResized = null;
-      window.addEventListener('resize', () => {
-        window.__europaQaResized = {
-          width: window.innerWidth, height: window.innerHeight,
-        };
-      }, { once: true });
+      window.addEventListener(
+        'resize',
+        () => {
+          window.__europaQaResized = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+          };
+        },
+        { once: true },
+      );
     });
     await page.setViewportSize(size);
     if (beforeViewport.width !== size.width || beforeViewport.height !== size.height) {
