@@ -31,3 +31,5 @@ jobs:
             playwright-report/
 
 # Retry only after fixing real-scene selection against internal PMREM render passes.
+
+# Retry QA fixture after identifying nested world and FogExp2 instead of direct city children.
