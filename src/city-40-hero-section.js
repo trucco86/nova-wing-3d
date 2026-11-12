@@ -27,8 +27,12 @@ function geometryBuilder() {
     // This builder emits hundreds of facade quads at startup. Compute the
     // cross product in scalars, avoiding three transient Vector3 allocations
     // for every face and reducing GC pressure on mobile initial load.
-    const abx = b[0] - a[0], aby = b[1] - a[1], abz = b[2] - a[2];
-    const acx = c[0] - a[0], acy = c[1] - a[1], acz = c[2] - a[2];
+    const abx = b[0] - a[0],
+      aby = b[1] - a[1],
+      abz = b[2] - a[2];
+    const acx = c[0] - a[0],
+      acy = c[1] - a[1],
+      acz = c[2] - a[2];
     let nx = aby * acz - abz * acy;
     let ny = abz * acx - abx * acz;
     let nz = abx * acy - aby * acx;
@@ -151,8 +155,7 @@ function finishMaterialMap(type) {
 // cameras, screen-space reflections or new runtime render passes. Six 32px
 // faces contain low-frequency skyline/sky highlights, not sharp fake mirrors.
 function createCity40ReflectionProbe() {
-  if (typeof document === 'undefined' || typeof document.createElement !== 'function')
-    return null;
+  if (typeof document === 'undefined' || typeof document.createElement !== 'function') return null;
   const side = 32;
   const faces = [];
   for (let face = 0; face < 6; face++) {
@@ -454,8 +457,7 @@ function makeFacade(host, style, groups) {
       p.trim,
     );
     for (const side of [-1, 1])
-      fine.box(x + side * width * 0.31, yTop - 1.05, z + 1.75,
-        width * 0.08, 1.8, 0.25, p.lit);
+      fine.box(x + side * width * 0.31, yTop - 1.05, z + 1.75, width * 0.08, 1.8, 0.25, p.lit);
   } else {
     for (const side of [-1, 1]) {
       masonry.polygonPrism(
@@ -471,9 +473,15 @@ function makeFacade(host, style, groups) {
       // Shallow service ventilation remains attached to a load-bearing roof
       // wall and never stretches between unrelated buildings.
       for (let fin = 0; fin < 3; fin++)
-        fine.box(x + side * width * 0.31,
-          yTop - 2.0 - fin * 1.15, z + 1.67,
-          width * 0.11, 0.25, 0.28, p.trim);
+        fine.box(
+          x + side * width * 0.31,
+          yTop - 2.0 - fin * 1.15,
+          z + 1.67,
+          width * 0.11,
+          0.25,
+          0.28,
+          p.trim,
+        );
     }
   }
   if (theme === 1) {
@@ -543,7 +551,8 @@ export function createCity40HeroSection(tile, variant = 'civic') {
     metrics.triangles += finished.triangles;
     metrics.vertices += finished.vertices;
     metrics.drawUnits++;
-    metrics.bytes = (metrics.bytes ?? 0) +
+    metrics.bytes =
+      (metrics.bytes ?? 0) +
       Object.values(finished.geometry.attributes).reduce((n, a) => n + a.array.byteLength, 0) +
       finished.geometry.index.array.byteLength;
   }
