@@ -77,10 +77,14 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
         const arrival = world.setDestinationArrival(60);
         assert.ok(arrival?.reveal >= 0.99, 'grade must be checked after the actual destination reveals');
       }
-      if (theme === 'mars' || theme === 'ice') {
-        // Mars sandstorm and Europa snow intentionally blend fog into their
-        // distinct entry sequence. A fixed fog tone would break that story.
+      if (['mars', 'ice', 'station'].includes(theme)) {
+        // Mars' storm, Europa's frost and the Devastador's interior visibility
+        // intentionally override the distant exterior fog at authored beats.
         assert.ok(scene.fog.density > 0 && Number.isFinite(scene.fog.density));
+        if (theme === 'station') {
+          const indoorFog = new T.Color('#101b30').lerp(new T.Color('#293447'), 0.8);
+          assert.ok(scene.fog.color.equals(indoorFog), 'mothership interior must preserve readable hangar fog');
+        }
       } else {
         assert.ok(
           scene.fog.color.equals(new T.Color(grade.fog)),
