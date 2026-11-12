@@ -34,3 +34,5 @@ jobs:
           npm run validate
 
 # Recheck QA113 after strict lint and measured GPU evidence logging.
+
+# Final QA113: supported flight-facing skins, scenic landmark and pixel-visibility gates.
