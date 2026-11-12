@@ -1,0 +1,50 @@
+name: QA116 prepare source and web candidate
+
+on:
+  push:
+    branches:
+      - feat/qa116-grounded-city-bus-air-traffic-20261112
+    paths:
+      - .github/workflows/qa116-prepare.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa116-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize unapproved QA116 package and generated HTML
+        run: npm run release:prepare -- 1.27.116
+      - run: npm run format
+      - run: npm run build
+      - run: npm run validate
+      - run: git diff --check
+      - name: Commit synchronized candidate to QA branch only
+        run: |
+          git add -u
+          if [ -f releases/v1.27.116.md ]; then git add releases/v1.27.116.md; fi
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA116 candidate already synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA116): synchronize v1.27.116 candidate after full Node validation'
+          git push origin HEAD:feat/qa116-grounded-city-bus-air-traffic-20261112
