@@ -1848,14 +1848,22 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         ? sectorScenery.getObjectByName('devastador-mothership-boarding')
         : null;
     const profile = DESTINATION_PROFILES[destinationIndex];
-    const target = new T.Color(profile.haze);
+    // Keep the opening orbit dark, then resolve into the unique premium
+    // biome lighting once the authored 25s arrival completes. Mars owns its
+    // own storm fog; Europa still blends its ice-surface frost afterward.
+    const grade = premiumWorldGrade(sceneryTheme);
+    const target = new T.Color(grade?.fog ?? profile.haze);
     europaArrivalSeconds = seconds;
     // The opening really starts in space. Each location's dust/cloud color
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
     const normalDensity =
-      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : 0.00045;
+      destinationIndex === 5
+        ? 0.0014
+        : destinationIndex === 7
+          ? 0.00012
+          : (grade?.haze ?? 0.00045);
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
