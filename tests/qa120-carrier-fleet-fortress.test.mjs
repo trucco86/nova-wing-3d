@@ -1,8 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createPremiumLandmarkHull, PREMIUM_LANDMARK_PARTS } from '../src/premium-landmark-hulls.js';
-import { createDestinationLandmarks, setDestinationLandmarkQuality } from '../src/destination-landmarks.js';
+import {
+  createPremiumLandmarkHull,
+  PREMIUM_LANDMARK_PARTS,
+} from '../src/premium-landmark-hulls.js';
+import {
+  createDestinationLandmarks,
+  setDestinationLandmarkQuality,
+} from '../src/destination-landmarks.js';
 import { createMothershipInterior, updateMothershipInterior } from '../src/mothership-interior.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
@@ -18,8 +24,14 @@ test('QA120: Saturn, Orion and Titan silhouettes are multi-part indexed PBR asse
     const hull = createPremiumLandmarkHull(item.shape);
     assert.equal(hull.userData.premiumHull, item.shape);
     assert.ok(hull.index && hull.getAttribute('normal') && hull.getAttribute('uv'));
-    assert.ok(hull.getAttribute('position').count >= 130, item.shape + ': real multipiece geometric detail');
-    assert.ok(hull.getAttribute('position').count < 1000, item.shape + ': bounded mobile complexity');
+    assert.ok(
+      hull.getAttribute('position').count >= 130,
+      item.shape + ': real multipiece geometric detail',
+    );
+    assert.ok(
+      hull.getAttribute('position').count < 1000,
+      item.shape + ': bounded mobile complexity',
+    );
     assert.ok(hull.boundingSphere?.radius > 0);
     assert.ok(PREMIUM_LANDMARK_PARTS[item.shape] >= 8);
     hull.dispose();
@@ -61,7 +73,9 @@ test('QA120: Devastador hangar panes have supported metal frames and real PBR gl
   let windowDraws = 0;
   for (const section of root.userData.sections) {
     const panes = section.children.filter((node) => node.name === 'carrier-hangar-window');
-    const frames = section.children.filter((node) => node.name === 'carrier-hangar-window-armored-frame');
+    const frames = section.children.filter(
+      (node) => node.name === 'carrier-hangar-window-armored-frame',
+    );
     assert.equal(panes.length, 2);
     assert.equal(frames.length, 2);
     windowDraws += panes.length + frames.length;
@@ -72,7 +86,10 @@ test('QA120: Devastador hangar panes have supported metal frames and real PBR gl
       const transform = new T.Matrix4();
       for (let i = 0; i < mesh.count; i++) {
         mesh.getMatrixAt(i, transform);
-        assert.ok(Math.abs(transform.elements[12]) > 65, 'glass physically attached to side bulkhead');
+        assert.ok(
+          Math.abs(transform.elements[12]) > 65,
+          'glass physically attached to side bulkhead',
+        );
         assert.ok(Math.abs(transform.elements[12]) < 75, 'do not penetrate the distant side hull');
       }
     }
@@ -88,7 +105,10 @@ test('QA120: Devastador drive coils and rotating five-blade turbines retain miss
   const root = createMothershipInterior();
   const engines = [];
   root.traverse((obj) => {
-    if (obj.name === 'devastador-main-drive-engine' || obj.name === 'devastador-reactor-coolant-pump')
+    if (
+      obj.name === 'devastador-main-drive-engine' ||
+      obj.name === 'devastador-reactor-coolant-pump'
+    )
       engines.push(obj);
   });
   assert.equal(engines.length, 4);
@@ -104,15 +124,23 @@ test('QA120: Devastador drive coils and rotating five-blade turbines retain miss
     assert.ok(turbine && turbine.userData.hitbox === undefined);
   }
   updateMothershipInterior(root, 75);
-  const before = engines.map((engine) =>
-    engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z,
+  const before = engines.map(
+    (engine) => engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z,
   );
   updateMothershipInterior(root, 75);
-  assert.deepEqual(engines.map((engine) =>
-    engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z), before);
+  assert.deepEqual(
+    engines.map(
+      (engine) => engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z,
+    ),
+    before,
+  );
   updateMothershipInterior(root, 76);
-  assert.notDeepEqual(engines.map((engine) =>
-    engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z), before);
+  assert.notDeepEqual(
+    engines.map(
+      (engine) => engine.getObjectByName('carrier-destroyable-drive-fan-visual').rotation.z,
+    ),
+    before,
+  );
 });
 
 test('QA120: all three premium destination sets survive actual world switching, reveal and quality changes', () => {
@@ -132,6 +160,5 @@ test('QA120: all three premium destination sets survive actual world switching, 
     assert.ok(mesh.count > 0);
   }
   world.setSector(SECTORS[0], 0);
-  for (const item of landmarkCases)
-    assert.equal(scene.getObjectByName(item.name), undefined);
+  for (const item of landmarkCases) assert.equal(scene.getObjectByName(item.name), undefined);
 });
