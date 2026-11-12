@@ -93,3 +93,34 @@ test('QA116: natural city palette and grounded bridge physics survive world qual
     world.destroy?.();
   }
 });
+
+
+test('QA116: generic rear billboards face outward from real buildings with no extra render batches', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.41, true);
+  try {
+    world.setSector(SECTORS[0]);
+    for (const tileName of ['launch-city', 'launch-city-far']) {
+      const tile = scene.getObjectByName(tileName);
+      const ads = tile.getObjectByName('city-premium-ad-inventory');
+      const screens = ads.getObjectByName('city-ad-atlas-generic-artwork');
+      const mounts = ads.getObjectByName('city-ad-grounded-metal-frames-and-mounts');
+      assert.ok(screens?.isInstancedMesh && mounts?.isInstancedMesh);
+      assert.equal(ads.children.length, 2, 'rear screens must reuse existing atlas and frame batches');
+      const rear = ads.userData.slots.filter((slot) => slot.surface === 'rear-facade');
+      assert.ok(rear.length >= 1, 'a building back needs an actual advertising panel');
+      for (const slot of rear) {
+        const host = tile.userData.buildingFootprints[slot.hostIndex];
+        assert.ok(Math.abs(slot.z - (host.z - host.depth / 2 - 2.05)) < 0.001);
+        const i = ads.userData.slots.findIndex((candidate) => candidate.id === slot.id);
+        const matrix = new T.Matrix4();
+        screens.getMatrixAt(i, matrix);
+        assert.ok(matrix.elements[0] < 0, 'rear artwork is rotated, never mirror-readable backwards');
+        assert.ok(matrix.elements[10] < 0, 'rear normal points toward the back of the building');
+        assert.ok(slot.width < host.w && slot.height > 1);
+      }
+    }
+  } finally {
+    world.destroy?.();
+  }
+});
