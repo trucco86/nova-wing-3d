@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { animateCityTraffic, createCityTraffic, setCityTrafficQuality } from '../src/city-traffic.js';
+import {
+  animateCityTraffic,
+  createCityTraffic,
+  setCityTrafficQuality,
+} from '../src/city-traffic.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
@@ -31,7 +35,10 @@ test('QA116: full-size buses remain on road without entering compact-car lanes o
         assert.ok(p.z < -50 && p.z > -1900);
       }
       const roadX = Math.abs(position(road, 2).x);
-      assert.ok(roadX + 3 < Math.abs(position(bus, 0).x) - 5, 'no parallel car/bus lane penetration');
+      assert.ok(
+        roadX + 3 < Math.abs(position(bus, 0).x) - 5,
+        'no parallel car/bus lane penetration',
+      );
     }
   }
 });

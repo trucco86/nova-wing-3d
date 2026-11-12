@@ -93,9 +93,9 @@ test('climbing into a skybridge stops at the actual lower face without sideways 
   const clear = new T.Vector3(72, 106, 9);
   assert.equal(resolveCitySolidContact(outsideFlank, clear, deck, { maxY: 184 }), false);
   assert.equal(clear.y, 106, 'the central deck alone ends at x=63');
-  const extension = physical.colliders().find(
-    (s) => s.kind === 'upper-bridge-extension' && s.center.x > 0,
-  );
+  const extension = physical
+    .colliders()
+    .find((s) => s.kind === 'upper-bridge-extension' && s.center.x > 0);
   assert.ok(extension, 'external span must be physically present');
   assert.equal(
     resolveCitySolidContact(outsideFlank, clear, extension, { maxY: 184 }),

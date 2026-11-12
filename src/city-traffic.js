@@ -168,8 +168,7 @@ function vehicleDetailGeometry(role) {
         add(wheel, '#182f3d', side * 4.1, -3.0, z, 1.55, 1.55, 1.55, 0, Math.PI / 2);
         add(wheel, '#9fbdc5', side * 4.48, -3.0, z, 0.8, 0.8, 0.8, 0, Math.PI / 2);
       }
-      for (const z of [-8, -2, 4, 10])
-        add(bar, '#bacbd1', side * 4.31, 3.1, z, 0.19, 2.45, 0.2);
+      for (const z of [-8, -2, 4, 10]) add(bar, '#bacbd1', side * 4.31, 3.1, z, 0.19, 2.45, 0.2);
       add(bar, '#b1dce0', side * 4.32, 2.75, -5.1, 0.21, 1.8, 0.22);
     }
     for (const x of [-2.65, 2.65]) {
