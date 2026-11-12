@@ -1,0 +1,57 @@
+name: QA119 prepare geologic scenes candidate
+
+on:
+  push:
+    branches:
+      - feat/qa119-surface-geology-and-caverns-20261112
+    paths:
+      - .github/workflows/qa119-prepare.yml
+      - src/mars-premium.js
+      - src/asteroid-interior.js
+      - src/europa-surface.js
+      - tests/qa119-geology-and-caverns.test.mjs
+      - specs/qa119-geology-and-caverns-premium.md
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa119-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare isolated QA119 version without production deploy
+        run: npm run release:prepare -- 1.27.119
+      - run: npm run format
+      - run: npm run build
+      - name: Geological QA, physical obstacles and deterministic timelines
+        run: node --test tests/qa119-geology-and-caverns.test.mjs tests/mars-descent.test.mjs tests/mars-42-mysteries-storm.test.mjs tests/asteroid-interior.test.mjs tests/asteroid-entry-cinematic.test.mjs tests/europa-surface.test.mjs tests/europa-boss-arena.test.mjs
+      - run: npm run validate
+      - run: git diff --check
+      - name: Commit fully validated version/build files to QA branch only
+        run: |
+          git add -u
+          if [ -f releases/v1.27.119.md ]; then git add releases/v1.27.119.md; fi
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA119 candidate is synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA119): synchronize full-tested 1.27.119 preview'
+          git push origin HEAD:feat/qa119-surface-geology-and-caverns-20261112
