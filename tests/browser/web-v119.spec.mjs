@@ -10,8 +10,13 @@ test('fighter roles charge and attack while desktop and touch controls remain us
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.evaluate(() => window.fixture.advance(2.75));
   const before = await page.evaluate(() => window.fixture.game.snapshot());
-  // Normal mode sends one introductory fighter, not a crowded two-ship opening.
-  expect(before.targets.filter((e) => e.charging).map((e) => e.role)).toEqual(['pursuer']);
+  // QA117: two genuine hostiles form the Normal introduction, rather than
+  // background traffic. Both must display their firing telegraph.
+  expect(before.targets.filter((e) => e.charging).map((e) => e.role)).toEqual([
+    'pursuer',
+    'interceptor',
+  ]);
+  expect(before.targets.filter((e) => e.kind === 'fighter')).toHaveLength(2);
   await page.screenshot({ path: info.outputPath('fighter-charge.png') });
   await page.locator('#pause').click();
   await page.evaluate(() => window.fixture.advance(2));
@@ -20,7 +25,10 @@ test('fighter roles charge and attack while desktop and touch controls remain us
   );
   await page.locator('#pauseResume').click();
   await page.evaluate(() => window.fixture.advance(0.6));
-  expect((await page.evaluate(() => window.fixture.game.snapshot())).entities.hostile).toBe(1);
+  const firstVolley = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(firstVolley.targets.filter((e) => e.kind === 'fighter')).toHaveLength(2);
+  expect(firstVolley.entities.hostile).toBeGreaterThan(0);
+  expect(firstVolley.entities.hostile).toBeLessThanOrEqual(6);
   const frames = await page.evaluate(async () => {
     const values = [];
     let previous = performance.now();
