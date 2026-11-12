@@ -27,6 +27,54 @@ const hash = (n) => {
   return t - Math.floor(t);
 };
 
+// A faceted *geological* profile, not a row of tall featureless cones.
+// Every ridge shares this vertex-coloured indexed geometry and remains within
+// the same existing InstancedMesh draw. Thin crest and wider fractured foot
+// make each scaled glacier read as a broken wall rather than a spike.
+export function createEuropaGlacialRidgeGeometry() {
+  const sides = 7;
+  const rings = [
+    { y: -0.5, radius: 1 },
+    { y: -0.22, radius: 0.93 },
+    { y: 0.08, radius: 0.74 },
+    { y: 0.34, radius: 0.38 },
+    { y: 0.5, radius: 0.085 },
+  ];
+  const positions = [];
+  const colors = [];
+  const indices = [];
+  const tints = ['#47758a', '#669caf', '#89bbca', '#c8e1e6', '#eff8f8'];
+  for (let ring = 0; ring < rings.length; ring++) {
+    const level = rings[ring];
+    const tint = new T.Color(tints[ring]);
+    for (let side = 0; side < sides; side++) {
+      const angle = (side / sides) * Math.PI * 2;
+      const relief = 1 + 0.13 * Math.sin(side * 2.8 + ring * 1.7);
+      positions.push(
+        Math.cos(angle) * level.radius * relief,
+        level.y + (ring === 0 || ring === 4 ? 0 : Math.sin(side * 3.7) * 0.028),
+        Math.sin(angle) * level.radius * relief,
+      );
+      colors.push(tint.r, tint.g, tint.b);
+    }
+  }
+  for (let ring = 0; ring < rings.length - 1; ring++)
+    for (let side = 0; side < sides; side++) {
+      const a = ring * sides + side;
+      const b = ring * sides + (side + 1) % sides;
+      const c = (ring + 1) * sides + side;
+      const d = (ring + 1) * sides + (side + 1) % sides;
+      indices.push(a, c, b, b, c, d);
+    }
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new T.Float32BufferAttribute(colors, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
 // One low-cost glacial vista, not a repeated row of primitive cones. All
 // geometry stays OUTSIDE the flight corridor; the boss arena hides this
 // near/mid layer when the Colossus appears.
@@ -46,13 +94,16 @@ export function createEuropaSurface() {
     emissiveIntensity: 0.09,
   });
   const blue = new T.MeshStandardMaterial({
-    color: '#5d92ac',
-    roughness: 0.52,
-    metalness: 0.08,
+    color: '#ffffff',
+    vertexColors: true,
+    roughness: 0.48,
+    metalness: 0.06,
     flatShading: true,
+    emissive: '#31596a',
+    emissiveIntensity: 0.045,
   });
   const floe = new T.IcosahedronGeometry(1, 0);
-  const shard = new T.ConeGeometry(1, 1, 5);
+  const shard = createEuropaGlacialRidgeGeometry();
   const dummy = new T.Object3D();
   for (const [name, count, geo, mat, center] of [
     ['europa-fractured-ice-shelves', 32, floe, ice, 105],
