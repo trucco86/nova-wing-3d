@@ -8,6 +8,7 @@ import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layo
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { cityTilePositions } from './city-tile-scroll.js';
 import { createCityAdInventory } from './city-ad-inventory.js';
+import { createCity40HeroSection, setCity40HeroQuality } from './city-40-hero-section.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1538,6 +1539,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // The inventory is decorative; no broad invisible blocker enters gameplay.
   createCityAdInventory(city, 'civic');
   createCityAdInventory(cityFar, 'industrial');
+  // Graphics 4.0 prototype: hand-sculpted 285m of architecture on zoned
+  // buildings, not a new set of collision boxes or gameplay constraints.
+  createCity40HeroSection(city, 'civic');
+  createCity40HeroSection(cityFar, 'industrial');
   cityFar.getObjectByName('city-active-traffic').userData.trafficPhase = 870;
   cityFar.getObjectByName('city-urban-drones').userData.phase = 2.4;
   animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
@@ -2029,6 +2034,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
         tile.getObjectByName('city-district-high-details').visible = high;
         setCityTileIdentityQuality(tile, quality);
+        setCity40HeroQuality(tile, quality);
         tile.getObjectByName('city-premium-high-details').visible = high;
         tile.getObjectByName('city-commerce-high-detail').visible = high;
         setCityTrafficQuality(tile.getObjectByName('city-active-traffic'), quality);
