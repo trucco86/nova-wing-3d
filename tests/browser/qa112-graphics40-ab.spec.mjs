@@ -1,12 +1,16 @@
 import { test, expect } from '@playwright/test';
 
-test('QA112 Graphics 4.0: identical-camera A/B captures prove visible architectural relief with bounded GPU cost', async ({ page }, info) => {
+test('QA112 Graphics 4.0: identical-camera A/B captures prove visible architectural relief with bounded GPU cost', async ({
+  page,
+}, info) => {
   test.setTimeout(210000);
   const problems = [];
   page.on('pageerror', (error) => problems.push(error.message));
   page.on('console', (msg) => {
-    if (msg.type() === 'error' &&
-        /WebGLProgram|Shader Error|VALIDATE_STATUS false|shader compilation/i.test(msg.text()))
+    if (
+      msg.type() === 'error' &&
+      /WebGLProgram|Shader Error|VALIDATE_STATUS false|shader compilation/i.test(msg.text())
+    )
       problems.push(msg.text());
   });
   await page.setViewportSize(
@@ -16,7 +20,11 @@ test('QA112 Graphics 4.0: identical-camera A/B captures prove visible architectu
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
   const comparisons = [];
-  for (const [label, seconds] of [['launch', 0], ['district', 6], ['approach', 7]]) {
+  for (const [label, seconds] of [
+    ['launch', 0],
+    ['district', 6],
+    ['approach', 7],
+  ]) {
     if (seconds) await page.evaluate((value) => window.fixture.advance(value), seconds);
     const before = await page.evaluate(() => window.fixture.graphics40Visible(false));
     expect(before.roots).toBe(2);
@@ -37,7 +45,10 @@ test('QA112 Graphics 4.0: identical-camera A/B captures prove visible architectu
       extraTriangles: after.stats.triangles - before.stats.triangles,
     });
   }
-  expect(comparisons.some((x) => x.extraTriangles > 0), 'new facade geometry must be truly rendered in stage 1').toBe(true);
+  expect(
+    comparisons.some((x) => x.extraTriangles > 0),
+    'new facade geometry must be truly rendered in stage 1',
+  ).toBe(true);
   expect(problems).toEqual([]);
   const snapshot = await page.evaluate(() => window.fixture.game.snapshot());
   expect(snapshot.state).toBe('playing');

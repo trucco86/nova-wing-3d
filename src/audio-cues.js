@@ -115,7 +115,16 @@ Object.assign(AUDIO_CUES, {
       { from: 145, to: 61, duration: 0.19, gain: 0.041, wave: 'sine', attack: 0.006 },
       // Mechanical pressure rebound gives the post-attack 110-280ms interval
       // actual body on speakers; the short original tail had 0.0003 RMS.
-      { from: 235, to: 69, delay: 0.068, duration: 0.27, gain: 0.078, wave: 'triangle', filter: 880, attack: 0.009 },
+      {
+        from: 235,
+        to: 69,
+        delay: 0.068,
+        duration: 0.27,
+        gain: 0.078,
+        wave: 'triangle',
+        filter: 880,
+        attack: 0.009,
+      },
     ],
     noises: [
       {

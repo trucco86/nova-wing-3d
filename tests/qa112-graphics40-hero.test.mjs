@@ -7,7 +7,12 @@ import { cityVolumesOverlap } from '../src/city-ad-slots.js';
 import { CITY40_HERO_RANGE, planCity40HeroBuildings } from '../src/city-40-hero-section.js';
 
 const volume = (b) => ({
-  x: b.x, y: b.h / 2 - 7, z: b.z, w: b.w, h: b.h, depth: b.depth,
+  x: b.x,
+  y: b.h / 2 - 7,
+  z: b.z,
+  w: b.w,
+  h: b.h,
+  depth: b.depth,
 });
 
 test('QA112: 285m hero section uses real sites and never intersects other building envelopes', () => {
@@ -16,33 +21,50 @@ test('QA112: 285m hero section uses real sites and never intersects other buildi
   const world = createWorld(scene, () => 0.47, true);
   world.setSector(SECTORS[0]);
   let total = 0;
-  for (const [tileName, variant] of [['launch-city','civic'], ['launch-city-far','industrial']]) {
+  for (const [tileName, variant] of [
+    ['launch-city', 'civic'],
+    ['launch-city-far', 'industrial'],
+  ]) {
     const tile = scene.getObjectByName(tileName);
     const hero = tile.getObjectByName('city40-hero-architecture');
     assert.equal(hero.userData.variant, variant);
     const selected = hero.userData.buildings;
-    assert.ok(selected.length >= 4 && selected.length <= 12, 'prototype must be visible, but remain small');
+    assert.ok(
+      selected.length >= 4 && selected.length <= 12,
+      'prototype must be visible, but remain small',
+    );
     total += selected.length;
     const base = tile.userData.buildingFootprints;
-    const adHosts = new Set(tile.getObjectByName('city-premium-ad-inventory').userData.slots.map(s => s.hostIndex));
+    const adHosts = new Set(
+      tile.getObjectByName('city-premium-ad-inventory').userData.slots.map((s) => s.hostIndex),
+    );
     const towers = tile.getObjectByName('city-architectural-districts').userData.towerFootprints;
     const pads = tile.getObjectByName('city-architectural-districts').userData.platformFootprints;
     for (const host of selected) {
-      assert.deepEqual({x:host.x,z:host.z,w:host.w,h:host.h,depth:host.depth},base[host.index]);
+      assert.deepEqual(
+        { x: host.x, z: host.z, w: host.w, h: host.h, depth: host.depth },
+        base[host.index],
+      );
       assert.ok(!adHosts.has(host.index), 'prototype cannot cover future ads');
-      assert.ok(host.z <= -115 && host.z >= -400, 'all hero facades belong to limited 285m section');
+      assert.ok(
+        host.z <= -115 && host.z >= -400,
+        'all hero facades belong to limited 285m section',
+      );
       assert.ok(Math.abs(host.x) - host.envelope.w / 2 >= 118, 'playable lane remains clear');
       const structures = [...base.filter((_, i) => i !== host.index), ...towers, ...pads];
       assert.ok(
-        structures.every(other => !cityVolumesOverlap(host.envelope, volume(other), 0.29)),
+        structures.every((other) => !cityVolumesOverlap(host.envelope, volume(other), 0.29)),
         'a facade skin must not enter another skyscraper or transit podium',
       );
-      assert.ok(selected.every(other => other === host ||
-        !cityVolumesOverlap(host.envelope, other.envelope, 0.5)));
+      assert.ok(
+        selected.every(
+          (other) => other === host || !cityVolumesOverlap(host.envelope, other.envelope, 0.5),
+        ),
+      );
     }
     assert.deepEqual(
-      planCity40HeroBuildings(tile, variant).map(b => b.index),
-      selected.map(b => b.index),
+      planCity40HeroBuildings(tile, variant).map((b) => b.index),
+      selected.map((b) => b.index),
       'hero buildings are deterministic across resets and replays',
     );
     assert.ok(hero.userData.metrics.drawUnits <= 4);
@@ -99,11 +121,11 @@ test('QA112: Graphics 4.0 changes facade render only, not stage-1 spatial collid
   world.setSector(SECTORS[0]);
   const near = scene.getObjectByName('launch-city');
   const far = scene.getObjectByName('launch-city-far');
-  const nearAnchors = near.userData.buildingFootprints.map(x => ({...x}));
-  const farAnchors = far.userData.buildingFootprints.map(x => ({...x}));
+  const nearAnchors = near.userData.buildingFootprints.map((x) => ({ ...x }));
+  const farAnchors = far.userData.buildingFootprints.map((x) => ({ ...x }));
   for (const tile of [near, far]) {
     const hero = tile.getObjectByName('city40-hero-architecture');
-    hero.traverse(obj => {
+    hero.traverse((obj) => {
       assert.equal(obj.userData.solid, undefined);
       assert.equal(obj.userData.hitbox, undefined);
       assert.notEqual(obj.userData.gameplayCollider, true);
