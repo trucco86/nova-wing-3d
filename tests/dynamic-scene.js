@@ -37,16 +37,21 @@ const game = createGame({
     const render = renderer.render.bind(renderer);
     renderer.render = (...args) => {
       if (!rendering) return;
-      lastScene = args[0];
+      // A physically based reflection cubemap triggers internal PMREM renders.
+      // They are NOT the game world, and must never replace the test's scene
+      // reference or GPU counters. Postprocessing passes likewise do not
+      // represent gameplay draw calls.
+      const realWorld = args[0]?.children?.some((node) => node.name === 'launch-city');
+      if (realWorld) lastScene = args[0];
       render(...args);
-      // Actual WebGL stats from the final rendered frame, not an FPS guess.
-      // Capture only immutable scalar values; renderer.info resets per frame.
-      lastRenderStats = {
-        calls: renderer.info.render.calls,
-        triangles: renderer.info.render.triangles,
-        lines: renderer.info.render.lines,
-        points: renderer.info.render.points,
-      };
+      if (realWorld) {
+        lastRenderStats = {
+          calls: renderer.info.render.calls,
+          triangles: renderer.info.render.triangles,
+          lines: renderer.info.render.lines,
+          points: renderer.info.render.points,
+        };
+      }
     };
     return renderer;
   },
