@@ -26,3 +26,7 @@ Após a homologação visual preliminar da Fase 1 premium, o jogador percebe pou
 ## Riscos
 
 Mais modelos podem aumentar CPU, GPU, projéteis e dificuldade percebida. Contagem ativa é limite de entidades, não comprovação de desempenho. Não mascarar testes falhos; ajustar a carga de combate conforme FPS medido.
+
+## Homologação visual no preview
+
+No mesmo SHA da CI, jogar a abertura da cidade e verificar as ondas às ~2s, ~6s e ~10s, a chegada das patrulhas ao nível do solo e os limites dos 13s. Confirmar ausência de novos inimigos na travessia do trem e durante Super Boost/atmosfera. Após a chegada à órbita, comparar a nova formação de três caças no Normal com a versão QA116, sem perder visibilidade dos projéteis, da nave ou dos indicadores do HUD. Medir FPS e chamadas reais no perfil Médio mobile e Alto desktop; não confundir testes automatizados com aprovação estética.
