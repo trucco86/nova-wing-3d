@@ -91,8 +91,7 @@ test('QA113: detailed PBR city and a single shared reflection probe stay within 
         original: original.stats,
         premium: premium.stats,
         changedFraction,
-        changedFraction,
-      details,
+        details,
       }),
   );
   await info.attach('qa113-gpu-and-material-profile', {
@@ -100,6 +99,7 @@ test('QA113: detailed PBR city and a single shared reflection probe stay within 
       platform: info.project.name,
       original: original.stats,
       premium: premium.stats,
+      changedFraction,
       details,
     }),
     contentType: 'application/json',
