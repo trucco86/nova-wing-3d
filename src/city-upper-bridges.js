@@ -6,18 +6,18 @@ import * as T from 'three';
 // have colliders, while grounded supports are outside the flight corridor.
 const unit = new T.BoxGeometry(1, 1, 1);
 const steel = new T.MeshStandardMaterial({
-  color: '#7794a9',
+  color: '#8c9a9d',
   metalness: 0.7,
   roughness: 0.32,
 });
 const glass = new T.MeshStandardMaterial({
-  color: '#2c5870',
+  color: '#435d66',
   metalness: 0.5,
   roughness: 0.2,
   transparent: true,
   opacity: 0.84,
 });
-const neon = new T.MeshBasicMaterial({ color: '#83e8f7', toneMapped: false });
+const neon = new T.MeshBasicMaterial({ color: '#c8e7e3', toneMapped: false });
 const BRIDGES = Object.freeze([
   { z: -285, y: 92, width: 126, depth: 12 },
   { z: -605, y: 123, width: 134, depth: 16 },
