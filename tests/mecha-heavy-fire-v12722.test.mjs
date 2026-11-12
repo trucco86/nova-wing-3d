@@ -35,7 +35,7 @@ test('mecha audio has distinct layered cannon, charged, precision and impact cue
   const cannon = AUDIO_CUES.mechaShot;
   assert.ok(cannon.cooldown >= 0.12);
   assert.ok(cannon.tones.length >= 3 && cannon.noises.length >= 1);
-  assert.ok(cannon.tones.some((tone) => tone.from > 800));
+  assert.ok(cannon.tones.some((tone) => tone.from >= 600 && tone.from <= 800 && tone.filter <= 1600 && tone.duration <= 0.1));
   assert.ok(cannon.tones.some((tone) => tone.from < 300));
   for (const cueName of ['mechaImpact', 'mechaPrecision', 'mechaChargeRelease']) {
     const cue = AUDIO_CUES[cueName];
