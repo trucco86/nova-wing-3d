@@ -376,7 +376,9 @@ function makeCorridorSideFacade(host, style, groups) {
       : { pane: '#6b9bb1', lit: '#efbd90', rim: '#bdac9b', shade: '#263440' };
   const depth = host.depth * 0.83;
   const bottom = -7;
-  const floors = Math.max(4, Math.min(9, Math.floor((host.h - 13) / 8)));
+  // Wider window bays preserve modeled depth while removing redundant floor
+  // subpanels that pushed the QA114 GPU geometry budget above 3%.
+  const floors = Math.max(4, Math.min(7, Math.floor((host.h - 13) / 9.5)));
   const pitch = (host.h - 13) / floors;
   // Recessed base appears beside the pilot's route, with realistic bearing
   // beams. Side skins never exceed the existing building's Z footprint.
@@ -604,7 +606,9 @@ function makeFacade(host, style, groups) {
   // preventing old windows from intersecting the new bay design.
   // Recessed, divided bay glazing is real depth, not a luminous texture pasted
   // onto a box. Deep horizontal spandrels cast shadow along each floor.
-  const floors = Math.max(4, Math.min(9, Math.floor((b.h - 14) / 7.5)));
+  // Larger glazing modules keep the premium readable on mobile while avoiding
+  // geometry whose projected screen size falls below a useful pixel.
+  const floors = Math.max(4, Math.min(7, Math.floor((b.h - 14) / 9.5)));
   const usable = b.h - 14;
   const step = usable / floors;
   for (let level = 0; level < floors; level++) {
