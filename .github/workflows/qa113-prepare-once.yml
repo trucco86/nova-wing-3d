@@ -32,3 +32,5 @@ jobs:
             git push origin HEAD:feat/qa113-city40-materials-detail-perf-20261111
           fi
           npm run validate
+
+# Recheck QA113 after strict lint and measured GPU evidence logging.
