@@ -29,3 +29,21 @@ Os gráficos da QA114 evoluíram mas a arquitetura próxima ao voo ainda tem blo
 A QA114 PR #325 tinha Node 778 PASS e WebGL direcionado 6 PASS, mas **CI FULL falhou**: Europa arena FOV em landscape ficou 88 onde teste requer <86; teste QA113 per-tile exibia 3 hosts em um dos layouts mobile contra expectativa fixa de 4. Tratar o segundo por cobertura total geolocalizada e prova visual; não mascarar comportamento de câmera. Retestar primeiro; se a câmera persistir fora de parâmetro, bloquear a cadeia.
 
 Nenhuma publicação na main até CI FULL verde e aceitação visual/auditiva explícita.
+
+
+## Evidência da rodada QA115, 12/11/2026
+- Node: **782 PASS, 0 FAIL**, build sincronizado em
+  https://github.com/trucco86/nova-wing-3d/actions/runs/43230488399 .
+- Browser real `OfflineAudioContext`, desktop/mobile, Europa e PBR:
+  **12/12 PASS** em https://github.com/trucco86/nova-wing-3d/actions/runs/43230827335 .
+- Release/hold: RMS da descarga >2,6x RMS do carregamento; sem clipping,
+  mute e pausa preservados. A aprovação estética do som continua humana.
+- WebGL: oito draw calls adicionais ao baseline sem Graphics4.0.
+  Medida mobile de 21.488 triângulos sobre 758.574 na cena baseline,
+  ou aproximadamente 2,83%. Os buffers continuam inferiores a
+  3 MiB por tile, com os quatro batches por material invariantes.
+- O teste de rotação de Europa passou nos dois perfis após aguardar
+  o evento real de resize, sem alterar o FOV de gameplay.
+- A/B mede diferença para a cena sem Graphics4.0, não demonstra
+  automaticamente ganho estético contra a candidata QA114. A percepção
+  de qualidade e FPS em dispositivo físico seguem gates de usuário.
