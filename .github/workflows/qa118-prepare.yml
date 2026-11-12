@@ -11,6 +11,7 @@ on:
       - src/visuals.js
       - src/city-40-hero-section.js
       - tests/qa118-premium-worlds.test.mjs
+      - tests/europa-boss-arena.test.mjs
       - specs/qa118-all-sectors-premium-direction.md
 
 permissions:
@@ -40,7 +41,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - name: Run premium-world smoke and all-stage layout tests
-        run: node --test tests/qa118-premium-worlds.test.mjs tests/living-world-depth.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/qa116-grounded-city-and-mobility.test.mjs tests/flight-environments.test.mjs tests/qa117-city-combat-density.test.mjs tests/mission-pacing-difficulty.test.mjs tests/sector-waves.test.mjs
+        run: node --test tests/qa118-premium-worlds.test.mjs tests/living-world-depth.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/qa116-grounded-city-and-mobility.test.mjs tests/flight-environments.test.mjs tests/qa117-city-combat-density.test.mjs tests/mission-pacing-difficulty.test.mjs tests/sector-waves.test.mjs tests/europa-boss-arena.test.mjs
       - run: npm run validate
       - run: git diff --check
       - name: Commit synchronized source and generated HTML to QA branch only
