@@ -25,6 +25,12 @@ test('mechanical effects and turbine mix render audibly with exact mute and paus
     expect(segment.rms, cue + ' must remain audible at nominal volume').toBeGreaterThan(0.001);
     expect(segment.peak, cue + ' must not clip').toBeLessThan(0.98);
   }
+  const chargeRiser = metrics.segments.find(s => s.name === 'plasmaRiser');
+  const releaseImpact = metrics.segments.find(s => s.name === 'plasmaRelease');
+  expect(releaseImpact.rms, 'charged shot must have more energy than the quiet hold')
+    .toBeGreaterThan(chargeRiser.rms * 2.6);
+  expect(chargeRiser.peak, 'the held charge must stay subtle and not dominate the mix')
+    .toBeLessThan(0.14);
   expect(metrics.afterDestroy.voices).toBe(0);
   expect(metrics.afterDestroy.engineActive).toBe(false);
   expect(metrics.afterDestroy.destroyed).toBe(true);
