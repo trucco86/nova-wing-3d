@@ -16,7 +16,11 @@ test('QA117: normal city and orbit have visibly larger but bounded formations', 
   assert.ok(normal.interval < 5.4, 'normal must improve the original 5.4s fighter cadence');
   assert.ok(normal.groundInterval < 6, 'city has more visible ground patrols');
   assert.ok(easy.interval > normal.interval && hard.interval < normal.interval);
-  for (const [mode, max] of [['easy', 4], ['normal', 6], ['hard', 8]]) {
+  for (const [mode, max] of [
+    ['easy', 4],
+    ['normal', 6],
+    ['hard', 8],
+  ]) {
     const p = stageOneCombatDensity(mode);
     assert.equal(p.maxActive, max);
     assert.equal(stageOneCombatDensity(mode, true, max).count, 0);

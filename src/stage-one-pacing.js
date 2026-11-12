@@ -67,7 +67,10 @@ export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFigh
     throw new RangeError('Active fighter count must be non-negative');
   const profile = profiles[mode] ?? profiles.normal;
   return {
-    count: Math.max(0, Math.min(orbit ? profile.orbit : profile.city, profile.maxActive - activeFighters)),
+    count: Math.max(
+      0,
+      Math.min(orbit ? profile.orbit : profile.city, profile.maxActive - activeFighters),
+    ),
     interval: profile.interval,
     groundInterval: profile.groundInterval,
     maxActive: profile.maxActive,

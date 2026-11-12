@@ -1,9 +1,11 @@
 # QA117 | Mais inimigos na cidade sem regressão do visual premium
 
 ## Problema observado
+
 Após a homologação visual preliminar da Fase 1 premium, o jogador percebe poucos inimigos. No modo Normal, a cidade abria com um único caça por onda a cada 5,4 segundos, além de uma patrulha terrestre a cada 6 segundos. A área preserva uma sequência cinematográfica de trem, Super Boost e órbita que não pode ser obstruída.
 
 ## Escopo
+
 - Manter integralmente o lote QA116, inclusive ônibus, carros voadores, novas pontes ancoradas, paleta PBR e outdoors.
 - Cidade (primeiros 13 segundos): formações reais de caças com 1/2/3 integrantes em Fácil/Normal/Difícil. Ritmos de 5,2/4,15/3,7 segundos, respectivamente.
 - Órbita depois do trecho de recuperação: formações de 2/3/4 em Fácil/Normal/Difícil. Conservar escalonamento e diferentes papéis (perseguidor, interceptador e bombardeiro).
@@ -13,6 +15,7 @@ Após a homologação visual preliminar da Fase 1 premium, o jogador percebe pou
 - Setores 2 a 10, som, dano, vida do jogador, munição e dificuldade base permanecem sem alterações. Sem spawn a partir de tempo de parede; manter pausa determinística.
 
 ## Validação
+
 1. Teste de unidade para intensidade por dificuldade, limite ativo e encaixe das formações.
 2. Teste de integração real da primeira onda e inimigo terrestre via harness.
 3. Testes de regressão do Boost, trem, subchefe e boss obrigatórios.
@@ -21,4 +24,5 @@ Após a homologação visual preliminar da Fase 1 premium, o jogador percebe pou
 6. **Sem merge ou produção até decisão e revisão humana.**
 
 ## Riscos
+
 Mais modelos podem aumentar CPU, GPU, projéteis e dificuldade percebida. Contagem ativa é limite de entidades, não comprovação de desempenho. Não mascarar testes falhos; ajustar a carga de combate conforme FPS medido.

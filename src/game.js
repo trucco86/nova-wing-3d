@@ -4556,8 +4556,10 @@ export function createGame({
       spawnCd =
         count === 0
           ? 1.25
-          : cityDensity?.interval ??
-            (dynamicFlight ? fighterInterval(sectorIndex, settings.difficulty) : 3.4 - sectorIndex * 0.12);
+          : (cityDensity?.interval ??
+            (dynamicFlight
+              ? fighterInterval(sectorIndex, settings.difficulty)
+              : 3.4 - sectorIndex * 0.12));
     }
     if (
       spawnEncounters &&
@@ -4624,7 +4626,9 @@ export function createGame({
     ) {
       // Orbital patrols share the same GPU-safe active-fighter budget as the
       // authored formations, so neither spawn path can bypass the cap.
-      const activeFighters = enemies.filter((target) => !target.dead && target.kind === 'fighter').length;
+      const activeFighters = enemies.filter(
+        (target) => !target.dead && target.kind === 'fighter',
+      ).length;
       if (stageOneCombatDensity(settings.difficulty, true, activeFighters).count > 0) {
         groundWave++;
         enemy('fighter');
