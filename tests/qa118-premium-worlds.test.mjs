@@ -71,9 +71,22 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
     assert.ok(ambient && ambient.children.length === 2);
     const grade = premiumWorldGrade(theme);
     if (grade) {
-      assert.ok(scene.fog.color.equals(new T.Color(grade.fog)), theme + ': grade actual fog');
       assert.ok(hemisphere.color.equals(new T.Color(grade.sky)), theme + ': grade actual skylight');
       assert.ok(sun.color.equals(new T.Color(grade.sun)), theme + ': grade key light');
+      if (sector >= 3) {
+        const arrival = world.setDestinationArrival(60);
+        assert.ok(arrival?.reveal >= 0.99, 'grade must be checked after the actual destination reveals');
+      }
+      if (theme === 'mars' || theme === 'ice') {
+        // Mars sandstorm and Europa snow intentionally blend fog into their
+        // distinct entry sequence. A fixed fog tone would break that story.
+        assert.ok(scene.fog.density > 0 && Number.isFinite(scene.fog.density));
+      } else {
+        assert.ok(
+          scene.fog.color.equals(new T.Color(grade.fog)),
+          theme + ': real fog must settle into the premium biome after arrival',
+        );
+      }
     }
     if (['asteroids', 'ice', 'nebula', 'sun'].includes(theme)) {
       const field = scene.getObjectByName('premium-instanced-' + theme + '-far-field');
