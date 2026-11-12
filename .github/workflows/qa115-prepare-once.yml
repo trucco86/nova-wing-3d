@@ -34,3 +34,5 @@ jobs:
           npm run validate
 
 # Revalidate QA115 after updating obsolete shrill-tone assertions to filtered impacts.
+
+# QA115 rerun: softer charging gains and hidden-geometry reduction.
