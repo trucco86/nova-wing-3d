@@ -51,3 +51,25 @@ export function stageOneEncounterWindows(
       !active || (orbitAge !== null && orbitAge >= STAGE_ONE_PACING.baseAfterOrbitSeconds),
   };
 }
+
+/**
+ * Stage-one combat only. The train, BOOST and subboss gates remain owned by
+ * stageOneEncounterWindows; denser formations are never permission to spawn
+ * inside a scripted transit. Cap active fighters for WebGL/mobile performance.
+ */
+export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFighters = 0) {
+  const profiles = {
+    easy: { city: 1, orbit: 2, interval: 5.2, groundInterval: 5.2, maxActive: 4 },
+    normal: { city: 2, orbit: 3, interval: 4.15, groundInterval: 4.3, maxActive: 6 },
+    hard: { city: 3, orbit: 4, interval: 3.7, groundInterval: 4.0, maxActive: 8 },
+  };
+  if (!Number.isInteger(activeFighters) || activeFighters < 0)
+    throw new RangeError('Active fighter count must be non-negative');
+  const profile = profiles[mode] ?? profiles.normal;
+  return {
+    count: Math.max(0, Math.min(orbit ? profile.orbit : profile.city, profile.maxActive - activeFighters)),
+    interval: profile.interval,
+    groundInterval: profile.groundInterval,
+    maxActive: profile.maxActive,
+  };
+}
