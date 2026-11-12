@@ -66,6 +66,24 @@ window.fixture = {
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
   // Private QA fixture only: render exact same camera and clock with and
   // without the new 285m architecture; production has no such debug switch.
+  graphics40Details() {
+    const tiles = [];
+    if (!lastScene) throw new Error('QA scene not rendered');
+    lastScene.traverse((node) => {
+      if (node.name !== 'city40-hero-architecture') return;
+      const masonry = node.getObjectByName('city40-sculpted-masonry')?.material;
+      const glass = node.getObjectByName('city40-deep-bay-glazing')?.material;
+      tiles.push({
+        variant: node.userData.variant,
+        buildings: node.userData.buildings.length,
+        metrics: { ...node.userData.metrics },
+        reflectionFaces: masonry?.envMap?.images?.length ?? 0,
+        reflectionsShared: masonry?.envMap != null && masonry.envMap === glass?.envMap,
+        batches: node.children.flatMap(group => group.children).length,
+      });
+    });
+    return tiles;
+  },
   graphics40Visible(enabled) {
     if (!lastScene) throw new Error('QA visual scene was not initialized');
     let roots = 0;
