@@ -34,7 +34,7 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
     assert.ok(inventory.userData.total >= 7, 'meaningful media density spread throughout stage');
     assert.ok(inventory.userData.total <= 12, 'avoid illegible ad clutter');
     const counts = inventory.userData.counts;
-    assert.ok(counts.facade >= 2 && counts.banner >= 2 && counts.roof >= 1);
+    assert.ok(counts.facade >= 2 && counts.rear >= 1 && counts.banner >= 2 && counts.roof >= 1);
     const slots = inventory.userData.slots;
     assert.equal(slots.length, inventory.userData.total);
     const buildings = tile.userData.buildingFootprints;
@@ -52,8 +52,10 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
       assert.equal(slot.x, host.x, 'screen must belong to an actual building');
       assert.ok(Math.abs(slot.x) - slot.width / 2 > 118, 'no panel enters maglev or pilot lane');
       assert.ok(slot.width < host.w && slot.height > 1);
-      if (slot.surface === 'front-facade') {
-        assert.ok(Math.abs(slot.z - (host.z + host.depth / 2 + 2.05)) < 0.0001);
+      if (slot.surface === 'front-facade' || slot.surface === 'rear-facade') {
+        const expectedZ =
+          host.z + (slot.surface === 'rear-facade' ? -host.depth / 2 - 2.05 : host.depth / 2 + 2.05);
+        assert.ok(Math.abs(slot.z - expectedZ) < 0.0001);
         assert.ok(slot.y > -7 && slot.y < host.h - 7);
       } else {
         assert.equal(slot.surface, 'roof-cap');
