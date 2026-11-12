@@ -97,7 +97,8 @@ window.fixture = {
         variant: node.userData.variant,
         buildings: node.userData.buildings.length,
         supportedSideRibbons: node.userData.corridorFacades.reduce(
-          (sum, facade) => sum + (facade.supportedRibbonCount ?? 0), 0,
+          (sum, facade) => sum + (facade.supportedRibbonCount ?? 0),
+          0,
         ),
         metrics: { ...node.userData.metrics },
         reflectionFaces: masonry?.envMap?.images?.length ?? 0,
