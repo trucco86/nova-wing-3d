@@ -8,7 +8,12 @@ import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layo
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { cityTilePositions } from './city-tile-scroll.js';
 import { createCityAdInventory } from './city-ad-inventory.js';
-import { createCity40HeroSection, setCity40HeroQuality } from './city-40-hero-section.js';
+import {
+  createCity40HeroSection,
+  setCity40HeroQuality,
+  createCity40SkylineLandmark,
+  setCity40SkylineQuality,
+} from './city-40-hero-section.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1650,6 +1655,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     skylineGate.add(box(4.5, 105, 4.5, glowMaterial('#56bace', 0.9), side * 88, 69, -810));
   }
   cityHorizon.add(skylineGate);
+  // Graphics 4.0: focal skyline architecture actually visible in portrait
+  // mode. Non-playable landmark stays behind the flight corridor.
+  cityHorizon.add(createCity40SkylineLandmark());
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
   const conceptCity = createCity34Concept();
@@ -2026,6 +2034,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      setCity40SkylineQuality(cityHorizon, quality);
       setCity34ConceptQuality(conceptCity, quality);
       cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
       launchCelestials.setGraphicsQuality(quality);
