@@ -41,7 +41,9 @@ const game = createGame({
       // They are NOT the game world, and must never replace the test's scene
       // reference or GPU counters. Postprocessing passes likewise do not
       // represent gameplay draw calls.
-      const realWorld = args[0]?.children?.some((node) => node.name === 'launch-city');
+      const realWorld = Boolean(
+        args[0]?.fog?.isFogExp2 || args[0]?.getObjectByName?.('launch-city'),
+      );
       if (realWorld) lastScene = args[0];
       render(...args);
       if (realWorld) {
