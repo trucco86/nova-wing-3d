@@ -109,7 +109,7 @@ test('QA111: real charge meter drives ONE rising plasma engine and stops cleanly
   assert.ok(cues.snapshot().chargeProgress >= 0.9);
   cues.setCharge({ active: false });
   assert.equal(cues.snapshot().chargeActive, false);
-  const targets = events.params.filter((entry) => entry[0] === 'target').slice(-3);
+  const targets = events.params.filter((entry) => entry[0] === 'target').slice(-4);
   assert.deepEqual(
     targets.map((x) => x[1]),
     [0, 0, 0],
@@ -138,7 +138,10 @@ test('QA111: repeated shots rotate slight deterministic pitch without stacking e
   const cues = createAudioCues(context);
   assert.equal(cues.play('shot'), true);
   const first = events.sources.filter((node) => node.kind === 'osc').map((n) => n.frequency.value);
-  assert.equal(first.length, 3);
+  assert.equal(first.length, 4, 'the cannon includes its delayed pressure rebound layer');
+  assert.ok(AUDIO_CUES.shot.tones.some((tone) =>
+    tone.delay >= 0.06 && tone.duration >= 0.25 && tone.to < 90
+  ), 'the fourth oscillator must actually sustain the audible post-attack body');
   assert.equal(cues.play('shot'), false, 'rapid duplicate gets suppressed');
   context.currentTime += 0.09;
   assert.equal(cues.play('shot'), true);
