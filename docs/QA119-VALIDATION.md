@@ -14,7 +14,9 @@
 - PR: https://github.com/trucco86/nova-wing-3d/pull/330 (Draft, sem autorização de merge/produção).
 
 ## Escopo
+
 Marte: cinco mesas esculpidas com 20 faixas sedimentares em cinco lotes. Asteroide: veios minerais aderidos à parede em vez de aros artificiais, mesma contagem de draw calls. Europa: cristas facetadas em um único lote instanciado, túnel e arena do chefe intactos.
 
 ## Não afirmar
+
 Não chamar de entrega AAA final; não extrapolar FPS real de celular a partir de Chromium; não considerar completa a QA visual de chefes e transições de todas as dez fases.
