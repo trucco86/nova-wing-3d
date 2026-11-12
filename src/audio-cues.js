@@ -660,14 +660,14 @@ export function createAudioCues(context) {
     };
     // Restrained energy: gentle low-pass movement, very little hiss and no
     // sawtooth sweep. The audible reward is the release, not the hold.
-    // Levels are roughly 10-15 dB under the QA114 charging mix.
+    // Levels stay around 13-18 dB under QA114, with release clearly louder.
     smooth(chargeLoop.bass.frequency, 85 + 28 * p);
     smooth(chargeLoop.flux.frequency, 148 + 63 * p);
     smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
     smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
-    smooth(chargeLoop.bassGain.gain, 0.004 + 0.007 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.0025 + 0.0045 * p);
-    smooth(chargeLoop.hissGain.gain, 0.0015 + 0.0035 * p);
+    smooth(chargeLoop.bassGain.gain, 0.003 + 0.0048 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.0018 + 0.003 * p);
+    smooth(chargeLoop.hissGain.gain, 0.001 + 0.0025 * p);
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {
