@@ -313,6 +313,53 @@ export function planCity40HeroBuildings(tile, variant = 'civic') {
   return selected;
 }
 
+// Camera-facing side skins make the premium treatment visible during forward
+// flight. Each facade is built against the side of its real host, instead of
+// only decorating the far/front surface hidden by maglev rails. Glazing can
+// protrude toward the corridor only when there is verified safe clearance.
+function makeCorridorSideFacade(host, style, groups) {
+  const side = Math.sign(host.x) || 1;
+  const innerWallX = host.x - side * host.w / 2;
+  const clearance = Math.abs(innerWallX) - SIDE_CLEARANCE;
+  if (clearance < 0.38) return null;
+  const projection = Math.min(0.32, clearance - 0.15);
+  const sideX = innerWallX - side * projection;
+  const { masonry, glass, shadow, fine } = groups;
+  const tone = style === 'civic'
+    ? { pane: '#94c6d8', lit: '#a8ecf5', rim: '#d3e5e7', shade: '#182e3b' }
+    : { pane: '#6b9bb1', lit: '#efbd90', rim: '#bdac9b', shade: '#263440' };
+  const depth = host.depth * 0.83;
+  const bottom = -7;
+  const floors = Math.max(4, Math.min(9, Math.floor((host.h - 13) / 8)));
+  const pitch = (host.h - 13) / floors;
+  // Recessed base appears beside the pilot's route, with realistic bearing
+  // beams. Side skins never exceed the existing building's Z footprint.
+  shadow.box(sideX, bottom + host.h * 0.53, host.z, 0.16, host.h * 0.78, depth, tone.shade);
+  masonry.box(sideX - side * 0.07, bottom + 5.5, host.z, 0.26, 0.65, depth, tone.rim);
+  for (let floor = 0; floor < floors; floor++) {
+    const y = bottom + 10 + (floor + 0.5) * pitch;
+    const span = depth * 0.78;
+    glass.box(sideX - side * 0.1, y, host.z, 0.18, pitch * 0.52, span,
+      floor % 4 === 1 ? tone.lit : tone.pane);
+    masonry.box(sideX - side * 0.1, y - pitch * 0.36, host.z,
+      0.24, 0.27, depth * 0.91, tone.rim);
+    if (style === 'industrial') {
+      // Banded HVAC/ventilation louvers face the actual flight route.
+      for (const zSide of [-1, 1])
+        fine.box(sideX - side * 0.15, y + pitch * 0.21,
+          host.z + zSide * depth * 0.23, 0.16, 0.26, depth * 0.36, tone.rim);
+    } else {
+      // Tall cyan slits in civic towers are contrasted with pale stone fins.
+      fine.box(sideX - side * 0.15, y, host.z + depth * 0.21,
+        0.16, pitch * 0.64, 0.19, tone.rim);
+    }
+  }
+  const minLaneAbsX = Math.abs(sideX) - 0.16;
+  if (minLaneAbsX < SIDE_CLEARANCE)
+    throw new Error('Graphics 4.0 side skin entered the reserved flight lane');
+  return { hostIndex: host.index, x: sideX, depth, floors, minLaneAbsX };
+}
+
 function makeFacade(host, style, groups) {
   const { masonry, glass, shadow, fine } = groups;
   const b = host;
@@ -524,7 +571,12 @@ export function createCity40HeroSection(tile, variant = 'civic') {
   const occlusion = geometryBuilder();
   const precision = geometryBuilder();
   const shapes = { masonry: architecture, glass: glazing, shadow: occlusion, fine: precision };
-  for (const host of selected) makeFacade(host, variant, shapes);
+  const corridorFacades = [];
+  for (const host of selected) {
+    makeFacade(host, variant, shapes);
+    const visibleSide = makeCorridorSideFacade(host, variant, shapes);
+    if (visibleSide) corridorFacades.push(visibleSide);
+  }
 
   const materials = sharedMaterials();
   const standard = new T.Group();
@@ -568,6 +620,7 @@ export function createCity40HeroSection(tile, variant = 'civic') {
   }));
   root.userData.range = { ...CITY40_HERO_RANGE };
   root.userData.metrics = metrics;
+  root.userData.corridorFacades = corridorFacades;
   tile.add(root);
   return root;
 }
