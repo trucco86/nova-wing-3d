@@ -86,9 +86,15 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
           assert.ok(scene.fog.color.equals(indoorFog), 'mothership interior must preserve readable hangar fog');
         }
       } else {
+        const referenceFog = new T.Color(grade.fog);
+        const fogDistance = Math.hypot(
+          scene.fog.color.r - referenceFog.r,
+          scene.fog.color.g - referenceFog.g,
+          scene.fog.color.b - referenceFog.b,
+        );
         assert.ok(
-          scene.fog.color.equals(new T.Color(grade.fog)),
-          theme + ': real fog must settle into the premium biome after arrival',
+          fogDistance < 1e-6,
+          theme + ': final fog must match the premium biome within Three.js float rounding',
         );
       }
     }
