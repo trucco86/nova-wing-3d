@@ -33,6 +33,8 @@ jobs:
         run: npm run release:prepare -- 1.27.116
       - run: npm run format
       - run: npm run build
+      - name: QA116 targeted regression on the corrected bridge inventory
+        run: node --test tests/qa100-upper-bridges.test.mjs tests/city-2-7-active-traffic.test.mjs tests/qa116-grounded-city-and-mobility.test.mjs
       - run: npm run validate
       - run: git diff --check
       - name: Commit synchronized candidate to QA branch only
