@@ -118,7 +118,7 @@ Object.assign(AUDIO_CUES, {
       {
         from: 215,
         to: 95,
-        delay: 0.047,
+        delay: 0.068,
         duration: 0.25,
         gain: 0.058,
         wave: 'triangle',
