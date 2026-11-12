@@ -98,7 +98,8 @@ export function createCityLocalSolids(tiles) {
     }
     // Upper city structures are real, approaching parts of the looping
     // stage, not the never-reachable scenic horizon. The authored instance
-    // data exactly matches the 12 prebuilt steel meshes and remains allocation-
+    // data matches 18 collidable decks/brackets/extensions inside 30 batched
+    // steel pieces (the piers themselves are outside the playable lane) and remains allocation-
     // free during frame updates.
     const playableSkybridges = tile.getObjectByName('city-upper-skybridge-solids');
     for (const instance of playableSkybridges?.userData.solidInstances ?? [])
