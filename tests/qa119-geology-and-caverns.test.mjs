@@ -2,8 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { createMarsPremium, updateMarsArrival, updateMarsPremium } from '../src/mars-premium.js';
-import { createAsteroidInterior, constrainCavernPosition, crossesCavernWall } from '../src/asteroid-interior.js';
-import { createEuropaSurface, createEuropaGlacialRidgeGeometry, updateEuropaSurface } from '../src/europa-surface.js';
+import {
+  createAsteroidInterior,
+  constrainCavernPosition,
+  crossesCavernWall,
+} from '../src/asteroid-interior.js';
+import {
+  createEuropaSurface,
+  createEuropaGlacialRidgeGeometry,
+  updateEuropaSurface,
+} from '../src/europa-surface.js';
 
 test('QA119: five distinct Mars mesas keep true weathered stone relief with four batched geological layers', () => {
   const mars = createMarsPremium();
@@ -20,7 +28,10 @@ test('QA119: five distinct Mars mesas keep true weathered stone relief with four
     assert.ok(body.isMesh && bands.isInstancedMesh);
     assert.equal(bands.count, 4);
     assert.equal(bands.userData.visualOnly, true);
-    assert.ok(body.geometry.getAttribute('position').count > 70, 'weathering is sculpted, not a seven-sided primitive');
+    assert.ok(
+      body.geometry.getAttribute('position').count > 70,
+      'weathering is sculpted, not a seven-sided primitive',
+    );
     assert.ok(body.geometry.getAttribute('normal').count > 0);
     assert.ok(bands.instanceColor?.count >= 4, 'strata have alternating natural stone layers');
     assert.ok(body.material.roughness > 0.8 && bands.material.roughness > 0.8);
@@ -45,7 +56,11 @@ test('QA119: five distinct Mars mesas keep true weathered stone relief with four
   const streamed = mesas.map((mesa) => mesa.position.z);
   assert.notDeepEqual(streamed, start);
   updateMarsPremium(mars, 105);
-  assert.deepEqual(mesas.map((mesa) => mesa.position.z), streamed, 'stage time is deterministic on pause');
+  assert.deepEqual(
+    mesas.map((mesa) => mesa.position.z),
+    streamed,
+    'stage time is deterministic on pause',
+  );
   mars.traverse((node) => {
     assert.notEqual(node.userData.hitbox, true, 'visual cliffs cannot create invisible collisions');
   });
@@ -63,10 +78,15 @@ test('QA119: asteroid cavern has no neon hoop and keeps real mineral seams outsi
     assert.ok(seams?.isInstancedMesh);
     assert.equal(seams.count, 8);
     assert.equal(seams.userData.visualOnly, true);
-    assert.ok(seams.material.isMeshStandardMaterial, 'veins use physically lit rock rather than always-on neon');
+    assert.ok(
+      seams.material.isMeshStandardMaterial,
+      'veins use physically lit rock rather than always-on neon',
+    );
     assert.ok(seams.material.roughness > 0.3);
-    assert.ok(!section.children.some((child) => child.geometry?.type === 'TorusGeometry'),
-      'repeated portal ring must be replaced with rocky faults');
+    assert.ok(
+      !section.children.some((child) => child.geometry?.type === 'TorusGeometry'),
+      'repeated portal ring must be replaced with rocky faults',
+    );
     const m = new T.Matrix4();
     for (let i = 0; i < seams.count; i++) {
       seams.getMatrixAt(i, m);

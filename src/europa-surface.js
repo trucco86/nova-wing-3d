@@ -61,9 +61,9 @@ export function createEuropaGlacialRidgeGeometry() {
   for (let ring = 0; ring < rings.length - 1; ring++)
     for (let side = 0; side < sides; side++) {
       const a = ring * sides + side;
-      const b = ring * sides + (side + 1) % sides;
+      const b = ring * sides + ((side + 1) % sides);
       const c = (ring + 1) * sides + side;
-      const d = (ring + 1) * sides + (side + 1) % sides;
+      const d = (ring + 1) * sides + ((side + 1) % sides);
       indices.push(a, c, b, b, c, d);
     }
   const geometry = new T.BufferGeometry();
