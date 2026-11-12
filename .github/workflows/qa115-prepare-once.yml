@@ -32,3 +32,5 @@ jobs:
             git push origin HEAD:feat/qa115-refined-charge-and-city-detail-20261112
           fi
           npm run validate
+
+# Revalidate QA115 after updating obsolete shrill-tone assertions to filtered impacts.
