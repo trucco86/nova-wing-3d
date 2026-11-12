@@ -18,15 +18,16 @@ Usar como norte visual o concept da Fase 1 aprovado na conversa de 12/11/2026, s
 - Aumentar carros voadores de **4 para 7 no Medium** e de **7 para 13 no High**. Rota ao lado do corredor de voo, fora dos prédios e acima do maglev. Movimento por distância percorrida, determinístico durante Pause.
 - Recuperar orçamento GPU realocando o material da luz traseira para a geometria mesclada do carro voador. **Meta: manter 22 batches de tráfego por tile**; checar chamadas e FPS reais antes de merge.
 - Reduzir rosa/ciano saturados da arquitetura da Fase 1 em favor de metal escovado, vidro em cores naturais, iluminação branca/dourada e detalhes ciano discretos. Sem alteração das cores funcionais de perigos, armas ou HUD.
-- Reutilizar o inventário de mídia genérica já introduzido no QA110; não conectar ad server.
+- Reutilizar o inventário de mídia genérica já introduzido no QA110 e adicionar dois espaços traseiros por tile quando houver fachada livre, com painéis orientados para o lado de fora, suporte preso à estrutura real e sem novos batches; não conectar ad server.
 
 ## Critérios verificáveis
 
 1. As passarelas exibem pilares conectados ao solo; coliders apenas onde há decks/brackets/extensões visíveis.
 2. Os dois tiles da Fase 1 preservam os obstáculos e ônibus/carro voador respeitam faixas laterais, sem atravessar os prédios.
 3. Os dois perfis High/Medium exibem ônibus e aviões com as densidades contratadas e sem objetos gerados por frame.
-4. Contratos Node, geometria, CI completa, screenshots desktop/mobile, leitura dos outdoors e métricas de FPS WebGL no dispositivo são exigidos **no SHA final**, sem relaxar testes.
-5. Não publicar na main nem atualizar produção sem homologação visual e autorização específica.
+4. Exibir pelo menos um outdoor nas costas de um prédio em cada tile, orientado corretamente e sem atravessar a fachada ou outra torre. Os testes do inventário QA110 continuam obrigatórios.
+5. Contratos Node, geometria, CI completa, screenshots desktop/mobile, leitura dos outdoors e métricas de FPS WebGL no dispositivo são exigidos **no SHA final**, sem relaxar testes.
+6. Não publicar na main nem atualizar produção sem homologação visual e autorização específica.
 
 ## Riscos e limites
 
