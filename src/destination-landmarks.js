@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { saturnPassageAt } from './saturn-ring-passage.js';
+import { createPremiumLandmarkHull } from './premium-landmark-hulls.js';
 
 // Authored landmarks outside the flight corridor. Draw calls stay bounded by
 // InstancedMesh; these never participate in collision, targeting or scoring.
@@ -86,7 +87,11 @@ export function createDestinationLandmarks(index) {
     const main = makeInstanced(
       index,
       index === 7 ? 8 : 32,
-      index === 8 ? new T.IcosahedronGeometry(1, 1) : new T.BoxGeometry(1, 1, 1),
+      index === 7
+        ? createPremiumLandmarkHull('dreadnought')
+        : index === 8
+          ? createPremiumLandmarkHull('orion-lens')
+          : new T.BoxGeometry(1, 1, 1),
       materialFor(index),
       structureName,
       (i) => {
@@ -328,11 +333,13 @@ export function createDestinationLandmarks(index) {
   if (additions[index]) {
     const [name, count] = additions[index];
     const shape =
-      index === 5 || index === 9
-        ? new T.BoxGeometry(1, 1, 1)
-        : index === 6
-          ? new T.ConeGeometry(1, 1, 7)
-          : new T.IcosahedronGeometry(1, 1);
+      index === 9
+        ? createPremiumLandmarkHull('titan-fortress')
+        : index === 5
+          ? new T.BoxGeometry(1, 1, 1)
+          : index === 6
+            ? new T.ConeGeometry(1, 1, 7)
+            : new T.IcosahedronGeometry(1, 1);
     const layer = makeInstanced(
       index,
       count,
@@ -353,6 +360,7 @@ export function createDestinationLandmarks(index) {
         };
       },
       true,
+      index === 9 ? ['#393941', '#6a514f', '#76605b', '#9b5553'] : null,
     );
     group.add(layer);
   }
