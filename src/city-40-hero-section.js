@@ -304,8 +304,10 @@ function makeFacade(host, style, groups) {
     1.8,
     p.trim,
   );
-  glass.box(x, y0 + doorHeight * 0.47, z + 1.03, bayWidth * 0.92, doorHeight * 0.7, 0.26, p.glass);
+  glass.box(x, y0 + doorHeight * 0.47, z + 1.49, bayWidth * 0.92, doorHeight * 0.7, 0.26, p.glass);
 
+  // The new glass is visibly in front of legacy City33 glazing at z+1.18,
+  // preventing old windows from intersecting the new bay design.
   // Recessed, divided bay glazing is real depth, not a luminous texture pasted
   // onto a box. Deep horizontal spandrels cast shadow along each floor.
   const floors = Math.max(4, Math.min(9, Math.floor((b.h - 14) / 7.5)));
@@ -322,17 +324,17 @@ function makeFacade(host, style, groups) {
       glass.box(
         px,
         floorY,
-        z + 1.04,
+        z + 1.49,
         pitch * 0.78,
         glazingHeight * 0.84,
         0.18,
         (level + col + host.band) % 5 === 0 ? p.lit : p.glass,
       );
-      fine.box(px, floorY + glazingHeight * 0.47, z + 1.25, pitch * 0.83, 0.19, 0.26, p.trim);
+      fine.box(px, floorY + glazingHeight * 0.47, z + 1.72, pitch * 0.83, 0.19, 0.26, p.trim);
     }
-    masonry.box(x, floorY - step * 0.43, z + 1.32, width * 0.77, 0.37, 0.79, p.bright);
+    masonry.box(x, floorY - step * 0.43, z + 1.67, width * 0.77, 0.37, 0.79, p.bright);
     if (level % 2 === 0)
-      masonry.box(x, floorY - step * 0.47, z + 1.38, width * 0.48, 0.27, 0.88, p.trim);
+      masonry.box(x, floorY - step * 0.47, z + 1.75, width * 0.48, 0.27, 0.88, p.trim);
   }
 
   // Offset roof shoulders build recognizable city silhouettes from the
