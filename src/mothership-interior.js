@@ -26,6 +26,28 @@ function block(parent, name, geo, mat, x, y, z, w, h, d) {
   parent.add(object);
   return object;
 }
+// Static GPU instancing for existing carrier architecture. No new colliders,
+// frame allocations or CPU animation loops.
+function batchParts(parent, name, geometry, finish, definitions) {
+  const mesh = new T.InstancedMesh(geometry, finish, definitions.length);
+  mesh.name = name;
+  mesh.userData.visualOnly = true;
+  mesh.frustumCulled = false;
+  const dummy = new T.Object3D();
+  for (let i = 0; i < definitions.length; i++) {
+    const { position, scale, rotation = [0, 0, 0], color = null } = definitions[i];
+    dummy.position.set(...position);
+    dummy.scale.set(...scale);
+    dummy.rotation.set(...rotation);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+    if (color) mesh.setColorAt(i, new T.Color(color));
+  }
+  mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  parent.add(mesh);
+  return mesh;
+}
 export function carrierInteriorState(elapsed) {
   const time = Math.max(0, Number.isFinite(elapsed) ? elapsed - WINDOW_START : 0);
   return {
@@ -47,6 +69,28 @@ export function createMothershipInterior() {
   const hazard = material('#fa755c', true);
   const cyan = material('#73e8ff', true);
   const warm = material('#e4b572', true);
+  const hangarGlass = new T.MeshStandardMaterial({
+    color: '#87b4bd',
+    metalness: 0.46,
+    roughness: 0.31,
+    emissive: '#2b5261',
+    emissiveIntensity: 0.14,
+  });
+  const driveMetal = new T.MeshStandardMaterial({
+    color: '#ffffff',
+    metalness: 0.78,
+    roughness: 0.34,
+    emissive: '#283c4b',
+    emissiveIntensity: 0.08,
+  });
+  const driveCoil = new T.MeshStandardMaterial({
+    color: '#ffffff',
+    metalness: 0.62,
+    roughness: 0.3,
+    emissive: '#6d4138',
+    emissiveIntensity: 0.16,
+  });
+  const coilGeometry = new T.CylinderGeometry(16, 16, 1.2, 24, 1, true);
   const cube = new T.BoxGeometry(1, 1, 1);
   const sections = [];
   const animatedMachines = [];
@@ -87,20 +131,17 @@ export function createMothershipInterior() {
           1.3,
         );
       }
+      // Four neon quads become real recessed glazing and physically attached
+      // mullions in just two instanced batches per wall.
+      const frames = [];
+      const windows = [];
       for (let j = 0; j < 4; j++) {
-        block(
-          section,
-          'carrier-hangar-window',
-          cube,
-          cyan,
-          side * 74,
-          20 + j * 10,
-          -42,
-          1.6,
-          4,
-          16,
-        );
+        const y = 20 + j * 10;
+        frames.push({ position: [side * 70.8, y, -42], scale: [2.6, 6.2, 18.6] });
+        windows.push({ position: [side * 69.4, y, -42], scale: [0.9, 4.3, 15.9] });
       }
+      batchParts(section, 'carrier-hangar-window-armored-frame', cube, plating, frames);
+      batchParts(section, 'carrier-hangar-window', cube, hangarGlass, windows);
     }
     block(section, 'carrier-ceiling-armored-spine', cube, plating, 0, 73, 0, 160, 13, 160);
     block(section, 'carrier-floor-armored-grid', cube, hull, 0, -32, 0, 156, 9, 160);
