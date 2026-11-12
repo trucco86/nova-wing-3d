@@ -8,6 +8,20 @@ desempenho. Não expandir a campanha antes da comparação visual humana.
 ## Entrega delimitada
 
 - Preservar intervalo de 285 m e os mesmos hosts/colliders da QA112.
+- Revisão obrigatória das capturas QA112 revelou melhoria visual quase
+  imperceptível: ~0,14% dos pixels mudaram na captura de distrito,
+  e praticamente zero no modo retrato. Estabilidade técnica não equivale
+  a transformação perceptível.
+- Fachadas laterais voltadas ao corredor de voo, presas aos edifícios
+  selecionados, com vidro, molduras, ventilação e clearance físico
+  de 118 unidades inclusive trim.
+- Landmark cívico distante, sustentado por duas torres esculpidas e
+  uma passarela estrutural, apenas no grupo de skyline não jogável.
+  Duas malhas visíveis em Médio e uma extra em Alto, sem colisores,
+  animação, luz dinâmica ou custo por frame.
+- Teste navegador usa captura isolada do canvas e compara pixel a pixel
+  antes/depois no MESMO frame, exigindo mais de 0,2% de pixels alterados
+  na região útil. Isso evita repetir o falso ganho visual da QA112.
 - Entradas comerciais construídas com pórticos, suportes, marquises
   chanfradas, vitrines recuadas e sofito escuro.
 - Níveis superiores com molduras metálicas profundas, divisórias e
