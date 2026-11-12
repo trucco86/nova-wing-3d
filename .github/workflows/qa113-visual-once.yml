@@ -29,3 +29,5 @@ jobs:
           path: |
             test-results/
             playwright-report/
+
+# Retry only after fixing real-scene selection against internal PMREM render passes.
