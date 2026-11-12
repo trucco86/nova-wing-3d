@@ -319,15 +319,16 @@ export function planCity40HeroBuildings(tile, variant = 'civic') {
 // protrude toward the corridor only when there is verified safe clearance.
 function makeCorridorSideFacade(host, style, groups) {
   const side = Math.sign(host.x) || 1;
-  const innerWallX = host.x - side * host.w / 2;
+  const innerWallX = host.x - (side * host.w) / 2;
   const clearance = Math.abs(innerWallX) - SIDE_CLEARANCE;
   if (clearance < 0.38) return null;
   const projection = Math.min(0.32, clearance - 0.22);
   const sideX = innerWallX - side * projection;
   const { masonry, glass, shadow, fine } = groups;
-  const tone = style === 'civic'
-    ? { pane: '#94c6d8', lit: '#a8ecf5', rim: '#d3e5e7', shade: '#182e3b' }
-    : { pane: '#6b9bb1', lit: '#efbd90', rim: '#bdac9b', shade: '#263440' };
+  const tone =
+    style === 'civic'
+      ? { pane: '#94c6d8', lit: '#a8ecf5', rim: '#d3e5e7', shade: '#182e3b' }
+      : { pane: '#6b9bb1', lit: '#efbd90', rim: '#bdac9b', shade: '#263440' };
   const depth = host.depth * 0.83;
   const bottom = -7;
   const floors = Math.max(4, Math.min(9, Math.floor((host.h - 13) / 8)));
@@ -339,19 +340,31 @@ function makeCorridorSideFacade(host, style, groups) {
   for (let floor = 0; floor < floors; floor++) {
     const y = bottom + 10 + (floor + 0.5) * pitch;
     const span = depth * 0.78;
-    glass.box(sideX - side * 0.1, y, host.z, 0.18, pitch * 0.52, span,
-      floor % 4 === 1 ? tone.lit : tone.pane);
-    masonry.box(sideX - side * 0.1, y - pitch * 0.36, host.z,
-      0.24, 0.27, depth * 0.91, tone.rim);
+    glass.box(
+      sideX - side * 0.1,
+      y,
+      host.z,
+      0.18,
+      pitch * 0.52,
+      span,
+      floor % 4 === 1 ? tone.lit : tone.pane,
+    );
+    masonry.box(sideX - side * 0.1, y - pitch * 0.36, host.z, 0.24, 0.27, depth * 0.91, tone.rim);
     if (style === 'industrial') {
       // Banded HVAC/ventilation louvers face the actual flight route.
       for (const zSide of [-1, 1])
-        fine.box(sideX - side * 0.15, y + pitch * 0.21,
-          host.z + zSide * depth * 0.23, 0.16, 0.26, depth * 0.36, tone.rim);
+        fine.box(
+          sideX - side * 0.15,
+          y + pitch * 0.21,
+          host.z + zSide * depth * 0.23,
+          0.16,
+          0.26,
+          depth * 0.36,
+          tone.rim,
+        );
     } else {
       // Tall cyan slits in civic towers are contrasted with pale stone fins.
-      fine.box(sideX - side * 0.15, y, host.z + depth * 0.21,
-        0.16, pitch * 0.64, 0.19, tone.rim);
+      fine.box(sideX - side * 0.15, y, host.z + depth * 0.21, 0.16, pitch * 0.64, 0.19, tone.rim);
     }
   }
   const minLaneAbsX = Math.abs(sideX) - 0.16;
@@ -651,14 +664,31 @@ export function createCity40SkylineLandmark() {
     // The lower pillar is a real structural foundation for the spire, and
     // the crown has an angled, recognizable profile instead of a cube.
     frame.box(x, 68, z - 6, 20, 150, 20, cladding);
-    frame.polygonPrism([
-      [x - 13, 132], [x + 13, 132], [x + 12, 176],
-      [x + 6, 219], [x + 1, 256], [x - 5, 227], [x - 12, 176],
-    ], z + 7, 23, cladding);
+    frame.polygonPrism(
+      [
+        [x - 13, 132],
+        [x + 13, 132],
+        [x + 12, 176],
+        [x + 6, 219],
+        [x + 1, 256],
+        [x - 5, 227],
+        [x - 12, 176],
+      ],
+      z + 7,
+      23,
+      cladding,
+    );
     for (let level = 0; level < 7; level++) {
       const y = 33 + level * 22;
-      glass.box(x, y, z + 5.6, 8, 6.4, 0.3,
-        (level + (side > 0 ? 1 : 0)) % 3 ? '#8bc6d7' : '#c9e8e1');
+      glass.box(
+        x,
+        y,
+        z + 5.6,
+        8,
+        6.4,
+        0.3,
+        (level + (side > 0 ? 1 : 0)) % 3 ? '#8bc6d7' : '#c9e8e1',
+      );
       trim.box(x, y + 4.9, z + 6.1, 15, 0.34, 0.28, '#dae2dc');
     }
     glass.box(x, 190, z + 7.6, 2.9, 103, 0.5, side < 0 ? '#a9e2ed' : '#efc5a8');
@@ -666,14 +696,32 @@ export function createCity40SkylineLandmark() {
   }
   // The skyway is actually connected to BOTH towers at y~157. Its stepped
   // steel truss spans only the far-background structure, not playable space.
-  frame.polygonPrism([
-    [-64, 157], [64, 157], [59, 172], [31, 178],
-    [0, 193], [-31, 178], [-59, 172],
-  ], z + 8, 20, '#b2c7cf');
+  frame.polygonPrism(
+    [
+      [-64, 157],
+      [64, 157],
+      [59, 172],
+      [31, 178],
+      [0, 193],
+      [-31, 178],
+      [-59, 172],
+    ],
+    z + 8,
+    20,
+    '#b2c7cf',
+  );
   trim.box(0, 158.5, z + 9, 105, 1.7, 1.1, '#d1e7e6');
-  glass.polygonPrism([
-    [-10.5, 183], [0, 201], [10.5, 183], [0, 168],
-  ], z + 9.4, 1.2, '#a7e0ee');
+  glass.polygonPrism(
+    [
+      [-10.5, 183],
+      [0, 201],
+      [10.5, 183],
+      [0, 168],
+    ],
+    z + 9.4,
+    1.2,
+    '#a7e0ee',
+  );
 
   const materials = sharedMaterials();
   const standard = new T.Group();
@@ -696,9 +744,11 @@ export function createCity40SkylineLandmark() {
     parent.add(mesh);
     metrics.drawUnits++;
     metrics.triangles += finished.triangles;
-    metrics.bytes += Object.values(finished.geometry.attributes)
-      .reduce((n, attr) => n + attr.array.byteLength, 0) +
-      finished.geometry.index.array.byteLength;
+    metrics.bytes +=
+      Object.values(finished.geometry.attributes).reduce(
+        (n, attr) => n + attr.array.byteLength,
+        0,
+      ) + finished.geometry.index.array.byteLength;
   }
   root.add(standard, high);
   root.userData.metrics = metrics;

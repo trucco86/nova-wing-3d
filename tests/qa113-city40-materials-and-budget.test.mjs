@@ -97,7 +97,7 @@ test('QA113: corridor-facing premium glass occupies supported building sides, ne
   for (const name of ['launch-city', 'launch-city-far']) {
     const tile = scene.getObjectByName(name);
     const hero = tile.getObjectByName('city40-hero-architecture');
-    const hosts = new Set(hero.userData.buildings.map(h => h.index));
+    const hosts = new Set(hero.userData.buildings.map((h) => h.index));
     const sideFacades = hero.userData.corridorFacades;
     assert.ok(Array.isArray(sideFacades));
     assert.ok(sideFacades.length >= 2, 'premium surfaces must face the pilot in both districts');
@@ -105,7 +105,9 @@ test('QA113: corridor-facing premium glass occupies supported building sides, ne
     for (const face of sideFacades) {
       assert.ok(hosts.has(face.hostIndex), 'side facade belongs to a real approved building');
       assert.ok(face.minLaneAbsX >= 118, 'side glazing cannot cross the flight lane');
-      assert.ok(face.depth > 0 && face.depth < tile.userData.buildingFootprints[face.hostIndex].depth);
+      assert.ok(
+        face.depth > 0 && face.depth < tile.userData.buildingFootprints[face.hostIndex].depth,
+      );
       assert.ok(face.floors >= 4);
     }
   }
@@ -133,7 +135,7 @@ test('QA113: portrait-visible skyline landmark stays distant and non-collidable 
     assert.equal(mesh.frustumCulled, true);
     assert.ok(mesh.geometry.boundingSphere?.radius > 0);
   }
-  landmark.traverse(node => {
+  landmark.traverse((node) => {
     assert.equal(node.userData.solid, undefined);
     assert.equal(node.userData.hitbox, undefined);
   });

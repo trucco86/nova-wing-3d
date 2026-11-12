@@ -69,12 +69,14 @@ window.fixture = {
   graphics40Horizon() {
     if (!lastScene) throw new Error('QA visual scene was not initialized');
     const landmark = lastScene.getObjectByName('city40-distant-signature');
-    return landmark ? {
-      visible: landmark.visible,
-      metrics: { ...landmark.userData.metrics },
-      localZ: landmark.userData.localZ,
-      visualOnly: landmark.userData.visualOnly,
-    } : null;
+    return landmark
+      ? {
+          visible: landmark.visible,
+          metrics: { ...landmark.userData.metrics },
+          localZ: landmark.userData.localZ,
+          visualOnly: landmark.userData.visualOnly,
+        }
+      : null;
   },
   graphics40Details() {
     const tiles = [];
