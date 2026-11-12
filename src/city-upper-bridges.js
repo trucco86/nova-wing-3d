@@ -2,7 +2,8 @@ import * as T from 'three';
 
 // Medium+ real route geometry. Three skybridges arrive through normal city
 // tile scrolling, unlike the distant skyline's decorative background spans.
-// All steel pieces use one instance draw per tile and have matching solids.
+// All steel pieces use one instance draw per tile; exposed walkway spans
+// have colliders, while grounded supports are outside the flight corridor.
 const unit = new T.BoxGeometry(1, 1, 1);
 const steel = new T.MeshStandardMaterial({
   color: '#7794a9',
@@ -75,7 +76,7 @@ export function createCityUpperBridges() {
       const pierHeight = y + 4.9; // base -7, roof at the underside y-2.1
       add(
         structure,
-        null,
+        'upper-bridge-extension',
         side * (deckEdge + connectorWidth / 2),
         y,
         z,
@@ -88,10 +89,10 @@ export function createCityUpperBridges() {
         structure,
         null,
         pierX,
-        y - 4.5,
+        y - 3.25,
         (z + pierZ) / 2,
         6,
-        3,
+        3.2,
         Math.abs(pierZ - z) + depth * 0.7,
       );
       groundedSupports.push({
