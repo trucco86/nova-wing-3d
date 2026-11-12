@@ -34,7 +34,7 @@ jobs:
       - run: npm run format
       - run: npm run build
       - name: Run premium-world smoke and all-stage layout tests
-        run: node --test tests/qa118-premium-worlds.test.mjs tests/living-world-depth.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/qa116-grounded-city-and-mobility.test.mjs tests/flight-environments.test.mjs tests/qa117-city-combat-density.test.mjs
+        run: node --test tests/qa118-premium-worlds.test.mjs tests/living-world-depth.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs tests/qa116-grounded-city-and-mobility.test.mjs tests/flight-environments.test.mjs tests/qa117-city-combat-density.test.mjs tests/mission-pacing-difficulty.test.mjs
       - run: npm run validate
       - run: git diff --check
       - name: Commit synchronized source and generated HTML to QA branch only
