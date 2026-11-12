@@ -1185,8 +1185,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     roofMat = metal('#e0eef3', 0.81, 0.2);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
-    edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
-    windows = new T.InstancedMesh(unit, cityNeon('#8de3ff'), 4800);
+    edges = new T.InstancedMesh(unit, cityNeon('#8dd6c7'), 400),
+    windows = new T.InstancedMesh(unit, cityNeon('#cedee5'), 4800);
   bodies.name = 'city-base-building-bodies';
   caps.name = 'city-base-building-roofs';
   // Rich high-quality architecture in three additional GPU-instanced draw calls.
@@ -1194,15 +1194,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityHighDetails = new T.Group();
   cityHighDetails.name = 'city-high-details';
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
-  const ledBands = new T.InstancedMesh(unit, cityNeon('#ff80c7'), 400);
+  const ledBands = new T.InstancedMesh(unit, cityNeon('#e8c48c'), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
   // City 2.2: layered facade details. One instanced draw call per material
   // instead of thousands of independent meshes, only visible on High.
-  const facadeWindowsCool = new T.InstancedMesh(unit, cityNeon('#74eaff'), 15000);
+  const facadeWindowsCool = new T.InstancedMesh(unit, cityNeon('#bbd9de'), 15000);
   facadeWindowsCool.name = 'city-facade-windows-cool';
   const facadeWindowsAmber = new T.InstancedMesh(unit, cityNeon('#ffce88'), 3000);
   facadeWindowsAmber.name = 'city-facade-windows-amber';
-  const facadeSideWindows = new T.InstancedMesh(unit, cityNeon('#c99aff'), 6600);
+  const facadeSideWindows = new T.InstancedMesh(unit, cityNeon('#cddbe0'), 6600);
   facadeSideWindows.name = 'city-facade-side-windows';
   const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
   facadePanelModules.name = 'city-facade-panel-modules';
@@ -1210,7 +1210,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // They are visual-only and remain visible in Medium, unlike premium decoration.
   const guardrailSteel = new T.InstancedMesh(unit, metal('#3c6570', 0.63, 0.7), 1100);
   guardrailSteel.name = 'city-avenue-guardrail';
-  const guardrailLamps = new T.InstancedMesh(unit, cityNeon('#44f2e2'), 240);
+  const guardrailLamps = new T.InstancedMesh(unit, cityNeon('#c1e5d4'), 240);
   guardrailLamps.name = 'city-avenue-guardrail-lights';
   // Three silhouettes: elevated overpasses, illuminated bridge gantries,
   // and side-running suspended transit beams. Only the High profile shows them.
@@ -1477,7 +1477,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   maglevCrossing.userData.role = 'maglev-infrastructure';
   const crossBeam = box(266, 3.1, 12, metal('#739caf', 0.72, 0.28), 0, 59, -345);
   crossBeam.name = 'city32-maglev-crossing-guideway';
-  const crossNeon = box(268, 0.55, 12.3, glowMaterial('#ff8aca', 1.6), 0, 61.3, -345);
+  const crossNeon = box(268, 0.55, 12.3, glowMaterial('#efd29e', 1.2), 0, 61.3, -345);
   crossNeon.name = 'city32-maglev-crossing-luminous-rail';
   maglevCrossing.add(crossBeam, crossNeon);
   for (const side of [-1, 1]) {
