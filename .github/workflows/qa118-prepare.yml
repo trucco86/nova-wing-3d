@@ -1,0 +1,52 @@
+name: QA118 prepare premium worlds candidate
+
+on:
+  push:
+    branches:
+      - feat/qa118-premium-worlds-20261112
+    paths:
+      - .github/workflows/qa118-prepare.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa118-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare isolated QA118 candidate, not production
+        run: npm run release:prepare -- 1.27.118
+      - run: npm run format
+      - run: npm run build
+      - name: Run premium-world smoke and all-stage layout tests
+        run: node --test tests/qa118-premium-worlds.test.mjs tests/living-world-depth.test.mjs tests/stage-variety.test.mjs tests/stage-combat-variety.test.mjs
+      - run: npm run validate
+      - run: git diff --check
+      - name: Commit synchronized source and generated HTML to QA branch only
+        run: |
+          git add -u
+          if [ -f releases/v1.27.118.md ]; then git add releases/v1.27.118.md; fi
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA118 candidate is synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA118): sync full-tested 1.27.118 premium worlds preview'
+          git push origin HEAD:feat/qa118-premium-worlds-20261112
