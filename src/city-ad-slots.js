@@ -7,12 +7,12 @@ const STREET_FLOOR = -7;
 const LAYOUT = Object.freeze([
   'facade',
   'banner',
-  'facade',
+  'rear',
   'roof',
   'banner',
   'facade',
   'roof',
-  'facade',
+  'rear',
   'banner',
   'facade',
   'roof',
@@ -51,6 +51,8 @@ function structure(b) {
 }
 function candidate(host, index, type, variant, slotNumber) {
   const face = host.z + host.depth / 2;
+  const rear = type === 'rear';
+  const rearFace = host.z - host.depth / 2;
   const tint =
     CITY_AD_CREATIVES[(slotNumber + (variant === 'industrial' ? 1 : 0)) % CITY_AD_CREATIVES.length];
   const w = Math.min(host.w * (type === 'banner' ? 0.73 : 0.66), type === 'banner' ? 20 : 15);
@@ -65,8 +67,8 @@ function candidate(host, index, type, variant, slotNumber) {
     type === 'roof'
       ? roofTop + 4 + h / 2
       : STREET_FLOOR + host.h * (type === 'banner' ? 0.27 : 0.59);
-  const z = type === 'roof' ? host.z + host.depth * 0.28 : face + 2.05;
-  const panel = { x: host.x, y, z, w, h, depth: 0.36 };
+  const z = type === 'roof' ? host.z + host.depth * 0.28 : rear ? rearFace - 2.05 : face + 2.05;
+  const panel = { x: host.x, y, z, w, h, depth: 0.36, rotationY: rear ? Math.PI : 0 };
   const supports =
     type === 'roof'
       ? [-1, 1].map((side) => ({
@@ -78,8 +80,8 @@ function candidate(host, index, type, variant, slotNumber) {
           depth: 0.48,
         }))
       : [
-          { x: host.x - w * 0.42, y, z: z - 0.33, w: 0.35, h: h + 0.6, depth: 0.46 },
-          { x: host.x + w * 0.42, y, z: z - 0.33, w: 0.35, h: h + 0.6, depth: 0.46 },
+          { x: host.x - w * 0.42, y, z: z + (rear ? 0.33 : -0.33), w: 0.35, h: h + 0.6, depth: 0.46 },
+          { x: host.x + w * 0.42, y, z: z + (rear ? 0.33 : -0.33), w: 0.35, h: h + 0.6, depth: 0.46 },
         ];
   return {
     id: variant + '-' + type + '-' + String(slotNumber + 1).padStart(2, '0'),
@@ -91,7 +93,7 @@ function candidate(host, index, type, variant, slotNumber) {
     z,
     w,
     h,
-    surface: type === 'roof' ? 'roof-cap' : 'front-facade',
+    surface: type === 'roof' ? 'roof-cap' : rear ? 'rear-facade' : 'front-facade',
     panel,
     supports,
     // Slots and dimensions can be mapped to future creatives without moving
@@ -121,7 +123,7 @@ export function planCityAdSlots(
           Math.sign(b.x) === side &&
           !excluded.has(index) &&
           !used.has(index) &&
-          b.h >= (type === 'roof' ? 42 : type === 'facade' ? 35 : 29) &&
+          b.h >= (type === 'roof' ? 42 : type === 'facade' || type === 'rear' ? 35 : 29) &&
           b.w >= 9.5 &&
           b.depth >= 8 &&
           Math.abs(b.x) - b.w / 2 >= CITY_TRANSIT_RESERVED_EDGE &&
