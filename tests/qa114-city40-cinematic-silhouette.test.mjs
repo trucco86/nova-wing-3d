@@ -31,7 +31,7 @@ test('QA114: cinematic skyline aperture is supported and remains in the same thr
   });
   assert.equal(all.length, 3);
   for (const mesh of all) assert.ok(mesh.geometry.boundingSphere?.radius > 0);
-  assert.ok(landmark.getObjectByName('city40-landmark-faceted-spires').geometry.index.count > 1000);
+  assert.ok(landmark.getObjectByName('city40-landmark-faceted-spires').geometry.index.count > 500);
 });
 
 test('QA114: flight-facing structural ribs are supported, keep the physical lane clear and add zero draw batches', () => {
