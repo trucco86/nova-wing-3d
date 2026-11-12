@@ -274,38 +274,36 @@ export function createMothershipInterior() {
         const drum = new T.Mesh(new T.CylinderGeometry(19, 21, 36, 18), hull);
         drum.rotation.x = Math.PI / 2;
         engine.add(drum);
-        for (let ring = 0; ring < 4; ring++) {
-          const halo = new T.Mesh(
-            new T.CylinderGeometry(16, 16, 1.2, 24, 1, true),
-            ring === 3 ? hazard : cyan,
-          );
-          halo.rotation.x = Math.PI / 2;
-          halo.position.z = 10 - ring * 8;
-          engine.add(halo);
-        }
+        batchParts(
+          engine,
+          'devastador-drive-coil-arrays',
+          coilGeometry,
+          driveCoil,
+          Array.from({ length: 4 }, (_, ring) => ({
+            position: [0, 0, 10 - ring * 8],
+            rotation: [Math.PI / 2, 0, 0],
+            scale: [1, 1, 1],
+            color: ring === 3 ? '#c7786b' : '#8aaebb',
+          })),
+        );
         const turbine = new T.Group();
         turbine.name = 'carrier-destroyable-drive-fan-visual';
         turbine.position.z = 19;
-        for (let blade = 0; blade < 5; blade++) {
-          const fan = block(
-            turbine,
-            'carrier-drive-fan-blade',
-            cube,
-            blade % 2 ? plating : armor,
-            0,
-            9,
-            0,
-            4,
-            13,
-            2,
-          );
-          fan.rotation.z = blade * ((Math.PI * 2) / 5);
-          fan.position.set(
-            Math.cos((blade * Math.PI * 2) / 5) * 7,
-            Math.sin((blade * Math.PI * 2) / 5) * 7,
-            0,
-          );
-        }
+        batchParts(
+          turbine,
+          'carrier-drive-fan-blade',
+          cube,
+          driveMetal,
+          Array.from({ length: 5 }, (_, blade) => {
+            const angle = (blade * Math.PI * 2) / 5;
+            return {
+              position: [Math.cos(angle) * 7, Math.sin(angle) * 7, 0],
+              rotation: [0, 0, angle],
+              scale: [4, 13, 2],
+              color: blade % 2 ? '#40536a' : '#a4b3c1',
+            };
+          }),
+        );
         engine.add(turbine);
         animatedMachines.push({
           mesh: turbine,
