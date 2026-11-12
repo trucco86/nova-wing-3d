@@ -78,7 +78,7 @@ window.fixture = {
         buildings: node.userData.buildings.length,
         metrics: { ...node.userData.metrics },
         reflectionFaces: masonry?.envMap?.images?.length ?? 0,
-        reflectionsShared: masonry?.envMap != null && masonry.envMap === glass?.envMap,
+        reflectionsShared: Boolean(masonry?.envMap) && masonry.envMap === glass?.envMap,
         batches: node.children.flatMap((group) => group.children).length,
       });
     });
