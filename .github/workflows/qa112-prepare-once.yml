@@ -34,3 +34,5 @@ jobs:
           npm run validate
 
 # QA112 second run: verify explicit four-layer cannon body invariant.
+
+# QA112 third run: PBR facade depth and 3/4 source voice contract reconciled.
