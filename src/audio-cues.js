@@ -91,87 +91,31 @@ Object.assign(AUDIO_CUES, {
   // Three sonic layers: a brief metallic snap, a mid-range cannon body,
   // and a small-speaker-friendly bass punch. Short noise tails prevent
   // the repeated pulse from reading as a vintage laser beep.
+  // QA115: fast, dry pulse. The mechanical body speaks in the midrange;
+  // the attack is a short filtered click, not a descending arcade whistle.
   shot: {
     cooldown: 0.088,
     tones: [
-      {
-        from: 1470,
-        to: 470,
-        duration: 0.055,
-        gain: 0.032,
-        wave: 'sawtooth',
-        filter: 3800,
-        attack: 0.002,
-      },
-      {
-        from: 410,
-        to: 112,
-        duration: 0.155,
-        gain: 0.064,
-        wave: 'triangle',
-        filter: 1450,
-        attack: 0.004,
-      },
-      { from: 145, to: 61, duration: 0.19, gain: 0.041, wave: 'sine', attack: 0.006 },
-      // Mechanical pressure rebound gives the post-attack 110-280ms interval
-      // actual body on speakers; the short original tail had 0.0003 RMS.
-      {
-        from: 235,
-        to: 69,
-        delay: 0.068,
-        duration: 0.27,
-        gain: 0.078,
-        wave: 'triangle',
-        filter: 880,
-        attack: 0.009,
-      },
+      { from: 890, to: 370, duration: 0.041, gain: 0.017, wave: 'sawtooth', filter: 1150, attack: 0.002 },
+      { from: 280, to: 135, duration: 0.155, gain: 0.062, wave: 'triangle', filter: 920, attack: 0.003 },
+      { from: 108, to: 57, duration: 0.18, gain: 0.034, wave: 'sine', attack: 0.003 },
+      { from: 215, to: 95, delay: 0.047, duration: 0.25, gain: 0.058, wave: 'triangle', filter: 740, attack: 0.007 },
     ],
     noises: [
-      {
-        duration: 0.044,
-        gain: 0.082,
-        filterType: 'bandpass',
-        filter: 3100,
-        filterEnd: 960,
-        q: 0.75,
-      },
-      { color: 'brown', duration: 0.15, gain: 0.06, filter: 850, filterEnd: 210, attack: 0.009 },
+      { duration: 0.036, gain: 0.058, filterType: 'bandpass', filter: 1500, filterEnd: 740, q: 0.65 },
+      { color: 'brown', delay: 0.014, duration: 0.142, gain: 0.054, filter: 550, filterEnd: 190, attack: 0.01 },
     ],
   },
-  // The robot fires a larger cannon with a distinct mechanical tail.
   mechaShot: {
     cooldown: 0.125,
     tones: [
-      {
-        from: 960,
-        to: 215,
-        duration: 0.11,
-        gain: 0.045,
-        wave: 'sawtooth',
-        filter: 2600,
-        attack: 0.003,
-      },
-      {
-        from: 275,
-        to: 59,
-        duration: 0.255,
-        gain: 0.078,
-        wave: 'triangle',
-        filter: 1050,
-        attack: 0.004,
-      },
-      { from: 106, to: 42, duration: 0.285, gain: 0.063, wave: 'sine', attack: 0.005 },
+      { from: 680, to: 230, duration: 0.076, gain: 0.034, wave: 'sawtooth', filter: 1320, attack: 0.002 },
+      { from: 285, to: 76, duration: 0.275, gain: 0.079, wave: 'triangle', filter: 900, attack: 0.003 },
+      { from: 102, to: 40, duration: 0.29, gain: 0.059, wave: 'sine', attack: 0.006 },
     ],
     noises: [
-      {
-        duration: 0.066,
-        gain: 0.085,
-        filterType: 'bandpass',
-        filter: 2400,
-        filterEnd: 560,
-        q: 0.7,
-      },
-      { color: 'brown', delay: 0.024, duration: 0.2, gain: 0.07, filter: 760, filterEnd: 130 },
+      { duration: 0.046, gain: 0.078, filterType: 'bandpass', filter: 1600, filterEnd: 450, q: 0.64 },
+      { color: 'brown', delay: 0.024, duration: 0.22, gain: 0.071, filter: 720, filterEnd: 160 },
     ],
   },
   mechaImpact: {
@@ -202,68 +146,32 @@ Object.assign(AUDIO_CUES, {
   },
   // Short mechanical ignition when holding FIRE begins; the continuous
   // level-aware charge layer below handles the actual rising energy.
+  // A restrained magnetic contact, then the continuously modulated charge
+  // engine takes over. Not a standalone high-pitched sweep.
   plasmaCharge: {
     cooldown: 0.4,
     tones: [
-      {
-        from: 125,
-        to: 320,
-        duration: 0.24,
-        gain: 0.031,
-        wave: 'triangle',
-        filter: 920,
-        attack: 0.075,
-      },
-      { from: 70, to: 115, duration: 0.26, gain: 0.024, wave: 'sine', attack: 0.06 },
+      { from: 108, to: 121, duration: 0.14, gain: 0.009, wave: 'sine', attack: 0.045 },
+      { from: 147, to: 158, duration: 0.13, gain: 0.007, wave: 'triangle', filter: 390, attack: 0.036 },
     ],
     noises: [
-      {
-        duration: 0.27,
-        gain: 0.042,
-        attack: 0.095,
-        filterType: 'bandpass',
-        filter: 320,
-        filterEnd: 1650,
-        q: 0.62,
-      },
+      { duration: 0.13, gain: 0.009, attack: 0.055,
+        filterType: 'bandpass', filter: 510, filterEnd: 650, q: 0.58 },
     ],
   },
-  // The release must feel larger than the charging sound: initial magnetic
-  // snap, pressure-wave body, sub pulse, and a brief spent-energy rumble.
+  // Release is the event; charge stays quiet. Emphasis on a warm mechanical
+  // impulse and controlled air displacement, with no piercing sawtooth glide.
   plasmaRelease: {
     cooldown: 0.16,
     tones: [
-      {
-        from: 1220,
-        to: 330,
-        duration: 0.12,
-        gain: 0.048,
-        wave: 'sawtooth',
-        filter: 3300,
-        attack: 0.002,
-      },
-      {
-        from: 370,
-        to: 67,
-        duration: 0.39,
-        gain: 0.083,
-        wave: 'triangle',
-        filter: 1450,
-        attack: 0.004,
-      },
-      { from: 118, to: 37, duration: 0.53, gain: 0.078, wave: 'sine', attack: 0.006 },
+      { from: 760, to: 280, duration: 0.087, gain: 0.032, wave: 'sawtooth', filter: 1450, attack: 0.002 },
+      { from: 345, to: 83, duration: 0.37, gain: 0.080, wave: 'triangle', filter: 1040, attack: 0.003 },
+      { from: 117, to: 39, duration: 0.52, gain: 0.076, wave: 'sine', attack: 0.006 },
     ],
     noises: [
-      { duration: 0.13, gain: 0.12, filterType: 'bandpass', filter: 2800, filterEnd: 460, q: 0.62 },
-      {
-        color: 'brown',
-        delay: 0.027,
-        duration: 0.47,
-        gain: 0.095,
-        filter: 1050,
-        filterEnd: 135,
-        attack: 0.012,
-      },
+      { duration: 0.095, gain: 0.088, filterType: 'bandpass', filter: 1650, filterEnd: 420, q: 0.67 },
+      { color: 'brown', delay: 0.024, duration: 0.46, gain: 0.083,
+        filter: 800, filterEnd: 133, attack: 0.012 },
     ],
   },
   explosion: {
@@ -583,15 +491,15 @@ export function createAudioCues(context) {
     const bassGain = context.createGain();
     const fluxGain = context.createGain();
     const hissGain = context.createGain();
-    bass.type = 'triangle';
-    flux.type = 'sawtooth';
+    bass.type = 'sine';
+    flux.type = 'triangle';
     hiss.buffer = buffer;
     hiss.loop = true;
     fluxFilter.type = 'lowpass';
-    fluxFilter.frequency.value = 800;
+    fluxFilter.frequency.value = 440;
     hissFilter.type = 'bandpass';
-    hissFilter.frequency.value = 450;
-    hissFilter.Q.value = 0.65;
+    hissFilter.frequency.value = 530;
+    hissFilter.Q.value = 0.52;
     bassGain.gain.value = fluxGain.gain.value = hissGain.gain.value = 0;
     bass.connect(bassGain);
     bassGain.connect(bus);
@@ -642,15 +550,16 @@ export function createAudioCues(context) {
       if (param.setTargetAtTime) param.setTargetAtTime(value, now, 0.055);
       else param.value = value;
     };
-    // Rising, filtered bass/metallic current/hiss build physical pressure.
-    // Energy ramps continuously until FIRE is released or the game pauses.
-    smooth(chargeLoop.bass.frequency, 68 + 105 * p);
-    smooth(chargeLoop.flux.frequency, 190 + 360 * p);
-    smooth(chargeLoop.fluxFilter.frequency, 770 + 1620 * p);
-    smooth(chargeLoop.hissFilter.frequency, 430 + 2200 * p);
-    smooth(chargeLoop.bassGain.gain, 0.012 + 0.028 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.01 + 0.024 * p);
-    smooth(chargeLoop.hissGain.gain, 0.012 + 0.026 * p);
+    // Restrained energy: gentle low-pass movement, very little hiss and no
+    // sawtooth sweep. The audible reward is the release, not the hold.
+    // Levels are roughly 10-15 dB under the QA114 charging mix.
+    smooth(chargeLoop.bass.frequency, 85 + 28 * p);
+    smooth(chargeLoop.flux.frequency, 148 + 63 * p);
+    smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
+    smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
+    smooth(chargeLoop.bassGain.gain, 0.004 + 0.007 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.0025 + 0.0045 * p);
+    smooth(chargeLoop.hissGain.gain, 0.0015 + 0.0035 * p);
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {
