@@ -249,7 +249,7 @@ function positionFor(role, i, travel, phase) {
     const direction = i % 2 === 0 ? 1 : -1;
     const step = (i * 390 + phase + travel * (0.18 + (i % 3) * 0.035)) % 1800;
     return {
-      x: (i % 2 ? 1 : -1) * (31 + (i % 3) * 1.7),
+      x: (i % 2 ? 1 : -1) * (35 + (i % 3) * 1.7),
       y: -1.5,
       z: -65 - (direction === 1 ? step : 1800 - step),
       rx: 0,
