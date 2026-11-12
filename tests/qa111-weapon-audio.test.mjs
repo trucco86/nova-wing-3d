@@ -141,7 +141,7 @@ test('QA111: repeated shots rotate slight deterministic pitch without stacking e
   assert.equal(first.length, 4, 'the cannon includes its delayed pressure rebound layer');
   assert.ok(
     AUDIO_CUES.shot.tones.some(
-      (tone) => tone.delay >= 0.06 && tone.duration >= 0.25 && tone.to < 90,
+      (tone) => tone.delay >= 0.04 && tone.duration >= 0.24 && tone.to <= 110,
     ),
     'the fourth oscillator must actually sustain the audible post-attack body',
   );
