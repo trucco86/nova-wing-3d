@@ -32,3 +32,5 @@ jobs:
             git push origin HEAD:feat/qa112-graphics40-hero-district-20261111
           fi
           npm run validate
+
+# QA112 second run: verify explicit four-layer cannon body invariant.
