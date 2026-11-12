@@ -631,3 +631,83 @@ export function setCity40HeroQuality(tile, quality) {
   section.getObjectByName('city40-precision-high').visible = quality === 'high';
   section.userData.quality = quality === 'high' ? 'high' : 'medium';
 }
+
+// A skyline monument built from a small number of faceted, supported meshes.
+// Unlike facade-only geometry, its central position is visible on portrait
+// phones. It belongs to the distant non-collidable horizon, NEVER to a road
+// tile or the pilot's flight path. The baseline horizon is located ~900 units
+// farther back, so these towers remain a scenic landmark throughout stage 1.
+export function createCity40SkylineLandmark() {
+  const root = new T.Group();
+  root.name = 'city40-distant-signature';
+  root.userData.visualOnly = true;
+  const frame = geometryBuilder();
+  const glass = geometryBuilder();
+  const trim = geometryBuilder();
+  const z = -450;
+  for (const side of [-1, 1]) {
+    const x = side * 57;
+    const cladding = side < 0 ? '#98b5bb' : '#9cabb7';
+    // The lower pillar is a real structural foundation for the spire, and
+    // the crown has an angled, recognizable profile instead of a cube.
+    frame.box(x, 68, z - 6, 20, 150, 20, cladding);
+    frame.polygonPrism([
+      [x - 13, 132], [x + 13, 132], [x + 12, 176],
+      [x + 6, 219], [x + 1, 256], [x - 5, 227], [x - 12, 176],
+    ], z + 7, 23, cladding);
+    for (let level = 0; level < 7; level++) {
+      const y = 33 + level * 22;
+      glass.box(x, y, z + 5.6, 8, 6.4, 0.3,
+        (level + (side > 0 ? 1 : 0)) % 3 ? '#8bc6d7' : '#c9e8e1');
+      trim.box(x, y + 4.9, z + 6.1, 15, 0.34, 0.28, '#dae2dc');
+    }
+    glass.box(x, 190, z + 7.6, 2.9, 103, 0.5, side < 0 ? '#a9e2ed' : '#efc5a8');
+    trim.box(x, 255.5, z + 7.9, 5, 0.8, 0.38, '#eff4f4');
+  }
+  // The skyway is actually connected to BOTH towers at y~157. Its stepped
+  // steel truss spans only the far-background structure, not playable space.
+  frame.polygonPrism([
+    [-64, 157], [64, 157], [59, 172], [31, 178],
+    [0, 193], [-31, 178], [-59, 172],
+  ], z + 8, 20, '#b2c7cf');
+  trim.box(0, 158.5, z + 9, 105, 1.7, 1.1, '#d1e7e6');
+  glass.polygonPrism([
+    [-10.5, 183], [0, 201], [10.5, 183], [0, 168],
+  ], z + 9.4, 1.2, '#a7e0ee');
+
+  const materials = sharedMaterials();
+  const standard = new T.Group();
+  standard.name = 'city40-landmark-medium';
+  const high = new T.Group();
+  high.name = 'city40-landmark-high';
+  high.visible = false;
+  const metrics = { drawUnits: 0, triangles: 0, bytes: 0 };
+  for (const [name, builder, parent, material] of [
+    ['city40-landmark-faceted-spires', frame, standard, materials.masonry],
+    ['city40-landmark-glazing', glass, standard, materials.glass],
+    ['city40-landmark-fine-frames', trim, high, materials.fine],
+  ]) {
+    const finished = builder.finish();
+    if (!finished) continue;
+    const mesh = new T.Mesh(finished.geometry, material);
+    mesh.name = name;
+    mesh.userData.visualOnly = true;
+    mesh.frustumCulled = true;
+    parent.add(mesh);
+    metrics.drawUnits++;
+    metrics.triangles += finished.triangles;
+    metrics.bytes += Object.values(finished.geometry.attributes)
+      .reduce((n, attr) => n + attr.array.byteLength, 0) +
+      finished.geometry.index.array.byteLength;
+  }
+  root.add(standard, high);
+  root.userData.metrics = metrics;
+  root.userData.localZ = z;
+  return root;
+}
+
+export function setCity40SkylineQuality(horizon, quality) {
+  const root = horizon?.getObjectByName('city40-distant-signature');
+  if (!root) return;
+  root.getObjectByName('city40-landmark-high').visible = quality === 'high';
+}
