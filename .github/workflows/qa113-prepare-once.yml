@@ -36,3 +36,5 @@ jobs:
 # Recheck QA113 after strict lint and measured GPU evidence logging.
 
 # Final QA113: supported flight-facing skins, scenic landmark and pixel-visibility gates.
+
+# Final QA113 rerun: ensure fixture-only toggle and true visible mobile skyline impact.
