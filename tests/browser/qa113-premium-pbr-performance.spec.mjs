@@ -67,6 +67,12 @@ test('QA113: detailed PBR city and a single shared reflection probe stay within 
     expect(tile.metrics.bytes, 'bounded buffer memory').toBeLessThan(3 * 1024 * 1024);
     expect(tile.buildings).toBeGreaterThanOrEqual(4);
   }
+  const skyline = await page.evaluate(() => window.fixture.graphics40Horizon());
+  expect(skyline).toBeTruthy();
+  expect(skyline.visualOnly).toBe(true);
+  expect(skyline.metrics.drawUnits, 'non-physical portrait focal landmark is merged by material')
+    .toBe(3);
+  expect(skyline.metrics.bytes).toBeLessThan(256 * 1024);
   await page.evaluate(() => window.fixture.advance(6));
   const original = await page.evaluate(() => window.fixture.graphics40Visible(false));
   const previousCanvas = await page.locator('#game').screenshot({
