@@ -80,8 +80,22 @@ function candidate(host, index, type, variant, slotNumber) {
           depth: 0.48,
         }))
       : [
-          { x: host.x - w * 0.42, y, z: z + (rear ? 0.33 : -0.33), w: 0.35, h: h + 0.6, depth: 0.46 },
-          { x: host.x + w * 0.42, y, z: z + (rear ? 0.33 : -0.33), w: 0.35, h: h + 0.6, depth: 0.46 },
+          {
+            x: host.x - w * 0.42,
+            y,
+            z: z + (rear ? 0.33 : -0.33),
+            w: 0.35,
+            h: h + 0.6,
+            depth: 0.46,
+          },
+          {
+            x: host.x + w * 0.42,
+            y,
+            z: z + (rear ? 0.33 : -0.33),
+            w: 0.35,
+            h: h + 0.6,
+            depth: 0.46,
+          },
         ];
   return {
     id: variant + '-' + type + '-' + String(slotNumber + 1).padStart(2, '0'),

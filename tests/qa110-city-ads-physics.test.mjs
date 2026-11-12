@@ -54,7 +54,8 @@ test('QA110: grounded inventory uses stable IDs, real supports and 3D spatial ex
       assert.ok(slot.width < host.w && slot.height > 1);
       if (slot.surface === 'front-facade' || slot.surface === 'rear-facade') {
         const expectedZ =
-          host.z + (slot.surface === 'rear-facade' ? -host.depth / 2 - 2.05 : host.depth / 2 + 2.05);
+          host.z +
+          (slot.surface === 'rear-facade' ? -host.depth / 2 - 2.05 : host.depth / 2 + 2.05);
         assert.ok(Math.abs(slot.z - expectedZ) < 0.0001);
         assert.ok(slot.y > -7 && slot.y < host.h - 7);
       } else {
