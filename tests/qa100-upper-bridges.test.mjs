@@ -16,11 +16,36 @@ function fixture(offset = 294) {
   return { tile, architecture, physical };
 }
 
-test('three distinct premium skyline decks have 12 visible preallocated solid structures', () => {
+test('three skyline decks remain collidable and gain real grounded external supports', () => {
   const { architecture, physical } = fixture();
   const steel = architecture.getObjectByName('city-upper-skybridge-solids');
-  assert.equal(steel.count, 12);
+  assert.equal(steel.count, 30, 'six visible grounded pylons and connecting beams are batched');
   assert.equal(steel.userData.solidInstances.length, 12);
+  assert.equal(architecture.userData.groundedSupports.length, 6);
+  const transform = new T.Matrix4();
+  for (const support of architecture.userData.groundedSupports) {
+    assert.ok(Math.abs(support.x) >= 105, 'supports cannot block the pilot x±72 lane');
+    assert.equal(support.footY, -7, 'each pylon must touch actual city ground');
+    assert.ok(support.topY > 80);
+    let grounded = false;
+    for (let i = 0; i < steel.count; i++) {
+      steel.getMatrixAt(i, transform);
+      const e = transform.elements;
+      const height = Math.abs(e[5]);
+      if (
+        Math.abs(e[12] - support.x) < 0.001 &&
+        Math.abs(e[14] - support.z) < 0.001 &&
+        height > 85 &&
+        Math.abs(e[13] - height / 2 + 7) < 0.001
+      )
+        grounded = true;
+    }
+    assert.ok(grounded, 'visible metal pylon must extend all the way to the road plane');
+  }
+  assert.ok(
+    architecture.userData.groundedSupports.some((s) => s.x < 0 && s.deckZ === -605 && s.z < -640),
+    'west maglev station cannot be penetrated by the mid-city bridge footing',
+  );
   assert.equal(
     architecture.children.length,
     3,
