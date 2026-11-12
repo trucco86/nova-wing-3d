@@ -131,7 +131,7 @@ function batch(root, name, geometry, material, shapes, creativeIndices = null) {
   for (let i = 0; i < shapes.length; i++) {
     const shape = shapes[i];
     transform.position.set(shape.x, shape.y, shape.z);
-    transform.rotation.set(0, 0, 0);
+    transform.rotation.set(0, shape.rotationY ?? 0, 0);
     transform.scale.set(shape.w, shape.h, shape.depth ?? 1);
     transform.updateMatrix();
     mesh.setMatrixAt(i, transform.matrix);
@@ -192,7 +192,7 @@ export function createCityAdInventory(tile, variant = 'civic') {
     metalParts.push({
       x: slot.x,
       y: slot.y,
-      z: slot.z - 0.36,
+      z: slot.z + (slot.surface === 'rear-facade' ? 0.36 : -0.36),
       w: slot.w + 1.05,
       h: slot.h + 1.05,
       depth: 0.55,
@@ -203,7 +203,7 @@ export function createCityAdInventory(tile, variant = 'civic') {
         metalParts.push({
           x: slot.x + side * slot.w * 0.42,
           y: slot.y,
-          z: b.z + b.depth / 2 + 1.0,
+          z: slot.surface === 'rear-facade' ? b.z - b.depth / 2 - 1.0 : b.z + b.depth / 2 + 1.0,
           w: 0.34,
           h: 0.34,
           depth: 2,
@@ -237,7 +237,7 @@ export function createCityAdInventory(tile, variant = 'civic') {
   }));
   root.userData.total = slots.length;
   root.userData.counts = Object.fromEntries(
-    ['facade', 'roof', 'banner'].map((type) => [
+    ['facade', 'rear', 'roof', 'banner'].map((type) => [
       type,
       slots.filter((slot) => slot.kind === type).length,
     ]),
