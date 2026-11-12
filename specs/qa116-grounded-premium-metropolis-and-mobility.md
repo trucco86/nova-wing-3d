@@ -31,3 +31,7 @@ Usar como norte visual o concept da Fase 1 aprovado na conversa de 12/11/2026, s
 ## Riscos e limites
 
 A extensão dos decks muda a colisão lateral próximo às extremidades: testar aproximação, desvio por baixo e por cima, boost e wrap. O objetivo é maior coerência física, não obstrução arbitrária. Bus e carros voadores são cenográficos, não adversários ou obstáculos de combate. Referência 2D não garante qualidade AAA em todos os dispositivos. Suporte, colisões e fluidez exigem QA real no navegador. O custo GPU deve ser medido; batch count é apenas um orçamento parcial.
+
+## Roteiro obrigatório de revisão visual
+
+Comparar screenshots reais de desktop e celular nos perfis Médio e Alto, utilizando exatamente a mesma trajetória de voo: aproximação de cada uma das três pontes, ônibus próximos ao chão, carros voadores em profundidade e outdoors vistos de frente, lateral e por trás. Registrar clipping, interferência no HUD, iluminação, materiais, FPS e draw calls reais. A melhoria cromática não deve reduzir o contraste de ataques ou dos alertas de colisão. A observação de uma imagem conceitual isolada não substitui o teste WebGL.
