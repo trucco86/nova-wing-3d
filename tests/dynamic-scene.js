@@ -82,6 +82,7 @@ window.fixture = {
           metrics: { ...landmark.userData.metrics },
           localZ: landmark.userData.localZ,
           visualOnly: landmark.userData.visualOnly,
+          aperture: landmark.userData.aperture ? { ...landmark.userData.aperture } : null,
         }
       : null;
   },
@@ -95,6 +96,9 @@ window.fixture = {
       tiles.push({
         variant: node.userData.variant,
         buildings: node.userData.buildings.length,
+        supportedSideRibbons: node.userData.corridorFacades.reduce(
+          (sum, facade) => sum + (facade.supportedRibbonCount ?? 0), 0,
+        ),
         metrics: { ...node.userData.metrics },
         reflectionFaces: masonry?.envMap?.images?.length ?? 0,
         reflectionsShared: Boolean(masonry?.envMap) && masonry.envMap === glass?.envMap,
