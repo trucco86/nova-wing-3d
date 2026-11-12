@@ -42,9 +42,15 @@ test('QA113: detailed PBR city and a single shared reflection probe stay within 
   expect(premium.stats.triangles).toBeGreaterThan(original.stats.triangles);
   expect(problems).toEqual([]);
   // Log compact evidence; screenshot attachments remain the visual record.
-  console.info('QA113_RENDER_COST=' + JSON.stringify({
-    platform: info.project.name, original: original.stats, premium: premium.stats, details,
-  }));
+  console.info(
+    'QA113_RENDER_COST=' +
+      JSON.stringify({
+        platform: info.project.name,
+        original: original.stats,
+        premium: premium.stats,
+        details,
+      }),
+  );
   await info.attach('qa113-gpu-and-material-profile', {
     body: JSON.stringify({
       platform: info.project.name,
