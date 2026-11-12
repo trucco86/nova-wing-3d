@@ -1,0 +1,34 @@
+name: QA115 prepare original audio and premium city once
+on:
+  push:
+    branches:
+      - feat/qa115-refined-charge-and-city-detail-20261112
+    paths:
+      - .github/workflows/qa115-prepare-once.yml
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Prepare 1.27.115 and verify Node build
+        run: |
+          npm run release:prepare -- 1.27.115
+          npm run format
+          npm run build
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "build(QA115): synchronize subtle-charge and sculpted city candidate 1.27.115"
+            git push origin HEAD:feat/qa115-refined-charge-and-city-detail-20261112
+          fi
+          npm run validate
