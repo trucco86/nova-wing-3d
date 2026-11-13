@@ -191,7 +191,7 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
     const { x, z, side, kind } = lot;
     const p = (dx, y, dz, w, h, d) => part(x + dx, y, z + dz, w, h, d);
     // The tarmac is only 0.16 tall and rests on the existing y=-7 ground.
-    sidewalks.push(p(0, -6.87, 0, 17.5, 0.22, 28));
+    sidewalks.push(p(0, -6.89, 0, 17.5, 0.22, 28));
     structures.push(p(side * 8.1, -6.53, 0, 0.55, 0.74, 26));
     if (kind === 'parking') {
       // Two clearly marked parked city cars, not flying anonymous cubes.
