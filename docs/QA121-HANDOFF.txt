@@ -1,0 +1,23 @@
+QA121 premium atmosphere handoff | 2026-11-13
+
+Version: 1.27.121, prepared and synchronized in the QA branch only.
+Prepare workflow: https://github.com/trucco86/nova-wing-3d/actions/runs/43362851812
+Result: success, including formatting, build, planetary-specific Node tests,
+existing scene regression checks, and complete npm run validate.
+
+Focused real-WebGL audit: https://github.com/trucco86/nova-wing-3d/actions/runs/43362958289
+Result: 18 of 18 browser checks passed in desktop and mobile contexts,
+with existing destination journeys and strict city QA114 GPU budget.
+Desktop: baseline 762186 triangles -> 774366, +12180 (+1.60%).
+Mobile: baseline 778946 triangles -> 788234, +9288 (+1.19%).
+Additional city render calls: 8 in each mode, below unchanged limit.
+
+Visible scenery: Venus cloud banks and volcanic fumaroles, Neptune layered
+storm banks and organic hive towers. Both retain their previous instance
+counts and draw batching. Physics, navigation, attacks, weapons untouched.
+
+This commit intentionally triggers a fresh, complete four-shard browser CI
+and isolated Cloudflare PR preview on the synchronized release snapshot.
+Do not merge the stacked QA120/QA121 changes or deploy production before
+all required checks pass and human/device visual review is completed.
+The QA120 mobile Space charge timeout repair also needs its own full CI green.
