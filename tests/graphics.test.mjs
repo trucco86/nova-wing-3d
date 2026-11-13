@@ -53,9 +53,16 @@ test('city remains present after one full scenery wrap and reset', () => {
     16,
     'seven grounded batches plus one shared high-only vapor batch per tile',
   );
+  const impactRoot = scene.getObjectByName('city-scripted-destruction');
+  const impactBatches = Object.values(impactRoot.userData.impacts).reduce(
+    (total, impact) => total + impact.children.filter((node) => node.isInstancedMesh).length,
+    0,
+  );
+  assert.equal(impactBatches, 3, 'one pooled shard GPU batch for each authored impact');
   assert.ok(
-    count >= 180 + streetDraws && count <= 260 + streetDraws,
-    'original city GPU instance budget plus only the measured street-infilling batches',
+    count >= 180 + streetDraws + impactBatches &&
+      count <= 260 + streetDraws + impactBatches,
+    'historical city instance budget remains unchanged after accounting for exact effect batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
