@@ -238,7 +238,7 @@ export function createCityPremiumInfrastructure() {
   high.name = 'city-premium-high-details';
   high.visible = false;
 
-  const roadPlates = new T.InstancedMesh(unit, darkMetal('#4f7894', 0.26), 760);
+  const roadPlates = new T.InstancedMesh(unit, darkMetal('#747a77', 0.42), 760);
   roadPlates.name = 'city-premium-road-plates';
   const roadGlow = new T.InstancedMesh(unit, illuminated('#ffffff'), 380);
   roadGlow.name = 'city-premium-road-lights';
@@ -267,9 +267,9 @@ export function createCityPremiumInfrastructure() {
       const x = (column - 3.5) * 9;
       at(roadPlates, 'plates', x, -6.88, z, 8.45, 0.13, 19.25);
       if ((column + segment) % 4 === 0) {
-        const color = new T.Color(column % 3 === 0 ? '#5c7899' : '#466c83');
+        const color = new T.Color(column % 3 === 0 ? '#757e7e' : '#5b6567');
         roadPlates.setColorAt(counts.plates - 1, color);
-      } else roadPlates.setColorAt(counts.plates - 1, new T.Color('#486a82'));
+      } else roadPlates.setColorAt(counts.plates - 1, new T.Color('#626d6e'));
       if ((column === 1 || column === 6) && segment % 2 === 0) {
         at(roadFine, 'fine', x, -6.76, z + 4, 4.2, 0.1, 0.35);
       }
@@ -278,7 +278,7 @@ export function createCityPremiumInfrastructure() {
       at(roadGlow, 'lights', x, -6.72, z, 0.45, 0.06, 17.4);
       roadGlow.setColorAt(
         counts.lights - 1,
-        new T.Color(x < 0 ? '#ff78d2' : segment % 3 === 0 ? '#ffcf87' : '#62f5ff'),
+        new T.Color(x < 0 ? '#d9c6a5' : segment % 3 === 0 ? '#e5b978' : '#aab7ae'),
       );
     }
   }
