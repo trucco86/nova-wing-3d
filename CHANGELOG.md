@@ -1,8 +1,16 @@
 # Histórico
 
-## 1.27.121 — Candidata em preparação
+## 1.27.121 — Candidata premium integrada, homologação manual pendente
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- QA107 a QA109: coerência urbana, ancoragem de objetos, ascensão orbital e colisores de destroços físicos.
+- QA110 a QA117: outdoors genéricos, fachadas PBR, detalhamento urbano, plasma/tiros e maior densidade de inimigos na primeira fase.
+- QA118: grading e geometria premium com otimizações de renderização nas dez fases.
+- QA119: geologia de Marte, cavernas de asteroides e cristas glaciais de Europa.
+- QA120: nave-mãe, motores e hangares, frotas de Saturno, estruturas de Órion e fortificações de Titã.
+- QA121: nuvens e estruturas atmosféricas esculpidas de Vênus e Netuno.
+- Integrados Control Center e monitoramento de release a cada 30 minutos. DEV e HML publicados com o mesmo bundle da candidata.
+- Evidência: PR #333 incorporada à release #319; CI Node, quatro shards Playwright e verificações de browser aprovadas, sem dispensar a homologação visual e física no celular.
+- **Produção não autorizada:** avaliação manual de jogabilidade, áudio, FPS mobile e rollback continuam pendentes.
 
 ## 1.27.120 — Candidata em preparação
 
