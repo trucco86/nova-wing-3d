@@ -58,6 +58,13 @@ export const ALLY_SORTIE_FLIGHT = Object.freeze({
   duration: 8.2,
   overdriveExit: 2.6,
 });
+const SORTIE_STARTS = Object.freeze([19, 42, 66, 91]);
+const WINGS_BY_PILOT = Object.fromEntries(
+  SQUAD_PILOTS.map(({ id }) => [
+    id,
+    Object.freeze(SQUAD_PILOTS.filter((pilot) => pilot.id !== id)),
+  ]),
+);
 const smoothFlight = (value) => {
   const t = Math.max(0, Math.min(1, value));
   return t * t * (3 - 2 * t);
@@ -65,13 +72,12 @@ const smoothFlight = (value) => {
 
 export function allySortieFlightAt(seconds, ownPilot) {
   if (!Number.isFinite(seconds) || seconds < 0) return null;
-  const wing = SQUAD_PILOTS.filter((pilot) => pilot.id !== ownPilot);
-  const starts = [19, 42, 66, 91];
-  const section = starts.findIndex(
+  const wing = WINGS_BY_PILOT[ownPilot] ?? SQUAD_PILOTS;
+  const section = SORTIE_STARTS.findIndex(
     (start) => seconds >= start && seconds < start + ALLY_SORTIE_FLIGHT.duration,
   );
   if (section < 0 || !wing.length) return null;
-  const age = seconds - starts[section];
+  const age = seconds - SORTIE_STARTS[section];
   return {
     pilot: wing[section % wing.length],
     section,
