@@ -2627,7 +2627,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
             animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
             animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
-            animateCity122StreetLife(tile.getObjectByName('city122-lived-in-street-blocks'), travel);
+            animateCity122StreetLife(
+              tile.getObjectByName('city122-lived-in-street-blocks'),
+              travel,
+            );
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
             updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
             if (dynamicFlight)

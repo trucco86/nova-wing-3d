@@ -88,7 +88,11 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   animateCity122StreetLife(root, 330);
   bodies.getMatrixAt(first.body, after);
   assert.notEqual(before.elements[14], after.elements[14], 'pedestrians must walk on the pavement');
-  assert.equal(after.elements[12], before.elements[12], 'walking must stay in protected sidewalk lane');
+  assert.equal(
+    after.elements[12],
+    before.elements[12],
+    'walking must stay in protected sidewalk lane',
+  );
   animateCity122StreetLife(root, 330);
   const still = new T.Matrix4();
   bodies.getMatrixAt(first.body, still);
