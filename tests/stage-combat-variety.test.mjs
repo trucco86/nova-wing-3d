@@ -8,7 +8,7 @@ import { stagePerspectiveAt } from '../src/stage-variety.js';
 import { createGroundEnemy, animateGroundEnemy } from '../src/encounters.js';
 import { harness } from './harness.mjs';
 
-test('only the asteroid has a cracked moon; the frozen sector uses an uncracked ice globe', () => {
+test('city and asteroid have fractured moons; Europa keeps an uncracked ice globe', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   const globe = scene.getObjectByName('world-orbital-globe');
@@ -16,8 +16,8 @@ test('only the asteroid has a cracked moon; the frozen sector uses an uncracked 
   const sky = scene.getObjectByName('launch-earth-horizon');
   for (let sector = 0; sector < 10; sector++) {
     world.setSector(SECTORS[sector], sector);
-    assert.equal(globe.visible, sector === 2 || sector === 5);
-    if (sector === 2) assert.equal(globe.material.uniforms.crackIntensity.value, 1);
+    assert.equal(globe.visible, sector === 0 || sector === 2 || sector === 5);
+    if (sector === 0 || sector === 2) assert.equal(globe.material.uniforms.crackIntensity.value, 1);
     if (sector === 5) assert.equal(globe.material.uniforms.crackIntensity.value, 0);
     assert.equal(sky.visible, false, 'Earth horizon belongs to orbital launch only');
   }
