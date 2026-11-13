@@ -19,6 +19,10 @@ Candidata isolada **1.27.122**. Este roteiro registra o que precisa ser observad
 - [ ] A Lua orbital apresenta crateras e o mesmo desenho de fissuras, mantendo continuidade visual.
 - [ ] A Terra, o céu e os edifícios conservam suas transições anteriores sem objetos aparecendo sobrepostos.
 
+## Evidência automatizada
+
+O teste WebGL direcionado passou no Chromium desktop e mobile para a versão com a Lua no fundo da cidade: [execução e artefatos](https://github.com/trucco86/nova-wing-3d/actions/runs/43431363007). A preparação de release e o browser FULL no commit final continuam sendo gates independentes.
+
 ## Qualidade e regressões
 
 - [ ] Capturas desktop e celular em Medium e High, abertura, seis segundos de percurso e ascensão.
