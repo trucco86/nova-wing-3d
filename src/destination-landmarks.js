@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { saturnPassageAt } from './saturn-ring-passage.js';
 import { createPremiumLandmarkHull } from './premium-landmark-hulls.js';
+import { createPremiumAtmosphericGeometry } from './premium-atmospheric-geology.js';
 
 // Authored landmarks outside the flight corridor. Draw calls stay bounded by
 // InstancedMesh; these never participate in collision, targeting or scoring.
@@ -186,7 +187,11 @@ export function createDestinationLandmarks(index) {
     }
     group.userData.iceTransform = new T.Object3D();
   } else if (cloud) {
-    const geometry = new T.SphereGeometry(1, 14, 9);
+    // Three overlapping wind-carved billows inside the original single GPU
+    // batch: retain atmospheric translucency without generic bubble spheres.
+    const geometry = createPremiumAtmosphericGeometry(
+      index === 4 ? 'venus-cloud-bank' : 'neptune-storm-bank',
+    );
     const count = index === 4 ? 38 : 34;
     const fog = makeInstanced(
       index,
@@ -335,11 +340,11 @@ export function createDestinationLandmarks(index) {
     const shape =
       index === 9
         ? createPremiumLandmarkHull('titan-fortress')
-        : index === 5
-          ? new T.BoxGeometry(1, 1, 1)
+        : index === 4
+          ? createPremiumAtmosphericGeometry('venus-volcanic-vent')
           : index === 6
-            ? new T.ConeGeometry(1, 1, 7)
-            : new T.IcosahedronGeometry(1, 1);
+            ? createPremiumAtmosphericGeometry('neptune-hive-tower')
+            : new T.BoxGeometry(1, 1, 1);
     const layer = makeInstanced(
       index,
       count,
@@ -407,6 +412,12 @@ export function updateDestinationLandmarks(root, seconds) {
     root.getObjectByName('neptune-turbulent-cloud-columns');
   if (clouds) {
     clouds.position.x = Math.sin(seconds * (root.userData.world === 6 ? 0.13 : 0.07)) * 8;
+    // Slow convective rise on Venus and distinct horizontal shear on
+    // Neptune, driven only by the mission clock (pause/replay deterministic).
+    clouds.position.y = Math.sin(seconds * (root.userData.world === 6 ? 0.047 : 0.064)) *
+      (root.userData.world === 6 ? 3.4 : 2.1);
+    clouds.rotation.z = Math.sin(seconds * (root.userData.world === 6 ? 0.031 : 0.018)) *
+      (root.userData.world === 6 ? 0.027 : 0.012);
     clouds.material.opacity =
       root.userData.world === 6
         ? 0.28 + 0.055 * Math.sin(seconds * 0.17)
