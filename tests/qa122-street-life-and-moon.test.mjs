@@ -118,6 +118,14 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   assert.ok(moon.position.y > 230);
   assert.ok(moon.position.z < -1900 && moon.position.z > -2400, 'moon belongs to far sky');
   assert.equal(moon.material.uniforms.backgroundDepth.value, 1, 'buildings must render in front');
+  assert.ok(
+    moon.material.vertexShader.includes('clip.w*.999999'),
+    'city lunar depth must be behind even the far skyline, not merely the near buildings',
+  );
+  assert.ok(
+    scene.getObjectByName('world-orbital-globe')?.material.vertexShader.includes('backgroundDepth'),
+    'moon shader preserves normal depth for other sectors',
+  );
   assert.equal(
     scene.getObjectByName('world-orbital-globe')?.material.fragmentShader.includes('craterRim'),
     true,
