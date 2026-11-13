@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.123 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.122
 
 **QA122 Cidade Premium 4.1 (candidata, sem merge)**
