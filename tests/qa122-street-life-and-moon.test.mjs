@@ -5,6 +5,7 @@ import {
   createCity122StreetInfill,
   animateCity122StreetLife,
   planCity122SidewalkParcels,
+  planCity122OuterParcels,
   setCity122Quality,
 } from '../src/city-122-street-infill.js';
 import { CITY_RETAIL_RESERVATIONS, cityFootprintsOverlap } from '../src/city-spatial-layout.js';
@@ -31,6 +32,34 @@ test('QA122: street lots occupy the genuine sidewalk band, never buildings, reta
     seen.add(key);
   }
   assert.deepEqual(planCity122SidewalkParcels(existing), lots, 'repeatable layout');
+});
+
+test('QA122: outer blocks fill both far corridors without intruding on buildings, shops or district infrastructure', () => {
+  const buildings = [
+    { x: 146, z: -29, w: 27, depth: 34, h: 85 },
+    { x: -224, z: -195, w: 35, depth: 24, h: 72 },
+  ];
+  const district = [{ x: 268, z: -150, w: 40, depth: 49, h: 40 }];
+  const lots = planCity122OuterParcels(buildings, district);
+  assert.ok(lots.length > 65, 'outer empty blocks must be occupied across the city');
+  assert.ok(lots.some((lot) => lot.band === 0));
+  assert.ok(lots.some((lot) => lot.band === 1));
+  assert.ok(lots.filter((lot) => lot.side === -1).length > 25);
+  assert.ok(lots.filter((lot) => lot.side === 1).length > 25);
+  assert.ok(lots.some((lot) => lot.z < -1700), 'the end of the 1.9 km route cannot be empty');
+  const types = new Set(lots.map((lot) => lot.kind));
+  assert.deepEqual(types, new Set(['parking', 'garden', 'delivery', 'plaza', 'service', 'access']));
+  const reserved = [...buildings, ...district, ...CITY_RETAIL_RESERVATIONS];
+  for (const [index, lot] of lots.entries()) {
+    assert.ok(Math.abs(lot.x) - lot.w / 2 >= 125, 'reserve train and flight space');
+    assert.ok(lot.z - lot.depth / 2 > -1900 && lot.z + lot.depth / 2 < 0);
+    assert.ok(reserved.every((b) => !cityFootprintsOverlap(lot, b, 5)), 'real parcel exclusion');
+    assert.ok(
+      lots.every((other, i) => index === i || !cityFootprintsOverlap(lot, other, 2)),
+      'courtyards and roads never overlap each other',
+    );
+  }
+  assert.deepEqual(planCity122OuterParcels(buildings, district), lots, 'layout is deterministic');
 });
 
 test('QA122: visible street fronts, sidewalks, service kiosks and amber signs are GPU-instanced with no ghost hitboxes', () => {
@@ -77,6 +106,10 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     positions.push([x, y, z]);
   }
   assert.ok(new Set(positions.map((p) => p[2])).size > 20, 'actually fills street depth');
+  const outer = root.userData.outerParcels;
+  assert.ok(outer.length > 60, 'outer districts should be populated without extra draw batches');
+  assert.ok(outer.some((lot) => lot.kind === 'delivery'));
+  assert.ok(outer.some((lot) => lot.kind === 'garden'));
   const trees = root.getObjectByName('city122-grounded-street-tree-canopies');
   assert.ok(trees.count > 0, 'tree crowns must occupy real sidewalk parcels');
   assert.ok(root.userData.pedestrians.length > 0, 'street needs actual pedestrians');
@@ -140,6 +173,24 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   const nearStreet = near.getObjectByName('city122-lived-in-street-blocks');
   const farStreet = far.getObjectByName('city122-lived-in-street-blocks');
   assert.ok(nearStreet && farStreet && nearStreet !== farStreet);
+  assert.ok(nearStreet.userData.outerParcels.length > 25, 'real city must gain outer blocks');
+  assert.deepEqual(
+    nearStreet.userData.outerParcels,
+    farStreet.userData.outerParcels,
+    'both tiles clone the same collision-free geometry',
+  );
+  const originalLots = nearStreet.userData.outerParcels;
+  const district = near.getObjectByName('city-architectural-districts');
+  const occupied = [
+    ...near.userData.buildingFootprints,
+    ...district.userData.towerFootprints,
+    ...district.userData.platformFootprints,
+    ...CITY_RETAIL_RESERVATIONS,
+  ];
+  assert.ok(
+    originalLots.every((lot) => occupied.every((footprint) => !cityFootprintsOverlap(lot, footprint, 5))),
+    'the full world must never place outdoor structures into real towers, mall or launch platform',
+  );
   assert.ok(nearStreet.visible && farStreet.visible);
   world.setGraphicsQuality('medium');
   assert.equal(nearStreet.getObjectByName('city122-extra-street-furniture-high').visible, false);
