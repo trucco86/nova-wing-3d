@@ -102,7 +102,13 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
       y = matrix.elements[13],
       z = matrix.elements[14];
     assert.ok(Math.abs(x) >= 95, 'sidewalk outside protected flight space');
-    assert.ok(Math.abs(y + 6.72) < 0.0001, 'supported at y=-7 road floor');
+    const slabHeight = matrix.elements[5];
+    const slabDepth = matrix.elements[10];
+    if (Math.abs(slabDepth - 28) < 0.001) {
+      assert.ok(Math.abs(y - slabHeight / 2 + 7) < 0.0001, 'secondary asphalt rests on y=-7');
+    } else {
+      assert.ok(Math.abs(y + 6.72) < 0.0001, 'existing sidewalk keeps its placement');
+    }
     positions.push([x, y, z]);
   }
   assert.ok(new Set(positions.map((p) => p[2])).size > 20, 'actually fills street depth');
