@@ -14,6 +14,7 @@ export function stageOneEncounterWindows(
   launchPhase = 'city',
   orbitReachedAt = null,
   scripted = true,
+  atmosphereSeconds = 0,
 ) {
   if (!Number.isFinite(seconds) || seconds < 0)
     throw new RangeError('Invalid stage-one elapsed seconds');
@@ -31,6 +32,15 @@ export function stageOneEncounterWindows(
     active &&
     seconds >= STAGE_ONE_PACING.trainWarningAt &&
     (orbitAge === null || orbitAge < STAGE_ONE_PACING.orbitRecoverySeconds);
+  // The atmospheric climb used to have almost forty seconds without combat.
+  // Keep train, mandatory BOOST and the first ascent seconds free of hazards;
+  // then allow a bounded aerial escort/ambush with no new obstacle colliders.
+  const ascentCombat =
+    active &&
+    launchPhase === 'atmosphere' &&
+    Number.isFinite(atmosphereSeconds) &&
+    atmosphereSeconds >= 12 &&
+    atmosphereSeconds < 35;
   const subbossIntro =
     active &&
     orbitAge !== null &&
@@ -39,6 +49,7 @@ export function stageOneEncounterWindows(
       STAGE_ONE_PACING.subbossAfterOrbitSeconds + STAGE_ONE_PACING.subbossIntroductionSeconds;
   return {
     orbitAge,
+    ascentCombat,
     // The hanging maglev is the ONLY authored obstacle during the ground
     // climax. Keep any later atmospheric climb free of random collisions.
     exclusiveTransit: cooldown,
@@ -57,22 +68,23 @@ export function stageOneEncounterWindows(
  * stageOneEncounterWindows; denser formations are never permission to spawn
  * inside a scripted transit. Cap active fighters for WebGL/mobile performance.
  */
-export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFighters = 0) {
+export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFighters = 0, ascent = false) {
   const profiles = {
-    easy: { city: 1, orbit: 2, interval: 5.2, groundInterval: 5.2, maxActive: 4 },
-    normal: { city: 2, orbit: 3, interval: 4.15, groundInterval: 4.3, maxActive: 6 },
-    hard: { city: 3, orbit: 4, interval: 3.7, groundInterval: 4.0, maxActive: 8 },
+    easy: { city: 1, orbit: 2, ascent: 1, interval: 5.2, ascentInterval: 5.8, groundInterval: 5.2, maxActive: 4, ascentMax: 3 },
+    normal: { city: 2, orbit: 3, ascent: 2, interval: 4.15, ascentInterval: 4.35, groundInterval: 4.3, maxActive: 6, ascentMax: 4 },
+    hard: { city: 3, orbit: 4, ascent: 3, interval: 3.7, ascentInterval: 4.0, groundInterval: 4.0, maxActive: 8, ascentMax: 5 },
   };
   if (!Number.isInteger(activeFighters) || activeFighters < 0)
     throw new RangeError('Active fighter count must be non-negative');
   const profile = profiles[mode] ?? profiles.normal;
+  const maxActive = ascent ? profile.ascentMax : profile.maxActive;
   return {
     count: Math.max(
       0,
-      Math.min(orbit ? profile.orbit : profile.city, profile.maxActive - activeFighters),
+      Math.min(ascent ? profile.ascent : orbit ? profile.orbit : profile.city, maxActive - activeFighters),
     ),
-    interval: profile.interval,
+    interval: ascent ? profile.ascentInterval : profile.interval,
     groundInterval: profile.groundInterval,
-    maxActive: profile.maxActive,
+    maxActive,
   };
 }
