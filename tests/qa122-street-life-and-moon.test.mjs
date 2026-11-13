@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
   createCity122StreetInfill,
+  animateCity122StreetLife,
   planCity122SidewalkParcels,
   setCity122Quality,
 } from '../src/city-122-street-infill.js';
@@ -47,6 +48,7 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     'city122-grounded-pedestrian-pavements',
     'city122-service-entries-and-transit-shelters',
     'city122-real-ground-floor-storefront-glazing',
+    'city122-grounded-street-tree-canopies',
     'city122-subtle-amber-street-wayfinding',
     'city122-service-bench-and-planter-furniture',
     'city122-loading-bay-small-furniture',
@@ -75,6 +77,22 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     positions.push([x, y, z]);
   }
   assert.ok(new Set(positions.map((p) => p[2])).size > 20, 'actually fills street depth');
+  const trees = root.getObjectByName('city122-grounded-street-tree-canopies');
+  assert.ok(trees.count > 0, 'tree crowns must occupy real sidewalk parcels');
+  assert.ok(root.userData.pedestrians.length > 0, 'street needs actual pedestrians');
+  const first = root.userData.pedestrians[0];
+  const bodies = root.getObjectByName('city122-service-entries-and-transit-shelters');
+  const before = new T.Matrix4();
+  const after = new T.Matrix4();
+  bodies.getMatrixAt(first.body, before);
+  animateCity122StreetLife(root, 330);
+  bodies.getMatrixAt(first.body, after);
+  assert.notEqual(before.elements[14], after.elements[14], 'pedestrians must walk on the pavement');
+  assert.equal(after.elements[12], before.elements[12], 'walking must stay in protected sidewalk lane');
+  animateCity122StreetLife(root, 330);
+  const still = new T.Matrix4();
+  bodies.getMatrixAt(first.body, still);
+  assert.deepEqual(still.elements, after.elements, 'repeatable animation for the same clock');
   setCity122Quality(root, 'medium');
   assert.equal(root.getObjectByName('city122-extra-street-furniture-high').visible, false);
   setCity122Quality(root, 'high');
@@ -94,6 +112,17 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   assert.ok(moon.material.fragmentShader.includes('branchA'), 'actual branching moon cracks');
   assert.ok(Math.abs(moon.position.x) < 220, 'visible against city skyline on phone');
   assert.ok(moon.position.y > 230);
+  assert.ok(moon.position.z < -1900 && moon.position.z > -2400, 'moon belongs to far sky');
+  assert.equal(moon.material.uniforms.backgroundDepth.value, 1, 'buildings must render in front');
+  assert.equal(
+    scene.getObjectByName('world-orbital-globe')?.material.fragmentShader.includes('craterRim'),
+    true,
+    'city moon must include crater relief',
+  );
+  assert.ok(
+    earthMoon.material.fragmentShader.includes('branchA'),
+    'later orbit moon must preserve the exact branching fissure pattern',
+  );
   const near = scene.getObjectByName('launch-city');
   const far = scene.getObjectByName('launch-city-far');
   const nearStreet = near.getObjectByName('city122-lived-in-street-blocks');
@@ -107,6 +136,7 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   world.setLaunchAscent(0.25, true);
   assert.equal(moon.visible, false, 'cracked city moon retires before realistic orbit');
   world.setSector(SECTORS[1], 1);
+  assert.equal(moon.material.uniforms.backgroundDepth.value, 0, 'other sector depths unchanged');
   assert.equal(nearStreet.visible, false, 'other planets cannot inherit street props');
   assert.equal(farStreet.visible, false);
   world.setSector(SECTORS[0], 0);
