@@ -148,7 +148,7 @@ export function createCity30DistrictLife(buildings = []) {
   // One instanced batch, four neon hues: brighter district without extra GPU
   // draw calls, real lights or costly full-screen bloom on phones.
   const neon = pack(root, 'city-matrix-green-walkway-neon', green, signage);
-  const hues = ['#48ffe1', '#ff86cb', '#9ec9ff', '#ffd483'].map((h) => new T.Color(h));
+  const hues = ['#c2cfc5', '#d7b38d', '#b0babc', '#e0ce9d'].map((h) => new T.Color(h));
   signage.forEach((_, i) => neon.setColorAt(i, hues[(i + Math.floor(i / 7)) % hues.length]));
   if (neon.instanceColor) neon.instanceColor.needsUpdate = true;
   pack(high, 'city-matrix-dense-windows', jade, moreWindows);
