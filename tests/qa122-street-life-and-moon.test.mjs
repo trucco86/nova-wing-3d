@@ -80,13 +80,19 @@ test('QA122: empty ground between towers gains safe patterned parcels on both si
   assert.ok(cells.length > 170, 'most empty ground requires a designed surface');
   assert.ok(cells.filter((c) => c.side < 0).length > 60);
   assert.ok(cells.filter((c) => c.side > 0).length > 60);
-  assert.ok(cells.some((c) => c.z < -1800), 'the far end of the road has usable ground');
+  assert.ok(
+    cells.some((c) => c.z < -1800),
+    'the far end of the road has usable ground',
+  );
   assert.deepEqual(new Set(cells.map((c) => c.type)), new Set([0, 1, 2, 3, 4]));
   const reserved = [...towers, ...district, ...CITY_RETAIL_RESERVATIONS, ...courtyards];
   for (const c of cells) {
     assert.ok(Math.abs(c.x) - c.w / 2 >= 125, 'flight and transit safety bands stay empty');
     assert.ok(c.z - c.depth / 2 > -1900 && c.z + c.depth / 2 < 0);
-    assert.ok(reserved.every((b) => !cityFootprintsOverlap(c, b, 2)), 'floor does not cover occupied structures');
+    assert.ok(
+      reserved.every((b) => !cityFootprintsOverlap(c, b, 2)),
+      'floor does not cover occupied structures',
+    );
   }
   assert.deepEqual(planCity122GroundCells(towers, district, courtyards), cells);
 });
@@ -166,8 +172,15 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   animateCity122StreetLife(root, 330);
   bodies.getMatrixAt(first.body, after);
   vapor.getMatrixAt(0, lastPlume);
-  assert.notEqual(firstPlume.elements[13], lastPlume.elements[13], 'vapor plume rises only as play advances');
-  assert.ok(root.userData.groundSignalIndices.length > 0, 'signals are grounded in existing GPU batches');
+  assert.notEqual(
+    firstPlume.elements[13],
+    lastPlume.elements[13],
+    'vapor plume rises only as play advances',
+  );
+  assert.ok(
+    root.userData.groundSignalIndices.length > 0,
+    'signals are grounded in existing GPU batches',
+  );
   assert.notEqual(before.elements[14], after.elements[14], 'pedestrians must walk on the pavement');
   assert.equal(
     after.elements[12],

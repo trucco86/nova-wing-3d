@@ -119,7 +119,12 @@ export function planCity122OuterParcels(buildings = [], districtFootprints = [])
 // the game's real terrain or create invisible gameplay walls. Keeping cells
 // small makes the floor visibly detailed without blanketing retail podiums.
 export function planCity122GroundCells(buildings = [], districtFootprints = [], outerParcels = []) {
-  const occupied = [...CITY_RETAIL_RESERVATIONS, ...buildings, ...districtFootprints, ...outerParcels];
+  const occupied = [
+    ...CITY_RETAIL_RESERVATIONS,
+    ...buildings,
+    ...districtFootprints,
+    ...outerParcels,
+  ];
   const cells = [];
   const lanes = [139, 173, 207, 241, 275, 309, 343, 377, 403];
   for (const side of [-1, 1]) {
@@ -309,14 +314,12 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
       for (const dz of [-3.3, 0, 3.3]) finer.push(at(0, -6.41, dz, 2.7, 0.11, 0.18));
     } else if (type === 1) {
       // Concrete maintenance yard, expansion seams and access hatch.
-      for (const dz of [-9, 0, 9])
-        structures.push(at(0, -6.58, dz, w - 4, 0.1, 0.18));
+      for (const dz of [-9, 0, 9]) structures.push(at(0, -6.58, dz, w - 4, 0.1, 0.18));
       structures.push(at(side * 4, -6.47, -3, 5.2, 0.2, 5));
       finer.push(at(side * 4, -6.34, -3, 4.1, 0.1, 0.3));
     } else if (type === 2) {
       // Pedestrian crossing with a grounded textured-looking stone pattern.
-      for (const dz of [-10, -5, 0, 5, 10])
-        storefronts.push(at(0, -6.62, dz, w * 0.65, 0.12, 1.5));
+      for (const dz of [-10, -5, 0, 5, 10]) storefronts.push(at(0, -6.62, dz, w * 0.65, 0.12, 1.5));
       finer.push(at(-side * 8, -6.46, -8, 2.1, 0.45, 2.1));
     } else if (type === 3) {
       // Industrial cracked paving and metal utility access channels.
@@ -457,7 +460,7 @@ export function animateCity122StreetLife(root, travel) {
   const steam = root.getObjectByName('city122-grounded-vent-vapor-high');
   for (let i = 0; i < (root.userData.vaporSources?.length ?? 0); i++) {
     const vent = root.userData.vaporSources[i];
-    const cycle = ((frame * 0.033 + vent.phase) % 1 + 1) % 1;
+    const cycle = (((frame * 0.033 + vent.phase) % 1) + 1) % 1;
     dummy.position.set(vent.x, -3.3 + cycle * 2, vent.z);
     dummy.rotation.set(0, 0, 0);
     dummy.scale.set(2.1 + cycle * 1.5, 5.3 + cycle * 3.1, 2.1 + cycle * 1.5);
