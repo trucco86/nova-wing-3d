@@ -51,8 +51,8 @@ test('ascent fighter waves do not interfere with the train or mandatory boost', 
     stageOneEncounterWindows(45, phase, null, true, atmosphericAge);
   assert.equal(get('city').ascentCombat, false);
   assert.equal(get('boost').ascentCombat, false);
-  assert.equal(get('atmosphere', 11.9).ascentCombat, false);
-  assert.equal(get('atmosphere', 12).ascentCombat, true);
+  assert.equal(get('atmosphere', 7.9).ascentCombat, false);
+  assert.equal(get('atmosphere', 8).ascentCombat, true);
   assert.equal(get('atmosphere', 20).exclusiveTransit, true);
   assert.equal(get('atmosphere', 34.9).ascentCombat, true);
   assert.equal(get('atmosphere', 35).ascentCombat, false);
