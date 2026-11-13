@@ -35,6 +35,17 @@ Novo feedback: o exterior continua vazio entre torres. A expansão não deve adi
 - Os dois trechos de estrada herdam a geometria durante rolagem e ascensão; perfis Medium/High, Lua, emissões, anúncios e colisões de gameplay devem permanecer intactos.
 - Testes novos cobrem distribuição nas duas margens, extremos do percurso, não sobreposição com todas as reservas, tipologia, instancing e observação WebGL desktop/mobile. Retêm-se todos os gates de performance e homologação de QA122.
 
+## Iteração 4.4: solo urbano, detalhes de vazio e impactos premium
+
+O plano de melhoria concentra a densidade em solo desocupado, sem ampliar a cidade com blocos aleatórios ou alterar a navegação.
+
+1. `planCity122GroundCells`: células de até 26 x 30 unidades entre os 200 prédios, torres distritais, plataformas, três complexos comerciais e quadras 4.3; cada célula permanece fora da faixa |x| < 125 e dentro do trecho de 1.900 unidades.
+2. Cinco leituras do solo combinam asfalto de serviço, pátios de concreto, faixas de circulação, fissuras técnicas, linhas e grelhas. O pavimento encosta no nível y = -7; os pequenos detalhes usam os cinco batches Medium já existentes, sem novas texturas remotas.
+3. Fontes de vapor apoiadas em grelhas concretas usam **um novo batch High instanciado por tile**, transparente e sem sombras dinâmicas. O efeito varia por distância de viagem, não cria partículas por frame e fica invisível no perfil Medium. Linhas de sinalização no solo usam o batch de luz âmbar Medium existente, com variação discreta de brilho.
+4. Os impactos roteirizados da cidade recebem núcleo térmico quente, quatro camadas de fumaça/fuligem, halo de choque mais curto, 12 detritos em um InstancedMesh, faíscas e marca de queimado temporária. O ciclo máximo de 2,25s não cria novos meshes a cada atualização e não altera dano, cronograma da fase nem hitboxes.
+5. Orçamento QA122 atualizado de **7 para 8 InstancedMeshes por tile**, aumento estritamente de um batch opcional High para vapor. Não afrouxar os orçamentos medidos do restante do jogo; inspecionar chamadas e triângulos em dispositivo móvel.
+6. Homologação: Node targeted, `npm run validate`, screenshot desktop/mobile em WebGL real, quatro shards FULL, observação da cidade em voo e teste de FPS/temperatura em celular físico.
+
 ## Critérios de aceite
 
 - Os dois lados da avenida devem ter pelo menos vinte trechos seguros por lado com calçadas e ocupação funcional.
@@ -42,7 +53,7 @@ Novo feedback: o exterior continua vazio entre torres. A expansão não deve adi
 - As vitrines são anexadas ao térreo dos prédios, não anúncios flutuantes, e os postes realmente tocam o solo.
 - A lua rachada deve aparecer no primeiro trecho da Fase 1 e desaparecer sem coexistir com a Lua orbital real.
 - Gráficos Medium mantêm os itens arquitetônicos importantes; High acrescenta mobiliário sem alterar física.
-- Nenhum novo colisor/hitbox, luz dinâmico extra, textura remota ou motor de física. Instancing limitado a sete batches novos por trecho, cinco em Medium (folhagem incluída); orçamento GPU de draw calls deve ser medido e não pode ultrapassar os gates estritos da arquitetura.
+- Nenhum novo colisor/hitbox, luz dinâmico extra, textura remota ou motor de física. Instancing limitado a oito batches por trecho (cinco Medium, três High, incluindo vapor); orçamento GPU de draw calls deve ser medido e não pode ultrapassar os gates estritos da arquitetura.
 - Build versionado `1.27.122`, `npm run validate`, quatro shards Playwright FULL e capturas reais WebGL desktop/mobile. Comparar o orçamento de draw calls e triângulos com QA114 e com a candidata 1.27.121, sem afrouxar limites.
 - QA em celular físico, áudio, vista de diferentes alturas e homologação humana são necessárias antes de merge em release, HML ou produção.
 
