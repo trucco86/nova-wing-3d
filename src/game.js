@@ -4717,7 +4717,8 @@ export function createGame({
         warned: bossWarned,
         boss: !!boss,
         blocked: bossBlocked,
-      }) || (elapsed >= current().duration && !bossWarned && !boss))
+      }) ||
+        (elapsed >= current().duration && !bossWarned && !boss))
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;

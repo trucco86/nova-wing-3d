@@ -14,7 +14,10 @@ test('boss must wait for defeat or completed retreat', () => {
 });
 test('boss must wait for distinct recovery beat after subboss', () => {
   assert.equal(bossEncounterGate({ ...base, subbossClearedAt: 119 }), false);
-  assert.equal(bossEncounterGate({ ...base, subbossClearedAt: 120 - SUBBOSS_BOSS_RECOVERY_SECONDS }), true);
+  assert.equal(
+    bossEncounterGate({ ...base, subbossClearedAt: 120 - SUBBOSS_BOSS_RECOVERY_SECONDS }),
+    true,
+  );
 });
 test('boss respects tunnel and other blockers', () => {
   assert.equal(bossEncounterGate({ ...base, blocked: true }), false);
