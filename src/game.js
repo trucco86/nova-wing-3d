@@ -4526,7 +4526,9 @@ export function createGame({
       sectorIndex === 0 ? orbitalLaunchSequence.snapshot().atmosphereSeconds : 0,
     );
     const quietFirstSubboss =
-      (dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
+      (!cityPacing.ascentCombat &&
+        dynamicFlight &&
+        firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
       cityPacing.subbossIntroQuiet;
     const quietCityWreck = cityPacing.exclusiveTransit;
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
