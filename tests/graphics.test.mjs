@@ -33,9 +33,9 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  // QA122 adds six actual building/sidewalk GPU batches per road tile.
+  // QA122 now adds seven building/sidewalk/foliage GPU batches per road tile.
   // Verify the new functionality is present, then account for exactly those
-  // twelve intentional batches without relaxing the historical base budget.
+  // fourteen measured batches without relaxing the historical base budget.
   const streets = ['launch-city', 'launch-city-far'].map((name) =>
     scene.getObjectByName(name).getObjectByName('city122-lived-in-street-blocks'),
   );
@@ -48,7 +48,7 @@ test('city remains present after one full scenery wrap and reset', () => {
       ),
     0,
   );
-  assert.equal(streetDraws, 12, 'six instanced architectural batches per 1.9 km tile');
+  assert.equal(streetDraws, 14, 'seven instanced architectural batches per 1.9 km tile');
   assert.ok(
     count >= 180 + streetDraws && count <= 260 + streetDraws,
     'original city GPU instance budget plus only the measured street-infilling batches',
