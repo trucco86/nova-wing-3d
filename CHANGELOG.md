@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.27.124 — Candidata em preparação
+## 1.27.124 — QA125 performance espacial (experimental)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Pré-carregamento gradual dos modelos `satellite`, `carrier` e `debris` em slots ociosos para evitar construção do primeiro obstáculo no frame de chegada ao espaço.
+- Precompilação assíncrona de materiais por meio do shader-prewarm existente, com cancelamento no teardown e fallback de agendamento.
+- Testes unitários de fila, deduplicação, cancelamento e recuperação de falhas. Medições FPS/frametime em dispositivo real ainda necessárias.
+- PR empilhada #341 sobre a #340; **sem publicação em produção**.
 
 ## 1.27.123 — Candidata QA124 (sem promoção)
 
