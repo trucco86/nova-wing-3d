@@ -1,0 +1,61 @@
+name: QA122 prepare denser warm city and fractured moon
+
+on:
+  push:
+    branches:
+      - feat/qa122-street-life-warm-city-fractured-moon-20261113
+    paths:
+      - .github/workflows/qa122-prepare.yml
+      - src/visuals.js
+      - src/city-122-street-infill.js
+      - src/city-premium.js
+      - src/city-32-living.js
+      - src/city-30-district-life.js
+      - tests/qa122-street-life-and-moon.test.mjs
+      - specs/qa122-city41-infill-warm-moon.md
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa122-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Synchronize isolated release 1.27.122
+        run: npm run release:prepare -- 1.27.122
+      - run: npm run format
+      - run: npm run build
+      - name: Validate grounded streets, moon, and city regression
+        run: node --test tests/qa122-street-life-and-moon.test.mjs tests/city-phase1-coherence.test.mjs tests/qa109-city-integrity.test.mjs tests/city-32-living.test.mjs tests/city-33-premium.test.mjs tests/city-35-lived-in.test.mjs tests/qa114-city40-cinematic-silhouette.test.mjs tests/flight-launch-visual.test.mjs
+      - run: npm run validate
+      - run: git diff --check
+      - name: Commit only validated generated release artifacts to QA branch
+        run: |
+          git add -u
+          if [ -f releases/v1.27.122.md ]; then git add releases/v1.27.122.md; fi
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA122 release is synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA122): sync fully tested 1.27.122 preview'
+          git fetch origin feat/qa122-street-life-warm-city-fractured-moon-20261113
+          git rebase origin/feat/qa122-street-life-warm-city-fractured-moon-20261113
+          git push origin HEAD:feat/qa122-street-life-warm-city-fractured-moon-20261113
