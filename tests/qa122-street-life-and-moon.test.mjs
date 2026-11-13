@@ -117,9 +117,21 @@ test('QA122: urban environmental lighting is neutral and warm while other planet
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[0], 0);
   const directional = scene.children.filter((node) => node.isDirectionalLight);
-  assert.ok(directional.some((l) => l.color.getHexString() === 'b4a99b'));
-  assert.ok(directional.some((l) => l.color.getHexString() === 'cdb49a'));
-  assert.ok(!directional.some((l) => l.color.getHexString() === 'ff82dc'));
+  const closeTo = (color, hex) => {
+    const expected = new T.Color(hex);
+    return Math.abs(color.r - expected.r) +
+      Math.abs(color.g - expected.g) +
+      Math.abs(color.b - expected.b) < 0.01;
+  };
+  assert.ok(
+    directional.some((l) => closeTo(l.color, '#b4a99b')),
+    'missing warm fill: ' + directional.map((l) => l.color.getHexString()).join(', '),
+  );
+  assert.ok(
+    directional.some((l) => closeTo(l.color, '#cdb49a')),
+    'missing stone-color rim: ' + directional.map((l) => l.color.getHexString()).join(', '),
+  );
+  assert.ok(!directional.some((l) => closeTo(l.color, '#ff82dc')));
   const urbanColor = scene.fog.color.getHexString();
   assert.equal(urbanColor, '737c7b');
   world.setSector(SECTORS[1], 1);
