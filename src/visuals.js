@@ -1517,7 +1517,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     urbanLife.add(craft);
   }
   city.add(urbanLife);
-  city.add(createCityDistricts(buildingAnchors));
+  const cityDistricts = createCityDistricts(buildingAnchors);
+  city.add(cityDistricts);
   city.add(createCityPremiumInfrastructure());
   city.add(createCityCommerce());
   city.add(createCityTraffic());
@@ -1527,7 +1528,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCity33Premium(buildingAnchors));
   // QA122: inhabited streets sit on parcels between the maglev and towers,
   // with ground-floor fronts anchored to actual procedural buildings.
-  city.add(createCity122StreetInfill(buildingAnchors));
+  city.add(
+    createCity122StreetInfill(buildingAnchors, [
+      ...cityDistricts.userData.towerFootprints,
+      ...cityDistricts.userData.platformFootprints,
+    ]),
+  );
   // Affordable inhabited-city depth: building-anchored landing pads, moving
   // lift services and HVAC. All details stay outside the x±72 flight area.
   if (dynamicFlight) city.add(createCity35LivedIn(buildingAnchors));
