@@ -1,6 +1,8 @@
 # Histórico
 
-## 1.27.122 - QA122 Cidade Premium 4.1 (candidata, sem merge)
+## 1.27.122
+
+**QA122 Cidade Premium 4.1 (candidata, sem merge)**
 
 - Fase 1: preenchimento funcional de ruas e espaços entre prédios com calçadas, baias de serviço, vitrines de térreo, quiosques, luzes de orientação, bancos e jardineiras.
 - Visual urbano reduz rosa e ciano dominantes por grafite, concreto, vidro, metais quentes e âmbar discreto; preservadas as cores de combate, efeitos e HUD.
