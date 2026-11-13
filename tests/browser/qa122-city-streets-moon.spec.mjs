@@ -31,17 +31,21 @@ test('QA122: Stage 1 renders populated streets and a distinctive cracked moon in
     expect(tile.visible).toBe(true);
     expect(tile.lots).toBeGreaterThan(20);
     expect(tile.outerLots).toBeGreaterThan(25);
+    expect(tile.groundCells).toBeGreaterThan(50);
+    expect(tile.groundKinds).toEqual(expect.arrayContaining([0, 1, 2, 3, 4]));
+    expect(tile.vaporPlumes).toBeGreaterThan(0);
+    expect(tile.groundSignals).toBeGreaterThan(0);
     expect(tile.outerKinds).toEqual(
       expect.arrayContaining(['parking', 'garden', 'delivery', 'plaza', 'service', 'access']),
     );
     expect(tile.occupiedSidewalks).toBeGreaterThan(20);
-    expect(tile.occupiedSidewalks).toBeGreaterThan(tile.lots);
+    expect(tile.occupiedSidewalks).toBeGreaterThan(tile.lots + tile.outerLots);
     expect(tile.storefronts).toBeGreaterThan(190);
     expect(tile.mediumBatches).toBe(5);
     expect(tile.trees).toBeGreaterThan(0);
     expect(tile.pedestrians).toBeGreaterThan(0);
     expect(tile.adScreens).toBeGreaterThanOrEqual(7);
-    expect(tile.highBatches).toBe(2);
+    expect(tile.highBatches).toBe(3);
   }
   await page.screenshot({
     path: info.outputPath('qa122-streets-and-moon-' + info.project.name + '.png'),
