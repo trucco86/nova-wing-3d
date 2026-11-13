@@ -18,6 +18,10 @@ export function createPremiumAtmosphericGeometry(kind) {
     geometry.scale(sx, sy, sz);
     if (roll) geometry.rotateZ(roll);
     geometry.translate(x, y, z);
+    // PolyhedronGeometry is emitted non-indexed while boxes and cylinders
+    // are indexed. Normalize both before merging into one GPU geometry.
+    if (!geometry.index)
+      geometry.setIndex(Array.from({ length: geometry.attributes.position.count }, (_, i) => i));
     parts.push(geometry);
   };
   if (kind === 'venus-volcanic-vent') {
