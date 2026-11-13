@@ -36,7 +36,20 @@ O teste WebGL direcionado passou no Chromium desktop e mobile para a versão com
 - [ ] As áreas novas são vistas de cima e ao passar entre prédios, sem interpenetrações com torres, shoppings ou plataformas do espaçoporto.
 - [ ] As quadras continuam alinhadas com o tile durante a rolagem, pausa e ascensão; não surgem paredes ou colisores invisíveis.
 - [ ] O teste visual compara o antes e depois em Medium/High no desktop e celular, incluindo os extremos do percurso e os diferentes ângulos de câmera.
-- [ ] Render stats e FPS físico confirmam que os novos elementos não pioram o desempenho; a contagem de sete batches de QA122 por tile permanece constante.
+- [ ] Render stats e FPS físico confirmam que os novos elementos não pioram o desempenho; oito batches por tile (oito apenas no perfil High) permanecem constantes após a inclusão do vapor.
+
+## Revisão 4.4: solo cinematográfico e impactos
+
+- [ ] Entre as torres, não há grandes regiões de piso liso sem leitura de textura, juntas, travessia, drenagem ou áreas de serviço.
+- [ ] O preenchimento do chão respeita todos os prédios, plataformas e lotes ocupados, sem superfícies se cruzando.
+- [ ] O chão permanece alinhado aos dois tiles durante scroll, pausa, reset e ascensão.
+- [ ] O vapor nasce em grelhas, não atravessa torres e aparece apenas no modo High. Medium mantém pisos e sinalização, preservando FPS.
+- [ ] Impactos de outdoor, carro e fachada têm calor inicial, faíscas, fragmentos, poeira e fuligem; queimaduras temporárias tocam o chão.
+- [ ] Nenhuma explosão cria hitbox invisível, altera a trajetória dos detritos, escala dano ou adiciona malhas durante a animação.
+- [ ] O orçamento de 8 batches por tile (5 Medium, 3 High) e 3 batches globais de fragmentos de impacto é registrado em QA, sem ampliar a tolerância do cenário original.
+- [ ] A diferença visual é perceptível também no celular e em diversos ângulos, sem comprometer FPS ou visibilidade de inimigos.
+
+**Evidência de build/Node no código 4.4:** [preparação QA122 aprovada](https://github.com/trucco86/nova-wing-3d/actions/runs/43447371288). Não substitui os shards de navegador nem testes em aparelho físico.
 
 ## Qualidade e regressões
 
