@@ -241,8 +241,7 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
     } else {
       // Access lanes connect the side road visually to the built blocks.
       // Direction markings stay readable, never entering the flight area.
-      for (const dx of [-5, 5])
-        lights.push({ ...p(dx, -6.72, 0, 0.2, 0.08, 21), tint: '#d7c7a5' });
+      for (const dx of [-5, 5]) lights.push({ ...p(dx, -6.72, 0, 0.2, 0.08, 21), tint: '#d7c7a5' });
       for (const dz of [-8, 8]) {
         structures.push(p(side * 7.7, -2.6, dz, 0.45, 8.2, 0.45));
         lights.push({ ...p(side * 7.7, 1.6, dz, 1.9, 0.3, 1.2), tint: '#c6d5ba' });

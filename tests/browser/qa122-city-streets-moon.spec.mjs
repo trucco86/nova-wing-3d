@@ -31,7 +31,9 @@ test('QA122: Stage 1 renders populated streets and a distinctive cracked moon in
     expect(tile.visible).toBe(true);
     expect(tile.lots).toBeGreaterThan(20);
     expect(tile.outerLots).toBeGreaterThan(25);
-    expect(tile.outerKinds).toEqual(expect.arrayContaining(['parking', 'garden', 'delivery', 'plaza', 'service', 'access']));
+    expect(tile.outerKinds).toEqual(
+      expect.arrayContaining(['parking', 'garden', 'delivery', 'plaza', 'service', 'access']),
+    );
     expect(tile.occupiedSidewalks).toBeGreaterThan(20);
     expect(tile.occupiedSidewalks).toBeGreaterThan(tile.lots);
     expect(tile.storefronts).toBeGreaterThan(190);

@@ -46,14 +46,20 @@ test('QA122: outer blocks fill both far corridors without intruding on buildings
   assert.ok(lots.some((lot) => lot.band === 1));
   assert.ok(lots.filter((lot) => lot.side === -1).length > 25);
   assert.ok(lots.filter((lot) => lot.side === 1).length > 25);
-  assert.ok(lots.some((lot) => lot.z < -1700), 'the end of the 1.9 km route cannot be empty');
+  assert.ok(
+    lots.some((lot) => lot.z < -1700),
+    'the end of the 1.9 km route cannot be empty',
+  );
   const types = new Set(lots.map((lot) => lot.kind));
   assert.deepEqual(types, new Set(['parking', 'garden', 'delivery', 'plaza', 'service', 'access']));
   const reserved = [...buildings, ...district, ...CITY_RETAIL_RESERVATIONS];
   for (const [index, lot] of lots.entries()) {
     assert.ok(Math.abs(lot.x) - lot.w / 2 >= 125, 'reserve train and flight space');
     assert.ok(lot.z - lot.depth / 2 > -1900 && lot.z + lot.depth / 2 < 0);
-    assert.ok(reserved.every((b) => !cityFootprintsOverlap(lot, b, 5)), 'real parcel exclusion');
+    assert.ok(
+      reserved.every((b) => !cityFootprintsOverlap(lot, b, 5)),
+      'real parcel exclusion',
+    );
     assert.ok(
       lots.every((other, i) => index === i || !cityFootprintsOverlap(lot, other, 2)),
       'courtyards and roads never overlap each other',
@@ -194,7 +200,9 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
     ...CITY_RETAIL_RESERVATIONS,
   ];
   assert.ok(
-    originalLots.every((lot) => occupied.every((footprint) => !cityFootprintsOverlap(lot, footprint, 5))),
+    originalLots.every((lot) =>
+      occupied.every((footprint) => !cityFootprintsOverlap(lot, footprint, 5)),
+    ),
     'the full world must never place outdoor structures into real towers, mall or launch platform',
   );
   assert.ok(nearStreet.visible && farStreet.visible);
