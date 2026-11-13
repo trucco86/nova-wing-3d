@@ -16,7 +16,11 @@ test('ship laser uses layered transient, energy body and mobile midrange texture
   const cue = AUDIO_CUES.shot;
   assert.ok(cue.cooldown >= 0.08);
   assert.ok(cue.tones.length >= 3);
-  assert.ok(cue.tones.some((tone) => tone.from > 900 && tone.duration < 0.1));
+  assert.ok(
+    cue.tones.some(
+      (tone) => tone.from >= 700 && tone.from <= 900 && tone.filter <= 1200 && tone.duration < 0.07,
+    ),
+  );
   assert.ok(cue.tones.some((tone) => tone.from < 350 && tone.duration > 0.1));
   assert.ok(cue.noises.some((noise) => noise.filter >= 1500));
   assert.ok(cue.tones.every((tone) => tone.gain > 0 && tone.gain < 0.1));

@@ -3,8 +3,18 @@ import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
-import { cityAscentGroundFlow } from './city-spatial-layout.js';
+import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
+import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
+import { cityTilePositions } from './city-tile-scroll.js';
+import { createCityAdInventory } from './city-ad-inventory.js';
+import {
+  createCity40HeroSection,
+  setCity40HeroQuality,
+  createCity40SkylineLandmark,
+  setCity40SkylineQuality,
+} from './city-40-hero-section.js';
 import { createCityCatastrophe } from './city-catastrophe.js';
 import { createCityFallingSolids } from './city-falling-solids.js';
 import { createOrbitalAscentEncounter } from './orbital-ascent-encounter.js';
@@ -1172,26 +1182,28 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityNeon = (color) => new T.MeshBasicMaterial({ color, toneMapped: false });
   const unit = new T.BoxGeometry(1, 1, 1),
     // City 3.3: brushed steel, slate, limestone and tempered glazing.
-    bodyMat = metal('#e7edf0', 0.65, 0.36),
-    roofMat = metal('#d9e1e4', 0.68, 0.31);
+    bodyMat = metal('#dceaf0', 0.78, 0.235),
+    roofMat = metal('#e0eef3', 0.81, 0.2);
   const bodies = new T.InstancedMesh(unit, bodyMat, 200),
     caps = new T.InstancedMesh(unit, roofMat, 200),
-    edges = new T.InstancedMesh(unit, cityNeon('#2cfcd9'), 400),
-    windows = new T.InstancedMesh(unit, cityNeon('#8de3ff'), 4800);
+    edges = new T.InstancedMesh(unit, cityNeon('#8dd6c7'), 400),
+    windows = new T.InstancedMesh(unit, cityNeon('#cedee5'), 4800);
+  bodies.name = 'city-base-building-bodies';
+  caps.name = 'city-base-building-roofs';
   // Rich high-quality architecture in three additional GPU-instanced draw calls.
   // Decoration stays outside the flight corridor and adds no collision volumes.
   const cityHighDetails = new T.Group();
   cityHighDetails.name = 'city-high-details';
   const facadeRibs = new T.InstancedMesh(unit, metal('#355363', 0.78, 0.34), 400);
-  const ledBands = new T.InstancedMesh(unit, cityNeon('#ff80c7'), 400);
+  const ledBands = new T.InstancedMesh(unit, cityNeon('#e8c48c'), 400);
   const antennas = new T.InstancedMesh(unit, metal('#668495', 0.82, 0.28), 200);
   // City 2.2: layered facade details. One instanced draw call per material
   // instead of thousands of independent meshes, only visible on High.
-  const facadeWindowsCool = new T.InstancedMesh(unit, cityNeon('#74eaff'), 15000);
+  const facadeWindowsCool = new T.InstancedMesh(unit, cityNeon('#bbd9de'), 15000);
   facadeWindowsCool.name = 'city-facade-windows-cool';
   const facadeWindowsAmber = new T.InstancedMesh(unit, cityNeon('#ffce88'), 3000);
   facadeWindowsAmber.name = 'city-facade-windows-amber';
-  const facadeSideWindows = new T.InstancedMesh(unit, cityNeon('#c99aff'), 6600);
+  const facadeSideWindows = new T.InstancedMesh(unit, cityNeon('#cddbe0'), 6600);
   facadeSideWindows.name = 'city-facade-side-windows';
   const facadePanelModules = new T.InstancedMesh(unit, metal('#405e6a', 0.68, 0.48), 800);
   facadePanelModules.name = 'city-facade-panel-modules';
@@ -1199,7 +1211,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // They are visual-only and remain visible in Medium, unlike premium decoration.
   const guardrailSteel = new T.InstancedMesh(unit, metal('#3c6570', 0.63, 0.7), 1100);
   guardrailSteel.name = 'city-avenue-guardrail';
-  const guardrailLamps = new T.InstancedMesh(unit, cityNeon('#44f2e2'), 240);
+  const guardrailLamps = new T.InstancedMesh(unit, cityNeon('#c1e5d4'), 240);
   guardrailLamps.name = 'city-avenue-guardrail-lights';
   // Three silhouettes: elevated overpasses, illuminated bridge gantries,
   // and side-running suspended transit beams. Only the High profile shows them.
@@ -1228,7 +1240,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       h = rnd(16, 105),
       w = rnd(7, 19),
       depth = rnd(8, 18);
-    buildingAnchors.push({ x, h, z, w, depth });
+    // Shared city parcels: no procedural office block may cover a maglev
+    // station, the reserved train approach, or an authored shopping centre.
+    // Adjacent 1,900-unit tiles share the exact same architecture. Protect
+    // the seam as well: final blocks may not pierce the next tile's first
+    // buildings when the stage scrolls through the wrap boundary.
+    const seam =
+      z < -1840
+        ? buildingAnchors
+            .filter((building) => building.z > -95)
+            .map((building) => ({ ...building, z: building.z - 1900 }))
+        : [];
+    const parcel = placeCityBaseBuilding({ x, z, w, depth, h }, [...buildingAnchors, ...seam], s);
+    x = parcel.x;
+    buildingAnchors.push({ ...parcel, h });
     const architecturePalette = ['#657984', '#8998a0', '#a7afb0', '#6d8290', '#aea9a3', '#6c7c87'];
     bodies.setColorAt(
       i,
@@ -1453,7 +1478,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   maglevCrossing.userData.role = 'maglev-infrastructure';
   const crossBeam = box(266, 3.1, 12, metal('#739caf', 0.72, 0.28), 0, 59, -345);
   crossBeam.name = 'city32-maglev-crossing-guideway';
-  const crossNeon = box(268, 0.55, 12.3, glowMaterial('#ff8aca', 1.6), 0, 61.3, -345);
+  const crossNeon = box(268, 0.55, 12.3, glowMaterial('#efd29e', 1.2), 0, 61.3, -345);
   crossNeon.name = 'city32-maglev-crossing-luminous-rail';
   maglevCrossing.add(crossBeam, crossNeon);
   for (const side of [-1, 1]) {
@@ -1500,10 +1525,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   // These three approaching tile-level bridges are: visible physical decks,
   // matching collision shapes, and a high route to fly above or below them.
   if (dynamicFlight) city.add(createCityUpperBridges());
+  city.userData.buildingFootprints = buildingAnchors.map(({ x, z, w, depth, h }) => ({
+    x,
+    z,
+    w,
+    depth,
+    h,
+  }));
   city.userData.loop = 1900;
   const cityFar = city.clone();
   cityFar.name = 'launch-city-far';
   cityFar.position.z = -1900;
+  // The original road geometry can repeat, but civic and industrial street
+  // identities must not be the same cloned skyline and advertising accents.
+  // Every new volume rests on a real roof or the actual building facade.
+  applyCityTileIdentity(city, 'civic');
+  applyCityTileIdentity(cityFar, 'industrial');
+  // QA110: every placement is selected from actual zoned building parcels.
+  // The inventory is decorative; no broad invisible blocker enters gameplay.
+  createCityAdInventory(city, 'civic');
+  createCityAdInventory(cityFar, 'industrial');
+  // Graphics 4.0 prototype: hand-sculpted 285m of architecture on zoned
+  // buildings, not a new set of collision boxes or gameplay constraints.
+  createCity40HeroSection(city, 'civic');
+  createCity40HeroSection(cityFar, 'industrial');
   cityFar.getObjectByName('city-active-traffic').userData.trafficPhase = 870;
   cityFar.getObjectByName('city-urban-drones').userData.phase = 2.4;
   animateCityTraffic(cityFar.getObjectByName('city-active-traffic'), 0);
@@ -1611,6 +1656,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     skylineGate.add(box(4.5, 105, 4.5, glowMaterial('#56bace', 0.9), side * 88, 69, -810));
   }
   cityHorizon.add(skylineGate);
+  // Graphics 4.0: focal skyline architecture actually visible in portrait
+  // mode. Non-playable landmark stays behind the flight corridor.
+  cityHorizon.add(createCity40SkylineLandmark());
   cityHorizon.add(createCityHorizonMegastructure());
   cityHorizon.add(createCity32Skyline());
   const conceptCity = createCity34Concept();
@@ -1800,14 +1848,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         ? sectorScenery.getObjectByName('devastador-mothership-boarding')
         : null;
     const profile = DESTINATION_PROFILES[destinationIndex];
-    const target = new T.Color(profile.haze);
+    // Keep the opening orbit dark, then resolve into the unique premium
+    // biome lighting once the authored 25s arrival completes. Mars owns its
+    // own storm fog; Europa still blends its ice-surface frost afterward.
+    const grade = premiumWorldGrade(sceneryTheme);
+    const target = new T.Color(grade?.fog ?? profile.haze);
     europaArrivalSeconds = seconds;
     // The opening really starts in space. Each location's dust/cloud color
     // grows naturally during re-entry and clears into its own established biome.
     scene.fog.color.set('#101c34').lerp(target, state.reveal);
     scene.fog.color.lerp(target, state.haze * 0.65);
     const normalDensity =
-      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : 0.00045;
+      destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : (grade?.haze ?? 0.00045);
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
     starfield.visible = state.reveal < 0.95 || state.keepGlobe;
@@ -1987,6 +2039,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       cityHighDetails.visible = high;
       if (farHighDetails) farHighDetails.visible = high;
       horizonPremium.visible = high;
+      setCity40SkylineQuality(cityHorizon, quality);
       setCity34ConceptQuality(conceptCity, quality);
       cityHorizon.getObjectByName('city-megastructure-high-detail').visible = high;
       launchCelestials.setGraphicsQuality(quality);
@@ -1994,6 +2047,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
         tile.getObjectByName('city-district-high-details').visible = high;
+        setCityTileIdentityQuality(tile, quality);
+        setCity40HeroQuality(tile, quality);
         tile.getObjectByName('city-premium-high-details').visible = high;
         tile.getObjectByName('city-commerce-high-detail').visible = high;
         setCityTrafficQuality(tile.getObjectByName('city-active-traffic'), quality);
@@ -2204,7 +2259,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
-      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       city.scale.setScalar(1);
       cityFar.scale.setScalar(1);
       near.forEach((o) => (o.position.y = 0));
@@ -2272,6 +2327,24 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
       scene.fog.density =
         sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
+      // A different physical daylight / bounce / haze signature per planet.
+      // Retain the approved city lighting and all existing combat colour cues.
+      const premiumGrade =
+        dynamicFlight && !illuminatedCity ? premiumWorldGrade(sceneryTheme) : null;
+      if (premiumGrade) {
+        hemisphere.color.set(premiumGrade.sky);
+        hemisphere.groundColor.set(premiumGrade.ground);
+        hemisphere.intensity = sceneryTheme === 'ice' ? 2.12 : 2.05;
+        key.color.set(premiumGrade.sun);
+        key.intensity = premiumGrade.key;
+        rim.color.set(premiumGrade.rim);
+        rim.intensity = premiumGrade.rimEnergy;
+        purple.color.set(premiumGrade.fill);
+        purple.intensity = premiumGrade.fillEnergy;
+        scene.fog.color.set(premiumGrade.fog);
+        scene.fog.density = premiumGrade.haze;
+        skyMat.uniforms.ambient.value.set(premiumGrade.fog);
+      }
       skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
@@ -2286,20 +2359,30 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           iceField.userData.europaForeground = true;
           sectorScenery.add(iceField);
         }
+        // Legacy: sixty separate low-detail meshes cost sixty draw calls.
+        // Preserve their authored positions/rotations in ONE instanced batch,
+        // outside the x±72 flight lane, with no invisible collision surfaces.
         const geo =
           sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
+        const field = new T.InstancedMesh(geo, mat, 60);
+        field.name = 'premium-instanced-' + sceneryTheme + '-far-field';
+        field.userData.visualOnly = true;
+        field.frustumCulled = false;
+        const transform = new T.Object3D();
         for (let i = 0; i < 60; i++) {
-          const o = new T.Mesh(geo, mat);
-          o.position.set(
-            (i % 2 ? 1 : -1) * rnd(38, 180),
+          transform.position.set(
+            (i % 2 ? 1 : -1) * rnd(125, 260),
             sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
             -i * 22,
           );
-          o.scale.setScalar(rnd(0.5, 2.5));
-          o.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
-          if (iceField) iceField.add(o);
-          else sectorScenery.add(o);
+          transform.scale.setScalar(rnd(0.5, 2.5));
+          transform.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+          transform.updateMatrix();
+          field.setMatrixAt(i, transform.matrix);
         }
+        field.instanceMatrix.needsUpdate = true;
+        if (iceField) iceField.add(field);
+        else sectorScenery.add(field);
       }
       if (sceneryTheme === 'station' && dynamicFlight) {
         // Mission 4 is INSIDE Marvin's mothership; do not reuse a generic
@@ -2484,12 +2567,17 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         if (sceneryTheme === 'city') cityVisualTravel += scenicDelta;
         const scenicTravel = sceneryTheme === 'city' ? cityVisualTravel : travel;
         terrainMat.uniforms.travel.value = scenicTravel;
-        city.position.z = scenicTravel % 1900;
-        cityFar.position.z = city.position.z - 1900;
-        // Persistent skyline remains distant while roads and trains move at
-        // different speeds: multiple parallax rates reinforce urban scale.
-        cityHorizon.position.x = Math.sin(travel / 3400) * 9;
-        cityHorizon.position.z = -Math.min(85, travel * 0.012);
+        // Never replace the building currently approaching the camera at a
+        // 1,900-unit wrap. The departing tile returns to the rear while the
+        // previous far tile continues forward uninterrupted.
+        const tiles = cityTilePositions(scenicTravel);
+        city.position.z = tiles.civic;
+        cityFar.position.z = tiles.industrial;
+        // The distant skyline is a STATIC architectural backdrop. Previously
+        // it slid laterally within the near city's blocks and appeared to
+        // penetrate the scrolling buildings, even as the road was coherent.
+        cityHorizon.position.x = 0;
+        cityHorizon.position.z = sceneryTheme === 'city' ? -900 : 0;
         for (const tile of [city, cityFar]) {
           // These are visual-only tiles. Once the launch city is hidden in
           // orbit or another mission, do not animate its entire traffic graph.
@@ -2592,7 +2680,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
       }
-      cityHorizon.position.set(0, 0, 0);
+      cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       cityHorizon.visible = sceneryTheme === 'city';
       updateCityDestructionScene(cityDestruction, 0, sceneryTheme === 'city');
       cityCatastrophe?.reset();

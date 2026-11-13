@@ -76,7 +76,12 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   const landmarks = scene.getObjectByName('destination-landmarks');
   const living = scene.getObjectByName('world-living-depth-ice');
   assert.ok(crystals && landmarks && living);
-  assert.equal(crystals.children.length, 60, 'preserve crystals during pre-boss flight');
+  // Sixty real crystals remain present, but are submitted as one GPU
+  // instanced batch instead of sixty independent draw calls.
+  assert.equal(crystals.children.length, 1, 'preserve glacial ridge field in one GPU batch');
+  const icyRidges = crystals.children[0];
+  assert.ok(icyRidges.isInstancedMesh && icyRidges.userData.visualOnly);
+  assert.equal(icyRidges.count, 60, 'preserve all sixty crystals before the boss');
   const floor = -83;
   const arena = world.setEuropaBossArena(true, floor);
   assert.equal(arena.active, true);

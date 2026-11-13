@@ -7,6 +7,7 @@ import {
   cityAscentGroundFlow,
   cityFootprintsOverlap,
   placeCityDistrictTower,
+  placeCityBaseBuilding,
 } from '../src/city-spatial-layout.js';
 import { createWorld } from '../src/visuals.js';
 
@@ -17,12 +18,20 @@ test('district tower placement reserves real occupied X/Z footprints', () => {
   assert.ok(!cityFootprintsOverlap(shifted, blocking[0]));
 
   // Same spatial distribution used for the repeated 1,900-unit urban tiles.
-  const anchors = Array.from({ length: 200 }, (_, i) => ({
-    x: (i % 2 ? 1 : -1) * (105 + ((i * 37) % 196)),
-    z: -30 - Math.floor(i / 2) * 19,
-    w: 7 + (i % 13),
-    depth: 8 + (i % 11),
-  }));
+  // District validation must use parcels already respecting the game's
+  // train and shopping reservations, not legacy unzoned random positions.
+  const anchors = [];
+  for (let i = 0; i < 200; i++) {
+    const side = i % 2 ? 1 : -1;
+    const plan = {
+      x: side * (105 + ((i * 37) % 196)),
+      z: -30 - Math.floor(i / 2) * 19,
+      w: 7 + (i % 13),
+      depth: 8 + (i % 11),
+      h: 50 + (i % 5) * 10,
+    };
+    anchors.push(placeCityBaseBuilding(plan, anchors, side));
+  }
   const district = createCityDistricts(anchors);
   const towers = district.userData.towerFootprints;
   assert.equal(towers.length, 24, 'three districts with four towers per side');

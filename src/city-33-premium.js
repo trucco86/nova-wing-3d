@@ -38,16 +38,20 @@ const busGlass = new T.MeshStandardMaterial({
   roughness: 0.19,
 });
 const busLight = new T.MeshBasicMaterial({ color: '#c3f8ff', toneMapped: false });
-const cladding = new T.MeshStandardMaterial({ color: '#e5e8e6', metalness: 0.64, roughness: 0.37 });
+const cladding = new T.MeshStandardMaterial({
+  color: '#e1edf1',
+  metalness: 0.77,
+  roughness: 0.245,
+});
 const panelGlass = new T.MeshStandardMaterial({
-  color: '#789eae',
-  metalness: 0.42,
-  roughness: 0.17,
+  color: '#9bc5d3',
+  metalness: 0.58,
+  roughness: 0.135,
 });
 const machinery = new T.MeshStandardMaterial({
-  color: '#b5bac0',
-  metalness: 0.73,
-  roughness: 0.36,
+  color: '#c4d1d7',
+  metalness: 0.79,
+  roughness: 0.27,
 });
 const fineMetal = new T.MeshStandardMaterial({
   color: '#7a8992',
@@ -240,7 +244,9 @@ function elevatedBusRoute(root) {
   const roadway = [],
     tracks = [],
     guard = [],
-    station = [];
+    station = [],
+    piers = [],
+    cantilevers = [];
   // Side-running busways at mid-stage, with open bridges to the transport
   // district. They remain out of the player lane and have no collision.
   for (const side of [-1, 1]) {
@@ -250,6 +256,12 @@ function elevatedBusRoute(root) {
       roadway.push(part(x, 13.2, z, 17, 2.2, 32.2));
       tracks.push(part(x - side * 7.7, 15, z, 0.62, 0.5, 32));
       tracks.push(part(x + side * 7.7, 15, z, 0.62, 0.5, 32));
+      // The busway is supported from outside the flight corridor.
+      // Piers touch street y=-7 and cantilevers meet the real deck underside.
+      if (i % 4 === 0) {
+        piers.push(part(side * 85, 1.5, z, 2.8, 17, 3.2));
+        cantilevers.push(part(side * 76, 11.15, z, 20, 2.15, 3.5));
+      }
       if (i % 3 === 0) {
         guard.push(part(x - side * 8.8, 20, z, 0.7, 7, 0.7));
         guard.push(part(x + side * 8.8, 20, z, 0.7, 7, 0.7));
@@ -264,6 +276,8 @@ function elevatedBusRoute(root) {
   batch(group, 'city33-suspended-busway-lights', cyan, tracks);
   batch(group, 'city33-suspended-busway-guardrails', fineMetal, guard);
   batch(group, 'city33-busway-platforms', cladding, station);
+  batch(group, 'city33-busway-grounded-piers', machinery, piers);
+  batch(group, 'city33-busway-cantilever-braces', fineMetal, cantilevers);
   const traffic = new T.Group();
   traffic.name = 'city33-moving-futuristic-buses';
   traffic.userData.visualOnly = true;
