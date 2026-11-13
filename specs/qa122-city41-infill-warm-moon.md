@@ -24,6 +24,17 @@ Feedback adicional: a Lua da abertura não pode se sobrepor aos prédios; o obje
 - Neón e anúncios: mais letreiros arquitetônicos alternando âmbar, verde-água e branco, e painéis de abrigo ancorados. Preservar os inventários de anúncios genéricos em atlas dos edifícios, sua contagem contratada (7 a 12 telas por tile) e os mesmos dois draw calls.
 - Matriz de regressão: vista desktop/mobile abertura, avanço, perfil Medium/High, pausa e reset, oclusão da Lua por edifícios, colisões existentes, render stats e shader WebGL. Capturas reais e FPS em dispositivo físico continuam obrigatórios antes de qualquer promoção.
 
+## Iteração 4.3: quadras externas funcionais
+
+Novo feedback: o exterior continua vazio entre torres. A expansão não deve adicionar objetos aleatórios no ar nem criar hitboxes invisíveis.
+
+- `planCity122OuterParcels` distribui solo urbano ao longo dos dois lados dos 1.900 metros, priorizando corredores de x = ±146 a ±352. Os lotes respeitam uma margem horizontal de 125 unidades para pista e maglev.
+- A reserva considera os 200 prédios procedurais, 24 torres distritais, oito plataformas do espaçoporto, os três complexos comerciais e todas as novas quadras entre si. Um lote ocupado é ignorado; nunca deslocar decoração para a pista.
+- Seis funções visuais, sem física adicional: estacionamentos com carros apoiados; jardins de bolso com árvores e bancos; depósitos logísticos com cobertura sustentada; pequenas praças e abrigos; pátios técnicos com transformadores; vias de acesso com faixas, postes e sinalização.
+- `city122-grounded-pedestrian-pavements` e os seis demais batches existentes incorporam a nova geometria, **sem adicionar draw calls ou novos materiais**. Os pisos externos têm base em y = -7, sem flutuar.
+- Os dois trechos de estrada herdam a geometria durante rolagem e ascensão; perfis Medium/High, Lua, emissões, anúncios e colisões de gameplay devem permanecer intactos.
+- Testes novos cobrem distribuição nas duas margens, extremos do percurso, não sobreposição com todas as reservas, tipologia, instancing e observação WebGL desktop/mobile. Retêm-se todos os gates de performance e homologação de QA122.
+
 ## Critérios de aceite
 
 - Os dois lados da avenida devem ter pelo menos vinte trechos seguros por lado com calçadas e ocupação funcional.
