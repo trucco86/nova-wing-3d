@@ -3,7 +3,7 @@
 ## 1.27.125 — QA126: combates na subida e aliados cinematográficos
 
 - Quatro saídas de apoio dos Five Cats com entrada de longe, escolta e saída em curva tangencial. Introdução e Overdrive também passam a entrar e se afastar de forma animada, sem oclusão repentina.
-- Fase 1: formações aéreas com caças perseguidores, interceptadores e bombardeiros durante o trecho intermediário da subida atmosférica (12s a 35s de atmosfera), respeitando o BOOST e a cena do trem.
+- Fase 1: formações aéreas com caças perseguidores, interceptadores e bombardeiros durante o trecho intermediário da subida atmosférica (8s a 35s de atmosfera), respeitando o BOOST e a cena do trem.
 - Variação dos inimigos de solo (tanques, robôs e mechas voadores), até uma patrulha de mecha voador durante a ascensão e limite ativo de naves por dificuldade.
 - Inimigos aéreos ajustam altura ao jogador; continuam usando as carenagens e superfícies premium já disponíveis para as três classes.
 - Testes para trajetórias de aliados, continuidade e lógica das ondas; validação visual e FPS em hardware físico continuam exigidos.
