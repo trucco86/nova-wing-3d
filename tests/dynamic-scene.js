@@ -90,6 +90,9 @@ window.fixture = {
         lots: root.userData.sidewalkParcels.length,
         occupiedSidewalks: root.getObjectByName('city122-grounded-pedestrian-pavements').count,
         storefronts: root.getObjectByName('city122-real-ground-floor-storefront-glazing').count,
+        trees: root.getObjectByName('city122-grounded-street-tree-canopies').count,
+        pedestrians: root.userData.pedestrians?.length ?? 0,
+        adScreens: tile.getObjectByName('city-premium-ad-inventory')?.userData.total ?? 0,
       };
     });
     return {
@@ -99,6 +102,9 @@ window.fixture = {
         fractured: moon?.material?.uniforms?.crackIntensity?.value === 1,
         x: moon?.position.x ?? null,
         y: moon?.position.y ?? null,
+        z: moon?.position.z ?? null,
+        backgroundDepth: moon?.material?.uniforms?.backgroundDepth?.value ?? null,
+        orbitalFractured: realMoon?.material?.fragmentShader.includes('branchA') ?? false,
         realOrbitalMoonVisible: realMoon?.visible ?? false,
       },
       citySky: lastScene.getObjectByName('launch-sky-dome')?.material?.uniforms?.cityGlow?.value,
