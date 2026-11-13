@@ -39,7 +39,7 @@ export function stageOneEncounterWindows(
     active &&
     launchPhase === 'atmosphere' &&
     Number.isFinite(atmosphereSeconds) &&
-    atmosphereSeconds >= 12 &&
+    atmosphereSeconds >= 8 &&
     atmosphereSeconds < 35;
   const subbossIntro =
     active &&
