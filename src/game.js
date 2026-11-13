@@ -179,6 +179,7 @@ import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.j
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
+import { bossEncounterGate } from './encounter-separation.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
 import {
@@ -712,6 +713,7 @@ export function createGame({
     podsDetached = false,
     podCd = 0,
     subDone = false,
+    subbossClearedAt = null,
     rivalDone = false,
     baseDone = false,
     groundCd = 5,
@@ -1511,6 +1513,7 @@ export function createGame({
     podCd = 0;
     obstacleCd = 9;
     subDone = rivalDone = false;
+    subbossClearedAt = null;
     baseDone = sectorIndex === 1;
     // The first ground patrol enters before the suspended-train warning.
     groundCd = dynamicFlight && sectorIndex === 0 ? 3.6 : 5;
@@ -1787,6 +1790,7 @@ export function createGame({
     if (e.dead) return;
     explode(e.o.position, e.kind === 'subboss' ? 48 : 16);
     if (e.kind === 'subboss') {
+      subbossClearedAt = elapsed;
       $('subHUD').hidden = true;
       music?.start(sectorIndex);
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
@@ -2954,6 +2958,7 @@ export function createGame({
       }
       // Keep the test focused on its selected encounter, not ambient enemies/pickups.
       subDone = rivalDone = baseDone = tunnelDone = arcadeDone = true;
+      subbossClearedAt = elapsed;
       spawnCd = groundCd = obstacleCd = ringCd = petCd = Infinity;
       if (scenario.encounter === 'subboss') {
         elapsed = current().duration * 0.25;
@@ -4687,21 +4692,30 @@ export function createGame({
         message('FENDA GLACIAL · TÚNEL PROTEGIDO · SIGA A ABERTURA');
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
+    const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
     const bossBlocked =
-      enemies.some((e) => !e.dead && e.kind === 'subboss') ||
+      activeSubboss ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
       (dynamicFlight &&
         sectorIndex === 2 &&
         (!asteroidInterior.course.snapshot().complete || (spawnEncounters && !subDone)));
+    const bossSeparated = bossEncounterGate({
+      elapsed,
+      subbossStarted: subDone,
+      subbossClearedAt,
+      activeSubboss,
+      blocked: bossBlocked,
+    });
     if (
+      bossSeparated &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
-      shouldWarnBoss({
+      (shouldWarnBoss({
         elapsed,
         duration: current().duration,
         warned: bossWarned,
         boss: !!boss,
         blocked: bossBlocked,
-      })
+      }) || (elapsed >= current().duration && !bossWarned && !boss))
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;
@@ -4717,8 +4731,9 @@ export function createGame({
     if (
       elapsed >= current().duration &&
       !boss &&
-      !enemies.some((e) => !e.dead && e.kind === 'subboss') &&
-      !bossBlocked
+      bossSeparated &&
+      bossWarned &&
+      bossWarningTime === 0
     )
       makeBoss();
     const phase = boss
@@ -4873,6 +4888,7 @@ export function createGame({
           ? firstSubbossDeparture(sectorIndex, e.age)
           : null;
       if (departure?.complete) {
+        subbossClearedAt = elapsed;
         dispose(e.o);
         e.dead = true;
         $('subHUD').hidden = true;
