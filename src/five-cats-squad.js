@@ -46,7 +46,6 @@ export function canActivateSquadSpecial(kind, { playing, intro, energy, cooldown
   return !!cfg && !!playing && !intro && cooldown <= 0 && energy >= cfg.cost;
 }
 
-
 /**
  * Long-running support flights. Ships approach from outside the battle space,
  * provide support and leave on a banked tangent. Never toggle visibility
@@ -113,9 +112,7 @@ export function allySortieFlightPose(sortie, player = { x: 0, y: 0, z: 0 }) {
     bank = -side * 0.14;
   } else {
     const age = t - ALLY_SORTIE_FLIGHT.escortEnd;
-    const ease = smoothFlight(
-      age / (ALLY_SORTIE_FLIGHT.duration - ALLY_SORTIE_FLIGHT.escortEnd),
-    );
+    const ease = smoothFlight(age / (ALLY_SORTIE_FLIGHT.duration - ALLY_SORTIE_FLIGHT.escortEnd));
     const escortAge = ALLY_SORTIE_FLIGHT.escortEnd - ALLY_SORTIE_FLIGHT.entry;
     const exitX = side * (18 + Math.sin(escortAge * 1.6) * 1.4);
     const exitY = 4 + Math.sin(escortAge * 1.3) * 0.9;

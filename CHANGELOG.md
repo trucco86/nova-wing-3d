@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.125 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.124 — QA125 performance espacial (experimental)
 
 - Pré-carregamento gradual dos modelos `satellite`, `carrier` e `debris` em slots ociosos para evitar construção do primeiro obstáculo no frame de chegada ao espaço.

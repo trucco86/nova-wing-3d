@@ -68,11 +68,43 @@ export function stageOneEncounterWindows(
  * stageOneEncounterWindows; denser formations are never permission to spawn
  * inside a scripted transit. Cap active fighters for WebGL/mobile performance.
  */
-export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFighters = 0, ascent = false) {
+export function stageOneCombatDensity(
+  mode = 'normal',
+  orbit = false,
+  activeFighters = 0,
+  ascent = false,
+) {
   const profiles = {
-    easy: { city: 1, orbit: 2, ascent: 1, interval: 5.2, ascentInterval: 5.8, groundInterval: 5.2, maxActive: 4, ascentMax: 3 },
-    normal: { city: 2, orbit: 3, ascent: 2, interval: 4.15, ascentInterval: 4.35, groundInterval: 4.3, maxActive: 6, ascentMax: 4 },
-    hard: { city: 3, orbit: 4, ascent: 3, interval: 3.7, ascentInterval: 4.0, groundInterval: 4.0, maxActive: 8, ascentMax: 5 },
+    easy: {
+      city: 1,
+      orbit: 2,
+      ascent: 1,
+      interval: 5.2,
+      ascentInterval: 5.8,
+      groundInterval: 5.2,
+      maxActive: 4,
+      ascentMax: 3,
+    },
+    normal: {
+      city: 2,
+      orbit: 3,
+      ascent: 2,
+      interval: 4.15,
+      ascentInterval: 4.35,
+      groundInterval: 4.3,
+      maxActive: 6,
+      ascentMax: 4,
+    },
+    hard: {
+      city: 3,
+      orbit: 4,
+      ascent: 3,
+      interval: 3.7,
+      ascentInterval: 4.0,
+      groundInterval: 4.0,
+      maxActive: 8,
+      ascentMax: 5,
+    },
   };
   if (!Number.isInteger(activeFighters) || activeFighters < 0)
     throw new RangeError('Active fighter count must be non-negative');
@@ -81,7 +113,10 @@ export function stageOneCombatDensity(mode = 'normal', orbit = false, activeFigh
   return {
     count: Math.max(
       0,
-      Math.min(ascent ? profile.ascent : orbit ? profile.orbit : profile.city, maxActive - activeFighters),
+      Math.min(
+        ascent ? profile.ascent : orbit ? profile.orbit : profile.city,
+        maxActive - activeFighters,
+      ),
     ),
     interval: ascent ? profile.ascentInterval : profile.interval,
     groundInterval: profile.groundInterval,
