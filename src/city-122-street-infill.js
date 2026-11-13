@@ -19,10 +19,13 @@ const amber = new T.MeshStandardMaterial({
   emissiveIntensity: 0.12,
 });
 const brass = new T.MeshStandardMaterial({ color: '#a49379', metalness: 0.65, roughness: 0.44 });
+const foliage = new T.MeshStandardMaterial({ color: '#507460', metalness: 0.03, roughness: 0.88 });
+const crown = new T.ConeGeometry(1, 1, 6);
+const wayfindingColors = ['#f1c58b', '#9ebfb5', '#c2bd98', '#b4c5cb'];
 const part = (x, y, z, w, h, d) => ({ x, y, z, w, h, d });
 
-function batch(parent, name, material, entries) {
-  const mesh = new T.InstancedMesh(unit, material, entries.length);
+function batch(parent, name, material, entries, geometry = unit) {
+  const mesh = new T.InstancedMesh(geometry, material, entries.length);
   mesh.name = name;
   mesh.userData.visualOnly = true;
   mesh.userData.architectural = true;
@@ -35,8 +38,10 @@ function batch(parent, name, material, entries) {
     dummy.scale.set(p.w, p.h, p.d);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
+    if (p.tint) mesh.setColorAt(i, new T.Color(p.tint));
   });
   mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   parent.add(mesh);
   return mesh;
 }
@@ -73,6 +78,8 @@ export function createCity122StreetInfill(buildings = []) {
   const lights = [];
   const furniture = [];
   const finer = [];
+  const trees = [];
+  const walkers = [];
   const parcels = planCity122SidewalkParcels(buildings);
   for (const lot of parcels) {
     const x = lot.x,
@@ -92,7 +99,16 @@ export function createCity122StreetInfill(buildings = []) {
       structures.push(part(x, 2.15, z + 3, 8.2, 0.78, 11.3));
       structures.push(part(x, -3.9, z - 1, 6.6, 5.2, 1.0));
       storefronts.push(part(x, -2.8, z + 3.05, 6.6, 4.9, 0.24));
-      lights.push(part(x, 1.63, z + 9, 6.2, 0.28, 0.4));
+      lights.push({
+        ...part(x, 1.63, z + 9, 6.2, 0.28, 0.4),
+        tint: wayfindingColors[lot.sector % wayfindingColors.length],
+      });
+      // A grounded shelter screen echoes the existing fictional building ads.
+      // Real creative artwork remains on the shared city-ad atlas.
+      lights.push({
+        ...part(x, -1.9, z + 8.8, 4.8, 2.6, 0.2),
+        tint: wayfindingColors[(lot.sector + 1) % wayfindingColors.length],
+      });
       finer.push(part(x, -5.9, z - 9, 6.0, 0.45, 2.0));
       finer.push(part(x + side * 1.7, -4.8, z - 8.3, 0.22, 2.0, 0.25));
     } else {
@@ -102,6 +118,20 @@ export function createCity122StreetInfill(buildings = []) {
         finer.push(part(x + n * 3.3, -5.7, z + 5, 4.2, 0.48, 2.3));
         finer.push(part(x + n * 3.3, -6.0, z + 5, 0.5, 1.8, 2.3));
       }
+    }
+    if (!lot.kiosk && lot.sector % 6 === 2) {
+      // Urban landscaping remains entirely within the unused pavement bay.
+      // Two tapered crowns read as trees instead of metallic cubes.
+      const treeX = side * 109.2;
+      const treeZ = z - 5.2;
+      structures.push(part(treeX, -4.25, treeZ, 0.55, 4.8, 0.55));
+      trees.push(part(treeX, -1.55, treeZ, 3.5, 4.3, 3.5));
+      trees.push(part(treeX, 0.05, treeZ, 2.6, 3.2, 2.6));
+    }
+    if (!lot.kiosk && lot.sector % 9 === 5 && lot.sector % 6 !== 2) {
+      // A few service pedestrians make the sidewalks inhabited. Their
+      // positions are stable and are animated only while gameplay advances.
+      walkers.push({ x: side * 102.7, z: z - 4.5, phase: lot.sector * 0.7 + side });
     }
     for (const dz of [-12, 12]) {
       lights.push(part(side * 98.4, -3.1, z + dz, 0.35, 7.3, 0.35));
@@ -120,20 +150,40 @@ export function createCity122StreetInfill(buildings = []) {
     storefronts.push(part(b.x, -2.6, front + 1.04, width, 5.6, 0.28));
     structures.push(part(b.x, 1.95, front + 2.0, width + 2.0, 0.65, 3.2));
     // Sparse warm wayfinding instead of all windows glowing cyan/magenta.
-    if (i % 3 === 0) lights.push(part(b.x, 2.15, front + 3.7, width * 0.66, 0.32, 0.22));
+    if (i % 3 === 0)
+      lights.push({
+        ...part(b.x, 2.15, front + 3.7, width * 0.66, 0.32, 0.22),
+        tint: wayfindingColors[i % wayfindingColors.length],
+      });
+    if (i % 7 === 3 && b.h > 34) {
+      // Architectural accent strips stay fixed to the real host facade.
+      lights.push({
+        ...part(b.x, Math.min(b.h - 12, 15), front + 0.85, width * 0.64, 0.25, 0.24),
+        tint: wayfindingColors[(i + 2) % wayfindingColors.length],
+      });
+    }
     if (i % 4 === 2) {
       structures.push(part(b.x - side * (b.w * 0.48), -2.65, front + 1.25, 0.42, 8.0, 0.52));
       finer.push(part(b.x + side * (b.w * 0.33), -5.4, front + 3.6, 2.3, 3.0, 1.0));
     }
   });
+  const pedestrianIndices = walkers.map((walker) => {
+    const body = structures.length;
+    structures.push(part(walker.x, -5.35, walker.z, 0.75, 2.6, 0.65));
+    const head = structures.length;
+    structures.push(part(walker.x, -3.65, walker.z, 0.85, 0.82, 0.82));
+    return { ...walker, body, head };
+  });
   batch(medium, 'city122-grounded-pedestrian-pavements', paving, sidewalks);
   batch(medium, 'city122-service-entries-and-transit-shelters', steel, structures);
   batch(medium, 'city122-real-ground-floor-storefront-glazing', glass, storefronts);
+  batch(medium, 'city122-grounded-street-tree-canopies', foliage, trees, crown);
   batch(medium, 'city122-subtle-amber-street-wayfinding', amber, lights);
   batch(high, 'city122-service-bench-and-planter-furniture', brass, furniture);
   batch(high, 'city122-loading-bay-small-furniture', steel, finer);
   root.add(medium, high);
   root.userData.sidewalkParcels = parcels;
+  root.userData.pedestrians = pedestrianIndices;
   setCity122Quality(root, 'medium');
   return root;
 }
@@ -143,4 +193,31 @@ export function setCity122Quality(root, quality) {
   root.userData.quality = quality === 'high' ? 'high' : 'medium';
   root.getObjectByName('city122-extra-street-furniture-high').visible =
     root.userData.quality === 'high';
+}
+
+/**
+ * Deterministic slow sidewalk motion. Reuses the already-instanced steel batch
+ * and updates at coarse distance intervals, without per-frame allocations,
+ * extra draw calls, physics, or animation when the game is paused.
+ */
+export function animateCity122StreetLife(root, travel) {
+  if (!root?.visible || !Number.isFinite(travel)) return;
+  const frame = Math.floor(travel / 11);
+  if (root.userData.pedestrianFrame === frame) return;
+  root.userData.pedestrianFrame = frame;
+  const mesh = root.getObjectByName('city122-service-entries-and-transit-shelters');
+  const pedestrians = root.userData.pedestrians ?? [];
+  for (const person of pedestrians) {
+    const offset = Math.sin(frame * 0.17 + person.phase) * 2.4;
+    dummy.position.set(person.x, -5.35, person.z + offset);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(0.75, 2.6, 0.65);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(person.body, dummy.matrix);
+    dummy.position.y = -3.65;
+    dummy.scale.set(0.85, 0.82, 0.82);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(person.head, dummy.matrix);
+  }
+  if (pedestrians.length) mesh.instanceMatrix.needsUpdate = true;
 }
