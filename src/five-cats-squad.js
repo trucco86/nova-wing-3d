@@ -116,9 +116,13 @@ export function allySortieFlightPose(sortie, player = { x: 0, y: 0, z: 0 }) {
     const ease = smoothFlight(
       age / (ALLY_SORTIE_FLIGHT.duration - ALLY_SORTIE_FLIGHT.escortEnd),
     );
-    x = side * (18 + 135 * ease);
-    y = 4 + 65 * ease;
-    z = -28 - 260 * ease;
+    const escortAge = ALLY_SORTIE_FLIGHT.escortEnd - ALLY_SORTIE_FLIGHT.entry;
+    const exitX = side * (18 + Math.sin(escortAge * 1.6) * 1.4);
+    const exitY = 4 + Math.sin(escortAge * 1.3) * 0.9;
+    const exitZ = -21 - escortAge * 1.8;
+    x = exitX + side * 135 * ease;
+    y = exitY + 65 * ease;
+    z = exitZ - 260 * ease;
     bank = -side * (0.14 + 0.78 * ease);
   }
   return { x: player.x + x, y: player.y + y, z: player.z + z, bank };
