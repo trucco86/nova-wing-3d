@@ -125,6 +125,7 @@ import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { prewarmSceneShaders } from './scene-prewarm.js';
+import { scheduleIdlePrewarm } from './obstacle-idle-prewarm.js';
 import {
   mechaMultiLockCapacity,
   availableMechaTargets,
@@ -6313,6 +6314,26 @@ export function createGame({
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
+  // The first space obstacle previously built its procedural geometry on the
+  // same frame as its arrival. Prime one type per idle slot during early flight,
+  // while the three.js renderer can precompile its materials asynchronously.
+  // QA harnesses (autoLoop=false) remain deterministic and unscheduled.
+  const cancelObstacleWarmup =
+    dynamicFlight && autoLoop
+      ? scheduleIdlePrewarm({
+          kinds: ['satellite', 'carrier', 'debris'],
+          prime: (kind) =>
+            prewarmSceneShaders(renderer, createObstacle(kind), camera, scene),
+          schedule: (callback) =>
+            typeof window.requestIdleCallback === 'function'
+              ? { mode: 'idle', id: window.requestIdleCallback(callback, { timeout: 2500 }) }
+              : { mode: 'timer', id: setTimeout(callback, 700) },
+          cancel: (pending) => {
+            if (pending.mode === 'idle') window.cancelIdleCallback?.(pending.id);
+            else clearTimeout(pending.id);
+          },
+        })
+      : () => {};
   addEventListener('resize', () => {
     const { innerWidth: w, innerHeight: h, devicePixelRatio: p = 1 } = window;
     camera.aspect = w / h;
@@ -6723,6 +6744,7 @@ export function createGame({
     }),
     destroy() {
       running = false;
+      cancelObstacleWarmup();
       frameAudit.clear();
       renderCostAudit.clear();
       frameAuditContext = null;
