@@ -4,7 +4,7 @@ import * as T from 'three';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
-test('city has lighter atmosphere, glossy road plates and chromatic LEDs in Medium', () => {
+test('city retains lit PBR metal and varied but muted street wayfinding in Medium', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[0]);
@@ -17,7 +17,7 @@ test('city has lighter atmosphere, glossy road plates and chromatic LEDs in Medi
   scene.traverse((node) => {
     if (node.isHemisphereLight) hemi = node;
   });
-  assert.ok(hemi.intensity >= 2.5, 'metals receive enough indirect light');
+  assert.ok(hemi.intensity >= 2.5, 'warm slate materials retain enough indirect light');
   assert.equal(scene.getObjectByName('launch-ground').material.uniforms.urban.value, 1);
 
   const near = scene.getObjectByName('launch-city');
