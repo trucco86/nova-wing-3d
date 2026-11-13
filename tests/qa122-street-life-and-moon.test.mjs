@@ -112,7 +112,7 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   assert.equal(nearStreet.visible, true);
 });
 
-test('QA122: city's new environmental lighting is neutral/warm, while other planets keep their authored grade', () => {
+test('QA122: urban environmental lighting is neutral and warm while other planets keep their authored grade', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[0], 0);
