@@ -21,6 +21,15 @@ const amber = new T.MeshStandardMaterial({
 const brass = new T.MeshStandardMaterial({ color: '#a49379', metalness: 0.65, roughness: 0.44 });
 const foliage = new T.MeshStandardMaterial({ color: '#507460', metalness: 0.03, roughness: 0.88 });
 const crown = new T.ConeGeometry(1, 1, 6);
+const vaporMaterial = new T.MeshBasicMaterial({
+  color: '#c5c2b7',
+  transparent: true,
+  opacity: 0.13,
+  side: T.DoubleSide,
+  depthWrite: false,
+  fog: true,
+});
+const groundTones = ['#b7b3a9', '#a4a8a5', '#c5b9a5', '#9a9c98', '#c1c3b8'];
 const wayfindingColors = ['#f1c58b', '#9ebfb5', '#c2bd98', '#b4c5cb'];
 const part = (x, y, z, w, h, d) => ({ x, y, z, w, h, d });
 
@@ -106,6 +115,36 @@ export function planCity122OuterParcels(buildings = [], districtFootprints = [])
   return lots;
 }
 
+// Only fill empty land between actual buildings. Ground decals do not replace
+// the game's real terrain or create invisible gameplay walls. Keeping cells
+// small makes the floor visibly detailed without blanketing retail podiums.
+export function planCity122GroundCells(buildings = [], districtFootprints = [], outerParcels = []) {
+  const occupied = [...CITY_RETAIL_RESERVATIONS, ...buildings, ...districtFootprints, ...outerParcels];
+  const cells = [];
+  const lanes = [139, 173, 207, 241, 275, 309, 343, 377, 403];
+  for (const side of [-1, 1]) {
+    for (let row = 0; row < 48; row++) {
+      const z = -28 - row * 39;
+      for (let lane = 0; lane < lanes.length; lane++) {
+        const x = side * lanes[lane];
+        const cell = {
+          x,
+          z,
+          w: lanes[lane] === 403 ? 24 : 26,
+          depth: 30,
+          row,
+          lane,
+          side,
+          type: (row * 7 + lane * 3 + (side > 0 ? 2 : 0)) % 5,
+        };
+        if (occupied.some((reserved) => cityFootprintsOverlap(cell, reserved, 2))) continue;
+        cells.push(cell);
+      }
+    }
+  }
+  return cells;
+}
+
 export function createCity122StreetInfill(buildings = [], districtFootprints = []) {
   const root = new T.Group();
   root.name = 'city122-lived-in-street-blocks';
@@ -123,8 +162,11 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
   const finer = [];
   const trees = [];
   const walkers = [];
+  const groundSignalIndices = [];
+  const vaporSources = [];
   const parcels = planCity122SidewalkParcels(buildings);
   const outerParcels = planCity122OuterParcels(buildings, districtFootprints);
+  const groundCells = planCity122GroundCells(buildings, districtFootprints, outerParcels);
   for (const lot of parcels) {
     const x = lot.x,
       z = lot.z,
@@ -249,6 +291,62 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
       finer.push(p(0, -6.55, 0, 0.3, 0.14, 6));
     }
   }
+  // Distinct street-floor signatures are visible from the elevated rail
+  // shooter camera. All geometry is fitted inside reserved-free parcels.
+  // No new road-level collision is implied by these purely visual overlays.
+  for (const cell of groundCells) {
+    const { x, z, w, depth, type, row, lane, side } = cell;
+    const at = (dx, y, dz, sx, sy, sz) => part(x + dx, y, z + dz, sx, sy, sz);
+    sidewalks.push({
+      ...at(0, -6.89, 0, w, 0.22, depth),
+      tint: groundTones[type],
+    });
+    if (type === 0) {
+      // Service asphalt: worn longitudinal markings, drain and curb joints.
+      for (const dx of [-w * 0.28, w * 0.28])
+        structures.push(at(dx, -6.55, 0, 0.27, 0.1, depth - 4));
+      structures.push(at(0, -6.54, 0, 3.2, 0.13, 1.9));
+      for (const dz of [-3.3, 0, 3.3]) finer.push(at(0, -6.41, dz, 2.7, 0.11, 0.18));
+    } else if (type === 1) {
+      // Concrete maintenance yard, expansion seams and access hatch.
+      for (const dz of [-9, 0, 9])
+        structures.push(at(0, -6.58, dz, w - 4, 0.1, 0.18));
+      structures.push(at(side * 4, -6.47, -3, 5.2, 0.2, 5));
+      finer.push(at(side * 4, -6.34, -3, 4.1, 0.1, 0.3));
+    } else if (type === 2) {
+      // Pedestrian crossing with a grounded textured-looking stone pattern.
+      for (const dz of [-10, -5, 0, 5, 10])
+        storefronts.push(at(0, -6.62, dz, w * 0.65, 0.12, 1.5));
+      finer.push(at(-side * 8, -6.46, -8, 2.1, 0.45, 2.1));
+    } else if (type === 3) {
+      // Industrial cracked paving and metal utility access channels.
+      for (const dz of [-9, 8]) {
+        structures.push(at(-side * 3, -6.55, dz, w - 6, 0.11, 0.35));
+        finer.push(at(side * 6, -6.41, dz, 1.5, 0.15, 0.25));
+      }
+      structures.push(at(side * 6, -6.54, -1, 0.3, 0.1, depth - 5));
+    } else {
+      // Underlit civic connector: a few reflective strips and real drains.
+      for (const dx of [-7, 7]) {
+        structures.push(at(dx, -6.55, 0, 0.22, 0.12, depth - 4));
+        if ((row + lane) % 3 === 0) {
+          groundSignalIndices.push(lights.length);
+          lights.push({
+            ...at(dx, -6.4, -6, 0.36, 0.12, 4),
+            tint: '#b9bdab',
+          });
+        }
+      }
+      finer.push(at(0, -6.45, 6, 5.2, 0.14, 2.4));
+    }
+    // Steam is a scarce high-quality effect, emitted only from a real access
+    // vent on vacant service land, and never as smoke floating in midair.
+    if ((row * 3 + lane * 5 + (side < 0 ? 2 : 0)) % 17 === 0 && type !== 2) {
+      structures.push(at(0, -6.35, 0, 2.2, 0.34, 2.2));
+      vaporSources.push({ x, z, phase: row * 0.47 + lane * 0.81 });
+    }
+  }
+
   buildings.forEach((b, i) => {
     const front = b.z + b.depth / 2;
     const side = Math.sign(b.x) || 1;
@@ -291,9 +389,19 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
   batch(medium, 'city122-subtle-amber-street-wayfinding', amber, lights);
   batch(high, 'city122-service-bench-and-planter-furniture', brass, furniture);
   batch(high, 'city122-loading-bay-small-furniture', steel, finer);
+  batch(
+    high,
+    'city122-grounded-vent-vapor-high',
+    vaporMaterial,
+    vaporSources.map((vent) => part(vent.x, -3.1, vent.z, 2.5, 6.4, 2.5)),
+    crown,
+  );
   root.add(medium, high);
   root.userData.sidewalkParcels = parcels;
   root.userData.outerParcels = outerParcels;
+  root.userData.groundCells = groundCells;
+  root.userData.groundSignalIndices = groundSignalIndices;
+  root.userData.vaporSources = vaporSources;
   root.userData.pedestrians = pedestrianIndices;
   setCity122Quality(root, 'medium');
   return root;
@@ -331,4 +439,30 @@ export function animateCity122StreetLife(root, travel) {
     mesh.setMatrixAt(person.head, dummy.matrix);
   }
   if (pedestrians.length) mesh.instanceMatrix.needsUpdate = true;
+
+  // Slow, subtle pulse along the ground connector lines, deterministic on
+  // replay and unaffected by the player HUD or weapon/emergency lighting.
+  const signs = root.getObjectByName('city122-subtle-amber-street-wayfinding');
+  const indices = root.userData.groundSignalIndices ?? [];
+  const tone = new T.Color();
+  for (let i = 0; i < indices.length; i++) {
+    const glow = 0.65 + 0.25 * Math.sin(frame * 0.13 + i * 0.7);
+    tone.set('#c4bba4').multiplyScalar(glow);
+    signs.setColorAt(indices[i], tone);
+  }
+  if (indices.length) signs.instanceColor.needsUpdate = true;
+
+  // Each cone rises from its own real vent, using one GPU instanced draw
+  // only on High. No particle allocations and no transform updates on pause.
+  const steam = root.getObjectByName('city122-grounded-vent-vapor-high');
+  for (let i = 0; i < (root.userData.vaporSources?.length ?? 0); i++) {
+    const vent = root.userData.vaporSources[i];
+    const cycle = ((frame * 0.033 + vent.phase) % 1 + 1) % 1;
+    dummy.position.set(vent.x, -3.3 + cycle * 2, vent.z);
+    dummy.rotation.set(0, 0, 0);
+    dummy.scale.set(2.1 + cycle * 1.5, 5.3 + cycle * 3.1, 2.1 + cycle * 1.5);
+    dummy.updateMatrix();
+    steam.setMatrixAt(i, dummy.matrix);
+  }
+  if (root.userData.vaporSources.length) steam.instanceMatrix.needsUpdate = true;
 }
