@@ -4699,13 +4699,15 @@ export function createGame({
       (dynamicFlight &&
         sectorIndex === 2 &&
         (!asteroidInterior.course.snapshot().complete || (spawnEncounters && !subDone)));
-    const bossSeparated = bossEncounterGate({
-      elapsed,
-      subbossStarted: subDone,
-      subbossClearedAt,
-      activeSubboss,
-      blocked: bossBlocked,
-    });
+    const bossSeparated =
+      !spawnEncounters ||
+      bossEncounterGate({
+        elapsed,
+        subbossStarted: subDone,
+        subbossClearedAt,
+        activeSubboss,
+        blocked: bossBlocked,
+      });
     if (
       bossSeparated &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
@@ -5014,6 +5016,13 @@ export function createGame({
         kill(e);
       }
       if (e.o.position.z > 40) {
+        if (e.kind === 'subboss') {
+          // A subboss leaving past the player's camera also resolves the encounter.
+          // Without this timestamp, the final encounter could stay blocked forever.
+          subbossClearedAt = elapsed;
+          $('subHUD').hidden = true;
+          music?.start(sectorIndex);
+        }
         dispose(e.o);
         e.dead = true;
       }
