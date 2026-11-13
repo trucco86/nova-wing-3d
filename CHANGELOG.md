@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.124 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.123 — Candidata QA124 (sem promoção)
 
 - QA124 (PR #340): chefe final depende do encerramento do subchefe, intervalo de recuperação de 8 segundos e aviso de aproximação de 3,5 segundos.

@@ -6322,8 +6322,7 @@ export function createGame({
     dynamicFlight && autoLoop
       ? scheduleIdlePrewarm({
           kinds: ['satellite', 'carrier', 'debris'],
-          prime: (kind) =>
-            prewarmSceneShaders(renderer, createObstacle(kind), camera, scene),
+          prime: (kind) => prewarmSceneShaders(renderer, createObstacle(kind), camera, scene),
           schedule: (callback) =>
             typeof window.requestIdleCallback === 'function'
               ? { mode: 'idle', id: window.requestIdleCallback(callback, { timeout: 2500 }) }

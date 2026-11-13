@@ -3,13 +3,7 @@
  * Each scheduled callback handles one asset to avoid a synchronous burst.
  * The cancellation function prevents late callbacks after game teardown.
  */
-export function scheduleIdlePrewarm({
-  kinds,
-  prime,
-  schedule,
-  cancel,
-  onError = () => {},
-}) {
+export function scheduleIdlePrewarm({ kinds, prime, schedule, cancel, onError = () => {} }) {
   if (!Array.isArray(kinds) || typeof prime !== 'function' || typeof schedule !== 'function')
     throw new TypeError('Expected kinds, prime and schedule');
   let stopped = false;
