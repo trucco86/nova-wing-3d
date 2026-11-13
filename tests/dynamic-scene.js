@@ -88,6 +88,8 @@ window.fixture = {
         highBatches: root.getObjectByName('city122-extra-street-furniture-high').children.length,
         quality: root.userData.quality,
         lots: root.userData.sidewalkParcels.length,
+        outerLots: root.userData.outerParcels.length,
+        outerKinds: [...new Set(root.userData.outerParcels.map((lot) => lot.kind))],
         occupiedSidewalks: root.getObjectByName('city122-grounded-pedestrian-pavements').count,
         storefronts: root.getObjectByName('city122-real-ground-floor-storefront-glazing').count,
         trees: root.getObjectByName('city122-grounded-street-tree-canopies').count,
