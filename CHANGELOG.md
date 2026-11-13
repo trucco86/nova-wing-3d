@@ -1,5 +1,67 @@
 # Histórico
 
+## 1.27.121 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.120 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.119 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.118 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.117 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.116 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.115 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.114 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.113 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.112 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.111 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.110 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.109 — Candidata em preparação
+
+- QA109: separar prédios e estruturas urbanas por zonas de ocupação; ancorar sinais, holofotes e plataformas; testes geométricos e visuais. Homologação e CI FULL pendentes.
+
+## 1.27.108 — Candidata em preparação
+
+- QA107/QA108: cidade mais coerente na ascensão orbital, torres distritais sem interpenetração com edifícios-base e colisão de destroços limitada à geometria visível.
+- Control Center responsivo para status público de PRs, CI da main, Pages e releases; monitor GitHub Actions 30 minutos com alertas deduplicados.
+- Candidata integrada com gates CI FULL, visual desktop/mobile e autorização de produção pendentes.
+
+## 1.27.107 — Candidata em preparação
+
+- QA107: torres distritais respeitam volumes ocupados da cidade; solo, edifícios e primeiro plano desaceleram juntos durante a ascensão orbital. Testes de regressão incluídos. Revisão visual High/Medium e gates browser pendentes.
+
 ## 1.27.106 — Candidata em preparação
 
 - Cancelamento seguro de multi-lock ao liberar controles, perder foco ou pausar. Regressão determinística incluída. Candidata pendente dos gates browser e homologação.

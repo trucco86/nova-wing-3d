@@ -1,9 +1,10 @@
 import * as T from 'three';
+import { placeCityDistrictTower } from './city-spatial-layout.js';
 
 // City 2.4 architectural districts deliberately have no physics colliders.
 // Instancing keeps the city recognizable in Medium without spawning hundreds
 // of standalone Mesh draw calls. Coordinates are relative to a 1,900-unit tile.
-export function createCityDistricts() {
+export function createCityDistricts(buildingAnchors = []) {
   const group = new T.Group();
   group.name = 'city-architectural-districts';
   const premium = new T.Group();
@@ -11,17 +12,17 @@ export function createCityDistricts() {
   premium.visible = false;
   const unit = new T.BoxGeometry(1, 1, 1);
   const frame = new T.MeshStandardMaterial({
-    color: '#527d9b',
+    color: '#687a81',
     metalness: 0.74,
     roughness: 0.42,
   });
   const cap = new T.MeshStandardMaterial({
-    color: '#96bfd2',
+    color: '#aab9b8',
     metalness: 0.76,
     roughness: 0.34,
   });
   const lowLight = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-  const highLight = new T.MeshBasicMaterial({ color: '#92eff1', toneMapped: false });
+  const highLight = new T.MeshBasicMaterial({ color: '#cce1e2', toneMapped: false });
   const amber = new T.MeshBasicMaterial({ color: '#ffca87', toneMapped: false });
   const bodyMesh = new T.InstancedMesh(unit, frame, 125);
   bodyMesh.name = 'city-district-towers-and-infrastructure';
@@ -35,6 +36,9 @@ export function createCityDistricts() {
   premiumAccents.name = 'city-district-premium-accents';
   const matrix = new T.Object3D();
   const counts = { bodies: 0, trim: 0, lights: 0, windows: 0, accents: 0 };
+  const occupied = buildingAnchors.map(({ x, z, w, depth }) => ({ x, z, w, depth }));
+  const towerFootprints = [];
+  const platformFootprints = [];
 
   function place(mesh, counter, x, y, z, w, h, d) {
     const i = counts[counter]++;
@@ -61,8 +65,10 @@ export function createCityDistricts() {
     group.add(marker);
     for (const side of [-1, 1]) {
       for (let lane = 0; lane < 4; lane++) {
-        const x = side * (121 + lane * 43);
-        const z = district.z - 54 + lane * 30;
+        const plannedX = side * (121 + lane * 43);
+        // A 38-unit stagger gives each 29-unit footprint real lateral air,
+        // rather than making four tall slabs read as one overlapping wall.
+        const plannedZ = district.z - 54 + lane * 38;
         const height = district.base + ((lane * 29 + (side + 1) * 9 + district.tone * 17) % 56);
         const width =
           district.name === 'industrial'
@@ -71,6 +77,25 @@ export function createCityDistricts() {
               ? 42
               : 18 + lane * 3;
         const topHeight = district.name === 'spaceport' ? 10 : 6;
+        // Base towers and district landmarks share a single occupied footprint
+        // map. A facade must never move through another building when the
+        // 1,900-unit city tiles wrap during flight.
+        const footprint = placeCityDistrictTower(
+          {
+            x: plannedX,
+            z: plannedZ,
+            w: width,
+            depth: 29,
+            h: height,
+            spaceportPad: district.name === 'spaceport',
+          },
+          occupied,
+          side,
+        );
+        const x = footprint.x;
+        const z = footprint.z;
+        occupied.push(footprint);
+        towerFootprints.push(footprint);
         place(bodyMesh, 'bodies', x, height / 2 - 7, z, width, height, 29);
         place(trimMesh, 'trim', x, height - 7, z, width * 0.88, topHeight, 31);
         // Side-lit vertical features mark the district's identity without
@@ -116,8 +141,16 @@ export function createCityDistricts() {
         } else {
           // Wide tiered launch platforms and raised fuel gantries remain outside
           // the gameplay corridor, not floating over the player.
-          place(bodyMesh, 'bodies', x - side * 13, 9, z + 25, 47, 5, 49);
-          place(lightMesh, 'lights', x - side * 13, 12.5, z + 25, 36, 0.6, 38);
+          // A functional pad extends OUTWARD from the supported spire, not
+          // inward across the maglev rail. Real support piers reach the road.
+          const padX = x + side * 13;
+          const pad = { x: padX, z: z + 25, w: 47, depth: 49, h: 16 };
+          platformFootprints.push(pad);
+          occupied.push(pad);
+          place(bodyMesh, 'bodies', padX, 9, z + 25, 47, 5, 49);
+          for (const end of [-1, 1])
+            place(bodyMesh, 'bodies', padX + side * 18.5, -0.25, z + 25 + end * 17, 3.2, 13.5, 3.2);
+          place(lightMesh, 'lights', padX, 12.5, z + 25, 36, 0.6, 38);
           place(
             premiumAccents,
             'accents',
@@ -168,9 +201,9 @@ export function createCityDistricts() {
   station(-1, -585);
   station(1, -1315);
 
-  // Street identifiers on Medium get cyan, warm amber and magenta accents
+  // Street identifiers on Medium use daylight glass, muted steel and warm accents
   // without new materials, lights or draw calls.
-  const urbanColors = ['#4af8ff', '#ff8bd0', '#ffd38a', '#7effdf'].map((c) => new T.Color(c));
+  const urbanColors = ['#d5e4e6', '#e5c98f', '#b6c9d0', '#a7d4bf'].map((c) => new T.Color(c));
   for (let i = 0; i < counts.lights; i++) {
     lightMesh.setColorAt(i, urbanColors[(i * 3 + Math.floor(i / 6)) % urbanColors.length]);
   }
@@ -188,5 +221,7 @@ export function createCityDistricts() {
   }
   group.add(premium);
   group.userData.districts = districts.map((x) => x.name);
+  group.userData.towerFootprints = towerFootprints;
+  group.userData.platformFootprints = platformFootprints;
   return group;
 }

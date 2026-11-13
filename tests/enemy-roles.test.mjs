@@ -33,10 +33,11 @@ test('real fighters stay to charge, fire, freeze on pause and remain bomb target
   h.game.start();
   h.advance(2.75);
   let s = h.game.snapshot();
-  assert.equal(s.targets.length, 1);
+  assert.equal(s.targets.length, 2, 'Normal stage-one first wave now has a real wingman');
   assert.deepEqual(
     s.targets.map((e) => e.role),
-    ['pursuer'],
+    ['pursuer', 'interceptor'],
+    'the new wingman retains the existing tactical role diversity',
   );
   assert.ok(s.targets.every((e) => e.charging));
   assert.equal(s.entities.hostile, 0);
@@ -47,8 +48,8 @@ test('real fighters stay to charge, fire, freeze on pause and remain bomb target
   h.game.pause();
   h.advance(0.6);
   s = h.game.snapshot();
-  assert.equal(s.targets.length, 1);
-  assert.ok(s.entities.hostile > 0 && s.entities.hostile <= 3);
+  assert.equal(s.targets.length, 2);
+  assert.ok(s.entities.hostile > 0 && s.entities.hostile <= 6);
   h.game.bomb();
   assert.equal(h.game.snapshot().targets.length, 0);
   h.advance(5.6);

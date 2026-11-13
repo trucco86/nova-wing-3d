@@ -110,21 +110,57 @@ function makeMesa(index) {
   group.position.set((index % 2 ? 1 : -1) * (280 + (index % 3) * 80), 0, -370 - index * 320);
   group.userData.visualOnly = true;
   group.userData.marsChunk = true;
-  const p = new T.Mesh(
-    new T.CylinderGeometry(30 + (index % 3) * 6, 75 + (index % 3) * 9, 75 + (index % 3) * 18, 7),
-    darkRock,
+  // Sculpt the existing stone mass into a jagged, weathered seven-sided
+  // escarpment. More vertical bands produce actual silhouette relief without
+  // raising the number of draw calls or introducing fake hitboxes.
+  const bodyGeometry = new T.CylinderGeometry(
+    30 + (index % 3) * 6,
+    75 + (index % 3) * 9,
+    75 + (index % 3) * 18,
+    9,
+    5,
   );
-  p.name = 'mars-layered-sedimentary-mesa';
-  p.position.y = 34;
-  p.scale.z = 2;
-  group.add(p);
-  for (let k = 0; k < 4; k++) {
-    const crown = new T.Mesh(new T.CylinderGeometry(35 - k * 4, 43 - k * 3, 3, 7), stone);
-    crown.name = 'mars-erosion-strata-' + k;
-    crown.position.y = 6 + k * 17;
-    crown.scale.z = 1.5;
-    group.add(crown);
+  const position = bodyGeometry.getAttribute('position');
+  for (let vertex = 0; vertex < position.count; vertex++) {
+    const x = position.getX(vertex);
+    const z = position.getZ(vertex);
+    const y = position.getY(vertex);
+    const angle = Math.atan2(z, x);
+    const relief =
+      1 +
+      0.068 * Math.sin(angle * 3 + index * 1.37 + y * 0.034) +
+      0.045 * Math.sin(angle * 5 - y * 0.065 + index);
+    position.setX(vertex, x * relief);
+    position.setZ(vertex, z * relief);
   }
+  position.needsUpdate = true;
+  bodyGeometry.computeVertexNormals();
+  const body = new T.Mesh(bodyGeometry, darkRock);
+  body.name = 'mars-layered-sedimentary-mesa';
+  body.position.y = 34;
+  body.scale.z = 2;
+  body.userData.visualOnly = true;
+  group.add(body);
+  // The old four separate strata cost four draws per mesa. Keep the same
+  // twenty geological bands but submit them as five instanced batches in
+  // total, one per cliff, with restrained natural mineral tones.
+  const bandGeometry = new T.CylinderGeometry(0.86, 1, 1, 9);
+  const bands = new T.InstancedMesh(bandGeometry, stone, 4);
+  bands.name = 'mars-sedimentary-strata-batched';
+  bands.userData.visualOnly = true;
+  const colors = ['#b99a79', '#a88066', '#b7a18c', '#92705e'];
+  for (let k = 0; k < 4; k++) {
+    dummy.position.set(0, 6 + k * 17, 0);
+    dummy.rotation.set(0, (index * 0.27 + k * 0.12) % (Math.PI * 2), 0);
+    const width = 43 - k * 3;
+    dummy.scale.set(width, 3.0, width * 1.5);
+    dummy.updateMatrix();
+    bands.setMatrixAt(k, dummy.matrix);
+    bands.setColorAt(k, new T.Color(colors[(index + k) % colors.length]));
+  }
+  bands.instanceMatrix.needsUpdate = true;
+  bands.instanceColor.needsUpdate = true;
+  group.add(bands);
   return group;
 }
 function makeMarsMoon(name, radius, position, tint) {
