@@ -1,0 +1,67 @@
+name: QA125 | Proof 9s real piloting 30fps and bright asteroid
+on:
+  push:
+    branches:
+      - feat/qa125-trailer-real-motion-30fps-20261113
+    paths:
+      - trailer/capture-motion-proof.mjs
+      - .github/workflows/trailer-qa125-proof.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-trailer-qa125-proof-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  youtube:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NOVA_VISUAL_TEST: '1'
+      TRAILER_FPS: '30'
+    steps:
+      - name: Checkout immutable game source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build latest real game engine and local WebGL fixture
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Install Chromium
+        run: npx playwright install chromium
+      - name: Install FFmpeg for 4K encoding
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -hide_banner -version | head -n 1
+      - name: Serve game locally without public deploy
+        run: |
+          (npm run dev > /tmp/nova-wing-youtube-server.log 2>&1 &)
+          for i in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4173/__dynamic.html?sector=0 > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/nova-wing-youtube-server.log
+          exit 1
+      - name: Record city, asteroid and boss actual piloting at 30 unique frames per second
+        run: node trailer/capture-youtube.mjs
+      - name: Verify native 30fps real ship movement, 9sec proof and provenance
+        run: |
+          ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,avg_frame_rate -of json artifacts/nova-wing-motion-proof/nova-wing-motion-proof-1080p30.mp4
+          node --input-type=module -e "import fs from 'node:fs';let d=JSON.parse(fs.readFileSync('artifacts/nova-wing-motion-proof/provenance.json'));if(d.scenes.length!==3||d.outputWidth!==1920||d.outputHeight!==1080||d.outputFps!==30||d.nativeCaptureFps!==30||d.frames!==270||d.movingScenes<2||d.frameInterpolation.startsWith('FFmpeg')||!d.upscaled)process.exit(1)"
+      - name: Upload YouTube cut and capture provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa125-proof-30fps-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            artifacts/nova-wing-trailer-youtube/nova-wing-youtube-4k60-60s.mp4
+            artifacts/nova-wing-trailer-youtube/provenance.json
