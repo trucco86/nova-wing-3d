@@ -42,13 +42,31 @@ export function createPremiumAtmosphericGeometry(kind) {
     add(new T.CylinderGeometry(0.22, 0.42, 1.05, 7, 2), 0, -0.04, 0);
     for (let i = 0; i < 3; i++) {
       const a = (i * Math.PI * 2) / 3;
-      add(new T.CylinderGeometry(0.06, 0.16, 0.67, 5), Math.cos(a) * 0.31, -0.34, Math.sin(a) * 0.31, 1, 1, 1, -Math.cos(a) * 0.27);
+      add(
+        new T.CylinderGeometry(0.06, 0.16, 0.67, 5),
+        Math.cos(a) * 0.31,
+        -0.34,
+        Math.sin(a) * 0.31,
+        1,
+        1,
+        1,
+        -Math.cos(a) * 0.27,
+      );
     }
     add(new T.DodecahedronGeometry(0.32, 0), 0, 0.48, 0, 1, 0.8, 1);
     add(new T.ConeGeometry(0.11, 0.36, 5), 0, 0.86, 0);
     for (const side of [-1, 0, 1]) {
       const s = side === 0 ? 1 : side;
-      add(new T.BoxGeometry(0.14, 0.56, 0.13), s * (side === 0 ? 0.19 : 0.46), 0.24, side === 0 ? 0.27 : -0.12, 1, 1, 1, s * 0.44);
+      add(
+        new T.BoxGeometry(0.14, 0.56, 0.13),
+        s * (side === 0 ? 0.19 : 0.46),
+        0.24,
+        side === 0 ? 0.27 : -0.12,
+        1,
+        1,
+        1,
+        s * 0.44,
+      );
     }
   } else {
     // One translucent, turbulent bank instead of a uniformly scaled sphere.

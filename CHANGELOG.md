@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.121 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.120 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.

@@ -414,9 +414,11 @@ export function updateDestinationLandmarks(root, seconds) {
     clouds.position.x = Math.sin(seconds * (root.userData.world === 6 ? 0.13 : 0.07)) * 8;
     // Slow convective rise on Venus and distinct horizontal shear on
     // Neptune, driven only by the mission clock (pause/replay deterministic).
-    clouds.position.y = Math.sin(seconds * (root.userData.world === 6 ? 0.047 : 0.064)) *
+    clouds.position.y =
+      Math.sin(seconds * (root.userData.world === 6 ? 0.047 : 0.064)) *
       (root.userData.world === 6 ? 3.4 : 2.1);
-    clouds.rotation.z = Math.sin(seconds * (root.userData.world === 6 ? 0.031 : 0.018)) *
+    clouds.rotation.z =
+      Math.sin(seconds * (root.userData.world === 6 ? 0.031 : 0.018)) *
       (root.userData.world === 6 ? 0.027 : 0.012);
     clouds.material.opacity =
       root.userData.world === 6

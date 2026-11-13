@@ -14,8 +14,24 @@ import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
 const atmosphericCases = [
-  { sector: 4, cloud: 'venus-cloud-bank', formation: 'venus-volcanic-vent', cloudName: 'venus-sulfur-cloud-columns', formationName: 'venus-volcanic-ridge-masses', cloudCount: 38, formationCount: 26 },
-  { sector: 6, cloud: 'neptune-storm-bank', formation: 'neptune-hive-tower', cloudName: 'neptune-turbulent-cloud-columns', formationName: 'neptune-organic-hive-towers', cloudCount: 34, formationCount: 28 },
+  {
+    sector: 4,
+    cloud: 'venus-cloud-bank',
+    formation: 'venus-volcanic-vent',
+    cloudName: 'venus-sulfur-cloud-columns',
+    formationName: 'venus-volcanic-ridge-masses',
+    cloudCount: 38,
+    formationCount: 26,
+  },
+  {
+    sector: 6,
+    cloud: 'neptune-storm-bank',
+    formation: 'neptune-hive-tower',
+    cloudName: 'neptune-turbulent-cloud-columns',
+    formationName: 'neptune-organic-hive-towers',
+    cloudCount: 34,
+    formationCount: 28,
+  },
 ];
 
 test('QA121: four actual 3D atmospheric sculptures are merged into indexed PBR assets within mobile geometry budgets', () => {
@@ -32,7 +48,10 @@ test('QA121: four actual 3D atmospheric sculptures are merged into indexed PBR a
     assert.ok(geometry.index && geometry.index.count >= 50, shape + ': no billboard plane');
     assert.ok(geometry.getAttribute('position') && geometry.getAttribute('normal'));
     assert.ok(geometry.getAttribute('uv'), shape + ': shared PBR UVs');
-    assert.ok(geometry.getAttribute('position').count < 550, shape + ': no hidden ultra-high-poly mesh');
+    assert.ok(
+      geometry.getAttribute('position').count < 550,
+      shape + ': no hidden ultra-high-poly mesh',
+    );
     assert.ok(geometry.boundingSphere.radius > 0 && geometry.boundingSphere.radius < 2);
     geometry.dispose();
   }
@@ -51,10 +70,17 @@ test('QA121: Venus and Neptune retain identical draw batches and count but repla
     assert.equal(formation.geometry.userData.premiumAtmosphere, sector.formation);
     assert.ok(clouds.material.isMeshStandardMaterial && formation.material.isMeshStandardMaterial);
     assert.ok(clouds.material.transparent && clouds.material.opacity < 0.35);
-    assert.ok(formation.material.roughness >= 0.8, 'biome silhouettes must read as geological material');
+    assert.ok(
+      formation.material.roughness >= 0.8,
+      'biome silhouettes must read as geological material',
+    );
     assert.equal(clouds.userData.visualOnly, true);
     assert.equal(formation.userData.highOnly, true);
-    assert.equal(root.children.filter((node) => node.isInstancedMesh).length, 3, 'exact same three GPU batches as previous clouds + distant strata');
+    assert.equal(
+      root.children.filter((node) => node.isInstancedMesh).length,
+      3,
+      'exact same three GPU batches as previous clouds + distant strata',
+    );
     setDestinationLandmarkQuality(root, 'medium');
     assert.ok(clouds.visible);
     assert.equal(formation.visible, false);
@@ -63,7 +89,10 @@ test('QA121: Venus and Neptune retain identical draw batches and count but repla
     const matrix = new T.Matrix4();
     for (let i = 0; i < formation.count; i++) {
       formation.getMatrixAt(i, matrix);
-      assert.ok(Math.abs(matrix.elements[12]) >= 120, 'volcanic vents and hives stay away from pilot and target lanes');
+      assert.ok(
+        Math.abs(matrix.elements[12]) >= 120,
+        'volcanic vents and hives stay away from pilot and target lanes',
+      );
     }
     root.traverse((node) => {
       assert.notEqual(node.userData.collider, true);
@@ -78,22 +107,36 @@ test('QA121: weather motion is deterministic under pause/replay and retains auth
     const cloud = root.getObjectByName(sector.cloudName);
     updateDestinationLandmarks(root, 41.25);
     const before = {
-      x: cloud.position.x, y: cloud.position.y, roll: cloud.rotation.z,
+      x: cloud.position.x,
+      y: cloud.position.y,
+      roll: cloud.rotation.z,
       opacity: cloud.material.opacity,
     };
     updateDestinationLandmarks(root, 41.25);
-    assert.deepEqual({
-      x: cloud.position.x, y: cloud.position.y, roll: cloud.rotation.z,
-      opacity: cloud.material.opacity,
-    }, before, 'same mission time must never drift, including under pause');
+    assert.deepEqual(
+      {
+        x: cloud.position.x,
+        y: cloud.position.y,
+        roll: cloud.rotation.z,
+        opacity: cloud.material.opacity,
+      },
+      before,
+      'same mission time must never drift, including under pause',
+    );
     updateDestinationLandmarks(root, 55.25);
     assert.notEqual(cloud.position.y, before.y);
     assert.notEqual(cloud.rotation.z, before.roll);
     updateDestinationLandmarks(root, 41.25);
-    assert.deepEqual({
-      x: cloud.position.x, y: cloud.position.y, roll: cloud.rotation.z,
-      opacity: cloud.material.opacity,
-    }, before, 'replay must reproduce the exact same scene');
+    assert.deepEqual(
+      {
+        x: cloud.position.x,
+        y: cloud.position.y,
+        roll: cloud.rotation.z,
+        opacity: cloud.material.opacity,
+      },
+      before,
+      'replay must reproduce the exact same scene',
+    );
     if (sector.sector === 4) {
       const lightning = root.getObjectByName('venus-lightning-at-cloud-horizon');
       assert.ok(lightning.isLineSegments && lightning.userData.visualOnly);
