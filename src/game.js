@@ -4523,6 +4523,7 @@ export function createGame({
       sectorIndex === 0 ? orbitalLaunchSequence.snapshot().phase : 'city',
       cityOrbitReadyAt,
       dynamicFlight && sectorIndex === 0 && enableCitySetpieces,
+      sectorIndex === 0 ? orbitalLaunchSequence.snapshot().atmosphereSeconds : 0,
     );
     const quietFirstSubboss =
       (dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
@@ -4536,7 +4537,7 @@ export function createGame({
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss &&
-      !quietCityWreck
+      (!quietCityWreck || cityPacing.ascentCombat)
     ) {
       const cityDensity =
         dynamicFlight && sectorIndex === 0
@@ -4544,6 +4545,7 @@ export function createGame({
               settings.difficulty,
               cityPacing.orbitAge !== null,
               enemies.filter((target) => !target.dead && target.kind === 'fighter').length,
+              cityPacing.ascentCombat,
             )
           : null;
       const count = cityDensity?.count ?? 2 + Math.floor(sectorIndex / 4);
@@ -4620,6 +4622,26 @@ export function createGame({
       message('BASE-SERVIDOR / ELIMINE A TORRE PARA RECEBER SUPRIMENTOS');
     }
     groundCd -= dt;
+    // One airborne mech patrol at a time intercepts the climb from deep space.
+    // Actual city tanks remain on streets; never move heavy ground units into orbit.
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      sectorIndex === 0 &&
+      cityPacing.ascentCombat &&
+      !quietFirstSubboss &&
+      groundCd <= 0
+    ) {
+      const activeMechs = enemies.filter((target) => !target.dead && target.airborneRobot).length;
+      if (activeMechs === 0) {
+        groundWave++;
+        enemy('hover-walker', {
+          x: groundWave % 2 ? -23 : 23,
+          y: Math.max(12, Math.min(verticalFlightLimit() - 6, player.position.y + 5)),
+        });
+      }
+      groundCd = 11.5;
+    }
     if (
       dynamicFlight &&
       spawnEncounters &&
@@ -4656,7 +4678,13 @@ export function createGame({
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
-      enemy(groundWave % 2 ? 'tank' : 'walker');
+      enemy(
+        dynamicFlight && sectorIndex === 0
+          ? ['tank', 'walker', 'hover-walker'][(groundWave - 1) % 3]
+          : groundWave % 2
+            ? 'tank'
+            : 'walker',
+      );
       groundCd =
         dynamicFlight && sectorIndex === 0
           ? stageOneCombatDensity(settings.difficulty).groundInterval
@@ -4858,6 +4886,13 @@ export function createGame({
               : e.y + Math.sin(elapsed + e.phase) * 2;
       }
       if (e.airborneRobot) {
+        if (sectorIndex === 0 && cityPacing.ascentCombat)
+          e.y = T.MathUtils.damp(
+            e.y,
+            Math.max(12, Math.min(verticalFlightLimit() - 6, player.position.y + 5)),
+            1.4,
+            hostileDt,
+          );
         e.o.rotation.z = Math.sin(e.age * 0.85 + e.phase) * 0.12;
         e.o.traverse((part) => {
           if (part.name === 'enemy-hover-thruster')
@@ -4865,7 +4900,15 @@ export function createGame({
         });
       }
       if (e.role) {
-        const motion = fighterMotion(e.role, e.age, e.x, e.y, player.position.x, e.phase);
+        const motion = fighterMotion(
+          e.role,
+          e.age,
+          e.x,
+          e.y,
+          player.position.x,
+          e.phase,
+          player.position.y,
+        );
         e.o.position.x = motion.x;
         e.o.position.y = motion.y;
         e.o.rotation.z = motion.bank;
