@@ -23,6 +23,12 @@ Candidata isolada **1.27.122**. Este roteiro registra o que precisa ser observad
 
 O teste WebGL direcionado passou no Chromium desktop e mobile para a versão com a Lua no fundo da cidade: [execução e artefatos](https://github.com/trucco86/nova-wing-3d/actions/runs/43431363007). A preparação de release e o browser FULL no commit final continuam sendo gates independentes.
 
+## Evidência QA das quadras externas
+
+- A preparação da versão 1.27.122 com `release:prepare`, `format`, `build`, testes direcionados de cidade e `npm run validate` passou: [GitHub Actions #43435009050](https://github.com/trucco86/nova-wing-3d/actions/runs/43435009050).
+- A cobertura inclui os dois lados do cenário, todos os tipos de quadras, a não interpenetração de lotes, pavimentos encostados no solo, continuidade da Lua e regressões de cena.
+- A validação WebGL desktop/mobile e o gate FULL de quatro shards no SHA final precisam de evidência própria; FPS em aparelho físico permanece manual.
+
 ## Revisão adicional das quadras externas
 
 - [ ] O exterior tem quadras pequenas e verossímeis desde a abertura até o fim do percurso, nos dois lados, não uma superfície lisa.
