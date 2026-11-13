@@ -9,6 +9,10 @@ const destination = resolve('artifacts/nova-wing-trailer');
 const framesDir = join(destination, 'frames');
 const baseURL = 'http://127.0.0.1:4173';
 if (!Number.isInteger(fps) || fps < 5 || fps > 30) throw new Error('Invalid trailer FPS');
+const ffmpegProbe = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' });
+if (ffmpegProbe.error || ffmpegProbe.status !== 0) {
+  throw new Error('FFmpeg is required before frame capture: ' + (ffmpegProbe.error?.message || ffmpegProbe.stderr));
+}
 await mkdir(framesDir, { recursive: true });
 
 const scenes = [
@@ -126,7 +130,7 @@ try {
     output,
   ];
   const encoded = spawnSync('ffmpeg', ffmpegArgs, { encoding: 'utf8', maxBuffer: 4 * 1024 * 1024 });
-  if (encoded.status !== 0) throw new Error('ffmpeg failed: ' + encoded.stderr);
+  if (encoded.status !== 0) throw new Error('ffmpeg failed: ' + (encoded.error?.message || encoded.stderr));
   if ((await stat(output)).size < 500000) throw new Error('Video output unexpectedly small');
   report.output = output;
   report.durationSeconds = frame / fps;
