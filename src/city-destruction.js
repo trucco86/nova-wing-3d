@@ -137,7 +137,7 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   const ring = new T.Mesh(
     new T.RingGeometry(0.87, 1, 24),
     new T.MeshBasicMaterial({
-      color: '#b7eaff',
+      color: '#f3c197',
       transparent: true,
       opacity: 0,
       depthWrite: false,
@@ -151,11 +151,11 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   root.add(ring);
   const cloudGeometry = new T.IcosahedronGeometry(1, 0);
   const dust = [];
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     const cloud = new T.Mesh(
       cloudGeometry,
       new T.MeshBasicMaterial({
-        color: tint,
+        color: i === 3 ? '#343d3c' : tint,
         transparent: true,
         opacity: 0,
         depthWrite: false,
@@ -167,11 +167,11 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
     dust.push(cloud);
   }
   const vertices = [];
-  for (let i = 0; i < 10; i++) {
-    const angle = (i / 10) * Math.PI * 2;
+  for (let i = 0; i < 20; i++) {
+    const angle = (i / 20) * Math.PI * 2;
     vertices.push(
       Math.cos(angle) * (1.5 + (i % 3)),
-      1 + i * 0.45,
+      1 + (i % 10) * 0.45,
       Math.sin(angle) * (1.5 + (i % 3)),
     );
   }
@@ -191,38 +191,112 @@ export function createCityRoadImpact(name, tint = '#d7b9a4') {
   sparks.name = 'city-ground-impact-sparks';
   sparks.userData.visualOnly = true;
   root.add(sparks);
-  root.userData.nodes = { ring, dust, sparks };
+  // Short thermal bloom, fading scorched pavement and one instanced batch
+  // of shards. Constructed once for each authored impact, not every frame.
+  const core = new T.Mesh(
+    new T.IcosahedronGeometry(1, 1),
+    new T.MeshBasicMaterial({
+      color: '#ffbb71',
+      transparent: true,
+      opacity: 0,
+      blending: T.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
+    }),
+  );
+  core.name = 'city-impact-thermal-core';
+  core.userData.visualOnly = true;
+  root.add(core);
+  const scorch = new T.Mesh(
+    new T.RingGeometry(0.6, 1, 22),
+    new T.MeshBasicMaterial({
+      color: '#29231e',
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      side: T.DoubleSide,
+    }),
+  );
+  scorch.name = 'city-impact-ground-scorch';
+  scorch.rotation.x = -Math.PI / 2;
+  scorch.position.y = CITY_STREET_TOP_Y + 0.06;
+  scorch.userData.visualOnly = true;
+  root.add(scorch);
+  const fragments = new T.InstancedMesh(
+    new T.TetrahedronGeometry(1, 0),
+    new T.MeshStandardMaterial({ color: '#5e5951', roughness: 0.82, metalness: 0.28 }),
+    12,
+  );
+  fragments.name = 'city-impact-batched-debris';
+  fragments.userData.visualOnly = true;
+  fragments.frustumCulled = false;
+  fragments.castShadow = false;
+  fragments.receiveShadow = false;
+  const transform = new T.Object3D();
+  for (let i = 0; i < fragments.count; i++) {
+    transform.position.set(0, CITY_STREET_TOP_Y + 0.5, 0);
+    transform.rotation.set(0, 0, 0);
+    transform.scale.setScalar(0.05);
+    transform.updateMatrix();
+    fragments.setMatrixAt(i, transform.matrix);
+  }
+  fragments.instanceMatrix.needsUpdate = true;
+  root.add(fragments);
+  root.userData.nodes = { ring, dust, sparks, core, scorch, fragments, transform };
   return root;
 }
 
 export function updateCityRoadImpact(root, time, started, x, z, strength = 1) {
   if (!root?.userData?.nodes) return false;
   const age = time - started;
-  const active = age >= 0 && age < 1.15;
+  const active = age >= 0 && age < 2.25;
   root.visible = active;
   root.userData.active = active;
   if (!active) return false;
-  const phase = clamp01(age / 1.15);
+  const phase = clamp01(age / 2.25);
+  const blastPhase = clamp01(age / 0.94);
   const fade = (1 - phase) ** 2;
+  const blastFade = (1 - blastPhase) ** 2;
   root.position.set(x, 0, z);
-  const { ring, dust, sparks } = root.userData.nodes;
-  ring.scale.setScalar(strength * (2 + 15 * smooth(phase)));
-  ring.material.opacity = 0.76 * fade;
+  const { ring, dust, sparks, core, scorch, fragments, transform } = root.userData.nodes;
+  ring.scale.setScalar(strength * (2 + 17 * smooth(blastPhase)));
+  ring.material.opacity = 0.7 * blastFade;
   for (let i = 0; i < dust.length; i++) {
     const cloud = dust[i];
-    const radius = strength * (1.6 + phase * (2.5 + i * 0.65));
+    const radius = strength * (1.6 + phase * (3.2 + i * 0.65));
     const spread = phase * (3.3 + strength * 2);
     cloud.position.set(
-      (i - 1) * spread,
-      CITY_STREET_TOP_Y + radius * 0.75 + phase * (4 + i),
-      (i - 1) * spread * 0.42,
+      (i - 1.5) * spread,
+      CITY_STREET_TOP_Y + radius * 0.82 + phase * (4 + i),
+      (i - 1.5) * spread * 0.42,
     );
-    cloud.scale.set(radius, radius * 0.72, radius * 1.15);
-    cloud.material.opacity = 0.39 * fade;
+    cloud.scale.set(radius, radius * 0.82, radius * 1.15);
+    cloud.material.opacity = (i === 3 ? 0.26 : 0.35) * fade;
   }
-  sparks.position.y = CITY_STREET_TOP_Y + 0.4 + 7 * phase;
-  sparks.scale.setScalar(strength * (0.85 + 1.4 * phase));
-  sparks.material.opacity = fade;
+  sparks.position.y = CITY_STREET_TOP_Y + 0.4 + 8 * blastPhase;
+  sparks.scale.setScalar(strength * (0.85 + 1.4 * blastPhase));
+  sparks.material.opacity = blastFade;
+  const heat = clamp01(age / 0.52);
+  core.position.set(0, CITY_STREET_TOP_Y + 3.3 * strength, 0);
+  core.scale.setScalar(strength * (2.2 + 6.5 * smooth(heat)));
+  core.material.opacity = 0.9 * (1 - heat) ** 2;
+  scorch.scale.setScalar(strength * (3 + 7 * smooth(phase)));
+  scorch.material.opacity = 0.22 * fade;
+  for (let i = 0; i < fragments.count; i++) {
+    const angle = (i / fragments.count) * Math.PI * 2;
+    const reach = strength * (1.3 + (i % 4) * 1.2) * Math.min(1, age * 2.1);
+    const height = Math.max(0.65, 3 + (i % 3) * 2.5 + age * (5 - 12 * age));
+    transform.position.set(
+      Math.cos(angle) * reach,
+      CITY_STREET_TOP_Y + height,
+      Math.sin(angle) * reach,
+    );
+    transform.rotation.set(age * (2 + i * 0.1), angle, age * (3 + i * 0.12));
+    transform.scale.setScalar(strength * (0.7 + (i % 3) * 0.2) * (1 - 0.58 * phase));
+    transform.updateMatrix();
+    fragments.setMatrixAt(i, transform.matrix);
+  }
+  fragments.instanceMatrix.needsUpdate = true;
   return true;
 }
 
