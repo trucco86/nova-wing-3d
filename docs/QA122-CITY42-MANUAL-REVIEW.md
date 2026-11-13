@@ -23,6 +23,15 @@ Candidata isolada **1.27.122**. Este roteiro registra o que precisa ser observad
 
 O teste WebGL direcionado passou no Chromium desktop e mobile para a versão com a Lua no fundo da cidade: [execução e artefatos](https://github.com/trucco86/nova-wing-3d/actions/runs/43431363007). A preparação de release e o browser FULL no commit final continuam sendo gates independentes.
 
+## Revisão adicional das quadras externas
+
+- [ ] O exterior tem quadras pequenas e verossímeis desde a abertura até o fim do percurso, nos dois lados, não uma superfície lisa.
+- [ ] Estacionamentos, jardins, vias de acesso, praças, pátios técnicos e entregas têm estrutura e propósito visual; veículos não flutuam.
+- [ ] As áreas novas são vistas de cima e ao passar entre prédios, sem interpenetrações com torres, shoppings ou plataformas do espaçoporto.
+- [ ] As quadras continuam alinhadas com o tile durante a rolagem, pausa e ascensão; não surgem paredes ou colisores invisíveis.
+- [ ] O teste visual compara o antes e depois em Medium/High no desktop e celular, incluindo os extremos do percurso e os diferentes ângulos de câmera.
+- [ ] Render stats e FPS físico confirmam que os novos elementos não pioram o desempenho; a contagem de sete batches de QA122 por tile permanece constante.
+
 ## Qualidade e regressões
 
 - [ ] Capturas desktop e celular em Medium e High, abertura, seis segundos de percurso e ascensão.
