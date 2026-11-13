@@ -21,6 +21,10 @@ test('QA122: Stage 1 renders populated streets and a distinctive cracked moon in
   expect(opening.moon.realOrbitalMoonVisible).toBe(false);
   expect(Math.abs(opening.moon.x)).toBeLessThan(220);
   expect(opening.moon.y).toBeGreaterThan(250);
+  expect(opening.moon.z).toBeLessThan(-1900);
+  expect(opening.moon.z).toBeGreaterThan(-2400);
+  expect(opening.moon.backgroundDepth).toBe(1);
+  expect(opening.moon.orbitalFractured).toBe(true);
   expect(opening.citySky).toBe(1);
   expect(opening.tiles).toHaveLength(2);
   for (const tile of opening.tiles) {
@@ -28,7 +32,10 @@ test('QA122: Stage 1 renders populated streets and a distinctive cracked moon in
     expect(tile.lots).toBeGreaterThan(20);
     expect(tile.occupiedSidewalks).toBeGreaterThan(20);
     expect(tile.storefronts).toBeGreaterThan(190);
-    expect(tile.mediumBatches).toBe(4);
+    expect(tile.mediumBatches).toBe(5);
+    expect(tile.trees).toBeGreaterThan(0);
+    expect(tile.pedestrians).toBeGreaterThan(0);
+    expect(tile.adScreens).toBeGreaterThanOrEqual(7);
     expect(tile.highBatches).toBe(2);
   }
   await page.screenshot({
