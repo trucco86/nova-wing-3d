@@ -60,8 +60,7 @@ test('city remains present after one full scenery wrap and reset', () => {
   );
   assert.equal(impactBatches, 3, 'one pooled shard GPU batch for each authored impact');
   assert.ok(
-    count >= 180 + streetDraws + impactBatches &&
-      count <= 260 + streetDraws + impactBatches,
+    count >= 180 + streetDraws + impactBatches && count <= 260 + streetDraws + impactBatches,
     'historical city instance budget remains unchanged after accounting for exact effect batches',
   );
   const closeCity = scene.getObjectByName('launch-city');

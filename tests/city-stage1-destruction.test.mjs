@@ -221,7 +221,11 @@ test('three stage-1 impacts have readable short-lived ground shockwaves without 
     effects = cityDestructionImpactState(root);
     assert.equal(effects[event].visible, true);
     assert.equal(effects[event].dustCount, 4, 'extra soot plume for realistic aftermath');
-    assert.equal(effects[event].drawCount, 9, 'ring, smoke, sparks, heat, scorch and one shard batch');
+    assert.equal(
+      effects[event].drawCount,
+      9,
+      'ring, smoke, sparks, heat, scorch and one shard batch',
+    );
     assert.ok(effects[event].groundY > CITY_STREET_TOP_Y);
     const impact = root.userData.impacts[event];
     assert.ok(impact.children.every((node) => node.userData.visualOnly));
@@ -232,7 +236,10 @@ test('three stage-1 impacts have readable short-lived ground shockwaves without 
     const shards = impact.getObjectByName('city-impact-batched-debris');
     assert.ok(core?.material.opacity > 0, 'short-lived hot fire core must be visible');
     assert.ok(scorch?.material.opacity > 0, 'pavement retains a transient burn ring');
-    assert.ok(shards?.isInstancedMesh && shards.count === 12, 'reused shards, not individual Mesh allocations');
+    assert.ok(
+      shards?.isInstancedMesh && shards.count === 12,
+      'reused shards, not individual Mesh allocations',
+    );
     assert.equal(shards.userData.visualOnly, true);
     assert.ok(scorch.position.y > CITY_STREET_TOP_Y && scorch.rotation.x === -Math.PI / 2);
     assert.ok(Math.abs(ring.rotation.x + Math.PI / 2) < 1e-6);
@@ -277,7 +284,11 @@ test('impact helpers stay deterministic over pause/seek and discard impossible t
   assert.equal(impact.userData.nodes.ring.material.opacity, glow);
   assert.equal(impact.position.x, x);
   assert.equal(impact.position.z, z);
-  assert.equal(updateCityRoadImpact(impact, 6.2, 5, 10, -20), true, 'soot lingers after the shockwave');
+  assert.equal(
+    updateCityRoadImpact(impact, 6.2, 5, 10, -20),
+    true,
+    'soot lingers after the shockwave',
+  );
   assert.equal(updateCityRoadImpact(impact, 7.4, 5, 10, -20), false);
 });
 
