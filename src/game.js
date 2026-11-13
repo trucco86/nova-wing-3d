@@ -99,7 +99,7 @@ import {
   isGroundSector,
 } from './encounters.js';
 import { createMusic } from './audio.js';
-import { stageOneEncounterWindows } from './stage-one-pacing.js';
+import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
@@ -1512,7 +1512,8 @@ export function createGame({
     obstacleCd = 9;
     subDone = rivalDone = false;
     baseDone = sectorIndex === 1;
-    groundCd = 5;
+    // The first ground patrol enters before the suspended-train warning.
+    groundCd = dynamicFlight && sectorIndex === 0 ? 3.6 : 5;
     groundWave = 0;
     tunnelDone = sectorIndex === 1;
     bossVolley = 0;
@@ -4531,23 +4532,34 @@ export function createGame({
       !quietFirstSubboss &&
       !quietCityWreck
     ) {
-      const count =
+      const cityDensity =
         dynamicFlight && sectorIndex === 0
-          ? settings.difficulty === 'hard'
-            ? 2
-            : 1
-          : 2 + Math.floor(sectorIndex / 4);
-      if (dynamicFlight) {
-        const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
-        lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-        wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
-        if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
-      } else {
-        for (let i = 0; i < count; i++) enemy();
+          ? stageOneCombatDensity(
+              settings.difficulty,
+              cityPacing.orbitAge !== null,
+              enemies.filter((target) => !target.dead && target.kind === 'fighter').length,
+            )
+          : null;
+      const count = cityDensity?.count ?? 2 + Math.floor(sectorIndex / 4);
+      // When the GPU-safe active cap is reached, retry later instead of
+      // allocating another overlapping formation or skipping a wave cycle.
+      if (count > 0) {
+        if (dynamicFlight) {
+          const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
+          lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
+          wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
+          if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
+        } else {
+          for (let i = 0; i < count; i++) enemy();
+        }
       }
-      spawnCd = dynamicFlight
-        ? fighterInterval(sectorIndex, settings.difficulty)
-        : 3.4 - sectorIndex * 0.12;
+      spawnCd =
+        count === 0
+          ? 1.25
+          : (cityDensity?.interval ??
+            (dynamicFlight
+              ? fighterInterval(sectorIndex, settings.difficulty)
+              : 3.4 - sectorIndex * 0.12));
     }
     if (
       spawnEncounters &&
@@ -4612,10 +4624,18 @@ export function createGame({
       elapsed < current().duration * 0.97 &&
       groundCd <= 0
     ) {
-      // Orbital combat gets actual spacecraft, never ground robots floating in space.
-      groundWave++;
-      enemy('fighter');
-      groundCd = 7.5;
+      // Orbital patrols share the same GPU-safe active-fighter budget as the
+      // authored formations, so neither spawn path can bypass the cap.
+      const activeFighters = enemies.filter(
+        (target) => !target.dead && target.kind === 'fighter',
+      ).length;
+      if (stageOneCombatDensity(settings.difficulty, true, activeFighters).count > 0) {
+        groundWave++;
+        enemy('fighter');
+        groundCd = 7.5;
+      } else {
+        groundCd = 1.25;
+      }
     }
     if (
       spawnEncounters &&
@@ -4631,7 +4651,10 @@ export function createGame({
     ) {
       groundWave++;
       enemy(groundWave % 2 ? 'tank' : 'walker');
-      groundCd = 6;
+      groundCd =
+        dynamicFlight && sectorIndex === 0
+          ? stageOneCombatDensity(settings.difficulty).groundInterval
+          : 6;
     }
     if (
       spawnEncounters &&
@@ -6091,6 +6114,19 @@ export function createGame({
       active: dynamicFlight && !muted && ['playing', 'collapsing'].includes(state),
       boosting,
       robot: robotMode,
+    });
+    // Match the continuous charging sound to the real on-screen plasma meter.
+    // Release, pause, blur, mute or a blocked cannon ends the rise immediately.
+    audioCues?.setCharge({
+      active:
+        dynamicFlight &&
+        appActive &&
+        !muted &&
+        state === 'playing' &&
+        marsCleanse === 0 &&
+        charge > 0.15 &&
+        (keys.has('Space') || touchFire),
+      progress: charge / 1.5,
     });
     const inside =
       cameraMode === 'cockpit' &&

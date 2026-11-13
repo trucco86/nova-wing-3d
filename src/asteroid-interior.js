@@ -36,8 +36,21 @@ export function createAsteroidInterior(scene, { obstacles = false } = {}) {
     roughness: 0.88,
     flatShading: true,
   });
-  const veinMaterial = new T.MeshBasicMaterial({ color: '#b98cfa', toneMapped: false });
-  const oreMaterial = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
+  const veinMaterial = new T.MeshStandardMaterial({
+    color: '#c49d76',
+    roughness: 0.39,
+    metalness: 0.53,
+    emissive: '#8c5d3e',
+    emissiveIntensity: 0.17,
+  });
+  const oreMaterial = new T.MeshStandardMaterial({
+    color: '#ffffff',
+    roughness: 0.32,
+    metalness: 0.21,
+    emissive: '#535663',
+    emissiveIntensity: 0.09,
+    flatShading: true,
+  });
   const braceMaterial = new T.MeshStandardMaterial({
     color: '#77808c',
     metalness: 0.7,
@@ -149,7 +162,7 @@ export function createAsteroidInterior(scene, { obstacles = false } = {}) {
       dummy.scale.set(2.2 + (k % 3), 4.5 + (k % 4), 2.4);
       dummy.updateMatrix();
       ores.setMatrixAt(k, dummy.matrix);
-      ores.setColorAt(k, new T.Color(['#b48fff', '#6cc9ee', '#cfadff', '#8d7ac9'][k % 4]));
+      ores.setColorAt(k, new T.Color(['#d8b69e', '#a9c0c4', '#d2c5a7', '#9aabb4'][k % 4]));
     }
     ores.instanceMatrix.needsUpdate = true;
     ores.instanceColor.needsUpdate = true;
@@ -166,9 +179,23 @@ export function createAsteroidInterior(scene, { obstacles = false } = {}) {
     }
     braces.instanceMatrix.needsUpdate = true;
     section.add(braces);
-    const seam = new T.Mesh(new T.TorusGeometry(36.7, 0.44, 5, 28), veinMaterial);
-    seam.position.z = -14;
-    section.add(seam);
+    // Fragmented ore seams must FOLLOW the cavern rock, not form a neon
+    // hoop at the edge of the pilot's flight path. One instanced batch per
+    // section replaces the old contiguous torus without any new draw call.
+    const seams = new T.InstancedMesh(braceGeo, veinMaterial, 8);
+    seams.name = 'asteroid-cavern-stratified-ore-seams';
+    seams.userData.visualOnly = true;
+    for (let k = 0; k < 8; k++) {
+      const angle = ((k + 0.31) * Math.PI) / 4 + i * 0.09;
+      const radius = 44 + Math.sin(i * 0.63 + k * 2.1) * 2;
+      dummy.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, -14 + (k % 3) * 4);
+      dummy.rotation.set(0, 0, angle + Math.PI / 2);
+      dummy.scale.set(0.55, 8 + (k % 3) * 2.6, 0.68);
+      dummy.updateMatrix();
+      seams.setMatrixAt(k, dummy.matrix);
+    }
+    seams.instanceMatrix.needsUpdate = true;
+    section.add(seams);
     section.position.set(0, CENTER_Y, -115 - i * RING_GAP);
     tunnel.add(section);
     rings.push(section);

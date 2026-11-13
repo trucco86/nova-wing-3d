@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><meta name="theme-color" content="#0b1020">
+<title>Nova Wing | Control Center</title>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#0b1020;color:#e9efff;font-size:15px}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 85% 0,#18284b 0,transparent 45%),#0b1020}
+a{color:#91baff;text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:1240px;margin:auto;padding:22px 18px 55px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:24px}
+.brand{font-size:11px;letter-spacing:.22em;color:#7b9cd3;font-weight:800}.heading{font-size:clamp(25px,4vw,38px);margin:6px 0}.muted{color:#98a8c3}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}button,select{background:#172440;border:1px solid #354969;border-radius:10px;color:#edf3ff;padding:10px 12px;font:inherit;cursor:pointer}
+button:hover{border-color:#88a9ed}button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid #a4c2ff;outline-offset:2px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.panel,.stat{border:1px solid #283956;background:#111b30e8;border-radius:16px;padding:18px;min-width:0}
+.stat .value{font-size:30px;font-weight:800;overflow-wrap:anywhere;margin:10px 0 3px}.stat .label{font-size:12px;color:#a6b6d2;text-transform:uppercase;letter-spacing:.08em}
+.layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(290px,1fr);gap:14px;margin-top:14px}
+.panel h2{font-size:16px;margin:0 0 14px}.item{padding:12px 0;border-top:1px solid #263651;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.item:first-of-type{border-top:0}
+.item .main{min-width:0;overflow-wrap:anywhere}.item .meta{font-size:12px;color:#a4b2cb;margin-top:5px}.pill{font-size:11px;padding:4px 8px;border-radius:99px;background:#253551;color:#bcd0f1;white-space:nowrap}
+.pill.good{background:#143b36;color:#83e7c1}.pill.bad{background:#4a252d;color:#ff9daa}.pill.wait{background:#4a3c23;color:#ffd78a}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.tabs button[aria-pressed=true]{background:#32528c;border-color:#7197e0}
+.empty{color:#a4b2cb;padding:15px 0}.error{border:1px solid #8b4d58;background:#3b222e;padding:12px;border-radius:10px;margin-bottom:16px}
+footer{margin-top:24px;font-size:12px;color:#8ea1bf}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+@media(max-width:420px){.wrap{padding:15px 12px 40px}.panel,.stat{padding:13px}.stat .value{font-size:25px}.actions{width:100%}.actions button{flex:1}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+<div><div class="brand">FIVE CATS / ENGINEERING</div><h1 class="heading">Nova Wing Control Center</h1><div class="muted" id="updated" role="status" aria-live="polite">Carregando dados públicos do GitHub…</div></div>
+<div class="actions"><select id="interval" aria-label="Intervalo de atualização"><option value="1800000">Atualizar a cada 30 min</option><option value="3600000">A cada 1 hora</option><option value="0">Somente manual</option></select><button id="refresh" type="button">Atualizar agora</button><a href="https://github.com/trucco86/nova-wing-3d" target="_blank" rel="noopener noreferrer">Repositório</a></div>
+</header>
+<div id="error" role="alert" hidden></div>
+<section class="grid" aria-label="Indicadores">
+<div class="stat"><div class="label">Tarefas abertas</div><div class="value" id="tasks">…</div><div class="muted">Issues, sem PRs</div></div>
+<div class="stat"><div class="label">PRs abertas</div><div class="value" id="prs">…</div><div class="muted">Implementação e revisão</div></div>
+<div class="stat"><div class="label">CI main</div><div class="value" id="ci">…</div><div class="muted" id="ci-meta">Último pipeline</div></div>
+<div class="stat"><div class="label">Deploy Pages</div><div class="value" id="deploy">…</div><div class="muted" id="deploy-meta">Última execução</div></div>
+</section>
+<div class="layout">
+<section class="panel"><h2>Trabalho e decisões</h2><div class="tabs"><button data-tab="tasks" aria-pressed="true">Tarefas</button><button data-tab="prs" aria-pressed="false">PRs</button><button data-tab="blockers" aria-pressed="false">Bloqueios</button></div><div id="work-list"></div></section>
+<section class="panel"><h2>Ambientes e atalhos</h2><div id="environments"></div></section>
+<section class="panel"><h2>Histórico de CI e deploy</h2><div id="runs"></div></section>
+<section class="panel"><h2>Histórico de entregas</h2><div id="releases"></div></section>
+</div>
+<footer>Fonte: API pública do GitHub. Dados somente leitura. Sem token ou credenciais. O agendamento de 30 minutos é executado separadamente pelo GitHub Actions após ativação do monitor. Atualização da tela: 30 minutos por padrão, respeitando o limite público da API. A API pública possui limite de requisições e o cron pode sofrer atrasos.</footer>
+</main>
+<script type="module">
+const owner='trucco86', repo='nova-wing-3d';
+const api='https://api.github.com/repos/'+owner+'/'+repo;
+const url='https://github.com/'+owner+'/'+repo;
+const $=id=>document.getElementById(id);
+const state={issues:[],prs:[],runs:[],mainRun:null,releases:[],branch:null,pages:null,history:[],tab:'tasks',timer:null,loading:false,rateLimitUntil:0,rateLimitRemaining:null};
+const link=(href,label)=>{const a=document.createElement('a');a.href=href;a.textContent=label;a.target='_blank';a.rel='noopener noreferrer';return a};
+const text=(tag,value,cls)=>{const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e};
+const label=(value,kind)=>text('span',value,'pill '+(kind||''));
+const date=value=>value?new Intl.DateTimeFormat('pt-BR',{dateStyle:'short',timeStyle:'short'}).format(new Date(value)):'Sem data';
+const status=run=>run?.status!=='completed'?'Executando':run.conclusion==='success'?'Aprovado':run.conclusion==='failure'?'Falhou':run.conclusion==='cancelled'?'Cancelado':run.conclusion||'Pendente';
+const kind=run=>run?.conclusion==='success'?'good':run?.conclusion==='failure'?'bad':'wait';
+async function get(path){
+if(Date.now()<state.rateLimitUntil)throw new Error('Limite de consultas atingido; tente novamente após '+date(new Date(state.rateLimitUntil).toISOString()));
+const response=await fetch(api+path,{headers:{Accept:'application/vnd.github+json'}});
+const remainingRaw=response.headers?.get?.('x-ratelimit-remaining');
+const resetRaw=response.headers?.get?.('x-ratelimit-reset');
+if(remainingRaw!==null&&remainingRaw!==undefined&&Number.isFinite(Number(remainingRaw)))state.rateLimitRemaining=Number(remainingRaw);
+const reset=Number(resetRaw);
+if(Number.isFinite(reset)&&reset>0&&(state.rateLimitRemaining!==null&&state.rateLimitRemaining<8||response.status===403||response.status===429))state.rateLimitUntil=Math.max(state.rateLimitUntil,reset*1000);
+if(!response.ok)throw new Error('GitHub API HTTP '+response.status+' em '+path+(state.rateLimitUntil>Date.now()?' (limite até '+date(new Date(state.rateLimitUntil).toISOString())+')':''));
+return response.json()
+}
+function item(parent,title,href,meta,badgeText,badgeKind){const row=text('div','','item'),main=text('div','','main');main.append(link(href,title),text('div',meta,'meta'));row.append(main);if(badgeText)row.append(label(badgeText,badgeKind));parent.append(row)}
+function renderWork(){const el=$('work-list');el.replaceChildren();const list=state.tab==='prs'?state.prs:state.tab==='blockers'?state.issues.filter(i=>i.title.startsWith('[monitor]')&&i.state==='open'):state.issues.filter(i=>!i.title.startsWith('[monitor]'));if(!list.length){el.append(text('div','Nenhum item nesta categoria.','empty'));return}
+for(const entry of list.slice(0,12)){const isPr=state.tab==='prs';item(el,entry.title,entry.html_url,'#'+entry.number+' · '+(entry.user?.login||'GitHub')+' · '+date(entry.updated_at),isPr?(entry.draft?'Draft':'Aberta'):'Aberta',state.tab==='blockers'?'bad':'')}}
+function render(){const openIssues=state.issues.filter(i=>i.state==='open');$('tasks').textContent=openIssues.filter(i=>!i.title.startsWith('[monitor]')).length;$('prs').textContent=state.prs.filter(p=>p.state==='open').length;
+const mainRun=state.mainRun;$('ci').textContent=mainRun?status(mainRun):'Sem dados';$('ci-meta').textContent=mainRun?date(mainRun.created_at):'Sem CI main';
+const environments=$('environments');environments.replaceChildren();const main=state.branch?.commit?.sha||'desconhecido';
+item(environments,'Produção: jogar', 'https://trucco86.github.io/nova-wing-3d/','HEAD main: '+main.slice(0,12),'Site','');
+item(environments,'DEV: testar','https://dev.nova-wing-preview.pages.dev/','Ambiente isolado','DEV','');
+item(environments,'Monitor de 30 minutos',url+'/actions/workflows/nova-release-monitor.yml','Ativo somente após merge do workflow na main','Actions','');
+const pages=state.pages;$('deploy').textContent=pages?status(pages):'Sem dados';$('deploy-meta').textContent=pages?date(pages.started_at):'Job Pages ainda não disponível';
+const runs=$('runs');runs.replaceChildren();for(const r of state.runs.slice(0,10))item(runs,r.name,r.html_url,r.head_branch+' · '+date(r.created_at),status(r),kind(r));if(!state.runs.length)runs.append(text('div','Sem execuções recentes.','empty'));
+const releases=$('releases');releases.replaceChildren();for(const r of state.releases.slice(0,5))item(releases,r.name||r.tag_name,r.html_url,date(r.published_at||r.created_at),r.tag_name,'good');for(const p of state.history.slice(0,6))item(releases,p.title,p.html_url,'PR #'+p.number+' · '+date(p.merged_at),'Integrada','good');if(!state.releases.length&&!state.history.length)releases.append(text('div','Nenhuma entrega encontrada.','empty'));
+renderWork()}
+async function refresh(){if(state.loading)return;state.loading=true;$('refresh').disabled=true;$('error').hidden=true;
+try{const [issues,prs,runs,releases,branch,closed,mainCi]=await Promise.all([get('/issues?state=open&per_page=100'),get('/pulls?state=open&per_page=100'),get('/actions/runs?per_page=40'),get('/releases?per_page=20'),get('/branches/main'),get('/pulls?state=closed&sort=updated&direction=desc&per_page=30'),get('/actions/workflows/ci.yml/runs?branch=main&per_page=1')]);
+// Only a CI built for the published main HEAD can certify this state. Other branch runs never substitute for it.
+const latestMain=(mainCi.workflow_runs||[]).find(r=>r.head_branch==='main'&&r.head_sha===branch?.commit?.sha)||null;const jobs=latestMain&&Date.now()>=state.rateLimitUntil?await get('/actions/runs/'+latestMain.id+'/jobs?per_page=100'):null;state.pages=jobs?.jobs?.find(j=>j.name==='pages')||null;state.mainRun=latestMain;state.history=closed.filter(p=>p.merged_at);state.issues=issues.filter(i=>!i.pull_request);state.prs=prs;state.runs=runs.workflow_runs||[];state.releases=releases;state.branch=branch;render();$('updated').textContent='Atualizado em '+date(new Date().toISOString())+' · GitHub público';}
+catch(error){$('error').hidden=false;$('error').className='error';$('error').textContent='Não foi possível atualizar: '+error.message+'. Os dados anteriores foram mantidos.';$('updated').textContent='Falha na atualização';}
+finally{state.loading=false;$('refresh').disabled=false}}
+function schedule(){if(state.timer)clearInterval(state.timer);const ms=Number($('interval').value);if(ms)state.timer=setInterval(refresh,ms)}
+document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{state.tab=button.dataset.tab;document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));renderWork()}));
+$('refresh').addEventListener('click',refresh);$('interval').addEventListener('change',schedule);schedule();refresh();
+</script>
+</body></html>

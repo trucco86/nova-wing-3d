@@ -368,6 +368,11 @@ test('offline Android interface protects controls from cutout and gesture insets
 test('holding Space never activates focused browser-page buttons or selects HUD text', async ({
   page,
 }) => {
+  // On software WebGL the first mobile game load can spend over 30 seconds
+  // compiling shaders before enough real frames elapse to charge the weapon.
+  // Retain the original >30% gameplay assertions and verify held input instead
+  // of failing on the global timeout before the charge is measured.
+  test.setTimeout(90000);
   await page.goto('/');
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
@@ -376,7 +381,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
   await page.keyboard.down('Space');
   await expect
     .poll(() => page.locator('#chargeBar').evaluate((el) => parseFloat(el.style.width)), {
-      timeout: 15000,
+      timeout: 45000,
     })
     .toBeGreaterThan(30);
   await expect

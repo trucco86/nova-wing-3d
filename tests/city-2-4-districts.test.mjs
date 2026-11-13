@@ -63,7 +63,11 @@ test('City 2.4 districts survive wrap and quality switching, disappear in orbit 
   assert.equal(highNear.visible, true);
   assert.equal(highFar.visible, true);
   world.update(42, 42, 48, true);
-  assert.ok(city.position.z >= 0 && city.position.z < 1900);
+  // After a full wrap the industrial tile is now the approaching city, so
+  // the civic tile correctly returns behind the camera instead of teleporting.
+  assert.ok(city.position.z >= -1900 && city.position.z < 0);
+  assert.ok(far.position.z >= 0 && far.position.z < 1900);
+  assert.equal(far.position.z - city.position.z, 1900);
   world.setSector(SECTORS[0]);
   assert.equal(nearDistrict.visible, true);
   world.setLaunchAscent(0.85, true);

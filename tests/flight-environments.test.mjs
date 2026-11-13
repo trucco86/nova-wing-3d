@@ -188,8 +188,8 @@ test('multiple fingers, long holds, cancellation and pause never latch touch act
 
 test('three homing pods damage elevated tank and walker hulls from normal flight', (t) => {
   for (const [kind, time] of [
-    ['tank', 4.9],
-    ['walker', 10.9],
+    ['tank', 3.45],
+    ['walker', 7.75],
   ]) {
     const h = setup(t, { spawnEncounters: true });
     h.advance(time);
