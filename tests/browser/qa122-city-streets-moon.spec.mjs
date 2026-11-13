@@ -31,7 +31,9 @@ test('QA122: Stage 1 renders populated streets and a distinctive cracked moon in
     expect(tile.mediumBatches).toBe(4);
     expect(tile.highBatches).toBe(2);
   }
-  await page.screenshot({ path: info.outputPath('qa122-streets-and-moon-' + info.project.name + '.png') });
+  await page.screenshot({
+    path: info.outputPath('qa122-streets-and-moon-' + info.project.name + '.png'),
+  });
   await page.evaluate(() => window.fixture.advance(6));
   const after = await page.evaluate(() => window.fixture.city122State());
   for (const [i, tile] of after.tiles.entries()) {
