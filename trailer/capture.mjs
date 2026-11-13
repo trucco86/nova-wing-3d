@@ -56,7 +56,7 @@ try {
   // The existing game's audio fixture renders original music, not copyrighted third-party songs.
   await page.goto(baseURL + '/__audio.html', { waitUntil: 'domcontentloaded' });
   await page.locator('button').first().click();
-  await page.waitForFunction(() => document.body.dataset.audioReady === 'true' || document.body.dataset.audioReady === 'error', { timeout: 180000 });
+  await page.waitForFunction(() => document.body.dataset.audioReady === 'true' || document.body.dataset.audioReady === 'error', null, { timeout: 180000 });
   if (await page.locator('body').getAttribute('data-audio-ready') !== 'true') {
     throw new Error('Nova Wing original music export failed: ' + await page.locator('pre').innerText());
   }
