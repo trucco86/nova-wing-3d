@@ -5,7 +5,11 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
-import { createCity122StreetInfill, setCity122Quality } from './city-122-street-infill.js';
+import {
+  animateCity122StreetLife,
+  createCity122StreetInfill,
+  setCity122Quality,
+} from './city-122-street-infill.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { cityTilePositions } from './city-tile-scroll.js';
@@ -1128,10 +1132,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     uniforms: {
       crackIntensity: { value: 1 },
       bodyTint: { value: new T.Color('#ffffff') },
+      backgroundDepth: { value: 0 },
     },
     vertexShader:
-      'varying vec3 p;varying vec3 n;void main(){p=position;n=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));float mainCrack=1.-smoothstep(.013,.033,fissure);float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);c=c*bodyTint*(.14+lit*.86);c=mix(c,vec3(.025,.025,.03),crack*.65*crackIntensity);c+=vec3(.93,.32,.082)*crack*.78*crackIntensity;gl_FragColor=vec4(c,1.);}`,
+      'uniform float backgroundDepth;varying vec3 p;varying vec3 n;void main(){p=position;n=normal;vec4 clip=projectionMatrix*modelViewMatrix*vec4(position,1.);clip.z=mix(clip.z,clip.w*.9999,backgroundDepth);gl_Position=clip;}',
+    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float maria=fbm(N*4.2+vec3(3.,7.,1.));float craterCell=length(fract(N.xy*27.+vec2(N.z*11.,N.z*7.))-.5);float craterRim=exp(-pow((craterCell-.29)*22.,2.));c=mix(c,vec3(.14,.17,.19),smoothstep(.54,.72,maria)*.32);c+=vec3(.09,.1,.11)*craterRim;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));float mainCrack=1.-smoothstep(.013,.033,fissure);float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);c=c*bodyTint*(.14+lit*.86);c=mix(c,vec3(.025,.025,.03),crack*.65*crackIntensity);c+=vec3(.93,.32,.082)*crack*.78*crackIntensity;gl_FragColor=vec4(c,1.);}`,
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
   moon.name = 'world-orbital-globe';
@@ -1143,8 +1148,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       transparent: true,
       depthWrite: false,
       blending: T.AdditiveBlending,
+      uniforms: { backgroundDepth: { value: 0 } },
       vertexShader:
-        'varying vec3 n;varying vec3 v;void main(){vec4 p=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=normalize(-p.xyz);gl_Position=projectionMatrix*p;}',
+        'uniform float backgroundDepth;varying vec3 n;varying vec3 v;void main(){vec4 p=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=normalize(-p.xyz);vec4 clip=projectionMatrix*p;clip.z=mix(clip.z,clip.w*.9999,backgroundDepth);gl_Position=clip;}',
       fragmentShader:
         'varying vec3 n;varying vec3 v;void main(){float a=pow(1.-abs(dot(normalize(n),normalize(v))),4.);gl_FragColor=vec4(.12,.55,.8,a*.6);}',
     }),
@@ -2249,6 +2255,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      // The city landmark is part of the far sky, not an object in the
+      // skyscraper corridor. Other sectors keep normal depth and occlusion.
+      const citySkyLandmark = sceneryTheme === 'city' ? 1 : 0;
+      moonMat.uniforms.backgroundDepth.value = citySkyLandmark;
+      atmosphere.material.uniforms.backgroundDepth.value = citySkyLandmark;
       launchAscentProgress = 0;
       cityVisualTravel = travel;
       cityCatastrophe?.reset();
@@ -2309,8 +2320,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       moon.visible = atmosphere.visible =
         sceneryTheme === 'city' || ['fractured-moon', 'ice-world'].includes(signature.globe);
       if (sceneryTheme === 'city') {
-        moon.position.set(150, 310, -1010);
-        moon.scale.setScalar(1.13);
+        // Shift the cratered moon deeper into the far skyline, while the
+        // shader keeps it behind EVERY foreground building at any altitude.
+        // z=-2100 stays inside the 2500-unit camera far plane.
+        moon.position.set(135, 600, -2100);
+        moon.scale.setScalar(1.4);
         atmosphere.position.copy(moon.position);
         atmosphere.scale.copy(moon.scale);
       }
@@ -2613,6 +2627,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
             animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
             animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
+            animateCity122StreetLife(tile.getObjectByName('city122-lived-in-street-blocks'), travel);
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
             updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
             if (dynamicFlight)
