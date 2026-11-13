@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.122 — Candidata em preparação
+## 1.27.122 - QA122 Cidade Premium 4.1 (candidata, sem merge)
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Fase 1: preenchimento funcional de ruas e espaços entre prédios com calçadas, baias de serviço, vitrines de térreo, quiosques, luzes de orientação, bancos e jardineiras.
+- Visual urbano reduz rosa e ciano dominantes por grafite, concreto, vidro, metais quentes e âmbar discreto; preservadas as cores de combate, efeitos e HUD.
+- Lua rachada aparece no horizonte urbano com fissuras ramificadas e se oculta antes da transição à Lua orbital real.
+- Novo módulo `city-122-street-infill.js` com seis lotes instanciados por trecho, quatro Medium, dois adicionais High, sem hitboxes e com segurança de lotes comerciais e envelope de voo.
+- QA direcionada: 4/4 testes WebGL desktop/mobile, orçamento City40 preservado, geometria extra de 2,21% desktop e 1,91% mobile. Gate FULL e homologação manual ainda necessários.
+- A versão 1.27.122 permanece somente em PR isolado, sem deploy de produção.
 
 ## 1.27.121 — Candidata premium integrada, homologação manual pendente
 
