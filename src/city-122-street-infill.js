@@ -81,11 +81,11 @@ export function createCity122StreetInfill(buildings = []) {
     if (lot.kiosk) {
       // Distinct transit, parcel and repair bays with supported roof and
       // side glazing. Every vertical support reaches the pavement.
-      const y = -2.2;
+      const y = -2.3;
       structures.push(part(x + side * 2.7, y, z + 3, 0.85, 8.0, 0.85));
       structures.push(part(x - side * 2.7, y, z + 3, 0.85, 8.0, 0.85));
       structures.push(part(x, 2.15, z + 3, 8.2, 0.78, 11.3));
-      structures.push(part(x, -3.7, z - 1, 6.6, 5.2, 1.0));
+      structures.push(part(x, -3.9, z - 1, 6.6, 5.2, 1.0));
       storefronts.push(part(x, -2.8, z + 3.05, 6.6, 4.9, 0.24));
       lights.push(part(x, 1.63, z + 9, 6.2, 0.28, 0.4));
       finer.push(part(x, -5.9, z - 9, 6.0, 0.45, 2.0));
