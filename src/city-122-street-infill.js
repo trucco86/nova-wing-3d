@@ -64,7 +64,49 @@ export function planCity122SidewalkParcels(buildings = []) {
   return lots;
 }
 
-export function createCity122StreetInfill(buildings = []) {
+// Places real micro-blocks in open outer-city footprints, not on top of the
+// 200 office towers, 24 district towers, transit platforms or shopping podiums.
+// Two bands are sampled across the full 1.9-km road tile; no generated volume
+// is allowed in the piloted flight lane. One block per row plus an occasional
+// outer block keeps skyline density meaningful without multiplying meshes.
+export function planCity122OuterParcels(buildings = [], districtFootprints = []) {
+  const reserved = [...CITY_RETAIL_RESERVATIONS, ...buildings, ...districtFootprints];
+  const lots = [];
+  const inner = [146, 185, 224];
+  const outer = [268, 309, 352];
+  for (const side of [-1, 1]) {
+    for (let row = 0; row < 44; row++) {
+      for (const band of [0, 1]) {
+        if (band === 1 && row % 3 !== 0) continue;
+        const centers = band === 0 ? inner : outer;
+        const z = -32 - row * 42 + (band ? -3 : 3);
+        for (let offset = 0; offset < centers.length; offset++) {
+          const center = centers[(row + band + offset) % centers.length];
+          const lot = {
+            x: side * center,
+            z,
+            w: 17.5,
+            depth: 28,
+            row,
+            side,
+            band,
+            kind: ['parking', 'garden', 'delivery', 'plaza', 'service', 'access'][
+              (row + band * 2 + (side < 0 ? 3 : 0)) % 6
+            ],
+          };
+          if (Math.abs(lot.x) - lot.w / 2 < 125) continue;
+          if (reserved.some((b) => cityFootprintsOverlap(lot, b, 5))) continue;
+          if (lots.some((b) => cityFootprintsOverlap(lot, b, 2))) continue;
+          lots.push(lot);
+          break;
+        }
+      }
+    }
+  }
+  return lots;
+}
+
+export function createCity122StreetInfill(buildings = [], districtFootprints = []) {
   const root = new T.Group();
   root.name = 'city122-lived-in-street-blocks';
   root.userData.visualOnly = true;
@@ -82,6 +124,7 @@ export function createCity122StreetInfill(buildings = []) {
   const trees = [];
   const walkers = [];
   const parcels = planCity122SidewalkParcels(buildings);
+  const outerParcels = planCity122OuterParcels(buildings, districtFootprints);
   for (const lot of parcels) {
     const x = lot.x,
       z = lot.z,
@@ -140,6 +183,73 @@ export function createCity122StreetInfill(buildings = []) {
       furniture.push(part(side * 110.6, -5.65, z + dz * 0.8, 2.8, 2.1, 2.8));
     }
   }
+  // The city's empty outer bands now have legible ground-level functions:
+  // connected-looking access lanes, courtyards, local delivery stations,
+  // small gardens and parked commuter transport. Every piece stays inside
+  // a collision-checked parcel and shares the original seven GPU batches.
+  for (const lot of outerParcels) {
+    const { x, z, side, kind } = lot;
+    const p = (dx, y, dz, w, h, d) => part(x + dx, y, z + dz, w, h, d);
+    // The tarmac is only 0.16 tall and rests on the existing y=-7 ground.
+    sidewalks.push(p(0, -6.87, 0, 17.5, 0.22, 28));
+    structures.push(p(side * 8.1, -6.53, 0, 0.55, 0.74, 26));
+    if (kind === 'parking') {
+      // Two clearly marked parked city cars, not flying anonymous cubes.
+      for (const offset of [-4, 4]) {
+        structures.push(p(offset, -5.56, 0, 5.6, 2.5, 9.1));
+        storefronts.push(p(offset, -3.94, -0.6, 4.2, 1.15, 4.7));
+        lights.push({ ...p(offset, -4.95, 4.61, 3.6, 0.22, 0.18), tint: '#edd3a4' });
+        lights.push({ ...p(offset, -4.95, -4.61, 3.1, 0.18, 0.18), tint: '#b3c9ba' });
+      }
+      for (const offset of [-8, 0, 8])
+        lights.push({ ...p(0, -6.73, offset, 14, 0.08, 0.2), tint: '#c4c6b2' });
+    } else if (kind === 'garden') {
+      // An actual parklet: bounded planters, trees, low seating and paths.
+      structures.push(p(0, -6.48, 0, 15, 0.85, 14));
+      for (const offset of [-4.5, 4.5]) {
+        structures.push(p(offset, -4.85, 1.5, 0.65, 3.9, 0.65));
+        trees.push(p(offset, -1.8, 1.5, 4.4, 4.9, 4.4));
+        furniture.push(p(offset, -5.82, -7.4, 3.7, 0.6, 1.7));
+      }
+      finer.push(p(0, -5.94, 8, 7.8, 0.65, 2.4));
+    } else if (kind === 'delivery') {
+      // Courier depot roof is supported by four posts that touch the slab.
+      for (const dx of [-6, 6])
+        for (const dz of [-7, 7]) structures.push(p(dx, -2.65, dz, 0.66, 8.3, 0.66));
+      structures.push(p(0, 1.75, 0, 14, 0.7, 19));
+      structures.push(p(0, -5.55, 1, 6.2, 2.65, 10.7));
+      storefronts.push(p(0, -3.65, -2, 5.0, 1.55, 4.5));
+      lights.push({ ...p(0, 1.35, 9.6, 10.8, 0.28, 0.25), tint: '#f0d6a5' });
+      for (const dx of [-5, 5]) finer.push(p(dx, -5.8, -9, 2.6, 2.1, 3.2));
+    } else if (kind === 'plaza') {
+      // A modest paved square with an articulated bus shelter and planter.
+      structures.push(p(0, -6.52, 0, 15, 0.62, 17));
+      for (const dx of [-5, 5]) structures.push(p(dx, -3.4, 4, 0.58, 6.6, 0.58));
+      structures.push(p(0, 0.1, 4, 12, 0.6, 7.5));
+      storefronts.push(p(0, -3.4, 7.65, 10, 3.0, 0.26));
+      lights.push({ ...p(0, -1.8, 7.83, 7.5, 0.3, 0.16), tint: '#aac8bd' });
+      furniture.push(p(0, -5.6, -6, 7, 1.2, 2.2));
+    } else if (kind === 'service') {
+      // A public utilities yard: transformers, cabinets and ground poles.
+      for (const dx of [-4.7, 4.7]) {
+        structures.push(p(dx, -4.6, 0, 4.4, 4.5, 5.4));
+        finer.push(p(dx, -2.05, 0, 3.5, 0.5, 4.1));
+      }
+      structures.push(p(side * 6.9, -2.8, 9, 0.55, 8.2, 0.55));
+      lights.push({ ...p(side * 6.9, 1.45, 9, 2.0, 0.3, 1.7), tint: '#e8b78a' });
+      for (const dz of [-10, -6]) finer.push(p(0, -5.7, dz, 10, 0.55, 1));
+    } else {
+      // Access lanes connect the side road visually to the built blocks.
+      // Direction markings stay readable, never entering the flight area.
+      for (const dx of [-5, 5])
+        lights.push({ ...p(dx, -6.72, 0, 0.2, 0.08, 21), tint: '#d7c7a5' });
+      for (const dz of [-8, 8]) {
+        structures.push(p(side * 7.7, -2.6, dz, 0.45, 8.2, 0.45));
+        lights.push({ ...p(side * 7.7, 1.6, dz, 1.9, 0.3, 1.2), tint: '#c6d5ba' });
+      }
+      finer.push(p(0, -6.55, 0, 0.3, 0.14, 6));
+    }
+  }
   buildings.forEach((b, i) => {
     const front = b.z + b.depth / 2;
     const side = Math.sign(b.x) || 1;
@@ -184,6 +294,7 @@ export function createCity122StreetInfill(buildings = []) {
   batch(high, 'city122-loading-bay-small-furniture', steel, finer);
   root.add(medium, high);
   root.userData.sidewalkParcels = parcels;
+  root.userData.outerParcels = outerParcels;
   root.userData.pedestrians = pedestrianIndices;
   setCity122Quality(root, 'medium');
   return root;
