@@ -215,7 +215,25 @@ function facadeSigns(parent, buildings) {
 // Distinct neighbourhoods are necessary for the route to feel like a lived-in
 // megacity rather than a repeating wall of neon. Use batching for thousands of
 // facade/storefront light accents, not a point light for each window.
-function districtIdentity(parent) {
+// Choose a real, nearby wall/roof in the same city tile. All decorative
+// lights and signs attach to this same authored building transform.
+function nearestCityFacade(buildings, side, targetZ) {
+  let selected = null;
+  let distance = Infinity;
+  for (const building of buildings) {
+    if (Math.sign(building.x) !== side) continue;
+    const delta = Math.abs(building.z - targetZ);
+    if (delta < distance) {
+      distance = delta;
+      selected = building;
+    }
+  }
+  return selected;
+}
+
+// Every branded screen and neon storefront is tied to an actual building
+// facade: no advertising panels suspended at arbitrary XYZ coordinates.
+function districtIdentity(parent, buildings) {
   const districts = [
     { name: 'corporate', z: -280, color: '#59dcff', secondary: '#a5b9ff', brands: [0, 9] },
     { name: 'entertainment', z: -865, color: '#ff72d4', secondary: '#ae80ff', brands: [1, 7] },
@@ -234,7 +252,8 @@ function districtIdentity(parent) {
     zone.userData.visualOnly = true;
     zone.position.z = district.z;
     for (const side of [-1, 1]) {
-      const x = side * (123 + (district.name === 'transport' ? 18 : 5));
+      const facade = nearestCityFacade(buildings, side, district.z + 28);
+      if (!facade) continue;
       const [brand, tagline, color] = CITY32_ADS[district.brands[side < 0 ? 0 : 1]];
       const panel = new T.Mesh(
         plane,
@@ -246,16 +265,46 @@ function districtIdentity(parent) {
       );
       panel.name = 'city32-district-' + district.name + '-billboard';
       panel.userData.visualOnly = true;
-      panel.scale.set(20, 22, 1);
-      panel.position.set(x, 40, 28);
+      panel.userData.anchor = { x: facade.x, z: facade.z };
+      panel.scale.set(Math.min(20, facade.w * 0.9), Math.min(22, facade.h * 0.45), 1);
+      panel.position.set(
+        facade.x,
+        -7 + facade.h * 0.53,
+        facade.z - district.z + facade.depth / 2 + 1.25,
+      );
       zone.add(panel);
       for (let i = 0; i < 6; i++) {
-        const localZ = district.z - 48 + i * 19;
-        const localX = x + side * ((i % 2) * 17);
+        const wall = nearestCityFacade(buildings, side, district.z - 48 + i * 19);
+        if (!wall) continue;
+        const front = wall.z + wall.depth / 2 + 0.75;
         const tint = i % 3 ? district.color : district.secondary;
-        bands.push({ x: localX, y: 11 + (i % 3) * 9, z: localZ, w: 22, h: 0.6, d: 0.55, tint });
-        stores.push({ x: localX, y: -0.5, z: localZ + 2, w: 19, h: 4.8, d: 0.5, tint });
-        vertical.push({ x: localX - side * 10, y: 25, z: localZ + 2, w: 0.6, h: 25, d: 0.5, tint });
+        bands.push({
+          x: wall.x,
+          y: -7 + wall.h * (0.35 + (i % 3) * 0.16),
+          z: front,
+          w: wall.w * 0.8,
+          h: 0.6,
+          d: 0.55,
+          tint,
+        });
+        stores.push({
+          x: wall.x,
+          y: -7 + Math.min(6, wall.h * 0.16),
+          z: front + 0.4,
+          w: wall.w * 0.85,
+          h: Math.min(4.8, wall.h * 0.23),
+          d: 0.5,
+          tint,
+        });
+        vertical.push({
+          x: wall.x - side * (wall.w * 0.4),
+          y: -7 + wall.h * 0.53,
+          z: front + 0.8,
+          w: 0.6,
+          h: Math.min(25, wall.h * 0.66),
+          d: 0.5,
+          tint,
+        });
       }
     }
     identity.add(zone);
@@ -266,7 +315,7 @@ function districtIdentity(parent) {
   parent.add(identity);
 }
 
-function searchlightNetwork(parent) {
+function searchlightNetwork(parent, buildings) {
   const group = new T.Group();
   group.name = 'city32-sky-searchlights';
   group.userData.visualOnly = true;
@@ -276,8 +325,11 @@ function searchlightNetwork(parent) {
     tower.name = 'city32-searchlight-' + i;
     tower.userData.index = i;
     const side = i % 2 ? 1 : -1;
-    const z = -125 - i * 302;
-    tower.position.set(side * (123 + (i % 3) * 29), 85 + (i % 3) * 19, z);
+    const anchor = nearestCityFacade(buildings, side, -125 - i * 302);
+    if (!anchor) continue;
+    // The base touches a real roof instead of hovering at y=85..123.
+    tower.position.set(anchor.x, anchor.h - 7 + 1.05, anchor.z);
+    tower.userData.roofY = anchor.h - 7;
     const base = new T.Mesh(block, frame);
     base.scale.set(6, 2.1, 6);
     base.name = 'city32-searchlight-mount';
@@ -301,7 +353,7 @@ function searchlightNetwork(parent) {
     beacons.push({
       x: tower.position.x,
       y: tower.position.y + 4,
-      z,
+      z: tower.position.z,
       w: 3.3,
       h: 1,
       d: 3.3,
@@ -331,12 +383,15 @@ function aerialLanes(parent) {
   parent.add(air);
 }
 
-function holograms(parent) {
+function holograms(parent, buildings) {
   const group = new T.Group();
   group.name = 'city32-holographic-signs';
   group.userData.visualOnly = true;
   for (let i = 0; i < 5; i++) {
     const [brand, subtitle, color] = CITY32_ADS[(i * 2 + 1) % CITY32_ADS.length];
+    const side = i % 2 ? 1 : -1;
+    const wall = nearestCityFacade(buildings, side, -245 - i * 290);
+    if (!wall) continue;
     const sign = new T.Mesh(
       plane,
       new T.MeshBasicMaterial({
@@ -352,8 +407,10 @@ function holograms(parent) {
     sign.name = 'city32-hologram-' + i;
     sign.userData.visualOnly = true;
     sign.userData.index = i;
-    sign.position.set((i % 2 ? 1 : -1) * (145 + (i % 3) * 18), 54 + (i % 3) * 17, -245 - i * 290);
-    sign.scale.set(21, 25, 1);
+    sign.userData.anchor = { x: wall.x, z: wall.z };
+    sign.userData.facadeWidth = Math.min(21, wall.w * 0.87);
+    sign.position.set(wall.x, -7 + wall.h * 0.55, wall.z + wall.depth / 2 + 1.8);
+    sign.scale.set(sign.userData.facadeWidth, Math.min(25, wall.h * 0.42), 1);
     group.add(sign);
   }
   parent.add(group);
@@ -366,10 +423,10 @@ export function createCity32Living(buildings = []) {
   root.userData.city32 = true;
   root.userData.phase = 0;
   facadeSigns(root, buildings);
-  districtIdentity(root);
-  searchlightNetwork(root);
+  districtIdentity(root, buildings);
+  searchlightNetwork(root, buildings);
   aerialLanes(root);
-  holograms(root);
+  holograms(root, buildings);
   updateCity32Living(root, 0);
   setCity32Quality(root, 'medium');
   return root;
@@ -427,7 +484,9 @@ export function updateCity32Living(root, travel) {
   holograms.forEach((mesh, i) => {
     if (!mesh.visible) return;
     mesh.rotation.y = Math.sin(travel * 0.004 + i) * 0.12;
-    mesh.scale.x = 19 + 2 * Math.sin(travel * 0.007 + i);
+    // The old 19..21-unit animation stretched narrow wall-mounted signs
+    // outside their support. Pulse within the actual facade instead.
+    mesh.scale.x = mesh.userData.facadeWidth * (0.95 + 0.05 * Math.sin(travel * 0.007 + i));
   });
 }
 

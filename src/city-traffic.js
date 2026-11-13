@@ -93,16 +93,23 @@ const PROFILES = Object.freeze([
     ],
   },
   {
+    // Urban ground buses share the street with compact cars. One merged
+    // coloured geometry per vehicle means only one additional GPU batch.
+    role: 'bus',
+    count: 4,
+    medium: 2,
+    parts: [],
+  },
+  {
     role: 'flycar',
-    count: 7,
-    medium: 4,
+    count: 13,
+    medium: 7,
     parts: [
       ['taxi', 0, 0, 0, 7, 2.5, 14],
       ['prow', 0, 0.15, -6.5, 6.1, 2.0, 5.4],
       ['glazing', 0, 1.4, -1.7, 5.4, 1.1, 7.3],
       ['taxi', 0, -0.25, 1.2, 15, 0.65, 3.2],
       ['cyan', 0, -1.55, -2, 5.6, 0.4, 8],
-      ['orange', 0, -0.05, 7.25, 4, 0.6, 0.5],
     ],
   },
   {
@@ -143,7 +150,32 @@ function vehicleDetailGeometry(role) {
   const wheel = new T.CylinderGeometry(1, 1, 0.7, 10);
   const pipe = new T.CylinderGeometry(0.38, 0.38, 1, 10);
   const bar = new T.BoxGeometry(1, 1, 1);
-  if (role === 'road') {
+  if (role === 'bus') {
+    // A full-size 27 m articulated-looking municipal bus: high passenger
+    // glazing, wheel housings, roof HVAC, double doors and route lighting.
+    // All body details are merged into one indexed, vertex-colour draw batch.
+    add(bar, '#aebdc4', 0, 0.9, 0, 8.2, 6.8, 27);
+    add(bar, '#263f4d', 0, 3.4, -0.4, 8.26, 2.25, 24.5);
+    add(bar, '#7c929c', 0, 4.5, 0, 7.1, 0.24, 22.5);
+    add(bar, '#7a919b', 0, 4.9, 5.2, 4.8, 0.62, 5.2);
+    add(bar, '#213845', 0, 2.8, -13.55, 7.1, 3.9, 0.15);
+    add(bar, '#f6d18e', 0, 5.1, -13.64, 5.8, 0.82, 0.16);
+    for (const side of [-1, 1]) {
+      add(bar, '#263f4d', side * 4.15, 3.1, -0.4, 0.15, 2.25, 24.3);
+      add(bar, '#8bc5d1', side * 4.28, 0.25, 0, 0.17, 0.27, 24.8);
+      add(bar, '#e0e7e7', side * 4.28, 1.5, 0, 0.17, 0.16, 24.8);
+      for (const z of [-9.5, 0.1, 9.1]) {
+        add(wheel, '#182f3d', side * 4.1, -3.0, z, 1.55, 1.55, 1.55, 0, Math.PI / 2);
+        add(wheel, '#9fbdc5', side * 4.48, -3.0, z, 0.8, 0.8, 0.8, 0, Math.PI / 2);
+      }
+      for (const z of [-8, -2, 4, 10]) add(bar, '#bacbd1', side * 4.31, 3.1, z, 0.19, 2.45, 0.2);
+      add(bar, '#b1dce0', side * 4.32, 2.75, -5.1, 0.21, 1.8, 0.22);
+    }
+    for (const x of [-2.65, 2.65]) {
+      add(bar, '#fce5bc', x, 0.1, -13.67, 1.1, 0.72, 0.18);
+      add(bar, '#ec816a', x, 0.25, 13.67, 1.3, 0.75, 0.2);
+    }
+  } else if (role === 'road') {
     for (const side of [-1, 1]) {
       for (const z of [-3.55, 3.5]) {
         add(wheel, '#182e42', side * 2.87, -0.64, z, 1, 1, 1, 0, Math.PI / 2);
@@ -167,6 +199,9 @@ function vehicleDetailGeometry(role) {
       add(bar, '#182d45', side * 2.58, 1.97, -0.75, 0.17, 0.22, 5.0);
     }
     add(bar, '#9bc3d6', 0, 2.08, 0.65, 3.0, 0.13, 0.23);
+    // Reuse the merged surface shell for the rear navigation lamp, freeing
+    // one former independent batch to accommodate the new bus fleet.
+    add(bar, '#ffae6f', 0, -0.05, 7.25, 4, 0.6, 0.5);
   } else {
     for (const side of [-1, 1]) {
       add(pipe, '#16334b', side * 3.15, -0.6, 11.9, 1.7, 1.4, 1.7, Math.PI / 2);
@@ -209,14 +244,28 @@ function positionFor(role, i, travel, phase) {
       ry: direction === 1 ? 0 : Math.PI,
     };
   }
+  if (role === 'bus') {
+    const direction = i % 2 === 0 ? 1 : -1;
+    const step = (i * 390 + phase + travel * (0.18 + (i % 3) * 0.035)) % 1800;
+    return {
+      x: (i % 2 ? 1 : -1) * (35 + (i % 3) * 1.7),
+      y: -1.5,
+      z: -65 - (direction === 1 ? step : 1800 - step),
+      rx: 0,
+      ry: direction === 1 ? 0 : Math.PI,
+      rz: 0,
+    };
+  }
   if (role === 'flycar') {
     const phaseValue = (i * 251 + phase + travel * (0.34 + i * 0.027)) % 1820;
     const bank = Math.sin(travel * 0.01 + i * 1.9) * 0.09;
     return {
       // Aerial taxis visibly weave between transit guideways and the retail
       // towers; never through the low-altitude player flight lane.
-      x: side * (76 + i * 5 + 11 * Math.sin(travel * 0.008 + i)),
-      y: 68 + (i % 4) * 17 + Math.sin(travel * 0.018 + i) * 6,
+      // Protected aerial lane between the pilot flight volume (x ±72)
+      // and the first building frontage (x ±118); no facade penetration.
+      x: side * (87 + (i % 3) * 9 + 3 * Math.sin(travel * 0.008 + i)),
+      y: 73 + (i % 5) * 15 + Math.sin(travel * 0.018 + i) * 3,
       z: -75 - phaseValue,
       rx: -0.055,
       ry: side * 0.17,
