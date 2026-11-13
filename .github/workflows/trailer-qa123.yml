@@ -36,8 +36,12 @@ jobs:
           node tools/visual-fixture.mjs
       - name: Install Chromium (software WebGL)
         run: npx playwright install chromium
+      - name: Install FFmpeg on clean runner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Check FFmpeg
-        run: ffmpeg -version | head -n 1
+        run: ffmpeg -hide_banner -version > /tmp/ffmpeg-version.txt && head -n 1 /tmp/ffmpeg-version.txt
       - name: Start localhost-only game server
         run: |
           (npm run dev > /tmp/nova-wing-trailer-server.log 2>&1 & echo $! > /tmp/nova-wing-trailer-server.pid)
