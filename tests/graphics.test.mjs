@@ -39,8 +39,15 @@ test('city remains present after one full scenery wrap and reset', () => {
   const streets = ['launch-city', 'launch-city-far'].map((name) =>
     scene.getObjectByName(name).getObjectByName('city122-lived-in-street-blocks'),
   );
-  const streetDraws = streets.reduce((total, root) =>
-    total + root.children.reduce((n, tier) => n + tier.children.filter((o) => o.isInstancedMesh).length, 0), 0);
+  const streetDraws = streets.reduce(
+    (total, root) =>
+      total +
+      root.children.reduce(
+        (n, tier) => n + tier.children.filter((o) => o.isInstancedMesh).length,
+        0,
+      ),
+    0,
+  );
   assert.equal(streetDraws, 12, 'six instanced architectural batches per 1.9 km tile');
   assert.ok(
     count >= 180 + streetDraws && count <= 260 + streetDraws,

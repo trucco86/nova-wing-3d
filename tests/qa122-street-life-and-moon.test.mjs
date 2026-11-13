@@ -38,7 +38,7 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     z: -25 - i * 29,
     w: 17,
     depth: 15,
-    h: 35 + i % 5 * 14,
+    h: 35 + (i % 5) * 14,
   }));
   const root = createCity122StreetInfill(anchors);
   assert.equal(root.name, 'city122-lived-in-street-blocks');
@@ -67,7 +67,9 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   const matrix = new T.Matrix4();
   for (let i = 0; i < blocks.count; i++) {
     blocks.getMatrixAt(i, matrix);
-    const x = matrix.elements[12], y = matrix.elements[13], z = matrix.elements[14];
+    const x = matrix.elements[12],
+      y = matrix.elements[13],
+      z = matrix.elements[14];
     assert.ok(Math.abs(x) >= 95, 'sidewalk outside protected flight space');
     assert.ok(Math.abs(y + 6.72) < 0.0001, 'supported at y=-7 road floor');
     positions.push([x, y, z]);
@@ -119,12 +121,17 @@ test('QA122: urban environmental lighting is neutral and warm while other planet
   // DynamicFlight nests lights under the orbitalFrame, so inspect the
   // rendered scene graph rather than only the scene's direct children.
   const directional = [];
-  scene.traverse((node) => { if (node.isDirectionalLight) directional.push(node); });
+  scene.traverse((node) => {
+    if (node.isDirectionalLight) directional.push(node);
+  });
   const closeTo = (color, hex) => {
     const expected = new T.Color(hex);
-    return Math.abs(color.r - expected.r) +
-      Math.abs(color.g - expected.g) +
-      Math.abs(color.b - expected.b) < 0.01;
+    return (
+      Math.abs(color.r - expected.r) +
+        Math.abs(color.g - expected.g) +
+        Math.abs(color.b - expected.b) <
+      0.01
+    );
   };
   assert.ok(
     directional.some((l) => closeTo(l.color, '#b4a99b')),
@@ -138,5 +145,9 @@ test('QA122: urban environmental lighting is neutral and warm while other planet
   const urbanColor = scene.fog.color.getHexString();
   assert.equal(urbanColor, '737c7b');
   world.setSector(SECTORS[1], 1);
-  assert.notEqual(scene.fog.color.getHexString(), urbanColor, 'Mars keeps its unique scene palette');
+  assert.notEqual(
+    scene.fog.color.getHexString(),
+    urbanColor,
+    'Mars keeps its unique scene palette',
+  );
 });

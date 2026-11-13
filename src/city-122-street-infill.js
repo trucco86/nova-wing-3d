@@ -12,8 +12,11 @@ const steel = new T.MeshStandardMaterial({ color: '#727a7b', metalness: 0.69, ro
 const paving = new T.MeshStandardMaterial({ color: '#797c76', metalness: 0.27, roughness: 0.74 });
 const glass = new T.MeshStandardMaterial({ color: '#91a8a5', metalness: 0.36, roughness: 0.3 });
 const amber = new T.MeshStandardMaterial({
-  color: '#f4ce9b', metalness: 0.24, roughness: 0.47,
-  emissive: '#806040', emissiveIntensity: 0.12,
+  color: '#f4ce9b',
+  metalness: 0.24,
+  roughness: 0.47,
+  emissive: '#806040',
+  emissiveIntensity: 0.12,
 });
 const brass = new T.MeshStandardMaterial({ color: '#a49379', metalness: 0.65, roughness: 0.44 });
 const part = (x, y, z, w, h, d) => ({ x, y, z, w, h, d });
@@ -72,7 +75,9 @@ export function createCity122StreetInfill(buildings = []) {
   const finer = [];
   const parcels = planCity122SidewalkParcels(buildings);
   for (const lot of parcels) {
-    const x = lot.x, z = lot.z, side = lot.side;
+    const x = lot.x,
+      z = lot.z,
+      side = lot.side;
     // Supports sit on the same y=-7 ground as the road, not underground.
     sidewalks.push(part(x, -6.72, z, lot.w, 0.45, lot.depth));
     // Two textured curb seams make the narrow pedestrian route perceptible
@@ -115,8 +120,7 @@ export function createCity122StreetInfill(buildings = []) {
     storefronts.push(part(b.x, -2.6, front + 1.04, width, 5.6, 0.28));
     structures.push(part(b.x, 1.95, front + 2.0, width + 2.0, 0.65, 3.2));
     // Sparse warm wayfinding instead of all windows glowing cyan/magenta.
-    if (i % 3 === 0)
-      lights.push(part(b.x, 2.15, front + 3.7, width * 0.66, 0.32, 0.22));
+    if (i % 3 === 0) lights.push(part(b.x, 2.15, front + 3.7, width * 0.66, 0.32, 0.22));
     if (i % 4 === 2) {
       structures.push(part(b.x - side * (b.w * 0.48), -2.65, front + 1.25, 0.42, 8.0, 0.52));
       finer.push(part(b.x + side * (b.w * 0.33), -5.4, front + 3.6, 2.3, 3.0, 1.0));

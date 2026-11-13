@@ -1,9 +1,11 @@
 # QA122 | Cidade 4.1: densidade urbana, paleta cinematográfica e lua rachada
 
 ## Problema reportado
+
 Na Fase 1 os espaços entre prédios e a infraestrutura viária parecem vazios; o rosa e azul ainda dominam o cenário; a lua rachada já existe mas não aparece na abertura da cidade. A correção deve preservar a navegação livre, o desempenho em celulares e a candidata consolidada 1.27.121.
 
 ## Escopo implementado
+
 1. Novo módulo `city-122-street-infill.js` acrescenta calçadas estruturadas, baias de carga, abrigos de trânsito, letreiros âmbar de baixa intensidade, vitrines reais no térreo de edifícios, bancos e jardineiras. Todos os elementos são instanciados por material, presos ao bloco de rua ou ao lote do prédio e marcados `visualOnly`.
 2. Reservas de shopping centers e ocupações de edifícios são verificadas por `cityFootprintsOverlap` antes de adicionar um novo lote. A área decorativa começa além de `|x| = 95` para não limitar a movimentação da nave ou as aproximações de combate.
 3. Térreos e calçadas aparecem em Medium. Mobiliário secundário e acabamento fino pertencem ao grupo High. O ambiente duplicado por trecho de 1900 unidades mantém os lotes e os detalhes dentro de cada bloco, durante scroll e ascensão.
@@ -12,6 +14,7 @@ Na Fase 1 os espaços entre prédios e a infraestrutura viária parecem vazios; 
 6. Novos testes verificam posicionamento seguro, geometria de vitrine, pausas e troca de High/Medium, visibilidade da lua, troca de setor, cores e ausência de colisores.
 
 ## Critérios de aceite
+
 - Os dois lados da avenida devem ter pelo menos vinte trechos seguros por lado com calçadas e ocupação funcional.
 - A rua nunca recebe props no centro `|x| < 95`, nem sobre reservas de shopping ou edifícios procedurais.
 - As vitrines são anexadas ao térreo dos prédios, não anúncios flutuantes, e os postes realmente tocam o solo.
@@ -22,4 +25,5 @@ Na Fase 1 os espaços entre prédios e a infraestrutura viária parecem vazios; 
 - QA em celular físico, áudio, vista de diferentes alturas e homologação humana são necessárias antes de merge em release, HML ou produção.
 
 ## Isolamento e promoção
+
 Este PR deve permanecer empilhado somente na branch de release 1.27.121. Não fazer merge em `main`, DEV/HML ou produção sem aprovação explícita. O preview do PR é a primeira etapa para avaliar os vazios, a paleta e a posição da lua rachada.

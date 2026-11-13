@@ -2262,7 +2262,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || (sceneryTheme === 'station' && !dynamicFlight);
       moonMat.uniforms.crackIntensity.value =
-         sceneryTheme === 'city' || signature.globe === 'fractured-moon' ? 1 : 0;
+        sceneryTheme === 'city' || signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
@@ -2333,7 +2333,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.6 : 1.6;
       rim.color.set(illuminatedCity ? '#cdb49a' : sector.accent);
       rim.intensity = illuminatedCity ? 1.85 : 3;
-      key.color.set(illuminatedCity ? '#f5e5cd' : ['mars', 'sun'].includes(sector.theme) ? '#ffdcaa' : '#e3eeff');
+      key.color.set(
+        illuminatedCity
+          ? '#f5e5cd'
+          : ['mars', 'sun'].includes(sector.theme)
+            ? '#ffdcaa'
+            : '#e3eeff',
+      );
       key.intensity = sceneryTheme === 'mars' ? 3.7 : illuminatedCity ? 3.45 : 3.2;
       purple.color.set(
         illuminatedCity ? '#b4a99b' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff',
@@ -2362,7 +2368,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         scene.fog.density = premiumGrade.haze;
         skyMat.uniforms.ambient.value.set(premiumGrade.fog);
       }
-      skyMat.uniforms.tint.value.set(illuminatedCity ? '#d7c6ac' : sector.accent).multiplyScalar(illuminatedCity ? 1 : 1.4);
+      skyMat.uniforms.tint.value
+        .set(illuminatedCity ? '#d7c6ac' : sector.accent)
+        .multiplyScalar(illuminatedCity ? 1 : 1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
       if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());

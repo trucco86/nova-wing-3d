@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.122 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.121 — Candidata premium integrada, homologação manual pendente
 
 - QA107 a QA109: coerência urbana, ancoragem de objetos, ascensão orbital e colisores de destroços físicos.
