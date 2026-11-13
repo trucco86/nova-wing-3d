@@ -1,0 +1,68 @@
+name: QA123 | Nova Wing real gameplay trailer
+on:
+  push:
+    branches:
+      - feat/qa123-real-gameplay-trailer-20261113
+    paths:
+      - 'trailer/**'
+      - '.github/workflows/trailer-qa123.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-trailer-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    name: Capture genuine WebGL frames and original game score
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      NOVA_VISUAL_TEST: '1'
+      TRAILER_FPS: '10'
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build the actual game and deterministic QA fixture
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Install Chromium (software WebGL)
+        run: npx playwright install chromium
+      - name: Check FFmpeg
+        run: ffmpeg -version | head -n 1
+      - name: Start localhost-only game server
+        run: |
+          (npm run dev > /tmp/nova-wing-trailer-server.log 2>&1 & echo $! > /tmp/nova-wing-trailer-server.pid)
+          for i in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4173/__dynamic.html?sector=0 > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/nova-wing-trailer-server.log
+          exit 1
+      - name: Capture real gameplay, render original soundtrack, encode MP4
+        run: node trailer/capture.mjs
+      - name: Confirm video metadata and source provenance
+        run: |
+          ffprobe -v error -show_entries format=duration,size -of json artifacts/nova-wing-trailer/nova-wing-gameplay-real-preview.mp4
+          node --input-type=module -e "import {readFileSync} from 'node:fs'; const d=JSON.parse(readFileSync('artifacts/nova-wing-trailer/provenance.json')); if(d.scenes.length !== 7 || !d.sha || d.frames < 180) process.exit(1); console.log(d.sha, d.frames, d.scenes.map(x=>x.id));"
+      - name: Upload actual gameplay MP4 and evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-real-gameplay-trailer-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            artifacts/nova-wing-trailer/nova-wing-gameplay-real-preview.mp4
+            artifacts/nova-wing-trailer/original-nova-wing-music.wav
+            artifacts/nova-wing-trailer/provenance.json
