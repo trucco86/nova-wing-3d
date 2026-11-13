@@ -116,7 +116,10 @@ test('QA122: urban environmental lighting is neutral and warm while other planet
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[0], 0);
-  const directional = scene.children.filter((node) => node.isDirectionalLight);
+  // DynamicFlight nests lights under the orbitalFrame, so inspect the
+  // rendered scene graph rather than only the scene's direct children.
+  const directional = [];
+  scene.traverse((node) => { if (node.isDirectionalLight) directional.push(node); });
   const closeTo = (color, hex) => {
     const expected = new T.Color(hex);
     return Math.abs(color.r - expected.r) +
