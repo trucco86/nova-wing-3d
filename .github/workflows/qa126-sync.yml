@@ -1,0 +1,36 @@
+name: QA126 temporary candidate synchronization
+on:
+  push:
+    branches:
+      - feat/qa126-ally-continuity-ascent-combat-20261113
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and validate targeted regressions
+        run: |
+          npx prettier --write src/five-cats-squad.js src/five-cats-runtime.js src/stage-one-pacing.js src/game.js src/enemy-roles.js tests/qa126-ally-ascent.test.mjs
+          node --test tests/qa126-ally-ascent.test.mjs
+      - name: Generate isolated candidate 1.27.125
+        run: |
+          npm run release:prepare -- 1.27.125
+          npm run build:check
+      - name: Commit branch outputs only
+        shell: bash
+        run: |
+          git add src/five-cats-squad.js src/five-cats-runtime.js src/stage-one-pacing.js src/game.js src/enemy-roles.js tests/qa126-ally-ascent.test.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.125.md index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA126): format and prepare unpromoted 1.27.125'
+            git push origin HEAD:feat/qa126-ally-continuity-ascent-combat-20261113
+          fi
