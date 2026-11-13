@@ -2330,7 +2330,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       hemisphere.groundColor.set(
         sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#77776f' : '#09293a',
       );
-      hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.3 : 1.6;
+      hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.6 : 1.6;
       rim.color.set(illuminatedCity ? '#cdb49a' : sector.accent);
       rim.intensity = illuminatedCity ? 1.85 : 3;
       key.color.set(illuminatedCity ? '#f5e5cd' : ['mars', 'sun'].includes(sector.theme) ? '#ffdcaa' : '#e3eeff');
