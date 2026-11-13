@@ -12,6 +12,12 @@ on:
       - src/city-32-living.js
       - src/city-30-district-life.js
       - tests/qa122-street-life-and-moon.test.mjs
+      - tests/graphics.test.mjs
+      - tests/sector-palette.test.mjs
+      - tests/stage-combat-variety.test.mjs
+      - tests/city-31-electric-twilight.test.mjs
+      - tests/dynamic-scene.js
+      - tests/browser/qa122-city-streets-moon.spec.mjs
       - specs/qa122-city41-infill-warm-moon.md
 
 permissions:
