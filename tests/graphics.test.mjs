@@ -33,11 +33,18 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  // City 3.2 adds bounded batches for signs, aircraft, holofotes and skyline.
-  // Keep the GPU draw-call budget checked instead of freezing the old count.
+  // QA122 adds six actual building/sidewalk GPU batches per road tile.
+  // Verify the new functionality is present, then account for exactly those
+  // twelve intentional batches without relaxing the historical base budget.
+  const streets = ['launch-city', 'launch-city-far'].map((name) =>
+    scene.getObjectByName(name).getObjectByName('city122-lived-in-street-blocks'),
+  );
+  const streetDraws = streets.reduce((total, root) =>
+    total + root.children.reduce((n, tier) => n + tier.children.filter((o) => o.isInstancedMesh).length, 0), 0);
+  assert.equal(streetDraws, 12, 'six instanced architectural batches per 1.9 km tile');
   assert.ok(
-    count >= 180 && count <= 260,
-    'City 3.2 keeps extra neon and aerial traffic within a bounded instancing budget',
+    count >= 180 + streetDraws && count <= 260 + streetDraws,
+    'original city GPU instance budget plus only the measured street-infilling batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
