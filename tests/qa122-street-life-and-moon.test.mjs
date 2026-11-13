@@ -6,6 +6,7 @@ import {
   animateCity122StreetLife,
   planCity122SidewalkParcels,
   planCity122OuterParcels,
+  planCity122GroundCells,
   setCity122Quality,
 } from '../src/city-122-street-infill.js';
 import { CITY_RETAIL_RESERVATIONS, cityFootprintsOverlap } from '../src/city-spatial-layout.js';
@@ -68,6 +69,28 @@ test('QA122: outer blocks fill both far corridors without intruding on buildings
   assert.deepEqual(planCity122OuterParcels(buildings, district), lots, 'layout is deterministic');
 });
 
+test('QA122: empty ground between towers gains safe patterned parcels on both sides', () => {
+  const towers = [
+    { x: 173, z: -250, w: 29, depth: 33 },
+    { x: -343, z: -900, w: 37, depth: 42 },
+  ];
+  const district = [{ x: 240, z: -1600, w: 47, depth: 49 }];
+  const courtyards = planCity122OuterParcels(towers, district);
+  const cells = planCity122GroundCells(towers, district, courtyards);
+  assert.ok(cells.length > 170, 'most empty ground requires a designed surface');
+  assert.ok(cells.filter((c) => c.side < 0).length > 60);
+  assert.ok(cells.filter((c) => c.side > 0).length > 60);
+  assert.ok(cells.some((c) => c.z < -1800), 'the far end of the road has usable ground');
+  assert.deepEqual(new Set(cells.map((c) => c.type)), new Set([0, 1, 2, 3, 4]));
+  const reserved = [...towers, ...district, ...CITY_RETAIL_RESERVATIONS, ...courtyards];
+  for (const c of cells) {
+    assert.ok(Math.abs(c.x) - c.w / 2 >= 125, 'flight and transit safety bands stay empty');
+    assert.ok(c.z - c.depth / 2 > -1900 && c.z + c.depth / 2 < 0);
+    assert.ok(reserved.every((b) => !cityFootprintsOverlap(c, b, 2)), 'floor does not cover occupied structures');
+  }
+  assert.deepEqual(planCity122GroundCells(towers, district, courtyards), cells);
+});
+
 test('QA122: visible street fronts, sidewalks, service kiosks and amber signs are GPU-instanced with no ghost hitboxes', () => {
   const anchors = Array.from({ length: 60 }, (_, i) => ({
     x: (i % 2 ? 1 : -1) * (145 + (i % 7) * 24),
@@ -110,7 +133,7 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     assert.ok(Math.abs(x) >= 95, 'sidewalk outside protected flight space');
     const slabHeight = matrix.elements[5];
     const slabDepth = matrix.elements[10];
-    if (Math.abs(slabDepth - 28) < 0.001) {
+    if (Math.abs(slabDepth - 28) < 0.001 || Math.abs(slabDepth - 30) < 0.001) {
       assert.ok(Math.abs(y - slabHeight / 2 + 7) < 0.0001, 'secondary asphalt rests on y=-7');
     } else {
       assert.ok(Math.abs(y + 6.72) < 0.0001, 'existing sidewalk keeps its placement');
@@ -118,6 +141,16 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
     positions.push([x, y, z]);
   }
   assert.ok(new Set(positions.map((p) => p[2])).size > 20, 'actually fills street depth');
+  const ground = root.userData.groundCells;
+  assert.ok(ground.length > 80, 'large city ground gaps need urban material');
+  const vapor = root.getObjectByName('city122-grounded-vent-vapor-high');
+  assert.ok(vapor?.isInstancedMesh && vapor.count > 0, 'real vents create shared High vapor');
+  assert.equal(vapor.userData.visualOnly, true);
+  assert.equal(vapor.material.transparent, true);
+  assert.equal(vapor.material.depthWrite, false);
+  const firstPlume = new T.Matrix4();
+  const lastPlume = new T.Matrix4();
+  vapor.getMatrixAt(0, firstPlume);
   const outer = root.userData.outerParcels;
   assert.ok(outer.length > 60, 'outer districts should be populated without extra draw batches');
   assert.ok(outer.some((lot) => lot.kind === 'delivery'));
@@ -132,6 +165,9 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   bodies.getMatrixAt(first.body, before);
   animateCity122StreetLife(root, 330);
   bodies.getMatrixAt(first.body, after);
+  vapor.getMatrixAt(0, lastPlume);
+  assert.notEqual(firstPlume.elements[13], lastPlume.elements[13], 'vapor plume rises only as play advances');
+  assert.ok(root.userData.groundSignalIndices.length > 0, 'signals are grounded in existing GPU batches');
   assert.notEqual(before.elements[14], after.elements[14], 'pedestrians must walk on the pavement');
   assert.equal(
     after.elements[12],
@@ -146,6 +182,7 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   assert.equal(root.getObjectByName('city122-extra-street-furniture-high').visible, false);
   setCity122Quality(root, 'high');
   assert.equal(root.getObjectByName('city122-extra-street-furniture-high').visible, true);
+  assert.equal(vapor.visible, true);
   assert.equal(root.getObjectByName('city122-visible-street-life-medium').visible, true);
 });
 
@@ -186,6 +223,8 @@ test('QA122: fractured moon actually appears over Stage 1 city, disappears on as
   const farStreet = far.getObjectByName('city122-lived-in-street-blocks');
   assert.ok(nearStreet && farStreet && nearStreet !== farStreet);
   assert.ok(nearStreet.userData.outerParcels.length > 25, 'real city must gain outer blocks');
+  assert.ok(nearStreet.userData.groundCells.length > 50, 'both real road tiles have filled ground');
+  assert.deepEqual(nearStreet.userData.groundCells, farStreet.userData.groundCells);
   assert.deepEqual(
     nearStreet.userData.outerParcels,
     farStreet.userData.outerParcels,
