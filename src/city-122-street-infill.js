@@ -26,6 +26,7 @@ const part = (x, y, z, w, h, d) => ({ x, y, z, w, h, d });
 
 function batch(parent, name, material, entries, geometry = unit) {
   const mesh = new T.InstancedMesh(geometry, material, entries.length);
+  const hasInstanceTint = entries.some((p) => !!p.tint);
   mesh.name = name;
   mesh.userData.visualOnly = true;
   mesh.userData.architectural = true;
@@ -38,7 +39,7 @@ function batch(parent, name, material, entries, geometry = unit) {
     dummy.scale.set(p.w, p.h, p.d);
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
-    if (p.tint) mesh.setColorAt(i, new T.Color(p.tint));
+    if (hasInstanceTint) mesh.setColorAt(i, new T.Color(p.tint || '#ffffff'));
   });
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
