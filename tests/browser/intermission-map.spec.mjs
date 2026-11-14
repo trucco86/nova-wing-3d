@@ -116,10 +116,23 @@ test('localized hangar and galaxy map remain reachable in a narrow viewport', as
     );
     // The portrait route is taller than one screen: the launch CTA must stay
     // reachable without requiring users to scroll past ten mission cards.
-    const initialLaunch = await page.locator('#mapLaunch').boundingBox();
-    expect(initialLaunch).not.toBeNull();
-    expect(initialLaunch.y).toBeGreaterThanOrEqual(0);
-    expect(initialLaunch.y + initialLaunch.height).toBeLessThanOrEqual(page.viewportSize().height);
+    if (page.viewportSize().width <= 600) {
+      const initialLaunch = await page.locator('#mapLaunch').boundingBox();
+      expect(initialLaunch).not.toBeNull();
+      expect(initialLaunch.y).toBeGreaterThanOrEqual(0);
+      expect(initialLaunch.y + initialLaunch.height).toBeLessThanOrEqual(page.viewportSize().height);
+    }
+    const artwork = await page.locator('.campaign-node .campaign-sector-art').first().evaluate((el) => {
+      const computed = getComputedStyle(el).backgroundImage;
+      return {
+        cinematic: computed.includes('data:image/webp;base64,'),
+        position: el.style.getPropertyValue('--sector-sprite-position'),
+        source: el.getAttribute('data-art-source'),
+      };
+    });
+    expect(artwork.cinematic).toBe(true);
+    expect(artwork.position).toBe('0% 0%');
+    expect(artwork.source).toBe('cinematic-concept');
     const bounds = await page.locator('.campaign-map-card').boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
