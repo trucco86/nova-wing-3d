@@ -26,14 +26,15 @@ const scenes = [
  * An authored movement sequence is not evidence that the runner sustains 30fps
  * in wall-clock time: screenshots are offline, deterministic WebGL frames.
  */
-const keySet = (scene, t) => {
+const keySet = (_scene, t) => {
   const keys = new Set();
-  // Camera remains in authentic chase mode. Ascend in 3D toward the reactor,
-  // then strafe to expose its vulnerable core rather than orbit into a wall.
-  if (t < 3.15) keys.add('w');
-  else keys.add('s');
-  if (t > 3.0) keys.add('d');
-  if (t < 1.25 || (t > 1.55 && t < 2.55) || t > 2.8) keys.add('Space');
+  // Begin already elevated. Strafe around the live reactor's attack lane.
+  // Never direct the capture into the side walls.
+  if (t < 1.35) keys.add('d');
+  else if (t < 2.7) keys.add('a');
+  else if (t < 4.15) keys.add('d');
+  else keys.add('a');
+  if (t % 1.18 < 0.96) keys.add('Space');
   return keys;
 };
 
@@ -108,6 +109,13 @@ try {
       if (scene.launch === 'orbit') await page.evaluate(() => window.fixture.advance(40));
     } else {
       await page.evaluate((seconds) => window.fixture.advance(seconds), scene.start);
+    }
+    // Get into a visible line-of-sight BEFORE filming the attack. Previous
+    // reactor footage spent its first half with a pillar hiding the objective.
+    if (scene.id === 'mothership-reactor-elevated-attack') {
+      await page.keyboard.down('w');
+      await page.evaluate(() => window.fixture.advance(3.0));
+      await page.keyboard.up('w');
     }
     if (scene.camera === 'combat') {
       await page.keyboard.press('c');
