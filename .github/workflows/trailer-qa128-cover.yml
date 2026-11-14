@@ -1,0 +1,27 @@
+name: QA128 | Export official Five Cats cover for video
+on:
+  push:
+    branches:
+      - feat/qa128-trailer-pet-cover-free-enemy-waves-20261114
+    paths:
+      - .github/workflows/trailer-qa128-cover.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  art:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout original cover
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Verify licensed game artwork is present
+        run: |
+          file docs/images/five-cats-cover.webp
+          test -s docs/images/five-cats-cover.webp
+      - name: Upload original unchanged cover artwork
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa128-official-cover
+          path: docs/images/five-cats-cover.webp
+          retention-days: 14
