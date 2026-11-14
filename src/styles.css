@@ -4765,6 +4765,20 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   #campaignMap .campaign-map-card {
     padding: 14px 13px 19px;
     border-radius: 23px;
+    /* Clip without creating another scroll container, so the launch actions
+       remain sticky to the actual campaignMap scrollport. */
+    overflow: clip;
+  }
+  #campaignMap .campaign-map-actions {
+    position: sticky;
+    bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    z-index: 12;
+    padding: 7px;
+    border: 1px solid #55bdd1a0;
+    border-radius: 12px;
+    background: #061b2aee;
+    box-shadow: 0 -10px 25px #030d20aa, inset 0 0 10px #25bce61b;
+    backdrop-filter: blur(10px);
   }
   #campaignMap .campaign-brand {
     margin-bottom: 13px;
