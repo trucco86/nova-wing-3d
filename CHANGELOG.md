@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.127 — Candidata em preparação
+## 1.27.127 — QA128: mapa galáctico premium interativo
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Substituição da grade simples do pós-missão por um mapa conectado dos dez setores, com rota ciano, nós numerados e cores distintas para missões concluídas, próxima missão e futuras.
+- Dez cenários SVG próprios (cidade, Marte, destroços, nave-mãe, dados, gelo, núcleo púrpura, Saturno, Órion e Marvin), sem download externo nem custo adicional de WebGL.
+- Cartões interativos de reconhecimento: é possível ler briefing, ameaça e chefe de qualquer destino; selecionar fase futura não altera os desbloqueios ou o alvo de lançamento.
+- Cabeçalho e HUD Nova Wing / Five Cats, progresso real, barra acessível, layout mobile com safe areas e suporte a movimento reduzido.
+- Testes de dez setores, legibilidade/markup, assets offline e proteção da progressão; 5/5 testes direcionados no workflow de build.
+- **Candidata isolada da tela após a missão. Nenhum merge ou deploy em produção.**
 
 ## 1.27.126 — QA127: identidades visuais premium de inimigos
 
