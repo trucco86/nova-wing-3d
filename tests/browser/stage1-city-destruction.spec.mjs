@@ -51,7 +51,7 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     if (impact) {
       expect(snap.cityDestruction.impacts[impact].visible).toBe(true);
       expect(snap.cityDestruction.impacts[impact].groundY).toBeGreaterThan(clearance.floorY);
-      expect(snap.cityDestruction.impacts[impact].drawCount).toBe(5);
+      // One ring, four dust clouds, sparks, thermal core, scorch and batched debris.\n      expect(snap.cityDestruction.impacts[impact].drawCount).toBe(9);
     }
     await page.screenshot({
       path: info.outputPath('stage1-destruction-' + seconds + '-' + info.project.name + '.png'),
