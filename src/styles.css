@@ -4952,11 +4952,21 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   #campaignMap .campaign-node[data-side='right'] {
     margin: 0;
   }
-  #campaignMap .campaign-node[data-sector='6'] { grid-area: 2 / 5 / 3 / 6; }
-  #campaignMap .campaign-node[data-sector='7'] { grid-area: 2 / 4 / 3 / 5; }
-  #campaignMap .campaign-node[data-sector='8'] { grid-area: 2 / 3 / 3 / 4; }
-  #campaignMap .campaign-node[data-sector='9'] { grid-area: 2 / 2 / 3 / 3; }
-  #campaignMap .campaign-node[data-sector='10'] { grid-area: 2 / 1 / 3 / 2; }
+  #campaignMap .campaign-node[data-sector='6'] {
+    grid-area: 2 / 5 / 3 / 6;
+  }
+  #campaignMap .campaign-node[data-sector='7'] {
+    grid-area: 2 / 4 / 3 / 5;
+  }
+  #campaignMap .campaign-node[data-sector='8'] {
+    grid-area: 2 / 3 / 3 / 4;
+  }
+  #campaignMap .campaign-node[data-sector='9'] {
+    grid-area: 2 / 2 / 3 / 3;
+  }
+  #campaignMap .campaign-node[data-sector='10'] {
+    grid-area: 2 / 1 / 3 / 2;
+  }
   #campaignMap .campaign-node:hover {
     transform: none;
   }

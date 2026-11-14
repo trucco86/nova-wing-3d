@@ -4872,29 +4872,233 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     padding: 6px;
   }
 }
+/* A 390px-tall landscape phone must show the route, briefing and launch
+   before the fold. Use two serpentine rows rather than ten tall rows. */
 @media (max-height: 550px) and (min-width: 701px) {
   #campaignMap {
     padding: 8px;
+    overflow-y: auto;
   }
   #campaignMap .campaign-map-card {
-    max-width: 1060px;
-    padding: 14px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.62fr) minmax(265px, 1fr);
+    grid-template-rows: 19px 54px minmax(0, 1fr) 45px;
+    column-gap: 13px;
+    row-gap: 6px;
+    align-items: stretch;
+    width: min(1060px, 100%);
+    min-height: 0;
+    height: calc(100dvh - 16px);
+    padding: 10px 13px;
+    border-radius: 18px;
   }
   #campaignMap .campaign-brand {
-    margin-bottom: 8px;
+    grid-row: 1;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    line-height: 1;
+  }
+  #campaignMap .campaign-brand-wings {
+    font-size: 13px;
+  }
+  #campaignMap .campaign-brand strong {
+    font-size: 16px;
+  }
+  #campaignMap .campaign-brand small {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+  }
+  #campaignMap .campaign-map-header {
+    grid-row: 2;
+    grid-column: 1;
+    padding: 0 6px;
+    min-height: 0;
+    background: none;
+  }
+  #campaignMap .campaign-map-header .eyebrow {
+    font-size: 8px;
+    line-height: 1;
+    letter-spacing: 0.06em;
   }
   #campaignMap .campaign-map-header h2 {
-    font-size: 30px;
-    margin: 2px 0;
+    margin: 1px 0;
+    font-size: 25px;
+    line-height: 1;
+  }
+  #campaignMap #mapProgress {
+    padding: 0;
+    margin: 1px 0 0;
+    border: 0;
+    font-size: 9px;
+  }
+  #campaignMap .campaign-map-cosmos {
+    grid-row: 3;
+    grid-column: 1;
+    min-width: 0;
+    min-height: 0;
+    padding: 2px 0;
+  }
+  #campaignMap .campaign-route-map {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    column-gap: 7px;
+    row-gap: 10px;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+  }
+  #campaignMap .campaign-route-thread,
+  #campaignMap .campaign-route-marker,
+  #campaignMap .campaign-orbit-beacon {
+    display: none;
   }
   #campaignMap .campaign-node {
-    min-height: 107px;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    border-radius: 6px;
+    transform: none;
   }
-  #campaignMap .campaign-node[data-side='left'] {
-    margin-bottom: 8px;
-  }
+  #campaignMap .campaign-node[data-side='left'],
   #campaignMap .campaign-node[data-side='right'] {
-    margin-top: 8px;
+    margin: 0;
+  }
+  #campaignMap .campaign-node[data-sector='6'] {
+    grid-area: 2 / 5 / 3 / 6;
+  }
+  #campaignMap .campaign-node[data-sector='7'] {
+    grid-area: 2 / 4 / 3 / 5;
+  }
+  #campaignMap .campaign-node[data-sector='8'] {
+    grid-area: 2 / 3 / 3 / 4;
+  }
+  #campaignMap .campaign-node[data-sector='9'] {
+    grid-area: 2 / 2 / 3 / 3;
+  }
+  #campaignMap .campaign-node[data-sector='10'] {
+    grid-area: 2 / 1 / 3 / 2;
+  }
+  #campaignMap .campaign-node:hover {
+    transform: none;
+  }
+  #campaignMap .campaign-node-content {
+    min-height: 0;
+    padding: 5px;
+    gap: 2px;
+  }
+  #campaignMap .campaign-node-icon {
+    margin-bottom: auto;
+    font-size: 12px;
+  }
+  #campaignMap .campaign-node-name {
+    font-size: clamp(7px, 0.93vw, 9px);
+    line-height: 1.14;
+    letter-spacing: 0;
+  }
+  #campaignMap .campaign-node-status {
+    border-radius: 6px;
+    padding: 2px 3px;
+    font-size: 7px;
+    line-height: 1.1;
+  }
+  #campaignMap .campaign-node::after {
+    display: none;
+  }
+  #campaignMap .campaign-node[data-sector='1']::after,
+  #campaignMap .campaign-node[data-sector='2']::after,
+  #campaignMap .campaign-node[data-sector='3']::after,
+  #campaignMap .campaign-node[data-sector='4']::after,
+  #campaignMap .campaign-node[data-sector='6']::after,
+  #campaignMap .campaign-node[data-sector='7']::after,
+  #campaignMap .campaign-node[data-sector='8']::after,
+  #campaignMap .campaign-node[data-sector='9']::after {
+    display: block;
+    top: 50%;
+    left: auto;
+    right: -8px;
+    width: 8px;
+    height: 2px;
+  }
+  #campaignMap .campaign-node[data-sector='6']::after,
+  #campaignMap .campaign-node[data-sector='7']::after,
+  #campaignMap .campaign-node[data-sector='8']::after,
+  #campaignMap .campaign-node[data-sector='9']::after {
+    left: -8px;
+    right: auto;
+  }
+  #campaignMap .campaign-node[data-sector='5']::after {
+    display: block;
+    top: 100%;
+    left: 50%;
+    right: auto;
+    width: 2px;
+    height: 11px;
+  }
+  #campaignMap .campaign-progress-foot {
+    grid-row: 4;
+    grid-column: 1;
+    gap: 7px;
+    min-height: 0;
+    margin: 0;
+    padding: 6px 8px;
+    border-radius: 7px;
+  }
+  #campaignMap .campaign-progress-foot > span,
+  #campaignMap .campaign-progress-foot > strong {
+    font-size: 8px;
+    line-height: 1.1;
+    letter-spacing: 0;
+  }
+  #campaignMap .campaign-brief {
+    grid-row: 2 / 4;
+    grid-column: 2;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 9px;
+    margin: 0;
+    border-radius: 8px;
+  }
+  #campaignMap .campaign-brief .eyebrow,
+  #campaignMap .campaign-intel-status {
+    font-size: 8px;
+    line-height: 1.2;
+  }
+  #campaignMap .campaign-brief h3 {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  #campaignMap .campaign-brief p,
+  #campaignMap .campaign-brief strong {
+    margin: 4px 0;
+    font-size: 9px;
+    line-height: 1.25;
+  }
+  #campaignMap .campaign-map-actions {
+    grid-row: 4;
+    grid-column: 2;
+    display: flex;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin: 0;
+    min-width: 0;
+    min-height: 0;
+  }
+  #campaignMap .campaign-map-actions button {
+    min-width: 0;
+    min-height: 40px;
+    flex: 1 1 0;
+    padding: 5px;
+    border-radius: 5px;
+    font-size: 8px;
+    line-height: 1.15;
   }
 }
 @media (prefers-reduced-motion: reduce) {
