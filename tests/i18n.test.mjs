@@ -101,10 +101,28 @@ test('scatter loadout purchase and equipped mode translate in EN and ES', () => 
 });
 
 test('premium galaxy map translates mission intel and status into English and Spanish', () => {
-  assert.equal(translateText('DESTINO ATUAL · PRONTO PARA LANÇAMENTO', 'en'), 'CURRENT DESTINATION · READY TO LAUNCH');
-  assert.equal(translateText('DESTINO ATUAL · PRONTO PARA LANÇAMENTO', 'es'), 'DESTINO ACTUAL · LISTO PARA DESPEGAR');
+  assert.equal(
+    translateText('DESTINO ATUAL · PRONTO PARA LANÇAMENTO', 'en'),
+    'CURRENT DESTINATION · READY TO LAUNCH',
+  );
+  assert.equal(
+    translateText('DESTINO ATUAL · PRONTO PARA LANÇAMENTO', 'es'),
+    'DESTINO ACTUAL · LISTO PARA DESPEGAR',
+  );
   assert.equal(translateText('PROGRESSO DA CAMPANHA', 'en'), 'CAMPAIGN PROGRESS');
-  assert.equal(translateText('INTELIGÊNCIA DO SETOR SELECIONADO', 'es'), 'INFORMACIÓN DEL SECTOR SELECCIONADO');
-  assert.equal(translateText('SETOR FUTURO · RECONHECIMENTO DISPONÍVEL', 'en'), 'FUTURE SECTOR · RECONNAISSANCE AVAILABLE');
-  assert.equal(translateText('Setor 3: CINTURÃO DE DESTROÇOS, ROTA A SEGUIR. Consultar missão.', 'en').includes('Inspect mission.'), true);
+  assert.equal(
+    translateText('INTELIGÊNCIA DO SETOR SELECIONADO', 'es'),
+    'INFORMACIÓN DEL SECTOR SELECCIONADO',
+  );
+  assert.equal(
+    translateText('SETOR FUTURO · RECONHECIMENTO DISPONÍVEL', 'en'),
+    'FUTURE SECTOR · RECONNAISSANCE AVAILABLE',
+  );
+  assert.equal(
+    translateText(
+      'Setor 3: CINTURÃO DE DESTROÇOS, ROTA A SEGUIR. Consultar missão.',
+      'en',
+    ).includes('Inspect mission.'),
+    true,
+  );
 });

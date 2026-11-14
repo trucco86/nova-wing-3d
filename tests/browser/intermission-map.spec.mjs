@@ -119,9 +119,7 @@ test('localized hangar and galaxy map remain reachable in a narrow viewport', as
     const initialLaunch = await page.locator('#mapLaunch').boundingBox();
     expect(initialLaunch).not.toBeNull();
     expect(initialLaunch.y).toBeGreaterThanOrEqual(0);
-    expect(initialLaunch.y + initialLaunch.height).toBeLessThanOrEqual(
-      page.viewportSize().height,
-    );
+    expect(initialLaunch.y + initialLaunch.height).toBeLessThanOrEqual(page.viewportSize().height);
     const bounds = await page.locator('.campaign-map-card').boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(page.viewportSize().width);

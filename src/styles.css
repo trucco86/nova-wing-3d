@@ -4777,7 +4777,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
     border: 1px solid #55bdd1a0;
     border-radius: 12px;
     background: #061b2aee;
-    box-shadow: 0 -10px 25px #030d20aa, inset 0 0 10px #25bce61b;
+    box-shadow:
+      0 -10px 25px #030d20aa,
+      inset 0 0 10px #25bce61b;
     backdrop-filter: blur(10px);
   }
   #campaignMap .campaign-brand {
