@@ -108,6 +108,20 @@ test('localized hangar and galaxy map remain reachable in a narrow viewport', as
     await expect(page.locator('.campaign-node.next small')).toHaveText(
       translateText('PRÓXIMA MISSÃO', lang),
     );
+    await expect(page.locator('#mapIntelStatus')).toHaveText(
+      translateText('DESTINO ATUAL · PRONTO PARA LANÇAMENTO', lang),
+    );
+    await expect(page.locator('.campaign-progress-foot > span')).toHaveText(
+      translateText('PROGRESSO DA CAMPANHA', lang),
+    );
+    // The portrait route is taller than one screen: the launch CTA must stay
+    // reachable without requiring users to scroll past ten mission cards.
+    const initialLaunch = await page.locator('#mapLaunch').boundingBox();
+    expect(initialLaunch).not.toBeNull();
+    expect(initialLaunch.y).toBeGreaterThanOrEqual(0);
+    expect(initialLaunch.y + initialLaunch.height).toBeLessThanOrEqual(
+      page.viewportSize().height,
+    );
     const bounds = await page.locator('.campaign-map-card').boundingBox();
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(page.viewportSize().width);
