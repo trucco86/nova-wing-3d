@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.126 — QA127: identidades visuais premium de inimigos
+
+- Caças perseguidores, interceptadores e bombardeiros recebem silhuetas distintas com placas de carenagem, entradas de ar, aletas, blindagem e módulos de armas específicos.
+- Tanques e walkers ganham variações de blindagem visual coerentes com sua função. O modelo base, pontos de disparo e volumes de colisão não mudam.
+- O acabamento é renderizado em **uma única malha instanciada adicional por inimigo** com geometrias e materiais compartilhados, em vez de múltiplas novas malhas e draw calls.
+- QA de composição de seis famílias de variantes, instancing, integridade dos hardpoints e segurança do modelo do jogador.
+- O teste de impacto de VFX da cidade foi atualizado no pipeline QA122 a QA126 para a composição premium real de 9 componentes e quatro nuvens de poeira.
+- **Candidata isolada, sem merge/deploy em produção.**
+
 ## 1.27.125 — QA126: combates na subida e aliados cinematográficos
 
 - Quatro saídas de apoio dos Five Cats com entrada de longe, escolta e saída em curva tangencial. Introdução e Overdrive também passam a entrar e se afastar de forma animada, sem oclusão repentina.

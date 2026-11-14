@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
+import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
@@ -1024,6 +1025,9 @@ function enemyDetails(variant) {
       }
     }
     if (variant === 2) g.add(box(1.2, 0.24, 5.8, glowMaterial('#a76bff', 2.2), 0, 0.9, -0.8));
+    // One instanced, variant-specific armor silhouette per enemy fighter.
+    // The pilot's ship never receives enemy geometry or extra draw calls.
+    g.add(createEnemyIdentityDetail('fighter', variant));
     variants.set(variant, g);
   }
   return variants.get(variant).clone(true);
