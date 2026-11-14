@@ -73,7 +73,8 @@ test('all sector illustrations are unique, offline SVG and reuse cached data', (
   for (const url of art) {
     assert.ok(url.startsWith('url("data:image/svg+xml,'));
     assert.ok(url.includes('%3Csvg'));
-    assert.ok(!url.includes('https:') && !url.includes('http%3A'));
+    // xmlns inside SVG is a namespace identifier, not a network fetch.
+    assert.ok(!url.includes('https%3A%2F%2F') && !url.includes('src%3Dhttp'));
   }
   assert.equal(campaignSectorArtwork('city'), art[0]);
 });
