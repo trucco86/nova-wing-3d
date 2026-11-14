@@ -51,7 +51,9 @@ test('stage 1 city escalates from normal traffic to collapse and hanging maglev,
     if (impact) {
       expect(snap.cityDestruction.impacts[impact].visible).toBe(true);
       expect(snap.cityDestruction.impacts[impact].groundY).toBeGreaterThan(clearance.floorY);
-      expect(snap.cityDestruction.impacts[impact].drawCount).toBe(5);
+      // Premium impact uses one ring, four dust clouds, sparks, heat, scorch and instanced shards.
+      expect(snap.cityDestruction.impacts[impact].dustCount).toBe(4);
+      expect(snap.cityDestruction.impacts[impact].drawCount).toBe(9);
     }
     await page.screenshot({
       path: info.outputPath('stage1-destruction-' + seconds + '-' + info.project.name + '.png'),
