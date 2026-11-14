@@ -1,0 +1,59 @@
+name: QA128 | Capture original enemy waves
+on:
+  push:
+    branches:
+      - feat/qa128-trailer-pet-cover-free-enemy-waves-20261114
+    paths:
+      - .github/workflows/trailer-qa128-enemies.yml
+      - trailer/capture-enemy-waves-qa128.mjs
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-qa128-enemies-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NOVA_VISUAL_TEST: '1'
+    steps:
+      - name: Checkout game source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build game and isolated visual fixture
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Install chromium
+        run: npx playwright install chromium
+      - name: Verify FFmpeg
+        run: ffmpeg -version | head -n 1
+      - name: Serve fixture locally
+        run: |
+          (npm run dev > /tmp/nova-wing-qa128.log 2>&1 &)
+          for i in $(seq 1 90); do
+            if curl --fail --silent 'http://127.0.0.1:4173/__dynamic.html?sector=1' > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/nova-wing-qa128.log
+          exit 1
+      - name: Record genuine enemy combat frames at 30 FPS
+        run: node trailer/capture-enemy-waves-qa128.mjs
+      - name: Upload capture and provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa128-enemy-waves-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            artifacts/nova-wing-qa128-enemy-waves/*.mp4
+            artifacts/nova-wing-qa128-enemy-waves/provenance.json
