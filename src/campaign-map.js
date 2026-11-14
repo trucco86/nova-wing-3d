@@ -1,4 +1,5 @@
 import { campaignSectorArtwork } from './campaign-map-art.js';
+import { CINEMATIC_SECTOR_ATLAS, CINEMATIC_SECTOR_COORDS } from './campaign-map-cinematic-atlas.js';
 
 const THREATS = {
   city: 'Torres, sentinelas e caças de interceptação',
@@ -118,6 +119,9 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
   const completed = steps.filter((step) => step.status === 'completed').length;
   const route = doc.getElementById('campaignRoute');
   route.replaceChildren();
+  // One shared WebP atlas from the approved concept. Each card uses a different
+  // tile, with the previous offline SVG underneath as a fallback.
+  route.style.setProperty('--campaign-sector-atlas', 'url("' + CINEMATIC_SECTOR_ATLAS + '")');
   route.append(galaxyTrack(doc, steps.length));
   const buttons = [];
   for (const [index, step] of steps.entries()) {
@@ -142,6 +146,14 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
     const artwork = element(doc, 'span', 'campaign-sector-art');
     artwork.setAttribute('aria-hidden', 'true');
     artwork.style.setProperty('--sector-art', campaignSectorArtwork(step.theme));
+    const coordinate = CINEMATIC_SECTOR_COORDS[step.theme];
+    if (coordinate) {
+      artwork.setAttribute('data-art-source', 'cinematic-concept');
+      artwork.style.setProperty(
+        '--sector-sprite-position',
+        (coordinate[0] * 100) + '% ' + (coordinate[1] * 25) + '%',
+      );
+    }
 
     const text = element(doc, 'span', 'campaign-node-content');
     const badge = element(doc, 'span', 'campaign-node-icon', step.icon);
