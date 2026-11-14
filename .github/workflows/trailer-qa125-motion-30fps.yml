@@ -50,7 +50,7 @@ jobs:
           cat /tmp/nova-wing-youtube-server.log
           exit 1
       - name: Film 1620 distinct 1080p WebGL frames with real steering, color grade and encode
-        run: node trailer/capture-youtube.mjs
+        run: node trailer/capture-real-motion.mjs
       - name: Verify 30fps REAL native capture, 4K30 output, motion and provenance
         run: |
           ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,avg_frame_rate -of json artifacts/nova-wing-trailer-motion/nova-wing-4k30-native-motion-60s.mp4
@@ -63,5 +63,5 @@ jobs:
           retention-days: 14
           if-no-files-found: warn
           path: |
-            artifacts/nova-wing-trailer-youtube/nova-wing-youtube-4k60-60s.mp4
-            artifacts/nova-wing-trailer-youtube/provenance.json
+            artifacts/nova-wing-trailer-motion/nova-wing-4k30-native-motion-60s.mp4
+            artifacts/nova-wing-trailer-motion/provenance.json
