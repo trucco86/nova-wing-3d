@@ -71,6 +71,51 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  // QA122 visual proof: inspect real WebGL scene and static urban GPU batches,
+  // never a mocked HUD or a separate synthetic moon.
+  city122State() {
+    if (!lastScene) throw new Error('QA122 real scene was not rendered');
+    const moon = lastScene.getObjectByName('world-orbital-globe');
+    const realMoon = lastScene.getObjectByName('launch-orbit-moon');
+    const tiles = ['launch-city', 'launch-city-far'].map((name) => {
+      const tile = lastScene.getObjectByName(name);
+      const root = tile?.getObjectByName('city122-lived-in-street-blocks');
+      if (!tile || !root) throw new Error('QA122 street or duplicated road tile is absent');
+      return {
+        name,
+        visible: tile.visible && root.visible,
+        mediumBatches: root.getObjectByName('city122-visible-street-life-medium').children.length,
+        highBatches: root.getObjectByName('city122-extra-street-furniture-high').children.length,
+        quality: root.userData.quality,
+        lots: root.userData.sidewalkParcels.length,
+        outerLots: root.userData.outerParcels.length,
+        groundCells: root.userData.groundCells.length,
+        groundKinds: [...new Set(root.userData.groundCells.map((lot) => lot.type))],
+        vaporPlumes: root.userData.vaporSources.length,
+        groundSignals: root.userData.groundSignalIndices.length,
+        outerKinds: [...new Set(root.userData.outerParcels.map((lot) => lot.kind))],
+        occupiedSidewalks: root.getObjectByName('city122-grounded-pedestrian-pavements').count,
+        storefronts: root.getObjectByName('city122-real-ground-floor-storefront-glazing').count,
+        trees: root.getObjectByName('city122-grounded-street-tree-canopies').count,
+        pedestrians: root.userData.pedestrians?.length ?? 0,
+        adScreens: tile.getObjectByName('city-premium-ad-inventory')?.userData.total ?? 0,
+      };
+    });
+    return {
+      tiles,
+      moon: {
+        visible: moon?.visible ?? false,
+        fractured: moon?.material?.uniforms?.crackIntensity?.value === 1,
+        x: moon?.position.x ?? null,
+        y: moon?.position.y ?? null,
+        z: moon?.position.z ?? null,
+        backgroundDepth: moon?.material?.uniforms?.backgroundDepth?.value ?? null,
+        orbitalFractured: realMoon?.material?.fragmentShader.includes('branchA') ?? false,
+        realOrbitalMoonVisible: realMoon?.visible ?? false,
+      },
+      citySky: lastScene.getObjectByName('launch-sky-dome')?.material?.uniforms?.cityGlow?.value,
+    };
+  },
   // Private QA fixture only: render exact same camera and clock with and
   // without the new 285m architecture; production has no such debug switch.
   graphics40Horizon() {

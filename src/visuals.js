@@ -5,6 +5,11 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
+import {
+  animateCity122StreetLife,
+  createCity122StreetInfill,
+  setCity122Quality,
+} from './city-122-street-infill.js';
 import { cityAscentGroundFlow, placeCityBaseBuilding } from './city-spatial-layout.js';
 import { applyCityTileIdentity, setCityTileIdentityQuality } from './city-tile-identity.js';
 import { cityTilePositions } from './city-tile-scroll.js';
@@ -1088,7 +1093,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     side: T.BackSide,
     vertexShader:
       'varying vec3 p;void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;uniform float cityGlow;uniform float marsGlow;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);vec3 nightSky=c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze;float horizon=1.-smoothstep(-.22,.55,n.y);vec3 citySky=mix(vec3(.055,.15,.31),vec3(.15,.255,.35),horizon);citySky+=vec3(.13,.055,.16)*pow(cloud,2.)*band+vec3(.018,.055,.12)*bandHaze;vec3 marsSky=mix(vec3(.93,.57,.34),vec3(.52,.24,.20),smoothstep(-.18,.6,n.y));marsSky+=vec3(.12,.075,.038)*pow(cloud,2.)*band;gl_FragColor=vec4(mix(mix(nightSky,citySky,cityGlow),marsSky,marsGlow),1.);}`,
+    fragmentShader: `uniform vec3 tint;uniform vec3 ambient;uniform float launchHaze;uniform float cityGlow;uniform float marsGlow;varying vec3 p;${noise}void main(){vec3 n=normalize(p);float cloud=fbm(n*6.);float band=exp(-pow((n.y-.2+n.x*.15)*3.,2.));vec3 c=vec3(.002,.004,.013);c+=vec3(.008,.07,.07)*pow(cloud,2.)*band;c+=vec3(.035,.015,.085)*pow(fbm(n*8.+10.),3.);c+=vec3(.008,.018,.022)*exp(-abs(n.y)*8.);float bandHaze=exp(-pow((n.y+.08)*5.,2.));vec3 haze=vec3(.04,.15,.25)*bandHaze+vec3(.012,.045,.07)*pow(fbm(n*16.+7.),2.);vec3 nightSky=c*tint*1.25+ambient*(.12+.18*band+.12*cloud)+launchHaze*haze;float horizon=1.-smoothstep(-.22,.55,n.y);vec3 citySky=mix(vec3(.09,.125,.15),vec3(.27,.275,.255),horizon);citySky+=vec3(.082,.064,.052)*pow(cloud,2.)*band+vec3(.028,.036,.041)*bandHaze;vec3 marsSky=mix(vec3(.93,.57,.34),vec3(.52,.24,.20),smoothstep(-.18,.6,n.y));marsSky+=vec3(.12,.075,.038)*pow(cloud,2.)*band;gl_FragColor=vec4(mix(mix(nightSky,citySky,cityGlow),marsSky,marsGlow),1.);}`,
   });
   const skyDome = new T.Mesh(new T.SphereGeometry(1900, 32, 20), skyMat);
   skyDome.name = 'launch-sky-dome';
@@ -1127,10 +1132,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     uniforms: {
       crackIntensity: { value: 1 },
       bodyTint: { value: new T.Color('#ffffff') },
+      backgroundDepth: { value: 0 },
     },
     vertexShader:
-      'varying vec3 p;varying vec3 n;void main(){p=position;n=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float crack=1.-smoothstep(.007,.016,abs(N.x+.14*sin(N.y*13.)+.035*sin(N.y*55.)));c=c*bodyTint*(.05+lit*.95)+vec3(.95,.27,.035)*crack*.7*crackIntensity;gl_FragColor=vec4(c,1.);}`,
+      'uniform float backgroundDepth;varying vec3 p;varying vec3 n;void main(){p=position;n=normal;vec4 clip=projectionMatrix*modelViewMatrix*vec4(position,1.);clip.z=mix(clip.z,clip.w*.999999,backgroundDepth);gl_Position=clip;}',
+    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float maria=fbm(N*4.2+vec3(3.,7.,1.));float craterCell=length(fract(N.xy*27.+vec2(N.z*11.,N.z*7.))-.5);float craterRim=exp(-pow((craterCell-.29)*22.,2.));c=mix(c,vec3(.14,.17,.19),smoothstep(.54,.72,maria)*.32);c+=vec3(.09,.1,.11)*craterRim;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));float mainCrack=1.-smoothstep(.013,.033,fissure);float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);c=c*bodyTint*(.14+lit*.86);c=mix(c,vec3(.025,.025,.03),crack*.65*crackIntensity);c+=vec3(.93,.32,.082)*crack*.78*crackIntensity;gl_FragColor=vec4(c,1.);}`,
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
   moon.name = 'world-orbital-globe';
@@ -1142,8 +1148,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       transparent: true,
       depthWrite: false,
       blending: T.AdditiveBlending,
+      uniforms: { backgroundDepth: { value: 0 } },
       vertexShader:
-        'varying vec3 n;varying vec3 v;void main(){vec4 p=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=normalize(-p.xyz);gl_Position=projectionMatrix*p;}',
+        'uniform float backgroundDepth;varying vec3 n;varying vec3 v;void main(){vec4 p=modelViewMatrix*vec4(position,1.);n=normalize(normalMatrix*normal);v=normalize(-p.xyz);vec4 clip=projectionMatrix*p;clip.z=mix(clip.z,clip.w*.999999,backgroundDepth);gl_Position=clip;}',
       fragmentShader:
         'varying vec3 n;varying vec3 v;void main(){float a=pow(1.-abs(dot(normalize(n),normalize(v))),4.);gl_FragColor=vec4(.12,.55,.8,a*.6);}',
     }),
@@ -1510,7 +1517,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     urbanLife.add(craft);
   }
   city.add(urbanLife);
-  city.add(createCityDistricts(buildingAnchors));
+  const cityDistricts = createCityDistricts(buildingAnchors);
+  city.add(cityDistricts);
   city.add(createCityPremiumInfrastructure());
   city.add(createCityCommerce());
   city.add(createCityTraffic());
@@ -1518,6 +1526,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   city.add(createCity30DistrictLife(buildingAnchors));
   city.add(createCity32Living(buildingAnchors));
   city.add(createCity33Premium(buildingAnchors));
+  // QA122: inhabited streets sit on parcels between the maglev and towers,
+  // with ground-floor fronts anchored to actual procedural buildings.
+  city.add(
+    createCity122StreetInfill(buildingAnchors, [
+      ...cityDistricts.userData.towerFootprints,
+      ...cityDistricts.userData.platformFootprints,
+    ]),
+  );
   // Affordable inhabited-city depth: building-anchored landing pads, moving
   // lift services and HVAC. All details stay outside the x±72 flight area.
   if (dynamicFlight) city.add(createCity35LivedIn(buildingAnchors));
@@ -2056,6 +2072,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         setCity30Quality(tile.getObjectByName('city-matrix-streets'), quality);
         setCity32Quality(tile.getObjectByName('city32-living-metropolis'), quality);
         setCity33Quality(tile.getObjectByName('city33-premium-urban-life'), quality);
+        setCity122Quality(tile.getObjectByName('city122-lived-in-street-blocks'), quality);
         if (dynamicFlight)
           setCity35LivedInQuality(tile.getObjectByName('city35-lived-in-metropolis'), quality);
       }
@@ -2167,8 +2184,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (!urbanVisible) cityDestruction.visible = false;
       near.forEach((o) => (o.visible = urbanVisible));
       rain.visible = urbanVisible && t < 0.57;
-      // The Moon used in other stages is separate from the real lunar body.
-      moon.visible = atmosphere.visible = false;
+      // The ominous cracked moon belongs to the low city skyline only;
+      // retire it during ascent, before the realistic Earth-orbit Moon enters.
+      moon.visible = atmosphere.visible = progress < 0.24;
       // Night begins only after the last towers have retreated. A dedicated
       // sky-only interval builds stars and thin haze before Earth appears.
       scene.fog.density = T.MathUtils.lerp(0.00055, 0.00021, reveal.night);
@@ -2243,6 +2261,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       atmosphere.position.copy(moon.position);
       atmosphere.scale.setScalar(1);
       sceneryTheme = sector.theme;
+      // The city landmark is part of the far sky, not an object in the
+      // skyscraper corridor. Other sectors keep normal depth and occlusion.
+      const citySkyLandmark = sceneryTheme === 'city' ? 1 : 0;
+      moonMat.uniforms.backgroundDepth.value = citySkyLandmark;
+      atmosphere.material.uniforms.backgroundDepth.value = citySkyLandmark;
       launchAscentProgress = 0;
       cityVisualTravel = travel;
       cityCatastrophe?.reset();
@@ -2255,7 +2278,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (cityCatastrophe) cityCatastrophe.root.visible = sceneryTheme === 'city';
       if (cityReactive) cityReactive.root.visible = sceneryTheme === 'city';
       carrier.visible = sceneryTheme === 'fleet' || (sceneryTheme === 'station' && !dynamicFlight);
-      moonMat.uniforms.crackIntensity.value = signature.globe === 'fractured-moon' ? 1 : 0;
+      moonMat.uniforms.crackIntensity.value =
+        sceneryTheme === 'city' || signature.globe === 'fractured-moon' ? 1 : 0;
       moonMat.uniforms.bodyTint.value.set(signature.globe === 'ice-world' ? '#a9e5ff' : '#ffffff');
       if (orbitalSatellite) orbitalSatellite.visible = false;
       city.position.y = cityFar.position.y = 0;
@@ -2288,6 +2312,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         tile.getObjectByName('city-matrix-streets').visible = sceneryTheme === 'city';
         tile.getObjectByName('city32-living-metropolis').visible = sceneryTheme === 'city';
         tile.getObjectByName('city33-premium-urban-life').visible = sceneryTheme === 'city';
+        tile.getObjectByName('city122-lived-in-street-blocks').visible = sceneryTheme === 'city';
         if (dynamicFlight)
           tile.getObjectByName('city35-lived-in-metropolis').visible = sceneryTheme === 'city';
       }
@@ -2296,7 +2321,19 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       starfield.visible = sceneryTheme !== 'mars';
       // Show the orbital globe only after the last city/port buildings are gone.
       // The first-sector Earth horizon is handled separately by setLaunchAscent.
-      moon.visible = atmosphere.visible = ['fractured-moon', 'ice-world'].includes(signature.globe);
+      // City opening gains an unmistakable fractured lunar landmark. The
+      // later Earth-orbit Moon is a separate object and remains realistic.
+      moon.visible = atmosphere.visible =
+        sceneryTheme === 'city' || ['fractured-moon', 'ice-world'].includes(signature.globe);
+      if (sceneryTheme === 'city') {
+        // Shift the cratered moon deeper into the far skyline, while the
+        // shader keeps it behind EVERY foreground building at any altitude.
+        // z=-2100 stays inside the 2500-unit camera far plane.
+        moon.position.set(135, 600, -2100);
+        moon.scale.setScalar(1.4);
+        atmosphere.position.copy(moon.position);
+        atmosphere.scale.copy(moon.scale);
+      }
       if (signature.globe === 'ice-world') {
         moon.position.set(-420, 250, -1150);
         moon.scale.setScalar(0.85);
@@ -2308,23 +2345,29 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // mode on mobile without any bloom or additional geometry.
       const illuminatedCity = sceneryTheme === 'city';
       hemisphere.color.set(
-        sceneryTheme === 'mars' ? '#ffdfb5' : illuminatedCity ? '#e4f4ff' : '#9fcdec',
+        sceneryTheme === 'mars' ? '#ffdfb5' : illuminatedCity ? '#efe6d8' : '#9fcdec',
       );
       hemisphere.groundColor.set(
-        sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#567d9c' : '#09293a',
+        sceneryTheme === 'mars' ? '#995f49' : illuminatedCity ? '#77776f' : '#09293a',
       );
       hemisphere.intensity = sceneryTheme === 'mars' ? 2.35 : illuminatedCity ? 2.6 : 1.6;
-      rim.color.set(illuminatedCity ? '#67ffe4' : sector.accent);
-      rim.intensity = illuminatedCity ? 3.5 : 3;
-      key.color.set(['mars', 'sun'].includes(sector.theme) ? '#ffdcaa' : '#e3eeff');
-      key.intensity = sceneryTheme === 'mars' ? 3.7 : illuminatedCity ? 3.8 : 3.2;
-      purple.color.set(
-        illuminatedCity ? '#ff82dc' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff',
+      rim.color.set(illuminatedCity ? '#cdb49a' : sector.accent);
+      rim.intensity = illuminatedCity ? 1.85 : 3;
+      key.color.set(
+        illuminatedCity
+          ? '#f5e5cd'
+          : ['mars', 'sun'].includes(sector.theme)
+            ? '#ffdcaa'
+            : '#e3eeff',
       );
-      purple.intensity = illuminatedCity ? 1.8 : 0.75;
+      key.intensity = sceneryTheme === 'mars' ? 3.7 : illuminatedCity ? 3.45 : 3.2;
+      purple.color.set(
+        illuminatedCity ? '#b4a99b' : sector.theme === 'nebula' ? '#ff8be5' : '#a5a3ff',
+      );
+      purple.intensity = illuminatedCity ? 0.68 : 0.75;
       scene.background.set(sector.sky);
-      skyMat.uniforms.ambient.value.set(illuminatedCity ? '#507d9e' : sector.sky);
-      scene.fog.color.set(illuminatedCity ? '#507d9e' : sector.sky);
+      skyMat.uniforms.ambient.value.set(illuminatedCity ? '#737c7b' : sector.sky);
+      scene.fog.color.set(illuminatedCity ? '#737c7b' : sector.sky);
       scene.fog.density =
         sceneryTheme === 'mars' ? 0.00095 : illuminatedCity ? 0.00055 : land ? 0.0014 : 0.00045;
       // A different physical daylight / bounce / haze signature per planet.
@@ -2345,7 +2388,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         scene.fog.density = premiumGrade.haze;
         skyMat.uniforms.ambient.value.set(premiumGrade.fog);
       }
-      skyMat.uniforms.tint.value.set(sector.accent).multiplyScalar(1.4);
+      skyMat.uniforms.tint.value
+        .set(illuminatedCity ? '#d7c6ac' : sector.accent)
+        .multiplyScalar(illuminatedCity ? 1 : 1.4);
       launchSkyTint.copy(skyMat.uniforms.tint.value);
       dust.material.color.set(sector.accent);
       if (sceneryTheme === 'mars') sectorScenery.add(createMarsPremium());
@@ -2588,6 +2633,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
             animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
             animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
             animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
+            animateCity122StreetLife(
+              tile.getObjectByName('city122-lived-in-street-blocks'),
+              travel,
+            );
             updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
             updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
             if (dynamicFlight)

@@ -133,7 +133,17 @@ export function createLaunchCelestials(scene) {
         // Subtle apparent crater relief without extra expensive geometry.
         vec3 localNormal=normalize(n+vec3(cell.x,cell.y,0.)*(bowl*.15-ring*.05));
         float lit=.09+.91*max(0.,dot(localNormal,normalize(vec3(-.75,.33,.55))));
-        gl_FragColor=vec4(c*lit,fade);
+        // Match the distinct branching fractures seen above Nova City.
+        // The lunar terrain still uses the original physically shaded craters.
+        float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));
+        float mainCrack=1.-smoothstep(.013,.033,fissure);
+        float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);
+        float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));
+        float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);
+        vec3 shaded=c*lit;
+        shaded=mix(shaded,vec3(.025,.025,.03),crack*.65);
+        shaded+=vec3(.93,.32,.082)*crack*.72;
+        gl_FragColor=vec4(shaded,fade);
       }`,
   });
   const moon = new T.Mesh(new T.SphereGeometry(112, 64, 40), moonMaterial);
