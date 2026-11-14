@@ -12,6 +12,40 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
+  qa128-build-sync:
+    # Temporary, isolated PR-scoped preparation. Removed after candidate commit.
+    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa128-galaxy-campaign-map-premium-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and test map before producing committed bundle
+        run: |
+          npx prettier --write src/campaign-map.js src/campaign-map-art.js src/styles.css src/shell.html tests/qa128-galaxy-campaign-map.test.mjs
+          node --test tests/qa128-galaxy-campaign-map.test.mjs
+      - name: Generate candidate v1.27.127 offline
+        run: |
+          npm run release:prepare -- 1.27.127
+          npm run build:check
+      - name: Commit only to this unmerged feature branch
+        shell: bash
+        run: |
+          git add src/campaign-map.js src/campaign-map-art.js src/styles.css src/shell.html tests/qa128-galaxy-campaign-map.test.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.127.md index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA128): synchronize premium map and versioned bundle'
+            git push origin HEAD:feat/qa128-galaxy-campaign-map-premium-20261114
+          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
