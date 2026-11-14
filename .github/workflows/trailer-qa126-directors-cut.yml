@@ -49,12 +49,20 @@ jobs:
           done
           cat /tmp/nova-wing-youtube-server.log
           exit 1
-      - name: Capture real orbit transition Mars descent Saturn rings and 4 boss battles
+      - name: Capture real orbit transition Mars descent Saturn rings and five bosses
         run: node trailer/capture-directors-cut-qa126.mjs
       - name: Verify orbit is actually reached and 4K30 60s contains true WebGL frames
         run: |
           ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,avg_frame_rate -of json artifacts/nova-wing-directors-cut-qa126/nova-wing-directors-cut-4k30-60s.mp4
-          node --input-type=module -e "import fs from 'node:fs';let d=JSON.parse(fs.readFileSync('artifacts/nova-wing-directors-cut-qa126/provenance.json'));if(d.scenes.length!==14||d.outputWidth!==3840||d.outputHeight!==2160||d.outputFps!==30||d.nativeCaptureFps!==30||d.frames!==1620||d.movingScenes<8||d.frameInterpolation.startsWith('FFmpeg')||!d.upscaled)process.exit(1)"
+          node --input-type=module -e "import fs from 'node:fs';let d=JSON.parse(fs.readFileSync('artifacts/nova-wing-directors-cut-qa126/provenance.json'));if(d.scenes.length!==14||d.premiumBossScenes.length!==5||d.outputWidth!==3840||d.outputHeight!==2160||d.outputFps!==30||d.nativeCaptureFps!==30||d.frames!==1620||d.movingScenes<8||d.frameInterpolation.startsWith('FFmpeg')||!d.upscaled)process.exit(1)"
+      - name: Produce downloadable 1080p and lightweight 720p versions
+        if: success()
+        continue-on-error: true
+        run: |
+          src=artifacts/nova-wing-directors-cut-qa126/nova-wing-directors-cut-4k30-60s.mp4
+          dir=artifacts/nova-wing-directors-cut-qa126
+          ffmpeg -hide_banner -loglevel error -y -i "$src" -vf 'scale=1920:1080:flags=lanczos' -c:v libx264 -preset ultrafast -crf 24 -maxrate 6M -bufsize 12M -pix_fmt yuv420p -r 30 -c:a copy -movflags +faststart "$dir/nova-wing-directors-cut-1080p30-mobile.mp4"
+          ffmpeg -hide_banner -loglevel error -y -i "$src" -vf 'scale=1280:720:flags=lanczos' -c:v libx264 -preset ultrafast -crf 27 -maxrate 2.5M -bufsize 5M -pix_fmt yuv420p -r 30 -c:a copy -movflags +faststart "$dir/nova-wing-directors-cut-720p30-light.mp4"
       - name: Upload YouTube cut and capture provenance
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -64,4 +72,6 @@ jobs:
           if-no-files-found: warn
           path: |
             artifacts/nova-wing-directors-cut-qa126/nova-wing-directors-cut-4k30-60s.mp4
+            artifacts/nova-wing-directors-cut-qa126/nova-wing-directors-cut-1080p30-mobile.mp4
+            artifacts/nova-wing-directors-cut-qa126/nova-wing-directors-cut-720p30-light.mp4
             artifacts/nova-wing-directors-cut-qa126/provenance.json
