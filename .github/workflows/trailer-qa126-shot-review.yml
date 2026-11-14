@@ -1,0 +1,57 @@
+name: QA126 | Cinematic shot proof city orbit Mars Saturn nucleus bosses
+on:
+  push:
+    branches:
+      - feat/qa126-directors-cut-phase-transitions-saturn-bosses-20261114
+    paths:
+      - 'trailer/qa126-shot-review.mjs'
+      - '.github/workflows/trailer-qa126-shot-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-qa126-shot-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NOVA_VISUAL_TEST: '1'
+    steps:
+      - name: Checkout exact game source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build real game and QA fixture
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Install chromium
+        run: npx playwright install chromium
+      - name: Serve local gameplay fixture
+        run: |
+          (npm run dev > /tmp/nova-wing-qa126-server.log 2>&1 &)
+          for i in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4173/__dynamic.html?sector=0 > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/nova-wing-qa126-server.log
+          exit 1
+      - name: Verify nine actual orbital transition and boss frames
+        run: node trailer/qa126-shot-review.mjs
+      - name: Upload cinematic contact frames and scene metadata
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa126-shot-review-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            artifacts/nova-wing-qa126-shot-review/*.jpg
+            artifacts/nova-wing-qa126-shot-review/shot-review.json
