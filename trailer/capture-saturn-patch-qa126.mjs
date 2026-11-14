@@ -28,13 +28,11 @@ const scenes = [
  */
 const keySet = (_scene, t) => {
   const keys = new Set();
-  // Cinematic Saturn silhouette stays fully visible while the fighter makes
-  // short course-corrections near its original frame, not a 44-unit strafe.
-  if (t > 1.15 && t < 1.62) keys.add('d');
-  if (t > 1.62 && t < 2.07) keys.add('a');
-  if (t > 2.12 && t < 2.58) keys.add('d');
-  if (t > 2.58 && t < 3.04) keys.add('a');
-  if (t > 1.25 && t < 3.55 && t % 1.15 < 0.56) keys.add('Space');
+  // Four-second establishing shot: hold both the real fighter and Saturn
+  // within the same safe frame. Give only a subtle two-way piloting nudge.
+  if (t > 1.55 && t < 1.95) keys.add('d');
+  if (t >= 1.95 && t < 2.36) keys.add('a');
+  if (t >= 1.8 && t < 3.6 && t % 1.10 < 0.57) keys.add('Space');
   return keys;
 };
 
@@ -184,7 +182,7 @@ try {
   }
   report.frames = frame;
   if (frame !== 120) throw new Error('Expected 4 seconds x 30 frames, got ' + frame);
-  if (report.scenes[0].motionRange < 8) throw new Error('Real Saturn pilot did not steer');
+  if (report.scenes[0].motionRange < 2) throw new Error('Saturn pilot failed to make subtle 3D course correction');
   if (report.scenes.length !== 1) throw new Error('Expected reactor patch only');
   const movingScenes = report.scenes.filter((scene) => scene.motionRange > 8).length;
   if (movingScenes < 1) throw new Error('Motion validation failed: stationary reactor pilot');
