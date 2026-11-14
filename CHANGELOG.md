@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.128 — QA129: mapa galáctico cinematográfico fiel ao conceito
+
+- Dez miniaturas cinematográficas extraídas do conceito visual aprovado, unificadas em um único atlas WebP de 10,3 KB, incorporado ao build offline. Cada fase tem seu quadrante exclusivo; SVGs QA128 continuam de fallback.
+- Cards continuam reais, selecionáveis e conectados à progressão da campanha, com neon, chamfros HUD, menta para concluído e âmbar para a próxima missão.
+- Nebulosa, estrelas, horizonte da Terra e nave dos Five Cats adicionados em CSS decorativo, sem objetos WebGL ou impacto nos controles de gameplay.
+- Mantido o design system Nova Wing (Chakra Petch / Barlow Condensed, azul-marinho, ciano/menta e laranja).
+- Teste de integridade do atlas, 10 quadrantes, missão ativa e bloqueio da missão futura; correção de teste desktop que aplicava requisito de sticky CTA exclusivo do mobile.
+- **Candidata isolada na PR #348, sem merge ou deploy de produção.**
+
 ## 1.27.127 — QA128: mapa galáctico premium interativo
 
 - Substituição da grade simples do pós-missão por um mapa conectado dos dez setores, com rota ciano, nós numerados e cores distintas para missões concluídas, próxima missão e futuras.

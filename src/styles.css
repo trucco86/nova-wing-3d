@@ -10328,3 +10328,362 @@ body:not(.developer-session) #qaBerserkDock {
     top: 113px;
   }
 }
+
+/* QA129: approved Nova Wing concept integrated with the existing HUD tokens.
+   Artwork comes from one 10 KB inline WebP atlas, not ten requests or a flat
+   screenshot. Cards, current mission and all selection controls stay live. */
+#campaignMap .campaign-map-card {
+  border-color: #47d5eaaf;
+  background:
+    radial-gradient(ellipse 40% 12% at 94% 10%, #7f369763, transparent 100%),
+    radial-gradient(ellipse 55% 36% at 12% 63%, #242d7766, transparent 100%),
+    linear-gradient(145deg, #03111ef5, #071629f8 48%, #030c20fc);
+  box-shadow:
+    inset 0 0 0 1px #65eafa37,
+    inset 0 0 60px #104b8f29,
+    0 18px 66px #000d,
+    0 0 34px #2adbeb19;
+}
+#campaignMap .campaign-visual-sky {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+}
+#campaignMap .campaign-nebula-core {
+  position: absolute;
+  top: 32px;
+  right: -75px;
+  width: clamp(180px, 32%, 310px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: rotate(-24deg);
+  background:
+    radial-gradient(
+      ellipse 65% 40% at 48% 49%,
+      #fff7cf 0 2%,
+      #ffd5a6 2% 4%,
+      #f984a6 5% 7%,
+      #9a6ade 9% 13%,
+      #473f8f 19%,
+      #642d8e58 32%,
+      transparent 65%
+    ),
+    repeating-conic-gradient(
+      from -30deg,
+      #6231b6aa 0 7deg,
+      #c366fd74 9deg 12deg,
+      transparent 15deg 23deg,
+      #2d68c35e 25deg 31deg,
+      transparent 34deg 46deg
+    ),
+    radial-gradient(ellipse at center, #6a55ca5c 0 20%, transparent 67%);
+  filter: blur(1.2px) saturate(1.1);
+  opacity: 0.78;
+  -webkit-mask-image: radial-gradient(ellipse, #000 0 49%, transparent 72%);
+  mask-image: radial-gradient(ellipse, #000 0 49%, transparent 72%);
+}
+#campaignMap .campaign-sky-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.8;
+  background:
+    radial-gradient(circle at 80% 10%, #fff 0 1.5px, transparent 2px),
+    radial-gradient(circle at 62% 16%, #62cfff 0 1.5px, transparent 2px),
+    radial-gradient(circle at 8% 38%, #cd89ff 0 1.3px, transparent 2px),
+    radial-gradient(circle at 97% 52%, #7de4ff 0 1.2px, transparent 2px),
+    radial-gradient(circle at 5% 84%, #b57cff 0 1.2px, transparent 2px),
+    radial-gradient(circle at 84% 92%, #a5fcff 0 1.2px, transparent 2px),
+    repeating-linear-gradient(0deg, transparent 0 39px, #62d0f80b 40px, transparent 41px),
+    repeating-linear-gradient(90deg, transparent 0 39px, #62d0f80b 40px, transparent 41px);
+}
+#campaignMap .campaign-brand {
+  position: relative;
+  z-index: 2;
+  text-shadow:
+    0 0 14px #5ecae9bb,
+    0 0 2px #fff9;
+}
+#campaignMap .campaign-brand-wings {
+  color: #72f2ff;
+  text-shadow: 0 0 12px #60e8ffdd;
+}
+#campaignMap .campaign-map-header {
+  border-left-color: #66e5f7;
+  background: linear-gradient(90deg, #10334c6b, #163c5552 75%, transparent);
+}
+#campaignMap .campaign-map-header h2 {
+  color: #e3fbff;
+  text-shadow:
+    0 0 20px #4bceff87,
+    0 2px 4px #000;
+  letter-spacing: 0.09em;
+}
+#campaignMap .campaign-route-map {
+  z-index: 1;
+}
+#campaignMap .campaign-route-thread {
+  filter: drop-shadow(0 0 10px #1cdcf9a2);
+}
+#campaignMap .campaign-route-glow {
+  stroke: #62f9ff;
+  stroke-width: 2.9px;
+  opacity: 0.95;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 8px #59f3ff);
+}
+#campaignMap .campaign-route-stroke {
+  stroke: #35bde5;
+  stroke-width: 8px;
+  opacity: 0.23;
+}
+#campaignMap .campaign-node {
+  border-color: var(--node-border);
+  border-radius: 10px;
+  background: #051527;
+  box-shadow:
+    0 0 8px var(--node-glow),
+    0 11px 21px #000a;
+}
+#campaignMap .campaign-node::before {
+  border-width: 1.5px;
+  clip-path: polygon(
+    0 11px,
+    11px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
+}
+#campaignMap .campaign-sector-art {
+  overflow: hidden;
+  border-radius: 10px;
+  background-color: #07182b;
+  background-image:
+    linear-gradient(90deg, #041525f5 0%, #061a2de7 22%, #051a29a1 48%, #06152812 93%),
+    linear-gradient(0deg, #031222d9 0%, transparent 55%), var(--campaign-sector-atlas),
+    var(--sector-art);
+  background-size:
+    100% 100%,
+    100% 100%,
+    200% 500%,
+    cover;
+  background-position: center, center, var(--sector-sprite-position, center), center;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 24px #020c1f7f;
+}
+#campaignMap .campaign-sector-art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(132deg, #8af5ff33 0 2%, transparent 3% 96%, #71dbff55 97% 100%),
+    linear-gradient(0deg, #6ac6ff18, transparent 45%);
+  pointer-events: none;
+}
+#campaignMap .campaign-node.locked {
+  opacity: 0.95;
+}
+#campaignMap .campaign-node.locked .campaign-sector-art {
+  filter: saturate(0.83) brightness(0.81);
+  opacity: 0.93;
+}
+#campaignMap .campaign-node.next {
+  box-shadow:
+    0 0 0 1px #ffc18162,
+    0 0 30px #f68e4670,
+    inset 0 0 17px #f89d5633;
+}
+#campaignMap .campaign-node.next .campaign-sector-art {
+  filter: saturate(1.16) brightness(1.04);
+}
+#campaignMap .campaign-node.completed .campaign-sector-art {
+  filter: saturate(1.08);
+}
+#campaignMap .campaign-node-content {
+  position: relative;
+  z-index: 2;
+}
+#campaignMap .campaign-node-name {
+  color: #f3ffff;
+  text-shadow:
+    0 2px 5px #000,
+    0 0 16px #000f;
+}
+#campaignMap .campaign-node-status {
+  border-radius: 7px;
+  background: #0b314ddc;
+  box-shadow:
+    inset 0 0 7px #1f93c42b,
+    0 2px 8px #0007;
+}
+#campaignMap .campaign-node.next .campaign-node-status {
+  background: #64300de8;
+  border-color: #ffc27bbc;
+  color: #fff0aa;
+  box-shadow: 0 0 12px #e59a4985;
+}
+#campaignMap .campaign-node.completed .campaign-node-status {
+  background: #065341e3;
+  box-shadow: 0 0 12px #37edac7b;
+}
+#campaignMap .campaign-route-marker {
+  color: #ebfdff;
+  border-color: #87efff;
+  background: #071729f7;
+  box-shadow:
+    0 0 0 2px #102e49dd,
+    0 0 14px #26e0fca8,
+    inset 0 0 12px #3aa7ff88;
+}
+#campaignMap .campaign-route-marker::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid #63eaff3f;
+  border-radius: 50%;
+  pointer-events: none;
+}
+#campaignMap .campaign-planet-pass {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: clamp(112px, 19vw, 195px);
+  margin: -10px auto 11px;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 17% 100%);
+  mask-image: linear-gradient(180deg, transparent, #000 17% 100%);
+}
+#campaignMap .campaign-earth-limb {
+  position: absolute;
+  left: -15%;
+  bottom: -135%;
+  width: 130%;
+  aspect-ratio: 1.9;
+  border: 2px solid #81dfff6b;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 59% 20%, #ffe2a54f 0 1%, transparent 21%),
+    radial-gradient(ellipse 24% 8% at 22% 19%, #e9b5779c, transparent),
+    radial-gradient(ellipse 23% 8% at 72% 27%, #76b0c96b, transparent),
+    radial-gradient(ellipse at 50% 20%, #225c8a 0, #153a5e 30%, #081c40 58%, #040e23 75%);
+  box-shadow:
+    0 -7px 24px #70cfff90,
+    0 -2px 7px #bbebffb2,
+    inset 0 28px 35px #5ed5ff32;
+}
+#campaignMap .campaign-earth-limb::before {
+  content: '';
+  position: absolute;
+  top: 12%;
+  left: 10%;
+  width: 75%;
+  height: 28%;
+  opacity: 0.72;
+  background:
+    radial-gradient(ellipse 8% 6% at 20% 28%, #ffc178, transparent),
+    radial-gradient(ellipse 12% 8% at 41% 40%, #f9bc75, transparent),
+    radial-gradient(ellipse 17% 6% at 64% 22%, #fbd398, transparent),
+    radial-gradient(ellipse 13% 9% at 80% 63%, #fbd398, transparent);
+}
+#campaignMap .campaign-hero-spacecraft {
+  position: absolute;
+  right: 7%;
+  bottom: 34%;
+  width: clamp(60px, 14%, 125px);
+  height: 35%;
+  background: linear-gradient(130deg, #d9edff, #53708b 38%, #0c223c 66%, #95cde6), #193c61;
+  clip-path: polygon(
+    0 53%,
+    37% 42%,
+    55% 14%,
+    77% 0,
+    75% 42%,
+    100% 65%,
+    70% 69%,
+    59% 100%,
+    42% 69%,
+    10% 76%
+  );
+  transform: rotate(11deg);
+  filter: drop-shadow(0 5px 13px #000b);
+}
+#campaignMap .campaign-hero-spacecraft::after {
+  content: '';
+  position: absolute;
+  right: 12%;
+  bottom: 0;
+  width: 32%;
+  height: 32%;
+  border-radius: 50%;
+  background: #80ecff;
+  box-shadow:
+    0 0 15px 5px #37bcff,
+    0 0 29px #58baff;
+}
+#campaignMap .campaign-progress-foot {
+  z-index: 2;
+  border-color: #61ecedc2;
+  background: #041729ed;
+}
+#campaignMap .campaign-progress-meter {
+  background: repeating-linear-gradient(90deg, #112a42 0 9.4%, #051829 9.4% 10%);
+}
+#campaignMap .campaign-brief {
+  z-index: 2;
+}
+#campaignMap .campaign-map-actions {
+  z-index: 20;
+}
+@media (max-width: 600px) {
+  #campaignMap .campaign-nebula-core {
+    top: 50px;
+    right: -40px;
+    width: 185px;
+  }
+  #campaignMap .campaign-planet-pass {
+    height: 115px;
+    margin-top: -6px;
+  }
+  #campaignMap .campaign-earth-limb {
+    bottom: -149%;
+    width: 153%;
+    left: -27%;
+  }
+  #campaignMap .campaign-hero-spacecraft {
+    right: 2%;
+    bottom: 30%;
+    width: 66px;
+  }
+  #campaignMap .campaign-node-name {
+    font-size: clamp(9px, 2.55vw, 12px);
+  }
+}
+@media (max-height: 550px) and (min-width: 701px) {
+  #campaignMap .campaign-visual-sky {
+    opacity: 0.6;
+  }
+  #campaignMap .campaign-planet-pass {
+    display: none;
+  }
+  #campaignMap .campaign-node-name {
+    font-size: clamp(7px, 0.93vw, 9px);
+  }
+  #campaignMap .campaign-sector-art {
+    background-image:
+      linear-gradient(90deg, #061728e8 0%, #051a2ccf 47%, #07142a55 92%),
+      linear-gradient(0deg, #041323cb 0%, transparent 80%), var(--campaign-sector-atlas),
+      var(--sector-art);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #campaignMap .campaign-node.next .campaign-route-marker {
+    animation: none;
+  }
+}
