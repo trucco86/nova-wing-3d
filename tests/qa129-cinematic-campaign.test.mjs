@@ -35,20 +35,39 @@ class Element {
     this.textContent = '';
     this.disabled = false;
   }
-  setAttribute(n, v) { this.attrs[n] = String(v); }
-  getAttribute(n) { return this.attrs[n] ?? null; }
-  append(...nodes) { this.children.push(...nodes); }
-  replaceChildren(...nodes) { this.children = nodes; }
-  addEventListener(_type, handler) { this.click = handler; }
+  setAttribute(n, v) {
+    this.attrs[n] = String(v);
+  }
+  getAttribute(n) {
+    return this.attrs[n] ?? null;
+  }
+  append(...nodes) {
+    this.children.push(...nodes);
+  }
+  replaceChildren(...nodes) {
+    this.children = nodes;
+  }
+  addEventListener(_type, handler) {
+    this.click = handler;
+  }
 }
 
 const fakeDocument = () => {
   const ids = {};
   for (const name of [
-    'campaignRoute', 'mapSectorTitle', 'mapSectorBrief', 'mapSectorThreat',
-    'mapSectorBoss', 'mapIntelStatus', 'mapProgress', 'mapProgressFill',
-    'mapProgressCount', 'mapProgressMeter', 'mapLaunch',
-  ]) ids[name] = new Element('div');
+    'campaignRoute',
+    'mapSectorTitle',
+    'mapSectorBrief',
+    'mapSectorThreat',
+    'mapSectorBoss',
+    'mapIntelStatus',
+    'mapProgress',
+    'mapProgressFill',
+    'mapProgressCount',
+    'mapProgressMeter',
+    'mapLaunch',
+  ])
+    ids[name] = new Element('div');
   return {
     ids,
     getElementById: (id) => ids[id],
@@ -84,10 +103,22 @@ test('cinematic images are bound to live mission cards while progress remains dy
   assert.equal(cards.length, 10);
   assert.deepEqual(
     cards.map((card) => card.children[0].styles['--sector-sprite-position']),
-    ['0% 0%', '100% 0%', '0% 25%', '100% 25%', '0% 50%',
-     '100% 50%', '0% 75%', '100% 75%', '0% 100%', '100% 100%'],
+    [
+      '0% 0%',
+      '100% 0%',
+      '0% 25%',
+      '100% 25%',
+      '0% 50%',
+      '100% 50%',
+      '0% 75%',
+      '100% 75%',
+      '0% 100%',
+      '100% 100%',
+    ],
   );
-  assert.ok(cards.every((card) => card.children[0].attrs['data-art-source'] === 'cinematic-concept'));
+  assert.ok(
+    cards.every((card) => card.children[0].attrs['data-art-source'] === 'cinematic-concept'),
+  );
   assert.equal(doc.ids.mapProgress.textContent, '1 / 10 SETORES CONCLUÍDOS');
   assert.equal(doc.ids.mapProgressFill.styles.width, '10%');
   cards[9].click();

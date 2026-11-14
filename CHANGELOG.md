@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.128 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.127 — QA128: mapa galáctico premium interativo
 
 - Substituição da grade simples do pós-missão por um mapa conectado dos dez setores, com rota ciano, nós numerados e cores distintas para missões concluídas, próxima missão e futuras.

@@ -10329,7 +10329,6 @@ body:not(.developer-session) #qaBerserkDock {
   }
 }
 
-
 /* QA129: approved Nova Wing concept integrated with the existing HUD tokens.
    Artwork comes from one 10 KB inline WebP atlas, not ten requests or a flat
    screenshot. Cards, current mission and all selection controls stay live. */
@@ -10362,8 +10361,24 @@ body:not(.developer-session) #qaBerserkDock {
   border-radius: 50%;
   transform: rotate(-24deg);
   background:
-    radial-gradient(ellipse 65% 40% at 48% 49%, #fff7cf 0 2%, #ffd5a6 2% 4%, #f984a6 5% 7%, #9a6ade 9% 13%, #473f8f 19%, #642d8e58 32%, transparent 65%),
-    repeating-conic-gradient(from -30deg, #6231b6aa 0 7deg, #c366fd74 9deg 12deg, transparent 15deg 23deg, #2d68c35e 25deg 31deg, transparent 34deg 46deg),
+    radial-gradient(
+      ellipse 65% 40% at 48% 49%,
+      #fff7cf 0 2%,
+      #ffd5a6 2% 4%,
+      #f984a6 5% 7%,
+      #9a6ade 9% 13%,
+      #473f8f 19%,
+      #642d8e58 32%,
+      transparent 65%
+    ),
+    repeating-conic-gradient(
+      from -30deg,
+      #6231b6aa 0 7deg,
+      #c366fd74 9deg 12deg,
+      transparent 15deg 23deg,
+      #2d68c35e 25deg 31deg,
+      transparent 34deg 46deg
+    ),
     radial-gradient(ellipse at center, #6a55ca5c 0 20%, transparent 67%);
   filter: blur(1.2px) saturate(1.1);
   opacity: 0.78;
@@ -10387,7 +10402,9 @@ body:not(.developer-session) #qaBerserkDock {
 #campaignMap .campaign-brand {
   position: relative;
   z-index: 2;
-  text-shadow: 0 0 14px #5ecae9bb, 0 0 2px #fff9;
+  text-shadow:
+    0 0 14px #5ecae9bb,
+    0 0 2px #fff9;
 }
 #campaignMap .campaign-brand-wings {
   color: #72f2ff;
@@ -10399,7 +10416,9 @@ body:not(.developer-session) #qaBerserkDock {
 }
 #campaignMap .campaign-map-header h2 {
   color: #e3fbff;
-  text-shadow: 0 0 20px #4bceff87, 0 2px 4px #000;
+  text-shadow:
+    0 0 20px #4bceff87,
+    0 2px 4px #000;
   letter-spacing: 0.09em;
 }
 #campaignMap .campaign-route-map {
@@ -10424,11 +10443,22 @@ body:not(.developer-session) #qaBerserkDock {
   border-color: var(--node-border);
   border-radius: 10px;
   background: #051527;
-  box-shadow: 0 0 8px var(--node-glow), 0 11px 21px #000a;
+  box-shadow:
+    0 0 8px var(--node-glow),
+    0 11px 21px #000a;
 }
 #campaignMap .campaign-node::before {
   border-width: 1.5px;
-  clip-path: polygon(0 11px, 11px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px));
+  clip-path: polygon(
+    0 11px,
+    11px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px)
+  );
 }
 #campaignMap .campaign-sector-art {
   overflow: hidden;
@@ -10436,10 +10466,13 @@ body:not(.developer-session) #qaBerserkDock {
   background-color: #07182b;
   background-image:
     linear-gradient(90deg, #041525f5 0%, #061a2de7 22%, #051a29a1 48%, #06152812 93%),
-    linear-gradient(0deg, #031222d9 0%, transparent 55%),
-    var(--campaign-sector-atlas),
+    linear-gradient(0deg, #031222d9 0%, transparent 55%), var(--campaign-sector-atlas),
     var(--sector-art);
-  background-size: 100% 100%, 100% 100%, 200% 500%, cover;
+  background-size:
+    100% 100%,
+    100% 100%,
+    200% 500%,
+    cover;
   background-position: center, center, var(--sector-sprite-position, center), center;
   background-repeat: no-repeat;
   box-shadow: inset 0 0 24px #020c1f7f;
@@ -10461,7 +10494,10 @@ body:not(.developer-session) #qaBerserkDock {
   opacity: 0.93;
 }
 #campaignMap .campaign-node.next {
-  box-shadow: 0 0 0 1px #ffc18162, 0 0 30px #f68e4670, inset 0 0 17px #f89d5633;
+  box-shadow:
+    0 0 0 1px #ffc18162,
+    0 0 30px #f68e4670,
+    inset 0 0 17px #f89d5633;
 }
 #campaignMap .campaign-node.next .campaign-sector-art {
   filter: saturate(1.16) brightness(1.04);
@@ -10475,12 +10511,16 @@ body:not(.developer-session) #qaBerserkDock {
 }
 #campaignMap .campaign-node-name {
   color: #f3ffff;
-  text-shadow: 0 2px 5px #000, 0 0 16px #000f;
+  text-shadow:
+    0 2px 5px #000,
+    0 0 16px #000f;
 }
 #campaignMap .campaign-node-status {
   border-radius: 7px;
   background: #0b314ddc;
-  box-shadow: inset 0 0 7px #1f93c42b, 0 2px 8px #0007;
+  box-shadow:
+    inset 0 0 7px #1f93c42b,
+    0 2px 8px #0007;
 }
 #campaignMap .campaign-node.next .campaign-node-status {
   background: #64300de8;
@@ -10496,7 +10536,10 @@ body:not(.developer-session) #qaBerserkDock {
   color: #ebfdff;
   border-color: #87efff;
   background: #071729f7;
-  box-shadow: 0 0 0 2px #102e49dd, 0 0 14px #26e0fca8, inset 0 0 12px #3aa7ff88;
+  box-shadow:
+    0 0 0 2px #102e49dd,
+    0 0 14px #26e0fca8,
+    inset 0 0 12px #3aa7ff88;
 }
 #campaignMap .campaign-route-marker::before {
   content: '';
@@ -10530,7 +10573,10 @@ body:not(.developer-session) #qaBerserkDock {
     radial-gradient(ellipse 24% 8% at 22% 19%, #e9b5779c, transparent),
     radial-gradient(ellipse 23% 8% at 72% 27%, #76b0c96b, transparent),
     radial-gradient(ellipse at 50% 20%, #225c8a 0, #153a5e 30%, #081c40 58%, #040e23 75%);
-  box-shadow: 0 -7px 24px #70cfff90, 0 -2px 7px #bbebffb2, inset 0 28px 35px #5ed5ff32;
+  box-shadow:
+    0 -7px 24px #70cfff90,
+    0 -2px 7px #bbebffb2,
+    inset 0 28px 35px #5ed5ff32;
 }
 #campaignMap .campaign-earth-limb::before {
   content: '';
@@ -10552,10 +10598,19 @@ body:not(.developer-session) #qaBerserkDock {
   bottom: 34%;
   width: clamp(60px, 14%, 125px);
   height: 35%;
-  background:
-    linear-gradient(130deg, #d9edff, #53708b 38%, #0c223c 66%, #95cde6),
-    #193c61;
-  clip-path: polygon(0 53%, 37% 42%, 55% 14%, 77% 0, 75% 42%, 100% 65%, 70% 69%, 59% 100%, 42% 69%, 10% 76%);
+  background: linear-gradient(130deg, #d9edff, #53708b 38%, #0c223c 66%, #95cde6), #193c61;
+  clip-path: polygon(
+    0 53%,
+    37% 42%,
+    55% 14%,
+    77% 0,
+    75% 42%,
+    100% 65%,
+    70% 69%,
+    59% 100%,
+    42% 69%,
+    10% 76%
+  );
   transform: rotate(11deg);
   filter: drop-shadow(0 5px 13px #000b);
 }
@@ -10568,7 +10623,9 @@ body:not(.developer-session) #qaBerserkDock {
   height: 32%;
   border-radius: 50%;
   background: #80ecff;
-  box-shadow: 0 0 15px 5px #37bcff, 0 0 29px #58baff;
+  box-shadow:
+    0 0 15px 5px #37bcff,
+    0 0 29px #58baff;
 }
 #campaignMap .campaign-progress-foot {
   z-index: 2;
@@ -10621,8 +10678,7 @@ body:not(.developer-session) #qaBerserkDock {
   #campaignMap .campaign-sector-art {
     background-image:
       linear-gradient(90deg, #061728e8 0%, #051a2ccf 47%, #07142a55 92%),
-      linear-gradient(0deg, #041323cb 0%, transparent 80%),
-      var(--campaign-sector-atlas),
+      linear-gradient(0deg, #041323cb 0%, transparent 80%), var(--campaign-sector-atlas),
       var(--sector-art);
   }
 }

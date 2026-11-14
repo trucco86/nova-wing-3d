@@ -151,7 +151,7 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
       artwork.setAttribute('data-art-source', 'cinematic-concept');
       artwork.style.setProperty(
         '--sector-sprite-position',
-        (coordinate[0] * 100) + '% ' + (coordinate[1] * 25) + '%',
+        coordinate[0] * 100 + '% ' + coordinate[1] * 25 + '%',
       );
     }
 
