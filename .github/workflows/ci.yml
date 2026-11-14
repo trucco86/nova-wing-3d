@@ -12,6 +12,40 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
+  qa128-landscape-sync:
+    # One-time PR branch bundle synchronization; never deploy production.
+    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa128-galaxy-campaign-map-premium-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format landscape CSS and regressions
+        run: |
+          npx prettier --write src/styles.css tests/browser/intermission-map.spec.mjs
+          node --test tests/qa128-galaxy-campaign-map.test.mjs tests/intermission-campaign-map.test.mjs
+      - name: Regenerate release bundle without production deployment
+        run: |
+          npm run build
+          npm run build:check
+      - name: Commit only to isolated QA128 branch
+        shell: bash
+        run: |
+          git add src/styles.css tests/browser/intermission-map.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA128): synchronize responsive campaign map preview'
+            git push origin HEAD:feat/qa128-galaxy-campaign-map-premium-20261114
+          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
