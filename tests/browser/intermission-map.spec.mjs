@@ -39,6 +39,21 @@ test('intermission hangar upgrades projectiles and cadence before campaign map a
     expect(briefing).not.toBeNull();
     expect(launch.y + launch.height).toBeLessThanOrEqual(page.viewportSize().height);
     expect(briefing.y).toBeGreaterThanOrEqual(0);
+    // A ten-stop galactic route must be inspectable in compact landscape,
+    // with no hidden final sector or CTA outside the 390px mobile viewport.
+    const sectors = await page.locator('.campaign-node').evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const r = node.getBoundingClientRect();
+        return { x: r.x, y: r.y, right: r.right, bottom: r.bottom };
+      }),
+    );
+    expect(sectors).toHaveLength(10);
+    for (const sector of sectors) {
+      expect(sector.x).toBeGreaterThanOrEqual(0);
+      expect(sector.y).toBeGreaterThanOrEqual(0);
+      expect(sector.right).toBeLessThanOrEqual(page.viewportSize().width);
+      expect(sector.bottom).toBeLessThanOrEqual(page.viewportSize().height);
+    }
   }
   await page.screenshot({ path: info.outputPath('campaign-map-10-stages.png') });
   await page.locator('#mapBack').click();
