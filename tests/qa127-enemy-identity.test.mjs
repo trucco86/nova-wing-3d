@@ -3,10 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { fighter } from '../src/visuals.js';
 import { createGroundEnemy } from '../src/encounters.js';
-import {
-  createEnemyIdentityDetail,
-  enemyIdentityPlates,
-} from '../src/enemy-premium-identity.js';
+import { createEnemyIdentityDetail, enemyIdentityPlates } from '../src/enemy-premium-identity.js';
 
 const kinds = ['fighter', 'tank', 'walker'];
 
@@ -17,7 +14,11 @@ test('every role has a distinct premium silhouette without extra gameplay collid
     assert.notDeepEqual(variants[1], variants[2]);
     for (const [variant, parts] of variants.entries()) {
       assert.ok(parts.length >= 8 && parts.length <= 12, kind + ' render budget');
-      assert.ok(parts.every((part) => Object.values(part).every((v) => typeof v === 'string' || Number.isFinite(v))));
+      assert.ok(
+        parts.every((part) =>
+          Object.values(part).every((v) => typeof v === 'string' || Number.isFinite(v)),
+        ),
+      );
       const batch = createEnemyIdentityDetail(kind, variant);
       assert.ok(batch instanceof T.InstancedMesh);
       assert.equal(batch.count, parts.length);
@@ -48,7 +49,9 @@ test('all enemy roles keep one cosmetic batch while hero silhouette remains unch
     assert.ok(batches[0] instanceof T.InstancedMesh);
     assert.ok(model.getObjectByName('enemy-premium-airframe'));
     for (const side of [-1, 1]) {
-      assert.ok(model.getObjectByName(side < 0 ? 'fighter-underwing-missile' : 'fighter-underwing-missile'));
+      assert.ok(
+        model.getObjectByName(side < 0 ? 'fighter-underwing-missile' : 'fighter-underwing-missile'),
+      );
     }
   }
 });

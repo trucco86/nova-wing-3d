@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.126 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.125 — QA126: combates na subida e aliados cinematográficos
 
 - Quatro saídas de apoio dos Five Cats com entrada de longe, escolta e saída em curva tangencial. Introdução e Overdrive também passam a entrar e se afastar de forma animada, sem oclusão repentina.
