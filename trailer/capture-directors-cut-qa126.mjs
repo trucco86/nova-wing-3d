@@ -8,7 +8,7 @@ const viewport = { width: 1920, height: 1080 };
 const destination = resolve('artifacts/nova-wing-directors-cut-qa126');
 const framesDir = join(destination, 'frames');
 const baseURL = 'http://127.0.0.1:4173';
-if (fps !== 30) throw new Error('QA125 must capture 30 unique WebGL frames/second; refusing interpolated source');
+if (fps !== 30) throw new Error('QA126 must capture 30 unique WebGL frames/second; refusing interpolated source');
 const ffmpegProbe = spawnSync('ffmpeg', ['-version'], { encoding: 'utf8' });
 if (ffmpegProbe.error || ffmpegProbe.status !== 0) {
   throw new Error('FFmpeg is required before frame capture: ' + (ffmpegProbe.error?.message || ffmpegProbe.stderr));
@@ -24,11 +24,11 @@ const scenes = [
   { id: 'earth-orbit-reveal', query: 'sector=0&encounters=1&citySetpieces=1', seconds: 4, launch: 'orbit' },
   // The Mars approach and descent are separate authentic travel phases.
   { id: 'mars-approach', query: 'sector=1&encounters=1', start: 8, seconds: 4 },
-  { id: 'mars-atmosphere-entry', query: 'sector=1&encounters=1', start: 18, seconds: 4 },
+  { id: 'mars-atmosphere-entry', query: 'sector=1&encounters=1', start: 23, seconds: 4 },
   { id: 'mars-desert-combat', query: 'sector=1&encounters=1', start: 29, seconds: 3.5 },
   { id: 'asteroid-escape', query: 'sector=2&encounters=1&asteroidCourse=1', start: 24, seconds: 2.5 },
   // Highlight active attacks and 360º combat inside the mother ship.
-  { id: 'mothership-reactor-combat', query: 'sector=3&qaBoss=3&encounters=1', start: 2.0, seconds: 5, camera: 'combat', boss: true, attack: true },
+  { id: 'mothership-reactor-combat', query: 'sector=3&qaBoss=3&encounters=1', start: 2.1, seconds: 5, camera: 'chase', boss: true, attack: true },
   { id: 'europa-colossus-reveal', query: 'sector=5&qaBoss=5&encounters=1', start: 1.1, seconds: 3, camera: 'combat', boss: true },
   // The NÚCLEO PÚRPURA phase is different from the mother-ship reactor.
   { id: 'purple-core-boss', query: 'sector=6&qaBoss=6&encounters=1', start: 1.1, seconds: 3.5, camera: 'combat', boss: true, attack: true },
@@ -61,6 +61,14 @@ const keySet = (scene, elapsed) => {
   }
   if (scene.id === 'earth-orbit-reveal') {
     if (t < 2.0) keys.add('Shift');
+    return keys;
+  }
+  if (scene.id === 'mothership-reactor-combat') {
+    // QA126 validated shot: camera is elevated before the recording, then
+    // the real fighter strafes while firing with the reactor unobstructed.
+    if (t < 1.35 || (t >= 2.7 && t < 4.15)) keys.add('d');
+    else keys.add('a');
+    if (t % 1.18 < 0.96) keys.add('Space');
     return keys;
   }
   if (t % 1.15 < (scene.attack ? 1.03 : 0.82)) keys.add('Space');
@@ -160,6 +168,13 @@ try {
     } else {
       await page.evaluate((seconds) => window.fixture.advance(seconds), scene.start);
     }
+    if (scene.id === 'mothership-reactor-combat') {
+      // Move to the tested line of sight before recording; it is actual
+      // game input, not a post-production camera pan.
+      await page.keyboard.down('w');
+      await page.evaluate(() => window.fixture.advance(3));
+      await page.keyboard.up('w');
+    }
     if (scene.camera === 'combat') {
       await page.keyboard.press('c');
       await page.keyboard.press('c');
@@ -227,7 +242,7 @@ try {
     const xRange = Math.max(...positions.map((p) => p.x)) - Math.min(...positions.map((p) => p.x));
     const yRange = Math.max(...positions.map((p) => p.y)) - Math.min(...positions.map((p) => p.y));
     const motionRange = Math.hypot(xRange, yRange);
-    report.scenes.push({ id: scene.id, firstFrame: sceneStart, frames: frame - sceneStart, xRange, yRange, motionRange, ...metrics });
+    report.scenes.push({ id: scene.id, firstFrame: sceneStart, frames: frame - sceneStart, xRange, yRange, motionRange, premiumBoss: !!scene.boss, ...metrics });
     if (motionRange < 5) console.warn('[motion] Limited physical ship displacement: ' + scene.id + ' ' + motionRange.toFixed(2));
 
     console.log('[capture] ' + scene.id + ': ' + (frame - sceneStart) + ' genuine gameplay frames');
@@ -235,7 +250,9 @@ try {
   report.frames = frame;
   if (frame !== 1620) throw new Error('Expected 54 seconds x 30 frames, got ' + frame);
   if (report.scenes.find(s => s.id === 'earth-orbit-reveal')?.orbitalLaunch !== 'orbit') throw new Error('Earth orbit reveal is not in actual orbit');
-  if (report.scenes.filter(s => /saturn|boss|reactor/.test(s.id)).length < 5) throw new Error('Missing premium combat coverage');
+  const premiumBosses = report.scenes.filter(s => s.premiumBoss);
+  if (premiumBosses.length !== 5) throw new Error('Expected five real boss scenes, got '+premiumBosses.length);
+  report.premiumBossScenes = premiumBosses.map(s => s.id);
   const movingScenes = report.scenes.filter((scene) => scene.motionRange > 8).length;
   if (movingScenes < 8) throw new Error('Motion validation failed: only ' + movingScenes + '/14 scenes show meaningful piloting');
   report.movingScenes = movingScenes;
