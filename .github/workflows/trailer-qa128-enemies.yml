@@ -34,8 +34,11 @@ jobs:
           node tools/visual-fixture.mjs
       - name: Install chromium
         run: npx playwright install chromium
-      - name: Verify FFmpeg
-        run: ffmpeg -version | head -n 1
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -n 1
       - name: Serve fixture locally
         run: |
           (npm run dev > /tmp/nova-wing-qa128.log 2>&1 &)
