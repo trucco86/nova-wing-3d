@@ -12,44 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa128-portrait-localization-sync:
-    # One-time candidate preparation on this PR only; never merge or deploy production.
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa128-galaxy-campaign-map-premium-20261114'
-    runs-on: ubuntu-latest
-    timeout-minutes: 16
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format and test the translated campaign map
-        run: |
-          npx prettier --write src/styles.css src/i18n.js tests/i18n.test.mjs tests/browser/intermission-map.spec.mjs
-          node --test tests/i18n.test.mjs tests/qa128-galaxy-campaign-map.test.mjs
-      - name: Rebuild isolated web release candidate
-        run: |
-          npm run build
-          npm run build:check
-      - name: Validate mobile portrait interaction in both languages
-        run: |
-          npx playwright install chromium
-          npx playwright test tests/browser/intermission-map.spec.mjs --project=mobile --grep "localized hangar"
-      - name: Sync only candidate source and generated HTML
-        shell: bash
-        run: |
-          git add src/styles.css src/i18n.js tests/i18n.test.mjs tests/browser/intermission-map.spec.mjs index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA128): sync sticky map navigation and complete PT EN ES localization'
-            git push origin HEAD:feat/qa128-galaxy-campaign-map-premium-20261114
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
