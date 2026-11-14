@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.123 — Candidata QA124 (sem promoção)
+
+- QA124 (PR #340): chefe final depende do encerramento do subchefe, intervalo de recuperação de 8 segundos e aviso de aproximação de 3,5 segundos.
+- Saída do subchefe fora da tela libera corretamente a sequência; testes QA sem inimigos preservam a progressão.
+- Testes de regressão da ordem e do tempo; CI, WebGL real e FPS em smartphone ainda exigidos.
+- **Candidata isolada, não publicada em produção.**
+
 ## 1.27.122
 
 **QA122 Cidade Premium 4.1 (candidata, sem merge)**
