@@ -4189,16 +4189,12 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   overscroll-behavior: contain;
   pointer-events: auto;
   touch-action: pan-y;
-  padding:
-    max(16px, env(safe-area-inset-top, 0px))
-    max(14px, env(safe-area-inset-right, 0px))
-    max(22px, env(safe-area-inset-bottom, 0px))
-    max(14px, env(safe-area-inset-left, 0px));
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px))
+    max(22px, env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
   background:
     radial-gradient(ellipse at 88% 7%, #55388466, transparent 24%),
     radial-gradient(ellipse at 5% 35%, #252e7c8c, transparent 39%),
-    radial-gradient(ellipse at 85% 85%, #3f20688a, transparent 33%),
-    #030c1b;
+    radial-gradient(ellipse at 85% 85%, #3f20688a, transparent 33%), #030c1b;
 }
 #campaignMap[hidden] {
   display: none;
@@ -4251,8 +4247,22 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   aspect-ratio: 1;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 42% 47%, #ffecbe 0 3%, #e98bb7 5%, #5e579e 12%, #242f6b 28%, transparent 69%),
-    conic-gradient(from 35deg, transparent 0 22%, #b980cd55 32%, transparent 43% 62%, #5f8fdc99 73%, transparent 88%);
+    radial-gradient(
+      circle at 42% 47%,
+      #ffecbe 0 3%,
+      #e98bb7 5%,
+      #5e579e 12%,
+      #242f6b 28%,
+      transparent 69%
+    ),
+    conic-gradient(
+      from 35deg,
+      transparent 0 22%,
+      #b980cd55 32%,
+      transparent 43% 62%,
+      #5f8fdc99 73%,
+      transparent 88%
+    );
   filter: blur(1.5px);
   opacity: 0.65;
   transform: rotate(-21deg);
@@ -4268,8 +4278,16 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   height: 290px;
   border: 1px solid #76b6e77a;
   border-radius: 50%;
-  background: radial-gradient(ellipse at 47% 4%, #77b2e52f 0, #172e56 36%, #071326 69%, transparent 70%);
-  box-shadow: 0 -21px 40px #247bdb13, 0 -5px 17px #6eecff28;
+  background: radial-gradient(
+    ellipse at 47% 4%,
+    #77b2e52f 0,
+    #172e56 36%,
+    #071326 69%,
+    transparent 70%
+  );
+  box-shadow:
+    0 -21px 40px #247bdb13,
+    0 -5px 17px #6eecff28;
   pointer-events: none;
 }
 #campaignMap .campaign-brand {
@@ -4288,14 +4306,18 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   line-height: 1;
 }
 #campaignMap .campaign-brand strong {
-  font: 700 clamp(20px, 3.9vw, 29px)/1.08 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(20px, 3.9vw, 29px)/1.08 'Chakra Petch',
+    sans-serif;
 }
 #campaignMap .campaign-brand strong span {
   color: #a2f5ff;
 }
 #campaignMap .campaign-brand small {
   color: #adc0d4;
-  font: 700 9px/1.4 'Chakra Petch', sans-serif;
+  font:
+    700 9px/1.4 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.52em;
 }
 #campaignMap .campaign-map-header {
@@ -4307,16 +4329,22 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 #campaignMap .campaign-map-header .eyebrow {
   color: #b7c8dc;
-  font: 700 clamp(10px, 1.7vw, 13px)/1.5 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(10px, 1.7vw, 13px)/1.5 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.2em;
 }
 #campaignMap .campaign-map-header h2 {
   margin: 8px 0 9px;
   color: #c1fbff;
-  font: 800 clamp(30px, 5.9vw, 54px)/1.12 'Barlow Condensed', sans-serif;
+  font:
+    800 clamp(30px, 5.9vw, 54px)/1.12 'Barlow Condensed',
+    sans-serif;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  text-shadow: 0 0 20px #72ebff78, 0 2px 1px #000c;
+  text-shadow:
+    0 0 20px #72ebff78,
+    0 2px 1px #000c;
 }
 #campaignMap #mapProgress {
   display: inline-block;
@@ -4324,7 +4352,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   padding: 5px 18px 5px 0;
   border-bottom: 1px solid #48cfd385;
   color: #b8e4f5;
-  font: 700 clamp(10px, 1.9vw, 14px)/1.45 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(10px, 1.9vw, 14px)/1.45 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.13em;
 }
 #campaignMap .campaign-map-cosmos {
@@ -4392,8 +4422,13 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   text-align: left;
   cursor: pointer;
   isolation: isolate;
-  box-shadow: inset 0 0 0 1px #b1e7ff12, 0 10px 24px #0008;
-  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+  box-shadow:
+    inset 0 0 0 1px #b1e7ff12,
+    0 10px 24px #0008;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 #campaignMap .campaign-node[data-side='left'] {
   grid-column: 1;
@@ -4410,7 +4445,10 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 #campaignMap .campaign-node.next {
   --node-border: #ffae68;
   --node-glow: #ff944a97;
-  box-shadow: 0 0 0 1px #ffb35b45, 0 0 27px #e4834380, inset 0 0 17px #f8a15b23;
+  box-shadow:
+    0 0 0 1px #ffb35b45,
+    0 0 27px #e4834380,
+    inset 0 0 17px #f8a15b23;
 }
 #campaignMap .campaign-node.locked {
   --node-border: #6dacc0a6;
@@ -4420,7 +4458,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 #campaignMap .campaign-node:focus-visible {
   outline: 2px solid #d7fff6;
   outline-offset: 3px;
-  box-shadow: 0 0 0 1px #ddfff877, 0 0 26px var(--node-glow);
+  box-shadow:
+    0 0 0 1px #ddfff877,
+    0 0 26px var(--node-glow);
 }
 #campaignMap .campaign-node:hover {
   transform: translateY(-3px);
@@ -4433,8 +4473,7 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   border-radius: inherit;
   background-color: #112b41;
   background-image:
-    linear-gradient(0deg, #031323f9 0%, #061b31bf 40%, transparent 88%),
-    var(--sector-art);
+    linear-gradient(0deg, #031323f9 0%, #061b31bf 40%, transparent 88%), var(--sector-art);
   background-position: center;
   background-size: cover;
   overflow: hidden;
@@ -4451,7 +4490,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   inset: -1px;
   border: 1px solid var(--node-border);
   border-radius: inherit;
-  box-shadow: inset 0 0 15px var(--node-glow), 0 0 12px var(--node-glow);
+  box-shadow:
+    inset 0 0 15px var(--node-glow),
+    0 0 12px var(--node-glow);
   pointer-events: none;
 }
 #campaignMap .campaign-node::after {
@@ -4485,17 +4526,23 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 #campaignMap .campaign-node-icon {
   margin-bottom: auto;
   color: var(--sector-accent, #8ee9ff);
-  font: 700 clamp(19px, 3vw, 29px)/1 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(19px, 3vw, 29px)/1 'Chakra Petch',
+    sans-serif;
   text-shadow: 0 0 11px currentColor;
 }
 #campaignMap .campaign-node-name {
   display: block;
   max-width: 100%;
   color: #f2fdff;
-  font: 700 clamp(10px, 1.9vw, 17px)/1.15 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(10px, 1.9vw, 17px)/1.15 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.035em;
   overflow-wrap: anywhere;
-  text-shadow: 0 2px 6px #000, 0 0 9px #000c;
+  text-shadow:
+    0 2px 6px #000,
+    0 0 9px #000c;
 }
 #campaignMap .campaign-node-status {
   display: inline-flex;
@@ -4506,7 +4553,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   border-radius: 15px;
   background: #072b42d9;
   color: #b5e6ff;
-  font: 700 clamp(8px, 1.55vw, 12px)/1.35 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(8px, 1.55vw, 12px)/1.35 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.025em;
   white-space: normal;
   text-shadow: 0 1px 5px #0009;
@@ -4544,9 +4593,13 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   border-radius: 50%;
   background: #06172cf0;
   color: #f0ffff;
-  font: 700 13px/1 'Chakra Petch', sans-serif;
+  font:
+    700 13px/1 'Chakra Petch',
+    sans-serif;
   text-shadow: 0 0 6px #88ffff;
-  box-shadow: inset 0 0 10px #2b9fe255, 0 0 11px #57c5e75e;
+  box-shadow:
+    inset 0 0 10px #2b9fe255,
+    0 0 11px #57c5e75e;
   pointer-events: none;
 }
 #campaignMap .campaign-node[data-side='left'] .campaign-route-marker {
@@ -4567,8 +4620,13 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   animation: galaxyBeacon 2.4s ease-in-out infinite;
 }
 @keyframes galaxyBeacon {
-  0%, 100% { box-shadow: 0 0 8px #fa9f6488; }
-  50% { box-shadow: 0 0 22px #fa9f64ff; }
+  0%,
+  100% {
+    box-shadow: 0 0 8px #fa9f6488;
+  }
+  50% {
+    box-shadow: 0 0 22px #fa9f64ff;
+  }
 }
 #campaignMap .campaign-orbit-beacon {
   width: min(110px, 24%);
@@ -4597,7 +4655,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 #campaignMap .campaign-progress-foot > span,
 #campaignMap .campaign-progress-foot > strong {
   color: #c3fbff;
-  font: 700 clamp(9px, 1.6vw, 12px)/1.2 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(9px, 1.6vw, 12px)/1.2 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.07em;
 }
 #campaignMap .campaign-progress-meter {
@@ -4626,20 +4686,26 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 #campaignMap .campaign-brief .eyebrow {
   color: #7bdeea;
-  font: 700 10px/1.45 'Chakra Petch', sans-serif;
+  font:
+    700 10px/1.45 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.12em;
 }
 #campaignMap .campaign-intel-status {
   display: block;
   margin: 6px 0 0;
   color: #ffca8d;
-  font: 700 10px/1.45 'Chakra Petch', sans-serif;
+  font:
+    700 10px/1.45 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.06em;
 }
 #campaignMap .campaign-brief h3 {
   margin: 8px 0;
   color: #f2fdff;
-  font: 700 clamp(16px, 3vw, 22px)/1.2 'Chakra Petch', sans-serif;
+  font:
+    700 clamp(16px, 3vw, 22px)/1.2 'Chakra Petch',
+    sans-serif;
 }
 #campaignMap .campaign-brief p {
   margin: 7px 0;
@@ -4649,7 +4715,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 #campaignMap .campaign-brief strong {
   color: #ffc98c;
-  font: 700 11px/1.45 'Chakra Petch', sans-serif;
+  font:
+    700 11px/1.45 'Chakra Petch',
+    sans-serif;
 }
 #campaignMap .campaign-map-actions {
   position: relative;
@@ -4668,7 +4736,9 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
   background: #0d2b41;
   color: #ddfdff;
   padding: 10px 15px;
-  font: 700 11px/1.2 'Chakra Petch', sans-serif;
+  font:
+    700 11px/1.2 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.075em;
 }
 #campaignMap .campaign-map-actions .primary {
@@ -4689,10 +4759,8 @@ body:has(#arcadePanel:not([hidden])) #robotTouch {
 }
 @media (max-width: 600px) {
   #campaignMap {
-    padding: max(8px, env(safe-area-inset-top, 0px))
-      max(6px, env(safe-area-inset-right, 0px))
-      max(13px, env(safe-area-inset-bottom, 0px))
-      max(6px, env(safe-area-inset-left, 0px));
+    padding: max(8px, env(safe-area-inset-top, 0px)) max(6px, env(safe-area-inset-right, 0px))
+      max(13px, env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px));
   }
   #campaignMap .campaign-map-card {
     padding: 14px 13px 19px;

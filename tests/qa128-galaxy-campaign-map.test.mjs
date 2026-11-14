@@ -16,9 +16,15 @@ class FakeElement {
     this.disabled = false;
     this.styles = {};
     this.style = {
-      setProperty: (name, value) => { this.styles[name] = value; },
-      set width(value) { this.element.styles.width = value; },
-      get width() { return this.element.styles.width; },
+      setProperty: (name, value) => {
+        this.styles[name] = value;
+      },
+      set width(value) {
+        this.element.styles.width = value;
+      },
+      get width() {
+        return this.element.styles.width;
+      },
     };
     this.style.element = this;
     this.events = {};
@@ -31,37 +37,80 @@ class FakeElement {
       },
     };
   }
-  setAttribute(name, value) { this.attributes[name] = String(value); }
-  getAttribute(name) { return this.attributes[name] ?? null; }
-  append(...children) { this.children.push(...children); }
-  replaceChildren(...children) { this.children = [...children]; }
-  addEventListener(name, callback) { this.events[name] = callback; }
-  click() { this.events.click?.(); }
+  setAttribute(name, value) {
+    this.attributes[name] = String(value);
+  }
+  getAttribute(name) {
+    return this.attributes[name] ?? null;
+  }
+  append(...children) {
+    this.children.push(...children);
+  }
+  replaceChildren(...children) {
+    this.children = [...children];
+  }
+  addEventListener(name, callback) {
+    this.events[name] = callback;
+  }
+  click() {
+    this.events.click?.();
+  }
 }
 class FakeDocument {
   constructor() {
     this.ids = Object.fromEntries(
-      ['campaignRoute', 'mapProgress', 'mapProgressFill', 'mapProgressCount',
-        'mapProgressMeter', 'mapSectorTitle', 'mapSectorBrief',
-        'mapSectorThreat', 'mapSectorBoss', 'mapIntelStatus', 'mapLaunch']
-        .map((id) => [id, new FakeElement('div')]),
+      [
+        'campaignRoute',
+        'mapProgress',
+        'mapProgressFill',
+        'mapProgressCount',
+        'mapProgressMeter',
+        'mapSectorTitle',
+        'mapSectorBrief',
+        'mapSectorThreat',
+        'mapSectorBoss',
+        'mapIntelStatus',
+        'mapLaunch',
+      ].map((id) => [id, new FakeElement('div')]),
     );
   }
-  getElementById(id) { return this.ids[id] ?? null; }
-  createElement(tag) { return new FakeElement(tag); }
-  createElementNS(_namespace, tag) { return new FakeElement(tag); }
+  getElementById(id) {
+    return this.ids[id] ?? null;
+  }
+  createElement(tag) {
+    return new FakeElement(tag);
+  }
+  createElementNS(_namespace, tag) {
+    return new FakeElement(tag);
+  }
 }
 
 test('all ten destinations match the actual campaign and maintain real unlock states', () => {
   const steps = campaignMapSteps(SECTORS, 1);
   assert.equal(steps.length, 10);
-  assert.deepEqual(steps.map(({ name }) => name), SECTORS.map(({ name }) => name));
-  assert.deepEqual(steps.map(({ status }) => status), [
-    'completed', 'next', 'locked', 'locked', 'locked', 'locked',
-    'locked', 'locked', 'locked', 'locked',
-  ]);
   assert.deepEqual(
-    campaignMapSteps(SECTORS, -2).map(({ status }) => status).slice(0, 2),
+    steps.map(({ name }) => name),
+    SECTORS.map(({ name }) => name),
+  );
+  assert.deepEqual(
+    steps.map(({ status }) => status),
+    [
+      'completed',
+      'next',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+      'locked',
+    ],
+  );
+  assert.deepEqual(
+    campaignMapSteps(SECTORS, -2)
+      .map(({ status }) => status)
+      .slice(0, 2),
     ['next', 'locked'],
   );
   assert.ok(campaignMapSteps(SECTORS, 100).every(({ status }) => status === 'completed'));
@@ -88,7 +137,9 @@ test('rendered route has ten inspectable mission buttons, linked lane and correc
   const buttons = route.children.slice(1);
   assert.ok(buttons.every((button) => button.tagName === 'button'));
   assert.ok(buttons.every((button) => button.children.length === 3));
-  assert.ok(buttons.every((button) => button.children[0].styles['--sector-art']?.startsWith('url(')));
+  assert.ok(
+    buttons.every((button) => button.children[0].styles['--sector-art']?.startsWith('url(')),
+  );
   assert.equal(buttons[0].className.includes('completed'), true);
   assert.equal(buttons[1].className.includes('next'), true);
   assert.equal(buttons[1].getAttribute('aria-current'), 'step');
@@ -115,16 +166,27 @@ test('completion of every sector shows 100% and prevents launching sector 11', (
   drawCampaignMap(doc, SECTORS, 10);
   assert.equal(doc.getElementById('mapProgressFill').styles.width, '100%');
   assert.equal(doc.getElementById('mapLaunch').disabled, true);
-  assert.ok(doc.getElementById('campaignRoute').children.slice(1).every(
-    (button) => button.className.includes('completed'),
-  ));
+  assert.ok(
+    doc
+      .getElementById('campaignRoute')
+      .children.slice(1)
+      .every((button) => button.className.includes('completed')),
+  );
 });
 
 test('campaign UI preserves actual game button IDs and scrollable touch view', () => {
   const html = readFileSync(new URL('../src/shell.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
-  for (const id of ['campaignMap', 'campaignRoute', 'mapProgress', 'mapProgressFill',
-    'mapProgressCount', 'mapIntelStatus', 'mapBack', 'mapLaunch']) {
+  for (const id of [
+    'campaignMap',
+    'campaignRoute',
+    'mapProgress',
+    'mapProgressFill',
+    'mapProgressCount',
+    'mapIntelStatus',
+    'mapBack',
+    'mapLaunch',
+  ]) {
     assert.ok(html.includes('id="' + id + '"'), id);
   }
   assert.match(css, /#campaignMap\s*\{[^}]*overflow-y:\s*auto/s);

@@ -69,8 +69,19 @@ function galaxyTrack(doc, count) {
     const y = 73 + i * 94;
     const x = i % 2 ? 69 : 51;
     const previousY = 73 + (i - 1) * 94;
-    path += ' C ' + (i % 2 ? 22 : 98) + ' ' + (previousY + 39) + ' ' +
-      (i % 2 ? 98 : 22) + ' ' + (y - 39) + ' ' + x + ' ' + y;
+    path +=
+      ' C ' +
+      (i % 2 ? 22 : 98) +
+      ' ' +
+      (previousY + 39) +
+      ' ' +
+      (i % 2 ? 98 : 22) +
+      ' ' +
+      (y - 39) +
+      ' ' +
+      x +
+      ' ' +
+      y;
   }
   stars.setAttribute('d', path);
   stars.setAttribute('class', 'campaign-route-stroke');
@@ -90,9 +101,11 @@ function showIntel(doc, step, buttons, steps) {
   const status = doc.getElementById('mapIntelStatus');
   if (status) {
     status.textContent =
-      step.status === 'next' ? 'DESTINO ATUAL · PRONTO PARA LANÇAMENTO' :
-        step.status === 'completed' ? 'MISSÃO CONCLUÍDA · CONSULTA AO ARQUIVO' :
-          'SETOR FUTURO · RECONHECIMENTO DISPONÍVEL';
+      step.status === 'next'
+        ? 'DESTINO ATUAL · PRONTO PARA LANÇAMENTO'
+        : step.status === 'completed'
+          ? 'MISSÃO CONCLUÍDA · CONSULTA AO ARQUIVO'
+          : 'SETOR FUTURO · RECONHECIMENTO DISPONÍVEL';
   }
   for (let i = 0; i < buttons.length; i++) {
     buttons[i].setAttribute('aria-pressed', String(steps[i] === step));
@@ -113,9 +126,16 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
     card.style.setProperty('--sector-accent', step.accent);
     card.setAttribute('data-sector', String(step.number));
     card.setAttribute('data-side', index % 2 ? 'right' : 'left');
-    card.setAttribute('aria-label',
-      'Setor ' + step.number + ': ' + step.name + ', ' + STATUS[step.status] +
-      '. Consultar missão.');
+    card.setAttribute(
+      'aria-label',
+      'Setor ' +
+        step.number +
+        ': ' +
+        step.name +
+        ', ' +
+        STATUS[step.status] +
+        '. Consultar missão.',
+    );
     card.setAttribute('aria-pressed', 'false');
     if (step.status === 'next') card.setAttribute('aria-current', 'step');
 
@@ -127,12 +147,16 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
     const badge = element(doc, 'span', 'campaign-node-icon', step.icon);
     badge.setAttribute('aria-hidden', 'true');
     const title = element(
-      doc, 'strong', 'campaign-node-name',
+      doc,
+      'strong',
+      'campaign-node-name',
       String(step.number).padStart(2, '0') + ' · ' + step.name,
     );
     const status = element(doc, 'small', 'campaign-node-status', STATUS[step.status]);
     const marker = element(
-      doc, 'span', 'campaign-route-marker',
+      doc,
+      'span',
+      'campaign-route-marker',
       String(step.number).padStart(2, '0'),
     );
     marker.setAttribute('aria-hidden', 'true');
@@ -146,7 +170,8 @@ export function drawCampaignMap(doc, sectors, nextIndex) {
   const progress = completed + ' / ' + steps.length;
   doc.getElementById('mapProgress').textContent = progress + ' SETORES CONCLUÍDOS';
   const progressFill = doc.getElementById('mapProgressFill');
-  if (progressFill) progressFill.style.width = (steps.length ? completed / steps.length * 100 : 0) + '%';
+  if (progressFill)
+    progressFill.style.width = (steps.length ? (completed / steps.length) * 100 : 0) + '%';
   const progressCount = doc.getElementById('mapProgressCount');
   if (progressCount) progressCount.textContent = progress;
   const progressMeter = doc.getElementById('mapProgressMeter');

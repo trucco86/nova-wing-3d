@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.127 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.126 — QA127: identidades visuais premium de inimigos
 
 - Caças perseguidores, interceptadores e bombardeiros recebem silhuetas distintas com placas de carenagem, entradas de ar, aletas, blindagem e módulos de armas específicos.

@@ -98,7 +98,17 @@ function starfield() {
   for (let i = 0; i < 27; i++) {
     const x = (i * 79 + 31) % 479;
     const y = (i * 53 + 17) % 231;
-    stars.push('<circle cx="' + x + '" cy="' + y + '" r="' + (i % 7 === 0 ? 1.7 : 0.75) + '" fill="#d8f4ff" opacity="' + (i % 5 === 0 ? '.85' : '.43') + '"/>');
+    stars.push(
+      '<circle cx="' +
+        x +
+        '" cy="' +
+        y +
+        '" r="' +
+        (i % 7 === 0 ? 1.7 : 0.75) +
+        '" fill="#d8f4ff" opacity="' +
+        (i % 5 === 0 ? '.85' : '.43') +
+        '"/>',
+    );
   }
   return stars.join('');
 }
@@ -110,10 +120,21 @@ export function campaignSectorArtwork(theme) {
   const [dark, tint, glow] = SKY[theme] ?? SKY.void;
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 240" preserveAspectRatio="xMidYMid slice">' +
-    '<defs><linearGradient id="space" x1="0" y1="0" x2="1" y2="1"><stop stop-color="' + dark + '"/><stop offset=".68" stop-color="' + tint + '" stop-opacity=".45"/><stop offset="1" stop-color="' + dark + '"/></linearGradient>' +
-    '<radialGradient id="atmo"><stop stop-color="' + glow + '" stop-opacity=".4"/><stop offset="1" stop-color="' + tint + '" stop-opacity="0"/></radialGradient></defs>' +
+    '<defs><linearGradient id="space" x1="0" y1="0" x2="1" y2="1"><stop stop-color="' +
+    dark +
+    '"/><stop offset=".68" stop-color="' +
+    tint +
+    '" stop-opacity=".45"/><stop offset="1" stop-color="' +
+    dark +
+    '"/></linearGradient>' +
+    '<radialGradient id="atmo"><stop stop-color="' +
+    glow +
+    '" stop-opacity=".4"/><stop offset="1" stop-color="' +
+    tint +
+    '" stop-opacity="0"/></radialGradient></defs>' +
     '<rect width="480" height="240" fill="url(#space)"/><ellipse cx="340" cy="70" rx="200" ry="150" fill="url(#atmo)"/>' +
-    STARS + (ART[theme] ?? ART.void).join('') +
+    STARS +
+    (ART[theme] ?? ART.void).join('') +
     '</svg>';
   const value = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
   CACHE.set(theme, value);
