@@ -1179,24 +1179,50 @@
       </section>
       <section id="campaignMap" hidden aria-label="Mapa de progresso da campanha">
         <div class="campaign-map-card">
-          <div class="eyebrow">FIVE CATS / ROTA DE PERSEGUIÇÃO</div>
-          <h2>MAPA DA GALÁXIA</h2>
-          <p id="mapProgress"></p>
-          <div
-            id="campaignRoute"
-            class="campaign-route-map"
-            aria-label="Progresso dos dez setores"
-          ></div>
+          <div class="campaign-brand" aria-label="Nova Wing Five Cats">
+            <span class="campaign-brand-wings" aria-hidden="true">◢ ◆ ◣</span>
+            <strong>NOVA <span>WING</span></strong>
+            <small>FIVE CATS</small>
+          </div>
+          <header class="campaign-map-header">
+            <div class="eyebrow">FIVE CATS / ROTA DE PERSEGUIÇÃO</div>
+            <h2>MAPA DA GALÁXIA</h2>
+            <p id="mapProgress" aria-live="polite"></p>
+          </header>
+          <div class="campaign-map-cosmos">
+            <div
+              id="campaignRoute"
+              class="campaign-route-map"
+              aria-label="Rota da campanha com dez setores conectados"
+            ></div>
+            <div class="campaign-orbit-beacon" aria-hidden="true"></div>
+          </div>
+          <div class="campaign-progress-foot">
+            <span>PROGRESSO DA CAMPANHA</span>
+            <div
+              id="mapProgressMeter"
+              class="campaign-progress-meter"
+              role="progressbar"
+              aria-label="Setores concluídos da campanha"
+              aria-valuemin="0"
+              aria-valuemax="10"
+              aria-valuenow="0"
+            >
+              <i id="mapProgressFill"></i>
+            </div>
+            <strong id="mapProgressCount">0 / 10</strong>
+          </div>
           <div class="campaign-brief">
-            <span class="eyebrow">INTELIGÊNCIA DA PRÓXIMA MISSÃO</span>
+            <span class="eyebrow">INTELIGÊNCIA DO SETOR SELECIONADO</span>
+            <span id="mapIntelStatus" class="campaign-intel-status"></span>
             <h3 id="mapSectorTitle"></h3>
             <p id="mapSectorBrief"></p>
             <p id="mapSectorThreat"></p>
             <strong id="mapSectorBoss"></strong>
           </div>
           <div class="campaign-map-actions">
-            <button id="mapBack">VOLTAR AO HANGAR</button>
-            <button class="primary" id="mapLaunch">INICIAR PRÓXIMA FASE ↗</button>
+            <button id="mapBack" type="button">VOLTAR AO HANGAR</button>
+            <button class="primary" id="mapLaunch" type="button">INICIAR PRÓXIMA FASE ↗</button>
           </div>
         </div>
       </section>
