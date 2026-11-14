@@ -28,13 +28,13 @@ const scenes = [
  */
 const keySet = (_scene, t) => {
   const keys = new Set();
-  // First let Saturn and the full ring silhouette read clearly; next bank
-  // around the field without changing the camera via a fake edit effect.
-  if (t >= 0.75 && t < 2.55) keys.add('d');
-  if (t >= 2.55) keys.add('a');
-  if (t >= 0.95 && t < 2.3) keys.add('w');
-  if (t > 2.3) keys.add('s');
-  if (t > 1.35 && t % 1.1 < 0.65) keys.add('Space');
+  // Cinematic Saturn silhouette stays fully visible while the fighter makes
+  // short course-corrections near its original frame, not a 44-unit strafe.
+  if (t > 1.15 && t < 1.62) keys.add('d');
+  if (t > 1.62 && t < 2.07) keys.add('a');
+  if (t > 2.12 && t < 2.58) keys.add('d');
+  if (t > 2.58 && t < 3.04) keys.add('a');
+  if (t > 1.25 && t < 3.55 && t % 1.15 < 0.56) keys.add('Space');
   return keys;
 };
 
