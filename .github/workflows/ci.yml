@@ -12,6 +12,40 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
+  qa134-package:
+    # Temporary PR-only packaging. Production branches are not touched.
+    if: github.event_name == 'pull_request' && github.head_ref == 'perf/qa134-bounded-space-obstacle-pooling-20261115'
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and test bounded obstacle resource pool
+        run: |
+          npx prettier --write src/reusable-obstacle-pool.js src/game.js tests/qa134-obstacle-pooling.test.mjs
+          node --test tests/qa134-obstacle-pooling.test.mjs tests/qa133-memory-lifecycle.test.mjs
+      - name: Version and build isolated QA134 candidate
+        run: |
+          npm run release:prepare -- 1.27.133
+          npm run build:check
+      - name: Synchronize only QA134 branch
+        shell: bash
+        run: |
+          git add src/reusable-obstacle-pool.js src/game.js tests/qa134-obstacle-pooling.test.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.133.md index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA134): prepare 1.27.133 bounded obstacle recycling'
+            git push origin HEAD:perf/qa134-bounded-space-obstacle-pooling-20261115
+          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
