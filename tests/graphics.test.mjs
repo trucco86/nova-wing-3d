@@ -77,10 +77,20 @@ test('city remains present after one full scenery wrap and reset', () => {
   assert.ok(mediumWindows.every((node) => node?.isInstancedMesh && node.count === 42));
   const qa141Draws = citadelDraws.length + mediumWindows.length;
   assert.equal(qa141Draws, 8);
+  // QA145 replaces 49 individually drawn shuttles with exactly three
+  // instanced material layers per tile. The instance tally increases by six
+  // even while the real draw budget falls by 92 potential meshes.
+  const evacuationDraws = ['launch-city', 'launch-city-far'].reduce((sum, name) => {
+    const fleet = scene.getObjectByName(name).getObjectByName('city-evacuation-instanced-fleet');
+    assert.ok(fleet?.isGroup);
+    assert.equal(fleet.children.length, 3);
+    return sum + fleet.children.filter((mesh) => mesh.isInstancedMesh).length;
+  }, 0);
+  assert.equal(evacuationDraws, 6);
   assert.ok(
-    count >= 180 + streetDraws + impactBatches + qa141Draws &&
-      count <= 260 + streetDraws + impactBatches + qa141Draws,
-    'historical city instance budget plus exactly eight QA141 batches',
+    count >= 180 + streetDraws + impactBatches + qa141Draws + evacuationDraws &&
+      count <= 260 + streetDraws + impactBatches + qa141Draws + evacuationDraws,
+    'historical city instance budget plus QA141 and the six QA145 fleet batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
