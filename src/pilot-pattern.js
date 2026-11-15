@@ -67,3 +67,13 @@ export function adaptiveBossAttack({ sector, kind, phase, cycle, previousKind, p
   if (pilotPattern.boostHeavy && cycle % 3 === 1) return pair[1];
   return kind;
 }
+
+/** Change at most one craft role per second wave. Formation size, position,
+ * hardpoints and the GPU budget are unchanged; counterplay stays readable. */
+export function adaptiveFighterRole(role, pilotPattern, cycle = 0, index = 0) {
+  if (!pilotPattern?.observed || cycle % 2 !== 0 || index !== 0) return role;
+  if (role === 'pursuer' && pilotPattern.boostHeavy) return 'interceptor';
+  if (role === 'interceptor' && pilotPattern.axis === 'horizontal') return 'pursuer';
+  if (role === 'pursuer' && pilotPattern.axis === 'vertical') return 'bomber';
+  return role;
+}
