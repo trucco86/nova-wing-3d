@@ -1,5 +1,94 @@
 # Histórico
 
+## 1.27.143 — QA146: estações de maglev e outdoors em batches sem perder detalhes
+
+- As três estações maglev preservam todos os 24 componentes estruturais e as mesmas posições/dimensões, renderizados em três lotes instanciados de metal, cobertura e sinalização no lugar de 24 meshes individuais. Metadados de estação permanecem acessíveis por nome.
+- Os seis outdoors da infraestrutura premium preservam suas telas com propagandas individuais e beacons que pulsam independentemente. Somente 18 partes **estáticas** (seis painéis de suporte metálico e doze frisos neon) passam para dois lotes, preservando cor, material, geometria e posição.
+- Duas cidades: menos 74 possíveis submissões de draw, sem reduzir a quantidade de triângulos, inimigos, distâncias, materiais premium ou física. O ganho real depende da câmera e deve ser medido em aparelho.
+- Bounds das novas instâncias são calculados para frustum culling seguro. Sem luzes dinâmicas, colisores ou texturas adicionais.
+- Testes de geometria/transform, clone próximo/distante, oscilação de luz, modos Medium/High e estabilidade dos recursos.
+- Baseline do usuário para comparar: 34 FPS médio, p95 39ms, 1.385 draw calls p95, 837 geometrias (+449). A variação da contagem de geometrias permanece **hipótese a investigar**, não confirmação de vazamento.
+- **PR Draft, sem merge e sem publicação em produção.**
+
+## 1.27.142 — QA145: redução de draw calls por batch das naves de evacuação
+
+- Medição real da fase 1 em HIGH no celular: 34,0 FPS médios, p95 39ms, 1.385 draw calls p95 e 1,66 milhão de triângulos p95, com escala adaptativa de 68%.
+- Inventário da cena revelou 885 malhas potencialmente visíveis, com 702 apenas nos dois tiles urbanos e 406 objetos Mesh individuais.
+- As 7 naves de evacuação de cada tile deixam de criar 49 Mesh individuais; mantêm os mesmos sete modelos completos e suas partes nas posições originais, renderizados em apenas 3 InstancedMesh separados por material.
+- Dois tiles da cidade: 92 draw submissions potenciais a menos, mantendo as cores, geometria, posição, animação, detecção de qualidade, pausa, cena High/Medium e rota de voo.
+- Redução de geometrias distintas, com placeholders de nave leves mantendo os IDs e sem adicionar hitboxes. Instâncias atualizadas uma vez por quadro e cache por tile em WeakMap.
+- Instrumentação de contagem dos subgrupos da fase 1 e novos testes de regressão. Relatório de FPS passa a distinguir DPR físico do dispositivo e DPR interno renderizado, que pode cair a ~0,92 mesmo quando a tela anuncia DPR 3.
+- Ganho real de FPS deve ser validado no celular e nos mesmos 35,42 segundos de baseline.
+- **PR Draft, sem merge e sem produção.**
+
+## 1.27.141 — QA144: antialiasing proporcional, bloom econômico e culling urbano
+
+- Pós-processamento High desktop mantém o mesmo bloom (limiar, intensidade e dois passes blur) com limite de 300 mil pixels em seus targets intermediários, preservando efeitos cromáticos. Evita renderizar blur em resoluções além do necessário.
+- MSAA do framebuffer High é 2x em viewport desktop com 1M ou mais pixels CSS e 4x em viewports menores; arquitetura, materiais, iluminação, texturas, VFX e passes não foram removidos.
+- Os sete lotes estáticos de ruas e mobiliário urbano agora recebem bounds exatos de instância e frustum culling por lote; objetos animados (pedestres/vapor) mantêm sem culling para evitar pop-in.
+- Pedestres, LEDs de rua e vapor com refs cacheadas por tile; cores de LED sem novas alocações de Color.
+- Vapor High não calcula nem transfere instâncias quando o grupo está oculto em Medium, e é atualizado no retorno a High.
+- Testes de bounds, culling, MSAA de tela pequena/grande, bloom, pause/qualidade, clone e regressão no QA122.
+- **Não há medição física de FPS; PR Draft, sem merge ou produção.**
+
+## 1.27.140 — QA143: Modo Alto eficiente sem reduzir materiais e arquitetura
+
+- Limite de supersampling por área da tela em qualidade Alta: 3,7 milhões de pixels renderizados no desktop e 900 mil em dispositivos touch, antes da escala adaptativa. Os mesmos modelos 3D, sombras, shader, bloom, iluminação, MSAA e VFX continuam habilitados.
+- O DPR é recalculado após resize/orientação de tela; resolução adaptativa reduz pixels sem trocar os materiais e lotes de detalhes Alto.
+- Modo Alto selecionado manualmente deixa de alternar silenciosamente para Médio após queda extrema de FPS; Auto mantém o fallback existente.
+- Cidade: a atualização visual reutiliza referências dos dois tiles, sem múltiplas buscas recursivas por quadro.
+- Painéis comerciais: cores das seis marcas e beacons são pré-calculados e cacheados via WeakMap para cada tile; zero novos THREE.Color no loop de animação.
+- Cidade industrial: rotores e grupo de alta qualidade acessados via cache do tile, sem buscas por cena em todo frame.
+- Testes para limite de pixels, orientação, pausa, preferência explícita e determinismo das fachadas. Medição de FPS em aparelho físico ainda necessária.
+- **PR Draft. Nenhum merge ou publicação em produção.**
+
+## 1.27.139 — QA142: fachadas premium e animação leve de tráfego
+
+- Cidade distante: 42 torres recebem nervuras metálicas anexadas, dois contornos de coroas por torre e seis andares com três janelas independentes. O orçamento permanece nos mesmos 9 batches de instancing: detalhes novos reutilizam os grupos de bridges, crowns e duas luzes de qualidade Alta.
+- Em qualidade Média, 84 janelas ocupadas continuam visíveis como na QA141; Alto passa a destacar 756 janelas distribuídas por células e não por faixas contínuas.
+- Tráfego urbano: matrizes locais de 22 partes agrupadas cacheadas em WeakMap, sem recomputar transformações por veículo, sem busca recursiva de grupos no loop, sem objeto transitório para posição por veículo.
+- Qualidade Média atualiza apenas carros visíveis; ao entrar em Alta, todas as instâncias adicionais são populadas no frame de troca para impedir flashes na origem.
+- Física, rotas, números e cores dos veículos, simulação por distância e pause/replay preservados. Sem luzes dinâmicas e sem colisões adicionais.
+- Testes QA142 e critérios de benchmark em dispositivo real.
+- **PR Draft, sem merge/deploy em produção.**
+
+## 1.27.138 — QA141: fachadas luminosas e grande monumento urbano premium
+
+- Megasestrutura do horizonte com duas torres ocupadas, passarelas suportadas, colunas de luz, fachada frontal e lateral, vigas de suporte, núcleo central e sinalização circular mais detalhados.
+- Todas as janelas estruturais e acabamentos foram reagrupados em quatro batches padrão e dois de precisão High, mantendo o anel físico existente: 5 draws no Médio e 7 no Alto, em lugar de dezenas de pequenas malhas independentes.
+- Prédios distantes da cidade com duas faixas de janelas realmente iluminadas em cada uma das 42 torres, mesmo no Médio; glazing com acabamento físico claro e emissividade discreta.
+- Skyline de fundo do Horizon com faixas existentes de luz visíveis também no Médio, e assinatura central da cidade com janelas modeladas dentro dos 3 meshes já compartilhados.
+- Instâncias estáticas, zero luzes dinâmicas adicionais, zero novos colliders, qualidade Alto/Médio mantida; testes automáticos e medições de FPS/dispositivos reais obrigatórias antes de aprovação.
+- **PR Draft, sem merge e sem deploy de produção.**
+
+## 1.27.137 — QA140: geologia premium de asteroides, Europa e Netuno
+
+- Asteroides: rocha com fraturas e depósitos minerais esculpidos e pintados na geometria existente; duas variações de material físico, sem criar mais geometrias, instâncias ou draws.
+- Europa: cristas das geleiras com fissuras, estratos gelados e contraste de neve dentro dos 35 vértices e cores já existentes; vento congelado invisível não recebe atualização por quadro.
+- Netuno: nuvens com gradientes gelados e ondas de altitude nas cores de vértice, reutilizando a geometria, materiais e batches instalados. Sombreamento azul profundo com emissão sutil.
+- Navegação: varredura dos obstáculos de asteroides preserva física e usa endpoint reutilizado em vez de objeto temporário a cada frame.
+- Testes de orçamento de triângulos/partículas, determinismo, colisões e materiais. FPS em dispositivos físicos ainda não medido.
+- **PR Draft apenas para QA. Sem merge ou deploy em produção.**
+
+## 1.27.136 — QA139: anéis premium de Saturno e vistas planetárias sem custo redundante
+
+- Consolidação de três faixas do sistema de anéis de Saturno em shader analítico C/B/A: mesmos efeitos de Cassini, sem três meshes, três materiais ou três draw calls adicionais.
+- Mantém a inclinação física dos anéis e a oclusão correta atrás do planeta, sem alterar física ou combate.
+- Animações de planetas, nuvens e céu cacheiam referências de cena em WeakMap, sem buscas recursivas a cada quadro.
+- Saída hiperespacial pré-calcula o XY de 96 partículas uma vez, atualiza apenas o Z e ignora computação quando invisível.
+- Fragmentos de gelo de Saturno pré-calculam suas propriedades estáticas de posição, escala e rotação; o movimento de passagem continua determinístico.
+- Tests de redução de draws, clonagem, qualidade e replay. Medições FPS em dispositivo real ainda são necessárias.
+- **Somente PR de QA, sem merge ou deploy de produção.**
+
+## QA138 (trilha de gráficos, incorporada à 1.27.143): Marte visual premium com orçamento de render controlado
+
+- Shader de Marte com crateras direcionais, manchas basálticas e terminador mais físico, sem novas malhas, texturas, passes ou amostras de ruído coerente.
+- Terreno com faixas eólicas de sedimento calculadas durante a geração de vértices, sem aumentar geometria e sem impacto no loop de render.
+- Caches WeakMap das referências do cenário, tempestade e órbita eliminam arrays temporários e buscas recursivas a cada quadro.
+- Desliga animações visuais quando a tempestade não está ativa, mantendo exatamente 240 partículas e três bancos de poeira.
+- Testes de orçamento, estabilidade, clone e reset. Desempenho de hardware físico ainda deve ser medido.
+- **QA sem merge ou deploy em produção.**
+
 ## 1.27.135 — QA140: menu RPG radial e pausa tática mobile
 
 - Primeira abertura radial com quatro categorias: Armas, Especiais, Berserk e Utilitários. Ações ficam agrupadas em painel compacto semitransparente e o botão fechado é circular.
