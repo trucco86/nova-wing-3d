@@ -12,34 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa131-final-html-sync:
-    # One-time build checksum repair on QA131 feature branch only.
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa131-smooth-premium-render-budget-20261114'
-    runs-on: ubuntu-latest
-    timeout-minutes: 8
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: |
-          npm run build
-          npm run build:check
-      - name: Synchronize generated HTML to the isolated branch
-        run: |
-          git add index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA131): synchronize distribution after lint-only cleanup'
-            git push origin HEAD:feat/qa131-smooth-premium-render-budget-20261114
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
