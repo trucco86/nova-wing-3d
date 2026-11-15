@@ -1297,6 +1297,10 @@ export function createGame({
   // keyboard focus in browsers that retain controls underneath the shop panel.
   // CSS provides the visual fallback and always keeps the hangar in front.
   function setIntermissionUI(active) {
+    if (active) {
+      $('strategyDrawer').open = false;
+      setRpgTacticalPaused(false);
+    }
     document.body.classList[active ? 'add' : 'remove']('intermission-active');
     for (const id of [
       'hud',
@@ -2833,6 +2837,8 @@ export function createGame({
     boss = null;
   }
   function start(resume = false, restart = null, skipSquad = false, developerRun = false) {
+    $('strategyDrawer').open = false;
+    setRpgTacticalPaused(false);
     skipSquadIntro = skipSquad;
     if (!appActive) return;
     developerSession = developerAvailable && developerRun;
@@ -3060,7 +3066,25 @@ export function createGame({
       ' · SEM RANK';
     return true;
   }
+  let rpgTacticalPaused = false;
+  let rpgFrozenFrames = 0;
+  function setRpgTacticalPaused(active) {
+    // Tactical pause is independent of the game's ordinary Pause screen.
+    if (active && (!dynamicFlight || state !== 'playing' || !coarsePointer.matches)) return false;
+    if (rpgTacticalPaused === !!active) return rpgTacticalPaused;
+    rpgTacticalPaused = !!active;
+    rpgFrozenFrames = 0;
+    document.body.classList.toggle('rpg-tactical-paused', rpgTacticalPaused);
+    if (rpgTacticalPaused) {
+      releaseControls();
+      music?.pause();
+      mechaEngine?.silence();
+      audioCues?.silence();
+    } else if (state === 'playing' && appActive) music?.resume();
+    return rpgTacticalPaused;
+  }
   function pause() {
+    setRpgTacticalPaused(false);
     if (!appActive) return;
     if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) {
       pausedFrom = state;
@@ -3105,6 +3129,8 @@ export function createGame({
   }
   function exitToMenu() {
     if (state !== 'paused') return;
+    $('strategyDrawer').open = false;
+    setRpgTacticalPaused(false);
     releaseControls();
     music?.pause();
     clearWorld();
@@ -3739,6 +3765,13 @@ export function createGame({
       return;
     }
     if (inFlight() && isGameKey(e)) e.preventDefault();
+    if (rpgTacticalPaused) {
+      if (e.code === 'Escape' || e.code === 'KeyP') {
+        e.preventDefault?.();
+        $('strategyDrawer').open = false;
+      } else if (isGameKey(e)) e.preventDefault?.();
+      return;
+    }
     keys.add(e.code);
     if (e.repeat) return;
     if (e.code === 'KeyF') cycleArsenal();
@@ -6106,6 +6139,15 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    if (rpgTacticalPaused && state === 'playing') {
+      // Freeze all combat clock, physics, weapons and enemies. Keep an
+      // occasional identical WebGL frame alive under the translucent menu.
+      if (rpgFrozenFrames++ % 4 === 0) {
+        routeRenderer?.prepare();
+        post.render();
+      }
+      return;
+    }
     heroEffects.tick(dt, state === 'playing' || state === 'collapsing');
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
@@ -6458,7 +6500,8 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
-    const renderingFlight = appActive && !document.hidden && state === 'playing';
+    const renderingFlight =
+      appActive && !document.hidden && state === 'playing' && !rpgTacticalPaused;
     frameAudit.sample(time, renderingFlight);
     const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
     if (nextBudget) applyRenderBudget(nextBudget);
@@ -6551,6 +6594,7 @@ export function createGame({
     scanBoss,
     tacticalAction,
     pause,
+    setRpgTacticalPaused,
     setActive,
     fire,
     bomb,
@@ -6575,6 +6619,7 @@ export function createGame({
       developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
+      rpgTacticalPaused,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
       strategy: {
@@ -6926,6 +6971,7 @@ export function createGame({
       },
     }),
     destroy() {
+      setRpgTacticalPaused(false);
       running = false;
       cancelObstacleWarmup();
       frameAudit.clear();
