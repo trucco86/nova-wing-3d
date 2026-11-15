@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { createPilotPatternReader, adaptiveBossAttack } from '../src/pilot-pattern.js';
+import {
+  createPilotPatternReader,
+  adaptiveBossAttack,
+  adaptiveFighterRole,
+} from '../src/pilot-pattern.js';
 import { chooseBossIntent, bossMeleePose } from '../src/boss-combat-ai.js';
 import { hostileShotHitsShip } from '../src/hostile-hit.js';
 import {
@@ -98,4 +102,15 @@ test('premium Mars and sandstorm stay in bounded render objects and deterministi
   assert.equal(bank.material.uniforms.wind.value, wind);
   updateMarsSandstorm(sand, 90);
   assert.equal(sand.visible, false);
+});
+
+test('normal fighters adapt one formation role without increasing spawn count', () => {
+  const pilotPattern = { observed: true, axis: 'horizontal', boostHeavy: false };
+  assert.equal(adaptiveFighterRole('interceptor', pilotPattern, 2, 0), 'pursuer');
+  assert.equal(adaptiveFighterRole('interceptor', pilotPattern, 3, 0), 'interceptor');
+  assert.equal(adaptiveFighterRole('interceptor', pilotPattern, 2, 1), 'interceptor');
+  assert.equal(adaptiveFighterRole('bomber', pilotPattern, 2, 0), 'bomber');
+  assert.equal(adaptiveFighterRole('pursuer', { ...pilotPattern, boostHeavy: true }, 2, 0), 'interceptor');
+  assert.equal(adaptiveFighterRole('pursuer', { ...pilotPattern, axis: 'vertical' }, 2, 0), 'bomber');
+  assert.equal(adaptiveFighterRole('interceptor', { ...pilotPattern, observed: false }, 2, 0), 'interceptor');
 });
