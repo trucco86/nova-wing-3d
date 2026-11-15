@@ -44,6 +44,24 @@ test('QA140 closing RPG never switches on the ordinary pause dialog', (t) => {
   assert.equal(h.game.snapshot().pauseDialog, true);
 });
 
+test('ordinary PAUSE always hides radial RPG and resume restores its hit target', (t) => {
+  const h = harness({ coarsePointer: true, spawnEncounters: false });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(0.1);
+  assert.equal(h.elements.get('strategyControls').hidden, false);
+  h.game.pause();
+  assert.equal(h.game.snapshot().state, 'paused');
+  assert.equal(h.game.snapshot().pauseDialog, true);
+  assert.equal(h.elements.get('strategyControls').hidden, true);
+  h.advance(0.1);
+  assert.equal(h.elements.get('strategyControls').hidden, true);
+  h.game.pause();
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().pauseDialog, false);
+  assert.equal(h.elements.get('strategyControls').hidden, false);
+});
+
 test('QA140 changing RPG weapon and spell refreshes labels while the battle clock is frozen', (t) => {
   const storage = {
     getItem: () =>
