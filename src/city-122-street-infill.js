@@ -8,6 +8,21 @@ import { CITY_RETAIL_RESERVATIONS, cityFootprintsOverlap } from './city-spatial-
 // tile so city loops, ascent and reset cannot leave floating scenery.
 const unit = new T.BoxGeometry(1, 1, 1);
 const dummy = new T.Object3D();
+const streetAnimationCache = new WeakMap();
+const signalBase = new T.Color('#c4bba4');
+const signalScratch = new T.Color();
+function streetAnimationNodes(root) {
+  let nodes = streetAnimationCache.get(root);
+  if (nodes) return nodes;
+  nodes = {
+    people: root.getObjectByName('city122-service-entries-and-transit-shelters'),
+    signs: root.getObjectByName('city122-subtle-amber-street-wayfinding'),
+    vapor: root.getObjectByName('city122-grounded-vent-vapor-high'),
+    high: root.getObjectByName('city122-extra-street-furniture-high'),
+  };
+  streetAnimationCache.set(root, nodes);
+  return nodes;
+}
 const steel = new T.MeshStandardMaterial({ color: '#727a7b', metalness: 0.69, roughness: 0.42 });
 const paving = new T.MeshStandardMaterial({ color: '#797c76', metalness: 0.27, roughness: 0.74 });
 const glass = new T.MeshStandardMaterial({ color: '#91a8a5', metalness: 0.36, roughness: 0.3 });
@@ -39,7 +54,13 @@ function batch(parent, name, material, entries, geometry = unit) {
   mesh.name = name;
   mesh.userData.visualOnly = true;
   mesh.userData.architectural = true;
-  mesh.frustumCulled = false;
+  // Only truly static instanced furniture gets broad-phase camera culling.
+  // Pedestrians and rising vapor move after creation, so they intentionally
+  // remain uncullable with their original conservative visibility behavior.
+  const animated =
+    name === 'city122-service-entries-and-transit-shelters' ||
+    name === 'city122-grounded-vent-vapor-high';
+  mesh.frustumCulled = !animated;
   mesh.castShadow = false;
   mesh.receiveShadow = false;
   entries.forEach((p, i) => {
@@ -52,6 +73,7 @@ function batch(parent, name, material, entries, geometry = unit) {
   });
   mesh.instanceMatrix.needsUpdate = true;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+  if (mesh.frustumCulled && mesh.count) mesh.computeBoundingSphere();
   parent.add(mesh);
   return mesh;
 }
@@ -412,9 +434,13 @@ export function createCity122StreetInfill(buildings = [], districtFootprints = [
 
 export function setCity122Quality(root, quality) {
   if (!root) return;
+  const before = root.userData.quality;
   root.userData.quality = quality === 'high' ? 'high' : 'medium';
-  root.getObjectByName('city122-extra-street-furniture-high').visible =
-    root.userData.quality === 'high';
+  const high = root.getObjectByName('city122-extra-street-furniture-high');
+  high.visible = root.userData.quality === 'high';
+  // A newly enabled High vapor must initialize at the current travel
+  // instead of using transforms from an old Medium or a previous sector.
+  if (before !== 'high' && high.visible) root.userData.pedestrianFrame = null;
 }
 
 /**
@@ -427,7 +453,8 @@ export function animateCity122StreetLife(root, travel) {
   const frame = Math.floor(travel / 11);
   if (root.userData.pedestrianFrame === frame) return;
   root.userData.pedestrianFrame = frame;
-  const mesh = root.getObjectByName('city122-service-entries-and-transit-shelters');
+  root.userData.lastTravel = travel;
+  const { people: mesh, signs, vapor, high } = streetAnimationNodes(root);
   const pedestrians = root.userData.pedestrians ?? [];
   for (const person of pedestrians) {
     const offset = Math.sin(frame * 0.17 + person.phase) * 2.4;
@@ -445,19 +472,17 @@ export function animateCity122StreetLife(root, travel) {
 
   // Slow, subtle pulse along the ground connector lines, deterministic on
   // replay and unaffected by the player HUD or weapon/emergency lighting.
-  const signs = root.getObjectByName('city122-subtle-amber-street-wayfinding');
   const indices = root.userData.groundSignalIndices ?? [];
-  const tone = new T.Color();
   for (let i = 0; i < indices.length; i++) {
     const glow = 0.65 + 0.25 * Math.sin(frame * 0.13 + i * 0.7);
-    tone.set('#c4bba4').multiplyScalar(glow);
-    signs.setColorAt(indices[i], tone);
+    signalScratch.copy(signalBase).multiplyScalar(glow);
+    signs.setColorAt(indices[i], signalScratch);
   }
   if (indices.length) signs.instanceColor.needsUpdate = true;
 
   // Each cone rises from its own real vent, using one GPU instanced draw
   // only on High. No particle allocations and no transform updates on pause.
-  const steam = root.getObjectByName('city122-grounded-vent-vapor-high');
+  if (!high.visible) return;
   for (let i = 0; i < (root.userData.vaporSources?.length ?? 0); i++) {
     const vent = root.userData.vaporSources[i];
     const cycle = (((frame * 0.033 + vent.phase) % 1) + 1) % 1;
@@ -465,7 +490,7 @@ export function animateCity122StreetLife(root, travel) {
     dummy.rotation.set(0, 0, 0);
     dummy.scale.set(2.1 + cycle * 1.5, 5.3 + cycle * 3.1, 2.1 + cycle * 1.5);
     dummy.updateMatrix();
-    steam.setMatrixAt(i, dummy.matrix);
+    vapor.setMatrixAt(i, dummy.matrix);
   }
-  if (root.userData.vaporSources.length) steam.instanceMatrix.needsUpdate = true;
+  if (root.userData.vaporSources.length) vapor.instanceMatrix.needsUpdate = true;
 }

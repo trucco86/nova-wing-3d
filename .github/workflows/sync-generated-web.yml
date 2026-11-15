@@ -7,6 +7,7 @@ on:
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
       - feat/qa140-radial-rpg-tactical-pause-20261115
+      - integration/qa147-graphics-perf-rpg-preserved-20261115
 permissions:
   contents: write
   actions: write
@@ -43,6 +44,11 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa140-radial-rpg-tactical-pause-20261115" ]; then
             git add -- src/shell.html src/styles.css src/main.js src/mobile-rpg.js src/game.js src/haptic-feedback.js src/ui-preferences.js tests/qa140-radial-rpg.test.mjs tests/haptic-feedback.test.mjs tests/browser/haptic-availability.spec.mjs specs/qa140-radial-rpg-tactical-pause.md tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs tests/browser/dynamic.spec.mjs tests/browser/five-cats-formation.spec.mjs tests/dynamic-scene.js tests/browser/rpg-top-hud.spec.mjs tests/browser/rpg-orbit-drawer.spec.mjs tests/browser/omega-flank-qa.spec.mjs tests/browser/game.spec.mjs package.json package-lock.json CHANGELOG.md releases/v1.27.135.md .github/workflows/sync-generated-web.yml
+          fi
+          # QA147 is an isolated reconciliation PR. Synchronize formatting
+          # and the generated HTML only after all Node validations pass.
+          if [ "${GITHUB_REF_NAME}" = "integration/qa147-graphics-perf-rpg-preserved-20261115" ]; then
+            git add -- src/ tests/ specs/ releases/ .github/workflows/sync-generated-web.yml
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'

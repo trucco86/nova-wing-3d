@@ -92,6 +92,27 @@ export function createPremiumAtmosphericGeometry(kind) {
   parts.forEach((part) => part.dispose());
   if (!merged || !merged.index || !merged.getAttribute('normal'))
     throw new Error('atmospheric geometry must be physically modeled and indexed: ' + kind);
+  if (kind === 'neptune-storm-bank') {
+    // An ice-blue gradient and broad cloud folds are baked into existing
+    // vertices. There are no added triangles, transparent layers or textures.
+    const positions = merged.getAttribute('position');
+    const colors = new Float32Array(positions.count * 3);
+    const deep = new T.Color('#b7d6f3');
+    const crest = new T.Color('#f0f9ff');
+    const tint = new T.Color();
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i);
+      const y = positions.getY(i);
+      const z = positions.getZ(i);
+      const elevation = T.MathUtils.clamp((y + 0.65) / 1.5, 0, 1);
+      const flow = 0.5 + 0.5 * Math.sin(y * 13 + x * 6.7 + z * 4.1);
+      tint.copy(deep).lerp(crest, elevation * 0.48 + flow * 0.33);
+      colors[i * 3] = tint.r;
+      colors[i * 3 + 1] = tint.g;
+      colors[i * 3 + 2] = tint.b;
+    }
+    merged.setAttribute('color', new T.BufferAttribute(colors, 3));
+  }
   merged.computeBoundingSphere();
   merged.userData.premiumAtmosphere = kind;
   return merged;
