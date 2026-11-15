@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.145 | QA149: Colosso das Dunas com marcha articulada
+
+- Seis pernas do escavador marciano ganham gait temporal, preparação da prensa vertical e perfurador, sem nova geometria ou draw calls.
+- O HUD passa a nomear COLOSSO DAS DUNAS, mantendo os tipos de ataque e seus hitboxes e esquivas existentes.
+- Cache WeakMap e tempo determinístico conservam pausa e reinício. Não altera RPG, geradores ou tiros.
+- **PR Draft empilhada. CI e QA visual/mobile obrigatórias, sem produção.**
+
 ## 1.27.144 — QA148: tempestade de areia com profundidade e deriva contínua
 
 - A fase 2 preserva três planos de névoa e 240 partículas, com novas camadas de poeira, linhas de areia e densidade mais próxima do solo, sem novos draws, texturas ou geometria.

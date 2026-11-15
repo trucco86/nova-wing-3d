@@ -772,7 +772,7 @@ export function animateBossSignature(
 ) {
   const pose = bossSignaturePose(index, time, phase, attackState, attackKind);
   if (!pose || !g) return null;
-  animateBossVisualIdentity(g, index, time, phase, attackState);
+  animateBossVisualIdentity(g, index, time, phase, attackState, attackKind);
   if (index === 5)
     animateEuropaAttackVfx(
       g.getObjectByName('boss-europa-attack-vfx'),
