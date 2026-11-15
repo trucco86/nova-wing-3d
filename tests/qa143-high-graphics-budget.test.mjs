@@ -126,8 +126,9 @@ test('QA143: High-only turbine updates use cached objects without scene searchin
   };
   highQuality();
   updateCity35LivedIn(root, 99);
+  const previousVersion = fans.instanceMatrix.version;
   root.getObjectByName = () => { throw new Error('per-frame traversal'); };
   updateCity35LivedIn(root, 101);
   assert.equal(high.visible, true);
-  assert.ok(fans.instanceMatrix.needsUpdate);
+  assert.ok(fans.instanceMatrix.version > previousVersion, 'active fans update GPU buffer');
 });
