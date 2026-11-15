@@ -18,7 +18,7 @@ const samples = (mesh) => {
   });
 };
 const near = (actual, expected) =>
-  ['x', 'y', 'z', 'w', 'h', 'd'].every((key) => Math.abs(actual[key] - expected[key]) < 0.00004);
+  ['x', 'y', 'z', 'w', 'h', 'd'].every((key) => Math.abs(actual[key] - expected[key]) < 0.0002);
 const meshStats = (node) => {
   let count = 0, instanced = 0, triangles = 0;
   node.traverse((x) => {

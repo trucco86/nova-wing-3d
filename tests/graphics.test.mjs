@@ -87,10 +87,25 @@ test('city remains present after one full scenery wrap and reset', () => {
     return sum + fleet.children.filter((mesh) => mesh.isInstancedMesh).length;
   }, 0);
   assert.equal(evacuationDraws, 6);
+  // QA146 also replaces 42 individual static meshes per tile with five
+  // material-accurate instance batches. Count exactly ten *additional*
+  // instanced draws across both city tiles, not an open-ended range.
+  const qa146Batches = ['launch-city', 'launch-city-far'].reduce((total, name) => {
+    const tile = scene.getObjectByName(name);
+    const district = tile.getObjectByName('city-architectural-districts');
+    const adverts = tile.getObjectByName('city-premium-infrastructure');
+    const stations = ['frame', 'cap', 'lowLight'].map((key) =>
+      district.getObjectByName('city-maglev-station-batched-' + key));
+    const signs = ['frame', 'trim'].map((key) =>
+      adverts.getObjectByName('city-commercial-billboard-batched-' + key));
+    assert.ok([...stations, ...signs].every((mesh) => mesh?.isInstancedMesh));
+    return total + stations.length + signs.length;
+  }, 0);
+  assert.equal(qa146Batches, 10);
   assert.ok(
-    count >= 180 + streetDraws + impactBatches + qa141Draws + evacuationDraws &&
-      count <= 260 + streetDraws + impactBatches + qa141Draws + evacuationDraws,
-    'historical city instance budget plus QA141 and the six QA145 fleet batches',
+    count >= 180 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches &&
+      count <= 260 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches,
+    'historical instance budget plus the exact 10 QA146 material batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

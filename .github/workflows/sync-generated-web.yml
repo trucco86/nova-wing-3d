@@ -83,7 +83,7 @@ jobs:
             git add -- src/visuals.js src/city-evacuation-batching.js src/game.js src/frame-audit.js tests/qa145-scene-draw-inventory.test.mjs tests/qa145-evacuation-batching.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/graphics.test.mjs specs/qa145-evacuation-batching.md
           fi
           if [ "${GITHUB_REF_NAME}" = "perf/qa146-static-city-stations-and-ad-batching-20261115" ]; then
-            git add -- src/city-districts.js src/city-premium.js tests/city-2-4-districts.test.mjs tests/qa146-city-station-ad-batching.test.mjs specs/qa146-stations-ads-budget.md
+            git add -- src/city-districts.js src/city-premium.js tests/city-2-4-districts.test.mjs tests/graphics.test.mjs tests/qa146-city-station-ad-batching.test.mjs specs/qa146-stations-ads-budget.md
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
