@@ -80,6 +80,25 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  // QA151: prove the LIVE WebGL world actually uses the soft dust map, not
+  // just a detached createMarsSandstorm() object in a unit test.
+  marsDustVisualState() {
+    const storm = lastScene?.getObjectByName('mars-sandstorm');
+    const dots = storm?.getObjectByName('mars-sandstorm-particle-field');
+    const map = dots?.material?.map;
+    const data = map?.image?.data;
+    const width = map?.image?.width ?? 0;
+    const height = map?.image?.height ?? 0;
+    return {
+      stormVisible: storm?.visible ?? false,
+      pointCount: dots?.geometry?.attributes?.position?.count ?? 0,
+      isNativeMap: Boolean(map?.isDataTexture),
+      textureWidth: width,
+      textureHeight: height,
+      cornerAlpha: data?.[3] ?? null,
+      centerAlpha: data ? data[((Math.floor(height / 2) * width + Math.floor(width / 2)) * 4) + 3] : null,
+    };
+  },
   // QA122 visual proof: inspect real WebGL scene and static urban GPU batches,
   // never a mocked HUD or a separate synthetic moon.
   city122State() {
