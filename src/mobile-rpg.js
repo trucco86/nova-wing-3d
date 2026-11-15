@@ -73,6 +73,10 @@ export function installMobileRpgAccordion({
     const target = event.target;
     const button = target?.closest?.('button');
     if (target?.id === 'rpgTacticalScrim') return close();
+    // On compact touch viewports, the wheel background can overlap the
+    // dormant orbit control. Tapping that empty space must dismiss the RPG
+    // instead of trapping a tap while the tactical pause remains active.
+    if (coarse && drawer.open && !button && wheel?.contains?.(target)) return close();
     if (!button || button.disabled) return;
     if (coarse && button.dataset.rpgCategory) return selectCategory(button.dataset.rpgCategory);
     if (button.id === 'rpgCategoryBack') return showWheel();
