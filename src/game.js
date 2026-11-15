@@ -102,10 +102,7 @@ import { createMusic } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
-import {
-  createAdaptiveGraphics,
-  graphicsBudgetTransition,
-} from './graphics-quality.js';
+import { createAdaptiveGraphics, graphicsBudgetTransition } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
