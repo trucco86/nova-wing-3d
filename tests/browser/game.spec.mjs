@@ -338,6 +338,10 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
 test('offline Android interface protects controls from cutout and gesture insets', async ({
   page,
 }, info) => {
+  // Bundling the complete offline WebGL application and shader preparation
+  // can exceed the generic 30s browser-test budget on software-rendered CI.
+  // Preserve all safe-area, controls, offline and pause assertions.
+  test.setTimeout(120000);
   test.skip(info.project.name !== 'mobile', 'Android layout requires the touch viewport.');
   const offline = await prepareAndroidWeb(info.outputPath('offline-assets'));
   const external = [];
