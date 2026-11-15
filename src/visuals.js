@@ -7,6 +7,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityEvacuationFleet, syncCityEvacuationFleet } from './city-evacuation-batching.js';
 import {
   animateCity122StreetLife,
   createCity122StreetInfill,
@@ -1513,16 +1514,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     craft.userData.role = 'evacuation';
     craft.userData.index = i;
     craft.userData.highOnly = i >= 3;
-    craft.add(box(3.4, 1.4, 9.2, civicHull));
-    craft.add(box(10, 0.45, 3.1, civicHull, 0, -0.3, 0.8));
-    craft.add(box(1.4, 0.8, 2, maglevWindows, 0, 0.75, -2.5));
-    for (const flank of [-1, 1]) {
-      craft.add(box(1.4, 0.4, 1.1, civicEngine, flank * 1.3, 0, 5));
-      craft.add(box(1.1, 0.35, 7, maglevWindows, flank * 4.3, -0.2, 0.8));
-    }
+    // The scene retains a lightweight, independently moving ship proxy.
+    // Seven authored parts are rendered in the three shared material draws.
+    craft.visible = i < 3;
     craft.position.set(side * (120 + (i % 3) * 26), 38, -230 - i * 238);
     urbanLife.add(craft);
   }
+  urbanLife.add(
+    createCityEvacuationFleet({
+      hull: civicHull,
+      glazing: maglevWindows,
+      engines: civicEngine,
+    }),
+  );
+  syncCityEvacuationFleet(urbanLife, false);
   city.add(urbanLife);
   const cityDistricts = createCityDistricts(buildingAnchors);
   city.add(cityDistricts);
@@ -2085,6 +2090,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       for (const tile of [city, cityFar]) {
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
+        syncCityEvacuationFleet(life, high);
         tile.getObjectByName('city-district-high-details').visible = high;
         setCityTileIdentityQuality(tile, quality);
         setCity40HeroQuality(tile, quality);
@@ -2683,7 +2689,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
                 side > 0
                   ? -215 - ((travel * 0.18 + 20) % 1470)
                   : -375 - ((travel * 0.35 + 60) % 1470);
-            } else {
+            } else if (vehicle.userData.role === 'evacuation') {
               const i = vehicle.userData.index;
               const ascent = ((travel * 0.23 + i * 212) % 1700) / 1700;
               const side = i % 2 ? 1 : -1;
@@ -2694,6 +2700,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
               vehicle.scale.setScalar(1 - ascent * 0.45);
             }
           }
+          syncCityEvacuationFleet(life);
         }
         for (let g of near) {
           g.position.z += scenicDelta;
@@ -2754,6 +2761,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), 0);
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
+        syncCityEvacuationFleet(tile.getObjectByName('city-urban-life'));
       }
       cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       cityHorizon.visible = sceneryTheme === 'city';
