@@ -97,7 +97,7 @@ test('QA145: phase 1 near/far use independent buffer transforms, High/Medium upd
   }
 });
 
-test('QA145: clone cache does not borrow instances or corrupt other city's ship paths', () => {
+test('QA145: clone cache does not borrow instances or corrupt other city ship paths', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.48, true);
   world.setSector(SECTORS[0], 0);
