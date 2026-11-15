@@ -1,0 +1,52 @@
+name: QA117 prepare combat density candidate
+
+on:
+  push:
+    branches:
+      - feat/qa117-stage1-enemy-density-20261112
+    paths:
+      - .github/workflows/qa117-prepare.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qa117-prepare
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare unapproved QA117 version and assets
+        run: npm run release:prepare -- 1.27.117
+      - run: npm run format
+      - run: npm run build
+      - name: QA117 focused regression
+        run: node --test tests/qa117-city-combat-density.test.mjs tests/stage-one-pacing.test.mjs tests/mission-pacing-difficulty.test.mjs tests/sector-waves.test.mjs tests/enemy-roles.test.mjs tests/flight-environments.test.mjs
+      - run: npm run validate
+      - run: git diff --check
+      - name: Commit version and generated candidate into branch only
+        run: |
+          git add -u
+          if [ -f releases/v1.27.117.md ]; then git add releases/v1.27.117.md; fi
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA117 candidate already synchronized.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build(QA117): sync candidate after full QA'
+          git push origin HEAD:feat/qa117-stage1-enemy-density-20261112

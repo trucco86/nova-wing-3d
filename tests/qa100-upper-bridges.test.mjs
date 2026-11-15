@@ -16,11 +16,36 @@ function fixture(offset = 294) {
   return { tile, architecture, physical };
 }
 
-test('three distinct premium skyline decks have 12 visible preallocated solid structures', () => {
+test('three skyline decks remain collidable and gain real grounded external supports', () => {
   const { architecture, physical } = fixture();
   const steel = architecture.getObjectByName('city-upper-skybridge-solids');
-  assert.equal(steel.count, 12);
-  assert.equal(steel.userData.solidInstances.length, 12);
+  assert.equal(steel.count, 30, 'six visible grounded pylons and connecting beams are batched');
+  assert.equal(steel.userData.solidInstances.length, 18);
+  assert.equal(architecture.userData.groundedSupports.length, 6);
+  const transform = new T.Matrix4();
+  for (const support of architecture.userData.groundedSupports) {
+    assert.ok(Math.abs(support.x) >= 105, 'supports cannot block the pilot x±72 lane');
+    assert.equal(support.footY, -7, 'each pylon must touch actual city ground');
+    assert.ok(support.topY > 80);
+    let grounded = false;
+    for (let i = 0; i < steel.count; i++) {
+      steel.getMatrixAt(i, transform);
+      const e = transform.elements;
+      const height = Math.abs(e[5]);
+      if (
+        Math.abs(e[12] - support.x) < 0.001 &&
+        Math.abs(e[14] - support.z) < 0.001 &&
+        height > 85 &&
+        Math.abs(e[13] - height / 2 + 7) < 0.001
+      )
+        grounded = true;
+    }
+    assert.ok(grounded, 'visible metal pylon must extend all the way to the road plane');
+  }
+  assert.ok(
+    architecture.userData.groundedSupports.some((s) => s.x < 0 && s.deckZ === -605 && s.z < -640),
+    'west maglev station cannot be penetrated by the mid-city bridge footing',
+  );
   assert.equal(
     architecture.children.length,
     3,
@@ -35,6 +60,8 @@ test('three distinct premium skyline decks have 12 visible preallocated solid st
     decks.map((s) => s.z),
     [9, -311, -711],
   );
+  const extensions = physical.snapshot().filter((s) => s.kind === 'upper-bridge-extension');
+  assert.equal(extensions.length, 6, 'approach arms must have real colliders');
   const first = physical.colliders().find((s) => s.kind === 'upper-bridge-deck');
   assert.ok(first && first.solid);
   assert.equal(first.center.z, 9);
@@ -65,7 +92,16 @@ test('climbing into a skybridge stops at the actual lower face without sideways 
   const outsideFlank = new T.Vector3(72, 78, 9);
   const clear = new T.Vector3(72, 106, 9);
   assert.equal(resolveCitySolidContact(outsideFlank, clear, deck, { maxY: 184 }), false);
-  assert.equal(clear.y, 106, 'pilot can fly vertically around the real narrow edge');
+  assert.equal(clear.y, 106, 'the central deck alone ends at x=63');
+  const extension = physical
+    .colliders()
+    .find((s) => s.kind === 'upper-bridge-extension' && s.center.x > 0);
+  assert.ok(extension, 'external span must be physically present');
+  assert.equal(
+    resolveCitySolidContact(outsideFlank, clear, extension, { maxY: 184 }),
+    true,
+    'new visible connector cannot become a phantom pass-through at x=72',
+  );
 });
 
 test('second and third reachable skyline bridges block only at their actual depth', () => {

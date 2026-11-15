@@ -1,0 +1,43 @@
+name: QA118 targeted city geometry and ten-sector visual audit
+
+on:
+  push:
+    branches:
+      - feat/qa118-premium-worlds-20261112
+    paths:
+      - .github/workflows/qa118-premium-visual-check.yml
+      - src/city-40-hero-section.js
+      - src/living-world-depth.js
+      - src/premium-world-grading.js
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa118-targeted-visual
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Compare actual skyline triangle budget and ten sector screenshots
+        run: npx playwright test tests/browser/qa114-silhouette-performance.spec.mjs tests/browser/sector-visual-audit.spec.mjs --workers=2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa118-visual-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn

@@ -47,6 +47,12 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html dist/index.html
+          # Keep the release dashboard testable before main/production, if this
+          # candidate includes it. Other PRs remain game-only.
+          if [ -f docs/control-center/index.html ]; then
+            mkdir -p dist/control-center
+            cp docs/control-center/index.html dist/control-center/index.html
+          fi
           touch dist/.nojekyll
           printf 'sha=%s\nref=%s\n' "$GITHUB_SHA" "$GITHUB_REF" > dist/BUILD.txt
       - name: Check Cloudflare credentials

@@ -23,7 +23,7 @@ const frame = (mesh) => {
 test('moving city has detailed surface cars, aerial taxis and ascending escape ships', () => {
   const traffic = createCityTraffic();
   assert.equal(traffic.name, 'city-active-traffic');
-  assert.deepEqual(traffic.userData.roleCounts, { road: 12, flycar: 7, escape: 6 });
+  assert.deepEqual(traffic.userData.roleCounts, { road: 12, bus: 4, flycar: 13, escape: 6 });
   for (const role of ['road', 'flycar', 'escape']) {
     const group = traffic.getObjectByName('city-traffic-' + role);
     assert.ok(group?.isGroup);
@@ -31,10 +31,18 @@ test('moving city has detailed surface cars, aerial taxis and ascending escape s
     assert.ok(group.children.every((mesh) => mesh.isInstancedMesh && mesh.userData.visualOnly));
     assert.ok(group.children.every((mesh) => !mesh.userData.hitbox));
   }
+  const bus = traffic.getObjectByName('city-traffic-bus-merged-detail');
+  assert.ok(bus?.isInstancedMesh, 'full-size city buses share a single GPU batch');
+  assert.ok(
+    bus.geometry.getAttribute('color')?.count > 100,
+    'bus has detailed coloured glazing, wheels, passenger doors and service panels',
+  );
   const road = traffic.getObjectByName('city-traffic-road-hull');
   const flying = traffic.getObjectByName('city-traffic-flycar-taxi');
   const escape = traffic.getObjectByName('city-traffic-escape-escape');
   assert.ok(road?.isInstancedMesh && flying?.isInstancedMesh && escape?.isInstancedMesh);
+  const startingBus = getTranslation(bus);
+  assert.ok(Math.abs(startingBus.x) >= 30 && startingBus.y < 0);
   const startingRoad = getTranslation(road);
   const startingFlying = getTranslation(flying);
   const startingEscape = getTranslation(escape);
@@ -60,7 +68,7 @@ test('moving city has detailed surface cars, aerial taxis and ascending escape s
 
 test('Medium keeps visible traffic and High reveals more without new draw groups', () => {
   const traffic = createCityTraffic();
-  const expected = { road: [8, 12], flycar: [4, 7], escape: [3, 6] };
+  const expected = { road: [8, 12], bus: [2, 4], flycar: [7, 13], escape: [3, 6] };
   let drawCalls = 0;
   for (const [role, [medium, high]] of Object.entries(expected)) {
     const group = traffic.getObjectByName('city-traffic-' + role);
@@ -73,7 +81,7 @@ test('Medium keeps visible traffic and High reveals more without new draw groups
   assert.equal(
     drawCalls,
     22,
-    '22 GPU batches per tile include merged real wheel and thruster details',
+    'same 22 GPU batches per tile after folding the taxi tail light into its detail geometry',
   );
 });
 

@@ -88,24 +88,98 @@ export const AUDIO_CUES = {
 };
 // Physical transients and staged mechanical events replace electronic beeps.
 Object.assign(AUDIO_CUES, {
+  // Three sonic layers: a brief metallic snap, a mid-range cannon body,
+  // and a small-speaker-friendly bass punch. Short noise tails prevent
+  // the repeated pulse from reading as a vintage laser beep.
+  // QA115: fast, dry pulse. The mechanical body speaks in the midrange;
+  // the attack is a short filtered click, not a descending arcade whistle.
   shot: {
-    cooldown: 0.085,
+    cooldown: 0.088,
     tones: [
-      { from: 1120, to: 320, duration: 0.075, gain: 0.029, wave: 'sawtooth', filter: 2900 },
-      { from: 290, to: 96, duration: 0.145, gain: 0.052, wave: 'triangle', filter: 1350 },
-      { from: 135, to: 65, duration: 0.12, gain: 0.021, wave: 'sine' },
+      {
+        from: 890,
+        to: 370,
+        duration: 0.041,
+        gain: 0.017,
+        wave: 'sawtooth',
+        filter: 1150,
+        attack: 0.002,
+      },
+      {
+        from: 280,
+        to: 135,
+        duration: 0.155,
+        gain: 0.062,
+        wave: 'triangle',
+        filter: 920,
+        attack: 0.003,
+      },
+      { from: 108, to: 57, duration: 0.18, gain: 0.034, wave: 'sine', attack: 0.003 },
+      {
+        from: 215,
+        to: 95,
+        delay: 0.068,
+        duration: 0.25,
+        gain: 0.058,
+        wave: 'triangle',
+        filter: 740,
+        attack: 0.007,
+      },
     ],
-    noises: [{ duration: 0.055, gain: 0.06, filterType: 'bandpass', filter: 2500, filterEnd: 760 }],
+    noises: [
+      {
+        duration: 0.036,
+        gain: 0.058,
+        filterType: 'bandpass',
+        filter: 1500,
+        filterEnd: 740,
+        q: 0.65,
+      },
+      {
+        color: 'brown',
+        delay: 0.014,
+        duration: 0.142,
+        gain: 0.054,
+        filter: 550,
+        filterEnd: 190,
+        attack: 0.01,
+      },
+    ],
   },
-  // The mecha has a slower, heavier cannon, not the fighter's quick laser.
   mechaShot: {
     cooldown: 0.125,
     tones: [
-      { from: 840, to: 175, duration: 0.14, gain: 0.044, wave: 'sawtooth', filter: 2800 },
-      { from: 220, to: 62, duration: 0.24, gain: 0.082, wave: 'triangle', filter: 1100 },
-      { from: 115, to: 47, duration: 0.22, gain: 0.052, wave: 'sine' },
+      {
+        from: 680,
+        to: 230,
+        duration: 0.076,
+        gain: 0.034,
+        wave: 'sawtooth',
+        filter: 1320,
+        attack: 0.002,
+      },
+      {
+        from: 285,
+        to: 76,
+        duration: 0.275,
+        gain: 0.079,
+        wave: 'triangle',
+        filter: 900,
+        attack: 0.003,
+      },
+      { from: 102, to: 40, duration: 0.29, gain: 0.059, wave: 'sine', attack: 0.006 },
     ],
-    noises: [{ duration: 0.12, gain: 0.075, filterType: 'bandpass', filter: 2100, filterEnd: 390 }],
+    noises: [
+      {
+        duration: 0.046,
+        gain: 0.078,
+        filterType: 'bandpass',
+        filter: 1600,
+        filterEnd: 450,
+        q: 0.64,
+      },
+      { color: 'brown', delay: 0.024, duration: 0.22, gain: 0.071, filter: 720, filterEnd: 160 },
+    ],
   },
   mechaImpact: {
     cooldown: 0.18,
@@ -133,30 +207,80 @@ Object.assign(AUDIO_CUES, {
     ],
     noises: [{ duration: 0.34, gain: 0.12, filterType: 'bandpass', filter: 2600, filterEnd: 180 }],
   },
+  // Short mechanical ignition when holding FIRE begins; the continuous
+  // level-aware charge layer below handles the actual rising energy.
+  // A restrained magnetic contact, then the continuously modulated charge
+  // engine takes over. Not a standalone high-pitched sweep.
   plasmaCharge: {
-    cooldown: 0.5,
+    cooldown: 0.4,
     tones: [
-      { from: 95, to: 380, duration: 0.65, gain: 0.035, wave: 'sine' },
-      { from: 190, to: 570, duration: 0.6, gain: 0.015, wave: 'triangle', filter: 900 },
+      { from: 108, to: 121, duration: 0.14, gain: 0.009, wave: 'sine', attack: 0.045 },
+      {
+        from: 147,
+        to: 158,
+        duration: 0.13,
+        gain: 0.007,
+        wave: 'triangle',
+        filter: 390,
+        attack: 0.036,
+      },
     ],
     noises: [
       {
-        duration: 0.65,
-        gain: 0.055,
-        attack: 0.14,
+        duration: 0.15,
+        gain: 0.009,
+        attack: 0.095,
         filterType: 'bandpass',
-        filter: 160,
-        filterEnd: 1500,
+        filter: 510,
+        filterEnd: 650,
+        q: 0.58,
       },
     ],
   },
+  // Release is the event; charge stays quiet. Emphasis on a warm mechanical
+  // impulse and controlled air displacement, with no piercing sawtooth glide.
   plasmaRelease: {
     cooldown: 0.16,
     tones: [
-      { from: 330, to: 65, duration: 0.42, gain: 0.06, wave: 'triangle', filter: 1000 },
-      { from: 95, to: 34, duration: 0.6, gain: 0.075, wave: 'sine' },
+      {
+        from: 760,
+        to: 280,
+        duration: 0.087,
+        gain: 0.032,
+        wave: 'sawtooth',
+        filter: 1450,
+        attack: 0.002,
+      },
+      {
+        from: 345,
+        to: 83,
+        duration: 0.37,
+        gain: 0.08,
+        wave: 'triangle',
+        filter: 1040,
+        attack: 0.003,
+      },
+      { from: 117, to: 39, duration: 0.52, gain: 0.076, wave: 'sine', attack: 0.006 },
     ],
-    noises: [{ duration: 0.48, gain: 0.14, filter: 2400, filterEnd: 150 }],
+    noises: [
+      {
+        duration: 0.095,
+        gain: 0.088,
+        filterType: 'bandpass',
+        filter: 1650,
+        filterEnd: 420,
+        q: 0.67,
+      },
+      {
+        color: 'brown',
+        delay: 0.024,
+        duration: 0.46,
+        gain: 0.083,
+        filter: 800,
+        filterEnd: 133,
+        attack: 0.012,
+      },
+    ],
   },
   explosion: {
     cooldown: 0.09,
@@ -395,7 +519,11 @@ export function createAudioCues(context) {
     level = 1,
     lastCue = null,
     engine,
-    engineActive = false;
+    engineActive = false,
+    chargeLoop,
+    chargeActive = false,
+    chargeProgress = -1,
+    shotVariant = 0;
   function engineOff() {
     if (!engineActive) return;
     engineActive = false;
@@ -456,6 +584,92 @@ export function createAudioCues(context) {
     smooth(engine.hum.frequency, boosting ? 145 : robot ? 62 : 82, 0.13);
     smooth(engine.noise.playbackRate, boosting ? 1.45 : robot ? 0.85 : 1, 0.16);
   }
+  // Unlike a one-shot beep, charging has continuous timbre and amplitude.
+  // One set of cached Web Audio nodes follows the real charge meter, with
+  // no interval, no per-frame source creation and no sound after pause.
+  function prepareCharge() {
+    if (chargeLoop) return true;
+    const buffer = noiseBuffer(context, 'white');
+    if (!buffer || !context.createBiquadFilter || !context.createOscillator) return false;
+    const bass = context.createOscillator();
+    const flux = context.createOscillator();
+    const hiss = context.createBufferSource();
+    const fluxFilter = context.createBiquadFilter();
+    const hissFilter = context.createBiquadFilter();
+    const bassGain = context.createGain();
+    const fluxGain = context.createGain();
+    const hissGain = context.createGain();
+    bass.type = 'sine';
+    flux.type = 'triangle';
+    hiss.buffer = buffer;
+    hiss.loop = true;
+    fluxFilter.type = 'lowpass';
+    fluxFilter.frequency.value = 440;
+    hissFilter.type = 'bandpass';
+    hissFilter.frequency.value = 530;
+    hissFilter.Q.value = 0.52;
+    bassGain.gain.value = fluxGain.gain.value = hissGain.gain.value = 0;
+    bass.connect(bassGain);
+    bassGain.connect(bus);
+    flux.connect(fluxFilter);
+    fluxFilter.connect(fluxGain);
+    fluxGain.connect(bus);
+    hiss.connect(hissFilter);
+    hissFilter.connect(hissGain);
+    hissGain.connect(bus);
+    bass.start();
+    flux.start();
+    hiss.start();
+    chargeLoop = {
+      bass,
+      flux,
+      hiss,
+      fluxFilter,
+      hissFilter,
+      bassGain,
+      fluxGain,
+      hissGain,
+    };
+    return true;
+  }
+  function chargeOff() {
+    if (!chargeActive) return;
+    chargeActive = false;
+    chargeProgress = -1;
+    const now = context.currentTime || 0;
+    for (const node of [chargeLoop.bassGain, chargeLoop.fluxGain, chargeLoop.hissGain]) {
+      if (node.gain.setTargetAtTime) node.gain.setTargetAtTime(0, now, 0.018);
+      else node.gain.value = 0;
+    }
+  }
+  function setCharge({ active = false, progress = 0 } = {}) {
+    const suspended = context.state === 'suspended' && typeof context.startRendering !== 'function';
+    if (!active || !enabled || destroyed || !level || suspended) {
+      chargeOff();
+      return;
+    }
+    if (!prepareCharge()) return;
+    const p = Number.isFinite(progress) ? Math.max(0, Math.min(1, progress)) : 0;
+    if (chargeActive && Math.abs(p - chargeProgress) < 0.045) return;
+    chargeActive = true;
+    chargeProgress = p;
+    const now = context.currentTime || 0;
+    const smooth = (param, value) => {
+      if (param.setTargetAtTime) param.setTargetAtTime(value, now, 0.055);
+      else param.value = value;
+    };
+    // Restrained energy: gentle low-pass movement, very little hiss and no
+    // sawtooth sweep. The audible reward is the release, not the hold.
+    // Levels stay around 13-18 dB under QA114, with release clearly louder.
+    smooth(chargeLoop.bass.frequency, 85 + 28 * p);
+    smooth(chargeLoop.flux.frequency, 148 + 63 * p);
+    smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
+    smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
+    smooth(chargeLoop.bassGain.gain, 0.003 + 0.0048 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.0018 + 0.003 * p);
+    smooth(chargeLoop.hissGain.gain, 0.001 + 0.0025 * p);
+  }
+
   function play(name, { enabled: allowed = true, active = true } = {}) {
     const cue = AUDIO_CUES[name];
     if (
@@ -481,23 +695,35 @@ export function createAudioCues(context) {
     }
     lastPlayed.set(name, now);
     lastCue = name;
-    for (const tone of cue.tones) pool.tone(tone);
+    // A subtle, deterministic ±2% pitch rotation gives rapid volleys some
+    // natural articulation without random bursts or extra source allocation.
+    const pitch =
+      name === 'shot'
+        ? [0.982, 1.014, 0.991, 1.024][shotVariant++ % 4]
+        : name === 'mechaShot'
+          ? [0.988, 1.012][shotVariant++ % 2]
+          : 1;
+    for (const tone of cue.tones)
+      pool.tone(pitch === 1 ? tone : { ...tone, from: tone.from * pitch, to: tone.to * pitch });
     for (const noise of cue.noises || []) pool.noise(noise);
     return true;
   }
   function silence() {
     pool.silence();
     engineOff();
+    chargeOff();
   }
   return {
     play,
     setFlight,
+    setCharge,
     silence,
     setEnabled(value) {
       enabled = !!value;
       if (!enabled) {
         pool.silence();
         engineOff();
+        chargeOff();
       }
     },
     setVolume(value) {
@@ -506,6 +732,7 @@ export function createAudioCues(context) {
       if (level === 0) {
         pool.silence();
         engineOff();
+        chargeOff();
       }
     },
     destroy() {
@@ -513,6 +740,12 @@ export function createAudioCues(context) {
       destroyed = true;
       pool.silence();
       engineOff();
+      chargeOff();
+      if (chargeLoop) {
+        for (const source of [chargeLoop.bass, chargeLoop.flux, chargeLoop.hiss]) source.stop();
+        for (const node of Object.values(chargeLoop)) node.disconnect?.();
+        chargeLoop = null;
+      }
       if (engine) {
         engine.noise.stop();
         engine.hum.stop();
@@ -529,6 +762,8 @@ export function createAudioCues(context) {
       destroyed,
       engineActive,
       engineMode: engineActive ? engine.mode : null,
+      chargeActive,
+      chargeProgress: chargeActive ? chargeProgress : 0,
       lastCue,
     }),
   };

@@ -1,5 +1,75 @@
 # Histórico
 
+## 1.27.121 — Candidata premium integrada, homologação manual pendente
+
+- QA107 a QA109: coerência urbana, ancoragem de objetos, ascensão orbital e colisores de destroços físicos.
+- QA110 a QA117: outdoors genéricos, fachadas PBR, detalhamento urbano, plasma/tiros e maior densidade de inimigos na primeira fase.
+- QA118: grading e geometria premium com otimizações de renderização nas dez fases.
+- QA119: geologia de Marte, cavernas de asteroides e cristas glaciais de Europa.
+- QA120: nave-mãe, motores e hangares, frotas de Saturno, estruturas de Órion e fortificações de Titã.
+- QA121: nuvens e estruturas atmosféricas esculpidas de Vênus e Netuno.
+- Integrados Control Center e monitoramento de release a cada 30 minutos. DEV e HML publicados com o mesmo bundle da candidata.
+- Evidência: PR #333 incorporada à release #319; CI Node, quatro shards Playwright e verificações de browser aprovadas, sem dispensar a homologação visual e física no celular.
+- **Produção não autorizada:** avaliação manual de jogabilidade, áudio, FPS mobile e rollback continuam pendentes.
+
+## 1.27.120 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.119 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.118 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.117 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.116 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.115 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.114 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.113 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.112 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.111 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.110 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.109 — Candidata em preparação
+
+- QA109: separar prédios e estruturas urbanas por zonas de ocupação; ancorar sinais, holofotes e plataformas; testes geométricos e visuais. Homologação e CI FULL pendentes.
+
+## 1.27.108 — Candidata em preparação
+
+- QA107/QA108: cidade mais coerente na ascensão orbital, torres distritais sem interpenetração com edifícios-base e colisão de destroços limitada à geometria visível.
+- Control Center responsivo para status público de PRs, CI da main, Pages e releases; monitor GitHub Actions 30 minutos com alertas deduplicados.
+- Candidata integrada com gates CI FULL, visual desktop/mobile e autorização de produção pendentes.
+
+## 1.27.107 — Candidata em preparação
+
+- QA107: torres distritais respeitam volumes ocupados da cidade; solo, edifícios e primeiro plano desaceleram juntos durante a ascensão orbital. Testes de regressão incluídos. Revisão visual High/Medium e gates browser pendentes.
+
 ## 1.27.106 — Candidata em preparação
 
 - Cancelamento seguro de multi-lock ao liberar controles, perder foco ou pausar. Regressão determinística incluída. Candidata pendente dos gates browser e homologação.

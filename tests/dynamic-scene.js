@@ -19,6 +19,7 @@ localStorage.setItem(
 let rendering = true,
   capture = true;
 let lastRenderStats = null;
+let lastScene = null;
 const game = createGame({
   autoLoop: false,
   // Existing gameplay probes skip the pre-mission film; opt in with ?intro=1
@@ -36,15 +37,23 @@ const game = createGame({
     const render = renderer.render.bind(renderer);
     renderer.render = (...args) => {
       if (!rendering) return;
+      // A physically based reflection cubemap triggers internal PMREM renders.
+      // They are NOT the game world, and must never replace the test's scene
+      // reference or GPU counters. Postprocessing passes likewise do not
+      // represent gameplay draw calls.
+      const realWorld = Boolean(
+        args[0]?.fog?.isFogExp2 || args[0]?.getObjectByName?.('launch-city'),
+      );
+      if (realWorld) lastScene = args[0];
       render(...args);
-      // Actual WebGL stats from the final rendered frame, not an FPS guess.
-      // Capture only immutable scalar values; renderer.info resets per frame.
-      lastRenderStats = {
-        calls: renderer.info.render.calls,
-        triangles: renderer.info.render.triangles,
-        lines: renderer.info.render.lines,
-        points: renderer.info.render.points,
-      };
+      if (realWorld) {
+        lastRenderStats = {
+          calls: renderer.info.render.calls,
+          triangles: renderer.info.render.triangles,
+          lines: renderer.info.render.lines,
+          points: renderer.info.render.points,
+        };
+      }
     };
     return renderer;
   },
@@ -62,6 +71,61 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  // Private QA fixture only: render exact same camera and clock with and
+  // without the new 285m architecture; production has no such debug switch.
+  graphics40Horizon() {
+    if (!lastScene) throw new Error('QA visual scene was not initialized');
+    const landmark = lastScene.getObjectByName('city40-distant-signature');
+    return landmark
+      ? {
+          visible: landmark.visible,
+          metrics: { ...landmark.userData.metrics },
+          localZ: landmark.userData.localZ,
+          visualOnly: landmark.userData.visualOnly,
+          aperture: landmark.userData.aperture ? { ...landmark.userData.aperture } : null,
+        }
+      : null;
+  },
+  graphics40Details() {
+    const tiles = [];
+    if (!lastScene) throw new Error('QA scene not rendered');
+    lastScene.traverse((node) => {
+      if (node.name !== 'city40-hero-architecture') return;
+      const masonry = node.getObjectByName('city40-sculpted-masonry')?.material;
+      const glass = node.getObjectByName('city40-deep-bay-glazing')?.material;
+      tiles.push({
+        variant: node.userData.variant,
+        buildings: node.userData.buildings.length,
+        supportedSideRibbons: node.userData.corridorFacades.reduce(
+          (sum, facade) => sum + (facade.supportedRibbonCount ?? 0),
+          0,
+        ),
+        metrics: { ...node.userData.metrics },
+        reflectionFaces: masonry?.envMap?.images?.length ?? 0,
+        reflectionsShared: Boolean(masonry?.envMap) && masonry.envMap === glass?.envMap,
+        batches: node.children.flatMap((group) => group.children).length,
+      });
+    });
+    return tiles;
+  },
+  graphics40Visible(enabled) {
+    if (!lastScene) throw new Error('QA visual scene was not initialized');
+    let roots = 0;
+    lastScene.traverse((node) => {
+      // The scenic landmark is non-playable and joins this comparison
+      // without changing the two-tile public QA fixture contract.
+      if (node.name === 'city40-distant-signature') {
+        node.visible = !!enabled;
+        return;
+      }
+      if (node.name !== 'city40-hero-architecture') return;
+      node.visible = !!enabled;
+      roots++;
+    });
+    rendering = true;
+    game.step(0);
+    return { roots, stats: lastRenderStats ? { ...lastRenderStats } : null };
+  },
   hangar() {
     capture = false;
     // Exercise the first-sector launch with the same keyboard controls as the

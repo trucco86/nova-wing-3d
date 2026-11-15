@@ -1,0 +1,43 @@
+name: QA119 geological WebGL visual audit
+
+on:
+  push:
+    branches:
+      - feat/qa119-surface-geology-and-caverns-20261112
+    paths:
+      - .github/workflows/qa119-visual-check.yml
+      - src/mars-premium.js
+      - src/asteroid-interior.js
+      - src/europa-surface.js
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa119-geology-visual
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Geologic scenes and strict city GPU guard in actual desktop/mobile WebGL
+        run: npx playwright test tests/browser/mars-premium-stage.spec.mjs tests/browser/asteroid-journey.spec.mjs tests/browser/europa-surface-transition.spec.mjs tests/browser/qa114-silhouette-performance.spec.mjs --workers=2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa119-geology-screenshots-traces
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn

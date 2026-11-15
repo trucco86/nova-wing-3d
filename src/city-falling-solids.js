@@ -15,7 +15,7 @@ function visibleToRoot(node, root) {
     if (!cursor.visible) return false;
   return !!node;
 }
-function boundsFor(meshes, destination) {
+function boundsFor(meshes, destination, root) {
   let minX = Infinity,
     minY = Infinity,
     minZ = Infinity;
@@ -23,6 +23,9 @@ function boundsFor(meshes, destination) {
     maxY = -Infinity,
     maxZ = -Infinity;
   for (const mesh of meshes) {
+    // A child mesh hidden by damage, LOD, or its parent cannot contribute
+    // to a physical hitbox; only geometry actually rendered is collidable.
+    if (!visibleToRoot(mesh, root)) continue;
     const m = mesh.matrixWorld.elements;
     // Each authored box in city-destruction.js uses BoxGeometry(1,1,1).
     // World-matrix column abs sums include all rotations and nested scales.
@@ -83,7 +86,7 @@ export function createCityFallingSolids(root) {
       const lastX = c.center.x,
         lastY = c.center.y,
         lastZ = c.center.z;
-      c.active = visibleToRoot(c.node, root) && c.meshes.length > 0 && boundsFor(c.meshes, c);
+      c.active = visibleToRoot(c.node, root) && c.meshes.length > 0 && boundsFor(c.meshes, c, root);
       if (!c.active) continue;
       c.previousX = wasActive ? lastX : c.center.x;
       c.previousY = wasActive ? lastY : c.center.y;

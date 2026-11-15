@@ -1,0 +1,20 @@
+QA120 preview validation handoff
+
+Version 1.27.120: build, formatting, focused Node tests, and full Node validation succeeded.
+Preparation workflow: https://github.com/trucco86/nova-wing-3d/actions/runs/43318964171
+
+Real WebGL audit: 18 of 18 desktop and mobile Playwright tests passed.
+Visual evidence workflow: https://github.com/trucco86/nova-wing-3d/actions/runs/43319176643
+
+QA114 city geometry: desktop 766294 to 779030 triangles (plus 1.66 percent);
+mobile 786466 to 804990 triangles (plus 2.36 percent).
+Incremental draw calls: 8 for desktop and 8 for mobile.
+The 3 percent city geometry guard was not weakened.
+
+Carrier interior: instanced glass and engine blades/coils reduce the modeled
+interior by an expected 52 draws versus the old per-object construction.
+That savings is structural and not a measured physical phone FPS result.
+
+Next gate: full four-shard Playwright CI and isolated Cloudflare preview on the
+final synchronized SHA. Manual stage art review and physical mobile FPS remain
+pending. This PR must not merge or deploy production without user approval.
