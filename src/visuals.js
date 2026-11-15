@@ -7,10 +7,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
-import {
-  createCityEvacuationFleet,
-  syncCityEvacuationFleet,
-} from './city-evacuation-batching.js';
+import { createCityEvacuationFleet, syncCityEvacuationFleet } from './city-evacuation-batching.js';
 import {
   animateCity122StreetLife,
   createCity122StreetInfill,

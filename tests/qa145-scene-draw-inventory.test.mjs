@@ -58,16 +58,19 @@ test('QA145 diagnostic: catalogue stage 1 scene cost by category on High', () =>
   const details = Object.fromEntries(
     city.children
       .filter((x) => x.children.length || x.isMesh)
-      .map((x) => [x.name || ('unnamed-' + x.id), audit(x)]),
+      .map((x) => [x.name || 'unnamed-' + x.id, audit(x)]),
   );
   const sorted = Object.entries(details)
     .sort((a, b) => b[1].meshCount - a[1].meshCount)
     .slice(0, 25);
-  console.log('QA145-BASELINE-SCENE:', JSON.stringify({
-    categories,
-    cityHotspots: sorted,
-    scene: audit(scene),
-  }));
+  console.log(
+    'QA145-BASELINE-SCENE:',
+    JSON.stringify({
+      categories,
+      cityHotspots: sorted,
+      scene: audit(scene),
+    }),
+  );
   assert.ok(categories['launch-city'].meshCount >= 50);
   assert.ok(categories['launch-city-far'].meshCount >= 50);
   assert.ok(details['city-urban-life'].individualMeshes > 0);
