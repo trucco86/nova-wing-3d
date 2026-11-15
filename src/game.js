@@ -866,6 +866,9 @@ export function createGame({
       $('specialSwitch').textContent =
         coarsePointer.matches && window.innerWidth <= 900 ? 'RPG ' + selected : 'H · ' + selected;
       $('quickRpg').setAttribute('data-selected', selected);
+      // The pause freezes the normal HUD refresh; the chosen spell can have
+      // a different energy cost and must not reuse a stale disabled state.
+      $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
       $('specialCast').setAttribute(
         'aria-label',
         'Ativar ' + selected + ', energia ' + Math.floor(arcana),
