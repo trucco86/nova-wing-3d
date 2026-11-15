@@ -44,15 +44,20 @@ test('mobile RPG always closes and does not hide or block either boss orbit cont
       const button = page.locator('#' + id);
       await expect(button).toBeVisible();
       const rect = await button.boundingBox();
-      const target = await page.evaluate(
-        ({ x, y }) => document.elementFromPoint(x, y)?.id,
-        center(rect),
-      );
-      // QA140 intentionally prevents orbit input during tactical pause.
-      // An outside tap closes the RPG; a subsequent touch can steer.
-      expect(target, id + ' should be shielded while tactical RPG is open').toBe(
-        'rpgTacticalScrim',
-      );
+      const target = await page.evaluate(({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return {
+          dismissSurface:
+            element?.id === 'rpgTacticalScrim' ||
+            (!!element?.closest?.('#rpgRadialMenu') && !element?.closest?.('button')),
+          category: !!element?.closest?.('[data-rpg-category]'),
+        };
+      }, center(rect));
+      // On a 320px viewport, the wheel itself may cover the orbit button.
+      // Both the scrim and empty wheel background must dismiss first without
+      // forwarding the same touch as an unintended boss orbit input.
+      expect(target.dismissSurface, id + ' must be protected by a dismiss surface').toBe(true);
+      expect(target.category, id + ' must not trigger an RPG category').toBe(false);
     }
     await page.evaluate(() => window.fixture.advance(0.8));
     const frozenAfter = await page.evaluate(() => window.fixture.game.snapshot());
