@@ -3254,6 +3254,8 @@ export function createGame({
         width: window.innerWidth,
         height: window.innerHeight,
         dpr: window.devicePixelRatio ?? 1,
+        // High mode may render internally below physical DPR. Show both.
+        renderDpr: renderer.getPixelRatio?.() ?? null,
         ...frameAuditContext,
       }) +
       '\n' +
@@ -3312,6 +3314,8 @@ export function createGame({
     const transition = graphicsBudgetTransition(appliedGraphicsBudget, budget, {
       coarsePointer: coarsePointer.matches,
       devicePixelRatio: window.devicePixelRatio ?? 1,
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
     });
     pixelLimit = transition.pixelLimit;
     // Scenery quality affects thousands of meshes. An adaptive DPR update
@@ -6617,8 +6621,18 @@ export function createGame({
     const { innerWidth: w, innerHeight: h, devicePixelRatio: p = 1 } = window;
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
+    // Preserve the full High scene but enforce its pixel-area budget
+    // after an orientation or viewport change.
+    const resized = graphicsBudgetTransition(appliedGraphicsBudget, adaptiveGraphics.current(), {
+      coarsePointer: coarsePointer.matches,
+      devicePixelRatio: p,
+      viewportWidth: w,
+      viewportHeight: h,
+    });
+    pixelLimit = resized.pixelLimit;
+    appliedGraphicsBudget = resized.next;
+    renderer.setPixelRatio(resized.pixelRatio);
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(p, pixelLimit));
     post.resize(w, h);
   });
   if (document.modelContext?.registerTool) {
