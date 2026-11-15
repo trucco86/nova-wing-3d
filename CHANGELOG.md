@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.144 — QA148: profundidade e rajadas da tempestade de Marte
+
+- Os três planos já existentes de névoa ganham deslocamento lateral pelo vento, oscilação vertical, variação sutil de profundidade, inclinação e escala determinísticas durante a tempestade.
+- A densidade cresce sem novos objetos, materiais, triângulos, draw calls ou overlays sobre controles/HUD.
+- O campo existente de partículas acompanha rajadas com custo constante e sem alocações por frame.
+- Testes preservam pausa, reset, replay determinístico, clonagem e invisibilidade fora da tempestade.
+- **Pendente:** CI FULL, revisão visual em celular High/Medium e medição comparativa de FPS antes da produção.
+
 ## 1.27.143 — QA146: estações de maglev e outdoors em batches sem perder detalhes
 
 - As três estações maglev preservam todos os 24 componentes estruturais e as mesmas posições/dimensões, renderizados em três lotes instanciados de metal, cobertura e sinalização no lugar de 24 meshes individuais. Metadados de estação permanecem acessíveis por nome.

@@ -146,15 +146,36 @@ export function updateMarsSandstorm(root, seconds) {
     return wind;
   }
   particles.material.opacity = wind.intensity * 0.88;
-  particles.position.x = Math.sin(seconds * 0.35) * 12 + wind.windX * 1.5;
+  // Deterministic gusts move the existing dust cloud without reallocating particles.
+  particles.position.x =
+    Math.sin(seconds * 0.35) * 12 +
+    wind.windX * 1.5 +
+    wind.intensity * Math.sin(seconds * 0.76) * 8;
   particles.position.z = ((seconds * 21) % 150) - 75;
   for (let i = 0; i < banks.length; i++) {
     const child = banks[i];
     const slot = i + 1; // Particle field is the first child.
-    child.material.uniforms.alpha.value = wind.intensity * (0.43 - i * 0.04);
+    // Gust-driven depth: reuse the same three atmospheric planes and shader.
+    // No extra geometry, materials, draw calls or HUD overlay.
+    const gustPhase = seconds * (0.18 + i * 0.035) + slot * 1.35;
+    child.material.uniforms.alpha.value = wind.intensity * (0.54 - i * 0.06);
     child.material.uniforms.seconds.value = seconds;
     child.material.uniforms.wind.value = wind.windX;
-    child.position.x = (slot - 2) * 62 + Math.sin(seconds * 0.32 + slot) * 16;
+    child.position.x =
+      (slot - 2) * 62 +
+      Math.sin(seconds * 0.32 + slot) * 16 +
+      wind.windX * (1.1 + slot * 0.18);
+    child.position.y =
+      8 + i * 5 + wind.intensity * (3.5 + i) * Math.sin(gustPhase * 1.35);
+    child.position.z =
+      -140 - i * 34 + wind.intensity * (5 + i * 3) * Math.sin(gustPhase * 0.8);
+    child.rotation.z =
+      i * 0.09 + wind.intensity * (0.055 * Math.sin(gustPhase) + wind.windX * 0.002);
+    child.scale.set(
+      1 + wind.intensity * (0.08 + i * 0.035),
+      1 + wind.intensity * (0.11 + i * 0.05),
+      1,
+    );
   }
   root.userData.intensity = wind.intensity;
   root.userData.windX = wind.windX;

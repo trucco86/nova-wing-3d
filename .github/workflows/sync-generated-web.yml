@@ -17,6 +17,7 @@ on:
       - perf/qa145-drawcall-budget-inventory-20261115
       - perf/qa146-static-city-stations-and-ad-batching-20261115
       - integration/qa138-146-on-qa140-20261115
+      - feat/qa148-mars-storm-depth-gust-20261115
 permissions:
   contents: write
   actions: write
@@ -86,6 +87,10 @@ jobs:
             # sources; only tracked files touched by format/build are staged.
             git add -u -- . ':(exclude).github/workflows/sync-generated-web.yml'
           fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa148-mars-storm-depth-gust-20261115" ]; then
+            # Bring formatting and generated HTML into the same commit as QA148.
+            git add -u
+          fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
             exit 0
@@ -97,5 +102,8 @@ jobs:
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
           if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ]; then
+            gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa148-mars-storm-depth-gust-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
