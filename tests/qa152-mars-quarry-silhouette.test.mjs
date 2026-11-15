@@ -73,3 +73,39 @@ test('QA152: destruction targets, two attacks and freeze remain independent of c
     disposeBoss(boss);
   }
 });
+
+
+test('QA152 visual follow-up: existing quarry pincers and stacks stand vertically without additional meshes', () => {
+  const mars = createBossModel(SECTORS[1], 1, true);
+  const phoenix = createBossModel(SECTORS[4], 4, true);
+  try {
+    const identity = mars.getObjectByName('boss-distinct-martian-dune-colossus');
+    const crust = identity.getObjectByName('mars-armored-crust');
+    const visor = identity.getObjectByName('mars-excavator-visor');
+    assert.ok(crust.position.y >= 21, 'tall mining cab replaces flat manta profile');
+    assert.ok(visor.position.y >= 24, 'operator visor is high and visible');
+    const stacks = [];
+    for (const side of [-1, 1]) {
+      const pincer = mars.getObjectByName(
+        side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right',
+      );
+      assert.ok(pincer);
+      assert.equal(pincer.children.length, 2, 'reuse existing armor and energy parts');
+      assert.ok(pincer.children[0].scale.y > pincer.children[0].scale.x);
+      assert.ok(pincer.position.y < 0, 'pincers hang from the mining body');
+      for (let i = 0; i < 3; i++)
+        stacks.push(identity.getObjectByName('mars-thermal-vent-' + side + '-' + i));
+    }
+    assert.equal(stacks.length, 6);
+    assert.ok(stacks.every((part) => part?.scale.y >= 20), 'six real exhaust stacks stand upright');
+    assert.equal(mars.children.filter(isLegacyWing).length, 0);
+    assert.equal(phoenix.children.filter(isLegacyWing).length, 20);
+    const original = mars.userData.parts.map((part) => part.mesh.position.toArray());
+    animateBossSignature(mars, 1, 4, 2, 'windup', 'stingray-scissor');
+    animateBossSignature(mars, 1, 4.5, 2, 'attack', 'stingray-scissor');
+    assert.deepEqual(mars.userData.parts.map((part) => part.mesh.position.toArray()), original);
+  } finally {
+    disposeBoss(mars);
+    disposeBoss(phoenix);
+  }
+});
