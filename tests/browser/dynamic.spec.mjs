@@ -192,6 +192,9 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.advance(2));
     await page.screenshot({ path: info.outputPath('evolution-' + xp + '.png') });
   }
+  await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
+  await expect(page.locator('#quickRpg')).toBeHidden();
+  await page.locator('#strategyDrawer summary').click();
   await expect(page.locator('#quickRpg')).toBeVisible();
   await expect(page.locator('#specialCast')).toBeVisible();
   await expect(page.locator('#rpgLevel')).toContainText('EV 6');
@@ -207,7 +210,6 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
   else await page.keyboard.press('KeyF');
   await page.evaluate(() => window.fixture.advance(0.1));
   await expect(page.locator('#arsenalSwitch')).toContainText('GEADA');
-  await page.locator('#strategyDrawer summary').click();
   await page.screenshot({ path: info.outputPath('loadout-drawer.png') });
   await expect(page.locator('#strategyStatus')).toContainText('ATAQUE');
   await expect(page.locator('#rpgNext')).toContainText('ARCANO');
@@ -217,7 +219,7 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     await page.evaluate(() => window.fixture.game.snapshot().strategy.barrier),
   ).toBeGreaterThan(3);
   await page.screenshot({ path: info.outputPath('barrier.png') });
-  await page.locator('#strategyDrawer summary').click();
+  await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
   await page.locator('#pause').click();
   const paused = await page.evaluate(() => window.fixture.game.snapshot());
   await page.evaluate(() => window.fixture.advance(1));
@@ -349,11 +351,13 @@ test('orbital radar, scanner and reserve attacks work without covering the comba
   await expect(page.locator('#tacticState')).toContainText('BATERIA');
   await page.locator('#strategyDrawer summary').click();
   await page.locator('#scanBoss').click();
+  await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
   await page.evaluate(() => window.fixture.advance(0.1));
   await expect(page.locator('#radarWeak')).toBeVisible();
   await page.screenshot({ path: info.outputPath('tactical-scan.png') });
-  await page.locator('#homingBarrage').click();
   await page.locator('#strategyDrawer summary').click();
+  await page.locator('#homingBarrage').click();
+  await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
   await page.evaluate(() => window.fixture.advance(0.1));
   const state = await page.evaluate(() => window.fixture.game.snapshot());
   expect(state.entities.shots).toBeGreaterThan(0);
