@@ -59,9 +59,28 @@ test('city remains present after one full scenery wrap and reset', () => {
     0,
   );
   assert.equal(impactBatches, 3, 'one pooled shard GPU batch for each authored impact');
+  // QA141 replaces dozens of individual monument Mesh draws with six
+  // InstancedMesh batches and adds two baseline window batches to the deep
+  // skyline. Account for exactly those eight instances rather than masking
+  // a future unbounded increase with an arbitrary upper limit.
+  const citadel = scene.getObjectByName('city-horizon-megastructure');
+  const citadelDraws = [];
+  citadel.traverse((node) => {
+    if (node.isInstancedMesh) citadelDraws.push(node);
+  });
+  assert.equal(citadelDraws.length, 6, 'four medium + two precision monument batches');
+  const deep = scene.getObjectByName('city34-concept-skyline');
+  const mediumWindows = [
+    deep.getObjectByName('city34-facade-baseline-amber'),
+    deep.getObjectByName('city34-facade-baseline-cool'),
+  ];
+  assert.ok(mediumWindows.every((node) => node?.isInstancedMesh && node.count === 42));
+  const qa141Draws = citadelDraws.length + mediumWindows.length;
+  assert.equal(qa141Draws, 8);
   assert.ok(
-    count >= 180 + streetDraws + impactBatches && count <= 260 + streetDraws + impactBatches,
-    'historical city instance budget remains unchanged after accounting for exact effect batches',
+    count >= 180 + streetDraws + impactBatches + qa141Draws &&
+      count <= 260 + streetDraws + impactBatches + qa141Draws,
+    'historical city instance budget plus exactly eight QA141 batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

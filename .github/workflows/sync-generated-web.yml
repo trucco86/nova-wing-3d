@@ -9,6 +9,7 @@ on:
       - feat/qa138-mars-surface-shader-cpu-budget-20261115
       - feat/qa139-saturn-ring-batching-planets-20261115
       - feat/qa140-asteroid-europa-neptune-gpu-budget-20261115
+      - feat/qa141-city-lit-facades-landmark-20261115
 permissions:
   contents: write
   actions: write
@@ -38,6 +39,11 @@ jobs:
         run: |
           if git diff --quiet -- index.html; then
             echo 'Generated index is already current.'
+            # Bot commits are not retriggered by pull_request. QA141 must still
+            # receive a fresh preview after source checks succeed.
+            if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ]; then
+              gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
+            fi
             exit 0
           fi
           git config user.name 'github-actions[bot]'
@@ -56,9 +62,15 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "feat/qa140-asteroid-europa-neptune-gpu-budget-20261115" ]; then
             git add -- src/asteroid-interior.js src/asteroid-course.js src/europa-surface.js src/premium-atmospheric-geology.js src/destination-landmarks.js tests/qa140-premium-biomes-budget.test.mjs specs/qa140-biomes-visual-and-perf.md
           fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ]; then
+            git add -- src/city-commerce.js src/city-34-concept.js src/city-40-hero-section.js src/visuals.js tests/qa141-lit-city-megastructure.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/city-2-7-retail-orbit.test.mjs tests/graphics.test.mjs specs/qa141-lit-city-architecture.md
+          fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
           gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ]; then
+            gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
+          fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
