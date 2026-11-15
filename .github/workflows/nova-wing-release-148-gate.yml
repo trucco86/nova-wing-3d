@@ -1,0 +1,81 @@
+name: Nova Wing v1.27.148 guarded production release
+on:
+  push:
+    branches: [ops/release-nova-wing-148-20261115]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write
+concurrency:
+  group: nova-wing-release-148-gate
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 58
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: trucco86/nova-wing-3d
+      PR: "390"
+      EXPECTED_HEAD: b1f1e3f915878718132dba6bf3e33f5a1ec26d44
+      EXPECTED_MAIN: 31eab0a32dc93e76dc18b17200f61103b839d76f
+      GATED_CI_RUN: "43774108383"
+    steps:
+      - name: Verify full browser gate, then merge only PR 390
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Owner-authorized release v1.27.148. PR #390 only."
+          for iteration in $(seq 1 55); do
+            pr=$(gh api "repos/$REPO/pulls/$PR")
+            if [[ "$(jq -r .merged <<<"$pr")" == true ]]; then
+              echo "Already merged. Never merge twice."
+              exit 0
+            fi
+            if [[ "$(jq -r .head.sha <<<"$pr")" != "$EXPECTED_HEAD" ||
+                  "$(jq -r .base.sha <<<"$pr")" != "$EXPECTED_MAIN" ||
+                  "$(jq -r .base.ref <<<"$pr")" != main ||
+                  "$(jq -r .draft <<<"$pr")" != false ]]; then
+              echo "::error::PR head/base/draft drifted. No merge."
+              exit 1
+            fi
+            current_main=$(gh api "repos/$REPO/branches/main" --jq .commit.sha)
+            if [[ "$current_main" != "$EXPECTED_MAIN" ]]; then
+              echo "::error::Main changed; reconcile before release."
+              exit 1
+            fi
+            jobs=$(gh api "repos/$REPO/actions/runs/$GATED_CI_RUN/jobs?per_page=100")
+            filter='[.jobs[] | select(.name == "quality" or .name == "browser" or (.name | startswith("browser-shard")))]'
+            total=$(jq -r "$filter | length" <<<"$jobs")
+            passed=$(jq -r "$filter | map(select(.conclusion == \"success\")) | length" <<<"$jobs")
+            failed=$(jq -r "$filter | map(select(.conclusion == \"failure\" or .conclusion == \"cancelled\" or .conclusion == \"timed_out\" or .conclusion == \"action_required\")) | length" <<<"$jobs")
+            echo "Gate attempt $iteration: $passed/$total passed, $failed failed"
+            if (( failed > 0 )); then
+              echo "::error::Full CI failed; no production merge."
+              exit 1
+            fi
+            if (( total == 6 && passed == 6 )); then
+              result=$(gh api "repos/$REPO/actions/runs/$GATED_CI_RUN")
+              if [[ "$(jq -r .head_sha <<<"$result")" != "$EXPECTED_HEAD" ||
+                    "$(jq -r .conclusion <<<"$result")" != success ]]; then
+                echo "::error::Full CI SHA or conclusion mismatch."
+                exit 1
+              fi
+              echo "All 6 required checks green. GitHub branch protection enforced."
+              gh api --method PUT "repos/$REPO/pulls/$PR/merge" \
+                -f sha="$EXPECTED_HEAD" \
+                -f merge_method=squash \
+                -f commit_title="release: Nova Wing v1.27.148 QA138-152" \
+                -f commit_message="Owner approved release. Single integration; preserve main trailer README; full browser and quality gates passed."
+              echo "GitHub accepted merge of PR #390."
+              # Pushes created with GITHUB_TOKEN do not trigger normal workflows.
+              # Explicitly dispatch CI on main, which builds/publishes Pages and release.
+              gh workflow run ci.yml --repo "$REPO" --ref main
+              echo "Dispatched main deployment pipeline: https://github.com/$REPO/actions/workflows/ci.yml"
+              exit 0
+            fi
+            sleep 60
+          done
+          echo "::error::Full CI did not complete in this one-off job."
+          exit 1
