@@ -116,6 +116,9 @@ test('QA146 high and medium preserve authored static triangles after two tiles c
     x.getObjectByName('city-commercial-billboard-batched-'+key)?.isInstancedMesh).length, 0), 4);
   assert.notEqual(adverts[0].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix,
     adverts[1].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix);
+  // Compare the same High geometry before and after all quality changes.
+  // A Medium baseline would misinterpret the intentionally hidden High details.
+  world.setGraphicsQuality('high');
   const baseTriangles = meshStats(a).triangles + meshStats(b).triangles;
   for (let i=0; i<4; i++) {
     world.setGraphicsQuality(i % 2 ? 'high' : 'medium');
