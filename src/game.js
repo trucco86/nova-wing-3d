@@ -6413,15 +6413,39 @@ export function createGame({
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
-  // The first space obstacle previously built its procedural geometry on the
-  // same frame as its arrival. Prime one type per idle slot during early flight,
-  // while the three.js renderer can precompile its materials asynchronously.
+  // Prebuild first enemy roles and ascending-space obstacles while the pilot
+  // is reading the menu, campaign map or upgrade hangar. Idle callbacks with a
+  // timeout can execute on an active gameplay frame, so eligibility is checked
+  // AGAIN inside the callback and no shader/model construction runs in flight.
+  // The actual enemies and collision objects are still spawned by normal logic.
   // QA harnesses (autoLoop=false) remain deterministic and unscheduled.
   const cancelObstacleWarmup =
     dynamicFlight && autoLoop
       ? scheduleIdlePrewarm({
-          kinds: ['satellite', 'carrier', 'debris'],
-          prime: (kind) => prewarmSceneShaders(renderer, createObstacle(kind), camera, scene),
+          kinds: [
+            'fighter',
+            'tank',
+            'walker',
+            'satellite',
+            'carrier',
+            'debris',
+            'gantry',
+            'reactor',
+            'tunnel',
+          ],
+          canPrime: (deadline) =>
+            (state === 'menu' || state === 'map' || state === 'shop') &&
+            !document.hidden &&
+            (typeof deadline?.timeRemaining !== 'function' || deadline.timeRemaining() >= 4),
+          prime: (kind) => {
+            const preview =
+              kind === 'fighter'
+                ? fighter(true, 0)
+                : kind === 'tank' || kind === 'walker'
+                  ? createGroundEnemy(kind, 0)
+                  : createObstacle(kind);
+            return prewarmSceneShaders(renderer, preview, camera, scene);
+          },
           schedule: (callback) =>
             typeof window.requestIdleCallback === 'function'
               ? { mode: 'idle', id: window.requestIdleCallback(callback, { timeout: 2500 }) }

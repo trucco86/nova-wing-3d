@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu, clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
@@ -36,6 +36,7 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await clickMenu(page, '#start');
   await expect(page.locator('#cinematic')).toBeVisible();
   await page.keyboard.press('Escape');
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#cinematic')).toBeHidden();
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#petCareHud')).toBeHidden();

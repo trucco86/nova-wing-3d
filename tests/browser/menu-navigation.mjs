@@ -32,3 +32,14 @@ export async function clickMenu(page, selector, mode = 'click') {
   await openMenu(page, destination);
   if (selector !== '#prepareSquad') await page.locator(selector)[mode]();
 }
+
+/** A normal campaign launch now requires accepting the interactive map before
+ *  asserting HUD, combat, boost or mecha controls. Never click hidden elements.
+ */
+export async function confirmCampaignPreflight(page) {
+  const map = page.locator('#campaignMap');
+  if (await map.isVisible()) {
+    await page.locator('#mapLaunch').click();
+    await map.waitFor({ state: 'hidden' });
+  }
+}

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMenu } from './menu-navigation.mjs';
 
 test('campaign map opens before the first mission and launches the correct sector', async ({
   page,
@@ -50,6 +51,9 @@ test('preflight map back returns to menu, and Continue reopens correct checkpoin
   await expect(page.locator('#mapLaunch')).toBeEnabled();
   await page.locator('#mapBack').click();
   await expect(page.locator('#menu')).toBeVisible();
+  // Returning to the menu does not automatically open its Play tab.
+  // Exercise the actual user navigation instead of asserting on a hidden tab.
+  await openMenu(page, 'play');
   await expect(page.locator('#continue')).toBeVisible();
   const persisted = await page.evaluate(
     () => JSON.parse(window.localStorage.getItem('nova-wing-3d-v1')).sector,
