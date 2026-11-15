@@ -376,18 +376,27 @@ export function createCityPremiumInfrastructure() {
 // Uses accumulated travel rather than wall-clock time so Pause freezes the
 // lighting just as it freezes train motion. Both cloned city tiles share the
 // same materials, so compute the same phase for each tile.
+// Both city road tiles are clones; WeakMap prevents the far tile borrowing
+// beacon objects from its near twin and avoids lookups/new colors per frame.
+const billboardAnimationCache = new WeakMap();
+const billboardColors = ['#58e9ff', '#61ffca', '#ffc46d', '#b58fff', '#83ffe4', '#ff75c9'].map(
+  (color) => new T.Color(color),
+);
 export function animateCityBillboards(cityTile, travel) {
-  const ads = cityTile.getObjectByName('city-commercial-billboards');
-  if (!ads || !Number.isFinite(travel)) return;
-  for (let i = 0; i < ads.children.length; i++) {
-    const beacon = ads.children[i].getObjectByName('city-billboard-beacon');
+  if (!cityTile || !Number.isFinite(travel)) return;
+  let beacons = billboardAnimationCache.get(cityTile);
+  if (!beacons) {
+    const ads = cityTile.getObjectByName('city-commercial-billboards');
+    if (!ads) return;
+    beacons = ads.children.map((ad) => ad.getObjectByName('city-billboard-beacon'));
+    billboardAnimationCache.set(cityTile, beacons);
+  }
+  for (let i = 0; i < beacons.length; i++) {
+    const beacon = beacons[i];
     if (!beacon) continue;
     const intensity = 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(travel * 0.012 + i * 1.9));
-    beacon.material.color.set('#ffffff').multiplyScalar(intensity);
-    // Retain the brand color, but avoid clipping the emissive sign against the
-    // dark architecture. No canvas repaint or texture upload per frame.
-    beacon.material.color.multiply(
-      new T.Color(['#58e9ff', '#61ffca', '#ffc46d', '#b58fff', '#83ffe4', '#ff75c9'][i]),
-    );
+    // Same exact color and luminous pulse. No scene traversal, array or
+    // THREE.Color allocation in the active animation loop.
+    beacon.material.color.copy(billboardColors[i]).multiplyScalar(intensity);
   }
 }

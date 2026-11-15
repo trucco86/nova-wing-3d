@@ -1588,6 +1588,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
   const cityBridgeCameraFade = dynamicFlight ? createCityBridgeCameraFade([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
+  // Cache each tile's live visual roots once. The stage 1 renderer used to
+  // perform 8 recursive getObjectByName traversals per tile per frame in
+  // addition to the interior animation modules' own lookups.
+  const cityFrameNodes = [city, cityFar].map((tile) => ({
+    tile,
+    traffic: tile.getObjectByName('city-active-traffic'),
+    drones: tile.getObjectByName('city-urban-drones'),
+    matrix: tile.getObjectByName('city-matrix-streets'),
+    pedestrians: tile.getObjectByName('city122-lived-in-street-blocks'),
+    life: tile.getObjectByName('city-urban-life'),
+    living: tile.getObjectByName('city32-living-metropolis'),
+    premium: tile.getObjectByName('city33-premium-urban-life'),
+    services: dynamicFlight ? tile.getObjectByName('city35-lived-in-metropolis') : null,
+  }));
 
   // A persistent, layered urban horizon gives the flight a destination instead
   // of extending the avenue endlessly. Unlike road tiles this background stays
@@ -2632,26 +2646,29 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // penetrate the scrolling buildings, even as the road was coherent.
         cityHorizon.position.x = 0;
         cityHorizon.position.z = sceneryTheme === 'city' ? -900 : 0;
-        for (const tile of [city, cityFar]) {
-          // These are visual-only tiles. Once the launch city is hidden in
-          // orbit or another mission, do not animate its entire traffic graph.
-          // Travel still advances, so the visible tile catches up instantly.
+        for (const {
+          tile,
+          traffic,
+          drones,
+          matrix,
+          pedestrians,
+          life,
+          living,
+          premium,
+          services,
+        } of cityFrameNodes) {
+          // The same live objects are reused after tile wrap, phase shifts
+          // and resets, so quality and collision semantics do not change.
           if (sceneryTheme !== 'city' || !tile.visible) continue;
-          if (sceneryTheme === 'city') {
-            animateCityBillboards(tile, travel);
-            animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
-            animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
-            animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
-            animateCity122StreetLife(
-              tile.getObjectByName('city122-lived-in-street-blocks'),
-              travel,
-            );
-            updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
-            updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
-            if (dynamicFlight)
-              updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), travel);
-          }
-          for (const vehicle of tile.getObjectByName('city-urban-life').children) {
+          animateCityBillboards(tile, travel);
+          animateCityTraffic(traffic, travel);
+          animateCityUrbanDrones(drones, travel);
+          animateCity30(matrix, travel);
+          animateCity122StreetLife(pedestrians, travel);
+          updateCity32Living(living, travel);
+          updateCity33Premium(premium, travel);
+          if (services) updateCity35LivedIn(services, travel);
+          for (const vehicle of life.children) {
             if (vehicle.userData.role === 'maglev-infrastructure') continue;
             if (vehicle.userData.role === 'maglev-crossing') {
               // Deterministic lateral traversal, looping only outside the
