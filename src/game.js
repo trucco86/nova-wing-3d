@@ -5282,12 +5282,14 @@ export function createGame({
           );
         }
         boss.position.set(
-          launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0) +
+          launchPose.x +
+            (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0) +
             (bossIntent ? (bossIntent.targetX - launchPose.x) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
-            : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0) +
-              (bossIntent ? (bossIntent.targetY - launchPose.y) * (meleePose.track ?? 0) : 0),
+            : launchPose.y +
+                (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0) +
+                (bossIntent ? (bossIntent.targetY - launchPose.y) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
