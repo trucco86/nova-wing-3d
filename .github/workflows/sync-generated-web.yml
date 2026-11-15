@@ -14,6 +14,7 @@ on:
       - perf/qa143-high-render-pixel-and-city-cpu-20261115
       - perf/qa144-compositor-msaa-street-culling-20261115
       - perf/qa145-drawcall-budget-inventory-20261115
+      - perf/qa146-static-city-stations-and-ad-batching-20261115
 permissions:
   contents: write
   actions: write
@@ -45,7 +46,7 @@ jobs:
             echo 'Generated index is already current.'
             # Bot commits are not retriggered by pull_request. QA141 must still
             # receive a fresh preview after source checks succeed.
-            if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
+            if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa146-static-city-stations-and-ad-batching-20261115" ]; then
               gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
             fi
             exit 0
@@ -81,10 +82,13 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
             git add -- src/visuals.js src/city-evacuation-batching.js src/game.js src/frame-audit.js tests/qa145-scene-draw-inventory.test.mjs tests/qa145-evacuation-batching.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/graphics.test.mjs specs/qa145-evacuation-batching.md
           fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa146-static-city-stations-and-ad-batching-20261115" ]; then
+            git add -- src/city-districts.js src/city-premium.js tests/city-2-4-districts.test.mjs tests/qa146-city-station-ad-batching.test.mjs specs/qa146-stations-ads-budget.md
+          fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
           gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
-          if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ] || [ "${GITHUB_REF_NAME}" = "feat/qa142-city-facade-traffic-cpu-budget-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa143-high-render-pixel-and-city-cpu-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa144-compositor-msaa-street-culling-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
+          if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ] || [ "${GITHUB_REF_NAME}" = "feat/qa142-city-facade-traffic-cpu-budget-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa143-high-render-pixel-and-city-cpu-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa144-compositor-msaa-street-culling-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ] || [ "${GITHUB_REF_NAME}" = "perf/qa146-static-city-stations-and-ad-batching-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then

@@ -329,6 +329,17 @@ export function createCityPremiumInfrastructure() {
   const signs = new T.Group();
   signs.name = 'city-commercial-billboards';
   const frame = darkMetal('#476476', 0.3);
+  const signStructure = { frame: [], trim: [] };
+  const staticSignPart = (key, sign, xx, yy, zz, w, h, d) => {
+    signStructure[key].push({
+      x: sign.position.x + xx,
+      y: sign.position.y + yy,
+      z: sign.position.z + zz,
+      w,
+      h,
+      d,
+    });
+  };
   for (let i = 0; i < ads.length; i++) {
     const side = i % 2 ? -1 : 1;
     const z = -140 - i * 295;
@@ -346,13 +357,36 @@ export function createCityPremiumInfrastructure() {
     // without modifying shared city-wide neon materials.
     const beacon = addBlock(sign, illuminated(ads[i][2]), 0, 24, 0.8, 31, 0.95, 1.2);
     beacon.name = 'city-billboard-beacon';
-    addBlock(sign, frame, 0, 0, -0.8, 30, 46, 1.6);
-    addBlock(sign, cyan, 0, 24, -0.2, 31, 0.6, 1.2);
-    addBlock(sign, cyan, 0, -24, -0.2, 31, 0.6, 1.2);
     sign.position.set(x, 48 + (i % 3) * 14, z);
+    // Brand textures and the six independently pulsing beacons remain
+    // separate. Shared static steel frame and two neon trims join batches.
+    staticSignPart('frame', sign, 0, 0, -0.8, 30, 46, 1.6);
+    staticSignPart('trim', sign, 0, 24, -0.2, 31, 0.6, 1.2);
+    staticSignPart('trim', sign, 0, -24, -0.2, 31, 0.6, 1.2);
     signs.add(sign);
   }
   g.add(signs);
+  const frameTransform = new T.Object3D();
+  for (const [key, material] of [['frame', frame], ['trim', cyan]]) {
+    const parts = signStructure[key];
+    const batch = new T.InstancedMesh(unit, material, parts.length);
+    batch.name = 'city-commercial-billboard-batched-' + key;
+    batch.userData.visualOnly = true;
+    batch.castShadow = false;
+    batch.receiveShadow = false;
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i];
+      frameTransform.position.set(p.x, p.y, p.z);
+      frameTransform.rotation.set(0, 0, 0);
+      frameTransform.scale.set(p.w, p.h, p.d);
+      frameTransform.updateMatrix();
+      batch.setMatrixAt(i, frameTransform.matrix);
+    }
+    batch.instanceMatrix.needsUpdate = true;
+    batch.computeBoundingSphere();
+    g.add(batch);
+  }
+  g.userData.billboardStructure = { draws: 2, metalParts: 6, neonParts: 12 };
   // Camera-facing terminal campaign beside the first playable maglev station.
   // Station canopy starts outside x=80; put advertising at x>90 to keep the
   // train and flight corridor clear and avoid blocking the camera sightline.

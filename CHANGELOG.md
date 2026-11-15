@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.143 — QA146: estações de maglev e outdoors em batches sem perder detalhes
+
+- As três estações maglev preservam todos os 24 componentes estruturais e as mesmas posições/dimensões, renderizados em três lotes instanciados de metal, cobertura e sinalização no lugar de 24 meshes individuais. Metadados de estação permanecem acessíveis por nome.
+- Os seis outdoors da infraestrutura premium preservam suas telas com propagandas individuais e beacons que pulsam independentemente. Somente 18 partes **estáticas** (seis painéis de suporte metálico e doze frisos neon) passam para dois lotes, preservando cor, material, geometria e posição.
+- Duas cidades: menos 74 possíveis submissões de draw, sem reduzir a quantidade de triângulos, inimigos, distâncias, materiais premium ou física. O ganho real depende da câmera e deve ser medido em aparelho.
+- Bounds das novas instâncias são calculados para frustum culling seguro. Sem luzes dinâmicas, colisores ou texturas adicionais.
+- Testes de geometria/transform, clone próximo/distante, oscilação de luz, modos Medium/High e estabilidade dos recursos.
+- Baseline do usuário para comparar: 34 FPS médio, p95 39ms, 1.385 draw calls p95, 837 geometrias (+449). A variação da contagem de geometrias permanece **hipótese a investigar**, não confirmação de vazamento.
+- **PR Draft, sem merge e sem publicação em produção.**
+
 ## 1.27.142 — QA145: redução de draw calls por batch das naves de evacuação
 
 - Medição real da fase 1 em HIGH no celular: 34,0 FPS médios, p95 39ms, 1.385 draw calls p95 e 1,66 milhão de triângulos p95, com escala adaptativa de 68%.
