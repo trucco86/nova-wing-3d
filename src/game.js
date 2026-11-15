@@ -102,7 +102,11 @@ import { createMusic } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
-import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
+import {
+  createAdaptiveGraphics,
+  graphicsPixelRatioLimit,
+  graphicsBudgetTransition,
+} from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
@@ -3225,16 +3229,25 @@ export function createGame({
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
   }
+  let appliedGraphicsBudget = null;
   function applyRenderBudget(budget) {
-    heroEffects.setQuality(budget.quality, coarsePointer.matches);
-    pixelLimit =
-      graphicsPixelRatioLimit(budget.quality, {
-        coarsePointer: coarsePointer.matches,
-      }) * budget.resolutionScale;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
-    world.setGraphicsQuality(budget.quality);
-    post.setGraphicsQuality(budget.quality);
-    post.resize(window.innerWidth, window.innerHeight);
+    const transition = graphicsBudgetTransition(appliedGraphicsBudget, budget, {
+      coarsePointer: coarsePointer.matches,
+      devicePixelRatio: window.devicePixelRatio ?? 1,
+    });
+    pixelLimit = transition.pixelLimit;
+    // Scenery quality affects thousands of meshes. An adaptive DPR update
+    // must never redo that work while a space-object wave is on screen.
+    if (transition.qualityChanged) {
+      heroEffects.setQuality(budget.quality, coarsePointer.matches);
+      world.setGraphicsQuality(budget.quality);
+      post.setGraphicsQuality(budget.quality);
+    }
+    if (transition.pixelRatioChanged) {
+      renderer.setPixelRatio(transition.pixelRatio);
+      post.resize(window.innerWidth, window.innerHeight);
+    }
+    appliedGraphicsBudget = transition.next;
     if (document.body.dataset) {
       document.body.dataset.graphicsQuality = budget.quality;
       document.body.dataset.graphicsAdaptive = String(budget.adaptive);
