@@ -22,6 +22,8 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
   });
 }
 
+const europaSurfaceParts = new WeakMap();
+
 const hash = (n) => {
   const t = Math.sin(n * 127.12 + 11.47) * 43758.5453;
   return t - Math.floor(t);
@@ -49,13 +51,20 @@ export function createEuropaGlacialRidgeGeometry() {
     const tint = new T.Color(tints[ring]);
     for (let side = 0; side < sides; side++) {
       const angle = (side / sides) * Math.PI * 2;
-      const relief = 1 + 0.13 * Math.sin(side * 2.8 + ring * 1.7);
+      // Frozen faulting and wind-carved crests sculpt the same 35 vertices.
+      const relief =
+        1 + 0.13 * Math.sin(side * 2.8 + ring * 1.7) +
+        (ring > 0 && ring < rings.length - 1
+          ? 0.045 * Math.sin(side * 4.1 - ring * 3.2)
+          : 0);
       positions.push(
         Math.cos(angle) * level.radius * relief,
         level.y + (ring === 0 || ring === 4 ? 0 : Math.sin(side * 3.7) * 0.028),
         Math.sin(angle) * level.radius * relief,
       );
-      colors.push(tint.r, tint.g, tint.b);
+      const frost = 0.88 + 0.12 * Math.sin(side * 2.7 + ring * 1.9);
+      const crevasse = ring < 2 && side % 3 === 0 ? 0.78 : 1;
+      colors.push(tint.r * frost * crevasse, tint.g * frost * crevasse, tint.b * frost);
     }
   }
   for (let ring = 0; ring < rings.length - 1; ring++)
@@ -156,6 +165,7 @@ export function createEuropaSurface() {
   snow.name = 'europa-windborne-ice-snow';
   snow.userData.visualOnly = true;
   root.add(snow);
+  europaSurfaceParts.set(root, snow);
   root.visible = false;
   return root;
 }
@@ -163,10 +173,18 @@ export function createEuropaSurface() {
 export function updateEuropaSurface(root, time, visible, highQuality = true) {
   if (!root) return;
   root.visible = Boolean(visible);
-  const snow = root.getObjectByName('europa-windborne-ice-snow');
+  // The inactive glacier and Medium mode do not calculate invisible VFX
+  // or walk the scene hierarchy. WeakMap keeps cloned worlds recoverable.
+  let snow = europaSurfaceParts.get(root);
+  if (!snow) {
+    snow = root.getObjectByName('europa-windborne-ice-snow');
+    europaSurfaceParts.set(root, snow);
+  }
   if (snow) {
     snow.visible = Boolean(visible && highQuality);
-    // Sinusoidal drift is stable across pause/reset and cannot jump a seam.
-    snow.position.set(Math.sin(time * 0.19) * 7, 0, 0);
+    if (snow.visible) {
+      // Simulation-time drift remains pause/reset deterministic.
+      snow.position.set(Math.sin(time * 0.19) * 7, 0, 0);
+    }
   }
 }

@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.137 — QA140: geologia premium de asteroides, Europa e Netuno
+
+- Asteroides: rocha com fraturas e depósitos minerais esculpidos e pintados na geometria existente; duas variações de material físico, sem criar mais geometrias, instâncias ou draws.
+- Europa: cristas das geleiras com fissuras, estratos gelados e contraste de neve dentro dos 35 vértices e cores já existentes; vento congelado invisível não recebe atualização por quadro.
+- Netuno: nuvens com gradientes gelados e ondas de altitude nas cores de vértice, reutilizando a geometria, materiais e batches instalados. Sombreamento azul profundo com emissão sutil.
+- Navegação: varredura dos obstáculos de asteroides preserva física e usa endpoint reutilizado em vez de objeto temporário a cada frame.
+- Testes de orçamento de triângulos/partículas, determinismo, colisões e materiais. FPS em dispositivos físicos ainda não medido.
+- **PR Draft apenas para QA. Sem merge ou deploy em produção.**
+
 ## 1.27.136 — QA139: anéis premium de Saturno e vistas planetárias sem custo redundante
 
 - Consolidação de três faixas do sistema de anéis de Saturno em shader analítico C/B/A: mesmos efeitos de Cassini, sem três meshes, três materiais ou três draw calls adicionais.

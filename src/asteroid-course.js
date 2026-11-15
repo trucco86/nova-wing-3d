@@ -42,6 +42,7 @@ export function measurePilotHull(root, excluded = null) {
   };
 }
 const rotationMatrix = new T.Matrix4();
+const SWEEP_AXES = Object.freeze(['x', 'y', 'z']);
 export function projectPilotHull(hull, rotation, scale = 1) {
   const e = rotationMatrix.makeRotationFromEuler(rotation).elements;
   return {
@@ -56,7 +57,7 @@ export function projectPilotHull(hull, rotation, scale = 1) {
 export function rockSweep(from, to, solid, half, offset = 0) {
   let enter = 0;
   let exit = 1;
-  for (const axis of ['x', 'y', 'z']) {
+  for (const axis of SWEEP_AXES) {
     const center = solid[axis] + (axis === 'z' ? offset : 0);
     const extent = solid['h' + axis] + half[axis];
     const min = center - extent;
@@ -114,6 +115,7 @@ export function createAsteroidCourse(scene, enabled = true) {
   let offset = 0;
   let blocked = false;
   let recovering = false;
+  const travelProbe = { x: 0, y: 0, z: 0 };
   function active() {
     return enabled && ['transition', 'interior'].includes(phase);
   }
@@ -163,7 +165,12 @@ export function createAsteroidCourse(scene, enabled = true) {
         return { distance: -distance, collided: false };
       }
       // Moving rocks are equivalent to sweeping the pilot backwards in Z.
-      const hit = firstHit(position, { ...position, z: position.z - distance }, half);
+      // A reused slab-sweep endpoint avoids creating a temporary object for
+      // each rock-collision step while leaving the pilot input untouched.
+      travelProbe.x = position.x;
+      travelProbe.y = position.y;
+      travelProbe.z = position.z - distance;
+      const hit = firstHit(position, travelProbe, half);
       const allowed = hit === null ? distance : Math.max(0, distance * hit - 0.001);
       offset += allowed;
       root.position.z = offset;
