@@ -74,7 +74,6 @@ test('QA152: destruction targets, two attacks and freeze remain independent of c
   }
 });
 
-
 test('QA152 visual follow-up: existing quarry pincers and stacks stand vertically without additional meshes', () => {
   const mars = createBossModel(SECTORS[1], 1, true);
   const phoenix = createBossModel(SECTORS[4], 4, true);
@@ -97,13 +96,19 @@ test('QA152 visual follow-up: existing quarry pincers and stacks stand verticall
         stacks.push(identity.getObjectByName('mars-thermal-vent-' + side + '-' + i));
     }
     assert.equal(stacks.length, 6);
-    assert.ok(stacks.every((part) => part?.scale.y >= 20), 'six real exhaust stacks stand upright');
+    assert.ok(
+      stacks.every((part) => part?.scale.y >= 20),
+      'six real exhaust stacks stand upright',
+    );
     assert.equal(mars.children.filter(isLegacyWing).length, 0);
     assert.equal(phoenix.children.filter(isLegacyWing).length, 20);
     const original = mars.userData.parts.map((part) => part.mesh.position.toArray());
     animateBossSignature(mars, 1, 4, 2, 'windup', 'stingray-scissor');
     animateBossSignature(mars, 1, 4.5, 2, 'attack', 'stingray-scissor');
-    assert.deepEqual(mars.userData.parts.map((part) => part.mesh.position.toArray()), original);
+    assert.deepEqual(
+      mars.userData.parts.map((part) => part.mesh.position.toArray()),
+      original,
+    );
   } finally {
     disposeBoss(mars);
     disposeBoss(phoenix);
