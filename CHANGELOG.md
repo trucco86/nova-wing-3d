@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.131 — Candidata em preparação
+## 1.27.131 — QA132: modelos e shaders premium preparados fora do combate
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Pré-carregamento de caças, tanques, robôs, satélites, naves de carga, destroços e obstáculos pesados dividido em tarefas independentes durante o menu, Mapa da Galáxia e hangar.
+- Evita executar a construção de geometria ou a compilação de shaders em callbacks de idle forçados por timeout durante o voo, subchefes, chefes e transições espaciais.
+- Se o navegador não oferece ao menos 4 ms livres em uma tarefa idle, o trabalho continua na fila, sem pular modelos nem alterar a sequência de missões.
+- Mantém geometria, materiais, hitboxes, quantidade de inimigos e identidade visual premium. Apenas o momento da preparação foi alterado.
+- Testes direcionados cobrem limite de idle, transição voo → mapa, processamento ordenado, cancelamento e compilação oculta dos pontos fracos.
+- **Candidata da PR #354, empilhada sobre #350, sem merge/deploy em produção.**
 
 ## 1.27.130 — QA131: qualidade premium sem travadas de orçamento gráfico
 
