@@ -104,6 +104,7 @@ import { createMusic } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
+import { createHapticFeedback } from './haptic-feedback.js';
 import { createAdaptiveGraphics, graphicsBudgetTransition } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
@@ -285,6 +286,7 @@ export function createGame({
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
   const hud = createHudWriteGuard($);
+  const haptics = createHapticFeedback(window);
   document.body.classList.add('menu');
   let renderer;
   try {
@@ -1824,7 +1826,7 @@ export function createGame({
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
-    if (settings.vibration) window.navigator?.vibrate?.(45);
+    if (settings.vibration) haptics.pulse(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
       cue('critical');
@@ -3410,6 +3412,12 @@ export function createGame({
       if (typeof settings[key] === 'boolean') $(id).checked = settings[key];
       else $(id).value = String(settings[key]);
     }
+    // A saved vibration preference cannot enable missing browser hardware APIs.
+    // Disable its checkbox with a localized explanation, especially in Safari iOS.
+    $('settingVibration').disabled = !haptics.available;
+    $('settingVibration').checked = haptics.available && settings.vibration;
+    $('vibrationSupportHint').hidden = haptics.available;
+    $('vibrationSupportHint').textContent = uiText(settings.language, 'vibrationUnavailable');
     $('touch').style.opacity = String(settings.opacity);
     // Options controls actual button translucency, not just its parent wrapper.
     $('touch').style.setProperty?.('--nw-touch-preference', String(settings.opacity));
@@ -3696,6 +3704,8 @@ export function createGame({
       });
       storeSettings(storage, settings);
       applySettings();
+      // Give immediate physical confirmation on browsers that expose haptics.
+      if (key === 'vibration' && settings.vibration) haptics.pulse(40);
     };
   }
   applySettings();
@@ -4139,7 +4149,7 @@ export function createGame({
       marsStormDamageCooldown = 3.2;
       hit(6);
       shake = Math.max(shake, 0.28);
-      if (settings.vibration) window.navigator?.vibrate?.(70);
+      if (settings.vibration) haptics.pulse(70);
     }
     player.position.x = clamp(
       player.position.x +
