@@ -13,6 +13,7 @@ on:
       - feat/qa142-city-facade-traffic-cpu-budget-20261115
       - perf/qa143-high-render-pixel-and-city-cpu-20261115
       - perf/qa144-compositor-msaa-street-culling-20261115
+      - perf/qa145-drawcall-budget-inventory-20261115
 permissions:
   contents: write
   actions: write
@@ -76,6 +77,9 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "perf/qa144-compositor-msaa-street-culling-20261115" ]; then
             git add -- src/visuals.js src/city-122-street-infill.js tests/qa122-street-life-and-moon.test.mjs tests/qa144-postfx-and-culling-budget.test.mjs specs/qa144-postfx-culling-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
+            git add -- tests/qa145-scene-draw-inventory.test.mjs
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
