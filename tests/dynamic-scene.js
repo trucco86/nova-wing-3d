@@ -96,7 +96,9 @@ window.fixture = {
       textureWidth: width,
       textureHeight: height,
       cornerAlpha: data?.[3] ?? null,
-      centerAlpha: data ? data[((Math.floor(height / 2) * width + Math.floor(width / 2)) * 4) + 3] : null,
+      centerAlpha: data
+        ? data[(Math.floor(height / 2) * width + Math.floor(width / 2)) * 4 + 3]
+        : null,
     };
   },
   // QA122 visual proof: inspect real WebGL scene and static urban GPU batches,
