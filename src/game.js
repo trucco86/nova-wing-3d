@@ -3121,6 +3121,7 @@ export function createGame({
       mechaEngine?.silence();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
+      $('strategyControls').hidden = true;
       $('pauseConfirmPanel').hidden = true;
       $('pauseActions').hidden = false;
       confirmation = null;
@@ -3136,6 +3137,7 @@ export function createGame({
       state = pausedFrom;
       $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
+      $('strategyControls').hidden = !dynamicFlight || state !== 'playing';
       $('pause').textContent = 'Ⅱ';
       if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0 && msgTime > 0))
         message('Missão retomada.');
@@ -6467,12 +6469,9 @@ export function createGame({
       hud.style('weakCue' + i, 'top', ((1 - marker.y) * window.innerHeight) / 2 + 'px');
     }
     hud.disabled('cameraView', state !== 'playing');
-    hud.hidden(
-      'strategyControls',
-      !dynamicFlight ||
-        !['playing', 'paused'].includes(state) ||
-        (state === 'paused' && pausedFrom !== 'playing'),
-    );
+    // The ordinary PAUSE modal owns the full viewport. Never expose the
+    // radial RPG trigger above it, even if the paused mission was playable.
+    hud.hidden('strategyControls', !dynamicFlight || state !== 'playing');
     const qaBerserkVisible = developerAvailable && developerSession && state === 'playing';
     hud.hidden('qaBerserkDock', !qaBerserkVisible);
     if (qaBerserkVisible) {
