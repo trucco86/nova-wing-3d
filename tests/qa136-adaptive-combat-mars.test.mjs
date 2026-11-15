@@ -50,8 +50,13 @@ test('boss reads recent pilot movement and counters repetition without homing du
   assert.equal(pattern.observed, true);
   assert.equal(pattern.axis, 'horizontal');
   const repeated = chooseBossIntent({
-    sector: 0, cycle: 2, phase: 2, playerX: 8, playerY: 12,
-    pilotPattern: pattern, previousKind: 'rok-pincer',
+    sector: 0,
+    cycle: 2,
+    phase: 2,
+    playerX: 8,
+    playerY: 12,
+    pilotPattern: pattern,
+    previousKind: 'rok-pincer',
   });
   assert.equal(repeated.kind, 'rok-ram');
   assert.deepEqual([repeated.targetX, repeated.targetY], [8, 12]);
@@ -59,8 +64,12 @@ test('boss reads recent pilot movement and counters repetition without homing du
   assert.equal(bossMeleePose(repeated, 'windup', 1).track, 0);
   assert.ok(bossMeleePose(repeated, 'attack', 0.7).track > 0);
   const controlled = adaptiveBossAttack({
-    sector: 3, kind: 'barrage', phase: 3, cycle: 3,
-    previousKind: 'barrage', pilotPattern: pattern,
+    sector: 3,
+    kind: 'barrage',
+    phase: 3,
+    cycle: 3,
+    previousKind: 'barrage',
+    pilotPattern: pattern,
   });
   assert.equal(controlled, 'barrage', 'destroyed reactor batteries still suppress unsafe attacks');
   model.reset();
@@ -110,7 +119,16 @@ test('normal fighters adapt one formation role without increasing spawn count', 
   assert.equal(adaptiveFighterRole('interceptor', pilotPattern, 3, 0), 'interceptor');
   assert.equal(adaptiveFighterRole('interceptor', pilotPattern, 2, 1), 'interceptor');
   assert.equal(adaptiveFighterRole('bomber', pilotPattern, 2, 0), 'bomber');
-  assert.equal(adaptiveFighterRole('pursuer', { ...pilotPattern, boostHeavy: true }, 2, 0), 'interceptor');
-  assert.equal(adaptiveFighterRole('pursuer', { ...pilotPattern, axis: 'vertical' }, 2, 0), 'bomber');
-  assert.equal(adaptiveFighterRole('interceptor', { ...pilotPattern, observed: false }, 2, 0), 'interceptor');
+  assert.equal(
+    adaptiveFighterRole('pursuer', { ...pilotPattern, boostHeavy: true }, 2, 0),
+    'interceptor',
+  );
+  assert.equal(
+    adaptiveFighterRole('pursuer', { ...pilotPattern, axis: 'vertical' }, 2, 0),
+    'bomber',
+  );
+  assert.equal(
+    adaptiveFighterRole('interceptor', { ...pilotPattern, observed: false }, 2, 0),
+    'interceptor',
+  );
 });
