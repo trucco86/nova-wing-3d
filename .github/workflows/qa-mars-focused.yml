@@ -1,0 +1,47 @@
+name: QA Mars focused visual evidence
+on:
+  push:
+    branches:
+      - ci/mars-visual-quick-gate-20261115
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: qa-mars-focused-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - scene: sandstorm
+            spec: tests/browser/mars-premium-stage.spec.mjs
+            grep: 'Mars is visibly'
+          - scene: colossus
+            spec: tests/browser/unique-boss-patterns.spec.mjs
+            grep: 'Stingray real signature'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npx playwright install chromium
+      - name: Render actual Mars gameplay via WebGL
+        env:
+          VISUAL_SPEC: ${{ matrix.spec }}
+          VISUAL_GREP: ${{ matrix.grep }}
+        run: npx playwright test "$VISUAL_SPEC" --project=mobile --grep "$VISUAL_GREP"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa-mars-focused-${{ matrix.scene }}
+          if-no-files-found: warn
+          path: |
+            test-results/
+            playwright-report/
