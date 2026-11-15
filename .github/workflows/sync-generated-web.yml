@@ -21,6 +21,7 @@ on:
       - feat/qa149-mars-colossus-animated-20261115
       - fix/qa150-mars-soft-dust-points-20261115
       - fix/qa151-mars-particle-texture-20261115
+      - feat/qa152-mars-quarry-boss-silhouette-20261115
 permissions:
   contents: write
   actions: write
@@ -53,6 +54,9 @@ jobs:
       - name: Prepare QA151 release metadata
         if: github.ref_name == 'fix/qa151-mars-particle-texture-20261115'
         run: npm run release:prepare -- 1.27.147
+      - name: Prepare QA152 release metadata
+        if: github.ref_name == 'feat/qa152-mars-quarry-boss-silhouette-20261115'
+        run: npm run release:prepare -- 1.27.148
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -112,6 +116,9 @@ jobs:
             git add -u
           fi
           if [ "${GITHUB_REF_NAME}" = "fix/qa151-mars-particle-texture-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa152-mars-quarry-boss-silhouette-20261115" ]; then
             git add -u
           fi
           if git diff --cached --quiet; then

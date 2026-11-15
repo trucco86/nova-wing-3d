@@ -50,8 +50,27 @@ export function createBossModel(sector, index = 0, tactical = false) {
         }
       break;
     }
-    case 'stingray':
+    case 'stingray': {
+      // QA152: the Martian sector is a six-legged quarry machine, not a
+      // manta-shaped spaceship. Remove the 20 generic feather-wing meshes
+      // that survived the visual-identity upgrade. The approved six legs,
+      // drill/tail attack rig, real generators and collision volumes remain.
+      const frame = add(box(58, 19, 40, armor), 0, 5, -21);
+      frame.name = 'mars-quarry-heavy-body';
+      const excavator = add(box(34, 12, 22, dark), 0, -7, 16);
+      excavator.name = 'mars-quarry-front-excavator';
+      for (const side of [-1, 1]) {
+        const brace = add(box(15, 17, 32, armor), side * 32, 0, -23);
+        brace.name = side < 0 ? 'mars-quarry-port-brace' : 'mars-quarry-starboard-brace';
+        const actuator = add(box(6, 8, 17, dark), side * 37, -11, -13);
+        actuator.name = side < 0 ? 'mars-quarry-port-actuator' : 'mars-quarry-starboard-actuator';
+      }
+      const face = add(new T.Mesh(new T.ConeGeometry(8, 22, 6), dark), 0, -18, 19);
+      face.name = 'mars-quarry-boring-jaw';
+      break;
+    }
     case 'phoenix': {
+      // Solar Phoenix keeps its proven articulated feather-wing silhouette.
       for (const s of [-1, 1])
         for (let i = 0; i < 5; i++) {
           let wing = box(15, 3, 26, armor);
