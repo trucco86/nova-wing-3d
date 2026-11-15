@@ -72,8 +72,7 @@ test('forced idle timeout during flight never builds a mesh or consumes its slot
   let phase = 'playing';
   scheduleIdlePrewarm({
     kinds: ['fighter', 'carrier', 'debris'],
-    canPrime: (deadline) =>
-      phase === 'map' && deadline.timeRemaining() >= 4,
+    canPrime: (deadline) => phase === 'map' && deadline.timeRemaining() >= 4,
     prime: (kind) => primed.push(kind),
     schedule: (callback) => {
       tasks.push(callback);

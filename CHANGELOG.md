@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.131 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.130 — QA131: qualidade premium sem travadas de orçamento gráfico
 
 - Alterações de resolução interna adaptativa passam a atualizar somente pixel ratio e render targets. Detalhes PBR, cidade, naves e cenários premium não são reconfigurados em todo ajuste de DPR.

@@ -11,7 +11,12 @@ export function scheduleIdlePrewarm({
   canPrime = () => true,
   onError = () => {},
 }) {
-  if (!Array.isArray(kinds) || typeof prime !== 'function' || typeof schedule !== 'function' || typeof canPrime !== 'function')
+  if (
+    !Array.isArray(kinds) ||
+    typeof prime !== 'function' ||
+    typeof schedule !== 'function' ||
+    typeof canPrime !== 'function'
+  )
     throw new TypeError('Expected kinds, prime and schedule');
   let stopped = false;
   let queued = null;
