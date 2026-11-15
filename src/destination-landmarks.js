@@ -62,9 +62,9 @@ const materialFor = (index, opacity = 1) =>
     metalness: index === 5 ? 0.06 : 0,
     // Only Neptune's existing translucent bank uses baked frost gradients.
     // Other planetary meshes keep their original renderer and palette.
-    vertexColors: index === 6 && opacity < 1,
-    emissive: index === 6 && opacity < 1 ? '#101f41' : '#000000',
-    emissiveIntensity: index === 6 && opacity < 1 ? 0.09 : 0,
+    vertexColors: index === 6 && opacity === 0.28,
+    emissive: index === 6 && opacity === 0.28 ? '#101f41' : '#000000',
+    emissiveIntensity: index === 6 && opacity === 0.28 ? 0.09 : 0,
     transparent: opacity < 1,
     opacity,
     depthWrite: opacity >= 1,

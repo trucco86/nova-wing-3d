@@ -103,6 +103,8 @@ test('QA140: Neptune atmosphere gains vertex gradients but no geometry/instance 
   assert.ok(clouds.material.vertexColors);
   assert.ok(clouds.material.emissiveIntensity > 0 && clouds.material.emissiveIntensity < 0.2);
   assert.equal(towers.material.vertexColors, false);
+  const depth = neptune.getObjectByName('destination-cloud-depth-high');
+  assert.equal(depth.material.vertexColors, false, 'geometry without color attr stays unmodified');
   assert.equal(neptune.children.filter((x) => x.isInstancedMesh).length, 3);
   const venus = createDestinationLandmarks(4);
   assert.equal(venus.getObjectByName('venus-sulfur-cloud-columns').material.vertexColors, false);
