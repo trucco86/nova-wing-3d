@@ -34,8 +34,11 @@ jobs:
           node tools/visual-fixture.mjs
       - name: Chromium
         run: npx playwright install chromium
-      - name: FFmpeg
-        run: ffmpeg -version | head -n1
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version | head -n1
       - name: Serve local game, no public deployment
         run: |
           (npm run dev >/tmp/qa131-game.log 2>&1 &)
