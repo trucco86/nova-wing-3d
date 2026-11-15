@@ -1,6 +1,6 @@
 # Histórico
 
-## 1.27.145 | QA149: Colosso das Dunas com marcha articulada
+## 1.27.145 — QA149: Colosso das Dunas com marcha articulada
 
 - Seis pernas do escavador marciano ganham gait temporal, preparação da prensa vertical e perfurador, sem nova geometria ou draw calls.
 - O HUD passa a nomear COLOSSO DAS DUNAS, mantendo os tipos de ataque e seus hitboxes e esquivas existentes.
