@@ -51,8 +51,11 @@ test('preflight map back returns to menu, and Continue reopens correct checkpoin
   await expect(page.locator('#mapLaunch')).toBeEnabled();
   await page.locator('#mapBack').click();
   await expect(page.locator('#menu')).toBeVisible();
-  // Returning to the menu does not automatically open its Play tab.
-  // Exercise the actual user navigation instead of asserting on a hidden tab.
+  // The compact menu intentionally restarts at Press Start when the overlay
+  // becomes visible. A player must pass the splash gate before opening Play.
+  await expect(page.locator('#menu')).toHaveAttribute('data-screen', 'splash');
+  await expect(page.locator('#pressStart')).toBeVisible();
+  await page.locator('#pressStart').click();
   await openMenu(page, 'play');
   await expect(page.locator('#continue')).toBeVisible();
   const persisted = await page.evaluate(

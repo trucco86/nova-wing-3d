@@ -108,6 +108,7 @@ import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
 import { createHudWriteGuard } from './hud-write-guard.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
+import { createGpuMemoryAudit, formatGpuMemoryAudit } from './gpu-memory-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
@@ -263,6 +264,9 @@ export function createGame({
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
   const renderCostAudit = createRenderCostAudit();
+  const gpuMemoryAudit = createGpuMemoryAudit();
+  let gpuMemoryAuditRecording = false;
+  let gpuMemoryFrameCount = 0;
   let frameAuditContext = null;
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
@@ -3158,6 +3162,15 @@ export function createGame({
       renderFrameAudit();
     }
   }
+  function captureGpuMemory(phase) {
+    return gpuMemoryAudit.capture(renderer, {
+      sector: sectorIndex + 1,
+      phase,
+      // performance.memory is optional and browser-specific; this is JS heap,
+      // not VRAM. No unsupported browser is assigned a guessed memory value.
+      jsHeapBytes: window.performance?.memory?.usedJSHeapSize ?? null,
+    });
+  }
   function renderFrameAudit() {
     const result = frameAudit.report();
     const renderCost = renderCostAudit.report();
@@ -3220,7 +3233,9 @@ export function createGame({
               : 'Passes pós-processamento (pico)') +
           ': ' +
           renderCost.maxPostPasses
-        : '');
+        : '') +
+      '\n' +
+      formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
@@ -3256,6 +3271,8 @@ export function createGame({
       // render presets. Invalidate both samplers before changing quality.
       frameAudit.clear();
       renderCostAudit.clear();
+      gpuMemoryAudit.clear();
+      gpuMemoryAuditRecording = false;
       frameAuditContext = null;
       activeGraphicsSetting = settings.graphics;
       adaptiveGraphics.reset(settings.graphics);
@@ -3547,12 +3564,18 @@ export function createGame({
     };
     frameAudit.start();
     renderCostAudit.start();
+    gpuMemoryAudit.clear();
+    gpuMemoryAuditRecording = true;
+    gpuMemoryFrameCount = 0;
+    captureGpuMemory('audit-start');
     renderFrameAudit();
   };
   $('auditStop').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.stop();
     renderCostAudit.stop();
+    captureGpuMemory('audit-stop');
+    gpuMemoryAuditRecording = false;
     renderFrameAudit();
   };
   $('auditCopy').onclick = () => {
@@ -6410,6 +6433,9 @@ export function createGame({
     tick(dt, time);
     // Read renderer counters only after this frame rendered. No extra WebGL calls.
     renderCostAudit.sample(lastFrameCost, renderingFlight && state === 'playing');
+    // Sample resource counts once per 120 active frames; no extra WebGL query.
+    if (gpuMemoryAuditRecording && renderingFlight && ++gpuMemoryFrameCount % 120 === 0)
+      captureGpuMemory('flight');
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
@@ -6869,6 +6895,8 @@ export function createGame({
       cancelObstacleWarmup();
       frameAudit.clear();
       renderCostAudit.clear();
+      gpuMemoryAudit.clear();
+      gpuMemoryAuditRecording = false;
       frameAuditContext = null;
       document.body.classList.remove(
         'in-mission',
@@ -6906,6 +6934,7 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      post.destroy();
       renderer.dispose?.();
     },
   };

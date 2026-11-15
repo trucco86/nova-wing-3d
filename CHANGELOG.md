@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.132 — QA133: memória GPU e ciclo de vida explícito
+
+- Diagnóstico no painel Pausa > FPS de geometrias, texturas, programas compilados e heap JavaScript quando disponível; amostragem limitada e diferenças em relação ao início de cada teste.
+- Liberação dos três render targets, dois shaders e geometria do quad de pós-processamento quando uma instância do jogo é destruída. Recursos de cena e materiais compartilhados continuam intactos.
+- Escopo explícito de propriedade com descarte idempotente, evitando ciclos de vida incorretos e double-dispose.
+- Contadores `renderer.info.memory` **não são VRAM em bytes** e heap JavaScript é opcional; ausência de medição aparece como n/d.
+- Correções regressivas para voltar do mapa de pré-missão pela tela Press Start e contabilizar taxiports no skyline real, com densidade variável.
+- Testes unitários cobrem ciclo de vida, ausência de descarte compartilhado, baseline, pico, crescimento e disponibilidade parcial de memória.
+- **Candidata da PR #356, sem merge ou deploy em produção.**
+
 ## 1.27.131 — QA132: modelos e shaders premium preparados fora do combate
 
 - Pré-carregamento de caças, tanques, robôs, satélites, naves de carga, destroços e obstáculos pesados dividido em tarefas independentes durante o menu, Mapa da Galáxia e hangar.
