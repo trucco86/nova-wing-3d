@@ -9,7 +9,6 @@
 - Mantidas as correções do RPG radial, controles mobile, PAUSA convencional e aviso de vibração indisponível no Safari do iPhone.
 - QA Playwright completo e validação em aparelho físico são gates separados; não presumir FPS de 60 sem medição.
 
-
 ## 1.27.135 — QA140: menu RPG radial e pausa tática mobile
 
 - Primeira abertura radial com quatro categorias: Armas, Especiais, Berserk e Utilitários. Ações ficam agrupadas em painel compacto semitransparente e o botão fechado é circular.
