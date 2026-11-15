@@ -120,14 +120,14 @@ test('brief transition hitches appear in p99 and 100ms counter even when p95 is 
   let time = 0;
   audit.sample(time);
   for (let i = 0; i < 200; i++) {
-    time += i === 88 || i === 155 ? 125 : 16.6;
+    time += i === 22 || i === 88 || i === 155 ? 125 : 16.6;
     audit.sample(time);
   }
   const stats = audit.report();
   assert.equal(stats.frames, 200);
-  assert.equal(stats.over100Ms, 2);
+  assert.equal(stats.over100Ms, 3);
   assert.ok(stats.p95FrameMs <= 17);
-  assert.ok(stats.p99FrameMs >= 16);
+  assert.ok(stats.p99FrameMs >= 100, 'p99 reveals three sustained spikes among 200 frames');
   const report = formatFrameAudit(stats, { language: 'pt' });
   assert.match(report, /p99/);
   assert.match(report, /33\/50\/100 ms/);
