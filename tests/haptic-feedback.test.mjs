@@ -27,10 +27,7 @@ test('supported Android web vibration uses bounded hardware durations', () => {
 });
 
 test('refused or failed browser feedback never crashes the game', () => {
-  assert.equal(
-    createHapticFeedback({ navigator: { vibrate: () => false } }).pulse(45),
-    false,
-  );
+  assert.equal(createHapticFeedback({ navigator: { vibrate: () => false } }).pulse(45), false);
   assert.equal(
     createHapticFeedback({
       navigator: {
