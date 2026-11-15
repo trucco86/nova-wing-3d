@@ -51,7 +51,7 @@ const game = createGame({
 });
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });
 const compactMenu = installCompactMenu();
-const mobileRpg = installMobileRpgAccordion();
+const mobileRpg = installMobileRpgAccordion({ game });
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
