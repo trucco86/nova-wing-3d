@@ -7,6 +7,7 @@ import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
+import { createCityEvacuationFleet, syncCityEvacuationFleet } from './city-evacuation-batching.js';
 import {
   animateCity122StreetLife,
   createCity122StreetInfill,
@@ -1513,16 +1514,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     craft.userData.role = 'evacuation';
     craft.userData.index = i;
     craft.userData.highOnly = i >= 3;
-    craft.add(box(3.4, 1.4, 9.2, civicHull));
-    craft.add(box(10, 0.45, 3.1, civicHull, 0, -0.3, 0.8));
-    craft.add(box(1.4, 0.8, 2, maglevWindows, 0, 0.75, -2.5));
-    for (const flank of [-1, 1]) {
-      craft.add(box(1.4, 0.4, 1.1, civicEngine, flank * 1.3, 0, 5));
-      craft.add(box(1.1, 0.35, 7, maglevWindows, flank * 4.3, -0.2, 0.8));
-    }
+    // The scene retains a lightweight, independently moving ship proxy.
+    // Seven authored parts are rendered in the three shared material draws.
+    craft.visible = i < 3;
     craft.position.set(side * (120 + (i % 3) * 26), 38, -230 - i * 238);
     urbanLife.add(craft);
   }
+  urbanLife.add(
+    createCityEvacuationFleet({
+      hull: civicHull,
+      glazing: maglevWindows,
+      engines: civicEngine,
+    }),
+  );
+  syncCityEvacuationFleet(urbanLife, false);
   city.add(urbanLife);
   const cityDistricts = createCityDistricts(buildingAnchors);
   city.add(cityDistricts);
@@ -1588,6 +1593,20 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   const cityLocalSolids = dynamicFlight ? createCityLocalSolids([city, cityFar]) : null;
   const cityBridgeCameraFade = dynamicFlight ? createCityBridgeCameraFade([city, cityFar]) : null;
   const farHighDetails = cityFar.getObjectByName('city-high-details');
+  // Cache each tile's live visual roots once. The stage 1 renderer used to
+  // perform 8 recursive getObjectByName traversals per tile per frame in
+  // addition to the interior animation modules' own lookups.
+  const cityFrameNodes = [city, cityFar].map((tile) => ({
+    tile,
+    traffic: tile.getObjectByName('city-active-traffic'),
+    drones: tile.getObjectByName('city-urban-drones'),
+    matrix: tile.getObjectByName('city-matrix-streets'),
+    pedestrians: tile.getObjectByName('city122-lived-in-street-blocks'),
+    life: tile.getObjectByName('city-urban-life'),
+    living: tile.getObjectByName('city32-living-metropolis'),
+    premium: tile.getObjectByName('city33-premium-urban-life'),
+    services: dynamicFlight ? tile.getObjectByName('city35-lived-in-metropolis') : null,
+  }));
 
   // A persistent, layered urban horizon gives the flight a destination instead
   // of extending the avenue endlessly. Unlike road tiles this background stays
@@ -1600,7 +1619,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   horizonCrown.name = 'city-horizon-rooflines';
   const horizonPremium = new T.Group();
   horizonPremium.name = 'city-horizon-high-details';
-  const horizonLit = new T.InstancedMesh(unit, cityNeon('#7ddcff'), 270);
+  const horizonLit = new T.InstancedMesh(unit, cityNeon('#c1efff'), 270);
   horizonLit.name = 'city-horizon-window-bands';
   const horizonFine = new T.InstancedMesh(unit, metal('#567f9d', 0.65, 0.45), 90);
   horizonFine.name = 'city-horizon-secondary-towers';
@@ -1664,7 +1683,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   for (const o of [horizonLit, horizonFine]) {
     o.instanceMatrix.needsUpdate = true;
-    horizonPremium.add(o);
+    // The two light bands are the minimum inhabited facade, not an optional
+    // High-only cosmetic. Metal secondary towers remain quality-gated.
+    (o === horizonLit ? cityHorizon : horizonPremium).add(o);
   }
   cityHorizon.add(horizonPremium);
   // The central suspended city gate sits ABOVE the flight corridor: a distant
@@ -2069,6 +2090,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       for (const tile of [city, cityFar]) {
         const life = tile.getObjectByName('city-urban-life');
         for (const vehicle of life.children) vehicle.visible = !vehicle.userData.highOnly || high;
+        syncCityEvacuationFleet(life, high);
         tile.getObjectByName('city-district-high-details').visible = high;
         setCityTileIdentityQuality(tile, quality);
         setCity40HeroQuality(tile, quality);
@@ -2630,26 +2652,29 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // penetrate the scrolling buildings, even as the road was coherent.
         cityHorizon.position.x = 0;
         cityHorizon.position.z = sceneryTheme === 'city' ? -900 : 0;
-        for (const tile of [city, cityFar]) {
-          // These are visual-only tiles. Once the launch city is hidden in
-          // orbit or another mission, do not animate its entire traffic graph.
-          // Travel still advances, so the visible tile catches up instantly.
+        for (const {
+          tile,
+          traffic,
+          drones,
+          matrix,
+          pedestrians,
+          life,
+          living,
+          premium,
+          services,
+        } of cityFrameNodes) {
+          // The same live objects are reused after tile wrap, phase shifts
+          // and resets, so quality and collision semantics do not change.
           if (sceneryTheme !== 'city' || !tile.visible) continue;
-          if (sceneryTheme === 'city') {
-            animateCityBillboards(tile, travel);
-            animateCityTraffic(tile.getObjectByName('city-active-traffic'), travel);
-            animateCityUrbanDrones(tile.getObjectByName('city-urban-drones'), travel);
-            animateCity30(tile.getObjectByName('city-matrix-streets'), travel);
-            animateCity122StreetLife(
-              tile.getObjectByName('city122-lived-in-street-blocks'),
-              travel,
-            );
-            updateCity32Living(tile.getObjectByName('city32-living-metropolis'), travel);
-            updateCity33Premium(tile.getObjectByName('city33-premium-urban-life'), travel);
-            if (dynamicFlight)
-              updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), travel);
-          }
-          for (const vehicle of tile.getObjectByName('city-urban-life').children) {
+          animateCityBillboards(tile, travel);
+          animateCityTraffic(traffic, travel);
+          animateCityUrbanDrones(drones, travel);
+          animateCity30(matrix, travel);
+          animateCity122StreetLife(pedestrians, travel);
+          updateCity32Living(living, travel);
+          updateCity33Premium(premium, travel);
+          if (services) updateCity35LivedIn(services, travel);
+          for (const vehicle of life.children) {
             if (vehicle.userData.role === 'maglev-infrastructure') continue;
             if (vehicle.userData.role === 'maglev-crossing') {
               // Deterministic lateral traversal, looping only outside the
@@ -2664,7 +2689,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
                 side > 0
                   ? -215 - ((travel * 0.18 + 20) % 1470)
                   : -375 - ((travel * 0.35 + 60) % 1470);
-            } else {
+            } else if (vehicle.userData.role === 'evacuation') {
               const i = vehicle.userData.index;
               const ascent = ((travel * 0.23 + i * 212) % 1700) / 1700;
               const side = i % 2 ? 1 : -1;
@@ -2675,6 +2700,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
               vehicle.scale.setScalar(1 - ascent * 0.45);
             }
           }
+          syncCityEvacuationFleet(life);
         }
         for (let g of near) {
           g.position.z += scenicDelta;
@@ -2735,6 +2761,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
           updateCity35LivedIn(tile.getObjectByName('city35-lived-in-metropolis'), 0);
         const cross = tile.getObjectByName('city32-cross-city-maglev-train');
         if (cross) cross.position.x = -75;
+        syncCityEvacuationFleet(tile.getObjectByName('city-urban-life'));
       }
       cityHorizon.position.set(0, 0, sceneryTheme === 'city' ? -900 : 0);
       cityHorizon.visible = sceneryTheme === 'city';
@@ -2795,6 +2822,38 @@ export function bossModel() {
   g.add(h);
   return g;
 }
+// Composer budget is based on CSS area rather than momentary adaptive DPR.
+// On large desktop canvases 2x MSAA combined with High DPR retains thin
+// facade edges without paying for a 4x 3.7-million-pixel framebuffer.
+export function postFxTargetPlan(
+  cssWidth,
+  cssHeight,
+  pixelRatio,
+  { coarsePointer = false, bloomDivisor = 3 } = {},
+) {
+  const w = Math.max(1, Math.round(cssWidth * pixelRatio));
+  const h = Math.max(1, Math.round(cssHeight * pixelRatio));
+  const samples = coarsePointer || cssWidth * cssHeight >= 1_000_000 ? 2 : 4;
+  const desiredW = Math.max(1, Math.round(w / bloomDivisor));
+  const desiredH = Math.max(1, Math.round(h / bloomDivisor));
+  // Fullscreen bloom remains two soft Gaussian passes with its original
+  // threshold and strength; only oversized intermediate texture area is
+  // bounded (fewer fragment shades, texture writes and memory bandwidth).
+  const bloomAreaLimit = 300_000;
+  const shrink = Math.min(1, Math.sqrt(bloomAreaLimit / (desiredW * desiredH)));
+  const bloomWidth = Math.max(1, Math.floor(desiredW * shrink));
+  const bloomHeight = Math.max(1, Math.floor(desiredH * shrink));
+  return {
+    width: w,
+    height: h,
+    samples,
+    bloomWidth,
+    bloomHeight,
+    renderPixels: w * h,
+    bloomPixels: bloomWidth * bloomHeight,
+  };
+}
+
 export function postProcessor(renderer, scene, camera, { coarsePointer = false } = {}) {
   const owned = createOwnedResourceScope();
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
@@ -2842,7 +2901,8 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
   passScene.add(quad);
   let bw = 1,
     bh = 1,
-    bloomDivisor = 3;
+    bloomDivisor = 3,
+    targetBudget = null;
   // On touch GPUs a multi-pass blur is often a larger cost than extra mesh
   // detail. Keep actual scene lights/materials, but avoid full-screen bloom.
   let direct = coarsePointer;
@@ -2860,14 +2920,29 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
     getFrameCost() {
       return { ...sceneCost };
     },
+    getTargetBudget() {
+      return targetBudget ? { ...targetBudget, direct } : null;
+    },
     resize(w, h) {
       if (direct) return;
-      let pr = renderer.getPixelRatio();
-      full.setSize(Math.round(w * pr), Math.round(h * pr));
-      bw = Math.max(1, Math.round((w * pr) / bloomDivisor));
-      bh = Math.max(1, Math.round((h * pr) / bloomDivisor));
+      const planned = postFxTargetPlan(w, h, renderer.getPixelRatio(), {
+        coarsePointer,
+        bloomDivisor,
+      });
+      // MSAA only changes when viewport class changes, never when adaptive
+      // resolution steps up/down. Dispose the previous GPU attachment if
+      // sample count changed but the physical dimensions stayed identical.
+      if (full.samples !== planned.samples) {
+        const sameSize = full.width === planned.width && full.height === planned.height;
+        full.samples = planned.samples;
+        if (sameSize) full.dispose();
+      }
+      full.setSize(planned.width, planned.height);
+      bw = planned.bloomWidth;
+      bh = planned.bloomHeight;
       a.setSize(bw, bh);
       b.setSize(bw, bh);
+      targetBudget = planned;
     },
     render() {
       if (direct) {

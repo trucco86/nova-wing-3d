@@ -93,6 +93,7 @@ const STRINGS = {
     jank: 'quadros acima de 33/50/100 ms',
     gaps: 'interrupções de aba/sistema ignoradas',
     viewport: 'tela',
+    internalRender: 'Resolução interna 3D',
     context: 'Cenário',
     sector: 'fase',
     selected: 'perfil selecionado',
@@ -111,6 +112,7 @@ const STRINGS = {
     jank: 'frames over 33/50/100 ms',
     gaps: 'ignored tab/system interruptions',
     viewport: 'viewport',
+    internalRender: 'Internal 3D rendering',
     context: 'Scenario',
     sector: 'stage',
     selected: 'selected profile',
@@ -129,6 +131,7 @@ const STRINGS = {
     jank: 'cuadros superiores a 33/50/100 ms',
     gaps: 'interrupciones de pestaña/sistema ignoradas',
     viewport: 'pantalla',
+    internalRender: 'Resolución interna 3D',
     context: 'Escenario',
     sector: 'fase',
     selected: 'perfil seleccionado',
@@ -146,6 +149,7 @@ export function formatFrameAudit(
     sector = null,
     graphics = null,
     version = null,
+    renderDpr = null,
   } = {},
 ) {
   const s = STRINGS[language] ?? STRINGS.pt;
@@ -164,6 +168,11 @@ export function formatFrameAudit(
     `${s.fps}: ${data.avgFps.toFixed(1)} · ${s.p95}: ${data.p95FrameMs.toFixed(1)} ms · ${s.p99}: ${data.p99FrameMs.toFixed(1)} ms`,
     `${s.jank}: ${data.over33Ms} / ${data.over50Ms} / ${data.over100Ms} · ${s.gaps}: ${data.interruptions}`,
     `${s.viewport}: ${width}×${height} @${Number(dpr).toFixed(2)} DPR`,
+    ...(Number.isFinite(renderDpr) && renderDpr > 0 && width > 0 && height > 0
+      ? [
+          `${s.internalRender}: ${Number(renderDpr).toFixed(2)} DPR · ${Math.round(width * height * renderDpr ** 2)} pixels`,
+        ]
+      : []),
     s.disclaimer,
   ];
   return lines.join('\n');

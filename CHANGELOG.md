@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.144 — Integração web QA138-146: cidade premium e orçamento de GPU
+
+- Marte, Saturno, asteroides, Europa e Netuno preservam os detalhes premium com menos custo de desenho e animação.
+- Fachadas, megasestruturas, tráfego e estações maglev receberam batching e otimizações de CPU/GPU.
+- Limites de DPR de renderização 3D, MSAA, Bloom, culling e dimensionamento adaptativo foram reconciliados com o HUD e a pausa tática QA140.
+- Na cidade, 74 objetos potencialmente renderizáveis foram consolidados, sem remover os mesmos detalhes visuais.
+- Mantidas as correções do RPG radial, controles mobile, PAUSA convencional e aviso de vibração indisponível no Safari do iPhone.
+- QA Playwright completo e validação em aparelho físico são gates separados; não presumir FPS de 60 sem medição.
+
 ## 1.27.135 — QA140: menu RPG radial e pausa tática mobile
 
 - Primeira abertura radial com quatro categorias: Armas, Especiais, Berserk e Utilitários. Ações ficam agrupadas em painel compacto semitransparente e o botão fechado é circular.

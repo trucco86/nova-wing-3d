@@ -1,5 +1,13 @@
 /** Browser-only render budgets; never change gameplay physics. */
 export const GRAPHICS_OPTIONS = Object.freeze(['auto', 'medium', 'high']);
+// Real screen pixels rendered per frame, NOT CSS or physical screen size.
+// A 1920x1080 desktop at DPR 1.7 otherwise draws ~6m pixels plus 4x MSAA
+// and three bloom passes. This cap preserves premium geometry, shaders and
+// effects while avoiding redundant supersampling on large viewports.
+export const HIGH_RENDER_PIXEL_BUDGET = Object.freeze({
+  coarse: 900_000,
+  desktop: 3_700_000,
+});
 export function resolveGraphicsQuality(mode, { coarsePointer = false, deviceMemory = null } = {}) {
   if (mode === 'medium' || mode === 'high') return mode;
   return coarsePointer || (Number.isFinite(deviceMemory) && deviceMemory <= 4) ? 'medium' : 'high';
@@ -21,10 +29,25 @@ export function graphicsPixelRatioLimit(quality, { coarsePointer = false } = {})
 export function graphicsBudgetTransition(
   previous,
   budget,
-  { coarsePointer = false, devicePixelRatio = 1 } = {},
+  { coarsePointer = false, devicePixelRatio = 1, viewportWidth = null, viewportHeight = null } = {},
 ) {
+  // Apply the physical-pixel budget BEFORE runtime adaptive scaling so a
+  // detected slowdown always reduces work, even when the cap is active.
+  const validViewport =
+    Number.isFinite(viewportWidth) &&
+    Number.isFinite(viewportHeight) &&
+    viewportWidth > 0 &&
+    viewportHeight > 0;
+  const maxPixelRatio =
+    budget.quality === 'high' && validViewport
+      ? Math.sqrt(
+          (coarsePointer ? HIGH_RENDER_PIXEL_BUDGET.coarse : HIGH_RENDER_PIXEL_BUDGET.desktop) /
+            (viewportWidth * viewportHeight),
+        )
+      : Infinity;
   const pixelLimit =
-    graphicsPixelRatioLimit(budget.quality, { coarsePointer }) * budget.resolutionScale;
+    Math.min(graphicsPixelRatioLimit(budget.quality, { coarsePointer }), maxPixelRatio) *
+    budget.resolutionScale;
   const pixelRatio = Math.min(
     Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1,
     pixelLimit,
@@ -133,10 +156,9 @@ export function createAdaptiveGraphics({
       fastWindows = 0;
       if (resolutionScale > MIN_SCALE + 0.015)
         resolutionScale = Math.max(MIN_SCALE, Number((resolutionScale - 0.13).toFixed(2)));
-      else if (quality === 'high' && (mode === 'auto' || currentFps < 34)) {
-        // Even the minimum resolution could not sustain smooth gameplay.
-        // This safety override also applies to manually selected High,
-        // while preserving that preference in Settings for later sessions.
+      else if (quality === 'high' && mode === 'auto') {
+        // AUTO may switch geometry detail as a last resort; explicitly
+        // selected HIGH never silently discards premium ships/buildings.
         quality = 'medium';
         resolutionScale = 0.9;
       } else return null;
