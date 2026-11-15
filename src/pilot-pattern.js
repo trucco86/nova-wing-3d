@@ -2,7 +2,8 @@
 // frame allocations or random retargeting. Tracks pilot movement only during
 // an active boss encounter; reset between sectors and on restart.
 export function createPilotPatternReader() {
-  let last = null;
+  let lastX = null;
+  let lastY = null;
   let horizontal = 0;
   let vertical = 0;
   let boostingRate = 0;
@@ -11,14 +12,15 @@ export function createPilotPatternReader() {
     if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y) ||
       !Number.isFinite(dt) || dt <= 0 || dt > 0.25) return;
     const alpha = Math.min(0.22, dt * 1.7);
-    if (last) {
-      const sx = Math.min(95, Math.abs(position.x - last.x) / dt);
-      const sy = Math.min(95, Math.abs(position.y - last.y) / dt);
+    if (lastX !== null) {
+      const sx = Math.min(95, Math.abs(position.x - lastX) / dt);
+      const sy = Math.min(95, Math.abs(position.y - lastY) / dt);
       horizontal += (sx - horizontal) * alpha;
       vertical += (sy - vertical) * alpha;
     }
     boostingRate += ((boosting ? 1 : 0) - boostingRate) * alpha;
-    last = { x: position.x, y: position.y };
+    lastX = position.x;
+    lastY = position.y;
     samples = Math.min(samples + 1, 10000);
   }
   function snapshot() {
@@ -36,7 +38,7 @@ export function createPilotPatternReader() {
     });
   }
   function reset() {
-    last = null;
+    lastX = lastY = null;
     horizontal = vertical = boostingRate = 0;
     samples = 0;
   }
