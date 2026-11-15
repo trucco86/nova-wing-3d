@@ -24,7 +24,11 @@ test('new campaign opens galaxy map before first flight and launches sector 01 w
   assert.match(h.elements.get('mapSectorTitle').textContent, /01.*CIDADE DAS MÁQUINAS/);
   assert.equal(h.elements.get('mapBack').textContent, 'VOLTAR AO MENU');
   assert.equal(h.elements.get('mapLaunch').textContent, 'INICIAR MISSÃO ↗');
-  assert.equal(h.elements.get('hud').inert, true, 'gameplay inputs must remain inert during briefing');
+  assert.equal(
+    h.elements.get('hud').inert,
+    true,
+    'gameplay inputs must remain inert during briefing',
+  );
   h.advance(2);
   assert.equal(h.game.snapshot().seconds, 0, 'time and enemy spawns must not progress in map mode');
 

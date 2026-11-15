@@ -4,8 +4,7 @@ test('campaign map opens before the first mission and launches the correct secto
   page,
 }, info) => {
   test.setTimeout(180000);
-  if (info.project.name === 'mobile')
-    await page.setViewportSize({ width: 390, height: 844 });
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&preflight=1');
@@ -36,8 +35,7 @@ test('preflight map back returns to menu, and Continue reopens correct checkpoin
   page,
 }, info) => {
   test.setTimeout(180000);
-  if (info.project.name === 'mobile')
-    await page.setViewportSize({ width: 320, height: 568 });
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 320, height: 568 });
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=2&preflight=1');
@@ -53,8 +51,8 @@ test('preflight map back returns to menu, and Continue reopens correct checkpoin
   await page.locator('#mapBack').click();
   await expect(page.locator('#menu')).toBeVisible();
   await expect(page.locator('#continue')).toBeVisible();
-  const persisted = await page.evaluate(() =>
-    JSON.parse(window.localStorage.getItem('nova-wing-3d-v1')).sector,
+  const persisted = await page.evaluate(
+    () => JSON.parse(window.localStorage.getItem('nova-wing-3d-v1')).sector,
   );
   expect(persisted).toBe(2);
 

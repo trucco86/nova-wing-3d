@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.129 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.128 — QA129: mapa galáctico cinematográfico fiel ao conceito
 
 - Dez miniaturas cinematográficas extraídas do conceito visual aprovado, unificadas em um único atlas WebP de 10,3 KB, incorporado ao build offline. Cada fase tem seu quadrante exclusivo; SVGs QA128 continuam de fallback.
