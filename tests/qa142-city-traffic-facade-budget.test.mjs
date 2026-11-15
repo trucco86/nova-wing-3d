@@ -35,7 +35,9 @@ test('QA142: 42 facades have batched framing and real room cells with no added d
   assert.equal(city.getObjectByName('city34-facade-baseline-cool').count, 42);
   assert.equal(city.getObjectByName('city34-facade-baseline-amber').count, 42);
   const instanced = [];
-  city.traverse((node) => { if (node.isInstancedMesh) instanced.push(node); });
+  city.traverse((node) => {
+    if (node.isInstancedMesh) instanced.push(node);
+  });
   assert.equal(instanced.length, 9, 'no additional GPU material batches');
   city.traverse((node) => {
     assert.notEqual(node.userData.hitbox, true);
@@ -56,13 +58,25 @@ test('QA142: medium traffic updates only visible vehicles but restores hidden Hi
   animateCityTraffic(traffic, 273);
   const hiddenBefore = instancePose(taxi, hiddenIndex);
   animateCityTraffic(traffic, 351);
-  assert.deepEqual(instancePose(taxi, hiddenIndex), hiddenBefore, 'Medium avoids High-only updates');
+  assert.deepEqual(
+    instancePose(taxi, hiddenIndex),
+    hiddenBefore,
+    'Medium avoids High-only updates',
+  );
   setCityTrafficQuality(traffic, 'high');
   assert.equal(taxi.count, 13);
-  assert.notDeepEqual(instancePose(taxi, hiddenIndex), hiddenBefore, 'High initializes hidden vehicles');
+  assert.notDeepEqual(
+    instancePose(taxi, hiddenIndex),
+    hiddenBefore,
+    'High initializes hidden vehicles',
+  );
   const visible = instancePose(taxi, hiddenIndex);
   animateCityTraffic(traffic, 351);
-  assert.deepEqual(instancePose(taxi, hiddenIndex), visible, 'same time produces identical matrices');
+  assert.deepEqual(
+    instancePose(taxi, hiddenIndex),
+    visible,
+    'same time produces identical matrices',
+  );
   setCityTrafficQuality(traffic, 'medium');
   assert.equal(taxi.count, 7);
   setCityTrafficQuality(traffic, 'high');
@@ -82,8 +96,12 @@ test('QA142: cloned traffic caches its own vehicle groups and correct phase', ()
   const saved = instancePose(nearTaxi, 0);
   animateCityTraffic(far, 999);
   assert.deepEqual(instancePose(nearTaxi, 0), saved, 'clone shares no animated scene cache');
-  near.getObjectByName = () => { throw new Error('frame-level recursive search'); };
-  far.getObjectByName = () => { throw new Error('frame-level recursive search'); };
+  near.getObjectByName = () => {
+    throw new Error('frame-level recursive search');
+  };
+  far.getObjectByName = () => {
+    throw new Error('frame-level recursive search');
+  };
   assert.doesNotThrow(() => animateCityTraffic(near, 520));
   assert.doesNotThrow(() => animateCityTraffic(far, 520));
 });

@@ -1,11 +1,13 @@
 # QA142: facade richness in GPU batches, traffic CPU reduction
 
 ## Hipótese
+
 Não é suficiente aumentar draw calls para melhorar a cidade; gastar mais
 GPU com novos objetos próximos do centro piora FPS. A nova rodada reutiliza
 materiais e batches existentes e remove trabalho do loop de veículos.
 
 ## Critérios de arquitetura
+
 - Skyline 42 torres: 84 novas nervuras anexadas, 42 perfis de coroas e
   756 janelas isoladas em Alto (seis níveis, três por torre).
   Esses objetos substituem ou ampliam **InstancedMesh existentes**,
@@ -18,6 +20,7 @@ materiais e batches existentes e remove trabalho do loop de veículos.
   custo de geração de sombras.
 
 ## Aceite
+
 - Regressões dos loops por pausa/replay, clones, transição de qualidade e
   visualização do skyline de todos os ângulos.
 - Draw calls: sem novos batches por prédios e veículos (9 batches cidade34,
