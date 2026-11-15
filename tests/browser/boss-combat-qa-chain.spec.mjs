@@ -102,13 +102,19 @@ test('mobile QA Berserk is actionable and cannot persist power into campaign sav
   await page.locator('#developerEncounter').selectOption('boss');
   await page.locator('#developerBerserkLaunch').click();
   await expect(page.locator('#developerSessionTag')).toContainText('SETOR 06');
+  const drawer = page.locator('#strategyDrawer');
+  await expect(drawer).not.toHaveAttribute('open');
+  await drawer.locator('summary').click();
   const action = page.locator('#qaBerserkAction');
   await expect(action).toBeVisible();
   await expect(action).toHaveText('ATIVAR BERSERK');
   await action.click();
+  await expect(drawer).not.toHaveAttribute('open');
   await expect(page.locator('body')).toHaveClass(/berserk-active/);
   await expect(page.locator('#qaBerserkStatus')).toContainText('ATIVO');
+  await drawer.locator('summary').click();
   await action.click();
+  await expect(drawer).not.toHaveAttribute('open');
   await expect(action).toContainText('REPETIR BERSERK');
   await page.screenshot({
     path: info.outputPath('berserk-europa-' + info.project.name + '.png'),
