@@ -37,7 +37,11 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
-          git commit -m 'build(web): sync generated index for candidate'
+          # QA137: keep source/contract formatting synced with the built artifact.
+          if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
+            git add -- src/shell.html tests/qa137-mobile-rpg-accordion.test.mjs specs/qa137-mobile-rpg-accordion.md
+          fi
+          git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
           gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
