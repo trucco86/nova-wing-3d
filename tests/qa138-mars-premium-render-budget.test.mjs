@@ -24,14 +24,20 @@ test('Mars improvements preserve the orbital draw and noise budget', () => {
 test('approach and sandstorm animate from cached references, with clone fallback', () => {
   const approach = createMarsApproach();
   const globe = approach.getObjectByName('mars-orbit-visible-planet');
-  approach.getObjectByName = () => { throw new Error('Unexpected hot-path traversal'); };
+  approach.getObjectByName = () => {
+    throw new Error('Unexpected hot-path traversal');
+  };
   updateMarsApproach(approach, marsDescentAt(18));
   assert.equal(globe.visible, true);
-  assert.doesNotThrow(() => updateMarsApproach(createMarsApproach().clone(true), marsDescentAt(20)));
+  assert.doesNotThrow(() =>
+    updateMarsApproach(createMarsApproach().clone(true), marsDescentAt(20)),
+  );
   const storm = createMarsSandstorm();
   const particles = storm.getObjectByName('mars-sandstorm-particle-field');
   const banks = storm.children.filter((x) => x.name.startsWith('mars-rolling-sand-haze-bank'));
-  storm.getObjectByName = () => { throw new Error('Unexpected hot-path traversal'); };
+  storm.getObjectByName = () => {
+    throw new Error('Unexpected hot-path traversal');
+  };
   updateMarsSandstorm(storm, 70);
   assert.equal(storm.visible, true);
   updateMarsSandstorm(storm, 92);
@@ -51,8 +57,13 @@ test('scrolling desert no longer allocates moving lists or re-searches the world
   assert.equal(terrain.geometry.parameters.widthSegments, 65);
   assert.equal(terrain.geometry.parameters.heightSegments, 140);
   assert.doesNotThrow(() => root.clone(true));
-  assert.equal(root.getObjectByName('mars-sandstorm-particle-field').geometry.attributes.position.count, 240);
-  root.getObjectByName = () => { throw new Error('Unexpected hot-path traversal'); };
+  assert.equal(
+    root.getObjectByName('mars-sandstorm-particle-field').geometry.attributes.position.count,
+    240,
+  );
+  root.getObjectByName = () => {
+    throw new Error('Unexpected hot-path traversal');
+  };
   for (let i = 0; i < 150; i++) {
     updateMarsPremium(root, i * 0.63);
     updateMarsArrival(root, i % 95);
