@@ -36,7 +36,7 @@ test('premium lunar relief does not require additional draw meshes or costly per
   const shader = moon.material.fragmentShader;
   // Declaration + one use. The former shader evaluated three fbm calls for
   // almost every pixel; detail is now built from one fbm and two noise calls.
-  assert.equal([...shader.matchAll(/\\bfbm\\s*\\(/g)].length, 2);
+  assert.equal(shader.split('fbm(').length - 1, 2);
   assert.equal(moon.children.length, 0, 'fracture glow is part of the existing surface pass');
   assert.equal(moon.material.uniforms.bodyTint.value.getHexString(), 'ffffff');
   sky.setGraphicsQuality('medium');
