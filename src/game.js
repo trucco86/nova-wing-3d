@@ -3089,6 +3089,7 @@ export function createGame({
     return rpgTacticalPaused;
   }
   function pause() {
+    $('strategyDrawer').open = false;
     setRpgTacticalPaused(false);
     if (!appActive) return;
     if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) {
