@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { createGame } from '../src/game.js';
 import { installMobileRpgAccordion } from '../src/mobile-rpg.js';
+import { installCompactMenu } from '../src/compact-menu.js';
 import { defeatBoss } from './combat-helper.mjs';
 import { SECTORS } from '../src/campaign.js';
 const params = new URLSearchParams(location.search);
@@ -64,6 +65,7 @@ const game = createGame({
 });
 // The visual test server must install the same RPG controller as src/main.js.
 // Otherwise the fixture silently exposes raw hidden markup instead of gameplay UX.
+installCompactMenu();
 installMobileRpgAccordion({ game });
 function advance(seconds, { renderAfter = true } = {}) {
   // Fast deterministic simulation can postpone the expensive software-GPU
