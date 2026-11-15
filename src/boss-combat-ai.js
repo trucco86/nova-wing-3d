@@ -17,8 +17,8 @@ const MELEE = Object.freeze({
 const LABEL = Object.freeze({
   'rok-pincer': 'ROK · PINÇA DAS ASAS · SUBA DA ZONA VERMELHA',
   'rok-ram': 'ROK · INVESTIDA FRONTAL · DESVIE DO EIXO',
-  'stingray-scissor': 'COLOSSO DAS DUNAS · PRENSA VERTICAL · DESVIE PELA LATERAL',
-  'stingray-sting': 'COLOSSO DAS DUNAS · PERFURADOR · SAIA DO EIXO',
+  'stingray-scissor': 'COLOSSO DAS DUNAS · PRENSA VERTICAL · DESVIE',
+  'stingray-sting': 'COLOSSO DAS DUNAS · PERFURADOR · DESVIE',
   'drill-crosscut': 'CARBIDE · BROCA TRANSVERSAL · MUDE DE ALTURA',
   'hydra-two-head-crossfire': 'HIDRA · FOGO CRUZADO DAS CABEÇAS · SUBA PARA ESCAPAR',
   'marvin-rear-thruster-sweep': 'MARVIN · VARREDURA DAS TURBINAS · MUDE DE ALTURA',
