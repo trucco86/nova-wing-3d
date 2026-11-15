@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.133 — QA134: pooling limitado de obstáculos espaciais
+
+- Satélites, cargueiros, destroços e pórticos comuns passam por pool de clones com no máximo três instâncias por tipo e doze no total. O cenário não precisa re-clonar a mesma composição de meshes em cada onda.
+- Cada reutilização restaura posição, rotação, escala e visibilidade de todos os componentes. Colisores, geometria, materiais e hardpoints permanecem idênticos.
+- Objetos do túnel Europa, reatores, trem, estruturas de chefe e variantes especiais não entram no pool.
+- O pool nunca descarta geometrias/materiais pertencentes a protótipos compartilhados; ao encerrar, solta apenas as referências JS retidas.
+- Contadores `created/reused/retained/rejected` ficam no snapshot de QA para comparar reutilização real e retenção em dispositivos.
+- Testes de reset integral, collider compartilhado, limites, exclusões de hazards e operação sem descarte indevido.
+- **Candidata na PR #359, sem merge ou deploy de produção.**
+
 ## 1.27.132 — QA133: memória GPU e ciclo de vida explícito
 
 - Diagnóstico no painel Pausa > FPS de geometrias, texturas, programas compilados e heap JavaScript quando disponível; amostragem limitada e diferenças em relação ao início de cada teste.
