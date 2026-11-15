@@ -1,0 +1,60 @@
+name: QA131 | Capture real RPG and hangar trailer assets
+on:
+  push:
+    branches:
+      - feat/qa131-trailer-rpg-hangar-action-20261114
+    paths:
+      - 'trailer/capture-features-qa131.mjs'
+      - '.github/workflows/trailer-qa131-feature-scenes.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-qa131-feature-scenes-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  film:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      NOVA_VISUAL_TEST: '1'
+    steps:
+      - name: Checkout actual game
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build actual game and local deterministic fixtures
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Chromium
+        run: npx playwright install chromium
+      - name: FFmpeg
+        run: ffmpeg -version | head -n1
+      - name: Serve local game, no public deployment
+        run: |
+          (npm run dev >/tmp/qa131-game.log 2>&1 &)
+          for i in $(seq 1 90); do
+            if curl -sSf http://127.0.0.1:4173/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/qa131-game.log
+          exit 1
+      - name: Film pilots ships upgrades actual RPG specials
+        run: node trailer/capture-features-qa131.mjs
+      - name: Upload factual game capture and QA provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa131-hangar-rpg-${{ github.sha }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            artifacts/nova-wing-qa131-showcase/*.png
+            artifacts/nova-wing-qa131-showcase/*.mp4
+            artifacts/nova-wing-qa131-showcase/provenance.json
