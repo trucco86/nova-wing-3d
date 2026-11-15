@@ -60,6 +60,9 @@ test('QA140 changing RPG weapon and spell refreshes labels while the battle cloc
   };
   const h = harness({ coarsePointer: true, storage, spawnEncounters: false });
   t.after(() => h.close());
+  // Headless harness defaults to 1280px; test the real mobile label contract.
+  h.window.innerWidth = 390;
+  h.window.innerHeight = 844;
   h.game.start(true);
   h.advance(0.1);
   const before = h.game.snapshot();
