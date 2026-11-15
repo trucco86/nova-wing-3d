@@ -53,8 +53,10 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
     }
   } else if (index === 1) {
     // Mars: giant six-legged quarry machine, not a sleek ocean manta.
-    slab(root, armor, 'mars-armored-crust', 0, 13, -8, 56, 21, 35);
-    slab(root, dark, 'mars-excavator-visor', 0, 16, 15, 28, 7, 8);
+    // Taller, readable industrial carapace while retaining the exact
+    // six-leg rig and all existing surface materials and draw-call count.
+    slab(root, armor, 'mars-armored-crust', 0, 21, -8, 51, 30, 35);
+    slab(root, dark, 'mars-excavator-visor', 0, 24, 15, 22, 8, 8);
     for (const side of [-1, 1]) {
       for (let i = 0; i < 3; i++) {
         slab(
@@ -82,13 +84,13 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
         );
         slab(
           root,
-          edge,
+          dark,
           'mars-thermal-vent-' + side + '-' + i,
-          side * (17 + i * 4),
-          27,
+          side * (10 + i * 7),
+          34 + i * 4,
           7 - i * 7,
           5,
-          2,
+          28 - i * 4,
           12,
         );
       }
