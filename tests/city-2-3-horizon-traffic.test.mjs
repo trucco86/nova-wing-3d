@@ -18,9 +18,12 @@ test('City 2.3 has a frontal three-tier skyline and elevated monument without ga
   assert.ok(centralSpan.position.y - centralSpan.geometry.parameters.height / 2 > 100);
   assert.ok(monument.children.every((part) => !part.userData.hitbox));
   const high = skyline.getObjectByName('city-horizon-high-details');
-  assert.ok(high.getObjectByName('city-horizon-window-bands').count > 140);
+  const windowBands = skyline.getObjectByName('city-horizon-window-bands');
+  assert.ok(windowBands?.isInstancedMesh && windowBands.count > 140);
+  assert.equal(windowBands.parent, skyline, 'window light must not be gated by High');
   world.setGraphicsQuality('medium');
   assert.equal(high.visible, false);
+  assert.equal(windowBands.visible, true, 'Medium must keep the urban skyline illuminated');
   assert.equal(towers.visible, true, 'Medium retains frontal city, not empty horizon');
   world.setGraphicsQuality('high');
   assert.equal(high.visible, true);

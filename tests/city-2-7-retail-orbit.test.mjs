@@ -64,9 +64,26 @@ test('City 2.7 citadel is a prominent distant visual anchor above the flying lan
   const citadel = createCityHorizonMegastructure();
   assert.equal(citadel.name, 'city-horizon-megastructure');
   assert.ok(citadel.getObjectByName('citadel-orbital-ring')?.isMesh);
-  assert.ok(citadel.getObjectByName('citadel-central-spire').position.y > 300);
-  const pylon = citadel.getObjectByName('citadel-flight-side-pylon');
-  assert.ok(pylon.position.y - pylon.scale.y / 2 > 20);
+  // The pylon and central spire are now individually positioned instances of
+  // one structural draw, not separate Mesh nodes. Validate real matrices.
+  const mass = citadel.getObjectByName('citadel-architectural-massing-batched');
+  assert.ok(mass?.isInstancedMesh);
+  const m = new T.Matrix4();
+  let spire = false;
+  let safePylons = 0;
+  for (let i = 0; i < mass.count; i++) {
+    mass.getMatrixAt(i, m);
+    const x = m.elements[12];
+    const y = m.elements[13];
+    const h = m.elements[5];
+    if (Math.abs(x) < 0.01 && y > 300 && h > 200) spire = true;
+    if (Math.abs(Math.abs(x) - 104) < 0.01 && h === 260) {
+      assert.ok(y - h / 2 > 20, 'supported pylon remains clear of the flying lane');
+      safePylons++;
+    }
+  }
+  assert.ok(spire, 'central spire occupies its original skyline position');
+  assert.equal(safePylons, 2, 'both load-bearing pylons remain at their original positions');
   assert.ok(citadel.getObjectByName('city-megastructure-high-detail'));
   citadel.traverse((o) => assert.notEqual(o.userData.hitbox, true));
 });
