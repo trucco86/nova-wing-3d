@@ -5,6 +5,7 @@ on:
       - feat/nw09-cinematic-3d
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
+      - fix/qa137-mobile-rpg-accordion-hud-20261115
 permissions:
   contents: write
   actions: write
