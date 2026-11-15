@@ -5,6 +5,7 @@
 - A screenshot de QA149 mostrou que o chefe marciano continuava usando 20 peças de asas do antigo modelo Stingray.
 - O modelo base de Marte agora apresenta carapaça, suportes, atuadores e perfurador industrial, com sete peças no lugar das 20 asas.
 - A Fênix Solar continua com as suas asas originais; seis pernas animadas, pontos fracos, armas e radar de Marte são preservados.
+- A primeira comparação de screenshots mostrou diferença insuficiente; a segunda revisão verticaliza as duas pinças, eleva carapaça/visor e aproveita os seis dutos como chaminés, sem novos meshes ou draw calls.
 - CI FULL, screenshot comparativa e QA mobile obrigatórios antes de liberar produção. PR Draft empilhada.
 
 ## 1.27.147 — QA151: alfa radial nativo na poeira de Marte

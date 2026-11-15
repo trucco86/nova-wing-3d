@@ -30,7 +30,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run build:check
+      # Isolated visual lane builds the unsynchronized QA source directly.
+      # Strict version/build checks remain in the ordinary FULL CI release gate.
+      - run: npm run build
       - run: npx playwright install chromium
       - name: Render actual Mars gameplay via WebGL
         env:
