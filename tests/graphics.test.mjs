@@ -95,9 +95,11 @@ test('city remains present after one full scenery wrap and reset', () => {
     const district = tile.getObjectByName('city-architectural-districts');
     const adverts = tile.getObjectByName('city-premium-infrastructure');
     const stations = ['frame', 'cap', 'lowLight'].map((key) =>
-      district.getObjectByName('city-maglev-station-batched-' + key));
+      district.getObjectByName('city-maglev-station-batched-' + key),
+    );
     const signs = ['frame', 'trim'].map((key) =>
-      adverts.getObjectByName('city-commercial-billboard-batched-' + key));
+      adverts.getObjectByName('city-commercial-billboard-batched-' + key),
+    );
     assert.ok([...stations, ...signs].every((mesh) => mesh?.isInstancedMesh));
     return total + stations.length + signs.length;
   }, 0);

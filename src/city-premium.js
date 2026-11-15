@@ -367,7 +367,10 @@ export function createCityPremiumInfrastructure() {
   }
   g.add(signs);
   const frameTransform = new T.Object3D();
-  for (const [key, material] of [['frame', frame], ['trim', cyan]]) {
+  for (const [key, material] of [
+    ['frame', frame],
+    ['trim', cyan],
+  ]) {
     const parts = signStructure[key];
     const batch = new T.InstancedMesh(unit, material, parts.length);
     batch.name = 'city-commercial-billboard-batched-' + key;

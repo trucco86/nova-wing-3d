@@ -5,6 +5,7 @@ Source: 15/11 mobile phase-1 High baseline, 34 FPS, frame p95 39ms,
 is not proof of a resource leak.
 
 ## Geometry preservation
+
 Each tile has 3 independently named maglev station groups. Each group
 contains 8 original box parts, now stored as `stationParts` immutable-like
 descriptors and transformed into three material-identical InstancedMesh batches
@@ -20,6 +21,7 @@ Two cloned city tiles reuse geometric assets and keep separate instance
 transforms. No route, collision or gameplay effect changes.
 
 ## Acceptance
+
 - 3 stations × 8 authored parts; 3 batches, count (9,9,6) per tile.
 - 6 signs × 3 original fixed parts; 2 batches, count (6,12) per tile.
 - Same 12 triangle faces for each box, same world-space bounding transforms.

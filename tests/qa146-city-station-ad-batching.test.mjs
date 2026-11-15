@@ -20,7 +20,9 @@ const samples = (mesh) => {
 const near = (actual, expected) =>
   ['x', 'y', 'z', 'w', 'h', 'd'].every((key) => Math.abs(actual[key] - expected[key]) < 0.0002);
 const meshStats = (node) => {
-  let count = 0, instanced = 0, triangles = 0;
+  let count = 0,
+    instanced = 0,
+    triangles = 0;
   node.traverse((x) => {
     if (!x.isMesh) return;
     count++;
@@ -37,16 +39,34 @@ test('QA146 maglev stations preserve all 24 boxes with just 3 draws per tile', (
     root.getObjectByName('city-maglev-station-west'),
     root.getObjectByName('city-maglev-station-east'),
   ];
-  assert.deepEqual(stations.map((s) => s.userData.stationParts.length), [8, 8, 8]);
-  assert.deepEqual(stations.map((s) => s.position.toArray()), [[80, 0, -215], [-80, 0, -585], [80, 0, -1315]]);
+  assert.deepEqual(
+    stations.map((s) => s.userData.stationParts.length),
+    [8, 8, 8],
+  );
+  assert.deepEqual(
+    stations.map((s) => s.position.toArray()),
+    [
+      [80, 0, -215],
+      [-80, 0, -585],
+      [80, 0, -1315],
+    ],
+  );
   const expected = { frame: [], cap: [], lowLight: [] };
   for (const station of stations)
     for (const part of station.userData.stationParts)
       expected[part.material].push({
-        x: station.position.x + part.x, y: part.y, z: station.position.z + part.z,
-        w: part.w, h: part.h, d: part.d,
+        x: station.position.x + part.x,
+        y: part.y,
+        z: station.position.z + part.z,
+        w: part.w,
+        h: part.h,
+        d: part.d,
       });
-  for (const [kind, count] of [['frame', 9], ['cap', 9], ['lowLight', 6]]) {
+  for (const [kind, count] of [
+    ['frame', 9],
+    ['cap', 9],
+    ['lowLight', 6],
+  ]) {
     const batched = root.getObjectByName('city-maglev-station-batched-' + kind);
     assert.ok(batched?.isInstancedMesh);
     assert.equal(batched.count, count);
@@ -59,7 +79,10 @@ test('QA146 maglev stations preserve all 24 boxes with just 3 draws per tile', (
   }
   assert.equal(root.userData.stationBatchCount, 3);
   assert.equal(root.userData.stationOriginalParts, 24);
-  assert.equal(stations.reduce((total, s) => total + meshStats(s).count, 0), 0);
+  assert.equal(
+    stations.reduce((total, s) => total + meshStats(s).count, 0),
+    0,
+  );
 });
 
 test('QA146 6 signs keep independent beacons and all 18 original fixed parts', () => {
@@ -70,7 +93,7 @@ test('QA146 6 signs keep independent beacons and all 18 original fixed parts', (
   const trim = g.getObjectByName('city-commercial-billboard-batched-trim');
   assert.equal(frame.count, 6);
   assert.equal(trim.count, 12);
-  assert.deepEqual(g.userData.billboardStructure, {draws: 2, metalParts: 6, neonParts: 12});
+  assert.deepEqual(g.userData.billboardStructure, { draws: 2, metalParts: 6, neonParts: 12 });
   const metal = samples(frame);
   const lights = samples(trim);
   for (let i = 0; i < signs.children.length; i++) {
@@ -79,22 +102,30 @@ test('QA146 6 signs keep independent beacons and all 18 original fixed parts', (
     const beacon = sign.getObjectByName('city-billboard-beacon');
     assert.ok(beacon?.isMesh, 'each creative keeps its own pulse and material');
     assert.equal(sign.children.filter((x) => x.isMesh).length, 2);
-    const x = sign.position.x, y = sign.position.y, z = sign.position.z;
+    const x = sign.position.x,
+      y = sign.position.y,
+      z = sign.position.z;
     assert.ok(near(metal[i], { x, y, z: z - 0.8, w: 30, h: 46, d: 1.6 }));
-    assert.ok(near(lights[2*i], {x, y:y + 24, z:z - 0.2, w:31, h:0.6, d:1.2}));
-    assert.ok(near(lights[2*i+1], {x, y:y - 24, z:z - 0.2, w:31, h:0.6, d:1.2}));
+    assert.ok(near(lights[2 * i], { x, y: y + 24, z: z - 0.2, w: 31, h: 0.6, d: 1.2 }));
+    assert.ok(near(lights[2 * i + 1], { x, y: y - 24, z: z - 0.2, w: 31, h: 0.6, d: 1.2 }));
   }
   const before = signs.children.map((sign) =>
-    sign.getObjectByName('city-billboard-beacon').material.color.toArray());
+    sign.getObjectByName('city-billboard-beacon').material.color.toArray(),
+  );
   const tile = new T.Group();
   tile.add(g);
   animateCityBillboards(tile, 317);
   const after = signs.children.map((sign) =>
-    sign.getObjectByName('city-billboard-beacon').material.color.toArray());
+    sign.getObjectByName('city-billboard-beacon').material.color.toArray(),
+  );
   assert.ok(after.some((entry, i) => entry.some((value, index) => value !== before[i][index])));
   animateCityBillboards(tile, 317);
-  assert.deepEqual(signs.children.map((sign) =>
-    sign.getObjectByName('city-billboard-beacon').material.color.toArray()), after);
+  assert.deepEqual(
+    signs.children.map((sign) =>
+      sign.getObjectByName('city-billboard-beacon').material.color.toArray(),
+    ),
+    after,
+  );
 });
 
 test('QA146 high and medium preserve authored static triangles after two tiles clone and looping', () => {
@@ -106,30 +137,58 @@ test('QA146 high and medium preserve authored static triangles after two tiles c
   const adverts = [a, b].map((x) => x.getObjectByName('city-premium-infrastructure'));
   const uniqueGeometryCount = () => {
     const all = new Set();
-    for (const tile of [a, b]) tile.traverse((node) => { if (node.geometry) all.add(node.geometry); });
+    for (const tile of [a, b])
+      tile.traverse((node) => {
+        if (node.geometry) all.add(node.geometry);
+      });
     return all.size;
   };
   const resources = uniqueGeometryCount();
-  assert.equal(districts.reduce((n, x) => n + ['frame','cap','lowLight'].filter((key) =>
-    x.getObjectByName('city-maglev-station-batched-'+key)?.isInstancedMesh).length, 0), 6);
-  assert.equal(adverts.reduce((n, x) => n + ['frame','trim'].filter((key) =>
-    x.getObjectByName('city-commercial-billboard-batched-'+key)?.isInstancedMesh).length, 0), 4);
-  assert.notEqual(adverts[0].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix,
-    adverts[1].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix);
+  assert.equal(
+    districts.reduce(
+      (n, x) =>
+        n +
+        ['frame', 'cap', 'lowLight'].filter(
+          (key) => x.getObjectByName('city-maglev-station-batched-' + key)?.isInstancedMesh,
+        ).length,
+      0,
+    ),
+    6,
+  );
+  assert.equal(
+    adverts.reduce(
+      (n, x) =>
+        n +
+        ['frame', 'trim'].filter(
+          (key) => x.getObjectByName('city-commercial-billboard-batched-' + key)?.isInstancedMesh,
+        ).length,
+      0,
+    ),
+    4,
+  );
+  assert.notEqual(
+    adverts[0].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix,
+    adverts[1].getObjectByName('city-commercial-billboard-batched-frame').instanceMatrix,
+  );
   // Compare the same High geometry before and after all quality changes.
   // A Medium baseline would misinterpret the intentionally hidden High details.
   world.setGraphicsQuality('high');
   const baseTriangles = meshStats(a).triangles + meshStats(b).triangles;
-  for (let i=0; i<4; i++) {
+  for (let i = 0; i < 4; i++) {
     world.setGraphicsQuality(i % 2 ? 'high' : 'medium');
     world.update(0.3, i * 0.3, 48, true);
   }
   world.setGraphicsQuality('high');
   assert.equal(uniqueGeometryCount(), resources, 'quality switches must not create new geometries');
-  assert.equal(meshStats(a).triangles + meshStats(b).triangles, baseTriangles,
-    'no change in authored geometry across repeated quality changes');
+  assert.equal(
+    meshStats(a).triangles + meshStats(b).triangles,
+    baseTriangles,
+    'no change in authored geometry across repeated quality changes',
+  );
   world.setSector(SECTORS[1]);
   world.setSector(SECTORS[0]);
   assert.equal(uniqueGeometryCount(), resources, 'sector switch keeps static city assets reused');
-  assert.ok(districts.every((root) => root.getObjectByName('city-maglev-station-batched-frame').visible));
+  assert.ok(
+    districts.every((root) => root.getObjectByName('city-maglev-station-batched-frame').visible),
+  );
 });
