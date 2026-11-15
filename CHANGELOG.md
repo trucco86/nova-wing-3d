@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.130 — QA131: qualidade premium sem travadas de orçamento gráfico
+
+- Alterações de resolução interna adaptativa passam a atualizar somente pixel ratio e render targets. Detalhes PBR, cidade, naves e cenários premium não são reconfigurados em todo ajuste de DPR.
+- Redução preventiva de stutter com detecção de p95 alto e frames acima de 50 ms em janelas sucessivas. Um pico isolado não altera qualidade.
+- Presets HIGH preservam detalhes de cena primeiro; resolução adaptativa evita degradar geometria prematuramente e não regrava a configuração do usuário.
+- Auditoria de FPS local passa a mostrar p99 de frametime e contador de quadros acima de 100 ms, além de p95 e contadores 33/50 ms; sem upload ou coleta de dados pessoais.
+- Adaptação dos testes de gameplay WebGL para confirmar o novo mapa de pré-missão antes dos comandos de tiro, boost e controles.
+- Testes dedicados para orçamento diferencial, jank recorrente, pico isolado, modo pausado e relatórios p99. É necessário medir frametime em telefone real para confirmar qualquer ganho de desempenho.
+- **Candidata na PR #350. Sem merge ou deploy de produção.**
+
 ## 1.27.129 — QA130: mapa galáctico antes de cada missão
 
 - O mapa cinematográfico abre **antes do primeiro voo** e após **Continuar** em um checkpoint. Mostra o setor atual e a progressão correta, sem avançar os eventos de gameplay enquanto o jogador consulta a rota.

@@ -32,6 +32,8 @@ test('audit distinguishes slow frames and suspensions without false spikes', () 
   assert.equal(data.over33Ms, 3);
   assert.equal(data.over50Ms, 2);
   assert.ok(data.p95FrameMs >= 52.5);
+  assert.ok(data.p99FrameMs >= data.p95FrameMs);
+  assert.equal(data.over100Ms, 0);
   assert.ok(data.avgFps < 40);
 });
 
@@ -50,8 +52,10 @@ test('frame audit bounds history and rejects clock anomalies', () => {
     durationSeconds: 0,
     avgFps: 0,
     p95FrameMs: 0,
+    p99FrameMs: 0,
     over33Ms: 0,
     over50Ms: 0,
+    over100Ms: 0,
     interruptions: 0,
   });
   assert.throws(() => createFrameAudit({ capacity: -2 }), RangeError);
@@ -108,4 +112,23 @@ test('physical-device reports label stage, selected quality and build for reprod
     version: 'private-secret',
   });
   assert.doesNotMatch(invalid, /private-secret|pretend-maximum|fase 6/);
+});
+
+test('brief transition hitches appear in p99 and 100ms counter even when p95 is smooth', () => {
+  const audit = createFrameAudit();
+  audit.start();
+  let time = 0;
+  audit.sample(time);
+  for (let i = 0; i < 200; i++) {
+    time += i === 22 || i === 88 || i === 155 ? 125 : 16.6;
+    audit.sample(time);
+  }
+  const stats = audit.report();
+  assert.equal(stats.frames, 200);
+  assert.equal(stats.over100Ms, 3);
+  assert.ok(stats.p95FrameMs <= 17);
+  assert.ok(stats.p99FrameMs >= 100, 'p99 reveals three sustained spikes among 200 frames');
+  const report = formatFrameAudit(stats, { language: 'pt' });
+  assert.match(report, /p99/);
+  assert.match(report, /33\/50\/100 ms/);
 });
