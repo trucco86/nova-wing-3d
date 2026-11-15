@@ -10833,3 +10833,299 @@ body:not(.developer-session) #qaBerserkDock {
     overflow: hidden;
   }
 }
+
+/* QA140: an explicit radial first step, then one compact category pane.
+   Keep the original disclosure for desktop and the touch trigger for mobile.
+   Tactical pause freezes the game clock; CSS only shades a live 3D frame. */
+#rpgRadialMenu[hidden],
+#rpgCategoryPanel[hidden] {
+  display: none !important;
+}
+@media (pointer: fine) {
+  #rpgRadialMenu,
+  #rpgTacticalScrim,
+  #rpgCategoryPanel .rpgCategoryHeader,
+  #rpgBerserkPlayer,
+  #rpgPodsAction {
+    display: none !important;
+  }
+  #rpgCategoryPanel {
+    display: block;
+  }
+}
+@media (pointer: coarse) {
+  body.in-mission #strategyControls {
+    z-index: 120;
+    overflow: visible;
+  }
+  body.in-mission #strategyControls #strategyDrawer,
+  body.in-mission #strategyControls #strategyDrawer[open] {
+    box-sizing: border-box;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    padding: 3px;
+    background: rgb(6 27 40 / 78%);
+    border: 2px solid rgb(96 231 213 / 80%);
+    backdrop-filter: none;
+    box-shadow: 0 0 12px rgb(70 217 216 / 19%);
+    overflow: visible;
+    transform: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    min-height: 52px;
+    height: 52px;
+    border-radius: 50%;
+    font: 800 10px/1.1 monospace;
+    letter-spacing: 0.025em;
+    list-style: none;
+    touch-action: manipulation;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary::-webkit-details-marker {
+    display: none;
+  }
+  body.in-mission #strategyControls #strategyDrawer summary b {
+    font-size: 10px;
+  }
+  body.in-mission.rpg-tactical-paused #strategyDrawer {
+    border-color: #ffda88;
+    box-shadow: 0 0 17px rgb(255 202 112 / 40%);
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    overflow: visible;
+    z-index: 2;
+    pointer-events: none;
+    transform: none;
+  }
+  body.in-mission #rpgTacticalScrim {
+    position: fixed;
+    inset: 0;
+    background: rgb(2 11 20 / 39%);
+    z-index: 0;
+    pointer-events: auto;
+  }
+  body.in-mission #rpgRadialMenu {
+    position: fixed;
+    top: 49%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(284px, calc(100vw - 28px), calc(100dvh - 86px));
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    z-index: 1;
+    border-radius: 50%;
+    border: 1px solid rgb(110 234 217 / 55%);
+    background: radial-gradient(circle, rgb(3 21 32 / 83%) 0 26%, rgb(7 34 49 / 73%) 27% 48%, rgb(5 25 39 / 21%) 70%);
+    box-shadow: 0 0 28px rgb(5 13 23 / 49%), inset 0 0 26px rgb(72 216 207 / 13%);
+    pointer-events: auto;
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialCore {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 83px;
+    height: 83px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    box-sizing: border-box;
+    background: #081d2bdd;
+    border-radius: 50%;
+    border: 1px solid #68daca7c;
+    box-shadow: inset 0 0 14px #2d9b9250;
+    color: #d6fff7;
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialCore strong {
+    font: 900 18px/1 monospace;
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialCore small {
+    font: 700 8px/1.2 monospace;
+    color: #a7d9d4;
+  }
+  body.in-mission #rpgRadialMenu button.rpgRadialChoice {
+    position: absolute;
+    box-sizing: border-box;
+    width: 96px;
+    height: 52px;
+    min-height: 52px;
+    padding: 5px;
+    border-radius: 16px;
+    background: rgb(9 37 53 / 92%);
+    border: 1px solid #62d9d0;
+    color: #e3fff7;
+    box-shadow: 0 3px 14px rgb(0 5 13 / 43%);
+    font: 800 10px/1.15 monospace;
+    letter-spacing: 0.03em;
+    touch-action: manipulation;
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialWeapons {
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialSpecials {
+    top: 50%;
+    right: 4px;
+    transform: translateY(-50%);
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialBerserk {
+    bottom: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: #e5b56e;
+    color: #ffe8ba;
+  }
+  body.in-mission #rpgRadialMenu .rpgRadialUtilities {
+    top: 50%;
+    left: 4px;
+    transform: translateY(-50%);
+  }
+  body.in-mission #rpgRadialMenu #rpgRadialClose {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    min-width: 110px;
+    min-height: 40px;
+    background: #09202de8;
+    color: #daeee7;
+    border: 1px solid #558d96;
+    pointer-events: auto;
+  }
+  body.in-mission #strategyControls #strategyDrawer[open] #rpgCategoryPanel:not([hidden]) {
+    display: flex;
+    position: fixed;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    flex-direction: column;
+    gap: 7px;
+    width: min(320px, calc(100vw - 26px));
+    max-width: none;
+    max-height: min(380px, calc(100dvh - 96px));
+    box-sizing: border-box;
+    padding: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 16px;
+    border: 1px solid #69d8cb;
+    background: rgb(4 25 38 / 89%);
+    box-shadow: 0 16px 32px rgb(0 4 11 / 54%);
+    z-index: 2;
+    pointer-events: auto;
+    backdrop-filter: blur(4px);
+  }
+  body.in-mission #rpgCategoryPanel .rpgCategoryHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 44px;
+    gap: 6px;
+    color: #e0fff6;
+    font: 800 13px/1.2 monospace;
+  }
+  body.in-mission #rpgCategoryPanel .rpgCategoryHeader button {
+    min-width: 48px;
+    min-height: 44px;
+    font: 800 10px/1.1 monospace;
+  }
+  body.in-mission #strategyControls #rpgCategoryPanel #quickRpg {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    background: none;
+    box-shadow: none;
+  }
+  body.in-mission #strategyControls #rpgCategoryPanel #quickRpg button,
+  body.in-mission #strategyControls #rpgCategoryPanel #rpgBerserkCast,
+  body.in-mission #strategyControls #rpgCategoryPanel #rpgPodsAction {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+  body.in-mission #rpgCategoryPanel[data-category='weapons'] #quickRpg #specialSwitch,
+  body.in-mission #rpgCategoryPanel[data-category='weapons'] #quickRpg #specialCast,
+  body.in-mission #rpgCategoryPanel[data-category='specials'] #quickRpg #arsenalSwitch {
+    display: none;
+  }
+  body.in-mission #rpgCategoryPanel[data-category='weapons'] > :not(.rpgCategoryHeader):not(#quickRpg),
+  body.in-mission #rpgCategoryPanel[data-category='specials'] > :not(.rpgCategoryHeader):not(#quickRpg):not(.squadSuperActions),
+  body.in-mission #rpgCategoryPanel[data-category='berserk'] > :not(.rpgCategoryHeader):not(#rpgBerserkPlayer):not(#qaBerserkDock),
+  body.in-mission #rpgCategoryPanel[data-category='utilities'] > :not(.rpgCategoryHeader):not(.tacticButtons):not(#rpgPodsAction):not(#tacticCharge):not(#strategyStatus):not(.rpgProgress):not(#rpgNext) {
+    display: none !important;
+  }
+  body.in-mission #rpgCategoryPanel #rpgBerserkPlayer small {
+    display: block;
+    padding: 6px 3px;
+    line-height: 1.35;
+  }
+  body.in-mission #rpgCategoryPanel #qaBerserkDock:not([hidden]) {
+    display: block;
+    position: static;
+    width: 100%;
+    margin: 3px 0;
+    padding: 5px;
+  }
+  body.in-mission #rpgCategoryPanel :is(.tacticButtons, .squadSuperActions) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  body.in-mission #rpgCategoryPanel :is(.tacticButtons, .squadSuperActions) button {
+    min-height: 48px;
+    min-width: 0;
+  }
+  body.in-mission.rpg-tactical-paused #touch,
+  body.in-mission.rpg-tactical-paused #orbitControls {
+    pointer-events: none;
+    opacity: 0.44;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+  body.in-mission #strategyControls #strategyDrawer[open] #rpgCategoryPanel:not([hidden]) {
+    top: 50%;
+    max-height: calc(100dvh - 36px);
+  }
+  body.in-mission #rpgRadialMenu {
+    top: 49%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.in-mission #rpgRadialMenu,
+  body.in-mission #rpgCategoryPanel {
+    transition: none !important;
+    animation: none !important;
+  }
+}
