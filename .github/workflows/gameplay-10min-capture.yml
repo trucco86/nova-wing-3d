@@ -1,0 +1,68 @@
+name: Nova Wing gameplay 10 minutes
+on:
+  push:
+    branches: [media/gameplay-ten-minutes]
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shot: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - run: node tools/visual-fixture.mjs
+      - name: Record real game and audio
+        env:
+          SHOT_INDEX: ${{ matrix.shot }}
+        run: |
+          NOVA_VISUAL_TEST=1 node tools/serve.mjs --port 4187 &
+          node capture-gameplay.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gameplay-shot-${{ matrix.shot }}
+          path: |
+            artifacts/gameplay/*.mp4
+            artifacts/gameplay/*.jpg
+            artifacts/gameplay/*.json
+          retention-days: 7
+  assemble:
+    needs: capture
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: gameplay-shot-*
+          path: shots
+          merge-multiple: true
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Assemble 600 seconds
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          files=sorted(Path('shots').glob('*.mp4'))
+          assert len(files)==21, len(files)
+          Path('concat.txt').write_text(''.join("file '"+str(f)+"'\n" for f in files))
+          PY
+          ffmpeg -y -f concat -safe 0 -i concat.txt -t 600 -c copy -movflags +faststart NovaWing_Gameplay_10min.mp4
+          ffprobe -v error -show_entries format=duration,size -show_entries stream=codec_name,width,height,r_frame_rate -of json NovaWing_Gameplay_10min.mp4 > video-metadata.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nova-wing-gameplay-10min
+          path: |
+            NovaWing_Gameplay_10min.mp4
+            video-metadata.json
+          retention-days: 14
