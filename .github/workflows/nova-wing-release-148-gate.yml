@@ -4,12 +4,12 @@ on:
     branches: [ops/release-nova-wing-148-20261115]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   actions: write
 concurrency:
   group: nova-wing-release-148-gate
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   release:
     runs-on: ubuntu-latest
