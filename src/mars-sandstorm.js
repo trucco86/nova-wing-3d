@@ -1,5 +1,18 @@
 import * as T from 'three';
 
+const stormCache = new WeakMap();
+function stormParts(root) {
+  let parts = stormCache.get(root);
+  if (!parts) {
+    parts = {
+      particles: root.getObjectByName('mars-sandstorm-particle-field'),
+      banks: root.children.filter((c) => c.name.startsWith('mars-rolling-sand-haze-bank')),
+    };
+    stormCache.set(root, parts);
+  }
+  return parts;
+}
+
 // A fair, forecastable, deterministic Martian crosswind encounter.
 // The player can still steer against gusts; wind never teleports the ship.
 export const MARS_STORM_START = 61;
@@ -113,24 +126,36 @@ export function createMarsSandstorm() {
     root.add(bank);
   }
   root.visible = false;
+  stormCache.set(root, { particles, banks: root.children.slice(1) });
   return root;
 }
 export function updateMarsSandstorm(root, seconds) {
   const wind = marsSandstormAt(seconds);
   if (!root) return wind;
+  const wasVisible = root.visible;
   root.visible = wind.active;
-  const particles = root.getObjectByName('mars-sandstorm-particle-field');
+  const { particles, banks } = stormParts(root);
+  // Inactive storms stop updating invisible geometry and uniforms.
+  if (!wind.active) {
+    if (wasVisible) {
+      particles.material.opacity = 0;
+      for (const bank of banks) bank.material.uniforms.alpha.value = 0;
+    }
+    root.userData.intensity = wind.intensity;
+    root.userData.windX = wind.windX;
+    return wind;
+  }
   particles.material.opacity = wind.intensity * 0.88;
-  // Visual drift and rolling banks follow the same deterministic wind clock.
   particles.position.x = Math.sin(seconds * 0.35) * 12 + wind.windX * 1.5;
   particles.position.z = ((seconds * 21) % 150) - 75;
-  root.children.forEach((child, i) => {
-    if (!child.name.startsWith('mars-rolling-sand-haze-bank')) return;
-    child.material.uniforms.alpha.value = wind.intensity * (0.43 - (i - 1) * 0.04);
+  for (let i = 0; i < banks.length; i++) {
+    const child = banks[i];
+    const slot = i + 1; // Particle field is the first child.
+    child.material.uniforms.alpha.value = wind.intensity * (0.43 - i * 0.04);
     child.material.uniforms.seconds.value = seconds;
     child.material.uniforms.wind.value = wind.windX;
-    child.position.x = (i - 2) * 62 + Math.sin(seconds * 0.32 + i) * 16;
-  });
+    child.position.x = (slot - 2) * 62 + Math.sin(seconds * 0.32 + slot) * 16;
+  }
   root.userData.intensity = wind.intensity;
   root.userData.windX = wind.windX;
   return wind;

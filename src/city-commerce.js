@@ -236,56 +236,172 @@ export function createCityCommerce() {
 }
 
 export function createCityHorizonMegastructure() {
-  // A permanently distant terminus gives the route a vanishing point. It
-  // always remains well above the flight lane and never creates hitboxes.
-  const group = new T.Group();
-  group.name = 'city-horizon-megastructure';
-  group.userData.visualOnly = true;
-  const hull = steel('#344f65', 0.48);
-  const cap = steel('#7298a9', 0.3);
-  const glow = light('#69dff3');
-  const amber = light('#f5b978');
-  function part(material, name, x, y, z, w, h, d) {
-    const mesh = new T.Mesh(BOX, material);
-    mesh.name = name;
-    mesh.position.set(x, y, z);
-    mesh.scale.set(w, h, d);
-    mesh.userData.visualOnly = true;
-    group.add(mesh);
-    return mesh;
-  }
-  const z = -1130;
-  for (const side of [-1, 1]) {
-    part(hull, 'citadel-flight-side-pylon', side * 104, 157, z, 35, 260, 69);
-    part(cap, 'citadel-tapered-crown', side * 104, 293, z, 44, 22, 76);
-    part(glow, 'citadel-vertical-beacon', side * 104, 175, z + 36, 3, 191, 2);
-    part(hull, 'citadel-cantilever', side * 62, 238, z, 72, 15, 57);
-    for (let tier = 0; tier < 6; tier++)
-      part(amber, 'citadel-window-tier', side * 104, 76 + tier * 30, z + 35, 24, 2, 1);
-  }
-  part(hull, 'citadel-central-spire', 0, 369, z - 14, 31, 248, 47);
-  part(cap, 'citadel-spire-crown', 0, 507, z - 14, 48, 35, 55);
-  part(glow, 'citadel-spire-beacon', 0, 534, z + 15, 14, 52, 2);
-  part(hull, 'citadel-skybridge', 0, 231, z + 8, 188, 18, 60);
-  part(glow, 'citadel-skybridge-neon', 0, 219, z + 39, 153, 3, 2);
-  const ring = new T.Mesh(new T.TorusGeometry(80, 4, 7, 44), cap);
-  ring.name = 'citadel-orbital-ring';
-  ring.position.set(0, 354, z + 25);
-  ring.userData.visualOnly = true;
-  group.add(ring);
+  // QA141: a lit, architectural destination instead of a sparse untextured
+  // citadel. Build all details ONCE in the same static instanced material
+  // batches; rendering cost depends on six materials, not hundreds of windows.
+  // The landmark stays far above the flight corridor and has no hitboxes.
+  const root = new T.Group();
+  root.name = 'city-horizon-megastructure';
+  root.userData.visualOnly = true;
   const high = new T.Group();
   high.name = 'city-megastructure-high-detail';
   high.visible = false;
-  for (const side of [-1, 1]) {
-    for (let i = 0; i < 12; i++) {
-      const mesh = new T.Mesh(BOX, glow);
-      mesh.name = 'citadel-high-window';
-      mesh.position.set(side * 104, 50 + i * 18, z + 36);
-      mesh.scale.set(15, 0.9, 1);
-      mesh.userData.visualOnly = true;
-      high.add(mesh);
-    }
+
+  const batches = {
+    structure: [],
+    cladding: [],
+    cool: [],
+    amber: [],
+    precision: [],
+    highGlow: [],
+  };
+  function place(kind, x, y, z, w, h, d, color) {
+    if (!(Math.min(w, h, d) > 0)) throw new Error('Invalid citadel detail size');
+    batches[kind].push({ x, y, z, w, h, d, color });
   }
-  group.add(high);
-  return group;
+
+  const z = -1130;
+  for (const side of [-1, 1]) {
+    const x = side * 104;
+    // A foundation, real vertical support and stepped roof. The silhouette
+    // is unchanged; architectural skin is attached to these actual volumes.
+    place('structure', x, 157, z, 35, 260, 69, '#46657c');
+    place('structure', x, 34, z, 49, 31, 76, '#536f81');
+    place('cladding', x, 293, z, 44, 22, 76, '#a0b8c5');
+    place('structure', side * 62, 238, z, 72, 15, 57, '#506f80');
+    place('cladding', x, 316, z - 4, 20, 18, 23, '#c7d9dd');
+    place('structure', x, 335, z - 4, 4, 25, 4, '#587788');
+    place('cool', x, 343, z - 1.6, 5.2, 4.3, 1, '#c1f5ff');
+    // Massive pylon ribs reinforce scale, supporting actual floor plates.
+    for (const rib of [-1, 1]) {
+      place('cladding', x + rib * 16.4, 154, z + 35.2, 1.45, 228, 1.2, '#759aad');
+      place('precision', x + rib * 17.2, 163, z + 35.8, 0.4, 206, 0.35, '#c2dce5');
+    }
+    for (let floor = 0; floor < 11; floor++) {
+      const y = 55 + floor * 20.1;
+      // Two differently colored occupied rooms on every level, even Medium.
+      for (const col of [-1, 1]) {
+        const kind = (floor + col + (side > 0 ? 1 : 0)) % 3 === 0 ? 'amber' : 'cool';
+        place(
+          kind,
+          x + col * 7.8,
+          y,
+          z + 35.25,
+          5.9,
+          2.4,
+          0.56,
+          kind === 'amber' ? '#ffe0a8' : '#b9edfc',
+        );
+        // Wall-facing light wells are actually on the pylons, not suspended
+        // in the corridor or hidden behind the front glass slab.
+        place('highGlow', x + col * 7.8, y + 4.6, z + 35.5, 4, 0.45, 0.48, '#d5f6ff');
+      }
+      place('cladding', x, y + 7, z + 35.1, 32, 0.85, 0.9, '#8facba');
+      if (floor % 2 === 0) place('amber', x, y + 7.6, z + 35.8, 23, 0.35, 0.5, '#f9c795');
+    }
+    // Facade facing the flight lane: repeated bays along the interior wall.
+    // Light bars are attached to the side of the left/right supporting tower.
+    for (let floor = 0; floor < 8; floor++) {
+      const y = 73 + floor * 25;
+      place('cool', x - side * 18.2, y, z + 3, 0.52, 2.4, 19, '#99d7ed');
+    }
+    // An explicitly supported gantry and beacon at each tower crown.
+    place('cladding', x, 306, z + 12, 30, 1.4, 39, '#adc8d3');
+    place('cool', x, 308, z + 32, 27, 0.82, 0.8, '#d5f8ff');
+  }
+
+  place('structure', 0, 369, z - 14, 31, 248, 47, '#40596e');
+  place('cladding', 0, 507, z - 14, 48, 35, 55, '#acc5d1');
+  place('cool', 0, 534, z + 15, 14, 52, 2, '#94ecfb');
+  place('structure', 0, 231, z + 8, 188, 18, 60, '#506e80');
+  place('cladding', 0, 245, z + 39, 180, 2, 2, '#9dbcc7');
+  place('cool', 0, 219, z + 39, 153, 3, 2, '#94e8f7');
+
+  for (const x of [-62, -42, -22, 22, 42, 62]) {
+    // Actual lattice held by the solid skybridge at y 231.
+    place('cladding', x, 251, z + 38, 1.5, 24, 1.2, '#96abb9');
+    place('cool', x, 265, z + 38.9, 3.1, 1.4, 0.7, '#c5f4ff');
+  }
+  for (let floor = 0; floor < 9; floor++) {
+    const y = 281 + floor * 24.1;
+    for (const x of [-9, 9]) {
+      place(
+        floor % 3 ? 'cool' : 'amber',
+        x,
+        y,
+        z + 10,
+        5.7,
+        3.2,
+        0.55,
+        floor % 3 ? '#c6efff' : '#ffd2a2',
+      );
+      place('highGlow', x, y + 5, z + 10.3, 3.8, 0.4, 0.55, '#f0f9ff');
+    }
+    place('cladding', 0, y + 9, z + 10, 30, 1.1, 1, '#7da1b5');
+  }
+  for (const x of [-13.1, 13.1]) {
+    place('cladding', x, 368, z + 10.8, 1.5, 180, 1.05, '#a5c3d0');
+    place('precision', x, 369, z + 11.6, 0.48, 165, 0.4, '#cbe5ed');
+  }
+  // Existing orbital ring: add little navigation beacons within the existing
+  // cool instanced batch. No additional torus or point light is allocated.
+  for (let i = 0; i < 12; i++) {
+    const a = (i * Math.PI * 2) / 12;
+    const x = Math.cos(a) * 79.2;
+    const y = 354 + Math.sin(a) * 79.2;
+    place('cool', x, y, z + 29.4, 2.8, 2.8, 0.75, i % 3 ? '#b1e7ff' : '#ffe1b8');
+  }
+
+  const materials = {
+    structure: steel('#ffffff', 0.44),
+    cladding: steel('#ffffff', 0.27),
+    cool: light('#ffffff'),
+    amber: light('#ffffff'),
+    precision: steel('#ffffff', 0.23),
+    highGlow: light('#ffffff'),
+  };
+  const names = {
+    structure: 'citadel-architectural-massing-batched',
+    cladding: 'citadel-facade-frames-batched',
+    cool: 'citadel-occupied-cool-windows-batched',
+    amber: 'citadel-occupied-warm-windows-batched',
+    precision: 'citadel-precision-ribs-batched',
+    highGlow: 'citadel-high-window-batched',
+  };
+  const dummy = new T.Object3D();
+  const tint = new T.Color();
+  for (const [kind, entries] of Object.entries(batches)) {
+    if (!entries.length) continue;
+    const mesh = new T.InstancedMesh(BOX, materials[kind], entries.length);
+    mesh.name = names[kind];
+    mesh.userData.visualOnly = true;
+    mesh.frustumCulled = true;
+    for (let i = 0; i < entries.length; i++) {
+      const b = entries[i];
+      dummy.position.set(b.x, b.y, b.z);
+      dummy.scale.set(b.w, b.h, b.d);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+      mesh.setColorAt(i, tint.set(b.color));
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.instanceColor.needsUpdate = true;
+    (kind === 'precision' || kind === 'highGlow' ? high : root).add(mesh);
+  }
+
+  const ring = new T.Mesh(new T.TorusGeometry(80, 4, 7, 44), steel('#98b8c8', 0.29));
+  ring.name = 'citadel-orbital-ring';
+  ring.position.set(0, 354, z + 25);
+  ring.userData.visualOnly = true;
+  ring.frustumCulled = true;
+  root.add(ring, high);
+  root.userData.detailBudget = {
+    mediumDraws: 5,
+    highDraws: 7,
+    mediumIlluminatedWindows: batches.cool.length + batches.amber.length,
+    highIlluminatedWindows: batches.highGlow.length,
+    materials: 7, // Six instanced materials + the single ring material.
+    nonPlayable: true,
+  };
+  return root;
 }
