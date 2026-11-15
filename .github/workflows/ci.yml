@@ -12,40 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa133-package:
-    # Temporary PR-only candidate preparation; no merge or production deployment.
-    if: github.event_name == 'pull_request' && github.head_ref == 'perf/qa133-memory-lifecycle-telemetry-20261115'
-    runs-on: ubuntu-latest
-    timeout-minutes: 14
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format and verify GPU ownership and lifecycle tests
-        run: |
-          npx prettier --write src/owned-resource-scope.js src/gpu-memory-audit.js src/visuals.js src/game.js tests/qa133-memory-lifecycle.test.mjs tests/browser/preflight-campaign-map.spec.mjs tests/browser/qa102-premium-city-life.spec.mjs
-          node --test tests/qa133-memory-lifecycle.test.mjs tests/render-cost-audit.test.mjs tests/frame-audit.test.mjs
-      - name: Prepare candidate 1.27.132 and verify reproducible HTML
-        run: |
-          npm run release:prepare -- 1.27.132
-          npm run build:check
-      - name: Commit source and distribution to QA133 branch only
-        shell: bash
-        run: |
-          git add src/owned-resource-scope.js src/gpu-memory-audit.js src/visuals.js src/game.js tests/qa133-memory-lifecycle.test.mjs tests/browser/preflight-campaign-map.spec.mjs tests/browser/qa102-premium-city-life.spec.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.132.md index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA133): synchronize GPU memory audit and release candidate 1.27.132'
-            git push origin HEAD:perf/qa133-memory-lifecycle-telemetry-20261115
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
