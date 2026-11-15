@@ -25,6 +25,8 @@ import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
+import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
+import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
@@ -1549,6 +1551,7 @@ export function createGame({
     lastRangedCycle = bossIntentCycle = -1;
     bossMeleeResolved = false;
     bossIntent = null;
+    pilotPatternReader.reset();
     renderBossRadar(document, null);
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
@@ -1937,6 +1940,7 @@ export function createGame({
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
   const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
+  const pilotPatternReader = createPilotPatternReader();
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
@@ -4276,6 +4280,7 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    pilotPatternReader.sample(player.position, dt, boosting);
     updateCityStageSetpieces();
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
@@ -4641,7 +4646,14 @@ export function createGame({
         if (dynamicFlight) {
           const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
           lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-          wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
+          const recentPattern = pilotPatternReader.snapshot();
+          wave.slots.forEach((slot, arrivalIndex) =>
+            enemy('fighter', {
+              ...slot,
+              role: adaptiveFighterRole(slot.role, recentPattern, wave.cycle, arrivalIndex),
+              arrivalIndex,
+            }),
+          );
           if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
         } else {
           for (let i = 0; i < count; i++) enemy();
@@ -5245,6 +5257,8 @@ export function createGame({
             boosting,
             robot: robotMode,
             generators: boss.userData.parts.map((part) => part.hp > 0),
+            pilotPattern: pilotPatternReader.snapshot(),
+            previousKind: bossIntent?.kind ?? null,
           });
           bossIntentCycle = t.cycle;
           bossMeleeResolved = false;
@@ -5268,10 +5282,14 @@ export function createGame({
           );
         }
         boss.position.set(
-          launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0),
+          launchPose.x +
+            (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0) +
+            (bossIntent ? (bossIntent.targetX - launchPose.x) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
-            : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
+            : launchPose.y +
+                (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0) +
+                (bossIntent ? (bossIntent.targetY - launchPose.y) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
@@ -5849,7 +5867,16 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (b.o.position.distanceTo(player.position) < 2.1) {
+      if (
+        hostileShotHitsShip(
+          from,
+          b.o.position,
+          player.position,
+          b.o.scale.x,
+          robotMode,
+          previousPlayer,
+        )
+      ) {
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);

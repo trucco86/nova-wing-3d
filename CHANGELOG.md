@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.134 — QA136: chefes adaptativos e Marte Premium
+
+- Colisão swept dos disparos hostis, agora baseada no percurso completo do projétil e na caixa compacta da nave ou robô; preserva pods, obstáculos e invulnerabilidade.
+- IA local determinística que observa os padrões de movimento/boost do jogador, alterna ataques já existentes e varia de forma limitada um papel de formação dos caças, respeitando avisos e armas destruídas.
+- Investidas físicas passam a aproximar parte do boss em direção ao ponto travado no windup, sem perseguição automática após esquiva.
+- Interceptores inimigos surgem nos trechos espaciais iniciais de Marte (3–13 s), sem novas ondas durante a reentrada.
+- Shader de Marte com cânions, crateras e variações geológicas e três bancos de poeira turbulenta existentes sem novas malhas ou partículas.
+- Preview isolado e testes Node/FAST executados; 4 shards Playwright, dispositivo físico e homologação visual pendentes. **Não publicar ou fazer merge sem aprovação.**
+
 ## 1.27.133 — QA134: pooling limitado de obstáculos espaciais
 
 - Satélites, cargueiros, destroços e pórticos comuns passam por pool de clones com no máximo três instâncias por tipo e doze no total. O cenário não precisa re-clonar a mesma composição de meshes em cada onda.

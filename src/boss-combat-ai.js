@@ -1,3 +1,5 @@
+import { adaptiveBossAttack } from './pilot-pattern.js';
+
 // Utility-driven boss combat. Tactics use the pilot's actual movement and
 // orbit rather than random bullets, and telegraph a dodgeable targeted attack.
 const MELEE = Object.freeze({
@@ -63,6 +65,8 @@ export function chooseBossIntent({
   boosting = false,
   robot = false,
   generators = [true, true],
+  pilotPattern = null,
+  previousKind = null,
 }) {
   const options = MELEE[sector];
   const p = Math.max(1, Math.min(3, phase));
@@ -156,6 +160,14 @@ export function chooseBossIntent({
     // of an endless stream of area attacks.
     if (cycle > 0 && cycle % 4 === 0) kind = 'barrage';
   }
+  kind = adaptiveBossAttack({
+    sector,
+    kind,
+    phase: p,
+    cycle,
+    previousKind,
+    pilotPattern,
+  });
   const ventSide =
     sector === 3 && kind === 'reactor-vent'
       ? !generators[0]
@@ -326,10 +338,18 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
 // physical collisions before the warning window.
 export function bossMeleePose(intent, state, phaseAge = 0) {
   if (!intent || intent.kind === 'barrage')
-    return Object.freeze({ lunge: 0, jaw: 0, claw: 0, tentacle: 0 });
+    return Object.freeze({ lunge: 0, jaw: 0, claw: 0, tentacle: 0, track: 0 });
   const windup = state === 'windup' ? Math.min(1, phaseAge / intent.warning) : 0;
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
+    // During the visible contact beat, actually advance a short distance
+    // toward the position that was telegraphed. Never home in on the player
+    // after windup; the pilot can dodge the announced lane.
+    track: ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
+      ? strike * 0.34
+      : ['claw-swipe', 'hammer-slam', 'cryo-pincer'].includes(intent.kind)
+        ? strike * 0.13
+        : 0,
     exhaust:
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
