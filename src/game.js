@@ -104,7 +104,6 @@ import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
 import {
   createAdaptiveGraphics,
-  graphicsPixelRatioLimit,
   graphicsBudgetTransition,
 } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
