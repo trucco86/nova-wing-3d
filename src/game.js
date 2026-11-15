@@ -3243,10 +3243,11 @@ export function createGame({
       world.setGraphicsQuality(budget.quality);
       post.setGraphicsQuality(budget.quality);
     }
-    if (transition.pixelRatioChanged) {
-      renderer.setPixelRatio(transition.pixelRatio);
+    if (transition.pixelRatioChanged) renderer.setPixelRatio(transition.pixelRatio);
+    // Switching Medium -> High may enable bloom even at the same DPR;
+    // allocate its targets exactly once when that quality state changes.
+    if (transition.pixelRatioChanged || transition.qualityChanged)
       post.resize(window.innerWidth, window.innerHeight);
-    }
     appliedGraphicsBudget = transition.next;
     if (document.body.dataset) {
       document.body.dataset.graphicsQuality = budget.quality;
