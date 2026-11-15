@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
+      - feat/qa135-premium-fractured-moon-perf-20261115
 permissions:
   contents: write
   actions: write
@@ -34,6 +35,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
-          git commit -m 'build(web): sync generated index for v1.23.0'
-          git push origin HEAD:feat/nw09-cinematic-3d
-          gh workflow run ci.yml --ref feat/nw09-cinematic-3d
+          git commit -m 'build(web): sync generated index for candidate'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"

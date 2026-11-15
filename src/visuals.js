@@ -83,6 +83,7 @@ import {
   setCity30Quality,
 } from './city-30-district-life.js';
 import { createLaunchCelestials } from './launch-celestials.js';
+import { createLunarFragmentShader } from './lunar-surface.js';
 import { ORBIT_REVEAL, orbitRevealAt } from './orbit-reveal.js';
 import {
   animateCityBillboards,
@@ -1137,11 +1138,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     uniforms: {
       crackIntensity: { value: 1 },
       bodyTint: { value: new T.Color('#ffffff') },
+      fade: { value: 1 },
       backgroundDepth: { value: 0 },
     },
     vertexShader:
       'uniform float backgroundDepth;varying vec3 p;varying vec3 n;void main(){p=position;n=normal;vec4 clip=projectionMatrix*modelViewMatrix*vec4(position,1.);clip.z=mix(clip.z,clip.w*.999999,backgroundDepth);gl_Position=clip;}',
-    fragmentShader: `uniform float crackIntensity;uniform vec3 bodyTint;varying vec3 p;varying vec3 n;${noise}void main(){vec3 N=normalize(n);float continent=fbm(N*9.);float details=fbm(N*42.);vec3 c=mix(vec3(.10,.16,.20),vec3(.43,.52,.56),smoothstep(.32,.72,continent));c*=.7+details*.5;float maria=fbm(N*4.2+vec3(3.,7.,1.));float craterCell=length(fract(N.xy*27.+vec2(N.z*11.,N.z*7.))-.5);float craterRim=exp(-pow((craterCell-.29)*22.,2.));c=mix(c,vec3(.14,.17,.19),smoothstep(.54,.72,maria)*.32);c+=vec3(.09,.1,.11)*craterRim;float lit=max(0.,dot(N,normalize(vec3(-.7,.45,.8))));float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));float mainCrack=1.-smoothstep(.013,.033,fissure);float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);c=c*bodyTint*(.14+lit*.86);c=mix(c,vec3(.025,.025,.03),crack*.65*crackIntensity);c+=vec3(.93,.32,.082)*crack*.78*crackIntensity;gl_FragColor=vec4(c,1.);}`,
+    fragmentShader: createLunarFragmentShader(noise),
   });
   let moon = new T.Mesh(new T.SphereGeometry(190, 64, 40), moonMat);
   moon.name = 'world-orbital-globe';

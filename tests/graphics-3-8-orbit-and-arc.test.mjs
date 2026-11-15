@@ -59,7 +59,9 @@ test('scene geometry respects the reveal gate for Earth, cloud shell, Moon, Sun 
     moon.geometry.attributes.position.count > 2300,
     'new crater sphere has higher fidelity',
   );
-  assert.ok(moon.material.fragmentShader.includes('Crater rim'));
+  assert.ok(moon.material.fragmentShader.includes('craterRim'));
+  assert.ok(moon.material.fragmentShader.includes('craterBowl'));
+  assert.ok(moon.material.fragmentShader.includes('branchC'), 'fractures have a third branch');
   assert.ok(scene.getObjectByName('launch-earth-clouds').visible);
   world.setGraphicsQuality('medium');
   assert.equal(scene.getObjectByName('launch-earth-clouds').visible, false);
