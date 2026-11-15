@@ -901,6 +901,11 @@ export function createGame({
     message('ESPECIAL · ' + spell.name);
     return true;
   }
+  function castBerserkFromMenu() {
+    if (state !== 'playing' || stage() < SPECIALS[3].stage) return false;
+    strategy.special = 3;
+    return castSpecial();
+  }
   function activateQaBerserk() {
     // Repeatable QA action: genuine Berserk spell, isolated from campaign saves,
     // with a longer inspection window and no twenty-six-second cooldown.
@@ -3685,6 +3690,8 @@ export function createGame({
   $('arsenalSwitch').onclick = cycleArsenal;
   $('specialSwitch').onclick = cycleSpecial;
   $('specialCast').onclick = castSpecial;
+  $('rpgBerserkCast').onclick = castBerserkFromMenu;
+  $('rpgPodsAction').onclick = togglePods;
   $('plasmaTitan').onclick = () => castSquadSpecial('plasma');
   $('fiveCatsOverdrive').onclick = () => castSquadSpecial('overdrive');
   $('scanBoss').onclick = scanBoss;
@@ -4569,6 +4576,23 @@ export function createGame({
           ' · ' +
           Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      const berserkUnlocked = stage() >= SPECIALS[3].stage;
+      $('rpgBerserkCast').disabled =
+        !berserkUnlocked || specialCd > 0 || arcana < SPECIALS[3].cost || berserk > 0;
+      $('rpgBerserkCast').textContent = !berserkUnlocked
+        ? 'BERSERK · EV ' + (SPECIALS[3].stage + 1)
+        : berserk > 0
+          ? 'BERSERK ATIVO'
+          : specialCd > 0
+            ? 'RECARGA · ' + Math.ceil(specialCd) + 's'
+            : 'ATIVAR BERSERK · ' + SPECIALS[3].cost;
+      $('rpgBerserkHint').textContent = !berserkUnlocked
+        ? 'Desbloqueia ao atingir evolução ' + (SPECIALS[3].stage + 1)
+        : 'Potência +60% por ' + SPECIALS[3].duration + 's · Gasto ' + SPECIALS[3].cost;
+      $('rpgPodsAction').disabled = podCount === 0;
+      $('rpgPodsAction').textContent = podCount
+        ? (podsDetached ? 'RECOLHER' : 'SOLTAR') + ' PODS · ' + podCount
+        : 'PODS NÃO DISPONÍVEIS';
       $('quickRpg').setAttribute('data-selected', SPECIALS[strategy.special].name);
       $('specialCast').setAttribute(
         'aria-label',
