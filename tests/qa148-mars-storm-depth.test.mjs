@@ -9,7 +9,9 @@ import {
 test('QA148: storm gains layered shear without extra meshes, textures or particles', () => {
   const storm = createMarsSandstorm();
   const particles = storm.getObjectByName('mars-sandstorm-particle-field');
-  const banks = storm.children.filter((child) => child.name.startsWith('mars-rolling-sand-haze-bank'));
+  const banks = storm.children.filter((child) =>
+    child.name.startsWith('mars-rolling-sand-haze-bank'),
+  );
   assert.equal(storm.children.length, 4, 'one particle draw plus three haze draws');
   assert.equal(banks.length, 3);
   assert.equal(new Set(banks.map((bank) => bank.geometry)).size, 1, 'share one cloud geometry');
@@ -23,17 +25,26 @@ test('QA148: storm gains layered shear without extra meshes, textures or particl
   assert.equal(storm.visible, true);
   assert.ok(banks[0].material.uniforms.alpha.value > banks[1].material.uniforms.alpha.value);
   assert.ok(banks[1].material.uniforms.alpha.value > banks[2].material.uniforms.alpha.value);
-  assert.ok(banks.every((bank) => Number.isFinite(bank.position.y) && Number.isFinite(bank.rotation.z)));
+  assert.ok(
+    banks.every((bank) => Number.isFinite(bank.position.y) && Number.isFinite(bank.rotation.z)),
+  );
 });
 
 test('QA148: deterministic cloud motion and no abrupt global particle snap', () => {
   const storm = createMarsSandstorm();
-  const banks = storm.children.filter((child) => child.name.startsWith('mars-rolling-sand-haze-bank'));
+  const banks = storm.children.filter((child) =>
+    child.name.startsWith('mars-rolling-sand-haze-bank'),
+  );
   function snapshot(seconds) {
     updateMarsSandstorm(storm, seconds);
     return {
       particleZ: storm.children[0].position.z,
-      banks: banks.map((bank) => [bank.position.x, bank.position.y, bank.rotation.z, bank.material.uniforms.alpha.value]),
+      banks: banks.map((bank) => [
+        bank.position.x,
+        bank.position.y,
+        bank.rotation.z,
+        bank.material.uniforms.alpha.value,
+      ]),
     };
   }
   const early = snapshot(68);
@@ -42,7 +53,10 @@ test('QA148: deterministic cloud motion and no abrupt global particle snap', () 
   assert.deepEqual(snapshot(70), active, 'the same clock time produces the same visual state');
   const beforeWrap = snapshot(71.42);
   const afterWrap = snapshot(71.44);
-  assert.ok(Math.abs(afterWrap.particleZ - beforeWrap.particleZ) < 2, 'no 150-unit dust-field jump');
+  assert.ok(
+    Math.abs(afterWrap.particleZ - beforeWrap.particleZ) < 2,
+    'no 150-unit dust-field jump',
+  );
   assert.deepEqual(snapshot(70), active, 'scrubbing time does not accumulate drift');
   updateMarsSandstorm(storm, 89);
   assert.equal(storm.visible, false);

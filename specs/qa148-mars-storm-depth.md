@@ -1,10 +1,12 @@
 # QA148 | Tempestade de Marte com profundidade e movimento contínuo
 
 ## Objetivo
+
 Tornar a tempestade da fase 2 mais legível e cinematográfica sem reduzir a
 visibilidade do alvo por HUD, aumentar draw calls ou alterar a física do vento.
 
 ## Contratos
+
 - Manter exatamente 240 partículas num único Points e três planos de névoa.
 - Reutilizar a geometria compartilhada, sem criar texturas ou objetos por quadro.
 - Três bancos de areia com diferentes opacidades, deriva transversal, variação
@@ -18,6 +20,7 @@ visibilidade do alvo por HUD, aumentar draw calls ou alterar a física do vento.
   draw calls p95, frame p95/p99, resolução interna e memória.
 
 ## Aceite e risco
+
 Testar início, ápice, desaparecimento da tempestade e navegação com chefe em
 iPhone portrait/landscape e Android. Confirmar ausência de tiras artificiais
 ou obscurecimento excessivo da mira, além de compilação do shader WebGL.
