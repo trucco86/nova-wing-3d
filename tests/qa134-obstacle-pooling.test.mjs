@@ -29,7 +29,7 @@ test('recycles the same standard space mesh with its original visible children a
   assert.equal(second.children[0].visible, true);
   assert.ok(second.children[0].position.distanceTo(authoredPosition) < 0.00001);
   assert.equal(second.position.length(), 0);
-  assert.equal(second.rotation.x, 0);
+  assert.ok(Math.abs(second.rotation.x) < 0.00001, 'reset rotation is zero, including -0');
   assert.equal(second.scale.x, 1);
   assert.equal(second.userData.solids, solids, 'physical collision solids are preserved');
   assert.equal(pool.stats().reused, 1);
