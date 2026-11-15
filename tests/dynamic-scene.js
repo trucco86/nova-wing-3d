@@ -64,7 +64,7 @@ const game = createGame({
 });
 // The visual test server must install the same RPG controller as src/main.js.
 // Otherwise the fixture silently exposes raw hidden markup instead of gameplay UX.
-const radialRpg = installMobileRpgAccordion({ game });
+installMobileRpgAccordion({ game });
 function advance(seconds, { renderAfter = true } = {}) {
   // Fast deterministic simulation can postpone the expensive software-GPU
   // frame until a visual checkpoint, without skipping physics or game logic.
