@@ -10796,11 +10796,13 @@ body:not(.developer-session) #qaBerserkDock {
 @media (pointer: coarse) and (max-width: 550px) {
   body.in-mission #hudNotices,
   body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
-    top: max(99px, calc(env(safe-area-inset-top, 0px) + 82px));
-    left: auto;
-    right: max(10px, env(safe-area-inset-right, 0px));
+    /* The right edge belongs to the 60px boss radar. Place radio/warnings
+       below the shield on the left, not across that instrument. */
+    top: max(158px, calc(env(safe-area-inset-top, 0px) + 142px));
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
     transform: none;
-    width: min(196px, calc(100vw - 99px));
+    width: min(196px, calc(100vw - 106px));
     max-height: 46px;
     gap: 3px;
     align-items: flex-end;
