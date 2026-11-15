@@ -103,7 +103,7 @@ export function installMobileRpgAccordion({
     if (wheel) wheel.hidden = true;
     if (panel) panel.hidden = false;
   }
-  drawer.addEventListener('toggle', syncPause);
+  drawer.addEventListener?.('toggle', syncPause);
   document.addEventListener('click', onClick);
   document.addEventListener('pointerdown', onPointerDown, true);
   document.addEventListener('keydown', onKeyDown);
@@ -111,7 +111,7 @@ export function installMobileRpgAccordion({
   return {
     destroy() {
       close();
-      drawer.removeEventListener('toggle', syncPause);
+      drawer.removeEventListener?.('toggle', syncPause);
       document.removeEventListener('click', onClick);
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('keydown', onKeyDown);
