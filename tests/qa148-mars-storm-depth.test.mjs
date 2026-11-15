@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createMarsSandstorm, updateMarsSandstorm, marsSandstormAt } from '../src/mars-sandstorm.js';
+import {
+  createMarsSandstorm,
+  updateMarsSandstorm,
+  marsSandstormAt,
+} from '../src/mars-sandstorm.js';
 
 function snapshot(banks) {
   return banks.map((bank) => ({
@@ -27,13 +31,23 @@ test('QA148 Mars: visible gusts add depth with exactly the same 4 drawing object
   assert.ok(banks.some((bank, i) => Math.abs(bank.position.z - (-140 - i * 34)) > 0.01));
   assert.ok(banks.every((bank) => bank.scale.x >= 1 && bank.scale.y >= 1));
   updateMarsSandstorm(root, 71);
-  assert.notDeepEqual(snapshot(banks), at70, 'front moves rather than remaining a static screen overlay');
+  assert.notDeepEqual(
+    snapshot(banks),
+    at70,
+    'front moves rather than remaining a static screen overlay',
+  );
   updateMarsSandstorm(root, 70);
   assert.deepEqual(snapshot(banks), at70, 'returning to the same time restores identical weather');
   for (let t = 72; t < 80; t += 0.25) updateMarsSandstorm(root, t);
   assert.equal(root.children.length, 4);
-  assert.deepEqual(root.children.map((child) => child.material), materialRefs);
-  assert.deepEqual(root.children.map((child) => child.geometry), geometryRefs);
+  assert.deepEqual(
+    root.children.map((child) => child.material),
+    materialRefs,
+  );
+  assert.deepEqual(
+    root.children.map((child) => child.geometry),
+    geometryRefs,
+  );
 });
 
 test('QA148 Mars: storm reset clears alpha and cloned storms keep the same timeline', () => {
