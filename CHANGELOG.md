@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.136 — QA139: anéis premium de Saturno e vistas planetárias sem custo redundante
+
+- Consolidação de três faixas do sistema de anéis de Saturno em shader analítico C/B/A: mesmos efeitos de Cassini, sem três meshes, três materiais ou três draw calls adicionais.
+- Mantém a inclinação física dos anéis e a oclusão correta atrás do planeta, sem alterar física ou combate.
+- Animações de planetas, nuvens e céu cacheiam referências de cena em WeakMap, sem buscas recursivas a cada quadro.
+- Saída hiperespacial pré-calcula o XY de 96 partículas uma vez, atualiza apenas o Z e ignora computação quando invisível.
+- Fragmentos de gelo de Saturno pré-calculam suas propriedades estáticas de posição, escala e rotação; o movimento de passagem continua determinístico.
+- Tests de redução de draws, clonagem, qualidade e replay. Medições FPS em dispositivo real ainda são necessárias.
+- **Somente PR de QA, sem merge ou deploy de produção.**
+
 ## 1.27.135 — QA138: Marte visual premium com orçamento de render controlado
 
 - Shader de Marte com crateras direcionais, manchas basálticas e terminador mais físico, sem novas malhas, texturas, passes ou amostras de ruído coerente.
