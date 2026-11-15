@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { orbitRevealAt } from './orbit-reveal.js';
+import { createLunarFragmentShader } from './lunar-surface.js';
 
 // A single coherent celestial composition for the opening Earth departure.
 // Procedural textures are evaluated on the GPU. No network calls, collision
@@ -108,43 +109,15 @@ export function createLaunchCelestials(scene) {
   scene.add(limb);
 
   const moonMaterial = new T.ShaderMaterial({
-    uniforms: { fade: { value: 0 } },
+    uniforms: {
+      fade: { value: 0 },
+      crackIntensity: { value: 1 },
+      bodyTint: { value: new T.Color('#ffffff') },
+    },
     transparent: true,
     depthWrite: false,
     vertexShader: vertex,
-    fragmentShader: `uniform float fade;varying vec3 n;varying vec3 p;${noise}
-      void main(){
-        vec3 N=normalize(p);
-        // Crater rim, bowl, ejecta streaks and broad basaltic maria.
-        vec3 craterCoord=N*25.5+vec3(.23,.61,.12);
-        vec3 cell=fract(craterCoord)-.5;
-        float radius=length(cell.xy);
-        float ring=exp(-pow((radius-.33)*24.,2.));
-        float bowl=1.-smoothstep(.09,.29,radius);
-        float pits=fbm(N*65.3+vec3(3.,9.,1.));
-        float ridges=fbm(N*14.);
-        float maria=fbm(N*3.6+vec3(5.,1.,8.));
-        vec3 c=mix(vec3(.21,.23,.26),vec3(.60,.63,.64),ridges);
-        c=mix(c,vec3(.15,.18,.20),smoothstep(.55,.73,maria)*.65);
-        float small=1.-smoothstep(.35,.64,pits);
-        c*=1.-bowl*.4+ring*.28-small*.11;
-        float ejecta=exp(-radius*4.)*max(0.,sin(atan(cell.y,cell.x)*12.))*0.14;
-        c+=vec3(.48,.51,.51)*ejecta;
-        // Subtle apparent crater relief without extra expensive geometry.
-        vec3 localNormal=normalize(n+vec3(cell.x,cell.y,0.)*(bowl*.15-ring*.05));
-        float lit=.09+.91*max(0.,dot(localNormal,normalize(vec3(-.75,.33,.55))));
-        // Match the distinct branching fractures seen above Nova City.
-        // The lunar terrain still uses the original physically shaded craters.
-        float fissure=abs(N.x+.19*sin(N.y*5.)+.07*sin(N.y*27.));
-        float mainCrack=1.-smoothstep(.013,.033,fissure);
-        float branchA=(1.-smoothstep(.012,.027,abs(N.y-.18-N.x*.82+.04*sin(N.x*23.))))*smoothstep(-.48,.08,N.x);
-        float branchB=(1.-smoothstep(.011,.027,abs(N.y+.37+N.x*.71+.033*sin(N.x*29.))))*(1.-smoothstep(.08,.53,N.x));
-        float crack=clamp(mainCrack+branchA*.72+branchB*.75,0.,1.);
-        vec3 shaded=c*lit;
-        shaded=mix(shaded,vec3(.025,.025,.03),crack*.65);
-        shaded+=vec3(.93,.32,.082)*crack*.72;
-        gl_FragColor=vec4(shaded,fade);
-      }`,
+    fragmentShader: createLunarFragmentShader(noise),
   });
   const moon = new T.Mesh(new T.SphereGeometry(112, 64, 40), moonMaterial);
   moon.name = 'launch-orbit-moon';
