@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.129 — Candidata em preparação
+## 1.27.129 — QA130: mapa galáctico antes de cada missão
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- O mapa cinematográfico abre **antes do primeiro voo** e após **Continuar** em um checkpoint. Mostra o setor atual e a progressão correta, sem avançar os eventos de gameplay enquanto o jogador consulta a rota.
+- Depois da vitória, preserva o fluxo Hangar de melhorias → Mapa → Próxima missão já existente.
+- Voltar do mapa antes da fase retorna ao menu, não ao hangar; créditos e checkpoint permanecem intactos. Selecionar visualmente uma missão bloqueada não permite pulá-la.
+- Rótulos próprios de pré-missão em português, inglês e espanhol. Entradas do Developer Lab ignoram o mapa de pré-missão para facilitar os testes.
+- Testes Node e Playwright de missão 01, checkpoint, rota de dez setores, botão lançar, voltar ao menu e mobile paisagem/retrato, com screenshots.
+- **Candidata apenas na PR #349, nenhuma alteração implantada em produção.**
 
 ## 1.27.128 — QA129: mapa galáctico cinematográfico fiel ao conceito
 
