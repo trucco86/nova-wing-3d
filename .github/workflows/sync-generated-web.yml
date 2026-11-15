@@ -39,3 +39,6 @@ jobs:
           git commit -m 'build(web): sync generated index for candidate'
           git push origin "HEAD:${GITHUB_REF_NAME}"
           gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
+            gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
+          fi
