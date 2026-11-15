@@ -1,6 +1,7 @@
 # QA140 | Menu RPG radial e pausa tática de combate
 
 ## Decisão de produto
+
 No mobile, o RPG é apenas um botão circular `RPG · EV` quando fechado.
 Ao abrir, a simulação congela, preservando nave, projéteis, inimigos,
 movimento de chefes, tempestades, dano e cronômetros, enquanto o último
@@ -8,6 +9,7 @@ frame 3D permanece visível atrás de uma camada leve de escurecimento.
 A pausa do RPG não deve abrir a interface convencional de PAUSA.
 
 ## Fluxo
+
 1. Clicar no gatilho circular mostra exclusivamente quatro categorias
    em roda: Armas, Especiais, Berserk e Utilitários.
 2. Selecionar uma categoria mantém a simulação congelada e abre painel
@@ -21,6 +23,7 @@ A pausa do RPG não deve abrir a interface convencional de PAUSA.
 6. No desktop, preservar as ações existentes no disclosure tradicional.
 
 ## Regras especiais
+
 - Berserk na campanha só após atingir EV 13 e consumir energia/cooldown reais.
   O comando QA existente só aparece em sessão de testes.
 - Não conceder imunidade nem resetar tempo, HP, pontos, bombas ou progresso
@@ -32,6 +35,7 @@ A pausa do RPG não deve abrir a interface convencional de PAUSA.
   ações multitouch e safe-area.
 
 ## QA obrigatório
+
 `node --test tests/qa140-radial-rpg.test.mjs`, `npm run validate`,
 `npm run build:check`, quatro shards Playwright e captura de screenshot
 do radial e dos quatro submenus. Sem merge ou produção antes de homologação.

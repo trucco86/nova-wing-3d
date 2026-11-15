@@ -10937,8 +10937,15 @@ body:not(.developer-session) #qaBerserkDock {
     z-index: 1;
     border-radius: 50%;
     border: 1px solid rgb(110 234 217 / 55%);
-    background: radial-gradient(circle, rgb(3 21 32 / 83%) 0 26%, rgb(7 34 49 / 73%) 27% 48%, rgb(5 25 39 / 21%) 70%);
-    box-shadow: 0 0 28px rgb(5 13 23 / 49%), inset 0 0 26px rgb(72 216 207 / 13%);
+    background: radial-gradient(
+      circle,
+      rgb(3 21 32 / 83%) 0 26%,
+      rgb(7 34 49 / 73%) 27% 48%,
+      rgb(5 25 39 / 21%) 70%
+    );
+    box-shadow:
+      0 0 28px rgb(5 13 23 / 49%),
+      inset 0 0 26px rgb(72 216 207 / 13%);
     pointer-events: auto;
   }
   body.in-mission #rpgRadialMenu .rpgRadialCore {
@@ -11080,10 +11087,20 @@ body:not(.developer-session) #qaBerserkDock {
   body.in-mission #rpgCategoryPanel[data-category='specials'] #quickRpg #arsenalSwitch {
     display: none;
   }
-  body.in-mission #rpgCategoryPanel[data-category='weapons'] > :not(.rpgCategoryHeader):not(#quickRpg),
-  body.in-mission #rpgCategoryPanel[data-category='specials'] > :not(.rpgCategoryHeader):not(#quickRpg):not(.squadSuperActions),
-  body.in-mission #rpgCategoryPanel[data-category='berserk'] > :not(.rpgCategoryHeader):not(#rpgBerserkPlayer):not(#qaBerserkDock),
-  body.in-mission #rpgCategoryPanel[data-category='utilities'] > :not(.rpgCategoryHeader):not(.tacticButtons):not(#rpgPodsAction):not(#tacticCharge):not(#strategyStatus):not(.rpgProgress):not(#rpgNext) {
+  body.in-mission
+    #rpgCategoryPanel[data-category='weapons']
+    > :not(.rpgCategoryHeader):not(#quickRpg),
+  body.in-mission
+    #rpgCategoryPanel[data-category='specials']
+    > :not(.rpgCategoryHeader):not(#quickRpg):not(.squadSuperActions),
+  body.in-mission
+    #rpgCategoryPanel[data-category='berserk']
+    > :not(.rpgCategoryHeader):not(#rpgBerserkPlayer):not(#qaBerserkDock),
+  body.in-mission
+    #rpgCategoryPanel[data-category='utilities']
+    > :not(.rpgCategoryHeader):not(.tacticButtons):not(#rpgPodsAction):not(#tacticCharge):not(
+      #strategyStatus
+    ):not(.rpgProgress):not(#rpgNext) {
     display: none !important;
   }
   body.in-mission #rpgCategoryPanel #rpgBerserkPlayer small {

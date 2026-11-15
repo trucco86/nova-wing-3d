@@ -4,7 +4,11 @@ import { harness } from './harness.mjs';
 import { installMobileRpgAccordion } from '../src/mobile-rpg.js';
 
 test('QA140 tactical RPG pause freezes combat, projectiles and phase timers', (t) => {
-  const h = harness({ coarsePointer: true, spawnEncounters: false, hostname: 'dev.nova-wing-preview.pages.dev' });
+  const h = harness({
+    coarsePointer: true,
+    spawnEncounters: false,
+    hostname: 'dev.nova-wing-preview.pages.dev',
+  });
   t.after(() => h.close());
   assert.equal(h.game.startDeveloperScenario(1, 'boss'), true);
   h.advance(5, 0.1);
@@ -42,44 +46,101 @@ test('QA140 closing RPG never switches on the ordinary pause dialog', (t) => {
 
 function ui() {
   const listeners = new Map();
-  const body = { classList: { contains(key) { return key === 'in-mission'; } } };
+  const body = {
+    classList: {
+      contains(key) {
+        return key === 'in-mission';
+      },
+    },
+  };
   function node(id) {
     const handlers = new Map();
     return {
-      id, hidden: false, open: false, disabled: false, dataset: {}, textContent: '', handlers,
-      addEventListener(type, fn) { handlers.set(type, fn); },
-      removeEventListener(type, fn) { if (handlers.get(type) === fn) handlers.delete(type); },
-      setAttribute(name, value) { this[name] = value; },
+      id,
+      hidden: false,
+      open: false,
+      disabled: false,
+      dataset: {},
+      textContent: '',
+      handlers,
+      addEventListener(type, fn) {
+        handlers.set(type, fn);
+      },
+      removeEventListener(type, fn) {
+        if (handlers.get(type) === fn) handlers.delete(type);
+      },
+      setAttribute(name, value) {
+        this[name] = value;
+      },
       focus() {},
-      querySelector() { return node('dialog'); },
-      contains(el) { return !!el?.inside; },
+      querySelector() {
+        return node('dialog');
+      },
+      contains(el) {
+        return !!el?.inside;
+      },
     };
   }
-  const elements = new Map(['strategyDrawer','rpgCategoryPanel','rpgRadialMenu','rpgCategoryTitle','rpgCategoryBack'].map(x=>[x,node(x)]));
+  const elements = new Map(
+    [
+      'strategyDrawer',
+      'rpgCategoryPanel',
+      'rpgRadialMenu',
+      'rpgCategoryTitle',
+      'rpgCategoryBack',
+    ].map((x) => [x, node(x)]),
+  );
   const document = {
     body,
-    getElementById(id) { return elements.get(id) ?? null; },
-    addEventListener(type, fn) { listeners.set(type, fn); },
-    removeEventListener(type) { listeners.delete(type); },
+    getElementById(id) {
+      return elements.get(id) ?? null;
+    },
+    addEventListener(type, fn) {
+      listeners.set(type, fn);
+    },
+    removeEventListener(type) {
+      listeners.delete(type);
+    },
   };
   const events = [];
-  const game = { setRpgTacticalPaused(enabled) { events.push(enabled); return !!enabled; } };
+  const game = {
+    setRpgTacticalPaused(enabled) {
+      events.push(enabled);
+      return !!enabled;
+    },
+  };
   return {
-    elements, document, events, game,
-    window: { matchMedia() { return { matches: true }; } },
-    toggle() { elements.get('strategyDrawer').handlers.get('toggle')?.(); },
+    elements,
+    document,
+    events,
+    game,
+    window: {
+      matchMedia() {
+        return { matches: true };
+      },
+    },
+    toggle() {
+      elements.get('strategyDrawer').handlers.get('toggle')?.();
+    },
     click(button) {
       listeners.get('click')?.({ target: button });
     },
     button(id, extra = {}) {
-      return { id, inside:true, disabled:false, dataset:{}, closest:()=>({ id, inside:true, disabled:false, dataset:{}, ...extra }), ...extra };
+      return {
+        id,
+        inside: true,
+        disabled: false,
+        dataset: {},
+        closest: () => ({ id, inside: true, disabled: false, dataset: {}, ...extra }),
+        ...extra,
+      };
     },
   };
 }
 
 test('QA140 touch categories keep the fight frozen until cast or close', () => {
   const f = ui();
-  const inst = installMobileRpgAccordion({ document:f.document, window:f.window, game:f.game });
+  const inst = installMobileRpgAccordion({ document: f.document, window: f.window, game: f.game });
   const drawer = f.elements.get('strategyDrawer');
   const wheel = f.elements.get('rpgRadialMenu');
   const panel = f.elements.get('rpgCategoryPanel');
@@ -89,13 +150,13 @@ test('QA140 touch categories keep the fight frozen until cast or close', () => {
   assert.equal(f.events.at(-1), true);
   assert.equal(wheel.hidden, false);
   assert.equal(panel.hidden, true);
-  f.click(f.button('category', {dataset:{rpgCategory:'weapons'}}));
+  f.click(f.button('category', { dataset: { rpgCategory: 'weapons' } }));
   assert.equal(panel.dataset.category, 'weapons');
   assert.equal(panel.hidden, false);
   assert.equal(wheel.hidden, true);
   f.click(f.button('rpgCategoryBack'));
   assert.equal(panel.hidden, true);
-  f.click(f.button('category', {dataset:{rpgCategory:'specials'}}));
+  f.click(f.button('category', { dataset: { rpgCategory: 'specials' } }));
   f.click(f.button('specialCast'));
   assert.equal(drawer.open, false);
   assert.equal(f.events.at(-1), false);

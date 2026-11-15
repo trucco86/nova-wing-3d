@@ -78,7 +78,9 @@ test('QA140 mobile radial RPG freezes the battle and keeps a compact circular HU
       });
       await page.locator('#rpgCategoryBack').click();
       await expect(page.locator('#rpgRadialMenu')).toBeVisible();
-      expect((await page.evaluate(() => window.fixture.game.snapshot())).rpgTacticalPaused).toBe(true);
+      expect((await page.evaluate(() => window.fixture.game.snapshot())).rpgTacticalPaused).toBe(
+        true,
+      );
     }
     await page.locator('#rpgRadialClose').click();
     await expect(drawer).not.toHaveAttribute('open');
