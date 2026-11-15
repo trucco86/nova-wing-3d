@@ -57,14 +57,15 @@ export function createGpuMemoryAudit({ capacity = 48 } = {}) {
       baseline: first,
       latest: last,
       peak,
-      delta: first && last
-        ? {
-            geometries: difference(last.geometries, first.geometries),
-            textures: difference(last.textures, first.textures),
-            programs: difference(last.programs, first.programs),
-            jsHeapBytes: difference(last.jsHeapBytes, first.jsHeapBytes),
-          }
-        : null,
+      delta:
+        first && last
+          ? {
+              geometries: difference(last.geometries, first.geometries),
+              textures: difference(last.textures, first.textures),
+              programs: difference(last.programs, first.programs),
+              jsHeapBytes: difference(last.jsHeapBytes, first.jsHeapBytes),
+            }
+          : null,
     };
   }
   return Object.freeze({ capture, report, clear });
@@ -72,26 +73,52 @@ export function createGpuMemoryAudit({ capacity = 48 } = {}) {
 
 export function formatGpuMemoryAudit(report, { language = 'pt' } = {}) {
   if (!report?.samples) {
-    return {
-      en: 'GPU resources: no measured samples',
-      es: 'Recursos GPU: sin muestras medidas',
-      pt: 'Recursos GPU: sem amostras medidas',
-    }[language] ?? 'Recursos GPU: sem amostras medidas';
+    return (
+      {
+        en: 'GPU resources: no measured samples',
+        es: 'Recursos GPU: sin muestras medidas',
+        pt: 'Recursos GPU: sem amostras medidas',
+      }[language] ?? 'Recursos GPU: sem amostras medidas'
+    );
   }
   const lang = ['en', 'es'].includes(language) ? language : 'pt';
   const labels = {
-    pt: ['Recursos GPU (contagens, não MB)', 'Geometrias', 'Texturas', 'Programas', 'Heap JS (quando disponível)', 'Amostras'],
-    en: ['GPU resources (counts, not MB)', 'Geometries', 'Textures', 'Programs', 'JS heap (when available)', 'Samples'],
-    es: ['Recursos GPU (conteos, no MB)', 'Geometrías', 'Texturas', 'Programas', 'Heap JS (si está disponible)', 'Muestras'],
+    pt: [
+      'Recursos GPU (contagens, não MB)',
+      'Geometrias',
+      'Texturas',
+      'Programas',
+      'Heap JS (quando disponível)',
+      'Amostras',
+    ],
+    en: [
+      'GPU resources (counts, not MB)',
+      'Geometries',
+      'Textures',
+      'Programs',
+      'JS heap (when available)',
+      'Samples',
+    ],
+    es: [
+      'Recursos GPU (conteos, no MB)',
+      'Geometrías',
+      'Texturas',
+      'Programas',
+      'Heap JS (si está disponible)',
+      'Muestras',
+    ],
   }[lang];
   const { latest, delta, samples } = report;
-  const value = (n, d) => n === null
-    ? 'n/d'
-    : n + (d === null ? '' : ' (' + (d >= 0 ? '+' : '') + d + ')');
-  const heap = latest.jsHeapBytes === null
-    ? 'n/d'
-    : (latest.jsHeapBytes / (1024 * 1024)).toFixed(1) + ' MiB' +
-      (delta.jsHeapBytes === null ? '' : ' (' + (delta.jsHeapBytes / (1024 * 1024)).toFixed(1) + ' MiB)');
+  const value = (n, d) =>
+    n === null ? 'n/d' : n + (d === null ? '' : ' (' + (d >= 0 ? '+' : '') + d + ')');
+  const heap =
+    latest.jsHeapBytes === null
+      ? 'n/d'
+      : (latest.jsHeapBytes / (1024 * 1024)).toFixed(1) +
+        ' MiB' +
+        (delta.jsHeapBytes === null
+          ? ''
+          : ' (' + (delta.jsHeapBytes / (1024 * 1024)).toFixed(1) + ' MiB)');
   return [
     labels[0] + ':',
     labels[1] + ': ' + value(latest.geometries, delta.geometries),

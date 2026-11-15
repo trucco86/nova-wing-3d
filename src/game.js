@@ -3234,7 +3234,8 @@ export function createGame({
           ': ' +
           renderCost.maxPostPasses
         : '') +
-      '\n' + formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
+      '\n' +
+      formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;

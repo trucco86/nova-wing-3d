@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.132 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.131 — QA132: modelos e shaders premium preparados fora do combate
 
 - Pré-carregamento de caças, tanques, robôs, satélites, naves de carga, destroços e obstáculos pesados dividido em tarefas independentes durante o menu, Mapa da Galáxia e hangar.

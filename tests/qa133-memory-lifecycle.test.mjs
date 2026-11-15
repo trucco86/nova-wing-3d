@@ -17,9 +17,21 @@ function rendererMemory(geometries, textures, programs) {
 test('GPU owner frees only explicitly registered resources, once', () => {
   const owner = createOwnedResourceScope();
   const released = [];
-  const shared = { dispose() { released.push('shared (must never run)'); } };
-  const first = { dispose() { released.push('first'); } };
-  const second = { dispose() { released.push('second'); } };
+  const shared = {
+    dispose() {
+      released.push('shared (must never run)');
+    },
+  };
+  const first = {
+    dispose() {
+      released.push('first');
+    },
+  };
+  const second = {
+    dispose() {
+      released.push('second');
+    },
+  };
   owner.own(first);
   owner.own(first);
   owner.own(second);
@@ -69,14 +81,20 @@ test('audit exposes renderer resource counters and deltas, not invented GPU VRAM
   const report = audit.report();
   assert.equal(report.samples, 3);
   assert.deepEqual(report.delta, {
-    geometries: 2, textures: 1, programs: 0, jsHeapBytes: null,
+    geometries: 2,
+    textures: 1,
+    programs: 0,
+    jsHeapBytes: null,
   });
   assert.equal(report.peak.geometries, 150);
   assert.equal(report.latest.phase, 'after-cleanup');
   assert.match(formatGpuMemoryAudit(report), /Geometrias: 122 \(\+2\)/);
   assert.match(formatGpuMemoryAudit(report, { language: 'en' }), /counts, not MB/);
   assert.match(formatGpuMemoryAudit(report, { language: 'es' }), /conteos, no MB/);
-  assert.ok(!Object.hasOwn(report, 'vramBytes'), 'GPU memory usage is not inferred from resource counts');
+  assert.ok(
+    !Object.hasOwn(report, 'vramBytes'),
+    'GPU memory usage is not inferred from resource counts',
+  );
   audit.clear();
   assert.equal(audit.report().samples, 0);
 });
@@ -84,10 +102,13 @@ test('audit exposes renderer resource counters and deltas, not invented GPU VRAM
 test('cyclic changes expose retained resources without confusing a peak with a leak', () => {
   const audit = createGpuMemoryAudit({ capacity: 4 });
   for (const [geometries, textures, phase] of [
-    [90, 14, 'sector-1'], [180, 32, 'sector-1-peak'],
-    [93, 15, 'sector-2'], [220, 39, 'sector-2-peak'],
+    [90, 14, 'sector-1'],
+    [180, 32, 'sector-1-peak'],
+    [93, 15, 'sector-2'],
+    [220, 39, 'sector-2-peak'],
     [95, 15, 'sector-3'],
-  ]) audit.capture(rendererMemory(geometries, textures, null), { phase });
+  ])
+    audit.capture(rendererMemory(geometries, textures, null), { phase });
   const r = audit.report();
   assert.equal(r.samples, 4);
   assert.equal(r.baseline.geometries, 180, 'bounded history removes oldest snapshot');
