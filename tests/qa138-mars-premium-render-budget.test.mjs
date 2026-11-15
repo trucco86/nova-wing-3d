@@ -12,7 +12,7 @@ test('Mars improvements preserve the orbital draw and noise budget', () => {
   assert.match(MARS_GLOBE_FRAGMENT_SHADER, /basalt/);
   assert.match(MARS_GLOBE_FRAGMENT_SHADER, /sunward/);
   assert.match(MARS_GLOBE_FRAGMENT_SHADER, /terminator/);
-  assert.equal((MARS_GLOBE_FRAGMENT_SHADER.match(/noise3\\(N \\*/g) ?? []).length, 2);
+  assert.equal((MARS_GLOBE_FRAGMENT_SHADER.match(/noise3\(N \*/g) ?? []).length, 2);
   assert.doesNotMatch(MARS_GLOBE_FRAGMENT_SHADER, /sampler2D|texture2D/);
   assert.equal(planet.geometry.parameters.widthSegments, 64);
   assert.equal(planet.geometry.parameters.heightSegments, 48);
