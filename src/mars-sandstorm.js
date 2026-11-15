@@ -1,5 +1,18 @@
 import * as T from 'three';
 
+const stormCache = new WeakMap();
+function stormParts(root) {
+  let parts = stormCache.get(root);
+  if (!parts) {
+    parts = {
+      particles: root.getObjectByName('mars-sandstorm-particle-field'),
+      banks: root.children.filter((c) => c.name.startsWith('mars-rolling-sand-haze-bank')),
+    };
+    stormCache.set(root, parts);
+  }
+  return parts;
+}
+
 // A fair, forecastable, deterministic Martian crosswind encounter.
 // The player can still steer against gusts; wind never teleports the ship.
 export const MARS_STORM_START = 61;
@@ -36,12 +49,43 @@ export function marsSandstormAt(seconds) {
   };
 }
 const particleCount = 240;
+const dustTextureSize = 32;
+// QA151: A tiny shared radial alpha texture is more robust than modifying
+// PointsMaterial shaders through onBeforeCompile. The previous QA150 method
+// passed structural tests but rendered the same opaque squares in Playwright.
+// 32 * 32 * 4 = 4 KiB of RGBA source data; reused by all storm instances.
+function createSoftDustTexture() {
+  const data = new Uint8Array(dustTextureSize * dustTextureSize * 4);
+  for (let y = 0; y < dustTextureSize; y++) {
+    for (let x = 0; x < dustTextureSize; x++) {
+      const dx = (x + 0.5) / dustTextureSize - 0.5;
+      const dy = (y + 0.5) / dustTextureSize - 0.5;
+      const radius = Math.hypot(dx, dy) * 2;
+      const fade = Math.max(0, Math.min(1, (1 - radius) / 0.68));
+      const alpha = Math.round(255 * fade * fade * (3 - 2 * fade));
+      const offset = (y * dustTextureSize + x) * 4;
+      data[offset] = 255;
+      data[offset + 1] = 255;
+      data[offset + 2] = 255;
+      data[offset + 3] = alpha;
+    }
+  }
+  const texture = new T.DataTexture(data, dustTextureSize, dustTextureSize, T.RGBAFormat);
+  texture.minFilter = T.LinearFilter;
+  texture.magFilter = T.LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  texture.name = 'mars-shared-feathered-dust-alpha';
+  return texture;
+}
+const softDustTexture = createSoftDustTexture();
 const fogMat = new T.PointsMaterial({
   color: '#f0b178',
   size: 4.1,
   sizeAttenuation: true,
   transparent: true,
   opacity: 0,
+  map: softDustTexture,
   depthWrite: false,
   fog: false,
 });
@@ -58,6 +102,8 @@ function sandParticles() {
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(buffer, 3));
+  // Only one Points draw and one shared 32x32 texture across all instances.
+  // Built-in map_particle_fragment handles alpha with no custom shader patch.
   const storm = new T.Points(geometry, fogMat.clone());
   storm.name = 'mars-sandstorm-particle-field';
   storm.frustumCulled = false;
@@ -91,18 +137,21 @@ export function createMarsSandstorm() {
         uniform float alpha;uniform float seconds;uniform float wind;uniform float seed;
         void main(){
           vec2 p=uvCoords*2.-1.;
-          // One soft rolling bank, two different turbulent wavelengths and
-          // an ochre density gradient. No particles spawned per frame.
+          // Three overlapping depth veils: ground dust, rolling clouds and
+          // wind-sheared fine streaks. Fixed geometry and zero texture fetches.
           float drift=seconds*.23+wind*.017+seed;
-          float broad=sin(p.x*5.4+sin(p.y*4.3+drift*.57)*1.9-drift);
-          float wisps=sin(p.x*13.7-p.y*5.2+drift*1.45)*.12;
-          float eddies=sin(p.y*7.3+sin(p.x*5.1+drift)*1.2)*.12;
-          float density=clamp(.56+broad*.21+wisps+eddies,0.,1.);
-          float envelope=exp(-dot(p*vec2(1.12,.8),p*vec2(1.12,.8))*2.45);
-          float ground=1.-smoothstep(-.30,.89,p.y);
-          float opacity=envelope*density*(.65+.35*ground);
-          vec3 dust=mix(vec3(.42,.20,.11),vec3(.88,.57,.34),
-            clamp(density*.75+ground*.17,0.,1.));
+          vec2 flow=vec2(p.x+drift+wind*.013*(.4-p.y),p.y);
+          float broad=sin(flow.x*5.+sin(flow.y*4.4+drift*.4)*1.55);
+          float wisps=sin(flow.x*11.2-flow.y*3.6+drift*.85)*.11;
+          float eddies=sin(flow.y*7.1+sin(flow.x*3.9+drift*.6)*1.15)*.10;
+          float ground=1.-smoothstep(-.66,.56,p.y);
+          float density=clamp(.45+broad*.20+wisps+eddies+ground*.14,0.,1.);
+          float envelope=exp(-dot(p*vec2(1.02,.78),p*vec2(1.02,.78))*2.2);
+          float streak=smoothstep(.78,.98,sin(flow.x*28.-flow.y*8.5+drift*1.3));
+          float veil=smoothstep(.23,.83,density);
+          float opacity=clamp(envelope*(.25+veil*.55+streak*.10)*(.7+ground*.3),0.,.86);
+          vec3 dust=mix(vec3(.39,.19,.11),vec3(.88,.59,.36),
+            clamp(density*.75+ground*.14,0.,1.));
           gl_FragColor=vec4(dust,alpha*opacity);
         }`,
       }),
@@ -113,24 +162,39 @@ export function createMarsSandstorm() {
     root.add(bank);
   }
   root.visible = false;
+  stormCache.set(root, { particles, banks: root.children.slice(1) });
   return root;
 }
 export function updateMarsSandstorm(root, seconds) {
   const wind = marsSandstormAt(seconds);
   if (!root) return wind;
+  const wasVisible = root.visible;
   root.visible = wind.active;
-  const particles = root.getObjectByName('mars-sandstorm-particle-field');
+  const { particles, banks } = stormParts(root);
+  // Inactive storms stop updating invisible geometry and uniforms.
+  if (!wind.active) {
+    if (wasVisible) {
+      particles.material.opacity = 0;
+      for (const bank of banks) bank.material.uniforms.alpha.value = 0;
+    }
+    root.userData.intensity = wind.intensity;
+    root.userData.windX = wind.windX;
+    return wind;
+  }
   particles.material.opacity = wind.intensity * 0.88;
-  // Visual drift and rolling banks follow the same deterministic wind clock.
   particles.position.x = Math.sin(seconds * 0.35) * 12 + wind.windX * 1.5;
-  particles.position.z = ((seconds * 21) % 150) - 75;
-  root.children.forEach((child, i) => {
-    if (!child.name.startsWith('mars-rolling-sand-haze-bank')) return;
-    child.material.uniforms.alpha.value = wind.intensity * (0.43 - (i - 1) * 0.04);
+  // Oscillation replaces the abrupt 150-unit modulo reset visible mid-storm.
+  particles.position.z = -18 + Math.sin(seconds * 0.23) * 34;
+  for (let i = 0; i < banks.length; i++) {
+    const child = banks[i];
+    const slot = i + 1; // Particle field is the first child.
+    child.material.uniforms.alpha.value = wind.intensity * (0.53 - i * 0.055);
     child.material.uniforms.seconds.value = seconds;
     child.material.uniforms.wind.value = wind.windX;
-    child.position.x = (i - 2) * 62 + Math.sin(seconds * 0.32 + i) * 16;
-  });
+    child.position.x = (slot - 2) * 62 + Math.sin(seconds * 0.32 + slot) * 16 + wind.windX * 0.7;
+    child.position.y = 8 + i * 5 + Math.sin(seconds * 0.26 + slot * 1.4) * 3.5 * wind.intensity;
+    child.rotation.z = i * 0.09 + wind.windX * 0.0035;
+  }
   root.userData.intensity = wind.intensity;
   root.userData.windX = wind.windX;
   return wind;

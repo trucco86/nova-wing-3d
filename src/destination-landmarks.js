@@ -5,6 +5,43 @@ import { createPremiumAtmosphericGeometry } from './premium-atmospheric-geology.
 
 // Authored landmarks outside the flight corridor. Draw calls stay bounded by
 // InstancedMesh; these never participate in collision, targeting or scoring.
+const landmarkParts = new WeakMap();
+const saturnIceBases = new WeakMap();
+function precomputeIce(layer) {
+  let bases = saturnIceBases.get(layer);
+  if (bases) return bases;
+  const near = layer.name === 'saturn-ring-ice-near';
+  const values = new Float64Array(layer.count * 9);
+  for (let i = 0; i < layer.count; i++) {
+    const k = i * 9;
+    const side = i % 2 ? 1 : -1;
+    values[k] = side * ((near ? 92 : 160) + hash(i * 17 + 4) * 115);
+    values[k + 1] = -8 + hash(i * 13 + 7) * 135;
+    values[k + 2] = i * (near ? 71 : 101);
+    values[k + 3] = (near ? 6 : 3) + hash(i * 9) * (near ? 13 : 8);
+    values[k + 4] = (near ? 4 : 2) + hash(i * 3) * (near ? 10 : 6);
+    values[k + 5] = (near ? 8 : 3) + hash(i * 11) * (near ? 14 : 9);
+    values[k + 6] = hash(i * 7) * 2;
+    values[k + 7] = hash(i * 23) * 3;
+    values[k + 8] = hash(i * 5) * 1.4;
+  }
+  bases = { near, values };
+  saturnIceBases.set(layer, bases);
+  return bases;
+}
+function partsForLandmark(root) {
+  let parts = landmarkParts.get(root);
+  if (!parts) {
+    parts = {
+      clouds:
+        root.getObjectByName('venus-sulfur-cloud-columns') ||
+        root.getObjectByName('neptune-turbulent-cloud-columns'),
+      lightning: root.getObjectByName('venus-lightning-at-cloud-horizon'),
+    };
+    landmarkParts.set(root, parts);
+  }
+  return parts;
+}
 const hash = (n) => {
   const x = Math.sin(n * 127.13 + 15.78) * 43758.5453;
   return x - Math.floor(x);
@@ -21,8 +58,13 @@ const palette = {
 const materialFor = (index, opacity = 1) =>
   new T.MeshStandardMaterial({
     color: '#ffffff',
-    roughness: index === 5 ? 0.77 : 0.94,
+    roughness: index === 5 ? 0.77 : index === 6 && opacity < 1 ? 0.79 : 0.94,
     metalness: index === 5 ? 0.06 : 0,
+    // Only Neptune's existing translucent bank uses baked frost gradients.
+    // Other planetary meshes keep their original renderer and palette.
+    vertexColors: index === 6 && opacity === 0.28,
+    emissive: index === 6 && opacity === 0.28 ? '#101f41' : '#000000',
+    emissiveIntensity: index === 6 && opacity === 0.28 ? 0.09 : 0,
     transparent: opacity < 1,
     opacity,
     depthWrite: opacity >= 1,
@@ -372,6 +414,7 @@ export function createDestinationLandmarks(index) {
   group.traverse((node) => {
     node.userData.visualOnly = true;
   });
+  partsForLandmark(group);
   return group;
 }
 
@@ -383,23 +426,23 @@ export function updateDestinationLandmarks(root, seconds) {
     root.userData.saturnPassage = passage.zone;
     for (const layer of root.children) {
       if (!layer.userData.saturnIce || !layer.visible) continue;
-      const near = layer.name === 'saturn-ring-ice-near';
+      const { near, values } = precomputeIce(layer);
       for (let i = 0; i < layer.count; i++) {
-        const side = i % 2 ? 1 : -1;
+        const k = i * 9;
         helper.position.set(
-          side * ((near ? 92 : 160) + hash(i * 17 + 4) * 115),
-          -8 + hash(i * 13 + 7) * 135 + Math.sin(seconds * 0.17 + i) * 3,
-          -180 - ((i * (near ? 71 : 101) + seconds * (near ? 33 : 12)) % 1800),
+          values[k],
+          values[k + 1] + Math.sin(seconds * 0.17 + i) * 3,
+          -180 - ((values[k + 2] + seconds * (near ? 33 : 12)) % 1800),
         );
         helper.scale.set(
-          ((near ? 6 : 3) + hash(i * 9) * (near ? 13 : 8)) * passage.density,
-          ((near ? 4 : 2) + hash(i * 3) * (near ? 10 : 6)) * passage.density,
-          ((near ? 8 : 3) + hash(i * 11) * (near ? 14 : 9)) * passage.density,
+          values[k + 3] * passage.density,
+          values[k + 4] * passage.density,
+          values[k + 5] * passage.density,
         );
         helper.rotation.set(
-          hash(i * 7) * 2 + seconds * 0.035,
-          hash(i * 23) * 3 + seconds * 0.045,
-          hash(i * 5) * 1.4,
+          values[k + 6] + seconds * 0.035,
+          values[k + 7] + seconds * 0.045,
+          values[k + 8],
         );
         helper.updateMatrix();
         layer.setMatrixAt(i, helper.matrix);
@@ -407,9 +450,7 @@ export function updateDestinationLandmarks(root, seconds) {
       layer.instanceMatrix.needsUpdate = true;
     }
   }
-  const clouds =
-    root.getObjectByName('venus-sulfur-cloud-columns') ||
-    root.getObjectByName('neptune-turbulent-cloud-columns');
+  const { clouds, lightning } = partsForLandmark(root);
   if (clouds) {
     clouds.position.x = Math.sin(seconds * (root.userData.world === 6 ? 0.13 : 0.07)) * 8;
     // Slow convective rise on Venus and distinct horizontal shear on
@@ -425,7 +466,6 @@ export function updateDestinationLandmarks(root, seconds) {
         ? 0.28 + 0.055 * Math.sin(seconds * 0.17)
         : 0.26 + 0.035 * Math.sin(seconds * 0.11);
   }
-  const lightning = root.getObjectByName('venus-lightning-at-cloud-horizon');
   if (lightning) {
     const flash = Math.sin(seconds * 1.3) * Math.sin(seconds * 0.27 + 1);
     lightning.material.opacity = Math.max(0, flash - 0.72) * 1.4;

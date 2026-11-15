@@ -50,8 +50,27 @@ export function createBossModel(sector, index = 0, tactical = false) {
         }
       break;
     }
-    case 'stingray':
+    case 'stingray': {
+      // QA152: the Martian sector is a six-legged quarry machine, not a
+      // manta-shaped spaceship. Remove the 20 generic feather-wing meshes
+      // that survived the visual-identity upgrade. The approved six legs,
+      // drill/tail attack rig, real generators and collision volumes remain.
+      const frame = add(box(58, 19, 40, armor), 0, 5, -21);
+      frame.name = 'mars-quarry-heavy-body';
+      const excavator = add(box(34, 12, 22, dark), 0, -7, 16);
+      excavator.name = 'mars-quarry-front-excavator';
+      for (const side of [-1, 1]) {
+        const brace = add(box(15, 17, 32, armor), side * 32, 0, -23);
+        brace.name = side < 0 ? 'mars-quarry-port-brace' : 'mars-quarry-starboard-brace';
+        const actuator = add(box(6, 8, 17, dark), side * 37, -11, -13);
+        actuator.name = side < 0 ? 'mars-quarry-port-actuator' : 'mars-quarry-starboard-actuator';
+      }
+      const face = add(new T.Mesh(new T.ConeGeometry(8, 22, 6), dark), 0, -18, 19);
+      face.name = 'mars-quarry-boring-jaw';
+      break;
+    }
     case 'phoenix': {
+      // Solar Phoenix keeps its proven articulated feather-wing silhouette.
       for (const s of [-1, 1])
         for (let i = 0; i < 5; i++) {
           let wing = box(15, 3, 26, armor);
@@ -182,14 +201,15 @@ export function createBossModel(sector, index = 0, tactical = false) {
     tail.add(new T.Mesh(new T.ConeGeometry(5, 36, 5), armor));
     tail.add(box(14, 2, 20, edge, 0, -14, 10));
     add(tail, 0, -14, -18);
-    // Two visible scissor vanes fold independently around the player during
-    // Stingray's physical blade attack; collision remains the authored radar.
+    // QA152 visual follow-up: reuse the two original physical scissor arms,
+    // but make them hanging quarry pincers, not broad manta wings.
+    // The radar and real damage footprint remain completely unchanged.
     for (const side of [-1, 1]) {
       const vane = new T.Group();
       vane.name = side < 0 ? 'signature-stingray-scissor-left' : 'signature-stingray-scissor-right';
-      vane.add(box(17, 3.5, 28, armor, side * 7, 0, 1));
-      vane.add(box(19, 0.9, 25, edge, side * 7, 2.2, 1));
-      add(vane, side * 38, 0, 13);
+      vane.add(box(9, 21, 22, armor, side * 3, -5, 1));
+      vane.add(box(4, 16, 19, edge, side * 3, -4, 2.5));
+      add(vane, side * 33, -11, 20);
     }
   }
   if (index === 3) {
@@ -298,7 +318,7 @@ export function createBossModel(sector, index = 0, tactical = false) {
   const anatomy = g.children.slice(organicStart);
   const proportions = [
     [1, 1, 1],
-    [1.65, 0.55, 1],
+    [0.92, 1.22, 1.04],
     [0.6, 1.3, 1.4],
     [0.8, 0.8, 0.6],
     [1.25, 1.6, 0.7],
@@ -772,7 +792,7 @@ export function animateBossSignature(
 ) {
   const pose = bossSignaturePose(index, time, phase, attackState, attackKind);
   if (!pose || !g) return null;
-  animateBossVisualIdentity(g, index, time, phase, attackState);
+  animateBossVisualIdentity(g, index, time, phase, attackState, attackKind);
   if (index === 5)
     animateEuropaAttackVfx(
       g.getObjectByName('boss-europa-attack-vfx'),

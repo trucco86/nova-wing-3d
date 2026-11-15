@@ -62,7 +62,7 @@ test('last three bosses have monumental silhouette without resizing their gamepl
   }
 });
 
-test('approved first three boss visual identities are untouched by new animator', () => {
+test('Rok and Carbide stay unchanged while Mars moves only approved visual legs', () => {
   for (let sector = 0; sector <= 2; sector++) {
     const root = identity(sector);
     const before = root.children.map((object) => [
@@ -70,12 +70,23 @@ test('approved first three boss visual identities are untouched by new animator'
       object.rotation.toArray(),
       object.scale.toArray(),
     ]);
-    animateBossVisualIdentity(root, sector, 18, 3, 'attack');
+    const count = root.children.length;
+    animateBossVisualIdentity(root, sector, 18, 3, 'attack', 'stingray-sting');
     const after = root.children.map((object) => [
       object.position.toArray(),
       object.rotation.toArray(),
       object.scale.toArray(),
     ]);
-    assert.deepEqual(after, before);
+    assert.equal(root.children.length, count, 'do not add draw objects');
+    if (sector === 1) {
+      assert.notDeepEqual(after, before, 'Martian mechanical limbs now articulate');
+      const legs = root.children.filter((part) =>
+        part.name.startsWith('mars-dune-walker-upper-leg-'),
+      );
+      assert.equal(legs.length, 6);
+      assert.ok(legs.some((leg) => Math.abs(leg.rotation.z) > 0.2));
+    } else {
+      assert.deepEqual(after, before, 'legacy boss silhouette remains stable');
+    }
   }
 });

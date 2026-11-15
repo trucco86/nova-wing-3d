@@ -27,6 +27,29 @@ const marker = new T.MeshBasicMaterial({ color: '#ffd49b', toneMapped: false });
 const boxGeo = new T.BoxGeometry(1, 1, 1);
 const rockGeo = new T.IcosahedronGeometry(1, 1);
 const dummy = new T.Object3D();
+// WeakMap avoids retaining disposed worlds and keeps userData JSON-cloneable.
+const marsSceneCache = new WeakMap();
+function sceneParts(root) {
+  let parts = marsSceneCache.get(root);
+  if (parts) return parts;
+  const terrain = root.getObjectByName('mars-surface-scene');
+  const mysteries = terrain.getObjectByName('mars-mysteries-and-olympus');
+  const moving = terrain.children.filter((child) => child.userData.marsChunk);
+  if (mysteries) {
+    for (const child of mysteries.children) {
+      if (child.userData.marsChunk) moving.push(child);
+    }
+  }
+  parts = {
+    moving,
+    terrain,
+    approach: root.getObjectByName('mars-orbital-approach'),
+    storm: terrain.getObjectByName('mars-sandstorm'),
+    moons: [root.getObjectByName('mars-moon-phobos'), root.getObjectByName('mars-moon-deimos')],
+  };
+  marsSceneCache.set(root, parts);
+  return parts;
+}
 
 function box(parent, name, material, x, y, z, w, h, d) {
   const mesh = new T.Mesh(boxGeo, material);
@@ -60,8 +83,12 @@ function makeSurface() {
     const z = positions.getZ(i) - 1800;
     const h = ridge(x, z);
     positions.setY(i, h);
-    base.set(colorBands[Math.floor(seeded(i * 3.1 + Math.floor(z * 0.003)) * colorBands.length)]);
-    base.multiplyScalar(0.89 + seeded(i * 0.63) * 0.22);
+    // Wind-eroded sediment ribbons are baked once into existing vertex colors.
+    const strata = 0.5 + 0.5 * Math.sin(z * 0.034 + Math.sin(x * 0.011) * 2.2);
+    const ripple = 0.5 + 0.5 * Math.sin(z * 0.155 + x * 0.037 + strata * 2.1);
+    const band = Math.min(colorBands.length - 1, Math.floor(strata * colorBands.length));
+    base.set(colorBands[band]);
+    base.multiplyScalar(0.83 + strata * 0.2 + ripple * 0.075 + seeded(i * 0.63) * 0.06);
     colors.push(base.r, base.g, base.b);
   }
   geo.setAttribute('color', new T.Float32BufferAttribute(colors, 3));
@@ -261,18 +288,17 @@ export function createMarsPremium() {
 export function updateMarsArrival(root, seconds) {
   if (!root) return marsDescentAt(seconds);
   const state = marsDescentAt(seconds);
-  const surface = root.getObjectByName('mars-surface-scene');
-  surface.visible = state.terrainVisible;
-  surface.position.y = state.terrainLift;
-  updateMarsApproach(root.getObjectByName('mars-orbital-approach'), state);
-  for (const name of ['phobos', 'deimos']) {
-    const moon = root.getObjectByName('mars-moon-' + name);
-    // Orbital companions are readable from space through re-entry, then
-    // recede into the dusty sky rather than disappearing on the first frame.
-    moon.visible = seconds < 30;
-    moon.scale.setScalar(seconds < 20 ? 1 : Math.max(0.1, 1 - (seconds - 20) / 11));
+  const { terrain, approach, storm, moons } = sceneParts(root);
+  terrain.visible = state.terrainVisible;
+  terrain.position.y = state.terrainLift;
+  updateMarsApproach(approach, state);
+  const moonVisible = seconds < 30;
+  const moonScale = seconds < 20 ? 1 : Math.max(0.1, 1 - (seconds - 20) / 11);
+  for (const moon of moons) {
+    moon.visible = moonVisible;
+    moon.scale.setScalar(moonScale);
   }
-  const wind = updateMarsSandstorm(surface.getObjectByName('mars-sandstorm'), seconds);
+  const wind = updateMarsSandstorm(storm, seconds);
   state.storm = wind;
   root.userData.arrivalPhase = state.phase;
   root.userData.combatReady = state.combatReady;
@@ -280,14 +306,9 @@ export function updateMarsArrival(root, seconds) {
 }
 export function updateMarsPremium(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
-  const terrain = root.getObjectByName('mars-surface-scene');
-  const moving = [...terrain.children];
-  // Nested mysteries contain animated landmark groups; stationary Olympus
-  // stays in the distant horizon (never streams like roadside rocks).
-  const mysteries = terrain.getObjectByName('mars-mysteries-and-olympus');
-  if (mysteries) moving.push(...mysteries.children);
-  for (const child of moving) {
-    if (!child.userData.marsChunk) continue;
+  // The same fixed chunk list is reused for every frame, without
+  // constructing arrays or recursively looking up world children.
+  for (const child of sceneParts(root).moving) {
     const base = Number.isFinite(child.userData.startZ)
       ? child.userData.startZ
       : (child.userData.startZ = child.position.z);

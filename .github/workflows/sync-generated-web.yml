@@ -7,6 +7,21 @@ on:
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
       - feat/qa140-radial-rpg-tactical-pause-20261115
+      - feat/qa138-mars-surface-shader-cpu-budget-20261115
+      - feat/qa139-saturn-ring-batching-planets-20261115
+      - feat/qa140-asteroid-europa-neptune-gpu-budget-20261115
+      - feat/qa141-city-lit-facades-landmark-20261115
+      - feat/qa142-city-facade-traffic-cpu-budget-20261115
+      - perf/qa143-high-render-pixel-and-city-cpu-20261115
+      - perf/qa144-compositor-msaa-street-culling-20261115
+      - perf/qa145-drawcall-budget-inventory-20261115
+      - perf/qa146-static-city-stations-and-ad-batching-20261115
+      - integration/qa138-146-on-qa140-20261115
+      - feat/qa148-mars-storm-depth-20261115
+      - feat/qa149-mars-colossus-animated-20261115
+      - fix/qa150-mars-soft-dust-points-20261115
+      - fix/qa151-mars-particle-texture-20261115
+      - feat/qa152-mars-quarry-boss-silhouette-20261115
 permissions:
   contents: write
   actions: write
@@ -27,6 +42,21 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Prepare QA148 release metadata
+        if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
+        run: npm run release:prepare -- 1.27.144
+      - name: Prepare QA149 release metadata
+        if: github.ref_name == 'feat/qa149-mars-colossus-animated-20261115'
+        run: npm run release:prepare -- 1.27.145
+      - name: Prepare QA150 release metadata
+        if: github.ref_name == 'fix/qa150-mars-soft-dust-points-20261115'
+        run: npm run release:prepare -- 1.27.146
+      - name: Prepare QA151 release metadata
+        if: github.ref_name == 'fix/qa151-mars-particle-texture-20261115'
+        run: npm run release:prepare -- 1.27.147
+      - name: Prepare QA152 release metadata
+        if: github.ref_name == 'feat/qa152-mars-quarry-boss-silhouette-20261115'
+        run: npm run release:prepare -- 1.27.148
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -44,6 +74,53 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "feat/qa140-radial-rpg-tactical-pause-20261115" ]; then
             git add -- src/shell.html src/styles.css src/main.js src/mobile-rpg.js src/game.js src/haptic-feedback.js src/ui-preferences.js tests/qa140-radial-rpg.test.mjs tests/haptic-feedback.test.mjs tests/browser/haptic-availability.spec.mjs specs/qa140-radial-rpg-tactical-pause.md tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs tests/browser/dynamic.spec.mjs tests/browser/five-cats-formation.spec.mjs tests/dynamic-scene.js tests/browser/rpg-top-hud.spec.mjs tests/browser/rpg-orbit-drawer.spec.mjs tests/browser/omega-flank-qa.spec.mjs tests/browser/game.spec.mjs package.json package-lock.json CHANGELOG.md releases/v1.27.135.md .github/workflows/sync-generated-web.yml
           fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa138-mars-surface-shader-cpu-budget-20261115" ]; then
+            git add -- src/mars-premium.js src/mars-descent.js src/mars-sandstorm.js src/mars-globe-shader.js tests/qa138-mars-premium-render-budget.test.mjs specs/qa138-mars-premium-render-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa139-saturn-ring-batching-planets-20261115" ]; then
+            git add -- src/destination-vista.js src/destination-landmarks.js tests/destination-arrival.test.mjs tests/destination-landmarks.test.mjs tests/qa139-planet-vista-render-budget.test.mjs specs/qa139-saturn-planet-render-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa140-asteroid-europa-neptune-gpu-budget-20261115" ]; then
+            git add -- src/asteroid-interior.js src/asteroid-course.js src/europa-surface.js src/premium-atmospheric-geology.js src/destination-landmarks.js tests/qa140-premium-biomes-budget.test.mjs specs/qa140-biomes-visual-and-perf.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ]; then
+            git add -- src/city-commerce.js src/city-34-concept.js src/city-40-hero-section.js src/visuals.js tests/qa141-lit-city-megastructure.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/city-2-7-retail-orbit.test.mjs tests/graphics.test.mjs specs/qa141-lit-city-architecture.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa142-city-facade-traffic-cpu-budget-20261115" ]; then
+            git add -- src/city-traffic.js src/city-34-concept.js tests/qa142-city-traffic-facade-budget.test.mjs specs/qa142-city-facade-traffic-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa143-high-render-pixel-and-city-cpu-20261115" ]; then
+            git add -- src/graphics-quality.js src/game.js src/visuals.js src/city-premium.js src/city-35-lived-in.js tests/qa143-high-graphics-budget.test.mjs specs/qa143-high-performance-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa144-compositor-msaa-street-culling-20261115" ]; then
+            git add -- src/visuals.js src/city-122-street-infill.js tests/qa122-street-life-and-moon.test.mjs tests/qa144-postfx-and-culling-budget.test.mjs specs/qa144-postfx-culling-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
+            git add -- src/visuals.js src/city-evacuation-batching.js src/game.js src/frame-audit.js tests/qa145-scene-draw-inventory.test.mjs tests/qa145-evacuation-batching.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/graphics.test.mjs specs/qa145-evacuation-batching.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa146-static-city-stations-and-ad-batching-20261115" ]; then
+            git add -- src/city-districts.js src/city-premium.js tests/city-2-4-districts.test.mjs tests/graphics.test.mjs tests/qa146-city-station-ad-batching.test.mjs specs/qa146-stations-ads-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ]; then
+            # The merged candidate must sync both the RPG and 56 performance
+            # sources; only tracked files touched by format/build are staged.
+            git add -u -- . ':(exclude).github/workflows/sync-generated-web.yml'
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa148-mars-storm-depth-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa149-mars-colossus-animated-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa150-mars-soft-dust-points-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa151-mars-particle-texture-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa152-mars-quarry-boss-silhouette-20261115" ]; then
+            git add -u
+          fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
             exit 0
@@ -52,5 +129,8 @@ jobs:
           git push origin "HEAD:${GITHUB_REF_NAME}"
           gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
+            gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
+          fi
+          if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi

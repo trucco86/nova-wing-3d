@@ -33,6 +33,20 @@ test('Mars is visibly a new planet with its own desert, two moons and rover', as
   await page.evaluate(() => window.fixture.advance(37));
   await page.screenshot({ path: info.outputPath('mars-07-midstage-sandstorm-crosswind.png') });
   await expect(page.locator('#routeLabel')).toContainText('TURBULÊNCIA MARCIANA');
+  const liveDust = await page.evaluate(() => window.fixture.marsDustVisualState());
+  expect(liveDust).toMatchObject({
+    stormVisible: true,
+    pointCount: 240,
+    isNativeMap: true,
+    textureWidth: 32,
+    textureHeight: 32,
+    cornerAlpha: 0,
+  });
+  expect(liveDust.centerAlpha).toBeGreaterThan(220);
+  await info.attach('mars-live-dust-alpha.json', {
+    body: Buffer.from(JSON.stringify(liveDust, null, 2)),
+    contentType: 'application/json',
+  });
   await page.evaluate(() => window.fixture.advance(17));
   await page.screenshot({ path: info.outputPath('mars-08-clear-desert-after-storm.png') });
   await expect(page.locator('#routeLabel')).toContainText('SUPERFÍCIE DE MARTE');

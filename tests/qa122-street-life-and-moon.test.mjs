@@ -169,6 +169,12 @@ test('QA122: visible street fronts, sidewalks, service kiosks and amber signs ar
   const before = new T.Matrix4();
   const after = new T.Matrix4();
   bodies.getMatrixAt(first.body, before);
+  // Vapor is visible/animated only on High; Medium must not spend CPU/GPU
+  // bandwidth on its hidden transforms.
+  const vaporBeforeMedium = vapor.instanceMatrix.version;
+  animateCity122StreetLife(root, 220);
+  assert.equal(vapor.instanceMatrix.version, vaporBeforeMedium);
+  setCity122Quality(root, 'high');
   animateCity122StreetLife(root, 330);
   bodies.getMatrixAt(first.body, after);
   vapor.getMatrixAt(0, lastPlume);

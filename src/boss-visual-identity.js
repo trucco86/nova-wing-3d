@@ -16,6 +16,7 @@ export const BOSS_SHAPES = Object.freeze([
 ]);
 const geo = new T.BoxGeometry(1, 1, 1);
 geo.userData.bossShared = true;
+const marsDuneRigCache = new WeakMap();
 function slab(g, mat, name, x, y, z, w, h, d, rz = 0) {
   const mesh = new T.Mesh(geo, mat);
   mesh.name = name;
@@ -52,8 +53,10 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
     }
   } else if (index === 1) {
     // Mars: giant six-legged quarry machine, not a sleek ocean manta.
-    slab(root, armor, 'mars-armored-crust', 0, 13, -8, 56, 21, 35);
-    slab(root, dark, 'mars-excavator-visor', 0, 16, 15, 28, 7, 8);
+    // Taller, readable industrial carapace while retaining the exact
+    // six-leg rig and all existing surface materials and draw-call count.
+    slab(root, armor, 'mars-armored-crust', 0, 21, -8, 51, 30, 35);
+    slab(root, dark, 'mars-excavator-visor', 0, 24, 15, 22, 8, 8);
     for (const side of [-1, 1]) {
       for (let i = 0; i < 3; i++) {
         slab(
@@ -81,13 +84,13 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
         );
         slab(
           root,
-          edge,
+          dark,
           'mars-thermal-vent-' + side + '-' + i,
-          side * (17 + i * 4),
-          27,
+          side * (10 + i * 7),
+          34 + i * 4,
           7 - i * 7,
           5,
-          2,
+          28 - i * 4,
           12,
         );
       }
@@ -277,8 +280,15 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
 
 /** Visual-only articulation: attack silhouettes move, not physical hit targets.
  * Frames depend solely on mission time so pause/replay is deterministic. */
-export function animateBossVisualIdentity(root, index, time, phase = 1, attackState = 'maneuver') {
-  if (!root || index < 3 || index > 9 || !Number.isFinite(time)) return;
+export function animateBossVisualIdentity(
+  root,
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
+) {
+  if (!root || index < 1 || index > 9 || !Number.isFinite(time)) return;
   const identity =
     root.name === 'boss-distinct-' + BOSS_SHAPES[index]
       ? root
@@ -287,7 +297,41 @@ export function animateBossVisualIdentity(root, index, time, phase = 1, attackSt
   const intensity = attackState === 'attack' ? 1 : attackState === 'windup' ? 0.5 : 0.15;
   const factor = 1 + 0.12 * Math.max(0, Math.min(2, phase - 1));
 
-  if (index === 3) {
+  if (index === 1) {
+    // The six-legged Martian quarry machine articulates existing decorative
+    // joints; the real weapon hitboxes and damage emitters remain stationary.
+    let rig = marsDuneRigCache.get(identity);
+    if (!rig) {
+      const limbs = [];
+      for (const side of [-1, 1]) {
+        for (let i = 0; i < 3; i++) {
+          const leg = identity.getObjectByName('mars-dune-walker-upper-leg-' + side + '-' + i);
+          const foot = identity.getObjectByName('mars-dune-walker-foot-' + side + '-' + i);
+          if (leg && foot) limbs.push({ leg, foot, side, i });
+        }
+      }
+      rig = { limbs, visor: identity.getObjectByName('mars-excavator-visor') };
+      marsDuneRigCache.set(identity, rig);
+    }
+    const crushing = attackKind === 'stingray-scissor';
+    const drilling = attackKind === 'stingray-sting';
+    const winding = attackState === 'windup';
+    const striking = attackState === 'attack';
+    for (const { leg, foot, side, i } of rig.limbs) {
+      const stride = Math.sin(time * (1 + (phase - 1) * 0.14) + i * 1.9 + (side < 0 ? 0 : Math.PI));
+      const lift = Math.max(0, stride) * (striking ? 4 : 2.4) * factor;
+      const press = crushing ? (winding ? -0.065 : striking ? 0.085 : 0) : 0;
+      const brace = drilling ? (winding ? 0.065 : striking ? -0.045 : 0) : 0;
+      leg.rotation.z = side * (0.43 + stride * 0.052 * factor + press + brace);
+      foot.position.y = -37 - i * 5 + lift + (drilling && winding && i === 0 ? 3.5 : 0);
+      foot.position.x = side * (42 + i * 7 - (crushing && winding ? 3 : 0));
+      foot.rotation.z = side * (Math.max(0, stride) * 0.045 + (striking && drilling ? -0.045 : 0));
+    }
+    if (rig.visor) {
+      rig.visor.rotation.x = drilling ? (winding ? -0.12 : striking ? 0.18 : 0) : 0;
+      rig.visor.position.y = 16 + (crushing && striking ? -2.5 : 0);
+    }
+  } else if (index === 3) {
     // Orbital fortress closes its four shield gates before releasing a salvo.
     for (let i = 0; i < 4; i++) {
       const spoke = identity.getObjectByName('station-reactor-shield-spoke-' + i);
