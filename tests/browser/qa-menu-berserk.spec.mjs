@@ -26,7 +26,7 @@ test('QA launcher is visible in the home menu, opens the lab, and starts Berserk
   const drawer = page.locator('#strategyDrawer');
   await expect(drawer).not.toHaveAttribute('open');
   await drawer.locator('summary').click();
-  await page.locator('[data-rpg-category="berserk"]').click();
+  if (info.project.name === 'mobile') await page.locator('[data-rpg-category="berserk"]').click();
   const berserk = page.locator('#qaBerserkAction');
   await expect(berserk).toBeVisible();
   await expect(berserk).toContainText('ATIVAR BERSERK');
@@ -35,7 +35,7 @@ test('QA launcher is visible in the home menu, opens the lab, and starts Berserk
   await expect(page.locator('body')).toHaveClass(/berserk-active/);
   await expect(page.locator('#qaBerserkStatus')).toContainText('ATIVO');
   await drawer.locator('summary').click();
-  await page.locator('[data-rpg-category="berserk"]').click();
+  if (info.project.name === 'mobile') await page.locator('[data-rpg-category="berserk"]').click();
   await expect(berserk).toContainText('REPETIR BERSERK');
   await berserk.click();
   await expect(drawer).not.toHaveAttribute('open');
