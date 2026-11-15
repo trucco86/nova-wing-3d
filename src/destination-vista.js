@@ -280,8 +280,7 @@ export function updateDestinationVista(root, index, seconds) {
     globe.visible = false;
     globe.material.uniforms.alpha.value = 0;
     rim.material.uniforms.alpha.value = 0;
-    for (const child of mist.children)
-      child.material.uniforms.alpha.value = 0;
+    for (const child of mist.children) child.material.uniforms.alpha.value = 0;
   }
   root.userData.arrivalPhase = state.phase;
   return state;

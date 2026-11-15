@@ -37,13 +37,19 @@ test('QA139: cached planetary vista updates do not search scene per frame', () =
     const root = createDestinationVista(sector);
     const globe = root.getObjectByName('destination-celestial-body');
     const first = globe.position.x;
-    root.getObjectByName = () => { throw new Error('unexpected traversal'); };
-    globe.getObjectByName = () => { throw new Error('unexpected globe traversal'); };
+    root.getObjectByName = () => {
+      throw new Error('unexpected traversal');
+    };
+    globe.getObjectByName = () => {
+      throw new Error('unexpected globe traversal');
+    };
     for (const time of [0, 8, 15, 23, 27, 58, 15]) updateDestinationVista(root, sector, time);
     if (sector === 3) assert.equal(globe.visible, false, 'mothership approach must stay ship-only');
     if (sector === 7) assert.equal(globe.visible, true, 'Saturn remains in view');
     if (sector === 7) assert.notEqual(globe.position.x, first);
-    assert.doesNotThrow(() => updateDestinationVista(createDestinationVista(sector).clone(true), sector, 19));
+    assert.doesNotThrow(() =>
+      updateDestinationVista(createDestinationVista(sector).clone(true), sector, 19),
+    );
   }
 });
 
@@ -52,7 +58,9 @@ test('QA139: escape streaks avoid trig per-frame and dormant GPU attribute uploa
   const particle = root.getObjectByName('escape-hyperspeed-particles');
   const pos = particle.geometry.getAttribute('position');
   const start = Array.from(pos.array);
-  root.getObjectByName = () => { throw new Error('unexpected search'); };
+  root.getObjectByName = () => {
+    throw new Error('unexpected search');
+  };
   updateDestinationEscape(root, 7, 0);
   assert.equal(root.visible, false);
   assert.deepEqual(Array.from(pos.array), start, 'inactive streaks stay unmodified');
@@ -78,7 +86,9 @@ test('QA139: static Saturn ice offsets are cached; clock still drives every wave
   updateDestinationLandmarks(root, 36);
   near.getMatrixAt(3, matrix);
   const first = matrix.clone();
-  root.getObjectByName = () => { throw new Error('unexpected clouds/lighting traversal'); };
+  root.getObjectByName = () => {
+    throw new Error('unexpected clouds/lighting traversal');
+  };
   updateDestinationLandmarks(root, 36);
   near.getMatrixAt(3, matrix);
   assert.deepEqual(matrix.elements, first.elements, 'replay renders same ring ice');
@@ -96,7 +106,9 @@ test('QA139: Venus and Neptune cloud motion preserves deterministic behavior', (
     const cloud = root.getObjectByName(
       sector === 4 ? 'venus-sulfur-cloud-columns' : 'neptune-turbulent-cloud-columns',
     );
-    root.getObjectByName = () => { throw new Error('unexpected search'); };
+    root.getObjectByName = () => {
+      throw new Error('unexpected search');
+    };
     updateDestinationLandmarks(root, 21);
     const x = cloud.position.x;
     const material = cloud.material.opacity;
