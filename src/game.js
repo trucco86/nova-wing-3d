@@ -849,11 +849,28 @@ export function createGame({
     if (!dynamicFlight || state !== 'playing') return;
     const available = ARSENAL.filter((w) => w.stage <= stage()).length;
     strategy.arsenal = (strategy.arsenal + 1) % available;
+    // The tactical pause freezes the simulation HUD loop. Selection feedback
+    // is UI-only and must update immediately while the battle stays frozen.
+    if (rpgTacticalPaused)
+      $('arsenalSwitch').textContent =
+        coarsePointer.matches && window.innerWidth <= 900
+          ? 'ARMA ' + selectedWeapon().name
+          : 'F · ' + selectedWeapon().name;
     message('ARMA · ' + selectedWeapon().name);
   }
   function cycleSpecial() {
     if (!dynamicFlight || state !== 'playing') return;
     strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
+    if (rpgTacticalPaused) {
+      const selected = SPECIALS[strategy.special].name;
+      $('specialSwitch').textContent =
+        coarsePointer.matches && window.innerWidth <= 900 ? 'RPG ' + selected : 'H · ' + selected;
+      $('quickRpg').setAttribute('data-selected', selected);
+      $('specialCast').setAttribute(
+        'aria-label',
+        'Ativar ' + selected + ', energia ' + Math.floor(arcana),
+      );
+    }
   }
   function castSquadSpecial(kind) {
     if (!dynamicFlight || state !== 'playing' || !squad) return false;
