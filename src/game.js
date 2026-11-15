@@ -108,6 +108,7 @@ import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
 import { createHudWriteGuard } from './hud-write-guard.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
+import { createReusableObstaclePool } from './reusable-obstacle-pool.js';
 import { createGpuMemoryAudit, formatGpuMemoryAudit } from './gpu-memory-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
@@ -302,6 +303,9 @@ export function createGame({
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new T.Scene();
+  // Only immutable standard obstacle clones can be recycled. Their geometry
+  // and materials belong to shared templates; do not dispose on release.
+  const obstaclePool = createReusableObstaclePool({ create: createObstacle });
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
@@ -1758,6 +1762,9 @@ export function createGame({
   }
   function dispose(o) {
     scene.remove(o);
+    // Safe only for explicitly leased immutable obstacle clones.
+    // All enemies, bosses, shots and special stage props keep their own path.
+    obstaclePool.release(o);
   }
   function explode(pos, n = 16, color = 0xffa04a, playGenericSound = true) {
     if (playGenericSound && n >= 12 && dynamicFlight) cue('explosion');
@@ -5956,7 +5963,7 @@ export function createGame({
             : Math.floor(elapsed / 8) % 2
               ? 'gantry'
               : 'reactor';
-      const o = createObstacle(kind);
+      const o = obstaclePool.acquire(kind);
       o.position.set(
         kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
         kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
@@ -6575,6 +6582,7 @@ export function createGame({
         })),
       hostileProjectilePool: hostileShotPool.stats(),
       particlePool: particlePool.stats(),
+      obstaclePool: obstaclePool.stats(),
       cameraMode,
       directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
@@ -6913,6 +6921,7 @@ export function createGame({
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
+      obstaclePool.clear();
       hostileShotPool.clear();
       particlePool.clear();
       player.userData.flames.forEach((f) => f.material.dispose());
