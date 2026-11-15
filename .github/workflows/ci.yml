@@ -12,40 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa130-preflight-package:
-    # Temporary branch-only QA package generation. No integration or production release.
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa130-preflight-map-every-mission-20261114'
-    runs-on: ubuntu-latest
-    timeout-minutes: 16
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          persist-credentials: true
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format and verify first mission and checkpoint map progression
-        run: |
-          npx prettier --write src/game.js src/i18n.js tests/harness.mjs tests/dynamic-scene.js tests/qa130-preflight-map.test.mjs tests/browser/preflight-campaign-map.spec.mjs
-          node --test tests/qa130-preflight-map.test.mjs tests/qa129-cinematic-campaign.test.mjs
-      - name: Generate isolated candidate v1.27.129
-        run: |
-          npm run release:prepare -- 1.27.129
-          npm run build:check
-      - name: Commit generated HTML and release metadata only to QA130
-        shell: bash
-        run: |
-          git add src/game.js src/i18n.js tests/harness.mjs tests/dynamic-scene.js tests/qa130-preflight-map.test.mjs tests/browser/preflight-campaign-map.spec.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.129.md index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA130): synchronize pre-mission map and version 1.27.129'
-            git push origin HEAD:feat/qa130-preflight-map-every-mission-20261114
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
