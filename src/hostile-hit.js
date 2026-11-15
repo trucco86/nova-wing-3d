@@ -15,14 +15,7 @@ export function hostileShotHitsShip(
   robot = false,
   previousPlayer = player,
 ) {
-  if (
-    !from ||
-    !to ||
-    !player ||
-    !previousPlayer ||
-    !Number.isFinite(scale) ||
-    scale <= 0
-  )
+  if (!from || !to || !player || !previousPlayer || !Number.isFinite(scale) || scale <= 0)
     return false;
   const half = robot ? MECHA_HALF : FIGHTER_HALF;
   const radius = Math.max(0.35, Math.min(1.1, scale * 0.42));
