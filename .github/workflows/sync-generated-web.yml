@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
   actions: write
+concurrency:
+  group: sync-generated-web-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   sync:
     if: github.repository == 'trucco86/nova-wing-3d'
