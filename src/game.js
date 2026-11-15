@@ -5859,10 +5859,7 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (hostileShotHitsShip(from, b.o.position, player.position, {
-        scale: b.o.scale.x,
-        robot: robotMode,
-      })) {
+      if (hostileShotHitsShip(from, b.o.position, player.position, b.o.scale.x, robotMode)) {
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
