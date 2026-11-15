@@ -25,7 +25,8 @@ test('first subboss health stays at the top-right information edge on phones', a
     await expect(page.locator('#subHUD')).toBeVisible();
     const bounds = await page.locator('#subHUD').boundingBox();
     const rail = await page.locator('#hudNotices').boundingBox();
-    const quickRpg = await page.locator('#quickRpg').boundingBox();
+    const rpgTrigger = await page.locator('#strategyDrawer summary').boundingBox();
+    await expect(page.locator('#quickRpg')).toBeHidden();
     expect(bounds.x, 'Subboss card should not cover the central aiming lane').toBeGreaterThan(
       viewport.width * 0.58,
     );
@@ -39,7 +40,7 @@ test('first subboss health stays at the top-right information edge on phones', a
       a.x + a.width > b.x + 3 &&
       a.y < b.y + b.height - 3 &&
       a.y + a.height > b.y + 3;
-    expect(overlap(bounds, quickRpg), 'Subboss health overlaps quick-RPG actions').toBe(false);
+    expect(overlap(bounds, rpgTrigger), 'Subboss health overlaps the RPG trigger').toBe(false);
     const state = await page.evaluate(() => window.fixture.game.snapshot());
     expect(state.encounterKinds).toContain('subboss');
     await page.screenshot({
