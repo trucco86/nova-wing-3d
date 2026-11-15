@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.144 — QA148: tempestade de areia com profundidade e deriva contínua
+
+- A fase 2 preserva três planos de névoa e 240 partículas, com novas camadas de poeira, linhas de areia e densidade mais próxima do solo, sem novos draws, texturas ou geometria.
+- O campo de partículas não salta mais 150 unidades ao reiniciar a posição; nuvens respondem ao vento com deslocamento vertical e inclinação determinísticos.
+- Sem alteração da física, do período da tempestade, da pausa tática ou da jogabilidade do RPG. Qualidade visual e custo real de GPU ainda exigem QA mobile.
+- **PR Draft dependente da QA138-146. Sem produção até CI FULL e validação visual.**
+
 ## 1.27.143 — QA146: estações de maglev e outdoors em batches sem perder detalhes
 
 - As três estações maglev preservam todos os 24 componentes estruturais e as mesmas posições/dimensões, renderizados em três lotes instanciados de metal, cobertura e sinalização no lugar de 24 meshes individuais. Metadados de estação permanecem acessíveis por nome.
