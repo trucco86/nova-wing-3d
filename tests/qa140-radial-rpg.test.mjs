@@ -112,7 +112,7 @@ function ui() {
         return node('dialog');
       },
       contains(el) {
-        return !!el?.inside;
+        return el === this || !!el?.inside;
       },
     };
   }
@@ -172,6 +172,25 @@ function ui() {
     },
   };
 }
+
+test('QA140 empty radial wheel tap dismisses tactical pause without casting', () => {
+  const f = ui();
+  const inst = installMobileRpgAccordion({
+    document: f.document,
+    window: f.window,
+    game: f.game,
+  });
+  const drawer = f.elements.get('strategyDrawer');
+  drawer.open = true;
+  f.toggle();
+  assert.equal(f.events.at(-1), true);
+  assert.equal(f.elements.get('rpgRadialMenu').hidden, false);
+  f.click(f.elements.get('rpgRadialMenu'));
+  assert.equal(drawer.open, false);
+  assert.equal(f.events.at(-1), false);
+  assert.equal(f.elements.get('rpgCategoryPanel').hidden, true);
+  inst.destroy();
+});
 
 test('QA140 touch categories keep the fight frozen until cast or close', () => {
   const f = ui();
