@@ -86,6 +86,19 @@ test('QA140 mobile radial RPG freezes the battle and keeps a compact circular HU
     await expect(drawer).not.toHaveAttribute('open');
     await expect(page.locator('body')).not.toHaveClass(/rpg-tactical-paused/);
     await expect(page.locator('#pauseMenu')).toBeHidden();
+
+    // Real pause uses a separate modal: no floating RPG/EV button may paint
+    // over its controls, even before the next gameplay frame arrives.
+    await page.locator('#pause').tap();
+    await expect(page.locator('#pauseMenu')).toBeVisible();
+    await expect(page.locator('#strategyControls')).toBeHidden();
+    await expect(trigger).toBeHidden();
+    await page.screenshot({
+      path: info.outputPath('pause-without-rpg-' + viewport.width + 'x' + viewport.height + '.png'),
+    });
+    await page.locator('#pauseResume').tap();
+    await expect(page.locator('#pauseMenu')).toBeHidden();
+    await expect(trigger).toBeVisible();
   }
   expect(errors).toEqual([]);
 });
