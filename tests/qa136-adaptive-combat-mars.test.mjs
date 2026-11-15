@@ -43,6 +43,52 @@ test('a hostile bullet cannot tunnel through the fighter between frames', () => 
   );
 });
 
+test('projectile and pilot swept paths collide consistently at low FPS', () => {
+  const start = new T.Vector3(0, 11, 0);
+  const end = new T.Vector3(14, 11, 0);
+  const projectileStart = new T.Vector3(7, 11, -9);
+  const projectileEnd = new T.Vector3(7, 11, 9);
+  assert.equal(
+    hostileShotHitsShip(projectileStart, projectileEnd, end, 1, false, start),
+    true,
+    'both objects cross at frame midpoint although neither endpoint overlaps',
+  );
+  assert.equal(
+    hostileShotHitsShip(projectileStart, projectileEnd, end, 1, false),
+    false,
+    'legacy static-player sweep misses this moving target',
+  );
+  assert.equal(
+    hostileShotHitsShip(
+      new T.Vector3(0, 11, 0),
+      new T.Vector3(0, 11, 0),
+      new T.Vector3(9, 11, 0),
+      1,
+      false,
+      new T.Vector3(-9, 11, 0),
+    ),
+    true,
+    'player crosses a stationary shot during a fast dash',
+  );
+  assert.equal(
+    hostileShotHitsShip(
+      new T.Vector3(8, 11, -9),
+      new T.Vector3(22, 11, 9),
+      new T.Vector3(14, 11, 0),
+      1,
+      false,
+      new T.Vector3(0, 11, 0),
+    ),
+    false,
+    'constant lateral offset cannot cause phantom damage',
+  );
+  assert.equal(
+    hostileShotHitsShip(new T.Vector3(Number.NaN, 0, 0), new T.Vector3(), new T.Vector3()),
+    false,
+    'nonfinite positions are not valid collisions',
+  );
+});
+
 test('boss reads recent pilot movement and counters repetition without homing during attack', () => {
   const model = createPilotPatternReader();
   for (let i = 0; i < 60; i++) model.sample({ x: i * 0.7, y: 12 }, 0.05, i % 5 < 3);
