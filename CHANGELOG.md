@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.147 — QA151: alfa radial nativo na poeira de Marte
+
+- Os screenshots da QA150 mostraram que o patch em onBeforeCompile não eliminou os quadrados de poeira; a PR QA150 permanece bloqueada visualmente.
+- O único Points da tempestade usa agora uma DataTexture RGBA de 32x32 (4 KiB de dados), criada uma vez e compartilhada: alpha radial suave nativo, sem novos draws, sprites menores.
+- Testes exigem textura real, cantos transparentes, centro visível, orçamento de 240 pontos e pausa intacta. Nova inspeção de screenshot e benchmark mobile obrigatórios.
+- **PR Draft empilhada na QA150, sem merge/produção antes do gate visual.**
+
 ## 1.27.146 — QA150: poeira suave no pico da tempestade marciana
 
 - Corrige as partículas da tempestade de areia que apareciam como quadrados amarelos nos screenshots reais do navegador, por meio de feather radial na PointsMaterial.
