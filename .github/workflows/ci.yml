@@ -12,40 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa131-package-smooth-budget:
-    # Branch-scoped format/test/build package, never production deployment.
-    if: github.event_name == 'pull_request' && github.head_ref == 'feat/qa131-smooth-premium-render-budget-20261114'
-    runs-on: ubuntu-latest
-    timeout-minutes: 14
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format and verify adaptive rendering and jank QA
-        run: |
-          npx prettier --write src/graphics-quality.js src/game.js src/frame-audit.js tests/qa131-smooth-render-budget.test.mjs tests/frame-audit.test.mjs tests/browser/game.spec.mjs
-          node --test tests/qa131-smooth-render-budget.test.mjs tests/frame-audit.test.mjs tests/graphics-quality.test.mjs
-      - name: Generate isolated candidate 1.27.130
-        run: |
-          npm run release:prepare -- 1.27.130
-          npm run build:check
-      - name: Commit only quality evidence and candidate to PR branch
-        shell: bash
-        run: |
-          git add src/graphics-quality.js src/game.js src/frame-audit.js tests/qa131-smooth-render-budget.test.mjs tests/frame-audit.test.mjs tests/browser/game.spec.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.130.md index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA131): synchronize adaptive graphics and 1.27.130 candidate'
-            git push origin HEAD:feat/qa131-smooth-premium-render-budget-20261114
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
