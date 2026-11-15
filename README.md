@@ -22,6 +22,14 @@
 
 ---
 
+## Trailer oficial de gameplay
+
+[![NOVA WING | Trailer Oficial de Gameplay | Five Cats vs. Marvin](docs/images/five-cats-cover.webp)](https://www.youtube.com/watch?v=d3bvL2aXc-4)
+
+**[Assistir ao trailer no YouTube em 4K a 60 fps](https://www.youtube.com/watch?v=d3bvL2aXc-4)**
+
+90 segundos de gameplay com os Five Cats em combate espacial, chefes e habilidades de RPG.
+
 ## Uma história que começou com meus pets
 
 O **Nova Wing** nasceu de uma ideia simples e pessoal: imaginar meus pets como protagonistas de um jogo de naves. **Bia, Jenifer, Christopher, Bob e Calvinho** inspiraram os cinco pilotos do esquadrão **Five Cats**. Já **Marvin**, meu pitbull, ganhou um papel bem diferente na ficção: ele é o grande vilão da aventura.
