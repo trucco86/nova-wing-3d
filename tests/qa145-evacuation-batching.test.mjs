@@ -72,7 +72,7 @@ test('QA145: phase 1 near/far use independent buffer transforms, High/Medium upd
   assert.notDeepEqual(matrixAt(near.batches[0], 6), before);
   assert.deepEqual(matrixAt(near.batches[0], 0), Array.from((() => {
     near.proxies[0].updateMatrix();
-    return near.proxies[0].matrix.elements;
+    return new Float32Array(near.proxies[0].matrix.elements);
   })()));
   const paused = matrixAt(near.batches[0], 3);
   world.update(1, 2, 48, false);
@@ -85,7 +85,7 @@ test('QA145: phase 1 near/far use independent buffer transforms, High/Medium upd
   assert.equal(near.proxies[6].visible, true);
   assert.deepEqual(matrixAt(near.batches[0], 6), Array.from((() => {
     near.proxies[6].updateMatrix();
-    return near.proxies[6].matrix.elements;
+    return new Float32Array(near.proxies[6].matrix.elements);
   })()));
   // No physics/collision metadata on either fleet or proxies.
   for (const { renderer, proxies } of [near, far]) {
