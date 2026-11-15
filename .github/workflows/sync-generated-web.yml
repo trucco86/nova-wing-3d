@@ -84,7 +84,7 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ]; then
             # The merged candidate must sync both the RPG and 56 performance
             # sources; only tracked files touched by format/build are staged.
-            git add -u
+            git add -u -- . ':(exclude).github/workflows/sync-generated-web.yml'
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
