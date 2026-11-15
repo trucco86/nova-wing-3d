@@ -58,7 +58,26 @@
     <div id="strategyControls">
       <details id="strategyDrawer">
         <summary><span>⚙ RPG</span><b id="rpgLevel">EV 1</b></summary>
-        <div class="rpgDrawerBody">
+        <div class="rpgDrawerBody" role="dialog" aria-label="RPG tático" aria-modal="false">
+          <div id="rpgTacticalScrim" aria-hidden="true"></div>
+          <div id="rpgRadialMenu" role="group" aria-label="Escolha uma categoria do RPG">
+            <div class="rpgRadialCore" aria-hidden="true">
+              <strong>RPG</strong>
+              <small>MENU TÁTICO</small>
+              <small>JOGO PAUSADO</small>
+            </div>
+            <button type="button" class="rpgRadialChoice rpgRadialWeapons" data-rpg-category="weapons" aria-label="Armas">ARMAS</button>
+            <button type="button" class="rpgRadialChoice rpgRadialSpecials" data-rpg-category="specials" aria-label="Especiais">ESPECIAIS</button>
+            <button type="button" class="rpgRadialChoice rpgRadialBerserk" data-rpg-category="berserk" aria-label="Berserk">BERSERK</button>
+            <button type="button" class="rpgRadialChoice rpgRadialUtilities" data-rpg-category="utilities" aria-label="Utilitários">UTILITÁRIOS</button>
+            <button type="button" id="rpgRadialClose" class="rpgRadialClose" aria-label="Fechar RPG e voltar ao jogo">FECHAR</button>
+          </div>
+          <section id="rpgCategoryPanel" class="rpgCategoryPanel" data-category="specials" aria-label="Ações da categoria RPG" hidden>
+            <header class="rpgCategoryHeader">
+              <button type="button" id="rpgCategoryBack" aria-label="Voltar às categorias">‹ VOLTAR</button>
+              <strong id="rpgCategoryTitle">ESPECIAIS</strong>
+              <button type="button" id="rpgCategoryClose" aria-label="Fechar RPG">✕</button>
+            </header>
           <div id="quickRpg" aria-label="Ações rápidas de RPG">
             <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
             ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
@@ -98,7 +117,12 @@
             <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
               O · FIVE CATS
             </button>
-          </div>
+            <div id="rpgBerserkPlayer" role="group" aria-label="Habilidade Berserk da campanha">
+              <button type="button" id="rpgBerserkCast" disabled>BERSERK · BLOQUEADO</button>
+              <small id="rpgBerserkHint">Desbloqueie a habilidade para ativá-la.</small>
+            </div>
+            <button type="button" id="rpgPodsAction">ALTERAR PODS</button>
+          </section>
         </div>
       </details>
       <div id="orbitControls" hidden>
