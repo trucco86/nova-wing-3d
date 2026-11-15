@@ -844,6 +844,27 @@ export function createCity40SkylineLandmark() {
         (level + (side > 0 ? 1 : 0)) % 3 ? '#8bc6d7' : '#c9e8e1',
       );
       trim.box(x, y + 4.9, z + 6.1, 15, 0.34, 0.28, '#dae2dc');
+      // Occupied window cells are framed by real glazing and use the same
+      // physical glass draw as the skyline, even in Medium mode.
+      for (const col of [-1, 0, 1]) {
+        const lit = (level + col + (side < 0 ? 1 : 0)) % 3;
+        glass.box(
+          x + col * 3.45,
+          y - 1.1,
+          z + 6.05,
+          2.1,
+          3.15,
+          0.32,
+          lit === 0 ? '#ffe0b6' : '#b7e8f4',
+        );
+      }
+      trim.box(x, y - 4.75, z + 6.3, 14.5, 0.25, 0.33, '#8eaeb9');
+    }
+    // Thin fluted ribs and roof instrumentation are physically attached
+    // to the existing pylons. Precision is confined to the High batch.
+    for (const rib of [-1, 1]) {
+      trim.box(x + rib * 10.2, 139, z + 7.8, 0.42, 173, 0.36, '#d2e8ea');
+      glass.box(x + rib * 7.4, 188, z + 8.15, 0.95, 80, 0.34, '#9ed5e6');
     }
     glass.box(x, 190, z + 7.6, 2.9, 103, 0.5, side < 0 ? '#a9e2ed' : '#efc5a8');
     trim.box(x, 255.5, z + 7.9, 5, 0.8, 0.38, '#eff4f4');

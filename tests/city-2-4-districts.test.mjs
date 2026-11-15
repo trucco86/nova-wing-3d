@@ -30,8 +30,9 @@ test('three urban districts are distinct, instanced and outside the flight lane'
     assert.ok(station?.isGroup);
     assert.equal(station.userData.district, 'transit');
     assert.ok(Math.abs(station.position.x) >= 80, 'station remains outside corridor');
-    assert.ok(station.children.length >= 8, 'station has canopy, platform and columns');
-    assert.ok(station.children.every((part) => !part.userData.hitbox));
+    assert.equal(station.userData.stationParts.length, 8, 'all original roofs, decks and piers');
+    assert.equal(station.children.length, 0, 'station static geometry is batched by material');
+    assert.ok(station.userData.stationParts.every((part) => !part.hitbox));
   }
   const transform = new T.Matrix4();
   const at = new T.Vector3();

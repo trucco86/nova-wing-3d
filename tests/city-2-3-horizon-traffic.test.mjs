@@ -18,9 +18,12 @@ test('City 2.3 has a frontal three-tier skyline and elevated monument without ga
   assert.ok(centralSpan.position.y - centralSpan.geometry.parameters.height / 2 > 100);
   assert.ok(monument.children.every((part) => !part.userData.hitbox));
   const high = skyline.getObjectByName('city-horizon-high-details');
-  assert.ok(high.getObjectByName('city-horizon-window-bands').count > 140);
+  const windowBands = skyline.getObjectByName('city-horizon-window-bands');
+  assert.ok(windowBands?.isInstancedMesh && windowBands.count > 140);
+  assert.equal(windowBands.parent, skyline, 'window light must not be gated by High');
   world.setGraphicsQuality('medium');
   assert.equal(high.visible, false);
+  assert.equal(windowBands.visible, true, 'Medium must keep the urban skyline illuminated');
   assert.equal(towers.visible, true, 'Medium retains frontal city, not empty horizon');
   world.setGraphicsQuality('high');
   assert.equal(high.visible, true);
@@ -36,10 +39,10 @@ test('maglev and evac shuttles animate independently and honor graphics, phases 
   assert.ok(life);
   assert.equal(
     life.children.length,
-    11,
-    '2 lateral maglevs, 1 overhead maglev, 1 guideway and 7 evacuation craft',
+    12,
+    '2 lateral maglevs, 1 overhead maglev, 1 guideway, 7 craft proxies and 1 3-draw fleet',
   );
-  assert.equal(far.getObjectByName('city-urban-life').children.length, 11);
+  assert.equal(far.getObjectByName('city-urban-life').children.length, 12);
   const west = near.getObjectByName('city-maglev-west');
   const east = near.getObjectByName('city-maglev-east');
   const craft = near.getObjectByName('city-evacuation-craft-0');

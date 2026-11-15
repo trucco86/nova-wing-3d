@@ -59,9 +59,55 @@ test('city remains present after one full scenery wrap and reset', () => {
     0,
   );
   assert.equal(impactBatches, 3, 'one pooled shard GPU batch for each authored impact');
+  // QA141 replaces dozens of individual monument Mesh draws with six
+  // InstancedMesh batches and adds two baseline window batches to the deep
+  // skyline. Account for exactly those eight instances rather than masking
+  // a future unbounded increase with an arbitrary upper limit.
+  const citadel = scene.getObjectByName('city-horizon-megastructure');
+  const citadelDraws = [];
+  citadel.traverse((node) => {
+    if (node.isInstancedMesh) citadelDraws.push(node);
+  });
+  assert.equal(citadelDraws.length, 6, 'four medium + two precision monument batches');
+  const deep = scene.getObjectByName('city34-concept-skyline');
+  const mediumWindows = [
+    deep.getObjectByName('city34-facade-baseline-amber'),
+    deep.getObjectByName('city34-facade-baseline-cool'),
+  ];
+  assert.ok(mediumWindows.every((node) => node?.isInstancedMesh && node.count === 42));
+  const qa141Draws = citadelDraws.length + mediumWindows.length;
+  assert.equal(qa141Draws, 8);
+  // QA145 replaces 49 individually drawn shuttles with exactly three
+  // instanced material layers per tile. The instance tally increases by six
+  // even while the real draw budget falls by 92 potential meshes.
+  const evacuationDraws = ['launch-city', 'launch-city-far'].reduce((sum, name) => {
+    const fleet = scene.getObjectByName(name).getObjectByName('city-evacuation-instanced-fleet');
+    assert.ok(fleet?.isGroup);
+    assert.equal(fleet.children.length, 3);
+    return sum + fleet.children.filter((mesh) => mesh.isInstancedMesh).length;
+  }, 0);
+  assert.equal(evacuationDraws, 6);
+  // QA146 also replaces 42 individual static meshes per tile with five
+  // material-accurate instance batches. Count exactly ten *additional*
+  // instanced draws across both city tiles, not an open-ended range.
+  const qa146Batches = ['launch-city', 'launch-city-far'].reduce((total, name) => {
+    const tile = scene.getObjectByName(name);
+    const district = tile.getObjectByName('city-architectural-districts');
+    const adverts = tile.getObjectByName('city-premium-infrastructure');
+    const stations = ['frame', 'cap', 'lowLight'].map((key) =>
+      district.getObjectByName('city-maglev-station-batched-' + key),
+    );
+    const signs = ['frame', 'trim'].map((key) =>
+      adverts.getObjectByName('city-commercial-billboard-batched-' + key),
+    );
+    assert.ok([...stations, ...signs].every((mesh) => mesh?.isInstancedMesh));
+    return total + stations.length + signs.length;
+  }, 0);
+  assert.equal(qa146Batches, 10);
   assert.ok(
-    count >= 180 + streetDraws + impactBatches && count <= 260 + streetDraws + impactBatches,
-    'historical city instance budget remains unchanged after accounting for exact effect batches',
+    count >= 180 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches &&
+      count <= 260 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches,
+    'historical instance budget plus the exact 10 QA146 material batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
