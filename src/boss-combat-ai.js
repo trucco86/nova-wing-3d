@@ -338,10 +338,18 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
 // physical collisions before the warning window.
 export function bossMeleePose(intent, state, phaseAge = 0) {
   if (!intent || intent.kind === 'barrage')
-    return Object.freeze({ lunge: 0, jaw: 0, claw: 0, tentacle: 0 });
+    return Object.freeze({ lunge: 0, jaw: 0, claw: 0, tentacle: 0, track: 0 });
   const windup = state === 'windup' ? Math.min(1, phaseAge / intent.warning) : 0;
   const strike = state === 'attack' ? Math.sin(Math.min(1, phaseAge / 1.4) * Math.PI) : 0;
   return {
+    // During the visible contact beat, actually advance a short distance
+    // toward the position that was telegraphed. Never home in on the player
+    // after windup; the pilot can dodge the announced lane.
+    track: ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
+      ? strike * 0.34
+      : ['claw-swipe', 'hammer-slam', 'cryo-pincer'].includes(intent.kind)
+        ? strike * 0.13
+        : 0,
     exhaust:
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
