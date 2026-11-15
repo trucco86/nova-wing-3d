@@ -10842,9 +10842,11 @@ body:not(.developer-session) #qaBerserkDock {
   }
   body.in-mission #hudNotices,
   body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    /* Reserve the left 220px for the shield/pilot HUD and the right
+       220px for score/radar. Radio and warnings stay in the middle. */
     top: max(70px, calc(env(safe-area-inset-top, 0px) + 53px));
-    left: max(100px, env(safe-area-inset-left, 0px));
-    right: max(85px, env(safe-area-inset-right, 0px));
+    left: max(245px, calc(env(safe-area-inset-left, 0px) + 235px));
+    right: max(220px, calc(env(safe-area-inset-right, 0px) + 210px));
     width: auto;
     max-height: 52px;
     overflow: hidden;
@@ -10914,6 +10916,12 @@ body:not(.developer-session) #qaBerserkDock {
   body.in-mission.rpg-tactical-paused #strategyDrawer {
     border-color: #ffda88;
     box-shadow: 0 0 17px rgb(255 202 112 / 40%);
+  }
+  /* Keep the same RPG button tappable above its full-screen scrim. */
+  body.in-mission #strategyControls #strategyDrawer[open] > summary {
+    position: relative;
+    z-index: 5;
+    pointer-events: auto;
   }
   body.in-mission #strategyControls #strategyDrawer[open] > .rpgDrawerBody {
     position: fixed;
