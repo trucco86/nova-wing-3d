@@ -2814,6 +2814,38 @@ export function bossModel() {
   g.add(h);
   return g;
 }
+// Composer budget is based on CSS area rather than momentary adaptive DPR.
+// On large desktop canvases 2x MSAA combined with High DPR retains thin
+// facade edges without paying for a 4x 3.7-million-pixel framebuffer.
+export function postFxTargetPlan(
+  cssWidth,
+  cssHeight,
+  pixelRatio,
+  { coarsePointer = false, bloomDivisor = 3 } = {},
+) {
+  const w = Math.max(1, Math.round(cssWidth * pixelRatio));
+  const h = Math.max(1, Math.round(cssHeight * pixelRatio));
+  const samples = coarsePointer || cssWidth * cssHeight >= 1_000_000 ? 2 : 4;
+  const desiredW = Math.max(1, Math.round(w / bloomDivisor));
+  const desiredH = Math.max(1, Math.round(h / bloomDivisor));
+  // Fullscreen bloom remains two soft Gaussian passes with its original
+  // threshold and strength; only oversized intermediate texture area is
+  // bounded (fewer fragment shades, texture writes and memory bandwidth).
+  const bloomAreaLimit = 300_000;
+  const shrink = Math.min(1, Math.sqrt(bloomAreaLimit / (desiredW * desiredH)));
+  const bloomWidth = Math.max(1, Math.floor(desiredW * shrink));
+  const bloomHeight = Math.max(1, Math.floor(desiredH * shrink));
+  return {
+    width: w,
+    height: h,
+    samples,
+    bloomWidth,
+    bloomHeight,
+    renderPixels: w * h,
+    bloomPixels: bloomWidth * bloomHeight,
+  };
+}
+
 export function postProcessor(renderer, scene, camera, { coarsePointer = false } = {}) {
   const owned = createOwnedResourceScope();
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
@@ -2861,7 +2893,8 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
   passScene.add(quad);
   let bw = 1,
     bh = 1,
-    bloomDivisor = 3;
+    bloomDivisor = 3,
+    targetBudget = null;
   // On touch GPUs a multi-pass blur is often a larger cost than extra mesh
   // detail. Keep actual scene lights/materials, but avoid full-screen bloom.
   let direct = coarsePointer;
@@ -2879,14 +2912,29 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
     getFrameCost() {
       return { ...sceneCost };
     },
+    getTargetBudget() {
+      return targetBudget ? { ...targetBudget, direct } : null;
+    },
     resize(w, h) {
       if (direct) return;
-      let pr = renderer.getPixelRatio();
-      full.setSize(Math.round(w * pr), Math.round(h * pr));
-      bw = Math.max(1, Math.round((w * pr) / bloomDivisor));
-      bh = Math.max(1, Math.round((h * pr) / bloomDivisor));
+      const planned = postFxTargetPlan(w, h, renderer.getPixelRatio(), {
+        coarsePointer,
+        bloomDivisor,
+      });
+      // MSAA only changes when viewport class changes, never when adaptive
+      // resolution steps up/down. Dispose the previous GPU attachment if
+      // sample count changed but the physical dimensions stayed identical.
+      if (full.samples !== planned.samples) {
+        const sameSize = full.width === planned.width && full.height === planned.height;
+        full.samples = planned.samples;
+        if (sameSize) full.dispose();
+      }
+      full.setSize(planned.width, planned.height);
+      bw = planned.bloomWidth;
+      bh = planned.bloomHeight;
       a.setSize(bw, bh);
       b.setSize(bw, bh);
+      targetBudget = planned;
     },
     render() {
       if (direct) {

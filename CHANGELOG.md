@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.141 — QA144: antialiasing proporcional, bloom econômico e culling urbano
+
+- Pós-processamento High desktop mantém o mesmo bloom (limiar, intensidade e dois passes blur) com limite de 300 mil pixels em seus targets intermediários, preservando efeitos cromáticos. Evita renderizar blur em resoluções além do necessário.
+- MSAA do framebuffer High é 2x em viewport desktop com 1M ou mais pixels CSS e 4x em viewports menores; arquitetura, materiais, iluminação, texturas, VFX e passes não foram removidos.
+- Os sete lotes estáticos de ruas e mobiliário urbano agora recebem bounds exatos de instância e frustum culling por lote; objetos animados (pedestres/vapor) mantêm sem culling para evitar pop-in.
+- Pedestres, LEDs de rua e vapor com refs cacheadas por tile; cores de LED sem novas alocações de Color.
+- Vapor High não calcula nem transfere instâncias quando o grupo está oculto em Medium, e é atualizado no retorno a High.
+- Testes de bounds, culling, MSAA de tela pequena/grande, bloom, pause/qualidade, clone e regressão no QA122.
+- **Não há medição física de FPS; PR Draft, sem merge ou produção.**
+
 ## 1.27.140 — QA143: Modo Alto eficiente sem reduzir materiais e arquitetura
 
 - Limite de supersampling por área da tela em qualidade Alta: 3,7 milhões de pixels renderizados no desktop e 900 mil em dispositivos touch, antes da escala adaptativa. Os mesmos modelos 3D, sombras, shader, bloom, iluminação, MSAA e VFX continuam habilitados.
