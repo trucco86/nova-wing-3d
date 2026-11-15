@@ -95,7 +95,11 @@ test('Jupiter spot, Neptune storm and Saturn rings are physically attached to th
   world.setSector(SECTORS[7], 7);
   planet = scene.getObjectByName('destination-celestial-body');
   assert.equal(planet.getObjectByName('saturn-planetary-ring-system').isMesh, true);
-  assert.equal(planet.children.filter((x) => x.name === 'saturn-astronomical-band').length, 3);
+  assert.equal(
+    planet.children.filter((x) => x.name === 'saturn-astronomical-band').length,
+    0,
+    'no extra ring draws after shader batching',
+  );
   world.setSector(SECTORS[4], 4);
   assert.equal(scene.getObjectByName('saturn-planetary-ring-system'), undefined);
 });
