@@ -4,7 +4,10 @@ import {
   SQUAD_INTRO_DURATION,
   SQUAD_SPECIALS,
   formationPose,
-  allySortieAt,
+  allySortieFlightAt,
+  allySortieFlightPose,
+  overdriveWingPose,
+  ALLY_SORTIE_FLIGHT,
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
 
@@ -91,6 +94,8 @@ export function createFiveCatsSquad({
   let plasmaClock = 0,
     overdriveClock = 0,
     supportClock = 0;
+  let overdriveAge = 0,
+    overdriveExit = 0;
   let beam = null;
   function stopBeam() {
     if (!beam) return;
@@ -105,6 +110,7 @@ export function createFiveCatsSquad({
     intro = 0;
     plasmaTime = overdriveTime = plasmaCooldown = overdriveCooldown = 0;
     plasmaClock = overdriveClock = supportClock = 0;
+    overdriveAge = overdriveExit = 0;
     stopBeam();
     wings.forEach(({ mesh }) => {
       mesh.visible = false;
@@ -153,6 +159,7 @@ export function createFiveCatsSquad({
       overdriveTime = SQUAD_SPECIALS.overdrive.duration;
       overdriveCooldown = SQUAD_SPECIALS.overdrive.cooldown;
       overdriveClock = 0;
+      overdriveAge = overdriveExit = 0;
       cue('fiveCatsOverdrive');
       notify('FIVE CATS OVERDRIVE · TODOS ÀS ARMAS');
     }
@@ -173,15 +180,21 @@ export function createFiveCatsSquad({
       const t = SQUAD_INTRO_DURATION - intro;
       wings.forEach(({ pilot: p, mesh }) => {
         const pose = formationPose(p.slot, t);
+        const side = p.slot < 0 ? -1 : 1;
+        const entering = 1 - Math.min(1, Math.max(0, t / 0.9));
+        const leaving = Math.min(1, Math.max(0, (t - SQUAD_INTRO_DURATION + 1.3) / 1.3));
+        const smoothLeave = leaving * leaving * (3 - 2 * leaving);
         mesh.visible = true;
         const portrait = aspect < 0.75;
         mesh.scale.setScalar(portrait ? 0.93 : 1.1);
         mesh.position.set(
-          player.position.x + pose.x * (portrait ? 0.53 : 1),
-          pose.y,
-          player.position.z + pose.z - (portrait ? 12 : 0),
+          player.position.x +
+            pose.x * (portrait ? 0.53 : 1) +
+            side * (110 * entering + 145 * smoothLeave),
+          pose.y + 28 * entering + 72 * smoothLeave,
+          player.position.z + pose.z - (portrait ? 12 : 0) - 230 * entering - 260 * smoothLeave,
         );
-        mesh.rotation.z = pose.bank;
+        mesh.rotation.z = pose.bank - side * (0.5 * entering + 0.78 * smoothLeave);
       });
       player.visible = false;
       formationStatus.hidden = false;
@@ -228,23 +241,27 @@ export function createFiveCatsSquad({
       }
       if (plasmaTime === 0) stopBeam();
     }
-    if (overdriveTime > 0) {
-      overdriveTime = Math.max(0, overdriveTime - dt);
-      status.textContent =
-        'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO · ' + Math.ceil(overdriveTime) + 's';
+    if (overdriveTime > 0 || overdriveExit > 0) {
+      const attacking = overdriveTime > 0;
+      if (attacking) {
+        overdriveTime = Math.max(0, overdriveTime - dt);
+        if (overdriveTime === 0) overdriveExit = ALLY_SORTIE_FLIGHT.overdriveExit;
+      } else {
+        overdriveExit = Math.max(0, overdriveExit - dt);
+      }
+      overdriveAge += dt;
+      status.textContent = attacking
+        ? 'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO · ' + Math.ceil(overdriveTime) + 's'
+        : 'FIVE CATS · ESQUADRÃO EM RETIRADA';
       overdriveClock -= dt;
       wings.forEach(({ pilot: p, mesh }) => {
         mesh.visible = p.id !== pilot;
         if (!mesh.visible) return;
-        const pose = formationPose(p.slot, SQUAD_INTRO_DURATION);
-        mesh.position.set(
-          player.position.x + pose.x * 0.8,
-          player.position.y + pose.y - 7,
-          player.position.z + pose.z + 12,
-        );
+        const pose = overdriveWingPose(p.slot, overdriveAge, player.position);
+        mesh.position.set(pose.x, pose.y, pose.z);
         mesh.rotation.z = pose.bank;
       });
-      if (overdriveClock <= 0) {
+      if (attacking && overdriveAge >= ALLY_SORTIE_FLIGHT.entry && overdriveClock <= 0) {
         const enemy = opponent();
         if (enemy)
           for (const { pilot: p, mesh } of wings) {
@@ -260,25 +277,17 @@ export function createFiveCatsSquad({
           }
         overdriveClock = SQUAD_SPECIALS.overdrive.pulseInterval;
       }
-      if (overdriveTime === 0)
-        wings.forEach(({ mesh }) => {
-          mesh.visible = false;
-        });
     } else {
-      const sortie = sector === 0 ? allySortieAt(elapsed, pilot) : null;
+      const sortie = sector === 0 ? allySortieFlightAt(elapsed, pilot) : null;
       wings.forEach(({ pilot: p, mesh }) => {
         mesh.visible = !!sortie && sortie.pilot.id === p.id;
         if (mesh.visible) {
-          const direction = sortie.section % 2 ? 1 : -1;
-          mesh.position.set(
-            player.position.x + direction * 16,
-            player.position.y + 3,
-            player.position.z - 10 - sortie.seconds * 2,
-          );
-          mesh.rotation.z = -direction * 0.12;
+          const pose = allySortieFlightPose(sortie, player.position);
+          mesh.position.set(pose.x, pose.y, pose.z);
+          mesh.rotation.z = pose.bank;
         }
       });
-      if (sortie && opponent()) {
+      if (sortie?.phase === 'escort' && opponent()) {
         supportClock -= dt;
         if (supportClock <= 0) {
           const wing = wings.find(({ pilot: p }) => p.id === sortie.pilot.id);
@@ -299,6 +308,7 @@ export function createFiveCatsSquad({
       intro,
       plasmaTime,
       overdriveTime,
+      overdriveExit,
       plasmaCooldown,
       overdriveCooldown,
       visible: wings

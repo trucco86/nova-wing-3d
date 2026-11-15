@@ -38,16 +38,31 @@ test('mobile RPG always closes and does not hide or block either boss orbit cont
     ).toBeLessThan(2);
     await expect(drawer.locator('.rpgDrawerBody')).toBeVisible();
 
+    await expect(page.locator('body')).toHaveClass(/rpg-tactical-paused/);
+    const frozenBefore = await page.evaluate(() => window.fixture.game.snapshot());
     for (const id of ['orbitLeft', 'orbitRight']) {
       const button = page.locator('#' + id);
       await expect(button).toBeVisible();
       const rect = await button.boundingBox();
-      const target = await page.evaluate(
-        ({ x, y }) => document.elementFromPoint(x, y)?.id,
-        center(rect),
-      );
-      expect(target, id + ' must not be intercepted while RPG is expanded').toBe(id);
+      const target = await page.evaluate(({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return {
+          dismissSurface:
+            element?.id === 'rpgTacticalScrim' ||
+            (!!element?.closest?.('#rpgRadialMenu') && !element?.closest?.('button')),
+          category: !!element?.closest?.('[data-rpg-category]'),
+        };
+      }, center(rect));
+      // On a 320px viewport, the wheel itself may cover the orbit button.
+      // Both the scrim and empty wheel background must dismiss first without
+      // forwarding the same touch as an unintended boss orbit input.
+      expect(target.dismissSurface, id + ' must be protected by a dismiss surface').toBe(true);
+      expect(target.category, id + ' must not trigger an RPG category').toBe(false);
     }
+    await page.evaluate(() => window.fixture.advance(0.8));
+    const frozenAfter = await page.evaluate(() => window.fixture.game.snapshot());
+    expect(frozenAfter.strategy.orbitAngle).toBe(frozenBefore.strategy.orbitAngle);
+    expect(frozenAfter.seconds).toBe(frozenBefore.seconds);
 
     // User can always close RPG by tapping its pinned heading, even if the
     // tactical content would otherwise need scrolling.
@@ -57,16 +72,24 @@ test('mobile RPG always closes and does not hide or block either boss orbit cont
     await summary.tap();
     await expect(drawer).toHaveAttribute('open');
 
-    // If the user starts orbiting instead, RPG folds without swallowing the
-    // orbital touch; J/L still move the ship during the same held press.
+    // First touch outside the modal dismisses it without accidental steering.
+    // A second, deliberate press can begin the orbital maneuver immediately.
     const left = await page.locator('#orbitLeft').boundingBox();
     const before = await page.evaluate(() => window.fixture.game.snapshot().strategy.orbitAngle);
+    await page.touchscreen.tap(center(left).x, center(left).y);
+    await expect(drawer).not.toHaveAttribute('open');
+    await expect(page.locator('body')).not.toHaveClass(/rpg-tactical-paused/);
+    expect(await page.evaluate(() => window.fixture.game.snapshot().strategy.orbitAngle)).toBe(
+      before,
+    );
+    expect(
+      await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, center(left)),
+    ).toBe('orbitLeft');
     const touch = await page.context().newCDPSession(page);
     await touch.send('Input.dispatchTouchEvent', {
       type: 'touchStart',
       touchPoints: [{ ...center(left), id: 76 }],
     });
-    await expect(drawer).not.toHaveAttribute('open');
     await page.evaluate(() => window.fixture.advance(1));
     await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     await touch.detach();

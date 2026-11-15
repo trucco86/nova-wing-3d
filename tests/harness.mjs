@@ -47,6 +47,14 @@ function element() {
       contains(n) {
         return classes.has(n);
       },
+      toggle(n, enabled) {
+        if (enabled === undefined) {
+          if (classes.has(n)) classes.delete(n);
+          else classes.add(n);
+        } else if (enabled) classes.add(n);
+        else classes.delete(n);
+        return classes.has(n);
+      },
     },
     setPointerCapture() {},
     getBoundingClientRect() {
@@ -62,6 +70,7 @@ export function harness({
   seed = 42,
   storage,
   nativeLifecycle = false,
+  preflightMap = false,
   coarsePointer = false,
   hostname,
   observeScene = () => {},
@@ -80,6 +89,7 @@ export function harness({
     hidden: false,
     body: element(),
     createElement: element,
+    createElementNS: element,
     getElementById(id) {
       if (!elements.has(id)) throw new Error('Missing DOM id ' + id);
       return elements.get(id);
@@ -150,6 +160,7 @@ export function harness({
     document,
     rendererFactory: () => renderer,
     autoLoop: false,
+    preflightMap,
     now: () => clock * 1000,
     random,
     spawnEncounters,

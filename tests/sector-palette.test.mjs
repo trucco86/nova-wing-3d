@@ -30,7 +30,7 @@ test('sector lighting really changes background, not just the HUD color', () => 
   }
 });
 
-test('city, Mars and planetary globes are mutually exclusive', () => {
+test('city shows its fractured moon only before ascent, without leaking into Mars or Earth orbit', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   const globe = scene.getObjectByName('world-orbital-globe');
@@ -40,10 +40,11 @@ test('city, Mars and planetary globes are mutually exclusive', () => {
   assert.ok(globe && city && cityFar && earth);
 
   world.setSector(SECTORS[0]);
-  assert.equal(globe.visible, false);
+  assert.equal(globe.visible, true, 'opening city now has a deliberately fractured moon');
+  assert.equal(globe.material.uniforms.crackIntensity.value, 1);
   assert.equal(city.visible, true, 'urban architecture is visible on Earth only');
   world.setAscent(0.4, true);
-  assert.equal(globe.visible, false, 'generic ascent cannot bypass the urban lockout');
+  assert.equal(globe.visible, true, 'generic ascent cannot bypass the authored city sky');
 
   world.setSector(SECTORS[1]);
   assert.equal(city.visible, false, 'no Earth metropolis on Mars');

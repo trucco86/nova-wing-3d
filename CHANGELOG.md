@@ -1,5 +1,132 @@
 # Histórico
 
+## 1.27.135 — QA140: menu RPG radial e pausa tática mobile
+
+- Primeira abertura radial com quatro categorias: Armas, Especiais, Berserk e Utilitários. Ações ficam agrupadas em painel compacto semitransparente e o botão fechado é circular.
+- Ao abrir no mobile, a simulação (tempo, movimento, tiros, colisões, chefes, tempestades e dano) é congelada sem interromper a visualização do frame do jogo. Ao fechar, a batalha retoma sem disparo ou boost preso.
+- Berserk utiliza progressão, energia e cooldown reais da campanha; a versão de QA continua isolada.
+- Fixture do navegador compartilha controlador real do RPG; testes de estados, pausa tática e visibilidade são executados pela CI.
+- Candidata em PR, sem merge ou produção até aprovação visual e testes 4/4.
+
+## 1.27.134 — QA136: chefes adaptativos e Marte Premium
+
+- Colisão swept dos disparos hostis, agora baseada no percurso completo do projétil e na caixa compacta da nave ou robô; preserva pods, obstáculos e invulnerabilidade.
+- IA local determinística que observa os padrões de movimento/boost do jogador, alterna ataques já existentes e varia de forma limitada um papel de formação dos caças, respeitando avisos e armas destruídas.
+- Investidas físicas passam a aproximar parte do boss em direção ao ponto travado no windup, sem perseguição automática após esquiva.
+- Interceptores inimigos surgem nos trechos espaciais iniciais de Marte (3–13 s), sem novas ondas durante a reentrada.
+- Shader de Marte com cânions, crateras e variações geológicas e três bancos de poeira turbulenta existentes sem novas malhas ou partículas.
+- Preview isolado e testes Node/FAST executados; 4 shards Playwright, dispositivo físico e homologação visual pendentes. **Não publicar ou fazer merge sem aprovação.**
+
+## 1.27.133 — QA134: pooling limitado de obstáculos espaciais
+
+- Satélites, cargueiros, destroços e pórticos comuns passam por pool de clones com no máximo três instâncias por tipo e doze no total. O cenário não precisa re-clonar a mesma composição de meshes em cada onda.
+- Cada reutilização restaura posição, rotação, escala e visibilidade de todos os componentes. Colisores, geometria, materiais e hardpoints permanecem idênticos.
+- Objetos do túnel Europa, reatores, trem, estruturas de chefe e variantes especiais não entram no pool.
+- O pool nunca descarta geometrias/materiais pertencentes a protótipos compartilhados; ao encerrar, solta apenas as referências JS retidas.
+- Contadores `created/reused/retained/rejected` ficam no snapshot de QA para comparar reutilização real e retenção em dispositivos.
+- Testes de reset integral, collider compartilhado, limites, exclusões de hazards e operação sem descarte indevido.
+- **Candidata na PR #359, sem merge ou deploy de produção.**
+
+## 1.27.132 — QA133: memória GPU e ciclo de vida explícito
+
+- Diagnóstico no painel Pausa > FPS de geometrias, texturas, programas compilados e heap JavaScript quando disponível; amostragem limitada e diferenças em relação ao início de cada teste.
+- Liberação dos três render targets, dois shaders e geometria do quad de pós-processamento quando uma instância do jogo é destruída. Recursos de cena e materiais compartilhados continuam intactos.
+- Escopo explícito de propriedade com descarte idempotente, evitando ciclos de vida incorretos e double-dispose.
+- Contadores `renderer.info.memory` **não são VRAM em bytes** e heap JavaScript é opcional; ausência de medição aparece como n/d.
+- Correções regressivas para voltar do mapa de pré-missão pela tela Press Start e contabilizar taxiports no skyline real, com densidade variável.
+- Testes unitários cobrem ciclo de vida, ausência de descarte compartilhado, baseline, pico, crescimento e disponibilidade parcial de memória.
+- **Candidata da PR #356, sem merge ou deploy em produção.**
+
+## 1.27.131 — QA132: modelos e shaders premium preparados fora do combate
+
+- Pré-carregamento de caças, tanques, robôs, satélites, naves de carga, destroços e obstáculos pesados dividido em tarefas independentes durante o menu, Mapa da Galáxia e hangar.
+- Evita executar a construção de geometria ou a compilação de shaders em callbacks de idle forçados por timeout durante o voo, subchefes, chefes e transições espaciais.
+- Se o navegador não oferece ao menos 4 ms livres em uma tarefa idle, o trabalho continua na fila, sem pular modelos nem alterar a sequência de missões.
+- Mantém geometria, materiais, hitboxes, quantidade de inimigos e identidade visual premium. Apenas o momento da preparação foi alterado.
+- Testes direcionados cobrem limite de idle, transição voo → mapa, processamento ordenado, cancelamento e compilação oculta dos pontos fracos.
+- **Candidata da PR #354, empilhada sobre #350, sem merge/deploy em produção.**
+
+## 1.27.130 — QA131: qualidade premium sem travadas de orçamento gráfico
+
+- Alterações de resolução interna adaptativa passam a atualizar somente pixel ratio e render targets. Detalhes PBR, cidade, naves e cenários premium não são reconfigurados em todo ajuste de DPR.
+- Redução preventiva de stutter com detecção de p95 alto e frames acima de 50 ms em janelas sucessivas. Um pico isolado não altera qualidade.
+- Presets HIGH preservam detalhes de cena primeiro; resolução adaptativa evita degradar geometria prematuramente e não regrava a configuração do usuário.
+- Auditoria de FPS local passa a mostrar p99 de frametime e contador de quadros acima de 100 ms, além de p95 e contadores 33/50 ms; sem upload ou coleta de dados pessoais.
+- Adaptação dos testes de gameplay WebGL para confirmar o novo mapa de pré-missão antes dos comandos de tiro, boost e controles.
+- Testes dedicados para orçamento diferencial, jank recorrente, pico isolado, modo pausado e relatórios p99. É necessário medir frametime em telefone real para confirmar qualquer ganho de desempenho.
+- **Candidata na PR #350. Sem merge ou deploy de produção.**
+
+## 1.27.129 — QA130: mapa galáctico antes de cada missão
+
+- O mapa cinematográfico abre **antes do primeiro voo** e após **Continuar** em um checkpoint. Mostra o setor atual e a progressão correta, sem avançar os eventos de gameplay enquanto o jogador consulta a rota.
+- Depois da vitória, preserva o fluxo Hangar de melhorias → Mapa → Próxima missão já existente.
+- Voltar do mapa antes da fase retorna ao menu, não ao hangar; créditos e checkpoint permanecem intactos. Selecionar visualmente uma missão bloqueada não permite pulá-la.
+- Rótulos próprios de pré-missão em português, inglês e espanhol. Entradas do Developer Lab ignoram o mapa de pré-missão para facilitar os testes.
+- Testes Node e Playwright de missão 01, checkpoint, rota de dez setores, botão lançar, voltar ao menu e mobile paisagem/retrato, com screenshots.
+- **Candidata apenas na PR #349, nenhuma alteração implantada em produção.**
+
+## 1.27.128 — QA129: mapa galáctico cinematográfico fiel ao conceito
+
+- Dez miniaturas cinematográficas extraídas do conceito visual aprovado, unificadas em um único atlas WebP de 10,3 KB, incorporado ao build offline. Cada fase tem seu quadrante exclusivo; SVGs QA128 continuam de fallback.
+- Cards continuam reais, selecionáveis e conectados à progressão da campanha, com neon, chamfros HUD, menta para concluído e âmbar para a próxima missão.
+- Nebulosa, estrelas, horizonte da Terra e nave dos Five Cats adicionados em CSS decorativo, sem objetos WebGL ou impacto nos controles de gameplay.
+- Mantido o design system Nova Wing (Chakra Petch / Barlow Condensed, azul-marinho, ciano/menta e laranja).
+- Teste de integridade do atlas, 10 quadrantes, missão ativa e bloqueio da missão futura; correção de teste desktop que aplicava requisito de sticky CTA exclusivo do mobile.
+- **Candidata isolada na PR #348, sem merge ou deploy de produção.**
+
+## 1.27.127 — QA128: mapa galáctico premium interativo
+
+- Substituição da grade simples do pós-missão por um mapa conectado dos dez setores, com rota ciano, nós numerados e cores distintas para missões concluídas, próxima missão e futuras.
+- Dez cenários SVG próprios (cidade, Marte, destroços, nave-mãe, dados, gelo, núcleo púrpura, Saturno, Órion e Marvin), sem download externo nem custo adicional de WebGL.
+- Cartões interativos de reconhecimento: é possível ler briefing, ameaça e chefe de qualquer destino; selecionar fase futura não altera os desbloqueios ou o alvo de lançamento.
+- Cabeçalho e HUD Nova Wing / Five Cats, progresso real, barra acessível, layout mobile com safe areas e suporte a movimento reduzido.
+- QA128.1: navegação compacta em paisagem, ações de voltar/iniciar fixas durante a rolagem em retrato e textos de inteligência do setor traduzidos para PT, EN e ES; verificações Playwright mobile e testes de idioma.
+- Testes de dez setores, legibilidade/markup, assets offline e proteção da progressão; 5/5 testes direcionados no workflow de build.
+- **Candidata isolada da tela após a missão. Nenhum merge ou deploy em produção.**
+
+## 1.27.126 — QA127: identidades visuais premium de inimigos
+
+- Caças perseguidores, interceptadores e bombardeiros recebem silhuetas distintas com placas de carenagem, entradas de ar, aletas, blindagem e módulos de armas específicos.
+- Tanques e walkers ganham variações de blindagem visual coerentes com sua função. O modelo base, pontos de disparo e volumes de colisão não mudam.
+- O acabamento é renderizado em **uma única malha instanciada adicional por inimigo** com geometrias e materiais compartilhados, em vez de múltiplas novas malhas e draw calls.
+- QA de composição de seis famílias de variantes, instancing, integridade dos hardpoints e segurança do modelo do jogador.
+- O teste de impacto de VFX da cidade foi atualizado no pipeline QA122 a QA126 para a composição premium real de 9 componentes e quatro nuvens de poeira.
+- **Candidata isolada, sem merge/deploy em produção.**
+
+## 1.27.125 — QA126: combates na subida e aliados cinematográficos
+
+- Quatro saídas de apoio dos Five Cats com entrada de longe, escolta e saída em curva tangencial. Introdução e Overdrive também passam a entrar e se afastar de forma animada, sem oclusão repentina.
+- Fase 1: formações aéreas com caças perseguidores, interceptadores e bombardeiros durante o trecho intermediário da subida atmosférica (8s a 35s de atmosfera), respeitando o BOOST e a cena do trem.
+- Variação dos inimigos de solo (tanques, robôs e mechas voadores), até uma patrulha de mecha voador durante a ascensão e limite ativo de naves por dificuldade.
+- Inimigos aéreos ajustam altura ao jogador; continuam usando as carenagens e superfícies premium já disponíveis para as três classes.
+- Testes para trajetórias de aliados, continuidade e lógica das ondas; validação visual e FPS em hardware físico continuam exigidos.
+- **Somente candidata, sem promoção a DEV/HML/main ou produção.**
+
+## 1.27.124 — QA125 performance espacial (experimental)
+
+- Pré-carregamento gradual dos modelos `satellite`, `carrier` e `debris` em slots ociosos para evitar construção do primeiro obstáculo no frame de chegada ao espaço.
+- Precompilação assíncrona de materiais por meio do shader-prewarm existente, com cancelamento no teardown e fallback de agendamento.
+- Testes unitários de fila, deduplicação, cancelamento e recuperação de falhas. Medições FPS/frametime em dispositivo real ainda necessárias.
+- PR empilhada #341 sobre a #340; **sem publicação em produção**.
+
+## 1.27.123 — Candidata QA124 (sem promoção)
+
+- QA124 (PR #340): chefe final depende do encerramento do subchefe, intervalo de recuperação de 8 segundos e aviso de aproximação de 3,5 segundos.
+- Saída do subchefe fora da tela libera corretamente a sequência; testes QA sem inimigos preservam a progressão.
+- Testes de regressão da ordem e do tempo; CI, WebGL real e FPS em smartphone ainda exigidos.
+- **Candidata isolada, não publicada em produção.**
+
+## 1.27.122
+
+**QA122 Cidade Premium 4.1 (candidata, sem merge)**
+
+- Fase 1: preenchimento funcional de ruas e espaços entre prédios com calçadas, baias de serviço, vitrines de térreo, quiosques, luzes de orientação, bancos e jardineiras.
+- Visual urbano reduz rosa e ciano dominantes por grafite, concreto, vidro, metais quentes e âmbar discreto; preservadas as cores de combate, efeitos e HUD.
+- Lua rachada aparece no horizonte urbano com fissuras ramificadas e se oculta antes da transição à Lua orbital real.
+- Novo módulo `city-122-street-infill.js` com seis lotes instanciados por trecho, quatro Medium, dois adicionais High, sem hitboxes e com segurança de lotes comerciais e envelope de voo.
+- QA direcionada: 4/4 testes WebGL desktop/mobile, orçamento City40 preservado, geometria extra de 2,21% desktop e 1,91% mobile. Gate FULL e homologação manual ainda necessários.
+- A versão 1.27.122 permanece somente em PR isolado, sem deploy de produção.
+
 ## 1.27.121 — Candidata premium integrada, homologação manual pendente
 
 - QA107 a QA109: coerência urbana, ancoragem de objetos, ascensão orbital e colisores de destroços físicos.

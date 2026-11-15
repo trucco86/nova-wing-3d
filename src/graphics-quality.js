@@ -14,6 +14,33 @@ export function graphicsPixelRatioLimit(quality, { coarsePointer = false } = {})
 }
 
 /**
+ * Pure render-budget diff. Changing internal DPR must not reconfigure dozens
+ * of high-detail city tiles: only a real geometry quality transition does.
+ * Repeated identical settings also avoid synchronous GPU target reallocations.
+ */
+export function graphicsBudgetTransition(
+  previous,
+  budget,
+  { coarsePointer = false, devicePixelRatio = 1 } = {},
+) {
+  const pixelLimit =
+    graphicsPixelRatioLimit(budget.quality, { coarsePointer }) * budget.resolutionScale;
+  const pixelRatio = Math.min(
+    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1,
+    pixelLimit,
+  );
+  const qualityChanged = !previous || previous.quality !== budget.quality;
+  const pixelRatioChanged = !previous || Math.abs(previous.pixelRatio - pixelRatio) >= 0.01;
+  return {
+    qualityChanged,
+    pixelRatioChanged,
+    pixelLimit,
+    pixelRatio,
+    next: { quality: budget.quality, pixelRatio },
+  };
+}
+
+/**
  * Adaptive 3D budget controlled by measured, active *render-frame* pacing.
  * Ignore background tabs, pause, menu, and long unrepresentative frame gaps.
  * Manual HIGH retains its geometry but can downscale internal resolution to
@@ -84,14 +111,21 @@ export function createAdaptiveGraphics({
     const ordered = samples.slice().sort((a, b) => a - b);
     const p75 = ordered[Math.floor(ordered.length * 0.75)];
     const currentFps = 1000 / Math.max(1, p75);
+    const p95 = ordered[Math.min(ordered.length - 1, Math.ceil(ordered.length * 0.95) - 1)];
+    const severeStalls = ordered.filter((ms) => ms >= 50).length;
+    const stutterRatio = severeStalls / ordered.length;
     const coverage = samples.length / (windowElapsed / 1000);
     samples = [];
     windowElapsed = 0;
     if (activeElapsed < 4500 || coverage < 8) return null;
     cooldown = Math.max(0, cooldown - 2.2);
     if (cooldown > 0) return null;
-    const struggling = currentFps < 42;
-    const stable = currentFps > 57;
+    // A smooth p75 can hide repeated 50-100ms frames during city/space
+    // transitions. React only to *sustained* jank across two windows, never
+    // downscale due to one slow object spawn or background scheduler noise.
+    const repeatedStutter = p95 >= 48 && stutterRatio >= 0.065;
+    const struggling = currentFps < 42 || repeatedStutter;
+    const stable = currentFps > 57 && p95 < 28 && stutterRatio < 0.01;
     slowWindows = struggling ? slowWindows + 1 : 0;
     fastWindows = stable ? fastWindows + 1 : 0;
     if (slowWindows >= 2) {

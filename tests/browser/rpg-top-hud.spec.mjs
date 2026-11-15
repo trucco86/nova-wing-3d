@@ -7,14 +7,13 @@ const overlaps = (a, b, gap = 2) =>
   a.y < b.y + b.height - gap &&
   a.y + a.height > b.y + gap;
 
-test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight corridor', async ({
+test('QA140 mobile radial RPG freezes the battle and keeps a compact circular HUD', async ({
   page,
 }, info) => {
-  test.skip(info.project.name !== 'mobile', 'Tests require actual touch viewport');
+  test.skip(info.project.name !== 'mobile', 'Touch radial menu is mobile-only');
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 320, height: 568 },
@@ -23,79 +22,83 @@ test('P0 mobile RPG shortcuts remain in the upper HUD and never block the flight
     await page.setViewportSize(viewport);
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-    const geo = await page.evaluate(() => {
-      const box = (selector) => {
-        const element = document.querySelector(selector);
-        if (!element || element.hidden || getComputedStyle(element).display === 'none') return null;
-        const { x, y, width, height } = element.getBoundingClientRect();
+    const drawer = page.locator('#strategyDrawer');
+    const trigger = drawer.locator('summary');
+    await expect(trigger).toBeVisible();
+    await expect(drawer).not.toHaveAttribute('open');
+    const atRest = await page.evaluate(() => {
+      const box = (sel) => {
+        const el = document.querySelector(sel);
+        if (!el || el.hidden || getComputedStyle(el).display === 'none') return null;
+        const { x, y, width, height } = el.getBoundingClientRect();
         return { x, y, width, height };
       };
-      const buttons = Object.fromEntries(
-        ['arsenalSwitch', 'specialSwitch', 'specialCast'].map((id) => [id, box('#' + id)]),
-      );
-      const pointerTargets = Object.fromEntries(
-        Object.entries(buttons).map(([id, bounds]) => [
-          id,
-          bounds
-            ? document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2)
-                ?.id
-            : null,
-        ]),
-      );
       return {
-        strategy: box('#strategyControls'),
-        drawer: box('#strategyDrawer'),
-        quick: box('#quickRpg'),
+        trigger: box('#strategyDrawer summary'),
         notices: box('#hudNotices'),
         radar: box('#tacticalPanel'),
-        aim: box('#aimReticle'),
-        buttons,
-        pointerTargets,
       };
     });
+    expect(atRest.trigger.width).toBeGreaterThanOrEqual(48);
+    expect(atRest.trigger.height).toBeGreaterThanOrEqual(48);
+    expect(atRest.trigger.x).toBeGreaterThanOrEqual(0);
+    expect(atRest.trigger.x + atRest.trigger.width).toBeLessThanOrEqual(viewport.width);
+    expect(overlaps(atRest.trigger, atRest.notices)).toBe(false);
+    expect(overlaps(atRest.trigger, atRest.radar)).toBe(false);
+    await page.screenshot({ path: info.outputPath('rpg-closed-' + viewport.width + '.png') });
 
-    expect(geo.strategy).not.toBeNull();
-    expect(geo.drawer).not.toBeNull();
-    expect(geo.quick).not.toBeNull();
-    expect(
-      geo.strategy.y + geo.strategy.height,
-      'RPG must stay above central combat lane',
-    ).toBeLessThan(viewport.height * (viewport.width > viewport.height ? 0.4 : 0.34));
-    expect(geo.strategy.x).toBeGreaterThanOrEqual(0);
-    expect(geo.strategy.x + geo.strategy.width).toBeLessThanOrEqual(viewport.width);
-    expect(overlaps(geo.strategy, geo.notices), 'warnings must have a separate top lane').toBe(
-      false,
-    );
-    expect(overlaps(geo.strategy, geo.radar), 'RPG must never cover boss radar').toBe(false);
-    const y = Object.values(geo.buttons).map((button) => button?.y);
-    expect(new Set(y).size, 'all RPG shortcuts must share one top row').toBe(1);
-    for (const [id, bounds] of Object.entries(geo.buttons)) {
-      expect(bounds, id + ' stays mounted').not.toBeNull();
-      expect(bounds.width, id + ' has a usable touch width').toBeGreaterThanOrEqual(37);
-      expect(bounds.height, id + ' has a usable touch height').toBeGreaterThanOrEqual(44);
-      expect(geo.pointerTargets[id], id + ' is not intercepted by another overlay').toBe(id);
+    await trigger.click();
+    await expect(drawer).toHaveAttribute('open');
+    await expect(page.locator('body')).toHaveClass(/rpg-tactical-paused/);
+    await expect(page.locator('#rpgRadialMenu')).toBeVisible();
+    await expect(page.locator('#rpgCategoryPanel')).toBeHidden();
+    await expect(page.locator('#pauseMenu')).toBeHidden();
+    const before = await page.evaluate(() => window.fixture.game.snapshot());
+    await page.evaluate(() => window.fixture.advance(3));
+    const after = await page.evaluate(() => window.fixture.game.snapshot());
+    expect(after.seconds).toBe(before.seconds);
+    expect(after.shield).toBe(before.shield);
+    expect(after.entities.hostile).toBe(before.entities.hostile);
+    expect(after.rpgTacticalPaused).toBe(true);
+    await page.screenshot({ path: info.outputPath('rpg-radial-' + viewport.width + '.png') });
+
+    for (const name of ['weapons', 'specials', 'berserk', 'utilities']) {
+      await page.locator('[data-rpg-category="' + name + '"]').click();
+      const panel = page.locator('#rpgCategoryPanel');
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveAttribute('data-category', name);
+      await expect(page.locator('#rpgRadialMenu')).toBeHidden();
+      const rect = await panel.boundingBox();
+      expect(rect.x).toBeGreaterThanOrEqual(0);
+      expect(rect.x + rect.width).toBeLessThanOrEqual(viewport.width);
+      expect(rect.y).toBeGreaterThanOrEqual(0);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(viewport.height);
+      await page.screenshot({
+        path: info.outputPath('rpg-' + name + '-' + viewport.width + '.png'),
+      });
+      await page.locator('#rpgCategoryBack').click();
+      await expect(page.locator('#rpgRadialMenu')).toBeVisible();
+      expect((await page.evaluate(() => window.fixture.game.snapshot())).rpgTacticalPaused).toBe(
+        true,
+      );
     }
-    await page.screenshot({
-      path: info.outputPath('rpg-top-rail-' + viewport.width + 'x' + viewport.height + '.png'),
-    });
+    await page.locator('#rpgRadialClose').click();
+    await expect(drawer).not.toHaveAttribute('open');
+    await expect(page.locator('body')).not.toHaveClass(/rpg-tactical-paused/);
+    await expect(page.locator('#pauseMenu')).toBeHidden();
 
-    // Opening advanced tactical options is deliberate; they must be scrollable
-    // without pushing the permanent RPG shortcuts into the middle of the screen.
-    await page.locator('#strategyDrawer summary').click();
-    await expect(page.locator('#strategyDrawer')).toHaveAttribute('open');
-    await expect(page.locator('#quickRpg')).toHaveCSS('visibility', 'visible');
-    await expect(page.locator('#specialCast')).toBeVisible();
-    const opened = await page.locator('#strategyDrawer').boundingBox();
-    expect(opened.y).toBeLessThan(viewport.height * 0.45);
-    expect(opened.height).toBeLessThanOrEqual(Math.min(viewport.height * 0.19, 110) + 2);
-    const cast = await page.locator('#specialCast').boundingBox();
-    const activeTarget = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, {
-      x: cast.x + cast.width / 2,
-      y: cast.y + cast.height / 2,
+    // Real pause uses a separate modal: no floating RPG/EV button may paint
+    // over its controls, even before the next gameplay frame arrives.
+    await page.locator('#pause').tap();
+    await expect(page.locator('#pauseMenu')).toBeVisible();
+    await expect(page.locator('#strategyControls')).toBeHidden();
+    await expect(trigger).toBeHidden();
+    await page.screenshot({
+      path: info.outputPath('pause-without-rpg-' + viewport.width + 'x' + viewport.height + '.png'),
     });
-    expect(activeTarget, 'cast button stays clickable while details are open').toBe('specialCast');
-    await page.locator('#strategyDrawer summary').click();
-    await expect(page.locator('#strategyDrawer')).not.toHaveAttribute('open');
+    await page.locator('#pauseResume').tap();
+    await expect(page.locator('#pauseMenu')).toBeHidden();
+    await expect(trigger).toBeVisible();
   }
   expect(errors).toEqual([]);
 });

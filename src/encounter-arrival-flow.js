@@ -6,6 +6,10 @@ export const LATE_ARRIVAL_WAVE_SECONDS = 18;
 
 export function fighterAllowedDuringArrival(sectorIndex, elapsed, arrivalTransit) {
   if (!arrivalTransit) return true;
+  // Mars opens with two intercept formations while its planet is still
+  // distant. Stop spawning once atmospheric entry begins at 13 seconds;
+  // the scripted descent and its sand curtains remain legible.
+  if (sectorIndex === 1) return elapsed >= 3 && elapsed < 13;
   return sectorIndex >= 3 && elapsed >= LATE_ARRIVAL_WAVE_SECONDS;
 }
 

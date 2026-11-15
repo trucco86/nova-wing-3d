@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { MARS_GLOBE_FRAGMENT_SHADER } from './mars-globe-shader.js';
 
 // The inverse of Earth's first-stage ascent: space -> Mars orbit -> atmospheric
 // entry -> controlled descent -> surface combat. Authored, deterministic and
@@ -65,25 +66,7 @@ export function createMarsApproach() {
       depthWrite: false,
       vertexShader:
         'varying vec3 surface;varying vec3 normalDir;void main(){surface=position;normalDir=normal;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader: `varying vec3 surface;varying vec3 normalDir;uniform float alpha;
-      float hash(vec3 p){return fract(sin(dot(p,vec3(17.13,61.37,39.19)))*43758.5453);}
-      float terrain(vec3 p){return sin(p.x*0.036)*sin(p.y*0.04+p.z*0.018)*0.23+
-        sin(p.x*0.12+p.z*0.055)*sin(p.y*0.14)*0.1+hash(floor(p*0.08))*0.12;}
-      void main(){
-        vec3 n=normalize(normalDir);
-        vec3 p=surface;
-        float grain=terrain(p);
-        float basin=smoothstep(-.30,.13,grain);
-        vec3 dark=vec3(.34,.105,.061);
-        vec3 bright=vec3(.76,.35,.18);
-        vec3 albedo=mix(dark,bright,basin);
-        float pole=smoothstep(.80,.96,abs(n.y));
-        albedo=mix(albedo,vec3(.77,.68,.58),pole*.7);
-        float crater=abs(sin(length(p.xz)*.022+grain*18.));
-        albedo*=1.-.13*smoothstep(.91,1.,crater);
-        float day=max(.14,dot(n,normalize(vec3(-.52,.38,.72))));
-        gl_FragColor=vec4(albedo*(.20+day*.95),alpha);
-      }`,
+      fragmentShader: MARS_GLOBE_FRAGMENT_SHADER,
     }),
   );
   planet.name = 'mars-orbit-visible-planet';

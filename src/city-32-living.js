@@ -4,17 +4,17 @@ import * as T from 'three';
 // Materials and textures are allocated once, never in the animation loop.
 export const CITY32_ADS = Object.freeze([
   ['NOVA GRID', 'ENERGIA QUE MOVE MUNDOS', '#58f0ff'],
-  ['CATRONICS', 'TECNOLOGIA FELINA', '#ff79d1'],
+  ['CATRONICS', 'TECNOLOGIA FELINA', '#d8b693'],
   ['ASTRO FUEL', 'MAIS LONGE A CADA SALTO', '#ffc47b'],
-  ['GALAXY BYTE', 'CONECTADOS AO INFINITO', '#a8a1ff'],
+  ['GALAXY BYTE', 'CONECTADOS AO INFINITO', '#a5b4af'],
   ['FIVE CATS ENERGY', 'PODER PARA DECOLAR', '#69ffd8'],
   ['SKYPORT', 'SEU DESTINO COMECA AQUI', '#75baff'],
-  ['AERORAIL', 'CIDADES EM MOVIMENTO', '#f3a6ff'],
+  ['AERORAIL', 'CIDADES EM MOVIMENTO', '#d8c2a4'],
   ['COSMO LINK', 'O UNIVERSO E AGORA', '#66fff0'],
   ['QUANTUM MALL', 'COMPRE NO AMANHA', '#ff9e89'],
   ['NEO CORE', 'O FUTURO EM SUAS MAOS', '#b2ff7c'],
   ['ORBITAL PLAZA', 'UM MUNDO DE EXPERIENCIAS', '#ffe280'],
-  ['NOVA MARKET', 'SEMPRE MAIS PERTO', '#ff85af'],
+  ['NOVA MARKET', 'SEMPRE MAIS PERTO', '#deb48a'],
 ]);
 
 const block = new T.BoxGeometry(1, 1, 1);
@@ -33,7 +33,7 @@ const beamMaterial = new T.MeshBasicMaterial({
 });
 const hull = new T.MeshStandardMaterial({ color: '#c5e5f0', metalness: 0.74, roughness: 0.24 });
 const engine = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-const palette = ['#48eaff', '#ff80d4', '#ffa970', '#b694ff', '#70ffd3', '#ffe795'].map(
+const palette = ['#c4c9b8', '#e1b786', '#d8d2c2', '#9fb9b4', '#c4b4a2', '#e8d7a5'].map(
   (c) => new T.Color(c),
 );
 const transform = new T.Object3D();
@@ -235,9 +235,9 @@ function nearestCityFacade(buildings, side, targetZ) {
 // facade: no advertising panels suspended at arbitrary XYZ coordinates.
 function districtIdentity(parent, buildings) {
   const districts = [
-    { name: 'corporate', z: -280, color: '#59dcff', secondary: '#a5b9ff', brands: [0, 9] },
-    { name: 'entertainment', z: -865, color: '#ff72d4', secondary: '#ae80ff', brands: [1, 7] },
-    { name: 'transport', z: -1450, color: '#ffca72', secondary: '#80ffa5', brands: [5, 6] },
+    { name: 'corporate', z: -280, color: '#b8c3bf', secondary: '#c7bfad', brands: [0, 9] },
+    { name: 'entertainment', z: -865, color: '#e3bb90', secondary: '#b7aca0', brands: [1, 7] },
+    { name: 'transport', z: -1450, color: '#e5c18b', secondary: '#b5c1aa', brands: [5, 6] },
   ];
   const bands = [];
   const stores = [];

@@ -1,0 +1,44 @@
+name: QA122 city street and lunar WebGL audit
+
+on:
+  push:
+    branches:
+      - feat/qa122-street-life-warm-city-fractured-moon-20261113
+    paths:
+      - .github/workflows/qa122-visual-check.yml
+      - src/visuals.js
+      - src/city-122-street-infill.js
+      - tests/dynamic-scene.js
+      - tests/browser/qa122-city-streets-moon.spec.mjs
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa122-city-webgl
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Audit grounded streets and fractured lunar landmark in actual WebGL
+        run: npx playwright test tests/browser/qa122-city-streets-moon.spec.mjs tests/browser/qa114-silhouette-performance.spec.mjs --workers=2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa122-street-moon-desktop-mobile
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn

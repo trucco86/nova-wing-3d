@@ -97,11 +97,30 @@ test('Saturn mobile thumb orbit closes RPG and triggers delayed Omega turn on bo
       const rect = await button.boundingBox();
       expect(rect).not.toBeNull();
       const pos = center(rect);
-      expect(
-        await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, pos),
-        'expanded RPG must not intercept the actual orbit button in Saturn battle',
-      ).toBe(side < 0 ? 'orbitLeft' : 'orbitRight');
+      const overlay = await page.evaluate(({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return {
+          dismissSurface:
+            element?.id === 'rpgTacticalScrim' ||
+            (!!element?.closest?.('#rpgRadialMenu') && !element?.closest?.('button')),
+          category: !!element?.closest?.('[data-rpg-category]'),
+        };
+      }, pos);
+      expect(overlay.dismissSurface, 'QA140 radial must absorb the orbit touch').toBe(true);
+      expect(overlay.category, 'orbit should not activate an RPG ability').toBe(false);
+      const frozen = await page.evaluate(() => window.fixture.game.snapshot());
+      await page.evaluate(() => window.fixture.advance(0.9, { renderAfter: false }));
+      const still = await page.evaluate(() => window.fixture.game.snapshot());
+      expect(still.seconds).toBe(frozen.seconds);
+      expect(still.strategy.orbitAngle).toBe(frozen.strategy.orbitAngle);
 
+      // Dismiss the overlay first; the underlying boss-orbit control must
+      // then be independently tappable without moving the ship on dismissal.
+      await page.touchscreen.tap(pos.x, pos.y);
+      await expect(drawer).not.toHaveAttribute('open');
+      expect(await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, pos)).toBe(
+        side < 0 ? 'orbitLeft' : 'orbitRight',
+      );
       const initialTarget = await page.evaluate(
         () => window.fixture.game.snapshot().bossTargets[0].angle,
       );
@@ -111,7 +130,6 @@ test('Saturn mobile thumb orbit closes RPG and triggers delayed Omega turn on bo
           type: 'touchStart',
           touchPoints: [{ ...pos, id: 8 }],
         });
-        await expect(drawer).not.toHaveAttribute('open');
         await page.evaluate(() => window.fixture.advance(1.96, { renderAfter: false }));
       } finally {
         await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });

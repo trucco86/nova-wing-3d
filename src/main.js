@@ -4,6 +4,7 @@ import { installShowroom } from './showroom.js';
 import { installOrbit9ExplorationPreview } from './exploration-preview.js';
 import { createGame } from './game.js';
 import { installCompactMenu } from './compact-menu.js';
+import { installMobileRpgAccordion } from './mobile-rpg.js';
 import { createTrophySystem, readTrophies } from './trophy-system.js';
 import { createCatService } from './cat-service.js';
 import { createCatRankUI } from './cat-rank-ui.js';
@@ -50,6 +51,7 @@ const game = createGame({
 });
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });
 const compactMenu = installCompactMenu();
+const mobileRpg = installMobileRpgAccordion({ game });
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -67,6 +69,7 @@ if (!Capacitor.isNativePlatform()) {
     trophyUI.destroy();
     catRankUI?.destroy();
     compactMenu.destroy();
+    mobileRpg.destroy();
     showroom.destroy();
     exploration.destroy();
     destroy();

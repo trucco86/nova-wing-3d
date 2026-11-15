@@ -25,6 +25,8 @@ import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
+import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
+import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
@@ -102,12 +104,15 @@ import { createMusic } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
-import { createAdaptiveGraphics, graphicsPixelRatioLimit } from './graphics-quality.js';
+import { createHapticFeedback } from './haptic-feedback.js';
+import { createAdaptiveGraphics, graphicsBudgetTransition } from './graphics-quality.js';
 import { createFrameAudit, formatFrameAudit } from './frame-audit.js';
 import { createHostileProjectilePool } from './hostile-projectile-pool.js';
 import { createParticlePool } from './particle-pool.js';
 import { createHudWriteGuard } from './hud-write-guard.js';
 import { createRenderCostAudit } from './render-cost-audit.js';
+import { createReusableObstaclePool } from './reusable-obstacle-pool.js';
+import { createGpuMemoryAudit, formatGpuMemoryAudit } from './gpu-memory-audit.js';
 import { createReflexBoost, nearbyHostileThreats } from './reflex-boost.js';
 import { robotAttackPose, robotEyeBurstReady, ROBOT_EYE_WARNING_SECONDS } from './robot-assault.js';
 import { bossBatteryPlan, batteryForSignature, sourceHardpointName } from './boss-hardpoints.js';
@@ -125,6 +130,7 @@ import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { prewarmSceneShaders } from './scene-prewarm.js';
+import { scheduleIdlePrewarm } from './obstacle-idle-prewarm.js';
 import {
   mechaMultiLockCapacity,
   availableMechaTargets,
@@ -179,6 +185,7 @@ import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.j
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
+import { bossEncounterGate } from './encounter-separation.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
 import {
@@ -245,6 +252,9 @@ export function createGame({
   now = () => performance.now(),
   random = Math.random,
   autoLoop = true,
+  // Real play opens a campaign briefing before the first or resumed sector.
+  // Headless test harnesses can opt in without enabling animation frames.
+  preflightMap = autoLoop,
   spawnEncounters = true,
   // QA fixtures may inspect destruction without spawning hostile formations;
   // ordinary gameplay inherits the normal encounter toggle.
@@ -258,6 +268,9 @@ export function createGame({
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
   const renderCostAudit = createRenderCostAudit();
+  const gpuMemoryAudit = createGpuMemoryAudit();
+  let gpuMemoryAuditRecording = false;
+  let gpuMemoryFrameCount = 0;
   let frameAuditContext = null;
   let pausePanel = 'controls';
   const matchMedia = (q) => window.matchMedia(q);
@@ -273,6 +286,7 @@ export function createGame({
     clamp = T.MathUtils.clamp,
     rnd = (a, b) => a + random() * (b - a);
   const hud = createHudWriteGuard($);
+  const haptics = createHapticFeedback(window);
   document.body.classList.add('menu');
   let renderer;
   try {
@@ -293,6 +307,9 @@ export function createGame({
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
   const scene = new T.Scene();
+  // Only immutable standard obstacle clones can be recycled. Their geometry
+  // and materials belong to shared templates; do not dispose on release.
+  const obstaclePool = createReusableObstaclePool({ create: createObstacle });
   const camera = new T.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 2500);
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 7, -50);
@@ -712,6 +729,7 @@ export function createGame({
     podsDetached = false,
     podCd = 0,
     subDone = false,
+    subbossClearedAt = null,
     rivalDone = false,
     baseDone = false,
     groundCd = 5,
@@ -833,11 +851,31 @@ export function createGame({
     if (!dynamicFlight || state !== 'playing') return;
     const available = ARSENAL.filter((w) => w.stage <= stage()).length;
     strategy.arsenal = (strategy.arsenal + 1) % available;
+    // The tactical pause freezes the simulation HUD loop. Selection feedback
+    // is UI-only and must update immediately while the battle stays frozen.
+    if (rpgTacticalPaused)
+      $('arsenalSwitch').textContent =
+        coarsePointer.matches && window.innerWidth <= 900
+          ? 'ARMA ' + selectedWeapon().name
+          : 'F · ' + selectedWeapon().name;
     message('ARMA · ' + selectedWeapon().name);
   }
   function cycleSpecial() {
     if (!dynamicFlight || state !== 'playing') return;
     strategy.special = (strategy.special + 1) % SPECIALS.filter((w) => w.stage <= stage()).length;
+    if (rpgTacticalPaused) {
+      const selected = SPECIALS[strategy.special].name;
+      $('specialSwitch').textContent =
+        coarsePointer.matches && window.innerWidth <= 900 ? 'RPG ' + selected : 'H · ' + selected;
+      $('quickRpg').setAttribute('data-selected', selected);
+      // The pause freezes the normal HUD refresh; the chosen spell can have
+      // a different energy cost and must not reuse a stale disabled state.
+      $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      $('specialCast').setAttribute(
+        'aria-label',
+        'Ativar ' + selected + ', energia ' + Math.floor(arcana),
+      );
+    }
   }
   function castSquadSpecial(kind) {
     if (!dynamicFlight || state !== 'playing' || !squad) return false;
@@ -884,6 +922,11 @@ export function createGame({
     }
     message('ESPECIAL · ' + spell.name);
     return true;
+  }
+  function castBerserkFromMenu() {
+    if (state !== 'playing' || stage() < SPECIALS[3].stage) return false;
+    strategy.special = 3;
+    return castSpecial();
   }
   function activateQaBerserk() {
     // Repeatable QA action: genuine Berserk spell, isolated from campaign saves,
@@ -1281,6 +1324,10 @@ export function createGame({
   // keyboard focus in browsers that retain controls underneath the shop panel.
   // CSS provides the visual fallback and always keeps the hangar in front.
   function setIntermissionUI(active) {
+    if (active) {
+      $('strategyDrawer').open = false;
+      setRpgTacticalPaused(false);
+    }
     document.body.classList[active ? 'add' : 'remove']('intermission-active');
     for (const id of [
       'hud',
@@ -1388,22 +1435,58 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
     return true;
   }
-  function showCampaignMap() {
-    if (state !== 'shop' || !appActive) return;
+  let campaignMapOrigin = 'hangar';
+  function openCampaignMap(origin) {
+    if (!appActive) return;
+    campaignMapOrigin = origin;
     state = 'map';
     $('shop').hidden = true;
-    drawCampaignMap(document, SECTORS, sectorIndex + 1);
+    // First launch or Continue uses the current sector. After a completed
+    // stage, the hangar points to the *next* unlocked destination.
+    drawCampaignMap(document, SECTORS, sectorIndex + (origin === 'hangar' ? 1 : 0));
+    $('mapBack').textContent = localization.translate(
+      origin === 'preflight' ? 'VOLTAR AO MENU' : 'VOLTAR AO HANGAR',
+    );
+    $('mapLaunch').textContent = localization.translate(
+      origin === 'preflight' ? 'INICIAR MISSÃO ↗' : 'INICIAR PRÓXIMA FASE ↗',
+    );
     $('campaignMap').hidden = false;
+    $('mapLaunch').focus?.({ preventScroll: true });
+  }
+  function showCampaignMap() {
+    if (state !== 'shop' || !appActive) return;
+    openCampaignMap('hangar');
   }
   function backToShop() {
     if (state !== 'map') return;
-    state = 'shop';
     $('campaignMap').hidden = true;
+    if (campaignMapOrigin === 'preflight') {
+      // A preflight briefing precedes the very first mission and Continue.
+      // Back does not change the checkpoint or pretend a hangar was earned.
+      campaignMapOrigin = 'hangar';
+      state = 'menu';
+      setIntermissionUI(false);
+      document.body.classList.remove('ranking-intermission');
+      document.body.classList.add('menu');
+      $('menu').hidden = false;
+      $('continue').hidden = !readSave(storage);
+      $('start').focus?.({ preventScroll: true });
+      return;
+    }
+    state = 'shop';
     $('shop').hidden = false;
     renderShop();
   }
   function nextSector() {
     if (!['shop', 'map'].includes(state) || !appActive) return;
+    if (state === 'map' && campaignMapOrigin === 'preflight') {
+      // Do not increment: the player has not yet started the selected sector.
+      campaignMapOrigin = 'hangar';
+      $('campaignMap').hidden = true;
+      resumeAudio();
+      enterSector(false);
+      return;
+    }
     $('campaignMap').hidden = true;
     resumeAudio();
     sectorIndex++;
@@ -1499,6 +1582,7 @@ export function createGame({
     lastRangedCycle = bossIntentCycle = -1;
     bossMeleeResolved = false;
     bossIntent = null;
+    pilotPatternReader.reset();
     renderBossRadar(document, null);
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
@@ -1511,6 +1595,7 @@ export function createGame({
     podCd = 0;
     obstacleCd = 9;
     subDone = rivalDone = false;
+    subbossClearedAt = null;
     baseDone = sectorIndex === 1;
     // The first ground patrol enters before the suspended-train warning.
     groundCd = dynamicFlight && sectorIndex === 0 ? 3.6 : 5;
@@ -1711,6 +1796,9 @@ export function createGame({
   }
   function dispose(o) {
     scene.remove(o);
+    // Safe only for explicitly leased immutable obstacle clones.
+    // All enemies, bosses, shots and special stage props keep their own path.
+    obstaclePool.release(o);
   }
   function explode(pos, n = 16, color = 0xffa04a, playGenericSound = true) {
     if (playGenericSound && n >= 12 && dynamicFlight) cue('explosion');
@@ -1738,7 +1826,7 @@ export function createGame({
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
-    if (settings.vibration) window.navigator?.vibrate?.(45);
+    if (settings.vibration) haptics.pulse(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
       cue('critical');
@@ -1787,6 +1875,7 @@ export function createGame({
     if (e.dead) return;
     explode(e.o.position, e.kind === 'subboss' ? 48 : 16);
     if (e.kind === 'subboss') {
+      subbossClearedAt = elapsed;
       $('subHUD').hidden = true;
       music?.start(sectorIndex);
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
@@ -1882,6 +1971,7 @@ export function createGame({
   }
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
   const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
+  const pilotPatternReader = createPilotPatternReader();
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
@@ -2774,6 +2864,8 @@ export function createGame({
     boss = null;
   }
   function start(resume = false, restart = null, skipSquad = false, developerRun = false) {
+    $('strategyDrawer').open = false;
+    setRpgTacticalPaused(false);
     skipSquadIntro = skipSquad;
     if (!appActive) return;
     developerSession = developerAvailable && developerRun;
@@ -2867,7 +2959,12 @@ export function createGame({
     settingsOpen = false;
     unlockAudio();
     menuThemePlaying = false;
-    enterSector(false);
+    if (dynamicFlight && preflightMap && !developerSession) {
+      setIntermissionUI(true);
+      openCampaignMap('preflight');
+    } else {
+      enterSector(false);
+    }
     // The selected Five Cats pilot is already the active player on frame zero.
     // Do not leave the previous/default pilot on the HUD until the first tick.
     $('pilotName').textContent =
@@ -2954,6 +3051,7 @@ export function createGame({
       }
       // Keep the test focused on its selected encounter, not ambient enemies/pickups.
       subDone = rivalDone = baseDone = tunnelDone = arcadeDone = true;
+      subbossClearedAt = elapsed;
       spawnCd = groundCd = obstacleCd = ringCd = petCd = Infinity;
       if (scenario.encounter === 'subboss') {
         elapsed = current().duration * 0.25;
@@ -2995,7 +3093,26 @@ export function createGame({
       ' · SEM RANK';
     return true;
   }
+  let rpgTacticalPaused = false;
+  let rpgFrozenFrames = 0;
+  function setRpgTacticalPaused(active) {
+    // Tactical pause is independent of the game's ordinary Pause screen.
+    if (active && (!dynamicFlight || state !== 'playing' || !coarsePointer.matches)) return false;
+    if (rpgTacticalPaused === !!active) return rpgTacticalPaused;
+    rpgTacticalPaused = !!active;
+    rpgFrozenFrames = 0;
+    document.body.classList.toggle('rpg-tactical-paused', rpgTacticalPaused);
+    if (rpgTacticalPaused) {
+      releaseControls();
+      music?.pause();
+      mechaEngine?.silence();
+      audioCues?.silence();
+    } else if (state === 'playing' && appActive) music?.resume();
+    return rpgTacticalPaused;
+  }
   function pause() {
+    $('strategyDrawer').open = false;
+    setRpgTacticalPaused(false);
     if (!appActive) return;
     if (['playing', 'collapsing', 'respawning', 'arcade'].includes(state)) {
       pausedFrom = state;
@@ -3006,6 +3123,7 @@ export function createGame({
       mechaEngine?.silence();
       audioCtx?.suspend?.().catch(() => {});
       $('pauseMenu').hidden = false;
+      $('strategyControls').hidden = true;
       $('pauseConfirmPanel').hidden = true;
       $('pauseActions').hidden = false;
       confirmation = null;
@@ -3021,6 +3139,7 @@ export function createGame({
       state = pausedFrom;
       $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
+      $('strategyControls').hidden = !dynamicFlight || state !== 'playing';
       $('pause').textContent = 'Ⅱ';
       if (!(dynamicFlight && coarsePointer.matches && stageIntroTime > 0 && msgTime > 0))
         message('Missão retomada.');
@@ -3040,6 +3159,8 @@ export function createGame({
   }
   function exitToMenu() {
     if (state !== 'paused') return;
+    $('strategyDrawer').open = false;
+    setRpgTacticalPaused(false);
     releaseControls();
     music?.pause();
     clearWorld();
@@ -3108,6 +3229,15 @@ export function createGame({
       renderFrameAudit();
     }
   }
+  function captureGpuMemory(phase) {
+    return gpuMemoryAudit.capture(renderer, {
+      sector: sectorIndex + 1,
+      phase,
+      // performance.memory is optional and browser-specific; this is JS heap,
+      // not VRAM. No unsupported browser is assigned a guessed memory value.
+      jsHeapBytes: window.performance?.memory?.usedJSHeapSize ?? null,
+    });
+  }
   function renderFrameAudit() {
     const result = frameAudit.report();
     const renderCost = renderCostAudit.report();
@@ -3170,21 +3300,33 @@ export function createGame({
               : 'Passes pós-processamento (pico)') +
           ': ' +
           renderCost.maxPostPasses
-        : '');
+        : '') +
+      '\n' +
+      formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
   }
+  let appliedGraphicsBudget = null;
   function applyRenderBudget(budget) {
-    heroEffects.setQuality(budget.quality, coarsePointer.matches);
-    pixelLimit =
-      graphicsPixelRatioLimit(budget.quality, {
-        coarsePointer: coarsePointer.matches,
-      }) * budget.resolutionScale;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, pixelLimit));
-    world.setGraphicsQuality(budget.quality);
-    post.setGraphicsQuality(budget.quality);
-    post.resize(window.innerWidth, window.innerHeight);
+    const transition = graphicsBudgetTransition(appliedGraphicsBudget, budget, {
+      coarsePointer: coarsePointer.matches,
+      devicePixelRatio: window.devicePixelRatio ?? 1,
+    });
+    pixelLimit = transition.pixelLimit;
+    // Scenery quality affects thousands of meshes. An adaptive DPR update
+    // must never redo that work while a space-object wave is on screen.
+    if (transition.qualityChanged) {
+      heroEffects.setQuality(budget.quality, coarsePointer.matches);
+      world.setGraphicsQuality(budget.quality);
+      post.setGraphicsQuality(budget.quality);
+    }
+    if (transition.pixelRatioChanged) renderer.setPixelRatio(transition.pixelRatio);
+    // Switching Medium -> High may enable bloom even at the same DPR;
+    // allocate its targets exactly once when that quality state changes.
+    if (transition.pixelRatioChanged || transition.qualityChanged)
+      post.resize(window.innerWidth, window.innerHeight);
+    appliedGraphicsBudget = transition.next;
     if (document.body.dataset) {
       document.body.dataset.graphicsQuality = budget.quality;
       document.body.dataset.graphicsAdaptive = String(budget.adaptive);
@@ -3196,6 +3338,8 @@ export function createGame({
       // render presets. Invalidate both samplers before changing quality.
       frameAudit.clear();
       renderCostAudit.clear();
+      gpuMemoryAudit.clear();
+      gpuMemoryAuditRecording = false;
       frameAuditContext = null;
       activeGraphicsSetting = settings.graphics;
       adaptiveGraphics.reset(settings.graphics);
@@ -3268,6 +3412,12 @@ export function createGame({
       if (typeof settings[key] === 'boolean') $(id).checked = settings[key];
       else $(id).value = String(settings[key]);
     }
+    // A saved vibration preference cannot enable missing browser hardware APIs.
+    // Disable its checkbox with a localized explanation, especially in Safari iOS.
+    $('settingVibration').disabled = !haptics.available;
+    $('settingVibration').checked = haptics.available && settings.vibration;
+    $('vibrationSupportHint').hidden = haptics.available;
+    $('vibrationSupportHint').textContent = uiText(settings.language, 'vibrationUnavailable');
     $('touch').style.opacity = String(settings.opacity);
     // Options controls actual button translucency, not just its parent wrapper.
     $('touch').style.setProperty?.('--nw-touch-preference', String(settings.opacity));
@@ -3487,12 +3637,18 @@ export function createGame({
     };
     frameAudit.start();
     renderCostAudit.start();
+    gpuMemoryAudit.clear();
+    gpuMemoryAuditRecording = true;
+    gpuMemoryFrameCount = 0;
+    captureGpuMemory('audit-start');
     renderFrameAudit();
   };
   $('auditStop').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.stop();
     renderCostAudit.stop();
+    captureGpuMemory('audit-stop');
+    gpuMemoryAuditRecording = false;
     renderFrameAudit();
   };
   $('auditCopy').onclick = () => {
@@ -3548,6 +3704,8 @@ export function createGame({
       });
       storeSettings(storage, settings);
       applySettings();
+      // Give immediate physical confirmation on browsers that expose haptics.
+      if (key === 'vibration' && settings.vibration) haptics.pulse(40);
     };
   }
   applySettings();
@@ -3565,6 +3723,8 @@ export function createGame({
   $('arsenalSwitch').onclick = cycleArsenal;
   $('specialSwitch').onclick = cycleSpecial;
   $('specialCast').onclick = castSpecial;
+  $('rpgBerserkCast').onclick = castBerserkFromMenu;
+  $('rpgPodsAction').onclick = togglePods;
   $('plasmaTitan').onclick = () => castSquadSpecial('plasma');
   $('fiveCatsOverdrive').onclick = () => castSquadSpecial('overdrive');
   $('scanBoss').onclick = scanBoss;
@@ -3645,6 +3805,13 @@ export function createGame({
       return;
     }
     if (inFlight() && isGameKey(e)) e.preventDefault();
+    if (rpgTacticalPaused) {
+      if (e.code === 'Escape' || e.code === 'KeyP') {
+        e.preventDefault?.();
+        $('strategyDrawer').open = false;
+      } else if (isGameKey(e)) e.preventDefault?.();
+      return;
+    }
     keys.add(e.code);
     if (e.repeat) return;
     if (e.code === 'KeyF') cycleArsenal();
@@ -3982,7 +4149,7 @@ export function createGame({
       marsStormDamageCooldown = 3.2;
       hit(6);
       shake = Math.max(shake, 0.28);
-      if (settings.vibration) window.navigator?.vibrate?.(70);
+      if (settings.vibration) haptics.pulse(70);
     }
     player.position.x = clamp(
       player.position.x +
@@ -4186,6 +4353,7 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    pilotPatternReader.sample(player.position, dt, boosting);
     updateCityStageSetpieces();
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
@@ -4441,6 +4609,23 @@ export function createGame({
           ' · ' +
           Math.floor(arcana);
       $('specialCast').disabled = specialCd > 0 || arcana < SPECIALS[strategy.special].cost;
+      const berserkUnlocked = stage() >= SPECIALS[3].stage;
+      $('rpgBerserkCast').disabled =
+        !berserkUnlocked || specialCd > 0 || arcana < SPECIALS[3].cost || berserk > 0;
+      $('rpgBerserkCast').textContent = !berserkUnlocked
+        ? 'BERSERK · EV ' + (SPECIALS[3].stage + 1)
+        : berserk > 0
+          ? 'BERSERK ATIVO'
+          : specialCd > 0
+            ? 'RECARGA · ' + Math.ceil(specialCd) + 's'
+            : 'ATIVAR BERSERK · ' + SPECIALS[3].cost;
+      $('rpgBerserkHint').textContent = !berserkUnlocked
+        ? 'Desbloqueia ao atingir evolução ' + (SPECIALS[3].stage + 1)
+        : 'Potência +60% por ' + SPECIALS[3].duration + 's · Gasto ' + SPECIALS[3].cost;
+      $('rpgPodsAction').disabled = podCount === 0;
+      $('rpgPodsAction').textContent = podCount
+        ? (podsDetached ? 'RECOLHER' : 'SOLTAR') + ' PODS · ' + podCount
+        : 'PODS NÃO DISPONÍVEIS';
       $('quickRpg').setAttribute('data-selected', SPECIALS[strategy.special].name);
       $('specialCast').setAttribute(
         'aria-label',
@@ -4517,9 +4702,12 @@ export function createGame({
       sectorIndex === 0 ? orbitalLaunchSequence.snapshot().phase : 'city',
       cityOrbitReadyAt,
       dynamicFlight && sectorIndex === 0 && enableCitySetpieces,
+      sectorIndex === 0 ? orbitalLaunchSequence.snapshot().atmosphereSeconds : 0,
     );
     const quietFirstSubboss =
-      (dynamicFlight && firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
+      (!cityPacing.ascentCombat &&
+        dynamicFlight &&
+        firstSubbossQuiet(sectorIndex, elapsed, current().duration)) ||
       cityPacing.subbossIntroQuiet;
     const quietCityWreck = cityPacing.exclusiveTransit;
     if (quietFirstSubboss) spawnCd = Math.max(2.4, spawnCd);
@@ -4530,7 +4718,7 @@ export function createGame({
       elapsed < current().duration &&
       spawnCd <= 0 &&
       !quietFirstSubboss &&
-      !quietCityWreck
+      (!quietCityWreck || cityPacing.ascentCombat)
     ) {
       const cityDensity =
         dynamicFlight && sectorIndex === 0
@@ -4538,6 +4726,7 @@ export function createGame({
               settings.difficulty,
               cityPacing.orbitAge !== null,
               enemies.filter((target) => !target.dead && target.kind === 'fighter').length,
+              cityPacing.ascentCombat,
             )
           : null;
       const count = cityDensity?.count ?? 2 + Math.floor(sectorIndex / 4);
@@ -4547,7 +4736,14 @@ export function createGame({
         if (dynamicFlight) {
           const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
           lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-          wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
+          const recentPattern = pilotPatternReader.snapshot();
+          wave.slots.forEach((slot, arrivalIndex) =>
+            enemy('fighter', {
+              ...slot,
+              role: adaptiveFighterRole(slot.role, recentPattern, wave.cycle, arrivalIndex),
+              arrivalIndex,
+            }),
+          );
           if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
         } else {
           for (let i = 0; i < count; i++) enemy();
@@ -4614,6 +4810,26 @@ export function createGame({
       message('BASE-SERVIDOR / ELIMINE A TORRE PARA RECEBER SUPRIMENTOS');
     }
     groundCd -= dt;
+    // One airborne mech patrol at a time intercepts the climb from deep space.
+    // Actual city tanks remain on streets; never move heavy ground units into orbit.
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      sectorIndex === 0 &&
+      cityPacing.ascentCombat &&
+      !quietFirstSubboss &&
+      groundCd <= 0
+    ) {
+      const activeMechs = enemies.filter((target) => !target.dead && target.airborneRobot).length;
+      if (activeMechs === 0) {
+        groundWave++;
+        enemy('hover-walker', {
+          x: groundWave % 2 ? -23 : 23,
+          y: Math.max(12, Math.min(verticalFlightLimit() - 6, player.position.y + 5)),
+        });
+      }
+      groundCd = 11.5;
+    }
     if (
       dynamicFlight &&
       spawnEncounters &&
@@ -4650,7 +4866,13 @@ export function createGame({
       (!dynamicFlight || sectorIndex !== 0 || elapsed < current().duration * 0.56)
     ) {
       groundWave++;
-      enemy(groundWave % 2 ? 'tank' : 'walker');
+      enemy(
+        dynamicFlight && sectorIndex === 0
+          ? ['tank', 'walker', 'hover-walker'][(groundWave - 1) % 3]
+          : groundWave % 2
+            ? 'tank'
+            : 'walker',
+      );
       groundCd =
         dynamicFlight && sectorIndex === 0
           ? stageOneCombatDensity(settings.difficulty).groundInterval
@@ -4687,21 +4909,33 @@ export function createGame({
         message('FENDA GLACIAL · TÚNEL PROTEGIDO · SIGA A ABERTURA');
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
+    const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
     const bossBlocked =
-      enemies.some((e) => !e.dead && e.kind === 'subboss') ||
+      activeSubboss ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
       (dynamicFlight &&
         sectorIndex === 2 &&
         (!asteroidInterior.course.snapshot().complete || (spawnEncounters && !subDone)));
+    const bossSeparated =
+      !spawnEncounters ||
+      bossEncounterGate({
+        elapsed,
+        subbossStarted: subDone,
+        subbossClearedAt,
+        activeSubboss,
+        blocked: bossBlocked,
+      });
     if (
+      bossSeparated &&
       (sectorIndex !== 0 || !dynamicFlight || orbitalLaunchSequence.snapshot().complete) &&
-      shouldWarnBoss({
+      (shouldWarnBoss({
         elapsed,
         duration: current().duration,
         warned: bossWarned,
         boss: !!boss,
         blocked: bossBlocked,
-      })
+      }) ||
+        (elapsed >= current().duration && !bossWarned && !boss))
     ) {
       bossWarned = true;
       bossWarningTime = 3.5;
@@ -4717,8 +4951,9 @@ export function createGame({
     if (
       elapsed >= current().duration &&
       !boss &&
-      !enemies.some((e) => !e.dead && e.kind === 'subboss') &&
-      !bossBlocked
+      bossSeparated &&
+      bossWarned &&
+      bossWarningTime === 0
     )
       makeBoss();
     const phase = boss
@@ -4839,6 +5074,13 @@ export function createGame({
               : e.y + Math.sin(elapsed + e.phase) * 2;
       }
       if (e.airborneRobot) {
+        if (sectorIndex === 0 && cityPacing.ascentCombat)
+          e.y = T.MathUtils.damp(
+            e.y,
+            Math.max(12, Math.min(verticalFlightLimit() - 6, player.position.y + 5)),
+            1.4,
+            hostileDt,
+          );
         e.o.rotation.z = Math.sin(e.age * 0.85 + e.phase) * 0.12;
         e.o.traverse((part) => {
           if (part.name === 'enemy-hover-thruster')
@@ -4846,7 +5088,15 @@ export function createGame({
         });
       }
       if (e.role) {
-        const motion = fighterMotion(e.role, e.age, e.x, e.y, player.position.x, e.phase);
+        const motion = fighterMotion(
+          e.role,
+          e.age,
+          e.x,
+          e.y,
+          player.position.x,
+          e.phase,
+          player.position.y,
+        );
         e.o.position.x = motion.x;
         e.o.position.y = motion.y;
         e.o.rotation.z = motion.bank;
@@ -4873,6 +5123,7 @@ export function createGame({
           ? firstSubbossDeparture(sectorIndex, e.age)
           : null;
       if (departure?.complete) {
+        subbossClearedAt = elapsed;
         dispose(e.o);
         e.dead = true;
         $('subHUD').hidden = true;
@@ -4998,6 +5249,13 @@ export function createGame({
         kill(e);
       }
       if (e.o.position.z > 40) {
+        if (e.kind === 'subboss') {
+          // A subboss leaving past the player's camera also resolves the encounter.
+          // Without this timestamp, the final encounter could stay blocked forever.
+          subbossClearedAt = elapsed;
+          $('subHUD').hidden = true;
+          music?.start(sectorIndex);
+        }
         dispose(e.o);
         e.dead = true;
       }
@@ -5089,6 +5347,8 @@ export function createGame({
             boosting,
             robot: robotMode,
             generators: boss.userData.parts.map((part) => part.hp > 0),
+            pilotPattern: pilotPatternReader.snapshot(),
+            previousKind: bossIntent?.kind ?? null,
           });
           bossIntentCycle = t.cycle;
           bossMeleeResolved = false;
@@ -5112,10 +5372,14 @@ export function createGame({
           );
         }
         boss.position.set(
-          launchPose.x + (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0),
+          launchPose.x +
+            (sectorIndex === 7 ? boss.userData.omegaPursuit.x : 0) +
+            (bossIntent ? (bossIntent.targetX - launchPose.x) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5
             ? europaBossArenaHeight(launchPose.y, boss.userData.europaMinimumCenterY)
-            : launchPose.y + (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0),
+            : launchPose.y +
+                (sectorIndex === 7 ? boss.userData.omegaPursuit.y : 0) +
+                (bossIntent ? (bossIntent.targetY - launchPose.y) * (meleePose.track ?? 0) : 0),
           sectorIndex === 5 ? europaBossArenaDepth(launchPose.z) : launchPose.z + meleePose.lunge,
         );
         // Use the same center for both inverse world frame and final camera
@@ -5693,7 +5957,16 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (b.o.position.distanceTo(player.position) < 2.1) {
+      if (
+        hostileShotHitsShip(
+          from,
+          b.o.position,
+          player.position,
+          b.o.scale.x,
+          robotMode,
+          previousPlayer,
+        )
+      ) {
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
@@ -5807,7 +6080,7 @@ export function createGame({
             : Math.floor(elapsed / 8) % 2
               ? 'gantry'
               : 'reactor';
-      const o = createObstacle(kind);
+      const o = obstaclePool.acquire(kind);
       o.position.set(
         kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
         kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
@@ -5923,6 +6196,15 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    if (rpgTacticalPaused && state === 'playing') {
+      // Freeze all combat clock, physics, weapons and enemies. Keep an
+      // occasional identical WebGL frame alive under the translucent menu.
+      if (rpgFrozenFrames++ % 4 === 0) {
+        routeRenderer?.prepare();
+        post.render();
+      }
+      return;
+    }
     heroEffects.tick(dt, state === 'playing' || state === 'collapsing');
     const now = nowMs;
     if (cinematic && state === 'menu') advanceCinematic(dt);
@@ -6197,12 +6479,9 @@ export function createGame({
       hud.style('weakCue' + i, 'top', ((1 - marker.y) * window.innerHeight) / 2 + 'px');
     }
     hud.disabled('cameraView', state !== 'playing');
-    hud.hidden(
-      'strategyControls',
-      !dynamicFlight ||
-        !['playing', 'paused'].includes(state) ||
-        (state === 'paused' && pausedFrom !== 'playing'),
-    );
+    // The ordinary PAUSE modal owns the full viewport. Never expose the
+    // radial RPG trigger above it, even if the paused mission was playable.
+    hud.hidden('strategyControls', !dynamicFlight || state !== 'playing');
     const qaBerserkVisible = developerAvailable && developerSession && state === 'playing';
     hud.hidden('qaBerserkDock', !qaBerserkVisible);
     if (qaBerserkVisible) {
@@ -6275,7 +6554,8 @@ export function createGame({
   }
   function loop(time) {
     if (!running) return;
-    const renderingFlight = appActive && !document.hidden && state === 'playing';
+    const renderingFlight =
+      appActive && !document.hidden && state === 'playing' && !rpgTacticalPaused;
     frameAudit.sample(time, renderingFlight);
     const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
     if (nextBudget) applyRenderBudget(nextBudget);
@@ -6284,9 +6564,55 @@ export function createGame({
     tick(dt, time);
     // Read renderer counters only after this frame rendered. No extra WebGL calls.
     renderCostAudit.sample(lastFrameCost, renderingFlight && state === 'playing');
+    // Sample resource counts once per 120 active frames; no extra WebGL query.
+    if (gpuMemoryAuditRecording && renderingFlight && ++gpuMemoryFrameCount % 120 === 0)
+      captureGpuMemory('flight');
     requestFrame(loop);
   }
   if (autoLoop) requestFrame(loop);
+  // Prebuild first enemy roles and ascending-space obstacles while the pilot
+  // is reading the menu, campaign map or upgrade hangar. Idle callbacks with a
+  // timeout can execute on an active gameplay frame, so eligibility is checked
+  // AGAIN inside the callback and no shader/model construction runs in flight.
+  // The actual enemies and collision objects are still spawned by normal logic.
+  // QA harnesses (autoLoop=false) remain deterministic and unscheduled.
+  const cancelObstacleWarmup =
+    dynamicFlight && autoLoop
+      ? scheduleIdlePrewarm({
+          kinds: [
+            'fighter',
+            'tank',
+            'walker',
+            'satellite',
+            'carrier',
+            'debris',
+            'gantry',
+            'reactor',
+            'tunnel',
+          ],
+          canPrime: (deadline) =>
+            (state === 'menu' || state === 'map' || state === 'shop') &&
+            !document.hidden &&
+            (typeof deadline?.timeRemaining !== 'function' || deadline.timeRemaining() >= 4),
+          prime: (kind) => {
+            const preview =
+              kind === 'fighter'
+                ? fighter(true, 0)
+                : kind === 'tank' || kind === 'walker'
+                  ? createGroundEnemy(kind, 0)
+                  : createObstacle(kind);
+            return prewarmSceneShaders(renderer, preview, camera, scene);
+          },
+          schedule: (callback) =>
+            typeof window.requestIdleCallback === 'function'
+              ? { mode: 'idle', id: window.requestIdleCallback(callback, { timeout: 2500 }) }
+              : { mode: 'timer', id: setTimeout(callback, 700) },
+          cancel: (pending) => {
+            if (pending.mode === 'idle') window.cancelIdleCallback?.(pending.id);
+            else clearTimeout(pending.id);
+          },
+        })
+      : () => {};
   addEventListener('resize', () => {
     const { innerWidth: w, innerHeight: h, devicePixelRatio: p = 1 } = window;
     camera.aspect = w / h;
@@ -6322,6 +6648,7 @@ export function createGame({
     scanBoss,
     tacticalAction,
     pause,
+    setRpgTacticalPaused,
     setActive,
     fire,
     bomb,
@@ -6346,6 +6673,7 @@ export function createGame({
       developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
+      rpgTacticalPaused,
       confirmation,
       stageTitleVisible: stageIntroTime > 0,
       strategy: {
@@ -6380,6 +6708,7 @@ export function createGame({
         })),
       hostileProjectilePool: hostileShotPool.stats(),
       particlePool: particlePool.stats(),
+      obstaclePool: obstaclePool.stats(),
       cameraMode,
       directedShot: flightCamera.getShot(),
       playerVisible: player.visible,
@@ -6696,9 +7025,13 @@ export function createGame({
       },
     }),
     destroy() {
+      setRpgTacticalPaused(false);
       running = false;
+      cancelObstacleWarmup();
       frameAudit.clear();
       renderCostAudit.clear();
+      gpuMemoryAudit.clear();
+      gpuMemoryAuditRecording = false;
       frameAuditContext = null;
       document.body.classList.remove(
         'in-mission',
@@ -6715,6 +7048,7 @@ export function createGame({
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
+      obstaclePool.clear();
       hostileShotPool.clear();
       particlePool.clear();
       player.userData.flames.forEach((f) => f.material.dispose());
@@ -6736,6 +7070,7 @@ export function createGame({
         o.geometry?.dispose();
         if (o.material?.userData.paintModule) o.material.dispose();
       });
+      post.destroy();
       renderer.dispose?.();
     },
   };

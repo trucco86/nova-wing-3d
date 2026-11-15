@@ -96,6 +96,8 @@ test('campaign briefing renders safe, navigable cards and actual next-sector int
         },
       },
       textContent: '',
+      classList: { toggle() {} },
+      addEventListener() {},
       setAttribute(key, value) {
         this[key] = value;
       },
@@ -113,13 +115,15 @@ test('campaign briefing renders safe, navigable cards and actual next-sector int
       return nodes.get(id);
     },
     createElement: el,
+    createElementNS: el,
   };
   drawCampaignMap(document, SECTORS, 2);
   const route = document.getElementById('campaignRoute');
-  assert.equal(route.children.length, 10);
-  assert.equal(route.children[0].className, 'campaign-node completed');
-  assert.equal(route.children[2].className, 'campaign-node next');
-  assert.equal(route.children[9].className, 'campaign-node locked');
+  assert.equal(route.children.length, 11, 'route SVG plus 10 cards');
+  const cards = route.children.slice(1);
+  assert.equal(cards[0].className, 'campaign-node completed');
+  assert.equal(cards[2].className, 'campaign-node next');
+  assert.equal(cards[9].className, 'campaign-node locked');
   assert.match(document.getElementById('mapSectorTitle').textContent, /CINTURÃO DE DESTROÇOS/);
   assert.match(document.getElementById('mapSectorThreat').textContent, /Detritos/);
   assert.match(document.getElementById('mapSectorBoss').textContent, /PERFURADOR/);

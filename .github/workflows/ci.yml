@@ -42,9 +42,10 @@ jobs:
       matrix:
         shard: [1, 2, 3, 4]
     runs-on: ubuntu-latest
-    # Four independent real-browser shards need headroom for software WebGL
-    # screenshots; preserve every assertion instead of timing out the job.
-    timeout-minutes: 25
+    # Full WebGL coverage reached 84+ passing tests before the 25-minute
+    # runner deadline, then lost the last tests to job cancellation. Keep
+    # every assertion; allow software SwiftShader enough time to finish.
+    timeout-minutes: 40
     env:
       NOVA_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
       NOVA_BROWSER_SHARD: ${{ matrix.shard }}/4

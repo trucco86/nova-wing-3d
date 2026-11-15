@@ -1,16 +1,19 @@
 import { test, expect } from '@playwright/test';
-import { clickMenu } from './menu-navigation.mjs';
+import { clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
 
 test('mecha enters heavy-fire mode, charges right-arm plasma and keeps game stable', async ({
   page,
 }, info) => {
-  test.setTimeout(120000);
+  // Real WebGL under software SwiftShader can need over 45s to advance the
+  // charging animation. Keep the real held input and full 58% threshold.
+  test.setTimeout(180000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
   await clickMenu(page, '#start', info.project.name === 'mobile' ? 'tap' : 'click');
   await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#robotTouch')).toHaveAttribute('aria-pressed', 'false');
 
@@ -33,7 +36,7 @@ test('mecha enters heavy-fire mode, charges right-arm plasma and keeps game stab
   }
   await expect
     .poll(() => page.locator('#chargeBar').evaluate((el) => Number.parseFloat(el.style.width)), {
-      timeout: 45000,
+      timeout: 90000,
     })
     .toBeGreaterThan(58);
   await page.screenshot({ path: info.outputPath(`mecha-heavy-charge-${info.project.name}.png`) });

@@ -220,13 +220,28 @@ test('three stage-1 impacts have readable short-lived ground shockwaves without 
     updateCityDestructionScene(root, at + 0.22);
     effects = cityDestructionImpactState(root);
     assert.equal(effects[event].visible, true);
-    assert.equal(effects[event].dustCount, 3);
-    assert.equal(effects[event].drawCount, 5, 'pooled shock ring, dust and single spark batch');
+    assert.equal(effects[event].dustCount, 4, 'extra soot plume for realistic aftermath');
+    assert.equal(
+      effects[event].drawCount,
+      9,
+      'ring, smoke, sparks, heat, scorch and one shard batch',
+    );
     assert.ok(effects[event].groundY > CITY_STREET_TOP_Y);
     const impact = root.userData.impacts[event];
     assert.ok(impact.children.every((node) => node.userData.visualOnly));
     const ring = impact.getObjectByName('city-ground-impact-shock-ring');
     assert.ok(ring?.material.opacity > 0 && ring.material.opacity <= 0.76);
+    const core = impact.getObjectByName('city-impact-thermal-core');
+    const scorch = impact.getObjectByName('city-impact-ground-scorch');
+    const shards = impact.getObjectByName('city-impact-batched-debris');
+    assert.ok(core?.material.opacity > 0, 'short-lived hot fire core must be visible');
+    assert.ok(scorch?.material.opacity > 0, 'pavement retains a transient burn ring');
+    assert.ok(
+      shards?.isInstancedMesh && shards.count === 12,
+      'reused shards, not individual Mesh allocations',
+    );
+    assert.equal(shards.userData.visualOnly, true);
+    assert.ok(scorch.position.y > CITY_STREET_TOP_Y && scorch.rotation.x === -Math.PI / 2);
     assert.ok(Math.abs(ring.rotation.x + Math.PI / 2) < 1e-6);
     const dust = impact.userData.nodes.dust;
     for (const cloud of dust) {
@@ -242,11 +257,11 @@ test('three stage-1 impacts have readable short-lived ground shockwaves without 
       impact.children.every((node, i) => node === original[i]),
       'dust effect reuses the same GPU meshes',
     );
-    updateCityDestructionScene(root, at + 1.25);
+    updateCityDestructionScene(root, at + 2.4);
     assert.equal(
       cityDestructionImpactState(root)[event].visible,
       false,
-      'old visual event clears; no permanent HUD or screen clutter',
+      'longer post-impact soot clears before the next stage',
     );
   }
   assert.equal(
@@ -269,7 +284,12 @@ test('impact helpers stay deterministic over pause/seek and discard impossible t
   assert.equal(impact.userData.nodes.ring.material.opacity, glow);
   assert.equal(impact.position.x, x);
   assert.equal(impact.position.z, z);
-  assert.equal(updateCityRoadImpact(impact, 6.2, 5, 10, -20), false);
+  assert.equal(
+    updateCityRoadImpact(impact, 6.2, 5, 10, -20),
+    true,
+    'soot lingers after the shockwave',
+  );
+  assert.equal(updateCityRoadImpact(impact, 7.4, 5, 10, -20), false);
 });
 
 test('train setpiece signals a real right-side route and shows electrical danger while hanging', () => {

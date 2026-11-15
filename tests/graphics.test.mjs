@@ -33,11 +33,35 @@ test('city remains present after one full scenery wrap and reset', () => {
     if (o.isInstancedMesh) count++;
     assert.ok(Number.isFinite(o.position.z));
   });
-  // City 3.2 adds bounded batches for signs, aircraft, holofotes and skyline.
-  // Keep the GPU draw-call budget checked instead of freezing the old count.
+  // QA122 adds seven street batches and one optional High-only shared vent-fog batch per tile.
+  // Verify the new functionality is present, then account for exactly those
+  // sixteen measured batches without changing the historical non-city GPU budget.
+  const streets = ['launch-city', 'launch-city-far'].map((name) =>
+    scene.getObjectByName(name).getObjectByName('city122-lived-in-street-blocks'),
+  );
+  const streetDraws = streets.reduce(
+    (total, root) =>
+      total +
+      root.children.reduce(
+        (n, tier) => n + tier.children.filter((o) => o.isInstancedMesh).length,
+        0,
+      ),
+    0,
+  );
+  assert.equal(
+    streetDraws,
+    16,
+    'seven grounded batches plus one shared high-only vapor batch per tile',
+  );
+  const impactRoot = scene.getObjectByName('city-scripted-destruction');
+  const impactBatches = Object.values(impactRoot.userData.impacts).reduce(
+    (total, impact) => total + impact.children.filter((node) => node.isInstancedMesh).length,
+    0,
+  );
+  assert.equal(impactBatches, 3, 'one pooled shard GPU batch for each authored impact');
   assert.ok(
-    count >= 180 && count <= 260,
-    'City 3.2 keeps extra neon and aerial traffic within a bounded instancing budget',
+    count >= 180 + streetDraws + impactBatches && count <= 260 + streetDraws + impactBatches,
+    'historical city instance budget remains unchanged after accounting for exact effect batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');

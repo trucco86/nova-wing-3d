@@ -124,6 +124,8 @@ export const UI_COPY = {
     subtitles: 'LEGENDAS',
     intro: 'ABERTURA AUTOMÁTICA',
     vibration: 'VIBRAÇÃO',
+    vibrationUnavailable:
+      'Vibração indisponível neste navegador. No iPhone, requer integração háptica nativa.',
     leftHanded: 'CONTROLES PARA CANHOTOS',
     watch: 'VER ABERTURA',
     critical: 'INTEGRIDADE CRÍTICA · BUSQUE REPARO',
@@ -202,6 +204,8 @@ export const UI_COPY = {
     subtitles: 'SUBTITLES',
     intro: 'AUTO PLAY INTRO',
     vibration: 'VIBRATION',
+    vibrationUnavailable:
+      'Vibration is unavailable in this browser. On iPhone, native haptics integration is required.',
     leftHanded: 'LEFT-HANDED CONTROLS',
     watch: 'WATCH INTRO',
     critical: 'CRITICAL SHIELD · FIND REPAIR',
@@ -280,6 +284,8 @@ export const UI_COPY = {
     subtitles: 'SUBTÍTULOS',
     intro: 'INTRO AUTOMÁTICA',
     vibration: 'VIBRACIÓN',
+    vibrationUnavailable:
+      'La vibración no está disponible en este navegador. En iPhone requiere integración háptica nativa.',
     leftHanded: 'CONTROLES PARA ZURDOS',
     watch: 'VER INTRO',
     critical: 'ESCUDO CRÍTICO · BUSCA REPARACIÓN',

@@ -1,6 +1,18 @@
 import { openMenu, clickMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { prepareAndroidWeb } from '../../tools/android.mjs';
+
+// Gameplay E2E must cross the new mission briefing before making
+// assertions about bombs, HUD, touch controls, flight or pause.
+async function confirmCampaignPreflight(page) {
+  const campaign = page.locator('#campaignMap');
+  if (await campaign.isVisible()) {
+    await expect(page.locator('#mapLaunch')).toBeEnabled();
+    await page.locator('#mapLaunch').click();
+    await expect(campaign).toBeHidden();
+  }
+}
+
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {
   // The software WebGL runner requires more than the Playwright 30s default
   // for a genuine menu -> cinematic -> mission -> pause interaction.
@@ -17,6 +29,7 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   expect(await page.locator('#brief').innerText()).not.toContain('não conseguiu');
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#music')).toBeHidden();
   await expect(page.locator('.brand-mini')).toBeHidden();
@@ -128,6 +141,7 @@ test('checkpoint restores the final sector with independent music control', asyn
   );
   await page.goto('/');
   await clickMenu(page, '#continue');
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#stage')).toHaveText('CAÇADA FINAL · MARVIN');
   await expect(page.locator('#weaponLabel')).toContainText('PLASMA VÓRTICE');
   await page.locator('#pause').click();
@@ -279,6 +293,7 @@ test('boost streaks follow keyboard or touch input and disappear on pause', asyn
   await page.goto('/');
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
   if (info.project.name === 'mobile') {
     const bounds = await page.locator('#boostTouch').boundingBox();
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
@@ -323,6 +338,10 @@ test('minimal title screen hides combat HUD and fits landscape and portrait', as
 test('offline Android interface protects controls from cutout and gesture insets', async ({
   page,
 }, info) => {
+  // Bundling the complete offline WebGL application and shader preparation
+  // can exceed the generic 30s browser-test budget on software-rendered CI.
+  // Preserve all safe-area, controls, offline and pause assertions.
+  test.setTimeout(120000);
   test.skip(info.project.name !== 'mobile', 'Android layout requires the touch viewport.');
   const offline = await prepareAndroidWeb(info.outputPath('offline-assets'));
   const external = [];
@@ -341,6 +360,7 @@ test('offline Android interface protects controls from cutout and gesture insets
   await clickMenu(page, '#start', 'tap');
   await expect(page.locator('#cinematic')).toHaveCSS('pointer-events', 'auto');
   await page.locator('#cinematicSkip').tap();
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#touch')).toBeVisible();
   const viewport = page.viewportSize();
   const safe = await page.locator('#interface').boundingBox();
@@ -376,6 +396,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
   await page.goto('/');
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
   await page.locator('#pause').focus();
   const label = await page.locator('#pause').textContent();
   await page.keyboard.down('Space');

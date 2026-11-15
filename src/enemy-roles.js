@@ -1,7 +1,7 @@
 export const FIGHTER_ROLES = ['pursuer', 'interceptor', 'bomber'];
 
 // Coordinates remain in the same local collision frame as the rest of the mission.
-export function fighterMotion(role, age, originX, originY, playerX, phase = 0) {
+export function fighterMotion(role, age, originX, originY, playerX, phase = 0, playerY = originY) {
   const wave = Math.sin(age * (role === 'interceptor' ? 2.8 : 1.2) + phase);
   const x =
     role === 'pursuer'
@@ -9,7 +9,14 @@ export function fighterMotion(role, age, originX, originY, playerX, phase = 0) {
       : originX + wave * (role === 'interceptor' ? 16 : 4);
   return {
     x,
-    y: originY + Math.sin(age * 1.5 + phase) * (role === 'bomber' ? 1 : 3),
+    // Pursuers/interceptors rise to meet the ship instead of lingering on a
+    // fixed low flight plane when the player climbs during atmospheric transit.
+    y:
+      originY +
+      (Number.isFinite(playerY) ? playerY - originY : 0) *
+        Math.max(0, Math.min(1, (age - 0.3) / 2.2)) *
+        (role === 'pursuer' ? 0.93 : role === 'interceptor' ? 0.78 : 0.52) +
+      Math.sin(age * 1.5 + phase) * (role === 'bomber' ? 1 : 3),
     bank: role === 'interceptor' ? wave * 0.3 : 0,
   };
 }

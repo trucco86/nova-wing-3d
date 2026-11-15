@@ -58,44 +58,117 @@
     <div id="strategyControls">
       <details id="strategyDrawer">
         <summary><span>⚙ RPG</span><b id="rpgLevel">EV 1</b></summary>
-        <div class="rpgDrawerBody">
-          <span id="strategyStatus"></span
-          ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
-          <div class="rpgProgress" aria-label="Progresso de evolução">
-            <i id="rpgProgressBar"></i>
-          </div>
-          <small id="rpgNext">PRÓXIMO · ARMA GEADA · EV 3</small>
-          <div class="tacticButtons">
-            <button id="scanBoss">I · SCAN</button
-            ><button id="precisionShot">K · PRECISÃO ◆</button>
-            <button id="repairPulse">R · REPARO ◆◆</button
-            ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
-          </div>
-          <div class="squadSuperActions" role="group" aria-label="Superespeciais dos Five Cats">
-            <button id="plasmaTitan" aria-label="Disparar canhão de plasma Titan">
-              Y · PLASMA
+        <div class="rpgDrawerBody" role="dialog" aria-label="RPG tático" aria-modal="false">
+          <div id="rpgTacticalScrim" aria-hidden="true"></div>
+          <div id="rpgRadialMenu" role="group" aria-label="Escolha uma categoria do RPG">
+            <div class="rpgRadialCore" aria-hidden="true">
+              <strong>RPG</strong>
+              <small>MENU TÁTICO</small>
+              <small>JOGO PAUSADO</small>
+            </div>
+            <button
+              type="button"
+              class="rpgRadialChoice rpgRadialWeapons"
+              data-rpg-category="weapons"
+              aria-label="Armas"
+            >
+              ARMAS
             </button>
-            <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
-              O · FIVE CATS
+            <button
+              type="button"
+              class="rpgRadialChoice rpgRadialSpecials"
+              data-rpg-category="specials"
+              aria-label="Especiais"
+            >
+              ESPECIAIS
+            </button>
+            <button
+              type="button"
+              class="rpgRadialChoice rpgRadialBerserk"
+              data-rpg-category="berserk"
+              aria-label="Berserk"
+            >
+              BERSERK
+            </button>
+            <button
+              type="button"
+              class="rpgRadialChoice rpgRadialUtilities"
+              data-rpg-category="utilities"
+              aria-label="Utilitários"
+            >
+              UTILITÁRIOS
+            </button>
+            <button
+              type="button"
+              id="rpgRadialClose"
+              class="rpgRadialClose"
+              aria-label="Fechar RPG e voltar ao jogo"
+            >
+              FECHAR
             </button>
           </div>
+          <section
+            id="rpgCategoryPanel"
+            class="rpgCategoryPanel"
+            data-category="specials"
+            aria-label="Ações da categoria RPG"
+            hidden
+          >
+            <header class="rpgCategoryHeader">
+              <button type="button" id="rpgCategoryBack" aria-label="Voltar às categorias">
+                ‹ VOLTAR
+              </button>
+              <strong id="rpgCategoryTitle">ESPECIAIS</strong>
+              <button type="button" id="rpgCategoryClose" aria-label="Fechar RPG">✕</button>
+            </header>
+            <div id="quickRpg" aria-label="Ações rápidas de RPG">
+              <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
+              ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
+              ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
+            </div>
+            <div
+              id="qaBerserkDock"
+              hidden
+              role="group"
+              aria-label="Controle exclusivo de teste Berserk"
+            >
+              <button
+                type="button"
+                id="qaBerserkAction"
+                aria-label="Ativar ou repetir o modo Berserk em QA"
+              >
+                ATIVAR BERSERK
+              </button>
+              <span id="qaBerserkStatus">QA · PRONTO PARA ATIVAR</span>
+            </div>
+            <span id="strategyStatus"></span
+            ><span id="tacticCharge" aria-label="Reservas táticas">◇ ◇ ◇</span>
+            <div class="rpgProgress" aria-label="Progresso de evolução">
+              <i id="rpgProgressBar"></i>
+            </div>
+            <small id="rpgNext">PRÓXIMO · ARMA GEADA · EV 3</small>
+            <div class="tacticButtons">
+              <button id="scanBoss">I · SCAN</button
+              ><button id="precisionShot">K · PRECISÃO ◆</button>
+              <button id="repairPulse">R · REPARO ◆◆</button
+              ><button id="homingBarrage">U · RAJADA ◆◆◆</button>
+            </div>
+            <div class="squadSuperActions" role="group" aria-label="Superespeciais dos Five Cats">
+              <button id="plasmaTitan" aria-label="Disparar canhão de plasma Titan">
+                Y · PLASMA
+              </button>
+              <button id="fiveCatsOverdrive" aria-label="Ativar super especial Five Cats">
+                O · FIVE CATS
+              </button>
+            </div>
+            <div id="rpgBerserkPlayer" role="group" aria-label="Habilidade Berserk da campanha">
+              <button type="button" id="rpgBerserkCast" disabled>BERSERK · BLOQUEADO</button>
+              <small id="rpgBerserkHint">Desbloqueie a habilidade para ativá-la.</small>
+            </div>
+            <button type="button" id="rpgPodsAction">ALTERAR PODS</button>
+          </section>
         </div>
       </details>
-      <div id="quickRpg" aria-label="Ações rápidas de RPG">
-        <button id="arsenalSwitch" aria-label="Trocar arma">F · PULSO</button
-        ><button id="specialSwitch" aria-label="Escolher especial">H · BARREIRA</button
-        ><button id="specialCast" aria-label="Ativar especial">G · ATIVAR</button>
-      </div>
-      <div id="qaBerserkDock" hidden role="group" aria-label="Controle exclusivo de teste Berserk">
-        <button
-          type="button"
-          id="qaBerserkAction"
-          aria-label="Ativar ou repetir o modo Berserk em QA"
-        >
-          ATIVAR BERSERK
-        </button>
-        <span id="qaBerserkStatus">QA · PRONTO PARA ATIVAR</span>
-      </div>
       <div id="orbitControls" hidden>
         <button id="orbitLeft" aria-label="Orbitar chefe à esquerda">J · ↶</button
         ><span>ORBITAR</span
@@ -1118,10 +1191,13 @@
               ></label
             >
             <label class="nw-setting-check"
-              ><input id="settingVibration" type="checkbox" /><span id="labelVibration"
-                >VIBRAÇÃO</span
-              ></label
+              ><input
+                id="settingVibration"
+                type="checkbox"
+                aria-describedby="vibrationSupportHint"
+              /><span id="labelVibration">VIBRAÇÃO</span></label
             >
+            <small id="vibrationSupportHint" role="status" hidden></small>
             <label class="nw-setting-check"
               ><input id="settingLeftHanded" type="checkbox" /><span id="labelLeftHanded"
                 >CONTROLES PARA CANHOTOS</span
@@ -1179,24 +1255,58 @@
       </section>
       <section id="campaignMap" hidden aria-label="Mapa de progresso da campanha">
         <div class="campaign-map-card">
-          <div class="eyebrow">FIVE CATS / ROTA DE PERSEGUIÇÃO</div>
-          <h2>MAPA DA GALÁXIA</h2>
-          <p id="mapProgress"></p>
-          <div
-            id="campaignRoute"
-            class="campaign-route-map"
-            aria-label="Progresso dos dez setores"
-          ></div>
+          <div class="campaign-visual-sky" aria-hidden="true">
+            <span class="campaign-nebula-core"></span>
+            <span class="campaign-sky-stars"></span>
+          </div>
+          <div class="campaign-brand" aria-label="Nova Wing Five Cats">
+            <span class="campaign-brand-wings" aria-hidden="true">◢ ◆ ◣</span>
+            <strong>NOVA <span>WING</span></strong>
+            <small>FIVE CATS</small>
+          </div>
+          <header class="campaign-map-header">
+            <div class="eyebrow">FIVE CATS / ROTA DE PERSEGUIÇÃO</div>
+            <h2>MAPA DA GALÁXIA</h2>
+            <p id="mapProgress" aria-live="polite"></p>
+          </header>
+          <div class="campaign-map-cosmos">
+            <div
+              id="campaignRoute"
+              class="campaign-route-map"
+              aria-label="Rota da campanha com dez setores conectados"
+            ></div>
+            <div class="campaign-orbit-beacon" aria-hidden="true"></div>
+          </div>
+          <div class="campaign-planet-pass" aria-hidden="true">
+            <span class="campaign-earth-limb"></span>
+            <span class="campaign-hero-spacecraft"></span>
+          </div>
+          <div class="campaign-progress-foot">
+            <span>PROGRESSO DA CAMPANHA</span>
+            <div
+              id="mapProgressMeter"
+              class="campaign-progress-meter"
+              role="progressbar"
+              aria-label="Setores concluídos da campanha"
+              aria-valuemin="0"
+              aria-valuemax="10"
+              aria-valuenow="0"
+            >
+              <i id="mapProgressFill"></i>
+            </div>
+            <strong id="mapProgressCount">0 / 10</strong>
+          </div>
           <div class="campaign-brief">
-            <span class="eyebrow">INTELIGÊNCIA DA PRÓXIMA MISSÃO</span>
+            <span class="eyebrow">INTELIGÊNCIA DO SETOR SELECIONADO</span>
+            <span id="mapIntelStatus" class="campaign-intel-status"></span>
             <h3 id="mapSectorTitle"></h3>
             <p id="mapSectorBrief"></p>
             <p id="mapSectorThreat"></p>
             <strong id="mapSectorBoss"></strong>
           </div>
           <div class="campaign-map-actions">
-            <button id="mapBack">VOLTAR AO HANGAR</button>
-            <button class="primary" id="mapLaunch">INICIAR PRÓXIMA FASE ↗</button>
+            <button id="mapBack" type="button">VOLTAR AO HANGAR</button>
+            <button class="primary" id="mapLaunch" type="button">INICIAR PRÓXIMA FASE ↗</button>
           </div>
         </div>
       </section>
