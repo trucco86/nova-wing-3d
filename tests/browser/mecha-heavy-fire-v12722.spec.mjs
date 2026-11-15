@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { clickMenu } from './menu-navigation.mjs';
+import { clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
 
 test('mecha enters heavy-fire mode, charges right-arm plasma and keeps game stable', async ({
   page,
@@ -11,6 +11,7 @@ test('mecha enters heavy-fire mode, charges right-arm plasma and keeps game stab
   await page.goto('/');
   await clickMenu(page, '#start', info.project.name === 'mobile' ? 'tap' : 'click');
   await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#robotTouch')).toHaveAttribute('aria-pressed', 'false');
 
