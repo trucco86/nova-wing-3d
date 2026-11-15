@@ -25,7 +25,7 @@ import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
 import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
-import { createPilotPatternReader } from './pilot-pattern.js';
+import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
 import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
@@ -4280,6 +4280,7 @@ export function createGame({
     }
     elapsed += dt;
     totalTime += dt;
+    pilotPatternReader.sample(player.position, dt, boosting);
     updateCityStageSetpieces();
     const marsArrival = dynamicFlight && sectorIndex === 1 ? world.setMarsDescent(elapsed) : null;
     const marsTransit = !!marsArrival && !marsArrival.combatReady;
@@ -4645,7 +4646,14 @@ export function createGame({
         if (dynamicFlight) {
           const wave = fighterWaveAt(sectorIndex, fighterWaveSerial++, count);
           lastFighterWave = { name: wave.name, rhythm: wave.rhythm, cycle: wave.cycle };
-          wave.slots.forEach((slot, arrivalIndex) => enemy('fighter', { ...slot, arrivalIndex }));
+          const recentPattern = pilotPatternReader.snapshot();
+          wave.slots.forEach((slot, arrivalIndex) =>
+            enemy('fighter', {
+              ...slot,
+              role: adaptiveFighterRole(slot.role, recentPattern, wave.cycle, arrivalIndex),
+              arrivalIndex,
+            }),
+          );
           if (wave.cycle === 0 && sectorIndex > 0) message('FORMAÇÃO INIMIGA · ' + wave.name);
         } else {
           for (let i = 0; i < count; i++) enemy();
@@ -5231,8 +5239,6 @@ export function createGame({
           p.marker.scale.setScalar(1 + Math.sin(visualTime * 7 + i) * 0.1);
         });
       }
-      if (dynamicFlight && !boss.userData.sabotage)
-        pilotPatternReader.sample(player.position, hostileDt, boosting);
       bossCombat.update(hostileDt);
       const combatPhase = bossCombat.phase;
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
