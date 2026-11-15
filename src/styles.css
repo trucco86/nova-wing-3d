@@ -11162,3 +11162,24 @@ body:not(.developer-session) #qaBerserkDock {
     top: max(84px, calc(env(safe-area-inset-top, 0px) + 68px));
   }
 }
+
+/* QA140 regression: ordinary PAUSE and SETTINGS are modal surfaces, never
+   gameplay HUD. Defend against a stale frame or older in-mission CSS rules
+   leaving the 120-z-index radial RPG over the pause dialog. */
+body.in-mission:has(#pauseMenu:not([hidden])) #strategyControls,
+body.in-mission:has(#settingsMenu:not([hidden])) #strategyControls {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+#settingsMenu #vibrationSupportHint:not([hidden]) {
+  grid-column: 1 / -1;
+  margin: -3px 0 2px;
+  padding: 3px 7px;
+  color: #b8d4d6;
+  font: 600 10px/1.4 monospace;
+}
+#settingsMenu #settingVibration:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
