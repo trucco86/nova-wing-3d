@@ -14,8 +14,16 @@ test('QA152: Martian boss keeps six quarry legs but no longer has generic Phoeni
   const mars = createBossModel(SECTORS[1], 1, true);
   const phoenix = createBossModel(SECTORS[4], 4, true);
   try {
-    assert.equal(mars.children.filter(isLegacyWing).length, 0, 'Mars must not inherit feather wings');
-    assert.equal(phoenix.children.filter(isLegacyWing).length, 20, 'Phoenix wings remain untouched');
+    assert.equal(
+      mars.children.filter(isLegacyWing).length,
+      0,
+      'Mars must not inherit feather wings',
+    );
+    assert.equal(
+      phoenix.children.filter(isLegacyWing).length,
+      20,
+      'Phoenix wings remain untouched',
+    );
     assert.ok(mars.getObjectByName('mars-quarry-heavy-body'));
     assert.ok(mars.getObjectByName('mars-quarry-front-excavator'));
     assert.ok(mars.getObjectByName('mars-quarry-boring-jaw'));
@@ -41,7 +49,10 @@ test('QA152: destruction targets, two attacks and freeze remain independent of c
   const boss = createBossModel(SECTORS[1], 1, true);
   try {
     const original = boss.userData.parts.map((part) => part.mesh.position.toArray());
-    for (const [y, attack] of [[12, 'stingray-scissor'], [34, 'stingray-sting']]) {
+    for (const [y, attack] of [
+      [12, 'stingray-scissor'],
+      [34, 'stingray-sting'],
+    ]) {
       const intent = chooseBossIntent({ sector: 1, cycle: 1, phase: 2, playerX: 5, playerY: y });
       assert.equal(intent.kind, attack);
       assert.equal(bossMeleeHit(intent, { x: intent.targetX, y: intent.targetY }), true);
@@ -54,7 +65,10 @@ test('QA152: destruction targets, two attacks and freeze remain independent of c
       animateBossSignature(boss, 1, 12.5, 2, 'attack', attack);
       assert.notEqual(leg.rotation.z, before);
     }
-    assert.deepEqual(boss.userData.parts.map((part) => part.mesh.position.toArray()), original);
+    assert.deepEqual(
+      boss.userData.parts.map((part) => part.mesh.position.toArray()),
+      original,
+    );
   } finally {
     disposeBoss(boss);
   }
