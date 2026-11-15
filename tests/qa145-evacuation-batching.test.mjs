@@ -6,6 +6,7 @@ import {
   syncCityEvacuationFleet,
 } from '../src/city-evacuation-batching.js';
 import { createWorld } from '../src/visuals.js';
+import { formatFrameAudit } from '../src/frame-audit.js';
 import { SECTORS } from '../src/campaign.js';
 
 function inspectFleet(life) {
@@ -144,4 +145,34 @@ test('QA145: clone cache does not borrow instances or corrupt other city ship pa
   };
   assert.doesNotThrow(() => syncCityEvacuationFleet(nearLife));
   assert.doesNotThrow(() => syncCityEvacuationFleet(farLife));
+});
+
+test('QA145: report shows WebGL internal DPR beside physical screen DPR', () => {
+  const recorded = {
+    active: false,
+    frames: 1203,
+    durationSeconds: 35.42,
+    avgFps: 34,
+    p95FrameMs: 39,
+    p99FrameMs: 46,
+    over33Ms: 307,
+    over50Ms: 5,
+    over100Ms: 1,
+    interruptions: 0,
+  };
+  const report = formatFrameAudit(recorded, {
+    language: 'pt',
+    width: 430,
+    height: 711,
+    dpr: 3,
+    renderDpr: 0.918,
+    graphics: 'high',
+    sector: 1,
+    version: '1.27.142',
+  });
+  assert.match(report, /430×711 @3\.00 DPR/);
+  assert.match(report, /Resolução interna 3D: 0\.92 DPR/);
+  assert.match(report, /257646 pixels/);
+  const old = formatFrameAudit(recorded, { width: 430, height: 711, dpr: 3 });
+  assert.doesNotMatch(old, /Resolução interna 3D/);
 });

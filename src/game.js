@@ -3198,6 +3198,9 @@ export function createGame({
         width: window.innerWidth,
         height: window.innerHeight,
         dpr: window.devicePixelRatio ?? 1,
+        // The selected HIGH profile can run at lower internal WebGL DPR.
+        // Never confuse physical screen density with 3D render resolution.
+        renderDpr: renderer.getPixelRatio?.() ?? null,
         ...frameAuditContext,
       }) +
       '\n' +

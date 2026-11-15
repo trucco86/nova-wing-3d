@@ -7,7 +7,8 @@
 - As 7 naves de evacuação de cada tile deixam de criar 49 Mesh individuais; mantêm os mesmos sete modelos completos e suas partes nas posições originais, renderizados em apenas 3 InstancedMesh separados por material.
 - Dois tiles da cidade: 92 draw submissions potenciais a menos, mantendo as cores, geometria, posição, animação, detecção de qualidade, pausa, cena High/Medium e rota de voo.
 - Redução de geometrias distintas, com placeholders de nave leves mantendo os IDs e sem adicionar hitboxes. Instâncias atualizadas uma vez por quadro e cache por tile em WeakMap.
-- Instrumentação de contagem dos subgrupos da fase 1 e novos testes de regressão. Ganho real de FPS deve ser validado no celular e nos mesmos 35,42 segundos de baseline.
+- Instrumentação de contagem dos subgrupos da fase 1 e novos testes de regressão. Relatório de FPS passa a distinguir DPR físico do dispositivo e DPR interno renderizado, que pode cair a ~0,92 mesmo quando a tela anuncia DPR 3.
+- Ganho real de FPS deve ser validado no celular e nos mesmos 35,42 segundos de baseline.
 - **PR Draft, sem merge e sem produção.**
 
 ## 1.27.141 — QA144: antialiasing proporcional, bloom econômico e culling urbano
