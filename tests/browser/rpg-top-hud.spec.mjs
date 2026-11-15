@@ -73,13 +73,16 @@ test('P0 mobile RPG remains collapsed during flight and opens with reachable act
           const r = el.getBoundingClientRect();
           const x = r.x + r.width / 2;
           const y = r.y + r.height / 2;
-          return [id, {
-            x: r.x,
-            y: r.y,
-            width: r.width,
-            height: r.height,
-            hit: document.elementFromPoint(x, y)?.id ?? null,
-          }];
+          return [
+            id,
+            {
+              x: r.x,
+              y: r.y,
+              width: r.width,
+              height: r.height,
+              hit: document.elementFromPoint(x, y)?.id ?? null,
+            },
+          ];
         }),
       );
       return {
