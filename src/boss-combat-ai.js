@@ -17,8 +17,8 @@ const MELEE = Object.freeze({
 const LABEL = Object.freeze({
   'rok-pincer': 'ROK · PINÇA DAS ASAS · SUBA DA ZONA VERMELHA',
   'rok-ram': 'ROK · INVESTIDA FRONTAL · DESVIE DO EIXO',
-  'stingray-scissor': 'STINGRAY · TESOURA VERTICAL · ESQUIVE PELA LATERAL',
-  'stingray-sting': 'STINGRAY · FERRÃO · SAIA DA LINHA DE INVESTIDA',
+  'stingray-scissor': 'COLOSSO DAS DUNAS · PRENSA VERTICAL · DESVIE',
+  'stingray-sting': 'COLOSSO DAS DUNAS · PERFURADOR · DESVIE',
   'drill-crosscut': 'CARBIDE · BROCA TRANSVERSAL · MUDE DE ALTURA',
   'hydra-two-head-crossfire': 'HIDRA · FOGO CRUZADO DAS CABEÇAS · SUBA PARA ESCAPAR',
   'marvin-rear-thruster-sweep': 'MARVIN · VARREDURA DAS TURBINAS · MUDE DE ALTURA',
@@ -79,8 +79,9 @@ export function chooseBossIntent({
       // instead reward a timely sidestep. The attack locks at windup.
       kind = flank || cycle % 3 !== 0 ? 'rok-pincer' : 'rok-ram';
     } else if (sector === 1) {
-      // Stingray punishes low flight with a vertical scissor, while climbing
-      // or boosting exposes the pilot to a narrower tail-sting dive.
+      // The Martian quarry colossus clamps the vertical corridor near the
+      // ground and uses its axial excavator against climbing/boosting pilots.
+      // Keep stable attack IDs for radar and damage compatibility.
       kind = boosting || playerY >= 25 ? 'stingray-sting' : 'stingray-scissor';
     } else if (sector === 8) {
       // Orion alternates a circular gravity pulse and a narrow iris beam.

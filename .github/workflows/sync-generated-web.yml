@@ -18,6 +18,7 @@ on:
       - perf/qa146-static-city-stations-and-ad-batching-20261115
       - integration/qa138-146-on-qa140-20261115
       - feat/qa148-mars-storm-depth-20261115
+      - feat/qa149-mars-colossus-animated-20261115
 permissions:
   contents: write
   actions: write
@@ -41,6 +42,9 @@ jobs:
       - name: Prepare QA148 release metadata
         if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
         run: npm run release:prepare -- 1.27.144
+      - name: Prepare QA149 release metadata
+        if: github.ref_name == 'feat/qa149-mars-colossus-animated-20261115'
+        run: npm run release:prepare -- 1.27.145
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -91,6 +95,9 @@ jobs:
             git add -u -- . ':(exclude).github/workflows/sync-generated-web.yml'
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa148-mars-storm-depth-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa149-mars-colossus-animated-20261115" ]; then
             git add -u
           fi
           if git diff --cached --quiet; then
