@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.135 — QA140: menu RPG radial e pausa tática mobile
+
+- Primeira abertura radial com quatro categorias: Armas, Especiais, Berserk e Utilitários. Ações ficam agrupadas em painel compacto semitransparente e o botão fechado é circular.
+- Ao abrir no mobile, a simulação (tempo, movimento, tiros, colisões, chefes, tempestades e dano) é congelada sem interromper a visualização do frame do jogo. Ao fechar, a batalha retoma sem disparo ou boost preso.
+- Berserk utiliza progressão, energia e cooldown reais da campanha; a versão de QA continua isolada.
+- Fixture do navegador compartilha controlador real do RPG; testes de estados, pausa tática e visibilidade são executados pela CI.
+- Candidata em PR, sem merge ou produção até aprovação visual e testes 4/4.
+
 ## 1.27.134 — QA136: chefes adaptativos e Marte Premium
 
 - Colisão swept dos disparos hostis, agora baseada no percurso completo do projétil e na caixa compacta da nave ou robô; preserva pods, obstáculos e invulnerabilidade.
