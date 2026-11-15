@@ -11164,6 +11164,14 @@ body:not(.developer-session) #qaBerserkDock {
   }
 }
 
+/* QA140 narrow phones: keep the circular RPG hit target completely above
+   the radio/warning lane and below the shield/status strip. */
+@media (pointer: coarse) and (max-width: 360px) {
+  body.in-mission #strategyControls {
+    top: max(84px, calc(env(safe-area-inset-top, 0px) + 68px));
+  }
+}
+
     </style>
   </head>
   <body>
@@ -12046,7 +12054,7 @@ body:not(.developer-session) #qaBerserkDock {
           </details>
         </div>
         <div class="title-footer">ATÉ A GALÁXIA MAIS DISTANTE.</div>
-        <span id="gameVersion">v1.27.134</span>
+        <span id="gameVersion">v1.27.135</span>
       </section>
       <section
         id="cinematic"
