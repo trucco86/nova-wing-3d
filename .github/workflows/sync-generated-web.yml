@@ -19,6 +19,7 @@ on:
       - integration/qa138-146-on-qa140-20261115
       - feat/qa148-mars-storm-depth-20261115
       - feat/qa149-mars-colossus-animated-20261115
+      - fix/qa150-mars-soft-dust-points-20261115
 permissions:
   contents: write
   actions: write
@@ -45,6 +46,9 @@ jobs:
       - name: Prepare QA149 release metadata
         if: github.ref_name == 'feat/qa149-mars-colossus-animated-20261115'
         run: npm run release:prepare -- 1.27.145
+      - name: Prepare QA150 release metadata
+        if: github.ref_name == 'fix/qa150-mars-soft-dust-points-20261115'
+        run: npm run release:prepare -- 1.27.146
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -98,6 +102,9 @@ jobs:
             git add -u
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa149-mars-colossus-animated-20261115" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa150-mars-soft-dust-points-20261115" ]; then
             git add -u
           fi
           if git diff --cached --quiet; then
