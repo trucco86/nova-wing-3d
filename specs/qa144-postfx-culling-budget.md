@@ -1,11 +1,13 @@
 # QA144: compositor e culling em High
 
 ## Diagnóstico
+
 QA143 reduziu supersampling redundante, mas a cena em desktop High
 continuava renderizando a textura offscreen 4x multisample e blurs
 intermediários em `dimensão física / 3`, aumentando bandwidth.
 
 ## Mudanças
+
 1. MSAA mantém 4 samples em telas com menos de 1M pixels CSS, usa
    2 samples em telas maiores. Somente a quantidade de amostras de
    cobertura muda, nunca o nível de detalhes geométricos/material.
@@ -23,6 +25,7 @@ intermediários em `dimensão física / 3`, aumentando bandwidth.
    são reutilizadas.
 
 ## Critérios de aceite
+
 - Testes de compositor, bounding spheres, clone, qualidade e pausa.
 - Preservar conteúdo original da cidade e das fases.
 - Bench comparativo no dispositivo real: p95/p99 frame, draw calls,

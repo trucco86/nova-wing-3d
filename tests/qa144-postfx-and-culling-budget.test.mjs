@@ -72,10 +72,17 @@ test('QA144: static city batches have conservative, initialized frustum bounds',
   for (const name of staticNames) {
     const mesh = root.getObjectByName(name);
     assert.equal(mesh.frustumCulled, true, name);
-    assert.ok(mesh.boundingSphere && Number.isFinite(mesh.boundingSphere.radius) && mesh.boundingSphere.radius > 0);
+    assert.ok(
+      mesh.boundingSphere &&
+        Number.isFinite(mesh.boundingSphere.radius) &&
+        mesh.boundingSphere.radius > 0,
+    );
     assert.equal(mesh.userData.hitbox, undefined);
   }
-  for (const name of ['city122-service-entries-and-transit-shelters', 'city122-grounded-vent-vapor-high'])
+  for (const name of [
+    'city122-service-entries-and-transit-shelters',
+    'city122-grounded-vent-vapor-high',
+  ])
     assert.equal(root.getObjectByName(name).frustumCulled, false, name);
   const clone = root.clone(true);
   assert.ok(clone.getObjectByName(staticNames[0]).boundingSphere);
@@ -106,7 +113,9 @@ test('QA144: invisible vapor remains idle and returns at correct travel in High'
   animateCity122StreetLife(clone, 200);
   const people = clone.getObjectByName('city122-service-entries-and-transit-shelters');
   const saved = people.instanceMatrix.version;
-  clone.getObjectByName = () => { throw new Error('per-frame scene search'); };
+  clone.getObjectByName = () => {
+    throw new Error('per-frame scene search');
+  };
   animateCity122StreetLife(clone, 260);
   assert.ok(people.instanceMatrix.version > saved);
 });
