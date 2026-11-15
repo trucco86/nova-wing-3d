@@ -1,3 +1,5 @@
+import { adaptiveBossAttack } from './pilot-pattern.js';
+
 // Utility-driven boss combat. Tactics use the pilot's actual movement and
 // orbit rather than random bullets, and telegraph a dodgeable targeted attack.
 const MELEE = Object.freeze({
@@ -63,6 +65,8 @@ export function chooseBossIntent({
   boosting = false,
   robot = false,
   generators = [true, true],
+  pilotPattern = null,
+  previousKind = null,
 }) {
   const options = MELEE[sector];
   const p = Math.max(1, Math.min(3, phase));
@@ -156,6 +160,14 @@ export function chooseBossIntent({
     // of an endless stream of area attacks.
     if (cycle > 0 && cycle % 4 === 0) kind = 'barrage';
   }
+  kind = adaptiveBossAttack({
+    sector,
+    kind,
+    phase: p,
+    cycle,
+    previousKind,
+    pilotPattern,
+  });
   const ventSide =
     sector === 3 && kind === 'reactor-vent'
       ? !generators[0]
