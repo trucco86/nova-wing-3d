@@ -166,8 +166,11 @@ export function createCityDistricts(buildingAnchors = []) {
     }
   }
 
-  // Maglev platforms sit parallel to (and on the OUTER side of) the ±80 rails.
-  // Shared unit geometry, no gameplay hitboxes, and roof above train clearance.
+  // All three stations use exactly three already-existing materials.
+  // Compose tile-relative transforms once, then render all 24 original
+  // static parts using only three GPU batches. Station Groups remain
+  // addressable by name for world/route tests and editor tooling.
+  const stationParts = { frame: [], cap: [], lowLight: [] };
   function station(side, z, opening = false) {
     const stationGroup = new T.Group();
     stationGroup.name = opening
@@ -177,12 +180,20 @@ export function createCityDistricts(buildingAnchors = []) {
         : 'city-maglev-station-east';
     stationGroup.position.set(side * 80, 0, z);
     stationGroup.userData.district = 'transit';
+    stationGroup.userData.visualOnly = true;
+    stationGroup.userData.stationParts = [];
     const add = (material, x, y, zz, w, h, d) => {
-      const mesh = new T.Mesh(unit, material);
-      mesh.position.set(x, y, zz);
-      mesh.scale.set(w, h, d);
-      stationGroup.add(mesh);
-      return mesh;
+      const key = material === frame ? 'frame' : material === cap ? 'cap' : 'lowLight';
+      const descriptor = { material: key, x, y, z: zz, w, h, d };
+      stationGroup.userData.stationParts.push(descriptor);
+      stationParts[key].push({
+        x: stationGroup.position.x + x,
+        y,
+        z: stationGroup.position.z + zz,
+        w,
+        h,
+        d,
+      });
     };
     add(frame, side * 11, 28.8, 0, 19, 2.5, 86); // boarding deck
     add(cap, side * 18, 47.5, 0, 27, 3, 89); // station canopy
@@ -200,6 +211,34 @@ export function createCityDistricts(buildingAnchors = []) {
   station(1, -215, true);
   station(-1, -585);
   station(1, -1315);
+
+  for (const [key, material] of [
+    ['frame', frame],
+    ['cap', cap],
+    ['lowLight', lowLight],
+  ]) {
+    const entries = stationParts[key];
+    const batch = new T.InstancedMesh(unit, material, entries.length);
+    batch.name = 'city-maglev-station-batched-' + key;
+    batch.userData.visualOnly = true;
+    batch.castShadow = false;
+    batch.receiveShadow = false;
+    for (let i = 0; i < entries.length; i++) {
+      const p = entries[i];
+      matrix.position.set(p.x, p.y, p.z);
+      matrix.rotation.set(0, 0, 0);
+      matrix.scale.set(p.w, p.h, p.d);
+      matrix.updateMatrix();
+      batch.setMatrixAt(i, matrix.matrix);
+    }
+    batch.instanceMatrix.needsUpdate = true;
+    // Preserve the usual frustum culling behaviour of the old individual
+    // meshes. Exact instanced bounds also avoid losing a distant terminal.
+    batch.computeBoundingSphere();
+    group.add(batch);
+  }
+  group.userData.stationBatchCount = 3;
+  group.userData.stationOriginalParts = 24;
 
   // Street identifiers on Medium use daylight glass, muted steel and warm accents
   // without new materials, lights or draw calls.
