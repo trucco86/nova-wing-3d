@@ -30,3 +30,17 @@ filtros ou simulação extra.
 - Verificar setores 4–10, HUD, troca de setor, pausa, reset e ondas inimigas.
 
 **Aprovação humana obrigatória antes de merge ou produção.**
+
+## Registro de testes automatizados
+
+A primeira validação da candidata executou **882 testes Node** com **0 falhas**;
+o build gerado foi sincronizado ao código pelo workflow de integração.
+A aprovação visual permanece pendente e não deve ser inferida desses testes.
+
+## Comparação de imagens a realizar
+
+Guardar imagens da mesma posição de câmera na fase 8 em:
+órbita com anéis, entrada no campo de gelo, fenda de Cassini e batalha contra o
+chefe. Registrar qual versão do jogo e configuração de qualidade geraram cada
+captura. Comparar se as três faixas incorporadas ao shader mantêm a separação
+visual dos anéis sem artefatos, mantendo a nave e a mira legíveis.
