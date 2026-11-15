@@ -22,7 +22,8 @@ test('NW-03 P0: controls remain accessible and HUD regions do not collide on sma
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     await reachBrowserBoss(page, { bossAge: 6 });
     await expect(page.locator('#bossHUD')).toBeVisible();
-    await expect(page.locator('#quickRpg')).toBeVisible();
+    await expect(page.locator('#strategyDrawer summary')).toBeVisible();
+    await expect(page.locator('#quickRpg')).toBeHidden();
     await expect(page.locator('#touch')).toBeVisible();
 
     const geometry = await page.evaluate(() => {
