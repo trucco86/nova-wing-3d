@@ -1,5 +1,16 @@
 # Histórico
 
+## 1.27.140 — QA143: Modo Alto eficiente sem reduzir materiais e arquitetura
+
+- Limite de supersampling por área da tela em qualidade Alta: 3,7 milhões de pixels renderizados no desktop e 900 mil em dispositivos touch, antes da escala adaptativa. Os mesmos modelos 3D, sombras, shader, bloom, iluminação, MSAA e VFX continuam habilitados.
+- O DPR é recalculado após resize/orientação de tela; resolução adaptativa reduz pixels sem trocar os materiais e lotes de detalhes Alto.
+- Modo Alto selecionado manualmente deixa de alternar silenciosamente para Médio após queda extrema de FPS; Auto mantém o fallback existente.
+- Cidade: a atualização visual reutiliza referências dos dois tiles, sem múltiplas buscas recursivas por quadro.
+- Painéis comerciais: cores das seis marcas e beacons são pré-calculados e cacheados via WeakMap para cada tile; zero novos THREE.Color no loop de animação.
+- Cidade industrial: rotores e grupo de alta qualidade acessados via cache do tile, sem buscas por cena em todo frame.
+- Testes para limite de pixels, orientação, pausa, preferência explícita e determinismo das fachadas. Medição de FPS em aparelho físico ainda necessária.
+- **PR Draft. Nenhum merge ou publicação em produção.**
+
 ## 1.27.139 — QA142: fachadas premium e animação leve de tráfego
 
 - Cidade distante: 42 torres recebem nervuras metálicas anexadas, dois contornos de coroas por torre e seis andares com três janelas independentes. O orçamento permanece nos mesmos 9 batches de instancing: detalhes novos reutilizam os grupos de bridges, crowns e duas luzes de qualidade Alta.

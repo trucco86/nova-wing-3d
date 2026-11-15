@@ -75,6 +75,8 @@ function refs(root) {
     glass: service.getObjectByName('city35-facade-service-glazing'),
     beacons: service.getObjectByName('city35-moving-lift-beacons'),
     exhaust: high.getObjectByName('city35-ventilated-vapour'),
+    fans: high.getObjectByName('city35-moving-turbine-rotors'),
+    high,
   };
   animations.set(root, found);
   return found;
@@ -200,7 +202,7 @@ export function setCity35LivedInQuality(root, quality) {
 export function updateCity35LivedIn(root, travel = 0) {
   if (!root || !Number.isFinite(travel)) return;
   root.userData.travel = travel;
-  const { lifts, vents, cabins, glass, beacons, exhaust } = refs(root);
+  const { lifts, vents, cabins, glass, beacons, exhaust, fans, high } = refs(root);
   const phase = root.userData.phase || 0;
   for (let i = 0; i < cabins.count; i++) {
     const p = lifts[i];
@@ -224,8 +226,7 @@ export function updateCity35LivedIn(root, travel = 0) {
   }
   if (cabins.count)
     for (const mesh of [cabins, glass, beacons]) mesh.instanceMatrix.needsUpdate = true;
-  const fanMeshes = root.getObjectByName('city35-moving-turbine-rotors');
-  if (root.getObjectByName('city35-industrial-high').visible) {
+  if (high.visible) {
     for (let i = 0; i < vents.length; i++) {
       const v = vents[i];
       const pulse = 0.6 + 0.4 * Math.sin(travel * 0.012 + v.phase);
@@ -242,7 +243,7 @@ export function updateCity35LivedIn(root, travel = 0) {
         Math.PI,
       );
       transform(
-        fanMeshes,
+        fans,
         i,
         v.x - 1.7,
         v.y - 2.9,
@@ -256,7 +257,7 @@ export function updateCity35LivedIn(root, travel = 0) {
     }
     if (vents.length) {
       exhaust.instanceMatrix.needsUpdate = true;
-      fanMeshes.instanceMatrix.needsUpdate = true;
+      fans.instanceMatrix.needsUpdate = true;
     }
   }
 }
