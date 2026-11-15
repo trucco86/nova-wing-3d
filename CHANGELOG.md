@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.130 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.129 — QA130: mapa galáctico antes de cada missão
 
 - O mapa cinematográfico abre **antes do primeiro voo** e após **Continuar** em um checkpoint. Mostra o setor atual e a progressão correta, sem avançar os eventos de gameplay enquanto o jogador consulta a rota.
