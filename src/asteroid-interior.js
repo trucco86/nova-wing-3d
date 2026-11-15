@@ -27,13 +27,44 @@ export function crossesCavernWall(from, to, radius = SHOT_RADIUS) {
   return false;
 }
 
+// Geometry and mineral colour are generated once, then shared by entrance and
+// every cavern section. Variation is per-vertex, not another shader pass or mesh.
+export function createAsteroidRockGeometry() {
+  const rock = new T.IcosahedronGeometry(1, 1);
+  const vertices = rock.getAttribute('position');
+  const colors = new Float32Array(vertices.count * 3);
+  const warm = new T.Color('#f5d9c2');
+  const cool = new T.Color('#c5d9ed');
+  const tint = new T.Color();
+  for (let i = 0; i < vertices.count; i++) {
+    const x = vertices.getX(i);
+    const y = vertices.getY(i);
+    const z = vertices.getZ(i);
+    // Faceted fracture at existing vertex density; no new triangles.
+    const fracture = 1 + 0.065 * Math.sin(x * 12.7 + z * 8.1) * Math.cos(y * 9.3);
+    vertices.setXYZ(i, x * fracture, y * fracture, z * fracture);
+    const strata = 0.5 + 0.5 * Math.sin(y * 7.3 + x * 3.2 + z * 2.1);
+    tint.copy(cool).lerp(warm, strata * 0.57);
+    const mineral = 0.88 + 0.12 * Math.sin(x * 17.1 + y * 8.7 + z * 4.3);
+    colors[i * 3] = tint.r * mineral;
+    colors[i * 3 + 1] = tint.g * mineral;
+    colors[i * 3 + 2] = tint.b * mineral;
+  }
+  vertices.needsUpdate = true;
+  rock.setAttribute('color', new T.BufferAttribute(colors, 3));
+  rock.computeVertexNormals();
+  rock.computeBoundingSphere();
+  return rock;
+}
+
 export function createAsteroidInterior(scene, { obstacles = false } = {}) {
   const course = createAsteroidCourse(scene, obstacles);
-  const rockGeometry = new T.IcosahedronGeometry(1, 1);
+  const rockGeometry = createAsteroidRockGeometry();
   const rockMaterial = new T.MeshStandardMaterial({
-    color: '#4b3c54',
-    metalness: 0.22,
-    roughness: 0.88,
+    color: '#705769',
+    metalness: 0.12,
+    roughness: 0.91,
+    vertexColors: true,
     flatShading: true,
   });
   const veinMaterial = new T.MeshStandardMaterial({
@@ -59,9 +90,10 @@ export function createAsteroidInterior(scene, { obstacles = false } = {}) {
   const crystalGeo = new T.OctahedronGeometry(1, 0);
   const braceGeo = new T.BoxGeometry(1, 1, 1);
   const gateMaterial = new T.MeshStandardMaterial({
-    color: '#4a354a',
-    metalness: 0.4,
-    roughness: 0.76,
+    color: '#715763',
+    metalness: 0.23,
+    roughness: 0.87,
+    vertexColors: true,
     flatShading: true,
     side: T.DoubleSide,
   });

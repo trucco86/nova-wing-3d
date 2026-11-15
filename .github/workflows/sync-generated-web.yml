@@ -8,6 +8,7 @@ on:
       - fix/qa137-mobile-rpg-accordion-hud-20261115
       - feat/qa138-mars-surface-shader-cpu-budget-20261115
       - feat/qa139-saturn-ring-batching-planets-20261115
+      - feat/qa140-asteroid-europa-neptune-gpu-budget-20261115
 permissions:
   contents: write
   actions: write
@@ -51,6 +52,9 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa139-saturn-ring-batching-planets-20261115" ]; then
             git add -- src/destination-vista.js src/destination-landmarks.js tests/destination-arrival.test.mjs tests/destination-landmarks.test.mjs tests/qa139-planet-vista-render-budget.test.mjs specs/qa139-saturn-planet-render-budget.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa140-asteroid-europa-neptune-gpu-budget-20261115" ]; then
+            git add -- src/asteroid-interior.js src/asteroid-course.js src/europa-surface.js src/premium-atmospheric-geology.js src/destination-landmarks.js tests/qa140-premium-biomes-budget.test.mjs specs/qa140-biomes-visual-and-perf.md
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
