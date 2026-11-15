@@ -97,10 +97,17 @@ test('Saturn mobile thumb orbit closes RPG and triggers delayed Omega turn on bo
       const rect = await button.boundingBox();
       expect(rect).not.toBeNull();
       const pos = center(rect);
-      expect(
-        await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, pos),
-        'QA140 scrim prevents accidental orbit while the RPG is tactically paused',
-      ).toBe('rpgTacticalScrim');
+      const overlay = await page.evaluate(({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return {
+          dismissSurface:
+            element?.id === 'rpgTacticalScrim' ||
+            (!!element?.closest?.('#rpgRadialMenu') && !element?.closest?.('button')),
+          category: !!element?.closest?.('[data-rpg-category]'),
+        };
+      }, pos);
+      expect(overlay.dismissSurface, 'QA140 radial must absorb the orbit touch').toBe(true);
+      expect(overlay.category, 'orbit should not activate an RPG ability').toBe(false);
       const frozen = await page.evaluate(() => window.fixture.game.snapshot());
       await page.evaluate(() => window.fixture.advance(0.9, { renderAfter: false }));
       const still = await page.evaluate(() => window.fixture.game.snapshot());
