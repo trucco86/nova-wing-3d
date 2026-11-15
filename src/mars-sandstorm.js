@@ -49,12 +49,43 @@ export function marsSandstormAt(seconds) {
   };
 }
 const particleCount = 240;
+const dustTextureSize = 32;
+// QA151: A tiny shared radial alpha texture is more robust than modifying
+// PointsMaterial shaders through onBeforeCompile. The previous QA150 method
+// passed structural tests but rendered the same opaque squares in Playwright.
+// 32 * 32 * 4 = 4 KiB of RGBA source data; reused by all storm instances.
+function createSoftDustTexture() {
+  const data = new Uint8Array(dustTextureSize * dustTextureSize * 4);
+  for (let y = 0; y < dustTextureSize; y++) {
+    for (let x = 0; x < dustTextureSize; x++) {
+      const dx = (x + 0.5) / dustTextureSize - 0.5;
+      const dy = (y + 0.5) / dustTextureSize - 0.5;
+      const radius = Math.hypot(dx, dy) * 2;
+      const fade = Math.max(0, Math.min(1, (1 - radius) / 0.68));
+      const alpha = Math.round(255 * fade * fade * (3 - 2 * fade));
+      const offset = (y * dustTextureSize + x) * 4;
+      data[offset] = 255;
+      data[offset + 1] = 255;
+      data[offset + 2] = 255;
+      data[offset + 3] = alpha;
+    }
+  }
+  const texture = new T.DataTexture(data, dustTextureSize, dustTextureSize, T.RGBAFormat);
+  texture.minFilter = T.LinearFilter;
+  texture.magFilter = T.LinearFilter;
+  texture.generateMipmaps = false;
+  texture.needsUpdate = true;
+  texture.name = 'mars-shared-feathered-dust-alpha';
+  return texture;
+}
+const softDustTexture = createSoftDustTexture();
 const fogMat = new T.PointsMaterial({
   color: '#f0b178',
-  size: 5.0,
+  size: 4.1,
   sizeAttenuation: true,
   transparent: true,
   opacity: 0,
+  map: softDustTexture,
   depthWrite: false,
   fog: false,
 });
@@ -71,23 +102,9 @@ function sandParticles() {
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(buffer, 3));
-  const material = fogMat.clone();
-  // QA150: PointsMaterial draws hard rectangular sprites without a map.
-  // Fade each existing gl_PointCoord in the fragment shader; no texture,
-  // geometry, materials, particles, or draw calls are added.
-  material.onBeforeCompile = (shader) => {
-    const chunk = '#include <map_particle_fragment>';
-    if (!shader.fragmentShader.includes(chunk)) return;
-    shader.fragmentShader = shader.fragmentShader.replace(
-      chunk,
-      `${chunk}
-      float dustRadius = length(gl_PointCoord.xy - vec2(0.5));
-      float dustFeather = 1.0 - smoothstep(0.10, 0.50, dustRadius);
-      diffuseColor.a *= dustFeather;`,
-    );
-  };
-  material.customProgramCacheKey = () => 'mars-sand-soft-point-v1';
-  const storm = new T.Points(geometry, material);
+  // Only one Points draw and one shared 32x32 texture across all instances.
+  // Built-in map_particle_fragment handles alpha with no custom shader patch.
+  const storm = new T.Points(geometry, fogMat.clone());
   storm.name = 'mars-sandstorm-particle-field';
   storm.frustumCulled = false;
   storm.userData.visualOnly = true;
