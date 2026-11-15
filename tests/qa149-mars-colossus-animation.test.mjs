@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { chooseBossIntent, bossMeleeHit } from '../src/boss-combat-ai.js';
-import { BOSS_SHAPES, createBossVisualIdentity, animateBossVisualIdentity } from '../src/boss-visual-identity.js';
+import {
+  BOSS_SHAPES,
+  createBossVisualIdentity,
+  animateBossVisualIdentity,
+} from '../src/boss-visual-identity.js';
 import { createBossModel, animateBossSignature, disposeBoss } from '../src/bosses.js';
 
 const materials = () => ({
@@ -12,13 +16,14 @@ const materials = () => ({
   edge: new T.MeshBasicMaterial(),
   hot: new T.MeshBasicMaterial(),
 });
-const legState = (root) => [-1, 1].flatMap((side) =>
-  [0, 1, 2].map((i) => {
-    const leg = root.getObjectByName('mars-dune-walker-upper-leg-' + side + '-' + i);
-    const foot = root.getObjectByName('mars-dune-walker-foot-' + side + '-' + i);
-    return [leg.rotation.z, foot.position.x, foot.position.y, foot.rotation.z];
-  }),
-);
+const legState = (root) =>
+  [-1, 1].flatMap((side) =>
+    [0, 1, 2].map((i) => {
+      const leg = root.getObjectByName('mars-dune-walker-upper-leg-' + side + '-' + i);
+      const foot = root.getObjectByName('mars-dune-walker-foot-' + side + '-' + i);
+      return [leg.rotation.z, foot.position.x, foot.position.y, foot.rotation.z];
+    }),
+  );
 
 test('QA149: six existing Martian legs brace differently for two attacks without new draws', () => {
   const visual = createBossVisualIdentity(1, materials());
@@ -73,7 +78,10 @@ test('QA149: boss generators remain fixed through tactical pause and phase chang
     animateBossSignature(boss, 1, 15.5, 2, 'attack', 'stingray-scissor');
     assert.notDeepEqual(legState(root), windup);
     animateBossSignature(boss, 1, 15.5, 3, 'attack', 'stingray-sting');
-    assert.deepEqual(boss.userData.parts.map((part) => part.mesh.position.toArray()), before);
+    assert.deepEqual(
+      boss.userData.parts.map((part) => part.mesh.position.toArray()),
+      before,
+    );
   } finally {
     disposeBoss(boss);
   }

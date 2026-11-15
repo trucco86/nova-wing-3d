@@ -278,7 +278,14 @@ export function createBossVisualIdentity(index, { armor, dark, edge, hot }) {
 
 /** Visual-only articulation: attack silhouettes move, not physical hit targets.
  * Frames depend solely on mission time so pause/replay is deterministic. */
-export function animateBossVisualIdentity(root, index, time, phase = 1, attackState = 'maneuver', attackKind = null) {
+export function animateBossVisualIdentity(
+  root,
+  index,
+  time,
+  phase = 1,
+  attackState = 'maneuver',
+  attackKind = null,
+) {
   if (!root || index < 1 || index > 9 || !Number.isFinite(time)) return;
   const identity =
     root.name === 'boss-distinct-' + BOSS_SHAPES[index]

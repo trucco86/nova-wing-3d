@@ -1,11 +1,13 @@
 # QA149 | Colosso das Dunas articulado
 
 ## Problema
+
 O chefe da fase 2 apresenta seis pernas mecânicas, mas não as movimenta
 durante o combate. Os avisos de ataques ainda citam Stingray, incoerente com
 o colosso escavador já desenhado no jogo.
 
 ## Comportamento e restrições
+
 - Seis pernas e pés já existentes recebem marcha procedimental, movimento
   de preparação e impacto para dois tipos de ataque.
 - A prensa vertical e o perfurador axial têm silhuetas distintas, com avisos
@@ -18,6 +20,7 @@ o colosso escavador já desenhado no jogo.
 - Clones do chefe recebem referências próprias sem reutilizar meshes antigos.
 
 ## Gates
+
 CI FULL com os quatro shards Playwright e smoke da fase 2.
 Capturar o chefe no mobile em preparação e ataque, portrait e landscape,
 e comparar draw calls, FPS e oclusão do HUD no mesmo dispositivo.

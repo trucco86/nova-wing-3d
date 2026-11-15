@@ -80,7 +80,9 @@ test('Rok and Carbide stay unchanged while Mars moves only approved visual legs'
     assert.equal(root.children.length, count, 'do not add draw objects');
     if (sector === 1) {
       assert.notDeepEqual(after, before, 'Martian mechanical limbs now articulate');
-      const legs = root.children.filter((part) => part.name.startsWith('mars-dune-walker-upper-leg-'));
+      const legs = root.children.filter((part) =>
+        part.name.startsWith('mars-dune-walker-upper-leg-'),
+      );
       assert.equal(legs.length, 6);
       assert.ok(legs.some((leg) => Math.abs(leg.rotation.z) > 0.2));
     } else {
