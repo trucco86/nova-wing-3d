@@ -15,15 +15,19 @@ function instance(mesh, index, x, y, z, w, h, d) {
 }
 const architecture = () =>
   new T.MeshStandardMaterial({
-    color: '#667f97',
-    metalness: 0.78,
-    roughness: 0.29,
+    color: '#8b9eae',
+    metalness: 0.68,
+    roughness: 0.31,
   });
 const glass = () =>
-  new T.MeshStandardMaterial({
-    color: '#274b70',
-    metalness: 0.62,
-    roughness: 0.18,
+  new T.MeshPhysicalMaterial({
+    color: '#497890',
+    metalness: 0.51,
+    roughness: 0.19,
+    clearcoat: 0.82,
+    clearcoatRoughness: 0.13,
+    emissive: '#12415c',
+    emissiveIntensity: 0.23,
   });
 const accent = (color) =>
   new T.MeshBasicMaterial({
@@ -51,6 +55,13 @@ export function createCity34Concept() {
   warmLights.name = 'city34-facade-amber-rooms';
   const coolLights = new T.InstancedMesh(unit, accent('#7cdeff'), 470);
   coolLights.name = 'city34-facade-cyan-rooms';
+  // Two occupied window bands on EVERY distant tower, even in Medium mode.
+  // Two instanced draws replace 84 individual lit meshes and ensure the
+  // first half of the city is not the only part that receives lighting.
+  const occupiedWarm = new T.InstancedMesh(unit, accent('#ffd3a0'), 42);
+  occupiedWarm.name = 'city34-facade-baseline-amber';
+  const occupiedCool = new T.InstancedMesh(unit, accent('#b6edff'), 42);
+  occupiedCool.name = 'city34-facade-baseline-cool';
   const bridges = new T.InstancedMesh(unit, architecture(), 30);
   bridges.name = 'city34-multilevel-skybridges';
   const bridgeLights = new T.InstancedMesh(unit, accent('#4ef5df'), 36);
@@ -61,7 +72,9 @@ export function createCity34Concept() {
     w = 0,
     b = 0,
     bl = 0,
-    cl = 0;
+    cl = 0,
+    ow = 0,
+    oc = 0;
   const towersPlan = [];
   for (const side of [-1, 1])
     for (let tier = 0; tier < 3; tier++)
@@ -74,6 +87,9 @@ export function createCity34Concept() {
         instance(towers, n++, x, h / 2 - 7, z, width, h, 23 + tier * 4);
         instance(glazing, g++, x, h / 2 - 6, z + 12.3 + tier * 2, width * 0.81, h * 0.78, 0.7);
         instance(crowns, c++, x, h - 5, z, width * 0.83, 1.7, 25);
+        // Real rooms sit in FRONT of the recessed façade, not behind a slab.
+        instance(occupiedWarm, ow++, x - width * 0.21, -5 + h * 0.34, z + 13.55 + tier * 2, width * 0.3, 1.2, 0.19);
+        instance(occupiedCool, oc++, x + width * 0.21, -5 + h * 0.64, z + 13.55 + tier * 2, width * 0.3, 1.05, 0.19);
         for (let level = 1; level <= 6; level++) {
           const y = -4 + (level * h) / 7;
           const lit = (i + level) % 3;
@@ -99,6 +115,8 @@ export function createCity34Concept() {
   finish(towers, n, root);
   finish(glazing, g, root);
   finish(crowns, c, root);
+  finish(occupiedWarm, ow, root);
+  finish(occupiedCool, oc, root);
   finish(bridges, b, root);
   finish(bridgeLights, bl, root);
   finish(warmLights, w, high);
@@ -131,6 +149,7 @@ export function createCity34Concept() {
   }
   root.add(high);
   root.userData.architecture = towersPlan;
+  root.userData.baselineLitBuildings = Math.min(ow, oc);
   setCity34ConceptQuality(root, 'medium');
   return root;
 }

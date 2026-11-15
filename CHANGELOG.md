@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.138 — QA141: fachadas luminosas e grande monumento urbano premium
+
+- Megasestrutura do horizonte com duas torres ocupadas, passarelas suportadas, colunas de luz, fachada frontal e lateral, vigas de suporte, núcleo central e sinalização circular mais detalhados.
+- Todas as janelas estruturais e acabamentos foram reagrupados em quatro batches padrão e dois de precisão High, mantendo o anel físico existente: 5 draws no Médio e 7 no Alto, em lugar de dezenas de pequenas malhas independentes.
+- Prédios distantes da cidade com duas faixas de janelas realmente iluminadas em cada uma das 42 torres, mesmo no Médio; glazing com acabamento físico claro e emissividade discreta.
+- Skyline de fundo do Horizon com faixas existentes de luz visíveis também no Médio, e assinatura central da cidade com janelas modeladas dentro dos 3 meshes já compartilhados.
+- Instâncias estáticas, zero luzes dinâmicas adicionais, zero novos colliders, qualidade Alto/Médio mantida; testes automáticos e medições de FPS/dispositivos reais obrigatórias antes de aprovação.
+- **PR Draft, sem merge e sem deploy de produção.**
+
 ## 1.27.137 — QA140: geologia premium de asteroides, Europa e Netuno
 
 - Asteroides: rocha com fraturas e depósitos minerais esculpidos e pintados na geometria existente; duas variações de material físico, sem criar mais geometrias, instâncias ou draws.

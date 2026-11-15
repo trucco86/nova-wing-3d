@@ -1600,7 +1600,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   horizonCrown.name = 'city-horizon-rooflines';
   const horizonPremium = new T.Group();
   horizonPremium.name = 'city-horizon-high-details';
-  const horizonLit = new T.InstancedMesh(unit, cityNeon('#7ddcff'), 270);
+  const horizonLit = new T.InstancedMesh(unit, cityNeon('#c1efff'), 270);
   horizonLit.name = 'city-horizon-window-bands';
   const horizonFine = new T.InstancedMesh(unit, metal('#567f9d', 0.65, 0.45), 90);
   horizonFine.name = 'city-horizon-secondary-towers';
@@ -1664,7 +1664,9 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
   }
   for (const o of [horizonLit, horizonFine]) {
     o.instanceMatrix.needsUpdate = true;
-    horizonPremium.add(o);
+    // The two light bands are the minimum inhabited facade, not an optional
+    // High-only cosmetic. Metal secondary towers remain quality-gated.
+    (o === horizonLit ? cityHorizon : horizonPremium).add(o);
   }
   cityHorizon.add(horizonPremium);
   // The central suspended city gate sits ABOVE the flight corridor: a distant
