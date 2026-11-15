@@ -1,0 +1,61 @@
+name: QA132 | Capture QA126 allied ships asteroid and varied enemies
+on:
+  push:
+    branches:
+      - feat/qa132-nova-wing-trailer-90s-allies-asteroid-20261114
+    paths:
+      - 'trailer/capture-qa132-ally-asteroid-30s.mjs'
+      - '.github/workflows/trailer-qa132-ally-asteroid.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-qa132-footage-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      NOVA_VISUAL_TEST: '1'
+    steps:
+      - name: Checkout QA126 ally continuity source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Node.js 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build actual game and deterministic browser fixture
+        run: |
+          npm run build
+          node tools/visual-fixture.mjs
+      - name: Install chromium
+        run: npx playwright install chromium
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Serve local fixture without production deploy
+        run: |
+          (npm run dev > /tmp/qa132-server.log 2>&1 &)
+          for i in $(seq 1 90); do
+            if curl --fail --silent 'http://127.0.0.1:4173/__dynamic.html?sector=0' >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/qa132-server.log
+          exit 1
+      - name: Capture 900 distinct WebGL frames across four real stages
+        run: node trailer/capture-qa132-ally-asteroid-30s.mjs
+      - name: Upload original captured footage and event provenance
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nova-wing-qa132-ally-asteroid-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            artifacts/nova-wing-qa132-trailer-extensions/*.mp4
+            artifacts/nova-wing-qa132-trailer-extensions/provenance.json
