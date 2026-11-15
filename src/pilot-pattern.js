@@ -9,8 +9,15 @@ export function createPilotPatternReader() {
   let boostingRate = 0;
   let samples = 0;
   function sample(position, dt, boosting = false) {
-    if (!position || !Number.isFinite(position.x) || !Number.isFinite(position.y) ||
-      !Number.isFinite(dt) || dt <= 0 || dt > 0.25) return;
+    if (
+      !position ||
+      !Number.isFinite(position.x) ||
+      !Number.isFinite(position.y) ||
+      !Number.isFinite(dt) ||
+      dt <= 0 ||
+      dt > 0.25
+    )
+      return;
     const alpha = Math.min(0.22, dt * 1.7);
     if (lastX !== null) {
       const sx = Math.min(95, Math.abs(position.x - lastX) / dt);
@@ -24,13 +31,14 @@ export function createPilotPatternReader() {
     samples = Math.min(samples + 1, 10000);
   }
   function snapshot() {
-    const axis = samples < 12 || Math.max(horizontal, vertical) < 7
-      ? 'mixed'
-      : horizontal > vertical * 1.3
-        ? 'horizontal'
-        : vertical > horizontal * 1.3
-          ? 'vertical'
-          : 'mixed';
+    const axis =
+      samples < 12 || Math.max(horizontal, vertical) < 7
+        ? 'mixed'
+        : horizontal > vertical * 1.3
+          ? 'horizontal'
+          : vertical > horizontal * 1.3
+            ? 'vertical'
+            : 'mixed';
     return Object.freeze({
       axis,
       boostHeavy: boostingRate > 0.55,
