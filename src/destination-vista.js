@@ -71,11 +71,18 @@ void main(){
  float bRing=smoothstep(225.,240.,r)*(1.-smoothstep(272.,281.,r));
  float aRing=smoothstep(295.,301.,r)*(1.-smoothstep(336.,346.,r));
  float gap=1.-smoothstep(278.,282.,r)*(1.-smoothstep(294.,297.,r));
- float density=.24*cRing+.81*bRing+.67*aRing;
+ // Cassini-band highlights are baked into this SAME shader, not drawn
+ // again as three overlapping alpha meshes on top of the icy ring.
+ float cAccent=smoothstep(209.,212.,r)*(1.-smoothstep(220.,223.,r));
+ float bAccent=smoothstep(242.,246.,r)*(1.-smoothstep(267.,271.,r));
+ float aAccent=smoothstep(302.,306.,r)*(1.-smoothstep(330.,334.,r));
+ float accent=.15*cAccent+.23*bAccent+.18*aAccent;
+ float density=.24*cRing+.81*bRing+.67*aRing+accent;
  float filaments=.84+.09*sin(r*1.42)+.07*sin(r*6.2)+.025*sin(r*15.6);
  float outer=clamp((r-205.)/141.,0.,1.);
  vec3 icyCream=mix(vec3(.80,.77,.69),vec3(.53,.51,.47),outer);
  icyCream*=.91+.09*sin(r*.17);
+ icyCream=mix(icyCream,vec3(.95,.89,.77),clamp(accent*1.3,0.,.3));
  float alpha=opacity*envelope*density*filaments*gap;
  gl_FragColor=vec4(icyCream,clamp(alpha,0.,.92));
 }`;
@@ -93,6 +100,40 @@ void main(){
  float center= .38+.62*smoothstep(.1,.9,abs(uvp.x-.5)*2.);
  gl_FragColor=vec4(tint,alpha*diffuse*mask*center);
 }`;
+
+// References live outside userData so Object3D cloning and disposal stay safe.
+const vistaParts = new WeakMap();
+const escapeParts = new WeakMap();
+function partsForVista(root) {
+  let parts = vistaParts.get(root);
+  if (!parts) {
+    const globe = root.getObjectByName('destination-celestial-body');
+    parts = {
+      globe,
+      rim: globe.getObjectByName('destination-celestial-limb'),
+      mist: root.getObjectByName('destination-entry-mist'),
+    };
+    vistaParts.set(root, parts);
+  }
+  return parts;
+}
+function partsForEscape(root) {
+  let parts = escapeParts.get(root);
+  if (!parts) {
+    const streaks = root.getObjectByName('escape-hyperspeed-particles');
+    const count = streaks.geometry.getAttribute('position').count;
+    const xy = new Float64Array(count * 2);
+    for (let i = 0; i < count; i++) {
+      const angle = i * 2.399963;
+      const radius = 65 + (i % 13) * 7;
+      xy[i * 2] = Math.cos(angle) * radius;
+      xy[i * 2 + 1] = Math.sin(angle) * radius + 8;
+    }
+    parts = { streaks, xy };
+    escapeParts.set(root, parts);
+  }
+  return parts;
+}
 
 const tints = {
   station: 0,
@@ -177,30 +218,9 @@ export function createDestinationVista(index) {
     rings.rotation.copy(tilt);
     rings.userData.visualOnly = true;
     globe.add(rings);
-    // Three faint structural bands accent the authored ring disk without
-    // adding a fake navigable torus in the player's center screen.
-    for (const [inner, outer, color, opacity] of [
-      [209, 223, '#f8edd5', 0.15],
-      [242, 271, '#e3d7b9', 0.13],
-      [302, 334, '#c5b8a6', 0.1],
-    ]) {
-      const band = new T.Mesh(
-        new T.RingGeometry(inner, outer, 160, 2),
-        new T.MeshBasicMaterial({
-          color,
-          side: T.DoubleSide,
-          transparent: true,
-          opacity,
-          depthWrite: false,
-          fog: false,
-        }),
-      );
-      band.name = 'saturn-astronomical-band';
-      band.renderOrder = 3;
-      band.rotation.copy(tilt);
-      band.userData.visualOnly = true;
-      globe.add(band);
-    }
+    // The three C/B/A accents now live inside SATURN_RING_FRAG.
+    // Eliminating their individual RingGeometry/material cuts 3 GPU draws
+    // without changing front/back ring depth, camera tilt or flight physics.
   }
   const mist = new T.Group();
   mist.name = 'destination-entry-mist';
@@ -230,6 +250,7 @@ export function createDestinationVista(index) {
     mist.add(cloud);
   }
   root.add(mist);
+  vistaParts.set(root, { globe, rim, mist });
   updateDestinationVista(root, index, 0);
   return root;
 }
@@ -237,7 +258,7 @@ export function createDestinationVista(index) {
 export function updateDestinationVista(root, index, seconds) {
   const state = destinationArrivalAt(index, seconds);
   if (!state || !root) return state;
-  const globe = root.getObjectByName('destination-celestial-body');
+  const { globe, rim, mist } = partsForVista(root);
   const visible = state.globeOpacity > 0.01;
   globe.visible = visible;
   globe.scale.setScalar(state.globeScale);
@@ -246,10 +267,9 @@ export function updateDestinationVista(root, index, seconds) {
   globe.position.y = index === 7 ? 86 + state.reveal * 18 : 94 + state.reveal * 44;
   globe.material.uniforms.alpha.value = state.globeOpacity;
   globe.material.uniforms.drift.value = seconds;
-  globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value =
-    state.globeOpacity * 0.8;
-  for (const child of root.getObjectByName('destination-entry-mist').children) {
-    const i = Number(child.name.slice(-1));
+  rim.material.uniforms.alpha.value = state.globeOpacity * 0.8;
+  for (let i = 0; i < mist.children.length; i++) {
+    const child = mist.children[i];
     child.material.uniforms.alpha.value = index === 7 ? 0 : state.haze * (0.3 + i * 0.05);
     child.material.uniforms.time.value = seconds + i * 13;
     child.position.x = (i - 1) * 18 + Math.sin(seconds * 0.32 + i) * 13;
@@ -259,8 +279,8 @@ export function updateDestinationVista(root, index, seconds) {
     // Keep the celestial object strictly hidden (including after reset).
     globe.visible = false;
     globe.material.uniforms.alpha.value = 0;
-    globe.getObjectByName('destination-celestial-limb').material.uniforms.alpha.value = 0;
-    for (const child of root.getObjectByName('destination-entry-mist').children)
+    rim.material.uniforms.alpha.value = 0;
+    for (const child of mist.children)
       child.material.uniforms.alpha.value = 0;
   }
   root.userData.arrivalPhase = state.phase;
@@ -276,6 +296,16 @@ export function createDestinationEscape(index) {
   root.userData.visualOnly = true;
   const count = 96,
     coords = new Float32Array(count * 3);
+  const xy = new Float64Array(count * 2);
+  // Trigonometry is paid once per effect creation, not 96 times per frame.
+  for (let i = 0; i < count; i++) {
+    const angle = i * 2.399963;
+    const radius = 65 + (i % 13) * 7;
+    xy[i * 2] = Math.cos(angle) * radius;
+    xy[i * 2 + 1] = Math.sin(angle) * radius + 8;
+    coords[i * 3] = xy[i * 2];
+    coords[i * 3 + 1] = xy[i * 2 + 1];
+  }
   const geom = new T.BufferGeometry();
   geom.setAttribute('position', new T.BufferAttribute(coords, 3));
   const color = index === 9 ? '#ffd4a2' : index === 1 ? '#e8c092' : '#7edbff';
@@ -295,6 +325,7 @@ export function createDestinationEscape(index) {
   streaks.userData.visualOnly = true;
   streaks.frustumCulled = false;
   root.add(streaks);
+  escapeParts.set(root, { streaks, xy });
   root.visible = false;
   return root;
 }
@@ -302,16 +333,15 @@ export function updateDestinationEscape(root, index, seconds) {
   const state = destinationExitAt(index, seconds);
   if (!root) return state;
   root.visible = state.active;
-  const particles = root.getObjectByName('escape-hyperspeed-particles');
-  particles.material.opacity = state.progress * 0.79;
-  const positions = particles.geometry.attributes.position;
+  root.userData.escapeProgress = state.progress;
+  if (!state.active) return state;
+  const { streaks, xy } = partsForEscape(root);
+  streaks.material.opacity = state.progress * 0.79;
+  const positions = streaks.geometry.attributes.position;
   for (let i = 0; i < positions.count; i++) {
-    const angle = i * 2.399963;
-    const rad = 65 + (i % 13) * 7;
     const z = -300 + ((((i * 37 + seconds * 230) % 360) + 360) % 360);
-    positions.setXYZ(i, Math.cos(angle) * rad, Math.sin(angle) * rad + 8, z);
+    positions.setXYZ(i, xy[i * 2], xy[i * 2 + 1], z);
   }
   positions.needsUpdate = true;
-  root.userData.escapeProgress = state.progress;
   return state;
 }
