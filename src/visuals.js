@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createOwnedResourceScope } from './owned-resource-scope.js';
 import { installPremiumMechaDetails } from './mecha-premium.js';
 import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
@@ -2793,6 +2794,7 @@ export function bossModel() {
   return g;
 }
 export function postProcessor(renderer, scene, camera, { coarsePointer = false } = {}) {
+  const owned = createOwnedResourceScope();
   const targetType = renderer.extensions.has('EXT_color_buffer_float')
     ? T.HalfFloatType
     : T.UnsignedByteType;
@@ -2827,6 +2829,14 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
       ),
   });
   const quad = new T.Mesh(new T.PlaneGeometry(2, 2), blur);
+  // Only these resources belong exclusively to this compositor. The renderer,
+  // the gameplay scene and any shared enemy materials are intentionally excluded.
+  owned.own(full);
+  owned.own(a);
+  owned.own(b);
+  owned.own(blur);
+  owned.own(final);
+  owned.own(quad.geometry);
   passScene.add(quad);
   let bw = 1,
     bh = 1,
@@ -2882,6 +2892,12 @@ export function postProcessor(renderer, scene, camera, { coarsePointer = false }
       renderer.setRenderTarget(null);
       renderer.render(passScene, passCam);
       return sceneCost;
+    },
+    destroy() {
+      // Disposing render targets also disposes their internally owned textures.
+      // Do not recursively dispose the live game scene or shared objects.
+      passScene.remove(quad);
+      return owned.dispose();
     },
   };
 }
