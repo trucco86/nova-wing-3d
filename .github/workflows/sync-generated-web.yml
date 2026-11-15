@@ -58,7 +58,7 @@ jobs:
             git add -- src/asteroid-interior.js src/asteroid-course.js src/europa-surface.js src/premium-atmospheric-geology.js src/destination-landmarks.js tests/qa140-premium-biomes-budget.test.mjs specs/qa140-biomes-visual-and-perf.md
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa141-city-lit-facades-landmark-20261115" ]; then
-            git add -- src/city-commerce.js src/city-34-concept.js src/city-40-hero-section.js src/visuals.js tests/qa141-lit-city-megastructure.test.mjs specs/qa141-lit-city-architecture.md
+            git add -- src/city-commerce.js src/city-34-concept.js src/city-40-hero-section.js src/visuals.js tests/qa141-lit-city-megastructure.test.mjs tests/city-2-3-horizon-traffic.test.mjs tests/city-2-7-retail-orbit.test.mjs tests/graphics.test.mjs specs/qa141-lit-city-architecture.md
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
