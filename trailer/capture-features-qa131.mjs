@@ -35,10 +35,10 @@ try{
   await page.locator('#loadoutCatalog').evaluate(n=>n.open=true);
   await snap('05-hangar-arsenal-gallery');
   // 2) Earn credits and buy real weapon, armor and pod upgrades, visible in shop.
-  await page.goto(base+'/__dynamic.html?sector=1&encounters=1',{waitUntil:'domcontentloaded',timeout:120000});
+  await page.goto(base+'/__dynamic.html?sector=0',{waitUntil:'domcontentloaded',timeout:120000});
   await page.waitForFunction(()=>document.body.dataset.ready==='true',null,{timeout:120000});
   await page.evaluate(()=>window.fixture.hangar());
-  await page.locator('#shop').waitFor({state:'visible',timeout:90000});
+  await page.locator('#shop').waitFor({state:'visible',timeout:30000});
   await snap('06-upgrade-before');
   for(const id of ['buyweapon','buyvolley','buyrapid','buypods','buyarmor']){
     const btn=page.locator('#'+id);
