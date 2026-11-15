@@ -7,14 +7,13 @@ const overlaps = (a, b, gap = 2) =>
   a.y < b.y + b.height - gap &&
   a.y + a.height > b.y + gap;
 
-test('P0 mobile RPG remains collapsed during flight and opens with reachable actions', async ({
+test('QA140 mobile radial RPG freezes the battle and keeps a compact circular HUD', async ({
   page,
 }, info) => {
-  test.skip(info.project.name !== 'mobile', 'Tests require an actual touch viewport');
+  test.skip(info.project.name !== 'mobile', 'Touch radial menu is mobile-only');
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-
   for (const viewport of [
     { width: 390, height: 844 },
     { width: 320, height: 568 },
@@ -24,88 +23,67 @@ test('P0 mobile RPG remains collapsed during flight and opens with reachable act
     await page.goto('/__dynamic.html?sector=0');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     const drawer = page.locator('#strategyDrawer');
-    const summary = drawer.locator('summary');
-    await expect(summary).toBeVisible();
+    const trigger = drawer.locator('summary');
+    await expect(trigger).toBeVisible();
     await expect(drawer).not.toHaveAttribute('open');
-    await expect(page.locator('#quickRpg')).toBeHidden();
-    await expect(page.locator('#specialCast')).toBeHidden();
-
-    const closed = await page.evaluate(() => {
-      const rect = (selector) => {
-        const el = document.querySelector(selector);
+    const atRest = await page.evaluate(() => {
+      const box = (sel) => {
+        const el = document.querySelector(sel);
         if (!el || el.hidden || getComputedStyle(el).display === 'none') return null;
         const { x, y, width, height } = el.getBoundingClientRect();
         return { x, y, width, height };
       };
       return {
-        strategy: rect('#strategyControls'),
-        trigger: rect('#strategyDrawer summary'),
-        notices: rect('#hudNotices'),
-        radar: rect('#tacticalPanel'),
+        trigger: box('#strategyDrawer summary'),
+        notices: box('#hudNotices'),
+        radar: box('#tacticalPanel'),
       };
     });
-    expect(closed.strategy).not.toBeNull();
-    expect(closed.trigger).not.toBeNull();
-    expect(closed.trigger.height).toBeGreaterThanOrEqual(44);
-    expect(closed.strategy.x).toBeGreaterThanOrEqual(0);
-    expect(closed.strategy.x + closed.strategy.width).toBeLessThanOrEqual(viewport.width);
-    expect(closed.strategy.y + closed.strategy.height).toBeLessThan(
-      viewport.height * (viewport.width > viewport.height ? 0.4 : 0.36),
-    );
-    expect(overlaps(closed.strategy, closed.notices), 'alerts cannot cover RPG toggle').toBe(false);
-    expect(overlaps(closed.strategy, closed.radar), 'radar cannot cover RPG toggle').toBe(false);
-    await page.screenshot({
-      path: info.outputPath('rpg-folded-' + viewport.width + 'x' + viewport.height + '.png'),
-    });
+    expect(atRest.trigger.width).toBeGreaterThanOrEqual(48);
+    expect(atRest.trigger.height).toBeGreaterThanOrEqual(48);
+    expect(atRest.trigger.x).toBeGreaterThanOrEqual(0);
+    expect(atRest.trigger.x + atRest.trigger.width).toBeLessThanOrEqual(viewport.width);
+    expect(overlaps(atRest.trigger, atRest.notices)).toBe(false);
+    expect(overlaps(atRest.trigger, atRest.radar)).toBe(false);
+    await page.screenshot({ path: info.outputPath('rpg-closed-' + viewport.width + '.png') });
 
-    // The advanced RPG controls are opt-in: verify real elementFromPoint
-    // hit-targets after expansion, without forcing the panel open in gameplay.
-    await summary.click();
+    await trigger.click();
     await expect(drawer).toHaveAttribute('open');
-    await expect(page.locator('#quickRpg')).toBeVisible();
-    await expect(page.locator('#specialCast')).toBeVisible();
-    const expanded = await page.evaluate(() => {
-      const panel = document.querySelector('#strategyDrawer > .rpgDrawerBody');
-      const pane = panel.getBoundingClientRect();
-      const actions = Object.fromEntries(
-        ['arsenalSwitch', 'specialSwitch', 'specialCast'].map((id) => {
-          const el = document.getElementById(id);
-          const r = el.getBoundingClientRect();
-          const x = r.x + r.width / 2;
-          const y = r.y + r.height / 2;
-          return [
-            id,
-            {
-              x: r.x,
-              y: r.y,
-              width: r.width,
-              height: r.height,
-              hit: document.elementFromPoint(x, y)?.id ?? null,
-            },
-          ];
-        }),
-      );
-      return {
-        panel: { x: pane.x, y: pane.y, width: pane.width, height: pane.height },
-        overflowY: getComputedStyle(panel).overflowY,
-        actions,
-      };
-    });
-    expect(expanded.panel.x).toBeGreaterThanOrEqual(0);
-    expect(expanded.panel.x + expanded.panel.width).toBeLessThanOrEqual(viewport.width);
-    expect(expanded.panel.height).toBeGreaterThan(0);
-    expect(expanded.overflowY).toBe('auto');
-    for (const [id, bounds] of Object.entries(expanded.actions)) {
-      expect(bounds.width, id + ' reachable width').toBeGreaterThanOrEqual(37);
-      expect(bounds.height, id + ' reachable height').toBeGreaterThanOrEqual(44);
-      expect(bounds.hit, id + ' receives the touch').toBe(id);
+    await expect(page.locator('body')).toHaveClass(/rpg-tactical-paused/);
+    await expect(page.locator('#rpgRadialMenu')).toBeVisible();
+    await expect(page.locator('#rpgCategoryPanel')).toBeHidden();
+    await expect(page.locator('#pauseMenu')).toBeHidden();
+    const before = await page.evaluate(() => window.fixture.game.snapshot());
+    await page.evaluate(() => window.fixture.advance(3));
+    const after = await page.evaluate(() => window.fixture.game.snapshot());
+    expect(after.seconds).toBe(before.seconds);
+    expect(after.shield).toBe(before.shield);
+    expect(after.entities.hostile).toBe(before.entities.hostile);
+    expect(after.rpgTacticalPaused).toBe(true);
+    await page.screenshot({ path: info.outputPath('rpg-radial-' + viewport.width + '.png') });
+
+    for (const name of ['weapons', 'specials', 'berserk', 'utilities']) {
+      await page.locator('[data-rpg-category="' + name + '"]').click();
+      const panel = page.locator('#rpgCategoryPanel');
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveAttribute('data-category', name);
+      await expect(page.locator('#rpgRadialMenu')).toBeHidden();
+      const rect = await panel.boundingBox();
+      expect(rect.x).toBeGreaterThanOrEqual(0);
+      expect(rect.x + rect.width).toBeLessThanOrEqual(viewport.width);
+      expect(rect.y).toBeGreaterThanOrEqual(0);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(viewport.height);
+      await page.screenshot({
+        path: info.outputPath('rpg-' + name + '-' + viewport.width + '.png'),
+      });
+      await page.locator('#rpgCategoryBack').click();
+      await expect(page.locator('#rpgRadialMenu')).toBeVisible();
+      expect((await page.evaluate(() => window.fixture.game.snapshot())).rpgTacticalPaused).toBe(true);
     }
-    await page.screenshot({
-      path: info.outputPath('rpg-open-' + viewport.width + 'x' + viewport.height + '.png'),
-    });
-    await summary.click();
+    await page.locator('#rpgRadialClose').click();
     await expect(drawer).not.toHaveAttribute('open');
-    await expect(page.locator('#quickRpg')).toBeHidden();
+    await expect(page.locator('body')).not.toHaveClass(/rpg-tactical-paused/);
+    await expect(page.locator('#pauseMenu')).toBeHidden();
   }
   expect(errors).toEqual([]);
 });
