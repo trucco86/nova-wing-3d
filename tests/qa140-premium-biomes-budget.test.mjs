@@ -28,9 +28,15 @@ test('QA140: rock geology is baked once and instanced without extra tunnel draws
   const tunnel = scene.getObjectByName('asteroid-cavern');
   assert.equal(tunnel.children.length, 8);
   assert.ok(tunnel.children.every((section) => section.children.length === 4));
-  assert.equal(tunnel.children.reduce((n, section) => n + section.children.length, 0), 32);
+  assert.equal(
+    tunnel.children.reduce((n, section) => n + section.children.length, 0),
+    32,
+  );
   assert.ok(tunnel.children.every((section) => section.children[0].material.vertexColors));
-  assert.equal(scene.getObjectByName('asteroid-entrance-jagged-rock-face').material.vertexColors, true);
+  assert.equal(
+    scene.getObjectByName('asteroid-entrance-jagged-rock-face').material.vertexColors,
+    true,
+  );
   assert.equal(scene.getObjectByName('asteroid-entrance-throat').material.vertexColors, true);
   cavern.reset(true);
   cavern.setPhase('transition');
@@ -66,7 +72,9 @@ test('QA140: Europa glacial geometry retains vertex and draw budget', () => {
   assert.equal(root.children.length, 3);
   const snow = root.getObjectByName('europa-windborne-ice-snow');
   assert.equal(snow.geometry.getAttribute('position').count, 84);
-  root.getObjectByName = () => { throw new Error('no per-frame scene searches'); };
+  root.getObjectByName = () => {
+    throw new Error('no per-frame scene searches');
+  };
   updateEuropaSurface(root, 20, true, true);
   const previous = snow.position.x;
   updateEuropaSurface(root, 40, false, false);

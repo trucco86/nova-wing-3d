@@ -5,6 +5,7 @@ profundidade geológica e atmosferas com baking na montagem, não com novos
 modelos ou pós-processamento em cada quadro.
 
 ## Escopo
+
 - Asteroides: rocha instanciada com fraturas e sedimentos em cores de vértice;
   quantidade de vértices/draw calls e corredor de combate preservados.
 - Europa: mesma malha de 35 pontos por crista, cores mais contrastantes,
@@ -15,6 +16,7 @@ modelos ou pós-processamento em cada quadro.
   caixas de colisão idênticas.
 
 ## Riscos e critérios
+
 - Confirmar WebGL shader/vertex color de Netuno em dispositivo móvel e desktop.
 - Comparar, usando percurso e câmera idênticos, 3 capturas por fase nos modos
   Médio e Alto. Exigir ausência de oclusão da nave, inimigos e indicadores.

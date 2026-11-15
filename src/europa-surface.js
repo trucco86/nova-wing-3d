@@ -53,10 +53,9 @@ export function createEuropaGlacialRidgeGeometry() {
       const angle = (side / sides) * Math.PI * 2;
       // Frozen faulting and wind-carved crests sculpt the same 35 vertices.
       const relief =
-        1 + 0.13 * Math.sin(side * 2.8 + ring * 1.7) +
-        (ring > 0 && ring < rings.length - 1
-          ? 0.045 * Math.sin(side * 4.1 - ring * 3.2)
-          : 0);
+        1 +
+        0.13 * Math.sin(side * 2.8 + ring * 1.7) +
+        (ring > 0 && ring < rings.length - 1 ? 0.045 * Math.sin(side * 4.1 - ring * 3.2) : 0);
       positions.push(
         Math.cos(angle) * level.radius * relief,
         level.y + (ring === 0 || ring === 4 ? 0 : Math.sin(side * 3.7) * 0.028),
