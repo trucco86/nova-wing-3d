@@ -1,6 +1,20 @@
 import * as T from 'three';
 import { MARS_GLOBE_FRAGMENT_SHADER } from './mars-globe-shader.js';
 
+const approachCache = new WeakMap();
+function approachParts(root) {
+  let parts = approachCache.get(root);
+  if (!parts) {
+    // Clone-compatible lazy lookup; never store scene objects in userData.
+    parts = {
+      globe: root.getObjectByName('mars-orbit-visible-planet'),
+      haze: root.getObjectByName('mars-atmospheric-sand-haze'),
+    };
+    approachCache.set(root, parts);
+  }
+  return parts;
+}
+
 // The inverse of Earth's first-stage ascent: space -> Mars orbit -> atmospheric
 // entry -> controlled descent -> surface combat. Authored, deterministic and
 // pause-safe: only elapsed mission seconds change the state.
@@ -146,12 +160,12 @@ export function createMarsApproach() {
   particles.frustumCulled = false;
   haze.add(particles);
   root.add(haze);
+  approachCache.set(root, { globe: planet, haze });
   updateMarsApproach(root, marsDescentAt(0));
   return root;
 }
 export function updateMarsApproach(root, state) {
-  const globe = root.getObjectByName('mars-orbit-visible-planet');
-  const haze = root.getObjectByName('mars-atmospheric-sand-haze');
+  const { globe, haze } = approachParts(root);
   globe.visible = state.planetOpacity > 0.005;
   globe.scale.setScalar(state.planetScale);
   globe.material.uniforms.alpha.value = state.planetOpacity;

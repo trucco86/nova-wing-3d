@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.135 — QA138: Marte visual premium com orçamento de render controlado
+
+- Shader de Marte com crateras direcionais, manchas basálticas e terminador mais físico, sem novas malhas, texturas, passes ou amostras de ruído coerente.
+- Terreno com faixas eólicas de sedimento calculadas durante a geração de vértices, sem aumentar geometria e sem impacto no loop de render.
+- Caches WeakMap das referências do cenário, tempestade e órbita eliminam arrays temporários e buscas recursivas a cada quadro.
+- Desliga animações visuais quando a tempestade não está ativa, mantendo exatamente 240 partículas e três bancos de poeira.
+- Testes de orçamento, estabilidade, clone e reset. Desempenho de hardware físico ainda deve ser medido.
+- **QA sem merge ou deploy em produção.**
+
 ## 1.27.134 — QA136: chefes adaptativos e Marte Premium
 
 - Colisão swept dos disparos hostis, agora baseada no percurso completo do projétil e na caixa compacta da nave ou robô; preserva pods, obstáculos e invulnerabilidade.
