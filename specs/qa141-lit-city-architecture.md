@@ -1,11 +1,13 @@
 # QA141: cidade premium mais brilhante sem poluição visual
 
 ## Problema
+
 Prédios distantes eram percebidos como fachadas apagadas no modo Médio.
 A estrutura maior no horizonte tinha volumes fortes, mas poucas janelas,
 nervuras estruturais ou sinalização de escala.
 
 ## Solução
+
 1. Megasestrutura, mesma localização original (z=-1130): fachadas iluminadas
    pela frente e pelo lado, plataformas, treliças conectadas e detalhes de
    coroa. As quatro famílias de material de base são instanciadas; dois
@@ -17,6 +19,7 @@ nervuras estruturais ou sinalização de escala.
    Médio e detalhes geométricos incorporados aos mesmos três meshes.
 
 ## Orçamento de render
+
 - Cidadela: até 5 draws em Médio, 7 em Alto; sem Canvas/texture extra.
 - Iluminação base cidade34: 2 InstancedMesh de 42 instâncias cada,
   sem Mesh individual por janela e sem luzes reais de sombra.
@@ -24,6 +27,7 @@ nervuras estruturais ou sinalização de escala.
   monumentos, câmera ou gameplay.
 
 ## Aceite
+
 - Fotos comparativas no mesmo ponto da fase 1, modo Alto e Médio,
   tanto portrait quanto landscape.
 - Conferir leitura de anúncios e inimigos e ausência de brilho ofuscante.

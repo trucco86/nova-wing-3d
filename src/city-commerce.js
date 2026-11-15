@@ -297,8 +297,7 @@ export function createCityHorizonMegastructure() {
         place('highGlow', x + col * 7.8, y + 4.6, z + 35.5, 4, 0.45, 0.48, '#d5f6ff');
       }
       place('cladding', x, y + 7, z + 35.1, 32, 0.85, 0.9, '#8facba');
-      if (floor % 2 === 0)
-        place('amber', x, y + 7.6, z + 35.8, 23, 0.35, 0.5, '#f9c795');
+      if (floor % 2 === 0) place('amber', x, y + 7.6, z + 35.8, 23, 0.35, 0.5, '#f9c795');
     }
     // Facade facing the flight lane: repeated bays along the interior wall.
     // Light bars are attached to the side of the left/right supporting tower.
@@ -326,7 +325,16 @@ export function createCityHorizonMegastructure() {
   for (let floor = 0; floor < 9; floor++) {
     const y = 281 + floor * 24.1;
     for (const x of [-9, 9]) {
-      place(floor % 3 ? 'cool' : 'amber', x, y, z + 10, 5.7, 3.2, 0.55, floor % 3 ? '#c6efff' : '#ffd2a2');
+      place(
+        floor % 3 ? 'cool' : 'amber',
+        x,
+        y,
+        z + 10,
+        5.7,
+        3.2,
+        0.55,
+        floor % 3 ? '#c6efff' : '#ffd2a2',
+      );
       place('highGlow', x, y + 5, z + 10.3, 3.8, 0.4, 0.55, '#f0f9ff');
     }
     place('cladding', 0, y + 9, z + 10, 30, 1.1, 1, '#7da1b5');

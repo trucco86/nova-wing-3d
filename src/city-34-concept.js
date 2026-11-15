@@ -88,8 +88,26 @@ export function createCity34Concept() {
         instance(glazing, g++, x, h / 2 - 6, z + 12.3 + tier * 2, width * 0.81, h * 0.78, 0.7);
         instance(crowns, c++, x, h - 5, z, width * 0.83, 1.7, 25);
         // Real rooms sit in FRONT of the recessed façade, not behind a slab.
-        instance(occupiedWarm, ow++, x - width * 0.21, -5 + h * 0.34, z + 13.55 + tier * 2, width * 0.3, 1.2, 0.19);
-        instance(occupiedCool, oc++, x + width * 0.21, -5 + h * 0.64, z + 13.55 + tier * 2, width * 0.3, 1.05, 0.19);
+        instance(
+          occupiedWarm,
+          ow++,
+          x - width * 0.21,
+          -5 + h * 0.34,
+          z + 13.55 + tier * 2,
+          width * 0.3,
+          1.2,
+          0.19,
+        );
+        instance(
+          occupiedCool,
+          oc++,
+          x + width * 0.21,
+          -5 + h * 0.64,
+          z + 13.55 + tier * 2,
+          width * 0.3,
+          1.05,
+          0.19,
+        );
         for (let level = 1; level <= 6; level++) {
           const y = -4 + (level * h) / 7;
           const lit = (i + level) % 3;
