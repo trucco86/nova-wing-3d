@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.146 — QA150: poeira suave no pico da tempestade marciana
+
+- Corrige as partículas da tempestade de areia que apareciam como quadrados amarelos nos screenshots reais do navegador, por meio de feather radial na PointsMaterial.
+- Shader de fragmento usa gl_PointCoord sem texturas, draw calls ou objetos 3D adicionais; conserva as 240 partículas e os três planos de névoa.
+- Sem alteração de vento, física, alertas ou RPG. Comparação visual e métricas mobile obrigatórias antes da publicação.
+- **Draft empilhada em QA149, QA148 e integração QA138-146.**
+
 ## 1.27.145 — QA149: Colosso das Dunas com marcha articulada
 
 - Seis pernas do escavador marciano ganham gait temporal, preparação da prensa vertical e perfurador, sem nova geometria ou draw calls.

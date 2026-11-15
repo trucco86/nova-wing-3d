@@ -71,7 +71,23 @@ function sandParticles() {
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(buffer, 3));
-  const storm = new T.Points(geometry, fogMat.clone());
+  const material = fogMat.clone();
+  // QA150: PointsMaterial draws hard rectangular sprites without a map.
+  // Fade each existing gl_PointCoord in the fragment shader; no texture,
+  // geometry, materials, particles, or draw calls are added.
+  material.onBeforeCompile = (shader) => {
+    const chunk = '#include <map_particle_fragment>';
+    if (!shader.fragmentShader.includes(chunk)) return;
+    shader.fragmentShader = shader.fragmentShader.replace(
+      chunk,
+      `${chunk}
+      float dustRadius = length(gl_PointCoord.xy - vec2(0.5));
+      float dustFeather = 1.0 - smoothstep(0.10, 0.50, dustRadius);
+      diffuseColor.a *= dustFeather;`,
+    );
+  };
+  material.customProgramCacheKey = () => 'mars-sand-soft-point-v1';
+  const storm = new T.Points(geometry, material);
   storm.name = 'mars-sandstorm-particle-field';
   storm.frustumCulled = false;
   storm.userData.visualOnly = true;
