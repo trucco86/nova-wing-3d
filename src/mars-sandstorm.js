@@ -169,8 +169,13 @@ export function updateMarsSandstorm(root, seconds) {
       8 + i * 5 + wind.intensity * (3.5 + i) * Math.sin(gustPhase * 1.35);
     child.position.z =
       -140 - i * 34 + wind.intensity * (5 + i * 3) * Math.sin(gustPhase * 0.8);
-    child.rotation.z =
-      i * 0.09 + wind.intensity * (0.055 * Math.sin(gustPhase) + wind.windX * 0.002);
+    // Normalize all Euler axes as well as Z: a Three.js clone can carry -0
+    // on X, which is visually identical but breaks exact replay snapshots.
+    child.rotation.set(
+      0,
+      0,
+      i * 0.09 + wind.intensity * (0.055 * Math.sin(gustPhase) + wind.windX * 0.002),
+    );
     child.scale.set(
       1 + wind.intensity * (0.08 + i * 0.035),
       1 + wind.intensity * (0.11 + i * 0.05),
