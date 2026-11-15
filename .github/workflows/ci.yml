@@ -12,40 +12,6 @@ concurrency:
   group: ci-${{ github.ref }}-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'delivery' }}
   cancel-in-progress: true
 jobs:
-  qa132-prewarm-package:
-    # PR-only temporary candidate builder. Never deploy or merge production.
-    if: github.event_name == 'pull_request' && github.head_ref == 'perf/qa132-safe-scene-prewarm-20261114'
-    runs-on: ubuntu-latest
-    timeout-minutes: 14
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          fetch-depth: 0
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - name: Format and test safe prewarm scheduling
-        run: |
-          npx prettier --write src/obstacle-idle-prewarm.js src/game.js tests/obstacle-idle-prewarm.test.mjs
-          node --test tests/obstacle-idle-prewarm.test.mjs tests/scene-prewarm.test.mjs tests/qa131-smooth-render-budget.test.mjs
-      - name: Package QA132 as 1.27.131, no main deployment
-        run: |
-          npm run release:prepare -- 1.27.131
-          npm run build:check
-      - name: Commit only candidate changes to isolated PR branch
-        shell: bash
-        run: |
-          git add src/obstacle-idle-prewarm.js src/game.js tests/obstacle-idle-prewarm.test.mjs package.json package-lock.json ios/App/App.xcodeproj/project.pbxproj CHANGELOG.md releases/v1.27.131.md index.html
-          if ! git diff --cached --quiet; then
-            git -c user.name='Nova Wing QA Bot' -c user.email='github-actions[bot]@users.noreply.github.com' commit -m 'build(QA132): package idle-only shaders and scene models 1.27.131'
-            git push origin HEAD:perf/qa132-safe-scene-prewarm-20261114
-          fi
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 10
