@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.142 — QA145: redução de draw calls por batch das naves de evacuação
+
+- Medição real da fase 1 em HIGH no celular: 34,0 FPS médios, p95 39ms, 1.385 draw calls p95 e 1,66 milhão de triângulos p95, com escala adaptativa de 68%.
+- Inventário da cena revelou 885 malhas potencialmente visíveis, com 702 apenas nos dois tiles urbanos e 406 objetos Mesh individuais.
+- As 7 naves de evacuação de cada tile deixam de criar 49 Mesh individuais; mantêm os mesmos sete modelos completos e suas partes nas posições originais, renderizados em apenas 3 InstancedMesh separados por material.
+- Dois tiles da cidade: 92 draw submissions potenciais a menos, mantendo as cores, geometria, posição, animação, detecção de qualidade, pausa, cena High/Medium e rota de voo.
+- Redução de geometrias distintas, com placeholders de nave leves mantendo os IDs e sem adicionar hitboxes. Instâncias atualizadas uma vez por quadro e cache por tile em WeakMap.
+- Instrumentação de contagem dos subgrupos da fase 1 e novos testes de regressão. Ganho real de FPS deve ser validado no celular e nos mesmos 35,42 segundos de baseline.
+- **PR Draft, sem merge e sem produção.**
+
 ## 1.27.141 — QA144: antialiasing proporcional, bloom econômico e culling urbano
 
 - Pós-processamento High desktop mantém o mesmo bloom (limiar, intensidade e dois passes blur) com limite de 300 mil pixels em seus targets intermediários, preservando efeitos cromáticos. Evita renderizar blur em resoluções além do necessário.

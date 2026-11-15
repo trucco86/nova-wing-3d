@@ -79,7 +79,7 @@ jobs:
             git add -- src/visuals.js src/city-122-street-infill.js tests/qa122-street-life-and-moon.test.mjs tests/qa144-postfx-and-culling-budget.test.mjs specs/qa144-postfx-culling-budget.md
           fi
           if [ "${GITHUB_REF_NAME}" = "perf/qa145-drawcall-budget-inventory-20261115" ]; then
-            git add -- tests/qa145-scene-draw-inventory.test.mjs
+            git add -- src/visuals.js src/city-evacuation-batching.js tests/qa145-scene-draw-inventory.test.mjs tests/qa145-evacuation-batching.test.mjs tests/city-2-3-horizon-traffic.test.mjs specs/qa145-evacuation-batching.md
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"

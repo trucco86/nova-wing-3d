@@ -71,6 +71,12 @@ test('QA145 diagnostic: catalogue stage 1 scene cost by category on High', () =>
   assert.ok(categories['launch-city'].meshCount >= 50);
   assert.ok(categories['launch-city-far'].meshCount >= 50);
   assert.ok(details['city-urban-life'].individualMeshes > 0);
+  assert.equal(details['city-urban-life'].individualMeshes, 19);
+  assert.equal(
+    details['city-urban-life'].meshCount,
+    40,
+    '7 evacuation shuttles preserve all geometry with 3 batched draws instead of 49 meshes',
+  );
   world.setGraphicsQuality('medium');
   const medium = audit(scene);
   world.setGraphicsQuality('high');
