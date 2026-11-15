@@ -39,3 +39,28 @@ A pausa do RPG não deve abrir a interface convencional de PAUSA.
 `node --test tests/qa140-radial-rpg.test.mjs`, `npm run validate`,
 `npm run build:check`, quatro shards Playwright e captura de screenshot
 do radial e dos quatro submenus. Sem merge ou produção antes de homologação.
+
+## Follow-up QA140 | PAUSA e vibração (captura iPhone, 15/11/2026)
+
+- A **PAUSA convencional** é uma interface modal exclusiva; botão circular
+  `RPG · EV` e qualquer outro controle de RPG ficam completamente ocultos
+  desde o primeiro frame de pausa, inclusive na aba CONTROLES e em OPÇÕES.
+  Ao tocar CONTINUAR, o botão retorna sem alterar a simulação.
+- Preserve a distinção: o RPG aberto congela a simulação sem mostrar a
+  PAUSA convencional; a PAUSA convencional não deixa o RPG interativo/visível.
+- `navigator.vibrate()` só dispara quando o navegador realmente expõe a
+  API. Em Safari do iPhone não há API padrão de vibração; não tentar
+  workarounds de WebKit que falham em versões modernas do iOS.
+- A opção VIBRAÇÃO indica claramente quando está indisponível e não pode
+  ser ligada nessas plataformas. A preferência persistida em outro aparelho
+  permanece guardada sem falsas promessas neste dispositivo.
+- Um plugin nativo de haptics do Capacitor pode ser usado **somente se já
+  estiver instalado e detectado no app nativo**. Isto não transforma a
+  prévia web em aplicativo nativo nem comprova suporte háptico no iPhone.
+- Em navegadores compatíveis, ativar a opção gera feedback físico curto
+  como confirmação; colisões e tempestade continuam usando pulsos limitados.
+
+**Evidências de aceitação:** testes Node de PAUSA, detecção de suporte e
+pulsos reais/negados; Playwright mobile com screenshot da PAUSA sem RPG
+em 320x568, 390x844 e 844x390; opção desabilitada em navegador sem
+`navigator.vibrate`. Verificação física no iPhone fica pendente.
