@@ -6,11 +6,7 @@
  */
 const SAFE_KINDS = new Set(['satellite', 'carrier', 'debris', 'gantry']);
 
-export function createReusableObstaclePool({
-  create,
-  maxRetainedPerKind = 3,
-  maxTotal = 12,
-} = {}) {
+export function createReusableObstaclePool({ create, maxRetainedPerKind = 3, maxTotal = 12 } = {}) {
   if (typeof create !== 'function') throw new TypeError('Expected obstacle factory');
   if (!Number.isInteger(maxRetainedPerKind) || maxRetainedPerKind < 0 || maxRetainedPerKind > 32)
     throw new RangeError('Invalid per-kind retention limit');

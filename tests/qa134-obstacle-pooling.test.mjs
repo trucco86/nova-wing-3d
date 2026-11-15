@@ -38,7 +38,9 @@ test('recycles the same standard space mesh with its original visible children a
 
 test('retention is bounded across repeated waves, even at high enemy density', () => {
   const pool = createReusableObstaclePool({
-    create: createObstacle, maxRetainedPerKind: 2, maxTotal: 3,
+    create: createObstacle,
+    maxRetainedPerKind: 2,
+    maxTotal: 3,
   });
   const debris = Array.from({ length: 9 }, () => pool.acquire('debris'));
   for (const mesh of debris) pool.release(mesh);

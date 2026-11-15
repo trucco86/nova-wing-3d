@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.133 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.132 — QA133: memória GPU e ciclo de vida explícito
 
 - Diagnóstico no painel Pausa > FPS de geometrias, texturas, programas compilados e heap JavaScript quando disponível; amostragem limitada e diferenças em relação ao início de cada teste.
