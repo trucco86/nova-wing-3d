@@ -230,57 +230,74 @@ const template = new T.Object3D();
 const root = new T.Object3D();
 const tempMatrix = new T.Matrix4();
 
-function positionFor(role, i, travel, phase) {
+// Scratch values are overwritten per vehicle; no transient object is
+// allocated for every instanced car, bus or rescue ship on each render tick.
+const trafficPose = { x: 0, y: 0, z: 0, rx: 0, ry: 0, rz: 0 };
+const trafficGroups = new WeakMap();
+function groupsFor(traffic) {
+  let groups = trafficGroups.get(traffic);
+  if (groups) return groups;
+  groups = PROFILES.map((profile) => {
+    const group = traffic.getObjectByName('city-traffic-' + profile.role);
+    if (!group) return null;
+    // Each rigid part uses a fixed local transform. Build it once instead
+    // of re-composing that same matrix for every car at every frame.
+    const meshes = group.children.map((mesh) => {
+      let partMatrix = null;
+      const part = mesh.userData.part;
+      if (!mesh.userData.composite) {
+        template.position.set(part[0], part[1], part[2]);
+        template.rotation.set(0, 0, 0);
+        template.scale.set(part[3], part[4], part[5]);
+        template.updateMatrix();
+        partMatrix = template.matrix.clone();
+      }
+      return { mesh, partMatrix };
+    });
+    return { group, profile, meshes };
+  });
+  trafficGroups.set(traffic, groups);
+  return groups;
+}
+function positionFor(role, i, travel, phase, out) {
   const side = i % 2 ? 1 : -1;
   if (role === 'road') {
     const direction = i % 3 === 0 ? -1 : 1;
     const step = (i * 147 + phase + travel * (0.24 + (i % 4) * 0.09)) % 1800;
-    return {
-      x: side * (18 + (i % 3) * 4),
-      y: -4.4 + Math.sin(travel * 0.018 + i) * 0.15,
-      z: -55 - (direction === 1 ? step : 1800 - step),
-      rx: 0,
-      rz: 0,
-      ry: direction === 1 ? 0 : Math.PI,
-    };
-  }
-  if (role === 'bus') {
+    out.x = side * (18 + (i % 3) * 4);
+    out.y = -4.4 + Math.sin(travel * 0.018 + i) * 0.15;
+    out.z = -55 - (direction === 1 ? step : 1800 - step);
+    out.rx = 0;
+    out.rz = 0;
+    out.ry = direction === 1 ? 0 : Math.PI;
+  } else if (role === 'bus') {
     const direction = i % 2 === 0 ? 1 : -1;
     const step = (i * 390 + phase + travel * (0.18 + (i % 3) * 0.035)) % 1800;
-    return {
-      x: (i % 2 ? 1 : -1) * (35 + (i % 3) * 1.7),
-      y: -1.5,
-      z: -65 - (direction === 1 ? step : 1800 - step),
-      rx: 0,
-      ry: direction === 1 ? 0 : Math.PI,
-      rz: 0,
-    };
-  }
-  if (role === 'flycar') {
+    out.x = (i % 2 ? 1 : -1) * (35 + (i % 3) * 1.7);
+    out.y = -1.5;
+    out.z = -65 - (direction === 1 ? step : 1800 - step);
+    out.rx = 0;
+    out.ry = direction === 1 ? 0 : Math.PI;
+    out.rz = 0;
+  } else if (role === 'flycar') {
     const phaseValue = (i * 251 + phase + travel * (0.34 + i * 0.027)) % 1820;
     const bank = Math.sin(travel * 0.01 + i * 1.9) * 0.09;
-    return {
-      // Aerial taxis visibly weave between transit guideways and the retail
-      // towers; never through the low-altitude player flight lane.
-      // Protected aerial lane between the pilot flight volume (x ±72)
-      // and the first building frontage (x ±118); no facade penetration.
-      x: side * (87 + (i % 3) * 9 + 3 * Math.sin(travel * 0.008 + i)),
-      y: 73 + (i % 5) * 15 + Math.sin(travel * 0.018 + i) * 3,
-      z: -75 - phaseValue,
-      rx: -0.055,
-      ry: side * 0.17,
-      rz: bank,
-    };
+    // Aerial taxis remain within their original, clear service corridor.
+    out.x = side * (87 + (i % 3) * 9 + 3 * Math.sin(travel * 0.008 + i));
+    out.y = 73 + (i % 5) * 15 + Math.sin(travel * 0.018 + i) * 3;
+    out.z = -75 - phaseValue;
+    out.rx = -0.055;
+    out.ry = side * 0.17;
+    out.rz = bank;
+  } else {
+    const climb = ((i * 343 + phase + travel * (0.2 + i * 0.018)) % 1800) / 1800;
+    out.x = side * (66 + (i % 3) * 23 + climb * 60);
+    out.y = 50 + climb * 380;
+    out.z = -170 - i * 223 - climb * 110;
+    out.rx = -0.12 - climb * 0.52;
+    out.ry = side * 0.08;
+    out.rz = side * (-0.05 - climb * 0.11);
   }
-  const climb = ((i * 343 + phase + travel * (0.2 + i * 0.018)) % 1800) / 1800;
-  return {
-    x: side * (66 + (i % 3) * 23 + climb * 60),
-    y: 50 + climb * 380,
-    z: -170 - i * 223 - climb * 110,
-    rx: -0.12 - climb * 0.52,
-    ry: side * 0.08,
-    rz: side * (-0.05 - climb * 0.11),
-  };
 }
 
 export function createCityTraffic() {
@@ -329,41 +346,43 @@ export function createCityTraffic() {
 export function setCityTrafficQuality(traffic, quality) {
   if (!traffic) return;
   const high = quality === 'high';
+  const before = traffic.userData.quality;
   traffic.userData.quality = high ? 'high' : 'medium';
-  traffic.children.forEach((group) => {
-    const count = high ? group.userData.totalCount : group.userData.mediumCount;
-    group.children.forEach((mesh) => {
-      mesh.count = count;
-    });
-  });
+  for (const item of groupsFor(traffic)) {
+    if (!item) continue;
+    const count = high ? item.group.userData.totalCount : item.group.userData.mediumCount;
+    for (const { mesh } of item.meshes) mesh.count = count;
+  }
+  // When enabling High, initialize the previously hidden transforms before
+  // a frame is drawn. Medium never uploads invisible High-only instances.
+  if (high && before !== 'high') animateCityTraffic(traffic, traffic.userData.lastTravel ?? 0);
 }
 
 export function animateCityTraffic(traffic, travel) {
   if (!traffic || !Number.isFinite(travel)) return;
   const phase = traffic.userData.trafficPhase || 0;
-  for (const p of PROFILES) {
-    const group = traffic.getObjectByName('city-traffic-' + p.role);
-    if (!group) continue;
-    for (let i = 0; i < p.count; i++) {
-      const pos = positionFor(p.role, i, travel, phase);
-      root.position.set(pos.x, pos.y, pos.z);
-      root.rotation.set(pos.rx, pos.ry, pos.rz);
+  traffic.userData.lastTravel = travel;
+  for (const item of groupsFor(traffic)) {
+    if (!item) continue;
+    const { profile, meshes } = item;
+    // Only visible instances cost transform work. All parts in a vehicle
+    // group are quality-gated together by setCityTrafficQuality.
+    const count = meshes[0]?.mesh.count ?? 0;
+    for (let i = 0; i < count; i++) {
+      positionFor(profile.role, i, travel, phase, trafficPose);
+      root.position.set(trafficPose.x, trafficPose.y, trafficPose.z);
+      root.rotation.set(trafficPose.rx, trafficPose.ry, trafficPose.rz);
       root.scale.setScalar(1);
       root.updateMatrix();
-      for (const mesh of group.children) {
-        if (mesh.userData.composite) {
+      for (const { mesh, partMatrix } of meshes) {
+        if (partMatrix) {
+          tempMatrix.multiplyMatrices(root.matrix, partMatrix);
+          mesh.setMatrixAt(i, tempMatrix);
+        } else {
           mesh.setMatrixAt(i, root.matrix);
-          continue;
         }
-        const [x, y, z, w, h, d] = mesh.userData.part;
-        template.position.set(x, y, z);
-        template.rotation.set(0, 0, 0);
-        template.scale.set(w, h, d);
-        template.updateMatrix();
-        tempMatrix.multiplyMatrices(root.matrix, template.matrix);
-        mesh.setMatrixAt(i, tempMatrix);
       }
     }
-    for (const mesh of group.children) mesh.instanceMatrix.needsUpdate = true;
+    if (count) for (const { mesh } of meshes) mesh.instanceMatrix.needsUpdate = true;
   }
 }

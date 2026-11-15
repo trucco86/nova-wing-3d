@@ -1,5 +1,15 @@
 # Histórico
 
+## 1.27.139 — QA142: fachadas premium e animação leve de tráfego
+
+- Cidade distante: 42 torres recebem nervuras metálicas anexadas, dois contornos de coroas por torre e seis andares com três janelas independentes. O orçamento permanece nos mesmos 9 batches de instancing: detalhes novos reutilizam os grupos de bridges, crowns e duas luzes de qualidade Alta.
+- Em qualidade Média, 84 janelas ocupadas continuam visíveis como na QA141; Alto passa a destacar 756 janelas distribuídas por células e não por faixas contínuas.
+- Tráfego urbano: matrizes locais de 22 partes agrupadas cacheadas em WeakMap, sem recomputar transformações por veículo, sem busca recursiva de grupos no loop, sem objeto transitório para posição por veículo.
+- Qualidade Média atualiza apenas carros visíveis; ao entrar em Alta, todas as instâncias adicionais são populadas no frame de troca para impedir flashes na origem.
+- Física, rotas, números e cores dos veículos, simulação por distância e pause/replay preservados. Sem luzes dinâmicas e sem colisões adicionais.
+- Testes QA142 e critérios de benchmark em dispositivo real.
+- **PR Draft, sem merge/deploy em produção.**
+
 ## 1.27.138 — QA141: fachadas luminosas e grande monumento urbano premium
 
 - Megasestrutura do horizonte com duas torres ocupadas, passarelas suportadas, colunas de luz, fachada frontal e lateral, vigas de suporte, núcleo central e sinalização circular mais detalhados.
