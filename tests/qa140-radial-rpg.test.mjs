@@ -44,6 +44,38 @@ test('QA140 closing RPG never switches on the ordinary pause dialog', (t) => {
   assert.equal(h.game.snapshot().pauseDialog, true);
 });
 
+test('QA140 changing RPG weapon and spell refreshes labels while the battle clock is frozen', (t) => {
+  const storage = {
+    getItem: () =>
+      JSON.stringify({
+        version: 1,
+        sector: 0,
+        credits: 0,
+        weapon: 0,
+        armor: 0,
+        pods: 0,
+        strategy: { xp: 160, arsenal: 0, special: 0 },
+      }),
+    setItem() {},
+  };
+  const h = harness({ coarsePointer: true, storage, spawnEncounters: false });
+  t.after(() => h.close());
+  h.game.start(true);
+  h.advance(0.1);
+  const before = h.game.snapshot();
+  assert.equal(h.game.setRpgTacticalPaused(true), true);
+  h.game.cycleArsenal();
+  assert.equal(h.game.snapshot().strategy.arsenal, 1);
+  assert.equal(h.elements.get('arsenalSwitch').textContent, 'ARMA GEADA');
+  h.game.cycleSpecial();
+  assert.equal(h.game.snapshot().strategy.special, 1);
+  assert.equal(h.elements.get('specialSwitch').textContent, 'RPG NOVA');
+  assert.equal(h.elements.get('specialCast').disabled, false);
+  h.advance(1);
+  assert.equal(h.game.snapshot().seconds, before.seconds);
+  h.game.setRpgTacticalPaused(false);
+});
+
 function ui() {
   const listeners = new Map();
   const body = {
