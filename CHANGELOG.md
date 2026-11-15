@@ -9,7 +9,6 @@
 - Shader de Marte com cânions, crateras e variações geológicas e três bancos de poeira turbulenta existentes sem novas malhas ou partículas.
 - Preview isolado e testes Node/FAST executados; 4 shards Playwright, dispositivo físico e homologação visual pendentes. **Não publicar ou fazer merge sem aprovação.**
 
-
 ## 1.27.133 — QA134: pooling limitado de obstáculos espaciais
 
 - Satélites, cargueiros, destroços e pórticos comuns passam por pool de clones com no máximo três instâncias por tipo e doze no total. O cenário não precisa re-clonar a mesma composição de meshes em cada onda.
