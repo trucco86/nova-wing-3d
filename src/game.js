@@ -247,6 +247,9 @@ export function createGame({
   now = () => performance.now(),
   random = Math.random,
   autoLoop = true,
+  // Real play opens a campaign briefing before the first or resumed sector.
+  // Headless test harnesses can opt in without enabling animation frames.
+  preflightMap = autoLoop,
   spawnEncounters = true,
   // QA fixtures may inspect destruction without spawning hostile formations;
   // ordinary gameplay inherits the normal encounter toggle.
@@ -1391,22 +1394,58 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
     return true;
   }
-  function showCampaignMap() {
-    if (state !== 'shop' || !appActive) return;
+  let campaignMapOrigin = 'hangar';
+  function openCampaignMap(origin) {
+    if (!appActive) return;
+    campaignMapOrigin = origin;
     state = 'map';
     $('shop').hidden = true;
-    drawCampaignMap(document, SECTORS, sectorIndex + 1);
+    // First launch or Continue uses the current sector. After a completed
+    // stage, the hangar points to the *next* unlocked destination.
+    drawCampaignMap(document, SECTORS, sectorIndex + (origin === 'hangar' ? 1 : 0));
+    $('mapBack').textContent = localization.translate(
+      origin === 'preflight' ? 'VOLTAR AO MENU' : 'VOLTAR AO HANGAR',
+    );
+    $('mapLaunch').textContent = localization.translate(
+      origin === 'preflight' ? 'INICIAR MISSÃO ↗' : 'INICIAR PRÓXIMA FASE ↗',
+    );
     $('campaignMap').hidden = false;
+    $('mapLaunch').focus?.({ preventScroll: true });
+  }
+  function showCampaignMap() {
+    if (state !== 'shop' || !appActive) return;
+    openCampaignMap('hangar');
   }
   function backToShop() {
     if (state !== 'map') return;
-    state = 'shop';
     $('campaignMap').hidden = true;
+    if (campaignMapOrigin === 'preflight') {
+      // A preflight briefing precedes the very first mission and Continue.
+      // Back does not change the checkpoint or pretend a hangar was earned.
+      campaignMapOrigin = 'hangar';
+      state = 'menu';
+      setIntermissionUI(false);
+      document.body.classList.remove('ranking-intermission');
+      document.body.classList.add('menu');
+      $('menu').hidden = false;
+      $('continue').hidden = !readSave(storage);
+      $('start').focus?.({ preventScroll: true });
+      return;
+    }
+    state = 'shop';
     $('shop').hidden = false;
     renderShop();
   }
   function nextSector() {
     if (!['shop', 'map'].includes(state) || !appActive) return;
+    if (state === 'map' && campaignMapOrigin === 'preflight') {
+      // Do not increment: the player has not yet started the selected sector.
+      campaignMapOrigin = 'hangar';
+      $('campaignMap').hidden = true;
+      resumeAudio();
+      enterSector(false);
+      return;
+    }
     $('campaignMap').hidden = true;
     resumeAudio();
     sectorIndex++;
@@ -2872,7 +2911,12 @@ export function createGame({
     settingsOpen = false;
     unlockAudio();
     menuThemePlaying = false;
-    enterSector(false);
+    if (dynamicFlight && preflightMap && !developerSession) {
+      setIntermissionUI(true);
+      openCampaignMap('preflight');
+    } else {
+      enterSector(false);
+    }
     // The selected Five Cats pilot is already the active player on frame zero.
     // Do not leave the previous/default pilot on the HUD until the first tick.
     $('pilotName').textContent =

@@ -22,6 +22,9 @@ let lastRenderStats = null;
 let lastScene = null;
 const game = createGame({
   autoLoop: false,
+  // Test the actual pre-mission flow without starting a requestAnimationFrame
+  // loop or altering the other deterministic browser fixtures.
+  preflightMap: params.get('preflight') === '1',
   // Existing gameplay probes skip the pre-mission film; opt in with ?intro=1
   // for dedicated browser assertions of the real Five Cats opening.
   enableSquadIntro: params.get('intro') === '1',
