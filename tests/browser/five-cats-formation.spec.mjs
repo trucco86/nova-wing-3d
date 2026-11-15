@@ -30,6 +30,7 @@ test('Plasma Titan and Five Cats Overdrive fire physical shots without covering 
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const plasma = page.locator('#plasmaTitan');
   await page.locator('#strategyDrawer summary').click();
+  if (info.project.name === 'mobile') await page.locator('[data-rpg-category="specials"]').click();
   await expect(plasma).toBeVisible();
   await plasma.click();
   await page.evaluate(() => window.fixture.advance(0.35));
@@ -41,6 +42,7 @@ test('Plasma Titan and Five Cats Overdrive fire physical shots without covering 
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.locator('#strategyDrawer summary').click();
+  if (info.project.name === 'mobile') await page.locator('[data-rpg-category="specials"]').click();
   await page.locator('#fiveCatsOverdrive').click();
   await page.evaluate(() => window.fixture.advance(0.2));
   const overdrive = await page.evaluate(() => window.fixture.game.snapshot().fiveCats);
