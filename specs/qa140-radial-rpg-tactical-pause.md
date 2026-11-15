@@ -64,3 +64,16 @@ do radial e dos quatro submenus. Sem merge ou produção antes de homologação.
 pulsos reais/negados; Playwright mobile com screenshot da PAUSA sem RPG
 em 320x568, 390x844 e 844x390; opção desabilitada em navegador sem
 `navigator.vibrate`. Verificação física no iPhone fica pendente.
+
+## Roteiro manual no preview isolado
+
+1. No iPhone, iniciar a fase, tocar PAUSA e abrir CONTROLES.
+   Nenhum botão RPG pode permanecer sobre a janela.
+2. Retomar a fase e confirmar o retorno do botão RPG.
+   Abrir o radial e fechar sem acionar tiro, boost ou órbita.
+3. Abrir OPÇÕES no iPhone: VIBRAÇÃO deve estar indisponível e
+   trazer uma mensagem de suporte, sem prometer haptics no Safari.
+4. Em Android com navegador compatível, ativar VIBRAÇÃO e
+   confirmar o pulso curto; verificar feedback em impactos.
+5. Registrar o commit exibido pelo preview, a resolução testada
+   e qualquer sobreposição. Não confundir preview com produção.
