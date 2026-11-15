@@ -30,8 +30,7 @@ function fixture() {
       return selector === 'button' ? this : null;
     },
   });
-  const dispatch = (type, target, extra = {}) =>
-    listeners.get(type)?.({ target, ...extra });
+  const dispatch = (type, target, extra = {}) => listeners.get(type)?.({ target, ...extra });
   return { drawer, document, button, dispatch, listeners };
 }
 
@@ -65,7 +64,15 @@ test('touching flight controls, outside region or Escape never blocks gameplay i
   installMobileRpgAccordion({ document: f.document });
   f.drawer.open = true;
   let prevented = false;
-  f.dispatch('pointerdown', { insideDrawer: false }, { preventDefault() { prevented = true; } });
+  f.dispatch(
+    'pointerdown',
+    { insideDrawer: false },
+    {
+      preventDefault() {
+        prevented = true;
+      },
+    },
+  );
   assert.equal(f.drawer.open, false);
   assert.equal(prevented, false, 'pointer capture is owned by the game');
   f.drawer.open = true;
