@@ -1,5 +1,7 @@
 import * as T from 'three';
 import { createGame } from '../src/game.js';
+import { installMobileRpgAccordion } from '../src/mobile-rpg.js';
+import { installCompactMenu } from '../src/compact-menu.js';
 import { defeatBoss } from './combat-helper.mjs';
 import { SECTORS } from '../src/campaign.js';
 const params = new URLSearchParams(location.search);
@@ -61,6 +63,10 @@ const game = createGame({
     return renderer;
   },
 });
+// Match the actual boot sequence: browser fixtures must attach the real
+// menu and accordion event handlers, not leave visible controls inert.
+installCompactMenu();
+installMobileRpgAccordion();
 function advance(seconds, { renderAfter = true } = {}) {
   // Fast deterministic simulation can postpone the expensive software-GPU
   // frame until a visual checkpoint, without skipping physics or game logic.
