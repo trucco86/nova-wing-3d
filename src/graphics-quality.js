@@ -41,9 +41,7 @@ export function graphicsBudgetTransition(
   const maxPixelRatio =
     budget.quality === 'high' && validViewport
       ? Math.sqrt(
-          (coarsePointer
-            ? HIGH_RENDER_PIXEL_BUDGET.coarse
-            : HIGH_RENDER_PIXEL_BUDGET.desktop) /
+          (coarsePointer ? HIGH_RENDER_PIXEL_BUDGET.coarse : HIGH_RENDER_PIXEL_BUDGET.desktop) /
             (viewportWidth * viewportHeight),
         )
       : Infinity;

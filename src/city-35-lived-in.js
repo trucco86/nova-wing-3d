@@ -242,18 +242,7 @@ export function updateCity35LivedIn(root, travel = 0) {
         1.9 + pulse * 0.8,
         Math.PI,
       );
-      transform(
-        fans,
-        i,
-        v.x - 1.7,
-        v.y - 2.9,
-        v.z,
-        2.35,
-        0.13,
-        0.36,
-        0,
-        travel * 0.025 + v.phase,
-      );
+      transform(fans, i, v.x - 1.7, v.y - 2.9, v.z, 2.35, 0.13, 0.36, 0, travel * 0.025 + v.phase);
     }
     if (vents.length) {
       exhaust.instanceMatrix.needsUpdate = true;

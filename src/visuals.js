@@ -2646,7 +2646,17 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // penetrate the scrolling buildings, even as the road was coherent.
         cityHorizon.position.x = 0;
         cityHorizon.position.z = sceneryTheme === 'city' ? -900 : 0;
-        for (const { tile, traffic, drones, matrix, pedestrians, life, living, premium, services } of cityFrameNodes) {
+        for (const {
+          tile,
+          traffic,
+          drones,
+          matrix,
+          pedestrians,
+          life,
+          living,
+          premium,
+          services,
+        } of cityFrameNodes) {
           // The same live objects are reused after tile wrap, phase shifts
           // and resets, so quality and collision semantics do not change.
           if (sceneryTheme !== 'city' || !tile.visible) continue;

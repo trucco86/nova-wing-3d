@@ -6524,16 +6524,12 @@ export function createGame({
     camera.updateProjectionMatrix();
     // Viewport changes alter the actual pixel workload. Re-evaluate DPR
     // against the screen-area cap while retaining the user's HIGH geometry.
-    const resized = graphicsBudgetTransition(
-      appliedGraphicsBudget,
-      adaptiveGraphics.current(),
-      {
-        coarsePointer: coarsePointer.matches,
-        devicePixelRatio: p,
-        viewportWidth: w,
-        viewportHeight: h,
-      },
-    );
+    const resized = graphicsBudgetTransition(appliedGraphicsBudget, adaptiveGraphics.current(), {
+      coarsePointer: coarsePointer.matches,
+      devicePixelRatio: p,
+      viewportWidth: w,
+      viewportHeight: h,
+    });
     pixelLimit = resized.pixelLimit;
     appliedGraphicsBudget = resized.next;
     renderer.setPixelRatio(resized.pixelRatio);
