@@ -3,11 +3,14 @@ on:
   push:
     branches:
       - fix/qa154-cockpit-hud-victory-radio-20261115
+      - feat/qa153-stage-score-and-cat-loot-20261115
     paths:
       - src/styles.css
       - src/shell.html
       - src/game.js
+      - src/warp-departure.js
       - tests/browser/qa154-cockpit-radio-layout.spec.mjs
+      - tests/warp-departure.test.mjs
       - .github/workflows/qa154-targeted-browser.yml
   workflow_dispatch:
 
