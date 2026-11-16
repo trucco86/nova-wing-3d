@@ -37,6 +37,11 @@ test('completed sectors emit exactly one ranking event with positive score delta
   assert.ok(completed[0].points >= 50);
   assert.ok(completed[0].durationMs >= 80000);
   assert.ok(completed[0].totalPoints >= 65);
+  assert.ok(completed[0].timeBonus >= 0);
+  assert.ok(Number.isInteger(completed[0].maxCombo));
+  assert.ok(Number.isInteger(completed[0].dodges));
+  assert.ok(Number.isInteger(completed[0].catLoot));
+  assert.match(h.game.snapshot().missionTime, /^\d\d:\d\d$/);
   h.advance(1);
   assert.equal(completed.length, 1, 'shop stays idempotent');
   h.game.nextSector();

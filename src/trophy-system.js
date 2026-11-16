@@ -19,6 +19,10 @@ const EMPTY_STATS = Object.freeze({
   mechaFinishes: 0,
   squadWins: 0,
   rings: 0,
+  maxCombo: 0,
+  dodges: 0,
+  catLoot: 0,
+  fastCleanWins: 0,
   hardPerfect: 0,
   hardPrimary: 0,
 });
@@ -69,6 +73,10 @@ export function readTrophies(storage) {
       'mechaFinishes',
       'squadWins',
       'rings',
+      'maxCombo',
+      'dodges',
+      'catLoot',
+      'fastCleanWins',
       'hardPerfect',
       'hardPrimary',
     ])
@@ -133,6 +141,9 @@ export function createTrophySystem({ storage, clock = () => new Date().toISOStri
     stats.points += points;
     stats.kills += safePositive(event.kills);
     stats.rings += safePositive(event.rings);
+    stats.maxCombo = Math.max(stats.maxCombo, safePositive(event.maxCombo));
+    stats.dodges += safePositive(event.dodges);
+    stats.catLoot += safePositive(event.catLoot);
     if (event.damageTaken === false) stats.cleanWins++;
     if (event.bombsUsed === false) stats.bombFreeWins++;
     if (event.bossDefeated && event.primaryOnly === true) {
@@ -149,7 +160,10 @@ export function createTrophySystem({ storage, clock = () => new Date().toISOStri
       event.durationMs > 0 &&
       event.durationMs <= SECTORS[event.sector - 1].duration * 1400
     )
-      stats.fastWins++;
+      {
+        stats.fastWins++;
+        if (event.damageTaken === false) stats.fastCleanWins++;
+      }
     state.processed.push(event.runId);
     state.processed = state.processed.slice(-512);
     const unlocked = [];

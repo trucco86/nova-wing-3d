@@ -245,6 +245,23 @@ body.in-mission .status {
   color: #84b3bb;
   padding-bottom: 4px;
 }
+#missionChrono {
+  align-self: center;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  color: #a4e9d1;
+}
+.mission-performance {
+  margin: 7px auto 10px;
+  max-width: 48rem;
+  color: #b7f0db;
+  font-size: clamp(10px, 2.2vw, 13px);
+  line-height: 1.5;
+  letter-spacing: 0.035em;
+  text-align: center;
+}
 .utilities {
   display: flex;
   gap: 7px;
@@ -3716,6 +3733,11 @@ body.left-handed #touch {
   }
   body.in-mission .score b {
     font-size: 34px;
+  }
+  body.in-mission #missionChrono {
+    font-size: 9px;
+    justify-self: end;
+    letter-spacing: 0;
   }
   body.in-mission .utilities #pause {
     min-width: 48px;

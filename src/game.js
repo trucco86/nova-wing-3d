@@ -203,6 +203,7 @@ import {
   firstSubbossDeparture,
 } from './subboss-tactics.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
+import { createMissionScoring, formatMissionTime } from './mission-scoring.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
@@ -679,6 +680,7 @@ export function createGame({
   // Shared muzzle meshes avoid per-spawn GPU resource leaks across long missions.
   const muzzleGeometry = new T.SphereGeometry(0.8, 8, 6);
   const muzzleMaterial = new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false });
+  const nearMissHalf = new T.Vector3(7, 7, 5);
   const laserGeo = new T.CylinderGeometry(0.1, 0.16, 3.8, 6),
     orbGeo = new T.SphereGeometry(0.35, 8, 6),
     particleGeo = new T.IcosahedronGeometry(0.3, 0);
@@ -769,7 +771,9 @@ export function createGame({
     bossWarningTime = 0;
   let stageScoreStart = 0,
     stageResultSent = false,
-    stagePerformance = null;
+    stagePerformance = null,
+    stageScoring = null,
+    stageResultBreakdown = null;
   let strategy = readStrategy(null),
     arcana = 100,
     specialCd = 0,
@@ -1271,7 +1275,13 @@ export function createGame({
       petCare = result.care;
       score += result.points;
       credits += Math.ceil(result.points / 2);
-      message(result.message + ' RESGATADO · CUIDE DOS FIVE CATS');
+      stageScoring?.pickup();
+      // Items grant actual resources or RPG progression, never decorative points only.
+      if (result.effect === 'shield') hp = Math.min(maxHp(), hp + result.amount);
+      if (result.effect === 'energy') energy = Math.min(100, energy + result.amount);
+      if (result.effect === 'xp') gainXP(result.amount);
+      if (result.effect === 'arcana') arcana = Math.min(100, arcana + result.amount);
+      message(result.message + ' + ' + result.points + ' PTS · ' + result.effect.toUpperCase() + ' +' + result.amount);
       cue(result.audioCue);
       return;
     }
@@ -1296,6 +1306,12 @@ export function createGame({
   function recordStageResult(outcome = 'cleared') {
     if (!dynamicFlight || developerSession || stageResultSent) return;
     stageResultSent = true;
+    stageResultBreakdown = stageScoring?.finish({
+      durationSeconds: elapsed,
+      cleared: outcome === 'cleared',
+      noDamage: stagePerformance?.damageTaken === false,
+    }) ?? null;
+    if (outcome === 'cleared') score += stageResultBreakdown?.totalBonus ?? 0;
     try {
       Promise.resolve(
         onStageFinished({
@@ -1313,6 +1329,10 @@ export function createGame({
           bombsUsed: stagePerformance?.bombsUsed !== false,
           kills: stagePerformance?.kills ?? 0,
           rings: stagePerformance?.rings ?? 0,
+          maxCombo: stageResultBreakdown?.maxCombo ?? 0,
+          dodges: stageResultBreakdown?.dodges ?? 0,
+          catLoot: stageResultBreakdown?.pickups ?? 0,
+          timeBonus: stageResultBreakdown?.timeBonus ?? 0,
           squadSpecialUsed: stagePerformance?.squadSpecialUsed === true,
         }),
       ).catch(() => {});
@@ -1365,6 +1385,12 @@ export function createGame({
     music?.start(sectorIndex, 'victory');
     $('bossHUD').hidden = true;
     $('shop').hidden = false;
+    $('shopPerformance').textContent = stageResultBreakdown
+      ? 'TEMPO ' + formatMissionTime(elapsed) +
+        ' · BÔNUS RAPIDEZ +' + stageResultBreakdown.timeBonus +
+        ' · INTACTO +' + stageResultBreakdown.cleanBonus +
+        ' · COMBO MÁX x' + stageResultBreakdown.maxCombo
+      : '';
     $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
     $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
     $('campaignMap').hidden = true;
@@ -1381,7 +1407,7 @@ export function createGame({
     return shopLevel(k) >= SHOP[k].max;
   }
   function renderShop() {
-    $('shopCredits').textContent = credits + ' CR · ' + score + ' ACERTOS · ' + bombs + ' BOMBAS';
+    $('shopCredits').textContent = credits + ' CR · ' + score + ' PONTOS · ' + bombs + ' BOMBAS';
     renderSkins();
     for (const k of Object.keys(SHOP)) {
       const level = shopLevel(k);
@@ -1678,6 +1704,8 @@ export function createGame({
     };
     stageScoreStart = score;
     stageResultSent = false;
+    stageResultBreakdown = null;
+    stageScoring = createMissionScoring(current().duration);
     stagePerformance = {
       damageTaken: false,
       bombsUsed: false,
@@ -1826,6 +1854,7 @@ export function createGame({
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
     if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
+    if (receivedDamage > 0) stageScoring?.damage();
     if (settings.vibration) haptics.pulse(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
@@ -2000,6 +2029,7 @@ export function createGame({
     if (!dynamicFlight) return;
     const feedback = combatFeedback(dealt, { boss: bossHit, weak });
     const confirmed = feedback.type !== 'blocked';
+    if (confirmed && state === 'playing') score += stageScoring?.hit(dealt) ?? 0;
     const color = feedback.color;
     explode(position, heavy ? 7 : 3, confirmed ? (weak ? 0xffeb8a : 0xbaffee) : 0xffad55);
     if (heavy && confirmed) cue('mechaImpact');
@@ -2425,7 +2455,9 @@ export function createGame({
   }
   function bullet(pos, target, spell = '', bossIndex = -1) {
     if (hostile.length >= 180 || !pos) return;
-    hostile.push(hostileShotPool.acquire(pos, target, spell, bossIndex));
+    const projectile = hostileShotPool.acquire(pos, target, spell, bossIndex);
+    projectile.scoreNearMiss = false; // Pooled objects must reset between shots.
+    hostile.push(projectile);
   }
   function prepareUpcomingBoss() {
     if (!dynamicFlight) return;
@@ -2828,7 +2860,12 @@ export function createGame({
     $('result').hidden = false;
     $('resultTitle').textContent = win ? 'A TERRA ESTÁ LIVRE' : 'NAVE ABATIDA';
     $('resultText').textContent =
-      `${score} acertos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
+      `${score} pontos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
+    $('resultPerformance').textContent = stageResultBreakdown
+      ? 'FASE ' + formatMissionTime(elapsed) + ' · RAPIDEZ +' +
+        stageResultBreakdown.timeBonus + ' · INTACTO +' + stageResultBreakdown.cleanBonus +
+        ' · COMBO x' + stageResultBreakdown.maxCombo
+      : '';
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
@@ -4356,6 +4393,7 @@ export function createGame({
       return;
     }
     elapsed += dt;
+    stageScoring?.advance(dt);
     totalTime += dt;
     pilotPatternReader.sample(player.position, dt, boosting);
     updateCityStageSetpieces();
@@ -5961,19 +5999,34 @@ export function createGame({
         explode(b.o.position, 3, 0x70cfff);
         continue;
       }
-      if (
-        hostileShotHitsShip(
-          from,
-          b.o.position,
-          player.position,
-          b.o.scale.x,
-          robotMode,
-          previousPlayer,
-        )
-      ) {
+      const shipStruck = hostileShotHitsShip(
+        from,
+        b.o.position,
+        player.position,
+        b.o.scale.x,
+        robotMode,
+        previousPlayer,
+      );
+      if (shipStruck) {
+        // Defensive roll/dash counts only when it actually blocks a projectile.
+        const protectedDodge = roll > 0 ||
+          (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection);
+        if (dynamicFlight && protectedDodge && invuln <= 0 && !b.scoreNearMiss) {
+          b.scoreNearMiss = true;
+          score += stageScoring?.dodge() ?? 0;
+        }
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
+      } else if (
+        dynamicFlight && b.life > 0 && !b.scoreNearMiss &&
+        from.z <= player.position.z + 5 &&
+        b.o.position.z >= player.position.z + 5 &&
+        crossesSolid(from, b.o.position, player.position, nearMissHalf, 0)
+      ) {
+        // Award a physical near miss only AFTER the shot passes the cockpit.
+        b.scoreNearMiss = true;
+        score += stageScoring?.dodge() ?? 0;
       }
     }
     ringCd -= dt;
@@ -6182,9 +6235,16 @@ export function createGame({
     hud.hidden('petCareHud', !dynamicFlight);
     hud.text(
       'petCareHud',
-      'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / '),
+      'SUPRIMENTOS DOS GATOS · ' +
+        PET_ITEMS.reduce((total, item) => total + (petCare[item.id] ?? 0), 0) +
+        ' ITENS',
     );
     hud.text('score', String(score).padStart(3, '0'));
+    hud.text(
+      'missionChrono',
+      formatMissionTime(elapsed) +
+        (stageScoring?.snapshot().combo > 1 ? ' · COMBO x' + stageScoring.snapshot().combo : ''),
+    );
     hud.text('bombs', '◆ '.repeat(bombs) || '—');
     hud.style('energy', 'width', energy + '%');
     hud.cssVar('boostTouch', '--meter', energy + '%');
@@ -6864,6 +6924,8 @@ export function createGame({
           generatorAlive: boss.userData.parts[i].hp > 0,
         })) ?? [],
       seconds: elapsed,
+      missionTime: formatMissionTime(elapsed),
+      missionScoring: stageScoring?.snapshot() ?? null,
       shield: hp,
       hits: score,
       bombs,
