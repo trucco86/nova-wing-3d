@@ -40,15 +40,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2, 3, 4, 5, 6]
     runs-on: ubuntu-latest
-    # Full WebGL coverage reached 84+ passing tests before the 25-minute
-    # runner deadline, then lost the last tests to job cancellation. Keep
-    # every assertion; allow software SwiftShader enough time to finish.
+    # Keep all WebGL/SwiftShader assertions: six independent shards reduce the
+    # slowest release gate without skipping expensive browser scenarios.
     timeout-minutes: 40
     env:
       NOVA_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-      NOVA_BROWSER_SHARD: ${{ matrix.shard }}/4
+      NOVA_BROWSER_SHARD: ${{ matrix.shard }}/6
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -62,7 +61,7 @@ jobs:
       # hosted runner. Missing runtime libraries still fail the real Playwright tests.
       - run: npx playwright install chromium
       # The quality job already ran format, lint, Node tests, invariants and
-      # reproducible build. Never re-run that full suite in four browser jobs.
+      # reproducible build. Never re-run that full suite in each browser shard.
       - run: npm run build:check
       # Rebuild after verifying committed HTML: existing security contract retained.
       - run: npm run build
