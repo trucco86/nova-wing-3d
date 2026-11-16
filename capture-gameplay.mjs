@@ -8,35 +8,30 @@ const shots=[{sector:1,mode:'hangar',duration:20},...SECTORS.flatMap((s,sector)=
 for(let i=0;i<shots.length;i++){
  if(process.env.SHOT_INDEX!==undefined && i!==Number(process.env.SHOT_INDEX))continue;
  const shot=shots[i],name=String(i).padStart(2,'0'); console.log('START',name,shot);
- const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:0.65,recordVideo:{dir:out,size:{width:1280,height:720}}});
+ const context=await browser.newContext({viewport:{width:1280,height:720},deviceScaleFactor:1});
  const page=await context.newPage();
- await page.addInitScript(()=>{
+ const warmup=shot.mode==='flight'?(shot.sector===0?5:27):0;
+ await page.addInitScript(({seconds})=>{
   localStorage.setItem('nova-wing-preferences-v1',JSON.stringify({graphics:'medium',language:'pt',subtitles:false}));
-  const Original=window.AudioContext; const mix=new Original(); const dest=mix.createMediaStreamDestination();
-  const outputs=new WeakMap(); const connect=AudioNode.prototype.connect;
-  AudioNode.prototype.connect=function(target,...args){
-   if(target instanceof AudioDestinationNode && this.context!==mix){
-    let output=outputs.get(this.context);
-    if(!output){output=this.context.createMediaStreamDestination();outputs.set(this.context,output);connect.call(mix.createMediaStreamSource(output.stream),dest);}
-    connect.call(this,output);
-   }
-   return connect.call(this,target,...args);
+  window.audioContexts=[];
+  window.AudioContext=class extends OfflineAudioContext {
+   constructor(){super(2,Math.ceil(seconds*48000),48000);window.audioContexts.push(this);}
+   resume(){return Promise.resolve();}
+   suspend(time){return time===undefined?Promise.resolve():super.suspend(time);}
   };
-  window.startAudio=async()=>{await mix.resume();window.audioChunks=[];window.rec=new MediaRecorder(dest.stream);rec.ondataavailable=e=>audioChunks.push(e.data);rec.start();};
-  window.finishAudio=()=>new Promise(resolve=>{rec.onstop=async()=>{const b=new Uint8Array(await new Blob(audioChunks).arrayBuffer());let s='';for(const n of b)s+=String.fromCharCode(n);resolve(btoa(s));};rec.stop();});
- });
+ },{seconds:warmup+shot.duration+1});
  await page.goto(`http://127.0.0.1:4187/__dynamic.html?sector=${shot.sector}&xp=2200&pods=3&encounters=${shot.mode==='hangar'?0:1}${shot.mode==='boss'?'&qaBoss='+shot.sector:''}`);
  await page.waitForFunction(()=>document.body.dataset.ready==='true',null,{timeout:90000});
  await page.locator('#pause').click();await page.locator('#pauseResume').click();
  if(shot.mode==='hangar')await page.evaluate(()=>fixture.hangar());
- if(shot.mode==='flight')await page.evaluate(sector=>fixture.advance(sector===0?5:27),shot.sector);
+
  await page.evaluate(({label,mode})=>{
   const chapter=document.createElement('div');chapter.textContent=label;chapter.style.cssText='position:fixed;left:24px;bottom:20px;z-index:99999;background:#07101ddd;color:#fff;padding:10px 16px;border-left:3px solid #5ee7ff;font:600 17px sans-serif;pointer-events:none';document.body.append(chapter);
-  window.captureFrames=0;window.captureStart=performance.now();let last=performance.now(),event=-1;
+  window.captureFrames=0;let event=-1;
   const key=(code,type='keydown')=>dispatchEvent(new KeyboardEvent(type,{code,bubbles:true}));
   if(mode!=='hangar')key('Space');
-  window.captureTick=()=>{
-   const now=performance.now(),dt=Math.min(1,(now-last)/1000);last=now;const elapsed=(now-captureStart)/1000;
+  window.captureTick=(elapsed)=>{
+   const dt=1/30;
    const tick=Math.floor(elapsed);
    if(tick!==event){event=tick;
     if(mode!=='hangar'){
@@ -50,17 +45,45 @@ for(let i=0;i<shots.length;i++){
      if(mode==='flight'&&tick===11)fixture.game.cycleCamera();if(mode==='flight'&&tick===16){fixture.game.cycleCamera();fixture.game.cycleCamera();}
     }
    }
-   fixture.advance(dt);captureFrames++;window.captureRaf=requestAnimationFrame(captureTick);
-  };window.captureRaf=requestAnimationFrame(captureTick);
+   fixture.advance(dt);captureFrames++;
+  };
  },{label:shot.mode==='hangar'?'HANGAR · Arsenal e progressão':`${String(shot.sector+1).padStart(2,'0')} · ${shot.mode==='boss'?SECTORS[shot.sector].boss:SECTORS[shot.sector].name}`,mode:shot.mode});
- await page.evaluate(()=>startAudio());
- const start=Date.now();await page.screenshot({path:`${out}/${name}-start.jpg`});
- await new Promise(r=>setTimeout(r,shot.duration*1000));
- const report=await page.evaluate(()=>{cancelAnimationFrame(captureRaf);return {frames:captureFrames,state:fixture.game.snapshot()};});
- const audio=await page.evaluate(()=>finishAudio());await writeFile(`${out}/${name}.webm.audio`,Buffer.from(audio,'base64'));
- await page.screenshot({path:`${out}/${name}-end.jpg`});const video=page.video();await context.close();await video.saveAs(`${out}/${name}.webm`);
- await writeFile(`${out}/${name}.json`,JSON.stringify({...shot,start,report},null,2));console.log('DONE',name,'frames',report.frames,'state',report.state.state);
- const duration=Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','default=nw=1:nk=1',`${out}/${name}.webm`],{encoding:'utf8'}).trim());
- execFileSync('ffmpeg',['-y','-ss',String(Math.max(0,duration-shot.duration-0.3)),'-i',`${out}/${name}.webm`,'-i',`${out}/${name}.webm.audio`,'-t',String(shot.duration),'-vf','fps=30,scale=1280:720,setsar=1','-af','apad','-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-ar','48000','-movflags','+faststart',`${out}/${name}.mp4`],{stdio:'ignore'});
+ const frameDir=`${out}/${name}-frames`;await mkdir(frameDir,{recursive:true});
+ await page.evaluate(()=>{
+  if(audioContexts.length!==1)throw new Error('Expected one game audio context');
+  window.offlineAudio=audioContexts[0];
+  window.nextAudio=offlineAudio.suspend(1/30);
+  window.renderedAudio=offlineAudio.startRendering();
+ });
+ for(let frame=0;frame<(warmup+shot.duration)*30;frame++){
+  await page.evaluate(async ({frame,warmup})=>{
+   if(frame<warmup*30)fixture.advance(1/30);
+   else captureTick((frame-warmup*30)/30);
+   await nextAudio;
+  },{frame,warmup});
+  if(frame>=warmup*30){
+   await page.screenshot({path:`${frameDir}/${String(frame-warmup*30).padStart(5,'0')}.jpg`,type:'jpeg',quality:92,animations:'disabled'});
+  }
+  await page.evaluate(frame=>{
+   window.nextAudio=offlineAudio.suspend((frame+2)/30);
+   return OfflineAudioContext.prototype.resume.call(offlineAudio);
+  },frame);
+  if(frame%150===0)console.log('FRAMES',name,frame,'/',(warmup+shot.duration)*30);
+ }
+ const audio=await page.evaluate(async()=>{
+  await nextAudio;await OfflineAudioContext.prototype.resume.call(offlineAudio);
+  const b=await renderedAudio;
+  const data=new Uint8Array(b.length*4);const v=new DataView(data.buffer);
+  for(let i=0;i<b.length;i++)for(let c=0;c<2;c++)v.setInt16(i*4+c*2,Math.max(-1,Math.min(1,b.getChannelData(c)[i]))*32767,true);
+  let s='';for(let i=0;i<data.length;i+=8192)s+=String.fromCharCode(...data.subarray(i,i+8192));return btoa(s);
+ });
+ await writeFile(`${out}/${name}.pcm`,Buffer.from(audio,'base64'));
+ const report=await page.evaluate(()=>({frames:captureFrames,state:fixture.game.snapshot()}));
+ await page.screenshot({path:`${out}/${name}-end.jpg`});
+ await context.close();
+ await writeFile(`${out}/${name}.json`,JSON.stringify({...shot,warmup,report},null,2));
+ execFileSync('ffmpeg',['-y','-framerate','30','-i',`${frameDir}/%05d.jpg`,'-f','s16le','-ar','48000','-ac','2','-ss',String(warmup),'-i',`${out}/${name}.pcm`,'-t',String(shot.duration),'-c:v','libx264','-preset','fast','-crf','19','-pix_fmt','yuv420p','-c:a','aac','-b:a','192k','-movflags','+faststart',`${out}/${name}.mp4`],{stdio:'ignore'});
+ console.log('DONE',name,'frames',report.frames);
+
 }
 await browser.close();
