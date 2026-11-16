@@ -22,6 +22,7 @@ on:
       - fix/qa150-mars-soft-dust-points-20261115
       - fix/qa151-mars-particle-texture-20261115
       - feat/qa152-mars-quarry-boss-silhouette-20261115
+      - feat/qa153-mission-score-cat-rewards-20261115
 permissions:
   contents: write
   actions: write
@@ -57,6 +58,9 @@ jobs:
       - name: Prepare QA152 release metadata
         if: github.ref_name == 'feat/qa152-mars-quarry-boss-silhouette-20261115'
         run: npm run release:prepare -- 1.27.148
+      - name: Prepare QA153 release metadata
+        if: github.ref_name == 'feat/qa153-mission-score-cat-rewards-20261115'
+        run: npm run release:prepare -- 1.27.149
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -120,6 +124,10 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa152-mars-quarry-boss-silhouette-20261115" ]; then
             git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/qa153-mission-score-cat-rewards-20261115" ]; then
+            git add -u
+            git add -- releases/v1.27.149.md specs/qa153-score-cat-loot.md
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'

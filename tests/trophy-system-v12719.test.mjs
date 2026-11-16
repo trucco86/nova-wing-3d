@@ -124,3 +124,31 @@ test('corrupt or older save is isolated from campaign data', () => {
   system.record(win('ok'));
   assert.ok(earned(system, 'boss-1').unlockedAt);
 });
+
+test('QA153: verified combos, dodges, cat collectibles and fast clean flight unlock new trophies', () => {
+  const s = storage();
+  const system = createTrophySystem({ storage: s });
+  const unlocked = system.record(win('qa153', {
+    sector: 1,
+    maxCombo: 24,
+    dodges: 22,
+    catLoot: 53,
+    durationMs: 166000,
+    damageTaken: false,
+  }));
+  for (const id of ['combo-ten', 'combo-twenty', 'dodge-twenty', 'cat-loot-fifty', 'quick-clean']) {
+    assert.ok(unlocked.some((entry) => entry.id === id), id);
+  }
+  assert.equal(earned(system, 'combo-twenty').progress, 24);
+  assert.equal(system.record(win('qa153', { dodges: 100 })).length, 0);
+  assert.equal(readTrophies(s).stats.dodges, 22);
+  assert.equal(createTrophySystem({ storage: s }).list().filter(t => t.unlockedAt).length, unlocked.length);
+});
+
+test('QA153: defeated and developer practice events do not gain achievement progress', () => {
+  const system = createTrophySystem({ storage: storage() });
+  system.record(win('failed-new', { outcome: 'defeated', maxCombo: 30, dodges: 80, catLoot: 60 }));
+  system.record(win('dev-new', { practice: true, maxCombo: 30, dodges: 80, catLoot: 60 }));
+  for (const id of ['combo-ten', 'dodge-twenty', 'cat-loot-fifty'])
+    assert.equal(earned(system, id).unlockedAt, null, id);
+});
