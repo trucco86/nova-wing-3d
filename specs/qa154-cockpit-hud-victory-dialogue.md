@@ -35,3 +35,10 @@
 
 - Captura real do navegador detectou que o CTA com `position: sticky` se sobrepunha aos botões de compra quando a loja era rolada. Alterado para fluxo normal, com ação de seguir ao mapa já no primeiro viewport.
 - Teste browser cobre a posição do CTA na abertura e a ausência de colisão com upgrades após rolagem em 320×568, 390×844 e 844×390.
+
+## QA154.3: corredor da mira em tela de 320px
+
+- CI full `43873481267` passou quality e 3/4 shards; no shard 4, 87 testes passaram e 1 falhou por o cockpit cruzar o centro da mira a 320x568. O teste de hangar e os de rádio passaram.
+- A regra `max-width:360px` também precisava corresponder à especificidade do seletor com `:has(#strategyControls)`. Agora fixa um cartão de 128px na lateral direita, fora da área central e acima das ações, sem reduzir botões de toque.
+- Playwright passa a exigir ausência de colisão entre o cockpit e o elemento real `#aimReticle` quando presente; em caso de falha registra os retângulos de ambos.
+- Um workflow de browser direcionado QA154 executa os três testes novos em mobile com capturas antes da suíte completa de release. Merge e produção permanecem bloqueados até a aprovação.
