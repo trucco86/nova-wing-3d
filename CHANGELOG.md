@@ -1,8 +1,14 @@
 # Histórico
 
-## 1.27.150 — Candidata em preparação
+## 1.27.150 — QA153 + QA154: fase cronometrada, cockpit e rádio
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Integra a QA153 (tempo ativo por fase, combos, bônus sem dano e por esquiva, troféus e itens felinos) à QA154.
+- Cockpit mobile deslocado dos botões de toque e do retículo, com cronômetro acima dos pontos.
+- Diálogos de Bia, Bob e Calvin em sequência após derrotar chefes comuns, com alertas críticos prioritários.
+- Salto de luz visivelmente mais longo, sem alterar o período de oito segundos ou o encerramento especial da Devastador.
+- Hangar pós-fase oferece acesso ao mapa logo após os créditos e não cobre os upgrades durante a rolagem.
+- Teste específico QA154: 3/3 aprovado, incluindo 320×568, 390×844 e 844×390.
+- **Candidata integrada apenas na branch QA153; aguardar CI completa consolidada e homologação antes de publicar na main.**
 
 ## 1.27.149 — QA153: tempo, combos e itens felinos
 
