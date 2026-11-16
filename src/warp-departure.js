@@ -1,15 +1,50 @@
 import * as T from 'three';
 
 /**
- * A single victory-flight contract for every boss. Never start the jump until
- * the destruction beat has played (at 4.7s); the player's BOOST button may
- * advance it, otherwise it starts automatically without stalling the shop.
+ * The regular post-boss scene is 2.2s longer than the legacy eight-second
+ * collapse. The final Devastador emergency escape keeps its separate timing.
+ */
+export const VICTORY_EXIT_SECONDS = 10.2;
+
+/** One radio lane and one speaker at a time, driven by simulation time. */
+export const VICTORY_RADIO_BEATS = Object.freeze([
+  Object.freeze({
+    at: 0.6,
+    speaker: 'bia',
+    text: 'ALVO NEUTRALIZADO! FIVE CATS, REAGRUPAR NA MINHA ASA.',
+  }),
+  Object.freeze({
+    at: 2.8,
+    speaker: 'bob',
+    text: 'ESQUADRÃO REUNIDO. COORDENADAS DE SAÍDA CONFIRMADAS!',
+  }),
+  Object.freeze({
+    at: 5.4,
+    speaker: 'calvin',
+    text: 'CORREDOR LIVRE. PREPAREM OS MOTORES: SALTO DE LUZ!',
+  }),
+]);
+
+export function victoryDialogueAt(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
+  let beat = null;
+  for (let index = 0; index < VICTORY_RADIO_BEATS.length; index++) {
+    if (seconds >= VICTORY_RADIO_BEATS[index].at)
+      beat = { ...VICTORY_RADIO_BEATS[index], index };
+  }
+  return beat;
+}
+
+/**
+ * Regular boss victory flight: explosion at 4.7s, squad departure dialogue,
+ * then optional early BOOST at 6.1s or automatic launch at 6.8s.
+ * The warp never changes scoring, gameplay time or the final-boss escape.
  */
 export function warpExitAt(seconds, boostHeld = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
-  const ready = seconds >= 4.9;
-  const active = ready && (boostHeld || seconds >= 6.4);
-  return { ready, active, speed: active ? 380 : 0 };
+  const ready = seconds >= 6.1;
+  const active = ready && (boostHeld || seconds >= 6.8);
+  return { ready, active, speed: active ? 420 : 0 };
 }
 
 /**
@@ -49,5 +84,5 @@ export function updateWarpStreaks(streaks, active, seconds, position) {
   streaks.visible = active;
   if (!active) return;
   streaks.position.copy(position);
-  streaks.scale.z = 1 + Math.min(0.6, Math.max(0, seconds - 4.9) * 0.3);
+  streaks.scale.z = 1 + Math.min(0.6, Math.max(0, seconds - 6.1) * 0.3);
 }
