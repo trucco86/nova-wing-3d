@@ -17,3 +17,8 @@
 - Simulação determinística: momento de cada fala, início do warp por BOOST e automático, extensão do espetáculo e ausência de mudança no final Devastador.
 - QA completo no SHA final: sync do HTML, formatter, build:check, lint, Node, quatro shards Playwright, screenshots reais portrait/landscape/desktop e inspeção no aparelho.
 - Sem merge nem publicação sem esses gates; comparar PR QA153 e outras branches em andamento antes da integração.
+
+## Evidência de CI e resolução de regressões
+- A execução CI `43786007699` identificou um retrato de rádio oculto em 320px, colisão do painel do cockpit com a área de ações e teste legado exigindo score oculto.
+- A correção restaura o avatar do rádio, reposiciona instrumentos do cockpit, e troca a antiga expectativa de ocultar score por legibilidade sem colisão. O teste de diálogo aguarda o fim do briefing, evitando comparar duas fases mutuamente exclusivas.
+- Reexecutar gates no novo SHA. O teste de browser deve registrar geometria quando a colisão persistir; não considerar esses ajustes aprovados sem prova visual.
