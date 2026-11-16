@@ -41,8 +41,10 @@ test('v1.14 menu theme, prologue, care HUD and mission remain usable', async ({ 
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#petCareHud')).toBeHidden();
   await page.locator('#pause').click();
-  await expect(page.locator('#pauseCare')).toContainText('LATINHA 0');
-  await expect(page.locator('#pauseCare')).toContainText('AREIA 0');
+  await expect(page.locator('#pauseCare')).toContainText('ATUM 0');
+  await expect(page.locator('#pauseCare')).toContainText('PEIXE 0');
+  await expect(page.locator('#pauseCare')).toContainText('SACHÊ 0');
+  await expect(page.locator('#stageClock')).toContainText(/\d\d:\d\d · COMBO ×\d+/);
   await page.locator('#pauseResume').click();
   expect(errors).toEqual([]);
 });

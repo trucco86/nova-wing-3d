@@ -1,7 +1,7 @@
 import { openMenu } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
-test('Hall da Fama opens in the menu and shows all forty-one trophy cards', async ({
+test('Hall da Fama opens in the menu and shows all forty-five trophy cards', async ({
   page,
 }, info) => {
   await page.goto('/');
@@ -11,10 +11,13 @@ test('Hall da Fama opens in the menu and shows all forty-one trophy cards', asyn
   await panel.scrollIntoViewIfNeeded();
   await panel.locator(':scope > summary').click();
   await expect(panel).toHaveAttribute('open', '');
-  await expect(page.locator('#novaTrophyList li')).toHaveCount(41);
-  await expect(page.locator('#novaTrophyCounter')).toHaveText('0 / 41');
+  await expect(page.locator('#novaTrophyList li')).toHaveCount(45);
+  await expect(page.locator('#novaTrophyCounter')).toHaveText('0 / 45');
   await expect(page.locator('#novaTrophyPoints')).toContainText('0 pontos');
   await expect(page.locator('#novaTrophyList')).toContainText('Só na Bala');
+  await expect(page.locator('#novaTrophyList')).toContainText('Sequência de Garras');
+  await expect(page.locator('#novaTrophyList')).toContainText('Reflexo Felino');
+  await expect(page.locator('#novaTrophyList')).toContainText('Banquete dos Five Cats');
   await expect(page.locator('#novaTrophyList')).toContainText('Troféu secreto');
   await page.screenshot({ path: info.outputPath('hall-of-fame.png') });
 });
