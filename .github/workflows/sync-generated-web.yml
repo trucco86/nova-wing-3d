@@ -23,6 +23,7 @@ on:
       - fix/qa151-mars-particle-texture-20261115
       - feat/qa152-mars-quarry-boss-silhouette-20261115
       - feat/qa153-stage-score-and-cat-loot-20261115
+      - fix/qa154-cockpit-hud-victory-radio-20261115
 permissions:
   contents: write
   actions: write
@@ -61,6 +62,9 @@ jobs:
       - name: Prepare QA153 release metadata
         if: github.ref_name == 'feat/qa153-stage-score-and-cat-loot-20261115'
         run: npm run release:prepare -- 1.27.149
+      - name: Prepare QA154 release metadata
+        if: github.ref_name == 'fix/qa154-cockpit-hud-victory-radio-20261115'
+        run: npm run release:prepare -- 1.27.150
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -127,6 +131,12 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa153-stage-score-and-cat-loot-20261115" ]; then
             git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa154-cockpit-hud-victory-radio-20261115" ]; then
+            git add -u
+            if [ -f releases/v1.27.150.md ]; then
+              git add -- releases/v1.27.150.md
+            fi
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
