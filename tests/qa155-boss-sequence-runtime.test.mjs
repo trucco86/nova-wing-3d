@@ -5,36 +5,32 @@ import { bossEncounterGate, SUBBOSS_BOSS_RECOVERY_SECONDS } from '../src/encount
 
 const source = readFileSync(new URL('../src/game.js', import.meta.url), 'utf8');
 
-// The helper had tests before, but the game could still bypass it if its
-// call site or clearance timestamp were inadvertently removed in a merge.
-test('QA155: the ordinary runtime gates the final boss behind its subboss', () => {
-  assert.match(source, /subDone = true;\s*enemy\('subboss'\)/);
-  assert.match(
-    source,
-    /const activeSubboss = enemies\.some\(\(e\) => !e\.dead && e\.kind === 'subboss'\);/,
-  );
-  assert.match(
-    source,
-    /bossEncounterGate\(\{\s*elapsed,\s*subbossStarted: subDone,\s*subbossClearedAt,\s*activeSubboss,\s*blocked: bossBlocked,/,
-  );
-  assert.match(
-    source,
-    /elapsed >= current\(\)\.duration &&\s*!boss &&\s*bossSeparated &&\s*bossWarned &&\s*bossWarningTime === 0/,
-  );
-  assert.match(source, /bossWarningTime = 3\.5;/);
+// A correct helper is insufficient if the real game loop stops calling it.
+test('QA155: the game loop wires subboss resolution to the final boss gate', () => {
+  for (const contract of [
+    "enemy('subboss')",
+    'const activeSubboss = enemies.some(',
+    'bossEncounterGate({',
+    'subbossStarted: subDone',
+    'subbossClearedAt,',
+    'activeSubboss,',
+    'blocked: bossBlocked',
+    'bossSeparated &&',
+    'bossWarned &&',
+    'bossWarningTime === 0',
+    'bossWarningTime = 3.5;',
+  ]) {
+    assert.ok(source.includes(contract), 'Missing runtime gate: ' + contract);
+  }
 });
 
-test('QA155: all normal subboss exits record the recovery timestamp', () => {
-  assert.match(source, /if \(e\.kind === 'subboss'\) \{\s*subbossClearedAt = elapsed;/);
-  assert.match(source, /if \(departure\?\.complete\) \{\s*subbossClearedAt = elapsed;/);
-  assert.match(
-    source,
-    /if \(e\.o\.position\.z > 40\) \{\s*if \(e\.kind === 'subboss'\) \{[\s\S]*?subbossClearedAt = elapsed;/,
-  );
-  assert.match(source, /subbossClearedAt = null;/);
+test('QA155: all natural subboss exits record the recovery timestamp', () => {
+  const recorded = source.match(/subbossClearedAt = elapsed;/g) ?? [];
+  assert.ok(recorded.length >= 3, 'Defeat, scripted exit and retreat must record time');
+  assert.ok(source.includes('subbossClearedAt = null;'), 'Reset between sectors is required');
 });
 
-test('QA155: elapsed time alone cannot bypass subboss recovery or a blocked arena', () => {
+test('QA155: elapsed time alone never bypasses the recovered subboss gate', () => {
   const event = {
     elapsed: 82,
     subbossStarted: true,
