@@ -1,7 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { warpExitAt, victoryDialogueAt, VICTORY_EXIT_SECONDS, createWarpStreaks, updateWarpStreaks } from '../src/warp-departure.js';
+import {
+  warpExitAt,
+  victoryDialogueAt,
+  VICTORY_EXIT_SECONDS,
+  createWarpStreaks,
+  updateWarpStreaks,
+} from '../src/warp-departure.js';
 
 test('a defeated boss can trigger the light-speed jump only after the explosion', () => {
   assert.equal(warpExitAt(4.7, true).active, false);
@@ -35,9 +41,10 @@ test('the universal warp effect renders in the scene and clears on intermission'
 test('post-boss squad lines are sequential and do not run before the first beat', () => {
   assert.equal(victoryDialogueAt(0), null);
   assert.equal(victoryDialogueAt(0.59), null);
-  assert.deepEqual([0.6, 2.8, 5.4].map((second) => victoryDialogueAt(second).speaker), [
-    'bia', 'bob', 'calvin',
-  ]);
+  assert.deepEqual(
+    [0.6, 2.8, 5.4].map((second) => victoryDialogueAt(second).speaker),
+    ['bia', 'bob', 'calvin'],
+  );
   assert.equal(victoryDialogueAt(2.79).index, 0);
   assert.equal(victoryDialogueAt(5.39).index, 1);
   assert.equal(victoryDialogueAt(9.8).index, 2);

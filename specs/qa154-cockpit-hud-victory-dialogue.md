@@ -1,6 +1,7 @@
 # QA154 | Cockpit sem colisão, hierarquia de HUD e saída da equipe
 
 ## Comportamento esperado
+
 - Em celular vertical, o painel opcional do cockpit fica acima dos botões de disparo/boost, nunca em cima deles. Radar duplicado do cockpit é omitido nesta largura; o radar tático e as informações da nave permanecem.
 - Em celular horizontal com altura reduzida, o painel extra é omitido para liberar o campo de toque. O cockpit 3D e a HUD principal continuam funcionais.
 - Nenhum dos sete botões altera seu identificador, área física ou comando. Preserve giro, Lock, piloto, RPG, controles para canhotos e área segura.
@@ -11,6 +12,7 @@
 - Textos, botões e modais nas demais telas entram na matriz de auditoria visual; não reduzir a fonte abaixo de 11px de timer em telefones compactos.
 
 ## Matriz de aceitação
+
 - Playwright em 320x568, 390x844 e 844x390: cockpit/controles e escudo/score sem sobreposição; horário acima dos pontos; rádio único e alertas prioritários; área de toque com alvos >=60px.
 - Simulação determinística: momento de cada fala, início do warp por BOOST e automático, extensão do espetáculo e ausência de mudança no final Devastador.
 - QA completo no SHA final: sync do HTML, formatter, build:check, lint, Node, quatro shards Playwright, screenshots reais portrait/landscape/desktop e inspeção no aparelho.

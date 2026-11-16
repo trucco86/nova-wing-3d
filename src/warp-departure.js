@@ -30,8 +30,7 @@ export function victoryDialogueAt(seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
   let beat = null;
   for (let index = 0; index < VICTORY_RADIO_BEATS.length; index++) {
-    if (seconds >= VICTORY_RADIO_BEATS[index].at)
-      beat = { ...VICTORY_RADIO_BEATS[index], index };
+    if (seconds >= VICTORY_RADIO_BEATS[index].at) beat = { ...VICTORY_RADIO_BEATS[index], index };
   }
   return beat;
 }

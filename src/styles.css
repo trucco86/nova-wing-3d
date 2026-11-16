@@ -11211,7 +11211,6 @@ body.in-mission:has(#settingsMenu:not([hidden])) #strategyControls {
   }
 }
 
-
 /* QA154: cohesive cockpit, score priority and single in-flight radio lane.
    Preserve the certified thumb targets and the RPG tactical overlay. */
 body.in-mission .score {
@@ -11227,7 +11226,9 @@ body.in-mission .score #stageClock {
   grid-column: 1 / -1;
   grid-row: 1;
   margin: 0 0 3px;
-  font: 800 15px/1.15 'Chakra Petch', sans-serif;
+  font:
+    800 15px/1.15 'Chakra Petch',
+    sans-serif;
   letter-spacing: 0.055em;
   color: #dbffe9;
   white-space: nowrap;

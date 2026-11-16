@@ -7,7 +7,9 @@ const overlaps = (a, b) =>
   a.y < b.y + b.height - 2 &&
   b.y < a.y + a.height - 2;
 
-test('QA154 cockpit HUD clears the touch island and time precedes score', async ({ page }, info) => {
+test('QA154 cockpit HUD clears the touch island and time precedes score', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile', 'Requires mobile touch layout');
   test.setTimeout(120000);
   for (const viewport of [
@@ -34,7 +36,14 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
         clock: box('#stageClock'),
         points: box('#score'),
         status: box('#hud .status'),
-        buttons: ['fireTouch', 'boostTouch', 'bombTouch', 'podsTouch', 'robotTouch', 'rollTouch'].map((id) => [id, box('#' + id)]),
+        buttons: [
+          'fireTouch',
+          'boostTouch',
+          'bombTouch',
+          'podsTouch',
+          'robotTouch',
+          'rollTouch',
+        ].map((id) => [id, box('#' + id)]),
         clockFont: parseFloat(getComputedStyle(document.querySelector('#stageClock')).fontSize),
       };
     });
@@ -42,9 +51,13 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
     expect(geometry.points, 'points remain visible').not.toBeNull();
     expect(geometry.clock.y + geometry.clock.height).toBeLessThanOrEqual(geometry.points.y + 2);
     expect(geometry.clockFont).toBeGreaterThanOrEqual(11);
-    expect(overlaps(geometry.status, geometry.clock), 'shield and clock must not collide').toBe(false);
+    expect(overlaps(geometry.status, geometry.clock), 'shield and clock must not collide').toBe(
+      false,
+    );
     expect(geometry.cockpit, 'cockpit readout stays visible in both orientations').not.toBeNull();
-    expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(false);
+    expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(
+      false,
+    );
     if (viewport.width > 550) {
       await expect(page.locator('#cockpitMap')).toBeVisible();
     }
@@ -60,7 +73,9 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
   }
 });
 
-test('QA154 radio uses one box and preserves dangerous-alert precedence', async ({ page }, info) => {
+test('QA154 radio uses one box and preserves dangerous-alert precedence', async ({
+  page,
+}, info) => {
   test.skip(info.project.name !== 'mobile', 'Requires mobile touch layout');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?sector=0');
