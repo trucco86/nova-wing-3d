@@ -11341,6 +11341,14 @@ body.in-mission .score span {
   }
 }
 @media (pointer: coarse) and (max-width: 360px) {
+  /* The wide readout would cover the center reticle on a 320px phone.
+     Move a narrower readout to the left lane above the joystick. */
+  body.in-mission #cockpitPanel:not([hidden]) {
+    left: max(12px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: 140px;
+    max-width: 140px;
+  }
   body.in-mission #hud .status {
     box-sizing: border-box;
     width: 112px;
