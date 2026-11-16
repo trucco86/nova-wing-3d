@@ -160,6 +160,31 @@ test('QA154 hangar route action is reachable without scrolling at compact sizes'
     await page.screenshot({
       path: info.outputPath('qa154-hangar-first-view-' + viewport.width + '.png'),
     });
+    // The primary navigation is visible on arrival but must not be a sticky
+    // overlay hiding upgrades when the player scrolls the hangar.
+    await expect(page.locator('#nextSector')).toHaveCSS('position', 'static');
+    await page.locator('#shop .hangar-card').evaluate((card) => {
+      card.scrollTop = Math.min(170, card.scrollHeight - card.clientHeight);
+    });
+    const overlapping = await page.evaluate(() => {
+      const action = document.querySelector('#nextSector').getBoundingClientRect();
+      const card = document.querySelector('#shop .hangar-card').getBoundingClientRect();
+      return [...document.querySelectorAll('#shop .shop-grid button')].some((button) => {
+        const r = button.getBoundingClientRect();
+        const onscreen = r.bottom > card.top && r.top < card.bottom;
+        return (
+          onscreen &&
+          action.left < r.right - 1 &&
+          action.right > r.left + 1 &&
+          action.top < r.bottom - 1 &&
+          action.bottom > r.top + 1
+        );
+      });
+    });
+    expect(overlapping, 'map CTA must not obscure upgrades while scrolling').toBe(false);
+    await page.screenshot({
+      path: info.outputPath('qa154-hangar-scrolled-' + viewport.width + '.png'),
+    });
     await page.locator('#nextSector').click();
     await expect(page.locator('#campaignMap')).toBeVisible();
     await expect(page.locator('#shop')).toBeHidden();
