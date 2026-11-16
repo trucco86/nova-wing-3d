@@ -69,7 +69,13 @@ import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
-import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
+import {
+  warpExitAt,
+  victoryDialogueAt,
+  VICTORY_EXIT_SECONDS,
+  createWarpStreaks,
+  updateWarpStreaks,
+} from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { measurePilotHull, projectPilotHull } from './asteroid-course.js';
 import { createMarvinRival } from './marvin-rival.js';
@@ -769,6 +775,7 @@ export function createGame({
     marsPendingRoll = false,
     marsStormDamageCooldown = 0,
     warpDeparture = false,
+    victoryRadioBeat = -1,
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -2737,6 +2744,7 @@ export function createGame({
         arr.length = 0;
       }
       collapseTime = collapseBurst = 0;
+      victoryRadioBeat = -1;
       collapseFinal = false;
       warpDeparture = false;
       collapse = createCollapse(boss.position, { final: sectorIndex === SECTORS.length - 1 });
@@ -2765,7 +2773,16 @@ export function createGame({
       }
     }
     collapseTime += dt;
-    if (dynamicFlight) {
+    // The regular victory has one deterministic radio speaker at a time.
+    // The Devastador finale already has its own five-cat evacuation dialogue.
+    if (dynamicFlight && !boss?.userData.sabotage) {
+      const beat = victoryDialogueAt(collapseTime);
+      if (beat && beat.index !== victoryRadioBeat) {
+        victoryRadioBeat = beat.index;
+        message(beat.text, beat.speaker);
+      }
+    }
+    if (dynamicFlight && !boss?.userData.sabotage) {
       const jump = warpExitAt(collapseTime, boostRequested());
       if (jump.active && !warpDeparture) {
         warpDeparture = true;
@@ -2857,7 +2874,9 @@ export function createGame({
     const vibration = collapseFinal ? Math.max(0, 1 - (collapseTime - 4.7) / 2) : 0.15;
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
     camera.position.y += Math.cos(collapseTime * 27) * vibration * 0.4;
-    if (collapseTime >= COLLAPSE_SECONDS) {
+    const victoryExitSeconds =
+      dynamicFlight && !boss.userData.sabotage ? VICTORY_EXIT_SECONDS : COLLAPSE_SECONDS;
+    if (collapseTime >= victoryExitSeconds) {
       if (boss.userData.sabotage) {
         document.body.classList.remove('devastador-escape');
         document.body.classList.remove('devastador-warp');
