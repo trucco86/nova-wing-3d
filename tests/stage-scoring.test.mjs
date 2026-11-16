@@ -53,8 +53,14 @@ test('real fighter coordinates are used for near-miss scoring and trophy progres
   // gameplay must pass its Vector3 position, as it does for projectile hits.
   assert.equal(nearMissCrossing(from, to, fighter), false);
   assert.equal(nearMissCrossing(from, to, fighter.position), true);
-  assert.equal(nearMissCrossing(new Vector3(0, 0, -8), new Vector3(0, 0, 20), fighter.position), false);
-  assert.equal(nearMissCrossing(new Vector3(12, 0, -8), new Vector3(12, 0, 20), fighter.position), false);
+  assert.equal(
+    nearMissCrossing(new Vector3(0, 0, -8), new Vector3(0, 0, 20), fighter.position),
+    false,
+  );
+  assert.equal(
+    nearMissCrossing(new Vector3(12, 0, -8), new Vector3(12, 0, 20), fighter.position),
+    false,
+  );
 
   // Guard the live game call path, not just the math helper's happy path.
   const gameSource = readFileSync(new URL('../src/game.js', import.meta.url), 'utf8');
