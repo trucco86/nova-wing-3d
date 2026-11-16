@@ -2751,7 +2751,13 @@ export function createGame({
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
       $('bossState').textContent = 'COLAPSO DO REATOR';
-      $('attackWarning').setAttribute?.('data-severity', 'danger');
+      // Ordinary boss victory is a safe cinematic: the reactor cue is
+      // informational so the Five Cats radio can actually be heard/read.
+      // Devastador keeps its separate danger-first emergency escape.
+      $('attackWarning').setAttribute?.(
+        'data-severity',
+        dynamicFlight && !boss.userData.sabotage ? 'info' : 'danger',
+      );
       $('attackWarning').textContent = 'REATOR INSTÁVEL / AFASTE-SE';
       reticle.visible = false;
       player.visible = true;
