@@ -1,8 +1,13 @@
 # Histórico
 
-## 1.27.149 — Candidata em preparação
+## 1.27.149 — QA153: tempo, combos e itens felinos
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Cronômetro de fase baseado em tempo ativo, preservando pausa normal e RPG radial.
+- Bônus de até 600 pontos por velocidade, 400 por fase sem danos, multiplicador de combo por sequência de eliminações e +25 por esquivas reais próximas.
+- Tela de resultado apresenta tempo, rapidez, bônus sem dano, combo máximo, esquivas e colecionáveis, preservando histórico local/ranking experimental.
+- Itens felinos ATUM, PEIXE, RATINHO e SACHÊ substituem silhueta antiga de osso e concedem XP, escudo ou energia além dos pontos. IDs de save permanecem compatíveis.
+- Quatro troféus adicionais (combos, esquivas e itens), tradução PT/EN/ES e novos testes de pontuação.
+- **Candidata em homologação**: testes de navegador e visual móvel ainda são obrigatórios. Nenhum merge ou publicação sem QA.
 
 ## 1.27.148 — QA152: Colosso das Dunas sem asas genéricas da Fênix
 
