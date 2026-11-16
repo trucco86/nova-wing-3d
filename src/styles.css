@@ -11388,11 +11388,11 @@ body.in-mission .score span {
     display: block;
     top: auto;
     bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 176px);
-    left: 50%;
+    left: max(14px, env(safe-area-inset-left, 0px));
     right: auto;
-    transform: translateX(-50%);
-    width: min(340px, 44vw);
-    max-width: min(340px, 44vw);
+    transform: none;
+    width: min(340px, 42vw);
+    max-width: min(340px, 42vw);
     padding: 5px 8px;
   }
   body.in-mission #cockpitPanel .cockpit-instruments {
