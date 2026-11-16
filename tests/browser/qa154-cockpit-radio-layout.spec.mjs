@@ -152,9 +152,10 @@ test('QA154 hangar route action is reachable without scrolling at compact sizes'
     expect(bounds.next.x, 'launch is horizontally within screen').toBeGreaterThanOrEqual(0);
     expect(bounds.next.x + bounds.next.width).toBeLessThanOrEqual(viewport.width + 1);
     expect(bounds.next.y, 'map action visible without scrolling').toBeGreaterThanOrEqual(0);
-    expect(bounds.next.y + bounds.next.height, 'map action fits in initial viewport').toBeLessThanOrEqual(
-      viewport.height,
-    );
+    expect(
+      bounds.next.y + bounds.next.height,
+      'map action fits in initial viewport',
+    ).toBeLessThanOrEqual(viewport.height);
     expect(bounds.credits.y + bounds.credits.height).toBeLessThanOrEqual(bounds.next.y + 2);
     await page.screenshot({
       path: info.outputPath('qa154-hangar-first-view-' + viewport.width + '.png'),

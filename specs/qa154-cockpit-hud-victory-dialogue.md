@@ -25,6 +25,7 @@
 - Reexecutar gates no novo SHA. O teste de browser deve registrar geometria quando a colisão persistir; não considerar esses ajustes aprovados sem prova visual.
 
 ## QA154.1: ajustes após browser CI
+
 - Full CI `43844842336`: quality + browser shards 1/2/3 passaram. Só falhou no shard 4: em 320x568, cockpit x=12..152,y=419..463 cruzou o retângulo do grupo de ações x=115..313,y=347..560.
 - Causa-raiz comprovada: regras legadas `body:has(#strategyControls:not([hidden])) #cockpitPanel` possuem dois seletores de ID e prevalecem sobre `body.in-mission #cockpitPanel:not([hidden])`, apesar de declaradas anteriormente. A nova regra considera explicitamente o estado `strategyControls`, resolvendo a especificidade sem remover o painel nem reduzir botões.
 - Hangar pós-fase: CTA para o mapa sobe para logo após créditos; upgrade e medalhas permanecem navegáveis, CTA sticky evita perda da ação quando o conteúdo é rolado. Cenários 320 portrait, 390 portrait e 844 landscape entram em browser QA.
