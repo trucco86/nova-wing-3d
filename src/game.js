@@ -69,7 +69,13 @@ import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
-import { warpExitAt, createWarpStreaks, updateWarpStreaks } from './warp-departure.js';
+import {
+  warpExitAt,
+  victoryDialogueAt,
+  VICTORY_EXIT_SECONDS,
+  createWarpStreaks,
+  updateWarpStreaks,
+} from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
 import { measurePilotHull, projectPilotHull } from './asteroid-course.js';
 import { createMarvinRival } from './marvin-rival.js';
@@ -203,6 +209,13 @@ import {
   firstSubbossDeparture,
 } from './subboss-tactics.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
+import {
+  SCORE_RULES,
+  stageClock,
+  comboBonus,
+  nearMissCrossing,
+  scoreStageClear,
+} from './stage-scoring.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
@@ -762,6 +775,7 @@ export function createGame({
     marsPendingRoll = false,
     marsStormDamageCooldown = 0,
     warpDeparture = false,
+    victoryRadioBeat = -1,
     sectorStart = null,
     confirmation = null,
     settingsOpen = false,
@@ -1271,7 +1285,12 @@ export function createGame({
       petCare = result.care;
       score += result.points;
       credits += Math.ceil(result.points / 2);
-      message(result.message + ' RESGATADO · CUIDE DOS FIVE CATS');
+      if (stagePerformance) stagePerformance.petItems++;
+      if (result.perk.type === 'shield') hp = Math.min(maxHp(), hp + result.perk.amount);
+      if (result.perk.type === 'energy') energy = Math.min(100, energy + result.perk.amount);
+      if (result.perk.type === 'xp') gainXP(result.perk.amount);
+      // The small existing pickup flash already announces the loot.
+      // Do not add a full-width radio alert over the flying corridor.
       cue(result.audioCue);
       return;
     }
@@ -1296,6 +1315,15 @@ export function createGame({
   function recordStageResult(outcome = 'cleared') {
     if (!dynamicFlight || developerSession || stageResultSent) return;
     stageResultSent = true;
+    if (outcome === 'cleared' && stagePerformance) {
+      const bonuses = scoreStageClear({
+        seconds: elapsed,
+        baselineSeconds: current().duration,
+        damageTaken: stagePerformance.damageTaken,
+      });
+      stagePerformance.bonuses = bonuses;
+      score += bonuses.total;
+    }
     try {
       Promise.resolve(
         onStageFinished({
@@ -1313,6 +1341,10 @@ export function createGame({
           bombsUsed: stagePerformance?.bombsUsed !== false,
           kills: stagePerformance?.kills ?? 0,
           rings: stagePerformance?.rings ?? 0,
+          maxCombo: stagePerformance?.maxCombo ?? 0,
+          nearMisses: stagePerformance?.nearMisses ?? 0,
+          petItems: stagePerformance?.petItems ?? 0,
+          scoreBonuses: stagePerformance?.bonuses ?? null,
           squadSpecialUsed: stagePerformance?.squadSpecialUsed === true,
         }),
       ).catch(() => {});
@@ -1366,6 +1398,20 @@ export function createGame({
     $('bossHUD').hidden = true;
     $('shop').hidden = false;
     $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
+    const bonuses = stagePerformance?.bonuses ?? { speed: 0, pristine: 0 };
+    $('stageScoreBreakdown').textContent =
+      'TEMPO ' +
+      stageClock(elapsed) +
+      ' · RAPIDEZ +' +
+      bonuses.speed +
+      ' · SEM DANO +' +
+      bonuses.pristine +
+      ' · COMBO ×' +
+      (stagePerformance?.maxCombo ?? 0) +
+      ' · ESQUIVAS ' +
+      (stagePerformance?.nearMisses ?? 0) +
+      ' · ITENS ' +
+      (stagePerformance?.petItems ?? 0);
     $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
     $('campaignMap').hidden = true;
     renderShop();
@@ -1381,7 +1427,7 @@ export function createGame({
     return shopLevel(k) >= SHOP[k].max;
   }
   function renderShop() {
-    $('shopCredits').textContent = credits + ' CR · ' + score + ' ACERTOS · ' + bombs + ' BOMBAS';
+    $('shopCredits').textContent = credits + ' CR · ' + score + ' PONTOS · ' + bombs + ' BOMBAS';
     renderSkins();
     for (const k of Object.keys(SHOP)) {
       const level = shopLevel(k);
@@ -1680,6 +1726,13 @@ export function createGame({
     stageResultSent = false;
     stagePerformance = {
       damageTaken: false,
+      combo: 0,
+      maxCombo: 0,
+      lastKillAt: -Infinity,
+      lastNearMissAt: -Infinity,
+      nearMisses: 0,
+      petItems: 0,
+      bonuses: null,
       bombsUsed: false,
       kills: 0,
       rings: 0,
@@ -1778,8 +1831,18 @@ export function createGame({
   function pickupFeedback(kind) {
     const element = $('pickupFlash');
     const pet = kind.startsWith('pet:');
+    const catLoot = pet ? PET_ITEMS.find((item) => item.id === kind.slice(4)) : null;
+    const perkLabel =
+      catLoot?.perk?.type === 'xp' ? 'XP' : catLoot?.perk?.type === 'shield' ? 'ESCUDO' : 'ENERGIA';
     element.textContent = pet
-      ? '✦ ' + (PET_ITEMS.find((item) => item.id === kind.slice(4))?.name ?? 'ITEM') + ' +1'
+      ? '✦ ' +
+        (catLoot?.name ?? 'ITEM') +
+        ' +' +
+        (catLoot?.points ?? 0) +
+        ' PTS · ' +
+        perkLabel +
+        ' +' +
+        (catLoot?.perk?.amount ?? 0)
       : kind === 'blue'
         ? '✦ XP +4 · PODS'
         : '✦ ESCUDO +25';
@@ -1825,7 +1888,10 @@ export function createGame({
       return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
     hp = Math.max(0, hp - receivedDamage);
-    if (stagePerformance && receivedDamage > 0) stagePerformance.damageTaken = true;
+    if (stagePerformance && receivedDamage > 0) {
+      stagePerformance.damageTaken = true;
+      stagePerformance.combo = 0;
+    }
     if (settings.vibration) haptics.pulse(45);
     if (dynamicFlight && hp > 0 && hp / maxHp() <= 0.25) {
       $('criticalWarning').hidden = false;
@@ -1881,7 +1947,16 @@ export function createGame({
       message('CRUZADOR DESTRUÍDO / ROTA LIBERADA');
     }
     score += e.elite ? 15 : 1;
-    if (stagePerformance) stagePerformance.kills++;
+    if (stagePerformance) {
+      stagePerformance.kills++;
+      stagePerformance.combo =
+        elapsed - stagePerformance.lastKillAt <= SCORE_RULES.comboWindowSeconds
+          ? stagePerformance.combo + 1
+          : 1;
+      stagePerformance.maxCombo = Math.max(stagePerformance.maxCombo, stagePerformance.combo);
+      stagePerformance.lastKillAt = elapsed;
+      score += comboBonus(stagePerformance.combo);
+    }
     gainXP(e.elite ? 8 : 1);
     credits += e.elite ? 90 : 12;
     if (e.kind === 'base') {
@@ -2669,13 +2744,20 @@ export function createGame({
         arr.length = 0;
       }
       collapseTime = collapseBurst = 0;
+      victoryRadioBeat = -1;
       collapseFinal = false;
       warpDeparture = false;
       collapse = createCollapse(boss.position, { final: sectorIndex === SECTORS.length - 1 });
       scene.add(collapse);
       music?.start(sectorIndex, 'collapse');
       $('bossState').textContent = 'COLAPSO DO REATOR';
-      $('attackWarning').setAttribute?.('data-severity', 'danger');
+      // Ordinary boss victory is a safe cinematic: the reactor cue is
+      // informational so the Five Cats radio can actually be heard/read.
+      // Devastador keeps its separate danger-first emergency escape.
+      $('attackWarning').setAttribute?.(
+        'data-severity',
+        dynamicFlight && !boss.userData.sabotage ? 'info' : 'danger',
+      );
       $('attackWarning').textContent = 'REATOR INSTÁVEL / AFASTE-SE';
       reticle.visible = false;
       player.visible = true;
@@ -2697,7 +2779,16 @@ export function createGame({
       }
     }
     collapseTime += dt;
-    if (dynamicFlight) {
+    // The regular victory has one deterministic radio speaker at a time.
+    // The Devastador finale already has its own five-cat evacuation dialogue.
+    if (dynamicFlight && !boss?.userData.sabotage) {
+      const beat = victoryDialogueAt(collapseTime);
+      if (beat && beat.index !== victoryRadioBeat) {
+        victoryRadioBeat = beat.index;
+        message(beat.text, beat.speaker);
+      }
+    }
+    if (dynamicFlight && !boss?.userData.sabotage) {
       const jump = warpExitAt(collapseTime, boostRequested());
       if (jump.active && !warpDeparture) {
         warpDeparture = true;
@@ -2789,7 +2880,9 @@ export function createGame({
     const vibration = collapseFinal ? Math.max(0, 1 - (collapseTime - 4.7) / 2) : 0.15;
     camera.position.x += Math.sin(collapseTime * 35) * vibration * 0.8;
     camera.position.y += Math.cos(collapseTime * 27) * vibration * 0.4;
-    if (collapseTime >= COLLAPSE_SECONDS) {
+    const victoryExitSeconds =
+      dynamicFlight && !boss.userData.sabotage ? VICTORY_EXIT_SECONDS : COLLAPSE_SECONDS;
+    if (collapseTime >= victoryExitSeconds) {
       if (boss.userData.sabotage) {
         document.body.classList.remove('devastador-escape');
         document.body.classList.remove('devastador-warp');
@@ -2828,7 +2921,7 @@ export function createGame({
     $('result').hidden = false;
     $('resultTitle').textContent = win ? 'A TERRA ESTÁ LIVRE' : 'NAVE ABATIDA';
     $('resultText').textContent =
-      `${score} acertos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
+      `${score} pontos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
@@ -5974,6 +6067,20 @@ export function createGame({
         hit(b.spell === 'fire' ? 14 : 10);
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
+      } else if (
+        dynamicFlight &&
+        b.life > 0 &&
+        stagePerformance &&
+        invuln <= 0 &&
+        barrier <= 0 &&
+        elapsed - stagePerformance.lastNearMissAt >= SCORE_RULES.nearMissCooldownSeconds &&
+        nearMissCrossing(from, b.o.position, player.position)
+      ) {
+        // Reward only a projectile that actually crossed close to the player.
+        // The hit and occlusion tests above take precedence over near misses.
+        stagePerformance.lastNearMissAt = elapsed;
+        stagePerformance.nearMisses++;
+        score += SCORE_RULES.nearMissPoints;
       }
     }
     ringCd -= dt;
@@ -6185,6 +6292,7 @@ export function createGame({
       'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / '),
     );
     hud.text('score', String(score).padStart(3, '0'));
+    hud.text('stageClock', stageClock(elapsed) + ' · COMBO ×' + (stagePerformance?.combo ?? 0));
     hud.text('bombs', '◆ '.repeat(bombs) || '—');
     hud.style('energy', 'width', energy + '%');
     hud.cssVar('boostTouch', '--meter', energy + '%');

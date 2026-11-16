@@ -323,7 +323,10 @@
           <small id="routeLabel"></small>
         </div>
         <div class="rightHUD">
-          <div class="score"><b id="score">000</b><span>ACERTOS</span></div>
+          <div class="score">
+            <b id="score">000</b><span>PONTOS</span
+            ><small id="stageClock" aria-label="Tempo da fase e combo">00:00 · COMBO ×0</small>
+          </div>
           <div class="utilities">
             <button id="music" aria-label="Ativar ou desativar música">♪ ON</button
             ><button id="sound" aria-label="Ativar ou desativar som">SOM ON</button
@@ -1216,8 +1219,14 @@
         <div class="hangar-card">
           <div class="eyebrow">FIVE CATS / HANGAR ORBITAL</div>
           <h2 id="shopTitle">SETOR LIBERTADO</h2>
+          <p
+            id="stageScoreBreakdown"
+            class="stage-score-breakdown"
+            aria-label="Bônus de desempenho da fase"
+          ></p>
           <p id="shopNext"></p>
           <strong id="shopCredits">0 CR</strong>
+          <button class="primary" id="nextSector">VER MAPA E PREPARAR A PRÓXIMA MISSÃO ↗</button>
           <div
             id="shopServiceSummary"
             class="cat-service-result"
@@ -1247,10 +1256,7 @@
               ><button id="skin-solar">SOLAR</button>
             </div>
           </details>
-          <button class="primary" id="nextSector">VER MAPA E PREPARAR A PRÓXIMA MISSÃO ↗</button
-          ><small
-            >Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small
-          >
+          <small>Checkpoint salvo neste navegador quando o armazenamento estiver disponível.</small>
         </div>
       </section>
       <section id="campaignMap" hidden aria-label="Mapa de progresso da campanha">

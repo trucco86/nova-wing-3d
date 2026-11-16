@@ -19,6 +19,9 @@ const EMPTY_STATS = Object.freeze({
   mechaFinishes: 0,
   squadWins: 0,
   rings: 0,
+  maxCombo: 0,
+  nearMisses: 0,
+  petItems: 0,
   hardPerfect: 0,
   hardPrimary: 0,
 });
@@ -69,6 +72,9 @@ export function readTrophies(storage) {
       'mechaFinishes',
       'squadWins',
       'rings',
+      'maxCombo',
+      'nearMisses',
+      'petItems',
       'hardPerfect',
       'hardPrimary',
     ])
@@ -133,6 +139,9 @@ export function createTrophySystem({ storage, clock = () => new Date().toISOStri
     stats.points += points;
     stats.kills += safePositive(event.kills);
     stats.rings += safePositive(event.rings);
+    stats.maxCombo = Math.max(stats.maxCombo, safePositive(event.maxCombo));
+    stats.nearMisses += safePositive(event.nearMisses);
+    stats.petItems += safePositive(event.petItems);
     if (event.damageTaken === false) stats.cleanWins++;
     if (event.bombsUsed === false) stats.bombFreeWins++;
     if (event.bossDefeated && event.primaryOnly === true) {

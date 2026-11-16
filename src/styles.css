@@ -11183,3 +11183,282 @@ body.in-mission:has(#settingsMenu:not([hidden])) #strategyControls {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* QA153: keep time and streak in the existing score cluster, not over gameplay. */
+.score #stageClock {
+  display: block;
+  font:
+    700 10px/1.2 'Chakra Petch',
+    sans-serif;
+  letter-spacing: 0.03em;
+  color: #abecd7;
+  white-space: nowrap;
+  margin-top: 3px;
+}
+.stage-score-breakdown {
+  margin: 7px 0 12px;
+  padding: 8px 10px;
+  border-left: 2px solid #71e4c3;
+  background: #051e2abc;
+  color: #c0f3dc;
+  font-size: 11px;
+  line-height: 1.5;
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission .score #stageClock {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+}
+
+/* QA154: cohesive cockpit, score priority and single in-flight radio lane.
+   Preserve the certified thumb targets and the RPG tactical overlay. */
+body.in-mission .score {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  align-items: end;
+  justify-items: end;
+  column-gap: 5px;
+  row-gap: 1px;
+}
+body.in-mission .score #stageClock {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin: 0 0 3px;
+  font:
+    800 15px/1.15 'Chakra Petch',
+    sans-serif;
+  letter-spacing: 0.055em;
+  color: #dbffe9;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 5px #03141c;
+}
+body.in-mission .score b {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 29px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+body.in-mission .score span {
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  font-size: 9px;
+  padding-bottom: 2px;
+  letter-spacing: 0.08em;
+}
+
+/* Low-priority pickup notifications never compete with a radio conversation.
+   Dangerous attacks, shield warnings and boss warnings retain existing priority. */
+@media (pointer: coarse) {
+  body.in-mission:has(#comms.active)
+    #hudNotices
+    > :is(#pickupFlash, #attackWarning[data-severity='info']) {
+    display: none !important;
+  }
+}
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #hud {
+    gap: 7px;
+  }
+  body.in-mission .rightHUD {
+    gap: 5px;
+  }
+  body.in-mission .score #stageClock {
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  body.in-mission .score b {
+    font-size: 24px;
+  }
+  body.in-mission .score span {
+    display: none;
+  }
+  /* Dock the cockpit readout ABOVE the action cluster, not across FIRE/BOOST.
+     In-flight radar already exists in the upper HUD, so avoid a duplicate. */
+  body.in-mission #cockpitPanel:not([hidden]),
+  body.in-mission:has(#strategyControls:not([hidden])) #cockpitPanel:not([hidden]) {
+    top: auto;
+    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 265px);
+    left: auto;
+    right: max(14px, env(safe-area-inset-right, 0px));
+    transform: none;
+    width: min(190px, calc(100vw - 28px));
+    max-width: min(190px, calc(100vw - 28px));
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: #061b28dc;
+  }
+  body.in-mission #cockpitPanel .cockpit-instruments {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  body.in-mission #cockpitPanel .cockpit-radar-wrap,
+  body.in-mission #cockpitPanel .cockpit-label,
+  body.in-mission #cockpitPanel :is(#cockpitReadout, #cockpitSwapStatus) {
+    display: none;
+  }
+  body.in-mission #cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+    font-size: 14px;
+    line-height: 1.1;
+  }
+  body.in-mission #cockpitPanel :is(#cockpitWeapon, #cockpitShip) {
+    font-size: 9px;
+  }
+  /* Preserve the left radio column, clear of the right-hand boss radar.
+     The previous 46px max-height truncated dialogue and competing alerts. */
+  body.in-mission #hudNotices,
+  body.developer-session.in-mission:has(#qaBerserkDock:not([hidden])) #hudNotices {
+    top: max(158px, calc(env(safe-area-inset-top, 0px) + 142px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: min(220px, calc(100vw - 145px));
+    max-height: 80px;
+    gap: 2px;
+    align-items: flex-start;
+  }
+  body.in-mission #hudNotices > #comms {
+    max-height: 78px;
+    width: 100%;
+    padding: 4px 7px;
+    gap: 5px;
+  }
+  body.in-mission #hudNotices #comms .eyebrow {
+    display: block;
+    font-size: 9px;
+    line-height: 1.2;
+  }
+  body.in-mission #hudNotices #comms #message {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    font-size: 10px;
+    line-height: 1.25;
+    text-align: left;
+  }
+}
+@media (pointer: coarse) and (max-width: 360px) {
+  /* On 320px phones the compact cockpit belongs in the right lane, not
+     the targeting corridor. Match the higher-specificity strategy selector. */
+  body.in-mission #cockpitPanel:not([hidden]),
+  body.in-mission:has(#strategyControls:not([hidden])) #cockpitPanel:not([hidden]) {
+    left: auto;
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: 128px;
+    max-width: 128px;
+  }
+  body.in-mission #hud .status {
+    box-sizing: border-box;
+    width: 112px;
+    padding: 9px 5px 8px 44px;
+  }
+  body.in-mission #pilotHud {
+    left: 5px;
+    top: 8px;
+  }
+  body.in-mission #pilotHudAvatar {
+    width: 30px;
+    height: 30px;
+  }
+  body.in-mission .status .shield-head span,
+  body.in-mission .status-caption {
+    display: none;
+  }
+  body.in-mission .rightHUD {
+    gap: 3px;
+  }
+  body.in-mission .score #stageClock {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+  body.in-mission .score b {
+    font-size: 22px;
+  }
+  body.in-mission #hudNotices #comms #commsPortrait {
+    display: block;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+/* Short landscape retains the cockpit radar and pilot instruments, but moves
+   the whole card above the thumb controls instead of covering their targets. */
+@media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
+  body.in-mission #cockpitPanel:not([hidden]),
+  body.in-mission:has(#strategyControls:not([hidden])) #cockpitPanel:not([hidden]) {
+    display: block;
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 210px);
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    transform: none;
+    width: min(340px, 42vw);
+    max-width: min(340px, 42vw);
+    padding: 5px 8px;
+  }
+  body.in-mission #cockpitPanel .cockpit-instruments {
+    grid-template-columns: minmax(0, 1fr) 74px minmax(0, 1fr);
+    gap: 5px;
+  }
+  body.in-mission #cockpitPanel #cockpitMap {
+    width: 72px;
+    height: 32px;
+  }
+  body.in-mission #cockpitPanel :is(.cockpit-label, #cockpitReadout, #cockpitSwapStatus) {
+    display: none;
+  }
+  body.in-mission #cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+    font-size: 13px;
+  }
+  body.in-mission .score #stageClock {
+    font-size: 12px;
+  }
+  body.in-mission .score b {
+    font-size: 25px;
+  }
+  body.in-mission #hudNotices {
+    max-height: 66px;
+  }
+}
+
+/* QA154 browser regression: compact radio avatar always remains identifiable. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #hudNotices > #comms.active #commsPortrait {
+    display: block;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* QA154: keep the next-stage CTA in the hangar's first view.
+   It stays in normal document flow: a sticky CTA obscured upgrades on scroll. */
+body.intermission-active #shop #nextSector {
+  box-sizing: border-box;
+  position: static;
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin: 12px 0;
+  padding: 10px 14px;
+  line-height: 1.3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  border: 1px solid #9cf5cc;
+  background: #0b614dcf;
+  color: #f2fff8;
+  box-shadow: 0 5px 14px #020d15b8;
+  touch-action: manipulation;
+}
+@media (max-width: 550px), (max-height: 550px) {
+  body.intermission-active #shop #nextSector {
+    min-height: 44px;
+    margin: 8px 0;
+    font-size: 11px;
+  }
+}

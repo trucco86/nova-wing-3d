@@ -12,9 +12,9 @@ test('pet care pickups update score, HUD and a compatible checkpoint', (t) => {
   const snap = h.game.snapshot();
   assert.equal(snap.petCare.can, 1);
   assert.equal(snap.petCare.toy, 1);
-  assert.equal(snap.hits, 35);
+  assert.equal(snap.hits, 95);
   h.advance(0.05);
-  assert.match(h.elements.get('petCareHud').textContent, /LATINHA 1/);
+  assert.match(h.elements.get('petCareHud').textContent, /ATUM 1/);
   const items = [];
   const storage = {
     setItem(_, json) {

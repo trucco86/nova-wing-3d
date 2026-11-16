@@ -1,5 +1,24 @@
 # Histórico
 
+## 1.27.150 — QA153 + QA154: fase cronometrada, cockpit e rádio
+
+- Integra a QA153 (tempo ativo por fase, combos, bônus sem dano e por esquiva, troféus e itens felinos) à QA154.
+- Cockpit mobile deslocado dos botões de toque e do retículo, com cronômetro acima dos pontos.
+- Diálogos de Bia, Bob e Calvin em sequência após derrotar chefes comuns, com alertas críticos prioritários.
+- Salto de luz visivelmente mais longo, sem alterar o período de oito segundos ou o encerramento especial da Devastador.
+- Hangar pós-fase oferece acesso ao mapa logo após os créditos e não cobre os upgrades durante a rolagem.
+- Teste específico QA154: 3/3 aprovado, incluindo 320×568, 390×844 e 844×390.
+- **Candidata integrada apenas na branch QA153; aguardar CI completa consolidada e homologação antes de publicar na main.**
+
+## 1.27.149 — QA153: tempo, combos e itens felinos
+
+- Cronômetro de fase baseado em tempo ativo, preservando pausa normal e RPG radial.
+- Bônus de até 600 pontos por velocidade, 400 por fase sem danos, multiplicador de combo por sequência de eliminações e +25 por esquivas reais próximas.
+- Tela de resultado apresenta tempo, rapidez, bônus sem dano, combo máximo, esquivas e colecionáveis, preservando histórico local/ranking experimental.
+- Itens felinos ATUM, PEIXE, RATINHO e SACHÊ substituem silhueta antiga de osso e concedem XP, escudo ou energia além dos pontos. IDs de save permanecem compatíveis.
+- Quatro troféus adicionais (combos, esquivas e itens), tradução PT/EN/ES e novos testes de pontuação.
+- **Candidata em homologação**: testes de navegador e visual móvel ainda são obrigatórios. Nenhum merge ou publicação sem QA.
+
 ## 1.27.148 — QA152: Colosso das Dunas sem asas genéricas da Fênix
 
 - A screenshot de QA149 mostrou que o chefe marciano continuava usando 20 peças de asas do antigo modelo Stingray.

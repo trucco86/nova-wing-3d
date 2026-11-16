@@ -1,6 +1,16 @@
 // Nova Wing translation catalog: UI, campaign, gameplay, hangar and accessible text.
 // Original PT-BR strings remain the canonical source; IDs, names and saves never change.
 const ROWS = [
+  ['PONTOS', 'POINTS', 'PUNTOS'],
+  ['COMBO', 'COMBO', 'COMBO'],
+  ['TEMPO', 'TIME', 'TIEMPO'],
+  ['RAPIDEZ', 'SPEED', 'RAPIDEZ'],
+  ['ESQUIVAS', 'DODGES', 'ESQUIVAS'],
+  ['ITENS', 'ITEMS', 'OBJETOS'],
+  ['ATUM', 'TUNA', 'ATÚN'],
+  ['PEIXE', 'FISH', 'PESCADO'],
+  ['RATINHO', 'TOY MOUSE', 'RATONCITO'],
+  ['SACHÊ', 'FOOD POUCH', 'SOBRE'],
   ['FIVE CATS / COMANDANTE', 'FIVE CATS / COMMANDER', 'FIVE CATS / COMANDANTE'],
   ['RADAR DE AMEAÇAS', 'THREAT RADAR', 'RADAR DE AMENAZAS'],
   ['VELOCIDADE / NÓS DE VOO', 'FLIGHT SPEED / UNITS', 'VELOCIDAD / UNIDADES'],
