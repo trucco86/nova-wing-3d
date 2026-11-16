@@ -7,13 +7,12 @@ test('a defeated boss can trigger the light-speed jump only after the explosion'
   assert.equal(warpExitAt(4.7, true).active, false);
   assert.equal(warpExitAt(4.88, true).active, false);
   assert.equal(warpExitAt(5, false).active, false);
-  assert.equal(warpExitAt(5, true).active, false);
-  assert.equal(warpExitAt(6.09, true).active, false);
-  assert.equal(warpExitAt(6.1, true).active, true);
-  assert.equal(warpExitAt(6.79, false).active, false);
-  assert.equal(warpExitAt(6.8, false).active, true);
+  assert.equal(warpExitAt(5, true).active, true);
+  assert.equal(warpExitAt(5.79, false).active, false);
+  assert.equal(warpExitAt(5.8, false).active, true);
+  assert.equal(warpExitAt(6.4, false).active, true);
   assert.equal(warpExitAt(7.8, false).speed, 420);
-  assert.equal(VICTORY_EXIT_SECONDS, 10.2);
+  assert.equal(VICTORY_EXIT_SECONDS, 8);
   assert.throws(() => warpExitAt(-0.1), RangeError);
 });
 
