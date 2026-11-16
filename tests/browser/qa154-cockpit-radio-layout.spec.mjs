@@ -58,6 +58,13 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
     expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(
       false,
     );
+    expect(
+      geometry.cockpit.x <= viewport.width / 2 &&
+        geometry.cockpit.x + geometry.cockpit.width >= viewport.width / 2 &&
+        geometry.cockpit.y <= viewport.height / 2 &&
+        geometry.cockpit.y + geometry.cockpit.height >= viewport.height / 2,
+      'cockpit instruments must leave the center targeting corridor free',
+    ).toBe(false);
     if (viewport.width > 550) {
       await expect(page.locator('#cockpitMap')).toBeVisible();
     }
