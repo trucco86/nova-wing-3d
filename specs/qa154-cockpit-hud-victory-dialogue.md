@@ -32,5 +32,6 @@
 - Gates: nova sincronização do HTML gerado + full CI antes de considerar elegível. Sem merge nem deploy em produção.
 
 ## QA154.2: revisão visual do hangar
+
 - Captura real do navegador detectou que o CTA com `position: sticky` se sobrepunha aos botões de compra quando a loja era rolada. Alterado para fluxo normal, com ação de seguir ao mapa já no primeiro viewport.
 - Teste browser cobre a posição do CTA na abertura e a ausência de colisão com upgrades após rolagem em 320×568, 390×844 e 844×390.

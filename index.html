@@ -11452,13 +11452,11 @@ body.in-mission .score span {
   }
 }
 
-/* QA154: post-boss hangar keeps the next-stage CTA in the first view.
-   Upgrades remain below and can be inspected independently. */
+/* QA154: keep the next-stage CTA in the hangar's first view.
+   It stays in normal document flow: a sticky CTA obscured upgrades on scroll. */
 body.intermission-active #shop #nextSector {
   box-sizing: border-box;
-  position: sticky;
-  top: 4px;
-  z-index: 3;
+  position: static;
   display: block;
   width: 100%;
   min-height: 48px;
