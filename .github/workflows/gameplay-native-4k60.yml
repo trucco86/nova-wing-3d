@@ -1,0 +1,59 @@
+name: Native 4K60 gameplay sample
+on:
+  push:
+    branches: [media/gameplay-native-4k60-v2]
+    paths:
+      - 'tools/media-capture.mjs'
+      - '.github/workflows/gameplay-native-4k60.yml'
+permissions:
+  contents: read
+concurrency:
+  group: native-gameplay-sample
+  cancel-in-progress: true
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        shot: [0, 1, 2, 3]
+    env:
+      SOURCE_COMMIT: 85be7afef80bc8753865f0796939c732536fad6c
+      SHOT_INDEX: ${{ matrix.shot }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Verify gameplay source provenance
+        run: git diff --exit-code "$SOURCE_COMMIT" HEAD -- src package.json package-lock.json tests/dynamic-scene.js tools/visual-fixture.mjs
+      - run: npm ci
+      - run: npm run agent:context -- --mapa
+      - run: node --check tools/media-capture.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - run: node tools/visual-fixture.mjs
+      - name: Capture deterministic native sample and original audio
+        run: |
+          NOVA_VISUAL_TEST=1 node tools/serve.mjs --port 4187 > /tmp/nova-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4187/__dynamic.html -o /dev/null; then break; fi
+            sleep 1
+          done
+          node tools/media-capture.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: native-4k60-sample-${{ matrix.shot }}
+          path: |
+            artifacts/native-4k60/*.mp4
+            artifacts/native-4k60/*.json
+            artifacts/native-4k60/*.png
+          retention-days: 7
