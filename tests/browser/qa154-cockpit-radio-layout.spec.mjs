@@ -118,3 +118,49 @@ test('QA154 radio uses one box and preserves dangerous-alert precedence', async 
   await expect(page.locator('#attackWarning')).toBeVisible();
   await page.screenshot({ path: info.outputPath('qa154-priority-radio.png') });
 });
+
+test('QA154 hangar route action is reachable without scrolling at compact sizes', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'mobile', 'Requires touch viewport layout');
+  test.setTimeout(120000);
+  for (const viewport of [
+    { width: 320, height: 568 },
+    { width: 390, height: 844 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto('/__dynamic.html?sector=0&xp=740');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    await page.evaluate(() => window.fixture.hangar());
+    await expect(page.locator('#shop')).toBeVisible();
+    const bounds = await page.evaluate(() => {
+      const box = (selector) => {
+        const node = document.querySelector(selector);
+        const { x, y, width, height } = node.getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      const card = document.querySelector('#shop .hangar-card');
+      return {
+        next: box('#nextSector'),
+        credits: box('#shopCredits'),
+        card: box('#shop .hangar-card'),
+        scrollTop: card.scrollTop,
+      };
+    });
+    expect(bounds.scrollTop, 'hangar begins at top of the card').toBe(0);
+    expect(bounds.next.x, 'launch is horizontally within screen').toBeGreaterThanOrEqual(0);
+    expect(bounds.next.x + bounds.next.width).toBeLessThanOrEqual(viewport.width + 1);
+    expect(bounds.next.y, 'map action visible without scrolling').toBeGreaterThanOrEqual(0);
+    expect(bounds.next.y + bounds.next.height, 'map action fits in initial viewport').toBeLessThanOrEqual(
+      viewport.height,
+    );
+    expect(bounds.credits.y + bounds.credits.height).toBeLessThanOrEqual(bounds.next.y + 2);
+    await page.screenshot({
+      path: info.outputPath('qa154-hangar-first-view-' + viewport.width + '.png'),
+    });
+    await page.locator('#nextSector').click();
+    await expect(page.locator('#campaignMap')).toBeVisible();
+    await expect(page.locator('#shop')).toBeHidden();
+  }
+});
