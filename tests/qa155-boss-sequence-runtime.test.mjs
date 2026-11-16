@@ -39,10 +39,8 @@ test('QA155: elapsed time alone never bypasses the recovered subboss gate', () =
     blocked: false,
   };
   assert.equal(bossEncounterGate(event), false);
-  assert.equal(
-    bossEncounterGate({ ...event, elapsed: 75 + SUBBOSS_BOSS_RECOVERY_SECONDS }),
-    true,
-  );
+  const readyAt = 75 + SUBBOSS_BOSS_RECOVERY_SECONDS;
+  assert.equal(bossEncounterGate({ ...event, elapsed: readyAt }), true);
   assert.equal(bossEncounterGate({ ...event, elapsed: 200, activeSubboss: true }), false);
   assert.equal(bossEncounterGate({ ...event, elapsed: 200, blocked: true }), false);
   assert.equal(bossEncounterGate({ ...event, elapsed: 200, subbossStarted: false }), false);
