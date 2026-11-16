@@ -6,7 +6,7 @@
 - Nenhum dos sete botões altera seu identificador, área física ou comando. Preserve giro, Lock, piloto, RPG, controles para canhotos e área segura.
 - Tempo da fase fica acima da pontuação e usa tipografia maior. Pontuação é secundária, mas continua visível até em 320px. A métrica continua baseada em tempo de simulação e pausa.
 - Comunicação da equipe usa uma caixa de rádio compacta; aviso crítico/ataque perigoso/escudo/chefe têm prioridade. Pickup e aviso informativo cedem lugar à transmissão sem descartar o estado do jogo.
-- Ao derrotar chefes comuns, Bia, Bob e Calvin têm três falas em sequência, sem caixas simultâneas. O salto de luz começa após a destruição principal, pode ser antecipado com BOOST após 6,1s ou se inicia automaticamente aos 6,8s. A transição termina em 10,2s, 2,2s além do colapso anterior.
+- Ao derrotar chefes comuns, Bia, Bob e Calvin têm três falas em sequência, sem caixas simultâneas. O salto de luz começa após a destruição principal, pode ser antecipado com BOOST após 4,9s ou se inicia automaticamente aos 5,8s. A sequência de luz fica 0,6s mais longa e com velocidade visual maior, sem ultrapassar os 8s totais e sem atrasar pontuação, compras e checkpoints.
 - A fuga especial da Devastador conserva seu roteiro e tempo de 8s, sem diálogo genérico duplicado. Menu, morte, pontos e ranking não são modificados.
 - Textos, botões e modais nas demais telas entram na matriz de auditoria visual; não reduzir a fonte abaixo de 11px de timer em telefones compactos.
 
