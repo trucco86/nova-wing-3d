@@ -1,10 +1,11 @@
 import * as T from 'three';
 
 /**
- * The regular post-boss scene is 2.2s longer than the legacy eight-second
- * collapse. The final Devastador emergency escape keeps its separate timing.
+ * Preserve the existing eight-second stage progression so hangar, checkpoints
+ * and the unique Devastador finale retain their tested timing. Extend only the
+ * visible warp portion by activating the automatic jump earlier.
  */
-export const VICTORY_EXIT_SECONDS = 10.2;
+export const VICTORY_EXIT_SECONDS = 8;
 
 /** One radio lane and one speaker at a time, driven by simulation time. */
 export const VICTORY_RADIO_BEATS = Object.freeze([
@@ -37,13 +38,13 @@ export function victoryDialogueAt(seconds) {
 
 /**
  * Regular boss victory flight: explosion at 4.7s, squad departure dialogue,
- * then optional early BOOST at 6.1s or automatic launch at 6.8s.
+ * then optional BOOST at 4.9s or automatic launch at 5.8s.
  * The warp never changes scoring, gameplay time or the final-boss escape.
  */
 export function warpExitAt(seconds, boostHeld = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
-  const ready = seconds >= 6.1;
-  const active = ready && (boostHeld || seconds >= 6.8);
+  const ready = seconds >= 4.9;
+  const active = ready && (boostHeld || seconds >= 5.8);
   return { ready, active, speed: active ? 420 : 0 };
 }
 
@@ -84,5 +85,5 @@ export function updateWarpStreaks(streaks, active, seconds, position) {
   streaks.visible = active;
   if (!active) return;
   streaks.position.copy(position);
-  streaks.scale.z = 1 + Math.min(0.6, Math.max(0, seconds - 6.1) * 0.3);
+  streaks.scale.z = 1 + Math.min(0.6, Math.max(0, seconds - 4.9) * 0.3);
 }
