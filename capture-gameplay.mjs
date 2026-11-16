@@ -57,12 +57,12 @@ for(let i=0;i<shots.length;i++){
  });
  for(let frame=0;frame<(warmup+shot.duration)*30;frame++){
   await page.evaluate(async ({frame,warmup})=>{
-   if(frame<warmup*30)fixture.advance(1/30);
+   if(frame<warmup*30)fixture.advance(1/30,{renderAfter:false});
    else captureTick((frame-warmup*30)/30);
    await nextAudio;
   },{frame,warmup});
   if(frame>=warmup*30){
-   await page.screenshot({path:`${frameDir}/${String(frame-warmup*30).padStart(5,'0')}.jpg`,type:'jpeg',quality:92,animations:'disabled'});
+   await page.screenshot({path:`${frameDir}/${String(frame-warmup*30).padStart(5,'0')}.jpg`,type:'jpeg',quality:92,timeout:120000});
   }
   await page.evaluate(frame=>{
    window.nextAudio=offlineAudio.suspend((frame+2)/30);
