@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { Object3D, Vector3 } from 'three';
 import { comboBonus, nearMissCrossing, scoreStageClear, stageClock } from '../src/stage-scoring.js';
 import { collectPetItem, PET_ITEMS, readPetCare } from '../src/pet-collectibles.js';
 
@@ -39,6 +41,24 @@ test('real near misses require physical swept trajectory crossing the ship plane
   assert.equal(nearMissCrossing({ x: 12, y: 0, z: -8 }, { x: 12, y: 0, z: 20 }, ship), false);
   assert.equal(nearMissCrossing({ x: 7, y: 0, z: -8 }, { x: 7, y: 0, z: -2 }, ship), false);
   assert.equal(nearMissCrossing({ x: 0, y: 0, z: 9 }, { x: 9, y: 0, z: 9 }, ship), false);
+});
+
+test('real fighter coordinates are used for near-miss scoring and trophy progression', () => {
+  const fighter = new Object3D();
+  fighter.position.set(0, 0, 9);
+  const from = new Vector3(7, 0, -8);
+  const to = new Vector3(7, 0, 20);
+
+  // Passing a Three.js Object3D directly silently fails the finite check;
+  // gameplay must pass its Vector3 position, as it does for projectile hits.
+  assert.equal(nearMissCrossing(from, to, fighter), false);
+  assert.equal(nearMissCrossing(from, to, fighter.position), true);
+  assert.equal(nearMissCrossing(new Vector3(0, 0, -8), new Vector3(0, 0, 20), fighter.position), false);
+  assert.equal(nearMissCrossing(new Vector3(12, 0, -8), new Vector3(12, 0, 20), fighter.position), false);
+
+  // Guard the live game call path, not just the math helper's happy path.
+  const gameSource = readFileSync(new URL('../src/game.js', import.meta.url), 'utf8');
+  assert.match(gameSource, /nearMissCrossing\(from, b\.o\.position, player\.position\)/);
 });
 
 test('collectibles contain only cat-appropriate items and preserve previous save IDs', () => {
