@@ -324,7 +324,13 @@ test('strategic progression, spells and orbital flanks render with keyboard and 
     expect(compactTouch.x).toBeGreaterThanOrEqual(0);
     expect(compactTouch.x + compactTouch.width).toBeLessThanOrEqual(320);
     expect(compactStick.x + compactStick.width).toBeLessThanOrEqual(compactActions.x);
-    await expect(page.locator('.score')).toBeHidden();
+    // QA154 intentionally keeps the smaller score and larger clock visible
+    // on 320px devices; hiding them would violate the new player HUD contract.
+    await expect(page.locator('.score')).toBeVisible();
+    await expect(page.locator('#stageClock')).toBeVisible();
+    const compactScore = await page.locator('.score').boundingBox();
+    const compactStatus = await page.locator('.status').boundingBox();
+    expect(overlap(compactScore, compactStatus), 'time/score cannot overlap shield').toBe(false);
     await expect(page.locator('#bossName')).toBeHidden();
     await expect(page.locator('#bossState')).toBeVisible();
     await page.screenshot({ path: info.outputPath('strategy-compact-320.png') });

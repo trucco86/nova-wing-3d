@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.150 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.149 — QA153: tempo, combos e itens felinos
 
 - Cronômetro de fase baseado em tempo ativo, preservando pausa normal e RPG radial.

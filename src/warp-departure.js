@@ -1,15 +1,50 @@
 import * as T from 'three';
 
 /**
- * A single victory-flight contract for every boss. Never start the jump until
- * the destruction beat has played (at 4.7s); the player's BOOST button may
- * advance it, otherwise it starts automatically without stalling the shop.
+ * Preserve the existing eight-second stage progression so hangar, checkpoints
+ * and the unique Devastador finale retain their tested timing. Extend only the
+ * visible warp portion by activating the automatic jump earlier.
+ */
+export const VICTORY_EXIT_SECONDS = 8;
+
+/** One radio lane and one speaker at a time, driven by simulation time. */
+export const VICTORY_RADIO_BEATS = Object.freeze([
+  Object.freeze({
+    at: 0.6,
+    speaker: 'bia',
+    text: 'ALVO NEUTRALIZADO! FIVE CATS, REAGRUPAR NA MINHA ASA.',
+  }),
+  Object.freeze({
+    at: 2.8,
+    speaker: 'bob',
+    text: 'ESQUADRÃO REUNIDO. COORDENADAS DE SAÍDA CONFIRMADAS!',
+  }),
+  Object.freeze({
+    at: 5.4,
+    speaker: 'calvin',
+    text: 'CORREDOR LIVRE. PREPAREM OS MOTORES: SALTO DE LUZ!',
+  }),
+]);
+
+export function victoryDialogueAt(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
+  let beat = null;
+  for (let index = 0; index < VICTORY_RADIO_BEATS.length; index++) {
+    if (seconds >= VICTORY_RADIO_BEATS[index].at) beat = { ...VICTORY_RADIO_BEATS[index], index };
+  }
+  return beat;
+}
+
+/**
+ * Regular boss victory flight: explosion at 4.7s, squad departure dialogue,
+ * then optional BOOST at 4.9s or automatic launch at 5.8s.
+ * The warp never changes scoring, gameplay time or the final-boss escape.
  */
 export function warpExitAt(seconds, boostHeld = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid victory time');
   const ready = seconds >= 4.9;
-  const active = ready && (boostHeld || seconds >= 6.4);
-  return { ready, active, speed: active ? 380 : 0 };
+  const active = ready && (boostHeld || seconds >= 5.8);
+  return { ready, active, speed: active ? 420 : 0 };
 }
 
 /**
