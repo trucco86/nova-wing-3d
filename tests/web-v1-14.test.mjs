@@ -7,12 +7,15 @@ import { AUDIO_CUES } from '../src/audio-cues.js';
 test('pet care defaults and collect are safe for legacy saves', () => {
   assert.deepEqual(
     PET_ITEMS.map(({ id }) => id),
-    ['can', 'treat', 'toy', 'litter'],
+    ['can', 'fish', 'pouch', 'treat', 'toy', 'catnip'],
   );
   assert.deepEqual(readPetCare({ can: -1, toy: Infinity }), {
     can: 0,
+    fish: 0,
+    pouch: 0,
     treat: 0,
     toy: 0,
+    catnip: 0,
     litter: 0,
   });
   assert.equal(collectPetItem({}, 'bad'), null);
