@@ -11343,13 +11343,14 @@ body.in-mission .score span {
   }
 }
 @media (pointer: coarse) and (max-width: 360px) {
-  /* The wide readout would cover the center reticle on a 320px phone.
-     Move a narrower readout to the left lane above the joystick. */
-  body.in-mission #cockpitPanel:not([hidden]) {
-    left: max(12px, env(safe-area-inset-left, 0px));
-    right: auto;
-    width: 140px;
-    max-width: 140px;
+  /* On 320px phones the compact cockpit belongs in the right lane, not
+     the targeting corridor. Match the higher-specificity strategy selector. */
+  body.in-mission #cockpitPanel:not([hidden]),
+  body.in-mission:has(#strategyControls:not([hidden])) #cockpitPanel:not([hidden]) {
+    left: auto;
+    right: max(8px, env(safe-area-inset-right, 0px));
+    width: 128px;
+    max-width: 128px;
   }
   body.in-mission #hud .status {
     box-sizing: border-box;
