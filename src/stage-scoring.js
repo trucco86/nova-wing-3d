@@ -20,11 +20,19 @@ export function comboBonus(streak) {
 }
 
 export function scoreStageClear({ seconds, baselineSeconds, damageTaken } = {}) {
-  const valid = Number.isFinite(seconds) && seconds >= 0 &&
-    Number.isFinite(baselineSeconds) && baselineSeconds > 0;
+  const valid =
+    Number.isFinite(seconds) &&
+    seconds >= 0 &&
+    Number.isFinite(baselineSeconds) &&
+    baselineSeconds > 0;
   const speed = valid
-    ? Math.max(0, Math.round(SCORE_RULES.speedMaxPoints -
-        Math.max(0, seconds - baselineSeconds) * SCORE_RULES.speedDecayPerSecond))
+    ? Math.max(
+        0,
+        Math.round(
+          SCORE_RULES.speedMaxPoints -
+            Math.max(0, seconds - baselineSeconds) * SCORE_RULES.speedDecayPerSecond,
+        ),
+      )
     : 0;
   const pristine = damageTaken === false ? SCORE_RULES.noDamagePoints : 0;
   return Object.freeze({ speed, pristine, total: speed + pristine });

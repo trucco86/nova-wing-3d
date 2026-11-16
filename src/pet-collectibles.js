@@ -1,9 +1,37 @@
 // Stable IDs are intentional: existing local save files keep their collection counts.
 export const PET_ITEMS = [
-  { id: 'can', name: 'ATUM', care: 'food', points: 55, color: '#ffb365', perk: { type: 'xp', amount: 6 } },
-  { id: 'treat', name: 'PEIXE', care: 'food', points: 45, color: '#71d8ed', perk: { type: 'shield', amount: 12 } },
-  { id: 'toy', name: 'RATINHO', care: 'play', points: 40, color: '#7ecfff', perk: { type: 'energy', amount: 18 } },
-  { id: 'litter', name: 'SACHÊ', care: 'food', points: 50, color: '#bca1e9', perk: { type: 'shield', amount: 20 } },
+  {
+    id: 'can',
+    name: 'ATUM',
+    care: 'food',
+    points: 55,
+    color: '#ffb365',
+    perk: { type: 'xp', amount: 6 },
+  },
+  {
+    id: 'treat',
+    name: 'PEIXE',
+    care: 'food',
+    points: 45,
+    color: '#71d8ed',
+    perk: { type: 'shield', amount: 12 },
+  },
+  {
+    id: 'toy',
+    name: 'RATINHO',
+    care: 'play',
+    points: 40,
+    color: '#7ecfff',
+    perk: { type: 'energy', amount: 18 },
+  },
+  {
+    id: 'litter',
+    name: 'SACHÊ',
+    care: 'food',
+    points: 50,
+    color: '#bca1e9',
+    perk: { type: 'shield', amount: 20 },
+  },
 ];
 export function readPetCare(raw) {
   return Object.fromEntries(

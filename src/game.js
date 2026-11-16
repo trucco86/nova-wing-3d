@@ -203,7 +203,13 @@ import {
   firstSubbossDeparture,
 } from './subboss-tactics.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from './pet-collectibles.js';
-import { SCORE_RULES, stageClock, comboBonus, nearMissCrossing, scoreStageClear } from './stage-scoring.js';
+import {
+  SCORE_RULES,
+  stageClock,
+  comboBonus,
+  nearMissCrossing,
+  scoreStageClear,
+} from './stage-scoring.js';
 import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
@@ -1274,8 +1280,7 @@ export function createGame({
       credits += Math.ceil(result.points / 2);
       if (stagePerformance) stagePerformance.petItems++;
       if (result.perk.type === 'shield') hp = Math.min(maxHp(), hp + result.perk.amount);
-      if (result.perk.type === 'energy')
-        energy = Math.min(100, energy + result.perk.amount);
+      if (result.perk.type === 'energy') energy = Math.min(100, energy + result.perk.amount);
       if (result.perk.type === 'xp') gainXP(result.perk.amount);
       // The small existing pickup flash already announces the loot.
       // Do not add a full-width radio alert over the flying corridor.
@@ -1388,11 +1393,18 @@ export function createGame({
     $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
     const bonuses = stagePerformance?.bonuses ?? { speed: 0, pristine: 0 };
     $('stageScoreBreakdown').textContent =
-      'TEMPO ' + stageClock(elapsed) + ' · RAPIDEZ +' + bonuses.speed +
-      ' · SEM DANO +' + bonuses.pristine +
-      ' · COMBO ×' + (stagePerformance?.maxCombo ?? 0) +
-      ' · ESQUIVAS ' + (stagePerformance?.nearMisses ?? 0) +
-      ' · ITENS ' + (stagePerformance?.petItems ?? 0);
+      'TEMPO ' +
+      stageClock(elapsed) +
+      ' · RAPIDEZ +' +
+      bonuses.speed +
+      ' · SEM DANO +' +
+      bonuses.pristine +
+      ' · COMBO ×' +
+      (stagePerformance?.maxCombo ?? 0) +
+      ' · ESQUIVAS ' +
+      (stagePerformance?.nearMisses ?? 0) +
+      ' · ITENS ' +
+      (stagePerformance?.petItems ?? 0);
     $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
     $('campaignMap').hidden = true;
     renderShop();
@@ -1814,14 +1826,16 @@ export function createGame({
     const pet = kind.startsWith('pet:');
     const catLoot = pet ? PET_ITEMS.find((item) => item.id === kind.slice(4)) : null;
     const perkLabel =
-      catLoot?.perk?.type === 'xp'
-        ? 'XP'
-        : catLoot?.perk?.type === 'shield'
-          ? 'ESCUDO'
-          : 'ENERGIA';
+      catLoot?.perk?.type === 'xp' ? 'XP' : catLoot?.perk?.type === 'shield' ? 'ESCUDO' : 'ENERGIA';
     element.textContent = pet
-      ? '✦ ' + (catLoot?.name ?? 'ITEM') + ' +' + (catLoot?.points ?? 0) +
-        ' PTS · ' + perkLabel + ' +' + (catLoot?.perk?.amount ?? 0)
+      ? '✦ ' +
+        (catLoot?.name ?? 'ITEM') +
+        ' +' +
+        (catLoot?.points ?? 0) +
+        ' PTS · ' +
+        perkLabel +
+        ' +' +
+        (catLoot?.perk?.amount ?? 0)
       : kind === 'blue'
         ? '✦ XP +4 · PODS'
         : '✦ ESCUDO +25';
@@ -6253,10 +6267,7 @@ export function createGame({
       'CUIDADOS · ' + PET_ITEMS.map(({ id, name }) => name + ' ' + petCare[id]).join(' / '),
     );
     hud.text('score', String(score).padStart(3, '0'));
-    hud.text(
-      'stageClock',
-      stageClock(elapsed) + ' · COMBO ×' + (stagePerformance?.combo ?? 0),
-    );
+    hud.text('stageClock', stageClock(elapsed) + ' · COMBO ×' + (stagePerformance?.combo ?? 0));
     hud.text('bombs', '◆ '.repeat(bombs) || '—');
     hud.style('energy', 'width', energy + '%');
     hud.cssVar('boostTouch', '--meter', energy + '%');

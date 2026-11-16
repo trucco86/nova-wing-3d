@@ -11,8 +11,11 @@ test('stage timer is deterministic and does not apply a real-time pause penalty'
 });
 
 test('speed bonus strictly falls with completion time and clean shield awards once', () => {
-  assert.deepEqual(scoreStageClear({ seconds: 130, baselineSeconds: 145, damageTaken: false }),
-    { speed: 600, pristine: 400, total: 1000 });
+  assert.deepEqual(scoreStageClear({ seconds: 130, baselineSeconds: 145, damageTaken: false }), {
+    speed: 600,
+    pristine: 400,
+    total: 1000,
+  });
   const fast = scoreStageClear({ seconds: 165, baselineSeconds: 145, damageTaken: true });
   const slow = scoreStageClear({ seconds: 200, baselineSeconds: 145, damageTaken: true });
   assert.ok(fast.speed > slow.speed);
@@ -39,9 +42,18 @@ test('real near misses require physical swept trajectory crossing the ship plane
 });
 
 test('collectibles contain only cat-appropriate items and preserve previous save IDs', () => {
-  assert.deepEqual(PET_ITEMS.map(item => item.id), ['can', 'treat', 'toy', 'litter']);
-  assert.deepEqual(PET_ITEMS.map(item => item.name), ['ATUM', 'PEIXE', 'RATINHO', 'SACHÊ']);
-  assert.equal(PET_ITEMS.some(item => /osso|bone|dog/i.test(item.name)), false);
+  assert.deepEqual(
+    PET_ITEMS.map((item) => item.id),
+    ['can', 'treat', 'toy', 'litter'],
+  );
+  assert.deepEqual(
+    PET_ITEMS.map((item) => item.name),
+    ['ATUM', 'PEIXE', 'RATINHO', 'SACHÊ'],
+  );
+  assert.equal(
+    PET_ITEMS.some((item) => /osso|bone|dog/i.test(item.name)),
+    false,
+  );
   const legacy = readPetCare({ can: 3, treat: 2, toy: 4, litter: 1 });
   assert.deepEqual(legacy, { can: 3, treat: 2, toy: 4, litter: 1 });
   for (const item of PET_ITEMS) {
