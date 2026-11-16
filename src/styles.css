@@ -11281,7 +11281,7 @@ body.in-mission .score span {
      In-flight radar already exists in the upper HUD, so avoid a duplicate. */
   body.in-mission #cockpitPanel:not([hidden]) {
     top: auto;
-    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 225px);
+    bottom: calc(max(15px, env(safe-area-inset-bottom, 0px)) + 265px);
     left: auto;
     right: max(14px, env(safe-area-inset-right, 0px));
     transform: none;
@@ -11378,7 +11378,10 @@ body.in-mission .score span {
     font-size: 22px;
   }
   body.in-mission #hudNotices #comms #commsPortrait {
-    display: none;
+    display: block;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
   }
 }
 /* Short landscape retains the cockpit radar and pilot instruments, but moves
@@ -11387,7 +11390,7 @@ body.in-mission .score span {
   body.in-mission #cockpitPanel:not([hidden]) {
     display: block;
     top: auto;
-    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 176px);
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 210px);
     left: max(14px, env(safe-area-inset-left, 0px));
     right: auto;
     transform: none;
@@ -11417,5 +11420,15 @@ body.in-mission .score span {
   }
   body.in-mission #hudNotices {
     max-height: 66px;
+  }
+}
+
+/* QA154 browser regression: compact radio avatar always remains identifiable. */
+@media (pointer: coarse) and (max-width: 550px) {
+  body.in-mission #hudNotices > #comms.active #commsPortrait {
+    display: block;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
   }
 }
