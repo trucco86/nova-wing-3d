@@ -43,11 +43,10 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
     expect(geometry.clock.y + geometry.clock.height).toBeLessThanOrEqual(geometry.points.y + 2);
     expect(geometry.clockFont).toBeGreaterThanOrEqual(11);
     expect(overlaps(geometry.status, geometry.clock), 'shield and clock must not collide').toBe(false);
-    if (viewport.width <= 550) {
-      expect(geometry.cockpit, 'compact cockpit readout visible').not.toBeNull();
-      expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(false);
-    } else {
-      expect(geometry.cockpit, 'short landscape omits redundant panel').toBeNull();
+    expect(geometry.cockpit, 'cockpit readout stays visible in both orientations').not.toBeNull();
+    expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(false);
+    if (viewport.width > 550) {
+      await expect(page.locator('#cockpitMap')).toBeVisible();
     }
     for (const [id, target] of geometry.buttons) {
       expect(target, id).not.toBeNull();
