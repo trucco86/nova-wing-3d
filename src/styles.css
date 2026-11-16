@@ -11372,11 +11372,33 @@ body.in-mission .score span {
     display: none;
   }
 }
-/* In landscape the dedicated cockpit readout duplicates the permanent upper
-   instruments and crowds the short viewport; keep all flight buttons exposed. */
+/* Short landscape retains the cockpit radar and pilot instruments, but moves
+   the whole card above the thumb controls instead of covering their targets. */
 @media (pointer: coarse) and (min-width: 551px) and (max-height: 550px) {
   body.in-mission #cockpitPanel:not([hidden]) {
+    display: block;
+    top: auto;
+    bottom: calc(max(8px, env(safe-area-inset-bottom, 0px)) + 176px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: min(340px, 44vw);
+    max-width: min(340px, 44vw);
+    padding: 5px 8px;
+  }
+  body.in-mission #cockpitPanel .cockpit-instruments {
+    grid-template-columns: minmax(0, 1fr) 74px minmax(0, 1fr);
+    gap: 5px;
+  }
+  body.in-mission #cockpitPanel #cockpitMap {
+    width: 72px;
+    height: 32px;
+  }
+  body.in-mission #cockpitPanel :is(.cockpit-label, #cockpitReadout, #cockpitSwapStatus) {
     display: none;
+  }
+  body.in-mission #cockpitPanel :is(#cockpitPilot, #cockpitSpeedValue) {
+    font-size: 13px;
   }
   body.in-mission .score #stageClock {
     font-size: 12px;
