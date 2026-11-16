@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('QA153: mission timer stays compact, tracks real time and cat food awards points', async ({ page }, info) => {
+test('QA153: mission timer stays compact, tracks real time and cat food awards points', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));

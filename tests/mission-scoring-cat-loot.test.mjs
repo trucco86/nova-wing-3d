@@ -1,15 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  createMissionScoring,
-  formatMissionTime,
-  MAX_COMBO,
-} from '../src/mission-scoring.js';
+import { createMissionScoring, formatMissionTime, MAX_COMBO } from '../src/mission-scoring.js';
 import { PET_ITEMS, readPetCare, collectPetItem } from '../src/pet-collectibles.js';
 
 test('faster boss clears get higher bonuses after the scripted flight runway', () => {
-  const quick = createMissionScoring(145).finish({ durationSeconds: 165, cleared: true, noDamage: false });
-  const slow = createMissionScoring(145).finish({ durationSeconds: 225, cleared: true, noDamage: false });
+  const quick = createMissionScoring(145).finish({
+    durationSeconds: 165,
+    cleared: true,
+    noDamage: false,
+  });
+  const slow = createMissionScoring(145).finish({
+    durationSeconds: 225,
+    cleared: true,
+    noDamage: false,
+  });
   assert.ok(quick.timeBonus > slow.timeBonus);
   assert.equal(slow.timeBonus, 0);
   assert.equal(quick.cleanBonus, 0);
@@ -47,7 +51,9 @@ test('real dodges and cat pickups are bounded and completion rewards are one-tim
 
 test('defeats and invalid seconds never give a time or perfect bonus', () => {
   const result = createMissionScoring(90).finish({
-    durationSeconds: Number.NaN, cleared: false, noDamage: true,
+    durationSeconds: Number.NaN,
+    cleared: false,
+    noDamage: true,
   });
   assert.equal(result.timeBonus, 0);
   assert.equal(result.cleanBonus, 0);
@@ -55,8 +61,14 @@ test('defeats and invalid seconds never give a time or perfect bonus', () => {
 });
 
 test('cat rewards exclude dog bones and keep legacy campaign pet counts readable', () => {
-  assert.deepEqual(PET_ITEMS.map((item) => item.id), ['can', 'fish', 'pouch', 'treat', 'toy', 'catnip']);
-  assert.equal(PET_ITEMS.some((item) => /osso|bone|litter|areia/i.test(item.name + item.id)), false);
+  assert.deepEqual(
+    PET_ITEMS.map((item) => item.id),
+    ['can', 'fish', 'pouch', 'treat', 'toy', 'catnip'],
+  );
+  assert.equal(
+    PET_ITEMS.some((item) => /osso|bone|litter|areia/i.test(item.name + item.id)),
+    false,
+  );
   const previous = readPetCare({ can: 3, litter: 9 });
   assert.equal(previous.can, 3);
   assert.equal(previous.litter, 9);

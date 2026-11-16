@@ -1,11 +1,13 @@
 # QA153 | Pontuação competitiva e itens de gatos
 
 ## Motivação
+
 Pontuação por tempo de missão, combos de impactos reais, esquivas e zero dano,
 sem aumentar a poluição do HUD. Ranking local permanece funcional offline e
 ranking remoto permanece experimental sem antitrapaça.
 
 ## Economia e critérios
+
 - Cronômetro usa o `elapsed` da fase (segundos de jogo), não relógio do sistema.
   Pausar, abrir RPG tático ou intermissões não aumenta o tempo da fase.
 - O trecho de voo tem tempo mínimo roteirizado. Bônus de rapidez depende do
@@ -23,6 +25,7 @@ ranking remoto permanece experimental sem antitrapaça.
   NÃO autoriza declarar o ranking remoto antitrapaça.
 
 ## Suprimentos dos Five Cats
+
 - Drops: atum em lata, peixe, sachê, petisco em grãos, bolinha e erva-do-gato.
 - Atum e sachê restauram escudo; peixe e petisco restauram energia; bolinha
   concede XP de RPG; erva-do-gato reabastece energia arcana tática.
@@ -32,6 +35,7 @@ ranking remoto permanece experimental sem antitrapaça.
 - Templates 3D têm material compartilhado por tipo, sem novos passes de pós.
 
 ## UX e QA
+
 - Cronômetro dentro do placar existente, sem popup concorrente no centro do jogo.
 - HUD de suprimentos passa a mostrar apenas o total; pausa ainda detalha tipos.
 - Hangar exibe tempo, bônus de rapidez, integridade e melhor combo.

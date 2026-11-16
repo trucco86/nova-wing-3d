@@ -159,11 +159,10 @@ export function createTrophySystem({ storage, clock = () => new Date().toISOStri
       Number.isFinite(event.durationMs) &&
       event.durationMs > 0 &&
       event.durationMs <= SECTORS[event.sector - 1].duration * 1400
-    )
-      {
-        stats.fastWins++;
-        if (event.damageTaken === false) stats.fastCleanWins++;
-      }
+    ) {
+      stats.fastWins++;
+      if (event.damageTaken === false) stats.fastCleanWins++;
+    }
     state.processed.push(event.runId);
     state.processed = state.processed.slice(-512);
     const unlocked = [];

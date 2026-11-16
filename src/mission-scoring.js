@@ -8,8 +8,9 @@ const safeTime = (value) => (Number.isFinite(value) && value >= 0 ? value : 0);
 
 export function formatMissionTime(seconds = 0) {
   const total = Math.floor(safeTime(seconds));
-  return String(Math.floor(total / 60)).padStart(2, '0') +
-    ':' + String(total % 60).padStart(2, '0');
+  return (
+    String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0')
+  );
 }
 
 export function createMissionScoring(plannedSeconds = 90) {

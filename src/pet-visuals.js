@@ -31,8 +31,7 @@ export function createPetPickup(kind) {
     } else if (kind === 'treat') {
       // Small kibble nuggets in a low-profile paper tray, never a dog bone.
       add(new T.BoxGeometry(3, 0.6, 1.4), dark);
-      for (const x of [-0.8, 0, 0.8])
-        add(new T.DodecahedronGeometry(0.46, 0), base, x, 0.6, 0);
+      for (const x of [-0.8, 0, 0.8]) add(new T.DodecahedronGeometry(0.46, 0), base, x, 0.6, 0);
     } else if (kind === 'fish') {
       const body = add(new T.SphereGeometry(1, 12, 8), base);
       body.scale.set(1.8, 0.84, 0.58);

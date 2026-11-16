@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.149 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.148 — QA152: Colosso das Dunas sem asas genéricas da Fênix
 
 - A screenshot de QA149 mostrou que o chefe marciano continuava usando 20 peças de asas do antigo modelo Stingray.

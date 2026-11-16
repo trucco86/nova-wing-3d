@@ -1281,7 +1281,15 @@ export function createGame({
       if (result.effect === 'energy') energy = Math.min(100, energy + result.amount);
       if (result.effect === 'xp') gainXP(result.amount);
       if (result.effect === 'arcana') arcana = Math.min(100, arcana + result.amount);
-      message(result.message + ' + ' + result.points + ' PTS · ' + result.effect.toUpperCase() + ' +' + result.amount);
+      message(
+        result.message +
+          ' + ' +
+          result.points +
+          ' PTS · ' +
+          result.effect.toUpperCase() +
+          ' +' +
+          result.amount,
+      );
       cue(result.audioCue);
       return;
     }
@@ -1306,11 +1314,12 @@ export function createGame({
   function recordStageResult(outcome = 'cleared') {
     if (!dynamicFlight || developerSession || stageResultSent) return;
     stageResultSent = true;
-    stageResultBreakdown = stageScoring?.finish({
-      durationSeconds: elapsed,
-      cleared: outcome === 'cleared',
-      noDamage: stagePerformance?.damageTaken === false,
-    }) ?? null;
+    stageResultBreakdown =
+      stageScoring?.finish({
+        durationSeconds: elapsed,
+        cleared: outcome === 'cleared',
+        noDamage: stagePerformance?.damageTaken === false,
+      }) ?? null;
     if (outcome === 'cleared') score += stageResultBreakdown?.totalBonus ?? 0;
     try {
       Promise.resolve(
@@ -1386,10 +1395,14 @@ export function createGame({
     $('bossHUD').hidden = true;
     $('shop').hidden = false;
     $('shopPerformance').textContent = stageResultBreakdown
-      ? 'TEMPO ' + formatMissionTime(elapsed) +
-        ' · BÔNUS RAPIDEZ +' + stageResultBreakdown.timeBonus +
-        ' · INTACTO +' + stageResultBreakdown.cleanBonus +
-        ' · COMBO MÁX x' + stageResultBreakdown.maxCombo
+      ? 'TEMPO ' +
+        formatMissionTime(elapsed) +
+        ' · BÔNUS RAPIDEZ +' +
+        stageResultBreakdown.timeBonus +
+        ' · INTACTO +' +
+        stageResultBreakdown.cleanBonus +
+        ' · COMBO MÁX x' +
+        stageResultBreakdown.maxCombo
       : '';
     $('shopTitle').textContent = 'SETOR ' + String(sectorIndex + 1).padStart(2, '0') + ' LIBERTADO';
     $('shopNext').textContent = 'PRÓXIMO: ' + SECTORS[sectorIndex + 1].name;
@@ -2862,9 +2875,14 @@ export function createGame({
     $('resultText').textContent =
       `${score} pontos · ${Math.floor(totalTime / 60)}m ${String(Math.floor(totalTime % 60)).padStart(2, '0')}s de voo. ${win ? 'Marvin derrotado. Os suprimentos estão de volta. Five Cats, missão cumprida.' : 'Use o giro para bloquear disparos e os anéis para recuperar escudo.'}`;
     $('resultPerformance').textContent = stageResultBreakdown
-      ? 'FASE ' + formatMissionTime(elapsed) + ' · RAPIDEZ +' +
-        stageResultBreakdown.timeBonus + ' · INTACTO +' + stageResultBreakdown.cleanBonus +
-        ' · COMBO x' + stageResultBreakdown.maxCombo
+      ? 'FASE ' +
+        formatMissionTime(elapsed) +
+        ' · RAPIDEZ +' +
+        stageResultBreakdown.timeBonus +
+        ' · INTACTO +' +
+        stageResultBreakdown.cleanBonus +
+        ' · COMBO x' +
+        stageResultBreakdown.maxCombo
       : '';
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
@@ -6009,8 +6027,8 @@ export function createGame({
       );
       if (shipStruck) {
         // Defensive roll/dash counts only when it actually blocks a projectile.
-        const protectedDodge = roll > 0 ||
-          (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection);
+        const protectedDodge =
+          roll > 0 || (robotMode && dashRemaining > MECHA_DASH.duration - MECHA_DASH.protection);
         if (dynamicFlight && protectedDodge && invuln <= 0 && !b.scoreNearMiss) {
           b.scoreNearMiss = true;
           score += stageScoring?.dodge() ?? 0;
@@ -6019,7 +6037,9 @@ export function createGame({
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       } else if (
-        dynamicFlight && b.life > 0 && !b.scoreNearMiss &&
+        dynamicFlight &&
+        b.life > 0 &&
+        !b.scoreNearMiss &&
         from.z <= player.position.z + 5 &&
         b.o.position.z >= player.position.z + 5 &&
         crossesSolid(from, b.o.position, player.position, nearMissHalf, 0)
