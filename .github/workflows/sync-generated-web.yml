@@ -59,9 +59,11 @@ jobs:
       - name: Prepare QA152 release metadata
         if: github.ref_name == 'feat/qa152-mars-quarry-boss-silhouette-20261115'
         run: npm run release:prepare -- 1.27.148
-      - name: Prepare QA153 release metadata
+      - name: Prepare QA153 integrated release metadata without downgrade
         if: github.ref_name == 'feat/qa153-stage-score-and-cat-loot-20261115'
-        run: npm run release:prepare -- 1.27.149
+        # QA154 can be merged into QA153 before main. Keep the already-selected
+        # release number instead of downgrading the integrated candidate to 1.27.149.
+        run: npm run release:prepare -- "$(node -p 'require("./package.json").version')"
       - name: Prepare QA154 release metadata
         if: github.ref_name == 'fix/qa154-cockpit-hud-victory-radio-20261115'
         run: npm run release:prepare -- 1.27.150
