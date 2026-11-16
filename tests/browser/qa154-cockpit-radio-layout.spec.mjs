@@ -33,6 +33,7 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
       return {
         cockpit: box('#cockpitPanel'),
         actions: box('#touch .actions'),
+        reticle: box('#aimReticle'),
         clock: box('#stageClock'),
         points: box('#score'),
         status: box('#hud .status'),
@@ -65,8 +66,16 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
         geometry.cockpit.x + geometry.cockpit.width >= viewport.width / 2 &&
         geometry.cockpit.y <= viewport.height / 2 &&
         geometry.cockpit.y + geometry.cockpit.height >= viewport.height / 2,
-      'cockpit instruments must leave the center targeting corridor free',
+      'cockpit must leave center targeting corridor free ' +
+        JSON.stringify({ viewport, cockpit: geometry.cockpit }),
     ).toBe(false);
+    if (geometry.reticle) {
+      expect(
+        overlaps(geometry.cockpit, geometry.reticle),
+        'cockpit must not obscure actual aim reticle ' +
+          JSON.stringify({ viewport, cockpit: geometry.cockpit, reticle: geometry.reticle }),
+      ).toBe(false);
+    }
     if (viewport.width > 550) {
       await expect(page.locator('#cockpitMap')).toBeVisible();
     }
