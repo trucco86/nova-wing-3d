@@ -11183,3 +11183,8 @@ body.in-mission:has(#settingsMenu:not([hidden])) #strategyControls {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* QA153: keep time and streak in the existing score cluster, not over gameplay. */
+.score #stageClock { display: block; font: 700 10px/1.2 'Chakra Petch', sans-serif; letter-spacing: .03em; color: #abecd7; white-space: nowrap; margin-top: 3px; }
+.stage-score-breakdown { margin: 7px 0 12px; padding: 8px 10px; border-left: 2px solid #71e4c3; background: #051e2abc; color: #c0f3dc; font-size: 11px; line-height: 1.5; }
+@media (pointer: coarse) and (max-width: 550px) { body.in-mission .score #stageClock { font-size: 8px; letter-spacing: 0; } }

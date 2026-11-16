@@ -1,8 +1,9 @@
+// Stable IDs are intentional: existing local save files keep their collection counts.
 export const PET_ITEMS = [
-  { id: 'can', name: 'LATINHA', care: 'food', points: 15, color: '#ffb365' },
-  { id: 'treat', name: 'PETISCO', care: 'food', points: 10, color: '#f5cb7d' },
-  { id: 'toy', name: 'BRINQUEDO', care: 'play', points: 20, color: '#7ecfff' },
-  { id: 'litter', name: 'AREIA', care: 'hygiene', points: 15, color: '#bca1e9' },
+  { id: 'can', name: 'ATUM', care: 'food', points: 55, color: '#ffb365', perk: { type: 'xp', amount: 6 } },
+  { id: 'treat', name: 'PEIXE', care: 'food', points: 45, color: '#71d8ed', perk: { type: 'shield', amount: 12 } },
+  { id: 'toy', name: 'RATINHO', care: 'play', points: 40, color: '#7ecfff', perk: { type: 'energy', amount: 18 } },
+  { id: 'litter', name: 'SACHÊ', care: 'food', points: 50, color: '#bca1e9', perk: { type: 'shield', amount: 20 } },
 ];
 export function readPetCare(raw) {
   return Object.fromEntries(
@@ -17,5 +18,12 @@ export function collectPetItem(raw, id) {
   if (!item) return null;
   const care = readPetCare(raw);
   care[id] = Math.min(999, care[id] + 1);
-  return { care, points: item.points, message: item.name, category: item.care, audioCue: id };
+  return {
+    care,
+    points: item.points,
+    message: item.name,
+    category: item.care,
+    audioCue: id,
+    perk: { ...item.perk },
+  };
 }
