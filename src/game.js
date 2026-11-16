@@ -6074,7 +6074,7 @@ export function createGame({
         invuln <= 0 &&
         barrier <= 0 &&
         elapsed - stagePerformance.lastNearMissAt >= SCORE_RULES.nearMissCooldownSeconds &&
-        nearMissCrossing(from, b.o.position, player)
+        nearMissCrossing(from, b.o.position, player.position)
       ) {
         // Reward only a projectile that actually crossed close to the player.
         // The hit and occlusion tests above take precedence over near misses.
