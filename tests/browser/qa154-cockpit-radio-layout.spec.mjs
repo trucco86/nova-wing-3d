@@ -55,9 +55,10 @@ test('QA154 cockpit HUD clears the touch island and time precedes score', async 
       false,
     );
     expect(geometry.cockpit, 'cockpit readout stays visible in both orientations').not.toBeNull();
-    expect(overlaps(geometry.cockpit, geometry.actions), 'cockpit panel must clear actions').toBe(
-      false,
-    );
+    expect(
+      overlaps(geometry.cockpit, geometry.actions),
+      'cockpit vs actions ' + JSON.stringify({ viewport, cockpit: geometry.cockpit, actions: geometry.actions }),
+    ).toBe(false);
     expect(
       geometry.cockpit.x <= viewport.width / 2 &&
         geometry.cockpit.x + geometry.cockpit.width >= viewport.width / 2 &&
@@ -87,8 +88,14 @@ test('QA154 radio uses one box and preserves dangerous-alert precedence', async 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?sector=0');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  // Complete the introductory briefing before taking ownership of the radio lane.
+  await page.evaluate(() => window.fixture.advance(3.3));
+  await expect(page.locator('body')).not.toHaveClass(/stage-intro/);
   await page.evaluate(() => {
     const byId = (id) => document.getElementById(id);
+    byId('criticalWarning').hidden = true;
+    byId('shieldWarning').hidden = true;
+    byId('bossIncoming').hidden = true;
     byId('comms').classList.add('active');
     byId('message').textContent = 'FIVE CATS EM FORMAÇÃO, PREPARAR SALTO DE LUZ';
     byId('pickupFlash').hidden = false;
