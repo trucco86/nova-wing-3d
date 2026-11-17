@@ -27,3 +27,9 @@ Controller uses conservative movement limits and partial snapshot telemetry, so 
 Full campaign capture and assembly intentionally await the sample gate.
 Hosted software rendering may exceed runner limits.
 A nominal 60fps MP4 alone does not establish 60 unique gameplay frames.
+
+## Revisão das amostras em 17/11/2026
+
+As quatro amostras de 8 segundos passaram na validação técnica. O reator foi REJEITADO editorialmente: todas as oito peças conservaram a vida e o chefe ficou com 2880 HP. O controlador limitava x a 22 e y a 30, abaixo dos limites reais do jogo (72 e 96 fora da cidade). Corrigido somente o controlador para perseguir pontos fracos alcançáveis, priorizar o mais próximo e orbitar somente os circuitos da etapa ativa. Nenhuma regra do jogo foi alterada. Nova captura do reator é obrigatória antes da montagem final.
+
+Modo REHEARSAL produz somente telemetria; não conta como footage nem como validação visual/60 fps. Captura integral e exportações finais continuam pendentes.

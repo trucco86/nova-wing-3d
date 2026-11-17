@@ -33,7 +33,10 @@ const plans = [
   { id: '03-boss-mecha', sector: 2, boss: true, warmup: 4, seconds: 8 },
   { id: '04-reactor', sector: 3, boss: true, warmup: 4, seconds: 8 },
 ];
-const shot = plans[Number(process.env.SHOT_INDEX || 0)];
+const rehearsal = process.env.REHEARSAL === '1';
+const shot = process.env.SECTOR !== undefined
+  ? { id: String(Number(process.env.SECTOR)+1).padStart(2,'0') + (process.env.BOSS === '1' ? '-boss' : '-flight'), sector: Number(process.env.SECTOR), boss: process.env.BOSS === '1', warmup: 4, seconds: 30 }
+  : plans[Number(process.env.SHOT_INDEX || 0)];
 if (!shot) throw new Error('Unknown sample shot');
 if (process.env.SAMPLE_SECONDS) shot.seconds = Number(process.env.SAMPLE_SECONDS);
 if (process.env.WARMUP_SECONDS) shot.warmup = Number(process.env.WARMUP_SECONDS);
@@ -82,7 +85,8 @@ try {
       const p = s.player, z = s.playerDepth;
       const threats = s.hostilePositions.filter(q => q[2] > z - 35 && q[2] < z + 5 && Math.hypot(q[0]-p.x,q[1]-p.y) < 9);
       const enemies = s.targets.filter(q => q.z < z && q.z > -180);
-      const parts = s.bossTargets.filter(q => q.hp > 0 && q.open);
+      const parts = s.bossTargets.filter(q => q.hp > 0 && q.open)
+        .sort((a,b) => Math.hypot(a.position[0]-p.x,a.position[1]-p.y)-Math.hypot(b.position[0]-p.x,b.position[1]-p.y));
       target = parts.length ? { x: parts[0].position[0], y: parts[0].position[1], z: parts[0].position[2] }
         : enemies.sort((a,b) => Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
       if (!target && s.boss && s.bossParts === 0 && s.coreOpen) target = { x: 0, y: 10, z: s.bossZ };
@@ -98,7 +102,8 @@ try {
         if (course?.recovering) throw new Error('Rejected asteroid recovery/backtracking');
       }
       if (threats.length) x = p.x + (threats[0][0] >= p.x ? -10 : 10);
-      x = Math.max(-22, Math.min(22, x)); y = Math.max(3, Math.min(30, y));
+      // Match actual dynamic-flight bounds; the old clamp made reactor valves unreachable.
+      x = Math.max(-68, Math.min(68, x)); y = Math.max(0, Math.min(sector === 0 ? 180 : 92, y));
       key('ArrowLeft', p.x > x + 0.8); key('ArrowRight', p.x < x - 0.8);
       key('ArrowUp', p.y < y - 0.8); key('ArrowDown', p.y > y + 0.8);
       const aligned = target && Math.abs(target.x-p.x) < 6 && Math.abs(target.y-p.y) < 6;
@@ -111,7 +116,11 @@ try {
       key('KeyN', Boolean(s.mecha.active && target && s.mecha.lockProgress < 0.95));
       if (threats.length && s.strategy.arcana > 50 && s.strategy.specialCd <= 0) tap('KeyG');
       // Orbit only towards an actual closed weak point, then stop.
-      const closed = s.bossTargets.find(q => q.hp > 0 && !q.open);
+      const phaseIndices = !s.sabotage ? s.bossTargets.map((_,i)=>i)
+        : s.bossTargets.slice(0,4).some(q=>q.hp>0) ? [0,1,2,3]
+        : s.bossTargets.slice(4,6).some(q=>q.hp>0) ? [4,5] : [6,7];
+      const closed = phaseIndices.map(i=>s.bossTargets[i]).filter(q=>q && q.hp>0 && !q.open)
+        .sort((a,b)=>Math.abs(Math.atan2(Math.sin(a.angle-s.strategy.orbitAngle),Math.cos(a.angle-s.strategy.orbitAngle)))-Math.abs(Math.atan2(Math.sin(b.angle-s.strategy.orbitAngle),Math.cos(b.angle-s.strategy.orbitAngle))))[0];
       const delta = closed ? Math.atan2(Math.sin(closed.angle-s.strategy.orbitAngle), Math.cos(closed.angle-s.strategy.orbitAngle)) : 0;
       key('KeyJ', !target && !!closed && delta < -0.2);
       key('KeyL', !target && !!closed && delta > 0.2);
@@ -121,6 +130,25 @@ try {
         orbit: s.strategy.orbitAngle, input: [...held] };
     };
   }, shot);
+  if (rehearsal) {
+    // Simulation-only diagnostics, never exported as video or counted as captured frames.
+    for (let frame = 0; frame < total * FPS; frame++) {
+      const info = await page.evaluate(() => {
+        const info = captureControl();
+        fixture.advance(1/60, { renderAfter: false });
+        return info;
+      });
+      if (frame % FPS === 0) report.telemetry.push({frame,...info});
+    }
+    const first = report.telemetry[0], last = report.telemetry.at(-1);
+    report.combatProgress = { scoreGained: last.score-first.score,
+      bossDamage: first.bossHp-last.bossHp,
+      partDamage: first.parts.reduce((a,b)=>a+b,0)-last.parts.reduce((a,b)=>a+b,0) };
+    report.status = 'REHEARSAL_ONLY_NOT_CAPTURED';
+    await save();
+    await browser.close();
+    process.exit(0);
+  }
   await page.evaluate(() => {
     if (captureAudioContexts.length !== 1) throw new Error('Expected one original game audio context');
     window.captureAudio = captureAudioContexts[0];
