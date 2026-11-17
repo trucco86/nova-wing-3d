@@ -1,0 +1,26 @@
+name: Media diagnostic workspace
+on:
+  push:
+    branches: [media/gameplay-native-4k60-v2]
+    paths: ['.github/workflows/media-workspace-bundle.yml']
+permissions:
+  contents: read
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: tar -czf /tmp/media-workspace.tgz src tests tools skills docs specs package.json package-lock.json AGENTS.md node_modules .github
+      - uses: actions/upload-artifact@v4
+        with:
+          name: media-diagnostic-workspace
+          path: /tmp/media-workspace.tgz
+          retention-days: 2
