@@ -170,6 +170,7 @@ try {
 } catch(e) {
   report.status='REJECTED';
   report.errors.push(e.stack || String(e));
+  console.error(JSON.stringify(report, null, 2));
   process.exitCode=1;
   encoder?.kill();
 } finally {
