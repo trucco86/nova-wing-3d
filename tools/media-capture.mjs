@@ -1,3 +1,4 @@
+import { build } from 'esbuild';
 import { chromium } from '@playwright/test';
 import { mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import { spawn, execFileSync } from 'node:child_process';
@@ -6,6 +7,25 @@ import { createHash } from 'node:crypto';
 
 const out = 'artifacts/native-4k60';
 await mkdir(out, { recursive: true });
+
+// Capture-only renderer policy: fixed native resolution. Gameplay sources stay byte-identical.
+const fixtureSource = await readFile('tests/dynamic-scene.js', 'utf8');
+const marker = 'const renderer = new T.WebGLRenderer(options);';
+if (!fixtureSource.includes(marker)) throw new Error('Fixture renderer hook changed');
+const nativeSource = fixtureSource.replace(marker, marker + '\n' +
+  'const nativePixelRatio = renderer.setPixelRatio.bind(renderer); renderer.setPixelRatio = () => nativePixelRatio(1);');
+const bundle = await build({ stdin: { contents: nativeSource, resolveDir: process.cwd() + '/tests', sourcefile: 'native-capture-fixture.js' },
+  bundle: true, write: false, format: 'iife', minify: true });
+const shell = await readFile('src/shell.html', 'utf8');
+const css = await readFile('src/styles.css', 'utf8');
+const pilot = await readFile('src/assets/bia-pilot.webp');
+const cover = (await readFile('src/assets/cover.webp.base64', 'utf8')).trim();
+await writeFile('artifacts/dynamic.html', shell
+  .replace('/* BUILD:GAME */', () => bundle.outputFiles[0].text)
+  .replace('/* BUILD:STYLES */', () => css.replaceAll('BUILD:COVER', 'data:image/webp;base64,' + cover))
+  .replace('BUILD:PILOT', 'data:image/webp;base64,' + pilot.toString('base64'))
+  .replace('BUILD:VERSION', 'native-capture'));
+
 const FPS = 60, WIDTH = 3840, HEIGHT = 2160;
 const plans = [
   { id: '01-flight', sector: 0, boss: false, warmup: 2, seconds: 8 },
@@ -17,6 +37,7 @@ const shot = plans[Number(process.env.SHOT_INDEX || 0)];
 if (!shot) throw new Error('Unknown sample shot');
 const report = { shot, sourceCommit: process.env.SOURCE_COMMIT, captureCommit: process.env.GITHUB_SHA,
   version: JSON.parse(await readFile('package.json', 'utf8')).version,
+  renderPolicy: 'Capture-only renderer setPixelRatio fixed at 1; original game logic unchanged.',
   fixture: 'Private deterministic game fixture; checkpoint XP=2200/pods=3 for flight; existing developer boss scenario for bosses. No healing, damage overrides, entity removal or invulnerability.',
   simulationStep: 1 / FPS, width: WIDTH, height: HEIGHT, fps: FPS, frames: 0,
   duplicateFrames: 0, telemetry: [], errors: [], visualReview: 'PENDING', status: 'RUNNING' };
