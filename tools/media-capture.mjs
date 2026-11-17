@@ -35,6 +35,8 @@ const plans = [
 ];
 const shot = plans[Number(process.env.SHOT_INDEX || 0)];
 if (!shot) throw new Error('Unknown sample shot');
+if (process.env.SAMPLE_SECONDS) shot.seconds = Number(process.env.SAMPLE_SECONDS);
+if (process.env.WARMUP_SECONDS) shot.warmup = Number(process.env.WARMUP_SECONDS);
 const report = { shot, sourceCommit: process.env.SOURCE_COMMIT, captureCommit: process.env.GITHUB_SHA,
   version: JSON.parse(await readFile('package.json', 'utf8')).version,
   renderPolicy: 'Capture-only renderer setPixelRatio fixed at 1; original game logic unchanged.',
@@ -44,10 +46,11 @@ const report = { shot, sourceCommit: process.env.SOURCE_COMMIT, captureCommit: p
 let browser, encoder;
 const save = () => writeFile(out + '/' + shot.id + '.json', JSON.stringify(report, null, 2));
 try {
-  browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--use-gl=angle',
+  browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || undefined, args: ['--no-sandbox', '--disable-dev-shm-usage', '--use-gl=angle',
     '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({ viewport: { width: WIDTH, height: HEIGHT }, deviceScaleFactor: 1 });
   const page = await context.newPage();
+  const cdp = await context.newCDPSession(page);
   page.on('pageerror', e => report.errors.push(String(e)));
   const total = shot.warmup + shot.seconds;
   await page.addInitScript(({ total }) => {
@@ -130,13 +133,13 @@ try {
   const encoderDone = once(encoder, 'close');
   let lastHash;
   for (let frame = 0; frame < total * FPS; frame++) {
-    const info = await page.evaluate(() => {
+    const info = await page.evaluate(({ shouldRender }) => {
       const telemetry = captureControl();
-      fixture.advance(1/60);
+      fixture.advance(1/60, { renderAfter: shouldRender });
       const c = document.querySelector('#game');
       if (c.width !== 3840 || c.height !== 2160) throw new Error('Non-native canvas: ' + c.width + 'x' + c.height);
       return telemetry;
-    });
+    }, { shouldRender: frame >= shot.warmup * FPS });
     await page.evaluate(() => nextAudio);
     if (frame % FPS === 0) {
       report.telemetry.push({ frame, ...info });
@@ -144,7 +147,8 @@ try {
       console.log(shot.id, frame, '/', total * FPS, info.state, info.score, info.bossHp);
     }
     if (frame >= shot.warmup * FPS) {
-      const buffer = await page.screenshot({ type: 'png', timeout: 120000 });
+      const capture = await Promise.race([cdp.send('Page.captureScreenshot', {format: 'png', optimizeForSpeed: true, captureBeyondViewport: false}), new Promise((_, reject) => setTimeout(() => reject(new Error('Capture stalled for 120 seconds')), 120000))]);
+      const buffer = Buffer.from(capture.data, 'base64');
       const hash = createHash('sha256').update(buffer).digest('hex');
       if (hash === lastHash) report.duplicateFrames++;
       lastHash = hash;
@@ -196,5 +200,6 @@ try {
   encoder?.kill();
 } finally {
   await save();
-  await browser?.close();
+  await Promise.race([browser?.close(), new Promise(resolve => setTimeout(resolve, 10000))]);
+  process.exit(process.exitCode || 0);
 }
