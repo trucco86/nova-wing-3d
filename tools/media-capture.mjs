@@ -38,6 +38,11 @@ const shot = process.env.SECTOR !== undefined
   ? { id: String(Number(process.env.SECTOR)+1).padStart(2,'0') + (process.env.BOSS === '1' ? '-boss' : '-flight'), sector: Number(process.env.SECTOR), boss: process.env.BOSS === '1', warmup: 4, seconds: 30 }
   : plans[Number(process.env.SHOT_INDEX || 0)];
 if (!shot) throw new Error('Unknown sample shot');
+if (process.env.FULL_CAPTURE === '1') {
+  // Cut before the observed asteroid blockage and sector-7 arcade transition.
+  shot.seconds = [2,6].includes(shot.sector) ? (shot.boss ? 38 : 22) : 30;
+  shot.warmup = 4;
+}
 if (process.env.SAMPLE_SECONDS) shot.seconds = Number(process.env.SAMPLE_SECONDS);
 if (process.env.WARMUP_SECONDS) shot.warmup = Number(process.env.WARMUP_SECONDS);
 const report = { shot, sourceCommit: process.env.SOURCE_COMMIT, captureCommit: process.env.GITHUB_SHA,
@@ -89,7 +94,9 @@ try {
         .sort((a,b) => Math.hypot(a.position[0]-p.x,a.position[1]-p.y)-Math.hypot(b.position[0]-p.x,b.position[1]-p.y));
       target = parts.length ? { x: parts[0].position[0], y: parts[0].position[1], z: parts[0].position[2] }
         : enemies.sort((a,b) => Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
-      if (!target && s.boss && s.bossParts === 0 && s.coreOpen) target = { x: 0, y: 10, z: s.bossZ };
+      if (!target && s.boss && s.bossParts === 0 && s.coreOpen) target = s.sabotage
+        ? { x: s.sabotage.orbit.coreWorldPosition[0], y: s.sabotage.orbit.coreWorldPosition[1], z: s.sabotage.orbit.coreWorldPosition[2] + 43 }
+        : { x: 0, y: 10, z: s.bossZ };
       let x = target?.x ?? 0, y = target?.y ?? 10;
       // Stay in the real asteroid corridor; do not change rock positions or collision.
       if (sector === 2 && !boss) {

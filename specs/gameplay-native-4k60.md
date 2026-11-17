@@ -33,3 +33,9 @@ A nominal 60fps MP4 alone does not establish 60 unique gameplay frames.
 As quatro amostras de 8 segundos passaram na validação técnica. O reator foi REJEITADO editorialmente: todas as oito peças conservaram a vida e o chefe ficou com 2880 HP. O controlador limitava x a 22 e y a 30, abaixo dos limites reais do jogo (72 e 96 fora da cidade). Corrigido somente o controlador para perseguir pontos fracos alcançáveis, priorizar o mais próximo e orbitar somente os circuitos da etapa ativa. Nenhuma regra do jogo foi alterada. Nova captura do reator é obrigatória antes da montagem final.
 
 Modo REHEARSAL produz somente telemetria; não conta como footage nem como validação visual/60 fps. Captura integral e exportações finais continuam pendentes.
+
+## Captura integral candidata
+
+Amostra corrigida do reator: 480 quadros, 3840x2160, 60/1, 8 segundos e zero duplicatas adjacentes. Peças restantes reduziram de 8 para 5 (HP total 700 para 490). Grade visual revisada com ação e órbita orientada aos circuitos. Teste de 34 segundos destruiu os oito circuitos. Corrigida a mira do núcleo para a posição real exposta no snapshot.
+
+Capturar 20 clipes: voo e chefe de cada fase. Fases 3 e 7 usam 22 segundos de voo antes do bloqueio/transição observados, e 38 de chefe; demais 30+30. Total pretendido 600 segundos/36000 quadros distintos. Isso é uma montagem de cenários separados com equipamento de teste, não uma campanha contínua. Sucesso técnico não aprova automaticamente visual, variedade de armas/especiais ou áudio: revisão completa continua obrigatória.
