@@ -78,6 +78,10 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
+          # QA157: preserve formatter output for the new hotpath code and tests.
+          if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
+            git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
+          fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
             git add -- src/shell.html src/styles.css src/main.js src/mobile-rpg.js tests/qa137-mobile-rpg-accordion.test.mjs specs/qa137-mobile-rpg-accordion.md tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs tests/browser/dynamic.spec.mjs tests/browser/mobile-hud-audit.spec.mjs tests/browser/subboss-edge-hud.spec.mjs tests/browser/rpg-top-hud.spec.mjs
