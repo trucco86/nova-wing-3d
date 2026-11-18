@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.151 — QA157: menor alocação de memória no combate
+
+- Reutiliza o eixo Y em quatro rotações de projéteis durante a órbita de chefes, evitando vetores temporários a cada atualização.
+- Reutiliza a hitbox de pods durante a checagem de disparos hostis, preservando a colisão varrida e os bloqueios existentes.
+- Testes Node específicos verificam equivalência de posição, velocidade e colisões, sem mudar RPG, HUD, pontuação, saves ou efeitos.
+- Ganho de FPS ainda não quantificado em aparelho físico. Liberação condicionada à CI completa com seis shards, revisão e deploy em Pages.
+
+
 ## 1.27.150 — QA153 + QA154: fase cronometrada, cockpit e rádio
 
 - Integra a QA153 (tempo ativo por fase, combos, bônus sem dano e por esquiva, troféus e itens felinos) à QA154.
