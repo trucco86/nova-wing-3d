@@ -34,7 +34,9 @@ test('QA158: all roof mounts are batched without moving the original searchlight
   assert.equal(mounts.userData.mediumCount, 3);
   assert.equal(mounts.count, 3);
   assert.equal(
-    towers.some((tower) => tower.children.some((child) => child.isMesh && child.name.includes('mount'))),
+    towers.some((tower) =>
+      tower.children.some((child) => child.isMesh && child.name.includes('mount')),
+    ),
     false,
     'static mounts must not remain as per-tower draw calls',
   );
@@ -90,10 +92,14 @@ test('QA158: both scrolling city tiles preserve separate batches and determinist
   assert.equal(farMounts.count, 6);
   assert.notEqual(nearMounts.instanceMatrix, farMounts.instanceMatrix, 'far clone has own buffer');
   for (const root of [near, far]) {
-    const towers = root.getObjectByName('city32-sky-searchlights').children.filter((o) => o.isGroup);
+    const towers = root
+      .getObjectByName('city32-sky-searchlights')
+      .children.filter((o) => o.isGroup);
     assert.equal(towers.length, 6);
     assert.equal(
-      towers.filter((tower) => tower.children.some((child) => child.name === 'city32-searchlight-mount')).length,
+      towers.filter((tower) =>
+        tower.children.some((child) => child.name === 'city32-searchlight-mount'),
+      ).length,
       0,
     );
   }

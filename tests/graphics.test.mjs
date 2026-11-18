@@ -117,9 +117,21 @@ test('city remains present after one full scenery wrap and reset', () => {
   assert.equal(qa158Batches, 2);
   assert.ok(
     count >=
-      180 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches + qa158Batches &&
+      180 +
+        streetDraws +
+        impactBatches +
+        qa141Draws +
+        evacuationDraws +
+        qa146Batches +
+        qa158Batches &&
       count <=
-        260 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches + qa158Batches,
+        260 +
+          streetDraws +
+          impactBatches +
+          qa141Draws +
+          evacuationDraws +
+          qa146Batches +
+          qa158Batches,
     'historical instance budget with QA146 and QA158 exact new batches',
   );
   const closeCity = scene.getObjectByName('launch-city');

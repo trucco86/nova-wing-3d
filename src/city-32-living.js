@@ -458,8 +458,7 @@ export function setCity32Quality(root, quality) {
       tower.visible = high || tower.userData.index < 3;
     }
     const mounts = beams.getObjectByName('city32-searchlight-roof-mounts');
-    if (mounts)
-      mounts.count = high ? mounts.userData.highCount : mounts.userData.mediumCount;
+    if (mounts) mounts.count = high ? mounts.userData.highCount : mounts.userData.mediumCount;
   }
   const holo = root.getObjectByName('city32-holographic-signs');
   if (holo)

@@ -7,7 +7,6 @@
 - Economia estrutural de cinco malhas por bloco (dez nos dois), não equivalente a ganho de FPS medido.
 - Testes de transformações, LOD e clone do cenário; integração condicionada à CI full de seis shards no SHA final.
 
-
 ## 1.27.151 — QA157: menor alocação de memória no combate
 
 - Reutiliza o eixo Y em quatro rotações de projéteis durante a órbita de chefes, evitando vetores temporários a cada atualização.
