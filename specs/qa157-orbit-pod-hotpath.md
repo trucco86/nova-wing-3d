@@ -21,3 +21,9 @@ O loop de órbita cria um `THREE.Vector3(0, 1, 0)` para cada rotação de posiç
 ## Segurança
 
 PR isolada contra `main`. Manter a produção publicada intacta até os gates completos.
+
+## Evidências de validação
+
+- CI full no SHA `d1b2de07d8894433e65b9b1cc090681af0641659`: workflow [44276178814](https://github.com/trucco86/nova-wing-3d/actions/runs/44276178814), quality e os seis Playwright shards aprovados, com o gate agregado `browser` verde.
+- O run acima foi iniciado por `workflow_dispatch` após geração automática do HTML. Os runs de evento `pull_request` disparados pelo bot ficaram em `action_required`; a validação associada a este commit documental deve confirmar os checks da própria PR antes de qualquer merge.
+- Não existe evidência de ganho de FPS em dispositivo físico; a melhoria confirmada é a remoção de alocações temporárias no código.
