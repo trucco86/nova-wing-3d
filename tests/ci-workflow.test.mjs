@@ -32,15 +32,20 @@ test('release quality checks committed output before rebuilding; browser shards 
   }
   assert.ok(
     browser.includes('npm run test:browser -- --shard="$NOVA_BROWSER_SHARD"'),
-    'all four real browser shards must execute Playwright, not mocks',
+    'all six real browser shards must execute Playwright, not mocks',
   );
   assert.equal(
     browser.some((line) => line.startsWith('npm run validate')),
     false,
-    'Node/lint/invariant suite must not run four redundant times',
+    'Node/lint/invariant suite must not run six redundant times',
   );
   assert.ok(quality.includes('npm run validate'), 'full Node gate remains compulsory');
-  assert.deepEqual(ci.jobs['browser-shard'].strategy.matrix.shard, [1, 2, 3, 4]);
+  assert.deepEqual(ci.jobs['browser-shard'].strategy.matrix.shard, [1, 2, 3, 4, 5, 6]);
+  assert.equal(
+    ci.jobs['browser-shard'].env.NOVA_BROWSER_SHARD,
+    '${{ matrix.shard }}/6',
+    'all six shards must use the same total for non-overlapping full-suite coverage',
+  );
   assert.equal(ci.jobs.pages.needs, 'browser', 'production Pages is gated by browser results');
   assert.deepEqual(ci.jobs.browser.needs, ['quality', 'browser-shard']);
 });
