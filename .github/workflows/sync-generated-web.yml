@@ -25,6 +25,7 @@ on:
       - feat/qa153-stage-score-and-cat-loot-20261115
       - fix/qa154-cockpit-hud-victory-radio-20261115
       - perf/qa157-orbit-pod-hotpath-allocations-20261118
+      - perf/qa158-city32-searchlight-mount-batching-20261118
 permissions:
   contents: write
   actions: write
@@ -71,6 +72,9 @@ jobs:
       - name: Prepare QA157 web release metadata
         if: github.ref_name == 'perf/qa157-orbit-pod-hotpath-allocations-20261118'
         run: npm run release:prepare -- 1.27.151
+      - name: Prepare QA158 GPU-batched city web release
+        if: github.ref_name == 'perf/qa158-city32-searchlight-mount-batching-20261118'
+        run: npm run release:prepare -- 1.27.152
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -86,6 +90,9 @@ jobs:
             git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
             git add -u
             git add -- releases/v1.27.151.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
+            git add -u
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
@@ -158,7 +165,7 @@ jobs:
           git push origin "HEAD:${GITHUB_REF_NAME}"
           # QA157's bot-generated release metadata is verified through a
           # following human-authored pull_request run; avoid duplicate bot CI.
-          if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
+          if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ] && [ "${GITHUB_REF_NAME}" != "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
             gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
