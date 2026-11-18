@@ -104,10 +104,23 @@ test('city remains present after one full scenery wrap and reset', () => {
     return total + stations.length + signs.length;
   }, 0);
   assert.equal(qa146Batches, 10);
+  // QA158 replaces six individual searchlight roof mounts per city tile with
+  // one static instance batch. Count the two new InstancedMesh objects while
+  // preserving the full six authored mounts and their animated beam pivots.
+  const qa158Batches = ['launch-city', 'launch-city-far'].reduce((total, name) => {
+    const city32 = scene.getObjectByName(name).getObjectByName('city32-living-metropolis');
+    const mounts = city32.getObjectByName('city32-searchlight-roof-mounts');
+    assert.ok(mounts?.isInstancedMesh);
+    assert.equal(mounts.userData.highCount, 6);
+    return total + 1;
+  }, 0);
+  assert.equal(qa158Batches, 2);
   assert.ok(
-    count >= 180 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches &&
-      count <= 260 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches,
-    'historical instance budget plus the exact 10 QA146 material batches',
+    count >=
+      180 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches + qa158Batches &&
+      count <=
+        260 + streetDraws + impactBatches + qa141Draws + evacuationDraws + qa146Batches + qa158Batches,
+    'historical instance budget with QA146 and QA158 exact new batches',
   );
   const closeCity = scene.getObjectByName('launch-city');
   const farCity = scene.getObjectByName('launch-city-far');
