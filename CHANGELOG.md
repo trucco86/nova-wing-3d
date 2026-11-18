@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
+
+- Batching dos seis suportes estáticos de holofotes por bloco de cidade com `InstancedMesh`, preservando geometrias, materiais, matrizes, feixes e lâmpadas animados.
+- Mode Medium com três suportes por bloco; High com seis. Cada um dos dois blocos do cenário mantém suas próprias instâncias.
+- Economia estrutural de cinco malhas por bloco (dez nos dois), não equivalente a ganho de FPS medido.
+- Testes de transformações, LOD e clone do cenário; integração condicionada à CI full de seis shards no SHA final.
+
+
 ## 1.27.151 — QA157: menor alocação de memória no combate
 
 - Reutiliza o eixo Y em quatro rotações de projéteis durante a órbita de chefes, evitando vetores temporários a cada atualização.
