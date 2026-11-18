@@ -24,6 +24,7 @@ on:
       - feat/qa152-mars-quarry-boss-silhouette-20261115
       - feat/qa153-stage-score-and-cat-loot-20261115
       - fix/qa154-cockpit-hud-victory-radio-20261115
+      - perf/qa157-orbit-pod-hotpath-allocations-20261118
 permissions:
   contents: write
   actions: write
@@ -67,6 +68,9 @@ jobs:
       - name: Prepare QA154 release metadata
         if: github.ref_name == 'fix/qa154-cockpit-hud-victory-radio-20261115'
         run: npm run release:prepare -- 1.27.150
+      - name: Prepare QA157 web release metadata
+        if: github.ref_name == 'perf/qa157-orbit-pod-hotpath-allocations-20261118'
+        run: npm run release:prepare -- 1.27.151
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -77,6 +81,12 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
+          # QA157: preserve formatter output for the new hotpath code and tests.
+          if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
+            git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
+            git add -u
+            git add -- releases/v1.27.151.md
+          fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
             git add -- src/shell.html src/styles.css src/main.js src/mobile-rpg.js tests/qa137-mobile-rpg-accordion.test.mjs specs/qa137-mobile-rpg-accordion.md tests/browser/qa-menu-berserk.spec.mjs tests/browser/boss-combat-qa-chain.spec.mjs tests/browser/dynamic.spec.mjs tests/browser/mobile-hud-audit.spec.mjs tests/browser/subboss-edge-hud.spec.mjs tests/browser/rpg-top-hud.spec.mjs
@@ -146,7 +156,11 @@ jobs:
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
-          gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          # QA157's bot-generated release metadata is verified through a
+          # following human-authored pull_request run; avoid duplicate bot CI.
+          if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
+            gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
