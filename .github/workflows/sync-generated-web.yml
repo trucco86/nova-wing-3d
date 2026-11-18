@@ -24,6 +24,7 @@ on:
       - feat/qa152-mars-quarry-boss-silhouette-20261115
       - feat/qa153-stage-score-and-cat-loot-20261115
       - fix/qa154-cockpit-hud-victory-radio-20261115
+      - perf/qa157-orbit-pod-hotpath-allocations-20261118
 permissions:
   contents: write
   actions: write
