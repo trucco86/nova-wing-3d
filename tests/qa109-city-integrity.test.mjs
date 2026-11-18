@@ -101,6 +101,10 @@ test('QA109: searchlight mounts and holograms belong to visible building rooftop
     ]) {
       const buildings = city.userData.buildingFootprints;
       const living = city.getObjectByName('city32-living-metropolis');
+      const mounts = living.getObjectByName('city32-searchlight-roof-mounts');
+      assert.ok(mounts?.isInstancedMesh, 'searchlight bases share one draw batch');
+      assert.equal(mounts.userData.highCount, 6, 'keep all six authored roof mounts');
+      const matrix = new T.Matrix4();
       for (let i = 0; i < 6; i++) {
         const searchlight = living.getObjectByName('city32-searchlight-' + i);
         assert.ok(searchlight, 'roof searchlight ' + i + ' is retained');
@@ -109,8 +113,15 @@ test('QA109: searchlight mounts and holograms belong to visible building rooftop
         );
         assert.ok(roof, 'searchlight must sit above an actual building');
         assert.ok(Math.abs(searchlight.position.y - (roof.h - 7 + 1.05)) < 1e-5);
-        const mount = searchlight.getObjectByName('city32-searchlight-mount');
-        assert.ok(Math.abs(searchlight.position.y - mount.scale.y / 2 - (roof.h - 7)) < 1e-5);
+        mounts.getMatrixAt(i, matrix);
+        const [x, y, z] = [matrix.elements[12], matrix.elements[13], matrix.elements[14]];
+        assert.ok(Math.abs(x - searchlight.position.x) < 1e-3);
+        assert.ok(Math.abs(y - searchlight.position.y) < 1e-3);
+        assert.ok(Math.abs(z - searchlight.position.z) < 1e-3);
+        assert.ok(
+          Math.abs(y - Math.abs(matrix.elements[5]) / 2 - (roof.h - 7)) < 1e-3,
+          'the instanced mount still rests on its original building roof',
+        );
       }
       for (let i = 0; i < 5; i++) {
         const sign = living.getObjectByName('city32-hologram-' + i);
