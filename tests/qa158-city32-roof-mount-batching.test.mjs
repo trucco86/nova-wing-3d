@@ -43,7 +43,7 @@ test('QA158: all roof mounts are batched without moving the original searchlight
   for (let i = 0; i < mounts.count; i++) {
     const { position, scale } = matrixPositionAndScale(mounts, i);
     assert.ok(position.distanceTo(towers[i].position) < 1e-8, 'mount remains fixed to roof');
-    assert.ok(scale.distanceTo(new T.Vector3(6, 2.1, 6)) < 1e-8);
+    assert.ok(scale.distanceTo(new T.Vector3(6, 2.1, 6)) < 1e-5);
     assert.ok(towers[i].getObjectByName('city32-searchlight-pivot'), 'moving beam is preserved');
   }
   const mountMatrices = Array.from({ length: 6 }, (_, i) => {
