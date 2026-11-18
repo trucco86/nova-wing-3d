@@ -27,3 +27,9 @@ PR isolada contra `main`. Manter a produção publicada intacta até os gates co
 - CI full no SHA `d1b2de07d8894433e65b9b1cc090681af0641659`: workflow [44276178814](https://github.com/trucco86/nova-wing-3d/actions/runs/44276178814), quality e os seis Playwright shards aprovados, com o gate agregado `browser` verde.
 - O run acima foi iniciado por `workflow_dispatch` após geração automática do HTML. Os runs de evento `pull_request` disparados pelo bot ficaram em `action_required`; a validação associada a este commit documental deve confirmar os checks da própria PR antes de qualquer merge.
 - Não existe evidência de ganho de FPS em dispositivo físico; a melhoria confirmada é a remoção de alocações temporárias no código.
+
+## Versão de publicação
+
+- O gate de invariantes identificou corretamente que a alteração do HTML distribuído exige uma versão posterior à `1.27.150`.
+- A sincronização da branch preparou a candidata `v1.27.151` no commit `9301e46fdd0ef3aed5fd8e478e6a7ab8130e5765`, alinhando `package.json`, lockfile, projeto iOS, changelog, notas e HTML.
+- A CI de `v1.27.151` deve passar no SHA final da PR com evento `pull_request`. O sucesso da CI antiga de `1.27.150` não autoriza esta publicação.
