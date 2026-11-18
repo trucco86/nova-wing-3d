@@ -45,8 +45,5 @@ test('QA157: live orbit and hostile projectile loops do not allocate these vecto
   assert.match(source, /const podCollisionHalf = new T\.Vector3\(1\.6, 1\.6, 1\.6\);/);
   assert.equal((source.match(/\.applyAxisAngle\(projectileOrbitAxis, -turn\)/g) ?? []).length, 4);
   assert.doesNotMatch(source, /\.applyAxisAngle\(new T\.Vector3\(0, 1, 0\), -turn\)/);
-  assert.match(
-    source,
-    /crossesSolid\(from, b\.o\.position, p\.position, podCollisionHalf, 0\.5\)/,
-  );
+  assert.match(source, /crossesSolid\(from, b\.o\.position, p\.position, podCollisionHalf, 0\.5\)/);
 });

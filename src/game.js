@@ -6049,9 +6049,7 @@ export function createGame({
         continue;
       }
       if (
-        podMeshes.some((p) =>
-          crossesSolid(from, b.o.position, p.position, podCollisionHalf, 0.5),
-        )
+        podMeshes.some((p) => crossesSolid(from, b.o.position, p.position, podCollisionHalf, 0.5))
       ) {
         b.life = 0;
         podBlocks++;
