@@ -7,7 +7,6 @@
 - Testes Node específicos verificam equivalência de posição, velocidade e colisões, sem mudar RPG, HUD, pontuação, saves ou efeitos.
 - Ganho de FPS ainda não quantificado em aparelho físico. Liberação condicionada à CI completa com seis shards, revisão e deploy em Pages.
 
-
 ## 1.27.150 — QA153 + QA154: fase cronometrada, cockpit e rádio
 
 - Integra a QA153 (tempo ativo por fase, combos, bônus sem dano e por esquiva, troféus e itens felinos) à QA154.
