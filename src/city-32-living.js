@@ -320,6 +320,8 @@ function searchlightNetwork(parent, buildings) {
   group.name = 'city32-sky-searchlights';
   group.userData.visualOnly = true;
   const beacons = [];
+  const roofMounts = [];
+  let mediumMounts = 0;
   for (let i = 0; i < 6; i++) {
     const tower = new T.Group();
     tower.name = 'city32-searchlight-' + i;
@@ -330,10 +332,18 @@ function searchlightNetwork(parent, buildings) {
     // The base touches a real roof instead of hovering at y=85..123.
     tower.position.set(anchor.x, anchor.h - 7 + 1.05, anchor.z);
     tower.userData.roofY = anchor.h - 7;
-    const base = new T.Mesh(block, frame);
-    base.scale.set(6, 2.1, 6);
-    base.name = 'city32-searchlight-mount';
-    tower.add(base);
+    // The mounts are rigid, stationary and use the same box and material.
+    // Store their existing roof-space transforms in a single GPU batch;
+    // the animated beam/lamp pivots remain on their original tower groups.
+    roofMounts.push({
+      x: tower.position.x,
+      y: tower.position.y,
+      z: tower.position.z,
+      w: 6,
+      h: 2.1,
+      d: 6,
+    });
+    if (i < 3) mediumMounts++;
     const pivot = new T.Group();
     pivot.name = 'city32-searchlight-pivot';
     const beam = new T.Mesh(skyBeam, beamMaterial);
@@ -360,6 +370,10 @@ function searchlightNetwork(parent, buildings) {
       tint: i % 2 ? '#ff6482' : '#9bdbff',
     });
   }
+  const mounts = instanced('city32-searchlight-roof-mounts', frame, roofMounts, group);
+  mounts.userData.highCount = roofMounts.length;
+  mounts.userData.mediumCount = mediumMounts;
+  mounts.count = mediumMounts;
   instanced('city32-aviation-warning-beacons', neon, beacons, group);
   parent.add(group);
 }
@@ -438,11 +452,15 @@ export function setCity32Quality(root, quality) {
   const air = root.getObjectByName('city32-sky-traffic');
   if (air) for (const mesh of air.children) mesh.count = high ? 18 : 9;
   const beams = root.getObjectByName('city32-sky-searchlights');
-  if (beams)
+  if (beams) {
     for (const tower of beams.children) {
       if (!tower.isGroup) continue;
       tower.visible = high || tower.userData.index < 3;
     }
+    const mounts = beams.getObjectByName('city32-searchlight-roof-mounts');
+    if (mounts)
+      mounts.count = high ? mounts.userData.highCount : mounts.userData.mediumCount;
+  }
   const holo = root.getObjectByName('city32-holographic-signs');
   if (holo)
     holo.children.forEach((p, i) => {
