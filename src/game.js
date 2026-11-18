@@ -383,6 +383,10 @@ export function createGame({
   const citySolidFrom = new T.Vector3();
   const citySolidTo = new T.Vector3();
   const citySolidOrigin = new T.Vector3();
+  // Reuse immutable-by-contract scratch vectors on every orbit/shot frame.
+  // crossesSolid and applyAxisAngle read these vectors without modifying them.
+  const projectileOrbitAxis = new T.Vector3(0, 1, 0);
+  const podCollisionHalf = new T.Vector3(1.6, 1.6, 1.6);
   let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
@@ -5371,9 +5375,9 @@ export function createGame({
           for (const shot of [...shots, ...hostile]) {
             shot.o.position
               .sub(boss.position)
-              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
+              .applyAxisAngle(projectileOrbitAxis, -turn)
               .add(boss.position);
-            if (shot.v) shot.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
+            if (shot.v) shot.v.applyAxisAngle(projectileOrbitAxis, -turn);
           }
         renderBossRadar(document, null);
         $('battleRadar').style.background = 'conic-gradient(#3fc6df, #fda664, #304d63, #3fc6df)';
@@ -5405,10 +5409,10 @@ export function createGame({
           for (const b of [...shots, ...hostile]) {
             b.o.position
               .sub(boss.position)
-              .applyAxisAngle(new T.Vector3(0, 1, 0), -turn)
+              .applyAxisAngle(projectileOrbitAxis, -turn)
               .add(boss.position);
             if (!b.v) b.v = new T.Vector3(0, 0, -190);
-            b.v.applyAxisAngle(new T.Vector3(0, 1, 0), -turn);
+            b.v.applyAxisAngle(projectileOrbitAxis, -turn);
           }
         boss.userData.parts.forEach((p, i) => {
           const open = bossTargetOpen(i) && p.hp > 0;
@@ -6046,7 +6050,7 @@ export function createGame({
       }
       if (
         podMeshes.some((p) =>
-          crossesSolid(from, b.o.position, p.position, new T.Vector3(1.6, 1.6, 1.6), 0.5),
+          crossesSolid(from, b.o.position, p.position, podCollisionHalf, 0.5),
         )
       ) {
         b.life = 0;
