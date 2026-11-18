@@ -68,6 +68,9 @@ jobs:
       - name: Prepare QA154 release metadata
         if: github.ref_name == 'fix/qa154-cockpit-hud-victory-radio-20261115'
         run: npm run release:prepare -- 1.27.150
+      - name: Prepare QA157 web release metadata
+        if: github.ref_name == 'perf/qa157-orbit-pod-hotpath-allocations-20261118'
+        run: npm run release:prepare -- 1.27.151
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -81,6 +84,8 @@ jobs:
           # QA157: preserve formatter output for the new hotpath code and tests.
           if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
             git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
+            git add -u
+            git add -- releases/v1.27.151.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
@@ -151,7 +156,11 @@ jobs:
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
           git push origin "HEAD:${GITHUB_REF_NAME}"
-          gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          # QA157's bot-generated release metadata is verified through a
+          # following human-authored pull_request run; avoid duplicate bot CI.
+          if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
+            gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
