@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import * as T from 'three';
+import { preserveTrainingCraftPose } from '../src/preflight-training.js';
 import {
   PREFLIGHT_ACTIONS,
   PREFLIGHT_KEY_CODES,
@@ -89,4 +91,21 @@ test('training can be skipped or returned to the map without losing the chosen f
   h.elements.get('mapLaunch').onclick();
   assert.equal(h.game.snapshot().state, 'playing');
   assert.equal(h.game.snapshot().preflightPractice.active, false);
+});
+
+
+test('switching from ship to robot and back preserves the active flight pose', () => {
+  const ship = new T.Object3D();
+  const robot = new T.Object3D();
+  ship.position.set(4.5, -1.25, 2);
+  ship.rotation.set(0.1, 0.2, 0.6);
+  assert.equal(preserveTrainingCraftPose(ship, robot), true);
+  assert.ok(robot.position.equals(ship.position));
+  assert.ok(robot.quaternion.equals(ship.quaternion));
+  robot.position.set(-2, 3.5, -1);
+  robot.rotation.set(0, 0.4, -0.2);
+  assert.equal(preserveTrainingCraftPose(robot, ship), true);
+  assert.ok(ship.position.equals(robot.position));
+  assert.ok(ship.quaternion.equals(robot.quaternion));
+  assert.equal(preserveTrainingCraftPose(null, ship), false);
 });
