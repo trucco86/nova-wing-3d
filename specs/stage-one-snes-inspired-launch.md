@@ -1,9 +1,11 @@
 # Abertura de lançamento da fase 1
 
 ## Objetivo
-Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem com narrativa visual de hangar, abertura de portas, ignição, formação dos Five Cats e passagem para a câmera jogável. A referência é o ritmo da saída do hangar de *Star Fox* (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
+
+Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem com narrativa visual de hangar, abertura de portas, ignição, formação dos Five Cats e passagem para a câmera jogável. A referência é o ritmo da saída do hangar de _Star Fox_ (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
 
 ## Contratos
+
 - Apenas setor 1 e apenas quando `enableSquadIntro` estiver ativo.
 - Conserva duração de cinco segundos para não alongar o tempo sem controle ou alterar os testes existentes.
 - Relógio da missão, spawns, colisões e BOOST obrigatório continuam suspensos durante a apresentação da formação.
@@ -15,6 +17,7 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - Áudio de ignição reaproveita cues existentes e respeita o mute.
 
 ## Aceite
+
 1. Em câmera real, observam-se as portas abrindo antes da partida e o hangar recuando durante a aceleração.
 2. As cinco naves permanecem identificáveis, sem desaparecer antes do encerramento.
 3. A câmera final está alinhada à câmera normal e não deixa controles travados.
