@@ -11,11 +11,15 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - Relógio da missão, spawns, colisões e BOOST obrigatório continuam suspensos durante a apresentação da formação.
 - O hangar é geometria visual temporária, removida do render após a decolagem e descartada no encerramento.
 - As cinco naves aparecem. O piloto selecionado lidera com a própria nave do gameplay no centro; as quatro naves de escolta usam os modelos e as cores oficiais de cada gato.
+- Reduzir a montagem de seis tomadas rápidas para quatro planos legíveis: hangar inteiro, gato piloto selecionado, portas vistas da frente e câmera de perseguição. O jogador entende a saída da base sem cortes bruscos.
 - A nave central não é duplicada, substituída nem repintada durante a transição. A história opcional também respeita a seleção de modelo, cor e piloto.
 - O hangar tem teto, pilares, portas, iluminação de pista e área de apresentação do gato selecionado, cujo modelo 3D segue o hangar.
 - Não há teleporte da nave do jogador: o líder termina na mesma posição do jogador. As demais naves abrem a formação ao final.
 - Pausa congela a animação e reinício recompõe a cena. Pular a história inicial preserva a decolagem do hangar; fases seguintes e laboratório não exibem hangar.
 - O botão Pular e as teclas Enter, Espaço e Escape ignoram apenas a história opcional, não o lançamento jogável.
+- Antes da primeira missão, o mapa de campanha oferece o treino opcional de comandos no mesmo chassi/pintura do jogador. O simulador 3D ensina movimentos, tiro, BOOST, giro, transformação e troca de câmera, com teclado e botões touch.
+- Treino não inicia o cronômetro, nem spawns, nem danos, nem pontuação, nem altera saves. Jogador pode voltar ao mapa ou iniciar diretamente a mesma missão.
+- O segundo contexto WebGL do treino é criado sob demanda e destruído ao fechar, sem gasto de GPU durante a missão.
 - Mobile em portrait comprime a abertura da formação e mantém os textos no trilho de avisos já existente, sem adicionar HUD.
 - Áudio de ignição reaproveita cues existentes e respeita o mute.
 
