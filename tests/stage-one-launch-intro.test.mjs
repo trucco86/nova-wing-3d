@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import {
   FIRST_STAGE_LAUNCH_SECONDS,
+  FIRST_STAGE_SHOTS,
+  firstStageWingSlots,
   firstStageLaunchAt,
   firstStageLaunchWingPose,
   createFirstStageLaunchIntro,
@@ -10,7 +12,7 @@ import {
 
 test('launch doors, ignition, departure and seamless playable camera handoff', () => {
   assert.equal(FIRST_STAGE_LAUNCH_SECONDS, 5);
-  const frames = [0, 1.2, 2.5, 4.5, 5].map((t) => firstStageLaunchAt(t));
+  const frames = [0, 1.2, 3.1, 4.5, 5].map((t) => firstStageLaunchAt(t));
   assert.deepEqual(
     frames.map((f) => f.beat),
     ['doors', 'ignition', 'departure', 'handoff', 'handoff'],
@@ -20,8 +22,25 @@ test('launch doors, ignition, departure and seamless playable camera handoff', (
   assert.ok(frames[2].corridorShift > frames[1].corridorShift);
   assert.equal(frames.at(-1).camera.x, 0);
   assert.equal(frames.at(-1).camera.z, 43);
+  assert.equal(frames.at(-1).camera.aimZ, -90);
+  assert.equal(frames.at(-1).camera.fov, 60);
+  assert.deepEqual(
+    FIRST_STAGE_SHOTS.map(({ name }) => name),
+    ['hangar-wide', 'pilot-close', 'engine-side', 'exit-front', 'launch-tracking', 'handoff'],
+  );
+  assert.equal(new Set(FIRST_STAGE_SHOTS.map(({ at }) => at)).size, 6);
   assert.deepEqual(firstStageLaunchAt(-50), frames[0]);
   assert.equal(firstStageLaunchAt(Infinity).t, 0);
+});
+
+test('every selected pilot replaces the central placeholder; four distinct escorts remain', () => {
+  for (const lead of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
+    const slots = firstStageWingSlots(lead);
+    assert.equal(slots.length, 4);
+    assert.deepEqual(slots.map(({ slot }) => slot), [-2, -1, 1, 2]);
+    assert.ok(slots.every(({ id }) => id !== lead));
+    assert.equal(new Set([lead, ...slots.map(({ id }) => id)]).size, 5);
+  }
 });
 
 test('five launch ships form a V, leader holds final player position, portrait stays readable', () => {
@@ -47,11 +66,17 @@ test('visual-only hangar opens its doors, scrolls back, hides and disposes', () 
   const camera = new T.PerspectiveCamera();
   const intro = createFirstStageLaunchIntro(scene, camera);
   assert.equal(intro.root.visible, false);
-  intro.reset(true);
+  intro.reset(true, 'bob');
   assert.ok(intro.active);
+  assert.equal(intro.root.userData.pilotId, 'bob');
+  const face = intro.root.getObjectByName('launch-selected-pilot');
+  assert.ok(face);
+  assert.equal(face.userData.uniformGrade, 0);
   const left = intro.root.getObjectByName('launch-door-left');
   const before = left.position.x;
   intro.update(1.5);
+  assert.equal(intro.root.userData.shot, 'pilot-close');
+  assert.equal(face.visible, true);
   assert.ok(left.position.x < before);
   intro.update(3);
   assert.ok(intro.root.position.z > 0);
@@ -64,9 +89,10 @@ test('visual-only hangar opens its doors, scrolls back, hides and disposes', () 
       assert.equal(node.userData.visualOnly, true);
     }
   });
-  assert.ok(count < 40, 'intro must stay cheap on mobile GPUs');
+  assert.ok(count < 160, 'visual-only intro must stay bounded on mobile GPUs');
   intro.finish();
   assert.equal(intro.root.visible, false);
+  assert.equal(intro.root.getObjectByName('launch-selected-pilot'), undefined);
   intro.reset(false);
   assert.equal(intro.active, false);
   intro.destroy();
