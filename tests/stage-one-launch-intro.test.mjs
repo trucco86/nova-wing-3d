@@ -26,9 +26,9 @@ test('launch doors, ignition, departure and seamless playable camera handoff', (
   assert.equal(frames.at(-1).camera.fov, 60);
   assert.deepEqual(
     FIRST_STAGE_SHOTS.map(({ name }) => name),
-    ['hangar-wide', 'pilot-close', 'engine-side', 'exit-front', 'launch-tracking', 'handoff'],
+    ['hangar-wide', 'pilot-close', 'exit-front', 'handoff'],
   );
-  assert.equal(new Set(FIRST_STAGE_SHOTS.map(({ at }) => at)).size, 6);
+  assert.equal(new Set(FIRST_STAGE_SHOTS.map(({ at }) => at)).size, 4);
   assert.deepEqual(firstStageLaunchAt(-50), frames[0]);
   assert.equal(firstStageLaunchAt(Infinity).t, 0);
 });
