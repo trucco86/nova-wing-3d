@@ -133,16 +133,48 @@ export function createFirstStageLaunchIntro(scene, camera) {
   const leftDoor = add('launch-door-left', [9, 15.5, 1.8], [-4.5, 1.5, -50], panel);
   const rightDoor = add('launch-door-right', [9, 15.5, 1.8], [4.5, 1.5, -50], panel);
   add('launch-bay-beacon', [13, 0.4, 1], [0, 14, -50], amber);
+  // Structural pieces make the staging unambiguously an enclosed hangar.
+  // Keep the roof's center strip clear for the high-angle establishment shot.
+  for (const side of [-1, 1]) {
+    add('launch-roof-bay', [14, 0.75, 113], [side * 13.2, 16.3, -15], panel);
+    add('launch-roof-strip', [0.6, 0.22, 106], [side * 8, 16.0, -15], cyan);
+    add('launch-hangar-side-beacon', [1.9, 0.4, 1.3], [side * 18, 10, -46], amber);
+    add('launch-door-sill-light', [0.7, 0.2, 5.5], [side * 13, -6, -48], cyan);
+    for (const z of [-34, -15, 6, 24]) {
+      add('launch-deck-chevron', [2.3, 0.08, 0.45], [side * 12.8, -6.14, z], cyan);
+    }
+  }
+  add('launch-exit-threshold', [38, 0.32, 2.2], [0, -6.12, -49], amber);
+  add('crew-holo-pedestal', [5.5, 0.45, 5.3], [-11, -6, 9], cyan);
+  add('crew-holo-backlight', [4.6, 5.6, 0.16], [-11, -0.8, 6.5], panel);
   root.visible = false;
   scene.add(root);
   let active = false;
+  let pilotModel = null;
+  function clearPilot() {
+    if (!pilotModel) return;
+    root.remove(pilotModel);
+    disposeShowroomModel(pilotModel);
+    pilotModel = null;
+  }
   return {
-    reset(enabled) {
+    reset(enabled, pilotId = 'bia') {
       active = Boolean(enabled);
       root.visible = active;
+      root.userData.pilotId = active ? pilotId : null;
       root.position.set(0, 0, 0);
       leftDoor.position.x = -4.5;
       rightDoor.position.x = 4.5;
+      clearPilot();
+      if (active) {
+        // Reuse the actual 3D roster identity, not an unrelated stock cat.
+        pilotModel = createShowroomPilot(pilotId);
+        pilotModel.name = 'launch-selected-pilot';
+        pilotModel.scale.multiplyScalar(1.65);
+        pilotModel.position.set(-11, -3.3, 9);
+        pilotModel.visible = false;
+        root.add(pilotModel);
+      }
     },
     update(seconds, aspect = 16 / 9) {
       if (!active) return firstStageLaunchAt(seconds, aspect);
@@ -150,16 +182,24 @@ export function createFirstStageLaunchIntro(scene, camera) {
       leftDoor.position.x = -4.5 - frame.doors * 12.4;
       rightDoor.position.x = 4.5 + frame.doors * 12.4;
       root.position.z = frame.corridorShift;
-      // Chase camera converges on the real playable rig at the end.
+      root.userData.shot = frame.shot;
+      if (pilotModel) {
+        pilotModel.visible = frame.shot === 'pilot-close';
+        pilotModel.rotation.y = -0.2 + Math.sin(frame.t * 2.3) * 0.09;
+      }
       camera.position.set(frame.camera.x, frame.camera.y, frame.camera.z);
       camera.lookAt(frame.camera.aimX, frame.camera.aimY, frame.camera.aimZ);
+      camera.fov = frame.camera.fov;
+      camera.updateProjectionMatrix();
       return frame;
     },
     finish() {
       active = false;
       root.visible = false;
+      clearPilot();
     },
     destroy() {
+      clearPilot();
       scene.remove(root);
       for (const mesh of meshes) mesh.geometry.dispose();
       for (const material of materials) material.dispose();
