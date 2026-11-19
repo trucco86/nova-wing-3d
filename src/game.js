@@ -387,6 +387,10 @@ export function createGame({
   // crossesSolid and applyAxisAngle read these vectors without modifying them.
   const projectileOrbitAxis = new T.Vector3(0, 1, 0);
   const podCollisionHalf = new T.Vector3(1.6, 1.6, 1.6);
+  // Immutable extents reused for each shot; collision and impact helpers only read them.
+  const rivalCollisionHalf = new T.Vector3(13, 10, 16);
+  const bossWeakpointCollisionHalf = new T.Vector3(5, 5, 5);
+  const bossHullCollisionHalf = new T.Vector3(45, 20, 4);
   let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
@@ -5923,10 +5927,10 @@ export function createGame({
         const rival = marvinRival?.target();
         if (
           rival &&
-          crossesSolid(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16), 0.5)
+          crossesSolid(previousShot, b.o.position, rival, rivalCollisionHalf, 0.5)
         ) {
           const dealt = marvinRival.hit(b.damage ?? 2);
-          impact(impactPoint(previousShot, b.o.position, rival, new T.Vector3(13, 10, 16)), dealt, {
+          impact(impactPoint(previousShot, b.o.position, rival, rivalCollisionHalf), dealt, {
             bossHit: true,
             weak: false,
             heavy: b.source?.startsWith('mecha-'),
@@ -5991,7 +5995,7 @@ export function createGame({
           : [boss.userData.core];
         for (const mesh of targets) {
           const center = mesh.getWorldPosition(new T.Vector3());
-          if (crossesSolid(previousShot, b.o.position, center, new T.Vector3(5, 5, 5), 0.5)) {
+          if (crossesSolid(previousShot, b.o.position, center, bossWeakpointCollisionHalf, 0.5)) {
             const dealt = damageBoss(
               (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
               center,
@@ -6000,7 +6004,7 @@ export function createGame({
               'weak',
               b.source,
             );
-            impact(impactPoint(previousShot, b.o.position, center, new T.Vector3(5, 5, 5)), dealt, {
+            impact(impactPoint(previousShot, b.o.position, center, bossWeakpointCollisionHalf), dealt, {
               bossHit: true,
               weak: dealt > 0,
               heavy: b.source?.startsWith('mecha-'),
@@ -6011,7 +6015,7 @@ export function createGame({
           }
         }
         // Hull catches missed/armored shots behind the forward weak-point volumes.
-        const hull = new T.Vector3(45, 20, 4);
+        const hull = bossHullCollisionHalf;
         if (b.life > 0 && crossesSolid(previousShot, b.o.position, boss.position, hull, 0.2)) {
           const dealt = damageBoss(
             (b.damage ?? 2) * (b.scatter ? scatterDamageFactor(b.travelled ?? 0) : 1),
