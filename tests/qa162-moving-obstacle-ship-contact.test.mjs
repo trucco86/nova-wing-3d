@@ -9,7 +9,7 @@ function barrier() {
   const o = {
     position: new Vector3(0, 0, 0),
     userData: {
-      solids: [{ center: new Vector3(0, 18, 0), half: new Vector3(80, 60, 1) }],
+      solids: [{ center: new Vector3(0, 18, 0), half: new Vector3(80, 120, 1) }],
     },
   };
   return o;
