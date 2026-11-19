@@ -24,3 +24,14 @@
 - Teste Playwright percorre seletor de Bob, arte, retorno ao 3D, troca de nave e cor, conceito da frota, arsenal e patente mobile.
 - Validar visualmente em desktop, 390x844 e landscape pequeno; controlar métricas de layout, FPS e uso de memória.
 - Não aprovar merge ou deploy sem CI FULL e aceitação explícita.
+
+## Checklist de revisão da prévia
+
+1. Abrir `https://pr-406.nova-wing-preview.pages.dev` e entrar em **ESCOLHER PILOTO E NAVE**.
+2. Selecionar **BOB** e **ARTE DOS GATOS**; o destaque deve exibir a arte individual de Bob, com uniforme escuro e luzes ciano.
+3. Voltar a **NAVE 360°**, selecionar SPECTER-X e OURO e confirmar que a nave jogável permanece customizável.
+4. Conferir arte conceitual de nave separada do chassi 3D e painéis de armas e pods em ARSENAL.
+5. Conferir as dez patentes nomeadas e suas insígnias decorativas em mobile, sem elementos obstruídos.
+6. Abrir cada asset via `/src/assets/<nome>.webp`; verificar HTTP 200 e formato `image/webp` no preview, em Pages e offline.
+
+Esses passos são critérios de revisão, não evidência de que o navegador foi inspecionado manualmente.
