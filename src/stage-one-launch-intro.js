@@ -45,7 +45,7 @@ export function firstStageLaunchWingPose(slot, seconds, aspect = 16 / 9) {
   return {
     x: slot * separation * squeeze + Math.sign(slot) * release * 65 * squeeze,
     y: 6 + wing * 0.65 + s.departure * 2.4 + release * wing * 7,
-    z: 9 + wing * 5.5 - s.departure * (wing * 3 + 2) - release * (wing * 28),
+    z: 9 + wing * 5.5 - s.departure * wing * 3 - release * wing * 28,
     bank: -slot * (0.02 + 0.13 * s.departure + 0.35 * release),
   };
 }
