@@ -11982,7 +11982,6 @@ body.intermission-active #shop #nextSector {
   }
 }
 
-
 /* Detailed individual showcase portraits. Never substitute the older composite Bob. */
 .showroom-web #squadSelection[data-pilot='bia'] .profile-portrait,
 .showroom-web #squadSelection[data-pilot='bia'] .hangar-art-portrait {

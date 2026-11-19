@@ -76,4 +76,3 @@ test('every Five Cats pilot uses their dedicated illustrated highlight, not the 
     expect(response.headers()['content-type']).toContain('image/webp');
   }
 });
-
