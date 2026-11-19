@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem com narrativa visual de hangar, abertura de portas, ignição, formação dos Five Cats e passagem para a câmera jogável. A referência é o ritmo da saída do hangar de _Star Fox_ (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
+Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem com seis planos cinematográficos originais: hangar amplo, gato piloto selecionado, ignição lateral, saída frontal, decolagem acompanhada e passagem para a câmera jogável. A referência é o ritmo da saída do hangar de _Star Fox_ (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
 
 ## Contratos
 
