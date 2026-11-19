@@ -10,7 +10,9 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - Conserva duração de cinco segundos para não alongar o tempo sem controle ou alterar os testes existentes.
 - Relógio da missão, spawns, colisões e BOOST obrigatório continuam suspensos durante a apresentação da formação.
 - O hangar é geometria visual temporária, removida do render após a decolagem e descartada no encerramento.
-- As cinco naves aparecem; a da Bia lidera. Enquadramento lateral inicial, abertura das portas, aceleração na pista e passagem para câmera de perseguição.
+- As cinco naves aparecem. O piloto selecionado lidera com a própria nave do gameplay no centro; as quatro naves de escolta usam os modelos e as cores oficiais de cada gato.
+- A nave central não é duplicada, substituída nem repintada durante a transição. A história opcional também respeita a seleção de modelo, cor e piloto.
+- O hangar tem teto, pilares, portas, iluminação de pista e área de apresentação do gato selecionado, cujo modelo 3D segue o hangar.
 - Não há teleporte da nave do jogador: o líder termina na mesma posição do jogador. As demais naves abrem a formação ao final.
 - Pausa congela a animação e reinício recompõe a cena. Pular a história inicial preserva a decolagem do hangar; fases seguintes e laboratório não exibem hangar.
 - O botão Pular e as teclas Enter, Espaço e Escape ignoram apenas a história opcional, não o lançamento jogável.
