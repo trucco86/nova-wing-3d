@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem com seis planos cinematográficos originais: hangar amplo, gato piloto selecionado, ignição lateral, saída frontal, decolagem acompanhada e passagem para a câmera jogável. A referência é o ritmo da saída do hangar de _Star Fox_ (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
+Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem clara de quatro planos: hangar amplo, gato piloto selecionado, saída frontal e câmera jogável. A referência é o ritmo da saída do hangar de _Star Fox_ (Super Nintendo), sem reutilizar modelos, áudio, falas ou cenas protegidas.
 
 ## Contratos
 
@@ -30,5 +30,5 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 3. A câmera final está alinhada à câmera normal e não deixa controles travados.
 4. Missão tem 0 segundos decorridos no fim da entrada e libera movimentação e disparos no quadro seguinte.
 5. A sequência não afeta a fase 2, retry, pausa ou o início acelerado de QA.
-6. Testes determinísticos conferem seis câmeras, simetria dinâmica, identidade do piloto, cores e modelos, e descarte de meshes.
+6. Testes determinísticos conferem quatro câmeras, simetria dinâmica, identidade do piloto, cores e modelos, e descarte de meshes.
 7. Validar visualmente em desktop e mobile e executar gates de CI antes de merge.
