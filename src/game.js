@@ -6242,7 +6242,7 @@ export function createGame({
         }
         updateEuropaTunnelBreach(obstacle.o, dt);
       }
-      let collidedWithObstacle = false;
+      let collidedWithObstacle;
       if (dynamicFlight) {
         // A damage event is not a physical collision. Keep the ship outside the
         // moving obstacle's *visible* solid parts, including during boost.
