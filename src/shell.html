@@ -1312,8 +1312,64 @@
           </div>
           <div class="campaign-map-actions">
             <button id="mapBack" type="button">VOLTAR AO HANGAR</button>
+            <button id="mapTrain" type="button" hidden>TREINAR COMANDOS</button>
             <button class="primary" id="mapLaunch" type="button">INICIAR PRÓXIMA FASE ↗</button>
           </div>
+        </div>
+      </section>
+      <section
+        id="preflightTraining"
+        class="preflight-training"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Treino de comandos do Nova Wing"
+      >
+        <div class="training-shell">
+          <header class="training-header">
+            <div>
+              <span class="eyebrow">FIVE CATS / SIMULADOR DE VOO</span>
+              <h2>TREINAMENTO DE PILOTAGEM</h2>
+              <p>Teste a sua nave antes da missão. Sem inimigos, dano ou cronômetro.</p>
+            </div>
+            <strong id="trainingProgress" aria-live="polite">0 / 6 COMANDOS TESTADOS</strong>
+          </header>
+          <div class="training-grid">
+            <div class="training-viewport">
+              <canvas id="trainingCanvas" aria-label="Simulação 3D de voo com a nave selecionada"></canvas>
+              <span id="trainingShipLabel" class="training-ship-label">FIVE CATS</span>
+              <strong id="trainingPrompt" aria-live="polite">PRATIQUE: MOVIMENTAR</strong>
+              <div class="training-direction" aria-label="Direcional do treino">
+                <button type="button" id="trainingUp" aria-label="Subir">▲</button>
+                <div>
+                  <button type="button" id="trainingLeft" aria-label="Esquerda">◀</button>
+                  <button type="button" id="trainingDown" aria-label="Descer">▼</button>
+                  <button type="button" id="trainingRight" aria-label="Direita">▶</button>
+                </div>
+              </div>
+              <div class="training-thrust-controls">
+                <button type="button" id="trainingFire">TIRO</button>
+                <button type="button" id="trainingBoost">BOOST</button>
+              </div>
+            </div>
+            <div class="training-exercises" aria-label="Exercícios de pilotagem">
+              <div id="trainingTask-move"><strong>MOVIMENTAR</strong><small>WASD / SETAS ou direcional</small></div>
+              <div id="trainingTask-fire"><strong>ATIRAR</strong><small>ESPAÇO ou TIRO</small></div>
+              <div id="trainingTask-boost"><strong>ACELERAR</strong><small>SHIFT ou BOOST</small></div>
+              <div id="trainingTask-roll"><strong>GIRO DEFENSIVO</strong><small>Q / E / Z ou GIRO</small></div>
+              <div id="trainingTask-transform"><strong>TRANSFORMAR</strong><small>T ou ROBÔ</small></div>
+              <div id="trainingTask-camera"><strong>TROCAR CÂMERA</strong><small>C ou CÂMERA</small></div>
+              <div class="training-secondary-controls">
+                <button type="button" id="trainingRoll">GIRO</button>
+                <button type="button" id="trainingTransform">ROBÔ</button>
+                <button type="button" id="trainingCamera">CÂMERA</button>
+              </div>
+            </div>
+          </div>
+          <footer class="training-actions">
+            <button type="button" id="trainingBack">VOLTAR AO MAPA</button>
+            <button type="button" class="primary" id="trainingLaunch">INICIAR MISSÃO ↗</button>
+          </footer>
         </div>
       </section>
       <section id="result" hidden>
