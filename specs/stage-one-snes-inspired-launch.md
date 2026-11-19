@@ -32,3 +32,11 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 5. A sequência não afeta a fase 2, retry, pausa ou o início acelerado de QA.
 6. Testes determinísticos conferem quatro câmeras, simetria dinâmica, identidade do piloto, cores e modelos, e descarte de meshes.
 7. Validar visualmente em desktop e mobile e executar gates de CI antes de merge.
+
+## Robustez do treinamento (19/11/2026)
+
+- A câmera 3D reutiliza o vetor de interpolação e só atualiza tamanho/projeção quando as dimensões visíveis mudam, evitando alocações e chamadas de resize por frame.
+- A transformação nave/robô preserva posição e orientação da forma anterior; não há salto de volta à origem do simulador.
+- O teste `preflight-practice.test.mjs` protege a continuidade bidirecional da pose, além da conclusão dos seis comandos e do isolamento do progresso da campanha.
+- A saída para o mapa ou para a missão descarta o renderizador secundário. A integração exige `build:check`, `validate`, `quality` e seis shards de navegador verdes no SHA final.
+- O PR permanece em draft. Nenhum merge ou deploy de produção é autorizado por esta especificação.
