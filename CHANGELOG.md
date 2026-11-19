@@ -6,6 +6,7 @@
 - Enquadramento cinematográfico que entrega a câmera de perseguição ao jogador, com lançamento alinhado à posição real da nave.
 - Narração visual e avisos curtos em português, inglês e espanhol; usa o áudio existente respeitando controles de volume.
 - Preserva o BOOST obrigatório, o início de combate, os dez setores, o fluxo mobile e a continuidade da campanha.
+- Corrigido o fluxo de Pular introdução para preservar a decolagem dos Five Cats, com teste de caminho real pelo menu.
 - Testes determinísticos de formação, duração, geometria temporária e descarte de recursos; validação visual e CI completa exigidas antes de qualquer publicação.
 
 ## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
