@@ -183,6 +183,7 @@ jobs:
           cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
           mkdir -p public-site/control-center
           cp docs/control-center/index.html public-site/control-center/index.html
+          node tools/copy-art-assets.mjs public-site
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: public-site
