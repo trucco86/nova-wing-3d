@@ -26,6 +26,7 @@ on:
       - fix/qa154-cockpit-hud-victory-radio-20261115
       - perf/qa157-orbit-pod-hotpath-allocations-20261118
       - perf/qa158-city32-searchlight-mount-batching-20261118
+      - feat/stage-one-cinematic-launch-20261119
 permissions:
   contents: write
   actions: write
@@ -156,6 +157,10 @@ jobs:
             if [ -f releases/v1.27.150.md ]; then
               git add -- releases/v1.27.150.md
             fi
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ]; then
+            # Isolated launch tutorial: stage the reproducible bundle and formatted test sources.
+            git add -- src/preflight-training.js src/stage-one-launch-intro.js tests/preflight-practice.test.mjs tests/stage-one-launch-intro.test.mjs
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
