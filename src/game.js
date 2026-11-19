@@ -5330,11 +5330,7 @@ export function createGame({
             player.position,
             e.combatPhase,
           ))
-            bullet(
-              volleyMuzzles[0] ?? e.o.position.clone(),
-              target,
-              e.subbossTactic?.spell ?? '',
-            );
+            bullet(volleyMuzzles[0] ?? e.o.position.clone(), target, e.subbossTactic?.spell ?? '');
         e.cd =
           (e.kind === 'subboss'
             ? dynamicFlight
