@@ -11462,3 +11462,97 @@ body.intermission-active #shop #nextSector {
     font-size: 11px;
   }
 }
+
+/* Optional Star Fox-style preflight practice. Completely isolated from campaign HUD. */
+.preflight-training {
+  position: fixed;
+  inset: 0;
+  z-index: 105;
+  background: rgba(2, 8, 18, 0.96);
+  padding: clamp(8px, 1.4vh, 20px);
+  overflow: auto;
+  color: #e8f7ff;
+}
+.preflight-training[hidden] { display: none !important; }
+.training-shell {
+  margin: 0 auto;
+  width: min(1180px, 100%);
+  min-height: min(100%, 740px);
+  background: linear-gradient(150deg, #132b40, #071827 68%, #06111b);
+  border: 1px solid rgba(104, 219, 250, 0.44);
+  border-radius: 19px;
+  padding: clamp(10px, 2vw, 23px);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.46);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.training-header, .training-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.training-header h2 { font-size: clamp(1.15rem, 2vw, 1.7rem); margin: 4px 0; }
+.training-header p { margin: 0; color: #b9d5e1; }
+#trainingProgress {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  border: 1px solid rgba(103, 255, 224, 0.4);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.training-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr); gap: 14px; flex: 1; min-height: 0; }
+.training-viewport { position: relative; background: #061422; min-height: 340px; border: 1px solid rgba(114, 184, 209, 0.4); border-radius: 13px; overflow: hidden; }
+#trainingCanvas { display: block; width: 100%; height: 100%; min-height: 340px; touch-action: none; }
+.training-ship-label, #trainingPrompt { position: absolute; z-index: 1; pointer-events: none; }
+.training-ship-label { top: 12px; left: 14px; font-size: 0.8rem; color: #c3eafb; }
+#trainingPrompt { top: 14px; right: 14px; font-size: 0.72rem; max-width: 52%; text-align: right; color: #a9ffe1; }
+.training-direction, .training-thrust-controls { position: absolute; bottom: 13px; z-index: 2; }
+.training-direction { left: 12px; text-align: center; }
+.training-direction > div { display: flex; gap: 4px; }
+.training-thrust-controls { right: 13px; display: flex; gap: 5px; }
+.preflight-training button { cursor: pointer; touch-action: manipulation; }
+.training-direction button, .training-thrust-controls button, .training-secondary-controls button {
+  background: rgba(16, 44, 67, 0.9);
+  border: 1px solid #4caed0;
+  color: white;
+  font-weight: 700;
+  min-height: 42px;
+  min-width: 44px;
+  border-radius: 10px;
+}
+.training-thrust-controls button { min-width: 62px; }
+.training-direction button:active, .training-thrust-controls button:active, .training-secondary-controls button:active { background: #256789; }
+.training-exercises { display: flex; flex-direction: column; justify-content: center; gap: 7px; }
+.training-exercises > div:not(.training-secondary-controls) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-left: 3px solid #42677f;
+  border-radius: 8px;
+  background: rgba(40, 76, 98, 0.28);
+}
+.training-exercises > div.completed:not(.training-secondary-controls) { border-color: #71ffcf; background: rgba(52, 148, 126, 0.18); }
+.training-exercises > div.completed strong::after { content: ' ✓'; color: #71ffcf; }
+.training-exercises small { color: #b3d2e0; }
+.training-secondary-controls { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.training-secondary-controls button { flex: 1; font-size: 0.75rem; }
+.training-actions { margin-top: auto; }
+.training-actions button { padding: 12px 18px; border-radius: 10px; }
+@media (max-width: 760px) {
+  .preflight-training { padding: 5px; }
+  .training-shell { min-height: 100%; gap: 8px; padding: 10px; border-radius: 12px; }
+  .training-header p { display: none; }
+  .training-header h2 { font-size: 1rem; }
+  #trainingProgress { padding: 7px; font-size: 0.62rem; }
+  .training-grid { grid-template-columns: 1fr; grid-template-rows: minmax(210px, 1fr) auto; gap: 8px; }
+  .training-viewport, #trainingCanvas { min-height: 210px; }
+  .training-exercises { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .training-exercises > div:not(.training-secondary-controls) { padding: 6px 8px; }
+  .training-exercises strong { font-size: 0.68rem; }
+  .training-exercises small { font-size: 0.62rem; }
+  .training-secondary-controls { grid-column: 1 / -1; margin-top: 0; }
+  .training-secondary-controls button { min-height: 36px; }
+  .training-actions button { font-size: 0.76rem; padding: 9px 12px; }
+  .training-direction button { min-height: 38px; min-width: 38px; }
+  .training-thrust-controls button { min-height: 42px; min-width: 57px; }
+  .training-ship-label { font-size: 0.69rem; }
+  #trainingPrompt { font-size: 0.63rem; }
+}
