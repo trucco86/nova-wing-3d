@@ -53,9 +53,9 @@ test('QA160: live game collision loop reuses extents instead of per-shot allocat
       name + ' must allocate only once per game',
     );
   }
-  assert.match(source, /crossesSolid\\([\\s\\S]{0,180}rivalCollisionHalf/);
-  assert.match(source, /impactPoint\\([\\s\\S]{0,180}rivalCollisionHalf/);
-  assert.match(source, /crossesSolid\\([\\s\\S]{0,180}bossWeakpointCollisionHalf/);
-  assert.match(source, /impactPoint\\([\\s\\S]{0,180}bossWeakpointCollisionHalf/);
+  assert.match(source, /crossesSolid\([\s\S]{0,180}rivalCollisionHalf/);
+  assert.match(source, /impactPoint\([\s\S]{0,180}rivalCollisionHalf/);
+  assert.match(source, /crossesSolid\([\s\S]{0,180}bossWeakpointCollisionHalf/);
+  assert.match(source, /impactPoint\([\s\S]{0,180}bossWeakpointCollisionHalf/);
   assert.ok(source.includes('const hull = bossHullCollisionHalf;'));
 });
