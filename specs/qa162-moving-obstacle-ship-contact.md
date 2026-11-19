@@ -1,6 +1,7 @@
 # QA162: contato físico dos obstáculos móveis
 
 ## Defeito observado no código
+
 O loop de obstáculos de `src/game.js` detectava choque com a geometria
 sólida e chamava `hit(30)`, mas não ajustava a posição da nave.
 Com dt elevado ou boost, uma travessia instantânea podia ser seguida por voo
@@ -8,6 +9,7 @@ dentro de um paredão ou por um túnel. Este caso é distinto da QA161, que
 corrigiu o lado de saída do fallback de colisão urbana.
 
 ## Contrato
+
 - Usar o mesmo `resolveCitySolidContact` já testado, com clearance esférico
   igual ao `shipCollisionMargin` (1.3 / 0.92), sem mudar dano nem hitboxes.
 - Transformar centros locais de `userData.solids` em coordenadas mundiais.
@@ -19,6 +21,7 @@ corrigiu o lado de saída do fallback de colisão urbana.
 - A mudança não instala engine física nem resolve contato entre destroços.
 
 ## Gates
+
 - Testes QA162 com muro bilateral, alta velocidade, sólido móvel, túnel
   atravessável, brecha Europa aberta e fuga de overlap.
 - `npm run release:prepare -- 1.27.156`, format, build, validate,

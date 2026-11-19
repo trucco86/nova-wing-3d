@@ -31,8 +31,7 @@ export function createObstacleShipResolver() {
     { radius = 1.3, laneLimit = 72, minY = -1, maxY = 96 } = {},
   ) {
     if (!obstacle?.userData?.solids?.length) return false;
-    if (!Number.isFinite(travel) || !Number.isFinite(radius) || radius < 0)
-      return false;
+    if (!Number.isFinite(travel) || !Number.isFinite(radius) || radius < 0) return false;
     clearance.x = radius;
     clearance.y = radius;
     clearance.z = radius;
