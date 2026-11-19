@@ -33,3 +33,9 @@ novos materiais para cada reconstrução independente do setor.
    íntegros.
 4. Homologação visual e benchmark físico permanecem pendentes. Manter PR Draft,
    sem merge ou deploy até revisão e aceite.
+
+## Evidência intermediária, não é aceite de produção
+
+- Workflow [Sync generated web #44433149889](https://github.com/trucco86/nova-wing-3d/actions/runs/44433149889): sucesso em `release:prepare`, Prettier, build e `npm run validate` após a correção do ESLint no teste QA159.
+- O SHA gerado pelo bot sincroniza o HTML e os metadados da candidata 1.27.153. Exigir novamente os checks da PR no HEAD final, inclusive Playwright 6/6, antes de qualquer merge.
+- Nenhuma medição de desempenho em iPhone ou comparação de screenshots foi feita nesta etapa.
