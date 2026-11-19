@@ -112,8 +112,11 @@ export function resolveCitySolidContact(
     next.y = up;
     return true;
   }
-  // A solid that covers the entire navigable cross-section must not allow
-  // the player to pass through. Retreat to the approaching (near-camera) face.
-  next.z = c.z + hz + epsilon;
+  // A solid spanning the entire navigable cross-section must keep the ship
+  // on its ORIGINAL approach face, including an approach from behind the wall.
+  // Always selecting the near-camera face lets a far-side crossing teleport
+  // through the visible obstacle when no X/Y escape is available.
+  const fromNegativeZ = sz < -1e-9 || (Math.abs(sz) <= 1e-9 && tz < 0);
+  next.z = c.z + (fromNegativeZ ? -hz - epsilon : hz + epsilon);
   return true;
 }
