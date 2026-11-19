@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/stage-one-cinematic-launch-20261119
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
@@ -86,9 +85,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
-          if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ]; then
-            git add -- src/preflight-practice.js src/preflight-training.js src/game.js src/shell.html src/styles.css src/stage-one-launch-intro.js tests/preflight-practice.test.mjs tests/browser/five-cats-formation.spec.mjs tests/stage-one-launch-intro.test.mjs
-          fi
           # QA157: preserve formatter output for the new hotpath code and tests.
           if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
             git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
