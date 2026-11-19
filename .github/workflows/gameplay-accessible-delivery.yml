@@ -10,13 +10,17 @@ permissions:
   actions: read
   contents: read
 
+concurrency:
+  group: gameplay-accessible-delivery
+  cancel-in-progress: true
+
 jobs:
   encode:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
       - name: Install FFmpeg
-        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+        run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y ffmpeg)
       - name: Download verified ten-minute candidate
         env:
           GH_TOKEN: ${{ github.token }}
