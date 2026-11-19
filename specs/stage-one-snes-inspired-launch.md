@@ -22,7 +22,7 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 ## Aceite
 
 1. Em câmera real, observam-se as portas abrindo antes da partida e o hangar recuando durante a aceleração.
-2. As cinco naves permanecem identificáveis, sem desaparecer antes do encerramento.
+2. A nave central usa a mesma instância 3D do jogador com modelo e pintura selecionados. As outras quatro naves não duplicam esse piloto.
 3. A câmera final está alinhada à câmera normal e não deixa controles travados.
 4. Missão tem 0 segundos decorridos no fim da entrada e libera movimentação e disparos no quadro seguinte.
 5. A sequência não afeta a fase 2, retry, pausa ou o início acelerado de QA.
