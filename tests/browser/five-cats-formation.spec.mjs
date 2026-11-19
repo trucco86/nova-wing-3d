@@ -34,7 +34,9 @@ test('skipping story from public menu still launches Five Cats from the hangar',
   await expect(page.locator('#campaignMap')).toBeVisible();
   await page.locator('#mapLaunch').click();
   await expect(page.locator('#squadFormationStatus')).toBeVisible();
-  await expect(page.locator('#squadFormationStatus')).toContainText(/HANGAR|MOTORES|DECOLAGEM|CONTROLE/);
+  await expect(page.locator('#squadFormationStatus')).toContainText(
+    /HANGAR|MOTORES|DECOLAGEM|CONTROLE/,
+  );
   await page.screenshot({ path: info.outputPath('stage-one-hangar-after-story-skip.png') });
 });
 
