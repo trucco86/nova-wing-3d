@@ -56,3 +56,24 @@ test('pilot portraits and insignia artwork work on mobile without obscuring the 
   ).toContain('five-cats-rank-emblems.webp');
   await page.screenshot({ path: info.outputPath('five-cats-art-mobile.png') });
 });
+
+test('every Five Cats pilot uses their dedicated illustrated highlight, not the low-res collage', async ({
+  page,
+}) => {
+  test.setTimeout(120000);
+  await page.goto('/');
+  await openMenu(page, 'hangar');
+  await page.locator('#hangarArt').click();
+  for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
+    await page.locator('#pilot-' + id).click();
+    await expect(page.locator('#squadSelection')).toHaveAttribute('data-pilot', id);
+    const image = await page
+      .locator('#hangarArtImage')
+      .evaluate((element) => getComputedStyle(element).backgroundImage);
+    expect(image).toContain(id + '-spotlight.webp');
+    const response = await page.request.get('/src/assets/' + id + '-spotlight.webp');
+    expect(response.ok()).toBeTruthy();
+    expect(response.headers()['content-type']).toContain('image/webp');
+  }
+});
+
