@@ -9,7 +9,7 @@ import {
   ALLY_SORTIE_FLIGHT,
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
-import { firstStageLaunchAt, firstStageLaunchWingPose } from './stage-one-launch-intro.js';
+import { firstStageLaunchAt, firstStageLaunchWingPose, firstStageWingSlots } from './stage-one-launch-intro.js';
 
 // World-space IFF tags attach to the ally ships, never to enemy fighters and
 // never to the HUD center. Green and readable even in the city neon skyline.
@@ -88,6 +88,7 @@ export function createFiveCatsSquad({
   });
   let intro = 0;
   let introBeat = '';
+  let introPilot = null;
   let plasmaTime = 0,
     overdriveTime = 0,
     plasmaCooldown = 0,
@@ -110,6 +111,7 @@ export function createFiveCatsSquad({
   function reset() {
     intro = 0;
     introBeat = '';
+    introPilot = null;
     plasmaTime = overdriveTime = plasmaCooldown = overdriveCooldown = 0;
     plasmaClock = overdriveClock = supportClock = 0;
     overdriveAge = overdriveExit = 0;
@@ -123,7 +125,9 @@ export function createFiveCatsSquad({
   function begin(firstSector) {
     reset();
     intro = firstSector ? SQUAD_INTRO_DURATION : 0;
-    player.visible = !intro;
+    // The original fighter stays on stage for the whole intro, eliminating
+    // the previous hero duplicate and any last-frame model/paint swap.
+    player.visible = true;
   }
   function activate(kind, energy) {
     const cooldown = kind === 'plasma' ? plasmaCooldown : overdriveCooldown;
@@ -181,6 +185,7 @@ export function createFiveCatsSquad({
     if (intro > 0) {
       const t = SQUAD_INTRO_DURATION - intro;
       const launch = firstStageLaunchAt(t, aspect);
+      introPilot = pilot;
       if (introBeat !== launch.beat) {
         introBeat = launch.beat;
         if (launch.beat === 'ignition') cue('boostIgnition');
@@ -206,14 +211,17 @@ export function createFiveCatsSquad({
         },
       };
       formationStatus.textContent = (captions[getLanguage()] ?? captions.pt)[launch.beat];
+      const slots = new Map(firstStageWingSlots(pilot).map(({ id, slot }) => [id, slot]));
       wings.forEach(({ pilot: p, mesh }) => {
-        const pose = firstStageLaunchWingPose(p.slot, t, aspect);
-        mesh.visible = true;
-        mesh.scale.setScalar(aspect < 0.75 ? 0.93 : 1.1);
-        mesh.position.set(player.position.x + pose.x, pose.y, player.position.z + pose.z - 9);
+        const slot = slots.get(p.id);
+        mesh.visible = slot !== undefined;
+        if (!mesh.visible) return; // Active pilot is the real gameplay ship in the center.
+        const pose = firstStageLaunchWingPose(slot, t, aspect);
+        mesh.scale.setScalar(aspect < 0.75 ? 0.93 : 1.0);
+        mesh.position.set(player.position.x + pose.x, pose.y, pose.z);
         mesh.rotation.z = pose.bank;
       });
-      player.visible = false;
+      player.visible = true;
       formationStatus.hidden = false;
       intro = Math.max(0, intro - dt);
       if (intro === 0) {
@@ -323,6 +331,9 @@ export function createFiveCatsSquad({
     stopBeam,
     snapshot: () => ({
       intro,
+      introPilot,
+      launchShot: intro > 0 ? firstStageLaunchAt(SQUAD_INTRO_DURATION - intro).shot : null,
+      playerIsLeader: intro > 0 && player.visible,
       plasmaTime,
       overdriveTime,
       overdriveExit,
@@ -341,6 +352,10 @@ export function createFiveCatsSquad({
       reset();
       wings.forEach(({ mesh }) => {
         scene.remove(mesh);
+        mesh.userData.launchModule?.traverse((part) => {
+          part.geometry?.dispose();
+          if (part.material?.userData.paintModule) part.material.dispose();
+        });
         mesh.userData.paint?.forEach((material) => material.dispose());
         mesh.userData.flames?.forEach((flame) => flame.material.dispose());
       });
