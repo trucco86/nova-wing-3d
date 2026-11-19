@@ -61,6 +61,7 @@ import {
   projectileHitsApproachingObstacle,
 } from './flight.js';
 import { resolveCitySolidContact } from './city-collision.js';
+import { createObstacleShipResolver } from './obstacle-ship-contact.js';
 import { createOrbitalLaunch } from './orbital-launch.js';
 import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.js';
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
@@ -391,6 +392,7 @@ export function createGame({
   const rivalCollisionHalf = new T.Vector3(13, 10, 16);
   const bossWeakpointCollisionHalf = new T.Vector3(5, 5, 5);
   const bossHullCollisionHalf = new T.Vector3(45, 20, 4);
+  const resolveObstacleShipContact = createObstacleShipResolver();
   let cityImpactCount = 0;
   scene.add(player);
   player.position.set(0, 6, 9);
@@ -6240,13 +6242,29 @@ export function createGame({
         }
         updateEuropaTunnelBreach(obstacle.o, dt);
       }
-      const from = previousPlayer
-        .clone()
-        .sub(obstacle.o.position)
-        .add(new T.Vector3(0, 0, travel));
-      const to = player.position.clone().sub(obstacle.o.position);
-      if (
-        obstacle.o.userData.solids.some((solid) =>
+      let collidedWithObstacle;
+      if (dynamicFlight) {
+        // A damage event is not a physical collision. Keep the ship outside the
+        // moving obstacle's *visible* solid parts, including during boost.
+        // The resolver follows the obstacle's previous and current Z position;
+        // openings in compound tunnel geometry remain open.
+        collidedWithObstacle = resolveObstacleShipContact(
+          previousPlayer,
+          player.position,
+          obstacle.o,
+          travel,
+          {
+            radius: shipCollisionMargin(robotMode, rollHeld),
+            laneLimit: flightLimit(),
+            maxY: verticalFlightLimit(),
+          },
+        );
+      } else {
+        // Preserve the classic 2D rules and its original damage-only behavior.
+        const from = previousPlayer.clone().sub(obstacle.o.position);
+        from.z += travel;
+        const to = player.position.clone().sub(obstacle.o.position);
+        collidedWithObstacle = obstacle.o.userData.solids.some((solid) =>
           crossesSolid(
             from,
             to,
@@ -6254,9 +6272,9 @@ export function createGame({
             solid.half,
             shipCollisionMargin(robotMode, rollHeld),
           ),
-        )
-      )
-        hit(30);
+        );
+      }
+      if (collidedWithObstacle) hit(30);
       // Stop allied and hostile rounds at actual solid geometry, not after it.
       for (const b of [...shots, ...hostile]) {
         if (b.life <= 0 || !b.previousPosition) continue;
