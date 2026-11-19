@@ -173,6 +173,9 @@ export function createFirstStageLaunchIntro(scene, camera) {
         pilotModel.scale.multiplyScalar(1.65);
         pilotModel.position.set(-11, -3.3, 9);
         pilotModel.visible = false;
+        pilotModel.traverse((part) => {
+          part.userData.visualOnly = true;
+        });
         root.add(pilotModel);
       }
     },
