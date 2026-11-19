@@ -49,6 +49,15 @@ test('QA162: authored tunnel walls block and push the ship toward its original s
   assert.equal(resolve(next, next, tunnel), false, 'ship stays outside actual wall solids');
 });
 
+test('QA162: tunnel ceiling keeps the pilot inside its corridor rather than teleporting sideways', () => {
+  const tunnel = createObstacle('tunnel');
+  const before = new Vector3(0, 33, -45);
+  const next = new Vector3(0, 43, -45);
+  assert.equal(resolve(before, next, tunnel), true);
+  assert.equal(next.x, 0, 'deck collision must not eject the ship through side walls');
+  assert.ok(next.y < 36 && next.y >= -1, 'ship remains below the visible roof');
+});
+
 test('QA162: tunnel corridor and hidden Europa breach remain physically traversable', () => {
   const tunnel = createObstacle('tunnel', 'europa');
   const before = new Vector3(0, 12, -55);

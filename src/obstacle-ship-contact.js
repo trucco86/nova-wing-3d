@@ -43,6 +43,12 @@ export function createObstacleShipResolver() {
       center.x = obstacle.position.x + volume.center.x;
       center.y = obstacle.position.y + volume.center.y;
       center.z = obstacle.position.z + volume.center.z;
+      // Wide shallow decks are approached vertically. Sliding onto a free
+      // flank would teleport the pilot outside the tunnel through its roof.
+      contact.kind =
+        volume.half.x >= 18 && volume.half.y <= 3 && volume.half.z >= 2
+          ? 'overpass-deck'
+          : 'obstacle';
       contact.half = volume.half;
       contact.previousX = center.x;
       contact.previousY = center.y;
