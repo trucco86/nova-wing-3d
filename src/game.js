@@ -188,7 +188,8 @@ import {
 } from './combat-progression.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
-import { SQUAD_SPECIALS } from './five-cats-squad.js';
+import { SQUAD_SPECIALS, SQUAD_INTRO_DURATION } from './five-cats-squad.js';
+import { createFirstStageLaunchIntro } from './stage-one-launch-intro.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { bossEncounterGate } from './encounter-separation.js';
@@ -349,6 +350,7 @@ export function createGame({
     arcadeDone = false;
   const world = createWorld(scene, random, dynamicFlight),
     post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
+  const firstStageIntro = dynamicFlight ? createFirstStageLaunchIntro(scene, camera) : null;
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
   const dashTrail = createMechaDashTrail(scene);
@@ -1607,7 +1609,9 @@ export function createGame({
     asteroidInterior?.reset(sectorIndex === 2);
     marvinRival?.reset();
     asteroidWallCooldown = 0;
-    squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
+    const showLaunch = sectorIndex === 0 && enableSquadIntro && !skipSquadIntro;
+    squad?.begin(showLaunch);
+    firstStageIntro?.reset(showLaunch);
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
@@ -1691,7 +1695,7 @@ export function createGame({
     settingsOpen = false;
     document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
-    stageIntroTime = 3;
+    stageIntroTime = firstStageIntro?.active ? SQUAD_INTRO_DURATION : 3;
     pickupFeedbackTime = 0;
     $('pickupFlash').hidden = true;
     $('aimReticle').hidden = true;
@@ -4450,6 +4454,13 @@ export function createGame({
         pilot: pilotLoadout.pilot,
         aspect: camera.aspect,
       });
+      const remaining = squad.snapshot().intro;
+      if (remaining > 0) firstStageIntro?.update(SQUAD_INTRO_DURATION - remaining, camera.aspect);
+      else {
+        firstStageIntro?.finish();
+        // The cinematic never alters the gameplay camera's anchor or controls.
+        flightCamera.reset(player.position);
+      }
       return;
     }
     elapsed += dt;
@@ -7180,6 +7191,7 @@ export function createGame({
       shotMaterials.forEach((m) => m.dispose());
       upgradedShotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
+      firstStageIntro?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       marsDust?.geometry.dispose();
