@@ -2,7 +2,8 @@
 
 ## 1.27.153 — Abertura cinematográfica de lançamento da Cidade das Máquinas
 
-- Apresentação em 3D de cinco segundos com hangar reconhecível, seis enquadramentos, abertura de portas, ignição e decolagem dos Five Cats.
+- Apresentação em 3D de cinco segundos com hangar reconhecível, quatro planos claros, portas abrindo, ignição e decolagem dos Five Cats.
+- Treinamento opcional e interativo antes da fase: mover, atirar, acelerar, girar, transformar e mudar a câmera, mantendo a nave selecionada e sem interferir na campanha.
 - A nave escolhida permanece no centro com o mesmo modelo, pintura e objeto 3D até o gameplay. A cinemática inicial também respeita o loadout selecionado.
 - Close do piloto com o modelo 3D do hangar, além de detalhes felinos aprimorados e proporções preservadas entre Christopher e Bob.
 - Enquadramento cinematográfico que entrega a câmera de perseguição ao jogador, com lançamento alinhado à posição real da nave.
