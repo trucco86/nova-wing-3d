@@ -1,5 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import * as T from 'three';
+import { shipColorAt } from '../src/pilots.js';
+import { CINEMATIC_FLEET } from '../src/cinematic-formation.js';
 import {
   SQUAD_PILOTS,
   SQUAD_INTRO_DURATION,
@@ -75,15 +78,17 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
   }
 });
 
-test('new mission shows Bia-led formation before gameplay clock starts', (t) => {
+test('new mission uses the actual active ship as leader, with four escorts', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   assert.ok(h.game.snapshot().fiveCats.intro > 0);
   h.advance(1);
   const first = h.game.snapshot();
-  assert.equal(first.fiveCats.visible.length, 5);
-  assert.equal(first.fiveCats.visible.find((p) => p.pilot === 'bia').x, 0);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.ok(first.fiveCats.visible.every((p) => p.pilot !== 'bia'));
+  assert.equal(first.fiveCats.introPilot, 'bia');
+  assert.equal(first.fiveCats.playerIsLeader, true);
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
   h.advance(4.1);
@@ -106,7 +111,7 @@ test('skipping the optional story keeps stage-one hangar launch after campaign m
   assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
   h.advance(1.2);
   assert.equal(h.game.snapshot().seconds, 0, 'mission clock cannot advance during launch');
-  assert.equal(h.game.snapshot().fiveCats.visible.length, 5);
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
   assert.match(h.elements.get('squadFormationStatus').textContent, /MOTORES|DECOLAGEM/);
   h.advance(4);
   assert.equal(h.game.snapshot().fiveCats.intro, 0);
@@ -122,8 +127,48 @@ test('keyboard skip of story preserves stage-one launch and does not skip it', (
   assert.equal(h.elements.get('cinematic').hidden, true);
   assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
   h.advance(0.3);
-  assert.equal(h.game.snapshot().fiveCats.visible.length, 5);
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
   assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR/);
+});
+
+test('selected ship and paint stay on the same real fighter across the launch handoff', (t) => {
+  let scene;
+  const h = harness({
+    spawnEncounters: false,
+    enableSquadIntro: true,
+    observeScene(current) {
+      scene = current;
+    },
+  });
+  t.after(() => h.close());
+  h.game.start(false, {
+    sector: 0,
+    loadout: { pilot: 'bob', ship: 'specter', color: 'crimson' },
+  });
+  h.advance(1.1);
+  const snap = h.game.snapshot();
+  assert.equal(snap.fiveCats.introPilot, 'bob');
+  assert.equal(snap.fiveCats.playerIsLeader, true);
+  assert.equal(snap.fiveCats.visible.length, 4);
+  assert.ok(snap.fiveCats.visible.every((wing) => wing.pilot !== 'bob'));
+  const player = scene.children.find((node) => node.getObjectByName('five-cats-flight-mech'));
+  assert.ok(player, 'live gameplay fighter must be on screen during the cinematic');
+  const module = player.getObjectByName('ship-model-specter');
+  assert.ok(module, 'actual selected ship mesh must stay attached to the live player');
+  const selected = new T.Color(shipColorAt('crimson').color).getHexString();
+  assert.ok(player.userData.paint.some((m) => m.color.getHexString() === selected));
+  for (const profile of CINEMATIC_FLEET.filter(({ id }) => id !== 'bob')) {
+    const escort = scene.getObjectByName('five-cats-wingman-' + profile.id);
+    assert.ok(escort.visible);
+    assert.equal(escort.userData.launchModule.name, 'ship-model-' + profile.model);
+  }
+  const samePlayer = player;
+  h.advance(4.1);
+  assert.equal(h.game.snapshot().fiveCats.intro, 0);
+  assert.equal(player, samePlayer);
+  assert.equal(player.visible, true);
+  assert.equal(player.getObjectByName('ship-model-specter'), module);
+  assert.ok(player.userData.paint.some((m) => m.color.getHexString() === selected));
 });
 
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
