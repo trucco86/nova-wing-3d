@@ -28,6 +28,7 @@ on:
       - perf/qa158-city32-searchlight-mount-batching-20261118
       - perf/qa159-city32-searchlight-resource-sharing-20261118
       - perf/qa160-boss-rival-hitbox-allocations-20261119
+      - fix/qa161-city-solid-approach-face-20261119
 permissions:
   contents: write
   actions: write
@@ -83,6 +84,9 @@ jobs:
       - name: Prepare QA160 boss/rival hitbox performance release
         if: github.ref_name == 'perf/qa160-boss-rival-hitbox-allocations-20261119'
         run: npm run release:prepare -- 1.27.154
+      - name: Prepare QA161 physical city collision release
+        if: github.ref_name == 'fix/qa161-city-solid-approach-face-20261119'
+        run: npm run release:prepare -- 1.27.155
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -109,6 +113,10 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "perf/qa160-boss-rival-hitbox-allocations-20261119" ]; then
             git add -u
             git add -- releases/v1.27.154.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa161-city-solid-approach-face-20261119" ]; then
+            git add -u
+            git add -- releases/v1.27.155.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
