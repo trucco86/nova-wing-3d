@@ -1,6 +1,5 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as T from 'three';
 import { createCity32Living, setCity32Quality, updateCity32Living } from '../src/city-32-living.js';
 
 const anchors = Array.from({ length: 200 }, (_, i) => ({
