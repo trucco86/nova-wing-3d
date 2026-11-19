@@ -274,6 +274,15 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     if (frame !== null) window.cancelAnimationFrame?.(frame);
     frame = null;
     clearModels();
+    // Do not keep a second WebGL context alive during the actual gameplay.
+    for (const resource of geometry) resource.dispose();
+    for (const material of materials) material.dispose();
+    geometry = [];
+    materials = [];
+    target = pulse = null;
+    renderer?.dispose();
+    renderer?.forceContextLoss?.();
+    renderer = scene = camera = null;
   }
 
   for (const [control, id] of Object.entries(CONTROL_IDS)) {
@@ -338,9 +347,6 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
       close();
       window.removeEventListener?.('keydown', onKeyDown, true);
       window.removeEventListener?.('keyup', onKeyUp, true);
-      for (const resource of geometry) resource.dispose();
-      for (const material of materials) material.dispose();
-      renderer?.dispose();
     },
   };
 }
