@@ -6,11 +6,10 @@ import { createShowroomPilot, disposeShowroomModel } from './showroom-models.js'
 // All staging stays visual-only: flight coordinates, selected ship and paint never change.
 export const FIRST_STAGE_LAUNCH_SECONDS = 5;
 export const FIRST_STAGE_SHOTS = Object.freeze([
+  // Four readable shots instead of six subsecond cuts.
   { at: 0, name: 'hangar-wide' },
-  { at: 0.82, name: 'pilot-close' },
-  { at: 1.62, name: 'engine-side' },
-  { at: 2.42, name: 'exit-front' },
-  { at: 3.18, name: 'launch-tracking' },
+  { at: 1.25, name: 'pilot-close' },
+  { at: 2.45, name: 'exit-front' },
   { at: 3.9, name: 'handoff' },
 ]);
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
@@ -42,9 +41,7 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   const views = {
     'hangar-wide': { eye: [14 * squeeze, 15, 33], aim: [0, 6, -40], fov: 68 },
     'pilot-close': { eye: [-11 * squeeze, 1, 23], aim: [-11 * squeeze, -0.8, 9], fov: 53 },
-    'engine-side': { eye: [23 * squeeze, 9.5, 15], aim: [0, 6, 5], fov: 63 },
     'exit-front': { eye: [1.5, 10, -64], aim: [0, 6, 3], fov: 68 },
-    'launch-tracking': { eye: [-17 * squeeze, 14, 38], aim: [0, 7, -42], fov: 70 },
     handoff: {
       eye: [7 * squeeze * (1 - handoff), 12, 43 + 7 * (1 - handoff)],
       aim: [0, 7, -90 + 25 * (1 - handoff)],
