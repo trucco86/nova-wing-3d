@@ -1,10 +1,12 @@
 # QA160: redução de alocações das hitboxes do combate
 
 ## Diagnóstico
+
 Durante cada disparo do jogador contra Marvin, pontos fracos dos chefes e casco do chefe,
 o gameloop instanciava novos vetores contendo as mesmas dimensões de colisão.
 
 ## Contrato
+
 - Criar três vetores de dimensões uma vez por jogo: 13/10/16 (rival), 5/5/5
   (pontos fracos), 45/20/4 (casco).
 - Reusar os vetores em crossesSolid e impactPoint, que leem sem modificar os extents.
@@ -13,6 +15,7 @@ o gameloop instanciava novos vetores contendo as mesmas dimensões de colisão.
 - A versão QA160 herda a QA159 como PR empilhada, sem modificá-la retroativamente.
 
 ## Gates
+
 - Release:prepare da v1.27.154 e HTML versionado sincronizado pelo workflow isolado.
 - Testes Node completos, QA157, QA159, QA160 e seis Playwright browser shards.
 - Preview e source repair no SHA final; revisar diff.
