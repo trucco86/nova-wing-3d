@@ -26,6 +26,7 @@ on:
       - fix/qa154-cockpit-hud-victory-radio-20261115
       - perf/qa157-orbit-pod-hotpath-allocations-20261118
       - perf/qa158-city32-searchlight-mount-batching-20261118
+      - perf/qa159-city32-searchlight-resource-sharing-20261118
 permissions:
   contents: write
   actions: write
@@ -75,6 +76,9 @@ jobs:
       - name: Prepare QA158 GPU-batched city web release
         if: github.ref_name == 'perf/qa158-city32-searchlight-mount-batching-20261118'
         run: npm run release:prepare -- 1.27.152
+      - name: Prepare QA159 shared searchlight resources web release
+        if: github.ref_name == 'perf/qa159-city32-searchlight-resource-sharing-20261118'
+        run: npm run release:prepare -- 1.27.153
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -93,6 +97,10 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
             git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "perf/qa159-city32-searchlight-resource-sharing-20261118" ]; then
+            git add -u
+            git add -- releases/v1.27.153.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
