@@ -61,6 +61,9 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
   let materials = [];
   let selected = null;
   const held = new Set();
+  const cameraTarget = new T.Vector3();
+  let renderedWidth = 0;
+  let renderedHeight = 0;
 
   function status() {
     const snap = progress.snapshot();
@@ -234,8 +237,10 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     const activeFlames = ship?.userData.flames ?? [];
     for (const flame of activeFlames) flame.scale.y = 1 + ignition * 1.1;
     if (camera) {
-      const pos = cameraIndex === 0 ? [0, 7, 24] : cameraIndex === 1 ? [17, 7, 12] : [0, 28, 10];
-      camera.position.lerp(new T.Vector3(...pos), Math.min(1, dt * 4));
+      if (cameraIndex === 0) cameraTarget.set(0, 7, 24);
+      else if (cameraIndex === 1) cameraTarget.set(17, 7, 12);
+      else cameraTarget.set(0, 28, 10);
+      camera.position.lerp(cameraTarget, Math.min(1, dt * 4));
       camera.lookAt(craft?.position.x ?? 0, craft?.position.y ?? 0, -4);
     }
   }
@@ -248,9 +253,13 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     if (renderer && scene && camera) {
       const width = Math.max(1, canvas.clientWidth || 700);
       const height = Math.max(1, canvas.clientHeight || 350);
-      renderer.setSize(width, height, false);
-      camera.aspect = width / height;
-      camera.updateProjectionMatrix();
+      if (width !== renderedWidth || height !== renderedHeight) {
+        renderer.setSize(width, height, false);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderedWidth = width;
+        renderedHeight = height;
+      }
       renderer.render(scene, camera);
     }
     frame = window.requestAnimationFrame?.(draw) ?? null;
@@ -291,6 +300,7 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     renderer?.dispose();
     renderer?.forceContextLoss?.();
     renderer = scene = camera = null;
+    renderedWidth = renderedHeight = 0;
   }
 
   for (const [control, id] of Object.entries(CONTROL_IDS)) {
