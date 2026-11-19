@@ -1,0 +1,56 @@
+name: Build accessible gameplay downloads
+
+on:
+  push:
+    branches: [media/gameplay-native-4k60-v3]
+    paths:
+      - '.github/workflows/gameplay-accessible-delivery.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  encode:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Install FFmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Download verified ten-minute candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/trucco86/nova-wing-3d/actions/artifacts/14383391412/zip" \
+            --output candidate.zip
+          unzip -q candidate.zip -d candidate
+      - name: Encode streamable 4K60 and mobile 1080p60
+        run: |
+          source_4k="$(find candidate -name 'NovaWing_Gameplay_10min_4K60.mp4' -print -quit)"
+          test -n "$source_4k"
+          mkdir -p delivery
+          ffmpeg -y -v warning -i "$source_4k" -t 600 \
+            -c:v libx264 -preset ultrafast -tune fastdecode \
+            -b:v 5800k -maxrate 6200k -bufsize 12400k \
+            -profile:v high -level:v 5.2 -pix_fmt yuv420p \
+            -c:a aac -b:a 128k -ar 48000 -movflags +faststart \
+            delivery/NovaWing_Gameplay_10min_4K60_Stream.mp4
+          ffmpeg -y -v warning -i "$source_4k" -t 600 -vf scale=1920:1080 \
+            -c:v libx264 -preset fast -crf 26 -profile:v main -level:v 4.2 \
+            -pix_fmt yuv420p -c:a aac -b:a 128k -ar 48000 -movflags +faststart \
+            delivery/NovaWing_Gameplay_10min_1080p60_Mobile.mp4
+      - name: Verify playback contract
+        run: |
+          for file in delivery/*.mp4; do
+            ffprobe -v error -count_frames \
+              -show_entries stream=codec_name,width,height,avg_frame_rate,nb_read_frames,duration \
+              -show_entries format=duration,size -of json "$file"
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: gameplay-accessible-downloads
+          path: delivery/*.mp4
+          retention-days: 14
