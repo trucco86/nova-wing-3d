@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { openMenu } from './menu-navigation.mjs';
 
-test('Five Cats intro shows five readable wingmen with Bia leading, then releases flight', async ({
+test('Five Cats launch shows the real lead ship and four escorts, then releases flight', async ({
   page,
 }, info) => {
   test.setTimeout(90000);
@@ -10,8 +10,10 @@ test('Five Cats intro shows five readable wingmen with Bia leading, then release
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await page.evaluate(() => window.fixture.advance(1.2));
   const intro = await page.evaluate(() => window.fixture.game.snapshot().fiveCats);
-  expect(intro.visible).toHaveLength(5);
-  expect(intro.visible.find((ship) => ship.pilot === 'bia').x).toBe(0);
+  expect(intro.visible).toHaveLength(4);
+  expect(intro.visible.some((ship) => ship.pilot === 'bia')).toBe(false);
+  expect(intro.playerIsLeader).toBe(true);
+  expect(intro.introPilot).toBe('bia');
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeLessThan(0.1);
   await expect(page.locator('#squadFormationStatus')).toBeVisible();
   await page.screenshot({ path: info.outputPath('bia-five-cats-formation-mobile.png') });
@@ -20,6 +22,31 @@ test('Five Cats intro shows five readable wingmen with Bia leading, then release
   await expect(page.locator('#squadFormationStatus')).toBeHidden();
   await page.evaluate(() => window.fixture.advance(0.6));
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
+});
+
+test('stage-one hangar uses six camera shots without changing the active fighter', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/__dynamic.html?sector=0&intro=1');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  const observed = [];
+  let previous = 0;
+  for (const at of [0.3, 1.1, 1.95, 2.8, 3.5, 4.5]) {
+    await page.evaluate((dt) => window.fixture.advance(dt), at - previous);
+    previous = at;
+    const data = await page.evaluate(() => window.fixture.game.snapshot());
+    observed.push(data.fiveCats.launchShot);
+    expect(data.fiveCats.playerIsLeader).toBe(true);
+    expect(data.fiveCats.visible).toHaveLength(4);
+    expect(data.seconds).toBe(0);
+    if (at === 1.1 || at === 3.5)
+      await page.screenshot({ path: info.outputPath('launch-shot-' + at + '.png') });
+  }
+  expect(observed).toEqual([
+    'hangar-wide', 'pilot-close', 'engine-side',
+    'exit-front', 'launch-tracking', 'handoff',
+  ]);
 });
 
 test('skipping story from public menu still launches Five Cats from the hangar', async ({
