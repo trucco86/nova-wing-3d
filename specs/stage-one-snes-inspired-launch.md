@@ -12,7 +12,8 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - O hangar é geometria visual temporária, removida do render após a decolagem e descartada no encerramento.
 - As cinco naves aparecem; a da Bia lidera. Enquadramento lateral inicial, abertura das portas, aceleração na pista e passagem para câmera de perseguição.
 - Não há teleporte da nave do jogador: o líder termina na mesma posição do jogador. As demais naves abrem a formação ao final.
-- Pausa congela a animação; reinício recompõe a cena; salto da introdução, fases seguintes e laboratório não exibem hangar.
+- Pausa congela a animação e reinício recompõe a cena. Pular a história inicial preserva a decolagem do hangar; fases seguintes e laboratório não exibem hangar.
+- O botão Pular e as teclas Enter, Espaço e Escape ignoram apenas a história opcional, não o lançamento jogável.
 - Mobile em portrait comprime a abertura da formação e mantém os textos no trilho de avisos já existente, sem adicionar HUD.
 - Áudio de ignição reaproveita cues existentes e respeita o mute.
 
