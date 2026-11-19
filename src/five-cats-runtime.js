@@ -343,6 +343,10 @@ export function createFiveCatsSquad({
         .filter(({ mesh }) => mesh.visible)
         .map(({ pilot: p, mesh }) => ({
           pilot: p.id,
+          shipModel: mesh.userData.launchModule?.name ?? null,
+          paintedColor: mesh.userData.paint
+            ?.find((material) => !material.userData.paintAccent)
+            ?.color.getHexString(),
           x: mesh.position.x,
           y: mesh.position.y,
           z: mesh.position.z,
