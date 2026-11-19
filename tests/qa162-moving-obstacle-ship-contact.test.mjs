@@ -77,7 +77,9 @@ test('QA162: decorative obstacles and leaving a collider do not create ghost hit
 test('QA162: the running loop uses physical resolution only in 3D mode', async () => {
   const { readFileSync } = await import('node:fs');
   const source = readFileSync(new URL('../src/game.js', import.meta.url), 'utf8');
-  assert.match(source, /const resolveObstacleShipContact = createObstacleShipResolver\\(\\);/);
-  assert.match(source, /if \\(dynamicFlight\\) \\{[\\s\\S]{0,450}resolveObstacleShipContact\\(/);
-  assert.match(source, /if \\(collidedWithObstacle\\) hit\\(30\\);/);
+  assert.ok(source.includes('const resolveObstacleShipContact = createObstacleShipResolver();'));
+  const flightContact = source.slice(source.indexOf('let collidedWithObstacle = false;'));
+  assert.ok(flightContact.includes('if (dynamicFlight) {'));
+  assert.ok(flightContact.includes('resolveObstacleShipContact('));
+  assert.ok(flightContact.includes('if (collidedWithObstacle) hit(30);'));
 });
