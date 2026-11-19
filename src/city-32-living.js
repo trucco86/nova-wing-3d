@@ -20,6 +20,7 @@ export const CITY32_ADS = Object.freeze([
 const block = new T.BoxGeometry(1, 1, 1);
 const plane = new T.PlaneGeometry(1, 1);
 const skyBeam = new T.CylinderGeometry(0.3, 8, 145, 10, 1, true);
+const searchlightLampGeometry = new T.SphereGeometry(2.2, 9, 7);
 const neon = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const frame = new T.MeshStandardMaterial({ color: '#587d91', metalness: 0.73, roughness: 0.28 });
 const beamMaterial = new T.MeshBasicMaterial({
@@ -35,6 +36,11 @@ const hull = new T.MeshStandardMaterial({ color: '#c5e5f0', metalness: 0.74, rou
 const engine = new T.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
 const palette = ['#c4c9b8', '#e1b786', '#d8d2c2', '#9fb9b4', '#c4b4a2', '#e8d7a5'].map(
   (c) => new T.Color(c),
+);
+// A city scene can be cloned or rebuilt; sharing immutable GPU resources avoids
+// six redundant sphere buffers per scene without changing each lamp's tint.
+const searchlightLampMaterials = palette.map(
+  (color) => new T.MeshBasicMaterial({ color, toneMapped: false }),
 );
 const transform = new T.Object3D();
 const textureCache = new Map();
@@ -351,12 +357,11 @@ function searchlightNetwork(parent, buildings) {
     beam.name = 'city32-searchlight-beam';
     beam.userData.visualOnly = true;
     pivot.add(beam);
-    const lamp = new T.Mesh(new T.SphereGeometry(2.2, 9, 7), engine);
+    const lamp = new T.Mesh(
+      searchlightLampGeometry,
+      searchlightLampMaterials[i % searchlightLampMaterials.length],
+    );
     lamp.name = 'city32-searchlight-lamp';
-    lamp.material = new T.MeshBasicMaterial({
-      color: palette[i % palette.length],
-      toneMapped: false,
-    });
     pivot.add(lamp);
     tower.add(pivot);
     group.add(tower);
