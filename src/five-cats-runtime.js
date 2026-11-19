@@ -9,7 +9,11 @@ import {
   ALLY_SORTIE_FLIGHT,
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
-import { firstStageLaunchAt, firstStageLaunchWingPose, firstStageWingSlots } from './stage-one-launch-intro.js';
+import {
+  firstStageLaunchAt,
+  firstStageLaunchWingPose,
+  firstStageWingSlots,
+} from './stage-one-launch-intro.js';
 
 // World-space IFF tags attach to the ally ships, never to enemy fighters and
 // never to the HUD center. Green and readable even in the city neon skyline.

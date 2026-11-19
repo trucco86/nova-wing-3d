@@ -44,8 +44,12 @@ test('stage-one hangar uses six camera shots without changing the active fighter
       await page.screenshot({ path: info.outputPath('launch-shot-' + at + '.png') });
   }
   expect(observed).toEqual([
-    'hangar-wide', 'pilot-close', 'engine-side',
-    'exit-front', 'launch-tracking', 'handoff',
+    'hangar-wide',
+    'pilot-close',
+    'engine-side',
+    'exit-front',
+    'launch-tracking',
+    'handoff',
   ]);
 });
 

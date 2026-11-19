@@ -37,7 +37,10 @@ test('every selected pilot replaces the central placeholder; four distinct escor
   for (const lead of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     const slots = firstStageWingSlots(lead);
     assert.equal(slots.length, 4);
-    assert.deepEqual(slots.map(({ slot }) => slot), [-2, -1, 1, 2]);
+    assert.deepEqual(
+      slots.map(({ slot }) => slot),
+      [-2, -1, 1, 2],
+    );
     assert.ok(slots.every(({ id }) => id !== lead));
     assert.equal(new Set([lead, ...slots.map(({ id }) => id)]).size, 5);
   }

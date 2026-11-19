@@ -3626,7 +3626,8 @@ export function createGame({
     // stacking contexts otherwise intercept taps meant for the skip action.
     $('menu').hidden = true;
     $('cinematic').hidden = false;
-    if (!cinematicStage) cinematicStage = createCinematicStage($('cinematicCanvas'), selectedMissionLoadout);
+    if (!cinematicStage)
+      cinematicStage = createCinematicStage($('cinematicCanvas'), selectedMissionLoadout);
     $('cinematic').classList[settings.subtitles ? 'remove' : 'add']('hide-subtitles');
     $('cinematicSkip').focus?.({ preventScroll: true });
     updateCinematic();

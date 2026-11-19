@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CINEMATIC_FLEET, cinematicFleetForLoadout, cinematicFormationPosition } from '../src/cinematic-formation.js';
+import {
+  CINEMATIC_FLEET,
+  cinematicFleetForLoadout,
+  cinematicFormationPosition,
+} from '../src/cinematic-formation.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from '../src/cinematics.js';
 import { renderCinematicPortrait } from '../src/radio-portraits.js';
 
@@ -32,7 +36,10 @@ test('optional story selects the actual lead ship, paint and center for every pi
       color: 'crimson',
     });
     assert.equal(fleet.length, 5);
-    assert.deepEqual(fleet.map(({ slot }) => slot), [0, -2, -1, 1, 2]);
+    assert.deepEqual(
+      fleet.map(({ slot }) => slot),
+      [0, -2, -1, 1, 2],
+    );
     assert.equal(fleet[0].id, active.id);
     assert.equal(fleet[0].model, 'specter');
     assert.equal(fleet[0].color, 'crimson');

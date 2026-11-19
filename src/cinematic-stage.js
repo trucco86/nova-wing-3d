@@ -86,9 +86,7 @@ export function createCinematicStage(canvas, selectedLoadout = null) {
       const profile = fleet[index];
       const pos = cinematicFormationPosition(profile.slot, elapsed, camera.aspect);
       ship.visible = shot !== 'squad' && !(mechaShot && profile.slot === 0);
-      ship.scale.setScalar(
-        (profile.slot === 0 ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1),
-      );
+      ship.scale.setScalar((profile.slot === 0 ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1));
       ship.position.set(pos.x, pos.y, pos.z);
       ship.rotation.set(0.12, Math.PI + Math.sin(elapsed * 0.2 + index) * 0.09, pos.bank);
       if (shot === 'escape')

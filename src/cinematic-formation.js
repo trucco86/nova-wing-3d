@@ -26,9 +26,7 @@ export function cinematicFleetForLoadout(loadout = null) {
     {
       ...selected,
       slot: 0,
-      model: ['nova7', 'specter', 'aegis'].includes(loadout?.ship)
-        ? loadout.ship
-        : selected.model,
+      model: ['nova7', 'specter', 'aegis'].includes(loadout?.ship) ? loadout.ship : selected.model,
       color: ['polar', 'mint', 'cobalt', 'crimson', 'gold'].includes(loadout?.color)
         ? loadout.color
         : selected.color,
