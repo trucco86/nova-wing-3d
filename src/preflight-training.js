@@ -151,6 +151,10 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     ship.scale.setScalar(0.83);
     scene.add(ship);
     robot = createFlyingRobot();
+    if (robot.userData.mechPaint) {
+      robot.userData.mechPaint.primary.color.set(palette.color);
+      robot.userData.mechPaint.accent.color.set(palette.accent);
+    }
     robot.name = 'preflight-selected-mecha';
     robot.scale.setScalar(0.75);
     robot.visible = false;
@@ -263,9 +267,13 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     };
     button.onpointerup = button.onpointercancel = button.onlostpointercapture = () => release(control);
     // Keyboard or assistive-tech clicks do not require synthetic pointer events.
-    button.onclick = () => {
-      if (!held.has(control)) press(control);
-      release(control);
+    button.onclick = (event) => {
+      // Pointer interaction already ran onpointerdown. Keyboard activation
+      // produces detail=0 and must not double-toggle ROBÔ or CÂMERA.
+      if (!event || event.detail === 0) {
+        press(control);
+        release(control);
+      }
     };
   }
   const onKeyDown = (event) => {
@@ -273,10 +281,15 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     const action = PREFLIGHT_KEY_CODES[event.code];
     if (action) {
       event.preventDefault?.();
-      if (!event.repeat && !held.has(event.code)) press(event.code);
+      if (!event.repeat && !held.has(event.code)) {
+        if (action === 'move') mark('move');
+        else {
+          press(action);
+          // Keyboard held state is tracked by its actual key code.
+          release(action);
+        }
+      }
       held.add(event.code);
-      if (action === 'move') mark('move');
-      if (action !== 'move') mark(action);
     }
   };
   const onKeyUp = (event) => {
