@@ -6,11 +6,11 @@ import { join, resolve } from 'node:path';
 import { copyGameArt, FIVE_CATS_ART_FILES } from '../tools/copy-art-assets.mjs';
 import { CAT_RANKS } from '../src/cat-rank-catalog.js';
 
-test('original Five Cats art exports all six standalone WebP files for offline and Pages', async (t) => {
+test('original Five Cats art exports all ten standalone WebP files for offline and Pages', async (t) => {
   const dest = await mkdtemp(join(tmpdir(), 'five-cats-art-'));
   t.after(() => rm(dest, { recursive: true, force: true }));
-  assert.equal(FIVE_CATS_ART_FILES.length, 6);
-  assert.equal(await copyGameArt(dest), 6);
+  assert.equal(FIVE_CATS_ART_FILES.length, 10);
+  assert.equal(await copyGameArt(dest), 10);
   for (const name of FIVE_CATS_ART_FILES) {
     const source = await readFile(resolve('src/assets', name));
     const installed = await readFile(join(dest, 'src/assets', name));
@@ -26,6 +26,8 @@ test('Bob gets the latest dedicated visual without changing the pilot identities
   const css = await readFile(resolve('src/styles.css'), 'utf8');
   const showroom = await readFile(resolve('src/showroom.js'), 'utf8');
   assert.match(css, /data-pilot='bob'\] \.profile-portrait/);
+  for (const pilot of ['bia', 'bob', 'christopher', 'calvin', 'jenifer'])
+    assert.match(css, new RegExp(pilot + '-spotlight\\.webp'));
   assert.match(css, /bob-spotlight\.webp/);
   assert.match(css, /data-pilot='bob'\] \.hangar-art-portrait/);
   assert.match(html, /id="hangarArtImage"/);
