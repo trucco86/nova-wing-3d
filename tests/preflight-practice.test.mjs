@@ -93,7 +93,6 @@ test('training can be skipped or returned to the map without losing the chosen f
   assert.equal(h.game.snapshot().preflightPractice.active, false);
 });
 
-
 test('switching from ship to robot and back preserves the active flight pose', () => {
   const ship = new T.Object3D();
   const robot = new T.Object3D();
