@@ -112,7 +112,7 @@ test('skipping the optional story keeps stage-one hangar launch after campaign m
   h.advance(1.2);
   assert.equal(h.game.snapshot().seconds, 0, 'mission clock cannot advance during launch');
   assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
-  assert.match(h.elements.get('squadFormationStatus').textContent, /MOTORES|DECOLAGEM/);
+  assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR|MOTORES|DECOLAGEM/);
   h.advance(4);
   assert.equal(h.game.snapshot().fiveCats.intro, 0);
   h.advance(0.2);
@@ -132,43 +132,37 @@ test('keyboard skip of story preserves stage-one launch and does not skip it', (
 });
 
 test('selected ship and paint stay on the same real fighter across the launch handoff', (t) => {
-  let scene;
-  const h = harness({
-    spawnEncounters: false,
-    enableSquadIntro: true,
-    observeScene(current) {
-      scene = current;
-    },
-  });
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start(false, {
     sector: 0,
     loadout: { pilot: 'bob', ship: 'specter', color: 'crimson' },
   });
   h.advance(1.1);
-  const snap = h.game.snapshot();
-  assert.equal(snap.fiveCats.introPilot, 'bob');
-  assert.equal(snap.fiveCats.playerIsLeader, true);
-  assert.equal(snap.fiveCats.visible.length, 4);
-  assert.ok(snap.fiveCats.visible.every((wing) => wing.pilot !== 'bob'));
-  const player = scene.children.find((node) => node.getObjectByName('five-cats-flight-mech'));
-  assert.ok(player, 'live gameplay fighter must be on screen during the cinematic');
-  const module = player.getObjectByName('ship-model-specter');
-  assert.ok(module, 'actual selected ship mesh must stay attached to the live player');
+  const first = h.game.snapshot();
+  assert.equal(first.fiveCats.introPilot, 'bob');
+  assert.equal(first.fiveCats.playerIsLeader, true);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.ok(first.fiveCats.visible.every((wing) => wing.pilot !== 'bob'));
+  assert.equal(first.heroShip.model, 'ship-model-specter');
+  assert.equal(first.heroShip.visible, true);
+  assert.equal(first.heroShip.selectedColor, 'crimson');
   const selected = new T.Color(shipColorAt('crimson').color).getHexString();
-  assert.ok(player.userData.paint.some((m) => m.color.getHexString() === selected));
+  assert.equal(first.heroShip.paint, selected);
   for (const profile of CINEMATIC_FLEET.filter(({ id }) => id !== 'bob')) {
-    const escort = scene.getObjectByName('five-cats-wingman-' + profile.id);
-    assert.ok(escort.visible);
-    assert.equal(escort.userData.launchModule.name, 'ship-model-' + profile.model);
+    const escort = first.fiveCats.visible.find(({ pilot }) => pilot === profile.id);
+    assert.ok(escort);
+    assert.equal(escort.shipModel, 'ship-model-' + profile.model);
+    assert.equal(escort.paintedColor, new T.Color(shipColorAt(profile.color).color).getHexString());
   }
-  const samePlayer = player;
   h.advance(4.1);
-  assert.equal(h.game.snapshot().fiveCats.intro, 0);
-  assert.equal(player, samePlayer);
-  assert.equal(player.visible, true);
-  assert.equal(player.getObjectByName('ship-model-specter'), module);
-  assert.ok(player.userData.paint.some((m) => m.color.getHexString() === selected));
+  const ended = h.game.snapshot();
+  assert.equal(ended.fiveCats.intro, 0);
+  assert.equal(ended.heroShip.visible, true);
+  assert.equal(ended.heroShip.rootId, first.heroShip.rootId);
+  assert.equal(ended.heroShip.moduleId, first.heroShip.moduleId);
+  assert.equal(ended.heroShip.model, first.heroShip.model);
+  assert.equal(ended.heroShip.paint, selected);
 });
 
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
