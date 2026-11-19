@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/stage-one-cinematic-launch-20261119
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
@@ -86,10 +85,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
-          # This PR's source and tests must match the formatter output consumed by CI.
-          if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ]; then
-            git add -- src/game.js src/five-cats-runtime.js src/stage-one-launch-intro.js src/showroom-models.js src/cinematic-formation.js src/cinematic-stage.js tests/stage-one-launch-intro.test.mjs tests/five-cats-formation-supers.test.mjs tests/cinematic-v12725.test.mjs tests/browser/five-cats-formation.spec.mjs specs/stage-one-snes-inspired-launch.md releases/v1.27.153.md CHANGELOG.md
-          fi
           # QA157: preserve formatter output for the new hotpath code and tests.
           if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
             git add -- src/game.js tests/qa157-orbit-pod-hotpath.test.mjs specs/qa157-orbit-pod-hotpath.md
