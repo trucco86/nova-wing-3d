@@ -205,17 +205,12 @@ export function createFiveCatsSquad({
           handoff: 'CIUDAD DE MÁQUINAS · TOMA EL CONTROL',
         },
       };
-      formationStatus.textContent =
-        (captions[getLanguage()] ?? captions.pt)[launch.beat];
+      formationStatus.textContent = (captions[getLanguage()] ?? captions.pt)[launch.beat];
       wings.forEach(({ pilot: p, mesh }) => {
         const pose = firstStageLaunchWingPose(p.slot, t, aspect);
         mesh.visible = true;
         mesh.scale.setScalar(aspect < 0.75 ? 0.93 : 1.1);
-        mesh.position.set(
-          player.position.x + pose.x,
-          pose.y,
-          player.position.z + pose.z - 9,
-        );
+        mesh.position.set(player.position.x + pose.x, pose.y, player.position.z + pose.z - 9);
         mesh.rotation.z = pose.bank;
       });
       player.visible = false;
