@@ -32,3 +32,10 @@ o movimento atravessa a parede e surge do outro lado.
 - Base QA160 #405, que depende da QA159 #404. Merge apenas na ordem correta
   após review, CI FULL e homologação física/visual.
 - Release candidata v1.27.155; não publicar automaticamente.
+
+## Evidência da preparação da candidata
+
+- [Sync generated web #44592818396](https://github.com/trucco86/nova-wing-3d/actions/runs/44592818396): execução concluída com sucesso, incluindo preparação v1.27.155, geração HTML e validação.
+- A PR #407 continua Draft; executar e verificar quality + todos os seis shards Playwright no SHA final, Source Repair e preview Cloudflare.
+- O teste de regressão foi concebido para falhar antes da mudança quando o piloto cruza uma barreira integral de -Z para +Z, sem espaço para desvio em X/Y.
+- Homologação no smartphone físico, vídeo dos dois sentidos de aproximação e investigação completa da issue #285 seguem pendentes.
