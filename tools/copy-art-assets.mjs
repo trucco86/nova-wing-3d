@@ -6,6 +6,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const FIVE_CATS_ART_FILES = Object.freeze([
   'five-cats-portraits.webp',
   'bob-spotlight.webp',
+  'bia-spotlight.webp',
+  'christopher-spotlight.webp',
+  'calvin-spotlight.webp',
+  'jenifer-spotlight.webp',
   'five-cats-ships-concept.webp',
   'five-cats-rank-emblems.webp',
   'nova-wing-weapons-concept.webp',
