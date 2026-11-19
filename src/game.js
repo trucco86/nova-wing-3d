@@ -191,6 +191,7 @@ import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.j
 import { SQUAD_SPECIALS, SQUAD_INTRO_DURATION } from './five-cats-squad.js';
 import { CINEMATIC_FLEET } from './cinematic-formation.js';
 import { createFirstStageLaunchIntro } from './stage-one-launch-intro.js';
+import { createPreflightTraining } from './preflight-training.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { bossEncounterGate } from './encounter-separation.js';
@@ -1501,6 +1502,16 @@ export function createGame({
     saveCheckpoint(sectorIndex + 1);
     return true;
   }
+  const preflightTraining = createPreflightTraining({
+    document,
+    window,
+    onLaunch() {
+      nextSector();
+    },
+    onBack() {
+      $('mapTrain').focus?.({ preventScroll: true });
+    },
+  });
   let campaignMapOrigin = 'hangar';
   function openCampaignMap(origin) {
     if (!appActive) return;
@@ -1516,6 +1527,7 @@ export function createGame({
     $('mapLaunch').textContent = localization.translate(
       origin === 'preflight' ? 'INICIAR MISSÃO ↗' : 'INICIAR PRÓXIMA FASE ↗',
     );
+    $('mapTrain').hidden = !(origin === 'preflight' && dynamicFlight);
     $('campaignMap').hidden = false;
     $('mapLaunch').focus?.({ preventScroll: true });
   }
@@ -3834,6 +3846,10 @@ export function createGame({
   if (!dynamicFlight) $('nextSector').textContent = 'SALTAR PARA O PRÓXIMO SETOR ↗';
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
+  $('mapTrain').onclick = () => {
+    if (state !== 'map' || campaignMapOrigin !== 'preflight' || !dynamicFlight) return;
+    preflightTraining.open({ ...pilotLoadout, skin: cosmetics.skin });
+  };
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
   $('equipScatter').onclick = equipScatter;
   $('music').onclick = () => {
@@ -7037,6 +7053,7 @@ export function createGame({
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
       fiveCats: squad?.snapshot() ?? null,
+      preflightPractice: preflightTraining.snapshot(),
       // QA-only visual identity: same live Object3D and paint before/after launch.
       heroShip: {
         rootId: player.uuid,
@@ -7207,6 +7224,7 @@ export function createGame({
       audioCues?.destroy();
       mechaEngine?.destroy();
       cinematicStage?.destroy();
+      preflightTraining.destroy();
       localization.destroy();
       cleanups.forEach((fn) => fn());
       clearWorld();
