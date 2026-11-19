@@ -66,7 +66,8 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   g.name = 'pilot-model-' + profile.id;
   const material = (color, metalness = 0.1, roughness = 0.65) =>
     new T.MeshStandardMaterial({ color, metalness, roughness });
-  const fur = material(id === 'jenifer' ? '#707a86' : id === 'calvin' ? '#28252d' : '#161a23');
+  // Single feline identity across the hangar, cinematic launch and pilot selection.
+  const fur = material(profile.fur, 0.08, 0.78);
   const armor = material(suitPalettes[grade][0], 0.7, 0.3),
     dark = material('#101925', 0.5);
   const trim = material(suitPalettes[grade][1], 0.8, 0.25),
@@ -78,7 +79,8 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   });
   const eye = material(id === 'jenifer' || id === 'bob' ? '#aedb91' : '#e3b95b');
   const white = material('#d9e0dc'),
-    pupil = material('#070b13');
+    pupil = material('#070b13'),
+    whiskerMat = material('#b5c1c7', 0, 0.85);
   function ellipsoid(parent, name, m, x, y, z, sx, sy, sz) {
     const o = new T.Mesh(new T.SphereGeometry(1, 28, 20), m);
     o.name = name;
@@ -93,7 +95,9 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
     g.add(o);
     return o;
   }
-  ellipsoid(g, 'flight-suit', armor, 0, 0.25, 0, 0.67, 0.88, 0.4);
+  // Distinct body masses: Christopher remains largest, Bob only slightly slimmer.
+  const torsoWidth = id === 'christopher' ? 0.74 : id === 'bob' ? 0.7 : 0.63;
+  ellipsoid(g, 'flight-suit', armor, 0, 0.25, 0, torsoWidth, 0.88, 0.4);
   ellipsoid(g, 'chest-plate', trim, 0, 0.38, 0.28, 0.48, 0.66, 0.2);
   plate(dark, 0, 0.38, 0.45, 0.23, 0.75, 0.1);
   plate(glow, 0, 0.6, 0.53, 0.12, 0.2, 0.05);
@@ -153,6 +157,9 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   head.scale.setScalar(id === 'christopher' ? 1.13 : 1);
   g.add(head);
   ellipsoid(head, 'fur', fur, 0, 0, 0, 0.78, 0.66, 0.62);
+  // Low-cost sculpted silhouette details, readable on the close-up and roster.
+  ellipsoid(head, 'feline-chin', fur, 0, -0.42, 0.37, 0.45, 0.19, 0.28);
+  ellipsoid(head, 'muzzle-bridge', fur, 0, -0.1, 0.55, 0.19, 0.27, 0.15);
   for (const side of [-1, 1]) {
     const ear = new T.Mesh(new T.ConeGeometry(0.3, 0.65, 3), fur);
     ear.name = 'ear';
@@ -164,6 +171,13 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
     inner.rotation.z = side * -0.22;
     head.add(inner);
     ellipsoid(head, 'cheek', fur, side * 0.4, -0.23, 0.37, 0.37, 0.31, 0.29);
+    if (id === 'bob' || id === 'christopher') {
+      const tuft = new T.Mesh(new T.ConeGeometry(0.2, 0.43, 4), fur);
+      tuft.name = 'feline-cheek-fur';
+      tuft.position.set(side * 0.68, -0.32, 0.24);
+      tuft.rotation.z = side * -0.95;
+      head.add(tuft);
+    }
     ellipsoid(head, 'eye-white', white, side * 0.31, 0.1, 0.55, 0.22, 0.17, 0.09);
     ellipsoid(head, 'iris', eye, side * 0.31, 0.1, 0.625, 0.12, 0.145, 0.04);
     ellipsoid(head, 'pupil', pupil, side * 0.31, 0.1, 0.66, 0.039, 0.12, 0.017);
@@ -171,7 +185,7 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
     ellipsoid(head, 'brow', fur, side * 0.3, 0.27, 0.58, 0.27, 0.075, 0.1).rotation.z = side * 0.1;
     ellipsoid(head, 'muzzle', fur, side * 0.16, -0.24, 0.6, 0.23, 0.17, 0.16);
     for (let i = 0; i < 3; i++) {
-      const whisker = new T.Mesh(new T.CylinderGeometry(0.008, 0.005, 0.48, 5), trim);
+      const whisker = new T.Mesh(new T.CylinderGeometry(0.008, 0.005, 0.48, 5), whiskerMat);
       whisker.position.set(side * 0.63, -0.19 - i * 0.07, 0.64);
       whisker.rotation.z = side * (1.1 + i * 0.2);
       head.add(whisker);
@@ -190,7 +204,9 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   );
   g.add(tail);
   // Christopher and Bob share a large body; Bia and Jenifer share the smaller one.
-  g.scale.setScalar(id === 'calvin' ? 0.79 : ['christopher', 'bob'].includes(id) ? 1.08 : 0.93);
+  g.scale.setScalar(
+    id === 'calvin' ? 0.79 : id === 'christopher' ? 1.11 : id === 'bob' ? 1.055 : 0.93,
+  );
   return g;
 }
 
