@@ -12,8 +12,10 @@ await mkdir(out, { recursive: true });
 const fixtureSource = await readFile('tests/dynamic-scene.js', 'utf8');
 const marker = 'const renderer = new T.WebGLRenderer(options);';
 if (!fixtureSource.includes(marker)) throw new Error('Fixture renderer hook changed');
-const nativeSource = fixtureSource.replace(marker, marker + '\n' +
+let nativeSource = fixtureSource.replace(marker, marker + '\n' +
   'const nativePixelRatio = renderer.setPixelRatio.bind(renderer); renderer.setPixelRatio = () => nativePixelRatio(1);');
+nativeSource = nativeSource.replace('render(...args);',
+  "if (sector === 7 && params.get('captureWide') === '1' && args[1]?.isPerspectiveCamera) { args[1].fov = 88; args[1].updateProjectionMatrix(); }\\n      render(...args);");
 const bundle = await build({ stdin: { contents: nativeSource, resolveDir: process.cwd() + '/tests', sourcefile: 'native-capture-fixture.js' },
   bundle: true, write: false, format: 'iife', minify: true });
 const shell = await readFile('src/shell.html', 'utf8');
@@ -70,7 +72,7 @@ try {
       suspend(time) { return time === undefined ? Promise.resolve() : super.suspend(time); }
     };
   }, { total });
-  const query = '?sector=' + shot.sector + '&xp=2200&pods=3&encounters=1' + (shot.boss ? '&qaBoss=' + shot.sector : '');
+  const query = '?sector=' + shot.sector + '&xp=2200&pods=3&encounters=1' + (shot.boss ? '&qaBoss=' + shot.sector : '') + (shot.sector === 7 && shot.boss ? '&captureWide=1' : '');
   await page.goto('http://127.0.0.1:4187/__dynamic.html' + query);
   await page.waitForFunction(() => document.body.dataset.ready === 'true', null, { timeout: 120000 });
   await page.locator('#pause').click();
@@ -102,8 +104,9 @@ try {
       let x = target?.x ?? 0, y = target?.y ?? 10;
       // Sector 8: keep the ship in the central safe corridor. Boss-facing is controlled by real orbit input below.
       if (sector === 7 && boss) {
-        x = Math.max(-8, Math.min(8, x));
-        y = Math.max(6, Math.min(18, y));
+        // Hold the real player in the arena center so the chase camera never enters boss geometry.
+        x = 0;
+        y = 10;
       }
       // Stay in the real asteroid corridor; do not change rock positions or collision.
       if (sector === 2 && !boss) {
@@ -115,12 +118,12 @@ try {
         if (blockedSeconds > 2) throw new Error('Rejected asteroid blockage > 2 seconds');
         if (course?.recovering) throw new Error('Rejected asteroid recovery/backtracking');
       }
-      if (threats.length) x = p.x + (threats[0][0] >= p.x ? -10 : 10);
+      if (threats.length && !(sector === 7 && boss)) x = p.x + (threats[0][0] >= p.x ? -10 : 10);
       // Match actual dynamic-flight bounds; the old clamp made reactor valves unreachable.
       x = Math.max(-68, Math.min(68, x)); y = Math.max(0, Math.min(sector === 0 ? 180 : 92, y));
       key('ArrowLeft', p.x > x + 0.8); key('ArrowRight', p.x < x - 0.8);
       key('ArrowUp', p.y < y - 0.8); key('ArrowDown', p.y > y + 0.8);
-      const aligned = target && Math.abs(target.x-p.x) < 6 && Math.abs(target.y-p.y) < 6;
+      const aligned = target && (sector === 7 && boss || (Math.abs(target.x-p.x) < 6 && Math.abs(target.y-p.y) < 6));
       key('Space', Boolean(aligned) && s.charge < 1.45);
       key('ShiftLeft', s.orbitalLaunch?.phase === 'boost' && s.energy > 0);
       // Transform only in open boss arena, never inside the asteroid passage.
@@ -137,14 +140,14 @@ try {
         .sort((a,b)=>Math.abs(Math.atan2(Math.sin(a.angle-s.strategy.orbitAngle),Math.cos(a.angle-s.strategy.orbitAngle)))-Math.abs(Math.atan2(Math.sin(b.angle-s.strategy.orbitAngle),Math.cos(b.angle-s.strategy.orbitAngle))))[0];
       const delta = closed ? Math.atan2(Math.sin(closed.angle-s.strategy.orbitAngle), Math.cos(closed.angle-s.strategy.orbitAngle)) : 0;
       if (sector === 7 && boss) {
-        // Preserve the frontal arrival for 3.5 seconds, then orbit only within a 43-degree frontal arc.
+        // Preserve the frontal arrival for 10 seconds, then make only a subtle real-input orbit.
         // The direction still reacts to the nearest real closed weak point; no periodic or random movement.
         const relative = closed
           ? Math.atan2(Math.sin(closed.angle-initialOrbit), Math.cos(closed.angle-initialOrbit))
           : 0;
-        const desired = initialOrbit + Math.max(-0.75, Math.min(0.75, relative));
+        const desired = initialOrbit + Math.max(-0.12, Math.min(0.12, relative));
         const frontalDelta = Math.atan2(Math.sin(desired-s.strategy.orbitAngle), Math.cos(desired-s.strategy.orbitAngle));
-        const orbitEnabled = controlFrames > 210;
+        const orbitEnabled = controlFrames > 600;
         key('KeyJ', orbitEnabled && frontalDelta < -0.08);
         key('KeyL', orbitEnabled && frontalDelta > 0.08);
       } else {
