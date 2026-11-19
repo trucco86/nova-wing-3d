@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMenu } from './menu-navigation.mjs';
 
 test('Five Cats intro shows five readable wingmen with Bia leading, then releases flight', async ({
   page,
@@ -19,6 +20,22 @@ test('Five Cats intro shows five readable wingmen with Bia leading, then release
   await expect(page.locator('#squadFormationStatus')).toBeHidden();
   await page.evaluate(() => window.fixture.advance(0.6));
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
+});
+
+test('skipping story from public menu still launches Five Cats from the hangar', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/');
+  await openMenu(page, 'play');
+  await page.locator('#start').click();
+  await expect(page.locator('#cinematic')).toBeVisible();
+  await page.locator('#cinematicSkip').click();
+  await expect(page.locator('#campaignMap')).toBeVisible();
+  await page.locator('#mapLaunch').click();
+  await expect(page.locator('#squadFormationStatus')).toBeVisible();
+  await expect(page.locator('#squadFormationStatus')).toContainText(/HANGAR|MOTORES|DECOLAGEM|CONTROLE/);
+  await page.screenshot({ path: info.outputPath('stage-one-hangar-after-story-skip.png') });
 });
 
 test('Plasma Titan and Five Cats Overdrive fire physical shots without covering center HUD', async ({
