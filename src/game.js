@@ -5299,11 +5299,13 @@ export function createGame({
       ) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
+        // Capture the muzzle world transforms exactly once per firing event.
+        // All projectiles in this volley originate from this same ship pose.
+        const volleyMuzzles = hostileMuzzles(e);
         if (e.kind === 'walker' || e.airborneRobot) {
-          const eyes = hostileMuzzles(e);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
-          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          for (const eye of volleyMuzzles) bullet(eye, player.position.clone(), 'eye-ray');
           fireGroundRobotEyes(e.o, e.age);
         } else
           for (const offset of introductorySubboss
@@ -5314,8 +5316,8 @@ export function createGame({
                 ? e.subbossTactic.aim
                 : [0])
             bullet(
-              hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
-                hostileMuzzles(e)[0] ??
+              volleyMuzzles[Math.abs(Math.round(offset)) % 2] ??
+                volleyMuzzles[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
               e.subbossTactic?.spell ?? '',
@@ -5328,11 +5330,7 @@ export function createGame({
             player.position,
             e.combatPhase,
           ))
-            bullet(
-              hostileMuzzles(e)[0] ?? e.o.position.clone(),
-              target,
-              e.subbossTactic?.spell ?? '',
-            );
+            bullet(volleyMuzzles[0] ?? e.o.position.clone(), target, e.subbossTactic?.spell ?? '');
         e.cd =
           (e.kind === 'subboss'
             ? dynamicFlight
