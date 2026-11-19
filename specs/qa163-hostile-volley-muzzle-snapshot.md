@@ -25,3 +25,9 @@ vetores com `getWorldPosition`. Não há animação do inimigo entre esses tiros
 - Sem promessa de ganho de FPS antes de medir; o objetivo é reduzir CPU/GC.
 - PR empilhada sobre QA162, mantendo QA159 a QA162 pendentes de homologação.
 - Nenhum merge nem deploy de produção sem revisão e autorização.
+
+## Evidências de sincronização inicial, 19/11/2026
+
+- Sync generated web: [run #44625435448](https://github.com/trucco86/nova-wing-3d/actions/runs/44625435448) concluído com sucesso, incluindo `npm run release:prepare -- 1.27.157`, formatação, build e validação.
+- Artefatos HTML e metadados sincronizados pelo bot no commit `be1e752dbe87db18919f2e6cbbd8bd122e070692`.
+- Validação de merge permanece condicionada à CI FULL com seis shards de navegador, source repair, preview isolado, QA de gameplay e benchmark físico do SHA final.
