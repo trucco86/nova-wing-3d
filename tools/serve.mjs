@@ -11,7 +11,7 @@ const server = createServer(async (req, res) => {
   const dynamic = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__dynamic.html';
   const audio = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__audio.html';
   const visual = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__visual.html';
-  const artMatch = /^\\/(?:nova-wing-3d\\/)?src\\/assets\\/([a-z0-9-]+\\.webp)$/.exec(url.pathname);
+  const artMatch = /^\/(?:nova-wing-3d\/)?src\/assets\/([a-z0-9-]+\.webp)$/.exec(url.pathname);
   if (artMatch && FIVE_CATS_ART_FILES.includes(artMatch[1])) {
     try {
       const file = await readFile(new URL('../src/assets/' + artMatch[1], import.meta.url));
