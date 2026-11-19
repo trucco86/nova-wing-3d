@@ -133,7 +133,10 @@ export function installShowroom({
       frame = 0;
       release();
       const pilot = pilotAt(root.dataset.pilot);
-      $('hangarArtImage').setAttribute('aria-label', pilot.name + ', arte de destaque dos Five Cats');
+      $('hangarArtImage').setAttribute(
+        'aria-label',
+        pilot.name + ', arte de destaque dos Five Cats',
+      );
       $('hangarName').textContent = pilot.name;
       $('hangarKind').textContent = 'ARTE DE DESTAQUE / FIVE CATS';
       $('hangarHint').textContent =

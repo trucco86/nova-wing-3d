@@ -15,7 +15,9 @@ test('new Bob art is visible from the real hangar, while the selected 3D ship an
   await expect(page.locator('#hangarCanvas')).toBeHidden();
   await expect(page.locator('#hangarArtImage')).toHaveAttribute('aria-label', /BOB/);
   expect(
-    await page.locator('#hangarArtImage').evaluate((node) => getComputedStyle(node).backgroundImage),
+    await page
+      .locator('#hangarArtImage')
+      .evaluate((node) => getComputedStyle(node).backgroundImage),
   ).toContain('bob-spotlight.webp');
   const bobArt = await page.request.get('/src/assets/bob-spotlight.webp');
   expect(bobArt.ok()).toBeTruthy();

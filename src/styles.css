@@ -11729,7 +11729,6 @@ body.intermission-active #shop #nextSector {
   }
 }
 
-
 /* Five Cats original-art gallery, 2026-11-19. Static WebP outside the 3D scene. */
 :root {
   --five-cats-portraits: url('src/assets/five-cats-portraits.webp');
@@ -11878,15 +11877,29 @@ body.intermission-active #shop #nextSector {
   background-repeat: no-repeat;
   background-position: 0% 0%;
 }
-#pilotRankInsignia[data-rank='2']::before { background-position: 33.333% 0%; }
-#pilotRankInsignia[data-rank='3']::before { background-position: 66.667% 0%; }
-#pilotRankInsignia[data-rank='4']::before { background-position: 100% 0%; }
-#pilotRankInsignia[data-rank='5']::before { background-position: 0% 100%; }
-#pilotRankInsignia[data-rank='6']::before { background-position: 33.333% 100%; }
+#pilotRankInsignia[data-rank='2']::before {
+  background-position: 33.333% 0%;
+}
+#pilotRankInsignia[data-rank='3']::before {
+  background-position: 66.667% 0%;
+}
+#pilotRankInsignia[data-rank='4']::before {
+  background-position: 100% 0%;
+}
+#pilotRankInsignia[data-rank='5']::before {
+  background-position: 0% 100%;
+}
+#pilotRankInsignia[data-rank='6']::before {
+  background-position: 33.333% 100%;
+}
 #pilotRankInsignia[data-rank='7']::before,
-#pilotRankInsignia[data-rank='8']::before { background-position: 66.667% 100%; }
+#pilotRankInsignia[data-rank='8']::before {
+  background-position: 66.667% 100%;
+}
 #pilotRankInsignia[data-rank='9']::before,
-#pilotRankInsignia[data-rank='10']::before { background-position: 100% 100%; }
+#pilotRankInsignia[data-rank='10']::before {
+  background-position: 100% 100%;
+}
 .cat-service-card .cat-service-avatar {
   padding: 0;
   background-image: var(--five-cats-portraits);
@@ -11896,10 +11909,18 @@ body.intermission-active #shop #nextSector {
 .cat-service-card .cat-service-avatar svg {
   display: none;
 }
-.cat-service-card[data-pilot='bob'] .cat-service-avatar { background-position: 25% 50%; }
-.cat-service-card[data-pilot='christopher'] .cat-service-avatar { background-position: 50% 50%; }
-.cat-service-card[data-pilot='calvin'] .cat-service-avatar { background-position: 75% 50%; }
-.cat-service-card[data-pilot='jenifer'] .cat-service-avatar { background-position: 100% 50%; }
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-position: 25% 50%;
+}
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-position: 50% 50%;
+}
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-position: 75% 50%;
+}
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-position: 100% 50%;
+}
 .nova-art-arsenal {
   margin-top: 9px;
   border: 1px solid #649cbc66;

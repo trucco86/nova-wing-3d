@@ -1,12 +1,14 @@
 # Integração das artes oficiais Five Cats no Nova Wing
 
 ## Fontes e identidade
+
 - Fonte principal: composição original de cinco pilotos e suas naves de 19/11/2026.
 - Retrato individual de Bob: usar a versão mais recente, com traje escuro e detalhes turquesa, substituindo o recorte anterior do painel coletivo.
 - As ilustrações de conceito usam o texto “Boa” e “Luna”; o jogo mantém a identidade já implementada **Bia** e **Jenifer**. Recortes removem legendas incorretas, sem modificar o roster, as habilidades e a nave selecionada.
 - Os arquivos WebP da branch são derivados localmente das artes já geradas pelo usuário; não são imagens obtidas de terceiros.
 
 ## Regras de apresentação
+
 1. Retratos no seletor dos cinco pilotos, painel individual, HUD e quadro de patentes devem refletir o piloto selecionado.
 2. O painel de Bob usa `bob-spotlight.webp` como única arte de destaque. Nunca exibir a versão antiga do Bob nesse painel.
 3. A opção **ARTE DOS GATOS** é visual e reversível; **NAVE 360°** e **PILOTO 360°** continuam usando os modelos Three.js reais.
@@ -17,6 +19,7 @@
 8. CSS e imagens não podem cobrir controles, bloquear foco de teclado, gerar scroll obrigatório para a missão ou impedir pausa/reinício.
 
 ## QA
+
 - Teste Node confere formato WebP e distribuição para destino offline, sem sobrescrever arte.
 - Teste Playwright percorre seletor de Bob, arte, retorno ao 3D, troca de nave e cor, conceito da frota, arsenal e patente mobile.
 - Validar visualmente em desktop, 390x844 e landscape pequeno; controlar métricas de layout, FPS e uso de memória.
