@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
+      - feat/stage-one-cinematic-launch-20261119
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
@@ -46,6 +47,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Verify v1.27.153 release preparation
+        if: github.ref_name == 'feat/stage-one-cinematic-launch-20261119'
+        run: npm run release:prepare -- 1.27.153
       - name: Prepare QA148 release metadata
         if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
         run: npm run release:prepare -- 1.27.144
