@@ -66,5 +66,7 @@ test('QA159: sharing lamp resources preserves six animated pivots and Medium/Hig
   assert.equal(towers.filter((tower) => tower.visible).length, 3);
   setCity32Quality(root, 'high');
   assert.equal(towers.filter((tower) => tower.visible).length, 6);
-  assert.ok(pivots.every((pivot) => pivot.children.some((node) => node.name === 'city32-searchlight-beam')));
+  assert.ok(
+    pivots.every((pivot) => pivot.children.some((node) => node.name === 'city32-searchlight-beam')),
+  );
 });
