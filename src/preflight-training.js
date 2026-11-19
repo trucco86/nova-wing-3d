@@ -3,7 +3,11 @@ import { createShowroomShip, disposeShowroomModel } from './showroom-models.js';
 import { createFlyingRobot } from './visuals.js';
 import { pilotAt, shipAt, shipColorAt } from './pilots.js';
 import { SKINS } from './customization.js';
-import { PREFLIGHT_ACTIONS, PREFLIGHT_KEY_CODES, createPracticeProgress } from './preflight-practice.js';
+import {
+  PREFLIGHT_ACTIONS,
+  PREFLIGHT_KEY_CODES,
+  createPracticeProgress,
+} from './preflight-practice.js';
 
 const CONTROL_IDS = {
   left: 'trainingLeft',
@@ -68,7 +72,10 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
         ' · ' +
         PREFLIGHT_ACTIONS.find(({ id }) => id === snap.next)?.keyboard;
     for (const action of PREFLIGHT_ACTIONS) {
-      $('trainingTask-' + action.id).classList.toggle('completed', snap.completed.includes(action.id));
+      $('trainingTask-' + action.id).classList.toggle(
+        'completed',
+        snap.completed.includes(action.id),
+      );
     }
     return snap;
   }
@@ -123,7 +130,8 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     } catch {
       renderer?.dispose();
       renderer = null;
-      $('trainingPrompt').textContent = 'Prévia 3D indisponível · os comandos continuam disponíveis.';
+      $('trainingPrompt').textContent =
+        'Prévia 3D indisponível · os comandos continuam disponíveis.';
       return false;
     }
   }
@@ -293,7 +301,10 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
       press(control);
       button.setPointerCapture?.(event.pointerId);
     };
-    button.onpointerup = button.onpointercancel = button.onlostpointercapture = () => release(control);
+    button.onpointerup =
+      button.onpointercancel =
+      button.onlostpointercapture =
+        () => release(control);
     // Keyboard or assistive-tech clicks do not require synthetic pointer events.
     button.onclick = (event) => {
       // Pointer interaction already ran onpointerdown. Keyboard activation

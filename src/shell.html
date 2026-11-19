@@ -1336,7 +1336,10 @@
           </header>
           <div class="training-grid">
             <div class="training-viewport">
-              <canvas id="trainingCanvas" aria-label="Simulação 3D de voo com a nave selecionada"></canvas>
+              <canvas
+                id="trainingCanvas"
+                aria-label="Simulação 3D de voo com a nave selecionada"
+              ></canvas>
               <span id="trainingShipLabel" class="training-ship-label">FIVE CATS</span>
               <strong id="trainingPrompt" aria-live="polite">PRATIQUE: MOVIMENTAR</strong>
               <div class="training-direction" aria-label="Direcional do treino">
@@ -1353,12 +1356,22 @@
               </div>
             </div>
             <div class="training-exercises" aria-label="Exercícios de pilotagem">
-              <div id="trainingTask-move"><strong>MOVIMENTAR</strong><small>WASD / SETAS ou direcional</small></div>
+              <div id="trainingTask-move">
+                <strong>MOVIMENTAR</strong><small>WASD / SETAS ou direcional</small>
+              </div>
               <div id="trainingTask-fire"><strong>ATIRAR</strong><small>ESPAÇO ou TIRO</small></div>
-              <div id="trainingTask-boost"><strong>ACELERAR</strong><small>SHIFT ou BOOST</small></div>
-              <div id="trainingTask-roll"><strong>GIRO DEFENSIVO</strong><small>Q / E / Z ou GIRO</small></div>
-              <div id="trainingTask-transform"><strong>TRANSFORMAR</strong><small>T ou ROBÔ</small></div>
-              <div id="trainingTask-camera"><strong>TROCAR CÂMERA</strong><small>C ou CÂMERA</small></div>
+              <div id="trainingTask-boost">
+                <strong>ACELERAR</strong><small>SHIFT ou BOOST</small>
+              </div>
+              <div id="trainingTask-roll">
+                <strong>GIRO DEFENSIVO</strong><small>Q / E / Z ou GIRO</small>
+              </div>
+              <div id="trainingTask-transform">
+                <strong>TRANSFORMAR</strong><small>T ou ROBÔ</small>
+              </div>
+              <div id="trainingTask-camera">
+                <strong>TROCAR CÂMERA</strong><small>C ou CÂMERA</small>
+              </div>
               <div class="training-secondary-controls">
                 <button type="button" id="trainingRoll">GIRO</button>
                 <button type="button" id="trainingTransform">ROBÔ</button>
