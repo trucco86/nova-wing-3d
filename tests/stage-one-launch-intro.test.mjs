@@ -11,9 +11,10 @@ import {
 test('launch doors, ignition, departure and seamless playable camera handoff', () => {
   assert.equal(FIRST_STAGE_LAUNCH_SECONDS, 5);
   const frames = [0, 1.2, 2.5, 4.5, 5].map((t) => firstStageLaunchAt(t));
-  assert.deepEqual(frames.map((f) => f.beat), [
-    'doors', 'ignition', 'departure', 'handoff', 'handoff',
-  ]);
+  assert.deepEqual(
+    frames.map((f) => f.beat),
+    ['doors', 'ignition', 'departure', 'handoff', 'handoff'],
+  );
   assert.equal(frames[0].doors, 0);
   assert.equal(frames.at(-1).doors, 1);
   assert.ok(frames[2].corridorShift > frames[1].corridorShift);
