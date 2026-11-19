@@ -28,3 +28,9 @@ corrigiu o lado de saída do fallback de colisão urbana.
   source repair, preview, Playwright completo nos 6 shards.
 - Inspeção em aparelho físico de frame time, controle, boost, colisão de
   túnel e câmera. **Não fazer merge sem homologação e aceite.**
+
+## Evidência inicial de automação em 19/11/2026
+
+- [Sync QA162 #44623326097](https://github.com/trucco86/nova-wing-3d/actions/runs/44623326097): `success`, incluindo `release:prepare` v1.27.156, format, build e `npm run validate`; gera o HTML sincronizado.
+- [CI FULL no SHA gerado #44623700341](https://github.com/trucco86/nova-wing-3d/actions/runs/44623700341): iniciada para quality, browser e seis shards; conclusão ainda precisa de verificação.
+- Homologação visual e desempenho em GPU de iPhone físico ainda não executados.
