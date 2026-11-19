@@ -7036,6 +7036,17 @@ export function createGame({
       podBlocks,
       podPositions: podMeshes.map((p) => ({ x: p.position.x, y: p.position.y, z: p.position.z })),
       fiveCats: squad?.snapshot() ?? null,
+      // QA-only visual identity: same live Object3D and paint before/after launch.
+      heroShip: {
+        rootId: player.uuid,
+        moduleId: shipModule.uuid,
+        model: shipModule.name,
+        selectedColor: pilotLoadout.color,
+        paint: player.userData.paint
+          ?.find((material) => !material.userData.paintAccent)
+          ?.color.getHexString(),
+        visible: player.visible,
+      },
       boostVisual: {
         color: player.userData.flames[0].material.color.getHex(),
         length: player.userData.flames[0].scale.y,
