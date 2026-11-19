@@ -1,0 +1,37 @@
+name: Split accessible gameplay downloads
+
+on:
+  push:
+    branches: [media/gameplay-native-4k60-v3]
+    paths:
+      - '.github/workflows/gameplay-split-delivery.yml'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  split:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download validated delivery package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail --location \
+            --header "Authorization: Bearer $GH_TOKEN" \
+            --header "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/trucco86/nova-wing-3d/actions/artifacts/14506423558/zip" \
+            --output delivery.zip
+          unzip -q delivery.zip -d delivery
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: NovaWing-10min-4K60-stream
+          path: delivery/NovaWing_Gameplay_10min_4K60_Stream.mp4
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: NovaWing-10min-1080p60-mobile
+          path: delivery/NovaWing_Gameplay_10min_1080p60_Mobile.mp4
+          retention-days: 14
