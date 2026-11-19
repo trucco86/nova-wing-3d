@@ -11,7 +11,10 @@ const ease = (n) => {
 };
 
 export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
-  const t = Math.min(FIRST_STAGE_LAUNCH_SECONDS, Math.max(0, Number.isFinite(seconds) ? seconds : 0));
+  const t = Math.min(
+    FIRST_STAGE_LAUNCH_SECONDS,
+    Math.max(0, Number.isFinite(seconds) ? seconds : 0),
+  );
   const doors = ease(t / 1.05);
   const departure = ease((t - 1.05) / 3.15);
   const handoff = ease((t - 3.8) / 1.2);
@@ -94,8 +97,7 @@ export function createFirstStageLaunchIntro(scene, camera) {
       add('bay-arch-light', [0.55, 14, 2.1], [side * 17.9, 4, z], cyan);
     }
   }
-  for (const z of [-44, -9, 26])
-    add('bay-arch-top', [39, 1.8, 2.5], [0, 14.2, z], metal);
+  for (const z of [-44, -9, 26]) add('bay-arch-top', [39, 1.8, 2.5], [0, 14.2, z], metal);
   const leftDoor = add('launch-door-left', [9, 15.5, 1.8], [-4.5, 1.5, -50], panel);
   const rightDoor = add('launch-door-right', [9, 15.5, 1.8], [4.5, 1.5, -50], panel);
   add('launch-bay-beacon', [13, 0.4, 1], [0, 14, -50], amber);
