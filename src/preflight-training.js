@@ -51,6 +51,8 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
   let ignition = 0;
   let firing = 0;
   let target = null;
+  let pulse = null;
+  let fireCooldown = 0;
   let geometry = [];
   let materials = [];
   let selected = null;
@@ -109,7 +111,12 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
       ring.position.set(0, 2.2, -14);
       scene.add(ring);
       target = ring;
-      geometry = [floor.geometry, ring.geometry];
+      const boltGeometry = new T.SphereGeometry(0.42, 10, 6);
+      pulse = new T.Mesh(boltGeometry, cyan);
+      pulse.name = 'training-fire-projectile';
+      pulse.visible = false;
+      scene.add(pulse);
+      geometry = [floor.geometry, ring.geometry, boltGeometry];
       camera.position.set(0, 7, 24);
       camera.lookAt(0, 0, 0);
       return true;
@@ -198,6 +205,17 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
       if (roll > 0) roll = Math.max(0, roll - dt * 12);
     }
     if (fire) firing = 0.4;
+    fireCooldown = Math.max(0, fireCooldown - dt);
+    if ((fire || firing > 0.33) && pulse && fireCooldown === 0) {
+      const current = robotMode ? robot : ship;
+      pulse.visible = true;
+      pulse.position.set(current?.position.x ?? 0, current?.position.y ?? 0, -3);
+      fireCooldown = 0.2;
+    }
+    if (pulse?.visible) {
+      pulse.position.z -= dt * 37;
+      if (pulse.position.z < -18) pulse.visible = false;
+    }
     firing = Math.max(0, firing - dt);
     ignition = boost ? 1 : Math.max(0, ignition - dt * 3);
     if (target) {
@@ -236,7 +254,8 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     held.clear();
     cameraIndex = 0;
     robotMode = false;
-    ignition = firing = roll = 0;
+    ignition = firing = roll = fireCooldown = 0;
+    if (pulse) pulse.visible = false;
     root.hidden = false;
     trainingActive = true;
     $('trainingShipLabel').textContent =
