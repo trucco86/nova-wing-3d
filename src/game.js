@@ -189,6 +189,7 @@ import {
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
 import { SQUAD_SPECIALS, SQUAD_INTRO_DURATION } from './five-cats-squad.js';
+import { CINEMATIC_FLEET } from './cinematic-formation.js';
 import { createFirstStageLaunchIntro } from './stage-one-launch-intro.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
@@ -441,8 +442,21 @@ export function createGame({
         createWing(pilot) {
           const wing = fighter();
           wing.name = 'five-cats-wingman-' + pilot.id;
-          wing.userData.paint?.forEach((material) => material.color.set(pilot.color));
-          wing.scale.setScalar(1.1);
+          const identity = CINEMATIC_FLEET.find(({ id }) => id === pilot.id);
+          const model = createShipModule(identity?.model ?? 'nova7');
+          const palette = shipColorAt(identity?.color ?? 'polar');
+          // The same fighter and ship-module geometry as the real playable craft.
+          // Wingmates keep their own established ship models and paint.
+          scaleFighterVisual(wing, 1.02);
+          model.scale.setScalar(1.02);
+          model.traverse((part) => {
+            if (part.material?.userData.paintModule) part.material.color.set(palette.color);
+          });
+          wing.userData.paint?.forEach((material) =>
+            material.color.set(material.userData.paintAccent ? palette.accent : palette.color),
+          );
+          wing.userData.launchModule = model;
+          wing.add(model);
           return wing;
         },
         fireFrom(origin, target, damage, element, charged, source = 'squad-support') {
@@ -1611,7 +1625,7 @@ export function createGame({
     asteroidWallCooldown = 0;
     const showLaunch = sectorIndex === 0 && enableSquadIntro && !skipSquadIntro;
     squad?.begin(showLaunch);
-    firstStageIntro?.reset(showLaunch);
+    firstStageIntro?.reset(showLaunch, pilotLoadout.pilot);
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
