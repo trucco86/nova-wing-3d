@@ -31,6 +31,14 @@ function paletteFor(loadout) {
   return chosen && chosen.id !== 'classic' ? chosen : base;
 }
 
+/** Preserve the position and orientation when switching between ship and mech. */
+export function preserveTrainingCraftPose(current, next) {
+  if (!current || !next) return false;
+  next.position.copy(current.position);
+  next.quaternion.copy(current.quaternion);
+  return true;
+}
+
 /**
  * Optional, isolated simulator. It reuses the real game fighter geometry and
  * selected colors, without starting sector timers, spawns or scoring.
@@ -184,6 +192,7 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     held.add(control);
     mark(control);
     if (control === 'transform') {
+      preserveTrainingCraftPose(robotMode ? robot : ship, robotMode ? ship : robot);
       robotMode = !robotMode;
       if (ship) ship.visible = !robotMode;
       if (robot) robot.visible = robotMode;
