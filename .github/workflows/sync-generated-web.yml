@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - feat/nw09-cinematic-3d
-      - feat/stage-one-cinematic-launch-20261119
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
