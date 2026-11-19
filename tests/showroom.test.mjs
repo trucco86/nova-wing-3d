@@ -19,7 +19,9 @@ test('showroom pilots preserve relative size, fur and head differences in finite
     assert.ok(box.max.y - box.min.y > 3);
   }
   assert.equal(cats.get('bia').scale.y, cats.get('jenifer').scale.y);
-  assert.equal(cats.get('bob').scale.y, cats.get('christopher').scale.y);
+  // Bob should resemble Christopher, but be slightly slimmer rather than identical.
+  assert.ok(cats.get('bob').scale.y < cats.get('christopher').scale.y);
+  assert.ok(cats.get('bob').scale.y > cats.get('christopher').scale.y * 0.93);
   assert.ok(
     cats.get('christopher').getObjectByName('head').scale.y >
       cats.get('bob').getObjectByName('head').scale.y,
