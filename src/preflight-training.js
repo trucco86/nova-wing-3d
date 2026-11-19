@@ -282,6 +282,9 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
     robotMode = false;
     ignition = firing = roll = fireCooldown = 0;
     if (pulse) pulse.visible = false;
+    // Hide map behind the training modal to prevent pointer interception.
+    const map = $('campaignMap');
+    if (map) map.hidden = true;
     root.hidden = false;
     trainingActive = true;
     $('trainingShipLabel').textContent =
@@ -357,6 +360,8 @@ export function createPreflightTraining({ document, window, onLaunch, onBack }) 
   window.addEventListener?.('keyup', onKeyUp, true);
   $('trainingBack').onclick = () => {
     close();
+    const map = $('campaignMap');
+    if (map) map.hidden = false;
     onBack();
   };
   $('trainingLaunch').onclick = () => {

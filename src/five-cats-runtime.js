@@ -133,6 +133,15 @@ export function createFiveCatsSquad({
     // the previous hero duplicate and any last-frame model/paint swap.
     player.visible = true;
   }
+  function skipIntro() {
+    if (intro <= 0) return false;
+    intro = 0;
+    introBeat = '';
+    player.visible = true;
+    formationStatus.hidden = true;
+    wings.forEach(({ mesh }) => { mesh.visible = false; });
+    return true;
+  }
   function activate(kind, energy) {
     const cooldown = kind === 'plasma' ? plasmaCooldown : overdriveCooldown;
     if (
@@ -330,6 +339,7 @@ export function createFiveCatsSquad({
   return {
     begin,
     reset,
+    skipIntro,
     activate,
     update,
     stopBeam,

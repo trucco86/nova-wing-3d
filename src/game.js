@@ -1721,6 +1721,7 @@ export function createGame({
     settingsOpen = false;
     document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
+    $('launchSkip').hidden = !showLaunch;
     stageIntroTime = firstStageIntro?.active ? SQUAD_INTRO_DURATION : 3;
     pickupFeedbackTime = 0;
     $('pickupFlash').hidden = true;
@@ -3237,6 +3238,18 @@ export function createGame({
     } else if (state === 'playing' && appActive) music?.resume();
     return rpgTacticalPaused;
   }
+  function skipStageOneLaunch() {
+    // Explicit pilot action: never advance mission time or swap the selected craft.
+    if (state !== 'playing' || !firstStageIntro?.active || !(squad?.snapshot().intro > 0))
+      return false;
+    squad.skipIntro();
+    firstStageIntro.finish();
+    flightCamera.reset(player.position);
+    stageIntroTime = 0;
+    document.body.classList.remove('stage-intro');
+    $('launchSkip').hidden = true;
+    return true;
+  }
   function pause() {
     $('strategyDrawer').open = false;
     setRpgTacticalPaused(false);
@@ -3245,6 +3258,7 @@ export function createGame({
       pausedFrom = state;
       releaseControls();
       state = 'paused';
+      $('launchSkip').hidden = true;
       $('bossIncoming').hidden = true;
       music?.pause();
       mechaEngine?.silence();
@@ -3264,6 +3278,7 @@ export function createGame({
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
+      $('launchSkip').hidden = !(state === 'playing' && squad?.snapshot().intro > 0);
       $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
       $('strategyControls').hidden = !dynamicFlight || state !== 'playing';
@@ -3301,6 +3316,7 @@ export function createGame({
     confirmation = null;
     settingsOpen = false;
     stageIntroTime = 0;
+    $('launchSkip').hidden = true;
     setIntermissionUI(false);
     document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
     document.body.classList.add('menu');
@@ -3846,6 +3862,7 @@ export function createGame({
   if (!dynamicFlight) $('nextSector').textContent = 'SALTAR PARA O PRÓXIMO SETOR ↗';
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
+  $('launchSkip').onclick = skipStageOneLaunch;
   $('mapTrain').onclick = () => {
     if (state !== 'map' || campaignMapOrigin !== 'preflight' || !dynamicFlight) return;
     preflightTraining.open({ ...pilotLoadout, skin: cosmetics.skin });
@@ -4490,6 +4507,7 @@ export function createGame({
       if (remaining > 0) firstStageIntro?.update(SQUAD_INTRO_DURATION - remaining, camera.aspect);
       else {
         firstStageIntro?.finish();
+        $('launchSkip').hidden = true;
         // The cinematic never alters the gameplay camera's anchor or controls.
         flightCamera.reset(player.position);
       }

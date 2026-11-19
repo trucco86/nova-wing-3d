@@ -11463,6 +11463,25 @@ body.intermission-active #shop #nextSector {
   }
 }
 
+/* Pilot-only launch skip stays outside the clipped alert rail and combat controls. */
+#launchSkip {
+  position: fixed;
+  z-index: 45;
+  top: max(148px, calc(env(safe-area-inset-top, 0px) + 118px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid #89e9f1;
+  border-radius: 10px;
+  background: #092838ed;
+  color: #d9fcff;
+  font: 800 11px/1.3 monospace;
+  letter-spacing: 0.045em;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#launchSkip[hidden] { display: none !important; }
+
 /* Optional Star Fox-style preflight practice. Completely isolated from campaign HUD. */
 .preflight-training {
   position: fixed;
