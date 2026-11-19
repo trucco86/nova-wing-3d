@@ -3,13 +3,13 @@ import {
   SQUAD_PILOTS,
   SQUAD_INTRO_DURATION,
   SQUAD_SPECIALS,
-  formationPose,
   allySortieFlightAt,
   allySortieFlightPose,
   overdriveWingPose,
   ALLY_SORTIE_FLIGHT,
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
+import { firstStageLaunchAt, firstStageLaunchWingPose } from './stage-one-launch-intro.js';
 
 // World-space IFF tags attach to the ally ships, never to enemy fighters and
 // never to the HUD center. Green and readable even in the city neon skyline.
@@ -87,6 +87,7 @@ export function createFiveCatsSquad({
     return { pilot, mesh, label };
   });
   let intro = 0;
+  let introBeat = '';
   let plasmaTime = 0,
     overdriveTime = 0,
     plasmaCooldown = 0,
@@ -108,6 +109,7 @@ export function createFiveCatsSquad({
   }
   function reset() {
     intro = 0;
+    introBeat = '';
     plasmaTime = overdriveTime = plasmaCooldown = overdriveCooldown = 0;
     plasmaClock = overdriveClock = supportClock = 0;
     overdriveAge = overdriveExit = 0;
@@ -178,23 +180,43 @@ export function createFiveCatsSquad({
     overdriveCooldown = Math.max(0, overdriveCooldown - dt);
     if (intro > 0) {
       const t = SQUAD_INTRO_DURATION - intro;
+      const launch = firstStageLaunchAt(t, aspect);
+      if (introBeat !== launch.beat) {
+        introBeat = launch.beat;
+        if (launch.beat === 'ignition') cue('boostIgnition');
+      }
+      const captions = {
+        pt: {
+          doors: 'FIVE CATS · PORTAS DO HANGAR ABRINDO',
+          ignition: 'MOTORES PRONTOS · PREPARAR DECOLAGEM',
+          departure: 'FIVE CATS · DECOLAGEM EM FORMAÇÃO',
+          handoff: 'CIDADE DAS MÁQUINAS · ASSUMA O CONTROLE',
+        },
+        en: {
+          doors: 'FIVE CATS · OPENING HANGAR DOORS',
+          ignition: 'ENGINES READY · PREPARE TO LAUNCH',
+          departure: 'FIVE CATS · FORMATION TAKEOFF',
+          handoff: 'MACHINE CITY · TAKE CONTROL',
+        },
+        es: {
+          doors: 'FIVE CATS · ABRIENDO EL HANGAR',
+          ignition: 'MOTORES LISTOS · PREPARAR DESPEGUE',
+          departure: 'FIVE CATS · DESPEGUE EN FORMACIÓN',
+          handoff: 'CIUDAD DE MÁQUINAS · TOMA EL CONTROL',
+        },
+      };
+      formationStatus.textContent =
+        (captions[getLanguage()] ?? captions.pt)[launch.beat];
       wings.forEach(({ pilot: p, mesh }) => {
-        const pose = formationPose(p.slot, t);
-        const side = p.slot < 0 ? -1 : 1;
-        const entering = 1 - Math.min(1, Math.max(0, t / 0.9));
-        const leaving = Math.min(1, Math.max(0, (t - SQUAD_INTRO_DURATION + 1.3) / 1.3));
-        const smoothLeave = leaving * leaving * (3 - 2 * leaving);
+        const pose = firstStageLaunchWingPose(p.slot, t, aspect);
         mesh.visible = true;
-        const portrait = aspect < 0.75;
-        mesh.scale.setScalar(portrait ? 0.93 : 1.1);
+        mesh.scale.setScalar(aspect < 0.75 ? 0.93 : 1.1);
         mesh.position.set(
-          player.position.x +
-            pose.x * (portrait ? 0.53 : 1) +
-            side * (110 * entering + 145 * smoothLeave),
-          pose.y + 28 * entering + 72 * smoothLeave,
-          player.position.z + pose.z - (portrait ? 12 : 0) - 230 * entering - 260 * smoothLeave,
+          player.position.x + pose.x,
+          pose.y,
+          player.position.z + pose.z - 9,
         );
-        mesh.rotation.z = pose.bank - side * (0.5 * entering + 0.78 * smoothLeave);
+        mesh.rotation.z = pose.bank;
       });
       player.visible = false;
       formationStatus.hidden = false;
@@ -205,7 +227,7 @@ export function createFiveCatsSquad({
         wings.forEach(({ mesh }) => {
           mesh.visible = false;
         });
-        notify('FIVE CATS · FORMAÇÃO DESFEITA · INICIAR MISSÃO');
+        notify('FIVE CATS · DECOLAGEM COMPLETA · INICIAR MISSÃO');
       }
       return { intro: true, energySpent: 0 };
     }
