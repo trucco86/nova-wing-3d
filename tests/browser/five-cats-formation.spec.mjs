@@ -64,6 +64,29 @@ test('skipping story from public menu still launches Five Cats from the hangar',
   await page.screenshot({ path: info.outputPath('stage-one-hangar-after-story-skip.png') });
 });
 
+test('optional preflight teaches and validates real controls before the same selected ship launches', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/');
+  await openMenu(page, 'play');
+  await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
+  await expect(page.locator('#campaignMap')).toBeVisible();
+  await expect(page.locator('#mapTrain')).toBeVisible();
+  await page.locator('#mapTrain').click();
+  await expect(page.locator('#preflightTraining')).toBeVisible();
+  await expect(page.locator('#trainingProgress')).toContainText('0 / 6');
+  for (const code of ['ArrowRight', 'Space', 'Shift', 'q', 't', 'c'])
+    await page.keyboard.press(code);
+  await expect(page.locator('#trainingProgress')).toContainText('6 / 6');
+  await page.screenshot({ path: info.outputPath('preflight-practice-before-launch.png') });
+  await page.locator('#trainingLaunch').click();
+  await expect(page.locator('#preflightTraining')).toBeHidden();
+  await expect(page.locator('#campaignMap')).toBeHidden();
+  await expect(page.locator('#squadFormationStatus')).toBeVisible();
+});
+
 test('Plasma Titan and Five Cats Overdrive fire physical shots without covering center HUD', async ({
   page,
 }, info) => {
