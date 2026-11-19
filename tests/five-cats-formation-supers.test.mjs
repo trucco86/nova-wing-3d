@@ -165,6 +165,25 @@ test('selected ship and paint stay on the same real fighter across the launch ha
   assert.equal(ended.heroShip.paint, selected);
 });
 
+test('optional launch skip preserves live ship identity, clock and escort visibility', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start();
+  const before = h.game.snapshot();
+  assert.ok(before.fiveCats.intro > 0);
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+  h.elements.get('launchSkip').onclick();
+  const after = h.game.snapshot();
+  assert.equal(after.fiveCats.intro, 0);
+  assert.equal(after.fiveCats.visible.length, 0);
+  assert.equal(after.heroShip.rootId, before.heroShip.rootId);
+  assert.equal(after.heroShip.moduleId, before.heroShip.moduleId);
+  assert.equal(after.seconds, before.seconds);
+  assert.equal(h.elements.get('launchSkip').hidden, true);
+  h.advance(0.3);
+  assert.ok(h.game.snapshot().seconds > 0, 'gameplay starts immediately after skip');
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());

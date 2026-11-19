@@ -40,3 +40,16 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - O teste `preflight-practice.test.mjs` protege a continuidade bidirecional da pose, além da conclusão dos seis comandos e do isolamento do progresso da campanha.
 - A saída para o mapa ou para a missão descarta o renderizador secundário. A integração exige `build:check`, `validate`, `quality` e seis shards de navegador verdes no SHA final.
 - O PR permanece em draft. Nenhum merge ou deploy de produção é autorizado por esta especificação.
+
+
+## QA de regressão: treino modal e skip explícito, 19/11/2026
+
+- O mapa fica oculto enquanto o simulador está aberto, não captura cliques
+  do botão **INICIAR MISSÃO** e só reaparece no comando **VOLTAR AO MAPA**.
+- Os cinco segundos da decolagem permanecem intactos. O piloto pode optar
+  por **PULAR DECOLAGEM**, preservando relógio, checkpoint, seleção e cor.
+- Pular oculta a baía e as quatro naves auxiliares da sequência, restaura
+  a câmera de gameplay e libera controles sem iniciar um segundo jogo.
+- Botão invisível após intro, em pausa e nas outras fases. Os testes de
+  combate seguem o mesmo fluxo visível que um usuário que pula a abertura.
+- QA visual em iPhone físico e seis shards Playwright seguem obrigatórios.

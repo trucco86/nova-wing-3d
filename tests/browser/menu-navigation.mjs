@@ -42,4 +42,10 @@ export async function confirmCampaignPreflight(page) {
     await page.locator('#mapLaunch').click();
     await map.waitFor({ state: 'hidden' });
   }
+  // Combat tests use the actual visible skip control; dedicated cinematic tests do not.
+  const skip = page.locator('#launchSkip');
+  if (await skip.isVisible()) {
+    await skip.click();
+    await skip.waitFor({ state: 'hidden' });
+  }
 }

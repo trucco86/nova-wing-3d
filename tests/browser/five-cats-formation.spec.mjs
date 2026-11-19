@@ -76,6 +76,7 @@ test('optional preflight teaches and validates real controls before the same sel
   await expect(page.locator('#mapTrain')).toBeVisible();
   await page.locator('#mapTrain').click();
   await expect(page.locator('#preflightTraining')).toBeVisible();
+  await expect(page.locator('#campaignMap')).toBeHidden();
   await expect(page.locator('#trainingProgress')).toContainText('0 / 6');
   for (const code of ['ArrowRight', 'Space', 'Shift', 'q', 't', 'c'])
     await page.keyboard.press(code);
@@ -85,6 +86,21 @@ test('optional preflight teaches and validates real controls before the same sel
   await expect(page.locator('#preflightTraining')).toBeHidden();
   await expect(page.locator('#campaignMap')).toBeHidden();
   await expect(page.locator('#squadFormationStatus')).toBeVisible();
+});
+
+test('pilot explicitly skips hangar cutscene and keeps the same craft', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'play');
+  await page.locator('#start').click();
+  await page.locator('#cinematicSkip').click();
+  await page.locator('#mapLaunch').click();
+  await expect(page.locator('#launchSkip')).toBeVisible();
+  await expect(page.locator('#squadFormationStatus')).toBeVisible();
+  await page.locator('#launchSkip').click();
+  await expect(page.locator('#launchSkip')).toBeHidden();
+  await expect(page.locator('#squadFormationStatus')).toBeHidden();
+  await expect(page.locator('body')).not.toHaveClass(/stage-intro/);
 });
 
 test('Plasma Titan and Five Cats Overdrive fire physical shots without covering center HUD', async ({
