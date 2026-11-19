@@ -36,6 +36,7 @@ test('five launch ships form a V, leader holds final player position, portrait s
   }
   const end = firstStageLaunchWingPose(0, 5);
   assert.equal(end.x, 0);
+  assert.equal(end.y, 6);
   assert.equal(end.z, 9);
   const tall = firstStageLaunchWingPose(2, 2, 390 / 844);
   assert.ok(Math.abs(tall.x) < Math.abs(firstStageLaunchWingPose(2, 2, 16 / 9).x));
