@@ -93,6 +93,39 @@ test('new mission shows Bia-led formation before gameplay clock starts', (t) => 
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
 });
 
+test('skipping the optional story keeps stage-one hangar launch after campaign map', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true, preflightMap: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, false);
+  h.elements.get('cinematicSkip').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, true);
+  assert.equal(h.elements.get('campaignMap').hidden, false);
+  h.elements.get('mapLaunch').onclick();
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
+  h.advance(1.2);
+  assert.equal(h.game.snapshot().seconds, 0, 'mission clock cannot advance during launch');
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 5);
+  assert.match(h.elements.get('squadFormationStatus').textContent, /MOTORES|DECOLAGEM/);
+  h.advance(4);
+  assert.equal(h.game.snapshot().fiveCats.intro, 0);
+  h.advance(0.2);
+  assert.ok(h.game.snapshot().seconds > 0);
+});
+
+test('keyboard skip of story preserves stage-one launch and does not skip it', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  h.key('Escape');
+  assert.equal(h.elements.get('cinematic').hidden, true);
+  assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
+  h.advance(0.3);
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 5);
+  assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR/);
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
