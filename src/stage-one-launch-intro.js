@@ -1,52 +1,84 @@
 import * as T from 'three';
+import { SQUAD_PILOTS } from './five-cats-squad.js';
+import { createShowroomPilot, disposeShowroomModel } from './showroom-models.js';
 
-// Inspired by the dramatic hangar-to-flight rhythm of early rail shooters.
-// Original Nova Wing hangar, geometry, colors and Five Cats formation.
+// Fixed, readable cinematic camera cuts, ending on the exact in-game chase rig.
+// All staging stays visual-only: flight coordinates, selected ship and paint never change.
 export const FIRST_STAGE_LAUNCH_SECONDS = 5;
-
+export const FIRST_STAGE_SHOTS = Object.freeze([
+  { at: 0, name: 'hangar-wide' },
+  { at: 0.82, name: 'pilot-close' },
+  { at: 1.62, name: 'engine-side' },
+  { at: 2.42, name: 'exit-front' },
+  { at: 3.18, name: 'launch-tracking' },
+  { at: 3.9, name: 'handoff' },
+]);
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 const ease = (n) => {
   const t = clamp01(n);
   return t * t * (3 - 2 * t);
 };
 
+// The selected pilot ALWAYS occupies the center. Only the other four get
+// wingman meshes; no second hero ship is ever constructed for the launch.
+export function firstStageWingSlots(activePilot = 'bia') {
+  const slots = [-2, -1, 1, 2];
+  return SQUAD_PILOTS.filter(({ id }) => id !== activePilot).map((pilot, index) => ({
+    ...pilot,
+    slot: slots[index],
+  }));
+}
+
 export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   const t = Math.min(
     FIRST_STAGE_LAUNCH_SECONDS,
     Math.max(0, Number.isFinite(seconds) ? seconds : 0),
   );
-  const doors = ease(t / 1.05);
-  const departure = ease((t - 1.05) / 3.15);
-  const handoff = ease((t - 3.8) / 1.2);
-  const portrait = Math.max(0.46, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
-  const cameraX = (1 - handoff) * 9.6 * (1 - departure * 0.82);
+  const doors = ease(t / 1.15);
+  const departure = ease((t - 2.65) / 2.3);
+  const handoff = ease((t - 3.9) / 1.1);
+  const squeeze = Math.max(0.46, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
+  const shot = FIRST_STAGE_SHOTS.reduce((current, entry) => (t >= entry.at ? entry : current)).name;
+  const views = {
+    'hangar-wide': { eye: [14 * squeeze, 15, 33], aim: [0, 6, -40], fov: 68 },
+    'pilot-close': { eye: [-11 * squeeze, 1, 23], aim: [-11 * squeeze, -0.8, 9], fov: 53 },
+    'engine-side': { eye: [23 * squeeze, 9.5, 15], aim: [0, 6, 5], fov: 63 },
+    'exit-front': { eye: [1.5, 10, -64], aim: [0, 6, 3], fov: 68 },
+    'launch-tracking': { eye: [-17 * squeeze, 14, 38], aim: [0, 7, -42], fov: 70 },
+    handoff: {
+      eye: [7 * squeeze * (1 - handoff), 12, 43 + 7 * (1 - handoff)],
+      aim: [0, 7, -90 + 25 * (1 - handoff)],
+      fov: 60 + 7 * (1 - handoff),
+    },
+  };
+  const view = views[shot];
   return {
     t,
-    beat: t < 1.05 ? 'doors' : t < 2.25 ? 'ignition' : t < 3.8 ? 'departure' : 'handoff',
+    shot,
+    beat: t < 1.15 ? 'doors' : t < 2.65 ? 'ignition' : t < 3.9 ? 'departure' : 'handoff',
     doors,
     departure,
     handoff,
     corridorShift: departure * 245,
     camera: {
-      x: cameraX * portrait,
-      y: 12 - (1 - departure) * 1.6,
-      z: 43 + (1 - departure) * 8,
-      aimX: 0,
-      aimY: 7,
-      aimZ: -94 + (1 - departure) * 52,
+      x: view.eye[0],
+      y: view.eye[1],
+      z: view.eye[2],
+      aimX: view.aim[0],
+      aimY: view.aim[1],
+      aimZ: view.aim[2],
+      fov: view.fov,
     },
   };
 }
 
-/** The lead ship settles exactly on the gameplay ship before the handoff. */
 export function firstStageLaunchWingPose(slot, seconds, aspect = 16 / 9) {
   const s = firstStageLaunchAt(seconds, aspect);
   const wing = Math.abs(slot);
   const squeeze = Math.max(0.48, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
-  const separation = 5.2 + 3 * s.departure;
   const release = s.handoff * s.handoff;
   return {
-    x: slot * separation * squeeze + Math.sign(slot) * release * 65 * squeeze,
+    x: slot * (8.2 + 2.1 * s.departure) * squeeze + Math.sign(slot) * release * 75 * squeeze,
     y: 6 + wing * 0.65 + s.departure * 2.4 * (1 - s.handoff) + release * wing * 7,
     z: 9 + wing * 5.5 - s.departure * wing * 3 - release * wing * 28,
     bank: -slot * (0.02 + 0.13 * s.departure + 0.35 * release),
