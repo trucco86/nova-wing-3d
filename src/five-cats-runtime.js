@@ -139,7 +139,9 @@ export function createFiveCatsSquad({
     introBeat = '';
     player.visible = true;
     formationStatus.hidden = true;
-    wings.forEach(({ mesh }) => { mesh.visible = false; });
+    wings.forEach(({ mesh }) => {
+      mesh.visible = false;
+    });
     return true;
   }
   function activate(kind, energy) {

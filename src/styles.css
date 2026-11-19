@@ -11480,7 +11480,9 @@ body.intermission-active #shop #nextSector {
   pointer-events: auto;
   touch-action: manipulation;
 }
-#launchSkip[hidden] { display: none !important; }
+#launchSkip[hidden] {
+  display: none !important;
+}
 
 /* Optional Star Fox-style preflight practice. Completely isolated from campaign HUD. */
 .preflight-training {

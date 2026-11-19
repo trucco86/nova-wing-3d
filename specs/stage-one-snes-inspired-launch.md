@@ -41,7 +41,6 @@ Transformar os cinco segundos iniciais de Cidade das Máquinas em uma decolagem 
 - A saída para o mapa ou para a missão descarta o renderizador secundário. A integração exige `build:check`, `validate`, `quality` e seis shards de navegador verdes no SHA final.
 - O PR permanece em draft. Nenhum merge ou deploy de produção é autorizado por esta especificação.
 
-
 ## QA de regressão: treino modal e skip explícito, 19/11/2026
 
 - O mapa fica oculto enquanto o simulador está aberto, não captura cliques
