@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.153 — Abertura cinematográfica de lançamento da Cidade das Máquinas
+
+- Nova apresentação em 3D de cinco segundos com hangar próprio, abertura de portas, ignição e decolagem em formação dos Five Cats.
+- Enquadramento cinematográfico que entrega a câmera de perseguição ao jogador, com lançamento alinhado à posição real da nave.
+- Narração visual e avisos curtos em português, inglês e espanhol; usa o áudio existente respeitando controles de volume.
+- Preserva o BOOST obrigatório, o início de combate, os dez setores, o fluxo mobile e a continuidade da campanha.
+- Testes determinísticos de formação, duração, geometria temporária e descarte de recursos; validação visual e CI completa exigidas antes de qualquer publicação.
+
 ## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
 
 - Batching dos seis suportes estáticos de holofotes por bloco de cidade com `InstancedMesh`, preservando geometrias, materiais, matrizes, feixes e lâmpadas animados.
