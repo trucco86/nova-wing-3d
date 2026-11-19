@@ -15,7 +15,7 @@ if (!fixtureSource.includes(marker)) throw new Error('Fixture renderer hook chan
 let nativeSource = fixtureSource.replace(marker, marker + '\n' +
   'const nativePixelRatio = renderer.setPixelRatio.bind(renderer); renderer.setPixelRatio = () => nativePixelRatio(1);');
 nativeSource = nativeSource.replace('render(...args);',
-  "if (sector === 7 && params.get('captureWide') === '1' && args[1]?.isPerspectiveCamera) { args[1].fov = 88; args[1].updateProjectionMatrix(); }\\n      render(...args);");
+  "if (sector === 7 && params.get('captureWide') === '1' && args[1]?.isPerspectiveCamera) { args[1].fov = 88; args[1].updateProjectionMatrix(); }\n      render(...args);");
 const bundle = await build({ stdin: { contents: nativeSource, resolveDir: process.cwd() + '/tests', sourcefile: 'native-capture-fixture.js' },
   bundle: true, write: false, format: 'iife', minify: true });
 const shell = await readFile('src/shell.html', 'utf8');
