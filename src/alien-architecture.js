@@ -61,14 +61,17 @@ function createBatch(root, name, geometry, material, count, positionAt) {
   mesh.frustumCulled = false;
   mesh.userData.visualOnly = true;
   const dummy = new T.Object3D();
+  const depth = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     const position = positionAt(i);
     dummy.position.set(position.x, position.y, position.z);
     dummy.rotation.set(0, position.yaw ?? 0, position.lean ?? 0);
     dummy.scale.set(position.width, position.height, position.depth);
+    depth[i] = position.z;
     dummy.updateMatrix();
     mesh.setMatrixAt(i, dummy.matrix);
   }
+  mesh.userData.authoredDepth = depth;
   mesh.instanceMatrix.needsUpdate = true;
   root.add(mesh);
   return mesh;
@@ -233,5 +236,29 @@ export function setAlienArchitectureQuality(root, quality) {
   if (!root) return;
   for (const child of root.children) {
     if (child.userData.highOnly) child.visible = quality === 'high';
+  }
+}
+
+const FAR_DEPTH = -1700;
+const DEPTH_SPAN = 1825;
+const PARALLAX_RATE = 0.22;
+
+// Move the authored ruins through the route without rotating the entire scene
+// or jumping visible buildings when an instanced landmark loops out of frame.
+// Only the translation component of each matrix changes: no allocations,
+// physics, texture uploads or additional WebGL draw calls per frame.
+export function updateAlienArchitecture(root, travel) {
+  if (!root || !Number.isFinite(travel)) return;
+  const advanced = travel * PARALLAX_RATE;
+  for (const mesh of root.children) {
+    const base = mesh.userData.authoredDepth;
+    if (!base) continue;
+    const matrices = mesh.instanceMatrix.array;
+    for (let i = 0; i < base.length; i++) {
+      const distance = base[i] + advanced - FAR_DEPTH;
+      const wrapped = ((distance % DEPTH_SPAN) + DEPTH_SPAN) % DEPTH_SPAN;
+      matrices[i * 16 + 14] = FAR_DEPTH + wrapped;
+    }
+    mesh.instanceMatrix.needsUpdate = true;
   }
 }
