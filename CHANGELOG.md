@@ -12,6 +12,7 @@
 - Corrigido o fluxo de Pular introdução para preservar a decolagem dos Five Cats, com teste de caminho real pelo menu.
 - Integração das artes de destaque dos Five Cats no hangar, avatares de seleção, HUD, rádio, diálogos e patentes, com Bob substituído pela imagem individual mais recente, opções de galeria reversíveis e conceito de naves separado do 3D jogável.
 - Onze assets WebP otimizados, incluindo retratos individuais dos cinco gatos (Bob na versão corrigida) e Marvin, são distribuídos em web, Pages e Android/iOS offline; a Central exibe dossiê do vilão sem permitir selecioná-lo como piloto. O elenco, as dez patentes reais e a progressão permanecem intactos.
+- O HUD da nave jogável agora mantém a mesma arte aprovada do piloto e atualiza o retrato na troca de comando e após a substituição da nave; as identidades 3D do hangar e da abertura recebem armaduras próprias, arreios, colares e olhos coerentes com as artes, incluindo Bob com olhos âmbar e Christopher com pelagem preta. Sem alteração de atributos ou progressão.
 - Testes determinísticos de formação, duração, geometria temporária e descarte de recursos; validação visual e CI completa exigidas antes de qualquer publicação.
 
 ## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
