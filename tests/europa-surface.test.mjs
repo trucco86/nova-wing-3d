@@ -10,18 +10,19 @@ import {
   updateEuropaSurface,
 } from '../src/europa-surface.js';
 
-test('Europa orbit disappears before the actual surface opens and cannot remain above it', () => {
+test('Europa keeps the moon until the icy floor appears, with no empty orbit/descent gap', () => {
   const early = europaSurfaceAt(9);
   assert.equal(early.orbitalVisible, true);
   assert.equal(early.groundVisible, false);
   const surface = europaSurfaceAt(26);
   assert.equal(surface.orbitalVisible, false);
-  assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon gone before frozen ground');
-  assert.equal(destinationArrivalAt(5, 18).globeOpacity, 0);
+  assert.equal(europaSurfaceAt(18).orbitalVisible, true, 'moon must remain while ice first rises');
+  assert.ok(europaSurfaceAt(18).groundVisible, 'surface is already coming into view');
+  assert.ok(destinationArrivalAt(5, 18).globeOpacity > 0, 'globe and surface overlap during handoff');
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
-  assert.equal(destinationArrivalAt(5, 20).globeOpacity, 0);
+  assert.ok(destinationArrivalAt(5, 20).globeOpacity > 0, 'moon fades DURING descent, not before it');
   assert.equal(destinationArrivalAt(5, 26).globeOpacity, 0);
   assert.equal(
     destinationArrivalAt(4, 20).globeOpacity,
@@ -41,10 +42,15 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   const surface = scene.getObjectByName('europa-frozen-surface');
   assert.ok(ground && globe && destination && surface);
   world.setDestinationArrival(10);
-  assert.equal(globe.visible, true);
+  assert.equal(globe.visible, false, 'legacy generic orbital globe must not duplicate Europa');
+  assert.equal(destination.visible, true, 'actual Europa approach remains on-screen');
   assert.equal(surface.visible, false);
+  world.setDestinationArrival(19);
+  assert.equal(destination.visible, true, 'planet should not vanish before terrain exists');
+  assert.equal(surface.visible, true, 'glaciers rise before planetary fade');
+  assert.ok(surface.position.y < 0 && surface.position.y > -240, 'continuous terrain lift');
   world.setDestinationArrival(26);
-  assert.equal(globe.visible, false, 'moon from orbital sky must be gone on surface');
+  assert.equal(globe.visible, false, 'the legacy orb remains hidden for this entire journey');
   assert.equal(destination.visible, false, 'distant second globe must also be gone');
   assert.equal(surface.visible, true);
   assert.equal(ground.visible, true);
