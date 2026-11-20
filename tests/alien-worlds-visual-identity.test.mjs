@@ -137,7 +137,7 @@ test('alien architecture flies past slowly and wraps only behind the horizon wit
   assert.doesNotThrow(() => updateAlienArchitecture(root, Number.NaN));
 });
 
-test('unique Europa hero vault never loops away from the player's scenic objective', () => {
+test("unique Europa hero vault never loops away from the player\u0027s scenic objective", () => {
   const root = createAlienArchitecture('ice');
   const vault = root.getObjectByName('europa-sunken-alien-vault-hero');
   assert.ok(vault?.userData.heroLandmark);
