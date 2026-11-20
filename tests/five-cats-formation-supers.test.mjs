@@ -91,11 +91,14 @@ test('new mission uses the actual active ship as leader, with four escorts', (t)
   assert.equal(first.fiveCats.playerIsLeader, true);
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), true);
+  assert.equal(first.fiveCats.visibleTagCount, 0);
   h.advance(SQUAD_INTRO_DURATION - 1 + 0.1);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.fiveCats.visible.length, 0);
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
 });
 
 test('skipping the optional story keeps stage-one hangar launch after campaign map', (t) => {
@@ -180,6 +183,7 @@ test('optional launch skip preserves live ship identity, clock and escort visibi
   assert.equal(after.heroShip.moduleId, before.heroShip.moduleId);
   assert.equal(after.seconds, before.seconds);
   assert.equal(h.elements.get('launchSkip').hidden, true);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
   h.advance(0.3);
   assert.ok(h.game.snapshot().seconds > 0, 'gameplay starts immediately after skip');
 });
