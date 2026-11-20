@@ -19,11 +19,22 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   await expect(page.locator('#explorationProgress')).toContainText('0/3');
   await expect(page.locator('#exploreLaunchCombat')).toBeHidden();
   await expect(page.locator('#exploreScan')).toBeDisabled();
+  await expect(page.locator('#explorationDistrict')).toHaveText('ÁTRIO DA ESTAÇÃO');
+  await expect(page.locator('.exploration-map-signal')).toHaveCount(3);
+  await expect(page.locator('#explorationMapPlayer')).toBeVisible();
+  // Non-linear districts on both sides of the old corridor.
+  await page.evaluate(() => window.__novaExploreQA.moveTo(-38, -18));
+  await expect(page.locator('#explorationDistrict')).toHaveText('LABORATÓRIO DE SINAIS');
+  await page.evaluate(() => window.__novaExploreQA.moveTo(39, -55));
+  await expect(page.locator('#explorationDistrict')).toHaveText('PRAÇA DO REATOR');
+  await page.evaluate(() => window.__novaExploreQA.moveTo(-37, -82));
+  await expect(page.locator('#explorationDistrict')).toHaveText('ARQUIVOS DA ORBITA');
+  await page.evaluate(() => window.__novaExploreQA.moveTo(0, 12));
 
   for (const [x, z] of [
-    [-12, -15],
-    [13, -37],
-    [-8, -59],
+    [-38, -18],
+    [39, -55],
+    [-37, -82],
   ]) {
     const accepted = await page.evaluate(
       ([px, pz]) => window.__novaExploreQA.moveTo(px, pz),
@@ -35,7 +46,7 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   }
   await expect(page.locator('#explorationProgress')).toContainText('3/3');
   await expect(page.locator('#exploreLaunchCombat')).toBeHidden();
-  await page.evaluate(() => window.__novaExploreQA.moveTo(8, -77));
+  await page.evaluate(() => window.__novaExploreQA.moveTo(9, -92));
   await expect(page.locator('#exploreTalk')).toBeEnabled();
   await page.locator('#exploreTalk').click();
   // The decision stays visible across multiple animation frames.
@@ -120,7 +131,7 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
       });
       expect(isTopmost, id + ' must not be covered by the 3D canvas').toBe(true);
     }
-    await page.evaluate(() => window.__novaExploreQA.moveTo(-12, -15));
+    await page.evaluate(() => window.__novaExploreQA.moveTo(-38, -18));
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('1/3');
     await page.screenshot({
@@ -133,4 +144,35 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
   await page.locator('#developerExplore').click();
   await expect(page.locator('#explorationProgress')).toContainText('0/3');
   await page.locator('#exploreExit').click();
+});
+
+test('Orbit-9 free roaming has solid reactor walls and an interactive minimap without persistence', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+  const before = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(before.district).toBe('central');
+  expect(before.player).toEqual({ x: 0, z: 12 });
+  // The core is a physical blocker. QA teleport cannot bypass it.
+  expect(await page.evaluate(() => window.__novaExploreQA.moveTo(0, -44))).toBe(false);
+  expect(await page.evaluate(() => window.__novaExploreQA.moveTo(39, -55))).toBe(true);
+  await expect(page.locator('#explorationDistrict')).toHaveText('PRAÇA DO REATOR');
+  const playerMap = await page.locator('#explorationMapPlayer').evaluate((el) => ({
+    x: parseFloat(el.style.left),
+    y: parseFloat(el.style.bottom),
+  }));
+  expect(playerMap.x).toBeGreaterThan(50);
+  expect(playerMap.y).toBeGreaterThan(0);
+  await page.locator('#exploreScan').click();
+  await expect(page.locator('.exploration-map-signal.found')).toHaveCount(1);
+  await page.screenshot({
+    path: info.outputPath('orbit9-free-roam-map-' + info.project.name + '.png'),
+  });
+  await page.locator('#exploreExit').click();
+  const saved = await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'));
+  expect(saved).toBeNull();
 });
