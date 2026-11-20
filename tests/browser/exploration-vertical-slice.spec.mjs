@@ -49,9 +49,16 @@ test('Five Cats Orbit-9: 3D investigation, clue gating and real boss entry with 
   await page.evaluate(() => window.__novaExploreQA.moveTo(9, -92));
   await expect(page.locator('#exploreTalk')).toBeEnabled();
   await page.locator('#exploreTalk').click();
-  // The decision stays visible across multiple animation frames.
-  await expect(page.locator('#explorationChoices')).toBeVisible();
-  await page.waitForTimeout(120);
+  // Scripted NPC dialogue presents three separate readable beats, then choices.
+  await expect(page.locator('#explorationDialogue')).toBeVisible();
+  await expect(page.locator('#explorationChoices')).toBeHidden();
+  for (const index of [0, 1, 2]) {
+    const state = await page.evaluate(() => window.__novaExploreQA.snapshot().dialogue);
+    expect(state.index).toBe(index);
+    await expect(page.locator('#exploreDialogueText')).not.toBeEmpty();
+    await page.locator('#exploreDialogueNext').click();
+  }
+  await expect(page.locator('#explorationDialogue')).toBeHidden();
   await expect(page.locator('#explorationChoices')).toBeVisible();
   await page.locator('#exploreChoiceHidden').click();
   await expect(page.locator('#exploreLaunchCombat')).toBeVisible();
@@ -108,6 +115,9 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
         'exploreMoveRight',
         'exploreExit',
         'exploreScan',
+        'exploreCameraLeft',
+        'exploreCameraRight',
+        'exploreCameraZoom',
       ].map(get);
     });
     for (const rect of sizes) {
@@ -120,7 +130,14 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
     }
     // Bounding boxes can be inside the viewport while the WebGL canvas
     // still intercepts the touch. Assert the real element at the target center.
-    for (const id of ['exploreExit', 'exploreMoveUp', 'exploreMoveRight', 'exploreScan']) {
+    for (const id of [
+      'exploreExit',
+      'exploreMoveUp',
+      'exploreMoveRight',
+      'exploreScan',
+      'exploreCameraLeft',
+      'exploreCameraZoom',
+    ]) {
       const isTopmost = await page.locator('#' + id).evaluate((button) => {
         const rect = button.getBoundingClientRect();
         const target = document.elementFromPoint(
@@ -194,5 +211,75 @@ test('selected Five Cats pilot is reused in Orbit-9 instead of a stock cat', asy
   await page.screenshot({
     path: info.outputPath('orbit9-bob-3d-' + info.project.name + '.png'),
   });
+  await page.locator('#exploreExit').click();
+});
+
+test('Orbit-9 lets the player orbit the third-person camera and inspect a wider survey view', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+  const before = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(before.camera.mode).toBe('follow');
+  expect(before.camera.yaw).toBe(0);
+  await page.locator('#exploreCameraRight').click();
+  let view = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(view.camera.yaw).toBeGreaterThan(0);
+  await page.keyboard.press('KeyQ');
+  view = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(view.camera.yaw).toBeCloseTo(0);
+  await page.locator('#exploreCameraZoom').click();
+  await expect(page.locator('#exploreCameraZoom')).toHaveAttribute('aria-pressed', 'true');
+  view = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(view.camera.mode).toBe('survey');
+  await page.keyboard.press('KeyC');
+  await expect(page.locator('#exploreCameraZoom')).toHaveAttribute('aria-pressed', 'false');
+  view = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(view.camera.mode).toBe('follow');
+  await page.screenshot({
+    path: info.outputPath('orbit9-orbit-camera-' + info.project.name + '.png'),
+  });
+  await page.locator('#exploreExit').click();
+  await page.locator('#developerExplore').click();
+  const reset = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(reset.camera).toEqual({ yaw: 0, mode: 'follow' });
+  await page.locator('#exploreExit').click();
+});
+
+test('survivor dialogue can be cancelled and resumed without granting a forged route choice', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+  for (const [x, z] of [
+    [-38, -18],
+    [39, -55],
+    [-37, -82],
+  ]) {
+    await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z]);
+    await page.locator('#exploreScan').click();
+  }
+  await page.evaluate(() => window.__novaExploreQA.moveTo(9, -92));
+  await page.locator('#exploreTalk').click();
+  await expect(page.locator('#explorationDialogue')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#explorationDialogue')).toBeHidden();
+  await expect(page.locator('#explorationOverlay')).toBeVisible();
+  expect((await page.evaluate(() => window.__novaExploreQA.snapshot())).quest.conversation).toBeNull();
+  await page.locator('#exploreTalk').click();
+  await expect(page.locator('#exploreDialogueText')).toContainText('Os gatos chegaram');
+  await page.locator('#exploreDialogueNext').click();
+  await page.locator('#exploreDialogueNext').click();
+  await page.locator('#exploreDialogueNext').click();
+  await page.locator('#exploreChoiceRestore').click();
+  const state = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(state.quest.conversation).toBe('restore-power');
+  await expect(page.locator('#exploreTalk')).toBeDisabled();
   await page.locator('#exploreExit').click();
 });
