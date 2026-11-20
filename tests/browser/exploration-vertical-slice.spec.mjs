@@ -313,10 +313,15 @@ test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST ge
   expect(moving.stick.z).toBeLessThan(-0.5);
 
   await page.mouse.up();
-  await page.waitForTimeout(550);
+  // The thumbstick must reset immediately. The visual rig eases to rest using
+  // simulated frame time, which can lag wall-clock time on shared SwiftShader CI.
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().gait.blend), {
+      timeout: 2500,
+    })
+    .toBeLessThan(0.03);
   const stopped = await page.evaluate(() => window.__novaExploreQA.snapshot());
   expect(stopped.stick).toEqual({ x: 0, z: 0 });
-  expect(stopped.gait.blend).toBeLessThan(0.03);
 
   // Keyboard Boost is unchanged; exploration maps it to walking speed.
   await page.keyboard.down('Shift');
