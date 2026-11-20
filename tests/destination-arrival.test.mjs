@@ -86,8 +86,8 @@ test('the scene begins in space, reveals a distinct planetary world, and resets 
     assert.equal(root.userData.arrivalPhase, 'arena');
     if (index === 5) {
       assert.ok(
-        scene.fog.density >= 0.002 && scene.fog.density <= 0.0035,
-        'Europa surface keeps bounded icy haze; combat remains visible',
+        scene.fog.density >= 0.0012 && scene.fog.density <= 0.0016,
+        'Europa surface uses crisp layered ice haze with readable distant architecture',
       );
       assert.equal(scene.getObjectByName('world-orbital-globe').visible, false);
       assert.equal(scene.getObjectByName('destination-celestial-body').visible, false);
