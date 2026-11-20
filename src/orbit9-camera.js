@@ -2,7 +2,6 @@
 // Pure geometry keeps inputs and browser frame timing outside this contract.
 import { ORBIT9_OBSTACLES } from './orbit9-free-roam.js';
 
-const limit = (value, min, max) => Math.min(max, Math.max(min, value));
 export const ORBIT9_CAMERA_MODES = Object.freeze(['follow', 'survey']);
 export function orbit9CameraState({ yaw = 0, mode = 'follow' } = {}) {
   return {
