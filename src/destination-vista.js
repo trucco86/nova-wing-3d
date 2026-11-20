@@ -112,6 +112,7 @@ function partsForVista(root) {
       globe,
       rim: globe.getObjectByName('destination-celestial-limb'),
       mist: root.getObjectByName('destination-entry-mist'),
+      iceParticles: root.getObjectByName('europa-fissure-entry-ice'),
     };
     vistaParts.set(root, parts);
   }
@@ -250,7 +251,40 @@ export function createDestinationVista(index) {
     mist.add(cloud);
   }
   root.add(mist);
-  vistaParts.set(root, { globe, rim, mist });
+  let iceParticles = null;
+  if (index === 5) {
+    // Mars has sand curtains; Europa uses sparse tumbling ice shards during
+    // the fissure entry. One Points draw with deterministic simulation-time
+    // movement, no screen-wide white flash or imaginary atmospheric ring.
+    const coordinates = new Float32Array(90 * 3);
+    const seeded = (v) => {
+      const n = Math.sin(v * 91.73) * 43758.5453;
+      return n - Math.floor(n);
+    };
+    for (let i = 0; i < 90; i++) {
+      coordinates[i * 3] = (seeded(i + 1) - 0.5) * 280;
+      coordinates[i * 3 + 1] = (seeded(i + 123) - 0.5) * 130;
+      coordinates[i * 3 + 2] = -95 - seeded(i + 277) * 240;
+    }
+    const iceGeometry = new T.BufferGeometry();
+    iceGeometry.setAttribute('position', new T.BufferAttribute(coordinates, 3));
+    iceParticles = new T.Points(
+      iceGeometry,
+      new T.PointsMaterial({
+        color: '#b7eaff',
+        size: 1.8,
+        opacity: 0,
+        transparent: true,
+        depthWrite: false,
+        fog: false,
+      }),
+    );
+    iceParticles.name = 'europa-fissure-entry-ice';
+    iceParticles.frustumCulled = false;
+    iceParticles.userData.visualOnly = true;
+    root.add(iceParticles);
+  }
+  vistaParts.set(root, { globe, rim, mist, iceParticles });
   updateDestinationVista(root, index, 0);
   return root;
 }
@@ -258,7 +292,7 @@ export function createDestinationVista(index) {
 export function updateDestinationVista(root, index, seconds) {
   const state = destinationArrivalAt(index, seconds);
   if (!state || !root) return state;
-  const { globe, rim, mist } = partsForVista(root);
+  const { globe, rim, mist, iceParticles } = partsForVista(root);
   const visible = state.globeOpacity > 0.01;
   globe.visible = visible;
   globe.scale.setScalar(state.globeScale);
@@ -284,6 +318,15 @@ export function updateDestinationVista(root, index, seconds) {
   globe.material.uniforms.alpha.value = state.globeOpacity;
   globe.material.uniforms.drift.value = seconds;
   rim.material.uniforms.alpha.value = state.globeOpacity * 0.8;
+  if (iceParticles) {
+    iceParticles.visible = state.haze > 0.01;
+    iceParticles.material.opacity = state.haze * 0.46;
+    iceParticles.position.set(
+      Math.sin(seconds * 0.31) * 8,
+      -Math.min(8, seconds * 0.28),
+      0,
+    );
+  }
   for (let i = 0; i < mist.children.length; i++) {
     const child = mist.children[i];
     child.material.uniforms.alpha.value = index === 7 ? 0 : state.haze * (0.3 + i * 0.05);
