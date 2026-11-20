@@ -260,7 +260,9 @@ export function createAlienArchitecture(theme, quality = 'high') {
       () => ({
         x: -165,
         y: 43,
-        z: -330,
+        // It begins deep in the landscape, approaches once and becomes a
+        // stable visual destination; a unique hero building must not loop.
+        z: -650,
         width: 108,
         height: 116,
         depth: 73,
@@ -283,11 +285,14 @@ export function setAlienArchitectureQuality(root, quality) {
 const FAR_DEPTH = -1700;
 const DEPTH_SPAN = 1825;
 const PARALLAX_RATE = 0.22;
+const HERO_APPROACH_RATE = 0.065;
+const HERO_NEAR_DEPTH = -285;
 
-// Move the authored ruins through the route without rotating the entire scene
-// or jumping visible buildings when an instanced landmark loops out of frame.
-// Only the translation component of each matrix changes: no allocations,
-// physics, texture uploads or additional WebGL draw calls per frame.
+// Background ruins may loop after leaving the camera, but a unique mission
+// landmark must NEVER wrap into empty space or vanish at a random moment.
+// Keep the Europa hero vault progressively readable in the middle of flight
+// until the separate boss arena transition explicitly hides its entire site.
+// Only instance translations change: no extra draws or allocations per frame.
 export function updateAlienArchitecture(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
   const advanced = travel * PARALLAX_RATE;
@@ -296,9 +301,16 @@ export function updateAlienArchitecture(root, travel) {
     if (!base) continue;
     const matrices = mesh.instanceMatrix.array;
     for (let i = 0; i < base.length; i++) {
-      const distance = base[i] + advanced - FAR_DEPTH;
-      const wrapped = ((distance % DEPTH_SPAN) + DEPTH_SPAN) % DEPTH_SPAN;
-      matrices[i * 16 + 14] = FAR_DEPTH + wrapped;
+      if (mesh.userData.heroLandmark) {
+        matrices[i * 16 + 14] = Math.min(
+          HERO_NEAR_DEPTH,
+          base[i] + Math.max(0, travel) * HERO_APPROACH_RATE,
+        );
+      } else {
+        const distance = base[i] + advanced - FAR_DEPTH;
+        const wrapped = ((distance % DEPTH_SPAN) + DEPTH_SPAN) % DEPTH_SPAN;
+        matrices[i * 16 + 14] = FAR_DEPTH + wrapped;
+      }
     }
     mesh.instanceMatrix.needsUpdate = true;
   }
