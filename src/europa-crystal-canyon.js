@@ -216,7 +216,7 @@ export function createEuropaCrystalCanyon() {
         return {
           // Close clusters now occupy the readable inside edge of the canyon.
           // Their full geometry stays outside the x +/-72 combat corridor.
-          x: side * (nearCluster ? 88 + (i % 3) * 11 : 110 + (i % 4) * 14),
+          x: side * (nearCluster ? 98 + (i % 3) * 11 : 110 + (i % 4) * 14),
           y: -7 + h * 0.44,
           z: nearCluster
             ? -150 - Math.floor(i / 2) * (highOnly ? 124 : 94)
