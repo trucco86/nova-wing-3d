@@ -4,6 +4,7 @@ on:
     branches:
       - feat/nw09-cinematic-3d
       - feat/stage-one-cinematic-launch-20261119
+      - feat/orbit9-free-roam-hub-20261120
       - feat/qa135-premium-fractured-moon-perf-20261115
       - feat/qa136-boss-learning-mars-combat-20261115
       - fix/qa137-mobile-rpg-accordion-hud-20261115
@@ -47,6 +48,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Prepare isolated Orbit-9 exploration release
+        if: github.ref_name == 'feat/orbit9-free-roam-hub-20261120'
+        run: npm run release:prepare -- 1.27.155
       - name: Prepare QA148 release metadata
         if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
         run: npm run release:prepare -- 1.27.144
@@ -88,6 +92,9 @@ jobs:
           git add -- index.html
           # Rebuild the approved cinematic candidate on its isolated branch.
           if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ]; then
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/orbit9-free-roam-hub-20261120" ]; then
             git add -u
           fi
           # QA157: preserve formatter output for the new hotpath code and tests.
