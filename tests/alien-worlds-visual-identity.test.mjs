@@ -7,6 +7,7 @@ import {
   ANCIENT_WORLD_THEMES,
   createAlienArchitecture,
   setAlienArchitectureQuality,
+  updateAlienArchitecture,
 } from '../src/alien-architecture.js';
 import { destinationArrivalAt } from '../src/destination-arrival.js';
 import { createDestinationVista, updateDestinationVista } from '../src/destination-vista.js';
@@ -101,4 +102,37 @@ test('the scenery keeps gameplay physics unchanged and does not leak decorations
     assert.notEqual(node.userData.hitbox, true);
     assert.notEqual(node.userData.solids?.length > 0, true);
   });
+});
+
+test('alien architecture flies past slowly and wraps only behind the horizon without extra geometry', () => {
+  const root = createAlienArchitecture('sun');
+  const mesh = root.children.find((child) => child.name.includes('-terraces'));
+  const matrix = new T.Matrix4();
+  mesh.getMatrixAt(0, matrix);
+  const initial = new T.Vector3().setFromMatrixPosition(matrix);
+  assert.equal(initial.z, -245);
+  const originalGeometry = mesh.geometry;
+  const count = mesh.count;
+  updateAlienArchitecture(root, 100);
+  mesh.getMatrixAt(0, matrix);
+  const moved = new T.Vector3().setFromMatrixPosition(matrix);
+  assert.ok(Math.abs(moved.z - (initial.z + 22)) < 0.01);
+  assert.equal(moved.x, initial.x);
+  assert.equal(moved.y, initial.y);
+  updateAlienArchitecture(root, 100);
+  mesh.getMatrixAt(0, matrix);
+  assert.ok(Math.abs(new T.Vector3().setFromMatrixPosition(matrix).z - moved.z) < 0.01);
+  updateAlienArchitecture(root, 10000);
+  for (const batch of root.children) {
+    assert.equal(batch.userData.visualOnly, true);
+    assert.equal(batch.count, batch.userData.authoredDepth.length);
+    for (let i = 0; i < batch.count; i++) {
+      batch.getMatrixAt(i, matrix);
+      const z = new T.Vector3().setFromMatrixPosition(matrix).z;
+      assert.ok(z >= -1700 && z < 125, 'world object wraps outside the near field');
+    }
+  }
+  assert.equal(mesh.geometry, originalGeometry);
+  assert.equal(mesh.count, count);
+  assert.doesNotThrow(() => updateAlienArchitecture(root, Number.NaN));
 });
