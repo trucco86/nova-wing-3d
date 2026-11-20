@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { createAlienMonumentGeometry } from './alien-monument-geometry.js';
+import { createAlienMonumentGeometry, createEuropaSunkenVaultGeometry } from './alien-monument-geometry.js';
 
 // Authored ruins for the worlds that were still recycling planet/torus props.
 // All architecture is background-only; it never becomes a hidden collision wall.
@@ -236,6 +236,36 @@ export function createAlienArchitecture(theme, quality = 'high') {
     },
   );
   runes.userData.highOnly = true;
+  if (theme === 'ice') {
+    // One hero structure provides the visual destination for the frozen
+    // journey. Build it as a single draw, away from the x +/- 72 flight lane.
+    // Its darker masonry contrasts with the already-authored glacial ridges.
+    const vault = createBatch(
+      root,
+      'europa-sunken-alien-vault-hero',
+      createEuropaSunkenVaultGeometry(),
+      new T.MeshStandardMaterial({
+        color: '#ffffff',
+        vertexColors: true,
+        roughness: 0.6,
+        metalness: 0.2,
+        flatShading: true,
+        emissive: '#112f41',
+        emissiveIntensity: 0.08,
+      }),
+      1,
+      () => ({
+        x: -165,
+        y: 43,
+        z: -330,
+        width: 108,
+        height: 116,
+        depth: 73,
+        yaw: 0.13,
+      }),
+    );
+    vault.userData.heroLandmark = true;
+  }
   setAlienArchitectureQuality(root, quality);
   return root;
 }
