@@ -263,8 +263,9 @@ export function updateDestinationVista(root, index, seconds) {
   globe.visible = visible;
   globe.scale.setScalar(state.globeScale);
   // Saturn remains within the narrow portrait viewport during ring combat.
-  globe.position.x = index === 7 ? -58 * state.reveal : state.keepGlobe ? -365 * state.reveal : 0;
-  globe.position.y = index === 7 ? 86 + state.reveal * 18 : 94 + state.reveal * 44;
+  const groundDestination = index === 4 || index === 5 || index === 6 || index === 9;
+  globe.position.x = index === 7 ? -58 * state.reveal : groundDestination ? -205 : state.keepGlobe ? -365 * state.reveal : 0;
+  globe.position.y = index === 7 ? 86 + state.reveal * 18 : groundDestination ? 170 : 94 + state.reveal * 44;
   globe.material.uniforms.alpha.value = state.globeOpacity;
   globe.material.uniforms.drift.value = seconds;
   rim.material.uniforms.alpha.value = state.globeOpacity * 0.8;
