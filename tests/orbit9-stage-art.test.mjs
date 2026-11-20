@@ -82,7 +82,6 @@ test('Stage art adds no new collision or interaction positions', () => {
   assert.deepEqual(ORBIT9_SURVIVOR, [9, -92]);
 });
 
-
 test('follow camera keeps the entrance deck visible and avoids giant foreground reactor props', () => {
   const spawn = orbit9CameraPose(0, 12, { yaw: 0, mode: 'follow' });
   assert.ok(spawn.eye.z <= 21, 'follow camera must stay above the built deck');
