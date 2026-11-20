@@ -32,3 +32,11 @@ uma vitória E2E, nem teste visual no iPhone. Não altera o gameplay;
 não incrementa versão nem gera cópia de produção. PR empilhada sobre
 QA163 #409, sujeita ao gate de quality e seis shards Playwright.
 Não fazer merge/deploy sem aprovação, manter #338 aberta.
+
+## Evidência técnica de 19/11/2026
+
+- [Sync gerado 44642498323](https://github.com/trucco86/nova-wing-3d/actions/runs/44642498323): sucesso.
+- `npm run format`, `npm run build` e `npm run validate`: aprovados.
+- O novo teste de percurso real QA164 foi aprovado no runner Node em 1.286 ms.
+- A etapa browser FULL de seis shards e o preview no SHA final permanecem como gates.
+- Benchmark do iPhone e fluxo completo de vitória/warp ainda não foram demonstrados.
