@@ -107,6 +107,7 @@ test('portrait camera sees most of Europa hero vault during approach without cor
   camera.position.set(0, 10, 32);
   camera.lookAt(0, 10, -500);
   camera.updateProjectionMatrix();
+  camera.updateMatrixWorld();
   const instance = new T.Matrix4();
   const projected = new T.Vector3();
   const xs = [bounds.min.x, bounds.max.x];
