@@ -42,24 +42,21 @@ test('all five identities use their individual artwork in every character surfac
   const css = await readFile(resolve('src/styles.css'), 'utf8');
   const html = await readFile(resolve('src/shell.html'), 'utf8');
   for (const pilot of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
-    assert.match(
-      css,
-      new RegExp('--nw-' + pilot + '-portrait: url\\(\\x27src/assets/' + pilot + '-spotlight\\.webp\\x27\\)'),
+    assert.ok(
+      css.includes(`--nw-${pilot}-portrait: url('src/assets/${pilot}-spotlight.webp')`),
       'individual artwork variable missing for ' + pilot,
     );
     for (const selector of [
-      '#pilot-' + pilot + ' .cat-avatar',
-      '#comms #commsPortrait[data-pilot=\\x27' + pilot + '\\x27]',
-      '#cinematicPortrait[data-pilot=\\x27' + pilot + '\\x27]',
-      '.cat-service-card[data-pilot=\\x27' + pilot + '\\x27] .cat-service-avatar',
-    ]) {
-      assert.ok(css.includes(selector.replaceAll('\\x27', "'")), selector + ' must use individual art');
-    }
+      `#pilot-${pilot} .cat-avatar`,
+      `#comms #commsPortrait[data-pilot='${pilot}']`,
+      `#cinematicPortrait[data-pilot='${pilot}']`,
+      `.cat-service-card[data-pilot='${pilot}'] .cat-service-avatar`,
+    ])
+      assert.ok(css.includes(selector), selector + ' must use individual art');
   }
   assert.match(css, /background-size: cover;/);
   assert.match(html, /id="hangarArt"/);
   assert.match(html, /id="hangarArtImage"/);
-  for (const unexpected of ['pilot-boa', 'pilot-luna']) {
+  for (const unexpected of ['pilot-boa', 'pilot-luna'])
     assert.ok(!html.includes('id="' + unexpected + '"'), unexpected + ' is not in the Five Cats roster');
-  }
 });
