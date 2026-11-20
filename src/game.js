@@ -7256,6 +7256,7 @@ export function createGame({
       document.body.classList.remove(
         'in-mission',
         'stage-intro',
+        'launch-cinematic',
         'left-handed',
         'ranking-intermission',
       );
