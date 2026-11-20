@@ -6,6 +6,11 @@ import * as T from 'three';
 // owns damage; these meshes never introduce a second/invisible hitbox.
 const FORWARD = new T.Vector3(0, 0, 1);
 const scratch = new T.Vector3();
+// Hotpath-safe scratch reused only for the single contact check per attack.
+// A visible mesh hit is not a speculative retarget: each claw is positioned
+// at the windup-locked destination before the predicate is evaluated.
+const contactWorld = new T.Vector3();
+const CONTACT_HALF = Object.freeze({ x: 17, y: 16, z: 19 });
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
 const smooth = (value) => {
   const t = clamp01(value);
@@ -223,4 +228,30 @@ export function animateEuropaAttackVfx(
     quake.scale.x = (striking ? 1.4 : 0.8) * strength;
     quake.scale.y = (striking ? 0.8 : 0.42) * strength;
   }
+}
+
+/**
+ * Physical tip contact for the Europa cryo-pincer ONLY. The exact displayed
+ * contact flashes are children of the animated claw meshes. A miss, hidden
+ * claw, or destroyed arm cannot apply melee damage, even when the broad
+ * tactical warning region still includes the pilot. Other boss strikes retain
+ * their pre-existing damage predicates until each 3D rig is authored.
+ *
+ * Called once at the actual strike apex, after animateEuropaAttackVfx().
+ * Damage still requires the separately latched radar predicate in game.js.
+ */
+export function europaClawContactHit(root, pilotPosition) {
+  if (!root?.userData?.strikers || !pilotPosition ||
+      ![pilotPosition.x, pilotPosition.y, pilotPosition.z].every(Number.isFinite)) return false;
+  // At most two arms. Don't create a Box3/Vector3 per frame, or treat the
+  // invisible flash meshes as active colliders during windup/recovery.
+  root.updateWorldMatrix(true, true);
+  for (const striker of root.userData.strikers) {
+    if (!striker.node.visible || !striker.impact.visible) continue;
+    striker.impact.getWorldPosition(contactWorld);
+    if (Math.abs(pilotPosition.x - contactWorld.x) <= CONTACT_HALF.x &&
+        Math.abs(pilotPosition.y - contactWorld.y) <= CONTACT_HALF.y &&
+        Math.abs(pilotPosition.z - contactWorld.z) <= CONTACT_HALF.z) return true;
+  }
+  return false;
 }
