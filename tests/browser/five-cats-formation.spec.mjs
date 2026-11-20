@@ -17,33 +17,49 @@ test('Five Cats launch shows the real lead ship and four escorts, then releases 
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeLessThan(0.1);
   await expect(page.locator('#squadFormationStatus')).toBeVisible();
   await page.screenshot({ path: info.outputPath('bia-five-cats-formation-mobile.png') });
-  await page.evaluate(() => window.fixture.advance(4.1));
+  await page.evaluate(() => window.fixture.advance(6.4));
   expect(await page.evaluate(() => window.fixture.game.snapshot().fiveCats.intro)).toBe(0);
   await expect(page.locator('#squadFormationStatus')).toBeHidden();
   await page.evaluate(() => window.fixture.advance(0.6));
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
 });
 
-test('stage-one hangar uses four readable camera shots without changing the active fighter', async ({
+test('stage-one uses six real camera angles and preserves selected hero through the handoff', async ({
   page,
 }, info) => {
   test.setTimeout(120000);
   await page.goto('/__dynamic.html?sector=0&intro=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  const observed = [];
+  const frames = [
+    [0.3, 'hangar-wide'],
+    [1.85, 'pilot-close'],
+    [2.9, 'deck-side'],
+    [4.3, 'exit-front'],
+    [5.65, 'rear-flight'],
+    [6.65, 'handoff'],
+  ];
   let previous = 0;
-  for (const at of [0.3, 1.5, 2.9, 4.5]) {
+  let heroId = null;
+  for (const [at, shot] of frames) {
     await page.evaluate((dt) => window.fixture.advance(dt), at - previous);
     previous = at;
     const data = await page.evaluate(() => window.fixture.game.snapshot());
-    observed.push(data.fiveCats.launchShot);
+    expect(data.fiveCats.launchShot).toBe(shot);
     expect(data.fiveCats.playerIsLeader).toBe(true);
     expect(data.fiveCats.visible).toHaveLength(4);
+    expect(data.fiveCats.visible.some(({ pilot }) => pilot === 'bia')).toBe(false);
+    expect(data.heroShip.visible, 'never hide the central hero during the cinematic').toBe(true);
+    heroId ??= data.heroShip.rootId;
+    expect(data.heroShip.rootId).toBe(heroId);
     expect(data.seconds).toBe(0);
-    if (at === 1.5 || at === 2.9)
-      await page.screenshot({ path: info.outputPath('launch-shot-' + at + '.png') });
+    await page.screenshot({ path: info.outputPath('six-shot-' + shot + '-' + info.project.name + '.png') });
   }
-  expect(observed).toEqual(['hangar-wide', 'pilot-close', 'exit-front', 'handoff']);
+  await page.evaluate(() => window.fixture.advance(1));
+  const after = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(after.fiveCats.intro).toBe(0);
+  expect(after.heroShip.rootId).toBe(heroId, 'same playable ship must survive opening');
+  expect(after.fiveCats.visible).toHaveLength(0);
+  expect(after.seconds).toBeGreaterThan(0);
 });
 
 test('skipping story from public menu still launches Five Cats from the hangar', async ({
