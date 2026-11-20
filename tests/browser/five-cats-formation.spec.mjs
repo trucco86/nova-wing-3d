@@ -15,8 +15,14 @@ test('Five Cats launch shows the real lead ship and four escorts, then releases 
   expect(intro.playerIsLeader).toBe(true);
   expect(intro.introPilot).toBe('bia');
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeLessThan(0.1);
-  await expect(page.locator('#squadFormationStatus')).toBeVisible();
-  await page.screenshot({ path: info.outputPath('bia-five-cats-formation-mobile.png') });
+  await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
+  await expect(page.locator('#squadFormationStatus')).toBeHidden();
+  await expect(page.locator('#hud')).toBeHidden();
+  await expect(page.locator('#touch')).toBeHidden();
+  await expect(page.locator('#strategyControls')).toBeHidden();
+  await expect(page.locator('#launchSkip')).toBeVisible();
+  expect(intro.visibleTagCount).toBe(0);
+  await page.screenshot({ path: info.outputPath('bia-clean-cinematic-mobile.png') });
   await page.evaluate(() => window.fixture.advance(6.4));
   expect(await page.evaluate(() => window.fixture.game.snapshot().fiveCats.intro)).toBe(0);
   await expect(page.locator('#squadFormationStatus')).toBeHidden();
@@ -24,19 +30,18 @@ test('Five Cats launch shows the real lead ship and four escorts, then releases 
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
 });
 
-test('stage-one uses six real camera angles and preserves selected hero through the handoff', async ({
+test('stage-one has three continuous clear hangar moments without labels or touch HUD', async ({
   page,
 }, info) => {
   test.setTimeout(120000);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/__dynamic.html?sector=0&intro=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const frames = [
-    [0.3, 'hangar-wide'],
-    [1.85, 'pilot-close'],
-    [2.9, 'deck-side'],
-    [4.3, 'exit-front'],
-    [5.65, 'rear-flight'],
-    [6.65, 'handoff'],
+    [0.4, 'hangar'],
+    [2.6, 'exit'],
+    [5.3, 'approach'],
   ];
   let previous = 0;
   let heroId = null;
@@ -47,21 +52,28 @@ test('stage-one uses six real camera angles and preserves selected hero through 
     expect(data.fiveCats.launchShot).toBe(shot);
     expect(data.fiveCats.playerIsLeader).toBe(true);
     expect(data.fiveCats.visible).toHaveLength(4);
+    expect(data.fiveCats.visibleTagCount).toBe(0);
     expect(data.fiveCats.visible.some(({ pilot }) => pilot === 'bia')).toBe(false);
-    expect(data.heroShip.visible, 'never hide the central hero during the cinematic').toBe(true);
+    expect(data.heroShip.visible, 'real protagonist remains visible').toBe(true);
     heroId ??= data.heroShip.rootId;
     expect(data.heroShip.rootId).toBe(heroId);
     expect(data.seconds).toBe(0);
-    await page.screenshot({
-      path: info.outputPath('six-shot-' + shot + '-' + info.project.name + '.png'),
-    });
+    await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
+    for (const ui of ['#hud', '#touch', '#bottom', '#strategyControls', '#squadFormationStatus'])
+      await expect(page.locator(ui)).toBeHidden();
+    await expect(page.locator('#launchSkip')).toBeVisible();
+    await page.screenshot({ path: info.outputPath('clean-launch-' + shot + '-' + info.project.name + '.png') });
   }
-  await page.evaluate(() => window.fixture.advance(1));
+  await page.evaluate(() => window.fixture.advance(1.3));
   const after = await page.evaluate(() => window.fixture.game.snapshot());
   expect(after.fiveCats.intro).toBe(0);
-  expect(after.heroShip.rootId).toBe(heroId, 'same playable ship must survive opening');
+  expect(after.heroShip.rootId).toBe(heroId);
   expect(after.fiveCats.visible).toHaveLength(0);
   expect(after.seconds).toBeGreaterThan(0);
+  await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
+  await expect(page.locator('#hud')).toBeVisible();
+  await expect(page.locator('#launchSkip')).toBeHidden();
+  expect(errors).toEqual([]);
 });
 
 test('skipping story from public menu still launches Five Cats from the hangar', async ({
@@ -75,10 +87,9 @@ test('skipping story from public menu still launches Five Cats from the hangar',
   await page.locator('#cinematicSkip').click();
   await expect(page.locator('#campaignMap')).toBeVisible();
   await page.locator('#mapLaunch').click();
-  await expect(page.locator('#squadFormationStatus')).toBeVisible();
-  await expect(page.locator('#squadFormationStatus')).toContainText(
-    /HANGAR|MOTORES|DECOLAGEM|CONTROLE/,
-  );
+  await expect(page.locator('#squadFormationStatus')).toBeHidden();
+  await expect(page.locator('#launchSkip')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
   await page.screenshot({ path: info.outputPath('stage-one-hangar-after-story-skip.png') });
 });
 
@@ -103,7 +114,8 @@ test('optional preflight teaches and validates real controls before the same sel
   await page.locator('#trainingLaunch').click();
   await expect(page.locator('#preflightTraining')).toBeHidden();
   await expect(page.locator('#campaignMap')).toBeHidden();
-  await expect(page.locator('#squadFormationStatus')).toBeVisible();
+  await expect(page.locator('#squadFormationStatus')).toBeHidden();
+  await expect(page.locator('#launchSkip')).toBeVisible();
 });
 
 test('pilot explicitly skips hangar cutscene and keeps the same craft', async ({ page }) => {
