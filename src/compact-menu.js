@@ -87,6 +87,9 @@ export function installCompactMenu({
     window,
     'keydown',
     (event) => {
+      // A foreground exploration session owns Escape and Enter, including
+      // survivor dialogues. The title menu remains underneath its QA overlay.
+      if ($('explorationOverlay') && !$('explorationOverlay').hidden) return;
       if (
         menu.hidden ||
         !document.body.classList.contains('menu') ||
