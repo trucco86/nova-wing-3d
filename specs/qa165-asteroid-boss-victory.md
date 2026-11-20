@@ -1,12 +1,14 @@
 # QA165 | Fase 3 completa: subchefe, chefe, vitória e saída
 
 ## Objetivo e escopo
+
 Amplia a [QA164](https://github.com/trucco86/nova-wing-3d/pull/410)
 para testar uma campanha real iniciada por save do setor 3
 (`start(true)` e `spawnEncounters: true`), sem atalho de DEV e
 sem alteração da lógica de jogo.
 
 ## Gates do teste
+
 1. Percorrer fenda, fragmentos e corredor com controles reais.
 2. Derrotar o subchefe real usando bombas com o escudo de entrada respeitado;
    o HUD do subchefe deve fechar.
@@ -20,6 +22,7 @@ sem alteração da lógica de jogo.
    automático após 5,8 segundos e chegar à loja da missão concluída.
 
 ## Segurança e limites
+
 - Nenhum estado interno, vida do inimigo, relógio ou checkpoint é
   adulterado; usam-se APIs existentes de controles, bombas e dano.
 - `collect('shield')` periódico mantém o personagem vivo durante
