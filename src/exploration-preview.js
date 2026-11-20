@@ -65,6 +65,9 @@ export function installOrbit9ExplorationPreview(
   let playerZ = ORBIT9_SPAWN.z;
   const cameraGoal = new T.Vector3();
   let currentDistrict = '';
+  let lastMapX = NaN;
+  let lastMapZ = NaN;
+  let lastClueCount = -1;
   let lastFrame = 0;
   let active = false;
   let elapsed = 0;
@@ -91,11 +94,23 @@ export function installOrbit9ExplorationPreview(
       currentDistrict = district.id;
       districtName.textContent = district.name;
     }
-    const mapPosition = orbit9MapPoint(playerX, playerZ);
-    mapPlayer.style.left = mapPosition.x + '%';
-    mapPlayer.style.bottom = mapPosition.y + '%';
-    for (const mark of mapSignals.children)
-      mark.classList.toggle('found', state.clues.includes(mark.dataset.clue));
+    // Do not write CSS positions and marker classes on every WebGL frame.
+    if (
+      !Number.isFinite(lastMapX) ||
+      Math.abs(playerX - lastMapX) > 0.2 ||
+      Math.abs(playerZ - lastMapZ) > 0.2
+    ) {
+      const mapPosition = orbit9MapPoint(playerX, playerZ);
+      mapPlayer.style.left = mapPosition.x + '%';
+      mapPlayer.style.bottom = mapPosition.y + '%';
+      lastMapX = playerX;
+      lastMapZ = playerZ;
+    }
+    if (lastClueCount !== stats.found) {
+      for (const mark of mapSignals.children)
+        mark.classList.toggle('found', state.clues.includes(mark.dataset.clue));
+      lastClueCount = stats.found;
+    }
     const closeClue = need.find((_, i) => {
       const position = CLUE_POSITIONS[ORBIT9_EVIDENCE.findIndex((e) => e.id === need[i].id)];
       return near(...position);
@@ -358,6 +373,8 @@ export function installOrbit9ExplorationPreview(
     playerX = ORBIT9_SPAWN.x;
     playerZ = ORBIT9_SPAWN.z;
     currentDistrict = '';
+    lastMapX = lastMapZ = NaN;
+    lastClueCount = -1;
     elapsed = 0;
     lastFrame = 0;
     root.hidden = false;
