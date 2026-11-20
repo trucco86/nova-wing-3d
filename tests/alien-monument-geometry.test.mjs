@@ -6,7 +6,11 @@ import {
   createAlienMonumentGeometry,
   createEuropaSunkenVaultGeometry,
 } from '../src/alien-monument-geometry.js';
-import { ANCIENT_WORLD_THEMES, createAlienArchitecture, updateAlienArchitecture } from '../src/alien-architecture.js';
+import {
+  ANCIENT_WORLD_THEMES,
+  createAlienArchitecture,
+  updateAlienArchitecture,
+} from '../src/alien-architecture.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
@@ -118,11 +122,13 @@ test('portrait camera sees most of Europa hero vault during approach without cor
     vault.getMatrixAt(0, instance);
     let minNdc = Infinity;
     let maxNdc = -Infinity;
-    for (const x of xs) for (const y of ys) for (const z of zs) {
-      projected.set(x, y, z).applyMatrix4(instance).project(camera);
-      minNdc = Math.min(minNdc, projected.x);
-      maxNdc = Math.max(maxNdc, projected.x);
-    }
+    for (const x of xs)
+      for (const y of ys)
+        for (const z of zs) {
+          projected.set(x, y, z).applyMatrix4(instance).project(camera);
+          minNdc = Math.min(minNdc, projected.x);
+          maxNdc = Math.max(maxNdc, projected.x);
+        }
     const visibleWidth = Math.max(0, Math.min(1, maxNdc) - Math.max(-1, minNdc));
     const fractionVisible = visibleWidth / (maxNdc - minNdc);
     assert.ok(
