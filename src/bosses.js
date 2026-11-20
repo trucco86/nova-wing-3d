@@ -746,6 +746,30 @@ export function createBossModel(sector, index = 0, tactical = false) {
         ...parts.flatMap((part) => [part.mesh, part.marker]),
       ]);
       for (const child of g.children) if (!keep.has(child)) child.visible = false;
+      // The old pitbull face, claws and living appendages were accidentally
+      // hidden behind the carrier fighter. Reparent the existing authored
+      // geometry onto the visible fighter instead of allocating duplicate rigs.
+      // Convert world-sized coordinates into the fighter's inverted 11.5x frame.
+      const fighterScale = 11.5;
+      const attachVisible = (node, name, x, y, z) => {
+        if (!node) return;
+        node.parent?.remove(node);
+        node.name = name;
+        node.position.set(-x / fighterScale, y / fighterScale, -z / fighterScale);
+        node.scale.setScalar(1 / fighterScale);
+        // Shell faces 180 degrees away in local space; restore the actual
+        // pitbull face and weapon tips toward the approaching player's camera.
+        node.rotation.y = Math.PI;
+        node.visible = true;
+        shell.add(node);
+      };
+      attachVisible(g.getObjectByName('marvin-pitbull'), 'marvin-pitbull', 0, 25, 34);
+      attachVisible(g.getObjectByName('marvin-left-claw'), 'marvin-left-claw', -41, -11, 19);
+      attachVisible(g.getObjectByName('marvin-right-claw'), 'marvin-right-claw', 41, -11, 19);
+      attachVisible(organic[0], 'marvin-port-tentacle', -34, -7, 22);
+      attachVisible(organic[3], 'marvin-starboard-tentacle', 34, -7, 22);
+      // Remaining hidden tissue still belongs to the original boss but does
+      // not create a fake attack or occlude the real fighter.
       // Existing weak points remain visible on the face of the carrier fighter.
       // Side batteries remain the actual physical projectile origins.
     } else {

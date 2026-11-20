@@ -48,7 +48,7 @@ test('pilot portraits and insignia artwork work on mobile without obscuring the 
   await expect(page.locator('#pilot-bia .cat-avatar')).toBeVisible();
   await expect(page.locator('#pilot-bob .cat-avatar')).toBeVisible();
   await page.locator('#pilot-bob').click();
-  await expect(page.locator('#pilotRankInsignia')).toContainText(/RECRUTA|CADETE|ASPIRANTE/);
+  await expect(page.locator('#pilotRankInsignia')).toContainText(/RECRUTA|CADETE|ASPIRANTE/i);
   expect(
     await page
       .locator('#pilotRankInsignia')

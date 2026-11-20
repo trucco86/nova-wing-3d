@@ -11,6 +11,15 @@ async function confirmCampaignPreflight(page) {
     await page.locator('#mapLaunch').click();
     await expect(campaign).toBeHidden();
   }
+  // Mission gameplay begins AFTER the optional stage-one decolagem, which
+  // intentionally hides all combat controls. Gameplay-only probes opt to
+  // skip the cinematic; dedicated opening tests verify all three shots.
+  const launchSkip = page.locator('#launchSkip');
+  if (await launchSkip.isVisible()) {
+    await launchSkip.click();
+    await expect(launchSkip).toBeHidden();
+    await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
+  }
 }
 
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {

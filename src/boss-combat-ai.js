@@ -55,6 +55,44 @@ const EXCLUSIVE_FOOTPRINTS = Object.freeze({
 });
 export const bossExclusiveFootprint = (kind) => EXCLUSIVE_FOOTPRINTS[kind] ?? null;
 
+/**
+ * Limit repeated melee telegraphs on the advanced bosses. The original
+ * targeting, selected generator and no-revival gates remain authoritative.
+ * Prefer an already-animated alternate strike over moving the whole model
+ * forward as a fake camera zoom. A true artillery volley can safely break a
+ * repetition when the physical limbs cannot reach the pilot's approach.
+ */
+export function variedAdvancedBossAttack({
+  sector,
+  kind,
+  previousKind,
+  cycle = 0,
+  generators = [true, true],
+}) {
+  if (cycle <= 0 || cycle % 4 === 0 || !kind || kind !== previousKind ||
+      kind === 'barrage' || generators.every((alive) => alive === false)) return kind;
+  if (sector === 6) {
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'tentacle-sweep') return 'tentacle-grab';
+    return kind;
+  }
+  if (sector === 7) {
+    if (kind === 'bite') return 'hammer-slam';
+    if (kind === 'hammer-slam') return 'bite';
+    if (kind === 'claw-swipe') return 'tentacle-sweep';
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'tentacle-sweep') return 'tentacle-grab';
+  }
+  if (sector === 9) {
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'claw-swipe') return 'tentacle-grab';
+    // Marvin's core cannon remains an honest authored ranged alternative:
+    // never substitute a claw when the camera shows only his frontal jaw.
+    if (kind === 'bite' || kind === 'marvin-rear-thruster-sweep') return 'barrage';
+  }
+  return kind;
+}
+
 export function chooseBossIntent({
   sector,
   cycle = 0,
@@ -169,6 +207,13 @@ export function chooseBossIntent({
     previousKind,
     pilotPattern,
   });
+  kind = variedAdvancedBossAttack({
+    sector,
+    kind,
+    previousKind,
+    cycle,
+    generators,
+  });
   const ventSide =
     sector === 3 && kind === 'reactor-vent'
       ? !generators[0]
@@ -213,7 +258,23 @@ export function chooseBossIntent({
                 : kind === 'hammer-slam'
                   ? 'signature-omega-left'
                   : null
-          : null,
+          : sector === 9
+            ? kind === 'bite'
+              ? 'marvin-bite-jaw'
+              : kind === 'claw-swipe'
+                ? orbit < 0
+                  ? 'marvin-left-claw'
+                  : 'marvin-right-claw'
+                : kind.startsWith('tentacle')
+                  ? orbit < 0
+                    ? 'marvin-port-tentacle'
+                    : 'marvin-starboard-tentacle'
+                  : kind === 'marvin-rear-thruster-sweep'
+                    ? 'marvin-rear-thruster-sweeper'
+                    : null
+            : sector === 6 && kind.startsWith('tentacle')
+              ? 'signature-hydra-head-' + Math.abs(cycle % 7)
+              : null,
     ventSide,
     sector,
     cycle,
@@ -335,6 +396,23 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   return Math.hypot(dx, dy) < r;
 }
 
+// Body rushes move the complete boss. Glaives, jaws of traps, mechanical arms,
+// tentacles and energy weapons instead strike with their own visible anatomy.
+// A full-body advance on these attacks looked like a camera zoom, not a hit.
+const BODY_RUSH_KINDS = new Set(['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting']);
+// At 0.7s the authored 1.4s strike sine is at maximum extension. Reuse this
+// moment for the single logical hit check, including on slower frame rates.
+export const BOSS_STRIKE_CONTACT_SECONDS = 0.7;
+export function bossMeleeContactReady(intent, state, attackAge) {
+  return (
+    !!intent &&
+    intent.kind !== 'barrage' &&
+    state === 'attack' &&
+    Number.isFinite(attackAge) &&
+    attackAge >= BOSS_STRIKE_CONTACT_SECONDS
+  );
+}
+
 // Drives visual strikes while the real attack clock runs. No rogue timers or
 // physical collisions before the warning window.
 export function bossMeleePose(intent, state, phaseAge = 0) {
@@ -346,11 +424,7 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
     // During the visible contact beat, actually advance a short distance
     // toward the position that was telegraphed. Never home in on the player
     // after windup; the pilot can dodge the announced lane.
-    track: ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-      ? strike * 0.34
-      : ['claw-swipe', 'hammer-slam', 'cryo-pincer'].includes(intent.kind)
-        ? strike * 0.13
-        : 0,
+    track: BODY_RUSH_KINDS.has(intent.kind) ? strike * 0.34 : 0,
     exhaust:
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
@@ -359,13 +433,9 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
       intent.kind === 'marvin-rear-thruster-sweep'
         ? windup * 0.4 + strike
         : 0,
-    lunge:
-      intent.kind === 'reactor-vent'
-        ? 0
-        : strike *
-          (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-            ? 72
-            : 48),
+    // Do not translate the entire body on claw/tentacle/area attacks.
+    // Their attached VFX and moving limbs carry the motion, not a camera fake.
+    lunge: BODY_RUSH_KINDS.has(intent.kind) ? strike * 72 : 0,
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'hydra-two-head-crossfire' ||

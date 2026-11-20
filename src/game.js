@@ -24,10 +24,16 @@ import { createCockpit } from './cockpit.js';
 import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
-import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.js';
+import {
+  chooseBossIntent,
+  bossMeleeHit,
+  bossMeleePose,
+  bossMeleeContactReady,
+} from './boss-combat-ai.js';
 import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
 import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
+import { europaClawContactHit } from './europa-attack-vfx.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -1402,7 +1408,13 @@ export function createGame({
       if (node) node.inert = active;
     }
     if (active)
-      document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'launch-cinematic',
+        'boosting',
+        'reflex-boost',
+      );
   }
   function showShop() {
     recordStageResult('cleared');
@@ -1721,6 +1733,9 @@ export function createGame({
     settingsOpen = false;
     document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
+    // Scope the HUD-free cinematic to stage ONE only. Every later stage
+    // retains its regular HUD and controls from the first gameplay frame.
+    document.body.classList.toggle('launch-cinematic', showLaunch);
     $('launchSkip').hidden = !showLaunch;
     stageIntroTime = firstStageIntro?.active ? SQUAD_INTRO_DURATION : 3;
     pickupFeedbackTime = 0;
@@ -3246,7 +3261,7 @@ export function createGame({
     firstStageIntro.finish();
     flightCamera.reset(player.position);
     stageIntroTime = 0;
-    document.body.classList.remove('stage-intro');
+    document.body.classList.remove('stage-intro', 'launch-cinematic');
     $('launchSkip').hidden = true;
     return true;
   }
@@ -3318,7 +3333,7 @@ export function createGame({
     stageIntroTime = 0;
     $('launchSkip').hidden = true;
     setIntermissionUI(false);
-    document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
+    document.body.classList.remove('in-mission', 'stage-intro', 'launch-cinematic', 'city-bright');
     document.body.classList.add('menu');
     for (const id of [
       'pauseMenu',
@@ -4405,11 +4420,14 @@ export function createGame({
       if (contact.collided) asteroidImpact();
     }
     // Keep transformation and flight-mech readable even during the initial
-    // invulnerability flicker. Damage protection is unchanged; ordinary ship
-    // mode retains the original blink feedback when invulnerable.
+    // invulnerability flicker. The hero must also remain continuous while the
+    // cinematic releases the real ship to the player: no one-frame disappearance
+    // at the handoff, even when invulnerability is still counting down.
+    // Damage protection is unchanged; blinking resumes after the short handoff.
     player.visible =
       cameraMode !== 'cockpit' &&
-      (robotMode ||
+      ((dynamicFlight && sectorIndex === 0 && elapsed < 0.3) ||
+        robotMode ||
         robotTransition > 0 ||
         boosting ||
         invuln <= 0 ||
@@ -4508,6 +4526,8 @@ export function createGame({
       else {
         firstStageIntro?.finish();
         $('launchSkip').hidden = true;
+        document.body.classList.remove('launch-cinematic', 'stage-intro');
+        stageIntroTime = 0;
         // The cinematic never alters the gameplay camera's anchor or controls.
         flightCamera.reset(player.position);
       }
@@ -5565,39 +5585,6 @@ export function createGame({
             plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
           }
         }
-        if (
-          t.state === 'attack' &&
-          bossIntent &&
-          bossIntent.kind !== 'barrage' &&
-          !bossMeleeResolved &&
-          attackAge >= 2.72
-        ) {
-          bossMeleeResolved = true;
-          if (
-            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
-            (bossIntent.kind !== 'reactor-vent' ||
-              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
-            // A destroyed Hydra head immediately cancels its paired beam,
-            // never landing invisible damage from an already broken gun.
-            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
-              boss.userData.parts.every((part) => part.hp > 0)) &&
-            bossMeleeHit(bossIntent, {
-              x: player.position.x,
-              y: player.position.y,
-              orbit: relativeOrbit(),
-            })
-          ) {
-            hit(bossIntent.damage);
-            explode(player.position.clone(), 8, 0xff8060);
-            cue('armorHit');
-          } else {
-            message(
-              boss.userData.parts.every((part) => part.hp === 0)
-                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
-                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
-            );
-          }
-        }
         // The tactical arrow points to the actual animated signature weapon
         // when it exists, instead of always pretending the attack comes from
         // the center of the boss. This does not change collision or targeting.
@@ -5753,6 +5740,47 @@ export function createGame({
           sectorIndex === 5 ? bossIntent : null,
           europaTarget,
         );
+        // Resolve direct melee only AFTER the actual weapon geometry has
+        // moved for this frame. Keep exactly one result per attack cycle.
+        if (
+          t.state === 'attack' &&
+          bossIntent &&
+          bossIntent.kind !== 'barrage' &&
+          !bossMeleeResolved &&
+          bossMeleeContactReady(bossIntent, t.state, poseAge - 2.2)
+        ) {
+          bossMeleeResolved = true;
+          if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            (bossIntent.kind !== 'reactor-vent' ||
+              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
+            // A destroyed Hydra head immediately cancels its paired beam,
+            // never landing invisible damage from an already broken gun.
+            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
+              boss.userData.parts.every((part) => part.hp > 0)) &&
+            bossMeleeHit(bossIntent, {
+              x: player.position.x,
+              y: player.position.y,
+              orbit: relativeOrbit(),
+            }) &&
+            // Europa's pincer must physically reach the pilot's hull, rather
+            // than landing damage from an invisible 2D danger rectangle.
+            // Ice-quake is an area shockwave, not a direct claw collision.
+            (sectorIndex !== 5 ||
+              bossIntent.kind !== 'cryo-pincer' ||
+              europaClawContactHit(boss.getObjectByName('boss-europa-attack-vfx'), player.position))
+          ) {
+            hit(bossIntent.damage);
+            explode(player.position.clone(), 8, 0xff8060);
+            cue('armorHit');
+          } else {
+            message(
+              boss.userData.parts.every((part) => part.hp === 0)
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+            );
+          }
+        }
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
@@ -6385,7 +6413,8 @@ export function createGame({
     if (cinematic && state === 'menu') advanceCinematic(dt);
     if (state === 'playing' && stageIntroTime > 0) {
       stageIntroTime = Math.max(0, stageIntroTime - dt);
-      if (stageIntroTime === 0) document.body.classList.remove('stage-intro');
+      if (stageIntroTime === 0 && !firstStageIntro?.active)
+        document.body.classList.remove('stage-intro');
     }
     if (state === 'playing' && pickupFeedbackTime > 0) {
       pickupFeedbackTime = Math.max(0, pickupFeedbackTime - dt);
@@ -7233,6 +7262,7 @@ export function createGame({
       document.body.classList.remove(
         'in-mission',
         'stage-intro',
+        'launch-cinematic',
         'left-handed',
         'ranking-intermission',
       );
