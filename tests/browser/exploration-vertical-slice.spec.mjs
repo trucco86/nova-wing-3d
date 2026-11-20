@@ -271,7 +271,9 @@ test('survivor dialogue can be cancelled and resumed without granting a forged r
   await page.keyboard.press('Escape');
   await expect(page.locator('#explorationDialogue')).toBeHidden();
   await expect(page.locator('#explorationOverlay')).toBeVisible();
-  expect((await page.evaluate(() => window.__novaExploreQA.snapshot())).quest.conversation).toBeNull();
+  expect(
+    (await page.evaluate(() => window.__novaExploreQA.snapshot())).quest.conversation,
+  ).toBeNull();
   await page.locator('#exploreTalk').click();
   await expect(page.locator('#exploreDialogueText')).toContainText('Os gatos chegaram');
   await page.locator('#exploreDialogueNext').click();

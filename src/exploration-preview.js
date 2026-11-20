@@ -526,7 +526,7 @@ export function installOrbit9ExplorationPreview(
       else scan();
       e.preventDefault();
     } else if (e.code === 'KeyQ' || e.code === 'KeyR') {
-      cameraState = orbit9RotateCamera(cameraState, (e.code === 'KeyQ' ? -1 : 1) * Math.PI / 7);
+      cameraState = orbit9RotateCamera(cameraState, ((e.code === 'KeyQ' ? -1 : 1) * Math.PI) / 7);
       e.preventDefault();
     } else if (e.code === 'KeyC') {
       cameraState = orbit9ToggleCameraMode(cameraState);

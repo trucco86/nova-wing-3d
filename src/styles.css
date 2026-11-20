@@ -12386,7 +12386,9 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
 }
 .exploration-dialogue p {
   margin: 0;
-  font: 600 13px/1.5 Arial, sans-serif;
+  font:
+    600 13px/1.5 Arial,
+    sans-serif;
 }
 .exploration-dialogue button {
   justify-self: end;
