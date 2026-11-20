@@ -51,11 +51,7 @@ export function createOrbit9WalkRig(pilot) {
       for (const { hip, knee, side } of legs) {
         const swing = Math.sin(phase + (side === -1 ? 0 : Math.PI));
         hip.rotation.x = smooth(hip.rotation.x, swing * 0.56 * blend, elapsed);
-        knee.rotation.x = smooth(
-          knee.rotation.x,
-          Math.max(0, -swing) * 0.49 * blend,
-          elapsed,
-        );
+        knee.rotation.x = smooth(knee.rotation.x, Math.max(0, -swing) * 0.49 * blend, elapsed);
       }
       for (const { arm, side } of arms) {
         const swing = Math.sin(phase + (side === -1 ? Math.PI : 0));
@@ -79,8 +75,7 @@ export function createOrbit9WalkRig(pilot) {
 }
 
 export function orbit9StickAxes(dx, dy, radius) {
-  if (![dx, dy, radius].every(Number.isFinite) || radius <= 0)
-    return { x: 0, z: 0 };
+  if (![dx, dy, radius].every(Number.isFinite) || radius <= 0) return { x: 0, z: 0 };
   const limited = Math.min(1, Math.hypot(dx, dy) / radius);
   if (limited < 0.2) return { x: 0, z: 0 };
   const normalized = (limited - 0.2) / 0.8;

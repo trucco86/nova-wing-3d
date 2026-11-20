@@ -12417,7 +12417,6 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   }
 }
 
-
 /* Orbit-9 uses the same transparent, thumb-friendly control grammar as
    the main arcade cockpit. Unlike the obsolete four-button D-pad, travel
    remains proportional and diagonal on mobile. No controls cover the center. */
@@ -12433,8 +12432,7 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   align-items: flex-end;
   justify-content: space-between;
   padding: 9px max(12px, env(safe-area-inset-right, 0px))
-    max(10px, env(safe-area-inset-bottom, 0px))
-    max(12px, env(safe-area-inset-left, 0px));
+    max(10px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px));
   border: 0;
   background: linear-gradient(0deg, #051626d9, #05162600 94%);
   pointer-events: none;
@@ -12451,7 +12449,9 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   border: 2px solid #8dece588;
   border-radius: 50%;
   background: radial-gradient(circle at 48% 50%, #10556870 10%, #08243163 65%, #05131e58 100%);
-  box-shadow: inset 0 0 0 2px #66cfd825, 0 0 0 4px #091e2d25;
+  box-shadow:
+    inset 0 0 0 2px #66cfd825,
+    0 0 0 4px #091e2d25;
   pointer-events: auto;
   touch-action: none;
   user-select: none;
@@ -12548,8 +12548,7 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   #explorationOverlay .exploration-controls {
     min-height: 110px;
     padding: 6px max(8px, env(safe-area-inset-right, 0px))
-      max(7px, env(safe-area-inset-bottom, 0px))
-      max(8px, env(safe-area-inset-left, 0px));
+      max(7px, env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
   }
   #exploreStick {
     width: clamp(86px, 23vw, 106px);

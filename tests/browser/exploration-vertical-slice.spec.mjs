@@ -284,7 +284,9 @@ test('survivor dialogue can be cancelled and resumed without granting a forged r
   await page.locator('#exploreExit').click();
 });
 
-test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST gesture as flight', async ({ page }) => {
+test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST gesture as flight', async ({
+  page,
+}) => {
   test.setTimeout(90000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -318,8 +320,12 @@ test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST ge
 
   // Keyboard Boost is unchanged; exploration maps it to walking speed.
   await page.keyboard.down('Shift');
-  await expect.poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting)).toBe(true);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting))
+    .toBe(true);
   await page.keyboard.up('Shift');
-  await expect.poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting)).toBe(false);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting))
+    .toBe(false);
   await page.locator('#exploreExit').click();
 });

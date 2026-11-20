@@ -12,8 +12,7 @@ test('Orbit-9 reuses the exact pilot identity and articulates legs on actual tra
     assert.ok(pilot.getObjectByName('orbit9-right-knee'));
     assert.equal(pilot.getObjectByName('leg')?.parent.name, 'orbit9-left-hip');
     const before = rig.snapshot();
-    for (let i = 0; i < 16; i++)
-      rig.update({ dt: 1 / 60, distanceTravelled: 11 / 60 });
+    for (let i = 0; i < 16; i++) rig.update({ dt: 1 / 60, distanceTravelled: 11 / 60 });
     const walking = rig.snapshot();
     assert.ok(walking.distance > 2);
     assert.ok(walking.blend > 0.8);
