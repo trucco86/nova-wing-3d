@@ -2,6 +2,7 @@ import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { createShowroomPilot } from './showroom-models.js';
 import { createOrbit9WalkRig, orbit9StickAxes } from './orbit9-locomotion.js';
+import { createOrbit9StageArt, updateOrbit9StageArt } from './orbit9-stage-art.js';
 import {
   orbit9CameraState,
   orbit9RotateCamera,
@@ -76,6 +77,7 @@ export function installOrbit9ExplorationPreview(
   let renderer = null;
   let camera = null;
   let pilot = null;
+  let stageArt = null;
   let walkRig = null;
   let facingYaw = Math.PI;
   const stickInput = { x: 0, z: 0, pointerId: null };
@@ -326,6 +328,11 @@ export function installOrbit9ExplorationPreview(
         makeBox(7, 7, 0.7, line, side * 47, 3.8, z);
       }
     }
+    // Stage 04 Devastador design language: armored carrier panels, distinct
+    // labs/reactor/archive silhouettes and GPU-instanced ambient detail.
+    // This is purely visual and leaves every existing interaction collider intact.
+    stageArt = createOrbit9StageArt();
+    scene.add(stageArt);
     beacons = CLUE_POSITIONS.map(([x, z], i) => {
       const ring = new T.Mesh(new T.TorusGeometry(2.8, 0.25, 8, 28), line);
       ring.rotation.x = -Math.PI / 2;
@@ -459,6 +466,7 @@ export function installOrbit9ExplorationPreview(
       beacon.core.position.y = 4 + Math.sin(elapsed * 2 + i * 2) * 0.45;
     }
     npc.children[0].scale.y = 1 + Math.sin(elapsed * 1.7) * 0.06;
+    updateOrbit9StageArt(stageArt, elapsed);
     renderer.render(scene, camera);
     updateUI();
     rafId = requestAnimationFrame(frame);
@@ -530,6 +538,7 @@ export function installOrbit9ExplorationPreview(
     }
     renderer = scene = camera = pilot = npc = null;
     walkRig = null;
+    stageArt = null;
     rafId = 0;
   }
 
@@ -724,6 +733,14 @@ export function installOrbit9ExplorationPreview(
         active,
         player: { x: playerX, z: playerZ },
         pilotModel: pilot?.name ?? null,
+        stageArt: stageArt
+          ? {
+              name: stageArt.name,
+              referencesStage: stageArt.userData.referencesStage,
+              districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
+              instanceCounts: { ...stageArt.userData.instanceCounts },
+            }
+          : null,
         gait: walkRig?.snapshot() ?? null,
         stick: { x: stickInput.x, z: stickInput.z },
         boosting: held.has('boost') || boostTouchHeld,
