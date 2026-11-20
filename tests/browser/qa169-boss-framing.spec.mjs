@@ -13,7 +13,10 @@ for (const { sector, name } of [
     page.on('pageerror', (e) => errors.push(e.message));
 
     // Both screenshots use the real authored 3D boss, not a painted artwork.
-    for (const [view, lateral] of [['frontal', 0], ['off-axis', 17]]) {
+    for (const [view, lateral] of [
+      ['frontal', 0],
+      ['off-axis', 17],
+    ]) {
       await page.goto('/__visual.html?sector=' + sector + '&lateral=' + lateral);
       await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
       await page.screenshot({
