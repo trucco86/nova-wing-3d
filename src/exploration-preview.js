@@ -742,6 +742,15 @@ export function installOrbit9ExplorationPreview(
         return false;
       playerX = x;
       playerZ = z;
+      // Developer/QA teleport is not player movement. Never interpolate the
+      // camera across dozens of meters through the station's physical walls.
+      // Snapping immediately also makes screenshots of each district reliable.
+      cameraYawVisual = cameraState.yaw;
+      const pose = orbit9CameraPose(playerX, playerZ, cameraState);
+      cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
+      cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+      camera?.position.copy(cameraGoal);
+      camera?.lookAt(cameraTarget);
       updateUI();
       return true;
     },
@@ -763,6 +772,9 @@ export function installOrbit9ExplorationPreview(
         boosting: held.has('boost') || boostTouchHeld,
         district: orbit9District(playerX, playerZ).id,
         camera: { ...cameraState },
+        cameraEye: camera
+          ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
+          : null,
         dialogue: {
           open: !dialoguePanel.hidden,
           index: dialogueIndex,
