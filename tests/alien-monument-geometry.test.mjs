@@ -6,7 +6,7 @@ import {
   createAlienMonumentGeometry,
   createEuropaSunkenVaultGeometry,
 } from '../src/alien-monument-geometry.js';
-import { ANCIENT_WORLD_THEMES, createAlienArchitecture } from '../src/alien-architecture.js';
+import { ANCIENT_WORLD_THEMES, createAlienArchitecture, updateAlienArchitecture } from '../src/alien-architecture.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
@@ -97,4 +97,39 @@ test('Europa hero vault is a distinctive grounded portal, low-cost, outside the 
   world.setSector(SECTORS[4], 4);
   assert.equal(scene.getObjectByName('europa-sunken-alien-vault-hero'), undefined);
   vaultGeometry.dispose();
+});
+
+test('portrait camera sees most of Europa hero vault during approach without corridor intrusion', () => {
+  const root = createAlienArchitecture('ice');
+  const vault = root.getObjectByName('europa-sunken-alien-vault-hero');
+  const bounds = new T.Box3().setFromBufferAttribute(vault.geometry.getAttribute('position'));
+  const camera = new T.PerspectiveCamera(60, 390 / 844, 0.1, 2500);
+  camera.position.set(0, 10, 32);
+  camera.lookAt(0, 10, -500);
+  camera.updateProjectionMatrix();
+  const instance = new T.Matrix4();
+  const projected = new T.Vector3();
+  const xs = [bounds.min.x, bounds.max.x];
+  const ys = [bounds.min.y, bounds.max.y];
+  const zs = [bounds.min.z, bounds.max.z];
+  for (const travel of [0, 4000, 12000]) {
+    updateAlienArchitecture(root, travel);
+    vault.getMatrixAt(0, instance);
+    let minNdc = Infinity;
+    let maxNdc = -Infinity;
+    for (const x of xs) for (const y of ys) for (const z of zs) {
+      projected.set(x, y, z).applyMatrix4(instance).project(camera);
+      minNdc = Math.min(minNdc, projected.x);
+      maxNdc = Math.max(maxNdc, projected.x);
+    }
+    const visibleWidth = Math.max(0, Math.min(1, maxNdc) - Math.max(-1, minNdc));
+    const fractionVisible = visibleWidth / (maxNdc - minNdc);
+    assert.ok(
+      fractionVisible >= 0.55,
+      'hero vault must remain recognizable in portrait at travel ' + travel,
+    );
+    assert.ok(visibleWidth >= 0.1, 'hero vault must have significant width on mobile');
+    const worldX = instance.elements[12];
+    assert.ok(worldX + bounds.max.x * 40 < -72, 'no masonry over the aiming lane');
+  }
 });
