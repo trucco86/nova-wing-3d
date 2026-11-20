@@ -160,7 +160,14 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   assert.equal(state.boss, false, 'warning must precede the final boss');
   assert.equal(state.asteroidInterior.course.complete, true);
 
-  state = flyUntil(h, (s) => s.boss, 6, 'boss entrance from mothership');
+  // The warning can start at duration - 9 while the boss is still held
+  // until the actual stage deadline, even after the 3.5-second siren ends.
+  state = flyUntil(
+    h,
+    (s) => s.boss,
+    Math.max(6, SECTORS[2].duration - state.seconds + 3),
+    'boss entrance after mission deadline',
+  );
   assert.equal(state.journey.phase, 'boss');
   assert.equal(state.bossParts, 2, 'both real armored generators start intact');
   assert.equal(state.bossTargets.length, 2);
