@@ -38,8 +38,12 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   // All camera poses face THROUGH the same hangar gate. Avoid disorienting
   // frontal cuts and interpolate both camera position and look-at direction.
   const views = [
-    { eye: [8 * squeeze, 12, 30], aim: [0, 6, -40], fov: 68 },
-    { eye: [6 * squeeze, 12, 36], aim: [0, 7, -62], fov: 64 },
+    // Wider stage establishment: the fully enclosed hangar is visible as a
+    // long tunnel instead of reading as a flat wall behind the wingmates.
+    { eye: [8.2 * squeeze, 12.4, 30], aim: [0, 6, -40], fov: 76 },
+    // Zoom/dolly-in through the open gate, still looking forward, not a cut.
+    { eye: [4.5 * squeeze, 10.6, 35], aim: [0, 7, -67], fov: 61 },
+    // Exact approved chase camera: preserve the original gameplay handoff.
     { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
   ];
   const firstBlend = ease((t - 1.1) / 1.3);
@@ -50,6 +54,10 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     return first + (views[2][field][index] - first) * secondBlend;
   };
   const fovBlend = views[0].fov + (views[1].fov - views[0].fov) * firstBlend;
+  // Optical push at the fastest part of launch. This is a FOV/dolly effect,
+  // not a new camera cut or a costly post-processing pass.
+  const zoom = Math.sin(Math.PI * ease((t - 1.1) / 5.4));
+  const engineVibration = departure * (1 - handoff);
   return {
     t,
     shot,
@@ -61,12 +69,13 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     corridorShift: departure * 245,
     camera: {
       x: interpolate('eye', 0),
-      y: interpolate('eye', 1),
-      z: interpolate('eye', 2),
+      y: interpolate('eye', 1) + Math.sin(t * 14) * 0.08 * engineVibration,
+      z: interpolate('eye', 2) - 2.8 * zoom,
       aimX: interpolate('aim', 0),
       aimY: interpolate('aim', 1),
       aimZ: interpolate('aim', 2),
-      fov: fovBlend + (views[2].fov - fovBlend) * secondBlend,
+      fov: fovBlend + (views[2].fov - fovBlend) * secondBlend - 6 * zoom,
+      roll: Math.sin(t * 4.5) * 0.009 * engineVibration,
     },
   };
 }
@@ -105,7 +114,22 @@ export function createFirstStageLaunchIntro(scene, camera) {
   });
   const cyan = new T.MeshBasicMaterial({ color: '#6bf5ff', toneMapped: false });
   const amber = new T.MeshBasicMaterial({ color: '#ffae69', toneMapped: false });
-  const materials = [metal, panel, cyan, amber];
+  const glass = new T.MeshBasicMaterial({
+    color: '#4ebad2',
+    transparent: true,
+    opacity: 0.22,
+    depthWrite: false,
+    side: T.DoubleSide,
+  });
+  const beamGlow = new T.MeshBasicMaterial({
+    color: '#6bf5ff',
+    transparent: true,
+    opacity: 0.065,
+    blending: T.AdditiveBlending,
+    depthWrite: false,
+    side: T.DoubleSide,
+  });
+  const materials = [metal, panel, cyan, amber, glass, beamGlow];
   const meshes = [];
   const add = (name, size, at, material = metal) => {
     const mesh = new T.Mesh(new T.BoxGeometry(...size), material);
@@ -116,6 +140,28 @@ export function createFirstStageLaunchIntro(scene, camera) {
     meshes.push(mesh);
     return mesh;
   };
+  // One draw call per repeating fixture family; no new meshes or allocations
+  // in the per-frame animation. This preserves headroom on portrait phones.
+  const matrix = new T.Matrix4();
+  const position = new T.Vector3();
+  const scale = new T.Vector3();
+  const quaternion = new T.Quaternion();
+  function repeat(name, size, placements, material = metal) {
+    const mesh = new T.InstancedMesh(new T.BoxGeometry(1, 1, 1), material, placements.length);
+    mesh.name = name;
+    mesh.userData.visualOnly = true;
+    placements.forEach(([x, y, z], i) => {
+      position.set(x, y, z);
+      scale.set(...size);
+      matrix.compose(position, quaternion, scale);
+      mesh.setMatrixAt(i, matrix);
+    });
+    mesh.instanceMatrix.needsUpdate = true;
+    mesh.computeBoundingSphere();
+    root.add(mesh);
+    meshes.push(mesh);
+    return mesh;
+  }
   // The player faces negative Z, passing out through the outward doors.
   add('launch-deck', [42, 1.2, 130], [0, -6.85, -13], metal);
   for (const side of [-1, 1]) {
@@ -149,6 +195,44 @@ export function createFirstStageLaunchIntro(scene, camera) {
   for (const side of [-1, 1]) {
     add('launch-rear-navigation-light', [0.7, 10, 0.45], [side * 17, 5, 41.65], cyan);
   }
+  // Repeating architectural rhythm: high gantries, upper observation galleries,
+  // side columns and floor slabs create a long, enclosed perspective.
+  const ribs = [-44, -32, -20, -8, 4, 16, 28, 39];
+  repeat('launch-ceiling-crossbeams', [39, 0.85, 1.35],
+    ribs.map((z) => [0, 14.6, z]), panel);
+  repeat('launch-ceiling-light-grid', [18, 0.16, 0.62],
+    ribs.map((z) => [0, 14.08, z - 1]), cyan);
+  repeat('launch-side-gantry-walkways', [4.2, 0.58, 91],
+    [[-18.8, 5.7, -8], [18.8, 5.7, -8]], panel);
+  repeat('launch-side-gantry-rail', [0.21, 2.2, 91],
+    [[-17.4, 7.2, -8], [17.4, 7.2, -8]], amber);
+  repeat('launch-side-deck-glass', [0.12, 4.1, 78],
+    [[-20.88, 6.2, -10], [20.88, 6.2, -10]], glass);
+  repeat('launch-side-observation-columns', [1.6, 9.5, 1.25],
+    ribs.flatMap((z) => [[-20.5, 6.8, z], [20.5, 6.8, z]]), panel);
+  repeat('launch-observation-led-stripes', [0.34, 5.8, 0.5],
+    ribs.flatMap((z) => [[-20.13, 6.4, z + 1], [20.13, 6.4, z + 1]]), cyan);
+  repeat('launch-floor-depth-seams', [39, 0.045, 0.2],
+    [...ribs, ...ribs.map((z) => z - 5.5)].map((z) => [0, -6.21, z]), panel);
+  repeat('launch-gate-approach-markers', [4.5, 0.08, 0.28],
+    [-42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2].flatMap(
+      (z) => [[-11, -6.08, z], [11, -6.08, z]]), amber);
+  // Fake soft volumetric spill using three translucent geometry cones.
+  // No expensive shadow-casting spotlights or realtime post-processing.
+  const shafts = new T.InstancedMesh(new T.ConeGeometry(3.2, 16, 8, 1, true),
+    beamGlow, 3);
+  shafts.name = 'launch-roof-volumetric-light-shafts';
+  shafts.userData.visualOnly = true;
+  [-32, -5, 21].forEach((z, i) => {
+    matrix.compose(position.set(i === 1 ? -4 : 4, 8, z), quaternion,
+      scale.set(1, 1, 1));
+    shafts.setMatrixAt(i, matrix);
+  });
+  shafts.instanceMatrix.needsUpdate = true;
+  shafts.computeBoundingSphere();
+  root.add(shafts);
+  meshes.push(shafts);
+  // Decorative details never enter the direct flight corridor.
   add('launch-exit-threshold', [38, 0.32, 2.2], [0, -6.12, -49], amber);
   // The launch doors are framed by a separate external threshold, so the
   // side and frontal cuts make it obvious that the formation leaves a hangar.
@@ -179,8 +263,11 @@ export function createFirstStageLaunchIntro(scene, camera) {
       root.userData.shot = frame.shot;
       camera.position.set(frame.camera.x, frame.camera.y, frame.camera.z);
       camera.lookAt(frame.camera.aimX, frame.camera.aimY, frame.camera.aimZ);
-      camera.fov = frame.camera.fov;
-      camera.updateProjectionMatrix();
+      camera.rotateZ(frame.camera.roll);
+      if (Math.abs(camera.fov - frame.camera.fov) > 0.015) {
+        camera.fov = frame.camera.fov;
+        camera.updateProjectionMatrix();
+      }
       return frame;
     },
     finish() {
