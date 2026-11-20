@@ -86,7 +86,7 @@ test('Marvin final pilot has visible actual face, claws and two tentacles', () =
   }
   assert.ok(
     boss.getObjectByName('marvin-pitbull').getWorldPosition(new T.Vector3()).z > 15,
-    'the dog's face is in front of the black fighter, not hidden behind it',
+    "Marvin’s face is in front of the black fighter, not hidden behind it",
   );
   const originalWeaponIds = boss.userData.parts.map((part) => part.mesh.uuid);
   assert.deepEqual(boss.userData.parts.map((part) => part.mesh.uuid), originalWeaponIds);
