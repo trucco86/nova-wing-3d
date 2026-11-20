@@ -58,12 +58,14 @@ function facetedIceCliff() {
   return geometry;
 }
 
-function crystallineShard() {
+function crystallineShard(violet = false) {
   // A six-sided double tapered prism reads as a crystal rather than an
   // icosahedral bubble. Four colour layers create faceted internal depth.
   const radius = [0.18, 0.7, 0.55, 0.03];
   const height = [-0.5, -0.25, 0.16, 0.5];
-  const colorsAt = ['#265a85', '#2eb9e2', '#b0f5ff', '#e1faff'];
+  const colorsAt = violet
+    ? ['#48257a', '#8e47d9', '#c58dff', '#f5dcff']
+    : ['#265a85', '#2eb9e2', '#b0f5ff', '#e1faff'];
   const positions = [];
   const colors = [];
   const indices = [];
@@ -196,7 +198,7 @@ export function createEuropaCrystalCanyon() {
     const crystal = instanced(
       root,
       name,
-      shard,
+      highOnly ? crystallineShard(true) : shard,
       new T.MeshStandardMaterial({
         color: tint,
         vertexColors: true,
@@ -204,19 +206,24 @@ export function createEuropaCrystalCanyon() {
         metalness: 0.1,
         flatShading: true,
         emissive: glow,
-        emissiveIntensity: highOnly ? 0.58 : 0.42,
+        emissiveIntensity: highOnly ? 0.9 : 0.68,
       }),
       count,
       (i) => {
         const side = i % 2 ? 1 : -1;
-        const h = 14 + (i % 5) * 5;
+        const nearCluster = i < (highOnly ? 6 : 10);
+        const h = nearCluster ? 37 + (i % 3) * 11 : 17 + (i % 5) * 5;
         return {
-          x: side * (99 + (i % 4) * 14),
-          y: -5 + h * 0.46,
-          z: -280 - Math.floor(i / 2) * (highOnly ? 178 : 128),
-          w: 7 + (i % 3) * 3,
+          // Close clusters now occupy the readable inside edge of the canyon.
+          // Their full geometry stays outside the x +/-72 combat corridor.
+          x: side * (nearCluster ? 88 + (i % 3) * 11 : 110 + (i % 4) * 14),
+          y: -7 + h * 0.44,
+          z: nearCluster
+            ? -150 - Math.floor(i / 2) * (highOnly ? 124 : 94)
+            : -545 - Math.floor((i - (highOnly ? 6 : 10)) / 2) * 145,
+          w: nearCluster ? 14 + (i % 3) * 3 : 8 + (i % 3) * 2,
           h,
-          d: 8 + (i % 3) * 2,
+          d: nearCluster ? 13 + (i % 3) * 3 : 9 + (i % 3) * 2,
           yaw: (i * 0.9) % Math.PI,
           roll: (i % 2 ? 1 : -1) * 0.13,
         };
@@ -231,20 +238,20 @@ export function createEuropaCrystalCanyon() {
     'europa-canyon-ancient-bridges',
     alienAqueductArch(),
     new T.MeshStandardMaterial({
-      color: '#4d7892',
+      color: '#658eae',
       roughness: 0.69,
       metalness: 0.14,
       flatShading: true,
-      emissive: '#192f4c',
-      emissiveIntensity: 0.06,
+      emissive: '#403563',
+      emissiveIntensity: 0.14,
     }),
     EUROPA_CANYON_BUDGET.ruinArchInstances,
     (i) => ({
-      x: -121,
-      y: 11,
-      z: -340 - i * 146,
-      w: 38,
-      h: 29,
+      x: -134,
+      y: 21,
+      z: -245 - i * 146,
+      w: 50,
+      h: 47,
       d: 9,
       yaw: Math.PI / 2,
     }),
@@ -255,7 +262,7 @@ export function createEuropaCrystalCanyon() {
   // torus corridor, its arc is broken and has a visible engineered purpose.
   const gate = new T.Group();
   gate.name = 'europa-canyon-distant-alien-gateway';
-  gate.position.set(132, 47, -990);
+  gate.position.set(132, 47, -610);
   gate.userData.visualOnly = true;
   gate.userData.fixedSky = true;
   const stone = new T.MeshStandardMaterial({
@@ -287,7 +294,7 @@ export function createEuropaCrystalCanyon() {
       roughness: 0.25,
       metalness: 0.25,
       emissive: '#733cc1',
-      emissiveIntensity: 0.5,
+      emissiveIntensity: 0.78,
       flatShading: true,
     }),
   );
