@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createAlienMonumentGeometry } from './alien-monument-geometry.js';
 
 // Authored ruins for the worlds that were still recycling planet/torus props.
 // All architecture is background-only; it never becomes a hidden collision wall.
@@ -149,21 +150,21 @@ export function createAlienArchitecture(theme, quality = 'high') {
       depth: 76 * s,
     };
   });
-  // Different civilisations need different silhouettes, not one pyramid
-  // duplicated with five material tints. Venus/Titan own stone pyramids,
-  // Europa frozen vaults, Neptune bio-structures and Orion monolith arrays.
-  const primaryShape =
-    theme === 'ice'
-      ? new T.OctahedronGeometry(1, 0)
-      : theme === 'nebula'
-        ? new T.DodecahedronGeometry(1, 0)
-        : theme === 'void'
-          ? new T.CylinderGeometry(0.54, 1, 1, 5)
-          : new T.ConeGeometry(1, 1, 4);
-  if (theme === 'sun' || theme === 'throne') primaryShape.rotateY(Math.PI / 4);
+  // Authored, vertex-coloured PBR monuments bring structural detail to each
+  // civilisation without adding separate draws, textures or point lights.
+  const primaryShape = createAlienMonumentGeometry(theme);
+  const monumentMaterial = new T.MeshStandardMaterial({
+    color: '#ffffff',
+    vertexColors: true,
+    metalness: theme === 'nebula' ? 0.29 : 0.38,
+    roughness: theme === 'ice' ? 0.45 : 0.67,
+    flatShading: true,
+    emissive: theme === 'ice' ? '#102733' : '#090a0d',
+    emissiveIntensity: 0.08,
+  });
   const structureHeight = (theme === 'void' ? 94 : theme === 'nebula' ? 75 : 60) * profile.height;
   const structureWidth = theme === 'void' ? 35 : theme === 'nebula' ? 39 : 53;
-  createBatch(root, profile.site + '-' + profile.structure, primaryShape, stone, 10, (i) => {
+  createBatch(root, profile.site + '-' + profile.structure, primaryShape, monumentMaterial, 10, (i) => {
     const s = widthAt(i);
     return {
       ...locations[i],
