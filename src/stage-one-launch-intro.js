@@ -42,7 +42,7 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     { eye: [6 * squeeze, 12, 36], aim: [0, 7, -62], fov: 64 },
     { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
   ];
-  const firstBlend = ease((t - 1.1) / 1.0);
+  const firstBlend = ease((t - 1.1) / 1.3);
   const secondBlend = ease((t - 4.1) / 2.4);
   const interpolate = (field, index) => {
     const first = views[0][field][index] + (views[1][field][index] - views[0][field][index]) * firstBlend;
