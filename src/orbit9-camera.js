@@ -1,6 +1,6 @@
 // Read-only, deterministic third-person orbit camera for the QA station.
 // Pure geometry keeps inputs and browser frame timing outside this contract.
-import { ORBIT9_OBSTACLES } from './orbit9-free-roam.js';
+import { ORBIT9_BOUNDS, ORBIT9_OBSTACLES } from './orbit9-free-roam.js';
 
 export const ORBIT9_CAMERA_MODES = Object.freeze(['follow', 'survey']);
 export function orbit9CameraState({ yaw = 0, mode = 'follow' } = {}) {
@@ -59,11 +59,15 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
     // Never allow walls to entirely squeeze the camera into the player.
     if (entry !== null) fraction = Math.min(fraction, Math.max(0.2, entry - 0.035));
   }
+  // Never put the camera behind the built station when the pilot begins
+  // near its south entrance. The deck only extends to z=22; unbounded
+  // camera z=27 used to show a dark void occupying half the viewport.
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   return {
     eye: {
-      x: x + dx * fraction,
+      x: clamp(x + dx * fraction, ORBIT9_BOUNDS.minX - 2, ORBIT9_BOUNDS.maxX + 2),
       y: (survey ? 25 : 10.5) * (0.5 + 0.5 * fraction),
-      z: z + dz * fraction,
+      z: clamp(z + dz * fraction, ORBIT9_BOUNDS.minZ - 2, ORBIT9_BOUNDS.maxZ + 3),
     },
     aim,
     fov: survey ? 68 : 59,
