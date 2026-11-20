@@ -25,3 +25,13 @@
 - Região única da estação. Sem planeta explorável, câmera manual orbital, NPC com IA, inventário de exploração, recompensas persistentes ou combate terrestre.
 - Obstáculos usam caixas AABB simples e foram posicionados para não impedir os três pontos de missão. A direção artística definitiva requer análise visual em dispositivo.
 - A branch está empilhada na candidata cinematográfica do Nova Wing, sem alteração automática da `main`.
+
+## Câmera orbital e conversa em etapas
+
+- A câmera 3D tem modos **SEGUIR** (mais perto da personagem) e **PANORÂMICA** (altura maior). Botões laterais, Q/R e arraste horizontal no canvas controlam o ângulo orbital; C alterna os modos. O movimento da personagem não é afetado pelas mudanças de ângulo.
+- Os dois modos evitam atravessar volumes sólidos do reator via interseção simplificada do plano horizontal entre personagem e câmera. A posição real é interpolada para evitar saltos. Não existe câmera em primeira pessoa.
+- Ao reencontrar o sobrevivente com as três pistas, um diálogo local de **três etapas** precede a escolha irreversível de acesso, cuja validação permanece em `exploration-quests.js`.
+- ESC fecha somente o diálogo/seleção quando estiver aberto; caso contrário, sai da exploração. Sair e reentrar restaura câmera, conversas e investigação sem escrever no save da campanha.
+- Na conversa, o movimento da personagem fica temporariamente bloqueado para não perder o NPC enquanto o texto é lido, e os botões permanecem tocáveis no celular. A rota escolhida altera a cor do holograma e libera o combate existente.
+- Não há LLM, geração de falas online ou IA real no NPC. Trata-se de roteiro local, estável e verificável.
+- Testes de unidade verificam yaw, modo, câmera obstruída por núcleo e ordem das falas. Playwright desktop/mobile deve confirmar interação de botões, controles de toque, texto, cancelamento e branch da missão.
