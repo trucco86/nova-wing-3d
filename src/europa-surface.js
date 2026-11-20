@@ -121,7 +121,7 @@ export function createEuropaSurface() {
   const shard = createEuropaGlacialRidgeGeometry();
   const dummy = new T.Object3D();
   for (const [name, count, geo, mat, center] of [
-    ['europa-fractured-ice-shelves', 22, floe, ice, 118],
+    ['europa-fractured-ice-shelves', 18, floe, ice, 151],
     ['europa-blue-crevasse-ridges', 18, shard, blue, 188],
   ]) {
     const mesh = new T.InstancedMesh(geo, mat, count);
