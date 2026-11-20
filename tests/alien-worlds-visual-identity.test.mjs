@@ -136,3 +136,29 @@ test('alien architecture flies past slowly and wraps only behind the horizon wit
   assert.equal(mesh.count, count);
   assert.doesNotThrow(() => updateAlienArchitecture(root, Number.NaN));
 });
+
+test('unique Europa hero vault never loops away from the player's scenic objective', () => {
+  const root = createAlienArchitecture('ice');
+  const vault = root.getObjectByName('europa-sunken-alien-vault-hero');
+  assert.ok(vault?.userData.heroLandmark);
+  const matrix = new T.Matrix4();
+  const where = () => {
+    vault.getMatrixAt(0, matrix);
+    return new T.Vector3().setFromMatrixPosition(matrix);
+  };
+  const initial = where();
+  assert.equal(initial.z, -650);
+  updateAlienArchitecture(root, 4000);
+  const approaching = where();
+  assert.ok(approaching.z > initial.z && approaching.z < -285);
+  assert.equal(approaching.x, initial.x);
+  assert.equal(approaching.y, initial.y);
+  updateAlienArchitecture(root, 12000);
+  assert.equal(where().z, -285, 'hero vault remains at readable middle-depth');
+  updateAlienArchitecture(root, 48000);
+  assert.equal(where().z, -285, 'unique mission landmark never wraps behind fog');
+  updateAlienArchitecture(root, 0);
+  assert.equal(where().z, -650, 'reset begins an identical approach');
+  assert.equal(vault.count, 1);
+  assert.equal(vault.userData.visualOnly, true);
+});
