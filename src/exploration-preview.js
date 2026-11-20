@@ -101,6 +101,7 @@ export function installOrbit9ExplorationPreview(
   let lastFrame = 0;
   let active = false;
   let elapsed = 0;
+  let statusUntil = 0;
 
   function listen(el, event, handler, opts) {
     el.addEventListener(event, handler, opts);
@@ -109,6 +110,8 @@ export function installOrbit9ExplorationPreview(
 
   function notification(message) {
     status.textContent = message;
+    status.hidden = false;
+    statusUntil = elapsed + 4.5;
   }
 
   function near(x, z) {
@@ -250,8 +253,8 @@ export function installOrbit9ExplorationPreview(
 
   function makeScene() {
     scene = new T.Scene();
-    scene.background = new T.Color('#030b1a');
-    scene.fog = new T.FogExp2('#030b1a', 0.0075);
+    scene.background = new T.Color('#071524');
+    scene.fog = new T.FogExp2('#071524', 0.0058);
     camera = new T.PerspectiveCamera(65, 1, 0.1, 300);
     renderer = new T.WebGLRenderer({
       antialias: false,
@@ -261,7 +264,15 @@ export function installOrbit9ExplorationPreview(
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
     renderer.domElement.setAttribute('aria-label', 'Exploração 3D da estação Órbita-9');
     viewport.appendChild(renderer.domElement);
-    scene.add(new T.HemisphereLight(0x8bcae8, 0x081222, 1.8));
+    scene.add(new T.HemisphereLight(0xb4d5ec, 0x17273a, 2.05));
+    // Carrier armor uses metallic PBR. Fill light is essential because the
+    // QA preview has no reflection cubemap, especially on low-end mobile GPUs.
+    const hangarKey = new T.DirectionalLight(0xe2f0ff, 2.0);
+    hangarKey.position.set(-18, 45, 22);
+    scene.add(hangarKey);
+    const hangarRim = new T.DirectionalLight(0x7ac8ff, 0.85);
+    hangarRim.position.set(44, 20, -85);
+    scene.add(hangarRim);
     const key = new T.PointLight(0x55ccff, 55, 150);
     key.position.set(-15, 25, -40);
     scene.add(key);
@@ -409,6 +420,12 @@ export function installOrbit9ExplorationPreview(
     const dt = Math.min(0.04, (stamp - (lastFrame || stamp)) / 1000);
     lastFrame = stamp;
     elapsed += dt;
+    // Mission instructions stay in the top rail; transient notifications
+    // should not permanently cover the cat or the middle of the scene.
+    if (statusUntil > 0 && elapsed >= statusUntil) {
+      status.hidden = true;
+      statusUntil = 0;
+    }
     const inputLocked = !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
