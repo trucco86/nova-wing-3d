@@ -145,3 +145,53 @@ export function createAlienMonumentGeometry(theme) {
   merged.userData.alienCivilisation = theme;
   return merged;
 }
+
+
+/**
+ * Europa's one-of-a-kind excavated alien vault: an actual doorway, horizontal
+ * lintel, structural buttresses and fractured cryo-crystal crown, rather than
+ * another field of isolated spikes. Merged once and placed only off-axis.
+ */
+export function createEuropaSunkenVaultGeometry() {
+  const parts = [];
+  const colors = ['#233c53', '#567f97', '#9bd0d6', '#152d3e'];
+  const add = (geometry, tone, transform) => pushPart(parts, geometry, tone, colors, transform);
+  const slab = (tone, x, y, z, w, h, d, rz = 0) =>
+    add(new T.BoxGeometry(1, 1, 1), tone, { x, y, z, w, h, d, rz });
+  // Foundation and stepped, eroded platform keep the building in the terrain.
+  slab(0, 0, -0.46, 0, 1.65, 0.12, 1.12);
+  slab(1, 0, -0.35, 0, 1.4, 0.11, 0.95);
+  slab(0, 0, -0.24, -0.08, 1.2, 0.11, 0.77);
+  // Two deep, asymmetric jambs frame an obvious portal, NOT a solid pyramid.
+  for (const side of [-1, 1]) {
+    slab(0, side * 0.48, 0.1, -0.1, 0.22, 0.83, 0.51);
+    slab(1, side * 0.65, -0.03, 0.06, 0.19, 0.65, 0.49, -side * 0.09);
+    slab(2, side * 0.48, 0.6, -0.12, 0.24, 0.12, 0.55);
+    add(new T.TetrahedronGeometry(0.22, 0), 2, {
+      x: side * 0.52,
+      y: 0.84,
+      z: -0.16,
+      w: 0.75,
+      h: 0.98,
+      rz: side * 0.14,
+    });
+  }
+  slab(0, 0, 0.58, -0.12, 1.16, 0.18, 0.68);
+  slab(1, 0, 0.72, -0.12, 0.9, 0.1, 0.55);
+  slab(3, 0, 0.07, 0.18, 0.65, 0.65, 0.055);
+  slab(2, 0, 0.07, 0.214, 0.15, 0.53, 0.018);
+  add(new T.OctahedronGeometry(0.23, 0), 2, {
+    y: 0.91,
+    z: -0.13,
+    w: 0.85,
+    h: 1.18,
+  });
+  if (parts.length !== 16) throw new Error('Europa sunken vault topology changed');
+  const merged = mergeGeometries(parts);
+  for (const part of parts) part.dispose();
+  if (!merged?.index || !merged.getAttribute('color') || !merged.getAttribute('normal'))
+    throw new Error('Europa vault needs merged indexed vertex-coloured geometry');
+  merged.userData.alienCivilisation = 'europa-hero-vault';
+  merged.computeBoundingSphere();
+  return merged;
+}
