@@ -55,6 +55,44 @@ const EXCLUSIVE_FOOTPRINTS = Object.freeze({
 });
 export const bossExclusiveFootprint = (kind) => EXCLUSIVE_FOOTPRINTS[kind] ?? null;
 
+/**
+ * Limit repeated melee telegraphs on the advanced bosses. The original
+ * targeting, selected generator and no-revival gates remain authoritative.
+ * Prefer an already-animated alternate strike over moving the whole model
+ * forward as a fake camera zoom. A true artillery volley can safely break a
+ * repetition when the physical limbs cannot reach the pilot's approach.
+ */
+export function variedAdvancedBossAttack({
+  sector,
+  kind,
+  previousKind,
+  cycle = 0,
+  generators = [true, true],
+}) {
+  if (cycle <= 0 || cycle % 4 === 0 || !kind || kind !== previousKind ||
+      kind === 'barrage' || generators.every((alive) => alive === false)) return kind;
+  if (sector === 6) {
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'tentacle-sweep') return 'tentacle-grab';
+    return kind;
+  }
+  if (sector === 7) {
+    if (kind === 'bite') return 'hammer-slam';
+    if (kind === 'hammer-slam') return 'bite';
+    if (kind === 'claw-swipe') return 'tentacle-sweep';
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'tentacle-sweep') return 'tentacle-grab';
+  }
+  if (sector === 9) {
+    if (kind === 'tentacle-grab') return 'tentacle-sweep';
+    if (kind === 'claw-swipe') return 'tentacle-grab';
+    // Marvin's core cannon remains an honest authored ranged alternative:
+    // never substitute a claw when the camera shows only his frontal jaw.
+    if (kind === 'bite' || kind === 'marvin-rear-thruster-sweep') return 'barrage';
+  }
+  return kind;
+}
+
 export function chooseBossIntent({
   sector,
   cycle = 0,
@@ -168,6 +206,13 @@ export function chooseBossIntent({
     cycle,
     previousKind,
     pilotPattern,
+  });
+  kind = variedAdvancedBossAttack({
+    sector,
+    kind,
+    previousKind,
+    cycle,
+    generators,
   });
   const ventSide =
     sector === 3 && kind === 'reactor-vent'
