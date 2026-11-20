@@ -33,7 +33,7 @@ test('Venus, Europa, Neptune and Titan establish a planet without placing it ins
   assert.equal(orion.getObjectByName('destination-celestial-body').visible, false);
 });
 
-test('five distinct alien sites contain grounded instanced pyramids, terraces and obelisks outside the flight lane', () => {
+test('five distinct alien sites contain grounded instanced silhouettes, terraces and obelisks outside the flight lane', () => {
   assert.deepEqual(Object.keys(ANCIENT_WORLD_THEMES), ['sun', 'ice', 'nebula', 'void', 'throne']);
   for (const [theme, index] of [['sun', 4], ['ice', 5], ['nebula', 6], ['void', 8], ['throne', 9]]) {
     const root = createAlienArchitecture(theme);
@@ -41,8 +41,9 @@ test('five distinct alien sites contain grounded instanced pyramids, terraces an
     assert.ok(root.userData.visualOnly);
     assert.equal(root.children.length, 6);
     assert.ok(root.children.every((child) => child.isInstancedMesh && child.userData.visualOnly));
-    assert.ok(root.children.some((child) => child.name.includes('-pyramids')));
+    assert.ok(root.children.some((child) => child.name.includes(ANCIENT_WORLD_THEMES[theme].structure)));
     assert.ok(root.children.some((child) => child.name.includes('-terraces')));
+    assert.equal(new Set(Object.values(ANCIENT_WORLD_THEMES).map((item) => item.structure)).size, 5);
     const position = new T.Vector3();
     const matrix = new T.Matrix4();
     for (const mesh of root.children) {
