@@ -19,6 +19,10 @@ Referência visual aprovada: hangar futurista profundo, luzes ciano/âmbar, estr
 - **Marvin**: detectado defeito de integração: o fighter final ocultava o rosto pitbull, duas garras e seis tentáculos originais. Rosto, duas garras e dois tentáculos agora usam a geometria original, anexada à nave preta na orientação frontal correta. Radar aponta para a peça exibida. Repetição de mordida frontal pode trocar por rajada de armas em vez de simular um zoom/mordida invisível.
 - Geradores destruídos não são recriados nem usados como origem de golpes. A nova variedade é somente seleção determinística ao preparar o golpe, sem retargeting após windup e sem alterar raio de dano, HP ou esquiva.
 
+## QA170: correção do enquadramento frontal de Marvin
+
+Inspeção das imagens Playwright 1366×768 da QA169 revelou rosto e orelhas cortados no topo, com a cabeça destacada da estrutura da nave. A montagem visual `marvin-pitbull` foi reposicionada de (0,25,34) para (0,14,28) no sistema de coordenadas anterior ao reparenting para a nave real. O deslocamento é **somente visual**; partes destrutíveis, hitboxes de dano e pontos fracos permanecem inalterados. O teste Node fixa o limite vertical do encaixe; a imagem da versão 1.27.162 ainda requer nova captura para comprovar ausência de corte no desktop e mobile.
+
 ## Limitações explícitas
 
 - Ainda não há colisão geométrica dos braços de Hidra, Ômega e Marvin com o casco do jogador. O dano permanece conforme área lógica anunciada no radar.
