@@ -46,7 +46,7 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     // Exact approved chase camera: preserve the original gameplay handoff.
     { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
   ];
-  const firstBlend = ease((t - 1.1) / 1.3);
+  const firstBlend = ease((t - 1.1) / 1.65);
   const secondBlend = ease((t - 4.1) / 2.4);
   const interpolate = (field, index) => {
     const first =
@@ -75,7 +75,7 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
       aimY: interpolate('aim', 1),
       aimZ: interpolate('aim', 2),
       fov: fovBlend + (views[2].fov - fovBlend) * secondBlend - 6 * zoom,
-      roll: Math.sin(t * 4.5) * 0.009 * engineVibration,
+      roll: engineVibration > 1e-8 ? Math.sin(t * 4.5) * 0.009 * engineVibration : 0,
     },
   };
 }
