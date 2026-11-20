@@ -210,13 +210,13 @@ export function installOrbit9ExplorationPreview(
       );
     });
     for (const side of [-1, 1]) {
-      makeBox(2, 9, 128, dark, side * 55, 4, -41);
+      makeBox(2, 9, 128, dark, side * 58, 4, -41);
       for (let n = 0; n < 10; n++) {
         const z = 9 - n * 11;
-        makeBox(2, 17, 3, steel, side * 53, 8, z);
-        makeBox(0.6, 12, 1, line, side * 51.8, 8, z);
+        makeBox(2, 17, 3, steel, side * 57, 8, z);
+        makeBox(0.6, 12, 1, line, side * 55.8, 8, z);
       }
-      makeBox(2, 0.2, 119, line, side * 50, 0.15, -40);
+      makeBox(2, 0.2, 119, line, side * 53, 0.15, -40);
     }
     for (let n = 0; n < 26; n++) {
       const z = 15 - n * 4.2;
@@ -371,7 +371,8 @@ export function installOrbit9ExplorationPreview(
       close();
       return;
     }
-    notification('BIA: Investigue as três transmissões. Nenhum progresso será salvo.');
+    const pilotName = game.snapshot?.().loadout?.pilotName ?? 'FIVE CATS';
+    notification(pilotName + ': Investigue as três transmissões. Nenhum progresso será salvo.');
     updateUI();
     rafId = requestAnimationFrame(frame);
   }
@@ -493,6 +494,7 @@ export function installOrbit9ExplorationPreview(
       return {
         active,
         player: { x: playerX, z: playerZ },
+        pilotModel: pilot?.name ?? null,
         district: orbit9District(playerX, playerZ).id,
         quest: createExplorationState(state),
       };
