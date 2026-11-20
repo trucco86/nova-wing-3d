@@ -1917,8 +1917,13 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : (grade?.haze ?? 0.00045);
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
-    starfield.visible = state.reveal < 0.95 || state.keepGlobe;
-    starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
+    // Europa keeps a sparse, crisp starfield over its frozen night canyon
+    // without reintroducing the old giant repeated background planet.
+    const europaSurfaceSky = destinationIndex === 5 && state.reveal > 0.82;
+    starfield.visible = europaSurfaceSky || state.reveal < 0.95 || state.keepGlobe;
+    starfield.material.opacity = europaSurfaceSky
+      ? 0.36
+      : 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) {
       const ice = europaSurfaceAt(seconds, europaTunnelActive);
       ground.visible = ice.groundVisible && !europaBossArenaActive;
