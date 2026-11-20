@@ -2487,13 +2487,21 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         field.frustumCulled = false;
         const transform = new T.Object3D();
         for (let i = 0; i < fieldCount; i++) {
+          // Europa now has authored cliffs and an alien monument inside the
+          // visible scenic lanes. Keep the older ridges as distant mountains,
+          // not giant spinning blocks that hide crystals and architecture.
+          const europaBackdrop = sceneryTheme === 'ice';
           transform.position.set(
-            (i % 2 ? 1 : -1) * rnd(125, 260),
-            sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
-            -i * 22,
+            (i % 2 ? 1 : -1) * (europaBackdrop ? rnd(210, 330) : rnd(125, 260)),
+            europaBackdrop ? -5 : rnd(-100, 160),
+            europaBackdrop ? -250 - i * 30 : -i * 22,
           );
-          transform.scale.setScalar(rnd(0.5, 2.5));
-          transform.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+          transform.scale.setScalar(europaBackdrop ? rnd(0.55, 1.3) : rnd(0.5, 2.5));
+          transform.rotation.set(
+            europaBackdrop ? 0 : rnd(0, 3),
+            rnd(0, 3),
+            europaBackdrop ? 0 : rnd(0, 3),
+          );
           transform.updateMatrix();
           field.setMatrixAt(i, transform.matrix);
         }
