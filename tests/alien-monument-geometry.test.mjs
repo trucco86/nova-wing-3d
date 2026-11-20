@@ -4,6 +4,7 @@ import * as T from 'three';
 import {
   ALIEN_MONUMENT_PARTS,
   createAlienMonumentGeometry,
+  createEuropaSunkenVaultGeometry,
 } from '../src/alien-monument-geometry.js';
 import { ANCIENT_WORLD_THEMES, createAlienArchitecture } from '../src/alien-architecture.js';
 import { createWorld } from '../src/visuals.js';
@@ -25,7 +26,7 @@ test('five authored alien monuments use indexed vertex-coloured PBR silhouettes 
     const fingerprint = geometry.index.count + ':' + colors.count;
     fingerprints.add(fingerprint);
     const root = createAlienArchitecture(theme);
-    assert.equal(root.children.length, 6);
+    assert.equal(root.children.length, theme === 'ice' ? 7 : 6);
     const primary = root.getObjectByName(
       ANCIENT_WORLD_THEMES[theme].site + '-' + ANCIENT_WORLD_THEMES[theme].structure,
     );
@@ -57,9 +58,43 @@ test('Europa replaces placeholder cones with blue ridged glacial rock geometry a
     assert.ok(field.geometry.getAttribute('color')?.count > 30);
     assert.equal(field.userData.hitbox, undefined);
   }
-  assert.equal(distant.count, 60);
-  assert.equal(cliffs.count, 54);
-  assert.equal(walls.count, 24);
+  assert.equal(distant.count, 40);
+  assert.equal(cliffs.count, 38);
+  assert.equal(walls.count, 16);
   world.setSector(SECTORS[4], 4);
   assert.equal(scene.getObjectByName('europa-fractured-glacial-spires'), undefined);
+});
+
+test('Europa hero vault is a distinctive grounded portal, low-cost, outside the aiming lane and absent at boss', () => {
+  const vaultGeometry = createEuropaSunkenVaultGeometry();
+  assert.ok(vaultGeometry.index.count > 0);
+  assert.ok(vaultGeometry.getAttribute('normal'));
+  assert.ok(vaultGeometry.getAttribute('color'));
+  assert.equal(vaultGeometry.userData.alienCivilisation, 'europa-hero-vault');
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[5], 5);
+  const vault = scene.getObjectByName('europa-sunken-alien-vault-hero');
+  assert.ok(vault?.isInstancedMesh);
+  assert.equal(vault.count, 1);
+  assert.equal(vault.userData.heroLandmark, true);
+  assert.equal(vault.userData.visualOnly, true);
+  assert.equal(vault.material.vertexColors, true);
+  const matrix = new T.Matrix4();
+  const pos = new T.Vector3();
+  vault.getMatrixAt(0, matrix);
+  pos.setFromMatrixPosition(matrix);
+  assert.ok(pos.x <= -150, 'vault remains on the left scenic lane');
+  const bounds = new T.Box3().setFromBufferAttribute(vault.geometry.getAttribute('position'));
+  const rightmost = pos.x + bounds.max.x * 108;
+  assert.ok(rightmost < -72, 'large vault must not intrude into the central flight corridor');
+  const site = scene.getObjectByName('alien-architecture-ice');
+  assert.equal(site.children.length, 7, 'one extra instanced draw, no duplicated monuments');
+  world.setDestinationArrival(30);
+  assert.equal(site.visible, true);
+  world.setEuropaBossArena(true, -83);
+  assert.equal(site.visible, false, 'frozen scenery clears the 360-degree boss arena');
+  world.setSector(SECTORS[4], 4);
+  assert.equal(scene.getObjectByName('europa-sunken-alien-vault-hero'), undefined);
+  vaultGeometry.dispose();
 });
