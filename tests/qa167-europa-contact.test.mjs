@@ -7,6 +7,7 @@ import {
   europaClawContactHit,
 } from '../src/europa-attack-vfx.js';
 
+// Regression anchor: every direct hit requires the displayed appendage, not just the radar area.
 const pilot = Object.freeze({ x: 0, y: 12, z: 9 });
 
 function fixture() {
