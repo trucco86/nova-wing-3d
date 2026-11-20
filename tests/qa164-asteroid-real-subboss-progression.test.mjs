@@ -27,13 +27,24 @@ function flyUntil(h, predicate, timeoutSeconds, label) {
 }
 
 test('QA164: asteroid stage must traverse rocks before showing its real subboss', (t) => {
+  const save = JSON.stringify({
+    version: 1,
+    sector: 2,
+    credits: 250,
+    weapon: 0,
+    armor: 0,
+    pods: 0,
+  });
   const h = harness({
     spawnEncounters: true,
     enableAsteroidCourse: true,
-    hostname: 'dev.nova-wing-preview.pages.dev',
+    storage: {
+      getItem: (key) => (key === 'nova-wing-3d-v1' ? save : null),
+      setItem() {},
+    },
   });
   t.after(() => h.close());
-  assert.equal(h.game.startDeveloperScenario(2, 'stage'), true);
+  h.game.start(true);
 
   let state = h.game.snapshot();
   assert.equal(state.sector, 3);

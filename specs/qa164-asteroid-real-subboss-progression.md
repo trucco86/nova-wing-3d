@@ -8,8 +8,9 @@ mas não percorre a missão normal. Os helpers de separação do chefe também
 não exercitam o fluxo inteiro do gameloop.
 
 ## Contrato
-Este novo teste inicia a fase 3 por cenário `stage` (não por `subboss`),
-com **spawnEncounters true** e o curso físico ativo. O piloto usa controles
+Este novo teste carrega um save normal no setor 3 e chama `start(true)`,
+com **spawnEncounters true** e o curso físico ativo, sem o atalho de
+cenários de desenvolvedor que desliga os encontros normais. O piloto usa controles
 de giro e direção reais, cruza a fenda, contorna os fragmentos, completa
 o curso, aguarda o subchefe único e comprova:
 - nenhum subchefe é inserido antes de completar as rochas;
