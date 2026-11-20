@@ -12205,3 +12205,30 @@ body.intermission-active #shop #nextSector {
   background-size: 175% auto;
   background-repeat: no-repeat;
 }
+
+/* Real gameplay pilot HUD identity, independent of the menu/showroom state.
+ * The same approved portrait follows every pilot relay and respawn. */
+body.in-mission #pilotHudAvatar[data-pilot] {
+  background-size: 175% auto;
+  background-repeat: no-repeat;
+}
+body.in-mission #pilotHudAvatar[data-pilot='bia'] {
+  background-image: var(--nw-bia-portrait);
+  background-position: 70% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='bob'] {
+  background-image: var(--nw-bob-portrait);
+  background-position: 50% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='christopher'] {
+  background-image: var(--nw-christopher-portrait);
+  background-position: 40% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='calvin'] {
+  background-image: var(--nw-calvin-portrait);
+  background-position: 72% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
+  background-image: var(--nw-jenifer-portrait);
+  background-position: 35% 3%;
+}
