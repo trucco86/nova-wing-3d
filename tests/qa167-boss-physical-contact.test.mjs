@@ -17,11 +17,21 @@ test('only authored full-body charges move the boss toward the camera', () => {
     assert.ok(pose.track > 0, kind + ' should track the announced target');
   }
   for (const kind of [
-    'claw-swipe', 'hammer-slam', 'tentacle-grab', 'tentacle-sweep',
-    'ice-quake', 'cryo-pincer', 'rok-pincer', 'stingray-scissor',
-    'drill-crosscut', 'solar-sweep', 'reactor-vent',
-    'orion-gravity-pulse', 'orion-iris-shear',
-    'hydra-two-head-crossfire', 'marvin-rear-thruster-sweep',
+    'claw-swipe',
+    'hammer-slam',
+    'tentacle-grab',
+    'tentacle-sweep',
+    'ice-quake',
+    'cryo-pincer',
+    'rok-pincer',
+    'stingray-scissor',
+    'drill-crosscut',
+    'solar-sweep',
+    'reactor-vent',
+    'orion-gravity-pulse',
+    'orion-iris-shear',
+    'hydra-two-head-crossfire',
+    'marvin-rear-thruster-sweep',
   ]) {
     const pose = bossMeleePose(intentFor(kind), 'attack', 0.7);
     assert.equal(pose.lunge, 0, kind + ' must not fake a strike by growing the whole boss');
@@ -47,7 +57,11 @@ test('logical boss contact is at the visible animation apex and never during win
 
 test('pilot gets a real dodge window; attack area remains fixed after preparation', () => {
   const intent = chooseBossIntent({
-    sector: 5, cycle: 1, phase: 2, playerX: 2, playerY: 12,
+    sector: 5,
+    cycle: 1,
+    phase: 2,
+    playerX: 2,
+    playerY: 12,
   });
   assert.equal(bossMeleeHit(intent, { x: 2, y: 12 }), true);
   assert.equal(bossMeleeHit(intent, { x: 82, y: 48 }), false);
@@ -59,15 +73,26 @@ test('repeated early phase boss attacks alternate without changing broken hardwa
   const first = chooseBossIntent({ sector: 0, cycle: 1, phase: 1, playerY: 12 });
   assert.equal(first.kind, 'rok-pincer');
   const varied = chooseBossIntent({
-    sector: 0, cycle: 1, phase: 1, playerY: 12, previousKind: first.kind,
+    sector: 0,
+    cycle: 1,
+    phase: 1,
+    playerY: 12,
+    previousKind: first.kind,
   });
   assert.equal(varied.kind, 'rok-ram');
   const another = chooseBossIntent({
-    sector: 5, cycle: 1, phase: 1, playerY: 25, previousKind: 'cryo-pincer',
+    sector: 5,
+    cycle: 1,
+    phase: 1,
+    playerY: 25,
+    previousKind: 'cryo-pincer',
   });
   assert.equal(another.kind, 'ice-quake');
   const powerless = chooseBossIntent({
-    sector: 3, cycle: 1, phase: 3, generators: [false, false],
+    sector: 3,
+    cycle: 1,
+    phase: 3,
+    generators: [false, false],
     previousKind: 'barrage',
   });
   assert.equal(powerless.kind, 'barrage', 'do not resurrect destroyed weapons');

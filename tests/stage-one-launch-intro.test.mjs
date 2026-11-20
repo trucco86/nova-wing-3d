@@ -35,8 +35,9 @@ test('launch doors, ignition, departure and seamless playable camera handoff', (
 
 test('launch has six legible angles with a visible side departure and a true final chase handoff', () => {
   assert.equal(FIRST_STAGE_SHOTS.length, 6);
-  assert.ok(FIRST_STAGE_SHOTS.every((shot, i) =>
-    i === 0 || shot.at - FIRST_STAGE_SHOTS[i - 1].at >= 0.85));
+  assert.ok(
+    FIRST_STAGE_SHOTS.every((shot, i) => i === 0 || shot.at - FIRST_STAGE_SHOTS[i - 1].at >= 0.85),
+  );
   for (const aspect of [390 / 844, 16 / 9]) {
     const side = firstStageLaunchAt(3.1, aspect);
     const front = firstStageLaunchAt(4.25, aspect);
@@ -47,13 +48,18 @@ test('launch has six legible angles with a visible side departure and a true fin
     assert.ok(side.camera.x > 0);
     assert.ok(front.camera.z < 0, 'front camera must sit outside the hangar');
     assert.ok(rear.camera.z > 0, 'rear camera follows the ship away from the door');
-    assert.ok([side, front, rear].every(({ camera }) =>
-      Object.values(camera).every(Number.isFinite)));
+    assert.ok(
+      [side, front, rear].every(({ camera }) => Object.values(camera).every(Number.isFinite)),
+    );
   }
   const moments = [0, 1.55, 3.25, 4, 5.5, 6.3, 7.5].map((t) => firstStageLaunchAt(t));
-  assert.ok(moments.every((frame, i) =>
-    i === 0 || (frame.doors >= moments[i - 1].doors &&
-                frame.departure >= moments[i - 1].departure)));
+  assert.ok(
+    moments.every(
+      (frame, i) =>
+        i === 0 ||
+        (frame.doors >= moments[i - 1].doors && frame.departure >= moments[i - 1].departure),
+    ),
+  );
   assert.equal(moments.at(-1).handoff, 1);
   assert.equal(moments.at(-1).corridorShift, 245);
 });

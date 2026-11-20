@@ -24,7 +24,12 @@ import { createCockpit } from './cockpit.js';
 import { createPilotRelay } from './pilot-relay.js';
 import { routeAt, createRouteRenderer } from './route.js';
 import { stagePerspectiveAt } from './stage-variety.js';
-import { chooseBossIntent, bossMeleeHit, bossMeleePose, bossMeleeContactReady } from './boss-combat-ai.js';
+import {
+  chooseBossIntent,
+  bossMeleeHit,
+  bossMeleePose,
+  bossMeleeContactReady,
+} from './boss-combat-ai.js';
 import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
 import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';

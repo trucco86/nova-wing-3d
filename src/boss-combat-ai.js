@@ -343,8 +343,13 @@ const BODY_RUSH_KINDS = new Set(['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 
 // moment for the single logical hit check, including on slower frame rates.
 export const BOSS_STRIKE_CONTACT_SECONDS = 0.7;
 export function bossMeleeContactReady(intent, state, attackAge) {
-  return !!intent && intent.kind !== 'barrage' && state === 'attack' &&
-    Number.isFinite(attackAge) && attackAge >= BOSS_STRIKE_CONTACT_SECONDS;
+  return (
+    !!intent &&
+    intent.kind !== 'barrage' &&
+    state === 'attack' &&
+    Number.isFinite(attackAge) &&
+    attackAge >= BOSS_STRIKE_CONTACT_SECONDS
+  );
 }
 
 // Drives visual strikes while the real attack clock runs. No rogue timers or
