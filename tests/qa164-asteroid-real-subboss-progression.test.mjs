@@ -49,7 +49,10 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   let state = h.game.snapshot();
   assert.equal(state.sector, 3);
   assert.equal(state.asteroidInterior.course.complete, false);
-  assert.equal(state.targets.some((enemy) => enemy.kind === 'subboss'), false);
+  assert.equal(
+    state.targets.some((enemy) => enemy.kind === 'subboss'),
+    false,
+  );
   assert.equal(state.boss, false);
 
   // A held roll is required to physically fit the actual wing collision hull
@@ -57,7 +60,10 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   h.key('KeyQ');
   state = flyUntil(h, (s) => s.asteroidInterior.course.offset > 920, 95, 'narrow fissure');
   assert.equal(state.asteroidInterior.course.complete, false);
-  assert.equal(state.targets.some((enemy) => enemy.kind === 'subboss'), false);
+  assert.equal(
+    state.targets.some((enemy) => enemy.kind === 'subboss'),
+    false,
+  );
   h.key('KeyQ', false);
 
   h.key('KeyD');
@@ -70,7 +76,12 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
 
   state = flyUntil(h, (s) => s.asteroidInterior.course.complete, 55, 'course completion');
   assert.equal(state.boss, false, 'boss remains gated after leaving the asteroid rocks');
-  state = flyUntil(h, (s) => s.targets.some((enemy) => enemy.kind === 'subboss'), 20, 'subboss arrival');
+  state = flyUntil(
+    h,
+    (s) => s.targets.some((enemy) => enemy.kind === 'subboss'),
+    20,
+    'subboss arrival',
+  );
   const subboss = state.targets.filter((enemy) => enemy.kind === 'subboss');
   assert.equal(subboss.length, 1, 'one real subboss, never duplicated');
   assert.ok(subboss[0].life > 0);
@@ -85,7 +96,12 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   assert.deepEqual(h.game.snapshot(), frozen, 'pause freezes both encounter and game clock');
   h.game.pause();
 
-  flyUntil(h, (s) => s.targets.some((enemy) => enemy.kind === 'subboss' && enemy.z > -130), 9, 'subboss attack approach');
+  flyUntil(
+    h,
+    (s) => s.targets.some((enemy) => enemy.kind === 'subboss' && enemy.z > -130),
+    9,
+    'subboss attack approach',
+  );
   // The real subboss has a three-second entry shield. Wait for the authored
   // combat window so the bomb proves damage, not a bypass of invulnerability.
   for (let i = 0; i < 8; i++) {
@@ -95,7 +111,10 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   const beforeDamage = h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').life;
   h.game.bomb();
   const after = h.game.snapshot();
-  assert.ok(after.targets.find((enemy) => enemy.kind === 'subboss').life < beforeDamage, 'real bomb reduces subboss HP');
+  assert.ok(
+    after.targets.find((enemy) => enemy.kind === 'subboss').life < beforeDamage,
+    'real bomb reduces subboss HP',
+  );
   assert.equal(after.boss, false, 'damaging a subboss must not launch the final boss');
   assert.equal(after.asteroidInterior.course.complete, true);
 });
