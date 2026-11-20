@@ -301,7 +301,9 @@ export function createEuropaCrystalCanyon() {
 
 export function setEuropaCrystalCanyonQuality(root, quality = 'high') {
   if (!root) return;
-  root.traverse((child) => {
+  // High-only crystal batches are direct root children. No per-frame tree
+  // traversal or geometry/material recreation during adaptive FPS changes.
+  for (const child of root.children) {
     if (child.userData.highOnly) child.visible = quality === 'high';
-  });
+  }
 }
