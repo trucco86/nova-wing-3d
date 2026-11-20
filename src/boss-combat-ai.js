@@ -258,7 +258,23 @@ export function chooseBossIntent({
                 : kind === 'hammer-slam'
                   ? 'signature-omega-left'
                   : null
-          : null,
+          : sector === 9
+            ? kind === 'bite'
+              ? 'marvin-bite-jaw'
+              : kind === 'claw-swipe'
+                ? orbit < 0
+                  ? 'marvin-left-claw'
+                  : 'marvin-right-claw'
+                : kind.startsWith('tentacle')
+                  ? orbit < 0
+                    ? 'marvin-port-tentacle'
+                    : 'marvin-starboard-tentacle'
+                  : kind === 'marvin-rear-thruster-sweep'
+                    ? 'marvin-rear-thruster-sweeper'
+                    : null
+            : sector === 6 && kind.startsWith('tentacle')
+              ? 'signature-hydra-head-' + Math.abs(cycle % 7)
+              : null,
     ventSide,
     sector,
     cycle,
