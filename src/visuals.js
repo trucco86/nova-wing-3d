@@ -52,7 +52,12 @@ import {
 } from './city-35-lived-in.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
-import { europaSurfaceAt, createEuropaSurface, updateEuropaSurface } from './europa-surface.js';
+import {
+  europaSurfaceAt,
+  createEuropaSurface,
+  createEuropaGlacialRidgeGeometry,
+  updateEuropaSurface,
+} from './europa-surface.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
 import {
@@ -2451,9 +2456,24 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // Legacy: sixty separate low-detail meshes cost sixty draw calls.
         // Preserve their authored positions/rotations in ONE instanced batch,
         // outside the x±72 flight lane, with no invisible collision surfaces.
+        // The old ice field was 60 primitive white cones. Reuse the same
+        // instanced glacier sculpture as Europa's authored surface instead.
         const geo =
-          sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
-        const field = new T.InstancedMesh(geo, mat, 60);
+          sceneryTheme === 'ice'
+            ? createEuropaGlacialRidgeGeometry()
+            : new T.IcosahedronGeometry(12, 1);
+        if (sceneryTheme === 'ice') geo.scale(9, 80, 9);
+        const fieldMaterial =
+          sceneryTheme === 'ice'
+            ? new T.MeshStandardMaterial({
+                color: '#ffffff',
+                vertexColors: true,
+                roughness: 0.62,
+                metalness: 0.04,
+                flatShading: true,
+              })
+            : mat;
+        const field = new T.InstancedMesh(geo, fieldMaterial, 60);
         field.name = 'premium-instanced-' + sceneryTheme + '-far-field';
         field.userData.visualOnly = true;
         field.frustumCulled = false;
