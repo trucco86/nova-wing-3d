@@ -68,6 +68,16 @@ test('camera follows one controlled glacial descent and settles without a cut at
 test('Europa uses exactly one celestial globe and raises the same ice scenery continuously', () => {
   const vista = createDestinationVista(5);
   const globe = vista.getObjectByName('destination-celestial-body');
+  const iceParticles = vista.getObjectByName('europa-fissure-entry-ice');
+  assert.ok(iceParticles?.isPoints, 'one low-cost glacial debris effect replaces generic reentry');
+  assert.equal(iceParticles.userData.visualOnly, true);
+  assert.equal(iceParticles.geometry.getAttribute('position').count, 90);
+  assert.equal(iceParticles.visible, false);
+  updateDestinationVista(vista, 5, 16);
+  assert.equal(iceParticles.visible, true);
+  assert.ok(iceParticles.material.opacity > 0.2);
+  updateDestinationVista(vista, 5, 25);
+  assert.equal(iceParticles.visible, false);
   for (const t of [0, 7, 12, 16, 20, 24]) {
     const state = updateDestinationVista(vista, 5, t);
     assert.equal(globe.visible, true, 'the moon must not abruptly disappear at ' + t);
