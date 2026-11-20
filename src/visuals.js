@@ -2152,7 +2152,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         updateEuropaSurface(
           sectorScenery.getObjectByName('europa-frozen-surface'),
           europaArrivalSeconds,
-          state.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+          state.groundVisible && !europaTunnelActive && !europaBossArenaActive,
           destinationGraphicsQuality === 'high',
         );
       }
@@ -2166,7 +2166,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = europaBossArenaActive ? floorY : -7;
       if (europaBossArenaActive) europaTunnelActive = false;
       const surface = sectorScenery.getObjectByName('europa-frozen-surface');
-      if (surface) surface.visible = !europaBossArenaActive && !europaTunnelActive;
+      if (surface)
+        surface.visible =
+          !europaBossArenaActive &&
+          !europaTunnelActive &&
+          europaSurfaceAt(europaArrivalSeconds).groundVisible;
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
       const buriedVaults = sectorScenery.getObjectByName('alien-architecture-ice');
