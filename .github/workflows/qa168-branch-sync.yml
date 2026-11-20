@@ -1,0 +1,36 @@
+name: QA168 temporary Europa crystal canyon sync
+on:
+  push:
+    branches:
+      - feat/alien-worlds-visual-identity-20261120
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/alien-worlds-visual-identity-20261120
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format the authored Europa canyon and QA changes
+        run: npx prettier --write src/europa-crystal-canyon.js src/europa-surface.js src/visuals.js tests/europa-surface.test.mjs tests/europa-crystal-canyon.test.mjs tests/dynamic-scene.js tests/browser/qa168-alien-worlds.spec.mjs
+      - name: Rebuild the game candidate
+        run: npm run build
+      - name: Run focused tests before synchronizing generated HTML
+        run: node --test tests/europa-crystal-canyon.test.mjs tests/europa-surface.test.mjs
+      - name: Commit source and synchronized web candidate into the QA branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/europa-crystal-canyon.js src/europa-surface.js src/visuals.js tests/europa-surface.test.mjs tests/europa-crystal-canyon.test.mjs tests/dynamic-scene.js tests/browser/qa168-alien-worlds.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(QA168): sync cinematic Europa crystal canyon preview build"
+            git push origin HEAD:feat/alien-worlds-visual-identity-20261120
+          fi
