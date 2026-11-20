@@ -1,5 +1,8 @@
 import * as T from 'three';
-import { createAlienMonumentGeometry, createEuropaSunkenVaultGeometry } from './alien-monument-geometry.js';
+import {
+  createAlienMonumentGeometry,
+  createEuropaSunkenVaultGeometry,
+} from './alien-monument-geometry.js';
 
 // Authored ruins for the worlds that were still recycling planet/torus props.
 // All architecture is background-only; it never becomes a hidden collision wall.

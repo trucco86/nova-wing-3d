@@ -146,7 +146,6 @@ export function createAlienMonumentGeometry(theme) {
   return merged;
 }
 
-
 /**
  * Europa's one-of-a-kind excavated alien vault: an actual doorway, horizontal
  * lintel, structural buttresses and fractured cryo-crystal crown, rather than
