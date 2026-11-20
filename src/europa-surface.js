@@ -5,11 +5,6 @@ import {
   setEuropaCrystalCanyonQuality,
 } from './europa-crystal-canyon.js';
 
-const smooth = (value) => {
-  const v = Math.max(0, Math.min(1, value));
-  return v * v * (3 - 2 * v);
-};
-
 // Europe is a grounded frozen world after its fissure descent, not a second
 // orbital globe. Keep the ice-floor swap deterministic in game time.
 export function europaSurfaceAt(seconds, tunnelActive = false) {
