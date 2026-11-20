@@ -6,7 +6,8 @@
 - Três pistas recolhíveis em regiões distintas, sobrevivente e escolha de rota originais preservados, com minimapa e nome do setor.
 - Reaproveita a modelagem felina 3D aprovada do hangar, sem criar um novo personagem incompatível com a arte.
 - Developer/QA continua isolado da campanha, sem salvar pistas ou pontuação, login ou ranking.
-- Testes determinísticos e Playwright de navegação e controles; revisão visual mobile e CI completa obrigatórias antes de integração.
+- Câmera orbital com rotação por teclado, arraste e botões, modo panorâmico e correção de obstrução por pilares; diálogo do sobrevivente em três etapas antes da escolha de rota.
+- Testes determinísticos e Playwright de navegação, câmera, NPC e controles; revisão visual mobile e CI completa obrigatórias antes de integração.
 
 ## 1.27.153 — Abertura cinematográfica de lançamento da Cidade das Máquinas
 
