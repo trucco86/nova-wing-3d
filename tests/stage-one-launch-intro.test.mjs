@@ -53,6 +53,46 @@ test('camera continuously looks forward at the gate through launch and handoff o
   }
 });
 
+test('optical camera pushes into the launch then restores original chase FOV on skip', () => {
+  const wide = firstStageLaunchAt(0.2, 390 / 844);
+  const push = firstStageLaunchAt(3.3, 390 / 844);
+  const finish = firstStageLaunchAt(6.5, 390 / 844);
+  assert.ok(wide.camera.fov >= 72, 'the player first sees a large deep bay');
+  assert.ok(push.camera.fov < 58, 'the camera zooms toward the front gate');
+  assert.ok(finish.camera.fov === 60, 'the handoff must match gameplay FOV');
+  assert.ok(Math.abs(push.camera.roll) < 0.015, 'engine camera movement is subtle');
+  assert.equal(finish.camera.roll, 0);
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(60);
+  const intro = createFirstStageLaunchIntro(scene, camera);
+  intro.reset(true, 'bia');
+  intro.update(3.3);
+  assert.ok(camera.fov < 58);
+  intro.finish();
+  assert.equal(camera.fov, 60, 'skipping must restore the gameplay view');
+  assert.equal(camera.rotation.z, 0);
+  intro.destroy();
+});
+
+test('depth architecture and engine beacons use batches, not 60 extra draw calls', () => {
+  const scene = new T.Scene();
+  const intro = createFirstStageLaunchIntro(scene, new T.PerspectiveCamera());
+  for (const name of [
+    'launch-ceiling-crossbeams',
+    'launch-side-deck-glass',
+    'launch-side-observation-columns',
+    'launch-floor-depth-seams',
+    'launch-ignition-beacons',
+    'launch-roof-volumetric-light-shafts',
+  ]) {
+    const mesh = intro.root.getObjectByName(name);
+    assert.ok(mesh?.isInstancedMesh, name + ' is one GPU draw family');
+    assert.ok(mesh.count >= 2);
+    assert.equal(mesh.userData.visualOnly, true);
+  }
+  intro.destroy();
+});
+
 test('every selected pilot remains real center fighter; four distinct escorts remain', () => {
   for (const lead of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     const slots = firstStageWingSlots(lead);
