@@ -1509,8 +1509,24 @@
           </div>
           <small>AZUL: PISTAS · VERDE: COLETADAS · BRANCO: JOGADOR</small>
         </aside>
+        <div class="exploration-camera-tools" aria-label="Controles da câmera de exploração">
+          <button id="exploreCameraLeft" type="button" aria-label="Girar câmera à esquerda">◀</button>
+          <button id="exploreCameraZoom" type="button" aria-label="Alternar câmera panorâmica" aria-pressed="false">VISTA</button>
+          <button id="exploreCameraRight" type="button" aria-label="Girar câmera à direita">▶</button>
+        </div>
       </div>
       <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
+      <div
+        id="explorationDialogue"
+        hidden
+        class="exploration-dialogue"
+        role="region"
+        aria-label="Diálogo com o sobrevivente"
+      >
+        <strong id="exploreDialogueSpeaker">SOBREVIVENTE</strong>
+        <p id="exploreDialogueText"></p>
+        <button id="exploreDialogueNext" type="button">CONTINUAR</button>
+      </div>
       <div
         id="explorationChoices"
         hidden
@@ -1536,7 +1552,7 @@
           </button>
         </div>
         <small
-          >WASD / SETAS PARA ANDAR · E PARA INVESTIGAR · ESC PARA SAIR · QA SEM SAVE/RANKING</small
+          >WASD / SETAS PARA ANDAR · ARRASTE / Q R PARA GIRAR · C PARA VISTA · E PARA INVESTIGAR · QA SEM SAVE</small
         >
       </footer>
     </section>
