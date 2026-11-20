@@ -107,10 +107,19 @@ test('Marvin final pilot has visible actual face, claws and two tentacles', () =
     boss.getObjectByName('marvin-pitbull').getWorldPosition(new T.Vector3()).z > 15,
     'Marvin’s face is in front of the black fighter, not hidden behind it',
   );
-  // QA170: the 1366x768 frontal screenshot had the pitbull ears cut off.
-  // Enforce a lower visual-only face mount; weakpoint volumes never move.
-  const headY = boss.getObjectByName('marvin-pitbull').getWorldPosition(new T.Vector3()).y;
-  assert.ok(headY >= 13 && headY <= 18, 'Marvin face stays inside the forward camera composition');
+  // QA170: compare the head mount in the actual fighter coordinate space.
+  // An absolute world-Y assertion is incorrect because boss placement and
+  // camera orbit apply additional transforms. Visual framing needs screenshots.
+  const head = boss.getObjectByName('marvin-pitbull');
+  assert.equal(head.parent, fighter, 'face is attached to the playable black fighter');
+  assert.ok(
+    Math.abs(head.position.y * fighter.scale.y - 14) < 0.01,
+    'Marvin face is mounted 11 world units lower than the original 25-unit mount',
+  );
+  assert.ok(
+    Math.abs(head.position.z * fighter.scale.z + 28) < 0.01,
+    'Marvin face has the closer 28-unit mount without moving generators',
+  );
   const originalWeaponIds = boss.userData.parts.map((part) => part.mesh.uuid);
   assert.deepEqual(
     boss.userData.parts.map((part) => part.mesh.uuid),
