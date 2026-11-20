@@ -114,21 +114,28 @@ export function createAlienArchitecture(theme, quality = 'high') {
       x: side * (156 + (i % 3) * 57),
       y: profile.elevation + (i % 3) * 7,
       z: -245 - i * 137,
-      yaw: (i % 5 - 2) * 0.105,
+      yaw: ((i % 5) - 2) * 0.105,
       size: 0.76 + (i % 4) * 0.14,
     };
   });
   const widthAt = (i) => locations[i].size;
-  createBatch(root, profile.site + '-bedrock', new T.DodecahedronGeometry(1, 0), basalt, 10, (i) => {
-    const s = widthAt(i);
-    return {
-      ...locations[i],
-      y: locations[i].y - 10,
-      width: 38 * s,
-      height: 17 * s,
-      depth: 44 * s,
-    };
-  });
+  createBatch(
+    root,
+    profile.site + '-bedrock',
+    new T.DodecahedronGeometry(1, 0),
+    basalt,
+    10,
+    (i) => {
+      const s = widthAt(i);
+      return {
+        ...locations[i],
+        y: locations[i].y - 10,
+        width: 38 * s,
+        height: 17 * s,
+        depth: 44 * s,
+      };
+    },
+  );
   createBatch(root, profile.site + '-terraces', new T.BoxGeometry(1, 1, 1), stone, 10, (i) => {
     const s = widthAt(i);
     return {
@@ -176,20 +183,27 @@ export function createAlienArchitecture(theme, quality = 'high') {
   });
   // Paired obelisks establish scale and a repeatable visual path to the
   // citadels. Their emissive glyphs are decorative and stay outside the lane.
-  createBatch(root, profile.site + '-obelisk-pairs', new T.BoxGeometry(1, 1, 1), basalt, 20, (i) => {
-    const p = locations[Math.floor(i / 2)];
-    const s = p.size;
-    const offset = i % 2 ? 1 : -1;
-    return {
-      x: p.x + offset * 39 * s,
-      y: p.y + 35 * s,
-      z: p.z + 7,
-      width: 9 * s,
-      height: 62 * s,
-      depth: 10 * s,
-      lean: offset * 0.02,
-    };
-  });
+  createBatch(
+    root,
+    profile.site + '-obelisk-pairs',
+    new T.BoxGeometry(1, 1, 1),
+    basalt,
+    20,
+    (i) => {
+      const p = locations[Math.floor(i / 2)];
+      const s = p.size;
+      const offset = i % 2 ? 1 : -1;
+      return {
+        x: p.x + offset * 39 * s,
+        y: p.y + 35 * s,
+        z: p.z + 7,
+        width: 9 * s,
+        height: 62 * s,
+        depth: 10 * s,
+        lean: offset * 0.02,
+      };
+    },
+  );
   const runes = createBatch(
     root,
     profile.site + '-emissive-runes',
