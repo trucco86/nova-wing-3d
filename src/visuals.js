@@ -5,6 +5,11 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import {
+  ANCIENT_WORLD_THEMES,
+  createAlienArchitecture,
+  setAlienArchitectureQuality,
+} from './alien-architecture.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityEvacuationFleet, syncCityEvacuationFleet } from './city-evacuation-batching.js';
@@ -2064,6 +2069,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
+      setAlienArchitectureQuality(
+        sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
+        quality,
+      );
       setLivingWorldQuality(
         sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
         quality,
@@ -2464,68 +2473,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sectorScenery.add(createMothershipInterior());
         sectorScenery.add(createMothershipApproach());
       }
-      if (
-        ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&
-        !(dynamicFlight && sceneryTheme === 'throne')
-      ) {
-        const orb = new T.Mesh(
-          new T.SphereGeometry(135, 32, 20),
-          sceneryTheme === 'sun' ? light : metal('#05020a', 0, 1),
-        );
-        orb.position.set(90, 90, -600);
-        sectorScenery.add(orb);
-        for (let i = 0; i < 4; i++) {
-          const disk = new T.Mesh(new T.TorusGeometry(160 + i * 18, 1 + i * 0.5, 6, 96), light);
-          disk.position.copy(orb.position);
-          disk.rotation.x = 0.9;
-          disk.rotation.y = 0.2;
-          sectorScenery.add(disk);
-        }
+      // The former generic planet plus four decorative torus rings made
+      // Venus, Neptune, Orion and Titan look like recolored copies of one map.
+      // Distant pyramids, buried vaults and engineered citadels now provide
+      // distinct silhouettes with no extra collision or targeting geometry.
+      if (dynamicFlight && ANCIENT_WORLD_THEMES[sceneryTheme]) {
+        sectorScenery.add(createAlienArchitecture(sceneryTheme, destinationGraphicsQuality));
       }
-      if (dynamicFlight && sceneryTheme === 'throne') {
-        const hole = new T.Group();
-        hole.userData.fixedSky = true;
-        hole.position.set(0, 125, -850);
-        hole.scale.setScalar(1.35);
-        const black = new T.Mesh(
-          new T.SphereGeometry(122, 48, 32),
-          new T.MeshBasicMaterial({ color: '#000003', fog: false }),
-        );
-        hole.add(black);
-        const disk = new T.Mesh(
-          new T.RingGeometry(130, 310, 128, 4),
-          new T.ShaderMaterial({
-            side: T.DoubleSide,
-            transparent: true,
-            depthWrite: false,
-            vertexShader:
-              'varying vec3 p; void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-            fragmentShader:
-              'varying vec3 p; void main(){float r=length(p.xy);float band=.6+.4*sin(r*1.5);float a=(1.-smoothstep(200.,310.,r))*smoothstep(130.,142.,r);vec3 c=mix(vec3(1.,.25,.035),vec3(1.,.88,.5),pow(1.-clamp((r-130.)/180.,0.,1.),2.));gl_FragColor=vec4(c*(1.5+band),a);}',
-          }),
-        );
-        disk.rotation.x = 1.34;
-        disk.rotation.z = -0.12;
-        hole.add(disk);
-        for (const radius of [125, 135]) {
-          const ring = new T.Mesh(
-            new T.TorusGeometry(radius, radius === 125 ? 1.8 : 5, 8, 128),
-            new T.MeshBasicMaterial({
-              color: radius === 125 ? '#fff0c8' : '#faab52',
-              transparent: true,
-              opacity: radius === 125 ? 1 : 0.38,
-              fog: false,
-            }),
-          );
-          ring.scale.y = radius === 125 ? 1 : 1.14;
-          hole.add(ring);
-        }
-        hole.traverse((o) => {
-          o.userData.fixedSky = true;
-        });
-        sectorScenery.add(hole);
-      }
-      if (dynamicFlight && ['asteroids', 'nebula'].includes(sceneryTheme)) {
+      // Only the asteroid sector keeps its actual, single gameplay gateway.
+      if (dynamicFlight && sceneryTheme === 'asteroids') {
         const gateway = new T.Mesh(new T.TorusGeometry(32, 3, 8, 64), light);
         gateway.position.set(0, 10, -390);
         gateway.userData.conduit = true;
@@ -2533,70 +2489,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
-      // The station is now a physical hangar/engine room, not extra torus rings.
-      // Each non-Earth location has a different silhouette, palette and traversal
-      // grammar. No universal orbital torus corridor or broken moon in every stage.
-      // Saturn: the abandoned seven-frigate debris field obscured the rings.
-      // The singular distant warship and authored icy landmark layers remain;
-      // scattered wrecks do not repeat throughout this orbital battlefield.
-      if (dynamicFlight && sceneryTheme === 'nebula') {
-        for (let i = 0; i < 12; i++) {
-          const root = new T.Group();
-          root.name = 'bio-nebula-spire';
-          const stalk = new T.Mesh(new T.ConeGeometry(12 + (i % 4) * 3, 85 + (i % 3) * 24, 5), mat);
-          stalk.rotation.z = (i % 2 ? 1 : -1) * 0.4;
-          root.add(stalk);
-          for (let j = 0; j < 3; j++) {
-            const node = new T.Mesh(new T.IcosahedronGeometry(6 + j * 2, 1), light);
-            node.position.set(j * 8 - 8, 16 + j * 23, 0);
-            root.add(node);
-          }
-          root.position.set((i % 2 ? 1 : -1) * (90 + (i % 3) * 28), 25, -130 - i * 105);
-          sectorScenery.add(root);
-        }
-      }
-      if (dynamicFlight && sceneryTheme === 'sun') {
-        for (let i = 0; i < 10; i++) {
-          const plasma = new T.Mesh(
-            new T.TorusGeometry(55 + (i % 3) * 14, 3, 7, 32, Math.PI * 1.1),
-            light,
-          );
-          plasma.name = 'solar-plasma-arc';
-          plasma.rotation.set(i * 0.12, 0.4 + i * 0.2, i * 0.31);
-          plasma.position.set((i % 2 ? 1 : -1) * 84, 42 + i * 8, -180 - i * 130);
-          sectorScenery.add(plasma);
-        }
-      }
-      if (dynamicFlight && sceneryTheme === 'void') {
-        for (let i = 0; i < 9; i++) {
-          const lens = new T.Group();
-          lens.name = 'orion-gravitational-lens';
-          const outer = new T.Mesh(new T.TorusGeometry(35 + i * 2, 2, 8, 60), light);
-          outer.rotation.y = (i % 2 ? -1 : 1) * 0.9;
-          lens.add(outer);
-          lens.add(new T.Mesh(new T.IcosahedronGeometry(13, 1), mat));
-          lens.position.set((i % 2 ? 1 : -1) * (85 + i * 3), 45, -160 - i * 155);
-          sectorScenery.add(lens);
-        }
-      }
-      if (dynamicFlight && sceneryTheme === 'throne') {
-        for (let i = 0; i < 7; i++) {
-          const gate = new T.Group();
-          gate.name = 'marvin-fortress-gate';
-          for (const side of [-1, 1]) {
-            gate.add(box(14, 100 + i * 8, 20, mat, side * 95, 40, 0));
-            gate.add(box(3, 72, 25, light, side * 96, 43, 12));
-          }
-          gate.add(box(200, 12, 30, mat, 0, 97 + i * 4, 0));
-          gate.position.z = -220 - i * 195;
-          sectorScenery.add(gate);
-        }
-      }
-      // Materials unused by a theme are disposed immediately.
-      if (!sectorScenery.children.length) {
-        mat.dispose();
-        light.dispose();
-      }
+      // Dispose only unattached materials, including in missions that now
+      // use their own independent instanced architecture.
+      if (!['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) mat.dispose();
+      if (!(dynamicFlight && sceneryTheme === 'asteroids')) light.dispose();
       if (dynamicFlight) {
         // Earth, Mars and the asteroid already have their own authored arrivals.
         if (DESTINATION_PROFILES[destinationIndex]) {
