@@ -63,7 +63,7 @@ test('QA166: PERFURADOR fits portrait camera and retains real orbit target views
     const { game, advance } = window.fixture;
     game.collect('shield');
     game.orbit(1);
-    advance(6.65, { renderAfter: false });
+    advance(6.2, { renderAfter: false });
     game.orbit(0);
     advance(0);
     const s = game.snapshot();
