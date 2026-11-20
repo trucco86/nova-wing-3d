@@ -84,11 +84,17 @@ window.fixture = {
     if (!lastScene) return null;
     const site = lastScene.getObjectByName('alien-architecture-' + theme);
     const globe = lastScene.getObjectByName('destination-celestial-body');
+    const hero = lastScene.getObjectByName('europa-sunken-alien-vault-hero');
+    const matrix = new T.Matrix4();
+    if (hero) hero.getMatrixAt(0, matrix);
     return {
       exists: Boolean(site),
       visible: site?.visible ?? false,
       siteName: site?.userData.site ?? null,
       structures: site?.children.map((node) => node.name) ?? [],
+      heroDepth: hero ? matrix.elements[14] : null,
+      heroX: hero ? matrix.elements[12] : null,
+      heroBatchCount: hero?.count ?? 0,
       visualOnly: site?.userData.visualOnly ?? false,
       giantGenericOrb: lastScene.getObjectByName('orion-generic-planet') !== undefined,
       globeVisible: globe?.visible ?? false,
