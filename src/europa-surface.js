@@ -28,6 +28,7 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
 }
 
 const europaSurfaceParts = new WeakMap();
+const europaCanyonParts = new WeakMap();
 
 const hash = (n) => {
   const t = Math.sin(n * 127.12 + 11.47) * 43758.5453;
@@ -173,7 +174,9 @@ export function createEuropaSurface() {
   europaSurfaceParts.set(root, snow);
   // New frozen canyon and ruins share the surface's existing boss/tunnel
   // visibility contract. No extra shadows, hitboxes, textures or postpasses.
-  root.add(createEuropaCrystalCanyon());
+  const canyon = createEuropaCrystalCanyon();
+  root.add(canyon);
+  europaCanyonParts.set(root, canyon);
   root.visible = false;
   return root;
 }
@@ -181,10 +184,14 @@ export function createEuropaSurface() {
 export function updateEuropaSurface(root, time, visible, highQuality = true) {
   if (!root) return;
   root.visible = Boolean(visible);
-  setEuropaCrystalCanyonQuality(
-    root.getObjectByName('europa-premium-crystal-canyon'),
-    highQuality ? 'high' : 'medium',
-  );
+  // Reuse a cached reference to avoid scene traversal on every rendered
+  // frame. Cloned scenes get a one-time lookup into their own subtree.
+  let canyon = europaCanyonParts.get(root);
+  if (!canyon) {
+    canyon = root.getObjectByName('europa-premium-crystal-canyon');
+    if (canyon) europaCanyonParts.set(root, canyon);
+  }
+  setEuropaCrystalCanyonQuality(canyon, highQuality ? 'high' : 'medium');
   // The inactive glacier and Medium mode do not calculate invisible VFX
   // or walk the scene hierarchy. WeakMap keeps cloned worlds recoverable.
   let snow = europaSurfaceParts.get(root);
