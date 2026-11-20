@@ -33,6 +33,7 @@ import {
 import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
 import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
+import { europaClawContactHit } from './europa-attack-vfx.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -5573,39 +5574,6 @@ export function createGame({
             plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
           }
         }
-        if (
-          t.state === 'attack' &&
-          bossIntent &&
-          bossIntent.kind !== 'barrage' &&
-          !bossMeleeResolved &&
-          bossMeleeContactReady(bossIntent, t.state, attackAge - 2.2)
-        ) {
-          bossMeleeResolved = true;
-          if (
-            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
-            (bossIntent.kind !== 'reactor-vent' ||
-              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
-            // A destroyed Hydra head immediately cancels its paired beam,
-            // never landing invisible damage from an already broken gun.
-            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
-              boss.userData.parts.every((part) => part.hp > 0)) &&
-            bossMeleeHit(bossIntent, {
-              x: player.position.x,
-              y: player.position.y,
-              orbit: relativeOrbit(),
-            })
-          ) {
-            hit(bossIntent.damage);
-            explode(player.position.clone(), 8, 0xff8060);
-            cue('armorHit');
-          } else {
-            message(
-              boss.userData.parts.every((part) => part.hp === 0)
-                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
-                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
-            );
-          }
-        }
         // The tactical arrow points to the actual animated signature weapon
         // when it exists, instead of always pretending the attack comes from
         // the center of the boss. This does not change collision or targeting.
@@ -5761,6 +5729,47 @@ export function createGame({
           sectorIndex === 5 ? bossIntent : null,
           europaTarget,
         );
+        // Resolve direct melee only AFTER the actual weapon geometry has
+        // moved for this frame. Keep exactly one result per attack cycle.
+        if (
+          t.state === 'attack' &&
+          bossIntent &&
+          bossIntent.kind !== 'barrage' &&
+          !bossMeleeResolved &&
+          bossMeleeContactReady(bossIntent, t.state, poseAge - 2.2)
+        ) {
+          bossMeleeResolved = true;
+          if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            (bossIntent.kind !== 'reactor-vent' ||
+              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
+            // A destroyed Hydra head immediately cancels its paired beam,
+            // never landing invisible damage from an already broken gun.
+            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
+              boss.userData.parts.every((part) => part.hp > 0)) &&
+            bossMeleeHit(bossIntent, {
+              x: player.position.x,
+              y: player.position.y,
+              orbit: relativeOrbit(),
+            }) &&
+            // Europa's pincer must physically reach the pilot's hull, rather
+            // than landing damage from an invisible 2D danger rectangle.
+            // Ice-quake is an area shockwave, not a direct claw collision.
+            (sectorIndex !== 5 || bossIntent.kind !== 'cryo-pincer' ||
+              europaClawContactHit(boss.getObjectByName('boss-europa-attack-vfx'), player.position))
+          ) {
+            hit(bossIntent.damage);
+            explode(player.position.clone(), 8, 0xff8060);
+            cue('armorHit');
+          } else {
+            message(
+              boss.userData.parts.every((part) => part.hp === 0)
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+            );
+          }
+        }
+
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
