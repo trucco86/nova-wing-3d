@@ -43,3 +43,13 @@ portanto não deve ser afirmado antes de benchmarks no dispositivo.
 
 Permanece necessária revisão visual em aparelho físico. Captura automática
 não é prova suficiente de experiência de jogo ou desempenho de GPU.
+
+## Visibilidade dos pilotos e desaceleração
+
+- O marcador da pista passou de 2,1m para 1,08m de raio e foi elevado,
+  evitando cobrir a cabeça do piloto durante a investigação.
+- O teste de caminhada agora aguarda o estado de repouso da animação, em
+  vez de presumir que todos os dispositivos renderizam 550ms de simulação
+  no mesmo intervalo de relógio. O joystick deve voltar a zero ao soltar.
+- A verificação focada de desktop/mobile deve aprovar 16 testes e capturar
+  o átrio, laboratório, reator e arquivos antes da homologação visual.
