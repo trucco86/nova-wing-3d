@@ -1973,9 +1973,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         child.userData.arrivalWasRevealed = true;
       }
       if (destinationIndex === 5 && child.userData.fixedSky && child !== destinationVista) {
-        // Distant Europa ruins rise with the canyon, instead of popping into
-        // the viewport midway through the approach. Full world pose at 25s.
-        child.position.y = state.terrainLift ?? 0;
+        // Never overwrite an authored object's base position. The glacier and
+        // distant ruins arrive together, preserving parallax and their layout.
+        const initialY =
+          child.userData.europaArrivalBaseY ??
+          (child.userData.europaArrivalBaseY = child.position.y);
+        child.position.y = initialY + (state.terrainLift ?? 0);
       }
     }
     if (destinationIndex === 3) {
