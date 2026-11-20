@@ -176,3 +176,23 @@ test('Orbit-9 free roaming has solid reactor walls and an interactive minimap wi
   const saved = await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'));
   expect(saved).toBeNull();
 });
+
+test('selected Five Cats pilot is reused in Orbit-9 instead of a stock cat', async ({
+  page,
+}, info) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'hangar');
+  await page.locator('#pilot-bob').click();
+  await expect(page.locator('#squadSelection')).toHaveAttribute('data-pilot', 'bob');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+  const model = await page.evaluate(() => window.__novaExploreQA.snapshot().pilotModel);
+  expect(model).toBe('orbit9-player-bob');
+  await expect(page.locator('#explorationStatus')).toContainText('BOB');
+  await page.screenshot({
+    path: info.outputPath('orbit9-bob-3d-' + info.project.name + '.png'),
+  });
+  await page.locator('#exploreExit').click();
+});
