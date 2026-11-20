@@ -1,0 +1,37 @@
+name: Orbit-9 Devastador art RC QA build
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-walk-and-gamepad-20261120
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.event.pull_request.head.ref == 'feat/orbit9-devastador-art-pass-20261120' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format art and prepare synchronized browser build
+        run: |
+          npx prettier --write src/orbit9-stage-art.js src/exploration-preview.js tests/orbit9-stage-art.test.mjs tests/browser/orbit9-stage-art.spec.mjs CHANGELOG.md releases/v1.27.157.md package.json package-lock.json
+          npm run build
+          npm run build:check
+          node --test tests/orbit9-stage-art.test.mjs
+      - name: Commit build and remove QA-only workflow
+        run: |
+          git config user.name "Nova Wing QA Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/orbit9-stage-art.js src/exploration-preview.js tests/orbit9-stage-art.test.mjs tests/browser/orbit9-stage-art.spec.mjs CHANGELOG.md releases/v1.27.157.md package.json package-lock.json
+          git rm .github/workflows/orbit9-art-rc-sync.yml
+          git diff --cached --quiet || git commit -m "chore(orbit9): format and synchronize v1.27.157 visual candidate"
+          git push origin HEAD:feat/orbit9-devastador-art-pass-20261120
