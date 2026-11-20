@@ -35,7 +35,14 @@ for (const { index, theme, label } of destinations) {
       expect(world.heroX).toBeLessThan(-103);
       expect(world.heroDepth).toBeGreaterThanOrEqual(-750);
       expect(world.heroDepth).toBeLessThanOrEqual(-450);
+      expect(world.canyon).not.toBeNull();
+      expect(world.canyon.visible).toBe(true);
+      expect(world.canyon.cyanCount).toBe(22);
+      expect(world.canyon.cliffs).toBe(24);
+      expect(world.canyon.bridges).toBe(8);
+      expect(world.canyon.gateway).toBe(true);
       await page.screenshot({ path: info.outputPath('qa168-europa-hero-vault-30s.png') });
+      await page.screenshot({ path: info.outputPath('qa168-europa-premium-crystal-canyon.png') });
     }
     expect(world?.visualOnly).toBe(true);
     expect(world.structures.length).toBeGreaterThanOrEqual(5);
