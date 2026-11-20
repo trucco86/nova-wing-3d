@@ -5,11 +5,56 @@ import { pilotAt, shipColorAt } from './pilots.js';
 // Adapt the existing lightweight Three.js cats to the approved character
 // spotlights. Palette and face identity are independent of gameplay bonuses.
 export const PILOT_ART_DIRECTION = Object.freeze({
-  bia: Object.freeze({ suit: '#26313b', armor: '#dde5e5', trim: '#a5bbc1', light: '#48dfd5', iris: '#e4ad4a', ear: 1.03, muzzle: 0.94, harness: '#a2a4a0' }),
-  bob: Object.freeze({ suit: '#20252e', armor: '#808b93', trim: '#66747e', light: '#40cbd9', iris: '#d9ac53', ear: 0.9, muzzle: 1.09, harness: '#958575' }),
-  christopher: Object.freeze({ suit: '#1c222d', armor: '#87949d', trim: '#7e8b9b', light: '#3b9de4', iris: '#d9a74f', ear: 0.86, muzzle: 1.13, harness: '#8f8174' }),
-  calvin: Object.freeze({ suit: '#273535', armor: '#8b9d85', trim: '#a4b5a0', light: '#6ee5a5', iris: '#e8b457', ear: 1.22, muzzle: 0.88, harness: '#8b9275' }),
-  jenifer: Object.freeze({ suit: '#29454c', armor: '#b2ced0', trim: '#cadbd9', light: '#55d4d1', iris: '#80bf94', ear: 1.16, muzzle: 0.97, harness: '#957f69' }),
+  bia: Object.freeze({
+    suit: '#26313b',
+    armor: '#dde5e5',
+    trim: '#a5bbc1',
+    light: '#48dfd5',
+    iris: '#e4ad4a',
+    ear: 1.03,
+    muzzle: 0.94,
+    harness: '#a2a4a0',
+  }),
+  bob: Object.freeze({
+    suit: '#20252e',
+    armor: '#808b93',
+    trim: '#66747e',
+    light: '#40cbd9',
+    iris: '#d9ac53',
+    ear: 0.9,
+    muzzle: 1.09,
+    harness: '#958575',
+  }),
+  christopher: Object.freeze({
+    suit: '#1c222d',
+    armor: '#87949d',
+    trim: '#7e8b9b',
+    light: '#3b9de4',
+    iris: '#d9a74f',
+    ear: 0.86,
+    muzzle: 1.13,
+    harness: '#8f8174',
+  }),
+  calvin: Object.freeze({
+    suit: '#273535',
+    armor: '#8b9d85',
+    trim: '#a4b5a0',
+    light: '#6ee5a5',
+    iris: '#e8b457',
+    ear: 1.22,
+    muzzle: 0.88,
+    harness: '#8b9275',
+  }),
+  jenifer: Object.freeze({
+    suit: '#29454c',
+    armor: '#b2ced0',
+    trim: '#cadbd9',
+    light: '#55d4d1',
+    iris: '#80bf94',
+    ear: 1.16,
+    muzzle: 0.97,
+    harness: '#957f69',
+  }),
 });
 
 // Preview resources are private: disposing them must never affect the live fighter.

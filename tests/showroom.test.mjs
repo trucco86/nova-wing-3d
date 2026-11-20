@@ -81,7 +81,9 @@ test('approved cat art identities are expressed by distinct 3D face, visor and s
     assert.ok(model.getObjectByName('pilot-art-shoulder-armor'));
     assert.ok(model.getObjectByName('ear').scale.y > 0.8);
     let parts = 0;
-    model.traverse((part) => { if (part.isMesh) parts++; });
+    model.traverse((part) => {
+      if (part.isMesh) parts++;
+    });
     assert.ok(parts < 100, 'cinematic pilot must remain lightweight for mobile');
     disposeShowroomModel(model);
   }
