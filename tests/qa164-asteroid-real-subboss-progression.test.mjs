@@ -156,7 +156,7 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
 
   // Use normal orbit controls and the existing boss-damage budget. Direct
   // damageBoss calls exercise generator and core gates, NOT projectile aim.
-  state = flyUntil(h, (s) => s.bossAge >= 3.1, 9, 'arrival shield expiration');
+  flyUntil(h, (s) => s.bossAge >= 3.1, 9, 'arrival shield expiration');
   for (let index = 0; index < 2; index++) {
     let struck = false;
     for (let i = 0; i < 700; i++) {
