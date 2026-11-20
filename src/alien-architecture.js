@@ -4,6 +4,7 @@ import * as T from 'three';
 // All architecture is background-only; it never becomes a hidden collision wall.
 export const ANCIENT_WORLD_THEMES = Object.freeze({
   sun: Object.freeze({
+    structure: 'sulfur-pyramids',
     site: 'venus-sulfur-temples',
     stone: '#755849',
     base: '#493d3a',
@@ -13,6 +14,7 @@ export const ANCIENT_WORLD_THEMES = Object.freeze({
     height: 1.05,
   }),
   ice: Object.freeze({
+    structure: 'glacial-vaults',
     site: 'europa-buried-vaults',
     stone: '#54778b',
     base: '#334e63',
@@ -22,6 +24,7 @@ export const ANCIENT_WORLD_THEMES = Object.freeze({
     height: 0.78,
   }),
   nebula: Object.freeze({
+    structure: 'biomechanical-spires',
     site: 'neptune-ancient-spires',
     stone: '#375587',
     base: '#202f54',
@@ -31,6 +34,7 @@ export const ANCIENT_WORLD_THEMES = Object.freeze({
     height: 1.18,
   }),
   void: Object.freeze({
+    structure: 'gravity-monoliths',
     site: 'orion-gravity-monuments',
     stone: '#3d4b66',
     base: '#1a223c',
@@ -40,6 +44,7 @@ export const ANCIENT_WORLD_THEMES = Object.freeze({
     height: 1.36,
   }),
   throne: Object.freeze({
+    structure: 'obsidian-citadel-pyramids',
     site: 'titan-obsidian-citadel',
     stone: '#64504a',
     base: '#342e38',
@@ -134,28 +139,38 @@ export function createAlienArchitecture(theme, quality = 'high') {
       depth: 76 * s,
     };
   });
-  // Square-based pyramids read as genuine architecture, not the cylindrical
-  // cones and randomly rotated floating triangles from the prototype.
-  const pyramid = new T.ConeGeometry(1, 1, 4);
-  pyramid.rotateY(Math.PI / 4);
-  createBatch(root, profile.site + '-pyramids', pyramid, stone, 10, (i) => {
+  // Different civilisations need different silhouettes, not one pyramid
+  // duplicated with five material tints. Venus/Titan own stone pyramids,
+  // Europa frozen vaults, Neptune bio-structures and Orion monolith arrays.
+  const primaryShape =
+    theme === 'ice'
+      ? new T.OctahedronGeometry(1, 0)
+      : theme === 'nebula'
+        ? new T.DodecahedronGeometry(1, 0)
+        : theme === 'void'
+          ? new T.CylinderGeometry(0.54, 1, 1, 5)
+          : new T.ConeGeometry(1, 1, 4);
+  if (theme === 'sun' || theme === 'throne') primaryShape.rotateY(Math.PI / 4);
+  const structureHeight = (theme === 'void' ? 94 : theme === 'nebula' ? 75 : 60) * profile.height;
+  const structureWidth = theme === 'void' ? 35 : theme === 'nebula' ? 39 : 53;
+  createBatch(root, profile.site + '-' + profile.structure, primaryShape, stone, 10, (i) => {
     const s = widthAt(i);
     return {
       ...locations[i],
-      y: locations[i].y + (15 + 28 * profile.height) * s,
-      width: 53 * s,
-      height: 60 * profile.height * s,
-      depth: 53 * s,
+      y: locations[i].y + (15 + structureHeight / 2) * s,
+      width: structureWidth * s,
+      height: structureHeight * s,
+      depth: structureWidth * s,
     };
   });
-  createBatch(root, profile.site + '-capstones', new T.ConeGeometry(1, 1, 4), trim, 10, (i) => {
+  createBatch(root, profile.site + '-capstones', new T.OctahedronGeometry(1, 0), trim, 10, (i) => {
     const s = widthAt(i);
     return {
       ...locations[i],
-      y: locations[i].y + (15 + 57 * profile.height) * s,
-      width: 11 * s,
-      height: 12 * s,
-      depth: 11 * s,
+      y: locations[i].y + (15 + structureHeight) * s,
+      width: 9 * s,
+      height: 9 * s,
+      depth: 9 * s,
       yaw: Math.PI / 4,
     };
   });
