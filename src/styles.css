@@ -12271,7 +12271,10 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
     linear-gradient(90deg, #509bb230 1px, transparent 1px),
     linear-gradient(0deg, #509bb230 1px, transparent 1px),
     radial-gradient(ellipse, #154153, #05131e 77%);
-  background-size: 20% 20%, 20% 20%, auto;
+  background-size:
+    20% 20%,
+    20% 20%,
+    auto;
 }
 #explorationMapSignals {
   position: absolute;

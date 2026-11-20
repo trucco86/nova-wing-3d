@@ -5,9 +5,23 @@ export const ORBIT9_SPAWN = Object.freeze({ x: 0, z: 12 });
 
 export const ORBIT9_DISTRICTS = Object.freeze([
   Object.freeze({ id: 'central', name: 'ÁTRIO DA ESTAÇÃO', x: 0, z: -38, width: 112, depth: 116 }),
-  Object.freeze({ id: 'science', name: 'LABORATÓRIO DE SINAIS', x: -34, z: -28, width: 43, depth: 55 }),
+  Object.freeze({
+    id: 'science',
+    name: 'LABORATÓRIO DE SINAIS',
+    x: -34,
+    z: -28,
+    width: 43,
+    depth: 55,
+  }),
   Object.freeze({ id: 'reactor', name: 'PRAÇA DO REATOR', x: 34, z: -56, width: 43, depth: 65 }),
-  Object.freeze({ id: 'archive', name: 'ARQUIVOS DA ORBITA', x: -33, z: -81, width: 42, depth: 29 }),
+  Object.freeze({
+    id: 'archive',
+    name: 'ARQUIVOS DA ORBITA',
+    x: -33,
+    z: -81,
+    width: 42,
+    depth: 29,
+  }),
 ]);
 
 // Visual landmark bodies are physical, but decorations and clues are not.
@@ -30,8 +44,7 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 export function orbit9Blocked(x, z, radius = ORBIT9_PLAYER_RADIUS) {
   return ORBIT9_OBSTACLES.some(
     (solid) =>
-      Math.abs(x - solid.x) < solid.halfX + radius &&
-      Math.abs(z - solid.z) < solid.halfZ + radius,
+      Math.abs(x - solid.x) < solid.halfX + radius && Math.abs(z - solid.z) < solid.halfZ + radius,
   );
 }
 export function orbit9Move(x, z, dx, dz, radius = ORBIT9_PLAYER_RADIUS) {

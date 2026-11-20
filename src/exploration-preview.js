@@ -214,15 +214,7 @@ export function installOrbit9ExplorationPreview(
     // Connected free-roam districts replace the former mandatory corridor.
     const districtMats = [mat('#193c4c'), mat('#37404d'), mat('#283b43')];
     ORBIT9_DISTRICTS.slice(1).forEach((district, i) => {
-      makeBox(
-        district.width,
-        0.12,
-        district.depth,
-        districtMats[i],
-        district.x,
-        -0.08,
-        district.z,
-      );
+      makeBox(district.width, 0.12, district.depth, districtMats[i], district.x, -0.08, district.z);
     });
     for (const side of [-1, 1]) {
       makeBox(2, 9, 128, dark, side * 58, 4, -41);
@@ -498,10 +490,13 @@ export function installOrbit9ExplorationPreview(
     moveTo(x, z) {
       if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
       if (
-        x < ORBIT9_BOUNDS.minX || x > ORBIT9_BOUNDS.maxX ||
-        z < ORBIT9_BOUNDS.minZ || z > ORBIT9_BOUNDS.maxZ ||
+        x < ORBIT9_BOUNDS.minX ||
+        x > ORBIT9_BOUNDS.maxX ||
+        z < ORBIT9_BOUNDS.minZ ||
+        z > ORBIT9_BOUNDS.maxZ ||
         orbit9Blocked(x, z)
-      ) return false;
+      )
+        return false;
       playerX = x;
       playerZ = z;
       updateUI();

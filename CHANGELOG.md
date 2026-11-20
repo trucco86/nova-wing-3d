@@ -8,7 +8,6 @@
 - Developer/QA continua isolado da campanha, sem salvar pistas ou pontuação, login ou ranking.
 - Testes determinísticos e Playwright de navegação e controles; revisão visual mobile e CI completa obrigatórias antes de integração.
 
-
 ## 1.27.153 — Abertura cinematográfica de lançamento da Cidade das Máquinas
 
 - Apresentação em 3D de cinco segundos com hangar reconhecível, quatro planos claros, portas abrindo, ignição e decolagem dos Five Cats.
