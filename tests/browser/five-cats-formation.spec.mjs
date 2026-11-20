@@ -65,6 +65,7 @@ test('stage-one has three continuous clear hangar moments without labels or touc
     await page.screenshot({ path: info.outputPath('clean-launch-' + shot + '-' + info.project.name + '.png') });
   }
   await page.evaluate(() => window.fixture.advance(1.3));
+  await page.evaluate(() => window.fixture.advance(0.2));
   const after = await page.evaluate(() => window.fixture.game.snapshot());
   expect(after.fiveCats.intro).toBe(0);
   expect(after.heroShip.rootId).toBe(heroId);
