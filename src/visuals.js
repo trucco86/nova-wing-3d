@@ -1936,7 +1936,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         continue;
       // The ice corridor is decorative, not a boss hazard. Arrival updates
       // must never restore foreground objects while Colossus is fighting.
-      if (europaBossArenaActive && child.userData.europaForeground) {
+      if (europaBossArenaActive &&
+          (child.userData.europaForeground || child.name === 'alien-architecture-ice')) {
         child.visible = false;
         continue;
       }
@@ -2141,6 +2142,8 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (surface) surface.visible = !europaBossArenaActive && !europaTunnelActive;
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
+      const buriedVaults = sectorScenery.getObjectByName('alien-architecture-ice');
+      if (buriedVaults) buriedVaults.visible = !europaBossArenaActive;
       // Preserve the glacier skyline, but move its near spires to the second
       // and third planes so none crosses the camera-to-boss sightline.
       if (destinationLandmarks) destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
@@ -2489,10 +2492,64 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
+      // Preserve the old world's recognisable landmarks, but remodel their
+      // silhouettes so they are not another field of glowing torus rings.
+      // All three remain distant, visual-only and clear of the pilot lane.
+      if (dynamicFlight && sceneryTheme === 'nebula') {
+        const spire = new T.Group();
+        spire.name = 'bio-nebula-spire';
+        spire.userData.visualOnly = true;
+        spire.userData.fixedSky = true;
+        spire.position.set(-205, -22, -565);
+        const trunk = new T.Mesh(new T.CylinderGeometry(11, 26, 142, 7), mat);
+        trunk.position.y = 66;
+        spire.add(trunk);
+        for (let i = 0; i < 3; i++) {
+          const blossom = new T.Mesh(new T.IcosahedronGeometry(17 + i * 5, 1), light);
+          blossom.position.set(i % 2 ? 27 : -22, 80 + i * 31, (i - 1) * 12);
+          blossom.scale.set(0.78, 1.4, 0.74);
+          spire.add(blossom);
+        }
+        sectorScenery.add(spire);
+      }
+      if (dynamicFlight && sceneryTheme === 'void') {
+        const lens = new T.Group();
+        lens.name = 'orion-gravitational-lens';
+        lens.userData.visualOnly = true;
+        lens.userData.fixedSky = true;
+        lens.position.set(220, -18, -665);
+        const core = new T.Mesh(new T.OctahedronGeometry(45, 0), mat);
+        core.position.y = 90;
+        core.scale.set(0.8, 1.65, 0.8);
+        lens.add(core);
+        for (const side of [-1, 1]) {
+          const shard = new T.Mesh(new T.TetrahedronGeometry(24, 0), light);
+          shard.position.set(side * 77, 114, side * 8);
+          shard.rotation.z = side * 0.3;
+          lens.add(shard);
+        }
+        sectorScenery.add(lens);
+      }
+      if (dynamicFlight && sceneryTheme === 'throne') {
+        const gate = new T.Group();
+        gate.name = 'marvin-fortress-gate';
+        gate.userData.visualOnly = true;
+        gate.userData.fixedSky = true;
+        gate.position.set(0, -12, -740);
+        for (const side of [-1, 1]) {
+          gate.add(box(23, 155, 34, mat, side * 120, 66, 0));
+          gate.add(box(4, 105, 35, light, side * 121, 80, 5));
+        }
+        gate.add(box(263, 18, 43, mat, 0, 150, 0));
+        gate.add(box(78, 8, 44, light, 0, 163, 0));
+        sectorScenery.add(gate);
+      }
       // Dispose only unattached materials, including in missions that now
       // use their own independent instanced architecture.
-      if (!['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme)) mat.dispose();
-      if (!(dynamicFlight && sceneryTheme === 'asteroids')) light.dispose();
+      if (!['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme) &&
+          !(dynamicFlight && ['void', 'throne'].includes(sceneryTheme))) mat.dispose();
+      if (!(dynamicFlight && ['asteroids', 'nebula', 'void', 'throne'].includes(sceneryTheme)))
+        light.dispose();
       if (dynamicFlight) {
         // Earth, Mars and the asteroid already have their own authored arrivals.
         if (DESTINATION_PROFILES[destinationIndex]) {
