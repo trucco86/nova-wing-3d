@@ -4405,11 +4405,14 @@ export function createGame({
       if (contact.collided) asteroidImpact();
     }
     // Keep transformation and flight-mech readable even during the initial
-    // invulnerability flicker. Damage protection is unchanged; ordinary ship
-    // mode retains the original blink feedback when invulnerable.
+    // invulnerability flicker. The hero must also remain continuous while the
+    // cinematic releases the real ship to the player: no one-frame disappearance
+    // at the handoff, even when invulnerability is still counting down.
+    // Damage protection is unchanged; blinking resumes after the short handoff.
     player.visible =
       cameraMode !== 'cockpit' &&
-      (robotMode ||
+      ((dynamicFlight && sectorIndex === 0 && elapsed < 0.3) ||
+        robotMode ||
         robotTransition > 0 ||
         boosting ||
         invuln <= 0 ||
