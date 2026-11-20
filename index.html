@@ -12136,6 +12136,93 @@ body.intermission-active #shop #nextSector {
   margin: 0;
 }
 
+/* Character-specific visual framing: preserve ears, readable eyes and the
+ * costume silhouette across 54px radio avatars, shallow rank cards and
+ * large hangar art. Bob always uses the corrected solo artwork. */
+.showroom-web #squadSelection[data-pilot='bia'] {
+  --nw-hero-x: 85%;
+  --nw-hero-y: 4%;
+  --nw-profile-x: 65%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='bob'] {
+  --nw-hero-x: 50%;
+  --nw-hero-y: 7%;
+  --nw-profile-x: 50%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='christopher'] {
+  --nw-hero-x: 28%;
+  --nw-hero-y: 3%;
+  --nw-profile-x: 40%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='calvin'] {
+  --nw-hero-x: 90%;
+  --nw-hero-y: 10%;
+  --nw-profile-x: 65%;
+  --nw-profile-y: 5%;
+}
+.showroom-web #squadSelection[data-pilot='jenifer'] {
+  --nw-hero-x: 18%;
+  --nw-hero-y: 14%;
+  --nw-profile-x: 38%;
+  --nw-profile-y: 8%;
+}
+.showroom-web #squadSelection[data-pilot] .hangar-art-portrait {
+  background-size: 128% auto;
+  background-position: var(--nw-hero-x, 50%) var(--nw-hero-y, 5%);
+}
+.showroom-web #squadSelection[data-pilot] .profile-portrait {
+  background-size: auto 155%;
+  background-position: var(--nw-profile-x, 50%) var(--nw-profile-y, 0%);
+}
+
+/* Small identity portraits are face crops, never whole-body thumbnails. */
+.showroom-web #pilot-bia .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bia'],
+#comms #commsPortrait[data-pilot='bia'],
+#cinematicPortrait[data-pilot='bia'],
+.cat-service-card[data-pilot='bia'] .cat-service-avatar {
+  background-position: 70% 0%;
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'],
+#comms #commsPortrait[data-pilot='bob'],
+#cinematicPortrait[data-pilot='bob'],
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-position: 50% 0%;
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'],
+#comms #commsPortrait[data-pilot='christopher'],
+#cinematicPortrait[data-pilot='christopher'],
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-position: 40% 0%;
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'],
+#comms #commsPortrait[data-pilot='calvin'],
+#cinematicPortrait[data-pilot='calvin'],
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-position: 72% 0%;
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'],
+#comms #commsPortrait[data-pilot='jenifer'],
+#cinematicPortrait[data-pilot='jenifer'],
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-position: 35% 3%;
+}
+.showroom-web .pilot-roster .cat-avatar,
+.showroom-web .cat-avatar[data-pilot],
+#comms #commsPortrait[data-pilot],
+#cinematicPortrait[data-pilot],
+.cat-service-card[data-pilot] .cat-service-avatar {
+  background-size: 175% auto;
+  background-repeat: no-repeat;
+}
+
     </style>
   </head>
   <body>
