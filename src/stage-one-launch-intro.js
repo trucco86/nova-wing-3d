@@ -129,7 +129,13 @@ export function createFirstStageLaunchIntro(scene, camera) {
     depthWrite: false,
     side: T.DoubleSide,
   });
-  const materials = [metal, panel, cyan, amber, glass, beamGlow];
+  const pulseAmber = new T.MeshBasicMaterial({
+    color: '#ff9f5b',
+    transparent: true,
+    opacity: 0.9,
+    toneMapped: false,
+  });
+  const materials = [metal, panel, cyan, amber, glass, beamGlow, pulseAmber];
   const meshes = [];
   const add = (name, size, at, material = metal) => {
     const mesh = new T.Mesh(new T.BoxGeometry(...size), material);
@@ -217,6 +223,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
   repeat('launch-gate-approach-markers', [4.5, 0.08, 0.28],
     [-42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2].flatMap(
       (z) => [[-11, -6.08, z], [11, -6.08, z]]), amber);
+  repeat('launch-ignition-beacons', [1.2, 0.46, 0.7],
+    ribs.flatMap((z) => [[-18.4, 13.8, z], [18.4, 13.8, z]]), pulseAmber);
   // Fake soft volumetric spill using three translucent geometry cones.
   // No expensive shadow-casting spotlights or realtime post-processing.
   const shafts = new T.InstancedMesh(new T.ConeGeometry(3.2, 16, 8, 1, true),
@@ -261,6 +269,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
       rightDoor.position.x = 4.5 + frame.doors * 12.4;
       root.position.z = frame.corridorShift;
       root.userData.shot = frame.shot;
+      pulseAmber.opacity = 0.72 + 0.22 * Math.sin(frame.t * 9);
+      beamGlow.opacity = 0.05 + 0.025 * frame.departure;
       camera.position.set(frame.camera.x, frame.camera.y, frame.camera.z);
       camera.lookAt(frame.camera.aimX, frame.camera.aimY, frame.camera.aimZ);
       camera.rotateZ(frame.camera.roll);
@@ -273,6 +283,13 @@ export function createFirstStageLaunchIntro(scene, camera) {
     finish() {
       active = false;
       root.visible = false;
+      // Skipping during the optical push must not leave gameplay permanently
+      // zoomed-in or slightly banked.
+      camera.rotation.z = 0;
+      if (Math.abs(camera.fov - 60) > 0.001) {
+        camera.fov = 60;
+        camera.updateProjectionMatrix();
+      }
     },
     destroy() {
       scene.remove(root);
