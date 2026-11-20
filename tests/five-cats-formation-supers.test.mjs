@@ -91,7 +91,7 @@ test('new mission uses the actual active ship as leader, with four escorts', (t)
   assert.equal(first.fiveCats.playerIsLeader, true);
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
-  h.advance(4.1);
+  h.advance(SQUAD_INTRO_DURATION - 1 + 0.1);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.fiveCats.visible.length, 0);
@@ -113,7 +113,7 @@ test('skipping the optional story keeps stage-one hangar launch after campaign m
   assert.equal(h.game.snapshot().seconds, 0, 'mission clock cannot advance during launch');
   assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
   assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR|MOTORES|DECOLAGEM/);
-  h.advance(4);
+  h.advance(SQUAD_INTRO_DURATION - 1.2 + 0.1);
   assert.equal(h.game.snapshot().fiveCats.intro, 0);
   h.advance(0.2);
   assert.ok(h.game.snapshot().seconds > 0);
@@ -155,7 +155,7 @@ test('selected ship and paint stay on the same real fighter across the launch ha
     assert.equal(escort.shipModel, 'ship-model-' + profile.model);
     assert.equal(escort.paintedColor, new T.Color(shipColorAt(profile.color).color).getHexString());
   }
-  h.advance(4.1);
+  h.advance(SQUAD_INTRO_DURATION - 1.1 + 0.1);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.heroShip.visible, true);
