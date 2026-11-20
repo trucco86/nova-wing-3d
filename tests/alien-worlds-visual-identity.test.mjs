@@ -54,7 +54,7 @@ test('five distinct alien sites contain grounded instanced silhouettes, terraces
     const root = createAlienArchitecture(theme);
     assert.equal(root.name, 'alien-architecture-' + theme);
     assert.ok(root.userData.visualOnly);
-    assert.equal(root.children.length, 6);
+    assert.equal(root.children.length, theme === 'ice' ? 7 : 6);
     assert.ok(root.children.every((child) => child.isInstancedMesh && child.userData.visualOnly));
     assert.ok(
       root.children.some((child) => child.name.includes(ANCIENT_WORLD_THEMES[theme].structure)),
