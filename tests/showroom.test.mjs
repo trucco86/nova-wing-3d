@@ -28,6 +28,10 @@ test('showroom pilots preserve relative size, fur and head differences in finite
       cats.get('bob').getObjectByName('head').scale.y,
   );
   assert.ok(cats.get('calvin').scale.y < cats.get('bia').scale.y);
+  assert.equal(
+    cats.get('christopher').getObjectByName('fur').material.color.getHexString(),
+    '2b2930',
+  );
   assert.notEqual(
     cats.get('jenifer').getObjectByName('fur').material.color.getHex(),
     cats.get('bia').getObjectByName('fur').material.color.getHex(),
