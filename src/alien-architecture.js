@@ -258,14 +258,16 @@ export function createAlienArchitecture(theme, quality = 'high') {
       }),
       1,
       () => ({
-        x: -165,
+        // On a 390x844 portrait viewport the horizontal camera frustum is
+        // narrow. This offset keeps the portal in-frame, while its rightmost
+        // masonry remains strictly left of the x +/-72 combat corridor.
+        x: -108,
         y: 43,
-        // It begins deep in the landscape, approaches once and becomes a
-        // stable visual destination; a unique hero building must not loop.
-        z: -650,
-        width: 108,
+        // One stable approach: visible as an objective, not a looping prop.
+        z: -750,
+        width: 40,
         height: 116,
-        depth: 73,
+        depth: 59,
         yaw: 0.13,
       }),
     );
@@ -286,7 +288,7 @@ const FAR_DEPTH = -1700;
 const DEPTH_SPAN = 1825;
 const PARALLAX_RATE = 0.22;
 const HERO_APPROACH_RATE = 0.065;
-const HERO_NEAR_DEPTH = -285;
+const HERO_NEAR_DEPTH = -450;
 
 // Background ruins may loop after leaving the camera, but a unique mission
 // landmark must NEVER wrap into empty space or vanish at a random moment.
