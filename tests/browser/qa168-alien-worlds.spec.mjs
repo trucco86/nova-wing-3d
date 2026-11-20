@@ -23,7 +23,27 @@ for (const { index, theme, label } of destinations) {
     await page.evaluate(() => window.fixture.advance(7));
     await page.screenshot({ path: info.outputPath(`qa168-${label}-arrival.png`) });
 
-    await page.evaluate(() => window.fixture.advance(23));
+    if (theme === 'ice') {
+      // Inspect continuous arrival checkpoints instead of validating only
+      // 7s orbit and 30s full gameplay, which missed the broken black gap.
+      let previous = 7;
+      for (const second of [12, 16, 20, 24, 25]) {
+        await page.evaluate((dt) => window.fixture.advance(dt), second - previous);
+        const arrival = await page.evaluate(() => window.fixture.game.snapshot().europaSurface);
+        expect(arrival).toBeTruthy();
+        expect(arrival.orbitalVisible).toBe(false);
+        if (second >= 16 && second <= 24) {
+          expect(arrival.destinationGlobeVisible).toBe(true);
+        }
+        if (second === 20 || second === 24) expect(arrival.surfaceVisible).toBe(true);
+        if (second === 25) expect(arrival.destinationGlobeVisible).toBe(false);
+        await page.screenshot({ path: info.outputPath(`qa168-europa-entry-${second}s.png`) });
+        previous = second;
+      }
+      await page.evaluate(() => window.fixture.advance(5));
+    } else {
+      await page.evaluate(() => window.fixture.advance(23));
+    }
     const world = await page.evaluate(
       (chosenTheme) => window.fixture.alienWorldState(chosenTheme),
       theme,
