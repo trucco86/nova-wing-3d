@@ -1408,7 +1408,7 @@ export function createGame({
       if (node) node.inert = active;
     }
     if (active)
-      document.body.classList.remove('in-mission', 'stage-intro', 'boosting', 'reflex-boost');
+      document.body.classList.remove('in-mission', 'stage-intro', 'launch-cinematic', 'boosting', 'reflex-boost');
   }
   function showShop() {
     recordStageResult('cleared');
@@ -1727,6 +1727,9 @@ export function createGame({
     settingsOpen = false;
     document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
+    // Scope the HUD-free cinematic to stage ONE only. Every later stage
+    // retains its regular HUD and controls from the first gameplay frame.
+    document.body.classList.toggle('launch-cinematic', showLaunch);
     $('launchSkip').hidden = !showLaunch;
     stageIntroTime = firstStageIntro?.active ? SQUAD_INTRO_DURATION : 3;
     pickupFeedbackTime = 0;
@@ -3252,7 +3255,7 @@ export function createGame({
     firstStageIntro.finish();
     flightCamera.reset(player.position);
     stageIntroTime = 0;
-    document.body.classList.remove('stage-intro');
+    document.body.classList.remove('stage-intro', 'launch-cinematic');
     $('launchSkip').hidden = true;
     return true;
   }
@@ -3324,7 +3327,7 @@ export function createGame({
     stageIntroTime = 0;
     $('launchSkip').hidden = true;
     setIntermissionUI(false);
-    document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
+    document.body.classList.remove('in-mission', 'stage-intro', 'launch-cinematic', 'city-bright');
     document.body.classList.add('menu');
     for (const id of [
       'pauseMenu',
@@ -4517,6 +4520,8 @@ export function createGame({
       else {
         firstStageIntro?.finish();
         $('launchSkip').hidden = true;
+        document.body.classList.remove('launch-cinematic', 'stage-intro');
+        stageIntroTime = 0;
         // The cinematic never alters the gameplay camera's anchor or controls.
         flightCamera.reset(player.position);
       }
@@ -6402,7 +6407,8 @@ export function createGame({
     if (cinematic && state === 'menu') advanceCinematic(dt);
     if (state === 'playing' && stageIntroTime > 0) {
       stageIntroTime = Math.max(0, stageIntroTime - dt);
-      if (stageIntroTime === 0) document.body.classList.remove('stage-intro');
+      if (stageIntroTime === 0 && !firstStageIntro?.active)
+        document.body.classList.remove('stage-intro');
     }
     if (state === 'playing' && pickupFeedbackTime > 0) {
       pickupFeedbackTime = Math.max(0, pickupFeedbackTime - dt);
