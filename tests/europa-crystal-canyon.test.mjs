@@ -36,12 +36,33 @@ test('Europa crystal canyon has authored cliffs, cyan/violet shards and rooted a
       assert.ok(Math.abs(pos.x) >= 98, name + ' stays outside aiming lane');
     }
   }
+  // Check the actual transformed vertices, not merely the centre positions:
+  // taller foreground crystals can lean into the aiming lane on mobile.
+  for (const name of ['europa-canyon-crystal-cyan', 'europa-canyon-crystal-violet']) {
+    const crystals = root.getObjectByName(name);
+    const attribute = crystals.geometry.getAttribute('position');
+    let closeUpCount = 0;
+    for (let i = 0; i < crystals.count; i++) {
+      crystals.getMatrixAt(i, instance);
+      const centerZ = instance.elements[14];
+      if (centerZ >= -490) closeUpCount++;
+      for (let v = 0; v < attribute.count; v++) {
+        pos.fromBufferAttribute(attribute, v).applyMatrix4(instance);
+        assert.ok(Math.abs(pos.x) > 72, name + ' must not cover the active aiming lane');
+      }
+    }
+    assert.ok(closeUpCount >= 4, name + ' must have visible foreground clusters');
+  }
+  const cyanColors = root.getObjectByName('europa-canyon-crystal-cyan').geometry.getAttribute('color');
+  const violetColors = root.getObjectByName('europa-canyon-crystal-violet').geometry.getAttribute('color');
+  assert.ok(violetColors.getX(6) > cyanColors.getX(6), 'violet crystals need their own visible color palette');
   const cliffs = root.getObjectByName('europa-canyon-grounded-cliffs');
   assert.ok(cliffs.geometry.getAttribute('color'));
   assert.ok(root.getObjectByName('europa-canyon-crystal-cyan').geometry.getAttribute('color'));
   const gate = root.getObjectByName('europa-canyon-distant-alien-gateway');
   assert.ok(gate?.isGroup);
   assert.ok(gate.position.x >= 120);
+  assert.ok(gate.position.z >= -650, 'landmark must be close enough to read on portrait');
   assert.equal(gate.children.length, 2);
   assert.ok(gate.getObjectByName('europa-canyon-anchored-broken-gateway')?.isMesh);
   assert.ok(gate.getObjectByName('europa-canyon-suspended-reactor')?.isMesh);
@@ -82,6 +103,13 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   const ground = scene.getObjectByName('launch-ground');
   assert.ok(ground.material.fragmentShader.includes('fissure'));
   assert.ok(ground.material.fragmentShader.includes('channel'));
+  assert.ok(ground.material.fragmentShader.includes('iceTile'));
+  assert.ok(ground.material.fragmentShader.includes('tileEdges'));
+  assert.equal(
+    ground.material.fragmentShader.includes('sin(p.y*.047+sin(p.x*.12)'),
+    false,
+    'remove the swirling puddle pattern from the frozen channel',
+  );
   assert.equal(canyon.getObjectByName('europa-canyon-crystal-cyan').visible, true);
   assert.equal(world.setEuropaTunnel(true), true);
   assert.equal(surface.visible, false);
