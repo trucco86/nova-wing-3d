@@ -1,0 +1,36 @@
+name: QA168 temporary ice-floor regression bundle sync
+on:
+  push:
+    branches:
+      - feat/alien-worlds-visual-identity-20261120
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/alien-worlds-visual-identity-20261120
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format shader and Europa tests
+        run: npx prettier --write src/visuals.js tests/europa-crystal-canyon.test.mjs
+      - name: Rebuild synchronized QA candidate HTML
+        run: npm run build
+      - name: Focused Europa environment tests
+        run: node --test tests/europa-crystal-canyon.test.mjs tests/europa-surface.test.mjs tests/europa-boss-arena.test.mjs tests/qa118-premium-worlds.test.mjs
+      - name: Commit generated bundle back to the isolated branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/visuals.js tests/europa-crystal-canyon.test.mjs index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(QA168): synchronize naturally fractured ice floor and unobstructed canyon"
+            git push origin HEAD:feat/alien-worlds-visual-identity-20261120
+          fi
