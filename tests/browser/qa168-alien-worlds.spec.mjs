@@ -32,9 +32,9 @@ for (const { index, theme, label } of destinations) {
     expect(world?.visible).toBe(true);
     if (theme === 'ice') {
       expect(world.heroBatchCount).toBe(1);
-      expect(world.heroX).toBeLessThan(-150);
-      expect(world.heroDepth).toBeGreaterThanOrEqual(-650);
-      expect(world.heroDepth).toBeLessThanOrEqual(-285);
+      expect(world.heroX).toBeLessThan(-103);
+      expect(world.heroDepth).toBeGreaterThanOrEqual(-750);
+      expect(world.heroDepth).toBeLessThanOrEqual(-450);
       await page.screenshot({ path: info.outputPath('qa168-europa-hero-vault-30s.png') });
     }
     expect(world?.visualOnly).toBe(true);
