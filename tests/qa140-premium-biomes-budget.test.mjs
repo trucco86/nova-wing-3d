@@ -69,7 +69,7 @@ test('QA140: Europa glacial geometry retains vertex and draw budget', () => {
   assert.ok(geo.index.count >= 150);
   geo.dispose();
   const root = createEuropaSurface();
-  assert.equal(root.children.length, 3);
+  assert.equal(root.children.length, 4);
   const snow = root.getObjectByName('europa-windborne-ice-snow');
   assert.equal(snow.geometry.getAttribute('position').count, 84);
   root.getObjectByName = () => {
