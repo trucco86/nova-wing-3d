@@ -10,6 +10,11 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   await page.locator('#developerPanel summary').click();
   await page.locator('#developerExplore').click();
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
+  // The initial transmission toast already auto-hides during real gameplay.
+  // Suppress that transient overlay for unobstructed architecture screenshots.
+  await page.locator('#explorationStatus').evaluate((node) => {
+    node.hidden = true;
+  });
 
   const state = await page.evaluate(() => window.__novaExploreQA.snapshot());
   expect(state.stageArt.name).toBe('orbit9-devastador-stage-art');
