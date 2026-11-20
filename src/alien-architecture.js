@@ -164,16 +164,23 @@ export function createAlienArchitecture(theme, quality = 'high') {
   });
   const structureHeight = (theme === 'void' ? 94 : theme === 'nebula' ? 75 : 60) * profile.height;
   const structureWidth = theme === 'void' ? 35 : theme === 'nebula' ? 39 : 53;
-  createBatch(root, profile.site + '-' + profile.structure, primaryShape, monumentMaterial, 10, (i) => {
-    const s = widthAt(i);
-    return {
-      ...locations[i],
-      y: locations[i].y + (15 + structureHeight / 2) * s,
-      width: structureWidth * s,
-      height: structureHeight * s,
-      depth: structureWidth * s,
-    };
-  });
+  createBatch(
+    root,
+    profile.site + '-' + profile.structure,
+    primaryShape,
+    monumentMaterial,
+    10,
+    (i) => {
+      const s = widthAt(i);
+      return {
+        ...locations[i],
+        y: locations[i].y + (15 + structureHeight / 2) * s,
+        width: structureWidth * s,
+        height: structureHeight * s,
+        depth: structureWidth * s,
+      };
+    },
+  );
   createBatch(root, profile.site + '-capstones', new T.OctahedronGeometry(1, 0), trim, 10, (i) => {
     const s = widthAt(i);
     return {

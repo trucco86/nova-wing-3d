@@ -60,8 +60,7 @@ export function createAlienMonumentGeometry(theme) {
     add(new T.ConeGeometry(0.35, 0.31, 4), 1, { y: 0.32, ry: Math.PI / 4 });
     block(0, 0, -0.16, 0.35, 0.17, 0.32, 0.09);
     block(3, 0, -0.16, 0.407, 0.12, 0.24, 0.02);
-    for (const side of [-1, 1])
-      block(2, side * 0.37, -0.29, 0.31, 0.18, 0.27, 0.2);
+    for (const side of [-1, 1]) block(2, side * 0.37, -0.29, 0.31, 0.18, 0.27, 0.2);
   } else if (theme === 'ice') {
     // Europa: a vault rooted into the glacier; frozen ribs enclose an
     // excavated entry. No free-floating white cones or duplicated mountains.

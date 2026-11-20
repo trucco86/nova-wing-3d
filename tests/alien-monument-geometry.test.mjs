@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
-import { ALIEN_MONUMENT_PARTS, createAlienMonumentGeometry } from '../src/alien-monument-geometry.js';
+import {
+  ALIEN_MONUMENT_PARTS,
+  createAlienMonumentGeometry,
+} from '../src/alien-monument-geometry.js';
 import { ANCIENT_WORLD_THEMES, createAlienArchitecture } from '../src/alien-architecture.js';
 import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
@@ -23,7 +26,9 @@ test('five authored alien monuments use indexed vertex-coloured PBR silhouettes 
     fingerprints.add(fingerprint);
     const root = createAlienArchitecture(theme);
     assert.equal(root.children.length, 6);
-    const primary = root.getObjectByName(ANCIENT_WORLD_THEMES[theme].site + '-' + ANCIENT_WORLD_THEMES[theme].structure);
+    const primary = root.getObjectByName(
+      ANCIENT_WORLD_THEMES[theme].site + '-' + ANCIENT_WORLD_THEMES[theme].structure,
+    );
     assert.ok(primary?.isInstancedMesh);
     assert.equal(primary.count, 10);
     assert.equal(primary.material.vertexColors, true);
