@@ -28,7 +28,7 @@ export const PILOT_PROFILES = [
   },
   {
     id: 'christopher',
-    fur: '#454046',
+    fur: '#2b2930',
     pawScale: 1.22,
     name: 'CHRISTOPHER',
     role: 'ARTILHEIRO PESADO',
