@@ -204,36 +204,94 @@ export function createFirstStageLaunchIntro(scene, camera) {
   // Repeating architectural rhythm: high gantries, upper observation galleries,
   // side columns and floor slabs create a long, enclosed perspective.
   const ribs = [-44, -32, -20, -8, 4, 16, 28, 39];
-  repeat('launch-ceiling-crossbeams', [39, 0.85, 1.35],
-    ribs.map((z) => [0, 14.6, z]), panel);
-  repeat('launch-ceiling-light-grid', [18, 0.16, 0.62],
-    ribs.map((z) => [0, 14.08, z - 1]), cyan);
-  repeat('launch-side-gantry-walkways', [4.2, 0.58, 91],
-    [[-18.8, 5.7, -8], [18.8, 5.7, -8]], panel);
-  repeat('launch-side-gantry-rail', [0.21, 2.2, 91],
-    [[-17.4, 7.2, -8], [17.4, 7.2, -8]], amber);
-  repeat('launch-side-deck-glass', [0.12, 4.1, 78],
-    [[-20.88, 6.2, -10], [20.88, 6.2, -10]], glass);
-  repeat('launch-side-observation-columns', [1.6, 9.5, 1.25],
-    ribs.flatMap((z) => [[-20.5, 6.8, z], [20.5, 6.8, z]]), panel);
-  repeat('launch-observation-led-stripes', [0.34, 5.8, 0.5],
-    ribs.flatMap((z) => [[-20.13, 6.4, z + 1], [20.13, 6.4, z + 1]]), cyan);
-  repeat('launch-floor-depth-seams', [39, 0.045, 0.2],
-    [...ribs, ...ribs.map((z) => z - 5.5)].map((z) => [0, -6.21, z]), panel);
-  repeat('launch-gate-approach-markers', [4.5, 0.08, 0.28],
-    [-42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2].flatMap(
-      (z) => [[-11, -6.08, z], [11, -6.08, z]]), amber);
-  repeat('launch-ignition-beacons', [1.2, 0.46, 0.7],
-    ribs.flatMap((z) => [[-18.4, 13.8, z], [18.4, 13.8, z]]), pulseAmber);
+  repeat(
+    'launch-ceiling-crossbeams',
+    [39, 0.85, 1.35],
+    ribs.map((z) => [0, 14.6, z]),
+    panel,
+  );
+  repeat(
+    'launch-ceiling-light-grid',
+    [18, 0.16, 0.62],
+    ribs.map((z) => [0, 14.08, z - 1]),
+    cyan,
+  );
+  repeat(
+    'launch-side-gantry-walkways',
+    [4.2, 0.58, 91],
+    [
+      [-18.8, 5.7, -8],
+      [18.8, 5.7, -8],
+    ],
+    panel,
+  );
+  repeat(
+    'launch-side-gantry-rail',
+    [0.21, 2.2, 91],
+    [
+      [-17.4, 7.2, -8],
+      [17.4, 7.2, -8],
+    ],
+    amber,
+  );
+  repeat(
+    'launch-side-deck-glass',
+    [0.12, 4.1, 78],
+    [
+      [-20.88, 6.2, -10],
+      [20.88, 6.2, -10],
+    ],
+    glass,
+  );
+  repeat(
+    'launch-side-observation-columns',
+    [1.6, 9.5, 1.25],
+    ribs.flatMap((z) => [
+      [-20.5, 6.8, z],
+      [20.5, 6.8, z],
+    ]),
+    panel,
+  );
+  repeat(
+    'launch-observation-led-stripes',
+    [0.34, 5.8, 0.5],
+    ribs.flatMap((z) => [
+      [-20.13, 6.4, z + 1],
+      [20.13, 6.4, z + 1],
+    ]),
+    cyan,
+  );
+  repeat(
+    'launch-floor-depth-seams',
+    [39, 0.045, 0.2],
+    [...ribs, ...ribs.map((z) => z - 5.5)].map((z) => [0, -6.21, z]),
+    panel,
+  );
+  repeat(
+    'launch-gate-approach-markers',
+    [4.5, 0.08, 0.28],
+    [-42, -38, -34, -30, -26, -22, -18, -14, -10, -6, -2, 2].flatMap((z) => [
+      [-11, -6.08, z],
+      [11, -6.08, z],
+    ]),
+    amber,
+  );
+  repeat(
+    'launch-ignition-beacons',
+    [1.2, 0.46, 0.7],
+    ribs.flatMap((z) => [
+      [-18.4, 13.8, z],
+      [18.4, 13.8, z],
+    ]),
+    pulseAmber,
+  );
   // Fake soft volumetric spill using three translucent geometry cones.
   // No expensive shadow-casting spotlights or realtime post-processing.
-  const shafts = new T.InstancedMesh(new T.ConeGeometry(3.2, 16, 8, 1, true),
-    beamGlow, 3);
+  const shafts = new T.InstancedMesh(new T.ConeGeometry(3.2, 16, 8, 1, true), beamGlow, 3);
   shafts.name = 'launch-roof-volumetric-light-shafts';
   shafts.userData.visualOnly = true;
   [-32, -5, 21].forEach((z, i) => {
-    matrix.compose(position.set(i === 1 ? -4 : 4, 8, z), quaternion,
-      scale.set(1, 1, 1));
+    matrix.compose(position.set(i === 1 ? -4 : 4, 8, z), quaternion, scale.set(1, 1, 1));
     shafts.setMatrixAt(i, matrix);
   });
   shafts.instanceMatrix.needsUpdate = true;

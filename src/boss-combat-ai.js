@@ -69,8 +69,15 @@ export function variedAdvancedBossAttack({
   cycle = 0,
   generators = [true, true],
 }) {
-  if (cycle <= 0 || cycle % 4 === 0 || !kind || kind !== previousKind ||
-      kind === 'barrage' || generators.every((alive) => alive === false)) return kind;
+  if (
+    cycle <= 0 ||
+    cycle % 4 === 0 ||
+    !kind ||
+    kind !== previousKind ||
+    kind === 'barrage' ||
+    generators.every((alive) => alive === false)
+  )
+    return kind;
   if (sector === 6) {
     if (kind === 'tentacle-grab') return 'tentacle-sweep';
     if (kind === 'tentacle-sweep') return 'tentacle-grab';

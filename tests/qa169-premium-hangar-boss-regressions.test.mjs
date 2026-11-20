@@ -3,11 +3,7 @@ import assert from 'node:assert/strict';
 import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { createBossModel, disposeBoss } from '../src/bosses.js';
-import {
-  chooseBossIntent,
-  variedAdvancedBossAttack,
-  bossMeleeHit,
-} from '../src/boss-combat-ai.js';
+import { chooseBossIntent, variedAdvancedBossAttack, bossMeleeHit } from '../src/boss-combat-ai.js';
 
 test('Hydra, Omega and Marvin vary repeated windup telegraphs without retargeting', () => {
   for (const [sector, repeated, alternate] of [
@@ -23,7 +19,10 @@ test('Hydra, Omega and Marvin vary repeated windup telegraphs without retargetin
   ]) {
     assert.equal(
       variedAdvancedBossAttack({
-        sector, kind: repeated, previousKind: repeated, cycle: 2,
+        sector,
+        kind: repeated,
+        previousKind: repeated,
+        cycle: 2,
         generators: [true, true],
       }),
       alternate,
@@ -31,31 +30,51 @@ test('Hydra, Omega and Marvin vary repeated windup telegraphs without retargetin
     );
     assert.equal(
       variedAdvancedBossAttack({
-        sector, kind: repeated, previousKind: repeated, cycle: 4,
+        sector,
+        kind: repeated,
+        previousKind: repeated,
+        cycle: 4,
         generators: [true, true],
       }),
-      repeated, 'every fourth cycle retains the authored ranged counter',
+      repeated,
+      'every fourth cycle retains the authored ranged counter',
     );
     assert.equal(
       variedAdvancedBossAttack({
-        sector, kind: repeated, previousKind: repeated, cycle: 2,
+        sector,
+        kind: repeated,
+        previousKind: repeated,
+        cycle: 2,
         generators: [false, false],
       }),
-      repeated, 'no destroyed weapon is resurrected for variety',
+      repeated,
+      'no destroyed weapon is resurrected for variety',
     );
   }
   const hydra = chooseBossIntent({
-    sector: 6, cycle: 2, playerX: 9, playerY: 30, previousKind: 'tentacle-grab',
+    sector: 6,
+    cycle: 2,
+    playerX: 9,
+    playerY: 30,
+    previousKind: 'tentacle-grab',
   });
   assert.equal(hydra.kind, 'tentacle-sweep');
   assert.deepEqual([hydra.targetX, hydra.targetY], [9, 30]);
   assert.equal(bossMeleeHit(hydra, { x: 90, y: 55 }), false);
   const omega = chooseBossIntent({
-    sector: 7, cycle: 3, playerX: 3, playerY: 12, previousKind: 'bite',
+    sector: 7,
+    cycle: 3,
+    playerX: 3,
+    playerY: 12,
+    previousKind: 'bite',
   });
   assert.equal(omega.kind, 'hammer-slam');
   const marvin = chooseBossIntent({
-    sector: 9, cycle: 3, playerX: 5, playerY: 11, previousKind: 'bite',
+    sector: 9,
+    cycle: 3,
+    playerX: 5,
+    playerY: 11,
+    previousKind: 'bite',
   });
   assert.equal(marvin.kind, 'barrage');
   assert.equal(marvin.originMesh, null, 'a core volley never pretends to come from a hidden claw');
@@ -86,10 +105,13 @@ test('Marvin final pilot has visible actual face, claws and two tentacles', () =
   }
   assert.ok(
     boss.getObjectByName('marvin-pitbull').getWorldPosition(new T.Vector3()).z > 15,
-    "Marvin’s face is in front of the black fighter, not hidden behind it",
+    'Marvin’s face is in front of the black fighter, not hidden behind it',
   );
   const originalWeaponIds = boss.userData.parts.map((part) => part.mesh.uuid);
-  assert.deepEqual(boss.userData.parts.map((part) => part.mesh.uuid), originalWeaponIds);
+  assert.deepEqual(
+    boss.userData.parts.map((part) => part.mesh.uuid),
+    originalWeaponIds,
+  );
   disposeBoss(boss);
 });
 
