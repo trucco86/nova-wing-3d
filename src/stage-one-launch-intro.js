@@ -1,19 +1,13 @@
 import * as T from 'three';
 import { SQUAD_PILOTS } from './five-cats-squad.js';
-import { createShowroomPilot, disposeShowroomModel } from './showroom-models.js';
 
-// Fixed, readable cinematic camera cuts, ending on the exact in-game chase rig.
-// All staging stays visual-only: flight coordinates, selected ship and paint never change.
-export const FIRST_STAGE_LAUNCH_SECONDS = 7.5;
+// Three continuous views: hangar, crossing front gate and flying toward mission.
+// No pilot close-ups, reverse angles or second protagonist.
+export const FIRST_STAGE_LAUNCH_SECONDS = 6.5;
 export const FIRST_STAGE_SHOTS = Object.freeze([
-  // Six distinct views with enough hold time to read the actual hangar exit.
-  // Inspired by the cinematic grammar of classic rail shooters, not copied shots.
-  { at: 0, name: 'hangar-wide' },
-  { at: 1.55, name: 'pilot-close' },
-  { at: 2.65, name: 'deck-side' },
-  { at: 3.55, name: 'exit-front' },
-  { at: 5.25, name: 'rear-flight' },
-  { at: 6.3, name: 'handoff' },
+  { at: 0, name: 'hangar' },
+  { at: 1.6, name: 'exit' },
+  { at: 4.4, name: 'approach' },
 ]);
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 const ease = (n) => {
@@ -36,40 +30,42 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     FIRST_STAGE_LAUNCH_SECONDS,
     Math.max(0, Number.isFinite(seconds) ? seconds : 0),
   );
-  const doors = ease(t / 1.5);
-  const departure = ease((t - 3.25) / 3.0);
-  const handoff = ease((t - 6.3) / 1.2);
+  const doors = ease(t / 1.6);
+  const departure = ease((t - 1.6) / 2.8);
+  const handoff = ease((t - 4.4) / 2.1);
   const squeeze = Math.max(0.46, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
   const shot = FIRST_STAGE_SHOTS.reduce((current, entry) => (t >= entry.at ? entry : current)).name;
-  const views = {
-    'hangar-wide': { eye: [14 * squeeze, 15, 33], aim: [0, 6, -40], fov: 68 },
-    'pilot-close': { eye: [-11 * squeeze, 1, 23], aim: [-11 * squeeze, -0.8, 9], fov: 53 },
-    'deck-side': { eye: [22 * squeeze, 9, 18], aim: [0, 6, -28], fov: 63 },
-    'exit-front': { eye: [1.5, 10, -67], aim: [0, 6, 3], fov: 68 },
-    'rear-flight': { eye: [9 * squeeze, 13, 40], aim: [0, 7, -77], fov: 64 },
-    handoff: {
-      eye: [7 * squeeze * (1 - handoff), 12, 43 + 7 * (1 - handoff)],
-      aim: [0, 7, -90 + 25 * (1 - handoff)],
-      fov: 60 + 7 * (1 - handoff),
-    },
+  // All camera poses face THROUGH the same hangar gate. Avoid disorienting
+  // frontal cuts and interpolate both camera position and look-at direction.
+  const views = [
+    { eye: [8 * squeeze, 12, 30], aim: [0, 6, -40], fov: 68 },
+    { eye: [6 * squeeze, 12, 36], aim: [0, 7, -62], fov: 64 },
+    { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
+  ];
+  const firstBlend = ease((t - 1.1) / 1.0);
+  const secondBlend = ease((t - 4.1) / 2.4);
+  const interpolate = (field, index) => {
+    const first = views[0][field][index] + (views[1][field][index] - views[0][field][index]) * firstBlend;
+    return first + (views[2][field][index] - first) * secondBlend;
   };
-  const view = views[shot];
+  const fovBlend = views[0].fov + (views[1].fov - views[0].fov) * firstBlend;
   return {
     t,
     shot,
-    beat: t < 1.5 ? 'doors' : t < 3.25 ? 'ignition' : t < 6.3 ? 'departure' : 'handoff',
+    beat: t < 1.6 ? 'hangar' : t < 4.4 ? 'exit' : 'approach',
     doors,
     departure,
     handoff,
+    // The bay retreats behind the real stationary fighter during takeoff.
     corridorShift: departure * 245,
     camera: {
-      x: view.eye[0],
-      y: view.eye[1],
-      z: view.eye[2],
-      aimX: view.aim[0],
-      aimY: view.aim[1],
-      aimZ: view.aim[2],
-      fov: view.fov,
+      x: interpolate('eye', 0),
+      y: interpolate('eye', 1),
+      z: interpolate('eye', 2),
+      aimX: interpolate('aim', 0),
+      aimY: interpolate('aim', 1),
+      aimZ: interpolate('aim', 2),
+      fov: fovBlend + (views[2].fov - fovBlend) * secondBlend,
     },
   };
 }
@@ -135,8 +131,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
   const leftDoor = add('launch-door-left', [9, 15.5, 1.8], [-4.5, 1.5, -50], panel);
   const rightDoor = add('launch-door-right', [9, 15.5, 1.8], [4.5, 1.5, -50], panel);
   add('launch-bay-beacon', [13, 0.4, 1], [0, 14, -50], amber);
-  // Structural pieces make the staging unambiguously an enclosed hangar.
-  // Keep the roof's center strip clear for the high-angle establishment shot.
+  // Close the rear bulkhead and the roof; no open sky behind the fighters.
+  // The camera stays INSIDE the bay and points toward the front gate.
   for (const side of [-1, 1]) {
     add('launch-roof-bay', [14, 0.75, 113], [side * 13.2, 16.3, -15], panel);
     add('launch-roof-strip', [0.6, 0.22, 106], [side * 8, 16.0, -15], cyan);
@@ -145,6 +141,12 @@ export function createFirstStageLaunchIntro(scene, camera) {
     for (const z of [-34, -15, 6, 24]) {
       add('launch-deck-chevron', [2.3, 0.08, 0.45], [side * 12.8, -6.14, z], cyan);
     }
+  }
+  add('launch-roof-center', [13.2, 0.8, 112], [0, 16.35, -15], metal);
+  add('launch-rear-bulkhead', [42, 23.4, 2.2], [0, 4.7, 43], panel);
+  add('launch-rear-rib', [41, 1.3, 2.5], [0, 14.5, 41.6], metal);
+  for (const side of [-1, 1]) {
+    add('launch-rear-navigation-light', [0.7, 10, 0.45], [side * 17, 5, 41.65], cyan);
   }
   add('launch-exit-threshold', [38, 0.32, 2.2], [0, -6.12, -49], amber);
   // The launch doors are framed by a separate external threshold, so the
@@ -155,18 +157,9 @@ export function createFirstStageLaunchIntro(scene, camera) {
     add('launch-exterior-gate-beacon', [0.8, 12, 1.1], [side * 17.5, 3, -54.5], cyan);
     add('launch-exit-lane-marker', [1.25, 0.25, 4], [side * 12, -5.95, -55], amber);
   }
-  add('crew-holo-pedestal', [5.5, 0.45, 5.3], [-11, -6, 9], cyan);
-  add('crew-holo-backlight', [4.6, 5.6, 0.16], [-11, -0.8, 6.5], panel);
   root.visible = false;
   scene.add(root);
   let active = false;
-  let pilotModel = null;
-  function clearPilot() {
-    if (!pilotModel) return;
-    root.remove(pilotModel);
-    disposeShowroomModel(pilotModel);
-    pilotModel = null;
-  }
   return {
     reset(enabled, pilotId = 'bia') {
       active = Boolean(enabled);
@@ -175,19 +168,6 @@ export function createFirstStageLaunchIntro(scene, camera) {
       root.position.set(0, 0, 0);
       leftDoor.position.x = -4.5;
       rightDoor.position.x = 4.5;
-      clearPilot();
-      if (active) {
-        // Reuse the actual 3D roster identity, not an unrelated stock cat.
-        pilotModel = createShowroomPilot(pilotId);
-        pilotModel.name = 'launch-selected-pilot';
-        pilotModel.scale.multiplyScalar(1.65);
-        pilotModel.position.set(-11, -3.3, 9);
-        pilotModel.visible = false;
-        pilotModel.traverse((part) => {
-          part.userData.visualOnly = true;
-        });
-        root.add(pilotModel);
-      }
     },
     update(seconds, aspect = 16 / 9) {
       if (!active) return firstStageLaunchAt(seconds, aspect);
@@ -196,10 +176,6 @@ export function createFirstStageLaunchIntro(scene, camera) {
       rightDoor.position.x = 4.5 + frame.doors * 12.4;
       root.position.z = frame.corridorShift;
       root.userData.shot = frame.shot;
-      if (pilotModel) {
-        pilotModel.visible = frame.shot === 'pilot-close';
-        pilotModel.rotation.y = -0.2 + Math.sin(frame.t * 2.3) * 0.09;
-      }
       camera.position.set(frame.camera.x, frame.camera.y, frame.camera.z);
       camera.lookAt(frame.camera.aimX, frame.camera.aimY, frame.camera.aimZ);
       camera.fov = frame.camera.fov;
@@ -209,10 +185,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
     finish() {
       active = false;
       root.visible = false;
-      clearPilot();
     },
     destroy() {
-      clearPilot();
       scene.remove(root);
       for (const mesh of meshes) mesh.geometry.dispose();
       for (const material of materials) material.dispose();
