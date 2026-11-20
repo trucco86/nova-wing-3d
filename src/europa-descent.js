@@ -36,7 +36,7 @@ export function europaDescentAt(seconds) {
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
     terrainVisible: seconds >= 14.5,
-    terrainLift: -240 * (1 - terrainReveal),
+    terrainLift: terrainReveal === 1 ? 0 : -240 * (1 - terrainReveal),
     planetOpacity,
     planetScale: 0.74 + orbit * 0.55 + entry * 0.34,
     // Keep the moon in the camera at approach, then let the ice floor become
@@ -45,7 +45,7 @@ export function europaDescentAt(seconds) {
     planetY: 105 + 40 * terrainReveal,
     iceMist,
     starOpacity: 0.75 * (1 - smooth((seconds - 12) / 12)),
-    cameraAscent: -0.32 * cameraDive,
+    cameraAscent: cameraDive === 0 ? 0 : -0.32 * cameraDive,
     label: {
       space: 'EUROPA À VISTA · APROXIMAÇÃO',
       orbit: 'ÓRBITA DE EUROPA · FENDA GLACIAL IDENTIFICADA',
