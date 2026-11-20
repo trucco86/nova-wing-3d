@@ -53,3 +53,13 @@ não é prova suficiente de experiência de jogo ou desempenho de GPU.
   no mesmo intervalo de relógio. O joystick deve voltar a zero ao soltar.
 - A verificação focada de desktop/mobile deve aprovar 16 testes e capturar
   o átrio, laboratório, reator e arquivos antes da homologação visual.
+
+## Marcadores de pista e leitura do piloto
+
+- As posições de coleta e minimapa não mudaram. Apenas o holograma, anel e
+  pedestal decorativos foram deslocados aproximadamente 3,4m na lateral e
+  3,2m à frente, para não cobrir o rosto do gato na câmera em terceira pessoa.
+- A captura automática desativa a notificação temporária de abertura apenas
+  para avaliação da arte. Em jogo, a notificação se oculta naturalmente.
+- Exigir nova execução focada de 16 testes desktop/mobile e quatro screenshots
+  reais, além do pipeline geral, antes de homologar a PR #417.
