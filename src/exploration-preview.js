@@ -2,6 +2,13 @@ import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { createShowroomPilot } from './showroom-models.js';
 import {
+  orbit9CameraState,
+  orbit9RotateCamera,
+  orbit9ToggleCameraMode,
+  orbit9CameraPose,
+} from './orbit9-camera.js';
+import { orbit9DialogueBeat, orbit9NextDialogue } from './orbit9-dialogue.js';
+import {
   ORBIT9_BOUNDS,
   ORBIT9_DISTRICTS,
   ORBIT9_OBSTACLES,
@@ -51,6 +58,13 @@ export function installOrbit9ExplorationPreview(
   const scanButton = $('exploreScan');
   const talkButton = $('exploreTalk');
   const exitButton = $('exploreExit');
+  const cameraLeft = $('exploreCameraLeft');
+  const cameraRight = $('exploreCameraRight');
+  const cameraZoom = $('exploreCameraZoom');
+  const dialoguePanel = $('explorationDialogue');
+  const dialogueSpeaker = $('exploreDialogueSpeaker');
+  const dialogueText = $('exploreDialogueText');
+  const dialogueNext = $('exploreDialogueNext');
   const held = new Set();
   const listeners = [];
   let scene = null;
@@ -64,6 +78,11 @@ export function installOrbit9ExplorationPreview(
   let playerX = ORBIT9_SPAWN.x;
   let playerZ = ORBIT9_SPAWN.z;
   const cameraGoal = new T.Vector3();
+  const cameraTarget = new T.Vector3();
+  let cameraState = orbit9CameraState();
+  let cameraYawVisual = 0;
+  let cameraPointer = null;
+  let dialogueIndex = -1;
   let currentDistrict = '';
   let lastMapX = NaN;
   let lastMapZ = NaN;
@@ -128,7 +147,12 @@ export function installOrbit9ExplorationPreview(
     }
     scanButton.disabled = !closeClue;
     talkButton.disabled =
-      !stats.found || stats.found < stats.required || !near(...SURVIVOR) || stats.survivorSpokenTo;
+      !stats.found ||
+      stats.found < stats.required ||
+      !near(...SURVIVOR) ||
+      stats.survivorSpokenTo ||
+      !choicePanel.hidden ||
+      !dialoguePanel.hidden;
     launchCombat.hidden = !stats.missionUnlocked;
     if (stats.survivorSpokenTo) choicePanel.hidden = true;
     beacons.forEach((beacon, i) => {
@@ -156,16 +180,39 @@ export function installOrbit9ExplorationPreview(
     updateUI();
   }
 
+  function showDialogueBeat(index) {
+    const beat = orbit9DialogueBeat(index);
+    if (!beat) return false;
+    dialogueIndex = index;
+    dialoguePanel.hidden = false;
+    choicePanel.hidden = true;
+    dialogueSpeaker.textContent = beat.speaker;
+    dialogueText.textContent = beat.text;
+    dialogueNext.textContent = orbit9NextDialogue(index) === null ? 'ESCOLHER ROTA' : 'CONTINUAR';
+    return true;
+  }
+
+  function advanceDialogue() {
+    if (dialoguePanel.hidden || dialogueIndex < 0) return;
+    const next = orbit9NextDialogue(dialogueIndex);
+    if (next === null) {
+      dialoguePanel.hidden = true;
+      dialogueIndex = -1;
+      choicePanel.hidden = false;
+      notification('SOBREVIVENTE: Qual acesso os Five Cats devem abrir?');
+    } else showDialogueBeat(next);
+    updateUI();
+  }
+
   function talk() {
     if (state.clues.length !== ORBIT9_EVIDENCE.length || !near(...SURVIVOR)) {
       notification('Colete todas as pistas e aproxime-se do sobrevivente.');
       return;
     }
-    if (!state.conversation) {
-      choicePanel.hidden = false;
-      notification(
-        'SOBREVIVENTE: A rota está trancada. Restauramos energia ou abrimos a passagem oculta?',
-      );
+    if (!state.conversation && choicePanel.hidden && dialoguePanel.hidden) {
+      showDialogueBeat(0);
+      notification('TRANSMISSÃO SEGURA · SOBREVIVENTE LOCALIZADO');
+      updateUI();
     }
   }
 
@@ -178,7 +225,15 @@ export function installOrbit9ExplorationPreview(
           ? 'ENERGIA RESTAURADA · ROTA FANTASMA ATIVA'
           : 'ROTA CLANDESTINA DETECTADA · MISSÃO LIBERADA',
       );
+      if (npc) {
+        const lightColor = choice === 'restore-power' ? '#6ef7b5' : '#f3b36c';
+        for (const mesh of npc.children) {
+          mesh.material.color.set(lightColor);
+          mesh.material.emissive.set(lightColor);
+        }
+      }
     }
+    dialoguePanel.hidden = true;
     updateUI();
   }
 
@@ -299,6 +354,9 @@ export function installOrbit9ExplorationPreview(
     pilot.name = 'orbit9-player-' + selectedPilot;
     pilot.scale.multiplyScalar(1.2);
     scene.add(pilot);
+    const initialCamera = orbit9CameraPose(playerX, playerZ, cameraState);
+    camera.position.set(initialCamera.eye.x, initialCamera.eye.y, initialCamera.eye.z);
+    camera.lookAt(initialCamera.aim.x, initialCamera.aim.y, initialCamera.aim.z);
     mapSignals.replaceChildren();
     CLUE_POSITIONS.forEach(([x, z], i) => {
       const mark = document.createElement('span');
@@ -332,8 +390,9 @@ export function installOrbit9ExplorationPreview(
     const dt = Math.min(0.04, (stamp - (lastFrame || stamp)) / 1000);
     lastFrame = stamp;
     elapsed += dt;
-    const moveX = Number(held.has('right')) - Number(held.has('left'));
-    const moveZ = Number(held.has('down')) - Number(held.has('up'));
+    const inputLocked = !dialoguePanel.hidden || !choicePanel.hidden;
+    const moveX = inputLocked ? 0 : Number(held.has('right')) - Number(held.has('left'));
+    const moveZ = inputLocked ? 0 : Number(held.has('down')) - Number(held.has('up'));
     const len = Math.max(1, Math.hypot(moveX, moveZ));
     const moved = orbit9Move(
       playerX,
@@ -345,9 +404,23 @@ export function installOrbit9ExplorationPreview(
     playerZ = moved.z;
     pilot.position.set(playerX, 2.2, playerZ);
     if (moveX || moveZ) pilot.rotation.y = Math.atan2(-moveX, -moveZ);
-    cameraGoal.set(playerX + 13, 18, playerZ + 25);
-    camera.position.lerp(cameraGoal, Math.min(1, dt * 6));
-    camera.lookAt(playerX, 3, playerZ - 17);
+    const turn = Math.atan2(
+      Math.sin(cameraState.yaw - cameraYawVisual),
+      Math.cos(cameraState.yaw - cameraYawVisual),
+    );
+    cameraYawVisual += turn * Math.min(1, dt * 7);
+    const pose = orbit9CameraPose(playerX, playerZ, {
+      yaw: cameraYawVisual,
+      mode: cameraState.mode,
+    });
+    cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
+    camera.position.lerp(cameraGoal, Math.min(1, dt * 9));
+    cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+    camera.lookAt(cameraTarget);
+    if (Math.abs(camera.fov - pose.fov) > 0.03) {
+      camera.fov += (pose.fov - camera.fov) * Math.min(1, dt * 8);
+      camera.updateProjectionMatrix();
+    }
     for (const [i, beacon] of beacons.entries()) {
       beacon.core.rotation.y += dt * 0.8;
       beacon.core.position.y = 4 + Math.sin(elapsed * 2 + i * 2) * 0.45;
@@ -369,8 +442,14 @@ export function installOrbit9ExplorationPreview(
     lastClueCount = -1;
     elapsed = 0;
     lastFrame = 0;
+    cameraState = orbit9CameraState();
+    cameraYawVisual = 0;
+    cameraPointer = null;
+    dialogueIndex = -1;
     root.hidden = false;
     choicePanel.hidden = true;
+    dialoguePanel.hidden = true;
+    cameraZoom.setAttribute('aria-pressed', 'false');
     try {
       makeScene();
     } catch (error) {
@@ -390,6 +469,10 @@ export function installOrbit9ExplorationPreview(
     active = false;
     cancelAnimationFrame(rafId);
     held.clear();
+    cameraPointer = null;
+    dialogueIndex = -1;
+    dialoguePanel.hidden = true;
+    choicePanel.hidden = true;
     root.hidden = true;
     beacons = [];
     mapSignals.replaceChildren();
@@ -442,8 +525,20 @@ export function installOrbit9ExplorationPreview(
       if (state.clues.length === ORBIT9_EVIDENCE.length && near(...SURVIVOR)) talk();
       else scan();
       e.preventDefault();
+    } else if (e.code === 'KeyQ' || e.code === 'KeyR') {
+      cameraState = orbit9RotateCamera(cameraState, (e.code === 'KeyQ' ? -1 : 1) * Math.PI / 7);
+      e.preventDefault();
+    } else if (e.code === 'KeyC') {
+      cameraState = orbit9ToggleCameraMode(cameraState);
+      cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
+      e.preventDefault();
     } else if (e.code === 'Escape') {
-      close();
+      if (!dialoguePanel.hidden || !choicePanel.hidden) {
+        dialoguePanel.hidden = true;
+        choicePanel.hidden = true;
+        dialogueIndex = -1;
+        updateUI();
+      } else close();
       e.preventDefault();
     }
   }
@@ -466,6 +561,33 @@ export function installOrbit9ExplorationPreview(
   listen(exitButton, 'click', close);
   listen(scanButton, 'click', scan);
   listen(talkButton, 'click', talk);
+  listen(dialogueNext, 'click', advanceDialogue);
+  listen(cameraLeft, 'click', () => {
+    cameraState = orbit9RotateCamera(cameraState, -Math.PI / 7);
+  });
+  listen(cameraRight, 'click', () => {
+    cameraState = orbit9RotateCamera(cameraState, Math.PI / 7);
+  });
+  listen(cameraZoom, 'click', () => {
+    cameraState = orbit9ToggleCameraMode(cameraState);
+    cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
+  });
+  listen(viewport, 'pointerdown', (event) => {
+    if (!active || event.target !== renderer?.domElement) return;
+    cameraPointer = { id: event.pointerId, lastX: event.clientX };
+    renderer.domElement.setPointerCapture?.(event.pointerId);
+  });
+  listen(viewport, 'pointermove', (event) => {
+    if (!cameraPointer || event.pointerId !== cameraPointer.id) return;
+    const delta = event.clientX - cameraPointer.lastX;
+    cameraPointer.lastX = event.clientX;
+    cameraState = orbit9RotateCamera(cameraState, delta * -0.008);
+    event.preventDefault();
+  });
+  for (const name of ['pointerup', 'pointercancel', 'lostpointercapture'])
+    listen(viewport, name, (event) => {
+      if (cameraPointer?.id === event.pointerId) cameraPointer = null;
+    });
   listen($('exploreChoiceRestore'), 'click', () => choose('restore-power'));
   listen($('exploreChoiceHidden'), 'click', () => choose('hidden-route'));
   listen(launchCombat, 'click', launchMission);
@@ -508,6 +630,12 @@ export function installOrbit9ExplorationPreview(
         player: { x: playerX, z: playerZ },
         pilotModel: pilot?.name ?? null,
         district: orbit9District(playerX, playerZ).id,
+        camera: { ...cameraState },
+        dialogue: {
+          open: !dialoguePanel.hidden,
+          index: dialogueIndex,
+          choicesVisible: !choicePanel.hidden,
+        },
         quest: createExplorationState(state),
       };
     },
