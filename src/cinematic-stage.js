@@ -1,5 +1,5 @@
 import * as T from 'three';
-import { CINEMATIC_FLEET, cinematicFormationPosition } from './cinematic-formation.js';
+import { cinematicFleetForLoadout, cinematicFormationPosition } from './cinematic-formation.js';
 import { createFlyingRobot } from './visuals.js';
 import { updateMechaPose } from './mecha-motion.js';
 import {
@@ -8,19 +8,11 @@ import {
   disposeShowroomModel,
 } from './showroom-models.js';
 
-const POSITIONS = [
-  [-5, -1.3, 0],
-  [-2.4, -1.3, 0],
-  [0, -1.3, 0],
-  [2.4, -1.3, 0],
-  [5, -1.3, 0],
-];
-const PILOTS = CINEMATIC_FLEET.map(({ id }) => id);
 export const cinematicShot = (elapsed) =>
   elapsed < 4 ? 'arrival' : elapsed < 8 ? 'escape' : elapsed < 16 ? 'squad' : 'pursuit';
 
 // An optional realtime background. Failure leaves the original captioned intro functional.
-export function createCinematicStage(canvas) {
+export function createCinematicStage(canvas, selectedLoadout = null) {
   if (!canvas) return null;
   let renderer;
   try {
@@ -43,16 +35,17 @@ export function createCinematicStage(canvas) {
   sphere.position.set(-8, -7, -35);
   scene.add(sphere);
 
-  const pilots = PILOTS.map((id, index) => {
+  const fleet = cinematicFleetForLoadout(selectedLoadout);
+  const pilots = fleet.map(({ id, slot }) => {
     const model = createShowroomPilot(id);
-    model.position.set(...POSITIONS[index]);
+    model.position.set(slot * 2.4, -1.3, 0);
     scene.add(model);
     return model;
   });
-  const ships = CINEMATIC_FLEET.map(({ id, model: modelId, color }) => {
+  const ships = fleet.map(({ id, model: modelId, color, slot }) => {
     const model = createShowroomShip(modelId, color);
     model.name = 'cinematic-ship-' + id;
-    model.scale.setScalar(id === 'bia' ? 1.12 : 0.96);
+    model.scale.setScalar(slot === 0 ? 1.12 : 0.96);
     scene.add(model);
     return model;
   });
@@ -90,12 +83,10 @@ export function createCinematicStage(canvas) {
     });
     const mechaShot = shot === 'pursuit' && elapsed >= 20 && elapsed < 24;
     ships.forEach((ship, index) => {
-      const profile = CINEMATIC_FLEET[index];
+      const profile = fleet[index];
       const pos = cinematicFormationPosition(profile.slot, elapsed, camera.aspect);
-      ship.visible = shot !== 'squad' && !(mechaShot && profile.id === 'bia');
-      ship.scale.setScalar(
-        (profile.id === 'bia' ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1),
-      );
+      ship.visible = shot !== 'squad' && !(mechaShot && profile.slot === 0);
+      ship.scale.setScalar((profile.slot === 0 ? 1.12 : 0.96) * (camera.aspect < 0.65 ? 0.76 : 1));
       ship.position.set(pos.x, pos.y, pos.z);
       ship.rotation.set(0.12, Math.PI + Math.sin(elapsed * 0.2 + index) * 0.09, pos.bank);
       if (shot === 'escape')

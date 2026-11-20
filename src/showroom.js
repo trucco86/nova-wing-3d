@@ -82,7 +82,7 @@ export function installShowroom({
     }
   }
   function draw() {
-    if (!renderer || !model || !active()) return;
+    if (!renderer || !model || !active() || mode === 'art') return;
     const width = Math.max(1, canvas.clientWidth),
       height = Math.max(1, canvas.clientHeight);
     if (
@@ -123,6 +123,28 @@ export function installShowroom({
       release();
       return;
     }
+    const isArt = mode === 'art';
+    canvas.hidden = isArt;
+    $('hangarArtImage').hidden = !isArt;
+    $('hangarTools').hidden = isArt;
+    $('hangarArt').setAttribute('aria-pressed', String(isArt));
+    if (isArt) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+      release();
+      const pilot = pilotAt(root.dataset.pilot);
+      $('hangarArtImage').setAttribute(
+        'aria-label',
+        pilot.name + ', arte de destaque dos Five Cats',
+      );
+      $('hangarName').textContent = pilot.name;
+      $('hangarKind').textContent = 'ARTE DE DESTAQUE / FIVE CATS';
+      $('hangarHint').textContent =
+        'ARTE DE PERSONAGEM · PARA A NAVE PERSONALIZADA, VOLTE À VISTA 3D';
+      $('hangarShip').setAttribute('aria-pressed', 'false');
+      $('hangarPilot').setAttribute('aria-pressed', 'false');
+      return;
+    }
     if (!initialize()) return;
     const next = [
       mode,
@@ -155,6 +177,7 @@ export function installShowroom({
       canvas.dataset.color = root.dataset.shipColor;
       $('hangarName').textContent =
         mode === 'ship' ? shipAt(root.dataset.ship).name : pilotAt(root.dataset.pilot).name;
+      $('hangarHint').textContent = 'ARRASTE PARA EXPLORAR · EXAMINE ANTES DO VOO';
       $('hangarKind').textContent =
         mode === 'ship'
           ? 'NAVE DE COMBATE / 360°'
@@ -186,6 +209,10 @@ export function installShowroom({
   });
   on($('hangarPilot'), 'click', () => {
     mode = 'pilot';
+    sync();
+  });
+  on($('hangarArt'), 'click', () => {
+    mode = 'art';
     sync();
   });
   on($('hangarAuto'), 'click', () => setAuto(!auto));

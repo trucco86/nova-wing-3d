@@ -56,22 +56,27 @@ test('live mission radio shows the correct original Five Cats portrait after mec
     .locator('#commsPortrait')
     .evaluate((el) => getComputedStyle(el).backgroundImage);
   expect(crop).not.toBe('none');
-  const portraitPositions = await page.locator('#commsPortrait').evaluate((el) => {
-    const positions = {};
+  const portraits = await page.locator('#commsPortrait').evaluate((el) => {
+    const result = {};
     for (const pilot of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
       el.dataset.pilot = pilot;
-      positions[pilot] = getComputedStyle(el).backgroundPosition;
+      const style = getComputedStyle(el);
+      result[pilot] = { image: style.backgroundImage, position: style.backgroundPosition };
     }
     el.dataset.pilot = 'christopher';
-    return positions;
+    return result;
   });
-  expect(portraitPositions).toEqual({
-    bia: '57.75% 40.5%',
-    bob: '74% 17.5%',
-    christopher: '56.4% 13.5%',
-    calvin: '44.2% 54%',
-    jenifer: '73.4% 41.8%',
-  });
+  const facePositions = {
+    bia: '70% 0%',
+    bob: '50% 0%',
+    christopher: '40% 0%',
+    calvin: '72% 0%',
+    jenifer: '35% 3%',
+  };
+  for (const pilot of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
+    expect(portraits[pilot].image).toContain(pilot + '-spotlight.webp');
+    expect(portraits[pilot].position).toBe(facePositions[pilot]);
+  }
   await page.screenshot({ path: info.outputPath(`radio-christopher-${info.project.name}.png`) });
   expect(errors).toEqual([]);
 });

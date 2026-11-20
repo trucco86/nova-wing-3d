@@ -3,6 +3,7 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { bundleGame } from './build.mjs';
+import { copyGameArt } from './copy-art-assets.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export async function prepareAndroidWeb(destination = resolve(root, 'android-web')) {
@@ -13,6 +14,8 @@ export async function prepareAndroidWeb(destination = resolve(root, 'android-web
   );
   await mkdir(destination, { recursive: true });
   await writeFile(resolve(destination, 'index.html'), html);
+  // All showcase images remain available without a network connection on mobile.
+  await copyGameArt(destination);
   await copyFile(resolve(root, 'LICENSE'), resolve(destination, 'LICENSE'));
   await copyFile(
     resolve(root, 'docs/THREE-LICENSE.txt'),

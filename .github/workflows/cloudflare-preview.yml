@@ -47,6 +47,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html dist/index.html
+          node tools/copy-art-assets.mjs dist
           # Keep the release dashboard testable before main/production, if this
           # candidate includes it. Other PRs remain game-only.
           if [ -f docs/control-center/index.html ]; then

@@ -12,6 +12,10 @@ test('cockpit instruments show real speed, weapon, map and active cat-specific p
   await expect(deck).toBeVisible();
   const before = await page.evaluate(() => window.fixture.game.snapshot());
   await expect(page.locator('#cockpitPilot')).toHaveText('BIA');
+  await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bia');
+  expect(
+    await page.locator('#pilotHudAvatar').evaluate((el) => getComputedStyle(el).backgroundImage),
+  ).toContain('bia-spotlight.webp');
   await expect(page.locator('#cockpitSpeedValue')).toHaveText(String(before.flightSpeed));
   await expect(page.locator('#cockpitWeapon')).not.toBeEmpty();
   await expect(page.locator('#cockpitMap')).toBeVisible();
@@ -30,6 +34,10 @@ test('cockpit instruments show real speed, weapon, map and active cat-specific p
   expect(switched.combatMultipliers.speed).not.toBe(before.combatMultipliers.speed);
   expect(switched.maxShield).toBeGreaterThan(before.maxShield);
   await expect(page.locator('#cockpitPilot')).toHaveText('BOB');
+  await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bob');
+  expect(
+    await page.locator('#pilotHudAvatar').evaluate((el) => getComputedStyle(el).backgroundImage),
+  ).toContain('bob-spotlight.webp');
   await expect(page.locator('#cockpitShip')).toHaveText('AEGIS-R');
   await page.screenshot({ path: info.outputPath('cockpit-bob-' + info.project.name + '.png') });
   expect(await page.evaluate(() => window.fixture.game.switchPilot())).toBe(false);
@@ -57,6 +65,10 @@ test('fatal damage means craft retreat, not a dead cat; a reserve pilot takes co
   expect(replacement.loadout.pilot).toBe('bob');
   expect(replacement.shield).toBe(replacement.maxShield);
   await expect(page.locator('#pilotHudName')).toHaveText('BOB');
+  await expect(page.locator('#pilotHudAvatar')).toHaveAttribute('data-pilot', 'bob');
+  expect(
+    await page.locator('#pilotHudAvatar').evaluate((el) => getComputedStyle(el).backgroundImage),
+  ).toContain('bob-spotlight.webp');
   await expect(page.locator('#pilotName')).toContainText('NAVES');
   await page.screenshot({ path: info.outputPath('craft-handoff-' + info.project.name + '.png') });
 });

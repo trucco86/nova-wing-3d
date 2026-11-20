@@ -1,5 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import * as T from 'three';
+import { shipColorAt } from '../src/pilots.js';
+import { CINEMATIC_FLEET } from '../src/cinematic-formation.js';
 import {
   SQUAD_PILOTS,
   SQUAD_INTRO_DURATION,
@@ -75,15 +78,17 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
   }
 });
 
-test('new mission shows Bia-led formation before gameplay clock starts', (t) => {
+test('new mission uses the actual active ship as leader, with four escorts', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   assert.ok(h.game.snapshot().fiveCats.intro > 0);
   h.advance(1);
   const first = h.game.snapshot();
-  assert.equal(first.fiveCats.visible.length, 5);
-  assert.equal(first.fiveCats.visible.find((p) => p.pilot === 'bia').x, 0);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.ok(first.fiveCats.visible.every((p) => p.pilot !== 'bia'));
+  assert.equal(first.fiveCats.introPilot, 'bia');
+  assert.equal(first.fiveCats.playerIsLeader, true);
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
   h.advance(4.1);
@@ -91,6 +96,92 @@ test('new mission shows Bia-led formation before gameplay clock starts', (t) => 
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.fiveCats.visible.length, 0);
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
+});
+
+test('skipping the optional story keeps stage-one hangar launch after campaign map', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true, preflightMap: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, false);
+  h.elements.get('cinematicSkip').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, true);
+  assert.equal(h.elements.get('campaignMap').hidden, false);
+  h.elements.get('mapLaunch').onclick();
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
+  h.advance(1.2);
+  assert.equal(h.game.snapshot().seconds, 0, 'mission clock cannot advance during launch');
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
+  assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR|MOTORES|DECOLAGEM/);
+  h.advance(4);
+  assert.equal(h.game.snapshot().fiveCats.intro, 0);
+  h.advance(0.2);
+  assert.ok(h.game.snapshot().seconds > 0);
+});
+
+test('keyboard skip of story preserves stage-one launch and does not skip it', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  h.key('Escape');
+  assert.equal(h.elements.get('cinematic').hidden, true);
+  assert.equal(h.game.snapshot().fiveCats.intro, SQUAD_INTRO_DURATION);
+  h.advance(0.3);
+  assert.equal(h.game.snapshot().fiveCats.visible.length, 4);
+  assert.match(h.elements.get('squadFormationStatus').textContent, /HANGAR/);
+});
+
+test('selected ship and paint stay on the same real fighter across the launch handoff', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start(false, {
+    sector: 0,
+    loadout: { pilot: 'bob', ship: 'specter', color: 'crimson' },
+  });
+  h.advance(1.1);
+  const first = h.game.snapshot();
+  assert.equal(first.fiveCats.introPilot, 'bob');
+  assert.equal(first.fiveCats.playerIsLeader, true);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.ok(first.fiveCats.visible.every((wing) => wing.pilot !== 'bob'));
+  assert.equal(first.heroShip.model, 'ship-model-specter');
+  assert.equal(first.heroShip.visible, true);
+  assert.equal(first.heroShip.selectedColor, 'crimson');
+  const selected = new T.Color(shipColorAt('crimson').color).getHexString();
+  assert.equal(first.heroShip.paint, selected);
+  for (const profile of CINEMATIC_FLEET.filter(({ id }) => id !== 'bob')) {
+    const escort = first.fiveCats.visible.find(({ pilot }) => pilot === profile.id);
+    assert.ok(escort);
+    assert.equal(escort.shipModel, 'ship-model-' + profile.model);
+    assert.equal(escort.paintedColor, new T.Color(shipColorAt(profile.color).color).getHexString());
+  }
+  h.advance(4.1);
+  const ended = h.game.snapshot();
+  assert.equal(ended.fiveCats.intro, 0);
+  assert.equal(ended.heroShip.visible, true);
+  assert.equal(ended.heroShip.rootId, first.heroShip.rootId);
+  assert.equal(ended.heroShip.moduleId, first.heroShip.moduleId);
+  assert.equal(ended.heroShip.model, first.heroShip.model);
+  assert.equal(ended.heroShip.paint, selected);
+});
+
+test('optional launch skip preserves live ship identity, clock and escort visibility', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start();
+  const before = h.game.snapshot();
+  assert.ok(before.fiveCats.intro > 0);
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+  h.elements.get('launchSkip').onclick();
+  const after = h.game.snapshot();
+  assert.equal(after.fiveCats.intro, 0);
+  assert.equal(after.fiveCats.visible.length, 0);
+  assert.equal(after.heroShip.rootId, before.heroShip.rootId);
+  assert.equal(after.heroShip.moduleId, before.heroShip.moduleId);
+  assert.equal(after.seconds, before.seconds);
+  assert.equal(h.elements.get('launchSkip').hidden, true);
+  h.advance(0.3);
+  assert.ok(h.game.snapshot().seconds > 0, 'gameplay starts immediately after skip');
 });
 
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {

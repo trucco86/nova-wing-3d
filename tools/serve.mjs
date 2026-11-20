@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { FIVE_CATS_ART_FILES } from './copy-art-assets.mjs';
 const args = process.argv.slice(2);
 const i = args.indexOf('--port');
 const port = i < 0 ? 4173 : Number(args[i + 1]);
@@ -10,6 +11,18 @@ const server = createServer(async (req, res) => {
   const dynamic = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__dynamic.html';
   const audio = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__audio.html';
   const visual = process.env.NOVA_VISUAL_TEST === '1' && url.pathname === '/__visual.html';
+  const artMatch = /^\/(?:nova-wing-3d\/)?src\/assets\/([a-z0-9-]+\.webp)$/.exec(url.pathname);
+  if (artMatch && FIVE_CATS_ART_FILES.includes(artMatch[1])) {
+    try {
+      const file = await readFile(new URL('../src/assets/' + artMatch[1], import.meta.url));
+      res.writeHead(200, { 'Content-Type': 'image/webp', 'Cache-Control': 'public, max-age=3600' });
+      res.end(file);
+    } catch {
+      res.writeHead(404);
+      res.end('Artwork unavailable');
+    }
+    return;
+  }
   if (
     !dynamic &&
     !visual &&

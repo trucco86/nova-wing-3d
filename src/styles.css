@@ -7811,7 +7811,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   .title-content
   > :not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras):not(#novaAuth):not(
     .title-help
-  ):not(#catRanks):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
+  ):not(#catRanks):not(#marvinDossier):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
   display: none !important;
 }
 #menu.title-screen[data-screen='splash'] {
@@ -7943,6 +7943,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu[data-screen='central'] .title-help,
 #menu[data-screen='central'] #novaAuth,
 #menu[data-screen='central'] #catRanks,
+#menu[data-screen='central'] #marvinDossier,
 #menu[data-screen='central'] #novaTrophies,
 #menu[data-screen='central'] #novaRanking,
 #menu[data-screen='central'] #developerPanel {
@@ -11461,4 +11462,773 @@ body.intermission-active #shop #nextSector {
     margin: 8px 0;
     font-size: 11px;
   }
+}
+
+/* Pilot-only launch skip stays outside the clipped alert rail and combat controls. */
+#launchSkip {
+  position: fixed;
+  z-index: 45;
+  top: max(148px, calc(env(safe-area-inset-top, 0px) + 118px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  min-height: 44px;
+  padding: 9px 13px;
+  border: 1px solid #89e9f1;
+  border-radius: 10px;
+  background: #092838ed;
+  color: #d9fcff;
+  font: 800 11px/1.3 monospace;
+  letter-spacing: 0.045em;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+#launchSkip[hidden] {
+  display: none !important;
+}
+
+/* Optional Star Fox-style preflight practice. Completely isolated from campaign HUD. */
+.preflight-training {
+  position: fixed;
+  inset: 0;
+  z-index: 105;
+  background: rgba(2, 8, 18, 0.96);
+  padding: clamp(8px, 1.4vh, 20px);
+  overflow: auto;
+  color: #e8f7ff;
+}
+.preflight-training[hidden] {
+  display: none !important;
+}
+.training-shell {
+  margin: 0 auto;
+  width: min(1180px, 100%);
+  min-height: min(100%, 740px);
+  background: linear-gradient(150deg, #132b40, #071827 68%, #06111b);
+  border: 1px solid rgba(104, 219, 250, 0.44);
+  border-radius: 19px;
+  padding: clamp(10px, 2vw, 23px);
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.46);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.training-header,
+.training-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.training-header h2 {
+  font-size: clamp(1.15rem, 2vw, 1.7rem);
+  margin: 4px 0;
+}
+.training-header p {
+  margin: 0;
+  color: #b9d5e1;
+}
+#trainingProgress {
+  white-space: nowrap;
+  font-size: 0.8rem;
+  border: 1px solid rgba(103, 255, 224, 0.4);
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.training-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+.training-viewport {
+  position: relative;
+  background: #061422;
+  min-height: 340px;
+  border: 1px solid rgba(114, 184, 209, 0.4);
+  border-radius: 13px;
+  overflow: hidden;
+}
+#trainingCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  touch-action: none;
+}
+.training-ship-label,
+#trainingPrompt {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+.training-ship-label {
+  top: 12px;
+  left: 14px;
+  font-size: 0.8rem;
+  color: #c3eafb;
+}
+#trainingPrompt {
+  top: 14px;
+  right: 14px;
+  font-size: 0.72rem;
+  max-width: 52%;
+  text-align: right;
+  color: #a9ffe1;
+}
+.training-direction,
+.training-thrust-controls {
+  position: absolute;
+  bottom: 13px;
+  z-index: 2;
+}
+.training-direction {
+  left: 12px;
+  text-align: center;
+}
+.training-direction > div {
+  display: flex;
+  gap: 4px;
+}
+.training-thrust-controls {
+  right: 13px;
+  display: flex;
+  gap: 5px;
+}
+.preflight-training button {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.training-direction button,
+.training-thrust-controls button,
+.training-secondary-controls button {
+  background: rgba(16, 44, 67, 0.9);
+  border: 1px solid #4caed0;
+  color: white;
+  font-weight: 700;
+  min-height: 42px;
+  min-width: 44px;
+  border-radius: 10px;
+}
+.training-thrust-controls button {
+  min-width: 62px;
+}
+.training-direction button:active,
+.training-thrust-controls button:active,
+.training-secondary-controls button:active {
+  background: #256789;
+}
+.training-exercises {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+}
+.training-exercises > div:not(.training-secondary-controls) {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-left: 3px solid #42677f;
+  border-radius: 8px;
+  background: rgba(40, 76, 98, 0.28);
+}
+.training-exercises > div.completed:not(.training-secondary-controls) {
+  border-color: #71ffcf;
+  background: rgba(52, 148, 126, 0.18);
+}
+.training-exercises > div.completed strong::after {
+  content: ' ✓';
+  color: #71ffcf;
+}
+.training-exercises small {
+  color: #b3d2e0;
+}
+.training-secondary-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+.training-secondary-controls button {
+  flex: 1;
+  font-size: 0.75rem;
+}
+.training-actions {
+  margin-top: auto;
+}
+.training-actions button {
+  padding: 12px 18px;
+  border-radius: 10px;
+}
+@media (max-width: 760px) {
+  .preflight-training {
+    padding: 5px;
+  }
+  .training-shell {
+    min-height: 100%;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+  .training-header p {
+    display: none;
+  }
+  .training-header h2 {
+    font-size: 1rem;
+  }
+  #trainingProgress {
+    padding: 7px;
+    font-size: 0.62rem;
+  }
+  .training-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(210px, 1fr) auto;
+    gap: 8px;
+  }
+  .training-viewport,
+  #trainingCanvas {
+    min-height: 210px;
+  }
+  .training-exercises {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .training-exercises > div:not(.training-secondary-controls) {
+    padding: 6px 8px;
+  }
+  .training-exercises strong {
+    font-size: 0.68rem;
+  }
+  .training-exercises small {
+    font-size: 0.62rem;
+  }
+  .training-secondary-controls {
+    grid-column: 1 / -1;
+    margin-top: 0;
+  }
+  .training-secondary-controls button {
+    min-height: 36px;
+  }
+  .training-actions button {
+    font-size: 0.76rem;
+    padding: 9px 12px;
+  }
+  .training-direction button {
+    min-height: 38px;
+    min-width: 38px;
+  }
+  .training-thrust-controls button {
+    min-height: 42px;
+    min-width: 57px;
+  }
+  .training-ship-label {
+    font-size: 0.69rem;
+  }
+  #trainingPrompt {
+    font-size: 0.63rem;
+  }
+}
+
+/* Five Cats original-art gallery, 2026-11-19. Static WebP outside the 3D scene. */
+:root {
+  --five-cats-portraits: url('src/assets/five-cats-portraits.webp');
+  --five-cats-ships: url('src/assets/five-cats-ships-concept.webp');
+  --five-cats-ranks: url('src/assets/five-cats-rank-emblems.webp');
+}
+.showroom-web .cat-avatar {
+  background-image: var(--five-cats-portraits);
+  background-size: 500% 100%;
+  background-repeat: no-repeat;
+  background-position: 0% 50%;
+  border-radius: 8px;
+  color: transparent;
+  padding: 0;
+}
+.showroom-web #pilot-bia .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bia'] {
+  background-position: 0% 50%;
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'] {
+  background-position: 25% 50%;
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'] {
+  background-position: 50% 50%;
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'] {
+  background-position: 75% 50%;
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'] {
+  background-position: 100% 50%;
+}
+.showroom-web .pilot-profile .profile-portrait {
+  min-height: 115px;
+  border-radius: 10px;
+  background-image: var(--five-cats-portraits);
+  background-size: 500% 100%;
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px #b2edff4a;
+  overflow: hidden;
+}
+.showroom-web .profile-portrait .cat-avatar {
+  visibility: hidden;
+}
+.showroom-web #squadSelection[data-pilot='bob'] .profile-portrait {
+  background-image: url('src/assets/bob-spotlight.webp');
+  background-position: center 17%;
+  background-size: cover;
+}
+.showroom-web #squadSelection[data-pilot='christopher'] .profile-portrait {
+  background-position: 50% 50%;
+}
+.showroom-web #squadSelection[data-pilot='calvin'] .profile-portrait {
+  background-position: 75% 50%;
+}
+.showroom-web #squadSelection[data-pilot='jenifer'] .profile-portrait {
+  background-position: 100% 50%;
+}
+.hangar-art-portrait {
+  width: min(95%, 330px);
+  height: 330px;
+  margin: 8px auto;
+  border-radius: 12px;
+  border: 1px solid #83e9fa73;
+  box-shadow: 0 0 32px #18bfff30;
+  background-image: var(--five-cats-portraits);
+  background-size: 500% 100%;
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+}
+#squadSelection[data-pilot='bob'] .hangar-art-portrait {
+  background-image: url('src/assets/bob-spotlight.webp');
+  background-size: cover;
+  background-position: center 16%;
+}
+#squadSelection[data-pilot='christopher'] .hangar-art-portrait {
+  background-position: 50% 50%;
+}
+#squadSelection[data-pilot='calvin'] .hangar-art-portrait {
+  background-position: 75% 50%;
+}
+#squadSelection[data-pilot='jenifer'] .hangar-art-portrait {
+  background-position: 100% 50%;
+}
+.showroom-web #squadSelection[data-pilot='bob'] .hangar-art-portrait {
+  border-color: #80efff99;
+}
+#hangarArtImage[hidden],
+#hangarCanvas[hidden],
+#hangarTools[hidden] {
+  display: none !important;
+}
+.nova-fleet-concept {
+  padding: 8px;
+  margin: 7px 0 12px;
+  display: grid;
+  grid-template-columns: minmax(140px, 0.7fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #5f9bbf45;
+  border-radius: 10px;
+  background: #071c2cbd;
+}
+.nova-fleet-concept-image {
+  width: 100%;
+  height: 115px;
+  border-radius: 8px;
+  background-image: var(--five-cats-ships);
+  background-position: 0% 50%;
+  background-size: 500% 100%;
+  background-repeat: no-repeat;
+}
+#squadSelection[data-pilot='bob'] .nova-fleet-concept-image {
+  background-position: 25% 50%;
+}
+#squadSelection[data-pilot='christopher'] .nova-fleet-concept-image {
+  background-position: 50% 50%;
+}
+#squadSelection[data-pilot='calvin'] .nova-fleet-concept-image {
+  background-position: 75% 50%;
+}
+#squadSelection[data-pilot='jenifer'] .nova-fleet-concept-image {
+  background-position: 100% 50%;
+}
+.nova-fleet-concept figcaption {
+  color: #b2d0dc;
+  font: 700 10px/1.65 monospace;
+  letter-spacing: 0.03em;
+}
+#pilotRankInsignia.pilot-rank-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+#pilotRankInsignia.pilot-rank-line::before {
+  content: '';
+  width: 58px;
+  height: 42px;
+  flex: 0 0 58px;
+  background-image: var(--five-cats-ranks);
+  background-size: 400% 200%;
+  background-repeat: no-repeat;
+  background-position: 0% 0%;
+}
+#pilotRankInsignia[data-rank='2']::before {
+  background-position: 33.333% 0%;
+}
+#pilotRankInsignia[data-rank='3']::before {
+  background-position: 66.667% 0%;
+}
+#pilotRankInsignia[data-rank='4']::before {
+  background-position: 100% 0%;
+}
+#pilotRankInsignia[data-rank='5']::before {
+  background-position: 0% 100%;
+}
+#pilotRankInsignia[data-rank='6']::before {
+  background-position: 33.333% 100%;
+}
+#pilotRankInsignia[data-rank='7']::before,
+#pilotRankInsignia[data-rank='8']::before {
+  background-position: 66.667% 100%;
+}
+#pilotRankInsignia[data-rank='9']::before,
+#pilotRankInsignia[data-rank='10']::before {
+  background-position: 100% 100%;
+}
+.cat-service-card .cat-service-avatar {
+  padding: 0;
+  background-image: var(--five-cats-portraits);
+  background-size: 500% 100%;
+  background-repeat: no-repeat;
+}
+.cat-service-card .cat-service-avatar svg {
+  display: none;
+}
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-position: 25% 50%;
+}
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-position: 50% 50%;
+}
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-position: 75% 50%;
+}
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-position: 100% 50%;
+}
+.nova-art-arsenal {
+  margin-top: 9px;
+  border: 1px solid #649cbc66;
+  border-radius: 10px;
+  padding: 10px;
+  background: #071724c9;
+}
+.nova-art-arsenal summary {
+  cursor: pointer;
+  font: 700 11px/1.4 monospace;
+  color: #95f2ef;
+}
+.nova-art-arsenal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.nova-art-arsenal figure {
+  margin: 0;
+  min-width: 0;
+}
+.nova-art-arsenal img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #589ca355;
+  border-radius: 8px;
+}
+.nova-art-arsenal figcaption,
+.nova-art-arsenal > small {
+  display: block;
+  margin-top: 5px;
+  font: 9px/1.6 monospace;
+  color: #adc7d1;
+}
+@media (max-width: 650px) {
+  .hangar-art-portrait {
+    width: min(90%, 250px);
+    height: 235px;
+  }
+  .nova-fleet-concept {
+    grid-template-columns: 42% minmax(0, 1fr);
+    gap: 7px;
+  }
+  .nova-fleet-concept-image {
+    height: 85px;
+  }
+  .nova-fleet-concept figcaption {
+    font-size: 8px;
+  }
+  .nova-art-arsenal-grid {
+    grid-template-columns: 1fr;
+  }
+  #pilotRankInsignia.pilot-rank-line::before {
+    width: 42px;
+    height: 30px;
+    flex-basis: 42px;
+  }
+}
+
+/* Detailed individual showcase portraits. Never substitute the older composite Bob. */
+.showroom-web #squadSelection[data-pilot='bia'] .profile-portrait,
+.showroom-web #squadSelection[data-pilot='bia'] .hangar-art-portrait {
+  background-image: url('src/assets/bia-spotlight.webp');
+}
+.showroom-web #squadSelection[data-pilot='christopher'] .profile-portrait,
+.showroom-web #squadSelection[data-pilot='christopher'] .hangar-art-portrait {
+  background-image: url('src/assets/christopher-spotlight.webp');
+}
+.showroom-web #squadSelection[data-pilot='calvin'] .profile-portrait,
+.showroom-web #squadSelection[data-pilot='calvin'] .hangar-art-portrait {
+  background-image: url('src/assets/calvin-spotlight.webp');
+}
+.showroom-web #squadSelection[data-pilot='jenifer'] .profile-portrait,
+.showroom-web #squadSelection[data-pilot='jenifer'] .hangar-art-portrait {
+  background-image: url('src/assets/jenifer-spotlight.webp');
+}
+.showroom-web #squadSelection[data-pilot='bob'] .profile-portrait,
+.showroom-web #squadSelection[data-pilot='bob'] .hangar-art-portrait {
+  background-image: url('src/assets/bob-spotlight.webp');
+}
+.showroom-web #squadSelection .profile-portrait,
+.showroom-web #squadSelection .hangar-art-portrait {
+  background-size: cover;
+  background-position: center 18%;
+}
+
+/* The same approved individual art now identifies each pilot everywhere:
+ * hangar roster, current pilot HUD, rank cards, radio and story dialogue.
+ * The previous composite incorrectly showed Bob with the wrong features. */
+:root {
+  --nw-bia-portrait: url('src/assets/bia-spotlight.webp');
+  --nw-bob-portrait: url('src/assets/bob-spotlight.webp');
+  --nw-christopher-portrait: url('src/assets/christopher-spotlight.webp');
+  --nw-calvin-portrait: url('src/assets/calvin-spotlight.webp');
+  --nw-jenifer-portrait: url('src/assets/jenifer-spotlight.webp');
+}
+.showroom-web #pilot-bia .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bia'],
+#comms #commsPortrait[data-pilot='bia'],
+#cinematicPortrait[data-pilot='bia'],
+.cat-service-card[data-pilot='bia'] .cat-service-avatar {
+  background-image: var(--nw-bia-portrait);
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'],
+#comms #commsPortrait[data-pilot='bob'],
+#cinematicPortrait[data-pilot='bob'],
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-image: var(--nw-bob-portrait);
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'],
+#comms #commsPortrait[data-pilot='christopher'],
+#cinematicPortrait[data-pilot='christopher'],
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-image: var(--nw-christopher-portrait);
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'],
+#comms #commsPortrait[data-pilot='calvin'],
+#cinematicPortrait[data-pilot='calvin'],
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-image: var(--nw-calvin-portrait);
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'],
+#comms #commsPortrait[data-pilot='jenifer'],
+#cinematicPortrait[data-pilot='jenifer'],
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-image: var(--nw-jenifer-portrait);
+}
+.showroom-web .pilot-roster .cat-avatar,
+.showroom-web .cat-avatar[data-pilot],
+#comms #commsPortrait[data-pilot],
+#cinematicPortrait[data-pilot],
+.cat-service-card[data-pilot] .cat-service-avatar {
+  background-size: cover;
+  background-position: center 18%;
+  background-repeat: no-repeat;
+}
+
+/* Marvin has his own authored illustration, not a sixth Five Cats pilot slot. */
+.nova-villain-dossier {
+  border: 1px solid #db69776b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #2c0d1eeb, #091726ed);
+}
+.nova-villain-dossier > summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: #ffb5ac;
+  font: 800 12px/1.5 monospace;
+  letter-spacing: 0.04em;
+}
+.nova-villain-dossier > summary span {
+  color: #ffd2cc;
+  font-size: 13px;
+}
+.nova-villain-dossier figure {
+  margin: 10px 0 2px;
+  display: grid;
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.nova-villain-dossier img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9px;
+  border: 1px solid #ff827266;
+}
+.nova-villain-dossier figcaption {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  font: 11px/1.5 monospace;
+  color: #eac6c8;
+}
+.nova-villain-dossier figcaption strong {
+  color: #ffe0d5;
+  font: 800 20px/1.2 monospace;
+}
+.nova-villain-dossier figcaption span {
+  color: #ff989a;
+  font-size: 10px;
+}
+.nova-villain-dossier figcaption p {
+  margin: 0;
+}
+
+/* Character-specific visual framing: preserve ears, readable eyes and the
+ * costume silhouette across 54px radio avatars, shallow rank cards and
+ * large hangar art. Bob always uses the corrected solo artwork. */
+.showroom-web #squadSelection[data-pilot='bia'] {
+  --nw-hero-x: 85%;
+  --nw-hero-y: 4%;
+  --nw-profile-x: 65%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='bob'] {
+  --nw-hero-x: 50%;
+  --nw-hero-y: 7%;
+  --nw-profile-x: 50%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='christopher'] {
+  --nw-hero-x: 28%;
+  --nw-hero-y: 3%;
+  --nw-profile-x: 40%;
+  --nw-profile-y: 0%;
+}
+.showroom-web #squadSelection[data-pilot='calvin'] {
+  --nw-hero-x: 90%;
+  --nw-hero-y: 10%;
+  --nw-profile-x: 65%;
+  --nw-profile-y: 5%;
+}
+.showroom-web #squadSelection[data-pilot='jenifer'] {
+  --nw-hero-x: 18%;
+  --nw-hero-y: 14%;
+  --nw-profile-x: 38%;
+  --nw-profile-y: 8%;
+}
+.showroom-web #squadSelection[data-pilot] .hangar-art-portrait {
+  background-size: 128% auto;
+  background-position: var(--nw-hero-x, 50%) var(--nw-hero-y, 5%);
+}
+.showroom-web #squadSelection[data-pilot] .profile-portrait {
+  background-size: auto 155%;
+  background-position: var(--nw-profile-x, 50%) var(--nw-profile-y, 0%);
+}
+
+/* Small identity portraits are face crops, never whole-body thumbnails. */
+.showroom-web #pilot-bia .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bia'],
+#comms #commsPortrait[data-pilot='bia'],
+#cinematicPortrait[data-pilot='bia'],
+.cat-service-card[data-pilot='bia'] .cat-service-avatar {
+  background-position: 70% 0%;
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'],
+#comms #commsPortrait[data-pilot='bob'],
+#cinematicPortrait[data-pilot='bob'],
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-position: 50% 0%;
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'],
+#comms #commsPortrait[data-pilot='christopher'],
+#cinematicPortrait[data-pilot='christopher'],
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-position: 40% 0%;
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'],
+#comms #commsPortrait[data-pilot='calvin'],
+#cinematicPortrait[data-pilot='calvin'],
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-position: 72% 0%;
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'],
+#comms #commsPortrait[data-pilot='jenifer'],
+#cinematicPortrait[data-pilot='jenifer'],
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-position: 35% 3%;
+}
+.showroom-web .pilot-roster .cat-avatar,
+.showroom-web .cat-avatar[data-pilot],
+#comms #commsPortrait[data-pilot],
+#cinematicPortrait[data-pilot],
+.cat-service-card[data-pilot] .cat-service-avatar {
+  background-size: 175% auto;
+  background-repeat: no-repeat;
+}
+
+/* Real gameplay pilot HUD identity, independent of the menu/showroom state.
+ * The same approved portrait follows every pilot relay and respawn. */
+body.in-mission #pilotHudAvatar[data-pilot] {
+  background-size: 175% auto;
+  background-repeat: no-repeat;
+}
+body.in-mission #pilotHudAvatar[data-pilot='bia'] {
+  background-image: var(--nw-bia-portrait);
+  background-position: 70% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='bob'] {
+  background-image: var(--nw-bob-portrait);
+  background-position: 50% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='christopher'] {
+  background-image: var(--nw-christopher-portrait);
+  background-position: 40% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='calvin'] {
+  background-image: var(--nw-calvin-portrait);
+  background-position: 72% 0%;
+}
+body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
+  background-image: var(--nw-jenifer-portrait);
+  background-position: 35% 3%;
 }

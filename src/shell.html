@@ -265,6 +265,9 @@
       <span id="mechaMultiTarget11" hidden class="nw-mecha-target" aria-hidden="true">12</span>
     </div>
     <div id="petCareHud" hidden aria-label="Itens resgatados para cuidar dos gatos"></div>
+    <button type="button" id="launchSkip" hidden aria-label="Pular decolagem e assumir o controle">
+      PULAR DECOLAGEM
+    </button>
     <div id="vignette"></div>
     <div id="flash"></div>
     <div id="hudNotices" aria-label="Avisos e comunicação da missão">
@@ -495,6 +498,7 @@
               <div class="hangar-tabs" role="group" aria-label="Objeto em inspeção">
                 <button id="hangarShip" aria-pressed="true">NAVE 360°</button>
                 <button id="hangarPilot" aria-pressed="false">PILOTO 360°</button>
+                <button id="hangarArt" aria-pressed="false">ARTE DOS GATOS</button>
               </div>
               <canvas
                 id="hangarCanvas"
@@ -502,8 +506,20 @@
                 role="img"
                 aria-label="Modelo 3D. Arraste para girar; setas inclinam e giram, mais e menos ajustam o zoom, Home restaura."
               ></canvas>
+              <div
+                id="hangarArtImage"
+                class="hangar-art-portrait"
+                role="img"
+                aria-label="Arte de destaque do piloto Five Cats selecionado"
+                hidden
+              ></div>
               <div class="hangar-floor"></div>
-              <div class="hangar-tools" role="group" aria-label="Controles de inspeção">
+              <div
+                id="hangarTools"
+                class="hangar-tools"
+                role="group"
+                aria-label="Controles de inspeção"
+              >
                 <button id="hangarLeft" aria-label="Girar para a esquerda">↶</button>
                 <button id="hangarRight" aria-label="Girar para a direita">↷</button>
                 <button id="hangarZoomOut" aria-label="Afastar">−</button>
@@ -611,6 +627,17 @@
             <small id="shipStats" data-hangar-section="ships"
               >ATAQUE 0 · DEFESA 0 · AGILIDADE 0</small
             >
+            <figure class="nova-fleet-concept" data-hangar-section="ships">
+              <div
+                id="fleetConceptPreview"
+                class="nova-fleet-concept-image"
+                role="img"
+                aria-label="Nave conceitual associada ao piloto selecionado"
+              ></div>
+              <figcaption>
+                ARTE DA ESQUADRILHA · O MODELO 3D ACIMA É A NAVE JOGÁVEL COM A COR SELECIONADA
+              </figcaption>
+            </figure>
             <details id="loadoutCatalog" data-hangar-section="arsenal">
               <summary>ARSENAL E EVOLUÇÕES <span>VER GALERIA</span></summary>
               <div class="loadout-catalog">
@@ -640,6 +667,37 @@
                   ><small>Barreira / Nova / Estase</small>
                 </article>
               </div>
+            </details>
+            <details class="nova-art-arsenal" data-hangar-section="arsenal">
+              <summary>ARTES DE REFERÊNCIA · ARMAS E PODS</summary>
+              <div class="nova-art-arsenal-grid">
+                <figure>
+                  <img
+                    loading="lazy"
+                    decoding="async"
+                    width="1030"
+                    height="579"
+                    src="src/assets/nova-wing-weapons-concept.webp"
+                    alt="Arte conceitual da evolução de armas da Nova Wing"
+                  />
+                  <figcaption>EVOLUÇÃO DAS ARMAS · CONCEITO VISUAL</figcaption>
+                </figure>
+                <figure>
+                  <img
+                    loading="lazy"
+                    decoding="async"
+                    width="1030"
+                    height="579"
+                    src="src/assets/nova-wing-pods-concept.webp"
+                    alt="Arte conceitual da evolução dos pods da Nova Wing"
+                  />
+                  <figcaption>EVOLUÇÃO DOS PODS · CONCEITO VISUAL</figcaption>
+                </figure>
+              </div>
+              <small
+                >Imagens ilustrativas. Desbloqueios e estatísticas são controlados pelo jogo, não
+                pelas artes.</small
+              >
             </details>
           </section>
           <div class="title-actions">
@@ -726,6 +784,31 @@
               class="cat-rank-cards"
               aria-label="Patentes individuais dos cinco pilotos"
             ></div>
+          </details>
+          <details
+            id="marvinDossier"
+            class="nova-villain-dossier"
+            aria-label="Dossiê do vilão Marvin"
+          >
+            <summary>◆ DOSSIÊ DO VILÃO <span>MARVIN</span></summary>
+            <figure>
+              <img
+                src="src/assets/marvin-spotlight.webp"
+                width="420"
+                height="380"
+                loading="lazy"
+                decoding="async"
+                alt="Marvin, o pitbull marrom e branco com armadura negra e detalhes vermelhos"
+              />
+              <figcaption>
+                <strong>MARVIN</strong>
+                <span>COMANDANTE DA FROTA CARMESIM</span>
+                <p>
+                  O adversário dos Five Cats. Conheça sua identidade antes de enfrentá-lo nas
+                  missões.
+                </p>
+              </figcaption>
+            </figure>
           </details>
           <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
             <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
@@ -1312,8 +1395,77 @@
           </div>
           <div class="campaign-map-actions">
             <button id="mapBack" type="button">VOLTAR AO HANGAR</button>
+            <button id="mapTrain" type="button" hidden>TREINAR COMANDOS</button>
             <button class="primary" id="mapLaunch" type="button">INICIAR PRÓXIMA FASE ↗</button>
           </div>
+        </div>
+      </section>
+      <section
+        id="preflightTraining"
+        class="preflight-training"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Treino de comandos do Nova Wing"
+      >
+        <div class="training-shell">
+          <header class="training-header">
+            <div>
+              <span class="eyebrow">FIVE CATS / SIMULADOR DE VOO</span>
+              <h2>TREINAMENTO DE PILOTAGEM</h2>
+              <p>Teste a sua nave antes da missão. Sem inimigos, dano ou cronômetro.</p>
+            </div>
+            <strong id="trainingProgress" aria-live="polite">0 / 6 COMANDOS TESTADOS</strong>
+          </header>
+          <div class="training-grid">
+            <div class="training-viewport">
+              <canvas
+                id="trainingCanvas"
+                aria-label="Simulação 3D de voo com a nave selecionada"
+              ></canvas>
+              <span id="trainingShipLabel" class="training-ship-label">FIVE CATS</span>
+              <strong id="trainingPrompt" aria-live="polite">PRATIQUE: MOVIMENTAR</strong>
+              <div class="training-direction" aria-label="Direcional do treino">
+                <button type="button" id="trainingUp" aria-label="Subir">▲</button>
+                <div>
+                  <button type="button" id="trainingLeft" aria-label="Esquerda">◀</button>
+                  <button type="button" id="trainingDown" aria-label="Descer">▼</button>
+                  <button type="button" id="trainingRight" aria-label="Direita">▶</button>
+                </div>
+              </div>
+              <div class="training-thrust-controls">
+                <button type="button" id="trainingFire">TIRO</button>
+                <button type="button" id="trainingBoost">BOOST</button>
+              </div>
+            </div>
+            <div class="training-exercises" aria-label="Exercícios de pilotagem">
+              <div id="trainingTask-move">
+                <strong>MOVIMENTAR</strong><small>WASD / SETAS ou direcional</small>
+              </div>
+              <div id="trainingTask-fire"><strong>ATIRAR</strong><small>ESPAÇO ou TIRO</small></div>
+              <div id="trainingTask-boost">
+                <strong>ACELERAR</strong><small>SHIFT ou BOOST</small>
+              </div>
+              <div id="trainingTask-roll">
+                <strong>GIRO DEFENSIVO</strong><small>Q / E / Z ou GIRO</small>
+              </div>
+              <div id="trainingTask-transform">
+                <strong>TRANSFORMAR</strong><small>T ou ROBÔ</small>
+              </div>
+              <div id="trainingTask-camera">
+                <strong>TROCAR CÂMERA</strong><small>C ou CÂMERA</small>
+              </div>
+              <div class="training-secondary-controls">
+                <button type="button" id="trainingRoll">GIRO</button>
+                <button type="button" id="trainingTransform">ROBÔ</button>
+                <button type="button" id="trainingCamera">CÂMERA</button>
+              </div>
+            </div>
+          </div>
+          <footer class="training-actions">
+            <button type="button" id="trainingBack">VOLTAR AO MAPA</button>
+            <button type="button" class="primary" id="trainingLaunch">INICIAR MISSÃO ↗</button>
+          </footer>
         </div>
       </section>
       <section id="result" hidden>
