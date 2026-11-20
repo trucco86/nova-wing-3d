@@ -155,7 +155,7 @@ test('selected ship and paint stay on the same real fighter across the launch ha
     assert.equal(escort.shipModel, 'ship-model-' + profile.model);
     assert.equal(escort.paintedColor, new T.Color(shipColorAt(profile.color).color).getHexString());
   }
-  h.advance(SQUAD_INTRO_DURATION - 1.1 + 0.1);
+  h.advance(SQUAD_INTRO_DURATION - 1.1 + 0.01);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.heroShip.visible, true);
@@ -188,7 +188,7 @@ test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immed
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(SQUAD_INTRO_DURATION + 0.1);
   const before = h.game.snapshot().strategy.arcana;
   h.key('KeyY');
   assert.ok(h.game.snapshot().fiveCats.plasmaTime > 0);
@@ -204,7 +204,7 @@ test('O launches Five Cats overdrive with actual wingman meshes and cooldown', (
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(SQUAD_INTRO_DURATION + 0.1);
   h.key('KeyO');
   assert.ok(h.game.snapshot().fiveCats.overdriveTime > 0);
   h.advance(0.1);
