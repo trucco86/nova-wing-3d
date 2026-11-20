@@ -58,12 +58,12 @@ export function createOrbit9StageArt() {
       emit(i % 3 ? 'cyan' : 'hazard', side * 53.75, 17.9, z - 4.8, 0.2, 0.23, 5.2);
       emit('conduit', side * 52.6, 22, z - 5, 1.35, 2.2, 10);
     }
-    // Suspended pipelines and protected maintenance galleries are high enough
-    // to preserve the 3rd-person camera and every clue interaction radius.
+    // The old 4.5m balcony crossed the follow camera when facing the reactor.
+    // Lift the galleries above the pilot and keep their horizontal profile narrow.
     emit('plating', side * 52, 23.5, -43, 4.2, 2, 111);
     emit('cyan', side * 49.3, 22.3, -43, 0.32, 0.35, 110);
-    emit('armor', side * 51, 4.5, -43, 6.0, 1.15, 110);
-    emit('amber', side * 47.3, 4.0, -43, 0.25, 0.23, 108);
+    emit('armor', side * 53, 15, -43, 3.0, 0.95, 110);
+    emit('amber', side * 51.1, 14.4, -43, 0.3, 0.22, 108);
     for (const z of [-7, -35, -63, -91]) {
       // Docking cranes visually echo the flight-stage carrier's maintenance bays.
       emit('armor', side * 48, 18.5, z, 2.5, 10, 2.5);
@@ -103,16 +103,19 @@ export function createOrbit9StageArt() {
   emit('armor', -45, 11, -28, 13, 2.6, 3.4);
   emit('cyan', -45, 9.6, -28, 10, 0.26, 0.5);
 
-  // Reactor plaza: two coolant towers and inspection pipelines flank the EAST wall.
-  // The evidence position at (39,-55) stays visually open and interactive.
+  // Reactor plaza: open-framed cooling racks replace solid 8m crates in the
+  // foreground. Keep every frame beside the EAST wall, clear of (39,-55).
   for (const z of [-42, -78]) {
-    emit('plating', 49.5, 4.4, z, 8, 8.4, 8);
-    emit('armor', 49.5, 9.0, z, 9, 1.3, 9);
-    emit('hazard', 45.2, 4.1, z, 0.45, 5.9, 6.5);
-    emit('cyan', 49.5, 9.9, z, 5.2, 0.3, 5.2);
+    for (const offset of [-2.9, 2.9]) {
+      emit('armor', 53.8, 6.8, z + offset, 1.1, 12.6, 1.2);
+      emit('plating', 52.6, 7.6, z + offset, 2.2, 0.4, 1.4);
+    }
+    emit('armor', 53.8, 13.2, z, 3.8, 1.15, 8.3);
+    emit('cyan', 51.6, 10.6, z, 0.3, 4.1, 5.3);
+    emit('hazard', 51.4, 4.8, z, 0.25, 3.2, 5.3);
   }
-  emit('conduit', 53, 13.2, -60, 2.2, 2.2, 43);
-  emit('amber', 52.8, 12.8, -60, 0.4, 0.35, 39);
+  emit('conduit', 55.0, 16, -60, 1.8, 1.8, 43);
+  emit('amber', 53.7, 15.9, -60, 0.33, 0.28, 39);
   // Archive district: protected memory stacks and recognizable vertical grilles.
   for (const z of [-72, -80, -88, -96]) {
     emit('plating', -51, 5, z, 4.9, 9, 5.7);
@@ -137,8 +140,12 @@ export function createOrbit9StageArt() {
         })
       : new T.MeshStandardMaterial({
           color: ORBIT9_DEVASTADOR_PALETTE[name],
-          metalness: name === 'glass' ? 0.4 : 0.78,
-          roughness: name === 'glass' ? 0.3 : 0.36,
+          // Without a baked environment map, fully metallic pieces render
+          // nearly black on mobile. Keep the carrier steel legible under fill light.
+          metalness: name === 'glass' ? 0.36 : 0.53,
+          roughness: name === 'glass' ? 0.3 : 0.43,
+          emissive: name === 'plating' ? '#162839' : '#263b4c',
+          emissiveIntensity: name === 'plating' ? 0.18 : 0.25,
         });
     const parts = definitions[name];
     if (!parts.length) continue;
