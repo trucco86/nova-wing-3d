@@ -12008,3 +12008,58 @@ body.intermission-active #shop #nextSector {
   background-size: cover;
   background-position: center 18%;
 }
+
+/* The same approved individual art now identifies each pilot everywhere:
+ * hangar roster, current pilot HUD, rank cards, radio and story dialogue.
+ * The previous composite incorrectly showed Bob with the wrong features. */
+:root {
+  --nw-bia-portrait: url('src/assets/bia-spotlight.webp');
+  --nw-bob-portrait: url('src/assets/bob-spotlight.webp');
+  --nw-christopher-portrait: url('src/assets/christopher-spotlight.webp');
+  --nw-calvin-portrait: url('src/assets/calvin-spotlight.webp');
+  --nw-jenifer-portrait: url('src/assets/jenifer-spotlight.webp');
+}
+.showroom-web #pilot-bia .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bia'],
+#comms #commsPortrait[data-pilot='bia'],
+#cinematicPortrait[data-pilot='bia'],
+.cat-service-card[data-pilot='bia'] .cat-service-avatar {
+  background-image: var(--nw-bia-portrait);
+}
+.showroom-web #pilot-bob .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='bob'],
+#comms #commsPortrait[data-pilot='bob'],
+#cinematicPortrait[data-pilot='bob'],
+.cat-service-card[data-pilot='bob'] .cat-service-avatar {
+  background-image: var(--nw-bob-portrait);
+}
+.showroom-web #pilot-christopher .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='christopher'],
+#comms #commsPortrait[data-pilot='christopher'],
+#cinematicPortrait[data-pilot='christopher'],
+.cat-service-card[data-pilot='christopher'] .cat-service-avatar {
+  background-image: var(--nw-christopher-portrait);
+}
+.showroom-web #pilot-calvin .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='calvin'],
+#comms #commsPortrait[data-pilot='calvin'],
+#cinematicPortrait[data-pilot='calvin'],
+.cat-service-card[data-pilot='calvin'] .cat-service-avatar {
+  background-image: var(--nw-calvin-portrait);
+}
+.showroom-web #pilot-jenifer .cat-avatar,
+.showroom-web .cat-avatar[data-pilot='jenifer'],
+#comms #commsPortrait[data-pilot='jenifer'],
+#cinematicPortrait[data-pilot='jenifer'],
+.cat-service-card[data-pilot='jenifer'] .cat-service-avatar {
+  background-image: var(--nw-jenifer-portrait);
+}
+.showroom-web .pilot-roster .cat-avatar,
+.showroom-web .cat-avatar[data-pilot],
+#comms #commsPortrait[data-pilot],
+#cinematicPortrait[data-pilot],
+.cat-service-card[data-pilot] .cat-service-avatar {
+  background-size: cover;
+  background-position: center 18%;
+  background-repeat: no-repeat;
+}
