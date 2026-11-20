@@ -345,17 +345,20 @@ export function installOrbit9ExplorationPreview(
     stageArt = createOrbit9StageArt();
     scene.add(stageArt);
     beacons = CLUE_POSITIONS.map(([x, z], i) => {
-      const ring = new T.Mesh(new T.TorusGeometry(2.8, 0.25, 8, 28), line);
+      // An evidence marker must be beside the cat, not floating above its
+      // head and masquerading as blue fur in the third-person view. The
+      // gameplay clue coordinate stays exact; the display is a nearby prop.
+      const markerX = x + (i === 1 ? -3.4 : 3.4);
+      const markerZ = z - 3.2;
+      const ring = new T.Mesh(new T.TorusGeometry(2.3, 0.22, 8, 28), line);
       ring.rotation.x = -Math.PI / 2;
-      ring.position.set(x, 0.4, z);
+      ring.position.set(markerX, 0.4, markerZ);
       scene.add(ring);
-      // The original 2.1m hologram at y=4 hid the selected cat's head when
-      // standing on an evidence marker. Keep the readable signal above the pilot.
       const core = new T.Mesh(new T.OctahedronGeometry(1.08, 1), mat('#55f2ff', '#106a9a'));
-      core.position.set(x, 6.35, z);
+      core.position.set(markerX, 4.9, markerZ);
       core.name = 'orbit9-clue-' + i;
       scene.add(core);
-      makeBox(3.8, 1.5, 3.8, dark, x, 0.7, z);
+      makeBox(3.2, 1.5, 3.2, dark, markerX, 0.7, markerZ);
       return { core, ring };
     });
     npc = new T.Group();
