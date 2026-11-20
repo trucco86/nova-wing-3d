@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.157 — Órbita-9: direção de arte da Devastador, fase 4
+
+- A exploração livre passa a compartilhar a linguagem industrial da fase 4: aço azul-acinzentado, blindagem reforçada, conduítes, vidro de diagnóstico e iluminação em ciano, âmbar e vermelho.
+- Átrio central com equipamento do reator, laboratório de sinais com consoles, praça do reator com módulos de resfriamento e arquivos com bancos de memória e a porta final do corredor.
+- Pisos modulares, passarelas, guindastes de manutenção, estruturas do teto, sinalização de segurança e molduras de blindagem ampliam profundidade e escala do cenário sem repetir anéis decorativos.
+- Geometria estática em oito lotes instanciados no WebGL. Elementos novos são apenas visuais e não alteram colisões, pistas, sobrevivente, save nem ranking.
+- Testes de identidade, materiais, geometria, layout e Playwright por distrito com screenshots; candidato de QA sujeito à validação visual mobile, não publicar sem aprovação.
+
 ## 1.27.156 — Caminhada articulada e controles unificados na Órbita-9
 
 - O piloto escolhido mantém o mesmo modelo 3D do hangar e ganha caminhada com quadris, joelhos e braços articulados, sincronizada com o deslocamento efetivo.
