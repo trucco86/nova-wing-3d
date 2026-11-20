@@ -2473,12 +2473,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
                 flatShading: true,
               })
             : mat;
-        const field = new T.InstancedMesh(geo, fieldMaterial, 60);
+        // Europa has a distinct hero vault and authored ridges now; reserve
+        // more negative space around it and fewer repeated background cliffs.
+        const fieldCount = sceneryTheme === 'ice' ? 40 : 60;
+        const field = new T.InstancedMesh(geo, fieldMaterial, fieldCount);
         field.name = 'premium-instanced-' + sceneryTheme + '-far-field';
         field.userData.visualOnly = true;
         field.frustumCulled = false;
         const transform = new T.Object3D();
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < fieldCount; i++) {
           transform.position.set(
             (i % 2 ? 1 : -1) * rnd(125, 260),
             sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
