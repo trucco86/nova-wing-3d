@@ -46,3 +46,13 @@ Esses passos são critérios de revisão, não evidência de que o navegador foi
 - O dossiê só carrega a imagem quando expandido. Não altera o loop 3D, piloto selecionado, progresso, colisões ou balanceamento.
 - O painel conceitual de naves e as insígnias permanecem identificados como referência visual.
 - QA deve inspecionar a imagem do Marvin, os cinco retratos e os assets no domínio publicado em mobile e desktop.
+
+## Revisão de enquadramento individual (20/11/2026)
+
+- **Não trocar as ilustrações aprovadas**. Especialmente Bob mantém a nova arte solo com armadura escura e detalhes ciano.
+- Avatares de roster, rádio, história e patentes utilizam recorte facial ampliado (`175% auto`) para tornar olhos, orelhas e focinho legíveis, sem exibir o corpo inteiro em 42 a 54 pixels.
+- O retrato horizontal do perfil usa enquadramento de cabeça, ombros e armadura (`auto 155%`).
+- O destaque no hangar usa cabeça e tronco superior (`128% auto`) com pontos focais próprios para cada um dos cinco gatos.
+- Os pontos focais são declarados por personagem na folha de estilo, não em números globais que distorçam o enquadramento dos demais gatos.
+- Usar captura real do Playwright em desktop e portrait para verificar que nenhum rosto/orelha é cortado; os testes de CSS verificam os recursos e seus parâmetros, não substituem inspeção visual.
+- Não editar a arte original, alterar piloto, nave/skin selecionadas ou aumentar a memória WebGL para corrigir o enquadramento.
