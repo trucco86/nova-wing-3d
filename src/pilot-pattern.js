@@ -56,7 +56,7 @@ export function createPilotPatternReader() {
 // Existing boss hardware/weakpoint gates remain authoritative. Adaptive
 // choices only switch between already-authored, telegraphed attacks.
 export function adaptiveBossAttack({ sector, kind, phase, cycle, previousKind, pilotPattern }) {
-  if (!pilotPattern?.observed || phase < 2 || cycle <= 0 || cycle % 4 === 0) return kind;
+  if (cycle <= 0 || cycle % 4 === 0) return kind;
   const families = {
     0: ['rok-pincer', 'rok-ram'],
     1: ['stingray-scissor', 'stingray-sting'],
@@ -67,9 +67,10 @@ export function adaptiveBossAttack({ sector, kind, phase, cycle, previousKind, p
   };
   const pair = families[sector];
   if (!pair) return kind;
-  // One repeat is acceptable. Alternating if the pilot keeps forcing the
-  // same outcome avoids identical boss attacks on successive openings.
+  // Repeated choices are broken even before the movement model has enough
+  // samples, and even in phase one. Phase two unlocks additional counters.
   if (kind === previousKind) return pair.find((candidate) => candidate !== kind) ?? kind;
+  if (!pilotPattern?.observed || phase < 2) return kind;
   if (pilotPattern.axis === 'horizontal' && cycle % 3 === 2) return pair[1];
   if (pilotPattern.axis === 'vertical' && cycle % 3 === 2) return pair[0];
   if (pilotPattern.boostHeavy && cycle % 3 === 1) return pair[1];
