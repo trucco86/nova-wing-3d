@@ -1,0 +1,32 @@
+name: Orbit-9 visual and interaction targeted QA
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-walk-and-gamepad-20261120
+permissions:
+  contents: read
+jobs:
+  orbit9:
+    if: github.event.pull_request.head.ref == 'feat/orbit9-devastador-art-pass-20261120'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run build:check
+      - name: Verify Orbit-9 art, gait, camera, and survivor dialogue
+        run: npx playwright test tests/browser/orbit9-stage-art.spec.mjs tests/browser/exploration-vertical-slice.spec.mjs --project=mobile --project=desktop --workers=1
+      - name: Upload scene screenshots and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbit9-polished-visual-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
