@@ -224,8 +224,10 @@ export function installOrbit9ExplorationPreview(
     }
     for (let n = 0; n < 8; n++) {
       const z = 6 - n * 14;
-      makeBox(110, 1.8, 2, steel, 0, 16, z);
-      makeBox(63, 0.45, 1, line, 0, 14.9, z);
+      // Overhead structure stays above the third-person camera, preserving
+      // readable landmarks in both the plaza and side districts.
+      makeBox(110, 1.8, 2, steel, 0, 26, z);
+      makeBox(63, 0.45, 1, line, 0, 24.9, z);
     }
     // Collidable architectural landmarks give each district its own silhouette.
     ORBIT9_OBSTACLES.forEach((block, i) => {
