@@ -43,7 +43,17 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   const portrait = await page
     .locator('#profileAvatar')
     .evaluate((e) => getComputedStyle(e).backgroundImage);
-  expect(portrait).toContain('data:image/webp;base64,');
+  // The approved portrait can be served as a cacheable same-origin WebP
+  // instead of embedding a large base64 data URI in every page.
+  expect(
+    portrait.includes('data:image/webp;base64,') ||
+      portrait.includes('/src/assets/five-cats-portraits.webp'),
+  ).toBe(true);
+  if (portrait.includes('/src/assets/five-cats-portraits.webp')) {
+    const file = await page.request.get('/src/assets/five-cats-portraits.webp');
+    expect(file.ok()).toBe(true);
+    expect(file.headers()['content-type']).toContain('image/webp');
+  }
   await page.locator('#ship-aegis').click();
   await page.locator('#ship-color-gold').click();
   await expect(canvas).toHaveAttribute('data-model', 'aegis');
