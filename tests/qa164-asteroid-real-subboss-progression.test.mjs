@@ -75,6 +75,12 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
   h.game.pause();
 
   flyUntil(h, (s) => s.targets.some((enemy) => enemy.kind === 'subboss' && enemy.z > -130), 9, 'subboss attack approach');
+  // The real subboss has a three-second entry shield. Wait for the authored
+  // combat window so the bomb proves damage, not a bypass of invulnerability.
+  for (let i = 0; i < 8; i++) {
+    h.game.collect('shield');
+    h.advance(0.5, 0.1);
+  }
   const beforeDamage = h.game.snapshot().targets.find((enemy) => enemy.kind === 'subboss').life;
   h.game.bomb();
   const after = h.game.snapshot();
