@@ -6965,6 +6965,7 @@ body.ranking-intermission #novaRanking {
    mission instructions stay in the top rail and thumb controls in the footer. */
 #explorationOverlay[hidden],
 #explorationChoices[hidden],
+#explorationDialogue[hidden],
 #exploreLaunchCombat[hidden] {
   display: none !important;
 }
@@ -12231,4 +12232,187 @@ body.in-mission #pilotHudAvatar[data-pilot='calvin'] {
 body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   background-image: var(--nw-jenifer-portrait);
   background-position: 35% 3%;
+}
+
+/* Orbit-9 free-roam QA: compact orientation, no center-lane or touch obstruction. */
+.exploration-mini-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  box-sizing: border-box;
+  width: min(166px, 35vw);
+  padding: 7px;
+  border: 1px solid #72c7d391;
+  border-radius: 9px;
+  background: #03131ede;
+  color: #d9fbfa;
+  pointer-events: none;
+  box-shadow: 0 5px 20px #0008;
+}
+.exploration-mini-map strong {
+  display: block;
+  font: 800 9px/1.2 monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.exploration-mini-map small {
+  display: block;
+  margin-top: 4px;
+  font: 7px/1.2 monospace;
+  color: #c2dce4;
+}
+.exploration-map-grid {
+  position: relative;
+  height: 102px;
+  border: 1px solid #72aebb73;
+  border-radius: 4px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #509bb230 1px, transparent 1px),
+    linear-gradient(0deg, #509bb230 1px, transparent 1px),
+    radial-gradient(ellipse, #154153, #05131e 77%);
+  background-size:
+    20% 20%,
+    20% 20%,
+    auto;
+}
+#explorationMapSignals {
+  position: absolute;
+  inset: 0;
+}
+#explorationMapPlayer,
+.exploration-map-signal,
+.exploration-map-survivor {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, 50%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+#explorationMapPlayer {
+  z-index: 2;
+  background: #fff;
+  color: #fff;
+  border: 1px solid #061826;
+  width: 9px;
+  height: 9px;
+}
+.exploration-map-signal {
+  color: #62dfff;
+  background: #62dfff;
+}
+.exploration-map-signal.found {
+  color: #70ebb0;
+  background: #70ebb0;
+}
+.exploration-map-survivor {
+  color: #ffdc80;
+  background: #ffdc80;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+@media (max-width: 650px), (max-height: 520px) {
+  .exploration-mini-map {
+    top: 4px;
+    right: 4px;
+    width: 115px;
+    padding: 5px;
+  }
+  .exploration-mini-map strong {
+    font-size: 7px;
+  }
+  .exploration-mini-map small {
+    display: none;
+  }
+  .exploration-map-grid {
+    height: 66px;
+  }
+}
+
+/* Camera controls sit outside the travel lane and avoid the corner minimap. */
+.exploration-camera-tools {
+  position: absolute;
+  z-index: 4;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 5px;
+  pointer-events: auto;
+}
+.exploration-camera-tools button {
+  min-height: 42px;
+  min-width: 42px;
+  padding: 6px;
+  background: #09273ce8;
+  border-color: #84bac9;
+  box-shadow: 0 2px 9px #000b;
+  touch-action: manipulation;
+}
+.exploration-camera-tools #exploreCameraZoom {
+  min-width: 54px;
+  font-size: 10px;
+}
+.exploration-camera-tools button[aria-pressed='true'] {
+  border-color: #a7eecf;
+  background: #21584c;
+}
+.exploration-dialogue {
+  position: absolute;
+  z-index: 302;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-sizing: border-box;
+  width: min(420px, calc(100vw - 28px));
+  max-height: min(220px, calc(100dvh - 155px));
+  overflow: auto;
+  display: grid;
+  gap: 9px;
+  padding: 13px 16px;
+  border: 1px solid #6be5d6;
+  border-radius: 11px;
+  background: #041421f5;
+  color: #e6fcf5;
+  box-shadow: 0 14px 38px #000c;
+}
+.exploration-dialogue strong {
+  color: #7af7d3;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+.exploration-dialogue p {
+  margin: 0;
+  font:
+    600 13px/1.5 Arial,
+    sans-serif;
+}
+.exploration-dialogue button {
+  justify-self: end;
+  background: #15574e;
+}
+@media (max-width: 650px), (max-height: 520px) {
+  .exploration-camera-tools {
+    top: 4px;
+    left: 4px;
+    gap: 3px;
+  }
+  .exploration-camera-tools button {
+    min-height: 39px;
+    min-width: 36px;
+    padding: 5px;
+  }
+  .exploration-camera-tools #exploreCameraZoom {
+    min-width: 48px;
+  }
+  .exploration-dialogue {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .exploration-dialogue p {
+    font-size: 11px;
+  }
 }

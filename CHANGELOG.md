@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.155 — Órbita-9 com distritos exploráveis (candidata QA)
+
+- Libera circulação na estação por átrio, laboratório, reator e arquivos com obstáculos sólidos, colisão por deslizamento e paisagens diferentes por área.
+- Três pistas recolhíveis em regiões distintas, sobrevivente e escolha de rota originais preservados, com minimapa e nome do setor.
+- Reaproveita a modelagem felina 3D aprovada do hangar, sem criar um novo personagem incompatível com a arte.
+- Developer/QA continua isolado da campanha, sem salvar pistas ou pontuação, login ou ranking.
+- Câmera orbital com rotação por teclado, arraste e botões, modo panorâmico e correção de obstrução por pilares; diálogo do sobrevivente em três etapas antes da escolha de rota.
+- Testes determinísticos e Playwright de navegação, câmera, NPC e controles; revisão visual mobile e CI completa obrigatórias antes de integração.
+
 ## 1.27.153 — Abertura cinematográfica de lançamento da Cidade das Máquinas
 
 - Apresentação em 3D de cinco segundos com hangar reconhecível, quatro planos claros, portas abrindo, ignição e decolagem dos Five Cats.

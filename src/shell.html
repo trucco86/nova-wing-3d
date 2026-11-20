@@ -1500,12 +1500,44 @@
         <strong id="explorationProgress">ÓRBITA-9 · PISTAS 0/3</strong>
         <button id="exploreExit" type="button">SAIR / VOLTAR</button>
       </header>
-      <div
-        id="explorationViewport"
-        class="exploration-viewport"
-        aria-label="Cena 3D explorável"
-      ></div>
+      <div id="explorationViewport" class="exploration-viewport" aria-label="Cena 3D explorável">
+        <aside class="exploration-mini-map" aria-label="Mapa de exploração da estação Órbita-9">
+          <strong id="explorationDistrict">ÁTRIO DA ESTAÇÃO</strong>
+          <div class="exploration-map-grid" role="img" aria-label="Sua posição e pistas na estação">
+            <span id="explorationMapSignals" aria-hidden="true"></span>
+            <span id="explorationMapPlayer" aria-hidden="true"></span>
+          </div>
+          <small>AZUL: PISTAS · VERDE: COLETADAS · BRANCO: JOGADOR</small>
+        </aside>
+        <div class="exploration-camera-tools" aria-label="Controles da câmera de exploração">
+          <button id="exploreCameraLeft" type="button" aria-label="Girar câmera à esquerda">
+            ◀
+          </button>
+          <button
+            id="exploreCameraZoom"
+            type="button"
+            aria-label="Alternar câmera panorâmica"
+            aria-pressed="false"
+          >
+            VISTA
+          </button>
+          <button id="exploreCameraRight" type="button" aria-label="Girar câmera à direita">
+            ▶
+          </button>
+        </div>
+      </div>
       <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
+      <div
+        id="explorationDialogue"
+        hidden
+        class="exploration-dialogue"
+        role="region"
+        aria-label="Diálogo com o sobrevivente"
+      >
+        <strong id="exploreDialogueSpeaker">SOBREVIVENTE</strong>
+        <p id="exploreDialogueText"></p>
+        <button id="exploreDialogueNext" type="button">CONTINUAR</button>
+      </div>
       <div
         id="explorationChoices"
         hidden
@@ -1531,7 +1563,8 @@
           </button>
         </div>
         <small
-          >WASD / SETAS PARA ANDAR · E PARA INVESTIGAR · ESC PARA SAIR · QA SEM SAVE/RANKING</small
+          >WASD / SETAS PARA ANDAR · ARRASTE / Q R PARA GIRAR · C PARA VISTA · E PARA INVESTIGAR ·
+          QA SEM SAVE</small
         >
       </footer>
     </section>
