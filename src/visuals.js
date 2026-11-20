@@ -9,6 +9,7 @@ import {
   ANCIENT_WORLD_THEMES,
   createAlienArchitecture,
   setAlienArchitectureQuality,
+  updateAlienArchitecture,
 } from './alien-architecture.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
@@ -2589,6 +2590,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         time,
         travel,
       });
+      if (playing) {
+        // Authored monuments pass the flight path as a slow parallax layer.
+        // Instancing keeps their cost bounded, and the center lane remains free.
+        updateAlienArchitecture(
+          sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
+          travel,
+        );
+      }
       if (playing) {
         travel += speed * dt;
         // Ease the *visual* street motion out during vertical climb. The
