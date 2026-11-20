@@ -335,6 +335,18 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
   return Math.hypot(dx, dy) < r;
 }
 
+// Body rushes move the complete boss. Glaives, jaws of traps, mechanical arms,
+// tentacles and energy weapons instead strike with their own visible anatomy.
+// A full-body advance on these attacks looked like a camera zoom, not a hit.
+const BODY_RUSH_KINDS = new Set(['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting']);
+// At 0.7s the authored 1.4s strike sine is at maximum extension. Reuse this
+// moment for the single logical hit check, including on slower frame rates.
+export const BOSS_STRIKE_CONTACT_SECONDS = 0.7;
+export function bossMeleeContactReady(intent, state, attackAge) {
+  return !!intent && intent.kind !== 'barrage' && state === 'attack' &&
+    Number.isFinite(attackAge) && attackAge >= BOSS_STRIKE_CONTACT_SECONDS;
+}
+
 // Drives visual strikes while the real attack clock runs. No rogue timers or
 // physical collisions before the warning window.
 export function bossMeleePose(intent, state, phaseAge = 0) {
@@ -346,11 +358,7 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
     // During the visible contact beat, actually advance a short distance
     // toward the position that was telegraphed. Never home in on the player
     // after windup; the pilot can dodge the announced lane.
-    track: ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-      ? strike * 0.34
-      : ['claw-swipe', 'hammer-slam', 'cryo-pincer'].includes(intent.kind)
-        ? strike * 0.13
-        : 0,
+    track: BODY_RUSH_KINDS.has(intent.kind) ? strike * 0.34 : 0,
     exhaust:
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
@@ -359,13 +367,9 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
       intent.kind === 'marvin-rear-thruster-sweep'
         ? windup * 0.4 + strike
         : 0,
-    lunge:
-      intent.kind === 'reactor-vent'
-        ? 0
-        : strike *
-          (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-            ? 72
-            : 48),
+    // Do not translate the entire body on claw/tentacle/area attacks.
+    // Their attached VFX and moving limbs carry the motion, not a camera fake.
+    lunge: BODY_RUSH_KINDS.has(intent.kind) ? strike * 72 : 0,
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'hydra-two-head-crossfire' ||
