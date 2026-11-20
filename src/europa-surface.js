@@ -1,5 +1,8 @@
 import * as T from 'three';
-import { createEuropaCrystalCanyon, setEuropaCrystalCanyonQuality } from './europa-crystal-canyon.js';
+import {
+  createEuropaCrystalCanyon,
+  setEuropaCrystalCanyonQuality,
+} from './europa-crystal-canyon.js';
 
 const smooth = (value) => {
   const v = Math.max(0, Math.min(1, value));

@@ -44,9 +44,9 @@ function facetedIceCliff() {
   for (let row = 0; row < rings.length - 1; row++)
     for (let side = 0; side < sides; side++) {
       const a = row * sides + side;
-      const b = row * sides + (side + 1) % sides;
+      const b = row * sides + ((side + 1) % sides);
       const c = (row + 1) * sides + side;
-      const d = (row + 1) * sides + (side + 1) % sides;
+      const d = (row + 1) * sides + ((side + 1) % sides);
       indices.push(a, c, b, b, c, d);
     }
   const geometry = new T.BufferGeometry();
@@ -71,7 +71,11 @@ function crystallineShard() {
     const c = new T.Color(colorsAt[level]);
     for (let i = 0; i < 6; i++) {
       const angle = (i / 6) * Math.PI * 2;
-      positions.push(Math.cos(angle) * radius[level], height[level], Math.sin(angle) * radius[level]);
+      positions.push(
+        Math.cos(angle) * radius[level],
+        height[level],
+        Math.sin(angle) * radius[level],
+      );
       const shade = 0.8 + 0.2 * Math.sin(angle * 2 + level);
       colors.push(c.r * shade, c.g * shade, c.b * shade);
     }
@@ -79,9 +83,9 @@ function crystallineShard() {
   for (let level = 0; level < 3; level++)
     for (let i = 0; i < 6; i++) {
       const a = level * 6 + i;
-      const b = level * 6 + (i + 1) % 6;
+      const b = level * 6 + ((i + 1) % 6);
       const c = (level + 1) * 6 + i;
-      const d = (level + 1) * 6 + (i + 1) % 6;
+      const d = (level + 1) * 6 + ((i + 1) % 6);
       indices.push(a, c, b, b, c, d);
     }
   const g = new T.BufferGeometry();
@@ -174,8 +178,20 @@ export function createEuropaCrystalCanyon() {
 
   const shard = crystallineShard();
   for (const [name, count, tint, glow, highOnly] of [
-    ['europa-canyon-crystal-cyan', EUROPA_CANYON_BUDGET.cyanCrystalInstances, '#9eebff', '#287bba', false],
-    ['europa-canyon-crystal-violet', EUROPA_CANYON_BUDGET.violetCrystalInstances, '#dfa9ff', '#8431be', true],
+    [
+      'europa-canyon-crystal-cyan',
+      EUROPA_CANYON_BUDGET.cyanCrystalInstances,
+      '#9eebff',
+      '#287bba',
+      false,
+    ],
+    [
+      'europa-canyon-crystal-violet',
+      EUROPA_CANYON_BUDGET.violetCrystalInstances,
+      '#dfa9ff',
+      '#8431be',
+      true,
+    ],
   ]) {
     const crystal = instanced(
       root,

@@ -109,5 +109,8 @@ test('Europa crystal canyon does not add offscreen planetary props or a repeat o
   assert.equal(rings, 0, 'broken arcs are merged into one structure, not repeated torus props');
   const ground = root.getObjectByName('europa-canyon-grounded-cliffs');
   assert.equal(ground.material.isMeshStandardMaterial, true);
-  assert.equal(root.getObjectByName('europa-canyon-ancient-bridges').material.isMeshStandardMaterial, true);
+  assert.equal(
+    root.getObjectByName('europa-canyon-ancient-bridges').material.isMeshStandardMaterial,
+    true,
+  );
 });
