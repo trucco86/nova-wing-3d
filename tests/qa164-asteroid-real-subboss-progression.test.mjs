@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
+import { SECTORS } from '../src/campaign.js';
+import { SUBBOSS_BOSS_RECOVERY_SECONDS } from '../src/encounter-separation.js';
 
 /**
  * QA164 follows the same playable KeyQ -> side fragment -> central corridor
@@ -142,8 +144,19 @@ test('QA164: asteroid stage must traverse rocks before showing its real subboss'
     assert.equal(h.elements.get('bossIncoming').hidden, true, 'no warning before recovery');
   }
   assert.ok(h.game.snapshot().seconds - clearedAt >= 7.4);
-  state = flyUntil(h, () => !h.elements.get('bossIncoming').hidden, 3, 'post-subboss warning');
-  assert.ok(state.seconds - clearedAt >= 7.9, 'warning waits for the recovery gate');
+  // The encounter also respects the authored boss warning clock. Recovery
+  // can end before the final nine seconds of an 82-second asteroid mission.
+  const earliestWarning = Math.max(
+    clearedAt + SUBBOSS_BOSS_RECOVERY_SECONDS,
+    SECTORS[2].duration - 9,
+  );
+  state = flyUntil(
+    h,
+    () => !h.elements.get('bossIncoming').hidden,
+    Math.max(3, earliestWarning - h.game.snapshot().seconds + 3),
+    'post-subboss warning and mission clock',
+  );
+  assert.ok(state.seconds >= earliestWarning - 0.11, 'both boss timing gates must be satisfied');
   assert.equal(state.boss, false, 'warning must precede the final boss');
   assert.equal(state.asteroidInterior.course.complete, true);
 
