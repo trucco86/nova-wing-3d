@@ -1,0 +1,38 @@
+name: Orbit-9 RC v1.27.156 build synchronization
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-free-roam-hub-20261120
+permissions:
+  contents: write
+jobs:
+  prepare:
+    if: github.event.pull_request.head.ref == 'feat/orbit9-walk-and-gamepad-20261120' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format and regenerate v1.27.156
+        run: |
+          npx prettier --write package.json package-lock.json CHANGELOG.md releases/v1.27.156.md docs/qa/orbit9-walking-acceptance-20261120.md
+          npm run build
+          npm run build:check
+          node tools/version.mjs
+          node --test tests/orbit9-locomotion.test.mjs
+      - name: Commit synchronized candidate and self-remove
+        run: |
+          git config user.name "Nova Wing QA Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html package.json package-lock.json CHANGELOG.md releases/v1.27.156.md docs/qa/orbit9-walking-acceptance-20261120.md
+          git rm .github/workflows/orbit9-rc-sync.yml
+          git diff --cached --quiet || git commit -m "chore(orbit9): synchronize v1.27.156 candidate build and notes"
+          git push origin HEAD:feat/orbit9-walk-and-gamepad-20261120
