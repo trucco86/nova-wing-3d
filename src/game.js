@@ -5755,7 +5755,8 @@ export function createGame({
             // Europa's pincer must physically reach the pilot's hull, rather
             // than landing damage from an invisible 2D danger rectangle.
             // Ice-quake is an area shockwave, not a direct claw collision.
-            (sectorIndex !== 5 || bossIntent.kind !== 'cryo-pincer' ||
+            (sectorIndex !== 5 ||
+              bossIntent.kind !== 'cryo-pincer' ||
               europaClawContactHit(boss.getObjectByName('boss-europa-attack-vfx'), player.position))
           ) {
             hit(bossIntent.damage);
@@ -5769,7 +5770,6 @@ export function createGame({
             );
           }
         }
-
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;

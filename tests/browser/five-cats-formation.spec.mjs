@@ -52,7 +52,9 @@ test('stage-one uses six real camera angles and preserves selected hero through 
     heroId ??= data.heroShip.rootId;
     expect(data.heroShip.rootId).toBe(heroId);
     expect(data.seconds).toBe(0);
-    await page.screenshot({ path: info.outputPath('six-shot-' + shot + '-' + info.project.name + '.png') });
+    await page.screenshot({
+      path: info.outputPath('six-shot-' + shot + '-' + info.project.name + '.png'),
+    });
   }
   await page.evaluate(() => window.fixture.advance(1));
   const after = await page.evaluate(() => window.fixture.game.snapshot());

@@ -241,17 +241,24 @@ export function animateEuropaAttackVfx(
  * Damage still requires the separately latched radar predicate in game.js.
  */
 export function europaClawContactHit(root, pilotPosition) {
-  if (!root?.userData?.strikers || !pilotPosition ||
-      ![pilotPosition.x, pilotPosition.y, pilotPosition.z].every(Number.isFinite)) return false;
+  if (
+    !root?.userData?.strikers ||
+    !pilotPosition ||
+    ![pilotPosition.x, pilotPosition.y, pilotPosition.z].every(Number.isFinite)
+  )
+    return false;
   // At most two arms. Don't create a Box3/Vector3 per frame, or treat the
   // invisible flash meshes as active colliders during windup/recovery.
   root.updateWorldMatrix(true, true);
   for (const striker of root.userData.strikers) {
     if (!striker.node.visible || !striker.impact.visible) continue;
     striker.impact.getWorldPosition(contactWorld);
-    if (Math.abs(pilotPosition.x - contactWorld.x) <= CONTACT_HALF.x &&
-        Math.abs(pilotPosition.y - contactWorld.y) <= CONTACT_HALF.y &&
-        Math.abs(pilotPosition.z - contactWorld.z) <= CONTACT_HALF.z) return true;
+    if (
+      Math.abs(pilotPosition.x - contactWorld.x) <= CONTACT_HALF.x &&
+      Math.abs(pilotPosition.y - contactWorld.y) <= CONTACT_HALF.y &&
+      Math.abs(pilotPosition.z - contactWorld.z) <= CONTACT_HALF.z
+    )
+      return true;
   }
   return false;
 }

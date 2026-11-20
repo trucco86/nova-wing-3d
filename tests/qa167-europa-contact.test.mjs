@@ -37,10 +37,16 @@ test('Europa cryo pincer reaches player through its real animated tip, not a bod
 
 test('damaged generators remove their contact flashes and active striking arms', () => {
   const { root, aim } = fixture();
-  animateEuropaAttackVfx(root, 12.7, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim, [false, false]);
+  animateEuropaAttackVfx(root, 12.7, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim, [
+    false,
+    false,
+  ]);
   assert.equal(europaClawContactHit(root, pilot), false);
   assert.ok(root.userData.strikers.every((striker) => !striker.node.visible));
-  animateEuropaAttackVfx(root, 12.7, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim, [true, false]);
+  animateEuropaAttackVfx(root, 12.7, 3, 'attack', 'cryo-pincer', { claw: 0.85 }, aim, [
+    true,
+    false,
+  ]);
   assert.equal(europaClawContactHit(root, pilot), true);
   assert.equal(root.userData.strikers[1].node.visible, false);
 });
@@ -53,5 +59,7 @@ test('geometry remains stable across dodge, with no homing after locked windup',
   assert.equal(europaClawContactHit(root, missed), false);
   animateEuropaAttackVfx(root, 11.05, 2, 'attack', 'cryo-pincer', { claw: 0.85 }, aim);
   root.updateWorldMatrix(true, true);
-  assert.ok(root.userData.strikers[0].impact.getWorldPosition(new T.Vector3()).distanceTo(tip) < 0.001);
+  assert.ok(
+    root.userData.strikers[0].impact.getWorldPosition(new T.Vector3()).distanceTo(tip) < 0.001,
+  );
 });
