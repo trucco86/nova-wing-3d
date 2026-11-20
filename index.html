@@ -7828,7 +7828,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   .title-content
   > :not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras):not(#novaAuth):not(
     .title-help
-  ):not(#catRanks):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
+  ):not(#catRanks):not(#marvinDossier):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
   display: none !important;
 }
 #menu.title-screen[data-screen='splash'] {
@@ -7960,6 +7960,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu[data-screen='central'] .title-help,
 #menu[data-screen='central'] #novaAuth,
 #menu[data-screen='central'] #catRanks,
+#menu[data-screen='central'] #marvinDossier,
 #menu[data-screen='central'] #novaTrophies,
 #menu[data-screen='central'] #novaRanking,
 #menu[data-screen='central'] #developerPanel {
@@ -12081,6 +12082,60 @@ body.intermission-active #shop #nextSector {
   background-repeat: no-repeat;
 }
 
+/* Marvin has his own authored illustration, not a sixth Five Cats pilot slot. */
+.nova-villain-dossier {
+  border: 1px solid #db69776b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #2c0d1eeb, #091726ed);
+}
+.nova-villain-dossier > summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: #ffb5ac;
+  font: 800 12px/1.5 monospace;
+  letter-spacing: 0.04em;
+}
+.nova-villain-dossier > summary span {
+  color: #ffd2cc;
+  font-size: 13px;
+}
+.nova-villain-dossier figure {
+  margin: 10px 0 2px;
+  display: grid;
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.nova-villain-dossier img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9px;
+  border: 1px solid #ff827266;
+}
+.nova-villain-dossier figcaption {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  font: 11px/1.5 monospace;
+  color: #eac6c8;
+}
+.nova-villain-dossier figcaption strong {
+  color: #ffe0d5;
+  font: 800 20px/1.2 monospace;
+}
+.nova-villain-dossier figcaption span {
+  color: #ff989a;
+  font-size: 10px;
+}
+.nova-villain-dossier figcaption p {
+  margin: 0;
+}
+
     </style>
   </head>
   <body>
@@ -12850,6 +12905,31 @@ body.intermission-active #shop #nextSector {
               class="cat-rank-cards"
               aria-label="Patentes individuais dos cinco pilotos"
             ></div>
+          </details>
+          <details
+            id="marvinDossier"
+            class="nova-villain-dossier"
+            aria-label="Dossiê do vilão Marvin"
+          >
+            <summary>◆ DOSSIÊ DO VILÃO <span>MARVIN</span></summary>
+            <figure>
+              <img
+                src="src/assets/marvin-spotlight.webp"
+                width="420"
+                height="380"
+                loading="lazy"
+                decoding="async"
+                alt="Marvin, o pitbull marrom e branco com armadura negra e detalhes vermelhos"
+              />
+              <figcaption>
+                <strong>MARVIN</strong>
+                <span>COMANDANTE DA FROTA CARMESIM</span>
+                <p>
+                  O adversário dos Five Cats. Conheça sua identidade antes de enfrentá-lo nas
+                  missões.
+                </p>
+              </figcaption>
+            </figure>
           </details>
           <details id="novaTrophies" class="nova-trophies-panel" aria-label="Troféus Five Cats">
             <summary>◆ TROFÉUS <span id="novaTrophyCounter">0 / 41</span></summary>
