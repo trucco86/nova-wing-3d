@@ -1,6 +1,6 @@
 // Five Cats: introductory flight formation and independent combat roles.
 // Pure timing/geometry contracts enable deterministic QA without rendering.
-export const SQUAD_INTRO_DURATION = 7.5;
+export const SQUAD_INTRO_DURATION = 6.5;
 export const SQUAD_PILOTS = [
   { id: 'bia', name: 'BIA', color: '#67ffe0', slot: 0, role: 'leader' },
   { id: 'jenifer', name: 'JENIFER', color: '#ff718f', slot: -1, role: 'intercept' },
