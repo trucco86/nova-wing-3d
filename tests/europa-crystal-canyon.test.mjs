@@ -112,6 +112,13 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   assert.ok(ground.material.fragmentShader.includes('channel'));
   assert.ok(ground.material.fragmentShader.includes('iceTile'));
   assert.ok(ground.material.fragmentShader.includes('tileEdges'));
+  const glsl = ground.material.fragmentShader;
+  const cityStart = glsl.indexOf('if(ice<.5){float gx=');
+  const cityEnd = glsl.indexOf('}if(ice>.5){', cityStart);
+  assert.ok(cityStart >= 0 && cityEnd > cityStart,
+    'city roads and neon grid must be completely masked on Europa');
+  assert.ok(glsl.indexOf('float iceTile=') === -1,
+    'iceTile is a vec2: never regress to broken uniform references');
   assert.equal(
     ground.material.fragmentShader.includes('sin(p.y*.047+sin(p.x*.12)'),
     false,
@@ -148,4 +155,25 @@ test('Europa crystal canyon does not add offscreen planetary props or a repeat o
     root.getObjectByName('europa-canyon-ancient-bridges').material.isMeshStandardMaterial,
     true,
   );
+});
+
+test('Europa legacy background ridges stay distant and upright instead of blocking the premium crystal canyon', () => {
+  const scene = new T.Scene();
+  const world = createWorld(scene, () => 0.5, true);
+  world.setSector(SECTORS[5], 5);
+  const field = scene.getObjectByName('premium-instanced-ice-far-field');
+  assert.ok(field?.isInstancedMesh);
+  assert.equal(field.count, 40);
+  const matrix = new T.Matrix4();
+  const position = new T.Vector3();
+  const rotation = new T.Quaternion();
+  const scale = new T.Vector3();
+  for (let i = 0; i < field.count; i++) {
+    field.getMatrixAt(i, matrix);
+    matrix.decompose(position, rotation, scale);
+    assert.ok(Math.abs(position.x) >= 210, 'legacy mountains must be behind the scenic crystal lane');
+    assert.ok(position.z <= -250, 'legacy mountains must begin behind the near canyon');
+    assert.ok(scale.x >= 0.55 && scale.x <= 1.301, 'legacy mountains cannot grow to 2.5x');
+    assert.ok(Math.abs(matrix.elements[1]) < 1e-4, 'ice ridges should no longer spin on X or Z');
+  }
 });
