@@ -53,9 +53,16 @@ test('Europa crystal canyon has authored cliffs, cyan/violet shards and rooted a
     }
     assert.ok(closeUpCount >= 4, name + ' must have visible foreground clusters');
   }
-  const cyanColors = root.getObjectByName('europa-canyon-crystal-cyan').geometry.getAttribute('color');
-  const violetColors = root.getObjectByName('europa-canyon-crystal-violet').geometry.getAttribute('color');
-  assert.ok(violetColors.getX(6) > cyanColors.getX(6), 'violet crystals need their own visible color palette');
+  const cyanColors = root
+    .getObjectByName('europa-canyon-crystal-cyan')
+    .geometry.getAttribute('color');
+  const violetColors = root
+    .getObjectByName('europa-canyon-crystal-violet')
+    .geometry.getAttribute('color');
+  assert.ok(
+    violetColors.getX(6) > cyanColors.getX(6),
+    'violet crystals need their own visible color palette',
+  );
   const cliffs = root.getObjectByName('europa-canyon-grounded-cliffs');
   assert.ok(cliffs.geometry.getAttribute('color'));
   assert.ok(root.getObjectByName('europa-canyon-crystal-cyan').geometry.getAttribute('color'));
