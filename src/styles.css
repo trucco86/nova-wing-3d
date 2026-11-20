@@ -12232,3 +12232,99 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   background-image: var(--nw-jenifer-portrait);
   background-position: 35% 3%;
 }
+
+/* Orbit-9 free-roam QA: compact orientation, no center-lane or touch obstruction. */
+.exploration-mini-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  box-sizing: border-box;
+  width: min(166px, 35vw);
+  padding: 7px;
+  border: 1px solid #72c7d391;
+  border-radius: 9px;
+  background: #03131ede;
+  color: #d9fbfa;
+  pointer-events: none;
+  box-shadow: 0 5px 20px #0008;
+}
+.exploration-mini-map strong {
+  display: block;
+  font: 800 9px/1.2 monospace;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+.exploration-mini-map small {
+  display: block;
+  margin-top: 4px;
+  font: 7px/1.2 monospace;
+  color: #c2dce4;
+}
+.exploration-map-grid {
+  position: relative;
+  height: 102px;
+  border: 1px solid #72aebb73;
+  border-radius: 4px;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, #509bb230 1px, transparent 1px),
+    linear-gradient(0deg, #509bb230 1px, transparent 1px),
+    radial-gradient(ellipse, #154153, #05131e 77%);
+  background-size: 20% 20%, 20% 20%, auto;
+}
+#explorationMapSignals {
+  position: absolute;
+  inset: 0;
+}
+#explorationMapPlayer,
+.exploration-map-signal,
+.exploration-map-survivor {
+  position: absolute;
+  display: block;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, 50%);
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+#explorationMapPlayer {
+  z-index: 2;
+  background: #fff;
+  color: #fff;
+  border: 1px solid #061826;
+  width: 9px;
+  height: 9px;
+}
+.exploration-map-signal {
+  color: #62dfff;
+  background: #62dfff;
+}
+.exploration-map-signal.found {
+  color: #70ebb0;
+  background: #70ebb0;
+}
+.exploration-map-survivor {
+  color: #ffdc80;
+  background: #ffdc80;
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+@media (max-width: 650px), (max-height: 520px) {
+  .exploration-mini-map {
+    top: 4px;
+    right: 4px;
+    width: 115px;
+    padding: 5px;
+  }
+  .exploration-mini-map strong {
+    font-size: 7px;
+  }
+  .exploration-mini-map small {
+    display: none;
+  }
+  .exploration-map-grid {
+    height: 66px;
+  }
+}
