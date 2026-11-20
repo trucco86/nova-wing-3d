@@ -85,6 +85,8 @@ window.fixture = {
     const site = lastScene.getObjectByName('alien-architecture-' + theme);
     const globe = lastScene.getObjectByName('destination-celestial-body');
     const hero = lastScene.getObjectByName('europa-sunken-alien-vault-hero');
+    const canyon = lastScene.getObjectByName('europa-premium-crystal-canyon');
+    const frozenSurface = lastScene.getObjectByName('europa-frozen-surface');
     const matrix = new T.Matrix4();
     if (hero) hero.getMatrixAt(0, matrix);
     return {
@@ -95,6 +97,16 @@ window.fixture = {
       heroDepth: hero ? matrix.elements[14] : null,
       heroX: hero ? matrix.elements[12] : null,
       heroBatchCount: hero?.count ?? 0,
+      canyon: canyon
+        ? {
+            visible: Boolean(frozenSurface?.visible && canyon.visible),
+            cyanCount: canyon.getObjectByName('europa-canyon-crystal-cyan')?.count ?? 0,
+            violetVisible: canyon.getObjectByName('europa-canyon-crystal-violet')?.visible ?? false,
+            cliffs: canyon.getObjectByName('europa-canyon-grounded-cliffs')?.count ?? 0,
+            bridges: canyon.getObjectByName('europa-canyon-ancient-bridges')?.count ?? 0,
+            gateway: Boolean(canyon.getObjectByName('europa-canyon-distant-alien-gateway')),
+          }
+        : null,
       visualOnly: site?.userData.visualOnly ?? false,
       giantGenericOrb: lastScene.getObjectByName('orion-generic-planet') !== undefined,
       globeVisible: globe?.visible ?? false,
