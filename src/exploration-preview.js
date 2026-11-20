@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { createShowroomPilot } from './showroom-models.js';
+import { createOrbit9WalkRig, orbit9StickAxes } from './orbit9-locomotion.js';
 import {
   orbit9CameraState,
   orbit9RotateCamera,
@@ -33,6 +34,7 @@ import {
 // exclusively through Developer/QA and deliberately never writes a save.
 const INTERACT_RADIUS = 8.5;
 const WALK_SPEED = 11;
+const RUN_MULTIPLIER = 1.65;
 const CLUE_POSITIONS = ORBIT9_CLUE_POSITIONS;
 const SURVIVOR = ORBIT9_SURVIVOR;
 const $ = (id) => document.getElementById(id);
@@ -58,6 +60,9 @@ export function installOrbit9ExplorationPreview(
   const scanButton = $('exploreScan');
   const talkButton = $('exploreTalk');
   const exitButton = $('exploreExit');
+  const stick = $('exploreStick');
+  const nub = $('exploreNub');
+  const boostButton = $('exploreBoost');
   const cameraLeft = $('exploreCameraLeft');
   const cameraRight = $('exploreCameraRight');
   const cameraZoom = $('exploreCameraZoom');
@@ -71,6 +76,10 @@ export function installOrbit9ExplorationPreview(
   let renderer = null;
   let camera = null;
   let pilot = null;
+  let walkRig = null;
+  let facingYaw = Math.PI;
+  const stickInput = { x: 0, z: 0, pointerId: null };
+  let boostTouchHeld = false;
   let beacons = [];
   let npc = null;
   let rafId = 0;
@@ -353,6 +362,9 @@ export function installOrbit9ExplorationPreview(
     pilot = createShowroomPilot(selectedPilot);
     pilot.name = 'orbit9-player-' + selectedPilot;
     pilot.scale.multiplyScalar(1.2);
+    walkRig = createOrbit9WalkRig(pilot);
+    facingYaw = Math.PI;
+    pilot.rotation.y = facingYaw;
     scene.add(pilot);
     const initialCamera = orbit9CameraPose(playerX, playerZ, cameraState);
     camera.position.set(initialCamera.eye.x, initialCamera.eye.y, initialCamera.eye.z);
@@ -391,19 +403,40 @@ export function installOrbit9ExplorationPreview(
     lastFrame = stamp;
     elapsed += dt;
     const inputLocked = !dialoguePanel.hidden || !choicePanel.hidden;
-    const moveX = inputLocked ? 0 : Number(held.has('right')) - Number(held.has('left'));
-    const moveZ = inputLocked ? 0 : Number(held.has('down')) - Number(held.has('up'));
+    const keyX = Number(held.has('right')) - Number(held.has('left'));
+    const keyZ = Number(held.has('down')) - Number(held.has('up'));
+    const keyboardActive = keyX !== 0 || keyZ !== 0;
+    const moveX = inputLocked ? 0 : keyboardActive ? keyX : stickInput.x;
+    const moveZ = inputLocked ? 0 : keyboardActive ? keyZ : stickInput.z;
     const len = Math.max(1, Math.hypot(moveX, moveZ));
+    const boosting = held.has('boost') || boostTouchHeld;
+    const speed = WALK_SPEED * (boosting ? RUN_MULTIPLIER : 1);
+    const previousX = playerX;
+    const previousZ = playerZ;
     const moved = orbit9Move(
       playerX,
       playerZ,
-      (moveX * WALK_SPEED * dt) / len,
-      (moveZ * WALK_SPEED * dt) / len,
+      (moveX * speed * dt) / len,
+      (moveZ * speed * dt) / len,
     );
     playerX = moved.x;
     playerZ = moved.z;
-    pilot.position.set(playerX, 2.2, playerZ);
-    if (moveX || moveZ) pilot.rotation.y = Math.atan2(-moveX, -moveZ);
+    const actualX = playerX - previousX;
+    const actualZ = playerZ - previousZ;
+    const distanceTravelled = Math.hypot(actualX, actualZ);
+    pilot.position.set(playerX, 1.92, playerZ);
+    walkRig?.update({ distanceTravelled, dt, boost: boosting });
+    if (distanceTravelled > 0.0001) {
+      // Showroom pilots face local +Z; yaw must follow actual walking direction,
+      // not the opposite heading or an input blocked by a physical obstacle.
+      const destinationYaw = Math.atan2(actualX, actualZ);
+      const angle = Math.atan2(
+        Math.sin(destinationYaw - facingYaw),
+        Math.cos(destinationYaw - facingYaw),
+      );
+      facingYaw += angle * Math.min(1, dt * 13);
+      pilot.rotation.y = facingYaw;
+    }
     const turn = Math.atan2(
       Math.sin(cameraState.yaw - cameraYawVisual),
       Math.cos(cameraState.yaw - cameraYawVisual),
@@ -445,6 +478,10 @@ export function installOrbit9ExplorationPreview(
     cameraState = orbit9CameraState();
     cameraYawVisual = 0;
     cameraPointer = null;
+    held.clear();
+    resetStick();
+    boostTouchHeld = false;
+    boostButton.classList.remove('pressed');
     dialogueIndex = -1;
     root.hidden = false;
     choicePanel.hidden = true;
@@ -469,6 +506,9 @@ export function installOrbit9ExplorationPreview(
     active = false;
     cancelAnimationFrame(rafId);
     held.clear();
+    resetStick();
+    boostTouchHeld = false;
+    boostButton.classList.remove('pressed');
     cameraPointer = null;
     dialogueIndex = -1;
     dialoguePanel.hidden = true;
@@ -489,6 +529,7 @@ export function installOrbit9ExplorationPreview(
       });
     }
     renderer = scene = camera = pilot = npc = null;
+    walkRig = null;
     rafId = 0;
   }
 
@@ -520,6 +561,9 @@ export function installOrbit9ExplorationPreview(
     }[e.code];
     if (direction) {
       held.add(direction);
+      e.preventDefault();
+    } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      held.add('boost');
       e.preventDefault();
     } else if (e.code === 'KeyE' && !e.repeat) {
       if (state.clues.length === ORBIT9_EVIDENCE.length && near(...SURVIVOR)) talk();
@@ -555,6 +599,7 @@ export function installOrbit9ExplorationPreview(
       ArrowRight: 'right',
     }[e.code];
     if (direction) held.delete(direction);
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') held.delete('boost');
   }
 
   listen(launch, 'click', open);
@@ -594,16 +639,66 @@ export function installOrbit9ExplorationPreview(
   listen(window, 'keydown', keyDown);
   listen(window, 'keyup', keyUp);
   listen(window, 'resize', resize);
-  listen(window, 'blur', () => held.clear());
-  for (const direction of ['up', 'down', 'left', 'right']) {
-    const button = $('exploreMove' + direction[0].toUpperCase() + direction.slice(1));
-    listen(button, 'pointerdown', (e) => {
-      e.preventDefault();
-      held.add(direction);
-      button.setPointerCapture?.(e.pointerId);
+  listen(window, 'blur', () => {
+    held.clear();
+    resetStick();
+    boostTouchHeld = false;
+    boostButton.classList.remove('pressed');
+  });
+  function resetStick() {
+    stickInput.x = 0;
+    stickInput.z = 0;
+    stickInput.pointerId = null;
+    nub.style.transform = 'translate(-50%, -50%)';
+    stick.classList.remove('pressed');
+  }
+  function moveStick(event) {
+    const bounds = stick.getBoundingClientRect();
+    const radius = Math.min(bounds.width, bounds.height) * 0.32;
+    const dx = event.clientX - (bounds.left + bounds.width / 2);
+    const dy = event.clientY - (bounds.top + bounds.height / 2);
+    const axes = orbit9StickAxes(dx, dy, radius);
+    stickInput.x = axes.x;
+    stickInput.z = axes.z;
+    const distance = Math.hypot(dx, dy);
+    const scale = distance > radius ? radius / distance : 1;
+    nub.style.transform =
+      'translate(-50%, -50%) translate(' +
+      Math.round(dx * scale) +
+      'px, ' +
+      Math.round(dy * scale) +
+      'px)';
+  }
+  listen(stick, 'pointerdown', (event) => {
+    if (!active || stickInput.pointerId !== null) return;
+    event.preventDefault();
+    stickInput.pointerId = event.pointerId;
+    stick.setPointerCapture?.(event.pointerId);
+    stick.classList.add('pressed');
+    moveStick(event);
+  });
+  listen(stick, 'pointermove', (event) => {
+    if (event.pointerId !== stickInput.pointerId) return;
+    event.preventDefault();
+    moveStick(event);
+  });
+  for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    listen(stick, eventName, (event) => {
+      if (event.pointerId === stickInput.pointerId) resetStick();
     });
-    for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
-      listen(button, event, () => held.delete(direction));
+  }
+  listen(boostButton, 'pointerdown', (event) => {
+    if (!active) return;
+    event.preventDefault();
+    boostTouchHeld = true;
+    boostButton.classList.add('pressed');
+    boostButton.setPointerCapture?.(event.pointerId);
+  });
+  for (const eventName of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    listen(boostButton, eventName, () => {
+      boostTouchHeld = false;
+      boostButton.classList.remove('pressed');
+    });
   }
 
   // Developer-only teleport/inspection API supports deterministic browser QA.
@@ -629,6 +724,9 @@ export function installOrbit9ExplorationPreview(
         active,
         player: { x: playerX, z: playerZ },
         pilotModel: pilot?.name ?? null,
+        gait: walkRig?.snapshot() ?? null,
+        stick: { x: stickInput.x, z: stickInput.z },
+        boosting: held.has('boost') || boostTouchHeld,
         district: orbit9District(playerX, playerZ).id,
         camera: { ...cameraState },
         dialogue: {

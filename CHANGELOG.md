@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.156 — Caminhada articulada e controles unificados na Órbita-9
+
+- O piloto escolhido mantém o mesmo modelo 3D do hangar e ganha caminhada com quadris, joelhos e braços articulados, sincronizada com o deslocamento efetivo.
+- O direcional separado de quatro setas dá lugar a um joystick analógico proporcional como no combate; BOOST oferece corrida no celular e Shift no desktop.
+- Ajustada a orientação do personagem, a zona morta do joystick, a parada da caminhada contra colisões e o posicionamento periférico dos controles no mobile.
+- Mantidas as pistas, a investigação, as câmeras, o sobrevivente, o gate de combate e o isolamento Developer/QA sem save ou ranking.
+- Testes Node de animação dos cinco gatos e controles, regressão browser mobile e checklist visual. Não publicar sem CI, preview e homologação em aparelho físico.
+
 ## 1.27.155 — Órbita-9 com distritos exploráveis (candidata QA)
 
 - Libera circulação na estação por átrio, laboratório, reator e arquivos com obstáculos sólidos, colisão por deslizamento e paisagens diferentes por área.

@@ -109,10 +109,8 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
       };
       return [
         'explorationViewport',
-        'exploreMoveUp',
-        'exploreMoveDown',
-        'exploreMoveLeft',
-        'exploreMoveRight',
+        'exploreStick',
+        'exploreBoost',
         'exploreExit',
         'exploreScan',
         'exploreCameraLeft',
@@ -132,8 +130,8 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
     // still intercepts the touch. Assert the real element at the target center.
     for (const id of [
       'exploreExit',
-      'exploreMoveUp',
-      'exploreMoveRight',
+      'exploreStick',
+      'exploreBoost',
       'exploreScan',
       'exploreCameraLeft',
       'exploreCameraZoom',
@@ -283,5 +281,51 @@ test('survivor dialogue can be cancelled and resumed without granting a forged r
   const state = await page.evaluate(() => window.__novaExploreQA.snapshot());
   expect(state.quest.conversation).toBe('restore-power');
   await expect(page.locator('#exploreTalk')).toBeDisabled();
+  await page.locator('#exploreExit').click();
+});
+
+test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST gesture as flight', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+
+  const initial = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(initial.gait).not.toBeNull();
+  expect(initial.gait.distance).toBe(0);
+  const stick = page.locator('#exploreStick');
+  const bounds = await stick.boundingBox();
+  const x = bounds.x + bounds.width / 2;
+  const y = bounds.y + bounds.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 8, y - 32, { steps: 5 });
+  await page.waitForTimeout(550);
+  const moving = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(moving.player.z).toBeLessThan(initial.player.z);
+  expect(moving.gait.distance).toBeGreaterThan(1);
+  expect(moving.gait.blend).toBeGreaterThan(0.4);
+  expect(Math.abs(moving.gait.leftHip) + Math.abs(moving.gait.rightHip)).toBeGreaterThan(0.05);
+  expect(moving.stick.z).toBeLessThan(-0.5);
+
+  await page.mouse.up();
+  await page.waitForTimeout(550);
+  const stopped = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(stopped.stick).toEqual({ x: 0, z: 0 });
+  expect(stopped.gait.blend).toBeLessThan(0.03);
+
+  // Keyboard Boost is unchanged; exploration maps it to walking speed.
+  await page.keyboard.down('Shift');
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting))
+    .toBe(true);
+  await page.keyboard.up('Shift');
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting))
+    .toBe(false);
   await page.locator('#exploreExit').click();
 });
