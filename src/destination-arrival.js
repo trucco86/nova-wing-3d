@@ -1,4 +1,5 @@
 import { saturnPassageAt } from './saturn-ring-passage.js';
+import { europaDescentAt } from './europa-descent.js';
 
 // The authored 10-sector itinerary: Earth and Mars keep their bespoke
 // transitions; asteroid traversal is already controlled by stage-journey.
@@ -85,6 +86,26 @@ export function destinationArrivalAt(index, seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid destination time');
   const profile = DESTINATION_PROFILES[index];
   if (!profile) return null;
+  // Dedicated Mars-style cinematic continuity: no 12-18 second empty gap.
+  if (index === 5) {
+    const ice = europaDescentAt(seconds);
+    return {
+      phase: ice.phase === 'surface' ? 'arena' : ice.phase,
+      combatReady: ice.combatReady,
+      reveal: ice.terrainReveal,
+      haze: ice.iceMist,
+      seconds,
+      keepGlobe: false,
+      globeOpacity: ice.planetOpacity,
+      globeScale: ice.planetScale,
+      globeX: ice.planetX,
+      globeY: ice.planetY,
+      cameraAscent: ice.cameraAscent,
+      starOpacity: ice.starOpacity,
+      terrainLift: ice.terrainLift,
+      label: ice.label,
+    };
+  }
   // Saturn is an orbital battle, not another compulsory atmosphere/ship entry.
   // Enter the ice-ring region with the planet already visible, and unlock
   // encounters after a short orienting beat. All other journeys stay intact.
