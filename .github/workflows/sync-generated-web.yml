@@ -1,5 +1,8 @@
 name: Sync generated web
 on:
+  pull_request:
+    branches:
+      - feat/stage-one-cinematic-launch-20261119
   push:
     branches:
       - feat/nw09-cinematic-3d
@@ -36,13 +39,14 @@ concurrency:
   cancel-in-progress: true
 jobs:
   sync:
-    if: github.repository == 'trucco86/nova-wing-3d'
+    if: github.repository == 'trucco86/nova-wing-3d' && (github.event_name == 'push' || (github.head_ref == 'feat/qa167-boss-physical-attacks-premium-launch-20261120' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: true
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '24'
@@ -88,7 +92,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
           # Rebuild the approved cinematic candidate on its isolated branch.
-          if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ] || [ "${GITHUB_REF_NAME}" = "feat/qa167-boss-physical-attacks-premium-launch-20261120" ]; then
+          if [ "${GITHUB_REF_NAME}" = "feat/stage-one-cinematic-launch-20261119" ] || [ "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" = "feat/qa167-boss-physical-attacks-premium-launch-20261120" ]; then
             git add -u
           fi
           # QA157: preserve formatter output for the new hotpath code and tests.
@@ -168,11 +172,11 @@ jobs:
             exit 0
           fi
           git commit -m 'build(web): sync QA candidate and generated HTML'
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           # QA157's bot-generated release metadata is verified through a
           # following human-authored pull_request run; avoid duplicate bot CI.
           if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ] && [ "${GITHUB_REF_NAME}" != "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
-            gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+            gh workflow run ci.yml --ref "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
