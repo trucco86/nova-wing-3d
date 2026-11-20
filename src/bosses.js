@@ -763,7 +763,11 @@ export function createBossModel(sector, index = 0, tactical = false) {
         node.visible = true;
         shell.add(node);
       };
-      attachVisible(g.getObjectByName('marvin-pitbull'), 'marvin-pitbull', 0, 25, 34);
+      // The original QA169 screenshot cut the forehead/ears against the top
+      // edge and left the pitbull face detached from the fighter chassis.
+      // Lower the visible rig 11 world units and bring it slightly toward
+      // the central weapon frame without moving actual target hitboxes.
+      attachVisible(g.getObjectByName('marvin-pitbull'), 'marvin-pitbull', 0, 14, 28);
       attachVisible(g.getObjectByName('marvin-left-claw'), 'marvin-left-claw', -41, -11, 19);
       attachVisible(g.getObjectByName('marvin-right-claw'), 'marvin-right-claw', 41, -11, 19);
       attachVisible(organic[0], 'marvin-port-tentacle', -34, -7, 22);
