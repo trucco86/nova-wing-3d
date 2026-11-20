@@ -12,7 +12,9 @@ const destinations = [
 ];
 
 for (const { index, theme, label } of destinations) {
-  test(`QA168 ${label}: atmosphere/architecture/boss are readable on real canvas`, async ({ page }, info) => {
+  test(`QA168 ${label}: atmosphere/architecture/boss are readable on real canvas`, async ({
+    page,
+  }, info) => {
     test.setTimeout(120000);
     if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/__dynamic.html?sector=${index}`);
@@ -22,7 +24,10 @@ for (const { index, theme, label } of destinations) {
     await page.screenshot({ path: info.outputPath(`qa168-${label}-arrival.png`) });
 
     await page.evaluate(() => window.fixture.advance(23));
-    const world = await page.evaluate((chosenTheme) => window.fixture.alienWorldState(chosenTheme), theme);
+    const world = await page.evaluate(
+      (chosenTheme) => window.fixture.alienWorldState(chosenTheme),
+      theme,
+    );
     expect(world?.exists).toBe(true);
     expect(world?.visible).toBe(true);
     expect(world?.visualOnly).toBe(true);

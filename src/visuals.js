@@ -1936,8 +1936,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         continue;
       // The ice corridor is decorative, not a boss hazard. Arrival updates
       // must never restore foreground objects while Colossus is fighting.
-      if (europaBossArenaActive &&
-          (child.userData.europaForeground || child.name === 'alien-architecture-ice')) {
+      if (
+        europaBossArenaActive &&
+        (child.userData.europaForeground || child.name === 'alien-architecture-ice')
+      ) {
         child.visible = false;
         continue;
       }
@@ -2546,8 +2548,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       }
       // Dispose only unattached materials, including in missions that now
       // use their own independent instanced architecture.
-      if (!['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme) &&
-          !(dynamicFlight && ['void', 'throne'].includes(sceneryTheme))) mat.dispose();
+      if (
+        !['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme) &&
+        !(dynamicFlight && ['void', 'throne'].includes(sceneryTheme))
+      )
+        mat.dispose();
       if (!(dynamicFlight && ['asteroids', 'nebula', 'void', 'throne'].includes(sceneryTheme)))
         light.dispose();
       if (dynamicFlight) {
