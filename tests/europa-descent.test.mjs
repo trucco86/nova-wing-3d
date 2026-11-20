@@ -10,20 +10,14 @@ import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
 test('Europa has the same ordered four-beat arrival grammar as Mars, not unrelated abrupt scene cuts', () => {
-  assert.deepEqual([0, 8, 15, 22, 26].map((t) => europaDescentAt(t).phase), [
-    'space',
-    'orbit',
-    'entry',
-    'descent',
-    'surface',
-  ]);
-  assert.deepEqual([0, 8, 15, 22, 28].map((t) => marsDescentAt(t).phase), [
-    'space',
-    'orbit',
-    'entry',
-    'descent',
-    'surface',
-  ]);
+  assert.deepEqual(
+    [0, 8, 15, 22, 26].map((t) => europaDescentAt(t).phase),
+    ['space', 'orbit', 'entry', 'descent', 'surface'],
+  );
+  assert.deepEqual(
+    [0, 8, 15, 22, 28].map((t) => marsDescentAt(t).phase),
+    ['space', 'orbit', 'entry', 'descent', 'surface'],
+  );
   assert.equal(EUROPA_TOUCHDOWN_SECONDS, 25);
   assert.equal(europaDescentAt(24.99).combatReady, false);
   assert.equal(europaDescentAt(25).combatReady, true);
@@ -40,8 +34,10 @@ test('moon stays on-screen until the canyon emerges; no black/empty transition i
     const arrival = europaDescentAt(t);
     const ice = europaSurfaceAt(t);
     const destination = destinationArrivalAt(5, t);
-    assert.ok(arrival.planetOpacity > 0.01 || ice.groundVisible,
-      'flight cannot lose both planet and surface at ' + t + 's');
+    assert.ok(
+      arrival.planetOpacity > 0.01 || ice.groundVisible,
+      'flight cannot lose both planet and surface at ' + t + 's',
+    );
     assert.ok(arrival.terrainReveal >= 0 && arrival.terrainReveal <= 1);
     assert.ok(arrival.planetOpacity >= 0 && arrival.planetOpacity <= 1);
     assert.equal(destination.reveal, arrival.terrainReveal);

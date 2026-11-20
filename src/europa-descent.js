@@ -10,8 +10,7 @@ const smooth = (v) => {
 };
 
 export function europaDescentAt(seconds) {
-  if (!Number.isFinite(seconds) || seconds < 0)
-    throw new RangeError('Invalid Europa arrival time');
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa arrival time');
   const phase =
     seconds < 6
       ? 'space'

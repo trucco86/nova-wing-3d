@@ -1921,9 +1921,12 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // without reintroducing the old giant repeated background planet.
     const europaSurfaceSky = destinationIndex === 5 && state.reveal > 0.82;
     starfield.visible = europaSurfaceSky || state.reveal < 0.95 || state.keepGlobe;
-    starfield.material.opacity = destinationIndex === 5
-      ? (europaSurfaceSky ? 0.32 : state.starOpacity)
-      : 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
+    starfield.material.opacity =
+      destinationIndex === 5
+        ? europaSurfaceSky
+          ? 0.32
+          : state.starOpacity
+        : 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) {
       const ice = europaSurfaceAt(seconds, europaTunnelActive);
       ground.visible = ice.groundVisible && !europaBossArenaActive;

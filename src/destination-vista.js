@@ -321,11 +321,7 @@ export function updateDestinationVista(root, index, seconds) {
   if (iceParticles) {
     iceParticles.visible = state.haze > 0.01;
     iceParticles.material.opacity = state.haze * 0.46;
-    iceParticles.position.set(
-      Math.sin(seconds * 0.31) * 8,
-      -Math.min(8, seconds * 0.28),
-      0,
-    );
+    iceParticles.position.set(Math.sin(seconds * 0.31) * 8, -Math.min(8, seconds * 0.28), 0);
   }
   for (let i = 0; i < mist.children.length; i++) {
     const child = mist.children[i];

@@ -18,11 +18,17 @@ test('Europa keeps the moon until the icy floor appears, with no empty orbit/des
   assert.equal(surface.orbitalVisible, false);
   assert.equal(europaSurfaceAt(18).orbitalVisible, true, 'moon must remain while ice first rises');
   assert.ok(europaSurfaceAt(18).groundVisible, 'surface is already coming into view');
-  assert.ok(destinationArrivalAt(5, 18).globeOpacity > 0, 'globe and surface overlap during handoff');
+  assert.ok(
+    destinationArrivalAt(5, 18).globeOpacity > 0,
+    'globe and surface overlap during handoff',
+  );
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
-  assert.ok(destinationArrivalAt(5, 20).globeOpacity > 0, 'moon fades DURING descent, not before it');
+  assert.ok(
+    destinationArrivalAt(5, 20).globeOpacity > 0,
+    'moon fades DURING descent, not before it',
+  );
   assert.equal(destinationArrivalAt(5, 26).globeOpacity, 0);
   assert.equal(
     destinationArrivalAt(4, 20).globeOpacity,
