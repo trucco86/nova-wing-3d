@@ -349,8 +349,10 @@ export function installOrbit9ExplorationPreview(
       ring.rotation.x = -Math.PI / 2;
       ring.position.set(x, 0.4, z);
       scene.add(ring);
-      const core = new T.Mesh(new T.OctahedronGeometry(2.1, 1), mat('#55f2ff', '#106a9a'));
-      core.position.set(x, 4, z);
+      // The original 2.1m hologram at y=4 hid the selected cat's head when
+      // standing on an evidence marker. Keep the readable signal above the pilot.
+      const core = new T.Mesh(new T.OctahedronGeometry(1.08, 1), mat('#55f2ff', '#106a9a'));
+      core.position.set(x, 6.35, z);
       core.name = 'orbit9-clue-' + i;
       scene.add(core);
       makeBox(3.8, 1.5, 3.8, dark, x, 0.7, z);
