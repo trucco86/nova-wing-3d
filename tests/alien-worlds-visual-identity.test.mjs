@@ -1,0 +1,84 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as T from 'three';
+import { SECTORS } from '../src/campaign.js';
+import { createWorld } from '../src/visuals.js';
+import {
+  ANCIENT_WORLD_THEMES,
+  createAlienArchitecture,
+  setAlienArchitectureQuality,
+} from '../src/alien-architecture.js';
+import { destinationArrivalAt } from '../src/destination-arrival.js';
+import { createDestinationVista, updateDestinationVista } from '../src/destination-vista.js';
+
+test('Venus, Europa, Neptune and Titan establish a planet without placing it inside the level', () => {
+  for (const index of [4, 5, 6, 9]) {
+    const vista = createDestinationVista(index);
+    const globe = vista.getObjectByName('destination-celestial-body');
+    assert.equal(destinationArrivalAt(index, 0).globeOpacity, 1);
+    updateDestinationVista(vista, index, 14);
+    assert.equal(globe.visible, false, 'planet must be gone during atmosphere entry in sector ' + index);
+    assert.equal(globe.position.x, -205, 'approach planet must not obscure the central aiming lane');
+    assert.equal(globe.position.y, 170);
+    assert.ok(globe.scale.x <= 0.91, 'the planetary approach is not a wall-sized backdrop');
+    updateDestinationVista(vista, index, 30);
+    assert.equal(globe.visible, false);
+  }
+  const saturn = createDestinationVista(7);
+  updateDestinationVista(saturn, 7, 30);
+  assert.equal(saturn.getObjectByName('destination-celestial-body').visible, true);
+  assert.ok(saturn.getObjectByName('saturn-planetary-ring-system'));
+  const orion = createDestinationVista(8);
+  updateDestinationVista(orion, 8, 30);
+  assert.equal(orion.getObjectByName('destination-celestial-body').visible, false);
+});
+
+test('five distinct alien sites contain grounded instanced pyramids, terraces and obelisks outside the flight lane', () => {
+  assert.deepEqual(Object.keys(ANCIENT_WORLD_THEMES), ['sun', 'ice', 'nebula', 'void', 'throne']);
+  for (const [theme, index] of [['sun', 4], ['ice', 5], ['nebula', 6], ['void', 8], ['throne', 9]]) {
+    const root = createAlienArchitecture(theme);
+    assert.equal(root.name, 'alien-architecture-' + theme);
+    assert.ok(root.userData.visualOnly);
+    assert.equal(root.children.length, 6);
+    assert.ok(root.children.every((child) => child.isInstancedMesh && child.userData.visualOnly));
+    assert.ok(root.children.some((child) => child.name.includes('-pyramids')));
+    assert.ok(root.children.some((child) => child.name.includes('-terraces')));
+    const position = new T.Vector3();
+    const matrix = new T.Matrix4();
+    for (const mesh of root.children) {
+      for (let i = 0; i < mesh.count; i++) {
+        mesh.getMatrixAt(i, matrix);
+        position.setFromMatrixPosition(matrix);
+        assert.ok(Math.abs(position.x) > 100, 'all structures leave the flight lane clear');
+      }
+    }
+    const scene = new T.Scene();
+    const world = createWorld(scene, () => 0.5, true);
+    world.setSector(SECTORS[index], index);
+    const installed = scene.getObjectByName('alien-architecture-' + theme);
+    assert.ok(installed, 'site must be included in the real mission scene');
+    const runes = installed.children.find((child) => child.userData.highOnly);
+    assert.ok(runes);
+    world.setGraphicsQuality('medium');
+    assert.equal(runes.visible, false);
+    world.setGraphicsQuality('high');
+    assert.equal(runes.visible, true);
+    world.setSector(SECTORS[0], 0);
+    assert.equal(scene.getObjectByName('alien-architecture-' + theme), undefined);
+  }
+});
+
+test('the scenery keeps gameplay physics unchanged and does not leak decorations into unrelated sectors', () => {
+  const nullWorld = createAlienArchitecture('city');
+  assert.equal(nullWorld, null);
+  assert.doesNotThrow(() => setAlienArchitectureQuality(null, 'medium'));
+  const root = createAlienArchitecture('throne', 'medium');
+  const runes = root.children.find((child) => child.userData.highOnly);
+  assert.equal(runes.visible, false);
+  setAlienArchitectureQuality(root, 'high');
+  assert.equal(runes.visible, true);
+  root.traverse((node) => {
+    assert.notEqual(node.userData.hitbox, true);
+    assert.notEqual(node.userData.solids?.length > 0, true);
+  });
+});
