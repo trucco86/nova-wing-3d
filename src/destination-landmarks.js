@@ -315,7 +315,7 @@ export function createDestinationLandmarks(index) {
       }),
       'europa-fractured-glacial-spires',
       (i) => {
-        const x = (i % 2 ? 1 : -1) * (85 + hash(i * 3) * 175);
+        const x = (i % 2 ? 1 : -1) * (158 + hash(i * 3) * 155);
         const h = 12 + hash(i * 11) * 65;
         return {
           position: [x, h * 0.43 - 8, -130 - i * 30],
