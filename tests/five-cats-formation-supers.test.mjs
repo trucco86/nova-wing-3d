@@ -188,6 +188,15 @@ test('optional launch skip preserves live ship identity, clock and escort visibi
   assert.ok(h.game.snapshot().seconds > 0, 'gameplay starts immediately after skip');
 });
 
+test('clean hangar is restricted to stage one; later missions keep normal controls', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start(false, { sector: 1 });
+  assert.equal(h.game.snapshot().fiveCats.intro, 0);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
+  assert.equal(h.elements.get('launchSkip').hidden, true);
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
