@@ -48,7 +48,7 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   assert.equal(destination.visible, false, 'distant second globe must also be gone');
   assert.equal(surface.visible, true);
   assert.equal(ground.visible, true);
-  assert.ok(scene.fog.density >= 0.002, 'frost haze instead of clear generic horizon');
+  assert.ok(scene.fog.density >= 0.0012 && scene.fog.density <= 0.0016, 'layered frost must be clear enough to reveal distant canyon architecture');
 
   assert.equal(world.setEuropaTunnel(true), true);
   assert.equal(ground.visible, false, 'avoid z-fighting with physical -7 tunnel floor');
@@ -73,7 +73,7 @@ test('frozen surface detail stays outside flight corridor with bounded mobile dr
   const root = createEuropaSurface();
   assert.equal(root.name, 'europa-frozen-surface');
   assert.equal(root.userData.visualOnly, true);
-  assert.equal(root.children.length, 3, 'two instanced shelves and a single snow draw');
+  assert.equal(root.children.length, 4, 'two instanced shelves, one snow draw and one premium canyon');
   for (const mesh of root.children.filter((o) => o.isInstancedMesh)) {
     assert.ok(mesh.count <= 32);
     assert.equal(mesh.userData.visualOnly, true);
@@ -88,7 +88,10 @@ test('frozen surface detail stays outside flight corridor with bounded mobile dr
   updateEuropaSurface(root, 28, true, true);
   assert.equal(root.visible, true);
   assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, true);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-violet').visible, true);
   updateEuropaSurface(root, 29, true, false);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-violet').visible, false);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-cyan').visible, true);
   assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, false);
   updateEuropaSurface(root, 29, false, false);
   assert.equal(root.visible, false);
