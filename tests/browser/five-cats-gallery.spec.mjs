@@ -94,3 +94,49 @@ test('Marvin has a dedicated illustration in the Central, not a playable pilot s
   expect(response.headers()['content-type']).toContain('image/webp');
   await expect(page.locator('#pilot-marvin')).toHaveCount(0);
 });
+
+test('per-cat face crop keeps the five portraits identifiable in hangar, roster and profile', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/');
+  await openMenu(page, 'hangar');
+  await page.locator('#hangarArt').click();
+  const focalPoints = {
+    bia: { avatar: '70% 0%', profile: '65% 0%', hero: '85% 4%' },
+    bob: { avatar: '50% 0%', profile: '50% 0%', hero: '50% 7%' },
+    christopher: { avatar: '40% 0%', profile: '40% 0%', hero: '28% 3%' },
+    calvin: { avatar: '72% 0%', profile: '65% 5%', hero: '90% 10%' },
+    jenifer: { avatar: '35% 3%', profile: '38% 8%', hero: '18% 14%' },
+  };
+  for (const [pilot, expected] of Object.entries(focalPoints)) {
+    await page.locator('#pilot-' + pilot).click();
+    await expect(page.locator('#squadSelection')).toHaveAttribute('data-pilot', pilot);
+    const actual = await page.evaluate((id) => {
+      const style = (selector) => {
+        const css = getComputedStyle(document.querySelector(selector));
+        return {
+          image: css.backgroundImage,
+          position: css.backgroundPosition,
+          size: css.backgroundSize,
+        };
+      };
+      return {
+        avatar: style('#pilot-' + id + ' .cat-avatar'),
+        profile: style('#squadSelection .profile-portrait'),
+        hero: style('#hangarArtImage'),
+      };
+    }, pilot);
+    for (const surface of ['avatar', 'profile', 'hero']) {
+      expect(actual[surface].image).toContain(pilot + '-spotlight.webp');
+      expect(actual[surface].position).toBe(expected[surface]);
+    }
+    expect(actual.avatar.size).toBe('175% auto');
+    expect(actual.profile.size).toBe('auto 155%');
+    expect(actual.hero.size).toBe('128% auto');
+    await expect(page.locator('#hangarArtImage')).toBeVisible();
+    await page.screenshot({
+      path: info.outputPath('portrait-crop-' + pilot + '-' + info.project.name + '.png'),
+    });
+  }
+});
