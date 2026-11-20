@@ -58,6 +58,9 @@ test('stage-one has three continuous clear hangar moments without labels or touc
     heroId ??= data.heroShip.rootId;
     expect(data.heroShip.rootId).toBe(heroId);
     expect(data.seconds).toBe(0);
+    if (shot === 'hangar') expect(data.camera.fov).toBeGreaterThan(70);
+    if (shot === 'exit') expect(data.camera.fov).toBeLessThan(62);
+    expect(Math.abs(data.camera.bank)).toBeLessThan(0.03);
     await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
     for (const ui of ['#hud', '#touch', '#bottom', '#strategyControls', '#squadFormationStatus'])
       await expect(page.locator(ui)).toBeHidden();
@@ -73,6 +76,7 @@ test('stage-one has three continuous clear hangar moments without labels or touc
   expect(after.heroShip.rootId).toBe(heroId);
   expect(after.fiveCats.visible).toHaveLength(0);
   expect(after.seconds).toBeGreaterThan(0);
+  expect(after.camera.fov).toBe(60);
   await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
   await expect(page.locator('#hud')).toBeVisible();
   await expect(page.locator('#launchSkip')).toBeHidden();
