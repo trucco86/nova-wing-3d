@@ -1408,7 +1408,13 @@ export function createGame({
       if (node) node.inert = active;
     }
     if (active)
-      document.body.classList.remove('in-mission', 'stage-intro', 'launch-cinematic', 'boosting', 'reflex-boost');
+      document.body.classList.remove(
+        'in-mission',
+        'stage-intro',
+        'launch-cinematic',
+        'boosting',
+        'reflex-boost',
+      );
   }
   function showShop() {
     recordStageResult('cleared');

@@ -62,7 +62,9 @@ test('stage-one has three continuous clear hangar moments without labels or touc
     for (const ui of ['#hud', '#touch', '#bottom', '#strategyControls', '#squadFormationStatus'])
       await expect(page.locator(ui)).toBeHidden();
     await expect(page.locator('#launchSkip')).toBeVisible();
-    await page.screenshot({ path: info.outputPath('clean-launch-' + shot + '-' + info.project.name + '.png') });
+    await page.screenshot({
+      path: info.outputPath('clean-launch-' + shot + '-' + info.project.name + '.png'),
+    });
   }
   await page.evaluate(() => window.fixture.advance(1.3));
   await page.evaluate(() => window.fixture.advance(0.2));

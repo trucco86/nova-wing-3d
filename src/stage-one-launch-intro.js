@@ -45,7 +45,8 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   const firstBlend = ease((t - 1.1) / 1.3);
   const secondBlend = ease((t - 4.1) / 2.4);
   const interpolate = (field, index) => {
-    const first = views[0][field][index] + (views[1][field][index] - views[0][field][index]) * firstBlend;
+    const first =
+      views[0][field][index] + (views[1][field][index] - views[0][field][index]) * firstBlend;
     return first + (views[2][field][index] - first) * secondBlend;
   };
   const fovBlend = views[0].fov + (views[1].fov - views[0].fov) * firstBlend;

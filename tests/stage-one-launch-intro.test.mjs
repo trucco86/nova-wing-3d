@@ -18,9 +18,10 @@ test('stage-one opening has exactly three clear moments and no reverse shot', ()
     { at: 4.4, name: 'approach' },
   ]);
   const frames = [0, 1.7, 3, 5, 6.5].map((t) => firstStageLaunchAt(t));
-  assert.deepEqual(frames.map((f) => f.beat), [
-    'hangar', 'exit', 'exit', 'approach', 'approach',
-  ]);
+  assert.deepEqual(
+    frames.map((f) => f.beat),
+    ['hangar', 'exit', 'exit', 'approach', 'approach'],
+  );
   assert.equal(frames[0].doors, 0);
   assert.equal(frames.at(-1).doors, 1);
   assert.ok(frames[2].corridorShift > 0);
@@ -55,7 +56,10 @@ test('camera continuously looks forward at the gate through launch and handoff o
 test('every selected pilot remains real center fighter; four distinct escorts remain', () => {
   for (const lead of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     const slots = firstStageWingSlots(lead);
-    assert.deepEqual(slots.map(({ slot }) => slot), [-2, -1, 1, 2]);
+    assert.deepEqual(
+      slots.map(({ slot }) => slot),
+      [-2, -1, 1, 2],
+    );
     assert.ok(slots.every(({ id }) => id !== lead));
     assert.equal(new Set([lead, ...slots.map(({ id }) => id)]).size, 5);
   }
@@ -86,8 +90,11 @@ test('enclosed rear wall and complete roof are present; camera never points thro
   assert.equal(intro.root.visible, false);
   intro.reset(true, 'bob');
   assert.equal(intro.root.userData.pilotId, 'bob');
-  assert.equal(intro.root.getObjectByName('launch-selected-pilot'), undefined,
-    'no pilot close-ups or extra 3D character models in the takeoff');
+  assert.equal(
+    intro.root.getObjectByName('launch-selected-pilot'),
+    undefined,
+    'no pilot close-ups or extra 3D character models in the takeoff',
+  );
   const bulkhead = intro.root.getObjectByName('launch-rear-bulkhead');
   const roof = intro.root.getObjectByName('launch-roof-center');
   assert.ok(bulkhead?.isMesh);
