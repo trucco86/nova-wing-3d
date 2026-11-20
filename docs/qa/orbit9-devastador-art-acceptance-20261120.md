@@ -26,3 +26,20 @@ exclusivamente para esta branch de QA, não para produção.
 
 A cena usa instâncias estáticas para peças repetidas. Ganho de FPS não foi medido,
 portanto não deve ser afirmado antes de benchmarks no dispositivo.
+
+## Revisão de screenshots e regressão de câmera
+
+- Capturas iniciais mostraram metal escuro, piloto pequeno e grandes painéis
+  atravessando o enquadramento da praça do reator.
+- Ajustados a iluminação, o acabamento do aço, a distância da câmera, a
+  altura das passarelas e o formato aberto das torres de resfriamento.
+- O teleporte de Developer/QA agora reposiciona a câmera instantaneamente
+  junto ao piloto. Antes, o movimento interpolado da câmera atravessava
+  paredes ao alternar rapidamente entre regiões para fotografar a cena.
+- Corrigida a interceptação de Escape pelo menu de título enquanto o diálogo
+  do sobrevivente está aberto na exploração.
+- A bateria focada anterior teve 16 testes Playwright aprovados em desktop e
+  mobile; o novo teste exige a câmera junto ao piloto após cada teleporte.
+
+Permanece necessária revisão visual em aparelho físico. Captura automática
+não é prova suficiente de experiência de jogo ou desempenho de GPU.
