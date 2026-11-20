@@ -33,6 +33,7 @@ on:
       - perf/qa163-hostile-volley-muzzle-snapshot-20261119
       - test/qa164-asteroid-subboss-real-progression-20261119
       - test/qa165-asteroid-boss-victory-sequence-20261119
+      - fix/qa166-asteroid-boss-portrait-framing-20261120
 permissions:
   contents: write
   actions: write
@@ -97,6 +98,9 @@ jobs:
       - name: Prepare QA163 enemy volley muzzle performance release
         if: github.ref_name == 'perf/qa163-hostile-volley-muzzle-snapshot-20261119'
         run: npm run release:prepare -- 1.27.157
+      - name: Prepare QA166 portrait boss framing release
+        if: github.ref_name == 'fix/qa166-asteroid-boss-portrait-framing-20261120'
+        run: npm run release:prepare -- 1.27.158
       - run: npm run format
       - name: QA165 focused asteroid full-mission regression before expensive validation
         if: github.ref_name == 'test/qa165-asteroid-boss-victory-sequence-20261119'
@@ -144,6 +148,10 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "test/qa165-asteroid-boss-victory-sequence-20261119" ]; then
             git add -- tests/qa164-asteroid-real-subboss-progression.test.mjs specs/qa165-asteroid-boss-victory.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa166-asteroid-boss-portrait-framing-20261120" ]; then
+            git add -u
+            git add -- releases/v1.27.158.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then

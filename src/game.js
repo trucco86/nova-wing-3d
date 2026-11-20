@@ -78,6 +78,7 @@ import {
   updateWarpStreaks,
 } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
+import { asteroidBossPortraitFov } from './asteroid-boss-framing.js';
 import { measurePilotHull, projectPilotHull } from './asteroid-course.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
@@ -4373,7 +4374,13 @@ export function createGame({
       clamp(dx, -1, 1),
       boosting,
       dynamicFlight ? route : undefined,
-      dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
+      dynamicFlight && boss
+        ? sectorIndex === 2
+          ? asteroidBossPortraitFov(camera.aspect)
+          : sectorIndex === 5
+            ? europaBossPortraitFov(camera.aspect)
+            : null
+        : null,
     );
     // Keep a true solid in the game world but render the nearby underside
     // translucent when it would eclipse the pilot and the gameplay corridor.
