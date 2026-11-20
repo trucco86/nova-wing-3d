@@ -82,7 +82,7 @@ function crystallineShard() {
       const b = level * 6 + (i + 1) % 6;
       const c = (level + 1) * 6 + i;
       const d = (level + 1) * 6 + (i + 1) % 6;
-      indices.push(a, b, c, b, d, c);
+      indices.push(a, c, b, b, c, d);
     }
   const g = new T.BufferGeometry();
   g.setAttribute('position', new T.Float32BufferAttribute(positions, 3));
@@ -239,7 +239,7 @@ export function createEuropaCrystalCanyon() {
   // torus corridor, its arc is broken and has a visible engineered purpose.
   const gate = new T.Group();
   gate.name = 'europa-canyon-distant-alien-gateway';
-  gate.position.set(105, 63, -990);
+  gate.position.set(132, 47, -990);
   gate.userData.visualOnly = true;
   gate.userData.fixedSky = true;
   const stone = new T.MeshStandardMaterial({
