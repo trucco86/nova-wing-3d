@@ -18,18 +18,26 @@ test('Venus, Europa, Neptune and Titan establish a planet without placing it ins
     const globe = vista.getObjectByName('destination-celestial-body');
     assert.equal(destinationArrivalAt(index, 0).globeOpacity, 1);
     updateDestinationVista(vista, index, 14);
-    assert.equal(
-      globe.visible,
-      false,
-      'planet must be gone during atmosphere entry in sector ' + index,
-    );
-    assert.equal(
-      globe.position.x,
-      -205,
-      'approach planet must not obscure the central aiming lane',
-    );
-    assert.equal(globe.position.y, 170);
-    assert.ok(globe.scale.x <= 0.91, 'the planetary approach is not a wall-sized backdrop');
+    if (index === 5) {
+      assert.equal(globe.visible, true, 'Europa moon must remain during fissure approach');
+      assert.ok(globe.position.x > -150 && globe.position.x < 0, 'moon stays within camera');
+      assert.ok(globe.scale.x > 1, 'Europa grows as the ship approaches');
+      const crossing = updateDestinationVista(vista, index, 20);
+      assert.ok(crossing.globeOpacity > 0 && crossing.reveal > 0);
+    } else {
+      assert.equal(
+        globe.visible,
+        false,
+        'planet must be gone during atmosphere entry in sector ' + index,
+      );
+      assert.equal(
+        globe.position.x,
+        -205,
+        'approach planet must not obscure the central aiming lane',
+      );
+      assert.equal(globe.position.y, 170);
+      assert.ok(globe.scale.x <= 0.91, 'the planetary approach is not a wall-sized backdrop');
+    }
     updateDestinationVista(vista, index, 30);
     assert.equal(globe.visible, false);
   }
