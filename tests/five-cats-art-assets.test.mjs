@@ -6,11 +6,11 @@ import { join, resolve } from 'node:path';
 import { copyGameArt, FIVE_CATS_ART_FILES } from '../tools/copy-art-assets.mjs';
 import { CAT_RANKS } from '../src/cat-rank-catalog.js';
 
-test('original Five Cats art exports all ten standalone WebP files for offline and Pages', async (t) => {
+test('original Five Cats and Marvin art exports all eleven WebP files for offline and Pages', async (t) => {
   const dest = await mkdtemp(join(tmpdir(), 'five-cats-art-'));
   t.after(() => rm(dest, { recursive: true, force: true }));
-  assert.equal(FIVE_CATS_ART_FILES.length, 10);
-  assert.equal(await copyGameArt(dest), 10);
+  assert.equal(FIVE_CATS_ART_FILES.length, 11);
+  assert.equal(await copyGameArt(dest), 11);
   for (const name of FIVE_CATS_ART_FILES) {
     const source = await readFile(resolve('src/assets', name));
     const installed = await readFile(join(dest, 'src/assets', name));
@@ -62,4 +62,14 @@ test('all five identities use their individual artwork in every character surfac
       !html.includes('id="' + unexpected + '"'),
       unexpected + ' is not in the Five Cats roster',
     );
+});
+
+test('Marvin is a separate villain dossier, never a selectable Five Cats pilot', async () => {
+  const html = await readFile(resolve('src/shell.html'), 'utf8');
+  const css = await readFile(resolve('src/styles.css'), 'utf8');
+  assert.match(html, /id="marvinDossier"/);
+  assert.match(html, /src="src\/assets\/marvin-spotlight\.webp"/);
+  assert.match(css, /#menu\[data-screen='central'\] #marvinDossier/);
+  assert.ok(!html.includes('id="pilot-marvin"'));
+  assert.ok(FIVE_CATS_ART_FILES.includes('marvin-spotlight.webp'));
 });

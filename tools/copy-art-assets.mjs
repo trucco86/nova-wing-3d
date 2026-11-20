@@ -10,6 +10,7 @@ export const FIVE_CATS_ART_FILES = Object.freeze([
   'christopher-spotlight.webp',
   'calvin-spotlight.webp',
   'jenifer-spotlight.webp',
+  'marvin-spotlight.webp',
   'five-cats-ships-concept.webp',
   'five-cats-rank-emblems.webp',
   'nova-wing-weapons-concept.webp',

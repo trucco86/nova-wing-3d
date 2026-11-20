@@ -7811,7 +7811,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
   .title-content
   > :not(#menuBack):not(#menuScreenLabel):not(.title-actions):not(.title-extras):not(#novaAuth):not(
     .title-help
-  ):not(#catRanks):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
+  ):not(#catRanks):not(#marvinDossier):not(#novaTrophies):not(#novaRanking):not(#developerPanel) {
   display: none !important;
 }
 #menu.title-screen[data-screen='splash'] {
@@ -7943,6 +7943,7 @@ body.in-mission #tacticalPanel:has(#battleRadar[data-mode='physical']) {
 #menu[data-screen='central'] .title-help,
 #menu[data-screen='central'] #novaAuth,
 #menu[data-screen='central'] #catRanks,
+#menu[data-screen='central'] #marvinDossier,
 #menu[data-screen='central'] #novaTrophies,
 #menu[data-screen='central'] #novaRanking,
 #menu[data-screen='central'] #developerPanel {
@@ -12062,4 +12063,58 @@ body.intermission-active #shop #nextSector {
   background-size: cover;
   background-position: center 18%;
   background-repeat: no-repeat;
+}
+
+/* Marvin has his own authored illustration, not a sixth Five Cats pilot slot. */
+.nova-villain-dossier {
+  border: 1px solid #db69776b;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #2c0d1eeb, #091726ed);
+}
+.nova-villain-dossier > summary {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: #ffb5ac;
+  font: 800 12px/1.5 monospace;
+  letter-spacing: 0.04em;
+}
+.nova-villain-dossier > summary span {
+  color: #ffd2cc;
+  font-size: 13px;
+}
+.nova-villain-dossier figure {
+  margin: 10px 0 2px;
+  display: grid;
+  grid-template-columns: minmax(0, 45%) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.nova-villain-dossier img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 9px;
+  border: 1px solid #ff827266;
+}
+.nova-villain-dossier figcaption {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  font: 11px/1.5 monospace;
+  color: #eac6c8;
+}
+.nova-villain-dossier figcaption strong {
+  color: #ffe0d5;
+  font: 800 20px/1.2 monospace;
+}
+.nova-villain-dossier figcaption span {
+  color: #ff989a;
+  font-size: 10px;
+}
+.nova-villain-dossier figcaption p {
+  margin: 0;
 }

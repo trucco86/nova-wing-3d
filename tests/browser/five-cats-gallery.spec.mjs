@@ -76,3 +76,21 @@ test('every Five Cats pilot uses their dedicated illustrated highlight, not the 
     expect(response.headers()['content-type']).toContain('image/webp');
   }
 });
+
+test('Marvin has a dedicated illustration in the Central, not a playable pilot slot', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await page.goto('/');
+  await openMenu(page, 'central');
+  const dossier = page.locator('#marvinDossier');
+  await expect(dossier).toBeVisible();
+  await dossier.locator('summary').click();
+  const portrait = dossier.locator('img');
+  await expect(portrait).toBeVisible();
+  await expect(portrait).toHaveAttribute('src', 'src/assets/marvin-spotlight.webp');
+  const response = await page.request.get('/src/assets/marvin-spotlight.webp');
+  expect(response.ok()).toBeTruthy();
+  expect(response.headers()['content-type']).toContain('image/webp');
+  await expect(page.locator('#pilot-marvin')).toHaveCount(0);
+});

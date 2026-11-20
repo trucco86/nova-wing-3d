@@ -15,7 +15,7 @@
 4. A imagem conceitual de nave é rotulada como arte de referência, diferente do modelo 3D configurável. Não inferir modelo, cor, stats ou upgrades a partir do desenho.
 5. O catálogo de patente mantém as **10** patentes e thresholds de `src/cat-rank-catalog.js`. A prancha de arte fornece **8** emblemas decorativos; classes avançadas podem compartilhar emblema, mas não nome, rank nem dados.
 6. Painéis de armas e pods são opcionais no arsenal, com carregamento adiado e rótulos de conceito. Não criar upgrades ou prometer funcionalidades da ilustração.
-7. Assets WebP são estáticos, sem texturas GPU da cena Three.js. Dev local, Cloudflare, GitHub Pages e Android/iOS offline precisam servir as mesmas dez imagens.
+7. Assets WebP são estáticos, sem texturas GPU da cena Three.js. Dev local, Cloudflare, GitHub Pages e Android/iOS offline precisam servir as mesmas onze imagens, incluindo o dossiê individual de Marvin.
 8. CSS e imagens não podem cobrir controles, bloquear foco de teclado, gerar scroll obrigatório para a missão ou impedir pausa/reinício.
 
 ## QA
@@ -37,3 +37,12 @@
 Esses passos são critérios de revisão, não evidência de que o navegador foi inspecionado manualmente.
 
 - Para destaques individuais, utilizar `{bia,bob,christopher,calvin,jenifer}-spotlight.webp` em resolução própria, e nunca ampliar a colagem dos retratos pequenos.
+
+## Retratos consistentes e Marvin (20/11/2026)
+
+- O seletor, HUD do piloto, rádio, diálogo cinematográfico e cards de patente usam individualmente os WebP de Bia, Bob, Christopher, Calvinho e Jenifer.
+- Bob usa o mesmo retrato corrigido em TODAS essas superfícies; a montagem antiga deixa de aparecer em avatares pequenos.
+- Marvin recebe uma arte própria e um dossiê recolhível na Central, separado dos cinco pilotos jogáveis.
+- O dossiê só carrega a imagem quando expandido. Não altera o loop 3D, piloto selecionado, progresso, colisões ou balanceamento.
+- O painel conceitual de naves e as insígnias permanecem identificados como referência visual.
+- QA deve inspecionar a imagem do Marvin, os cinco retratos e os assets no domínio publicado em mobile e desktop.
