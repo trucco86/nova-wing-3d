@@ -82,8 +82,8 @@ export function orbit9StickAxes(dx, dy, radius) {
   if (![dx, dy, radius].every(Number.isFinite) || radius <= 0)
     return { x: 0, z: 0 };
   const limited = Math.min(1, Math.hypot(dx, dy) / radius);
-  if (limited < 0.15) return { x: 0, z: 0 };
-  const normalized = (limited - 0.15) / 0.85;
+  if (limited < 0.2) return { x: 0, z: 0 };
+  const normalized = (limited - 0.2) / 0.8;
   const angle = Math.atan2(dy, dx);
   return { x: Math.cos(angle) * normalized, z: Math.sin(angle) * normalized };
 }
