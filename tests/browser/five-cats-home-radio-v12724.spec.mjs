@@ -66,9 +66,16 @@ test('live mission radio shows the correct original Five Cats portrait after mec
     el.dataset.pilot = 'christopher';
     return result;
   });
+  const facePositions = {
+    bia: '70% 0%',
+    bob: '50% 0%',
+    christopher: '40% 0%',
+    calvin: '72% 0%',
+    jenifer: '35% 3%',
+  };
   for (const pilot of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
     expect(portraits[pilot].image).toContain(pilot + '-spotlight.webp');
-    expect(portraits[pilot].position).toBe('50% 18%');
+    expect(portraits[pilot].position).toBe(facePositions[pilot]);
   }
   await page.screenshot({ path: info.outputPath(`radio-christopher-${info.project.name}.png`) });
   expect(errors).toEqual([]);
