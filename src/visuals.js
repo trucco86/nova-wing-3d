@@ -2570,7 +2570,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // Dispose only unattached materials, including in missions that now
       // use their own independent instanced architecture.
       if (
-        !['asteroids', 'ice', 'nebula', 'sun'].includes(sceneryTheme) &&
+        !['asteroids', 'nebula', 'sun'].includes(sceneryTheme) &&
         !(dynamicFlight && ['void', 'throne'].includes(sceneryTheme))
       )
         mat.dispose();
