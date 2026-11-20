@@ -25,7 +25,11 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
     [-37, -82, 'archive', 'archive-banks'],
   ]) {
     expect(await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z])).toBe(true);
-    expect((await page.evaluate(() => window.__novaExploreQA.snapshot())).district).toBe(district);
+    const landed = await page.evaluate(() => window.__novaExploreQA.snapshot());
+    expect(landed.district).toBe(district);
+    // QA camera must land beside the cat immediately, not fly through solid
+    // structures from the previous test location and capture a blocking slab.
+    expect(Math.hypot(landed.cameraEye.x - x, landed.cameraEye.z - z)).toBeLessThan(18);
     await page.waitForTimeout(100);
     await page.screenshot({ path: info.outputPath('orbit9-devastador-' + file + '.png') });
   }
