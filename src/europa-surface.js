@@ -112,12 +112,13 @@ export function createEuropaSurface() {
     emissive: '#31596a',
     emissiveIntensity: 0.045,
   });
-  const floe = new T.IcosahedronGeometry(1, 0);
+  // Broad eroded shelves replace rounded placeholder boulders.
+  const floe = new T.CylinderGeometry(0.84, 1.12, 0.42, 7, 1);
   const shard = createEuropaGlacialRidgeGeometry();
   const dummy = new T.Object3D();
   for (const [name, count, geo, mat, center] of [
-    ['europa-fractured-ice-shelves', 32, floe, ice, 105],
-    ['europa-blue-crevasse-ridges', 26, shard, blue, 175],
+    ['europa-fractured-ice-shelves', 22, floe, ice, 118],
+    ['europa-blue-crevasse-ridges', 18, shard, blue, 188],
   ]) {
     const mesh = new T.InstancedMesh(geo, mat, count);
     mesh.name = name;
