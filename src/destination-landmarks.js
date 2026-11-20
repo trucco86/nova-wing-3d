@@ -302,7 +302,7 @@ export function createDestinationLandmarks(index) {
   } else if (index === 5) {
     const ice = makeInstanced(
       index,
-      54,
+      38,
       createEuropaGlacialRidgeGeometry(),
       new T.MeshStandardMaterial({
         color: '#ffffff',
@@ -382,7 +382,7 @@ export function createDestinationLandmarks(index) {
   // layer; close-up props stay lateral to the actual gameplay corridor.
   const additions = {
     4: ['venus-volcanic-ridge-masses', 26],
-    5: ['europa-glacier-fault-walls', 24],
+    5: ['europa-glacier-fault-walls', 16],
     6: ['neptune-organic-hive-towers', 28],
     9: ['titan-fortress-perimeter-towers', 28],
   };
