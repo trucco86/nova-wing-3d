@@ -56,3 +56,12 @@ Esses passos são critérios de revisão, não evidência de que o navegador foi
 - Os pontos focais são declarados por personagem na folha de estilo, não em números globais que distorçam o enquadramento dos demais gatos.
 - Usar captura real do Playwright em desktop e portrait para verificar que nenhum rosto/orelha é cortado; os testes de CSS verificam os recursos e seus parâmetros, não substituem inspeção visual.
 - Não editar a arte original, alterar piloto, nave/skin selecionadas ou aumentar a memória WebGL para corrigir o enquadramento.
+
+## Convergência entre o HUD e o 3D (20/11/2026)
+
+- O retrato de piloto `#pilotHudAvatar` do gameplay deve sempre usar `{id}-spotlight.webp` com o mesmo recorte facial aprovado no hangar, **sem depender** de estar no modo de showroom. Trocas manuais e substituição após dano preservam o piloto atual e atualizam nome, `data-pilot` e imagem.
+- Bob mantém `bob-spotlight.webp` corrigido e olhos **âmbar**, não verdes. Christopher e Bob têm pelagem escura e cabeça robusta, com Christopher ligeiramente maior. Jenifer tem olhos verdes e traje claro/turquesa. Bia veste armadura clara com detalhes ciano; Calvinho é menor, de orelhas relativamente altas e detalhes verdes.
+- `PILOT_ART_DIRECTION` em `showroom-models.js` descreve apenas materiais, feições e acessórios 3D; não altera `PILOT_PROFILES`, vantagens, armas, patente, colisões nem câmeras.
+- Reaproveitar a mesma geometria de piloto na inspeção 360° e na apresentação do hangar da fase 1; não instanciar gatos 3D de maneira permanente dentro do gameplay. Armadura e arreios têm geometria leve, descartada com o showroom.
+- **Aceite**: cada gato é reconhecível na comparação entre arte e 3D, Bob/Christopher não se confundem, olhos/armaduras estão coerentes, HUD mostra a arte correta antes e depois da troca de piloto, UI portrait mantém espaço de combate e não há alteração de balanceamento.
+- Cobertura: testes Node para materiais, geometria finita, insígnias e disposição; teste Playwright para o retrato real antes/depois do relay e respawn. Exigir CI completa e screenshots nos viewports web/mobile antes do merge.
