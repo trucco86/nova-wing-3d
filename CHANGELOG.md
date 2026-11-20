@@ -10,8 +10,8 @@
 - Narração visual e avisos curtos em português, inglês e espanhol; usa o áudio existente respeitando controles de volume.
 - Preserva o BOOST obrigatório, o início de combate, os dez setores, o fluxo mobile e a continuidade da campanha.
 - Corrigido o fluxo de Pular introdução para preservar a decolagem dos Five Cats, com teste de caminho real pelo menu.
-- Integração das artes de destaque dos Five Cats no hangar e nas patentes, com Bob substituído pela imagem individual mais recente, opções de galeria reversíveis e conceito de naves separado do 3D jogável.
-- Dez assets WebP otimizados, incluindo retratos individuais premium dos cinco gatos (Bob na versão mais recente), são entregues por caminho seguro em web, Pages e Android/iOS offline, com painel opcional de armas e pods. Preserva as dez patentes reais.
+- Integração das artes de destaque dos Five Cats no hangar, avatares de seleção, HUD, rádio, diálogos e patentes, com Bob substituído pela imagem individual mais recente, opções de galeria reversíveis e conceito de naves separado do 3D jogável.
+- Onze assets WebP otimizados, incluindo retratos individuais dos cinco gatos (Bob na versão corrigida) e Marvin, são distribuídos em web, Pages e Android/iOS offline; a Central exibe dossiê do vilão sem permitir selecioná-lo como piloto. O elenco, as dez patentes reais e a progressão permanecem intactos.
 - Testes determinísticos de formação, duração, geometria temporária e descarte de recursos; validação visual e CI completa exigidas antes de qualquer publicação.
 
 ## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
