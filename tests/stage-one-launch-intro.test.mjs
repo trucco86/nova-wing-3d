@@ -61,14 +61,15 @@ test('every selected pilot remains real center fighter; four distinct escorts re
   }
 });
 
-test('five launch ships form a V and the leader holds the actual playable position', () => {
+test('five launch ships form a V then peel away before playable handoff', () => {
   for (const t of [0, 2, 3.8, 5.7, 6.5]) {
     const leader = firstStageLaunchWingPose(0, t);
     const left = firstStageLaunchWingPose(-1, t);
     const right = firstStageLaunchWingPose(1, t);
     assert.equal(left.x, -right.x);
     assert.equal(left.z, right.z);
-    assert.ok(left.z > leader.z || t === 6.5);
+    if (t <= 3.8) assert.ok(left.z > leader.z, 'escorts begin behind the real leader');
+    else assert.ok(Math.abs(left.x) > 20, 'escorts exit toward the outer lanes before gameplay');
     assert.equal(leader.x, 0);
   }
   assert.equal(firstStageLaunchWingPose(0, 6.5).z, 9);
