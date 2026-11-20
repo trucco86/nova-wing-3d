@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { createEuropaCrystalCanyon, setEuropaCrystalCanyonQuality } from './europa-crystal-canyon.js';
 
 const smooth = (value) => {
   const v = Math.max(0, Math.min(1, value));
@@ -15,8 +16,9 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
     surface,
     orbitalVisible: orbital > 0.01,
     orbitalOpacity: orbital,
-    frostDensity: 0.00135 + surface * 0.00135,
-    fogTint: '#b3d5e0',
+    // Clear, layered night-blue frost rather than a white-grey blurred wall.
+    frostDensity: 0.001 + surface * 0.00038,
+    fogTint: '#355b78',
     groundVisible: surface > 0.07 && !tunnelActive,
     tunnelActive: Boolean(tunnelActive),
   });
@@ -165,6 +167,9 @@ export function createEuropaSurface() {
   snow.userData.visualOnly = true;
   root.add(snow);
   europaSurfaceParts.set(root, snow);
+  // New frozen canyon and ruins share the surface's existing boss/tunnel
+  // visibility contract. No extra shadows, hitboxes, textures or postpasses.
+  root.add(createEuropaCrystalCanyon());
   root.visible = false;
   return root;
 }
@@ -172,6 +177,10 @@ export function createEuropaSurface() {
 export function updateEuropaSurface(root, time, visible, highQuality = true) {
   if (!root) return;
   root.visible = Boolean(visible);
+  setEuropaCrystalCanyonQuality(
+    root.getObjectByName('europa-premium-crystal-canyon'),
+    highQuality ? 'high' : 'medium',
+  );
   // The inactive glacier and Medium mode do not calculate invisible VFX
   // or walk the scene hierarchy. WeakMap keeps cloned worlds recoverable.
   let snow = europaSurfaceParts.get(root);
