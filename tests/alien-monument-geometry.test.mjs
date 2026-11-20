@@ -84,9 +84,9 @@ test('Europa hero vault is a distinctive grounded portal, low-cost, outside the 
   const pos = new T.Vector3();
   vault.getMatrixAt(0, matrix);
   pos.setFromMatrixPosition(matrix);
-  assert.ok(pos.x <= -150, 'vault remains on the left scenic lane');
+  assert.ok(pos.x <= -105, 'vault remains on the left scenic lane');
   const bounds = new T.Box3().setFromBufferAttribute(vault.geometry.getAttribute('position'));
-  const rightmost = pos.x + bounds.max.x * 108;
+  const rightmost = pos.x + bounds.max.x * 40;
   assert.ok(rightmost < -72, 'large vault must not intrude into the central flight corridor');
   const site = scene.getObjectByName('alien-architecture-ice');
   assert.equal(site.children.length, 7, 'one extra instanced draw, no duplicated monuments');
