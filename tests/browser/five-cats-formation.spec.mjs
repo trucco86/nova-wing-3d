@@ -133,7 +133,8 @@ test('pilot explicitly skips hangar cutscene and keeps the same craft', async ({
   await page.locator('#cinematicSkip').click();
   await page.locator('#mapLaunch').click();
   await expect(page.locator('#launchSkip')).toBeVisible();
-  await expect(page.locator('#squadFormationStatus')).toBeVisible();
+  await expect(page.locator('#squadFormationStatus')).toBeHidden();
+  await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
   await page.locator('#launchSkip').click();
   await expect(page.locator('#launchSkip')).toBeHidden();
   await expect(page.locator('#squadFormationStatus')).toBeHidden();
