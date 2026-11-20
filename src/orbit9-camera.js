@@ -42,11 +42,13 @@ function segmentEntry(x0, z0, dx, dz, block, expand = 1.1) {
 export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   const safe = orbit9CameraState(state);
   const survey = safe.mode === 'survey';
-  const distance = survey ? 30 : 19;
-  const shoulder = survey ? 0 : 3.2;
+  // Keep the follow camera closer than the panoramic view: the previous 19m
+  // distance made nearby reactor pylons fill the screen and the pilot tiny.
+  const distance = survey ? 30 : 15;
+  const shoulder = survey ? 0 : 2.4;
   const cos = Math.cos(safe.yaw);
   const sin = Math.sin(safe.yaw);
-  const aim = { x, y: survey ? 3.5 : 3.2, z };
+  const aim = { x, y: survey ? 3.5 : 3.6, z };
   const desiredX = x + sin * distance + cos * shoulder;
   const desiredZ = z + cos * distance - sin * shoulder;
   let fraction = 1;
@@ -60,7 +62,7 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   return {
     eye: {
       x: x + dx * fraction,
-      y: (survey ? 25 : 11) * (0.5 + 0.5 * fraction),
+      y: (survey ? 25 : 10.5) * (0.5 + 0.5 * fraction),
       z: z + dz * fraction,
     },
     aim,
