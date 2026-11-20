@@ -4,13 +4,16 @@ import { createShowroomPilot, disposeShowroomModel } from './showroom-models.js'
 
 // Fixed, readable cinematic camera cuts, ending on the exact in-game chase rig.
 // All staging stays visual-only: flight coordinates, selected ship and paint never change.
-export const FIRST_STAGE_LAUNCH_SECONDS = 5;
+export const FIRST_STAGE_LAUNCH_SECONDS = 7.5;
 export const FIRST_STAGE_SHOTS = Object.freeze([
-  // Four readable shots instead of six subsecond cuts.
+  // Six distinct views with enough hold time to read the actual hangar exit.
+  // Inspired by the cinematic grammar of classic rail shooters, not copied shots.
   { at: 0, name: 'hangar-wide' },
-  { at: 1.25, name: 'pilot-close' },
-  { at: 2.45, name: 'exit-front' },
-  { at: 3.9, name: 'handoff' },
+  { at: 1.55, name: 'pilot-close' },
+  { at: 2.65, name: 'deck-side' },
+  { at: 3.55, name: 'exit-front' },
+  { at: 5.25, name: 'rear-flight' },
+  { at: 6.3, name: 'handoff' },
 ]);
 const clamp01 = (n) => Math.max(0, Math.min(1, Number.isFinite(n) ? n : 0));
 const ease = (n) => {
@@ -33,15 +36,17 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
     FIRST_STAGE_LAUNCH_SECONDS,
     Math.max(0, Number.isFinite(seconds) ? seconds : 0),
   );
-  const doors = ease(t / 1.15);
-  const departure = ease((t - 2.65) / 2.3);
-  const handoff = ease((t - 3.9) / 1.1);
+  const doors = ease(t / 1.5);
+  const departure = ease((t - 3.25) / 3.0);
+  const handoff = ease((t - 6.3) / 1.2);
   const squeeze = Math.max(0.46, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
   const shot = FIRST_STAGE_SHOTS.reduce((current, entry) => (t >= entry.at ? entry : current)).name;
   const views = {
     'hangar-wide': { eye: [14 * squeeze, 15, 33], aim: [0, 6, -40], fov: 68 },
     'pilot-close': { eye: [-11 * squeeze, 1, 23], aim: [-11 * squeeze, -0.8, 9], fov: 53 },
-    'exit-front': { eye: [1.5, 10, -64], aim: [0, 6, 3], fov: 68 },
+    'deck-side': { eye: [22 * squeeze, 9, 18], aim: [0, 6, -28], fov: 63 },
+    'exit-front': { eye: [1.5, 10, -67], aim: [0, 6, 3], fov: 68 },
+    'rear-flight': { eye: [9 * squeeze, 13, 40], aim: [0, 7, -77], fov: 64 },
     handoff: {
       eye: [7 * squeeze * (1 - handoff), 12, 43 + 7 * (1 - handoff)],
       aim: [0, 7, -90 + 25 * (1 - handoff)],
@@ -52,7 +57,7 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   return {
     t,
     shot,
-    beat: t < 1.15 ? 'doors' : t < 2.65 ? 'ignition' : t < 3.9 ? 'departure' : 'handoff',
+    beat: t < 1.5 ? 'doors' : t < 3.25 ? 'ignition' : t < 6.3 ? 'departure' : 'handoff',
     doors,
     departure,
     handoff,
@@ -142,6 +147,14 @@ export function createFirstStageLaunchIntro(scene, camera) {
     }
   }
   add('launch-exit-threshold', [38, 0.32, 2.2], [0, -6.12, -49], amber);
+  // The launch doors are framed by a separate external threshold, so the
+  // side and frontal cuts make it obvious that the formation leaves a hangar.
+  add('launch-exterior-gate-header', [39, 1.5, 2.1], [0, 15.5, -55], panel);
+  for (const side of [-1, 1]) {
+    add('launch-exterior-gate-pillar', [1.35, 22, 2.1], [side * 19, 4, -55], panel);
+    add('launch-exterior-gate-beacon', [0.8, 12, 1.1], [side * 17.5, 3, -54.5], cyan);
+    add('launch-exit-lane-marker', [1.25, 0.25, 4], [side * 12, -5.95, -55], amber);
+  }
   add('crew-holo-pedestal', [5.5, 0.45, 5.3], [-11, -6, 9], cyan);
   add('crew-holo-backlight', [4.6, 5.6, 0.16], [-11, -0.8, 6.5], panel);
   root.visible = false;
