@@ -32,6 +32,7 @@ on:
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - perf/qa163-hostile-volley-muzzle-snapshot-20261119
       - test/qa164-asteroid-subboss-real-progression-20261119
+      - test/qa165-asteroid-boss-victory-sequence-20261119
 permissions:
   contents: write
   actions: write
@@ -137,6 +138,9 @@ jobs:
           fi
           if [ "${GITHUB_REF_NAME}" = "test/qa164-asteroid-subboss-real-progression-20261119" ]; then
             git add -- tests/qa164-asteroid-real-subboss-progression.test.mjs specs/qa164-asteroid-real-subboss-progression.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "test/qa165-asteroid-boss-victory-sequence-20261119" ]; then
+            git add -- tests/qa164-asteroid-real-subboss-progression.test.mjs specs/qa165-asteroid-boss-victory.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
