@@ -1,4 +1,5 @@
 import * as T from 'three';
+import { europaDescentAt } from './europa-descent.js';
 import {
   createEuropaCrystalCanyon,
   setEuropaCrystalCanyonQuality,
@@ -13,16 +14,20 @@ const smooth = (value) => {
 // orbital globe. Keep the ice-floor swap deterministic in game time.
 export function europaSurfaceAt(seconds, tunnelActive = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa arrival time');
-  const surface = smooth((seconds - 16) / 7);
-  const orbital = 1 - smooth((seconds - 14.5) / 2.5);
+  const descent = europaDescentAt(seconds);
+  const surface = descent.terrainReveal;
+  // Planetary approach remains visible until the ice scenery has visibly
+  // emerged; do not strand the player in black space for 5+ seconds.
+  const orbital = descent.planetOpacity;
   return Object.freeze({
     surface,
     orbitalVisible: orbital > 0.01,
     orbitalOpacity: orbital,
+    terrainLift: descent.terrainLift,
     // Clear, layered night-blue frost rather than a white-grey blurred wall.
     frostDensity: 0.001 + surface * 0.00038,
     fogTint: '#355b78',
-    groundVisible: surface > 0.07 && !tunnelActive,
+    groundVisible: descent.terrainVisible && surface > 0.01 && !tunnelActive,
     tunnelActive: Boolean(tunnelActive),
   });
 }
@@ -184,6 +189,9 @@ export function createEuropaSurface() {
 export function updateEuropaSurface(root, time, visible, highQuality = true) {
   if (!root) return;
   root.visible = Boolean(visible);
+  // Mirror Mars's ground-rise transition: the same glacier comes into view
+  // continuously while the orbital globe fades. No sudden scene swap.
+  root.position.y = europaDescentAt(time).terrainLift;
   // Reuse a cached reference to avoid scene traversal on every rendered
   // frame. Cloned scenes get a one-time lookup into their own subtree.
   let canyon = europaCanyonParts.get(root);
