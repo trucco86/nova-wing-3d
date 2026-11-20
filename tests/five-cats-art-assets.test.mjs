@@ -58,5 +58,8 @@ test('all five identities use their individual artwork in every character surfac
   assert.match(html, /id="hangarArt"/);
   assert.match(html, /id="hangarArtImage"/);
   for (const unexpected of ['pilot-boa', 'pilot-luna'])
-    assert.ok(!html.includes('id="' + unexpected + '"'), unexpected + ' is not in the Five Cats roster');
+    assert.ok(
+      !html.includes('id="' + unexpected + '"'),
+      unexpected + ' is not in the Five Cats roster',
+    );
 });
