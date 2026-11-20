@@ -115,10 +115,14 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   const glsl = ground.material.fragmentShader;
   const cityStart = glsl.indexOf('if(ice<.5){float gx=');
   const cityEnd = glsl.indexOf('}if(ice>.5){', cityStart);
-  assert.ok(cityStart >= 0 && cityEnd > cityStart,
-    'city roads and neon grid must be completely masked on Europa');
-  assert.ok(glsl.indexOf('float iceTile=') === -1,
-    'iceTile is a vec2: never regress to broken uniform references');
+  assert.ok(
+    cityStart >= 0 && cityEnd > cityStart,
+    'city roads and neon grid must be completely masked on Europa',
+  );
+  assert.ok(
+    glsl.indexOf('float iceTile=') === -1,
+    'iceTile is a vec2: never regress to broken uniform references',
+  );
   assert.equal(
     ground.material.fragmentShader.includes('sin(p.y*.047+sin(p.x*.12)'),
     false,
@@ -171,7 +175,10 @@ test('Europa legacy background ridges stay distant and upright instead of blocki
   for (let i = 0; i < field.count; i++) {
     field.getMatrixAt(i, matrix);
     matrix.decompose(position, rotation, scale);
-    assert.ok(Math.abs(position.x) >= 210, 'legacy mountains must be behind the scenic crystal lane');
+    assert.ok(
+      Math.abs(position.x) >= 210,
+      'legacy mountains must be behind the scenic crystal lane',
+    );
     assert.ok(position.z <= -250, 'legacy mountains must begin behind the near canyon');
     assert.ok(scale.x >= 0.55 && scale.x <= 1.301, 'legacy mountains cannot grow to 2.5x');
     assert.ok(Math.abs(matrix.elements[1]) < 1e-4, 'ice ridges should no longer spin on X or Z');
