@@ -5,6 +5,7 @@ import { fighter } from '../src/visuals.js';
 import { PILOT_PROFILES, SHIP_MODELS } from '../src/pilots.js';
 import {
   createShowroomPilot,
+  PILOT_ART_DIRECTION,
   createShowroomShip,
   disposeShowroomModel,
 } from '../src/showroom-models.js';
@@ -54,4 +55,37 @@ test('preview ship color and resource disposal cannot change the live fighter', 
   }
   assert.equal(disposed, 0);
   assert.equal(live.children[0].material.color.getHex(), original);
+});
+
+test('approved cat art identities are expressed by distinct 3D face, visor and suit materials', () => {
+  const expected = {
+    bia: '#e4ad4a',
+    bob: '#d9ac53',
+    christopher: '#d9a74f',
+    calvin: '#e8b457',
+    jenifer: '#80bf94',
+  };
+  for (const [id, iris] of Object.entries(expected)) {
+    const model = createShowroomPilot(id);
+    assert.equal(model.userData.artIdentity, id);
+    assert.equal(model.getObjectByName('iris').material.color.getHexString(), iris.slice(1));
+    assert.equal(
+      model.getObjectByName('pilot-art-harness').material.color.getHexString(),
+      PILOT_ART_DIRECTION[id].harness.slice(1),
+    );
+    assert.equal(
+      model.getObjectByName('pilot-art-chest-light').material.color.getHexString(),
+      PILOT_ART_DIRECTION[id].light.slice(1),
+    );
+    assert.ok(model.getObjectByName('pilot-art-collar'));
+    assert.ok(model.getObjectByName('pilot-art-shoulder-armor'));
+    assert.ok(model.getObjectByName('ear').scale.y > 0.8);
+    let parts = 0;
+    model.traverse((part) => { if (part.isMesh) parts++; });
+    assert.ok(parts < 100, 'cinematic pilot must remain lightweight for mobile');
+    disposeShowroomModel(model);
+  }
+  assert.ok(PILOT_ART_DIRECTION.calvin.ear > PILOT_ART_DIRECTION.christopher.ear);
+  assert.notEqual(PILOT_ART_DIRECTION.bob.iris, PILOT_ART_DIRECTION.jenifer.iris);
+  assert.equal(PILOT_ART_DIRECTION.bia.suit, '#26313b');
 });
