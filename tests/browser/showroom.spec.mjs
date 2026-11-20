@@ -43,7 +43,7 @@ test('approved artwork and 360 hangar support selection, touch drag, zoom and re
   const portrait = await page
     .locator('#profileAvatar')
     .evaluate((e) => getComputedStyle(e).backgroundImage);
-  expect(portrait).toContain('data:image/webp;base64,');
+  expect(portrait).toContain('bia-spotlight.webp');
   await page.locator('#ship-aegis').click();
   await page.locator('#ship-color-gold').click();
   await expect(canvas).toHaveAttribute('data-model', 'aegis');
