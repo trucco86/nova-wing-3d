@@ -1,6 +1,7 @@
 import * as T from 'three';
 
 // Only the exploration avatar is rigged. Hangar/launch character assets stay untouched.
+// Drive gait from measured travel, not intended input, so collisions stop the feet.
 export function createOrbit9WalkRig(pilot) {
   const legs = [];
   const arms = [];
