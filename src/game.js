@@ -774,6 +774,7 @@ export function createGame({
     ringWave = 0,
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
+    europaArrivalPhase = 'space',
     marsStormPhase = 'clear',
     marsCleanse = 0,
     marsPendingRoll = false,
@@ -1596,6 +1597,7 @@ export function createGame({
     world.setSector(current(), sectorIndex);
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
+    europaArrivalPhase = 'space';
     marsStormPhase = 'clear';
     marsCleanse = 0;
     marsPendingRoll = false;
@@ -4505,6 +4507,25 @@ export function createGame({
     } else if (sectorIndex === 1 && marsCleanse === 0 && !boss && !sandstorm?.active) {
       $('attackWarning').textContent = '';
     }
+    // Match Mars's clean, one-time mission beats during Europa entry.
+    // A smooth transition never spams HUD text or hides the reticle.
+    if (
+      dynamicFlight &&
+      sectorIndex === 5 &&
+      destinationArrival &&
+      destinationArrival.phase !== europaArrivalPhase
+    ) {
+      europaArrivalPhase = destinationArrival.phase;
+      const europaAnnouncements = {
+        orbit: ['ÓRBITA DE EUROPA · FENDA GLACIAL LOCALIZADA', 'bob'],
+        entry: ['DESCIDA NA FENDA · FRAGMENTOS DE GELO À FRENTE', 'christopher'],
+        descent: ['CÂNION CRISTALINO À VISTA · MANTENHA A FORMAÇÃO', 'bia'],
+        arena: ['EUROPA · CÂNION CONGELADO · COMBATE LIBERADO', 'bob'],
+      };
+      const beat = europaAnnouncements[destinationArrival.phase];
+      if (beat) message(beat[0], beat[1]);
+      if (destinationArrival.phase === 'arena') invuln = Math.max(invuln, 2.5);
+    }
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
       const announcements = {
@@ -4566,7 +4587,13 @@ export function createGame({
       );
       if (destinationArrival && !boss) {
         route.label = destinationArrival.label;
-        if (destinationArrival.phase === 'entry') route.ascent -= 0.16 * destinationArrival.haze;
+        if (sectorIndex === 5) {
+          // Mars-style continuous camera dip through the glacial fissure.
+          // Do not combine generic route movement with the descent twice.
+          route.ascent = destinationArrival.cameraAscent;
+        } else if (destinationArrival.phase === 'entry') {
+          route.ascent -= 0.16 * destinationArrival.haze;
+        }
       }
       if (marsArrival && !boss) {
         route.label = marsArrival.label;
