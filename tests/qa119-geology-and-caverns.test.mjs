@@ -110,7 +110,11 @@ test('QA119: Europa ridges have five physical colour bands and keep the same two
   assert.ok(geo.boundingSphere.radius < 2);
   geo.dispose();
   const root = createEuropaSurface();
-  assert.equal(root.children.length, 4, 'two existing terrain batches, snow and one premium canyon');
+  assert.equal(
+    root.children.length,
+    4,
+    'two existing terrain batches, snow and one premium canyon',
+  );
   const ice = root.getObjectByName('europa-blue-crevasse-ridges');
   assert.ok(ice.isInstancedMesh && ice.material.vertexColors && ice.count === 18);
   const m = new T.Matrix4();
