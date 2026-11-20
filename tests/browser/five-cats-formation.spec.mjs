@@ -76,7 +76,10 @@ test('stage-one has three continuous clear hangar moments without labels or touc
   expect(after.heroShip.rootId).toBe(heroId);
   expect(after.fiveCats.visible).toHaveLength(0);
   expect(after.seconds).toBeGreaterThan(0);
-  expect(after.camera.fov).toBe(60);
+  // The cinematic ends at 60°, then the playable chase camera smoothly
+  // settles toward its normal 64° lens during the first real game frames.
+  expect(after.camera.fov).toBeGreaterThanOrEqual(60);
+  expect(after.camera.fov).toBeLessThanOrEqual(65);
   await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
   await expect(page.locator('#hud')).toBeVisible();
   await expect(page.locator('#launchSkip')).toBeHidden();
