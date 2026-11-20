@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { orbit9CameraPose } from '../src/orbit9-camera.js';
 import {
   ORBIT9_ART_LANDMARKS,
   ORBIT9_DEVASTADOR_PALETTE,
@@ -79,4 +80,17 @@ test('Stage art adds no new collision or interaction positions', () => {
     [-37, -82],
   ]);
   assert.deepEqual(ORBIT9_SURVIVOR, [9, -92]);
+});
+
+
+test('follow camera keeps the entrance deck visible and avoids giant foreground reactor props', () => {
+  const spawn = orbit9CameraPose(0, 12, { yaw: 0, mode: 'follow' });
+  assert.ok(spawn.eye.z <= 21, 'follow camera must stay above the built deck');
+  assert.ok(spawn.eye.z > spawn.aim.z);
+  const reactor = orbit9CameraPose(39, -55, { yaw: 0, mode: 'follow' });
+  const distance = Math.hypot(reactor.eye.x - 39, reactor.eye.z + 55);
+  assert.ok(distance < 16, 'reactor camera must be close enough to keep the pilot readable');
+  assert.ok(reactor.eye.z < -38, 'foreground service modules should stay behind camera');
+  const survey = orbit9CameraPose(39, -55, { yaw: 0, mode: 'survey' });
+  assert.ok(survey.eye.y > reactor.eye.y, 'panoramic mode stays visibly elevated');
 });
