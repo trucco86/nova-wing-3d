@@ -81,9 +81,9 @@ jobs:
       - name: Prepare QA158 GPU-batched city web release
         if: github.ref_name == 'perf/qa158-city32-searchlight-mount-batching-20261118'
         run: npm run release:prepare -- 1.27.152
-      - name: Prepare QA167 boss contact and six-shot launch release candidate
+      - name: Prepare QA168 clean hangar launch release candidate
         if: github.ref_name == 'feat/qa167-boss-physical-attacks-premium-launch-20261120' || github.head_ref == 'feat/qa167-boss-physical-attacks-premium-launch-20261120'
-        run: npm run release:prepare -- 1.27.159
+        run: npm run release:prepare -- 1.27.160
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -99,7 +99,7 @@ jobs:
             git add -u
           fi
           if [ "${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}" = "feat/qa167-boss-physical-attacks-premium-launch-20261120" ]; then
-            git add -- releases/v1.27.159.md
+            git add -- releases/v1.27.160.md
           fi
           # QA157: preserve formatter output for the new hotpath code and tests.
           if [ "${GITHUB_REF_NAME}" = "perf/qa157-orbit-pod-hotpath-allocations-20261118" ]; then
