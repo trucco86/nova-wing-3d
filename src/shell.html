@@ -1549,13 +1549,16 @@
         <button id="exploreChoiceHidden" type="button">ABRIR ROTA CLANDESTINA</button>
       </div>
       <footer class="exploration-controls">
-        <div class="exploration-directional" aria-label="Controles de deslocamento">
-          <button id="exploreMoveUp" type="button" aria-label="Avançar">▲</button>
-          <button id="exploreMoveLeft" type="button" aria-label="Ir à esquerda">◀</button>
-          <button id="exploreMoveDown" type="button" aria-label="Recuar">▼</button>
-          <button id="exploreMoveRight" type="button" aria-label="Ir à direita">▶</button>
+        <div
+          id="exploreStick"
+          class="exploration-stick"
+          role="group"
+          aria-label="Direcional analógico da exploração, igual ao joystick do voo"
+        >
+          <div id="exploreNub" aria-hidden="true"></div>
         </div>
         <div class="exploration-actions">
+          <button id="exploreBoost" type="button" aria-label="BOOST: correr">BOOST</button>
           <button id="exploreScan" type="button" disabled>SCAN · PISTA</button>
           <button id="exploreTalk" type="button" disabled>INTERAGIR · NPC</button>
           <button id="exploreLaunchCombat" type="button" hidden>
@@ -1563,7 +1566,7 @@
           </button>
         </div>
         <small
-          >WASD / SETAS PARA ANDAR · ARRASTE / Q R PARA GIRAR · C PARA VISTA · E PARA INVESTIGAR ·
+          >WASD / SETAS OU ANALÓGICO · SHIFT / BOOST PARA CORRER · Q R CÂMERA · C VISTA · E INTERAGIR ·
           QA SEM SAVE</small
         >
       </footer>
