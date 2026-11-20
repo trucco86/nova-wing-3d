@@ -11463,6 +11463,40 @@ body.intermission-active #shop #nextSector {
   }
 }
 
+/* QA168: stage-one hangar cinematics must contain ONLY the actual ships,
+   their sealed bay and the optional SKIP button. No battle tags or input HUD. */
+body.launch-cinematic :is(
+  #hud,
+  #hudNotices,
+  #touch,
+  #bottom,
+  #strategyControls,
+  #orbitControls,
+  #squadFormationStatus,
+  #squadSuperStatus,
+  #sectorTag,
+  #routeLabel,
+  #cockpitPanel,
+  #tacticalPanel,
+  #battleRadar,
+  #bossHUD,
+  #subHUD,
+  #petCareHud,
+  #comms,
+  #launchBoostNotice,
+  #aimReticle,
+  #pause,
+  #pauseTouch
+) {
+  display: none !important;
+  pointer-events: none !important;
+}
+body.launch-cinematic #launchSkip:not([hidden]) {
+  display: block !important;
+  top: max(18px, calc(env(safe-area-inset-top, 0px) + 10px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+}
+
 /* Pilot-only launch skip stays outside the clipped alert rail and combat controls. */
 #launchSkip {
   position: fixed;
