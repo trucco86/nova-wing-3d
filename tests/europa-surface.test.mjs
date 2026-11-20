@@ -23,7 +23,7 @@ test('Europa orbit disappears before the actual surface opens and cannot remain 
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
   assert.equal(destinationArrivalAt(5, 20).globeOpacity, 0);
   assert.equal(destinationArrivalAt(5, 26).globeOpacity, 0);
-  assert.ok(destinationArrivalAt(4, 20).globeOpacity > 0, 'Venus arrival unchanged');
+  assert.equal(destinationArrivalAt(4, 20).globeOpacity, 0, 'Venus now clears the planet before atmospheric combat');
   assert.throws(() => europaSurfaceAt(Number.NaN), RangeError);
 });
 
