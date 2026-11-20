@@ -80,6 +80,23 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  alienWorldState(theme) {
+    if (!lastScene) return null;
+    const site = lastScene.getObjectByName('alien-architecture-' + theme);
+    const globe = lastScene.getObjectByName('destination-celestial-body');
+    return {
+      exists: Boolean(site),
+      visible: site?.visible ?? false,
+      siteName: site?.userData.site ?? null,
+      structures: site?.children.map((node) => node.name) ?? [],
+      visualOnly: site?.userData.visualOnly ?? false,
+      giantGenericOrb: lastScene.getObjectByName('orion-generic-planet') !== undefined,
+      globeVisible: globe?.visible ?? false,
+      ringsAttachedToSaturn: Boolean(lastScene.getObjectByName('saturn-planetary-ring-system')),
+      render: lastRenderStats ? { ...lastRenderStats } : null,
+    };
+  },
+
   // QA151: prove the LIVE WebGL world actually uses the soft dust map, not
   // just a detached createMarsSandstorm() object in a unit test.
   marsDustVisualState() {
