@@ -1921,19 +1921,25 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     // without reintroducing the old giant repeated background planet.
     const europaSurfaceSky = destinationIndex === 5 && state.reveal > 0.82;
     starfield.visible = europaSurfaceSky || state.reveal < 0.95 || state.keepGlobe;
-    starfield.material.opacity = europaSurfaceSky
-      ? 0.36
+    starfield.material.opacity = destinationIndex === 5
+      ? (europaSurfaceSky ? 0.32 : state.starOpacity)
       : 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) {
       const ice = europaSurfaceAt(seconds, europaTunnelActive);
       ground.visible = ice.groundVisible && !europaBossArenaActive;
-      moon.visible = atmosphere.visible = ice.orbitalVisible;
+      // The destination-vista moon is the ONE valid orbital body. The legacy
+      // generic moon and halo were duplicating Europa during the approach.
+      moon.visible = false;
+      atmosphere.visible = false;
+      // Use the existing transparent terrain shader for a smooth dissolve,
+      // rather than suddenly switching from empty space to an opaque floor.
+      terrainMat.uniforms.launchGroundAlpha.value = ice.surface;
       scene.fog.color.lerp(new T.Color(ice.fogTint), ice.surface * 0.87);
       scene.fog.density = T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface);
       updateEuropaSurface(
         sectorScenery.getObjectByName('europa-frozen-surface'),
         seconds,
-        ice.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+        ice.groundVisible && !europaTunnelActive && !europaBossArenaActive,
         destinationGraphicsQuality === 'high',
       );
     }
@@ -1965,6 +1971,11 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       } else if (!child.userData.arrivalWasRevealed) {
         child.visible = child.userData.arrivalInitiallyVisible;
         child.userData.arrivalWasRevealed = true;
+      }
+      if (destinationIndex === 5 && child.userData.fixedSky && child !== destinationVista) {
+        // Distant Europa ruins rise with the canyon, instead of popping into
+        // the viewport midway through the approach. Full world pose at 25s.
+        child.position.y = state.terrainLift ?? 0;
       }
     }
     if (destinationIndex === 3) {
