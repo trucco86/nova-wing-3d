@@ -1,0 +1,36 @@
+name: Orbit-9 final side-clue source sync
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-walk-and-gamepad-20261120
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.event.pull_request.head.ref == 'feat/orbit9-devastador-art-pass-20261120' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format and regenerate preview for clue visibility
+        run: |
+          npx prettier --write src/exploration-preview.js tests/browser/orbit9-stage-art.spec.mjs
+          npm run build
+          npm run build:check
+          node --test tests/orbit9-stage-art.test.mjs tests/orbit9-locomotion.test.mjs
+      - name: Commit synchronized QA build and self-remove
+        run: |
+          git config user.name "Nova Wing QA Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html src/exploration-preview.js tests/browser/orbit9-stage-art.spec.mjs
+          git rm .github/workflows/orbit9-final-side-clue-sync.yml
+          git diff --cached --quiet || git commit -m "chore(orbit9): sync final unobstructed evidence markers"
+          git push origin HEAD:feat/orbit9-devastador-art-pass-20261120
