@@ -14,13 +14,10 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   const state = await page.evaluate(() => window.__novaExploreQA.snapshot());
   expect(state.stageArt.name).toBe('orbit9-devastador-stage-art');
   expect(state.stageArt.referencesStage).toBe(3);
-  expect(state.stageArt.districtLandmarks).toEqual([
-    'central',
-    'science',
-    'reactor',
-    'archive',
-  ]);
-  expect(Object.values(state.stageArt.instanceCounts).reduce((a, b) => a + b, 0)).toBeGreaterThan(200);
+  expect(state.stageArt.districtLandmarks).toEqual(['central', 'science', 'reactor', 'archive']);
+  expect(Object.values(state.stageArt.instanceCounts).reduce((a, b) => a + b, 0)).toBeGreaterThan(
+    200,
+  );
   for (const [x, z, district, file] of [
     [0, 12, 'central', 'atrium'],
     [-38, -18, 'science', 'signal-lab'],

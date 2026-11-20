@@ -45,8 +45,7 @@ export function createOrbit9StageArt() {
       const x = col * 12.2;
       const z = 11 - row * 8.4;
       emit('plating', x, 0.005, z, 11.7, 0.08, 7.95);
-      if ((col + row + 20) % 3 === 0)
-        emit('armor', x, 0.065, z - 3.4, 10.4, 0.055, 0.13);
+      if ((col + row + 20) % 3 === 0) emit('armor', x, 0.065, z - 3.4, 10.4, 0.055, 0.13);
     }
   }
   for (const side of [-1, 1]) {
@@ -118,8 +117,7 @@ export function createOrbit9StageArt() {
   for (const z of [-72, -80, -88, -96]) {
     emit('plating', -51, 5, z, 4.9, 9, 5.7);
     emit('armor', -48.3, 5.1, z, 0.5, 8.5, 5.8);
-    for (let y = 2; y <= 8; y += 2)
-      emit('cyan', -48.0, y, z, 0.25, 0.22, 4.5);
+    for (let y = 2; y <= 8; y += 2) emit('cyan', -48.0, y, z, 0.25, 0.22, 4.5);
   }
   // A clearly legible end-of-station bulkhead, behind the survivor, not a portal.
   emit('plating', 0, 9, -101.4, 108, 19, 2);

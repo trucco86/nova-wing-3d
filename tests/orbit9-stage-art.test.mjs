@@ -6,7 +6,11 @@ import {
   createOrbit9StageArt,
   updateOrbit9StageArt,
 } from '../src/orbit9-stage-art.js';
-import { ORBIT9_OBSTACLES, ORBIT9_CLUE_POSITIONS, ORBIT9_SURVIVOR } from '../src/orbit9-free-roam.js';
+import {
+  ORBIT9_OBSTACLES,
+  ORBIT9_CLUE_POSITIONS,
+  ORBIT9_SURVIVOR,
+} from '../src/orbit9-free-roam.js';
 
 test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', () => {
   assert.equal(ORBIT9_DEVASTADOR_PALETTE.hull, '#34475b');
@@ -18,12 +22,10 @@ test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', 
   assert.equal(root.name, 'orbit9-devastador-stage-art');
   assert.equal(root.userData.referencesStage, 3);
   assert.equal(root.userData.visualOnly, true);
-  assert.deepEqual(root.userData.landmarks.map((item) => item.id), [
-    'central',
-    'science',
-    'reactor',
-    'archive',
-  ]);
+  assert.deepEqual(
+    root.userData.landmarks.map((item) => item.id),
+    ['central', 'science', 'reactor', 'archive'],
+  );
   assert.deepEqual(root.userData.landmarks, ORBIT9_ART_LANDMARKS);
   const batches = root.children.filter((o) => o.isInstancedMesh);
   assert.ok(batches.length >= 7 && batches.length <= 8);
@@ -53,7 +55,11 @@ test('Stage art adds no new collision or interaction positions', () => {
     halfX,
     halfZ,
   }));
-  const before = JSON.stringify({ blocks: originalBlocks, clues: ORBIT9_CLUE_POSITIONS, npc: ORBIT9_SURVIVOR });
+  const before = JSON.stringify({
+    blocks: originalBlocks,
+    clues: ORBIT9_CLUE_POSITIONS,
+    npc: ORBIT9_SURVIVOR,
+  });
   createOrbit9StageArt();
   const after = JSON.stringify({
     blocks: ORBIT9_OBSTACLES.map(({ id, x, z, halfX, halfZ }) => ({
@@ -67,6 +73,10 @@ test('Stage art adds no new collision or interaction positions', () => {
     npc: ORBIT9_SURVIVOR,
   });
   assert.equal(after, before);
-  assert.deepEqual(ORBIT9_CLUE_POSITIONS, [[-38, -18], [39, -55], [-37, -82]]);
+  assert.deepEqual(ORBIT9_CLUE_POSITIONS, [
+    [-38, -18],
+    [39, -55],
+    [-37, -82],
+  ]);
   assert.deepEqual(ORBIT9_SURVIVOR, [9, -92]);
 });
