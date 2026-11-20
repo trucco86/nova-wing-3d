@@ -31,3 +31,17 @@ sem alteração da lógica de jogo.
 - Performance em dispositivo real, capturas visuais, precisão do retículo
   e testes mobile seguem pendentes. Não concluir a issue P0 por CI verde.
 - PR Draft, empilhada sobre QA164, **sem merge nem deploy de produção**.
+
+## Evidência automatizada no SHA de sincronização
+
+- [Sync da QA165, run 44661397782](https://github.com/trucco86/nova-wing-3d/actions/runs/44661397782): sucesso.
+- Antes da validação geral, o novo gate focalizado
+  `node --test tests/qa164-asteroid-real-subboss-progression.test.mjs`
+  concluiu com sucesso.
+- `npm run format`, `npm run build` e `npm run validate`:
+  concluídos com sucesso. O arquivo `index.html` permanece
+  equivalente ao runtime original, sem lógica de gameplay alterada.
+- A CI FULL com os seis shards Playwright, Source Repair e preview
+  no SHA humano final devem ser conferidos separadamente.
+- O teste não prova pontaria física dos tiros, FPS do iPhone nem
+  inspeção visual humana da cena do chefe.
