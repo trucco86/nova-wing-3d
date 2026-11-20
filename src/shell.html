@@ -1504,7 +1504,16 @@
         id="explorationViewport"
         class="exploration-viewport"
         aria-label="Cena 3D explorável"
-      ></div>
+      >
+        <aside class="exploration-mini-map" aria-label="Mapa de exploração da estação Órbita-9">
+          <strong id="explorationDistrict">ÁTRIO DA ESTAÇÃO</strong>
+          <div class="exploration-map-grid" role="img" aria-label="Sua posição e pistas na estação">
+            <span id="explorationMapSignals" aria-hidden="true"></span>
+            <span id="explorationMapPlayer" aria-hidden="true"></span>
+          </div>
+          <small>AZUL: PISTAS · VERDE: COLETADAS · BRANCO: JOGADOR</small>
+        </aside>
+      </div>
       <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
       <div
         id="explorationChoices"
