@@ -71,12 +71,14 @@ export function createHostileProjectilePool({
     }
     shot.o.material = themed
       ? bossMaterials[bossIndex]
-      : spell === 'arcane'
-        ? materials.arcane
-        : spell === 'fire'
-          ? materials.fire
-          : materials.normal;
-    shot.o.scale.setScalar(themed ? 2.15 : spell ? 1.8 : 1);
+      : spell === 'ice' && materials.ice
+        ? materials.ice
+        : spell === 'arcane'
+          ? materials.arcane
+          : spell === 'fire'
+            ? materials.fire
+            : materials.normal;
+    shot.o.scale.setScalar(themed ? 2.15 : spell === 'ice' ? 1.45 : spell ? 1.8 : 1);
     const streak = shot.o.getObjectByName('hostile-projectile-streak');
     streak.visible = themed;
     streak.material = shot.o.material;
