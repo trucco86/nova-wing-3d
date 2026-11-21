@@ -25,7 +25,10 @@ test('QA174 opt-in stage 4 pauses real flight until all three access modules are
   assert.equal(h.game.enterReactorAccessForQA(), true);
   assert.equal(calls, 1);
   assert.equal(request.sector, 3);
-  assert.deepEqual(request.modules.map(({ id }) => id), ids);
+  assert.deepEqual(
+    request.modules.map(({ id }) => id),
+    ids,
+  );
   let s = h.game.snapshot();
   assert.equal(s.state, 'reactor-access');
   assert.equal(s.reactorAccess.started, true);

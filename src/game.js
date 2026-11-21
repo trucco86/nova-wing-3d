@@ -2558,7 +2558,8 @@ export function createGame({
       reactorAccessComplete ||
       state !== 'playing' ||
       sectorIndex !== 3
-    ) return false;
+    )
+      return false;
     releaseControls();
     touchFire = touchBoost = false;
     const accepted = onReactorAccessRequested({
@@ -2613,7 +2614,8 @@ export function createGame({
       sectorIndex !== 3 ||
       state !== 'playing' ||
       developerScenario?.encounter !== 'stage'
-    ) return false;
+    )
+      return false;
     elapsed = Math.max(elapsed, current().duration * DEVASTADOR_ACCESS_THRESHOLD);
     for (const e of enemies) dispose(e.o);
     enemies = [];
@@ -2626,11 +2628,13 @@ export function createGame({
     // The live reactor is locked until the three interior modules are complete.
     // Direct boss QA remains independent; legacy gameplay has no callback.
     if (
-      dynamicFlight && sectorIndex === 3 &&
+      dynamicFlight &&
+      sectorIndex === 3 &&
       typeof onReactorAccessRequested === 'function' &&
       !reactorAccessComplete &&
       !(developerSession && developerScenario?.encounter === 'boss')
-    ) return;
+    )
+      return;
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
       asteroidInterior.setPhase(journey.phase);
