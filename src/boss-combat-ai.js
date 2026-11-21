@@ -337,6 +337,10 @@ export function bossMeleeHit(intent, { x, y, orbit = 0 }) {
 
 // Drives visual strikes while the real attack clock runs. No rogue timers or
 // physical collisions before the warning window.
+// Body movement is a true rush only for five committed charge families.
+// Rotating/animated limbs must never move the entire boss toward the lens.
+const BODY_RUSH_KINDS = new Set(['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting']);
+
 export function bossMeleePose(intent, state, phaseAge = 0) {
   if (!intent || intent.kind === 'barrage')
     return Object.freeze({ lunge: 0, jaw: 0, claw: 0, tentacle: 0, track: 0 });
@@ -346,11 +350,7 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
     // During the visible contact beat, actually advance a short distance
     // toward the position that was telegraphed. Never home in on the player
     // after windup; the pilot can dodge the announced lane.
-    track: ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-      ? strike * 0.34
-      : ['claw-swipe', 'hammer-slam', 'cryo-pincer'].includes(intent.kind)
-        ? strike * 0.13
-        : 0,
+    track: BODY_RUSH_KINDS.has(intent.kind) ? strike * 0.34 : 0,
     exhaust:
       intent.kind === 'reactor-vent' ||
       intent.kind === 'plasma-dive' ||
@@ -359,13 +359,9 @@ export function bossMeleePose(intent, state, phaseAge = 0) {
       intent.kind === 'marvin-rear-thruster-sweep'
         ? windup * 0.4 + strike
         : 0,
-    lunge:
-      intent.kind === 'reactor-vent'
-        ? 0
-        : strike *
-          (['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting'].includes(intent.kind)
-            ? 72
-            : 48),
+    // Limb, area and crosscut attacks retain their real animation and hit zone,
+    // not a fake whole-body zoom into the chase camera.
+    lunge: BODY_RUSH_KINDS.has(intent.kind) ? strike * 72 : 0,
     jaw: intent.kind === 'bite' ? windup * 0.45 + strike * 0.9 : 0,
     claw:
       intent.kind === 'hydra-two-head-crossfire' ||
