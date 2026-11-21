@@ -45,7 +45,7 @@ test('only regular stage four flight pauses for the embedded reactor access', ()
     encounter: 'stage',
   };
   assert.equal(shouldEnterDevastadorReactorAccess(base), true);
-  assert.equal(shouldEnterDevastadorReactorAccess({ ...base, elapsed: 72 }), false);
+  assert.equal(shouldEnterDevastadorReactorAccess({ ...base, elapsed: 61 }), false);
   assert.equal(shouldEnterDevastadorReactorAccess({ ...base, sector: 2 }), false);
   assert.equal(shouldEnterDevastadorReactorAccess({ ...base, sector: 4 }), false);
   assert.equal(shouldEnterDevastadorReactorAccess({ ...base, completed: true }), false);
