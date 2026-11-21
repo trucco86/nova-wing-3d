@@ -76,6 +76,7 @@ export function harness({
   observeScene = () => {},
   onStageStarted = () => {},
   onStageFinished = () => {},
+  onReactorAccessRequested = null,
 } = {}) {
   const elements = new Map(
     [
@@ -170,6 +171,7 @@ export function harness({
     nativeLifecycle,
     onStageStarted,
     onStageFinished,
+    onReactorAccessRequested,
   });
   return {
     game,
