@@ -20,15 +20,16 @@ for (const { index, theme, label } of destinations) {
     await page.goto(`/__dynamic.html?sector=${index}`);
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
 
-    await page.evaluate(() => window.fixture.advance(7));
+    await page.evaluate(() => window.fixture.advanceToMissionTime(7));
     await page.screenshot({ path: info.outputPath(`qa168-${label}-arrival.png`) });
 
     if (theme === 'ice') {
       // Inspect continuous arrival checkpoints instead of validating only
       // 7s orbit and 30s full gameplay, which missed the broken black gap.
-      let previous = 7;
       for (const second of [8, 10, 12, 16, 20, 24, 25]) {
-        await page.evaluate((dt) => window.fixture.advance(dt), second - previous);
+        await page.evaluate((target) => window.fixture.advanceToMissionTime(target), second);
+        const timer = await page.evaluate(() => window.fixture.game.snapshot().seconds);
+        expect(timer).toBeGreaterThanOrEqual(second - 0.001);
         const arrival = await page.evaluate(() => window.fixture.game.snapshot().europaSurface);
         expect(arrival).toBeTruthy();
         expect(arrival.orbitalVisible).toBe(false);
@@ -41,9 +42,8 @@ for (const { index, theme, label } of destinations) {
         }
         if (second === 25) expect(arrival.destinationGlobeVisible).toBe(false);
         await page.screenshot({ path: info.outputPath(`qa168-europa-entry-${second}s.png`) });
-        previous = second;
       }
-      await page.evaluate(() => window.fixture.advance(5));
+      await page.evaluate(() => window.fixture.advanceToMissionTime(30));
     } else {
       await page.evaluate(() => window.fixture.advance(23));
     }
@@ -116,11 +116,11 @@ test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital 
 }, info) => {
   test.setTimeout(120000);
   if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/__dynamic.html?qaSurface=5');
+  await page.goto('/__dynamic.html?sector=5');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   const sector = await page.evaluate(() => window.fixture.game.snapshot().sector);
   expect(sector).toBe(6); // The real Europa stage, never Earth.
-  await page.evaluate(() => window.fixture.advance(3));
+  await page.evaluate(() => window.fixture.advanceToMissionTime(3));
   const approach = await page.evaluate(() => window.fixture.europaBoostWeatherState());
   expect(approach.boostVisible).toBe(true);
   expect(approach.boostLineVertices).toBe(152);
@@ -128,7 +128,7 @@ test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital 
   expect(approach.globeScale).toBeGreaterThan(1.0);
   expect(approach.globeDepth).toBeGreaterThan(-920);
   await page.screenshot({ path: info.outputPath('qa168-europa-super-boost-3s.png') });
-  await page.evaluate(() => window.fixture.advance(5));
+  await page.evaluate(() => window.fixture.advanceToMissionTime(8));
   const orbit = await page.evaluate(() => window.fixture.europaBoostWeatherState());
   expect(orbit.boostVisible).toBe(false);
   expect(orbit.globeVisible).toBe(false);
