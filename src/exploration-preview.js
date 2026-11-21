@@ -1,9 +1,6 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
-import {
-  DEVASTADOR_ACCESS_MODULES,
-  reactorModulesComplete,
-} from './devastador-reactor-access.js';
+import { DEVASTADOR_ACCESS_MODULES, reactorModulesComplete } from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
 import {
   createOrbit9WalkRig,
@@ -616,10 +613,12 @@ export function installOrbit9ExplorationPreview(
 
   function openIntegrated(request) {
     if (
-      !request || request.sector !== 3 ||
+      !request ||
+      request.sector !== 3 ||
       typeof request.complete !== 'function' ||
       typeof request.abort !== 'function'
-    ) return false;
+    )
+      return false;
     integratedRequest = request;
     return open();
   }
@@ -778,72 +777,73 @@ export function installOrbit9ExplorationPreview(
 
   // Developer-only teleport/inspection API supports deterministic browser QA.
   // It grants no rank, save, mission victory or privileged backend actions.
-  if (qaAllowed) window.__novaExploreQA = Object.freeze({
-    startStageReactorQA() {
-      if (active || game.snapshot?.().state !== 'menu') return false;
-      return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
-    },
-    moveTo(x, z) {
-      if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
-      if (
-        x < ORBIT9_BOUNDS.minX ||
-        x > ORBIT9_BOUNDS.maxX ||
-        z < ORBIT9_BOUNDS.minZ ||
-        z > ORBIT9_BOUNDS.maxZ ||
-        orbit9Blocked(x, z)
-      )
-        return false;
-      playerX = x;
-      playerZ = z;
-      // Developer/QA teleport is not player movement. Never interpolate the
-      // camera across dozens of meters through the station's physical walls.
-      // Snapping immediately also makes screenshots of each district reliable.
-      cameraYawVisual = cameraState.yaw;
-      const pose = orbit9CameraPose(playerX, playerZ, cameraState);
-      cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
-      cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
-      camera?.position.copy(cameraGoal);
-      camera?.lookAt(cameraTarget);
-      updateUI();
-      return true;
-    },
-    snapshot() {
-      return {
-        active,
-        game: {
-          state: game.snapshot?.().state,
-          sector: game.snapshot?.().sector,
-          reactorAccess: game.snapshot?.().reactorAccess,
-        },
-        player: { x: playerX, z: playerZ },
-        pilotModel: pilot?.name ?? null,
-        stageArt: stageArt
-          ? {
-              name: stageArt.name,
-              referencesStage: stageArt.userData.referencesStage,
-              districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
-              instanceCounts: { ...stageArt.userData.instanceCounts },
-            }
-          : null,
-        gait: walkRig?.snapshot() ?? null,
-        stick: { x: stickInput.x, z: stickInput.z },
-        boosting: held.has('boost') || boostTouchHeld,
-        spinning: spinElapsed >= 0,
-        cameraVisualYaw: cameraYawVisual,
-        district: orbit9District(playerX, playerZ).id,
-        camera: { ...cameraState },
-        cameraEye: camera
-          ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
-          : null,
-        dialogue: {
-          open: !dialoguePanel.hidden,
-          index: dialogueIndex,
-          choicesVisible: !choicePanel.hidden,
-        },
-        quest: createExplorationState(state),
-      };
-    },
-  });
+  if (qaAllowed)
+    window.__novaExploreQA = Object.freeze({
+      startStageReactorQA() {
+        if (active || game.snapshot?.().state !== 'menu') return false;
+        return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
+      },
+      moveTo(x, z) {
+        if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
+        if (
+          x < ORBIT9_BOUNDS.minX ||
+          x > ORBIT9_BOUNDS.maxX ||
+          z < ORBIT9_BOUNDS.minZ ||
+          z > ORBIT9_BOUNDS.maxZ ||
+          orbit9Blocked(x, z)
+        )
+          return false;
+        playerX = x;
+        playerZ = z;
+        // Developer/QA teleport is not player movement. Never interpolate the
+        // camera across dozens of meters through the station's physical walls.
+        // Snapping immediately also makes screenshots of each district reliable.
+        cameraYawVisual = cameraState.yaw;
+        const pose = orbit9CameraPose(playerX, playerZ, cameraState);
+        cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
+        cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+        camera?.position.copy(cameraGoal);
+        camera?.lookAt(cameraTarget);
+        updateUI();
+        return true;
+      },
+      snapshot() {
+        return {
+          active,
+          game: {
+            state: game.snapshot?.().state,
+            sector: game.snapshot?.().sector,
+            reactorAccess: game.snapshot?.().reactorAccess,
+          },
+          player: { x: playerX, z: playerZ },
+          pilotModel: pilot?.name ?? null,
+          stageArt: stageArt
+            ? {
+                name: stageArt.name,
+                referencesStage: stageArt.userData.referencesStage,
+                districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
+                instanceCounts: { ...stageArt.userData.instanceCounts },
+              }
+            : null,
+          gait: walkRig?.snapshot() ?? null,
+          stick: { x: stickInput.x, z: stickInput.z },
+          boosting: held.has('boost') || boostTouchHeld,
+          spinning: spinElapsed >= 0,
+          cameraVisualYaw: cameraYawVisual,
+          district: orbit9District(playerX, playerZ).id,
+          camera: { ...cameraState },
+          cameraEye: camera
+            ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
+            : null,
+          dialogue: {
+            open: !dialoguePanel.hidden,
+            index: dialogueIndex,
+            choicesVisible: !choicePanel.hidden,
+          },
+          quest: createExplorationState(state),
+        };
+      },
+    });
 
   return {
     openIntegrated,

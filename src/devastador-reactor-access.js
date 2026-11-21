@@ -4,8 +4,16 @@
 export const DEVASTADOR_REACTOR_SECTOR = 3;
 export const DEVASTADOR_ACCESS_THRESHOLD = 0.74;
 export const DEVASTADOR_ACCESS_MODULES = Object.freeze([
-  Object.freeze({ id: 'transmission-a', name: 'CIRCUITOS', action: 'Restabelecer distribuição de energia' }),
-  Object.freeze({ id: 'reactor-map', name: 'REFRIGERAÇÃO', action: 'Liberar a refrigeração do núcleo' }),
+  Object.freeze({
+    id: 'transmission-a',
+    name: 'CIRCUITOS',
+    action: 'Restabelecer distribuição de energia',
+  }),
+  Object.freeze({
+    id: 'reactor-map',
+    name: 'REFRIGERAÇÃO',
+    action: 'Liberar a refrigeração do núcleo',
+  }),
   Object.freeze({ id: 'broken-beacon', name: 'MOTORES', action: 'Destravar os propulsores' }),
 ]);
 const ids = new Set(DEVASTADOR_ACCESS_MODULES.map(({ id }) => id));

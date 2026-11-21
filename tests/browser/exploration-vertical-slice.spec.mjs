@@ -37,9 +37,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
     [39, -55, 'PRAÇA DO REATOR', 2],
     [-37, -82, 'ARQUIVOS DA ORBITA', 3],
   ]) {
-    expect(
-      await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z]),
-    ).toBe(true);
+    expect(await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z])).toBe(true);
     await expect(page.locator('#explorationDistrict')).toHaveText(district);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
@@ -73,7 +71,10 @@ test('Stage 04 walking controls, orbit and 360 remain usable on mobile landscape
     const rectangles = await page.evaluate(() => {
       const get = (id) => {
         const rect = document.getElementById(id).getBoundingClientRect();
-        const found = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        const found = document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        );
         return {
           id,
           left: rect.left,
@@ -86,8 +87,14 @@ test('Stage 04 walking controls, orbit and 360 remain usable on mobile landscape
         };
       };
       return [
-        'exploreStick', 'exploreBoost', 'exploreScan', 'exploreExit',
-        'exploreCameraLeft', 'exploreCameraRight', 'exploreCameraZoom', 'exploreSpin',
+        'exploreStick',
+        'exploreBoost',
+        'exploreScan',
+        'exploreExit',
+        'exploreCameraLeft',
+        'exploreCameraRight',
+        'exploreCameraZoom',
+        'exploreSpin',
       ].map(get);
     });
     for (const item of rectangles) {
@@ -106,13 +113,19 @@ test('Stage 04 walking controls, orbit and 360 remain usable on mobile landscape
     });
     expect(Math.abs(rail.left - rail.stickLeft)).toBeLessThan(16);
     expect(rail.bottom).toBeLessThanOrEqual(rail.stickTop - 4);
-    await page.screenshot({ path: info.outputPath('devastador-controls-' + viewport.width + '.png') });
+    await page.screenshot({
+      path: info.outputPath('devastador-controls-' + viewport.width + '.png'),
+    });
   }
   await page.locator('#exploreSpin').click();
-  await expect.poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().spinning)).toBe(true);
-  await expect.poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().spinning), {
-    timeout: 2500,
-  }).toBe(false);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().spinning))
+    .toBe(true);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().spinning), {
+      timeout: 2500,
+    })
+    .toBe(false);
   await page.locator('#exploreExit').click();
   await expect(page.locator('#explorationOverlay')).toBeHidden();
   await expect(page.locator('#pauseMenu')).toBeVisible();
@@ -160,10 +173,15 @@ test('the cat moves relative to the orbital camera before unlocking the core', a
   const forward = await page.evaluate(() => window.__novaExploreQA.snapshot());
   expect(forward.player.z).toBeLessThan(before.player.z - 0.5);
   for (let i = 0; i < 7; i++) await page.locator('#exploreCameraRight').click();
-  await expect.poll(
-    () => page.evaluate(() => Math.abs(Math.abs(window.__novaExploreQA.snapshot().cameraVisualYaw) - Math.PI)),
-    { timeout: 3500 },
-  ).toBeLessThan(0.12);
+  await expect
+    .poll(
+      () =>
+        page.evaluate(() =>
+          Math.abs(Math.abs(window.__novaExploreQA.snapshot().cameraVisualYaw) - Math.PI),
+        ),
+      { timeout: 3500 },
+    )
+    .toBeLessThan(0.12);
   const reverse = await page.evaluate(() => window.__novaExploreQA.snapshot());
   await page.keyboard.down('KeyW');
   await page.waitForTimeout(380);

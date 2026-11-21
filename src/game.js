@@ -2583,7 +2583,8 @@ export function createGame({
       reactorAccessComplete ||
       state !== 'playing' ||
       sectorIndex !== 3
-    ) return false;
+    )
+      return false;
     releaseControls();
     touchFire = touchBoost = false;
     const accepted = onReactorAccessRequested({
@@ -2634,9 +2635,13 @@ export function createGame({
 
   function enterReactorAccessForQA() {
     if (
-      !developerAvailable || !developerSession || sectorIndex !== 3 ||
-      state !== 'playing' || developerScenario?.encounter !== 'stage'
-    ) return false;
+      !developerAvailable ||
+      !developerSession ||
+      sectorIndex !== 3 ||
+      state !== 'playing' ||
+      developerScenario?.encounter !== 'stage'
+    )
+      return false;
     elapsed = Math.max(elapsed, current().duration * 0.74);
     for (const e of enemies) dispose(e.o);
     enemies = [];
@@ -2649,10 +2654,13 @@ export function createGame({
     // The Devastador core cannot be exposed before all three internal
     // access modules are active. Direct boss QA is deliberately isolated.
     if (
-      dynamicFlight && sectorIndex === 3 &&
-      typeof onReactorAccessRequested === 'function' && !reactorAccessComplete &&
+      dynamicFlight &&
+      sectorIndex === 3 &&
+      typeof onReactorAccessRequested === 'function' &&
+      !reactorAccessComplete &&
       !(developerSession && developerScenario?.encounter === 'boss')
-    ) return;
+    )
+      return;
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
       asteroidInterior.setPhase(journey.phase);
@@ -5162,21 +5170,24 @@ export function createGame({
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
-    if (shouldEnterDevastadorReactorAccess({
-      sector: sectorIndex,
-      elapsed,
-      duration: current().duration,
-      completed: reactorAccessComplete,
-      active: reactorAccessStarted,
-      boss: !!boss,
-      subbossActive: activeSubboss,
-      encounter: developerSession ? developerScenario?.encounter : 'stage',
-      dynamicFlight: dynamicFlight && typeof onReactorAccessRequested === 'function',
-    })) {
+    if (
+      shouldEnterDevastadorReactorAccess({
+        sector: sectorIndex,
+        elapsed,
+        duration: current().duration,
+        completed: reactorAccessComplete,
+        active: reactorAccessStarted,
+        boss: !!boss,
+        subbossActive: activeSubboss,
+        encounter: developerSession ? developerScenario?.encounter : 'stage',
+        dynamicFlight: dynamicFlight && typeof onReactorAccessRequested === 'function',
+      })
+    ) {
       if (startReactorAccess()) return;
     }
     const bossBlocked =
-      (dynamicFlight && sectorIndex === 3 &&
+      (dynamicFlight &&
+        sectorIndex === 3 &&
         typeof onReactorAccessRequested === 'function' &&
         !reactorAccessComplete &&
         !(developerSession && developerScenario?.encounter === 'boss')) ||
