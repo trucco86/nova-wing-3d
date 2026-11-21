@@ -2,7 +2,9 @@
 // Three internal modules must be activated before the existing core/boss fight.
 // UI and 3D exploration are merely different modes of this one stage.
 export const DEVASTADOR_REACTOR_SECTOR = 3;
-export const DEVASTADOR_ACCESS_THRESHOLD = 0.74;
+// Reactor security comes after the timed defense grid (about 31-48s of
+// the 88s stage), placing disembark around 55s, not just before the boss.
+export const DEVASTADOR_ACCESS_THRESHOLD = 0.62;
 export const DEVASTADOR_ACCESS_MODULES = Object.freeze([
   Object.freeze({
     id: 'transmission-a',
