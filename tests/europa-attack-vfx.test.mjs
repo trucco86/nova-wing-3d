@@ -114,6 +114,14 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
     assert.ok(hammer.hand.position.y < aim.y);
     assert.ok(hammer.hand.position.z > aim.z - 9, 'hammer reaches the targeted lane');
     assert.equal(hammer.impact.visible, true);
+    assert.ok(
+      effect.userData.quake.position.z <= aim.z - 45,
+      'ice-quake ring stays behind the ship and never fills the camera near-plane',
+    );
+    assert.ok(
+      effect.userData.quake.scale.x < 1.1,
+      'impact shock cannot hide the boss across the whole frame',
+    );
     assert.equal(
       effect.userData.strikers[0].node.visible,
       true,
