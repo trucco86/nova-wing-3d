@@ -179,14 +179,16 @@ export function createEuropaIceCavern() {
     EUROPA_CAVE_BUDGET.exteriorCliffs,
     (i) => {
       const side = i % 2 ? 1 : -1;
-      const height = 48 + rng(i + 231) * 55;
+      // Keep flanking cliffs behind the entrance, not as a huge foreground
+      // shard that fills half of a portrait screen.
+      const height = 34 + rng(i + 231) * 42;
       return {
-        x: side * (103 + rng(i + 221) * 60),
+        x: side * (147 + rng(i + 221) * 78),
         y: -7 + height * 0.46,
-        z: 24 - Math.floor(i / 2) * 26,
-        w: 18 + rng(i + 227) * 24,
+        z: -28 - Math.floor(i / 2) * 31,
+        w: 16 + rng(i + 227) * 19,
         h: height,
-        d: 29 + rng(i + 233) * 21,
+        d: 22 + rng(i + 233) * 19,
         yaw: (rng(i + 239) - 0.5) * 0.55,
       };
     },
@@ -210,24 +212,27 @@ export function createEuropaIceCavern() {
     (i) => {
       const gate = Math.floor(i / 24);
       const side = Math.floor((i % 24) / 12) === 0 ? -1 : 1;
-      const row = i % 12;
+      // Twelve interlocking facets on each collision panel: three columns
+      // by four rows. They form a legible solid-looking frozen barricade
+      // instead of a small decal on a visible rectangular concrete wall.
+      const slot = i % 12;
+      const col = slot % 3;
+      const row = Math.floor(slot / 3);
       const gap = gate % 2 ? -9 : 9;
       const left = gap - 15;
       const right = gap + 15;
       const min = side < 0 ? -32 : right;
       const max = side < 0 ? left : 32;
-      const margin = Math.min(2.5, (max - min) * 0.22);
-      const center = (min + max) * 0.5;
-      const offset = (rng(i + 94) - 0.5) * (max - min) * 0.55;
+      const width = max - min;
       return {
-        x: Math.max(min + margin, Math.min(max - margin, center + offset)),
-        y: -1 + (row % 6) * 6.1 + (rng(i + 123) - 0.5) * 3,
+        x: min + ((col + 0.5) * width) / 3,
+        y: -1.5 + row * 10.5 + (rng(i + 123) - 0.5) * 1.4,
         z: -107 - gate * 150,
-        w: Math.min(2.8, (max - min) * 0.23),
-        h: 2.1 + (i % 3) * 0.7,
-        d: 1.4,
-        yaw: rng(i + 141) * 0.9,
-        roll: (rng(i + 149) - 0.5) * 0.4,
+        w: width / 6,
+        h: 5.9 + rng(i + 137) * 1.5,
+        d: 3.3,
+        yaw: (rng(i + 141) - 0.5) * 0.14,
+        roll: (rng(i + 149) - 0.5) * 0.16,
       };
     },
   );
