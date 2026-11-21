@@ -1,8 +1,12 @@
 # Histórico
 
-## 1.27.158 — Candidata em preparação
+## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.
+- Suspende voo, combate e relógio enquanto o piloto caminha em cena 3D; mantém joystick mobile, BOOST, câmera orbital, minimapa e giro 360.
+- Exige CIRCUITOS, REFRIGERAÇÃO e MOTORES antes do retorno ao chefe original, com IDs únicos e proteção contra bypass.
+- Preserva a retirada da coluna fantasma da v1.27.157, os recursos do piloto e a campanha; build nativo conserva o fluxo anterior.
+- Candidata em homologação: testes visuais, navegador e publicação ainda pendentes.
 
 ## 1.27.157 — QA171: correção do eixo de entrada no reator da fase 4
 
