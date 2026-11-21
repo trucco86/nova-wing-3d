@@ -9,6 +9,7 @@ import {
 
 test('Europa super boost has exactly three deterministic side-lane chasers', () => {
   assert.equal(EUROPA_PURSUIT_SLOTS, 3);
+  assert.equal(europaPursuitAt(EUROPA_PURSUIT_START_SECONDS, 0).active, true);
   assert.equal(europaPursuitAt(0.5, 0).active, false);
   assert.equal(europaPursuitAt(1, 0).active, true);
   assert.equal(europaPursuitAt(4, 1).fire, true);
