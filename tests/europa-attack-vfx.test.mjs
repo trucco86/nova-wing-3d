@@ -36,6 +36,9 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
       assert.ok(Math.abs(arm.hand.position.z - (aim.z - 3)) < 0.01);
       assert.ok(arm.forearm.scale.z > 35);
       assert.equal(arm.impact.visible, true, 'visible flash attaches to claw tip');
+      assert.ok(arm.hand.scale.x <= 0.34, 'camera-near claw stays compact to keep boss in frame');
+      assert.ok(arm.forearm.scale.x <= 0.62, 'forearm tapers instead of covering the targeting lane');
+      assert.ok(arm.userData.flashRadius < 0.35, 'hit flash cannot become a giant screen-filling disc');
     }
     // Telegraph and strike use the same point; any new dodge moves *pilot*,
     // not the arm's already committed target.
