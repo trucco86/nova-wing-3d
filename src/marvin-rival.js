@@ -191,6 +191,11 @@ export function createMarvinRival(scene) {
         hp = 135;
       }
       const arc = MARVIN_ARC[sector];
+      if (suspended) {
+        state = { active: false, phase: 'cave-transit', type: arc?.type ?? 'none', shoot: false };
+        root.visible = false;
+        return state;
+      }
       state = marvinBeatAt(sector, elapsed, duration, bossActive, retreat);
       if (
         arc &&
