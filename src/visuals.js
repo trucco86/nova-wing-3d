@@ -2667,10 +2667,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // Previously the hero tower froze at z=-450 and the canyon stayed
         // in sky-space, making full-speed flight look stationary.
         if (sceneryTheme === 'ice')
-          updateEuropaSurfaceTravel(
-            sectorScenery.getObjectByName('europa-frozen-surface'),
-            travel,
-          );
+          updateEuropaSurfaceTravel(sectorScenery.getObjectByName('europa-frozen-surface'), travel);
         updateAlienArchitecture(
           sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
           travel,

@@ -46,7 +46,10 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
       ) < 0.01,
     );
     animateEuropaAttackVfx(effect, 12, 3, 'recovery', 'cryo-pincer', { claw: 0 }, aim);
-    assert.ok(effect.userData.arms.every((node) => node.visible), 'claws remain attached while retracting');
+    assert.ok(
+      effect.userData.arms.every((node) => node.visible),
+      'claws remain attached while retracting',
+    );
     const recovery = effect.userData.strikers.map((arm) => arm.hand.position.clone());
     animateEuropaAttackVfx(effect, 13.6, 3, 'recovery', 'cryo-pincer', { claw: 0 }, aim);
     for (const [i, arm] of effect.userData.strikers.entries()) {
@@ -55,7 +58,10 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
       assert.equal(arm.impact.visible, false, 'only strike flash may disappear');
     }
     animateEuropaAttackVfx(effect, 14.5, 3, 'maneuver', 'cryo-pincer');
-    assert.ok(effect.userData.arms.every((node) => node.visible), 'idle claws remain part of Colossus');
+    assert.ok(
+      effect.userData.arms.every((node) => node.visible),
+      'idle claws remain part of Colossus',
+    );
     assert.ok(effect.userData.shards.every((node) => !node.visible));
     assert.equal(effect.userData.quake.visible, false);
   } finally {
@@ -99,7 +105,11 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
     assert.ok(hammer.hand.position.y < aim.y);
     assert.ok(hammer.hand.position.z > aim.z - 9, 'hammer reaches the targeted lane');
     assert.equal(hammer.impact.visible, true);
-    assert.equal(effect.userData.strikers[0].node.visible, true, 'non-striking hand remains attached');
+    assert.equal(
+      effect.userData.strikers[0].node.visible,
+      true,
+      'non-striking hand remains attached',
+    );
     assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y > 1));
 
     animateEuropaAttackVfx(
@@ -209,7 +219,11 @@ test('Colossus persistent claws and articulated joint recovery are deterministic
       const claw = state === 'attack' ? 0.85 : clock < 8.1 ? 0.01 : 0.28;
       animateEuropaAttackVfx(effect, clock, 2, state, 'cryo-pincer', { claw }, aim);
       assert.equal(effect.userData.strikers.filter((arm) => arm.node.visible).length, 2);
-      assert.ok(effect.userData.strikers.every((arm) => Number.isFinite(arm.forearm.scale.z) && arm.forearm.scale.z > 0));
+      assert.ok(
+        effect.userData.strikers.every(
+          (arm) => Number.isFinite(arm.forearm.scale.z) && arm.forearm.scale.z > 0,
+        ),
+      );
       positions.push(effect.userData.strikers[0].hand.position.toArray());
     }
     const atRecovery = positions[4];

@@ -273,7 +273,8 @@ export function updateEuropaSurfaceTravel(root, travel) {
       matrices[i * 16 + 14] = europaCanyonDepth(authoredDepth[i], travel, 0.55);
     mesh.instanceMatrix.needsUpdate = true;
   }
-  const canyon = europaCanyonParts.get(root) ?? root.getObjectByName('europa-premium-crystal-canyon');
+  const canyon =
+    europaCanyonParts.get(root) ?? root.getObjectByName('europa-premium-crystal-canyon');
   updateEuropaCrystalCanyonMotion(canyon, travel);
   return true;
 }

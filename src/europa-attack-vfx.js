@@ -54,7 +54,17 @@ function makeStriker(side, materials) {
   return { node, upper, forearm, elbow, hand, talons, impact, side };
 }
 
-function poseStriker(striker, target, state, kind, reach, charge, time, recovery = 0, operational = true) {
+function poseStriker(
+  striker,
+  target,
+  state,
+  kind,
+  reach,
+  charge,
+  time,
+  recovery = 0,
+  operational = true,
+) {
   const { side, upper, forearm, elbow, hand, talons, impact } = striker;
   const shoulder = new T.Vector3(side * 22, 4, 8);
   const rest = new T.Vector3(side * 40, -14, 36);
@@ -220,8 +230,8 @@ export function animateEuropaAttackVfx(
 
   for (let i = 0; i < arms.length; i++) {
     const operational = generators[i] !== false;
-    const attackingArm = operational &&
-      ((kind === 'cryo-pincer') || (kind === 'ice-quake' && i === strikingArm));
+    const attackingArm =
+      operational && (kind === 'cryo-pincer' || (kind === 'ice-quake' && i === strikingArm));
     // Keep both meshes/real claws visible throughout maneuver and recovery.
     // An inactive or broken arm returns to an idle/damaged resting pose.
     arms[i].visible = true;
