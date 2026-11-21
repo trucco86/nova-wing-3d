@@ -260,7 +260,7 @@ export function installOrbit9ExplorationPreview(
       powerPreference: 'low-power',
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
-    renderer.domElement.setAttribute('aria-label', 'Exploração 3D da estação Órbita-9');
+    renderer.domElement.setAttribute('aria-label', 'Exploração 3D da nave-mãe Devastador');
     viewport.appendChild(renderer.domElement);
     scene.add(new T.HemisphereLight(0xb4d5ec, 0x17273a, 2.05));
     // Carrier armor uses metallic PBR. Fill light is essential because the
@@ -401,12 +401,6 @@ export function installOrbit9ExplorationPreview(
       mark.style.bottom = where.y + '%';
       mapSignals.appendChild(mark);
     });
-    const survivorMark = document.createElement('span');
-    survivorMark.className = 'exploration-map-survivor';
-    const where = orbit9MapPoint(...SURVIVOR);
-    survivorMark.style.left = where.x + '%';
-    survivorMark.style.bottom = where.y + '%';
-    mapSignals.appendChild(survivorMark);
     resize();
   }
 
