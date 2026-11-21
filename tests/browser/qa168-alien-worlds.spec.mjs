@@ -127,11 +127,37 @@ test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital 
   expect(approach.boostLineVertices).toBe(152);
   expect(approach.globeVisible).toBe(true);
   expect(approach.globeScale).toBeGreaterThan(1.0);
-  expect(approach.globeDepth).toBeGreaterThan(-920);
+  expect(approach.globeDepth).toBeGreaterThan(-770);
+  expect(approach.globeScale).toBeGreaterThan(1.25);
   await page.screenshot({ path: info.outputPath('qa168-europa-super-boost-3s.png') });
   await page.evaluate(() => window.fixture.advanceToMissionTime(8));
   const orbit = await page.evaluate(() => window.fixture.europaBoostWeatherState());
   expect(orbit.boostVisible).toBe(false);
   expect(orbit.globeVisible).toBe(false);
   await page.screenshot({ path: info.outputPath('qa168-europa-orbit-ice-mist-8s.png') });
+  await page.evaluate(() => window.fixture.advanceToMissionTime(12));
+  const snow = await page.evaluate(() => window.fixture.europaBoostWeatherState());
+  expect(snow.snowVisible).toBe(true);
+  await page.screenshot({ path: info.outputPath('qa168-europa-first-blizzard-12s.png') });
+});
+
+test('QA168 Europa: real ice interceptors chase and shoot physical cyan projectiles during super boost', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/__dynamic.html?sector=5&encounters=1');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.advanceToMissionTime(3.6));
+  const chased = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(chased.sector).toBe(6);
+  expect(chased.europaPursuit.interceptors).toBe(3);
+  expect(chased.europaPursuit.shotsFired).toBeGreaterThan(0);
+  expect(chased.europaPursuit.liveIceShots).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('qa168-europa-real-ice-interceptors-and-shots-3s.png') });
+  await page.evaluate(() => window.fixture.advanceToMissionTime(6.5));
+  const escaped = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(escaped.europaPursuit.interceptors).toBe(0);
+  expect(escaped.europaPursuit.liveIceShots).toBe(0);
+  expect(escaped.europaPursuit.shotsFired).toBeGreaterThan(0);
 });
