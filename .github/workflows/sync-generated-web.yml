@@ -30,6 +30,7 @@ on:
       - perf/qa160-boss-rival-hitbox-allocations-20261119
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
+      - fix/qa175-compound-obstacle-contact
 permissions:
   contents: write
   actions: write
@@ -91,6 +92,9 @@ jobs:
       - name: Prepare QA162 moving obstacle contact release
         if: github.ref_name == 'fix/qa162-moving-obstacle-ship-contact-20261119'
         run: npm run release:prepare -- 1.27.156
+      - name: Prepare QA175 compound-contact candidate after QA175 reactor release
+        if: github.ref_name == 'fix/qa175-compound-obstacle-contact'
+        run: npm run release:prepare -- 1.27.159
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -125,6 +129,10 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa162-moving-obstacle-ship-contact-20261119" ]; then
             git add -u
             git add -- releases/v1.27.156.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa175-compound-obstacle-contact" ]; then
+            git add -u
+            git add -- releases/v1.27.159.md
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
