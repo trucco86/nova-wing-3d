@@ -29,13 +29,13 @@ test('Europa has the same ordered four-beat arrival grammar as Mars, not unrelat
   assert.throws(() => europaDescentAt(NaN), RangeError);
 });
 
-test('moon stays on-screen until the canyon emerges; no black/empty transition interval', () => {
+test('moon disappears at orbit handoff and the ice fog masks every intermediate frame', () => {
   for (let t = 0; t <= 25; t += 0.25) {
     const arrival = europaDescentAt(t);
     const ice = europaSurfaceAt(t);
     const destination = destinationArrivalAt(5, t);
     assert.ok(
-      arrival.planetOpacity > 0.01 || ice.groundVisible,
+      arrival.planetOpacity > 0.01 || ice.groundVisible || arrival.iceMist > 0.65,
       'flight cannot lose both planet and surface at ' + t + 's',
     );
     assert.ok(arrival.terrainReveal >= 0 && arrival.terrainReveal <= 1);
@@ -43,7 +43,9 @@ test('moon stays on-screen until the canyon emerges; no black/empty transition i
     assert.equal(destination.reveal, arrival.terrainReveal);
     assert.equal(destination.globeOpacity, arrival.planetOpacity);
   }
-  assert.ok(europaDescentAt(19).planetOpacity > 0);
+  assert.equal(europaDescentAt(12).planetOpacity, 0);
+  assert.ok(europaDescentAt(12).iceMist > 0.9);
+  assert.equal(europaDescentAt(19).planetOpacity, 0);
   assert.ok(europaSurfaceAt(19).groundVisible);
   assert.equal(europaDescentAt(25).planetOpacity, 0);
   assert.equal(europaDescentAt(25).terrainReveal, 1);
@@ -74,9 +76,9 @@ test('Europa uses exactly one celestial globe and raises the same ice scenery co
   assert.ok(iceParticles.material.opacity > 0.2);
   updateDestinationVista(vista, 5, 25);
   assert.equal(iceParticles.visible, false);
-  for (const t of [0, 7, 12, 16, 20, 24]) {
+  for (const t of [0, 7, 10, 11, 12, 16, 20, 24]) {
     const state = updateDestinationVista(vista, 5, t);
-    assert.equal(globe.visible, true, 'the moon must not abruptly disappear at ' + t);
+    assert.equal(globe.visible, t < 12, 'moon must vanish before icy atmospheric curtain at ' + t);
     assert.equal(globe.position.x, state.globeX);
     assert.equal(globe.position.y, state.globeY);
     assert.ok(globe.scale.x <= 1.64, 'moon stays at a believable apparent size');
@@ -92,7 +94,7 @@ test('Europa uses exactly one celestial globe and raises the same ice scenery co
   for (const t of [0, 9, 14, 16, 19, 22, 25]) {
     const state = world.setDestinationArrival(t);
     assert.equal(legacy.visible, false, 'no duplicate generic globe');
-    assert.equal(scene.getObjectByName('destination-celestial-body').visible, t < 25);
+    assert.equal(scene.getObjectByName('destination-celestial-body').visible, t < 12);
     assert.ok(Math.abs(root.position.y - state.terrainLift) < 1e-8);
     assert.equal(root.visible, europaSurfaceAt(t).groundVisible);
   }
