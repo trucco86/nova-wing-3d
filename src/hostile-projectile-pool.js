@@ -73,17 +73,17 @@ export function createHostileProjectilePool({
     }
     const aura = shot.o.getObjectByName('hostile-projectile-halo');
     if (aura && materials.normalHalo && materials.iceHalo)
-      aura.material = spell === 'ice' ? materials.iceHalo : materials.normalHalo;
+      aura.material = spell === 'ice' || spell === 'cryo' ? materials.iceHalo : materials.normalHalo;
     shot.o.material = themed
       ? bossMaterials[bossIndex]
-      : spell === 'ice' && materials.ice
+      : (spell === 'ice' || spell === 'cryo') && materials.ice
         ? materials.ice
         : spell === 'arcane'
           ? materials.arcane
           : spell === 'fire'
             ? materials.fire
             : materials.normal;
-    shot.o.scale.setScalar(themed ? 2.15 : spell === 'ice' ? 1.45 : spell ? 1.8 : 1);
+    shot.o.scale.setScalar(themed ? 2.15 : spell === 'ice' || spell === 'cryo' ? 1.45 : spell ? 1.8 : 1);
     const streak = shot.o.getObjectByName('hostile-projectile-streak');
     streak.visible = themed;
     streak.material = shot.o.material;
