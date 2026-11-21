@@ -123,7 +123,10 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   assert.ok(ground.material.fragmentShader.includes('veinA'));
   assert.ok(ground.material.fragmentShader.includes('veinB'));
   const glsl = ground.material.fragmentShader;
-  assert.ok(!glsl.includes('tileEdges'), 'Europa terrain should not render repeating rectangular slabs');
+  assert.ok(
+    !glsl.includes('tileEdges'),
+    'Europa terrain should not render repeating rectangular slabs',
+  );
   const cityStart = glsl.indexOf('if(ice<.5){float gx=');
   const cityEnd = glsl.indexOf('}if(ice>.5){', cityStart);
   assert.ok(
