@@ -96,6 +96,26 @@ test('QA174 renderer rejection cannot trap the pilot in the reactor-access state
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
   assert.equal(h.game.enterReactorAccessForQA(), false);
   assert.equal(calls, 1);
-  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().state, 'paused', 'failed WebGL must expose pause/exit controls');
+  assert.equal(h.elements.pauseMenu.hidden, false);
   assert.equal(h.game.snapshot().reactorAccess.completed, false);
+});
+
+test('QA175 a renderer exception fails closed to the pause menu without bypassing the reactor', (t) => {
+  const h = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+    onReactorAccessRequested() {
+      throw new Error('WebGL context lost');
+    },
+  });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
+  assert.equal(h.game.enterReactorAccessForQA(), false);
+  const snap = h.game.snapshot();
+  assert.equal(snap.state, 'paused');
+  assert.equal(snap.sector, 4);
+  assert.equal(snap.boss, false);
+  assert.equal(snap.reactorAccess.completed, false);
+  assert.equal(h.elements.pauseMenu.hidden, false);
 });
