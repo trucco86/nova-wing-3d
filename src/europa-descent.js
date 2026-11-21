@@ -46,7 +46,7 @@ export function europaDescentAt(seconds) {
     terrainVisible: seconds >= 8,
     // Small camera-relative lift shows the glacier horizon at 8s without
     // a sudden ground pop. Floor reaches its gameplay height by 20s.
-    terrainLift: -65 * (1 - smooth((seconds - 6) / 14)),
+    terrainLift: seconds >= 20 ? 0 : -65 * (1 - smooth((seconds - 6) / 14)),
     planetOpacity,
     // The moon must visibly grow WHILE the automatic super boost is active.
     // Previously growth started after the boost had already stopped.
