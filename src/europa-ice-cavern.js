@@ -119,5 +119,28 @@ export function createEuropaIceCavern() {
       };
     },
   );
+  // Massive, unmistakable cave mouth rather than a rectangular loading
+  // corridor. These sculpted boulders frame the safe 64-unit width without
+  // adding colliders; the functional tunnel walls remain underneath.
+  addBatch(
+    root,
+    'europa-cave-monumental-entrance',
+    new T.DodecahedronGeometry(1, 0),
+    rock,
+    10,
+    (i) => {
+      const side = i % 2 ? 1 : -1;
+      const row = Math.floor(i / 2);
+      return {
+        x: side * (43 + row * 3),
+        y: 17 + row * 5,
+        z: 7 - row * 4,
+        w: 8 + row,
+        h: 14 - row * 0.8,
+        d: 10 + row,
+        yaw: side * (row % 2 ? 0.19 : -0.11),
+      };
+    },
+  );
   return root;
 }
