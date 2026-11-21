@@ -263,8 +263,10 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
     const g = new T.Group(),
       solids = [];
     const solid = (w, h, d, x, y, z, material = armor) => {
-      g.add(box(w, h, d, material, x, y, z));
+      const mesh = box(w, h, d, material, x, y, z);
+      g.add(mesh);
       solids.push({ center: new T.Vector3(x, y, z), half: new T.Vector3(w / 2, h / 2, d / 2) });
+      return mesh;
     };
     if (kind === 'tunnel') {
       const europaCavern = variant === 'europa';
@@ -371,7 +373,13 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
       // while its authored 520-unit tunnel owns the real flight floor.
       solid(72, 3, 520, 0, -8.5, -260, frostDeck);
-      solid(72, 3, 520, 0, 38.5, -260, frostWall);
+      const roof = solid(72, 3, 520, 0, 38.5, -260, frostWall);
+      if (europaCavern) {
+        // Retain the EXACT roof collider; show the sculpted cave vault instead
+        // of a rectangular beam across the entire entrance and 520-unit route.
+        roof.name = 'europa-cavern-physical-roof-hidden-under-ice';
+        roof.visible = false;
+      }
       // Preserve the original industrial ribs only in other biomes. The
       // Europa cave gets one natural faceted skin instead of neon columns.
       if (!europaCavern)
