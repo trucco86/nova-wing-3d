@@ -95,20 +95,44 @@ test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall 
   expect(cave).not.toBeNull();
   expect(cave.visualOnly).toBe(true);
   expect(cave.visible).toBe(true);
-  expect(cave.length).toBe(520);
+  expect(cave.length).toBe(940);
   expect(cave.breachPanel).toBe(true);
   expect(cave.renderCalls).toBeGreaterThan(0);
   expect(cave.batches).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 38 }),
-      expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 22 }),
-      expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 36 }),
+      expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 70 }),
+      expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 41 }),
+      expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 66 }),
       expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
       expect.objectContaining({ name: 'europa-cave-natural-ice-arch', count: 13 }),
       expect.objectContaining({ name: 'europa-cave-exterior-glacial-cliffs', count: 16 }),
-      expect.objectContaining({ name: 'europa-cave-faceted-gate-skin', count: 72 }),
+      expect.objectContaining({ name: 'europa-cave-distant-fjord-approach', count: 24 }),
+      expect.objectContaining({ name: 'europa-cave-optical-flow-ice', count: 0 }),
+      expect.objectContaining({ name: 'europa-cave-faceted-gate-skin', count: 120 }),
     ]),
   );
+  const opening = await page.evaluate(() => window.fixture.game.snapshot().europaCaveApproach);
+  expect(opening).not.toBeNull();
+  expect(opening.length).toBe(940);
+  expect(opening.phase).toBe('distant');
+  expect(opening.distance).toBeGreaterThan(900);
+  await page.screenshot({ path: info.outputPath('qa168-europa-far-fjord-before-approach.png') });
+  await page.evaluate(() => window.fixture.advance(4));
+  const approaching = await page.evaluate(() => window.fixture.game.snapshot().europaCaveApproach);
+  expect(approaching.frontZ).toBeGreaterThan(opening.frontZ);
+  expect(approaching.distance).toBeLessThan(opening.distance);
+  await page.screenshot({ path: info.outputPath('qa168-europa-fjord-grows-mid-approach.png') });
+  await page.evaluate(() => window.fixture.advance(4));
+  const closer = await page.evaluate(() => window.fixture.game.snapshot().europaCaveApproach);
+  expect(closer.frontZ).toBeGreaterThan(approaching.frontZ);
+  await page.screenshot({ path: info.outputPath('qa168-europa-portal-close-approach.png') });
+  await page.evaluate(() => window.fixture.advance(4));
+  const interior = await page.evaluate(() => window.fixture.game.snapshot().europaCaveApproach);
+  expect(interior.frontZ).toBeGreaterThan(closer.frontZ);
+  expect(interior.visualIntensity).toBeGreaterThan(0);
+  await page.screenshot({ path: info.outputPath('qa168-europa-long-cave-first-section.png') });
+  await page.evaluate(() => window.fixture.advance(3));
+  await page.screenshot({ path: info.outputPath('qa168-europa-long-cave-second-section.png') });
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
 });
 
