@@ -32,3 +32,11 @@
 - [ ] Testes Node, browser e build reproduzível aprovados em QA.
 - [ ] Atalho em Central → Developer/QA → TESTAR ACESSO AO REATOR · FASE 04
       abre este trecho dentro do setor 04, nunca uma fase extra.
+
+## Verificações adicionais de estabilidade
+
+- O motor de voo suspende seu próprio renderizador WebGL durante o desembarque, reduzindo concorrência de GPU com a exploração em celular.
+- O relógio do setor 04 permanece parado enquanto os três módulos são ativados. O teste de navegador verifica esse congelamento.
+- Os testes gerais de BOOST e disparo agora encerram a abertura antes de testar comandos, usando o fluxo compartilhado de início da missão.
+- A patente ilustrada é conferida independentemente da capitalização do texto localizado.
+- A homologação depende do Playwright focado, dos seis shards gerais e da revisão do aparelho físico, não apenas dos testes Node.
