@@ -8,8 +8,8 @@ export const EUROPA_CANYON_BUDGET = Object.freeze({
   cyanCrystalInstances: 22,
   violetCrystalInstances: 14,
   ruinArchInstances: 8,
-  decorativeDrawsHigh: 6,
-  decorativeDrawsMedium: 5,
+  decorativeDrawsHigh: 7,
+  decorativeDrawsMedium: 6,
   corridorHalfWidth: 72,
 });
 
