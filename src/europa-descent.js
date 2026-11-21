@@ -25,6 +25,7 @@ export function europaDescentAt(seconds) {
   // A dense but short blue/white ice curtain masks the descent into the fissure.
   const terrainReveal = smooth((seconds - 10) / 15);
   const planetOpacity = 1 - smooth((seconds - 6) / 2);
+  const approach = smooth(seconds / 6);
   const orbit = smooth((seconds - 6) / 6);
   const entry = smooth((seconds - 12) / 7);
   const iceMist = smooth((seconds - 6) / 2) * (1 - smooth((seconds - 20) / 5));
@@ -35,12 +36,17 @@ export function europaDescentAt(seconds) {
     // Automatic cinematic super boost only during the initial approach.
     // Energy, damage, scoring and player input remain under game control.
     approachBoost: seconds < 6,
+    approachProgress: approach,
+    approachBoostVisual: seconds < 6 ? smooth(seconds / 0.9) * (1 - smooth((seconds - 5.1) / 0.9)) : 0,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
     terrainVisible: seconds >= 11.5,
     terrainLift: terrainReveal === 1 ? 0 : -240 * (1 - terrainReveal),
     planetOpacity,
-    planetScale: 0.74 + orbit * 0.55 + entry * 0.34,
+    // The moon must visibly grow WHILE the automatic super boost is active.
+    // Previously growth started after the boost had already stopped.
+    planetScale: 0.74 + approach * 0.8 + orbit * 0.07 + entry * 0.03,
+    planetZ: -920 + approach * 205,
     // Keep the moon in the camera at approach, then let the ice floor become
     // the primary point of reference without a screen-filling planet.
     planetX: -24 - 68 * smooth((seconds - 6) / 2),
@@ -49,7 +55,7 @@ export function europaDescentAt(seconds) {
     starOpacity: 0.75 * (1 - smooth((seconds - 12) / 12)),
     cameraAscent: cameraDive === 0 ? 0 : -0.32 * cameraDive,
     label: {
-      space: 'EUROPA À VISTA · APROXIMAÇÃO',
+      space: 'SUPER BOOST AUTOMÁTICO · APROXIMANDO DE EUROPA',
       orbit: 'ÓRBITA DE EUROPA · PREPARAR MERGULHO NA FENDA',
       entry: 'ENTRANDO NA FENDA · CRISTAIS À FRENTE',
       descent: 'DESCIDA CONTROLADA · CÂNION CONGELADO',
