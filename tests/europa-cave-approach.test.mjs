@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as T from 'three';
+import { createMarvinRival } from '../src/marvin-rival.js';
 import {
   EUROPA_CAVE_SPAWN_Z,
   EUROPA_CAVE_HANDOFF_DISTANCE,
@@ -25,4 +27,30 @@ test('glacial cave grows from deep approach before physical deck takes ownership
   assert.deepEqual(europaCaveApproachAt(-70, 940), europaCaveApproachAt(-70, 940));
   assert.throws(() => europaCaveApproachAt(Infinity, 940), RangeError);
   assert.throws(() => europaCaveApproachAt(-300, 0), RangeError);
+});
+
+test('Marvin stays outside Europa cave view but is not removed from the story', () => {
+  const scene = new T.Scene();
+  const marvin = createMarvinRival(scene);
+  const notices = [];
+  const options = {
+    sector: 5,
+    elapsed: 44,
+    duration: 110,
+    bossActive: false,
+    player: new T.Vector3(0, 6, 9),
+    fire: () => {
+      throw new Error('no rival projectile while cave is visible');
+    },
+    notify: (line) => notices.push(line),
+  };
+  marvin.update({ ...options, suspended: true });
+  assert.equal(marvin.snapshot().visible, false);
+  assert.equal(marvin.snapshot().phase, 'cave-transit');
+  assert.equal(marvin.target(), null, 'no invisible enemy hitbox in tunnel');
+  assert.equal(notices.length, 0, 'no offscreen attack announcement');
+  marvin.update({ ...options, elapsed: 50, suspended: false, fire: null });
+  assert.equal(marvin.snapshot().visible, true, 'rival resumes after the physical cave');
+  assert.equal(notices.length, 1);
+  marvin.destroy();
 });
