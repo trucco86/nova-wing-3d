@@ -20,6 +20,8 @@ test('Europa super boost makes the moon grow and approach while consuming no scr
   assert.equal(near.approachBoost, true);
   assert.ok(before.planetScale < during.planetScale);
   assert.ok(during.planetScale < near.planetScale);
+  assert.ok(near.planetScale > 1.9, 'moon dominates automatic super boost');
+  assert.ok(near.planetZ > -650, 'moon is visibly closer to camera');
   assert.ok(before.planetZ < during.planetZ);
   assert.ok(during.planetZ < near.planetZ);
   assert.ok(during.approachBoostVisual > 0.75);
@@ -57,14 +59,15 @@ test('automatic super boost draws only one deterministic white speed-streak batc
 });
 
 test('three bounded weather windows add snow without hiding the whole Europa mission', () => {
-  for (const second of [0, 10, 24, 39, 44, 62, 69, 84, 90]) {
+  for (const second of [0, 9.9, 40, 44, 62, 69, 84, 90]) {
     const weather = europaWeatherAt(second);
     assert.equal(weather.phase, 'clear');
     assert.equal(weather.active, false);
     assert.equal(weather.intensity, 0);
   }
   for (const [second, phase] of [
-    [28, 'light-snow'],
+    [12, 'ice-squall'],
+    [28, 'ice-squall'],
     [53, 'ice-squall'],
     [75, 'light-snow'],
   ]) {
@@ -83,8 +86,10 @@ test('existing 84-snowflake GPU draw activates only during scenic windows in Hig
   const snow = surface.getObjectByName('europa-windborne-ice-snow');
   assert.ok(snow?.isPoints);
   assert.equal(snow.geometry.getAttribute('position').count, 84);
-  updateEuropaSurface(surface, 20, true, true);
+  updateEuropaSurface(surface, 9, true, true);
   assert.equal(snow.visible, false);
+  updateEuropaSurface(surface, 12, true, true);
+  assert.equal(snow.visible, true, 'snow begins before 25-second combat unlock');
   updateEuropaSurface(surface, 28, true, true);
   assert.equal(snow.visible, true);
   assert.ok(snow.material.opacity > 0.2);
@@ -98,7 +103,8 @@ test('existing 84-snowflake GPU draw activates only during scenic windows in Hig
   updateEuropaSurface(surface, 75, true, true);
   assert.equal(snow.visible, true);
   updateEuropaSurface(surface, 75, true, false);
-  assert.equal(snow.visible, false, 'Medium does not incur extra snow particle draw');
+  assert.equal(snow.visible, true, 'Medium also gets cheap blizzard particle draw');
+  assert.ok(snow.material.opacity < 0.45, 'mobile keeps snow translucent');
   updateEuropaSurface(surface, 53, false, true);
   assert.equal(snow.visible, false, 'cave and boss transitions suppress background snow');
 });
