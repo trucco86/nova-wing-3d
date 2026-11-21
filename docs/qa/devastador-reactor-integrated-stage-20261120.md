@@ -101,4 +101,5 @@
 
 - O script de QA executou 18 testes específicos, todos aprovados, incluindo ataque real por projéteis, sentinelas associadas aos reguladores de energia, origem dos canhões, cancelamento de ataque, entrada sem coluna e quatro assinaturas novas de tiro.
 - Build HTML sincronizado e validado no run 44881310233: `npm run validate` completo aprovado com 987 testes e nenhum erro; os seis arquivos de áudio preexistentes também preservaram seus contratos. A QA em navegador terá nova evidência dos sentinelas já abertos após o aviso.
+- A captura do chefe agora usa avanço determinístico de 100 ms somente em Developer QA, em vez de percorrer 420 frames SwiftShader. O jogo real e os controles permanecem em tempo normal.
 - A inspeção artística das capturas e o teste de som em aparelho físico ainda são pendências. Não publicar sem validar.
