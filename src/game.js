@@ -68,6 +68,12 @@ import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { europaDescentAt } from './europa-descent.js';
+import {
+  EUROPA_PURSUIT_START_SECONDS,
+  EUROPA_PURSUIT_END_SECONDS,
+  EUROPA_PURSUIT_SLOTS,
+  europaPursuitAt,
+} from './europa-pursuit.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
@@ -777,6 +783,8 @@ export function createGame({
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
     europaArrivalPhase = 'space',
+    europaPursuitSpawned = false,
+    europaPursuitShotsFired = 0,
     marsStormPhase = 'clear',
     marsCleanse = 0,
     marsPendingRoll = false,
@@ -1600,6 +1608,8 @@ export function createGame({
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
     europaArrivalPhase = 'space';
+    europaPursuitSpawned = false;
+    europaPursuitShotsFired = 0;
     marsStormPhase = 'clear';
     marsCleanse = 0;
     marsPendingRoll = false;
@@ -2055,10 +2065,16 @@ export function createGame({
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
   const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
   const pilotPatternReader = createPilotPatternReader();
+  const europaIceShotMaterial = glowMaterial('#8feaff', 3.2);
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
-    materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    materials: {
+      normal: enemyOrbMat,
+      fire: shotMaterials[2],
+      arcane: shotMaterials[3],
+      ice: europaIceShotMaterial,
+    },
     bossMaterials: bossShotMaterials,
     createHalo: () => halo(0xff4265, 2.6, 0.8),
     maxRetained: 96,
@@ -2397,6 +2413,7 @@ export function createGame({
     );
     if (assignedSlot?.europaBreach)
       o.position.set(52, 20, assignedSlot.europaBreach.position.z - 220);
+    if (assignedSlot?.europaPursuit) o.position.z = -130;
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
@@ -2447,15 +2464,22 @@ export function createGame({
     const initialCooldown = rnd(1, 3);
     enemies.push({
       o,
-      role: tacticalFighter ? FIGHTER_ROLES[roleIndex] : null,
+      role: tacticalFighter && !assignedSlot?.europaPursuit ? FIGHTER_ROLES[roleIndex] : null,
       arrivalIndex: assignedSlot?.arrivalIndex ?? 0,
       europaBreach: assignedSlot?.europaBreach ?? null,
+      europaPursuit: assignedSlot?.europaPursuit ?? null,
       subbossTactic,
       attackGlow,
       x,
       y,
       phase,
-      cd: tacticalFighter ? 1.2 : subbossTactic ? 1.6 : initialCooldown,
+      cd: assignedSlot?.europaPursuit
+        ? 0.65 + assignedSlot.europaPursuit.slot * 0.3
+        : tacticalFighter
+          ? 1.2
+          : subbossTactic
+            ? 1.6
+            : initialCooldown,
       life:
         kind === 'subboss'
           ? dynamicFlight
@@ -4485,6 +4509,29 @@ export function createGame({
       obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel');
     if (dynamicFlight && sectorIndex === 5) world.setEuropaTunnel?.(europaTunnelCrossing);
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
+    // Exactly three physical, damageable ice fighters approach during the
+    // automatic boost. Their cyan shots reuse actual swept projectile
+    // collision and difficulty, not a decorative fake animation.
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      sectorIndex === 5 &&
+      !boss &&
+      !europaPursuitSpawned &&
+      elapsed >= EUROPA_PURSUIT_START_SECONDS &&
+      elapsed < EUROPA_PURSUIT_END_SECONDS
+    ) {
+      europaPursuitSpawned = true;
+      for (let slot = 0; slot < EUROPA_PURSUIT_SLOTS; slot++) {
+        const chase = europaPursuitAt(elapsed, slot, player.position.x, player.position.y);
+        enemy('fighter', {
+          x: chase.x,
+          y: chase.y,
+          europaPursuit: { slot },
+        });
+      }
+      message('EUROPA · CAÇAS CRISTALINOS PERSEGUINDO · DESVIE DOS DISPAROS', 'christopher');
+    }
     const sandstorm = marsArrival?.storm;
     if (sandstorm && sandstorm.phase !== marsStormPhase) {
       const previousStorm = marsStormPhase;
@@ -5166,6 +5213,13 @@ export function createGame({
 
     for (let e of enemies) {
       if (e.dead) continue;
+      if (e.europaPursuit && elapsed >= EUROPA_PURSUIT_END_SECONDS) {
+        // Chasers disengage before descent; combat and collisions after
+        // the transition retain their existing pacing.
+        dispose(e.o);
+        e.dead = true;
+        continue;
+      }
       e.age += hostileDt;
       if (dynamicFlight) {
         e.chilled = Math.max(0, e.chilled - dt);
@@ -5181,7 +5235,16 @@ export function createGame({
         if (e.kind === 'subboss')
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
-      if (e.role) {
+      if (e.europaPursuit) {
+        const chase = europaPursuitAt(
+          elapsed,
+          e.europaPursuit.slot,
+          player.position.x,
+          player.position.y,
+        );
+        e.o.position.set(chase.x, chase.y, chase.z);
+        e.o.rotation.z = chase.bank;
+      } else if (e.role) {
         const approachAge = fighterArrivalAge(sectorIndex, e.age, e.arrivalIndex);
         const flightStep = approachAge > 0 ? hostileDt : 0;
         e.o.position.z = fighterAdvance(e.o.position.z, approachAge, flightStep, speed);
@@ -5201,7 +5264,7 @@ export function createGame({
                   ? speed
                   : 6
                 : speed + 12);
-      if (!e.subbossTactic) {
+      if (!e.subbossTactic && !e.europaPursuit) {
         e.o.position.x = e.ground
           ? e.x + (e.airborneRobot ? Math.sin(e.age * 0.85 + e.phase) * 4 : 0)
           : e.kind === 'base'
@@ -5229,7 +5292,7 @@ export function createGame({
             part.scale.y = 0.72 + Math.sin(e.age * 16 + e.phase) * 0.25;
         });
       }
-      if (e.role) {
+      if (e.role && !e.europaPursuit) {
         const motion = fighterMotion(
           e.role,
           e.age,
@@ -5328,6 +5391,7 @@ export function createGame({
       if (
         e.cd <= 0 &&
         e.o.position.z < -15 &&
+        (!e.europaPursuit || europaPursuitAt(elapsed, e.europaPursuit.slot).fire) &&
         (!e.role || fighterMayFireAtDepth(sectorIndex, e.o.position.z)) &&
         (!(e.kind === 'walker' || e.airborneRobot) ||
           robotEyeBurstReady(e.age, e.o.position.z, e.cd))
@@ -5341,20 +5405,22 @@ export function createGame({
           for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
           fireGroundRobotEyes(e.o, e.age);
         } else
-          for (const offset of introductorySubboss
+          for (const offset of introductorySubboss || e.europaPursuit
             ? [0]
             : e.role
               ? fighterAimOffsets(e.role)
               : e.subbossTactic
                 ? e.subbossTactic.aim
-                : [0])
+                : [0]) {
             bullet(
               hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
                 hostileMuzzles(e)[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
-              e.subbossTactic?.spell ?? '',
+              e.europaPursuit ? 'ice' : e.subbossTactic?.spell ?? '',
             );
+            if (e.europaPursuit) europaPursuitShotsFired++;
+          }
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
@@ -5369,7 +5435,9 @@ export function createGame({
               e.subbossTactic?.spell ?? '',
             );
         e.cd =
-          (e.kind === 'subboss'
+          (e.europaPursuit
+            ? 1.65
+            : e.kind === 'subboss'
             ? dynamicFlight
               ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
               : 1.5
@@ -6072,6 +6140,11 @@ export function createGame({
       }
     }
     for (let b of hostile) {
+      if (dynamicFlight && sectorIndex === 5 && elapsed >= 6.3 && b.spell === 'ice') {
+        // No lingering ice bullets through the fog or onto the surface.
+        b.life = 0;
+        continue;
+      }
       const from = b.previousPosition.copy(b.o.position);
       b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
@@ -7191,6 +7264,12 @@ export function createGame({
             }
           : null,
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
+      europaPursuit: {
+        active: sectorIndex === 5 && elapsed < EUROPA_PURSUIT_END_SECONDS,
+        interceptors: enemies.filter((target) => !target.dead && !!target.europaPursuit).length,
+        shotsFired: europaPursuitShotsFired,
+        liveIceShots: hostile.filter((shot) => shot.life > 0 && shot.spell === 'ice').length,
+      },
       entities: {
         enemies: enemies.length,
         shots: shots.length,
@@ -7230,6 +7309,7 @@ export function createGame({
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
+      europaIceShotMaterial.dispose();
       upgradedShotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
       barrierVisual.geometry.dispose();
