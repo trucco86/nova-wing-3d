@@ -11,11 +11,14 @@ test('stage 6 Colossus physically extends claws to the latched ship lane, then s
   await expect(page.locator('#bossHUD')).toBeVisible();
 
   const samples = [];
-  for (const [age, kind, state, activeClaws] of [
-    [8.9, 'cryo-pincer', 'windup', 2],
+  for (const [age, kind, state, strikingClaws] of [
+    [8.9, 'cryo-pincer', 'windup', 0],
     [10.72, 'cryo-pincer', 'attack', 2],
-    [20.9, 'ice-quake', 'windup', 1],
+    [11.7, 'cryo-pincer', 'recovery', 0],
+    [14.5, 'cryo-pincer', 'maneuver', 0],
+    [20.9, 'ice-quake', 'windup', 0],
     [22.72, 'ice-quake', 'attack', 1],
+    [23.8, 'ice-quake', 'recovery', 0],
   ]) {
     const snapshot = await page.evaluate((seconds) => {
       const { game, advance } = window.fixture;
@@ -28,14 +31,15 @@ test('stage 6 Colossus physically extends claws to the latched ship lane, then s
     expect(strike?.kind).toBe(kind);
     expect(strike?.state).toBe(state);
     expect(strike?.claws).toHaveLength(2);
-    expect(strike.claws.filter((claw) => claw.visible)).toHaveLength(activeClaws);
+    expect(strike.claws.filter((claw) => claw.visible)).toHaveLength(2);
+    expect(strike.claws.filter((claw) => claw.flash)).toHaveLength(strikingClaws);
     expect(snapshot.bossZ).toBeLessThanOrEqual(-155);
     expect(snapshot.entities.obstacles).toBe(0);
     if (state === 'attack') {
       // The body stays at the arena center. Actual appendage mesh, not a
       // duplicate floating sprite, must reach the ship's depth and committed
       // horizontal/vertical danger coordinates.
-      for (const claw of strike.claws.filter((item) => item.visible)) {
+      for (const claw of strike.claws.filter((item) => item.flash)) {
         expect(Math.abs(claw.contact[0] - strike.target[0])).toBeLessThan(25);
         expect(Math.abs(claw.contact[1] - strike.target[1])).toBeLessThan(14);
         expect(Math.abs(claw.contact[2] - snapshot.playerDepth)).toBeLessThan(35);
@@ -45,6 +49,6 @@ test('stage 6 Colossus physically extends claws to the latched ship lane, then s
     samples.push(snapshot);
   }
   expect(samples[0].bossZ).toBeCloseTo(samples[1].bossZ, 1);
-  expect(samples[2].bossZ).toBeCloseTo(samples[3].bossZ, 1);
+  expect(samples[4].bossZ).toBeCloseTo(samples[5].bossZ, 1);
   expect(errors).toEqual([]);
 });
