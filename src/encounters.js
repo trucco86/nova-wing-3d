@@ -393,7 +393,7 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         const coordinates = geometry.getAttribute('position');
         const colors = new Float32Array(coordinates.count * 3);
         const exterior = new T.Color('#0c2237');
-        const interior = new T.Color('#b1d9e9');
+        const interior = new T.Color('#72acc5');
         const tint = new T.Color();
         for (let i = 0; i < coordinates.count; i++) {
           const progress = Math.max(0, Math.min(1, (caveLength / 2 - coordinates.getZ(i)) / 260));
