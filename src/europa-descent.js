@@ -23,7 +23,10 @@ export function europaDescentAt(seconds) {
             : 'surface';
   // At orbit handoff the moon leaves the shot completely, as on Mars.
   // A dense but short blue/white ice curtain masks the descent into the fissure.
-  const terrainReveal = smooth((seconds - 10) / 15);
+  // Browser evidence at 8-10s showed blank blue sky after moon fade.
+  // Bring the SAME canyon into view from the first orbit-crossing frames;
+  // the ice curtain still masks the slow-rise, not an empty scene.
+  const terrainReveal = smooth((seconds - 6) / 19);
   const planetOpacity = 1 - smooth((seconds - 6) / 2);
   const approach = smooth(seconds / 6);
   const orbit = smooth((seconds - 6) / 6);
@@ -40,8 +43,10 @@ export function europaDescentAt(seconds) {
     approachBoostVisual: seconds < 6 ? smooth(seconds / 0.9) * (1 - smooth((seconds - 5.1) / 0.9)) : 0,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
-    terrainVisible: seconds >= 11.5,
-    terrainLift: terrainReveal === 1 ? 0 : -240 * (1 - terrainReveal),
+    terrainVisible: seconds >= 8,
+    // Small camera-relative lift shows the glacier horizon at 8s without
+    // a sudden ground pop. Floor reaches its gameplay height by 20s.
+    terrainLift: -65 * (1 - smooth((seconds - 6) / 14)),
     planetOpacity,
     // The moon must visibly grow WHILE the automatic super boost is active.
     // Previously growth started after the boost had already stopped.
