@@ -3,6 +3,8 @@ import { europaDescentAt } from './europa-descent.js';
 import {
   createEuropaCrystalCanyon,
   setEuropaCrystalCanyonQuality,
+  updateEuropaCrystalCanyonMotion,
+  europaCanyonDepth,
 } from './europa-crystal-canyon.js';
 
 // Europe is a grounded frozen world after its fissure descent, not a second
@@ -157,6 +159,7 @@ export function createEuropaSurface() {
     const mesh = new T.InstancedMesh(geo, mat, count);
     mesh.name = name;
     mesh.userData.visualOnly = true;
+    const authoredDepth = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       const side = i % 2 ? 1 : -1;
       const h = (name.includes('ridges') ? 28 : 7) + hash(i * 19) * 32;
@@ -169,7 +172,9 @@ export function createEuropaSurface() {
       dummy.scale.set(12 + hash(i * 13) * 31, h, 18 + hash(i * 23) * 45);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
+      authoredDepth[i] = dummy.position.z;
     }
+    mesh.userData.authoredDepth = authoredDepth;
     mesh.instanceMatrix.needsUpdate = true;
     mesh.frustumCulled = false;
     root.add(mesh);
@@ -252,4 +257,23 @@ export function updateEuropaSurface(root, time, visible, highQuality = true) {
       );
     }
   }
+}
+
+// Deterministic glacier scenery translation on every playing frame. The
+// original static ice shelves made Europa resemble a stationary painting
+// while the game's tunnel obstacle continued moving. Use the SAME flight
+// travel across all depth layers, so pause and reset are reproducible.
+export function updateEuropaSurfaceTravel(root, travel) {
+  if (!root || !Number.isFinite(travel) || travel < 0) return false;
+  for (const mesh of root.children) {
+    if (!mesh.isInstancedMesh || !mesh.userData.authoredDepth) continue;
+    const matrices = mesh.instanceMatrix.array;
+    const authoredDepth = mesh.userData.authoredDepth;
+    for (let i = 0; i < authoredDepth.length; i++)
+      matrices[i * 16 + 14] = europaCanyonDepth(authoredDepth[i], travel, 0.55);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  const canyon = europaCanyonParts.get(root) ?? root.getObjectByName('europa-premium-crystal-canyon');
+  updateEuropaCrystalCanyonMotion(canyon, travel);
+  return true;
 }
