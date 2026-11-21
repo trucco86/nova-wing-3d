@@ -6489,6 +6489,11 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    // The stage-04 disembark owns its own WebGL canvas. Freeze the original
+    // flight renderer completely, not just combat timers: two simultaneous
+    // GPU render loops overheat mobile devices and can stall both controls.
+    // The flight resumes on the same sector/score/ship after all modules.
+    if (state === 'reactor-access') return;
     if (rpgTacticalPaused && state === 'playing') {
       // Freeze all combat clock, physics, weapons and enemies. Keep an
       // occasional identical WebGL frame alive under the translucent menu.
