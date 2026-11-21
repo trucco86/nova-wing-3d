@@ -100,6 +100,22 @@ test('follow camera keeps the entrance deck visible and avoids giant foreground 
   const horizontal = Math.hypot(spawn.eye.x - spawn.aim.x, spawn.eye.z - spawn.aim.z);
   const pitch = Math.atan2(spawn.eye.y - spawn.aim.y, horizontal);
   assert.ok(pitch < 0.28, 'camera pitch must not fill the viewport with deck panels');
+  const portrait = orbit9CameraPose(0, 12, {
+    yaw: 0,
+    mode: 'follow',
+    aspect: 390 / 844,
+  });
+  const landscape = orbit9CameraPose(0, 12, {
+    yaw: 0,
+    mode: 'follow',
+    aspect: 844 / 390,
+  });
+  assert.ok(
+    portrait.eye.z > landscape.eye.z + 5,
+    'portrait camera must move back so the cat does not fill half the phone',
+  );
+  assert.ok(portrait.eye.z <= 34, 'portrait camera stays over the extended landing floor');
+  assert.ok(portrait.fov > landscape.fov, 'portrait view needs more vertical space around cat');
   const reactor = orbit9CameraPose(39, -55, { yaw: 0, mode: 'follow' });
   const distance = Math.hypot(reactor.eye.x - 39, reactor.eye.z + 55);
   assert.ok(distance < 16, 'reactor camera must be close enough to keep the pilot readable');
