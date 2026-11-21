@@ -68,6 +68,8 @@ import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { europaDescentAt } from './europa-descent.js';
+import { updateEuropaIceCavernMotion } from './europa-ice-cavern.js';
+import { EUROPA_CAVE_SPAWN_Z, europaCaveApproachAt } from './europa-cave-approach.js';
 import {
   EUROPA_PURSUIT_START_SECONDS,
   EUROPA_PURSUIT_END_SECONDS,
@@ -760,6 +762,7 @@ export function createGame({
     groundCd = 5,
     groundWave = 0,
     tunnelDone = false,
+    europaTunnelCrossingLast = false,
     respawnTime = 0,
     totalTime = 0,
     music = null,
@@ -1665,6 +1668,7 @@ export function createGame({
     groundCd = dynamicFlight && sectorIndex === 0 ? 3.6 : 5;
     groundWave = 0;
     tunnelDone = sectorIndex === 1;
+    europaTunnelCrossingLast = false;
     bossVolley = 0;
     collapseBurst = 0;
     pausedFrom = 'playing';
@@ -3198,7 +3202,7 @@ export function createGame({
         // and spawn rules run during the normal campaign. No mock scene.
         elapsed = Math.min(current().duration - 16, ARRIVAL_SECONDS + 10);
         const crossing = createObstacle('tunnel', 'europa');
-        crossing.position.z = -230;
+        crossing.position.z = EUROPA_CAVE_SPAWN_Z;
         scene.add(crossing);
         obstacles.push({
           o: crossing,
@@ -3206,7 +3210,9 @@ export function createGame({
           hp: breakableHullHealth(crossing.userData.kind),
         });
         world.setDestinationArrival?.(elapsed);
-        world.setEuropaTunnel?.(true);
+        // QA intentionally starts at the far approach, then advances the
+        // exact same real tunnel until physical entry and exit.
+        world.setEuropaTunnel?.(false);
       } else {
         elapsed = current().duration + 0.1;
         if (sectorIndex === 2) {
@@ -4415,6 +4421,25 @@ export function createGame({
       dynamicFlight ? route : undefined,
       dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
     );
+    // Cave approach and wind turbulence act on the CAMERA only, not on
+    // the physical pilot hull, stick direction or collision calculations.
+    const approachingCave =
+      dynamicFlight && sectorIndex === 5
+        ? obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach)
+        : null;
+    if (approachingCave && cameraMode !== 'cockpit') {
+      const motion = europaCaveApproachAt(
+        approachingCave.o.position.z,
+        approachingCave.o.userData.length,
+        player.position.z,
+      );
+      const flutter = motion.cameraIntensity;
+      camera.position.x += Math.sin(elapsed * 8.1) * 0.18 * flutter;
+      camera.position.y += Math.sin(elapsed * 6.4) * 0.11 * flutter;
+      // A subtle aerodynamic bank sells the climb without overriding
+      // controls or the camera's existing roll/steering integration.
+      if (flutter > 0) camera.rotateZ(Math.sin(elapsed * 3.2) * flutter * 0.002);
+    }
     // Keep a true solid in the game world but render the nearby underside
     // translucent when it would eclipse the pilot and the gameplay corridor.
     if (dynamicFlight) world.updateCityCameraOcclusion(camera.position, player.position, dt);
@@ -4509,10 +4534,30 @@ export function createGame({
     // Europa's real tunnel deck is the only visible floor during traversal.
     // The global ice terrain is coplanar with its top face (-7): rendering
     // both caused z-fighting and severe ground flicker on mobile.
-    const europaTunnelCrossing =
-      dynamicFlight &&
-      sectorIndex === 5 &&
-      obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel');
+    const europaCaveObstacle =
+      dynamicFlight && sectorIndex === 5
+        ? obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach)
+        : null;
+    const europaCaveApproach = europaCaveObstacle
+      ? europaCaveApproachAt(
+          europaCaveObstacle.o.position.z,
+          europaCaveObstacle.o.userData.length,
+          player.position.z,
+        )
+      : null;
+    // The glacial portal grows visibly in the far distance while the normal
+    // world floor remains intact. Only hand over the deck on actual approach.
+    const europaTunnelCrossing = !!europaCaveApproach?.inside;
+    if (europaTunnelCrossing && !europaTunnelCrossingLast) {
+      // The flight corridor is now physically occupied. Do not allow
+      // existing fighters/projectiles to overlap its rock colliders.
+      for (const e of enemies) dispose(e.o);
+      enemies = [];
+      for (const shot of hostile) hostileShotPool.release(shot);
+      hostile = [];
+      message('EUROPA · ENTRANDO NA CAVERNA GLACIAL', 'christopher');
+    }
+    europaTunnelCrossingLast = europaTunnelCrossing;
     if (dynamicFlight && sectorIndex === 5) world.setEuropaTunnel?.(europaTunnelCrossing);
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
     // Exactly three physical, damageable ice fighters approach during the
@@ -5088,20 +5133,13 @@ export function createGame({
         'tunnel',
         dynamicFlight && sectorIndex === 5 ? 'europa' : 'standard',
       );
-      o.position.z = -230;
+      o.position.z = dynamicFlight && sectorIndex === 5 ? EUROPA_CAVE_SPAWN_Z : -230;
       scene.add(o);
       obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       if (dynamicFlight && sectorIndex === 5) {
-        // No fighter is allowed to phase through a solid frozen wall. Clear
-        // only this staged transit and stop spawning until the tunnel passes.
-        // A future breach encounter must physically remove its wall collision
-        // and play falling debris BEFORE allowing an enemy inside.
-        for (const e of enemies) dispose(e.o);
-        enemies = [];
-        for (const shot of hostile) hostileShotPool.release(shot);
-        hostile = [];
-        world.setEuropaTunnel?.(true);
-        message('FENDA GLACIAL · TÚNEL PROTEGIDO · SIGA A ABERTURA');
+        // Stage the real, collidable portal hundreds of units away. There is
+        // no geometry or scene swap near the player's nose.
+        message('EUROPA · FENDA GLACIAL NO HORIZONTE', 'christopher');
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
@@ -6327,6 +6365,12 @@ export function createGame({
       if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
+      if (dynamicFlight && sectorIndex === 5 && obstacle.o.userData.europaBreach)
+        updateEuropaIceCavernMotion(
+          obstacle.o.getObjectByName('europa-cathedral-ice-cavern'),
+          elapsed,
+          speed,
+        );
       if (dynamicFlight && sectorIndex === 0 && obstacle.o.userData.kind === 'city-hanging-train')
         animateCityHangingTrainObstacle(obstacle.o, elapsed);
       if (sectorIndex === 5 && dynamicFlight && obstacle.o.userData.europaBreach) {
@@ -6399,10 +6443,18 @@ export function createGame({
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
-    if (dynamicFlight && sectorIndex === 5)
+    if (dynamicFlight && sectorIndex === 5) {
+      const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
       world.setEuropaTunnel?.(
-        obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel'),
+        cave
+          ? europaCaveApproachAt(
+              cave.o.position.z,
+              cave.o.userData.length,
+              player.position.z,
+            ).inside
+          : false,
       );
+    }
     hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
     hud.text('speedValue', String(Math.round(lastFlightSpeed * 10)));
     hud.style('shield', 'width', (hp / maxHp()) * 100 + '%');
@@ -7217,6 +7269,19 @@ export function createGame({
           phase: e.combatPhase,
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
+      europaCaveApproach:
+        dynamicFlight && sectorIndex === 5
+          ? (() => {
+              const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
+              return cave
+                ? europaCaveApproachAt(
+                    cave.o.position.z,
+                    cave.o.userData.length,
+                    player.position.z,
+                  )
+                : null;
+            })()
+          : null,
       europaTunnel:
         dynamicFlight && sectorIndex === 5
           ? obstacles
