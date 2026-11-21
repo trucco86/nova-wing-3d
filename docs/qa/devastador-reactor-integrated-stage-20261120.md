@@ -30,3 +30,5 @@
 - [ ] Pausa não pula a trava.
 - [ ] Mobile mantém analógico, órbita, 360 e BOOST acessíveis.
 - [ ] Testes Node, browser e build reproduzível aprovados em QA.
+- [ ] Atalho em Central → Developer/QA → TESTAR ACESSO AO REATOR · FASE 04
+      abre este trecho dentro do setor 04, nunca uma fase extra.
