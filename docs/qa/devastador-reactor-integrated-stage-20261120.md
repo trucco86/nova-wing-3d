@@ -70,3 +70,8 @@
 - O núcleo exibe anel emissivo frontal animado e refrigeração mecânica detalhada, sem substituir o obstáculo físico existente.
 - O teste específico de arte confirma dois elementos individuais de energia, instâncias de blindagem, ausência de novos colisores e animação determinística, com 9/9 verificações aprovadas na preparação da candidata.
 - Revisão final das capturas em paisagem e retrato é obrigatória antes de homologar o aspecto visual.
+
+## Redimensionamento no QA
+
+- O teleporte do cenário de teste sincroniza as dimensões da câmera antes de fotografar após rotação de tela, evitando capturas com a distância do layout anterior.
+- A orientação não muda a progressão, os módulos nem a posição física do piloto. O teste inclui as duas resoluções 390×844 e 844×390.
