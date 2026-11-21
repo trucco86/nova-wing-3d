@@ -44,7 +44,8 @@ test('moon disappears at orbit handoff and the ice fog masks every intermediate 
     assert.equal(destination.globeOpacity, arrival.planetOpacity);
   }
   assert.equal(europaDescentAt(12).planetOpacity, 0);
-  assert.ok(europaDescentAt(12).iceMist > 0.9);
+  assert.ok(europaDescentAt(7.6).iceMist > 0.9, 'short orbital snow curtain');
+  assert.ok(europaDescentAt(12).iceMist < 0.01, 'no prolonged blue fog');
   assert.equal(europaDescentAt(19).planetOpacity, 0);
   assert.ok(europaSurfaceAt(19).groundVisible);
   assert.equal(europaDescentAt(25).planetOpacity, 0);
@@ -99,6 +100,8 @@ test('Europa uses exactly one celestial globe and raises the same ice scenery co
   assert.equal(iceParticles.geometry.getAttribute('position').count, 90);
   assert.equal(iceParticles.visible, false);
   updateDestinationVista(vista, 5, 16);
+  assert.equal(iceParticles.visible, false, 'no lingering 16-second snow curtain');
+  updateDestinationVista(vista, 5, 7.6);
   assert.equal(iceParticles.visible, true);
   assert.ok(iceParticles.material.opacity > 0.2);
   updateDestinationVista(vista, 5, 25);
@@ -108,7 +111,7 @@ test('Europa uses exactly one celestial globe and raises the same ice scenery co
     assert.equal(globe.visible, t < 8, 'moon must vanish as orbital mist develops at ' + t);
     assert.equal(globe.position.x, state.globeX);
     assert.equal(globe.position.y, state.globeY);
-    assert.ok(globe.scale.x <= 1.64, 'moon stays at a believable apparent size');
+    assert.ok(globe.scale.x <= 2.12, 'close approach avoids camera intersection');
   }
   updateDestinationVista(vista, 5, 25);
   assert.equal(globe.visible, false);
