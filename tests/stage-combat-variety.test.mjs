@@ -8,7 +8,7 @@ import { stagePerspectiveAt } from '../src/stage-variety.js';
 import { createGroundEnemy, animateGroundEnemy } from '../src/encounters.js';
 import { harness } from './harness.mjs';
 
-test('city and asteroid have fractured moons; Europa keeps an uncracked ice globe', () => {
+test('city and asteroid keep fractured moons; Europa has a separate arrival moon only', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   const globe = scene.getObjectByName('world-orbital-globe');
@@ -16,7 +16,18 @@ test('city and asteroid have fractured moons; Europa keeps an uncracked ice glob
   const sky = scene.getObjectByName('launch-earth-horizon');
   for (let sector = 0; sector < 10; sector++) {
     world.setSector(SECTORS[sector], sector);
-    assert.equal(globe.visible, sector === 0 || sector === 2 || sector === 5);
+    assert.equal(
+      globe.visible,
+      sector === 0 || sector === 2,
+      'legacy generic moon must not duplicate the Europa arrival object',
+    );
+    if (sector === 5) {
+      const moon = scene.getObjectByName('destination-celestial-body');
+      assert.ok(moon, 'Europa moon remains a unique dedicated cinematic vista');
+      assert.equal(moon.visible, true, 'moon appears only during the initial approach');
+      world.setDestinationArrival(8);
+      assert.equal(moon.visible, false, 'moon fully clears at orbital handoff');
+    }
     if (sector === 0 || sector === 2) assert.equal(globe.material.uniforms.crackIntensity.value, 1);
     if (sector === 5) assert.equal(globe.material.uniforms.crackIntensity.value, 0);
     assert.equal(sky.visible, false, 'Earth horizon belongs to orbital launch only');

@@ -4,7 +4,7 @@
  * This pool never disposes those shared GPU resources and never handles
  * encounter state machines (Europa breach, moving trains, reactors or bosses).
  */
-const SAFE_KINDS = new Set(['satellite', 'carrier', 'debris', 'gantry']);
+const SAFE_KINDS = new Set(['satellite', 'carrier', 'debris', 'gantry', 'ice-crag', 'ice-spire']);
 
 export function createReusableObstaclePool({ create, maxRetainedPerKind = 3, maxTotal = 12 } = {}) {
   if (typeof create !== 'function') throw new TypeError('Expected obstacle factory');

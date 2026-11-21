@@ -76,10 +76,90 @@ function advance(seconds, { renderAfter = true } = {}) {
   game.step(0);
   rendering = capture;
 }
+function advanceToMissionTime(target) {
+  if (!Number.isFinite(target) || target < 0)
+    throw new RangeError('Mission time target must be finite and nonnegative');
+  // The squad starts with a non-playable intro beat. Simulation wall time
+  // includes that beat, but the mission clock deliberately does not. QA
+  // screenshots must use the actual mission timer, never accumulated calls.
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const current = game.snapshot().seconds;
+    if (current >= target - 0.000001) return current;
+    advance(Math.max(0.05, target - current + 0.015));
+  }
+  throw new Error('Could not reach mission time ' + target + ' seconds');
+}
 window.fixture = {
   game,
   advance,
+  advanceToMissionTime,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  europaBoostWeatherState() {
+    const globe = lastScene?.getObjectByName('destination-celestial-body');
+    const streaks = lastScene?.getObjectByName('europa-orbital-super-boost-streaks');
+    const flakes = lastScene?.getObjectByName('europa-windborne-ice-snow');
+    return {
+      globeVisible: globe?.visible ?? false,
+      globeScale: globe?.scale.x ?? null,
+      globeDepth: globe?.position.z ?? null,
+      boostVisible: streaks?.visible ?? false,
+      boostLineVertices: streaks?.geometry?.getAttribute('position')?.count ?? 0,
+      snowVisible: flakes?.visible ?? false,
+      snowCount: flakes?.geometry?.getAttribute('position')?.count ?? 0,
+      render: lastRenderStats ? { ...lastRenderStats } : null,
+    };
+  },
+
+  europaCavernState() {
+    const root = lastScene?.getObjectByName('europa-cathedral-ice-cavern');
+    const tunnel = root?.parent;
+    return root
+      ? {
+          visible: root.visible,
+          visualOnly: root.userData.visualOnly,
+          batches: root.children.map((o) => ({ name: o.name, count: o.count ?? 0 })),
+          breachPanel: Boolean(tunnel?.getObjectByName('europa-tunnel-breach-panel')),
+          length: tunnel?.userData.length ?? null,
+          renderCalls: lastRenderStats?.calls ?? 0,
+        }
+      : null;
+  },
+
+  alienWorldState(theme) {
+    if (!lastScene) return null;
+    const site = lastScene.getObjectByName('alien-architecture-' + theme);
+    const globe = lastScene.getObjectByName('destination-celestial-body');
+    const hero = lastScene.getObjectByName('europa-sunken-alien-vault-hero');
+    const canyon = lastScene.getObjectByName('europa-premium-crystal-canyon');
+    const frozenSurface = lastScene.getObjectByName('europa-frozen-surface');
+    const matrix = new T.Matrix4();
+    if (hero) hero.getMatrixAt(0, matrix);
+    return {
+      exists: Boolean(site),
+      visible: site?.visible ?? false,
+      siteName: site?.userData.site ?? null,
+      structures: site?.children.map((node) => node.name) ?? [],
+      heroDepth: hero ? matrix.elements[14] : null,
+      heroX: hero ? matrix.elements[12] : null,
+      heroBatchCount: hero?.count ?? 0,
+      canyon: canyon
+        ? {
+            visible: Boolean(frozenSurface?.visible && canyon.visible),
+            cyanCount: canyon.getObjectByName('europa-canyon-crystal-cyan')?.count ?? 0,
+            violetVisible: canyon.getObjectByName('europa-canyon-crystal-violet')?.visible ?? false,
+            cliffs: canyon.getObjectByName('europa-canyon-grounded-cliffs')?.count ?? 0,
+            bridges: canyon.getObjectByName('europa-canyon-ancient-bridges')?.count ?? 0,
+            gateway: Boolean(canyon.getObjectByName('europa-canyon-distant-alien-gateway')),
+          }
+        : null,
+      visualOnly: site?.userData.visualOnly ?? false,
+      giantGenericOrb: lastScene.getObjectByName('orion-generic-planet') !== undefined,
+      globeVisible: globe?.visible ?? false,
+      ringsAttachedToSaturn: Boolean(lastScene.getObjectByName('saturn-planetary-ring-system')),
+      render: lastRenderStats ? { ...lastRenderStats } : null,
+    };
+  },
+
   // QA151: prove the LIVE WebGL world actually uses the soft dust map, not
   // just a detached createMarsSandstorm() object in a unit test.
   marsDustVisualState() {
@@ -239,6 +319,10 @@ window.fixture = {
 const qaSector = params.get('qaBoss');
 const qaSubboss = params.get('qaSubboss');
 const qaTunnel = params.get('qaTunnel');
+// Explicit stage-only scenario for live arrival/boost evidence. Previously
+// ?qaSurface=5 silently loaded the default Earth checkpoint, producing a
+// false screenshot of the city's launch instead of Europa.
+const qaSurface = params.get('qaSurface');
 if (qaTunnel !== null) {
   if (!game.startDeveloperScenario(Number(qaTunnel), 'tunnel'))
     throw new Error('Developer/QA Europa tunnel fixture unavailable');
@@ -248,6 +332,9 @@ if (qaTunnel !== null) {
 } else if (qaSector !== null) {
   if (!game.startDeveloperScenario(Number(qaSector), 'boss'))
     throw new Error('Developer/QA boss fixture unavailable');
+} else if (qaSurface !== null) {
+  if (!game.startDeveloperScenario(Number(qaSurface), 'stage'))
+    throw new Error('Developer/QA surface arrival fixture unavailable');
 } else game.start(true);
 game.step(0);
 document.body.dataset.ready = 'true';

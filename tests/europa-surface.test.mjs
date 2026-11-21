@@ -10,20 +10,27 @@ import {
   updateEuropaSurface,
 } from '../src/europa-surface.js';
 
-test('Europa orbit disappears before the actual surface opens and cannot remain above it', () => {
-  const early = europaSurfaceAt(9);
+test('Europa replaces moon with ice mist on orbit entry, without empty transition frames', () => {
+  const early = europaSurfaceAt(5);
   assert.equal(early.orbitalVisible, true);
   assert.equal(early.groundVisible, false);
   const surface = europaSurfaceAt(26);
   assert.equal(surface.orbitalVisible, false);
-  assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon gone before frozen ground');
+  assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon exits before glacial descent');
+  assert.ok(europaSurfaceAt(18).groundVisible, 'surface is already coming into view');
   assert.equal(destinationArrivalAt(5, 18).globeOpacity, 0);
+  assert.ok(destinationArrivalAt(5, 7.6).haze > 0.9, 'short snowy orbit bridge');
+  assert.ok(destinationArrivalAt(5, 12).haze < 0.01, 'sky clears before canyon combat');
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
   assert.equal(destinationArrivalAt(5, 20).globeOpacity, 0);
   assert.equal(destinationArrivalAt(5, 26).globeOpacity, 0);
-  assert.ok(destinationArrivalAt(4, 20).globeOpacity > 0, 'Venus arrival unchanged');
+  assert.equal(
+    destinationArrivalAt(4, 20).globeOpacity,
+    0,
+    'Venus now clears the planet before atmospheric combat',
+  );
   assert.throws(() => europaSurfaceAt(Number.NaN), RangeError);
 });
 
@@ -36,19 +43,39 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   const destination = scene.getObjectByName('destination-celestial-body');
   const surface = scene.getObjectByName('europa-frozen-surface');
   assert.ok(ground && globe && destination && surface);
-  world.setDestinationArrival(10);
-  assert.equal(globe.visible, true);
+  world.setDestinationArrival(7);
+  assert.equal(globe.visible, false, 'legacy generic orbital globe must not duplicate Europa');
+  assert.equal(destination.visible, true, 'Europa moon is just fading at orbit entry');
   assert.equal(surface.visible, false);
+  world.setDestinationArrival(19);
+  assert.equal(destination.visible, false, 'planet disappears before the tunnel/fissure entry');
+  assert.equal(surface.visible, true, 'glaciers rise before planetary fade');
+  assert.equal(surface.position.y, 0, 'glacier is fully revealed before 19s');
+  world.setDestinationArrival(11);
+  assert.ok(
+    surface.position.y < 0 && surface.position.y > -35,
+    'the same canyon rises continuously through the short ice curtain',
+  );
+  world.setDestinationArrival(19);
   world.setDestinationArrival(26);
-  assert.equal(globe.visible, false, 'moon from orbital sky must be gone on surface');
+  assert.equal(globe.visible, false, 'the legacy orb remains hidden for this entire journey');
   assert.equal(destination.visible, false, 'distant second globe must also be gone');
   assert.equal(surface.visible, true);
   assert.equal(ground.visible, true);
-  assert.ok(scene.fog.density >= 0.002, 'frost haze instead of clear generic horizon');
+  assert.ok(
+    scene.fog.density >= 0.0012 && scene.fog.density <= 0.0016,
+    'layered frost must be clear enough to reveal distant canyon architecture',
+  );
 
   assert.equal(world.setEuropaTunnel(true), true);
   assert.equal(ground.visible, false, 'avoid z-fighting with physical -7 tunnel floor');
-  assert.equal(surface.visible, false, 'avoid foreground intersecting tunnel walls');
+  assert.equal(
+    surface.visible,
+    true,
+    'keep distant cliff skyline during tunnel but hide global coplanar ground',
+  );
+  assert.equal(scene.getObjectByName('europa-canyon-grounded-cliffs')?.visible, true);
+  assert.ok(scene.getObjectByName('europa-blue-crevasse-ridges')?.isInstancedMesh);
   world.setDestinationArrival(31);
   assert.equal(ground.visible, false, 'arrival update must not restore coplanar ground');
   assert.equal(world.setEuropaTunnel(false), false);
@@ -69,7 +96,11 @@ test('frozen surface detail stays outside flight corridor with bounded mobile dr
   const root = createEuropaSurface();
   assert.equal(root.name, 'europa-frozen-surface');
   assert.equal(root.userData.visualOnly, true);
-  assert.equal(root.children.length, 3, 'two instanced shelves and a single snow draw');
+  assert.equal(
+    root.children.length,
+    4,
+    'two instanced shelves, one snow draw and one premium canyon',
+  );
   for (const mesh of root.children.filter((o) => o.isInstancedMesh)) {
     assert.ok(mesh.count <= 32);
     assert.equal(mesh.userData.visualOnly, true);
@@ -84,8 +115,15 @@ test('frozen surface detail stays outside flight corridor with bounded mobile dr
   updateEuropaSurface(root, 28, true, true);
   assert.equal(root.visible, true);
   assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, true);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-violet').visible, true);
   updateEuropaSurface(root, 29, true, false);
-  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, false);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-violet').visible, false);
+  assert.equal(root.getObjectByName('europa-canyon-crystal-cyan').visible, true);
+  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, true);
+  assert.ok(
+    root.getObjectByName('europa-windborne-ice-snow').material.opacity < 0.45,
+    'medium retains affordable translucent snow with the existing single Points draw',
+  );
   updateEuropaSurface(root, 29, false, false);
   assert.equal(root.visible, false);
   root.traverse((node) => {

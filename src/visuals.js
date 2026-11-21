@@ -5,6 +5,12 @@ import { addFighterDetail, addMechDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
 import { launchOrbitReady } from './flight.js';
 import { stageVisualAt } from './stage-variety.js';
+import {
+  ANCIENT_WORLD_THEMES,
+  createAlienArchitecture,
+  setAlienArchitectureQuality,
+  updateAlienArchitecture,
+} from './alien-architecture.js';
 import { premiumWorldGrade } from './premium-world-grading.js';
 import { createCityDistricts } from './city-districts.js';
 import { createCityEvacuationFleet, syncCityEvacuationFleet } from './city-evacuation-batching.js';
@@ -46,7 +52,12 @@ import {
 } from './city-35-lived-in.js';
 import { createMarsPremium, updateMarsPremium, updateMarsArrival } from './mars-premium.js';
 import { DESTINATION_PROFILES } from './destination-arrival.js';
-import { europaSurfaceAt, createEuropaSurface, updateEuropaSurface } from './europa-surface.js';
+import {
+  europaSurfaceAt,
+  createEuropaSurface,
+  createEuropaGlacialRidgeGeometry,
+  updateEuropaSurface,
+} from './europa-surface.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
 import {
@@ -1179,7 +1190,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     depthWrite: false,
     vertexShader:
       'varying vec3 w;void main(){w=(modelMatrix*vec4(position,1.)).xyz;gl_Position=projectionMatrix*viewMatrix*vec4(w,1.);}',
-    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float ice;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;if(ice>.5){float fault=1.-smoothstep(.06,.3,abs(sin(p.x*.035+sin(p.y*.023)*1.8)));float frost=fbm(vec3(p*.015,1.))*0.55+.25;vec3 blue=vec3(.078,.16,.19)+vec3(.20,.28,.29)*frost;blue-=vec3(.055,.065,.075)*fault;float ridges=.55+.45*fbm(vec3(p*.066,6.));c=mix(c,blue*ridges,ice);}float fog=1.-exp(-dist*(urban>.5?.00075:.002));vec3 fogTint=mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
+    fragmentShader: `varying vec3 w;uniform float time;uniform float travel;uniform float water;uniform float urban;uniform float ice;uniform float detail;uniform float launchGroundAlpha;${noise}void main(){vec2 p=w.xz;p.y-=travel;float dist=length(w-cameraPosition);float wet=water*(1.-smoothstep(34.,39.,abs(p.x)));float rip=sin(p.y*.6+sin(p.x*.15+time))*sin(p.x*.27-time*.8);vec3 c=mix(vec3(.009,.019,.027),vec3(.060,.091,.128),urban);if(ice<.5){float gx=1.-smoothstep(.04,.12,abs(mod(p.x+8.,16.)-8.));float gz=1.-smoothstep(.04,.16,abs(mod(p.y+8.,16.)-8.));c+=vec3(.005,.14,.09)*max(gx,gz)*(1.-wet);float refl=pow(max(0.,sin(p.x*.06+sin(p.y*.08)*.6)),14.)*(.25+noise(vec3(p*.5,time))*.75);c=mix(c,vec3(.004,.023,.031)+vec3(.01,.13,.12)*refl+vec3(.008,.045,.06)*rip,wet);float road=(1.-wet)*(1.-smoothstep(.12,.3,abs(abs(p.x)-18.)))*step(4.,mod(p.y,16.));c+=vec3(.05,.18,.17)*road;float edge=exp(-abs(abs(p.x)-36.)*.8);c+=vec3(.08,1.,.63)*edge;float avenue=urban*(1.-wet)*(1.-smoothstep(40.,51.,abs(p.x)));float seamX=1.-smoothstep(.04,.15,4.-abs(mod(p.x+4.,8.)-4.));float seamZ=1.-smoothstep(.05,.17,5.-abs(mod(p.y+5.,10.)-5.));float plating=noise(vec3(floor((p.x+4.)/8.)*.31,floor((p.y+5.)/10.)*.31,2.));c+=avenue*(vec3(.029,.054,.081)+vec3(.008,.024,.034)*plating+vec3(.025,.13,.16)*max(seamX,seamZ)*(.65+detail*.35));float grooves=exp(-abs(abs(p.x)-27.)*.95)+exp(-abs(abs(p.x)-12.)*1.4);c+=avenue*vec3(.016,.22,.25)*grooves*(.35+detail*.65);float lane=1.-smoothstep(.08,.17,abs(mod(p.x+2.,9.)-2.));float rivetX=1.-smoothstep(.13,.28,abs(mod(p.x+4.,8.)-4.));float rivetZ=1.-smoothstep(.13,.28,abs(mod(p.y+5.,10.)-5.));c+=avenue*detail*(vec3(.035,.21,.23)*lane*.35+vec3(.10,.23,.26)*rivetX*rivetZ*.5);float sideSheen=avenue*(.5+.5*sin(p.y*.23))*exp(-pow((abs(p.x)-28.)/10.,2.));c+=vec3(.048,.11,.19)*sideSheen;float centerSheen=avenue*pow(max(0.,sin(p.x*.35+sin(p.y*.042))),16.)*.3;c+=vec3(.024,.14,.18)*centerSheen;}if(ice>.5){float fault=1.-smoothstep(.035,.22,abs(sin(p.x*.05+sin(p.y*.026)*1.8)));float frost=fbm(vec3(p*.018,1.))*.42+.3;vec3 blue=vec3(.025,.074,.135)+vec3(.16,.24,.33)*frost;float ridges=.68+.32*fbm(vec3(p*.059,6.));c=mix(c,blue*ridges,ice);float channel=1.-smoothstep(48.,105.,abs(p.x));float fractureWarp=sin(p.y*.036+sin(p.x*.047)*1.4)*2.7+sin(p.x*.023+p.y*.029)*1.9;float veinA=1.-smoothstep(.025,.17,abs(sin(p.x*.074+p.y*.013+fractureWarp)));float veinB=1.-smoothstep(.028,.15,abs(sin(p.y*.057-p.x*.039+sin(p.y*.019)*2.4)));float irregular=fbm(vec3(p*.034,9.));float cracked=max(veinA*smoothstep(.48,.72,irregular),veinB*smoothstep(.45,.76,irregular));float sheen=pow(max(0.,cos((p.x+p.y*.12)*.037)),22.);vec3 iceChannel=vec3(.013,.052,.107)+vec3(.037,.13,.21)*sheen;c=mix(c,iceChannel,channel*.88);c+=channel*(vec3(.065,.17,.25)*cracked*.23+vec3(.045,.14,.25)*sheen*.35);c+=vec3(.028,.12,.2)*fault*.18;}float fog=1.-exp(-dist*(ice>.5?.00085:(urban>.5?.00075:.002)));vec3 fogTint=ice>.5?vec3(.083,.155,.24):mix(vec3(.013,.046,.054),vec3(.10,.19,.26),urban);gl_FragColor=vec4(mix(c,fogTint,fog),launchGroundAlpha);}`,
   });
   const ground = new T.Mesh(
     new T.PlaneGeometry(4000, 4000, dynamicFlight ? 32 : 1, dynamicFlight ? 96 : 1),
@@ -1906,18 +1917,40 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       destinationIndex === 5 ? 0.0014 : destinationIndex === 7 ? 0.00012 : (grade?.haze ?? 0.00045);
     scene.fog.density =
       T.MathUtils.lerp(0.00012, normalDensity, state.reveal) + state.haze * 0.0011;
-    starfield.visible = state.reveal < 0.95 || state.keepGlobe;
-    starfield.material.opacity = 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
+    // Europa keeps a sparse, crisp starfield over its frozen night canyon
+    // without reintroducing the old giant repeated background planet.
+    const europaSurfaceSky = destinationIndex === 5 && state.reveal > 0.82;
+    starfield.visible = europaSurfaceSky || state.reveal < 0.95 || state.keepGlobe;
+    starfield.material.opacity =
+      destinationIndex === 5
+        ? europaSurfaceSky
+          ? 0.32
+          : state.starOpacity
+        : 0.75 * (1 - state.reveal * (state.keepGlobe ? 0.14 : 0.9));
     if (destinationIndex === 5) {
       const ice = europaSurfaceAt(seconds, europaTunnelActive);
       ground.visible = ice.groundVisible && !europaBossArenaActive;
-      moon.visible = atmosphere.visible = ice.orbitalVisible;
+      // The destination-vista moon is the ONE valid orbital body. The legacy
+      // generic moon and halo were duplicating Europa during the approach.
+      moon.visible = false;
+      atmosphere.visible = false;
+      // Use the existing transparent terrain shader for a smooth dissolve,
+      // rather than suddenly switching from empty space to an opaque floor.
+      terrainMat.uniforms.launchGroundAlpha.value = ice.surface;
       scene.fog.color.lerp(new T.Color(ice.fogTint), ice.surface * 0.87);
-      scene.fog.density = T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface);
+      scene.fog.density =
+        T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface) + state.haze * 0.006;
+      // Mist is a transition curtain, not permanent blur in the playable
+      // canyon. The fog clears completely as the ship leaves the fissure.
+      // The global flight floor stays hidden during the physical tunnel,
+      // while OUTER canyon shelves and cliffs can remain in view. All of
+      // those authored meshes are beyond the +/-72 flight envelope.
+      const showIceBackdrop =
+        !europaBossArenaActive && (ice.groundVisible || (europaTunnelActive && seconds >= 25));
       updateEuropaSurface(
         sectorScenery.getObjectByName('europa-frozen-surface'),
         seconds,
-        ice.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+        showIceBackdrop,
         destinationGraphicsQuality === 'high',
       );
     }
@@ -1931,7 +1964,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         continue;
       // The ice corridor is decorative, not a boss hazard. Arrival updates
       // must never restore foreground objects while Colossus is fighting.
-      if (europaBossArenaActive && child.userData.europaForeground) {
+      if (
+        europaBossArenaActive &&
+        (child.userData.europaForeground || child.name === 'alien-architecture-ice')
+      ) {
         child.visible = false;
         continue;
       }
@@ -1946,6 +1982,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       } else if (!child.userData.arrivalWasRevealed) {
         child.visible = child.userData.arrivalInitiallyVisible;
         child.userData.arrivalWasRevealed = true;
+      }
+      if (destinationIndex === 5 && child.userData.fixedSky && child !== destinationVista) {
+        // Never overwrite an authored object's base position. The glacier and
+        // distant ruins arrive together, preserving parallax and their layout.
+        const initialY =
+          child.userData.europaArrivalBaseY ??
+          (child.userData.europaArrivalBaseY = child.position.y);
+        child.position.y = initialY + (state.terrainLift ?? 0);
       }
     }
     if (destinationIndex === 3) {
@@ -2064,6 +2108,10 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
     setGraphicsQuality(quality) {
       destinationGraphicsQuality = quality;
       setDestinationLandmarkQuality(destinationLandmarks, quality);
+      setAlienArchitectureQuality(
+        sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
+        quality,
+      );
       setLivingWorldQuality(
         sectorScenery.getObjectByName('world-living-depth-' + sceneryTheme),
         quality,
@@ -2112,12 +2160,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (sceneryTheme === 'ice') {
         const state = europaSurfaceAt(europaArrivalSeconds, europaTunnelActive);
         ground.visible = state.groundVisible && !europaBossArenaActive;
+        const showIceBackdrop =
+          !europaBossArenaActive &&
+          (state.groundVisible || (europaTunnelActive && europaArrivalSeconds >= 25));
         updateEuropaSurface(
           sectorScenery.getObjectByName('europa-frozen-surface'),
           europaArrivalSeconds,
-          state.surface > 0.16 && !europaTunnelActive && !europaBossArenaActive,
+          showIceBackdrop,
           destinationGraphicsQuality === 'high',
         );
+        // The physical cave reads as a frozen canyon, not a doorway in
+        // star-filled empty space. No sky changes persist after tunnel exit.
+        if (europaTunnelActive) starfield.material.opacity = 0.08;
       }
       return europaTunnelActive;
     },
@@ -2129,9 +2183,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       ground.position.y = europaBossArenaActive ? floorY : -7;
       if (europaBossArenaActive) europaTunnelActive = false;
       const surface = sectorScenery.getObjectByName('europa-frozen-surface');
-      if (surface) surface.visible = !europaBossArenaActive && !europaTunnelActive;
+      if (surface)
+        surface.visible =
+          !europaBossArenaActive &&
+          (europaTunnelActive || europaSurfaceAt(europaArrivalSeconds).groundVisible);
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
+      const buriedVaults = sectorScenery.getObjectByName('alien-architecture-ice');
+      if (buriedVaults) buriedVaults.visible = !europaBossArenaActive;
       // Preserve the glacier skyline, but move its near spires to the second
       // and third planes so none crosses the camera-to-boss sightline.
       if (destinationLandmarks) destinationLandmarks.position.z = europaBossArenaActive ? -280 : 0;
@@ -2436,21 +2495,47 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         // Legacy: sixty separate low-detail meshes cost sixty draw calls.
         // Preserve their authored positions/rotations in ONE instanced batch,
         // outside the x±72 flight lane, with no invisible collision surfaces.
+        // The old ice field was 60 primitive white cones. Reuse the same
+        // instanced glacier sculpture as Europa's authored surface instead.
         const geo =
-          sceneryTheme === 'ice' ? new T.ConeGeometry(9, 80, 5) : new T.IcosahedronGeometry(12, 1);
-        const field = new T.InstancedMesh(geo, mat, 60);
+          sceneryTheme === 'ice'
+            ? createEuropaGlacialRidgeGeometry()
+            : new T.IcosahedronGeometry(12, 1);
+        if (sceneryTheme === 'ice') geo.scale(9, 80, 9);
+        const fieldMaterial =
+          sceneryTheme === 'ice'
+            ? new T.MeshStandardMaterial({
+                color: '#ffffff',
+                vertexColors: true,
+                roughness: 0.62,
+                metalness: 0.04,
+                flatShading: true,
+              })
+            : mat;
+        // Europa has a distinct hero vault and authored ridges now; reserve
+        // more negative space around it and fewer repeated background cliffs.
+        const fieldCount = sceneryTheme === 'ice' ? 40 : 60;
+        const field = new T.InstancedMesh(geo, fieldMaterial, fieldCount);
         field.name = 'premium-instanced-' + sceneryTheme + '-far-field';
         field.userData.visualOnly = true;
         field.frustumCulled = false;
         const transform = new T.Object3D();
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < fieldCount; i++) {
+          // Europa now has authored cliffs and an alien monument inside the
+          // visible scenic lanes. Keep the older ridges as distant mountains,
+          // not giant spinning blocks that hide crystals and architecture.
+          const europaBackdrop = sceneryTheme === 'ice';
           transform.position.set(
-            (i % 2 ? 1 : -1) * rnd(125, 260),
-            sceneryTheme === 'ice' ? -5 : rnd(-100, 160),
-            -i * 22,
+            (i % 2 ? 1 : -1) * (europaBackdrop ? rnd(210, 330) : rnd(125, 260)),
+            europaBackdrop ? -5 : rnd(-100, 160),
+            europaBackdrop ? -250 - i * 30 : -i * 22,
           );
-          transform.scale.setScalar(rnd(0.5, 2.5));
-          transform.rotation.set(rnd(0, 3), rnd(0, 3), rnd(0, 3));
+          transform.scale.setScalar(europaBackdrop ? rnd(0.55, 1.3) : rnd(0.5, 2.5));
+          transform.rotation.set(
+            europaBackdrop ? 0 : rnd(0, 3),
+            rnd(0, 3),
+            europaBackdrop ? 0 : rnd(0, 3),
+          );
           transform.updateMatrix();
           field.setMatrixAt(i, transform.matrix);
         }
@@ -2464,68 +2549,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         sectorScenery.add(createMothershipInterior());
         sectorScenery.add(createMothershipApproach());
       }
-      if (
-        ['void', 'throne', 'sun', 'nebula'].includes(sceneryTheme) &&
-        !(dynamicFlight && sceneryTheme === 'throne')
-      ) {
-        const orb = new T.Mesh(
-          new T.SphereGeometry(135, 32, 20),
-          sceneryTheme === 'sun' ? light : metal('#05020a', 0, 1),
-        );
-        orb.position.set(90, 90, -600);
-        sectorScenery.add(orb);
-        for (let i = 0; i < 4; i++) {
-          const disk = new T.Mesh(new T.TorusGeometry(160 + i * 18, 1 + i * 0.5, 6, 96), light);
-          disk.position.copy(orb.position);
-          disk.rotation.x = 0.9;
-          disk.rotation.y = 0.2;
-          sectorScenery.add(disk);
-        }
+      // The former generic planet plus four decorative torus rings made
+      // Venus, Neptune, Orion and Titan look like recolored copies of one map.
+      // Distant pyramids, buried vaults and engineered citadels now provide
+      // distinct silhouettes with no extra collision or targeting geometry.
+      if (dynamicFlight && ANCIENT_WORLD_THEMES[sceneryTheme]) {
+        sectorScenery.add(createAlienArchitecture(sceneryTheme, destinationGraphicsQuality));
       }
-      if (dynamicFlight && sceneryTheme === 'throne') {
-        const hole = new T.Group();
-        hole.userData.fixedSky = true;
-        hole.position.set(0, 125, -850);
-        hole.scale.setScalar(1.35);
-        const black = new T.Mesh(
-          new T.SphereGeometry(122, 48, 32),
-          new T.MeshBasicMaterial({ color: '#000003', fog: false }),
-        );
-        hole.add(black);
-        const disk = new T.Mesh(
-          new T.RingGeometry(130, 310, 128, 4),
-          new T.ShaderMaterial({
-            side: T.DoubleSide,
-            transparent: true,
-            depthWrite: false,
-            vertexShader:
-              'varying vec3 p; void main(){p=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-            fragmentShader:
-              'varying vec3 p; void main(){float r=length(p.xy);float band=.6+.4*sin(r*1.5);float a=(1.-smoothstep(200.,310.,r))*smoothstep(130.,142.,r);vec3 c=mix(vec3(1.,.25,.035),vec3(1.,.88,.5),pow(1.-clamp((r-130.)/180.,0.,1.),2.));gl_FragColor=vec4(c*(1.5+band),a);}',
-          }),
-        );
-        disk.rotation.x = 1.34;
-        disk.rotation.z = -0.12;
-        hole.add(disk);
-        for (const radius of [125, 135]) {
-          const ring = new T.Mesh(
-            new T.TorusGeometry(radius, radius === 125 ? 1.8 : 5, 8, 128),
-            new T.MeshBasicMaterial({
-              color: radius === 125 ? '#fff0c8' : '#faab52',
-              transparent: true,
-              opacity: radius === 125 ? 1 : 0.38,
-              fog: false,
-            }),
-          );
-          ring.scale.y = radius === 125 ? 1 : 1.14;
-          hole.add(ring);
-        }
-        hole.traverse((o) => {
-          o.userData.fixedSky = true;
-        });
-        sectorScenery.add(hole);
-      }
-      if (dynamicFlight && ['asteroids', 'nebula'].includes(sceneryTheme)) {
+      // Only the asteroid sector keeps its actual, single gameplay gateway.
+      if (dynamicFlight && sceneryTheme === 'asteroids') {
         const gateway = new T.Mesh(new T.TorusGeometry(32, 3, 8, 64), light);
         gateway.position.set(0, 10, -390);
         gateway.userData.conduit = true;
@@ -2533,70 +2565,67 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         gateway.add(inner);
         sectorScenery.add(gateway);
       }
-      // The station is now a physical hangar/engine room, not extra torus rings.
-      // Each non-Earth location has a different silhouette, palette and traversal
-      // grammar. No universal orbital torus corridor or broken moon in every stage.
-      // Saturn: the abandoned seven-frigate debris field obscured the rings.
-      // The singular distant warship and authored icy landmark layers remain;
-      // scattered wrecks do not repeat throughout this orbital battlefield.
+      // Preserve the old world's recognisable landmarks, but remodel their
+      // silhouettes so they are not another field of glowing torus rings.
+      // All three remain distant, visual-only and clear of the pilot lane.
       if (dynamicFlight && sceneryTheme === 'nebula') {
-        for (let i = 0; i < 12; i++) {
-          const root = new T.Group();
-          root.name = 'bio-nebula-spire';
-          const stalk = new T.Mesh(new T.ConeGeometry(12 + (i % 4) * 3, 85 + (i % 3) * 24, 5), mat);
-          stalk.rotation.z = (i % 2 ? 1 : -1) * 0.4;
-          root.add(stalk);
-          for (let j = 0; j < 3; j++) {
-            const node = new T.Mesh(new T.IcosahedronGeometry(6 + j * 2, 1), light);
-            node.position.set(j * 8 - 8, 16 + j * 23, 0);
-            root.add(node);
-          }
-          root.position.set((i % 2 ? 1 : -1) * (90 + (i % 3) * 28), 25, -130 - i * 105);
-          sectorScenery.add(root);
+        const spire = new T.Group();
+        spire.name = 'bio-nebula-spire';
+        spire.userData.visualOnly = true;
+        spire.userData.fixedSky = true;
+        spire.position.set(-205, -22, -565);
+        const trunk = new T.Mesh(new T.CylinderGeometry(11, 26, 142, 7), mat);
+        trunk.position.y = 66;
+        spire.add(trunk);
+        for (let i = 0; i < 3; i++) {
+          const blossom = new T.Mesh(new T.IcosahedronGeometry(17 + i * 5, 1), light);
+          blossom.position.set(i % 2 ? 27 : -22, 80 + i * 31, (i - 1) * 12);
+          blossom.scale.set(0.78, 1.4, 0.74);
+          spire.add(blossom);
         }
-      }
-      if (dynamicFlight && sceneryTheme === 'sun') {
-        for (let i = 0; i < 10; i++) {
-          const plasma = new T.Mesh(
-            new T.TorusGeometry(55 + (i % 3) * 14, 3, 7, 32, Math.PI * 1.1),
-            light,
-          );
-          plasma.name = 'solar-plasma-arc';
-          plasma.rotation.set(i * 0.12, 0.4 + i * 0.2, i * 0.31);
-          plasma.position.set((i % 2 ? 1 : -1) * 84, 42 + i * 8, -180 - i * 130);
-          sectorScenery.add(plasma);
-        }
+        sectorScenery.add(spire);
       }
       if (dynamicFlight && sceneryTheme === 'void') {
-        for (let i = 0; i < 9; i++) {
-          const lens = new T.Group();
-          lens.name = 'orion-gravitational-lens';
-          const outer = new T.Mesh(new T.TorusGeometry(35 + i * 2, 2, 8, 60), light);
-          outer.rotation.y = (i % 2 ? -1 : 1) * 0.9;
-          lens.add(outer);
-          lens.add(new T.Mesh(new T.IcosahedronGeometry(13, 1), mat));
-          lens.position.set((i % 2 ? 1 : -1) * (85 + i * 3), 45, -160 - i * 155);
-          sectorScenery.add(lens);
+        const lens = new T.Group();
+        lens.name = 'orion-gravitational-lens';
+        lens.userData.visualOnly = true;
+        lens.userData.fixedSky = true;
+        lens.position.set(220, -18, -665);
+        const core = new T.Mesh(new T.OctahedronGeometry(45, 0), mat);
+        core.position.y = 90;
+        core.scale.set(0.8, 1.65, 0.8);
+        lens.add(core);
+        for (const side of [-1, 1]) {
+          const shard = new T.Mesh(new T.TetrahedronGeometry(24, 0), light);
+          shard.position.set(side * 77, 114, side * 8);
+          shard.rotation.z = side * 0.3;
+          lens.add(shard);
         }
+        sectorScenery.add(lens);
       }
       if (dynamicFlight && sceneryTheme === 'throne') {
-        for (let i = 0; i < 7; i++) {
-          const gate = new T.Group();
-          gate.name = 'marvin-fortress-gate';
-          for (const side of [-1, 1]) {
-            gate.add(box(14, 100 + i * 8, 20, mat, side * 95, 40, 0));
-            gate.add(box(3, 72, 25, light, side * 96, 43, 12));
-          }
-          gate.add(box(200, 12, 30, mat, 0, 97 + i * 4, 0));
-          gate.position.z = -220 - i * 195;
-          sectorScenery.add(gate);
+        const gate = new T.Group();
+        gate.name = 'marvin-fortress-gate';
+        gate.userData.visualOnly = true;
+        gate.userData.fixedSky = true;
+        gate.position.set(0, -12, -740);
+        for (const side of [-1, 1]) {
+          gate.add(box(23, 155, 34, mat, side * 120, 66, 0));
+          gate.add(box(4, 105, 35, light, side * 121, 80, 5));
         }
+        gate.add(box(263, 18, 43, mat, 0, 150, 0));
+        gate.add(box(78, 8, 44, light, 0, 163, 0));
+        sectorScenery.add(gate);
       }
-      // Materials unused by a theme are disposed immediately.
-      if (!sectorScenery.children.length) {
+      // Dispose only unattached materials, including in missions that now
+      // use their own independent instanced architecture.
+      if (
+        !['asteroids', 'nebula', 'sun'].includes(sceneryTheme) &&
+        !(dynamicFlight && ['void', 'throne'].includes(sceneryTheme))
+      )
         mat.dispose();
+      if (!(dynamicFlight && ['asteroids', 'nebula', 'void', 'throne'].includes(sceneryTheme)))
         light.dispose();
-      }
       if (dynamicFlight) {
         // Earth, Mars and the asteroid already have their own authored arrivals.
         if (DESTINATION_PROFILES[destinationIndex]) {
@@ -2631,6 +2660,14 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         time,
         travel,
       });
+      if (playing) {
+        // Authored monuments pass the flight path as a slow parallax layer.
+        // Instancing keeps their cost bounded, and the center lane remains free.
+        updateAlienArchitecture(
+          sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
+          travel,
+        );
+      }
       if (playing) {
         travel += speed * dt;
         // Ease the *visual* street motion out during vertical climb. The
