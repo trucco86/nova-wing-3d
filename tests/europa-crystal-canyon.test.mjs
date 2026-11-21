@@ -100,7 +100,7 @@ test('mobile Medium mode removes violet crystal draw while preserving canyon and
   assert.equal(EUROPA_CANYON_BUDGET.decorativeDrawsMedium, 6);
 });
 
-test('the real Europa mission reveals the canyon after descent, hides it in tunnel and boss', () => {
+test('the real Europa mission retains distant canyon in tunnel, hides ground and clears boss sightline', () => {
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
   world.setSector(SECTORS[5], 5);
@@ -144,8 +144,13 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   );
   assert.equal(canyon.getObjectByName('europa-canyon-crystal-cyan').visible, true);
   assert.equal(world.setEuropaTunnel(true), true);
-  assert.equal(surface.visible, false);
-  assert.equal(ground.visible, false);
+  assert.equal(surface.visible, true, 'only the distant noncolliding canyon remains');
+  assert.equal(ground.visible, false, 'coplanar tunnel floor cannot render twice');
+  assert.equal(
+    canyon.getObjectByName('europa-canyon-grounded-cliffs')?.visible,
+    true,
+    'cliff skyline visually surrounds the cavern, outside the flight corridor',
+  );
   world.setEuropaTunnel(false);
   assert.equal(surface.visible, true);
   world.setEuropaBossArena(true, -83);
