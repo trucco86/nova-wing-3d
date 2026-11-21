@@ -2239,9 +2239,15 @@ export function createGame({
       // Rotate distinct original cannon transients to avoid a constant
       // descending beep during sustained fire. No extra simultaneous voices.
       shotVolley++;
-      cue(robotMode
-        ? shotVolley % 3 === 0 ? 'mechaShotAlt' : 'mechaShot'
-        : shotVolley % 3 === 0 ? 'shotAlt' : 'shot');
+      cue(
+        robotMode
+          ? shotVolley % 3 === 0
+            ? 'mechaShotAlt'
+            : 'mechaShot'
+          : shotVolley % 3 === 0
+            ? 'shotAlt'
+            : 'shot',
+      );
     } else sound(900 + weapon * 110);
     shotCd = dynamicFlight
       ? mechaShotCooldown(
@@ -6061,10 +6067,7 @@ export function createGame({
             ? '⚠ ROBÔS SENTINELAS · CANHÕES DAS PAREDES CARREGANDO'
             : '⚠ PULSO DO REATOR · DESVIE DA ZONA MARCADA'
           : 'SABOTAGEM · ' + sabotagePhase.label;
-        $('attackWarning').setAttribute?.(
-          'data-severity',
-          armed ? 'danger' : 'info',
-        );
+        $('attackWarning').setAttribute?.('data-severity', armed ? 'danger' : 'info');
       }
       if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=

@@ -25,18 +25,31 @@ test('the wall guard has a telegraphed charge before firing at a latched positio
   let state = createDevastadorDefenseState();
   assert.equal(advanceDevastadorDefense(state, { age: 3, parts: parts() }).event, null);
   const warn = advanceDevastadorDefense(state, {
-    age: 4.5, parts: parts(), playerX: 15, playerY: 18, playerZ: 30,
+    age: 4.5,
+    parts: parts(),
+    playerX: 15,
+    playerY: 18,
+    playerZ: 30,
   });
   assert.deepEqual(warn.event, {
-    type: 'warning', kind: 'sentinels', indices: [0, 1], seconds: DEVASTADOR_DEFENSE_WARNING,
+    type: 'warning',
+    kind: 'sentinels',
+    indices: [0, 1],
+    seconds: DEVASTADOR_DEFENSE_WARNING,
   });
   state = warn.state;
   assert.equal(advanceDevastadorDefense(state, { age: 5.3, parts: parts() }).event, null);
   const fire = advanceDevastadorDefense(state, {
-    age: 5.76, parts: parts(), playerX: -38, playerY: -15, playerZ: -60,
+    age: 5.76,
+    parts: parts(),
+    playerX: -38,
+    playerY: -15,
+    playerZ: -60,
   });
   assert.deepEqual(fire.event, {
-    type: 'fire', kind: 'sentinels', indices: [0, 1],
+    type: 'fire',
+    kind: 'sentinels',
+    indices: [0, 1],
     target: { x: 15, y: 18, z: 30 },
   });
   assert.equal(fire.state.fired, 1);
@@ -55,16 +68,21 @@ test('destroying a regulator disarms its linked wall robot immediately', () => {
   assert.equal(devastadorDefenseOnline(damage).pulse, true);
   for (const part of damage) part.hp = 0;
   assert.equal(devastadorDefenseOnline(damage).systems, 0);
-  assert.equal(advanceDevastadorDefense(createDevastadorDefenseState(), {
-    age: 50, parts: damage,
-  }).event, null);
+  assert.equal(
+    advanceDevastadorDefense(createDevastadorDefenseState(), {
+      age: 50,
+      parts: damage,
+    }).event,
+    null,
+  );
 });
 
 test('breaking the final powered robot during its windup cancels the attack', () => {
   const damage = parts();
   for (let i = 1; i < 4; i++) damage[i].hp = 0;
   let state = advanceDevastadorDefense(createDevastadorDefenseState(), {
-    age: 4.5, parts: damage,
+    age: 4.5,
+    parts: damage,
   }).state;
   assert.deepEqual(state.armed.indices, [0]);
   damage[0].hp = 0;
@@ -102,9 +120,12 @@ test('special heavy robot busts stay attached to the walls and use visible arm m
     assert.ok(sentinel.muzzle.name.includes('devastador-wall-sentinel-muzzle'));
     assert.equal(sentinel.mount.getObjectByName('sentinel-legs'), undefined);
   }
-  updateDevastadorSabotageCore(model, { time: 10, defense: {
-    armed: { kind: 'sentinels', indices: [0], fireAt: 11, target: { x: 0, y: 0, z: 0 } },
-  } });
+  updateDevastadorSabotageCore(model, {
+    time: 10,
+    defense: {
+      armed: { kind: 'sentinels', indices: [0], fireAt: 11, target: { x: 0, y: 0, z: 0 } },
+    },
+  });
   assert.equal(sentinels[0].upper.visible, true);
   assert.ok(sentinels[0].upper.position.z > -3);
   assert.ok(sentinels[0].arms[0].muzzle.scale.x > 1.3);
