@@ -42,12 +42,16 @@ function segmentEntry(x0, z0, dx, dz, block, expand = 1.1) {
 export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   const safe = orbit9CameraState(state);
   const survey = safe.mode === 'survey';
+  const portrait = Number.isFinite(state?.aspect) && state.aspect < 0.78;
   // The original 15m, 10.5m-high follow camera looked down at the deck:
   // portrait and landscape screenshots showed mostly empty floor and hid
   // the carrier architecture. Follow from shoulder height and look 7.5m
   // ahead of the cat. Survey mode deliberately keeps the bird's-eye view.
-  const distance = survey ? 30 : 11.8;
-  const shoulder = survey ? 0 : 1.1;
+  // Portrait has less horizontal field of view and the cat otherwise fills
+  // most of the screen. Extend the camera back along the landing deck only
+  // for that layout, leaving the approved landscape framing unchanged.
+  const distance = survey ? 30 : portrait ? 17 : 11.8;
+  const shoulder = survey ? 0 : portrait ? 0.8 : 1.1;
   const cos = Math.cos(safe.yaw);
   const sin = Math.sin(safe.yaw);
   const lookAhead = survey ? 0 : 7.5;
@@ -73,11 +77,17 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   return {
     eye: {
       x: clamp(x + dx * fraction, ORBIT9_BOUNDS.minX - 2, ORBIT9_BOUNDS.maxX + 2),
-      y: survey ? 25 * (0.5 + 0.5 * fraction) : 6.1 * (0.7 + 0.3 * fraction),
-      z: clamp(z + dz * fraction, ORBIT9_BOUNDS.minZ - 2, ORBIT9_BOUNDS.maxZ + 3),
+      y: survey
+        ? 25 * (0.5 + 0.5 * fraction)
+        : (portrait ? 7.1 : 6.1) * (0.7 + 0.3 * fraction),
+      z: clamp(
+        z + dz * fraction,
+        ORBIT9_BOUNDS.minZ - 2,
+        ORBIT9_BOUNDS.maxZ + (portrait && !survey ? 16 : 3),
+      ),
     },
     aim,
-    fov: survey ? 68 : 52,
+    fov: survey ? 68 : portrait ? 59 : 52,
     clipped: fraction < 0.99,
   };
 }
