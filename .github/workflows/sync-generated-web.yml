@@ -34,6 +34,7 @@ on:
       - test/qa164-asteroid-subboss-real-progression-20261119
       - test/qa165-asteroid-boss-victory-sequence-20261119
       - fix/qa166-asteroid-boss-portrait-framing-20261120
+      - release/lot1-stabilization-20261121
 permissions:
   contents: write
   actions: write
@@ -152,6 +153,10 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa166-asteroid-boss-portrait-framing-20261120" ]; then
             git add -u
             git add -- releases/v1.27.158.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "release/lot1-stabilization-20261121" ]; then
+            # QA166.1: synchronize actual gameplay sources, tests and generated web for review.
+            git add -u
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
