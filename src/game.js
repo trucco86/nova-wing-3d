@@ -6432,6 +6432,14 @@ export function createGame({
           toggleRobot();
         }
       }
+      // Render tick has its own lexical scope; read the exact cinematic
+      // interval instead of referencing updatePiloting()'s local variable.
+      const europaAutoBoost =
+        dynamicFlight &&
+        sectorIndex === 5 &&
+        !boss &&
+        state === 'playing' &&
+        europaDescentAt(elapsed).approachBoost;
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
