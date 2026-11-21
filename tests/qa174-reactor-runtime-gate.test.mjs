@@ -97,7 +97,7 @@ test('QA174 renderer rejection cannot trap the pilot in the reactor-access state
   assert.equal(h.game.enterReactorAccessForQA(), false);
   assert.equal(calls, 1);
   assert.equal(h.game.snapshot().state, 'paused', 'failed WebGL must expose pause/exit controls');
-  assert.equal(h.elements.pauseMenu.hidden, false);
+  assert.equal(h.elements.get('pauseMenu').hidden, false);
   assert.equal(h.game.snapshot().reactorAccess.completed, false);
 });
 
@@ -117,5 +117,5 @@ test('QA175 a renderer exception fails closed to the pause menu without bypassin
   assert.equal(snap.sector, 4);
   assert.equal(snap.boss, false);
   assert.equal(snap.reactorAccess.completed, false);
-  assert.equal(h.elements.pauseMenu.hidden, false);
+  assert.equal(h.elements.get('pauseMenu').hidden, false);
 });
