@@ -471,8 +471,10 @@ export function installOrbit9ExplorationPreview(
     // the collision capsule, trigger flight rolls or change progression.
     let spinAngle = 0;
     if (spinElapsed >= 0) {
-      spinElapsed += dt;
-      const t = Math.min(1, spinElapsed / SPIN_SECONDS);
+      // dt is deliberately capped for collision safety. The 360-degree
+      // action must use real time; otherwise low-FPS devices take several
+      // seconds to complete an intended 720ms rotation.
+      const t = Math.min(1, Math.max(0, (stamp - spinElapsed) / (SPIN_SECONDS * 1000)));
       spinAngle = Math.PI * 2 * (t * t * (3 - 2 * t));
       if (t >= 1) {
         spinElapsed = -1;
@@ -688,7 +690,7 @@ export function installOrbit9ExplorationPreview(
   });
   listen(spinButton, 'click', () => {
     if (!active || spinElapsed >= 0 || !dialoguePanel.hidden || !choicePanel.hidden) return;
-    spinElapsed = 0;
+    spinElapsed = performance.now();
     spinButton.classList.add('pressed');
   });
   listen(viewport, 'pointerdown', (event) => {
