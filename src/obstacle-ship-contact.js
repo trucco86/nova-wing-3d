@@ -36,7 +36,12 @@ export function createObstacleShipResolver() {
     clearance.y = radius;
     clearance.z = radius;
     let collided = false;
-    for (const volume of obstacle.userData.solids) {
+    const solids = obstacle.userData.solids;
+    // A baffle can deflect the ship into a previously checked wall.
+    // Recheck the entire compound until no position changes.
+    for (let pass = 0; pass < solids.length + 1; pass++) {
+      let changed = false;
+      for (const volume of solids) {
       // Only solid parts of the compound object exist here. Europa's breach
       // removes its panel from this array when it breaks.
       center.x = obstacle.position.x + volume.center.x;
@@ -52,15 +57,31 @@ export function createObstacleShipResolver() {
       contact.previousX = center.x;
       contact.previousY = center.y;
       contact.previousZ = center.z - travel;
-      if (
-        resolveCitySolidContact(previous, next, contact, {
-          clearance,
-          laneLimit,
-          minY,
-          maxY,
-        })
-      )
+      const oldX = next.x;
+      const oldY = next.y;
+      const oldZ = next.z;
+      if (resolveCitySolidContact(previous, next, contact, {
+        clearance,
+        laneLimit,
+        minY,
+        maxY,
+      })) {
         collided = true;
+        if (next.x !== oldX || next.y !== oldY || next.z !== oldZ) changed = true;
+      }
+      }
+      if (!changed) break;
+    }
+    // Never return inside another part of the compound if the incoming
+    // position was clear. Fall back to the last safe position.
+    const overlaps = (position) => solids.some((volume) =>
+      Math.abs(position.x - obstacle.position.x - volume.center.x) < volume.half.x + radius &&
+      Math.abs(position.y - obstacle.position.y - volume.center.y) < volume.half.y + radius &&
+      Math.abs(position.z - obstacle.position.z - volume.center.z) < volume.half.z + radius
+    );
+    if (overlaps(next) && !overlaps(previous)) {
+      next.copy(previous);
+      collided = true;
     }
     return collided;
   };
