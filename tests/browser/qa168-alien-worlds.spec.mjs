@@ -118,6 +118,8 @@ test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital 
   if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?qaSurface=5');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  const sector = await page.evaluate(() => window.fixture.game.snapshot().sector);
+  expect(sector).toBe(6); // The real Europa stage, never Earth.
   await page.evaluate(() => window.fixture.advance(3));
   const approach = await page.evaluate(() => window.fixture.europaBoostWeatherState());
   expect(approach.boostVisible).toBe(true);
