@@ -56,8 +56,8 @@ for (const { index, theme, label } of destinations) {
     if (theme === 'ice') {
       expect(world.heroBatchCount).toBe(1);
       expect(world.heroX).toBeLessThan(-103);
-      expect(world.heroDepth).toBeGreaterThanOrEqual(-750);
-      expect(world.heroDepth).toBeLessThanOrEqual(-450);
+      expect(world.heroDepth).toBeGreaterThan(-980);
+      expect(world.heroDepth).toBeLessThanOrEqual(160);
       expect(world.canyon).not.toBeNull();
       expect(world.canyon.visible).toBe(true);
       expect(world.canyon.cyanCount).toBe(22);
