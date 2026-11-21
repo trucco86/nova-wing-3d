@@ -15,7 +15,9 @@ test('stage 6 descends to a frozen surface without a second moon or flashing glo
   expect(orbit.sector).toBe(6);
   expect(orbit.europaSurface?.orbitalVisible).toBe(false);
   expect(orbit.europaSurface?.destinationGlobeVisible).toBe(false);
-  expect(orbit.europaSurface?.surfaceVisible).toBe(false);
+  // In the corrected transition the actual glacial vista is already
+  // rendering behind a dense orbit-entry ice curtain at 11 seconds.
+  expect(orbit.europaSurface?.surfaceVisible).toBe(true);
 
   const landing = await page.evaluate(() => {
     window.fixture.advance(15);
