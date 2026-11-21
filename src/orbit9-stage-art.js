@@ -139,6 +139,20 @@ export function createOrbit9StageArt() {
   }
   emit('armor', 0, 18.2, -44, 17.5, 2.8, 22);
   emit('cyan', 0, 20, -44, 10, 0.4, 12);
+  // The front of the large reactor collider was a featureless opaque slab
+  // when approached from the hangar. Cladding and exposed cooling vanes
+  // turn it into readable Devastador machinery without changing collision.
+  emit('hull', 0, 14.3, -33.4, 13.2, 1.25, 1.1);
+  emit('armor', 0, 2.6, -33.4, 13.2, 1.25, 1.1);
+  for (const side of [-1, 1]) {
+    emit('armor', side * 6.45, 8.4, -33.3, 0.85, 10.8, 1.0);
+    emit('hazard', side * 6.35, 13.0, -32.6, 0.28, 1.2, 0.22);
+    emit('cyan', side * 5.6, 8.6, -32.62, 0.18, 7.4, 0.24);
+  }
+  for (const y of [4.5, 11.8]) {
+    emit('conduit', 0, y, -32.7, 8.8, 0.58, 0.48);
+    emit('amber', 0, y + 0.43, -32.4, 8.8, 0.16, 0.18);
+  }
   // Laboratory: terminals and diagnostic glass close to the WEST wall.
   for (const z of [-18, -28, -38]) {
     emit('plating', -50, 3.3, z, 3.7, 5.4, 5.8);
@@ -224,6 +238,23 @@ export function createOrbit9StageArt() {
   dial.userData.visualOnly = true;
   root.add(dial);
   root.userData.diagnosticDial = dial;
+  // A readable ring in front of the physical reactor blocker, facing the
+  // incoming cat. Its geometry is visual-only and rotates independently of
+  // the elevated maintenance diagnostic to communicate an energized core.
+  const faceRing = new T.Mesh(
+    new T.TorusGeometry(4.35, 0.32, 8, 48),
+    new T.MeshBasicMaterial({
+      color: ORBIT9_DEVASTADOR_PALETTE.cyan,
+      toneMapped: false,
+    }),
+  );
+  faceRing.name = 'devastador-reactor-front-energy-ring';
+  faceRing.position.set(0, 8.7, -31.85);
+  faceRing.userData.visualOnly = true;
+  faceRing.castShadow = false;
+  faceRing.receiveShadow = false;
+  root.add(faceRing);
+  root.userData.reactorFaceRing = faceRing;
   root.userData.instanceCounts = Object.fromEntries(
     FORMATS.map((name) => [name, definitions[name].length]),
   );
@@ -234,4 +265,5 @@ export function updateOrbit9StageArt(root, elapsed) {
   if (!root?.userData?.diagnosticDial) return;
   const t = Number.isFinite(elapsed) ? elapsed : 0;
   root.userData.diagnosticDial.rotation.z = t * 0.16;
+  if (root.userData.reactorFaceRing) root.userData.reactorFaceRing.rotation.z = -t * 0.12;
 }
