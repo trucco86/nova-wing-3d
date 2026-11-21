@@ -59,8 +59,8 @@ test('automatic super boost draws only one deterministic white speed-streak batc
   );
 });
 
-test('three bounded weather windows add snow without hiding the whole Europa mission', () => {
-  for (const second of [0, 9.9, 40, 44, 62, 69, 84, 90]) {
+test('four bounded snowstorm windows pace the extended Europa mission', () => {
+  for (const second of [0, 9.9, 40, 44, 69, 100, 131, 134]) {
     const weather = europaWeatherAt(second);
     assert.equal(weather.phase, 'clear');
     assert.equal(weather.active, false);
@@ -71,6 +71,7 @@ test('three bounded weather windows add snow without hiding the whole Europa mis
     [28, 'ice-squall'],
     [53, 'ice-squall'],
     [75, 'light-snow'],
+    [115, 'light-snow'],
   ]) {
     const weather = europaWeatherAt(second);
     assert.equal(weather.phase, phase);

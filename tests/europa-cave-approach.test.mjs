@@ -9,11 +9,11 @@ import {
 } from '../src/europa-cave-approach.js';
 test('glacial cave grows from deep approach before physical deck takes ownership', () => {
   assert.ok(EUROPA_CAVE_SPAWN_Z < -900);
-  const distant = europaCaveApproachAt(EUROPA_CAVE_SPAWN_Z, 940);
-  const approach = europaCaveApproachAt(-450, 940);
-  const align = europaCaveApproachAt(-70, 940);
-  const entry = europaCaveApproachAt(-10, 940);
-  const farExit = europaCaveApproachAt(1030, 940);
+  const distant = europaCaveApproachAt(EUROPA_CAVE_SPAWN_Z, 1500);
+  const approach = europaCaveApproachAt(-450, 1500);
+  const align = europaCaveApproachAt(-70, 1500);
+  const entry = europaCaveApproachAt(-10, 1500);
+  const farExit = europaCaveApproachAt(1590, 1500);
   assert.deepEqual(
     [distant.phase, approach.phase, align.phase, entry.phase, farExit.phase],
     ['distant', 'approach', 'align', 'inside', 'exit'],
@@ -24,8 +24,8 @@ test('glacial cave grows from deep approach before physical deck takes ownership
   assert.ok(approach.visualIntensity > distant.visualIntensity);
   assert.ok(entry.cameraIntensity > approach.cameraIntensity);
   assert.ok(EUROPA_CAVE_HANDOFF_DISTANCE < 40);
-  assert.deepEqual(europaCaveApproachAt(-70, 940), europaCaveApproachAt(-70, 940));
-  assert.throws(() => europaCaveApproachAt(Infinity, 940), RangeError);
+  assert.deepEqual(europaCaveApproachAt(-70, 1500), europaCaveApproachAt(-70, 1500));
+  assert.throws(() => europaCaveApproachAt(Infinity, 1500), RangeError);
   assert.throws(() => europaCaveApproachAt(-300, 0), RangeError);
 });
 

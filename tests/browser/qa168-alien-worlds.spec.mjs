@@ -83,7 +83,7 @@ for (const { index, theme, label } of destinations) {
   });
 }
 
-test('QA168 Europa: long 940-unit frozen cave approaches naturally with visible ice optical flow', async ({
+test('QA168 Europa: long 1500-unit frozen cave approaches naturally with visible ice optical flow', async ({
   page,
 }, info) => {
   test.setTimeout(120000);
@@ -95,25 +95,29 @@ test('QA168 Europa: long 940-unit frozen cave approaches naturally with visible 
   expect(cave).not.toBeNull();
   expect(cave.visualOnly).toBe(true);
   expect(cave.visible).toBe(true);
-  expect(cave.length).toBe(940);
+  expect(cave.length).toBe(1500);
   expect(cave.breachPanel).toBe(true);
+  expect(cave.batches.some((batch) => batch.name.includes('gate'))).toBe(false);
   expect(cave.renderCalls).toBeGreaterThan(0);
   expect(cave.batches).toEqual(
     expect.arrayContaining([
-      expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 70 }),
-      expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 41 }),
-      expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 66 }),
+      expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 114 }),
+      expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 66 }),
+      expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 108 }),
       expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
       expect.objectContaining({ name: 'europa-cave-natural-ice-arch', count: 13 }),
       expect.objectContaining({ name: 'europa-cave-exterior-glacial-cliffs', count: 16 }),
       expect.objectContaining({ name: 'europa-cave-distant-fjord-approach', count: 24 }),
       expect.objectContaining({ name: 'europa-cave-optical-flow-ice', count: 0 }),
-      expect.objectContaining({ name: 'europa-cave-faceted-gate-skin', count: 120 }),
+      expect.objectContaining({ name: 'europa-cave-frozen-waterfalls', count: 18 }),
+      expect.objectContaining({ name: 'europa-cave-cathedral-crystal-pillars', count: 22 }),
+      expect.objectContaining({ name: 'europa-cave-buried-alien-ruins', count: 14 }),
+      expect.objectContaining({ name: 'europa-cave-luminous-ice-veins', count: 52 }),
     ]),
   );
   const opening = await page.evaluate(() => window.fixture.game.snapshot().europaCaveApproach);
   expect(opening).not.toBeNull();
-  expect(opening.length).toBe(940);
+  expect(opening.length).toBe(1500);
   expect(opening.phase).toBe('distant');
   expect(opening.distance).toBeGreaterThan(900);
   await page.screenshot({ path: info.outputPath('qa168-europa-far-fjord-before-approach.png') });

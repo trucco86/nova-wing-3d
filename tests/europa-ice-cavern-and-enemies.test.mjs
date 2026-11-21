@@ -41,7 +41,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
   const cavern = createEuropaIceCavern();
   assert.equal(cavern.name, 'europa-cathedral-ice-cavern');
   assert.equal(cavern.userData.visualOnly, true);
-  assert.equal(EUROPA_CAVE_LENGTH, 940);
+  assert.equal(EUROPA_CAVE_LENGTH, 1500);
   const expected = [
     ['europa-cave-sculpted-wall', EUROPA_CAVE_BUDGET.wallRocks],
     ['europa-cave-vaulted-ceiling', EUROPA_CAVE_BUDGET.ceilingSpires],
@@ -50,12 +50,15 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-natural-ice-arch', EUROPA_CAVE_BUDGET.archstones],
     ['europa-cave-exterior-glacial-cliffs', EUROPA_CAVE_BUDGET.exteriorCliffs],
     ['europa-cave-distant-fjord-approach', EUROPA_CAVE_BUDGET.approachFjord],
-    ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
+    ['europa-cave-frozen-waterfalls', EUROPA_CAVE_BUDGET.frozenWaterfall],
+    ['europa-cave-cathedral-crystal-pillars', EUROPA_CAVE_BUDGET.naturalPillars],
+    ['europa-cave-buried-alien-ruins', EUROPA_CAVE_BUDGET.buriedRuins],
+    ['europa-cave-luminous-ice-veins', EUROPA_CAVE_BUDGET.iceVeins],
   ];
   assert.equal(
     cavern.children.length,
     expected.length + 1,
-    'the only additional draw is optical flow',
+    'only one additional visual flow draw in the glacier canyon',
   );
   const flow = cavern.getObjectByName('europa-cave-optical-flow-ice');
   assert.ok(flow?.isPoints && flow.userData.visualOnly);
@@ -102,7 +105,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
           'entrance must remain outside the safe passage',
         );
       } else {
-        assert.ok(position.z < 0 && position.z >= -970);
+        assert.ok(position.z < 0 && position.z >= -1535);
       }
       if (name.includes('wall'))
         assert.ok(Math.abs(position.x) - scale.x > 30, 'wall must not hide tunnel opening');
@@ -114,26 +117,31 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
   }
 });
 
-test('Europa retains solid 940-unit cave with real roof, floor, five gates and breach panel', () => {
+test('Europa has 1500-unit real floor, roof and walls but no industrial crossbars', () => {
   const tunnel = createObstacle('tunnel', 'europa');
   const cave = tunnel.getObjectByName('europa-cathedral-ice-cavern');
   assert.ok(cave?.isGroup);
-  assert.ok(tunnel.userData.solids.length > 6);
-  assert.equal(tunnel.userData.length, 940);
-  assert.deepEqual(EUROPA_CAVE_GATE_DEPTHS, [-110, -260, -410, -610, -810]);
+  assert.ok(tunnel.userData.solids.length >= 6);
+  assert.equal(tunnel.userData.length, 1500);
+  assert.deepEqual(EUROPA_CAVE_GATE_DEPTHS, []);
+  assert.equal(
+    tunnel.getObjectByName('europa-cave-faceted-gate-skin'),
+    undefined,
+    'traves, slalom signs and floating industrial gate panels are removed from Europa',
+  );
+  const deck = tunnel.getObjectByName('europa-cave-continuous-ice-floor');
+  assert.ok(deck?.isMesh && deck.material.vertexColors);
+  assert.equal(deck.userData.transitionDepth, 260);
+  const colors = deck.geometry.getAttribute('color');
+  assert.ok(colors && colors.count > 100, 'continuous glacier floor has color gradient');
+  const deckColors = [...colors.array];
+  assert.ok(Math.max(...deckColors) - Math.min(...deckColors) > 0.2);
   assert.equal(tunnel.userData.europaBreach, true);
   assert.ok(tunnel.getObjectByName('europa-tunnel-breach-panel'));
   assert.ok(tunnel.getObjectByName('europa-tunnel-falling-debris'));
   const roof = tunnel.getObjectByName('europa-cavern-physical-roof-hidden-under-ice');
   assert.ok(roof?.isMesh, 'same physical ceiling has an authored visual cover');
   assert.equal(roof.visible, false, 'no rectangle across cave mouth');
-  for (let gate = 0; gate < EUROPA_CAVE_GATE_DEPTHS.length; gate++) {
-    for (const side of ['left', 'right']) {
-      const panel = tunnel.getObjectByName('europa-cave-hidden-' + side + '-gate-' + gate);
-      assert.ok(panel?.isMesh, 'all six real gate colliders remain');
-      assert.equal(panel.visible, false, 'squared gate facade becomes irregular crystal skin');
-    }
-  }
   for (const name of [
     'europa-cave-hidden-left-wall-collider',
     'europa-cave-hidden-right-near-collider',
@@ -147,10 +155,10 @@ test('Europa retains solid 940-unit cave with real roof, floor, five gates and b
     tunnel.userData.solids.some(
       (solid) =>
         solid.center.y === 38.5 &&
-        solid.center.z === -470 &&
+        solid.center.z === -750 &&
         solid.half.x === 36 &&
         solid.half.y === 1.5 &&
-        solid.half.z === 470,
+        solid.half.z === 750,
     ),
     'full-size original roof collider remains intact',
   );
