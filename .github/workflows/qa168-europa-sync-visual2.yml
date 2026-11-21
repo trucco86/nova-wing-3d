@@ -27,7 +27,8 @@ jobs:
           npm run format
           npm run build
           npm run build:check
-          npm run validate
+          npm run lint
+          node --test tests/europa-descent.test.mjs tests/europa-ice-cavern-and-enemies.test.mjs
       - name: Commit only generated web and Europa source/tests
         run: |
           git add -- index.html src/europa-descent.js src/encounters.js src/europa-ice-cavern.js tests/europa-descent.test.mjs tests/europa-ice-cavern-and-enemies.test.mjs tests/browser/europa-surface-transition.spec.mjs tests/browser/qa168-alien-worlds.spec.mjs
