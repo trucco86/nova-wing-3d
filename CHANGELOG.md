@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.159 — Defesa do reator e som de combate
+
+- A Devastador ganha quatro sentinelas de busto fixas às paredes e uma artilharia de plasma do núcleo, com carga visível, tiros reais e janelas para esquiva.
+- Os sistemas de CIRCUITOS alimentam as sentinelas: sabotá-los corta seus disparos; destruir as demais máquinas expõe o núcleo.
+- Removida a coluna gigante sem colisão do centro da entrada na arena, preservando o pórtico lateral.
+- Áudio dos tiros da nave e do robô refeito com assinaturas mecânicas curtas e alternadas, efeitos próprios do reator e polifonia limitada.
+
 ## 1.27.158 — Devastador: desembarque e três módulos antes do reator
 
 - A antiga Órbita-9 passa a ser uma seção da fase 04, aberta automaticamente no voo e sem modo independente no menu.
