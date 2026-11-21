@@ -270,7 +270,7 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       const europaCavern = variant === 'europa';
       // Europa is carved ice, not an industrial metal corridor. Do not
       // modify the authoritative 520-unit solids, hitboxes or breach opening.
-      const frostWall = europaCavern ? metal('#90bbd3', 0.07, 0.7) : dark;
+      const frostWall = europaCavern ? metal('#537e9b', 0.07, 0.76) : dark;
       const frostDeck = europaCavern ? metal('#779db9', 0.05, 0.64) : armor;
       solid(4, 44, 520, -34, 15, -260, frostWall);
       if (variant === 'europa') {
