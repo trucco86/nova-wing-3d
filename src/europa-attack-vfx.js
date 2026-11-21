@@ -274,12 +274,14 @@ export function animateEuropaAttackVfx(
       shard.rotation.z = (i % 2 ? -1 : 1) * (striking ? 0.32 : 0.17);
     }
   }
-  shock.opacity = quakeOn ? Math.min(0.9, (striking ? 0.84 : 0.48) * pulse * strength) : 0;
+  shock.opacity = quakeOn ? Math.min(0.7, (striking ? 0.62 : 0.41) * pulse * strength) : 0;
   quake.visible = quakeOn;
   if (quakeOn) {
-    quake.position.set(aim.x, aim.y - 19, aim.z - 12);
+    // Ice quake is a danger telegraph behind the craft, not a giant
+    // camera-attached white arc that hides the Colossus at contact.
+    quake.position.set(aim.x, aim.y - 19, aim.z - 52);
     quake.rotation.z = time * 0.65;
-    quake.scale.x = (striking ? 1.4 : 0.8) * strength;
-    quake.scale.y = (striking ? 0.8 : 0.42) * strength;
+    quake.scale.x = (striking ? 0.82 : 0.62) * strength;
+    quake.scale.y = (striking ? 0.48 : 0.33) * strength;
   }
 }
