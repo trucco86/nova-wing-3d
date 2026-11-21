@@ -80,7 +80,9 @@ for (const { index, theme, label } of destinations) {
   });
 }
 
-test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall are visible on mobile', async ({ page }, info) => {
+test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall are visible on mobile', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?qaTunnel=5');
@@ -93,11 +95,13 @@ test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall 
   expect(cave.length).toBe(520);
   expect(cave.breachPanel).toBe(true);
   expect(cave.renderCalls).toBeGreaterThan(0);
-  expect(cave.batches).toEqual(expect.arrayContaining([
-    expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 38 }),
-    expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 22 }),
-    expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 36 }),
-    expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
-  ]));
+  expect(cave.batches).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 38 }),
+      expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 22 }),
+      expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 36 }),
+      expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
+    ]),
+  );
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
 });

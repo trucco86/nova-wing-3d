@@ -108,7 +108,11 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   const surface = scene.getObjectByName('europa-frozen-surface');
   assert.ok(canyon && surface && canyon.parent === surface);
   assert.equal(surface.visible, false);
-  assert.equal(europaSurfaceAt(12).groundVisible, true, 'frozen terrain begins rising behind the mist at entry');
+  assert.equal(
+    europaSurfaceAt(12).groundVisible,
+    true,
+    'frozen terrain begins rising behind the mist at entry',
+  );
   world.setDestinationArrival(28);
   assert.equal(surface.visible, true);
   assert.ok(scene.fog.density < 0.0016, 'distance clarity must improve over old grey haze');
