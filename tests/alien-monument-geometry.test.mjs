@@ -117,7 +117,9 @@ test('portrait camera sees most of Europa hero vault during approach without cor
   const xs = [bounds.min.x, bounds.max.x];
   const ys = [bounds.min.y, bounds.max.y];
   const zs = [bounds.min.z, bounds.max.z];
-  for (const travel of [0, 4000, 12000]) {
+  // The monument is an approach landmark, not a static sky reference.
+  // It should read clearly while distant, then pass the player once.
+  for (const travel of [0, 300, 650]) {
     updateAlienArchitecture(root, travel);
     vault.getMatrixAt(0, instance);
     let minNdc = Infinity;
@@ -138,5 +140,14 @@ test('portrait camera sees most of Europa hero vault during approach without cor
     assert.ok(visibleWidth >= 0.1, 'hero vault must have significant width on mobile');
     const worldX = instance.elements[12];
     assert.ok(worldX + bounds.max.x * 40 < -72, 'no masonry over the aiming lane');
+  }
+  for (const travel of [4000, 12000]) {
+    updateAlienArchitecture(root, travel);
+    vault.getMatrixAt(0, instance);
+    assert.equal(
+      instance.elements[14],
+      160,
+      'after passing behind the camera the unique vault never freezes on screen',
+    );
   }
 });
