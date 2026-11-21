@@ -63,7 +63,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
       matrix.decompose(position, rotation, scale);
       if (name.includes('exterior-glacial-cliffs')) {
         assert.ok(Math.abs(position.x) - scale.x > 55, 'fjord stays outside flight');
-        assert.ok(position.z >= -170 && position.z <= 24, 'fjord frames cave mouth');
+        assert.ok(position.z >= -260 && position.z <= -28, 'fjord remains behind cave mouth');
       } else if (name.includes('natural-ice-arch')) {
         assert.ok(position.z <= 0 && position.z >= -12, 'arch frames cave mouth');
         assert.ok(
@@ -102,6 +102,13 @@ test('Europa reuses existing 520-unit collision tunnel, including the breakable 
   const roof = tunnel.getObjectByName('europa-cavern-physical-roof-hidden-under-ice');
   assert.ok(roof?.isMesh, 'same physical ceiling has an authored visual cover');
   assert.equal(roof.visible, false, 'no rectangle across cave mouth');
+  for (let gate = 0; gate < 3; gate++) {
+    for (const side of ['left', 'right']) {
+      const panel = tunnel.getObjectByName('europa-cave-hidden-' + side + '-gate-' + gate);
+      assert.ok(panel?.isMesh, 'all six real gate colliders remain');
+      assert.equal(panel.visible, false, 'squared gate facade becomes irregular crystal skin');
+    }
+  }
   for (const name of [
     'europa-cave-hidden-left-wall-collider',
     'europa-cave-hidden-right-near-collider',
@@ -130,7 +137,12 @@ test('Europa reuses existing 520-unit collision tunnel, including the breakable 
   world.setSector(SECTORS[5], 5);
   world.setDestinationArrival(30);
   assert.equal(world.setEuropaTunnel(true), true);
-  assert.equal(scene.getObjectByName('europa-frozen-surface')?.visible, false);
+  assert.equal(scene.getObjectByName('launch-ground')?.visible, false);
+  assert.equal(
+    scene.getObjectByName('europa-frozen-surface')?.visible,
+    true,
+    'distant canyon remains visible outside the physical ice corridor',
+  );
   world.setEuropaTunnel(false);
   assert.equal(scene.getObjectByName('europa-frozen-surface')?.visible, true);
 });
