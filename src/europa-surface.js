@@ -176,13 +176,13 @@ export function createEuropaSurface() {
 
   // Wind-blown ice crystals sit in the distant two side lanes. Points are
   // cheaper than dozens of transparent billboards on Medium/mobile.
-  const count = 84;
+  const count = 180;
   const coords = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const side = i % 2 ? -1 : 1;
     // Most flakes cross the visible chase-camera lane, not only cliffs.
     // Everything here remains purely visual, without collision volumes.
-    const foreground = i < 60;
+    const foreground = i < 138;
     coords[i * 3] = foreground ? (hash(i * 13 + 1) - 0.5) * 170 : side * (95 + hash(i * 13) * 165);
     coords[i * 3 + 1] = -2 + hash(i * 31) * 78;
     coords[i * 3 + 2] = foreground ? -45 - hash(i * 47) * 330 : -270 - hash(i * 47) * 1020;
