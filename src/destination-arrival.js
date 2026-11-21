@@ -100,6 +100,8 @@ export function destinationArrivalAt(index, seconds) {
       globeScale: ice.planetScale,
       globeX: ice.planetX,
       globeY: ice.planetY,
+      globeZ: ice.planetZ,
+      approachBoostVisual: ice.approachBoostVisual,
       cameraAscent: ice.cameraAscent,
       starOpacity: ice.starOpacity,
       terrainLift: ice.terrainLift,
