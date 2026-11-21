@@ -57,6 +57,7 @@ import {
   createEuropaSurface,
   createEuropaGlacialRidgeGeometry,
   updateEuropaSurface,
+  updateEuropaSurfaceTravel,
 } from './europa-surface.js';
 import { createMothershipInterior, updateMothershipInterior } from './mothership-interior.js';
 import { createMothershipApproach, updateMothershipApproach } from './mothership-approach.js';
@@ -2661,8 +2662,15 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         travel,
       });
       if (playing) {
-        // Authored monuments pass the flight path as a slow parallax layer.
-        // Instancing keeps their cost bounded, and the center lane remains free.
+        // The Europa glacier, gateway and foreground geometry must traverse
+        // real depth with the same flight clock as the moving obstacles.
+        // Previously the hero tower froze at z=-450 and the canyon stayed
+        // in sky-space, making full-speed flight look stationary.
+        if (sceneryTheme === 'ice')
+          updateEuropaSurfaceTravel(
+            sectorScenery.getObjectByName('europa-frozen-surface'),
+            travel,
+          );
         updateAlienArchitecture(
           sectorScenery.getObjectByName('alien-architecture-' + sceneryTheme),
           travel,
