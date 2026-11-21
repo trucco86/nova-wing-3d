@@ -58,6 +58,41 @@ const mobileRpg = installMobileRpgAccordion({ game });
 // Developer/QA game mode. No persistent exploration save is introduced.
 const exploration = installOrbit9ExplorationPreview(game);
 reactorAccessStage = exploration;
+// Only authorized DEV/QA builds expose deterministic boss inspection. The
+// existing Developer encounter never records ranking or campaign progress.
+// This permits real screenshots AFTER the wall sentinels emerge, rather than
+// approving a static screenshot of the first frame with all robots retracted.
+if (!Capacitor.isNativePlatform() && game.snapshot().developerAvailable) {
+  const bossQA = Object.freeze({
+    snapshot() {
+      const state = game.snapshot();
+      return state.developerSession && state.sector === 4
+        ? {
+            state: state.state,
+            boss: state.boss,
+            defense: state.sabotage?.defense ?? null,
+            projectileCount: state.hostileProjectilePool.active,
+          }
+        : null;
+    },
+    advance(seconds) {
+      const state = game.snapshot();
+      if (
+        !state.developerSession ||
+        state.sector !== 4 ||
+        state.state !== 'playing' ||
+        !state.boss ||
+        !Number.isFinite(seconds) ||
+        seconds <= 0 ||
+        seconds > 9
+      )
+        return false;
+      for (let tick = 0; tick < Math.round(seconds * 60); tick++) game.step(1 / 60);
+      return true;
+    },
+  });
+  globalThis.__novaBossQA = bossQA;
+}
 const destroyWithStage = game.destroy.bind(game);
 game.destroy = () => {
   exploration.destroy();
