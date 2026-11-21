@@ -63,3 +63,15 @@ não é prova suficiente de experiência de jogo ou desempenho de GPU.
   para avaliação da arte. Em jogo, a notificação se oculta naturalmente.
 - Exigir nova execução focada de 16 testes desktop/mobile e quatro screenshots
   reais, além do pipeline geral, antes de homologar a PR #417.
+
+## Controles da exploração com referência ao combate da nave
+
+- [ ] O analógico e WASD/setas são relativos à câmera: cima sempre significa
+  caminhar para a frente da tela, inclusive após orbitar 90° e 180°.
+- [ ] Botões ÓRBITA esquerda/direita, 360° do personagem e VISTA ficam na
+  faixa imediatamente acima do analógico esquerdo, sem cobrir SCAN ou BOOST.
+- [ ] O giro 360° é visual, não modifica colisores, save, score nem posição.
+- [ ] No mobile em 390×844 e 844×390, todos os botões têm áreas reais de toque
+  acessíveis; não há controle oculto atrás do canvas ou do HUD.
+- [ ] Trocar câmera não deve fazer as direções do joystick parecerem invertidas.
+- [ ] As animações de pernas, BOOST e os cinco modelos aprovados não mudam.
