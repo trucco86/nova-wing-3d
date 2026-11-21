@@ -76,9 +76,23 @@ function advance(seconds, { renderAfter = true } = {}) {
   game.step(0);
   rendering = capture;
 }
+function advanceToMissionTime(target) {
+  if (!Number.isFinite(target) || target < 0)
+    throw new RangeError('Mission time target must be finite and nonnegative');
+  // The squad starts with a non-playable intro beat. Simulation wall time
+  // includes that beat, but the mission clock deliberately does not. QA
+  // screenshots must use the actual mission timer, never accumulated calls.
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const current = game.snapshot().seconds;
+    if (current >= target - 0.000001) return current;
+    advance(Math.max(0.05, target - current + 0.015));
+  }
+  throw new Error('Could not reach mission time ' + target + ' seconds');
+}
 window.fixture = {
   game,
   advance,
+  advanceToMissionTime,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
   europaBoostWeatherState() {
     const globe = lastScene?.getObjectByName('destination-celestial-body');
