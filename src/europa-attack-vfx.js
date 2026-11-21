@@ -43,7 +43,9 @@ function makeStriker(side, materials) {
     hand.add(knuckle);
     talons.push(knuckle);
   }
-  const impact = new T.Mesh(new T.SphereGeometry(8, 10, 8), materials.flash);
+  // Small contact spark: the previous radius-8 glow projected as a giant
+  // opaque disc over the pilot when the claw reached camera depth.
+  const impact = new T.Mesh(new T.SphereGeometry(3.5, 10, 8), materials.flash);
   impact.name = 'europa-claw-contact-flash';
   impact.position.z = 17;
   hand.add(impact);
@@ -104,6 +106,15 @@ function poseStriker(
   segment(forearm, joint, end);
   elbow.position.copy(joint);
   hand.position.copy(end);
+  // The claw is close to the player during contact. Keep its world-space
+  // target and damage timing unchanged, but taper the visible geometry as
+  // it approaches the camera so the Colossus and targeting reticle remain
+  // readable instead of two screen-filling claws/glows.
+  const cameraNear = smooth((end.z - 73) / 92);
+  hand.scale.setScalar(1 - 0.72 * cameraNear);
+  forearm.scale.x = 1 - 0.53 * cameraNear;
+  forearm.scale.y = 1 - 0.53 * cameraNear;
+  elbow.scale.setScalar(1 - 0.45 * cameraNear);
   hand.rotation.set(
     quake ? -0.18 - reach * 0.45 : 0.03,
     side * (quake ? 0.05 : 0.15 + reach * 0.18),
@@ -116,8 +127,13 @@ function poseStriker(
   });
   impact.visible = operational && state === 'attack' && reach > 0.91;
   // The transient is attached to the exact visible contact tip, not the body.
-  impact.scale.setScalar(impact.visible ? 0.75 + 0.45 * reach : 0.01);
-  striker.userData = { target: contact.clone(), reach };
+  impact.scale.setScalar(impact.visible ? 0.42 - 0.25 * cameraNear : 0.01);
+  striker.userData = {
+    target: contact.clone(),
+    reach,
+    visualScale: hand.scale.x,
+    flashRadius: impact.visible ? 3.5 * impact.scale.x * hand.scale.x : 0,
+  };
 }
 
 // The visual-only ice shock and segmented arms reuse shared geometries and
