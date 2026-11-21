@@ -2562,14 +2562,21 @@ export function createGame({
       return false;
     releaseControls();
     touchFire = touchBoost = false;
-    const accepted = onReactorAccessRequested({
-      sector: 3,
-      modules: DEVASTADOR_ACCESS_MODULES,
-      complete: finishReactorAccess,
-      abort: abortReactorAccess,
-    });
+    let accepted = false;
+    try {
+      accepted = onReactorAccessRequested({
+        sector: 3,
+        modules: DEVASTADOR_ACCESS_MODULES,
+        complete: finishReactorAccess,
+        abort: abortReactorAccess,
+      }) === true;
+    } catch (error) {
+      // An unavailable exploration renderer must not crash or silently soft-lock the campaign.
+      console.error('Devastador reactor access:', error);
+    }
     if (!accepted) {
-      message('ACESSO AO REATOR INDISPONÍVEL · VERIFIQUE OS CONTROLES DA MISSÃO');
+      message('ACESSO AO REATOR INDISPONÍVEL · MISSÃO PAUSADA · REINICIE OU SAIA');
+      pause();
       return false;
     }
     reactorAccessStarted = true;
@@ -5127,7 +5134,7 @@ export function createGame({
         dynamicFlight: dynamicFlight && typeof onReactorAccessRequested === 'function',
       })
     ) {
-      if (startReactorAccess()) return;
+      if (startReactorAccess() || state !== 'playing') return;
     }
     const bossBlocked =
       (dynamicFlight &&
