@@ -182,7 +182,16 @@ export function createMarvinRival(scene) {
       state = null;
       root.visible = false;
     },
-    update({ sector, elapsed, duration, bossActive = false, suspended = false, player, fire, notify }) {
+    update({
+      sector,
+      elapsed,
+      duration,
+      bossActive = false,
+      suspended = false,
+      player,
+      fire,
+      notify,
+    }) {
       if (sector !== lastSector) {
         lastSector = sector;
         lastVolley = -1;

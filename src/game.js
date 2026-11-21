@@ -4775,8 +4775,7 @@ export function createGame({
         // Marvin remains part of the campaign, but cannot cover the
         // fissure entrance or attack inside its navigable choke points.
         suspended:
-          sectorIndex === 5 &&
-          obstacles.some(({ o, life }) => life > 0 && o.userData.europaBreach),
+          sectorIndex === 5 && obstacles.some(({ o, life }) => life > 0 && o.userData.europaBreach),
         player: player.position,
         fire: spawnEncounters ? (origin, target, element) => bullet(origin, target, element) : null,
         notify: (line, speaker) => message(line, speaker),
