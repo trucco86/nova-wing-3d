@@ -35,7 +35,10 @@ for (const { index, theme, label } of destinations) {
         if (second >= 8) {
           expect(arrival.destinationGlobeVisible).toBe(false);
         }
-        if (second === 20 || second === 24) expect(arrival.surfaceVisible).toBe(true);
+        if (second >= 8) {
+          expect(arrival.surfaceVisible).toBe(true);
+          expect(arrival.groundVisible).toBe(true);
+        }
         if (second === 25) expect(arrival.destinationGlobeVisible).toBe(false);
         await page.screenshot({ path: info.outputPath(`qa168-europa-entry-${second}s.png`) });
         previous = second;
