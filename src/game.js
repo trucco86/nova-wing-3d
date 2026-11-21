@@ -78,6 +78,7 @@ import {
   updateWarpStreaks,
 } from './warp-departure.js';
 import { createAsteroidInterior } from './asteroid-interior.js';
+import { asteroidBossPortraitFov } from './asteroid-boss-framing.js';
 import { measurePilotHull, projectPilotHull } from './asteroid-course.js';
 import { createMarvinRival } from './marvin-rival.js';
 import { bossDepartureAt } from './boss-departure.js';
@@ -4373,7 +4374,13 @@ export function createGame({
       clamp(dx, -1, 1),
       boosting,
       dynamicFlight ? route : undefined,
-      dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
+      dynamicFlight && boss
+        ? sectorIndex === 2
+          ? asteroidBossPortraitFov(camera.aspect)
+          : sectorIndex === 5
+            ? europaBossPortraitFov(camera.aspect)
+            : null
+        : null,
     );
     // Keep a true solid in the game world but render the nearby underside
     // translucent when it would eclipse the pilot and the gameplay corridor.
@@ -5299,11 +5306,13 @@ export function createGame({
       ) {
         const introductorySubboss =
           dynamicFlight && e.kind === 'subboss' && firstSubbossWarmup(sectorIndex, e.age);
+        // Capture the muzzle world transforms exactly once per firing event.
+        // All projectiles in this volley originate from this same ship pose.
+        const volleyMuzzles = hostileMuzzles(e);
         if (e.kind === 'walker' || e.airborneRobot) {
-          const eyes = hostileMuzzles(e);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
-          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          for (const eye of volleyMuzzles) bullet(eye, player.position.clone(), 'eye-ray');
           fireGroundRobotEyes(e.o, e.age);
         } else
           for (const offset of introductorySubboss
@@ -5314,8 +5323,8 @@ export function createGame({
                 ? e.subbossTactic.aim
                 : [0])
             bullet(
-              hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
-                hostileMuzzles(e)[0] ??
+              volleyMuzzles[Math.abs(Math.round(offset)) % 2] ??
+                volleyMuzzles[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
               e.subbossTactic?.spell ?? '',
@@ -5328,11 +5337,7 @@ export function createGame({
             player.position,
             e.combatPhase,
           ))
-            bullet(
-              hostileMuzzles(e)[0] ?? e.o.position.clone(),
-              target,
-              e.subbossTactic?.spell ?? '',
-            );
+            bullet(volleyMuzzles[0] ?? e.o.position.clone(), target, e.subbossTactic?.spell ?? '');
         e.cd =
           (e.kind === 'subboss'
             ? dynamicFlight
