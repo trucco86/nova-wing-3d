@@ -5935,7 +5935,7 @@ export function createGame({
         // target. Dodging changes the player's position, NOT the latched aim.
         // Transforming the point to boss-local space also preserves orbit.
         const europaTarget =
-          sectorIndex === 5 && bossIntent && ['windup', 'attack'].includes(tactics().state)
+          sectorIndex === 5 && bossIntent
             ? boss.worldToLocal(
                 new T.Vector3(bossIntent.targetX, bossIntent.targetY, player.position.z - 7),
               )
