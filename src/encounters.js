@@ -4,7 +4,6 @@ import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
 import {
   createEuropaIceCavern,
   EUROPA_CAVE_LENGTH,
-  EUROPA_CAVE_GATE_DEPTHS,
 } from './europa-ice-cavern.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
@@ -387,8 +386,34 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         }
         g.add(debris);
       } else solid(4, 44, 520, 34, 15, -260, frostWall);
-      // The exact physical deck and roof cover the entire extended cave.
-      solid(72, 3, caveLength, 0, -8.5, caveCenter, frostDeck);
+      // A continuous gradient on the EXACT same physical deck fades from
+      // the dark exterior surface to bright cathedral ice over 260 units.
+      // This eliminates the abrupt black-to-white ground cut at the handoff
+      // while leaving all ship and projectile collision unchanged.
+      const deck = solid(72, 3, caveLength, 0, -8.5, caveCenter, frostDeck);
+      if (europaCavern) {
+        const geometry = new T.BoxGeometry(72, 3, caveLength, 1, 1, 60);
+        const coordinates = geometry.getAttribute('position');
+        const colors = new Float32Array(coordinates.count * 3);
+        const exterior = new T.Color('#0c2237');
+        const interior = new T.Color('#b1d9e9');
+        const tint = new T.Color();
+        for (let i = 0; i < coordinates.count; i++) {
+          const progress = Math.max(0, Math.min(1, (caveLength / 2 - coordinates.getZ(i)) / 260));
+          const smooth = progress * progress * (3 - 2 * progress);
+          tint.copy(exterior).lerp(interior, smooth);
+          colors[i * 3] = tint.r;
+          colors[i * 3 + 1] = tint.g;
+          colors[i * 3 + 2] = tint.b;
+        }
+        geometry.setAttribute('color', new T.BufferAttribute(colors, 3));
+        deck.geometry = geometry;
+        deck.material = frostDeck.clone();
+        deck.material.vertexColors = true;
+        deck.material.color.set('#ffffff');
+        deck.name = 'europa-cave-continuous-ice-floor';
+        deck.userData.transitionDepth = 260;
+      }
       const roof = solid(72, 3, caveLength, 0, 38.5, caveCenter, frostWall);
       if (europaCavern) {
         // Retain the EXACT roof collider; show the sculpted cave vault instead
@@ -408,28 +433,24 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
         }
       if (europaCavern) g.add(createEuropaIceCavern());
-      for (let i = 0; i < (europaCavern ? EUROPA_CAVE_GATE_DEPTHS.length : 3); i++) {
-        const gap = i % 2 ? -9 : 9,
-          z = europaCavern ? EUROPA_CAVE_GATE_DEPTHS[i] : -110 - i * 150;
-        // A 30-unit opening, tall enough to evade without scraping the ceiling.
-        const left = gap - 15,
-          right = gap + 15;
-        const leftGate = solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
-        const rightGate = solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
-        if (europaCavern) {
-          // Existing physical gate volumes stay exact; six visible rectangular
-          // slabs are replaced by the corresponding 72 interlocking ice facets.
-          leftGate.name = 'europa-cave-hidden-left-gate-' + i;
-          rightGate.name = 'europa-cave-hidden-right-gate-' + i;
-          leftGate.visible = rightGate.visible = false;
+      // The industrial slalom belongs to city/standard tunnels only.
+      // Europa's natural glacier has no crossbars, arrows, fake barricades
+      // or their corresponding collision boxes along the center lane.
+      if (!europaCavern)
+        for (let i = 0; i < 3; i++) {
+          const gap = i % 2 ? -9 : 9;
+          const z = -110 - i * 150;
+          const left = gap - 15;
+          const right = gap + 15;
+          solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
+          solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
+          for (const x of [left, right])
+            g.add(box(0.5, 35, 5.5, hazard, x, 13, z));
+          const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
+          arrow.rotation.z = gap > 0 ? -Math.PI / 2 : Math.PI / 2;
+          arrow.position.set(gap, 30, z + 3);
+          g.add(arrow);
         }
-        for (const x of [left, right])
-          g.add(box(0.5, 35, 5.5, europaCavern ? cyan : hazard, x, 13, z));
-        const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
-        arrow.rotation.z = gap > 0 ? -Math.PI / 2 : Math.PI / 2;
-        arrow.position.set(gap, 30, z + 3);
-        g.add(arrow);
-      }
     } else if (kind === 'carrier') {
       // Derelict ship: hull, bridge and two wings with escapable upper corridor.
       solid(36, 11, 42, 0, 14, 0, armor);
