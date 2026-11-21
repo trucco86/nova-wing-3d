@@ -27,12 +27,12 @@ for (const { index, theme, label } of destinations) {
       // Inspect continuous arrival checkpoints instead of validating only
       // 7s orbit and 30s full gameplay, which missed the broken black gap.
       let previous = 7;
-      for (const second of [12, 16, 20, 24, 25]) {
+      for (const second of [8, 10, 12, 16, 20, 24, 25]) {
         await page.evaluate((dt) => window.fixture.advance(dt), second - previous);
         const arrival = await page.evaluate(() => window.fixture.game.snapshot().europaSurface);
         expect(arrival).toBeTruthy();
         expect(arrival.orbitalVisible).toBe(false);
-        if (second >= 12) {
+        if (second >= 8) {
           expect(arrival.destinationGlobeVisible).toBe(false);
         }
         if (second === 20 || second === 24) expect(arrival.surfaceVisible).toBe(true);
@@ -79,3 +79,25 @@ for (const { index, theme, label } of destinations) {
     await page.screenshot({ path: info.outputPath(`qa168-${label}-boss.png`) });
   });
 }
+
+test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall are visible on mobile', async ({ page }, info) => {
+  test.setTimeout(120000);
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/__dynamic.html?qaTunnel=5');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.advance(0.5));
+  const cave = await page.evaluate(() => window.fixture.europaCavernState());
+  expect(cave).not.toBeNull();
+  expect(cave.visualOnly).toBe(true);
+  expect(cave.visible).toBe(true);
+  expect(cave.length).toBe(520);
+  expect(cave.breachPanel).toBe(true);
+  expect(cave.renderCalls).toBeGreaterThan(0);
+  expect(cave.batches).toEqual(expect.arrayContaining([
+    expect.objectContaining({ name: 'europa-cave-sculpted-wall', count: 38 }),
+    expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 22 }),
+    expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 36 }),
+    expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
+  ]));
+  await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
+});
