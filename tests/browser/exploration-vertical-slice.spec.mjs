@@ -40,7 +40,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   for (const [x, z, district, modules] of [
     [-38, -18, 'LABORATÓRIO DE SINAIS', 1],
     [39, -55, 'PRAÇA DO REATOR', 2],
-    [-37, -82, 'ARQUIVOS DA ORBITA', 3],
+    [-37, -82, 'ARQUIVOS DA DEVASTADOR', 3],
   ]) {
     expect(await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z])).toBe(true);
     await expect(page.locator('#explorationDistrict')).toHaveText(district);
