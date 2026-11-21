@@ -5,6 +5,8 @@ import {
   EUROPA_CANYON_BUDGET,
   createEuropaCrystalCanyon,
   setEuropaCrystalCanyonQuality,
+  updateEuropaCrystalCanyonMotion,
+  europaCanyonDepth,
 } from '../src/europa-crystal-canyon.js';
 import { europaSurfaceAt } from '../src/europa-surface.js';
 import { createWorld } from '../src/visuals.js';
@@ -202,4 +204,39 @@ test('Europa legacy background ridges stay distant and upright instead of blocki
     assert.ok(scale.x >= 0.55 && scale.x <= 1.301, 'legacy mountains cannot grow to 2.5x');
     assert.ok(Math.abs(matrix.elements[1]) < 1e-4, 'ice ridges should no longer spin on X or Z');
   }
+});
+
+test('Europa world canyon and unique tower travel at different depths with no persistent fixed reference', () => {
+  const root = createEuropaCrystalCanyon();
+  const cliffs = root.getObjectByName('europa-canyon-grounded-cliffs');
+  const crystals = root.getObjectByName('europa-canyon-crystal-cyan');
+  const gate = root.getObjectByName('europa-canyon-distant-alien-gateway');
+  const m = new T.Matrix4();
+  const z = (batch) => {
+    batch.getMatrixAt(0, m);
+    return m.elements[14];
+  };
+  const initialCliff = z(cliffs);
+  const initialCrystal = z(crystals);
+  assert.equal(gate.position.z, -610);
+  assert.equal(updateEuropaCrystalCanyonMotion(root, 400), true);
+  const cliff = z(cliffs);
+  const crystal = z(crystals);
+  assert.ok(cliff > initialCliff + 200);
+  assert.ok(crystal > initialCrystal + 250, 'near ice travels faster than distant ridges');
+  assert.ok(gate.position.z > -450, 'the physical landmark approaches the cockpit');
+  updateEuropaCrystalCanyonMotion(root, 400);
+  assert.equal(z(cliffs), cliff, 'same clock cannot drift after pause/replay');
+  assert.equal(z(crystals), crystal);
+  updateEuropaCrystalCanyonMotion(root, 3000);
+  assert.equal(gate.position.z, 160, 'gateway passes behind the camera once');
+  updateEuropaCrystalCanyonMotion(root, 9000);
+  assert.equal(gate.position.z, 160, 'never reappears at the horizon');
+  assert.ok(z(cliffs) < 160, 'repeating natural cliffs stay behind pilot');
+  updateEuropaCrystalCanyonMotion(root, 0);
+  assert.equal(z(cliffs), initialCliff);
+  assert.equal(z(crystals), initialCrystal);
+  assert.equal(gate.position.z, -610);
+  assert.equal(europaCanyonDepth(-250, 0), -250);
+  assert.throws(() => europaCanyonDepth(0, -1), RangeError);
 });
