@@ -4156,7 +4156,11 @@ export function createGame({
       shipModule.rotation.z = 0;
     }
     const energyBeforeBoost = energy;
-    energy = clamp(energy + dt * (europaAutoBoost ? 15 : boosting ? -28 : robotMode ? 7 : 15), 0, 100);
+    energy = clamp(
+      energy + dt * (europaAutoBoost ? 15 : boosting ? -28 : robotMode ? 7 : 15),
+      0,
+      100,
+    );
     if (dynamicFlight && sectorIndex === 0) {
       const beforeLaunch = orbitalLaunchSequence.snapshot().phase;
       const launchState = orbitalLaunchSequence.advance({
@@ -4201,9 +4205,7 @@ export function createGame({
     const superBoost =
       dynamicFlight &&
       (europaAutoBoost ||
-        (sectorIndex === 0 &&
-          orbitalLaunchSequence.snapshot().phase === 'boost' &&
-          boosting));
+        (sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost' && boosting));
     const speed =
       (superBoost ? 114 : boosting ? 90 : 48) *
       (1 + Math.min(30, stage()) * 0.02) *
