@@ -1,0 +1,44 @@
+name: QA171 Europa premium no bars and cryo build sync
+on:
+  push:
+    branches:
+      - feat/alien-worlds-visual-identity-20261120
+    paths:
+      - .github/workflows/qa171-europa-premium-sync.yml
+permissions:
+  contents: write
+jobs:
+  build-qa:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/alien-worlds-visual-identity-20261120
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format, lint, regress Europa, and rebuild actual web game
+        run: |
+          npx prettier --write src/europa-ice-cavern.js src/encounters.js src/campaign.js src/europa-cryo.js src/europa-surface.js src/hostile-projectile-pool.js src/game.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/europa-cryo.test.mjs tests/developer-scenarios.test.mjs tests/browser/qa168-alien-worlds.spec.mjs tests/europa-super-boost-weather.test.mjs
+          npm run lint
+          node --test tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/europa-cryo.test.mjs tests/developer-scenarios.test.mjs tests/europa-super-boost-weather.test.mjs tests/europa-surface.test.mjs
+          npm run build
+          npm run build:check
+      - name: Push synchronized QA only, never merge
+        run: |
+          git add -- index.html src/europa-ice-cavern.js src/encounters.js src/campaign.js src/europa-cryo.js src/europa-surface.js src/hostile-projectile-pool.js src/game.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/europa-cryo.test.mjs tests/developer-scenarios.test.mjs tests/browser/qa168-alien-worlds.spec.mjs tests/europa-super-boost-weather.test.mjs
+          git diff --cached --check
+          if git diff --cached --quiet; then
+            echo 'QA bundle up to date'
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'build(europa): synchronize premium long cave and cryo robots'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
