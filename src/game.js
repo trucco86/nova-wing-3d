@@ -158,6 +158,10 @@ import {
   sabotageTargetOpen,
   sabotageRadarTarget,
 } from './devastador-sabotage.js';
+import {
+  createDevastadorDefenseState,
+  advanceDevastadorDefense,
+} from './devastador-reactor-defense.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
 import {
@@ -223,6 +227,12 @@ import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
+import {
+  DEVASTADOR_ACCESS_THRESHOLD,
+  DEVASTADOR_ACCESS_MODULES,
+  shouldEnterDevastadorReactorAccess,
+  reactorModulesComplete,
+} from './devastador-reactor-access.js';
 import { developerLabLoadout } from './developer-lab.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
@@ -280,6 +290,9 @@ export function createGame({
   nativeLifecycle = false,
   onStageStarted = () => {},
   onStageFinished = () => {},
+  // The live Stage-04 gate is wired by main.js to the same exploration renderer.
+  // Headless game-only fixtures omit it and retain the original stage harness.
+  onReactorAccessRequested = null,
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
@@ -831,6 +844,10 @@ export function createGame({
     reactorGridSeconds = 0,
     reactorGridCompleted = false,
     reactorGridWave = 0,
+    reactorAccessStarted = false,
+    reactorAccessComplete = false,
+    reactorDefense = createDevastadorDefenseState(),
+    shotVolley = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () =>
@@ -1667,6 +1684,10 @@ export function createGame({
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
     reactorGridWave = 0;
+    reactorAccessStarted = false;
+    reactorAccessComplete = false;
+    reactorDefense = createDevastadorDefenseState();
+    shotVolley = 0;
     specialCd = barrier = stasis = berserk = bossHitPulse = 0;
     weakpointEvidence = [];
     podsDetached = false;
@@ -2214,8 +2235,20 @@ export function createGame({
         ),
       );
     }
-    if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
-    else sound(900 + weapon * 110);
+    if (dynamicFlight) {
+      // Rotate distinct original cannon transients to avoid a constant
+      // descending beep during sustained fire. No extra simultaneous voices.
+      shotVolley++;
+      cue(
+        robotMode
+          ? shotVolley % 3 === 0
+            ? 'mechaShot'
+            : 'mechaShotAlt'
+          : shotVolley % 3 === 0
+            ? 'shot'
+            : 'shotAlt',
+      );
+    } else sound(900 + weapon * 110);
     shotCd = dynamicFlight
       ? mechaShotCooldown(
           firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
@@ -2562,7 +2595,93 @@ export function createGame({
       });
     });
   }
+  // Same Stage 04, no new sector / score / save. The player disembarks before
+  // reaching the reactor. Every activated switch belongs to this mission run.
+  function startReactorAccess() {
+    if (
+      typeof onReactorAccessRequested !== 'function' ||
+      reactorAccessStarted ||
+      reactorAccessComplete ||
+      state !== 'playing' ||
+      sectorIndex !== 3
+    )
+      return false;
+    releaseControls();
+    touchFire = touchBoost = false;
+    const accepted = onReactorAccessRequested({
+      sector: 3,
+      modules: DEVASTADOR_ACCESS_MODULES,
+      complete: finishReactorAccess,
+      abort: abortReactorAccess,
+    });
+    if (!accepted) {
+      message('ACESSO AO REATOR INDISPONÍVEL · VERIFIQUE OS CONTROLES DA MISSÃO');
+      return false;
+    }
+    reactorAccessStarted = true;
+    state = 'reactor-access';
+    music?.pause();
+    mechaEngine?.silence();
+    $('bossIncoming').hidden = true;
+    $('strategyControls').hidden = true;
+    message('DEVASTADOR · ATIVE OS 3 MÓDULOS PARA ACESSAR O NÚCLEO', 'calvin');
+    return true;
+  }
+
+  function finishReactorAccess(activated) {
+    if (state !== 'reactor-access' || !reactorModulesComplete(activated)) return false;
+    reactorAccessComplete = true;
+    reactorAccessStarted = false;
+    state = 'playing';
+    elapsed = Math.max(elapsed, current().duration - 3.8);
+    bossWarned = false;
+    bossWarningTime = 0;
+    releaseControls();
+    invuln = Math.max(invuln, 4);
+    music?.resume();
+    $('strategyControls').hidden = !dynamicFlight;
+    message('OS 3 MÓDULOS FORAM ATIVADOS · NÚCLEO EXPOSTO · PREPARE-SE!', 'bia');
+    return true;
+  }
+
+  function abortReactorAccess() {
+    if (state !== 'reactor-access') return false;
+    reactorAccessStarted = false;
+    state = 'playing';
+    // The regular pause menu offers RESUME / RESTART / EXIT. Resuming the
+    // stage reopens the still-locked gate, never skips straight to its boss.
+    pause();
+    return true;
+  }
+
+  function enterReactorAccessForQA() {
+    if (
+      !developerAvailable ||
+      !developerSession ||
+      sectorIndex !== 3 ||
+      state !== 'playing' ||
+      developerScenario?.encounter !== 'stage'
+    )
+      return false;
+    elapsed = Math.max(elapsed, current().duration * DEVASTADOR_ACCESS_THRESHOLD);
+    for (const e of enemies) dispose(e.o);
+    enemies = [];
+    subDone = true;
+    subbossClearedAt = elapsed;
+    return startReactorAccess();
+  }
+
   function makeBoss() {
+    // The Devastador core cannot be exposed before all three internal
+    // access modules are active. Direct boss QA is deliberately isolated.
+    if (
+      dynamicFlight &&
+      sectorIndex === 3 &&
+      typeof onReactorAccessRequested === 'function' &&
+      !reactorAccessComplete &&
+      !(developerSession && developerScenario?.encounter === 'boss')
+    )
+      return;
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
       asteroidInterior.setPhase(journey.phase);
@@ -2582,6 +2701,7 @@ export function createGame({
     // Preserve the already warmed GPU model; rebuilding on boss arrival
     // causes stutter and defeats the stage-loading shader prewarm.
     const bossUsesSabotageCore = dynamicFlight && sectorIndex === 3;
+    reactorDefense = createDevastadorDefenseState();
     if (bossUsesSabotageCore && preparedBoss) disposeBoss(preparedBoss);
     boss = bossUsesSabotageCore
       ? createDevastadorSabotageCore()
@@ -5072,7 +5192,27 @@ export function createGame({
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
+    if (
+      shouldEnterDevastadorReactorAccess({
+        sector: sectorIndex,
+        elapsed,
+        duration: current().duration,
+        completed: reactorAccessComplete,
+        active: reactorAccessStarted,
+        boss: !!boss,
+        subbossActive: activeSubboss,
+        encounter: developerSession ? developerScenario?.encounter : 'stage',
+        dynamicFlight: dynamicFlight && typeof onReactorAccessRequested === 'function',
+      })
+    ) {
+      if (startReactorAccess()) return;
+    }
     const bossBlocked =
+      (dynamicFlight &&
+        sectorIndex === 3 &&
+        typeof onReactorAccessRequested === 'function' &&
+        !reactorAccessComplete &&
+        !(developerSession && developerScenario?.encounter === 'boss')) ||
       activeSubboss ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
       (dynamicFlight &&
@@ -5493,6 +5633,63 @@ export function createGame({
       }
       bossCombat.update(hostileDt);
       const combatPhase = bossCombat.phase;
+      if (dynamicFlight && boss.userData.sabotage) {
+        const next = advanceDevastadorDefense(reactorDefense, {
+          age: bossCombat.age,
+          phase: combatPhase,
+          parts: boss.userData.parts,
+          playerX: player.position.x,
+          playerY: player.position.y,
+          playerZ: player.position.z,
+        });
+        reactorDefense = next.state;
+        if (next.event?.type === 'warning') {
+          cue('reactorWarning');
+          message(
+            next.event.kind === 'sentinels'
+              ? 'ALERTA · ROBÔS SENTINELAS EMERGINDO DAS PAREDES · DESVIE!'
+              : 'ALERTA · REATOR CARREGANDO PULSO DE PLASMA · AFASTE-SE!',
+          );
+        } else if (next.event?.type === 'fire') {
+          boss.updateMatrixWorld(true);
+          const target = new T.Vector3(
+            next.event.target.x,
+            next.event.target.y,
+            next.event.target.z,
+          );
+          if (next.event.kind === 'sentinels') {
+            for (const index of next.event.indices) {
+              const sentinel = boss.userData.sentinels[index];
+              if (!sentinel || boss.userData.parts[index].hp <= 0) continue;
+              // Fire from two large visible arm cannons. Direction latches
+              // at warning, so strafing and BOOST genuinely avoid the salvo.
+              for (const { muzzle, side } of sentinel.arms) {
+                const origin = muzzle.getWorldPosition(new T.Vector3());
+                bullet(
+                  origin,
+                  target.clone().add(new T.Vector3(side * 5.5, side * 3, 0)),
+                  'fire',
+                  sectorIndex,
+                );
+              }
+            }
+            cue('reactorVolley');
+          } else {
+            const origin = boss.userData.coreMuzzle.getWorldPosition(new T.Vector3());
+            for (const offset of [-12, 0, 12]) {
+              bullet(
+                origin,
+                target.clone().add(new T.Vector3(offset, offset === 0 ? 0 : 5, 0)),
+                'arcane',
+                sectorIndex,
+              );
+            }
+            cue('reactorPulse');
+          }
+        } else if (next.event?.type === 'cancel') {
+          message('DEFESA INTERROMPIDA · SISTEMA DE ENERGIA DESATIVADO');
+        }
+      }
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       let radarPlan = null;
@@ -5757,7 +5954,11 @@ export function createGame({
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const sabotagePhase = boss.userData.sabotage
-        ? updateDevastadorSabotageCore(boss, { orbit: orbitAngle, time: bossCombat.age })
+        ? updateDevastadorSabotageCore(boss, {
+            orbit: orbitAngle,
+            time: bossCombat.age,
+            defense: reactorDefense,
+          })
         : null;
       const openGenerator = boss.userData.parts.findIndex(
         (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
@@ -5859,8 +6060,15 @@ export function createGame({
                 'COROA IMPERIAL',
               ][sectorIndex]
             : '';
-      if (boss.userData.sabotage)
-        $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      if (boss.userData.sabotage) {
+        const armed = reactorDefense.armed;
+        $('attackWarning').textContent = armed
+          ? armed.kind === 'sentinels'
+            ? '⚠ ROBÔS SENTINELAS · CANHÕES DAS PAREDES CARREGANDO'
+            : '⚠ PULSO DO REATOR · DESVIE DA ZONA MARCADA'
+          : 'SABOTAGEM · ' + sabotagePhase.label;
+        $('attackWarning').setAttribute?.('data-severity', armed ? 'danger' : 'info');
+      }
       if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
@@ -6371,6 +6579,11 @@ export function createGame({
   let last = now();
   function tick(dt, nowMs) {
     if (!appActive) return;
+    // The stage-04 disembark owns its own WebGL canvas. Freeze the original
+    // flight renderer completely, not just combat timers: two simultaneous
+    // GPU render loops overheat mobile devices and can stall both controls.
+    // The flight resumes on the same sector/score/ship after all modules.
+    if (state === 'reactor-access') return;
     if (rpgTacticalPaused && state === 'playing') {
       // Freeze all combat clock, physics, weapons and enemies. Keep an
       // occasional identical WebGL frame alive under the translucent menu.
@@ -6851,6 +7064,7 @@ export function createGame({
     selectShipColor,
     nextSector,
     startDeveloperScenario,
+    enterReactorAccessForQA,
     snapshot: () => ({
       state,
       developerAvailable,
@@ -6873,6 +7087,11 @@ export function createGame({
       },
       missionCameraSeconds: reactorGridSeconds,
       missionHazardWave: reactorGridWave,
+      reactorAccess: {
+        started: reactorAccessStarted,
+        completed: reactorAccessComplete,
+        required: DEVASTADOR_ACCESS_MODULES.map(({ id }) => id),
+      },
       bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
@@ -7005,6 +7224,13 @@ export function createGame({
       sabotage: boss?.userData.sabotage
         ? {
             ...sabotagedSystem(boss.userData.parts),
+            defense: {
+              ...reactorDefense,
+              online: boss.userData.sentinels
+                .filter((s) => boss.userData.parts[s.index].hp > 0)
+                .map((s) => s.index),
+              visible: boss.userData.sentinels.filter((s) => s.upper.visible).length,
+            },
             visual: boss.userData.reactorVisual,
             orbit: {
               angle: orbitAngle,

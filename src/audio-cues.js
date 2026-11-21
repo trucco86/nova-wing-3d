@@ -497,6 +497,127 @@ Object.assign(AUDIO_CUES, {
   },
 });
 
+// QA 418: alternate short, ORIGINAL cannon signatures to break the robotic
+// repetition of sustained fire. Retain the established 'shot'/'mechaShot'
+// profiles for compatibility with the existing acoustic regression baseline;
+// the new alternates use four voices max to respect mobile polyphony.
+Object.assign(AUDIO_CUES, {
+  shotAlt: {
+    cooldown: 0.075,
+    tones: [
+      {
+        from: 780,
+        to: 390,
+        duration: 0.06,
+        gain: 0.028,
+        wave: 'sawtooth',
+        filter: 1550,
+        attack: 0.002,
+      },
+      {
+        from: 228,
+        to: 118,
+        duration: 0.15,
+        gain: 0.054,
+        wave: 'triangle',
+        filter: 850,
+        attack: 0.002,
+      },
+      { from: 88, to: 59, duration: 0.135, gain: 0.027, wave: 'sine', attack: 0.002 },
+    ],
+    noises: [
+      {
+        duration: 0.052,
+        gain: 0.051,
+        filterType: 'bandpass',
+        filter: 1450,
+        filterEnd: 450,
+        q: 0.65,
+      },
+    ],
+  },
+  mechaShotAlt: {
+    cooldown: 0.1,
+    tones: [
+      {
+        from: 1010,
+        to: 310,
+        duration: 0.085,
+        gain: 0.034,
+        wave: 'sawtooth',
+        filter: 1650,
+        attack: 0.002,
+      },
+      {
+        from: 185,
+        to: 65,
+        duration: 0.245,
+        gain: 0.076,
+        wave: 'triangle',
+        filter: 860,
+        attack: 0.004,
+      },
+      { from: 72, to: 40, duration: 0.225, gain: 0.052, wave: 'sine', attack: 0.004 },
+    ],
+    noises: [
+      { duration: 0.078, gain: 0.063, filterType: 'bandpass', filter: 1350, filterEnd: 370 },
+    ],
+  },
+  // Big reactor sentinels use an industrial servo alarm and metallic
+  // bombardment rather than the same sound as the player's primary weapon.
+  reactorWarning: {
+    cooldown: 1.0,
+    tones: [
+      { from: 170, to: 340, duration: 0.25, gain: 0.034, wave: 'triangle', filter: 1000 },
+      {
+        from: 350,
+        to: 170,
+        delay: 0.25,
+        duration: 0.2,
+        gain: 0.032,
+        wave: 'sawtooth',
+        filter: 820,
+      },
+    ],
+    noises: [{ color: 'brown', duration: 0.28, gain: 0.052, filter: 750, filterEnd: 380 }],
+  },
+  reactorVolley: {
+    cooldown: 0.6,
+    tones: [
+      { from: 485, to: 145, duration: 0.16, gain: 0.06, wave: 'sawtooth', filter: 1600 },
+      { from: 145, to: 45, duration: 0.27, gain: 0.067, wave: 'triangle', filter: 880 },
+      { from: 75, to: 34, duration: 0.23, gain: 0.047, wave: 'sine' },
+    ],
+    noises: [{ duration: 0.16, gain: 0.087, filterType: 'bandpass', filter: 1800, filterEnd: 290 }],
+  },
+  reactorPulse: {
+    cooldown: 0.7,
+    tones: [
+      { from: 210, to: 720, duration: 0.18, gain: 0.052, wave: 'sawtooth', filter: 1950 },
+      {
+        from: 165,
+        to: 43,
+        delay: 0.11,
+        duration: 0.36,
+        gain: 0.081,
+        wave: 'triangle',
+        filter: 900,
+      },
+      { from: 74, to: 32, delay: 0.11, duration: 0.42, gain: 0.058, wave: 'sine' },
+    ],
+    noises: [
+      {
+        delay: 0.1,
+        duration: 0.32,
+        gain: 0.079,
+        filterType: 'bandpass',
+        filter: 1450,
+        filterEnd: 230,
+      },
+    ],
+  },
+});
+
 const LIMIT = 32;
 
 export function createAudioCues(context) {

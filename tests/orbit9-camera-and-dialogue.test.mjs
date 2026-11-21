@@ -30,8 +30,11 @@ test('Orbit-9 camera adapts to reactor walls and keeps the cat visible', () => {
   const blocked = orbit9CameraPose(0, -25, { yaw: Math.PI, mode: 'follow' });
   assert.equal(blocked.clipped, true);
   assert.ok(blocked.eye.z > -34, 'camera must not pass through the solid central core');
-  assert.equal(blocked.aim.x, 0);
-  assert.equal(blocked.aim.z, -25);
+  // The new low-angle follow camera looks ahead in its orbit direction.
+  // sin(PI) has floating-point noise: compare geometry with a tolerance.
+  assert.ok(Math.abs(blocked.aim.x) < 1e-8);
+  assert.ok(blocked.aim.z > -25, 'reverse orbit looks beyond the cat, not at its feet');
+  assert.ok(clear.aim.z < -25, 'forward orbit looks into the Devastador hangar');
   assert.ok(blocked.eye.y > blocked.aim.y);
   const survey = orbit9CameraPose(-38, -18, { yaw: 0, mode: 'survey' });
   assert.ok(survey.eye.y > clear.eye.y);

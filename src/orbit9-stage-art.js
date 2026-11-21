@@ -38,6 +38,52 @@ export function createOrbit9StageArt() {
     definitions[type].push({ x, y, z, w, h, d, ry });
   };
 
+  // Devastador arrival hangar: the landing view needs architectural depth
+  // directly ahead, not only wall panels 55m to either side. Open-framed
+  // pressure bulkheads preserve a clear CENTRAL navigation lane. Every part
+  // remains cosmetic and shares the existing instanced material draw calls.
+  for (const z of [5, -9, -23]) {
+    for (const side of [-1, 1]) {
+      emit('armor', side * 26.5, 10.5, z, 2.4, 19.5, 2.8);
+      emit('hull', side * 25.2, 19.6, z, 5.0, 3.1, 3.7);
+      // Staggered lateral armor in the portal gives the bay a layered
+      // silhouette without creating another opaque wall in the cat's path.
+      emit('hull', side * 24.2, 15.1, z - 2.0, 3.2, 1.2, 7.0);
+      emit('glass', side * 26.0, 10.5, z + 1.45, 0.35, 10.0, 0.25);
+      emit('cyan', side * 25.8, 10.6, z + 1.65, 0.16, 9.2, 0.2);
+      emit('hazard', side * 22.6, 2.0, z + 1.65, 0.85, 0.3, 1.8);
+    }
+    emit('hull', 0, 21.3, z, 56, 2.6, 3.5);
+    emit('plating', 0, 23.0, z, 27, 1.1, 3.2);
+    emit('cyan', 0, 19.8, z + 1.9, 17, 0.26, 0.23);
+    emit('amber', 0, 19.35, z + 1.9, 5.5, 0.16, 0.24);
+  }
+
+  // Illuminated maintenance bays in the near corridor provide parallax
+  // while the camera follows the cat. The structures sit outside the
+  // entire x=-12..12 main walkable lane.
+  for (const side of [-1, 1]) {
+    for (const z of [10, -6, -22]) {
+      emit('hull', side * 33.5, 4.5, z, 8.5, 8, 8.3);
+      emit('armor', side * 29.2, 5.6, z, 1.0, 9.5, 7.5);
+      emit('glass', side * 28.6, 6.5, z, 0.26, 4.5, 5.3);
+      emit('cyan', side * 28.4, 3.7, z, 0.2, 0.25, 5.2);
+      emit('hazard', side * 28.3, 9.5, z, 0.3, 0.42, 5.2);
+    }
+    // Non-collidable deck guide strips lead the pilot from the hangar into
+    // the actual reactor access sequence rather than an empty blue floor.
+    for (let n = 0; n < 8; n++) {
+      const z = 11 - n * 6.4;
+      emit('cyan', side * 6.8, 0.12, z, 0.22, 0.055, 4.1);
+      emit('armor', side * 10.8, 0.12, z, 2.0, 0.06, 0.24);
+    }
+  }
+  for (const z of [10, -2, -14, -26]) {
+    // Arrow-like landing-path markers stay below the player's feet.
+    emit('amber', 0, 0.12, z, 4.4, 0.055, 0.32);
+    emit('cyan', 0, 0.13, z - 1.45, 1.5, 0.06, 0.18);
+  }
+
   // A deck with meaningful structure, not the repeated glowing-ring corridor.
   // Panels are below feet, and all rails are shallow enough not to obstruct the walk.
   for (let col = -4; col <= 4; col++) {
@@ -93,6 +139,20 @@ export function createOrbit9StageArt() {
   }
   emit('armor', 0, 18.2, -44, 17.5, 2.8, 22);
   emit('cyan', 0, 20, -44, 10, 0.4, 12);
+  // The front of the large reactor collider was a featureless opaque slab
+  // when approached from the hangar. Cladding and exposed cooling vanes
+  // turn it into readable Devastador machinery without changing collision.
+  emit('hull', 0, 14.3, -33.4, 13.2, 1.25, 1.1);
+  emit('armor', 0, 2.6, -33.4, 13.2, 1.25, 1.1);
+  for (const side of [-1, 1]) {
+    emit('armor', side * 6.45, 8.4, -33.3, 0.85, 10.8, 1.0);
+    emit('hazard', side * 6.35, 13.0, -32.6, 0.28, 1.2, 0.22);
+    emit('cyan', side * 5.6, 8.6, -32.62, 0.18, 7.4, 0.24);
+  }
+  for (const y of [4.5, 11.8]) {
+    emit('conduit', 0, y, -32.7, 8.8, 0.58, 0.48);
+    emit('amber', 0, y + 0.43, -32.4, 8.8, 0.16, 0.18);
+  }
   // Laboratory: terminals and diagnostic glass close to the WEST wall.
   for (const z of [-18, -28, -38]) {
     emit('plating', -50, 3.3, z, 3.7, 5.4, 5.8);
@@ -178,6 +238,23 @@ export function createOrbit9StageArt() {
   dial.userData.visualOnly = true;
   root.add(dial);
   root.userData.diagnosticDial = dial;
+  // A readable ring in front of the physical reactor blocker, facing the
+  // incoming cat. Its geometry is visual-only and rotates independently of
+  // the elevated maintenance diagnostic to communicate an energized core.
+  const faceRing = new T.Mesh(
+    new T.TorusGeometry(4.35, 0.32, 8, 48),
+    new T.MeshBasicMaterial({
+      color: ORBIT9_DEVASTADOR_PALETTE.cyan,
+      toneMapped: false,
+    }),
+  );
+  faceRing.name = 'devastador-reactor-front-energy-ring';
+  faceRing.position.set(0, 8.7, -31.85);
+  faceRing.userData.visualOnly = true;
+  faceRing.castShadow = false;
+  faceRing.receiveShadow = false;
+  root.add(faceRing);
+  root.userData.reactorFaceRing = faceRing;
   root.userData.instanceCounts = Object.fromEntries(
     FORMATS.map((name) => [name, definitions[name].length]),
   );
@@ -188,4 +265,5 @@ export function updateOrbit9StageArt(root, elapsed) {
   if (!root?.userData?.diagnosticDial) return;
   const t = Number.isFinite(elapsed) ? elapsed : 0;
   root.userData.diagnosticDial.rotation.z = t * 0.16;
+  if (root.userData.reactorFaceRing) root.userData.reactorFaceRing.rotation.z = -t * 0.12;
 }

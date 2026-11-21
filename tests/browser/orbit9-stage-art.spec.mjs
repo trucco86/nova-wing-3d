@@ -8,7 +8,7 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   await page.goto('/');
   await openMenu(page, 'central');
   await page.locator('#developerPanel summary').click();
-  await page.locator('#developerExplore').click();
+  await page.locator('#developerReactorQA').click();
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
   // The initial transmission toast already auto-hides during real gameplay.
   // Suppress that transient overlay for unobstructed architecture screenshots.
@@ -20,9 +20,35 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   expect(state.stageArt.name).toBe('orbit9-devastador-stage-art');
   expect(state.stageArt.referencesStage).toBe(3);
   expect(state.stageArt.districtLandmarks).toEqual(['central', 'science', 'reactor', 'archive']);
+  expect(state.stageArt.instanceCounts.hull).toBeGreaterThan(20);
+  // No surviving NPC from the old standalone mission should remain in the
+  // reactor-access minimap. Only the three active security modules are shown.
+  await expect(page.locator('.exploration-map-survivor')).toHaveCount(0);
   expect(Object.values(state.stageArt.instanceCounts).reduce((a, b) => a + b, 0)).toBeGreaterThan(
     200,
   );
+  // Explicit viewport evidence of the entry framing. Before this pass the
+  // camera pointed sharply down and the cat stood on an empty blue floor.
+  for (const viewportSize of [
+    { width: 390, height: 844 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(viewportSize);
+    await page.waitForTimeout(120);
+    // Developer teleport snaps the camera immediately after the responsive
+    // resize, making the visual framing deterministic under software WebGL.
+    expect(await page.evaluate(() => window.__novaExploreQA.moveTo(0, 12))).toBe(true);
+    const camera = await page.evaluate(() => window.__novaExploreQA.snapshot().cameraEye);
+    if (viewportSize.width < viewportSize.height) {
+      expect(camera.z).toBeGreaterThan(25);
+    } else {
+      expect(camera.z).toBeLessThanOrEqual(22);
+    }
+    await page.screenshot({
+      path: info.outputPath('devastador-hangar-entry-' + viewportSize.width + '.png'),
+    });
+  }
+
   for (const [x, z, district, file] of [
     [0, 12, 'central', 'atrium'],
     [-38, -18, 'science', 'signal-lab'],
@@ -40,7 +66,7 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   }
   await expect(page.locator('#exploreScan')).toBeEnabled();
   await page.locator('#exploreScan').click();
-  await expect(page.locator('#explorationProgress')).toContainText('1/3');
+  await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 1/3');
   await page.locator('#exploreExit').click();
   expect(await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'))).toBeNull();
 });

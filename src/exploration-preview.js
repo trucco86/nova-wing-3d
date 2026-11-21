@@ -1,5 +1,6 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
+import { DEVASTADOR_ACCESS_MODULES, reactorModulesComplete } from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
 import {
   createOrbit9WalkRig,
@@ -49,11 +50,9 @@ export function installOrbit9ExplorationPreview(
   game,
   { hostname = window.location.hostname } = {},
 ) {
-  const launch = $('developerExplore');
   const root = $('explorationOverlay');
-  if (!launch || !root || !developerToolsAllowed(hostname)) return { destroy() {} };
-
-  launch.hidden = false;
+  if (!root) return { openIntegrated: () => false, destroy() {} };
+  const qaAllowed = developerToolsAllowed(hostname);
   const viewport = $('explorationViewport');
   const objective = $('explorationObjective');
   const progress = $('explorationProgress');
@@ -93,6 +92,7 @@ export function installOrbit9ExplorationPreview(
   let npc = null;
   let rafId = 0;
   let state = createExplorationState();
+  let integratedRequest = null;
   let playerX = ORBIT9_SPAWN.x;
   let playerZ = ORBIT9_SPAWN.z;
   const cameraGoal = new T.Vector3();
@@ -128,7 +128,7 @@ export function installOrbit9ExplorationPreview(
   function updateUI() {
     const stats = questStatus(state);
     const need = ORBIT9_EVIDENCE.filter(({ id }) => !state.clues.includes(id));
-    progress.textContent = 'ÓRBITA-9 · PISTAS ' + stats.found + '/' + stats.required;
+    progress.textContent = 'DEVASTADOR · MÓDULOS ' + stats.found + '/' + stats.required;
     const district = orbit9District(playerX, playerZ);
     if (district.id !== currentDistrict) {
       currentDistrict = district.id;
@@ -155,27 +155,18 @@ export function installOrbit9ExplorationPreview(
       const position = CLUE_POSITIONS[ORBIT9_EVIDENCE.findIndex((e) => e.id === need[i].id)];
       return near(...position);
     });
-    if (stats.missionUnlocked) {
-      objective.textContent = 'ROTA FANTASMA DESCOBERTA · COMBATE DISPONÍVEL';
-    } else if (stats.found < stats.required) {
-      objective.textContent = closeClue
-        ? 'SINAL PRÓXIMO · SCAN / E PARA INVESTIGAR'
-        : 'EXPLORE OS DISTRITOS · BUSQUE 3 PISTAS NO MAPA';
+    if (stats.found === stats.required) {
+      objective.textContent = 'TRÊS MÓDULOS ATIVOS · ACESSO AO NÚCLEO LIBERADO';
+    } else if (closeClue) {
+      const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === closeClue.id)?.name;
+      objective.textContent = moduleName + ' · PRESSIONE ATIVAR / E';
     } else {
-      objective.textContent = near(...SURVIVOR)
-        ? 'SOBREVIVENTE PRÓXIMO · INTERAGIR / E'
-        : 'ENCONTRE O SOBREVIVENTE NO SETOR SUL DA ESTAÇÃO';
+      objective.textContent = 'LOCALIZE E ATIVE CIRCUITOS, REFRIGERAÇÃO E MOTORES';
     }
     scanButton.disabled = !closeClue;
-    talkButton.disabled =
-      !stats.found ||
-      stats.found < stats.required ||
-      !near(...SURVIVOR) ||
-      stats.survivorSpokenTo ||
-      !choicePanel.hidden ||
-      !dialoguePanel.hidden;
-    launchCombat.hidden = !stats.missionUnlocked;
-    if (stats.survivorSpokenTo) choicePanel.hidden = true;
+    talkButton.hidden = true;
+    talkButton.disabled = true;
+    launchCombat.hidden = stats.found !== stats.required;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
@@ -188,15 +179,15 @@ export function installOrbit9ExplorationPreview(
       ({ id }, i) => !state.clues.includes(id) && near(...CLUE_POSITIONS[i]),
     );
     if (idx < 0) {
-      notification('Aproxime-se de uma transmissão luminosa.');
+      notification('Aproxime-se de um dos três módulos de acesso.');
       return;
     }
     const result = inspectEvidence(state, ORBIT9_EVIDENCE[idx].id);
     state = result.state;
     notification(
       result.accepted
-        ? 'PISTA RECUPERADA · ' + ORBIT9_EVIDENCE[idx].label.toUpperCase()
-        : 'A TRANSMISSÃO JÁ FOI RECUPERADA.',
+        ? 'MÓDULO ATIVADO · ' + DEVASTADOR_ACCESS_MODULES[idx].name
+        : 'MÓDULO JÁ ATIVADO.',
     );
     updateUI();
   }
@@ -269,7 +260,7 @@ export function installOrbit9ExplorationPreview(
       powerPreference: 'low-power',
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
-    renderer.domElement.setAttribute('aria-label', 'Exploração 3D da estação Órbita-9');
+    renderer.domElement.setAttribute('aria-label', 'Exploração 3D da nave-mãe Devastador');
     viewport.appendChild(renderer.domElement);
     scene.add(new T.HemisphereLight(0xb4d5ec, 0x17273a, 2.05));
     // Carrier armor uses metallic PBR. Fill light is essential because the
@@ -295,6 +286,9 @@ export function installOrbit9ExplorationPreview(
       return mesh;
     };
     makeBox(112, 1.4, 126, steel, 0, -0.9, -41);
+    // The portrait follow camera is pulled back beyond the old deck edge.
+    // Extend only the cosmetic landing floor so no unbuilt void enters view.
+    makeBox(112, 1.4, 28, steel, 0, -0.9, 29);
     // Connected free-roam districts replace the former mandatory corridor.
     const districtMats = [mat('#193c4c'), mat('#37404d'), mat('#283b43')];
     ORBIT9_DISTRICTS.slice(1).forEach((district, i) => {
@@ -302,6 +296,7 @@ export function installOrbit9ExplorationPreview(
     });
     for (const side of [-1, 1]) {
       makeBox(2, 9, 128, dark, side * 58, 4, -41);
+      makeBox(2, 9, 28, dark, side * 58, 4, 29);
       for (let n = 0; n < 10; n++) {
         const z = 9 - n * 11;
         makeBox(2, 17, 3, steel, side * 57, 8, z);
@@ -385,6 +380,7 @@ export function installOrbit9ExplorationPreview(
     head.position.y = 10;
     npc.add(head);
     npc.position.set(SURVIVOR[0], 0, SURVIVOR[1]);
+    npc.visible = false; // No unrelated NPC/dialogue before the reactor.
     scene.add(npc);
     // Use the same approved feline 3D character the current hangar and
     // stage-one opening already share; never build an unrelated cube avatar.
@@ -396,7 +392,10 @@ export function installOrbit9ExplorationPreview(
     facingYaw = Math.PI;
     pilot.rotation.y = facingYaw;
     scene.add(pilot);
-    const initialCamera = orbit9CameraPose(playerX, playerZ, cameraState);
+    const initialCamera = orbit9CameraPose(playerX, playerZ, {
+      ...cameraState,
+      aspect: viewport.clientWidth / Math.max(1, viewport.clientHeight),
+    });
     camera.position.set(initialCamera.eye.x, initialCamera.eye.y, initialCamera.eye.z);
     camera.lookAt(initialCamera.aim.x, initialCamera.aim.y, initialCamera.aim.z);
     mapSignals.replaceChildren();
@@ -409,12 +408,6 @@ export function installOrbit9ExplorationPreview(
       mark.style.bottom = where.y + '%';
       mapSignals.appendChild(mark);
     });
-    const survivorMark = document.createElement('span');
-    survivorMark.className = 'exploration-map-survivor';
-    const where = orbit9MapPoint(...SURVIVOR);
-    survivorMark.style.left = where.x + '%';
-    survivorMark.style.bottom = where.y + '%';
-    mapSignals.appendChild(survivorMark);
     resize();
   }
 
@@ -479,8 +472,10 @@ export function installOrbit9ExplorationPreview(
     // the collision capsule, trigger flight rolls or change progression.
     let spinAngle = 0;
     if (spinElapsed >= 0) {
-      spinElapsed += dt;
-      const t = Math.min(1, spinElapsed / SPIN_SECONDS);
+      // dt is deliberately capped for collision safety. The 360-degree
+      // action must use real time; otherwise low-FPS devices take several
+      // seconds to complete an intended 720ms rotation.
+      const t = Math.min(1, Math.max(0, (stamp - spinElapsed) / (SPIN_SECONDS * 1000)));
       spinAngle = Math.PI * 2 * (t * t * (3 - 2 * t));
       if (t >= 1) {
         spinElapsed = -1;
@@ -497,6 +492,7 @@ export function installOrbit9ExplorationPreview(
     const pose = orbit9CameraPose(playerX, playerZ, {
       yaw: cameraYawVisual,
       mode: cameraState.mode,
+      aspect: camera.aspect,
     });
     cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
     camera.position.lerp(cameraGoal, Math.min(1, dt * 9));
@@ -518,7 +514,7 @@ export function installOrbit9ExplorationPreview(
   }
 
   function open() {
-    if (active) return;
+    if (active || !integratedRequest) return false;
     active = true;
     state = travelTo(createExplorationState(), 'orbit-9-ruins').state;
     playerX = ORBIT9_SPAWN.x;
@@ -539,6 +535,13 @@ export function installOrbit9ExplorationPreview(
     spinButton.classList.remove('pressed');
     dialogueIndex = -1;
     root.hidden = false;
+    root.dataset.mode = 'reactor-access';
+    $('explorationTitle').textContent = 'DEVASTADOR · ACESSO AO REATOR';
+    $('explorationEyebrow').textContent = 'FASE 04 · DESEMBARQUE · REATOR';
+    exitButton.textContent = 'PAUSAR / MENU';
+    scanButton.textContent = 'ATIVAR MÓDULO';
+    launchCombat.textContent = 'ENTRAR NO REATOR · ENFRENTAR O NÚCLEO';
+    talkButton.hidden = true;
     choicePanel.hidden = true;
     dialoguePanel.hidden = true;
     cameraZoom.setAttribute('aria-pressed', 'false');
@@ -549,12 +552,13 @@ export function installOrbit9ExplorationPreview(
       root.hidden = true;
       notification('WebGL indisponível: ' + String(error?.message || error));
       close();
-      return;
+      return false;
     }
     const pilotName = game.snapshot?.().loadout?.pilotName ?? 'FIVE CATS';
-    notification(pilotName + ': Investigue as três transmissões. Nenhum progresso será salvo.');
+    notification(pilotName + ': Ative os 3 módulos para liberar o núcleo da Devastador.');
     updateUI();
     rafId = requestAnimationFrame(frame);
+    return true;
   }
 
   function close() {
@@ -589,20 +593,38 @@ export function installOrbit9ExplorationPreview(
     walkRig = null;
     stageArt = null;
     rafId = 0;
+    integratedRequest = null;
   }
 
   function launchMission() {
-    if (!questStatus(state).missionUnlocked) {
-      notification('Missão bloqueada: investigue e converse com o sobrevivente.');
+    if (!integratedRequest || !reactorModulesComplete(state.clues)) {
+      notification('ACESSO BLOQUEADO · ATIVE OS TRÊS MÓDULOS');
       return;
     }
-    const destination = travelTo(state, 'orion-ghost-route');
-    if (!destination.accepted) return;
-    // Sector 04 is Orbit-9; the existing Developer/QA game session keeps
-    // ranking and campaign saves isolated. No mission completion is spoofed.
-    const entered = game.startDeveloperScenario(3, 'boss');
-    if (entered) close();
-    else notification('Não foi possível iniciar o combate de QA.');
+    // Continue the SAME Stage 04 flight: the original reactor boss spawns
+    // after the normal encounter warning. Never start a second QA scenario.
+    const resumed = integratedRequest.complete([...state.clues]);
+    if (resumed) close();
+    else notification('NÃO FOI POSSÍVEL LIBERAR O NÚCLEO.');
+  }
+
+  function leaveToPause() {
+    if (!integratedRequest) return;
+    const abort = integratedRequest.abort;
+    close();
+    abort();
+  }
+
+  function openIntegrated(request) {
+    if (
+      !request ||
+      request.sector !== 3 ||
+      typeof request.complete !== 'function' ||
+      typeof request.abort !== 'function'
+    )
+      return false;
+    integratedRequest = request;
+    return open();
   }
 
   function keyDown(e) {
@@ -624,8 +646,7 @@ export function installOrbit9ExplorationPreview(
       held.add('boost');
       e.preventDefault();
     } else if (e.code === 'KeyE' && !e.repeat) {
-      if (state.clues.length === ORBIT9_EVIDENCE.length && near(...SURVIVOR)) talk();
-      else scan();
+      scan();
       e.preventDefault();
     } else if (e.code === 'KeyQ' || e.code === 'KeyR') {
       cameraState = orbit9RotateCamera(cameraState, ((e.code === 'KeyQ' ? -1 : 1) * Math.PI) / 7);
@@ -635,12 +656,7 @@ export function installOrbit9ExplorationPreview(
       cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
       e.preventDefault();
     } else if (e.code === 'Escape') {
-      if (!dialoguePanel.hidden || !choicePanel.hidden) {
-        dialoguePanel.hidden = true;
-        choicePanel.hidden = true;
-        dialogueIndex = -1;
-        updateUI();
-      } else close();
+      leaveToPause();
       e.preventDefault();
     }
   }
@@ -660,8 +676,7 @@ export function installOrbit9ExplorationPreview(
     if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') held.delete('boost');
   }
 
-  listen(launch, 'click', open);
-  listen(exitButton, 'click', close);
+  listen(exitButton, 'click', leaveToPause);
   listen(scanButton, 'click', scan);
   listen(talkButton, 'click', talk);
   listen(dialogueNext, 'click', advanceDialogue);
@@ -677,7 +692,7 @@ export function installOrbit9ExplorationPreview(
   });
   listen(spinButton, 'click', () => {
     if (!active || spinElapsed >= 0 || !dialoguePanel.hidden || !choicePanel.hidden) return;
-    spinElapsed = 0;
+    spinElapsed = performance.now();
     spinButton.classList.add('pressed');
   });
   listen(viewport, 'pointerdown', (event) => {
@@ -764,73 +779,95 @@ export function installOrbit9ExplorationPreview(
     });
   }
 
+  function startStageReactorQA() {
+    if (!qaAllowed || active || game.snapshot?.().state !== 'menu') return false;
+    return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
+  }
+  if (qaAllowed && $('developerReactorQA'))
+    listen($('developerReactorQA'), 'click', startStageReactorQA);
+
   // Developer-only teleport/inspection API supports deterministic browser QA.
   // It grants no rank, save, mission victory or privileged backend actions.
-  window.__novaExploreQA = Object.freeze({
-    moveTo(x, z) {
-      if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
-      if (
-        x < ORBIT9_BOUNDS.minX ||
-        x > ORBIT9_BOUNDS.maxX ||
-        z < ORBIT9_BOUNDS.minZ ||
-        z > ORBIT9_BOUNDS.maxZ ||
-        orbit9Blocked(x, z)
-      )
-        return false;
-      playerX = x;
-      playerZ = z;
-      // Developer/QA teleport is not player movement. Never interpolate the
-      // camera across dozens of meters through the station's physical walls.
-      // Snapping immediately also makes screenshots of each district reliable.
-      cameraYawVisual = cameraState.yaw;
-      const pose = orbit9CameraPose(playerX, playerZ, cameraState);
-      cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
-      cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
-      camera?.position.copy(cameraGoal);
-      camera?.lookAt(cameraTarget);
-      updateUI();
-      return true;
-    },
-    snapshot() {
-      return {
-        active,
-        player: { x: playerX, z: playerZ },
-        pilotModel: pilot?.name ?? null,
-        stageArt: stageArt
-          ? {
-              name: stageArt.name,
-              referencesStage: stageArt.userData.referencesStage,
-              districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
-              instanceCounts: { ...stageArt.userData.instanceCounts },
-            }
-          : null,
-        gait: walkRig?.snapshot() ?? null,
-        stick: { x: stickInput.x, z: stickInput.z },
-        boosting: held.has('boost') || boostTouchHeld,
-        spinning: spinElapsed >= 0,
-        cameraVisualYaw: cameraYawVisual,
-        district: orbit9District(playerX, playerZ).id,
-        camera: { ...cameraState },
-        cameraEye: camera
-          ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
-          : null,
-        dialogue: {
-          open: !dialoguePanel.hidden,
-          index: dialogueIndex,
-          choicesVisible: !choicePanel.hidden,
-        },
-        quest: createExplorationState(state),
-      };
-    },
-  });
+  if (qaAllowed)
+    window.__novaExploreQA = Object.freeze({
+      startStageReactorQA,
+      moveTo(x, z) {
+        if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
+        if (
+          x < ORBIT9_BOUNDS.minX ||
+          x > ORBIT9_BOUNDS.maxX ||
+          z < ORBIT9_BOUNDS.minZ ||
+          z > ORBIT9_BOUNDS.maxZ ||
+          orbit9Blocked(x, z)
+        )
+          return false;
+        playerX = x;
+        playerZ = z;
+        // Developer/QA teleport is not player movement. Never interpolate the
+        // camera across dozens of meters through the station's physical walls.
+        // Snapping immediately also makes screenshots of each district reliable.
+        // The viewport can change between screenshots without a delivered
+        // window.resize event yet. Read its actual dimensions synchronously.
+        resize();
+        cameraYawVisual = cameraState.yaw;
+        const pose = orbit9CameraPose(playerX, playerZ, {
+          ...cameraState,
+          aspect: camera?.aspect,
+        });
+        cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
+        cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+        camera?.position.copy(cameraGoal);
+        camera?.lookAt(cameraTarget);
+        updateUI();
+        return true;
+      },
+      snapshot() {
+        return {
+          active,
+          game: {
+            state: game.snapshot?.().state,
+            sector: game.snapshot?.().sector,
+            seconds: game.snapshot?.().seconds,
+            arena: game.snapshot?.().arena,
+            reactorAccess: game.snapshot?.().reactorAccess,
+          },
+          player: { x: playerX, z: playerZ },
+          pilotModel: pilot?.name ?? null,
+          stageArt: stageArt
+            ? {
+                name: stageArt.name,
+                referencesStage: stageArt.userData.referencesStage,
+                districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
+                instanceCounts: { ...stageArt.userData.instanceCounts },
+              }
+            : null,
+          gait: walkRig?.snapshot() ?? null,
+          stick: { x: stickInput.x, z: stickInput.z },
+          boosting: held.has('boost') || boostTouchHeld,
+          spinning: spinElapsed >= 0,
+          cameraVisualYaw: cameraYawVisual,
+          district: orbit9District(playerX, playerZ).id,
+          camera: { ...cameraState },
+          cameraEye: camera
+            ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
+            : null,
+          dialogue: {
+            open: !dialoguePanel.hidden,
+            index: dialogueIndex,
+            choicesVisible: !choicePanel.hidden,
+          },
+          quest: createExplorationState(state),
+        };
+      },
+    });
 
   return {
+    openIntegrated,
     destroy() {
       close();
-      if (window.__novaExploreQA) delete window.__novaExploreQA;
+      if (qaAllowed && window.__novaExploreQA) delete window.__novaExploreQA;
       for (const [el, name, handler, opts] of listeners)
         el.removeEventListener(name, handler, opts);
-      launch.hidden = true;
     },
   };
 }

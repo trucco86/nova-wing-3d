@@ -204,9 +204,65 @@ export function createDevastadorSabotageCore() {
   const coreMuzzle = new T.Object3D();
   coreMuzzle.position.copy(core.position);
   root.add(coreMuzzle);
+  // Distinct, oversized, wall-bound defense automatons. Only upper bodies
+  // extend out of recessed wall sockets. They are NOT ordinary enemy robots:
+  // no legs, pathfinding, free movement, or separate enemy/wave spawning.
+  // Destroying power circuit i permanently retracts sentinel i.
+  const sentinels = [];
+  const sentinelAngles = [-0.78, -0.36, 0.36, 0.78];
+  const face = mat('#f55f41', true);
+  const optic = mat('#b8f6ff', true);
+  const robotServo = new T.CylinderGeometry(1, 1, 1, 10);
+  const robotFace = new T.OctahedronGeometry(6.4, 0);
+  for (const [index, angle] of sentinelAngles.entries()) {
+    const mount = new T.Group();
+    mount.name = 'devastador-wall-sentinel-' + index;
+    mount.userData.visualOnly = true;
+    mount.position.set(Math.sin(angle) * 224, 24, Math.cos(angle) * 224);
+    mount.rotation.y = angle + Math.PI;
+    grandHall.add(mount);
+    addBox(mount, 'sentinel-wall-anchorage', dark, [0, 0, -3], [35, 38, 11]);
+    for (const side of [-1, 1]) {
+      addBox(mount, 'sentinel-rail-' + index, steel, [side * 16, 0, 1], [3, 29, 14]);
+      addBox(mount, 'sentinel-hydraulic-anchor', charge, [side * 16, -10, 4], [1.3, 9, 1.4]);
+    }
+    const upper = new T.Group();
+    upper.name = 'sentinel-deploying-upper-body';
+    mount.add(upper);
+    addBox(upper, 'sentinel-armored-chest', armor, [0, 0, 12], [26, 23, 13]);
+    addBox(upper, 'sentinel-reactor-heart', face, [0, 1, 20], [6.3, 6, 2.3]);
+    addBox(upper, 'sentinel-neck', dark, [0, 11, 12], [9, 5, 9]);
+    const head = new T.Mesh(robotFace, steel);
+    head.name = 'sentinel-faceted-head-' + index;
+    head.position.set(0, 17.5, 16);
+    upper.add(head);
+    addBox(upper, 'sentinel-eye-visor', optic, [0, 17.1, 22], [11.5, 2.2, 1.6]);
+    const arms = [];
+    for (const side of [-1, 1]) {
+      const arm = new T.Group();
+      arm.name = side < 0 ? 'sentinel-left-arm' : 'sentinel-right-arm';
+      arm.position.set(side * 17, 3, 11);
+      upper.add(arm);
+      addBox(arm, 'sentinel-heavy-shoulder', armor, [0, 0, 2], [12, 13, 14]);
+      const servo = new T.Mesh(robotServo, dark);
+      servo.name = 'sentinel-articulated-arm-servo';
+      servo.rotation.z = Math.PI / 2;
+      servo.position.set(0, -4, 10);
+      servo.scale.set(4.1, 14, 4.1);
+      arm.add(servo);
+      addBox(arm, 'sentinel-forearm-cannon', steel, [0, -7, 19], [7.5, 9, 19]);
+      const muzzle = addBox(arm, 'sentinel-energy-muzzle', face, [0, -7, 29], [4, 4, 2]);
+      muzzle.name = 'devastador-wall-sentinel-muzzle-' + index + '-' + (side < 0 ? 'L' : 'R');
+      arms.push({ arm, muzzle, side });
+    }
+    // Real fire origin is the visible right-arm cannon, never the chamber center.
+    const muzzle = arms[1].muzzle;
+    sentinels.push({ index, mount, upper, head, arms, muzzle, angle });
+  }
   root.userData = {
     sabotage: true,
     parts,
+    sentinels,
     grandHall,
     core,
     coreMarker,
@@ -231,7 +287,10 @@ export function createDevastadorSabotageCore() {
   return root;
 }
 
-export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active = true } = {}) {
+export function updateDevastadorSabotageCore(
+  root,
+  { orbit = 0, time = 0, active = true, defense = null } = {},
+) {
   if (!root?.userData.sabotage) return null;
   const parts = root.userData.parts;
   const stage = sabotagedSystem(parts);
@@ -267,6 +326,22 @@ export function updateDevastadorSabotageCore(root, { orbit = 0, time = 0, active
       active && (failed || (open && alarmsOn)) && Math.sin(time * 8 + i * 1.9) > -0.2;
     if (part.fan && !failed) part.fan.rotation.z = time * (0.35 + 2 * driveSpeed);
     if (part.fan && failed) part.fan.rotation.z = 0;
+  }
+  for (const sentinel of root.userData.sentinels ?? []) {
+    const online = parts[sentinel.index].hp > 0;
+    const t = Math.min(1, Math.max(0, (time - 3.1 - sentinel.index * 0.35) / 1.25));
+    // Upper body slides out on the armored wall rails; its legs do not exist.
+    sentinel.upper.position.z = online ? -15 + 13 * t : -25;
+    sentinel.upper.visible = online && active;
+    const charging =
+      active &&
+      defense?.armed?.kind === 'sentinels' &&
+      defense.armed.indices.includes(sentinel.index);
+    sentinel.head.rotation.y = Math.sin(time * 0.6 + sentinel.index) * 0.16;
+    for (const { arm, muzzle, side } of sentinel.arms) {
+      arm.rotation.x = charging ? -0.3 : Math.sin(time * 0.82 + sentinel.index + side) * 0.07;
+      muzzle.scale.setScalar(charging ? 1.55 + Math.sin(time * 19) * 0.12 : 1);
+    }
   }
   root.userData.core.visible = stage.system === 'core';
   root.userData.coreMarker.visible = stage.system === 'core';

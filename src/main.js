@@ -27,7 +27,9 @@ let catRankUI;
 const sessionId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
 let runIndex = 0;
 let activeRunId = '';
+let reactorAccessStage = null;
 const game = createGame({
+  onReactorAccessRequested: (context) => reactorAccessStage?.openIntegrated(context) ?? false,
   nativeLifecycle: Capacitor.isNativePlatform(),
   onStageStarted: (event) => {
     activeRunId = sessionId + '-' + ++runIndex + '-' + event.sector;
@@ -52,6 +54,53 @@ const game = createGame({
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });
 const compactMenu = installCompactMenu();
 const mobileRpg = installMobileRpgAccordion({ game });
+// Part of the actual Stage-04 mission on web and native, not a separate
+// Developer/QA game mode. No persistent exploration save is introduced.
+const exploration = installOrbit9ExplorationPreview(game);
+reactorAccessStage = exploration;
+// Only authorized DEV/QA builds expose deterministic boss inspection. The
+// existing Developer encounter never records ranking or campaign progress.
+// This permits real screenshots AFTER the wall sentinels emerge, rather than
+// approving a static screenshot of the first frame with all robots retracted.
+if (!Capacitor.isNativePlatform() && game.snapshot().developerAvailable) {
+  const bossQA = Object.freeze({
+    snapshot() {
+      const state = game.snapshot();
+      return state.developerSession && state.sector === 4
+        ? {
+            state: state.state,
+            boss: state.boss,
+            defense: state.sabotage?.defense ?? null,
+            projectileCount: state.hostileProjectilePool.active,
+          }
+        : null;
+    },
+    advance(seconds) {
+      const state = game.snapshot();
+      if (
+        !state.developerSession ||
+        state.sector !== 4 ||
+        state.state !== 'playing' ||
+        !state.boss ||
+        !Number.isFinite(seconds) ||
+        seconds <= 0 ||
+        seconds > 9
+      )
+        return false;
+      // QA screenshot sampling uses the same 100ms integration step as the
+      // existing Node harness. 60Hz software-WebGL stepping blocked browser
+      // screenshots for minutes without increasing gameplay test coverage.
+      for (let tick = 0; tick < Math.round(seconds * 10); tick++) game.step(0.1);
+      return true;
+    },
+  });
+  globalThis.__novaBossQA = bossQA;
+}
+const destroyWithStage = game.destroy.bind(game);
+game.destroy = () => {
+  exploration.destroy();
+  destroyWithStage();
+};
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -61,7 +110,6 @@ if (!Capacitor.isNativePlatform()) {
     onRuntimeConfig: (config) => ranking?.setRuntimeConfig(config),
   });
   const showroom = installShowroom();
-  const exploration = installOrbit9ExplorationPreview(game);
   const destroy = game.destroy.bind(game);
   game.destroy = () => {
     destroyAuth();
@@ -71,7 +119,6 @@ if (!Capacitor.isNativePlatform()) {
     compactMenu.destroy();
     mobileRpg.destroy();
     showroom.destroy();
-    exploration.destroy();
     destroy();
   };
 }
