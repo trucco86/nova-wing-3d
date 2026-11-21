@@ -116,7 +116,8 @@ test('Europa uses exactly one celestial globe and raises the same ice scenery co
     assert.equal(root.visible, europaSurfaceAt(t).groundVisible);
   }
   world.setEuropaTunnel(true);
-  assert.equal(root.visible, false);
+  assert.equal(root.visible, true, 'glacial cliff backdrop persists through cave');
+  assert.equal(scene.getObjectByName('launch-ground').visible, false);
   world.setEuropaTunnel(false);
   assert.equal(root.visible, true);
   world.setEuropaBossArena(true, -83);
