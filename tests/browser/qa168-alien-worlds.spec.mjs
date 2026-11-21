@@ -110,3 +110,23 @@ test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall 
   );
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
 });
+
+test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital fade', async ({ page }, info) => {
+  test.setTimeout(120000);
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/__dynamic.html?qaSurface=5');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  await page.evaluate(() => window.fixture.advance(3));
+  const approach = await page.evaluate(() => window.fixture.europaBoostWeatherState());
+  expect(approach.boostVisible).toBe(true);
+  expect(approach.boostLineVertices).toBe(152);
+  expect(approach.globeVisible).toBe(true);
+  expect(approach.globeScale).toBeGreaterThan(1.0);
+  expect(approach.globeDepth).toBeGreaterThan(-920);
+  await page.screenshot({ path: info.outputPath('qa168-europa-super-boost-3s.png') });
+  await page.evaluate(() => window.fixture.advance(5));
+  const orbit = await page.evaluate(() => window.fixture.europaBoostWeatherState());
+  expect(orbit.boostVisible).toBe(false);
+  expect(orbit.globeVisible).toBe(false);
+  await page.screenshot({ path: info.outputPath('qa168-europa-orbit-ice-mist-8s.png') });
+});
