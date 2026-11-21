@@ -80,6 +80,22 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  europaBoostWeatherState() {
+    const globe = lastScene?.getObjectByName('destination-celestial-body');
+    const streaks = lastScene?.getObjectByName('europa-orbital-super-boost-streaks');
+    const flakes = lastScene?.getObjectByName('europa-windborne-ice-snow');
+    return {
+      globeVisible: globe?.visible ?? false,
+      globeScale: globe?.scale.x ?? null,
+      globeDepth: globe?.position.z ?? null,
+      boostVisible: streaks?.visible ?? false,
+      boostLineVertices: streaks?.geometry?.getAttribute('position')?.count ?? 0,
+      snowVisible: flakes?.visible ?? false,
+      snowCount: flakes?.geometry?.getAttribute('position')?.count ?? 0,
+      render: lastRenderStats ? { ...lastRenderStats } : null,
+    };
+  },
+
   europaCavernState() {
     const root = lastScene?.getObjectByName('europa-cathedral-ice-cavern');
     const tunnel = root?.parent;
