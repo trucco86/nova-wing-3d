@@ -41,6 +41,7 @@ import {
 import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
+import { addEuropaEnemyIceSkin } from './europa-enemy-ice-skin.js';
 import {
   SECTORS,
   PILOTS,
@@ -2409,6 +2410,9 @@ export function createGame({
         );
         mount.add(muzzle);
       }
+    }
+    if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground)) {
+      addEuropaEnemyIceSkin(o, { ground });
     }
     if (kind === 'walker' || airborneRobot) o.userData.combatState = 'deploying';
     if (airborneRobot) {
