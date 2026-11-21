@@ -206,7 +206,8 @@ test('Colossus persistent claws and articulated joint recovery are deterministic
       [13, 'recovery'],
       [14.1, 'maneuver'],
     ]) {
-      animateEuropaAttackVfx(effect, clock, 2, state, 'cryo-pincer', { claw: state === 'attack' ? 0.85 : 0.25 }, aim);
+      const claw = state === 'attack' ? 0.85 : clock < 8.1 ? 0.01 : 0.28;
+      animateEuropaAttackVfx(effect, clock, 2, state, 'cryo-pincer', { claw }, aim);
       assert.equal(effect.userData.strikers.filter((arm) => arm.node.visible).length, 2);
       assert.ok(effect.userData.strikers.every((arm) => Number.isFinite(arm.forearm.scale.z) && arm.forearm.scale.z > 0));
       positions.push(effect.userData.strikers[0].hand.position.toArray());
