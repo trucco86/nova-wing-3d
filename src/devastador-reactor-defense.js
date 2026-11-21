@@ -29,6 +29,7 @@ export function advanceDevastadorDefense(state, {
   parts = [],
   playerX = 0,
   playerY = 0,
+  playerZ = 0,
 } = {}) {
   if (!state || !Number.isFinite(age) || age < 0) return { event: null, state };
   const online = devastadorDefenseOnline(parts);
@@ -74,6 +75,7 @@ export function advanceDevastadorDefense(state, {
     target: {
       x: Number.isFinite(playerX) ? Math.max(-100, Math.min(100, playerX)) : 0,
       y: Number.isFinite(playerY) ? Math.max(-80, Math.min(120, playerY)) : 0,
+      z: Number.isFinite(playerZ) ? Math.max(-250, Math.min(120, playerZ)) : 0,
     },
   };
   return {
