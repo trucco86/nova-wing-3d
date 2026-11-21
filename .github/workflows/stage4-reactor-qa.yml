@@ -1,0 +1,32 @@
+name: Stage-04 integrated reactor browser QA
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-devastador-art-pass-20261120
+permissions:
+  contents: read
+jobs:
+  reactor:
+    if: github.event.pull_request.head.ref == 'feat/devastador-reactor-integrated-access-20261120'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run build:check
+      - name: Test midstage reactor gate, 3 activations, camera, and pilot in desktop/mobile
+        run: npx playwright test tests/browser/exploration-vertical-slice.spec.mjs tests/browser/orbit9-stage-art.spec.mjs --project=mobile --project=desktop --workers=1
+      - name: Upload screenshots and failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage4-integrated-reactor-browser-evidence
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
