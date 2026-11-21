@@ -783,8 +783,10 @@ export function installOrbit9ExplorationPreview(
     if (!qaAllowed || active || game.snapshot?.().state !== 'menu') return false;
     return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
   }
-  if (qaAllowed && $('developerReactorQA'))
+  if (qaAllowed && $('developerReactorQA')) {
+    $('developerReactorQA').hidden = false;
     listen($('developerReactorQA'), 'click', startStageReactorQA);
+  }
 
   // Developer-only teleport/inspection API supports deterministic browser QA.
   // It grants no rank, save, mission victory or privileged backend actions.
