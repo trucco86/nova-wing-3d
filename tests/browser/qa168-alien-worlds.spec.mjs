@@ -101,7 +101,8 @@ test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall 
       expect.objectContaining({ name: 'europa-cave-vaulted-ceiling', count: 22 }),
       expect.objectContaining({ name: 'europa-cave-hanging-ice-stalactites', count: 36 }),
       expect.objectContaining({ name: 'europa-cave-monumental-entrance', count: 10 }),
-      expect.objectContaining({ name: 'europa-cave-faceted-gate-skin', count: 36 }),
+      expect.objectContaining({ name: 'europa-cave-natural-ice-arch', count: 13 }),
+      expect.objectContaining({ name: 'europa-cave-faceted-gate-skin', count: 72 }),
     ]),
   );
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
