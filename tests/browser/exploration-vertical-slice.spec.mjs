@@ -35,9 +35,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   // neither the campaign clock nor the underlying flight should keep ticking.
   const suspended = await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds);
   await page.waitForTimeout(300);
-  expect((await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds))).toBe(
-    suspended,
-  );
+  expect(await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds)).toBe(suspended);
 
   for (const [x, z, district, modules] of [
     [-38, -18, 'LABORATÓRIO DE SINAIS', 1],
