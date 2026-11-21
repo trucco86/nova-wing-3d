@@ -57,3 +57,9 @@
 - Minimap mostra somente os três módulos do reator, sem marcador de NPC da versão antiga. Átrio e arquivos agora usam a identificação Devastador.
 - Testes registram capturas de QA 390×844 e 844×390, além da verificação de ângulo, distância e FOV da câmera de seguimento.
 - Revisar as capturas reais e a velocidade de renderização em aparelho físico antes de homologar como arte final.
+
+## Verificação de câmera responsiva
+
+- Paisagem: mantém a aproximação da câmera e o enquadramento dos pórticos da Devastador.
+- Retrato: recua a câmera e amplia o campo de visão para reduzir a proporção do gato na tela. O piso cosmético do hangar foi estendido para sustentar esse recuo sem mostrar vazio.
+- Validação Node local da CI de sincronização: 12/12 testes específicos de câmera, locomoção, geografia e reator aprovados. Capturas finais e a suíte geral devem ser conferidas no commit de QA atualizado.
