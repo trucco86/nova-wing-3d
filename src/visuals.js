@@ -1942,10 +1942,16 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
         T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface) + state.haze * 0.006;
       // Mist is a transition curtain, not permanent blur in the playable
       // canyon. The fog clears completely as the ship leaves the fissure.
+      // The global flight floor stays hidden during the physical tunnel,
+      // while OUTER canyon shelves and cliffs can remain in view. All of
+      // those authored meshes are beyond the +/-72 flight envelope.
+      const showIceBackdrop =
+        !europaBossArenaActive &&
+        (ice.groundVisible || (europaTunnelActive && seconds >= 25));
       updateEuropaSurface(
         sectorScenery.getObjectByName('europa-frozen-surface'),
         seconds,
-        ice.groundVisible && !europaTunnelActive && !europaBossArenaActive,
+        showIceBackdrop,
         destinationGraphicsQuality === 'high',
       );
     }
@@ -2155,12 +2161,18 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (sceneryTheme === 'ice') {
         const state = europaSurfaceAt(europaArrivalSeconds, europaTunnelActive);
         ground.visible = state.groundVisible && !europaBossArenaActive;
+        const showIceBackdrop =
+          !europaBossArenaActive &&
+          (state.groundVisible || (europaTunnelActive && europaArrivalSeconds >= 25));
         updateEuropaSurface(
           sectorScenery.getObjectByName('europa-frozen-surface'),
           europaArrivalSeconds,
-          state.groundVisible && !europaTunnelActive && !europaBossArenaActive,
+          showIceBackdrop,
           destinationGraphicsQuality === 'high',
         );
+        // The physical cave reads as a frozen canyon, not a doorway in
+        // star-filled empty space. No sky changes persist after tunnel exit.
+        if (europaTunnelActive) starfield.material.opacity = 0.08;
       }
       return europaTunnelActive;
     },
@@ -2175,8 +2187,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       if (surface)
         surface.visible =
           !europaBossArenaActive &&
-          !europaTunnelActive &&
-          europaSurfaceAt(europaArrivalSeconds).groundVisible;
+          (europaTunnelActive || europaSurfaceAt(europaArrivalSeconds).groundVisible);
       const crystals = sectorScenery.getObjectByName('europa-near-field-crystals');
       if (crystals) crystals.visible = !europaBossArenaActive;
       const buriedVaults = sectorScenery.getObjectByName('alien-architecture-ice');
