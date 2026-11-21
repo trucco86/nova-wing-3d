@@ -14,7 +14,8 @@ test('Europa crystal canyon has authored cliffs, cyan/violet shards and rooted a
   const root = createEuropaCrystalCanyon();
   assert.equal(root.name, 'europa-premium-crystal-canyon');
   assert.equal(root.userData.visualOnly, true);
-  assert.equal(root.children.length, 5, 'four batches and one landmark group');
+  assert.equal(root.children.length, 6, 'four batches, one landmark group and one frozen cloud layer');
+  assert.ok(root.getObjectByName('europa-frozen-cloud-banks')?.isInstancedMesh);
   const quantities = [
     ['europa-canyon-grounded-cliffs', EUROPA_CANYON_BUDGET.cliffInstances],
     ['europa-canyon-crystal-cyan', EUROPA_CANYON_BUDGET.cyanCrystalInstances],
@@ -91,8 +92,8 @@ test('mobile Medium mode removes violet crystal draw while preserving canyon and
   assert.equal(root.getObjectByName('europa-canyon-distant-alien-gateway').visible, true);
   setEuropaCrystalCanyonQuality(root, 'high');
   assert.equal(violet.visible, true);
-  assert.equal(EUROPA_CANYON_BUDGET.decorativeDrawsHigh, 6);
-  assert.equal(EUROPA_CANYON_BUDGET.decorativeDrawsMedium, 5);
+  assert.equal(EUROPA_CANYON_BUDGET.decorativeDrawsHigh, 7);
+  assert.equal(EUROPA_CANYON_BUDGET.decorativeDrawsMedium, 6);
 });
 
 test('the real Europa mission reveals the canyon after descent, hides it in tunnel and boss', () => {
