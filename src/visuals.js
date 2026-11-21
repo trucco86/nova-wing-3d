@@ -1946,8 +1946,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       // while OUTER canyon shelves and cliffs can remain in view. All of
       // those authored meshes are beyond the +/-72 flight envelope.
       const showIceBackdrop =
-        !europaBossArenaActive &&
-        (ice.groundVisible || (europaTunnelActive && seconds >= 25));
+        !europaBossArenaActive && (ice.groundVisible || (europaTunnelActive && seconds >= 25));
       updateEuropaSurface(
         sectorScenery.getObjectByName('europa-frozen-surface'),
         seconds,
