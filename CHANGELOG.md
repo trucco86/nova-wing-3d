@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.159 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.157 — QA171: correção do eixo de entrada no reator da fase 4
 
 - Remove a coluna visual de 215 unidades que não tinha colisão e atravessava a nave na entrada da arena; mantém estruturas reais nas laterais.
