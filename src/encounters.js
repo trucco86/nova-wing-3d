@@ -408,8 +408,15 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         // A 30-unit opening, tall enough to evade without scraping the ceiling.
         const left = gap - 15,
           right = gap + 15;
-        solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
-        solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
+        const leftGate = solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
+        const rightGate = solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
+        if (europaCavern) {
+          // Existing physical gate volumes stay exact; six visible rectangular
+          // slabs are replaced by the corresponding 72 interlocking ice facets.
+          leftGate.name = 'europa-cave-hidden-left-gate-' + i;
+          rightGate.name = 'europa-cave-hidden-right-gate-' + i;
+          leftGate.visible = rightGate.visible = false;
+        }
         for (const x of [left, right])
           g.add(box(0.5, 35, 5.5, europaCavern ? cyan : hazard, x, 13, z));
         const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
