@@ -60,6 +60,17 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   expect(after.reactorAccess.completed).toBe(true);
   expect(after.reactorAccess.started).toBe(false);
   expect(await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'))).toBeNull();
+  // Prove that the actual reactor encounter starts, not just the flight HUD.
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.boss), {
+      timeout: 30000,
+    })
+    .toBe(true);
+  await expect(page.locator('#bossHUD')).toBeVisible();
+  const boss = await page.evaluate(() => window.__novaExploreQA.snapshot().game);
+  expect(boss.sector).toBe(4);
+  expect(boss.reactorAccess.completed).toBe(true);
+  await page.screenshot({ path: info.outputPath('devastador-boss-after-three-modules.png') });
   expect(errors).toEqual([]);
 });
 
