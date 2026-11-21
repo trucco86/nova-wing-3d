@@ -107,8 +107,16 @@ export function frostEuropaPursuitFighter(root) {
     if (!frozen) {
       frozen = original.clone();
       const brightness = original.color.r + original.color.g + original.color.b;
+      // Metal '#822d49' is converted to linear RGB, where its summed
+      // brightness is only ~0.32. Hue recognition MUST precede the dark
+      // joint threshold or the red fuselage mistakenly becomes slate.
+      const warmHostile =
+        original.color.r > original.color.g * 1.4 &&
+        original.color.r > original.color.b * 1.3;
       if (original.isSpriteMaterial || part.name === 'flame') {
         frozen.color.set('#86e9ff');
+      } else if (warmHostile) {
+        frozen.color.set('#e7f7ff');
       } else if (brightness < 0.34) {
         frozen.color.set('#465c70');
       } else if (original.isMeshBasicMaterial) {
