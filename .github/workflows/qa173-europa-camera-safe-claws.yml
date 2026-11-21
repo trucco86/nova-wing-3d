@@ -53,3 +53,5 @@ jobs:
           fi
 
 # QA173 retest: orbit-aware near-camera claw scaling after integrated WebGL gate
+
+# QA173 final: verify shock ring stays outside near camera while Colossus attacks
