@@ -1,7 +1,12 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { createShowroomPilot } from './showroom-models.js';
-import { createOrbit9WalkRig, orbit9StickAxes } from './orbit9-locomotion.js';
+import {
+  createOrbit9WalkRig,
+  orbit9StickAxes,
+  orbit9CameraRelativeAxes,
+} from './orbit9-locomotion.js';
+import { createOrbit9StageArt, updateOrbit9StageArt } from './orbit9-stage-art.js';
 import {
   orbit9CameraState,
   orbit9RotateCamera,
@@ -35,6 +40,7 @@ import {
 const INTERACT_RADIUS = 8.5;
 const WALK_SPEED = 11;
 const RUN_MULTIPLIER = 1.65;
+const SPIN_SECONDS = 0.72;
 const CLUE_POSITIONS = ORBIT9_CLUE_POSITIONS;
 const SURVIVOR = ORBIT9_SURVIVOR;
 const $ = (id) => document.getElementById(id);
@@ -66,6 +72,7 @@ export function installOrbit9ExplorationPreview(
   const cameraLeft = $('exploreCameraLeft');
   const cameraRight = $('exploreCameraRight');
   const cameraZoom = $('exploreCameraZoom');
+  const spinButton = $('exploreSpin');
   const dialoguePanel = $('explorationDialogue');
   const dialogueSpeaker = $('exploreDialogueSpeaker');
   const dialogueText = $('exploreDialogueText');
@@ -76,8 +83,10 @@ export function installOrbit9ExplorationPreview(
   let renderer = null;
   let camera = null;
   let pilot = null;
+  let stageArt = null;
   let walkRig = null;
   let facingYaw = Math.PI;
+  let spinElapsed = -1;
   const stickInput = { x: 0, z: 0, pointerId: null };
   let boostTouchHeld = false;
   let beacons = [];
@@ -99,6 +108,7 @@ export function installOrbit9ExplorationPreview(
   let lastFrame = 0;
   let active = false;
   let elapsed = 0;
+  let statusUntil = 0;
 
   function listen(el, event, handler, opts) {
     el.addEventListener(event, handler, opts);
@@ -107,6 +117,8 @@ export function installOrbit9ExplorationPreview(
 
   function notification(message) {
     status.textContent = message;
+    status.hidden = false;
+    statusUntil = elapsed + 4.5;
   }
 
   function near(x, z) {
@@ -248,8 +260,8 @@ export function installOrbit9ExplorationPreview(
 
   function makeScene() {
     scene = new T.Scene();
-    scene.background = new T.Color('#030b1a');
-    scene.fog = new T.FogExp2('#030b1a', 0.0075);
+    scene.background = new T.Color('#071524');
+    scene.fog = new T.FogExp2('#071524', 0.0058);
     camera = new T.PerspectiveCamera(65, 1, 0.1, 300);
     renderer = new T.WebGLRenderer({
       antialias: false,
@@ -259,7 +271,15 @@ export function installOrbit9ExplorationPreview(
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
     renderer.domElement.setAttribute('aria-label', 'Exploração 3D da estação Órbita-9');
     viewport.appendChild(renderer.domElement);
-    scene.add(new T.HemisphereLight(0x8bcae8, 0x081222, 1.8));
+    scene.add(new T.HemisphereLight(0xb4d5ec, 0x17273a, 2.05));
+    // Carrier armor uses metallic PBR. Fill light is essential because the
+    // QA preview has no reflection cubemap, especially on low-end mobile GPUs.
+    const hangarKey = new T.DirectionalLight(0xe2f0ff, 2.0);
+    hangarKey.position.set(-18, 45, 22);
+    scene.add(hangarKey);
+    const hangarRim = new T.DirectionalLight(0x7ac8ff, 0.85);
+    hangarRim.position.set(44, 20, -85);
+    scene.add(hangarRim);
     const key = new T.PointLight(0x55ccff, 55, 150);
     key.position.set(-15, 25, -40);
     scene.add(key);
@@ -326,16 +346,26 @@ export function installOrbit9ExplorationPreview(
         makeBox(7, 7, 0.7, line, side * 47, 3.8, z);
       }
     }
+    // Stage 04 Devastador design language: armored carrier panels, distinct
+    // labs/reactor/archive silhouettes and GPU-instanced ambient detail.
+    // This is purely visual and leaves every existing interaction collider intact.
+    stageArt = createOrbit9StageArt();
+    scene.add(stageArt);
     beacons = CLUE_POSITIONS.map(([x, z], i) => {
-      const ring = new T.Mesh(new T.TorusGeometry(2.8, 0.25, 8, 28), line);
+      // An evidence marker must be beside the cat, not floating above its
+      // head and masquerading as blue fur in the third-person view. The
+      // gameplay clue coordinate stays exact; the display is a nearby prop.
+      const markerX = x + (i === 1 ? -3.4 : 3.4);
+      const markerZ = z - 3.2;
+      const ring = new T.Mesh(new T.TorusGeometry(2.3, 0.22, 8, 28), line);
       ring.rotation.x = -Math.PI / 2;
-      ring.position.set(x, 0.4, z);
+      ring.position.set(markerX, 0.4, markerZ);
       scene.add(ring);
-      const core = new T.Mesh(new T.OctahedronGeometry(2.1, 1), mat('#55f2ff', '#106a9a'));
-      core.position.set(x, 4, z);
+      const core = new T.Mesh(new T.OctahedronGeometry(1.08, 1), mat('#55f2ff', '#106a9a'));
+      core.position.set(markerX, 4.9, markerZ);
       core.name = 'orbit9-clue-' + i;
       scene.add(core);
-      makeBox(3.8, 1.5, 3.8, dark, x, 0.7, z);
+      makeBox(3.2, 1.5, 3.2, dark, markerX, 0.7, markerZ);
       return { core, ring };
     });
     npc = new T.Group();
@@ -402,12 +432,21 @@ export function installOrbit9ExplorationPreview(
     const dt = Math.min(0.04, (stamp - (lastFrame || stamp)) / 1000);
     lastFrame = stamp;
     elapsed += dt;
+    // Mission instructions stay in the top rail; transient notifications
+    // should not permanently cover the cat or the middle of the scene.
+    if (statusUntil > 0 && elapsed >= statusUntil) {
+      status.hidden = true;
+      statusUntil = 0;
+    }
     const inputLocked = !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
     const keyboardActive = keyX !== 0 || keyZ !== 0;
-    const moveX = inputLocked ? 0 : keyboardActive ? keyX : stickInput.x;
-    const moveZ = inputLocked ? 0 : keyboardActive ? keyZ : stickInput.z;
+    const inputX = inputLocked ? 0 : keyboardActive ? keyX : stickInput.x;
+    const inputZ = inputLocked ? 0 : keyboardActive ? keyZ : stickInput.z;
+    // The thumbstick and keyboard follow the rendered camera orientation.
+    // World-aligned input felt inverted after orbiting behind the cat.
+    const { x: moveX, z: moveZ } = orbit9CameraRelativeAxes(inputX, inputZ, cameraYawVisual);
     const len = Math.max(1, Math.hypot(moveX, moveZ));
     const boosting = held.has('boost') || boostTouchHeld;
     const speed = WALK_SPEED * (boosting ? RUN_MULTIPLIER : 1);
@@ -435,8 +474,21 @@ export function installOrbit9ExplorationPreview(
         Math.cos(destinationYaw - facingYaw),
       );
       facingYaw += angle * Math.min(1, dt * 13);
-      pilot.rotation.y = facingYaw;
     }
+    // Full 360 degree character turn is visual only. It does not displace
+    // the collision capsule, trigger flight rolls or change progression.
+    let spinAngle = 0;
+    if (spinElapsed >= 0) {
+      spinElapsed += dt;
+      const t = Math.min(1, spinElapsed / SPIN_SECONDS);
+      spinAngle = Math.PI * 2 * (t * t * (3 - 2 * t));
+      if (t >= 1) {
+        spinElapsed = -1;
+        spinAngle = 0;
+        spinButton.classList.remove('pressed');
+      }
+    }
+    pilot.rotation.y = facingYaw + spinAngle;
     const turn = Math.atan2(
       Math.sin(cameraState.yaw - cameraYawVisual),
       Math.cos(cameraState.yaw - cameraYawVisual),
@@ -459,6 +511,7 @@ export function installOrbit9ExplorationPreview(
       beacon.core.position.y = 4 + Math.sin(elapsed * 2 + i * 2) * 0.45;
     }
     npc.children[0].scale.y = 1 + Math.sin(elapsed * 1.7) * 0.06;
+    updateOrbit9StageArt(stageArt, elapsed);
     renderer.render(scene, camera);
     updateUI();
     rafId = requestAnimationFrame(frame);
@@ -482,6 +535,8 @@ export function installOrbit9ExplorationPreview(
     resetStick();
     boostTouchHeld = false;
     boostButton.classList.remove('pressed');
+    spinElapsed = -1;
+    spinButton.classList.remove('pressed');
     dialogueIndex = -1;
     root.hidden = false;
     choicePanel.hidden = true;
@@ -509,6 +564,8 @@ export function installOrbit9ExplorationPreview(
     resetStick();
     boostTouchHeld = false;
     boostButton.classList.remove('pressed');
+    spinElapsed = -1;
+    spinButton.classList.remove('pressed');
     cameraPointer = null;
     dialogueIndex = -1;
     dialoguePanel.hidden = true;
@@ -530,6 +587,7 @@ export function installOrbit9ExplorationPreview(
     }
     renderer = scene = camera = pilot = npc = null;
     walkRig = null;
+    stageArt = null;
     rafId = 0;
   }
 
@@ -616,6 +674,11 @@ export function installOrbit9ExplorationPreview(
   listen(cameraZoom, 'click', () => {
     cameraState = orbit9ToggleCameraMode(cameraState);
     cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
+  });
+  listen(spinButton, 'click', () => {
+    if (!active || spinElapsed >= 0 || !dialoguePanel.hidden || !choicePanel.hidden) return;
+    spinElapsed = 0;
+    spinButton.classList.add('pressed');
   });
   listen(viewport, 'pointerdown', (event) => {
     if (!active || event.target !== renderer?.domElement) return;
@@ -716,6 +779,15 @@ export function installOrbit9ExplorationPreview(
         return false;
       playerX = x;
       playerZ = z;
+      // Developer/QA teleport is not player movement. Never interpolate the
+      // camera across dozens of meters through the station's physical walls.
+      // Snapping immediately also makes screenshots of each district reliable.
+      cameraYawVisual = cameraState.yaw;
+      const pose = orbit9CameraPose(playerX, playerZ, cameraState);
+      cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
+      cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+      camera?.position.copy(cameraGoal);
+      camera?.lookAt(cameraTarget);
       updateUI();
       return true;
     },
@@ -724,11 +796,24 @@ export function installOrbit9ExplorationPreview(
         active,
         player: { x: playerX, z: playerZ },
         pilotModel: pilot?.name ?? null,
+        stageArt: stageArt
+          ? {
+              name: stageArt.name,
+              referencesStage: stageArt.userData.referencesStage,
+              districtLandmarks: stageArt.userData.landmarks.map((item) => item.id),
+              instanceCounts: { ...stageArt.userData.instanceCounts },
+            }
+          : null,
         gait: walkRig?.snapshot() ?? null,
         stick: { x: stickInput.x, z: stickInput.z },
         boosting: held.has('boost') || boostTouchHeld,
+        spinning: spinElapsed >= 0,
+        cameraVisualYaw: cameraYawVisual,
         district: orbit9District(playerX, playerZ).id,
         camera: { ...cameraState },
+        cameraEye: camera
+          ? { x: camera.position.x, y: camera.position.y, z: camera.position.z }
+          : null,
         dialogue: {
           open: !dialoguePanel.hidden,
           index: dialogueIndex,

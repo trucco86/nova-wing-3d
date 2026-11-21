@@ -1,7 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createShowroomPilot } from '../src/showroom-models.js';
-import { createOrbit9WalkRig, orbit9StickAxes } from '../src/orbit9-locomotion.js';
+import {
+  createOrbit9WalkRig,
+  orbit9StickAxes,
+  orbit9CameraRelativeAxes,
+} from '../src/orbit9-locomotion.js';
 
 test('Orbit-9 reuses the exact pilot identity and articulates legs on actual travel', () => {
   for (const id of ['bia', 'bob', 'christopher', 'calvin', 'jenifer']) {
@@ -33,4 +37,27 @@ test('Orbit-9 thumb stick preserves main game directions, deadzone and diagonal 
   const diagonal = orbit9StickAxes(40, 40, 40);
   assert.ok(Math.abs(Math.hypot(diagonal.x, diagonal.z) - 1) < 1e-10);
   assert.deepEqual(orbit9StickAxes(NaN, 0, 40), { x: 0, z: 0 });
+});
+
+test('Orbit-9 analog/keyboard directions follow camera yaw instead of fixed world axes', () => {
+  const almost = (actual, expected) => assert.ok(Math.abs(actual - expected) < 1e-10);
+  const forward = orbit9StickAxes(0, -40, 40);
+  // Default camera looks into -Z; up means forward (away from viewer).
+  const zero = orbit9CameraRelativeAxes(forward.x, forward.z, 0);
+  almost(zero.x, 0);
+  almost(zero.z, -1);
+  // After a 90 degree right orbit, screen-up travels toward world -X.
+  const quarter = orbit9CameraRelativeAxes(forward.x, forward.z, Math.PI / 2);
+  almost(quarter.x, -1);
+  almost(quarter.z, 0);
+  const right = orbit9CameraRelativeAxes(1, 0, Math.PI / 2);
+  almost(right.x, 0);
+  almost(right.z, -1);
+  // After looking at the cat from the opposite side, forward flips world Z.
+  const reverse = orbit9CameraRelativeAxes(forward.x, forward.z, Math.PI);
+  almost(reverse.x, 0);
+  almost(reverse.z, 1);
+  const diagonal = orbit9CameraRelativeAxes(0.6, -0.8, 1.2);
+  almost(Math.hypot(diagonal.x, diagonal.z), 1);
+  assert.deepEqual(orbit9CameraRelativeAxes(1, 0, NaN), { x: 0, z: 0 });
 });

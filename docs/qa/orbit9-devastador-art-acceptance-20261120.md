@@ -1,0 +1,77 @@
+# QA visual | Órbita-9 com identidade da Devastador
+
+Candidata v1.27.157, PR #417 sobre #416. Qualquer aprovação é
+exclusivamente para esta branch de QA, não para produção.
+
+## O que comparar com a fase 04
+
+- [ ] Paleta e contraste de blindagem, aço, conduítes e luz ciano/âmbar/vermelha.
+- [ ] Sensação de entrar em uma estação gigante, com vigas e guindastes acima do piloto.
+- [ ] Laboratório oeste: terminais diagnósticos facilmente reconhecíveis.
+- [ ] Praça do reator leste: módulos de resfriamento que não ocultam a pista.
+- [ ] Arquivos no sudoeste: bancos de memória e porta blindada ao final.
+- [ ] Átrio central: núcleo industrial sem anéis repetitivos e sem corredor genérico.
+- [ ] Sem objetos decorativos atravessando ou escondendo o piloto.
+- [ ] Câmera seguir e panorâmica conseguem ler os quatro distritos.
+- [ ] No celular, 390 × 844 e 844 × 390, HUD, joystick e BOOST seguem sem obstruções.
+
+## Gates funcionais de regressão
+
+- [ ] Cinco pilotos com a mesma arte da seleção, caminhada e parada preservadas.
+- [ ] Colisões iguais às da v1.27.156 e três pistas em suas posições originais.
+- [ ] NPC, diálogo, escolha de rota e gate de combate permanecem funcionais.
+- [ ] Sem alteração de save, Firebase, ranking ou progressão da campanha.
+- [ ] Build reproduzível, formatação, lint, Node e Playwright verdes.
+- [ ] Evidência de screenshots e revisão humana em aparelho físico.
+
+A cena usa instâncias estáticas para peças repetidas. Ganho de FPS não foi medido,
+portanto não deve ser afirmado antes de benchmarks no dispositivo.
+
+## Revisão de screenshots e regressão de câmera
+
+- Capturas iniciais mostraram metal escuro, piloto pequeno e grandes painéis
+  atravessando o enquadramento da praça do reator.
+- Ajustados a iluminação, o acabamento do aço, a distância da câmera, a
+  altura das passarelas e o formato aberto das torres de resfriamento.
+- O teleporte de Developer/QA agora reposiciona a câmera instantaneamente
+  junto ao piloto. Antes, o movimento interpolado da câmera atravessava
+  paredes ao alternar rapidamente entre regiões para fotografar a cena.
+- Corrigida a interceptação de Escape pelo menu de título enquanto o diálogo
+  do sobrevivente está aberto na exploração.
+- A bateria focada anterior teve 16 testes Playwright aprovados em desktop e
+  mobile; o novo teste exige a câmera junto ao piloto após cada teleporte.
+
+Permanece necessária revisão visual em aparelho físico. Captura automática
+não é prova suficiente de experiência de jogo ou desempenho de GPU.
+
+## Visibilidade dos pilotos e desaceleração
+
+- O marcador da pista passou de 2,1m para 1,08m de raio e foi elevado,
+  evitando cobrir a cabeça do piloto durante a investigação.
+- O teste de caminhada agora aguarda o estado de repouso da animação, em
+  vez de presumir que todos os dispositivos renderizam 550ms de simulação
+  no mesmo intervalo de relógio. O joystick deve voltar a zero ao soltar.
+- A verificação focada de desktop/mobile deve aprovar 16 testes e capturar
+  o átrio, laboratório, reator e arquivos antes da homologação visual.
+
+## Marcadores de pista e leitura do piloto
+
+- As posições de coleta e minimapa não mudaram. Apenas o holograma, anel e
+  pedestal decorativos foram deslocados aproximadamente 3,4m na lateral e
+  3,2m à frente, para não cobrir o rosto do gato na câmera em terceira pessoa.
+- A captura automática desativa a notificação temporária de abertura apenas
+  para avaliação da arte. Em jogo, a notificação se oculta naturalmente.
+- Exigir nova execução focada de 16 testes desktop/mobile e quatro screenshots
+  reais, além do pipeline geral, antes de homologar a PR #417.
+
+## Controles da exploração com referência ao combate da nave
+
+- [ ] O analógico e WASD/setas são relativos à câmera: cima sempre significa
+      caminhar para a frente da tela, inclusive após orbitar 90° e 180°.
+- [ ] Botões ÓRBITA esquerda/direita, 360° do personagem e VISTA ficam na
+      faixa imediatamente acima do analógico esquerdo, sem cobrir SCAN ou BOOST.
+- [ ] O giro 360° é visual, não modifica colisores, save, score nem posição.
+- [ ] No mobile em 390×844 e 844×390, todos os botões têm áreas reais de toque
+      acessíveis; não há controle oculto atrás do canvas ou do HUD.
+- [ ] Trocar câmera não deve fazer as direções do joystick parecerem invertidas.
+- [ ] As animações de pernas, BOOST e os cinco modelos aprovados não mudam.
