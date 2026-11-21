@@ -2442,7 +2442,15 @@ export function createGame({
     }
     const elite = !ground && kind !== 'fighter';
     o.scale.setScalar(
-      ground || kind === 'subboss' ? 1 : elite ? 1.6 : tacticalFighter ? 1.3 : 0.65,
+      assignedSlot?.europaCaveSentinel
+        ? 0.76
+        : ground || kind === 'subboss'
+          ? 1
+          : elite
+            ? 1.6
+            : tacticalFighter
+              ? 1.3
+              : 0.65,
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x =
@@ -4635,12 +4643,12 @@ export function createGame({
       const depth = -europaCaveApproach.distance;
       if (europaCaveSentinelWave === 0 && depth >= 110) {
         europaCaveSentinelWave = 1;
-        enemy('hover-walker', { x: -13, y: 15, phase: 0.5 });
-        enemy('hover-walker', { x: 14, y: 18, phase: 2.7 });
+        enemy('hover-walker', { x: -13, y: 15, phase: 0.5, europaCaveSentinel: true });
+        enemy('hover-walker', { x: 14, y: 18, phase: 2.7, europaCaveSentinel: true });
         message('CATEDRAL GLACIAL · DRONES CRIOGÊNICOS À FRENTE', 'bob');
       } else if (europaCaveSentinelWave === 1 && depth >= 730) {
         europaCaveSentinelWave = 2;
-        enemy('hover-walker', { x: 0, y: 17, phase: 1.6 });
+        enemy('hover-walker', { x: 0, y: 17, phase: 1.6, europaCaveSentinel: true });
         message('FENDA PROFUNDA · LASERS DE GELO · USE GIRO PARA LIMPAR', 'christopher');
       }
     }
