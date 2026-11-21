@@ -1,7 +1,11 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { createShowroomPilot } from './showroom-models.js';
-import { createOrbit9WalkRig, orbit9StickAxes } from './orbit9-locomotion.js';
+import {
+  createOrbit9WalkRig,
+  orbit9StickAxes,
+  orbit9CameraRelativeAxes,
+} from './orbit9-locomotion.js';
 import { createOrbit9StageArt, updateOrbit9StageArt } from './orbit9-stage-art.js';
 import {
   orbit9CameraState,
@@ -36,6 +40,7 @@ import {
 const INTERACT_RADIUS = 8.5;
 const WALK_SPEED = 11;
 const RUN_MULTIPLIER = 1.65;
+const SPIN_SECONDS = 0.72;
 const CLUE_POSITIONS = ORBIT9_CLUE_POSITIONS;
 const SURVIVOR = ORBIT9_SURVIVOR;
 const $ = (id) => document.getElementById(id);
@@ -67,6 +72,7 @@ export function installOrbit9ExplorationPreview(
   const cameraLeft = $('exploreCameraLeft');
   const cameraRight = $('exploreCameraRight');
   const cameraZoom = $('exploreCameraZoom');
+  const spinButton = $('exploreSpin');
   const dialoguePanel = $('explorationDialogue');
   const dialogueSpeaker = $('exploreDialogueSpeaker');
   const dialogueText = $('exploreDialogueText');
@@ -80,6 +86,7 @@ export function installOrbit9ExplorationPreview(
   let stageArt = null;
   let walkRig = null;
   let facingYaw = Math.PI;
+  let spinElapsed = -1;
   const stickInput = { x: 0, z: 0, pointerId: null };
   let boostTouchHeld = false;
   let beacons = [];
@@ -435,8 +442,11 @@ export function installOrbit9ExplorationPreview(
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
     const keyboardActive = keyX !== 0 || keyZ !== 0;
-    const moveX = inputLocked ? 0 : keyboardActive ? keyX : stickInput.x;
-    const moveZ = inputLocked ? 0 : keyboardActive ? keyZ : stickInput.z;
+    const inputX = inputLocked ? 0 : keyboardActive ? keyX : stickInput.x;
+    const inputZ = inputLocked ? 0 : keyboardActive ? keyZ : stickInput.z;
+    // The thumbstick and keyboard follow the rendered camera orientation.
+    // World-aligned input felt inverted after orbiting behind the cat.
+    const { x: moveX, z: moveZ } = orbit9CameraRelativeAxes(inputX, inputZ, cameraYawVisual);
     const len = Math.max(1, Math.hypot(moveX, moveZ));
     const boosting = held.has('boost') || boostTouchHeld;
     const speed = WALK_SPEED * (boosting ? RUN_MULTIPLIER : 1);
@@ -464,8 +474,21 @@ export function installOrbit9ExplorationPreview(
         Math.cos(destinationYaw - facingYaw),
       );
       facingYaw += angle * Math.min(1, dt * 13);
-      pilot.rotation.y = facingYaw;
     }
+    // Full 360 degree character turn is visual only. It does not displace
+    // the collision capsule, trigger flight rolls or change progression.
+    let spinAngle = 0;
+    if (spinElapsed >= 0) {
+      spinElapsed += dt;
+      const t = Math.min(1, spinElapsed / SPIN_SECONDS);
+      spinAngle = Math.PI * 2 * (t * t * (3 - 2 * t));
+      if (t >= 1) {
+        spinElapsed = -1;
+        spinAngle = 0;
+        spinButton.classList.remove('pressed');
+      }
+    }
+    pilot.rotation.y = facingYaw + spinAngle;
     const turn = Math.atan2(
       Math.sin(cameraState.yaw - cameraYawVisual),
       Math.cos(cameraState.yaw - cameraYawVisual),
@@ -512,6 +535,8 @@ export function installOrbit9ExplorationPreview(
     resetStick();
     boostTouchHeld = false;
     boostButton.classList.remove('pressed');
+    spinElapsed = -1;
+    spinButton.classList.remove('pressed');
     dialogueIndex = -1;
     root.hidden = false;
     choicePanel.hidden = true;
@@ -539,6 +564,8 @@ export function installOrbit9ExplorationPreview(
     resetStick();
     boostTouchHeld = false;
     boostButton.classList.remove('pressed');
+    spinElapsed = -1;
+    spinButton.classList.remove('pressed');
     cameraPointer = null;
     dialogueIndex = -1;
     dialoguePanel.hidden = true;
@@ -647,6 +674,11 @@ export function installOrbit9ExplorationPreview(
   listen(cameraZoom, 'click', () => {
     cameraState = orbit9ToggleCameraMode(cameraState);
     cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
+  });
+  listen(spinButton, 'click', () => {
+    if (!active || spinElapsed >= 0 || !dialoguePanel.hidden || !choicePanel.hidden) return;
+    spinElapsed = 0;
+    spinButton.classList.add('pressed');
   });
   listen(viewport, 'pointerdown', (event) => {
     if (!active || event.target !== renderer?.domElement) return;
@@ -775,6 +807,8 @@ export function installOrbit9ExplorationPreview(
         gait: walkRig?.snapshot() ?? null,
         stick: { x: stickInput.x, z: stickInput.z },
         boosting: held.has('boost') || boostTouchHeld,
+        spinning: spinElapsed >= 0,
+        cameraVisualYaw: cameraYawVisual,
         district: orbit9District(playerX, playerZ).id,
         camera: { ...cameraState },
         cameraEye: camera
