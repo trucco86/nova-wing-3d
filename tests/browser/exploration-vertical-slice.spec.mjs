@@ -67,7 +67,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   expect(await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'))).toBeNull();
   // Prove that the actual reactor encounter starts, not just the flight HUD.
   await expect
-    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.boss), {
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.arena), {
       timeout: 30000,
     })
     .toBe(true);
