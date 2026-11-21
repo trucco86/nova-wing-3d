@@ -302,6 +302,33 @@ export function createEuropaCrystalCanyon() {
   reactor.userData.visualOnly = true;
   gate.add(reactor);
   root.add(gate);
+  // Frozen cloud banks sit above the cliffs, NOT across the targeting lane.
+  // All ten volumes share one translucent draw with soft procedural edges.
+  const frostClouds = instanced(
+    root,
+    'europa-frozen-cloud-banks',
+    new T.PlaneGeometry(1, 1),
+    new T.ShaderMaterial({
+      uniforms: { tint: { value: new T.Color('#b3ddef') } },
+      vertexShader:
+        'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+      fragmentShader:
+        'varying vec2 vUv;uniform vec3 tint;void main(){vec2 q=(vUv-.5)*vec2(1.1,1.7);float r=length(q);float n=sin(vUv.x*17.)*sin(vUv.y*23.)*.07+sin(vUv.x*37.+vUv.y*13.)*.04;float a=(1.-smoothstep(.3,.78,r+n))*.16;gl_FragColor=vec4(tint,a);}',
+      transparent: true,
+      depthWrite: false,
+      side: T.DoubleSide,
+    }),
+    10,
+    (i) => ({
+      x: (i % 2 ? 1 : -1) * (152 + (i % 3) * 13),
+      y: 82 + (i % 4) * 9,
+      z: -265 - Math.floor(i / 2) * 270,
+      w: 104 + (i % 3) * 22,
+      h: 42 + (i % 3) * 10,
+      d: 1,
+    }),
+  );
+  frostClouds.userData.layer = 'frozen-clouds';
   setEuropaCrystalCanyonQuality(root, 'high');
   return root;
 }
