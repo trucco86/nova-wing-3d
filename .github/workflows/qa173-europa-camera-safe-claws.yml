@@ -26,6 +26,7 @@ jobs:
         run: |
           npx prettier --write src/europa-attack-vfx.js src/game.js tests/europa-attack-vfx.test.mjs tests/browser/europa-claw-strikes.spec.mjs
           npm run lint
+          npm run validate
           node --test tests/europa-attack-vfx.test.mjs tests/europa-boss-arena.test.mjs tests/boss-signature-scene.test.mjs
           npm run build
           npm run build:check
@@ -55,3 +56,5 @@ jobs:
 # QA173 retest: orbit-aware near-camera claw scaling after integrated WebGL gate
 
 # QA173 final: verify shock ring stays outside near camera while Colossus attacks
+
+# QA173 final full 10-sector regression after camera and shock-scale refinements
