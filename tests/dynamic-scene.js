@@ -305,6 +305,10 @@ window.fixture = {
 const qaSector = params.get('qaBoss');
 const qaSubboss = params.get('qaSubboss');
 const qaTunnel = params.get('qaTunnel');
+// Explicit stage-only scenario for live arrival/boost evidence. Previously
+// ?qaSurface=5 silently loaded the default Earth checkpoint, producing a
+// false screenshot of the city's launch instead of Europa.
+const qaSurface = params.get('qaSurface');
 if (qaTunnel !== null) {
   if (!game.startDeveloperScenario(Number(qaTunnel), 'tunnel'))
     throw new Error('Developer/QA Europa tunnel fixture unavailable');
@@ -314,6 +318,9 @@ if (qaTunnel !== null) {
 } else if (qaSector !== null) {
   if (!game.startDeveloperScenario(Number(qaSector), 'boss'))
     throw new Error('Developer/QA boss fixture unavailable');
+} else if (qaSurface !== null) {
+  if (!game.startDeveloperScenario(Number(qaSurface), 'stage'))
+    throw new Error('Developer/QA surface arrival fixture unavailable');
 } else game.start(true);
 game.step(0);
 document.body.dataset.ready = 'true';
