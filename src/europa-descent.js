@@ -26,13 +26,17 @@ export function europaDescentAt(seconds) {
   // Browser evidence at 8-10s showed blank blue sky after moon fade.
   // Bring the SAME canyon into view from the first orbit-crossing frames;
   // the ice curtain still masks the slow-rise, not an empty scene.
-  const terrainReveal = smooth((seconds - 6) / 19);
+  // The same glacier rises as Europa exits the shot. The short ice veil
+  // bridges the handoff without hiding the next fifteen seconds of scenery.
+  const terrainReveal = smooth((seconds - 6) / 9.5);
   const planetOpacity = 1 - smooth((seconds - 6) / 2);
   const approach = smooth(seconds / 6);
   const orbit = smooth((seconds - 6) / 6);
   const entry = smooth((seconds - 12) / 7);
-  const iceMist = smooth((seconds - 6) / 2) * (1 - smooth((seconds - 20) / 5));
-  const cameraDive = smooth((seconds - 12) / 4) * (1 - smooth((seconds - 20) / 5));
+  const iceMist =
+    smooth((seconds - 6.1) / 1.15) * (1 - smooth((seconds - 8.2) / 2.15));
+  const cameraDive =
+    smooth((seconds - 11) / 3.5) * (1 - smooth((seconds - 17.5) / 4));
   return Object.freeze({
     phase,
     seconds,
@@ -51,16 +55,17 @@ export function europaDescentAt(seconds) {
     // a sudden ground pop. Floor reaches its gameplay height by 20s.
     // Higher early horizon makes the approach readable inside the blue mist.
     // The floor reaches its unchanged gameplay elevation at 20 seconds.
-    terrainLift: seconds >= 20 ? 0 : -35 * (1 - smooth((seconds - 6) / 14)),
+    terrainLift: seconds >= 15.5 ? 0 : -35 * (1 - smooth((seconds - 6) / 9.5)),
     planetOpacity,
     // The moon must visibly grow WHILE the automatic super boost is active.
     // Previously growth started after the boost had already stopped.
-    planetScale: 0.74 + approach * 0.78 + orbit * 0.07 + entry * 0.03,
-    planetZ: -920 + approach * 205,
+    // Larger, closer moon without intersecting the chase camera.
+    planetScale: 0.8 + approach * 1.22 + orbit * 0.04 + entry * 0.02,
+    planetZ: -920 + approach * 315,
     // Keep the moon in the camera at approach, then let the ice floor become
     // the primary point of reference without a screen-filling planet.
-    planetX: -24 - 68 * smooth((seconds - 6) / 2),
-    planetY: 105 + 22 * smooth((seconds - 6) / 2),
+    planetX: -12 - 80 * smooth((seconds - 6) / 2),
+    planetY: 78 + 34 * smooth((seconds - 6) / 2),
     iceMist,
     starOpacity: 0.75 * (1 - smooth((seconds - 12) / 12)),
     cameraAscent: cameraDive === 0 ? 0 : -0.32 * cameraDive,
