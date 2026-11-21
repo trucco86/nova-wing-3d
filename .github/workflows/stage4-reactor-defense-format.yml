@@ -1,0 +1,36 @@
+name: Stage 04 reactor defense browser spec formatting
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - feat/orbit9-devastador-art-pass-20261120
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.event.pull_request.head.ref == 'feat/devastador-reactor-integrated-access-20261120' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format new browser test and recheck game build
+        run: |
+          npx prettier --write tests/browser/devastador-reactor-defense.spec.mjs
+          npm run format:check
+          npm run build:check
+      - name: Commit formatted spec and self-remove
+        run: |
+          git config user.name "Nova Wing QA Automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/browser/devastador-reactor-defense.spec.mjs
+          git rm .github/workflows/stage4-reactor-defense-format.yml
+          git diff --cached --quiet || git commit -m "chore(stage4): format reactor boss desktop/mobile browser QA"
+          git push origin HEAD:feat/devastador-reactor-integrated-access-20261120
