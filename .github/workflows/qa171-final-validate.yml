@@ -1,0 +1,28 @@
+name: QA171 Europa final cross-suite validation
+on:
+  push:
+    branches:
+      - feat/alien-worlds-visual-identity-20261120
+    paths:
+      - .github/workflows/qa171-final-validate.yml
+permissions:
+  contents: read
+jobs:
+  full-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/alien-worlds-visual-identity-20261120
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Source formatted and 10 mission regression contracts
+        run: |
+          npx prettier --check tests/mission-pacing-difficulty.test.mjs tests/sector-palette.test.mjs
+          npm run lint
+          npm run validate
+          npm run build:check
