@@ -8,6 +8,7 @@ export const EUROPA_CAVE_BUDGET = Object.freeze({
   wallRocks: 38,
   ceilingSpires: 22,
   crystalSpikes: 36,
+  entranceRocks: 10,
 });
 
 const rng = (i) => {
@@ -127,7 +128,7 @@ export function createEuropaIceCavern() {
     'europa-cave-monumental-entrance',
     new T.DodecahedronGeometry(1, 0),
     rock,
-    10,
+    EUROPA_CAVE_BUDGET.entranceRocks,
     (i) => {
       const side = i % 2 ? 1 : -1;
       const row = Math.floor(i / 2);
