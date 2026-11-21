@@ -19,7 +19,8 @@ test('Europa replaces moon with ice mist on orbit entry, without empty transitio
   assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon exits before glacial descent');
   assert.ok(europaSurfaceAt(18).groundVisible, 'surface is already coming into view');
   assert.equal(destinationArrivalAt(5, 18).globeOpacity, 0);
-  assert.ok(destinationArrivalAt(5, 12).haze > 0.9, 'frozen mist must mask the orbit handoff');
+  assert.ok(destinationArrivalAt(5, 7.6).haze > 0.9, 'short snowy orbit bridge');
+  assert.ok(destinationArrivalAt(5, 12).haze < 0.01, 'sky clears before canyon combat');
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
