@@ -226,7 +226,7 @@ export function createDestinationVista(index) {
   const mist = new T.Group();
   mist.name = 'destination-entry-mist';
   mist.userData.visualOnly = true;
-  const plane = new T.PlaneGeometry(430, 170);
+  const plane = index === 5 ? new T.PlaneGeometry(480, 230) : new T.PlaneGeometry(430, 170);
   for (let i = 0; i < 3; i++) {
     const cloud = new T.Mesh(
       plane,
@@ -272,7 +272,7 @@ export function createDestinationVista(index) {
       iceGeometry,
       new T.PointsMaterial({
         color: '#b7eaff',
-        size: 1.8,
+        size: 3.4,
         opacity: 0,
         transparent: true,
         depthWrite: false,
@@ -325,7 +325,8 @@ export function updateDestinationVista(root, index, seconds) {
   }
   for (let i = 0; i < mist.children.length; i++) {
     const child = mist.children[i];
-    child.material.uniforms.alpha.value = index === 7 ? 0 : state.haze * (0.3 + i * 0.05);
+    child.material.uniforms.alpha.value =
+      index === 7 ? 0 : state.haze * (index === 5 ? 1.1 + i * 0.14 : 0.3 + i * 0.05);
     child.material.uniforms.time.value = seconds + i * 13;
     child.position.x = (i - 1) * 18 + Math.sin(seconds * 0.32 + i) * 13;
   }
