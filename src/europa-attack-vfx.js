@@ -110,7 +110,13 @@ function poseStriker(
   // target and damage timing unchanged, but taper the visible geometry as
   // it approaches the camera so the Colossus and targeting reticle remain
   // readable instead of two screen-filling claws/glows.
-  const cameraNear = smooth((end.z - 73) / 92);
+  // A rotated/orbiting boss changes the claw's local Z even while the tip
+  // lands at the same player-world depth. Also use the STRIKE reach to keep
+  // both sides camera-safe at contact regardless of boss heading.
+  const cameraNear = Math.max(
+    smooth((end.z - 73) / 92),
+    state === 'attack' ? reach : 0,
+  );
   hand.scale.setScalar(1 - 0.72 * cameraNear);
   forearm.scale.x = 1 - 0.53 * cameraNear;
   forearm.scale.y = 1 - 0.53 * cameraNear;
