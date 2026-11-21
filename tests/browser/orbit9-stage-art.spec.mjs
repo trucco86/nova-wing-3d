@@ -7,7 +7,8 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   test.setTimeout(90000);
   await page.goto('/');
   await openMenu(page, 'central');
-  expect(await page.evaluate(() => window.__novaExploreQA.startStageReactorQA())).toBe(true);
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerReactorQA').click();
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
   // The initial transmission toast already auto-hides during real gameplay.
   // Suppress that transient overlay for unobstructed architecture screenshots.
