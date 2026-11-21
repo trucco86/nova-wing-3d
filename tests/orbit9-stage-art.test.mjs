@@ -32,6 +32,14 @@ test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', 
   assert.ok(batches.length >= 7 && batches.length <= 8);
   assert.ok(batches.every((m) => m.count > 0 && m.userData.visualOnly));
   assert.ok(batches.reduce((n, m) => n + m.count, 0) >= 200);
+  assert.ok(
+    root.userData.instanceCounts.hull >= 20,
+    'landing hangar must have near-field armored frames instead of an empty deck',
+  );
+  assert.ok(
+    root.userData.instanceCounts.cyan >= 25,
+    'arrival path and carrier gantries need recognizable light guides',
+  );
   assert.equal(root.children.filter((o) => o.isMesh && !o.isInstancedMesh).length, 1);
   const dial = root.getObjectByName('orbit9-reactor-diagnostic-dial');
   assert.ok(dial);
@@ -86,6 +94,12 @@ test('follow camera keeps the entrance deck visible and avoids giant foreground 
   const spawn = orbit9CameraPose(0, 12, { yaw: 0, mode: 'follow' });
   assert.ok(spawn.eye.z <= 21, 'follow camera must stay above the built deck');
   assert.ok(spawn.eye.z > spawn.aim.z);
+  assert.ok(spawn.eye.y < 8, 'follow camera stays at character level, not overhead');
+  assert.ok(spawn.aim.z < 7, 'the look-ahead reveals the hangar architecture');
+  assert.ok(spawn.fov <= 54, 'follow framing keeps the cat large enough on phones');
+  const horizontal = Math.hypot(spawn.eye.x - spawn.aim.x, spawn.eye.z - spawn.aim.z);
+  const pitch = Math.atan2(spawn.eye.y - spawn.aim.y, horizontal);
+  assert.ok(pitch < 0.28, 'camera pitch must not fill the viewport with deck panels');
   const reactor = orbit9CameraPose(39, -55, { yaw: 0, mode: 'follow' });
   const distance = Math.hypot(reactor.eye.x - 39, reactor.eye.z + 55);
   assert.ok(distance < 16, 'reactor camera must be close enough to keep the pilot readable');
