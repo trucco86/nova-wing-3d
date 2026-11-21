@@ -4633,12 +4633,12 @@ export function createGame({
     // or static turrets. They enter only after the camera is safely INSIDE.
     if (europaTunnelCrossing && spawnEncounters && !boss && europaCaveApproach) {
       const depth = -europaCaveApproach.distance;
-      if (europaCaveSentinelWave === 0 && depth >= 355) {
+      if (europaCaveSentinelWave === 0 && depth >= 110) {
         europaCaveSentinelWave = 1;
         enemy('hover-walker', { x: -13, y: 15, phase: 0.5 });
         enemy('hover-walker', { x: 14, y: 18, phase: 2.7 });
         message('CATEDRAL GLACIAL · DRONES CRIOGÊNICOS À FRENTE', 'bob');
-      } else if (europaCaveSentinelWave === 1 && depth >= 980) {
+      } else if (europaCaveSentinelWave === 1 && depth >= 730) {
         europaCaveSentinelWave = 2;
         enemy('hover-walker', { x: 0, y: 17, phase: 1.6 });
         message('FENDA PROFUNDA · LASERS DE GELO · USE GIRO PARA LIMPAR', 'christopher');
