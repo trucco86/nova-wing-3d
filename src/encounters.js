@@ -502,6 +502,35 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       uplink.position.set(0, 27.7, 0);
       g.add(uplink);
       g.add(box(4, 0.4, 7, red, 0, 18.7, 0));
+    } else if (kind === 'ice-crag' || kind === 'ice-spire') {
+      // Europa has geological hazards, not first-stage construction gantries.
+      // Their visible volumes match a bounded pair of real collision hulls.
+      const monolith = kind === 'ice-spire';
+      const ice = new T.MeshStandardMaterial({
+        color: monolith ? '#b4e6f2' : '#85c5d9',
+        roughness: 0.31,
+        metalness: 0.08,
+        flatShading: true,
+        emissive: '#276e8c',
+        emissiveIntensity: 0.18,
+      });
+      const bulk = new T.Mesh(new T.IcosahedronGeometry(1, 0), ice);
+      bulk.name = monolith ? 'europa-ice-natural-spire' : 'europa-ice-natural-crag';
+      bulk.position.set(0, monolith ? 8.5 : 3.5, 0);
+      bulk.scale.set(monolith ? 5 : 9, monolith ? 15 : 9, monolith ? 6 : 11);
+      g.add(bulk);
+      solids.push({
+        center: new T.Vector3(0, monolith ? 8.5 : 3.5, 0),
+        half: new T.Vector3(monolith ? 5 : 9, monolith ? 15 : 9, monolith ? 6 : 11),
+      });
+      for (const side of [-1, 1]) {
+        const shard = new T.Mesh(new T.ConeGeometry(2, monolith ? 12 : 8, 5), ice);
+        shard.position.set(side * (monolith ? 4.2 : 7), monolith ? 12 : 7, side * 2);
+        shard.rotation.z = side * 0.17;
+        shard.userData.visualOnly = true;
+        g.add(shard);
+      }
+      g.userData.biome = 'europa-natural-ice';
     } else if (kind === 'ice-meteor') {
       // Saturn: icy, faceted rocks in the actual flight corridor.
       // A conservative bounding box encloses the visible object; unlike the
