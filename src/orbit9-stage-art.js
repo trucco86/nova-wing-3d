@@ -46,6 +46,9 @@ export function createOrbit9StageArt() {
     for (const side of [-1, 1]) {
       emit('armor', side * 26.5, 10.5, z, 2.4, 19.5, 2.8);
       emit('hull', side * 25.2, 19.6, z, 5.0, 3.1, 3.7);
+      // Staggered lateral armor in the portal gives the bay a layered
+      // silhouette without creating another opaque wall in the cat's path.
+      emit('hull', side * 24.2, 15.1, z - 2.0, 3.2, 1.2, 7.0);
       emit('glass', side * 26.0, 10.5, z + 1.45, 0.35, 10.0, 0.25);
       emit('cyan', side * 25.8, 10.6, z + 1.65, 0.16, 9.2, 0.2);
       emit('hazard', side * 22.6, 2.0, z + 1.65, 0.85, 0.3, 1.8);
