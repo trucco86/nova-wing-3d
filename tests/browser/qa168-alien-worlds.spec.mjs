@@ -32,8 +32,8 @@ for (const { index, theme, label } of destinations) {
         const arrival = await page.evaluate(() => window.fixture.game.snapshot().europaSurface);
         expect(arrival).toBeTruthy();
         expect(arrival.orbitalVisible).toBe(false);
-        if (second >= 16 && second <= 24) {
-          expect(arrival.destinationGlobeVisible).toBe(true);
+        if (second >= 12) {
+          expect(arrival.destinationGlobeVisible).toBe(false);
         }
         if (second === 20 || second === 24) expect(arrival.surfaceVisible).toBe(true);
         if (second === 25) expect(arrival.destinationGlobeVisible).toBe(false);
