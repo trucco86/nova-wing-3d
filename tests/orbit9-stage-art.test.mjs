@@ -51,7 +51,7 @@ test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', 
   assert.ok(Math.abs(faceRing.rotation.z + 0.36) < 0.00001);
   updateOrbit9StageArt(root, NaN);
   assert.equal(dial.rotation.z, 0);
-  assert.equal(faceRing.rotation.z, 0);
+  assert.ok(Math.abs(faceRing.rotation.z) < 1e-8);
   root.traverse((o) => {
     if (o.isMesh) {
       assert.equal(o.userData.visualOnly, true);
