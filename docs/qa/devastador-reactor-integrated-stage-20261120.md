@@ -96,3 +96,9 @@
 - [ ] A destruição de cada circuito cancela o respectivo robô e a destruição dos restantes encerra as ofensivas.
 - [ ] Testes Node, áudio, Desktop/Mobile Playwright, build reproduzível e validação física em dispositivo antes da produção.
 - [ ] A PR continua Draft e nunca faz merge ou deploy de produção sem aprovação.
+
+### Evidência técnica 21/11/2026
+
+- O script de QA executou 18 testes específicos, todos aprovados, incluindo ataque real por projéteis, sentinelas associadas aos reguladores de energia, origem dos canhões, cancelamento de ataque, entrada sem coluna e quatro assinaturas novas de tiro.
+- Formatação e build HTML sincronizado foram corrigidos na branch da PR. A próxima execução da CI e do Playwright valida a versão v1.27.159 consolidada.
+- A inspeção artística das capturas e o teste de som em aparelho físico ainda são pendências. Não publicar sem validar.
