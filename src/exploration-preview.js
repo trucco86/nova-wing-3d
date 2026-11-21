@@ -806,6 +806,9 @@ export function installOrbit9ExplorationPreview(
         // Developer/QA teleport is not player movement. Never interpolate the
         // camera across dozens of meters through the station's physical walls.
         // Snapping immediately also makes screenshots of each district reliable.
+        // The viewport can change between screenshots without a delivered
+        // window.resize event yet. Read its actual dimensions synchronously.
+        resize();
         cameraYawVisual = cameraState.yaw;
         const pose = orbit9CameraPose(playerX, playerZ, {
           ...cameraState,
