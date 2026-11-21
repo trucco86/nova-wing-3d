@@ -52,7 +52,7 @@
 
 ## Polimento visual do desembarque
 
-- Câmera de seguimento a cerca de 6 m de altura e 11,8 m de distância, olhando adiante do piloto, para reduzir excesso de piso no enquadramento de celular. VISTA panorâmica continua elevada e independente.
+- Câmera de seguimento baixa: cerca de 11,8 m de distância em paisagem e 17 m em retrato, olhando adiante do piloto. O recuo em retrato mantém o gato inteiro e a arquitetura na tela; uma pequena extensão decorativa do piso evita vazio atrás do hangar. VISTA panorâmica continua independente.
 - Estruturas da Devastador adicionadas no campo de visão de entrada: nervuras de hangar, pórticos de pressão, baias de manutenção, iluminação e guias de piso. Todas são instâncias decorativas, sem novos colisores nem interrupção da jornada.
 - Minimap mostra somente os três módulos do reator, sem marcador de NPC da versão antiga. Átrio e arquivos agora usam a identificação Devastador.
 - Testes registram capturas de QA 390×844 e 844×390, além da verificação de ângulo, distância e FOV da câmera de seguimento.
