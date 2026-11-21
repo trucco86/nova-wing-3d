@@ -85,7 +85,7 @@ test('existing 84-snowflake GPU draw activates only during scenic windows in Hig
   const surface = createEuropaSurface();
   const snow = surface.getObjectByName('europa-windborne-ice-snow');
   assert.ok(snow?.isPoints);
-  assert.equal(snow.geometry.getAttribute('position').count, 84);
+  assert.equal(snow.geometry.getAttribute('position').count, 180);
   updateEuropaSurface(surface, 9, true, true);
   assert.equal(snow.visible, false);
   updateEuropaSurface(surface, 12, true, true);
