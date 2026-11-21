@@ -539,7 +539,7 @@ export function installOrbit9ExplorationPreview(
     $('explorationTitle').textContent = 'DEVASTADOR · ACESSO AO REATOR';
     $('explorationEyebrow').textContent = 'FASE 04 · DESEMBARQUE · REATOR';
     exitButton.textContent = 'PAUSAR / MENU';
-    scanButton.textContent = 'ATIVAR MÓDULO';
+    scanButton.textContent = 'ATIVAR';
     launchCombat.textContent = 'ENTRAR NO REATOR · ENFRENTAR O NÚCLEO';
     talkButton.hidden = true;
     choicePanel.hidden = true;
