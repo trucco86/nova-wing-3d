@@ -20,7 +20,7 @@ test('glacial cave grows from deep approach before physical deck takes ownership
   assert.ok(approach.visualIntensity > distant.visualIntensity);
   assert.ok(entry.cameraIntensity > approach.cameraIntensity);
   assert.ok(EUROPA_CAVE_HANDOFF_DISTANCE < 40);
-  assert.equal(europaCaveApproachAt(-70, 940), europaCaveApproachAt(-70, 940));
+  assert.deepEqual(europaCaveApproachAt(-70, 940), europaCaveApproachAt(-70, 940));
   assert.throws(() => europaCaveApproachAt(Infinity, 940), RangeError);
   assert.throws(() => europaCaveApproachAt(-300, 0), RangeError);
 });
