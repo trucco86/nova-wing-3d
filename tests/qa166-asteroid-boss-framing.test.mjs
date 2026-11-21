@@ -40,7 +40,6 @@ test('QA166: combat camera transitions smoothly without moving the fighter or mo
   assert.deepEqual(player.toArray(), [0, 10, 9]);
 });
 
-
 test('QA166.1: drill crosscut and other non-charge attacks never fake zoom by moving the entire boss', () => {
   const attacking = (kind) => bossMeleePose({ kind, warning: 2.2 }, 'attack', 0.7);
   for (const kind of [
@@ -56,7 +55,11 @@ test('QA166.1: drill crosscut and other non-charge attacks never fake zoom by mo
     'reactor-vent',
   ]) {
     const pose = attacking(kind);
-    assert.equal(pose.lunge, 0, kind + ' must animate limbs or VFX without an entire boss body rush');
+    assert.equal(
+      pose.lunge,
+      0,
+      kind + ' must animate limbs or VFX without an entire boss body rush',
+    );
     assert.equal(pose.track, 0, kind + ' must not pull the full body toward the locked pilot');
   }
   const crosscut = attacking('drill-crosscut');
