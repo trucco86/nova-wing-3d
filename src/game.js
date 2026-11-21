@@ -5417,7 +5417,7 @@ export function createGame({
                 hostileMuzzles(e)[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
-              e.europaPursuit ? 'ice' : e.subbossTactic?.spell ?? '',
+              e.europaPursuit ? 'ice' : (e.subbossTactic?.spell ?? ''),
             );
             if (e.europaPursuit) europaPursuitShotsFired++;
           }
@@ -5438,14 +5438,14 @@ export function createGame({
           (e.europaPursuit
             ? 1.65
             : e.kind === 'subboss'
-            ? dynamicFlight
-              ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
-              : 1.5
-            : e.role
-              ? 1.8
-              : e.kind === 'walker' || e.airborneRobot
-                ? 2.9 - (e.variant % 3) * 0.18
-                : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
+              ? dynamicFlight
+                ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
+                : 1.5
+              : e.role
+                ? 1.8
+                : e.kind === 'walker' || e.airborneRobot
+                  ? 2.9 - (e.variant % 3) * 0.18
+                  : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
         crossesSolid(

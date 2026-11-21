@@ -183,13 +183,9 @@ export function createEuropaSurface() {
     // Most flakes cross the visible chase-camera lane, not only cliffs.
     // Everything here remains purely visual, without collision volumes.
     const foreground = i < 60;
-    coords[i * 3] = foreground
-      ? (hash(i * 13 + 1) - 0.5) * 170
-      : side * (95 + hash(i * 13) * 165);
+    coords[i * 3] = foreground ? (hash(i * 13 + 1) - 0.5) * 170 : side * (95 + hash(i * 13) * 165);
     coords[i * 3 + 1] = -2 + hash(i * 31) * 78;
-    coords[i * 3 + 2] = foreground
-      ? -45 - hash(i * 47) * 330
-      : -270 - hash(i * 47) * 1020;
+    coords[i * 3 + 2] = foreground ? -45 - hash(i * 47) * 330 : -270 - hash(i * 47) * 1020;
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(coords, 3));
@@ -246,8 +242,8 @@ export function updateEuropaSurface(root, time, visible, highQuality = true) {
       // One existing Points draw, with wind and snowfall driven by mission
       // seconds. Medium keeps the optional layer disabled for mobile FPS.
       snow.material.opacity = highQuality
-        ? 0.20 + weather.intensity * 0.48
-        : 0.10 + weather.intensity * 0.26;
+        ? 0.2 + weather.intensity * 0.48
+        : 0.1 + weather.intensity * 0.26;
       snow.position.set(
         Math.sin(time * 0.19) * 7 + weather.wind,
         Math.sin(time * 0.23) * 2,

@@ -33,10 +33,8 @@ export function europaDescentAt(seconds) {
   const approach = smooth(seconds / 6);
   const orbit = smooth((seconds - 6) / 6);
   const entry = smooth((seconds - 12) / 7);
-  const iceMist =
-    smooth((seconds - 6.1) / 1.15) * (1 - smooth((seconds - 8.2) / 2.15));
-  const cameraDive =
-    smooth((seconds - 11) / 3.5) * (1 - smooth((seconds - 17.5) / 4));
+  const iceMist = smooth((seconds - 6.1) / 1.15) * (1 - smooth((seconds - 8.2) / 2.15));
+  const cameraDive = smooth((seconds - 11) / 3.5) * (1 - smooth((seconds - 17.5) / 4));
   return Object.freeze({
     phase,
     seconds,

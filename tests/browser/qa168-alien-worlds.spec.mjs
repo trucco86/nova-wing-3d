@@ -154,7 +154,9 @@ test('QA168 Europa: real ice interceptors chase and shoot physical cyan projecti
   expect(chased.europaPursuit.interceptors).toBe(3);
   expect(chased.europaPursuit.shotsFired).toBeGreaterThan(0);
   expect(chased.europaPursuit.liveIceShots).toBeGreaterThan(0);
-  await page.screenshot({ path: info.outputPath('qa168-europa-real-ice-interceptors-and-shots-3s.png') });
+  await page.screenshot({
+    path: info.outputPath('qa168-europa-real-ice-interceptors-and-shots-3s.png'),
+  });
   await page.evaluate(() => window.fixture.advanceToMissionTime(6.5));
   const escaped = await page.evaluate(() => window.fixture.game.snapshot());
   expect(escaped.europaPursuit.interceptors).toBe(0);
