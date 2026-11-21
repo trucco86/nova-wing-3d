@@ -40,13 +40,18 @@ test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', 
     root.userData.instanceCounts.cyan >= 25,
     'arrival path and carrier gantries need recognizable light guides',
   );
-  assert.equal(root.children.filter((o) => o.isMesh && !o.isInstancedMesh).length, 1);
+  assert.equal(root.children.filter((o) => o.isMesh && !o.isInstancedMesh).length, 2);
   const dial = root.getObjectByName('orbit9-reactor-diagnostic-dial');
+  const faceRing = root.getObjectByName('devastador-reactor-front-energy-ring');
   assert.ok(dial);
+  assert.ok(faceRing, 'the core collider must show an identifiable reactor face');
+  assert.ok(faceRing.position.z > -34, 'reactor energy ring sits in front of the solid block');
   updateOrbit9StageArt(root, 3);
   assert.ok(Math.abs(dial.rotation.z - 0.48) < 0.00001);
+  assert.ok(Math.abs(faceRing.rotation.z + 0.36) < 0.00001);
   updateOrbit9StageArt(root, NaN);
   assert.equal(dial.rotation.z, 0);
+  assert.equal(faceRing.rotation.z, 0);
   root.traverse((o) => {
     if (o.isMesh) {
       assert.equal(o.userData.visualOnly, true);
