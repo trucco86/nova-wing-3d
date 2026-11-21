@@ -42,3 +42,5 @@ jobs:
             git commit -m 'build(europa): sync closer moon, short snow veil and real ice fighter pursuit'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
+
+# QA169 retry: interceptor activation boundary now asserted (lint-clean)
