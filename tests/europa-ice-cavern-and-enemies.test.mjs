@@ -27,6 +27,11 @@ test('Europa moon disappears exactly at orbit handoff behind a dense ice mist cu
   assert.ok(europaDescentAt(16).iceMist > 0.9);
   assert.equal(europaDescentAt(25).iceMist, 0);
   assert.equal(europaDescentAt(25).combatReady, true);
+  // Cinematic boost is automatic during the approach and ends at orbit.
+  assert.equal(europaDescentAt(0).approachBoost, true);
+  assert.equal(europaDescentAt(5.99).approachBoost, true);
+  for (const second of [6, 8, 12, 25, 45])
+    assert.equal(europaDescentAt(second).approachBoost, false);
 });
 
 test('Europa cavern is a long readable frozen passage with geometry outside collision route', () => {
@@ -39,6 +44,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-vaulted-ceiling', EUROPA_CAVE_BUDGET.ceilingSpires],
     ['europa-cave-hanging-ice-stalactites', EUROPA_CAVE_BUDGET.crystalSpikes],
     ['europa-cave-monumental-entrance', EUROPA_CAVE_BUDGET.entranceRocks],
+    ['europa-cave-natural-ice-arch', EUROPA_CAVE_BUDGET.archstones],
     ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
   ];
   assert.equal(cavern.children.length, expected.length);
@@ -54,7 +60,11 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     for (let i = 0; i < count; i++) {
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(position, rotation, scale);
-      if (name.includes('entrance')) {
+      if (name.includes('natural-ice-arch')) {
+        assert.ok(position.z <= 0 && position.z >= -12, 'arch frames cave mouth');
+        assert.ok(position.y - scale.y > 38, 'arch stays above playable tunnel');
+        assert.ok(Math.abs(position.x) < 33, 'arch has organic span over entrance');
+      } else if (name.includes('entrance')) {
         assert.ok(position.z <= 7 && position.z >= -10, 'cave entrance frames the opening');
         assert.ok(
           Math.abs(position.x) - scale.x > 30,
