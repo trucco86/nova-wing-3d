@@ -140,6 +140,29 @@ test('QA168 Europa: long 1500-unit frozen cave approaches naturally with visible
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
 });
 
+test('QA171 Europa: playable 1500-unit ice cathedral has no bars and real freeze-robot encounters', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/__dynamic.html?qaTunnel=5&encounters=1');
+  await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+  const initial = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(initial.europaCryo.stacks).toBe(0);
+  expect(initial.europaCryo.frostVisible).toBe(false);
+  const cave = await page.evaluate(() => window.fixture.europaCavernState());
+  expect(cave.length).toBe(1500);
+  expect(cave.batches.some((part) => part.name.includes('gate'))).toBe(false);
+  await page.evaluate(() => window.fixture.advance(19));
+  const middle = await page.evaluate(() => window.fixture.game.snapshot());
+  expect(middle.europaCaveApproach).not.toBeNull();
+  expect(middle.europaCaveApproach.length).toBe(1500);
+  expect(middle.europaCaveSentinels).toBeGreaterThanOrEqual(1);
+  expect(middle.obstacleKinds).not.toContain('gantry');
+  expect(middle.obstacleKinds).not.toContain('reactor');
+  await page.screenshot({ path: info.outputPath('qa171-europa-natural-cathedral-ice-robots.png') });
+});
+
 test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital fade', async ({
   page,
 }, info) => {
