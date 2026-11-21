@@ -7,8 +7,7 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   test.setTimeout(90000);
   await page.goto('/');
   await openMenu(page, 'central');
-  await page.locator('#developerPanel summary').click();
-  await page.locator('#developerExplore').click();
+  expect(await page.evaluate(() => window.__novaExploreQA.startStageReactorQA())).toBe(true);
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
   // The initial transmission toast already auto-hides during real gameplay.
   // Suppress that transient overlay for unobstructed architecture screenshots.
@@ -40,7 +39,7 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   }
   await expect(page.locator('#exploreScan')).toBeEnabled();
   await page.locator('#exploreScan').click();
-  await expect(page.locator('#explorationProgress')).toContainText('1/3');
+  await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 1/3');
   await page.locator('#exploreExit').click();
   expect(await page.evaluate(() => localStorage.getItem('nova-wing-3d-exploration-v1'))).toBeNull();
 });
