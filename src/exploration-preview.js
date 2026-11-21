@@ -1,5 +1,9 @@
 import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
+import {
+  DEVASTADOR_ACCESS_MODULES,
+  reactorModulesComplete,
+} from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
 import {
   createOrbit9WalkRig,
@@ -49,11 +53,9 @@ export function installOrbit9ExplorationPreview(
   game,
   { hostname = window.location.hostname } = {},
 ) {
-  const launch = $('developerExplore');
   const root = $('explorationOverlay');
-  if (!launch || !root || !developerToolsAllowed(hostname)) return { destroy() {} };
-
-  launch.hidden = false;
+  if (!root) return { openIntegrated: () => false, destroy() {} };
+  const qaAllowed = developerToolsAllowed(hostname);
   const viewport = $('explorationViewport');
   const objective = $('explorationObjective');
   const progress = $('explorationProgress');
@@ -93,6 +95,7 @@ export function installOrbit9ExplorationPreview(
   let npc = null;
   let rafId = 0;
   let state = createExplorationState();
+  let integratedRequest = null;
   let playerX = ORBIT9_SPAWN.x;
   let playerZ = ORBIT9_SPAWN.z;
   const cameraGoal = new T.Vector3();
@@ -128,7 +131,7 @@ export function installOrbit9ExplorationPreview(
   function updateUI() {
     const stats = questStatus(state);
     const need = ORBIT9_EVIDENCE.filter(({ id }) => !state.clues.includes(id));
-    progress.textContent = 'ÓRBITA-9 · PISTAS ' + stats.found + '/' + stats.required;
+    progress.textContent = 'DEVASTADOR · MÓDULOS ' + stats.found + '/' + stats.required;
     const district = orbit9District(playerX, playerZ);
     if (district.id !== currentDistrict) {
       currentDistrict = district.id;
@@ -155,27 +158,18 @@ export function installOrbit9ExplorationPreview(
       const position = CLUE_POSITIONS[ORBIT9_EVIDENCE.findIndex((e) => e.id === need[i].id)];
       return near(...position);
     });
-    if (stats.missionUnlocked) {
-      objective.textContent = 'ROTA FANTASMA DESCOBERTA · COMBATE DISPONÍVEL';
-    } else if (stats.found < stats.required) {
-      objective.textContent = closeClue
-        ? 'SINAL PRÓXIMO · SCAN / E PARA INVESTIGAR'
-        : 'EXPLORE OS DISTRITOS · BUSQUE 3 PISTAS NO MAPA';
+    if (stats.found === stats.required) {
+      objective.textContent = 'TRÊS MÓDULOS ATIVOS · ACESSO AO NÚCLEO LIBERADO';
+    } else if (closeClue) {
+      const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === closeClue.id)?.name;
+      objective.textContent = moduleName + ' · PRESSIONE ATIVAR / E';
     } else {
-      objective.textContent = near(...SURVIVOR)
-        ? 'SOBREVIVENTE PRÓXIMO · INTERAGIR / E'
-        : 'ENCONTRE O SOBREVIVENTE NO SETOR SUL DA ESTAÇÃO';
+      objective.textContent = 'LOCALIZE E ATIVE CIRCUITOS, REFRIGERAÇÃO E MOTORES';
     }
     scanButton.disabled = !closeClue;
-    talkButton.disabled =
-      !stats.found ||
-      stats.found < stats.required ||
-      !near(...SURVIVOR) ||
-      stats.survivorSpokenTo ||
-      !choicePanel.hidden ||
-      !dialoguePanel.hidden;
-    launchCombat.hidden = !stats.missionUnlocked;
-    if (stats.survivorSpokenTo) choicePanel.hidden = true;
+    talkButton.hidden = true;
+    talkButton.disabled = true;
+    launchCombat.hidden = stats.found !== stats.required;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
@@ -188,15 +182,15 @@ export function installOrbit9ExplorationPreview(
       ({ id }, i) => !state.clues.includes(id) && near(...CLUE_POSITIONS[i]),
     );
     if (idx < 0) {
-      notification('Aproxime-se de uma transmissão luminosa.');
+      notification('Aproxime-se de um dos três módulos de acesso.');
       return;
     }
     const result = inspectEvidence(state, ORBIT9_EVIDENCE[idx].id);
     state = result.state;
     notification(
       result.accepted
-        ? 'PISTA RECUPERADA · ' + ORBIT9_EVIDENCE[idx].label.toUpperCase()
-        : 'A TRANSMISSÃO JÁ FOI RECUPERADA.',
+        ? 'MÓDULO ATIVADO · ' + DEVASTADOR_ACCESS_MODULES[idx].name
+        : 'MÓDULO JÁ ATIVADO.',
     );
     updateUI();
   }
@@ -385,6 +379,7 @@ export function installOrbit9ExplorationPreview(
     head.position.y = 10;
     npc.add(head);
     npc.position.set(SURVIVOR[0], 0, SURVIVOR[1]);
+    npc.visible = false; // No unrelated NPC/dialogue before the reactor.
     scene.add(npc);
     // Use the same approved feline 3D character the current hangar and
     // stage-one opening already share; never build an unrelated cube avatar.
@@ -518,7 +513,7 @@ export function installOrbit9ExplorationPreview(
   }
 
   function open() {
-    if (active) return;
+    if (active || !integratedRequest) return false;
     active = true;
     state = travelTo(createExplorationState(), 'orbit-9-ruins').state;
     playerX = ORBIT9_SPAWN.x;
@@ -539,6 +534,13 @@ export function installOrbit9ExplorationPreview(
     spinButton.classList.remove('pressed');
     dialogueIndex = -1;
     root.hidden = false;
+    root.dataset.mode = 'reactor-access';
+    $('explorationTitle').textContent = 'DEVASTADOR · ACESSO AO REATOR';
+    $('explorationEyebrow').textContent = 'FASE 04 · DESEMBARQUE · REATOR';
+    exitButton.textContent = 'PAUSAR / MENU';
+    scanButton.textContent = 'ATIVAR MÓDULO';
+    launchCombat.textContent = 'ENTRAR NO REATOR · ENFRENTAR O NÚCLEO';
+    talkButton.hidden = true;
     choicePanel.hidden = true;
     dialoguePanel.hidden = true;
     cameraZoom.setAttribute('aria-pressed', 'false');
@@ -549,12 +551,13 @@ export function installOrbit9ExplorationPreview(
       root.hidden = true;
       notification('WebGL indisponível: ' + String(error?.message || error));
       close();
-      return;
+      return false;
     }
     const pilotName = game.snapshot?.().loadout?.pilotName ?? 'FIVE CATS';
-    notification(pilotName + ': Investigue as três transmissões. Nenhum progresso será salvo.');
+    notification(pilotName + ': Ative os 3 módulos para liberar o núcleo da Devastador.');
     updateUI();
     rafId = requestAnimationFrame(frame);
+    return true;
   }
 
   function close() {
@@ -589,20 +592,36 @@ export function installOrbit9ExplorationPreview(
     walkRig = null;
     stageArt = null;
     rafId = 0;
+    integratedRequest = null;
   }
 
   function launchMission() {
-    if (!questStatus(state).missionUnlocked) {
-      notification('Missão bloqueada: investigue e converse com o sobrevivente.');
+    if (!integratedRequest || !reactorModulesComplete(state.clues)) {
+      notification('ACESSO BLOQUEADO · ATIVE OS TRÊS MÓDULOS');
       return;
     }
-    const destination = travelTo(state, 'orion-ghost-route');
-    if (!destination.accepted) return;
-    // Sector 04 is Orbit-9; the existing Developer/QA game session keeps
-    // ranking and campaign saves isolated. No mission completion is spoofed.
-    const entered = game.startDeveloperScenario(3, 'boss');
-    if (entered) close();
-    else notification('Não foi possível iniciar o combate de QA.');
+    // Continue the SAME Stage 04 flight: the original reactor boss spawns
+    // after the normal encounter warning. Never start a second QA scenario.
+    const resumed = integratedRequest.complete([...state.clues]);
+    if (resumed) close();
+    else notification('NÃO FOI POSSÍVEL LIBERAR O NÚCLEO.');
+  }
+
+  function leaveToPause() {
+    if (!integratedRequest) return;
+    const abort = integratedRequest.abort;
+    close();
+    abort();
+  }
+
+  function openIntegrated(request) {
+    if (
+      !request || request.sector !== 3 ||
+      typeof request.complete !== 'function' ||
+      typeof request.abort !== 'function'
+    ) return false;
+    integratedRequest = request;
+    return open();
   }
 
   function keyDown(e) {
@@ -624,8 +643,7 @@ export function installOrbit9ExplorationPreview(
       held.add('boost');
       e.preventDefault();
     } else if (e.code === 'KeyE' && !e.repeat) {
-      if (state.clues.length === ORBIT9_EVIDENCE.length && near(...SURVIVOR)) talk();
-      else scan();
+      scan();
       e.preventDefault();
     } else if (e.code === 'KeyQ' || e.code === 'KeyR') {
       cameraState = orbit9RotateCamera(cameraState, ((e.code === 'KeyQ' ? -1 : 1) * Math.PI) / 7);
@@ -635,12 +653,7 @@ export function installOrbit9ExplorationPreview(
       cameraZoom.setAttribute('aria-pressed', String(cameraState.mode === 'survey'));
       e.preventDefault();
     } else if (e.code === 'Escape') {
-      if (!dialoguePanel.hidden || !choicePanel.hidden) {
-        dialoguePanel.hidden = true;
-        choicePanel.hidden = true;
-        dialogueIndex = -1;
-        updateUI();
-      } else close();
+      leaveToPause();
       e.preventDefault();
     }
   }
@@ -660,8 +673,7 @@ export function installOrbit9ExplorationPreview(
     if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') held.delete('boost');
   }
 
-  listen(launch, 'click', open);
-  listen(exitButton, 'click', close);
+  listen(exitButton, 'click', leaveToPause);
   listen(scanButton, 'click', scan);
   listen(talkButton, 'click', talk);
   listen(dialogueNext, 'click', advanceDialogue);
@@ -766,7 +778,11 @@ export function installOrbit9ExplorationPreview(
 
   // Developer-only teleport/inspection API supports deterministic browser QA.
   // It grants no rank, save, mission victory or privileged backend actions.
-  window.__novaExploreQA = Object.freeze({
+  if (qaAllowed) window.__novaExploreQA = Object.freeze({
+    startStageReactorQA() {
+      if (active || game.snapshot?.().state !== 'menu') return false;
+      return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
+    },
     moveTo(x, z) {
       if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
       if (
@@ -825,12 +841,12 @@ export function installOrbit9ExplorationPreview(
   });
 
   return {
+    openIntegrated,
     destroy() {
       close();
-      if (window.__novaExploreQA) delete window.__novaExploreQA;
+      if (qaAllowed && window.__novaExploreQA) delete window.__novaExploreQA;
       for (const [el, name, handler, opts] of listeners)
         el.removeEventListener(name, handler, opts);
-      launch.hidden = true;
     },
   };
 }
