@@ -40,3 +40,4 @@ jobs:
             git commit -m 'build(europa): sync early glacial horizon and natural ice cave'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
+# QA168 resume: ensure render-local boost scope is lint-clean
