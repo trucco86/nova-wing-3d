@@ -33,3 +33,5 @@ jobs:
           path: |
             test-results/
             playwright-report/
+
+# Repeat WebGL mobile/desktop smoke after early ice robot timing correction
