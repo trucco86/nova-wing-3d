@@ -11,7 +11,7 @@ import {
 } from '../src/europa-surface.js';
 
 test('Europa replaces moon with ice mist on orbit entry, without empty transition frames', () => {
-  const early = europaSurfaceAt(9);
+  const early = europaSurfaceAt(5);
   assert.equal(early.orbitalVisible, true);
   assert.equal(early.groundVisible, false);
   const surface = europaSurfaceAt(26);
