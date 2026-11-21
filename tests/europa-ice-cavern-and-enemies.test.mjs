@@ -52,7 +52,11 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-distant-fjord-approach', EUROPA_CAVE_BUDGET.approachFjord],
     ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
   ];
-  assert.equal(cavern.children.length, expected.length + 1, 'the only additional draw is optical flow');
+  assert.equal(
+    cavern.children.length,
+    expected.length + 1,
+    'the only additional draw is optical flow',
+  );
   const flow = cavern.getObjectByName('europa-cave-optical-flow-ice');
   assert.ok(flow?.isPoints && flow.userData.visualOnly);
   assert.equal(flow.geometry.getAttribute('position').count, 96);

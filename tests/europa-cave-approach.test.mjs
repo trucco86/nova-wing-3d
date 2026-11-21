@@ -12,8 +12,10 @@ test('glacial cave grows from deep approach before physical deck takes ownership
   const align = europaCaveApproachAt(-70, 940);
   const entry = europaCaveApproachAt(-10, 940);
   const farExit = europaCaveApproachAt(1030, 940);
-  assert.deepEqual([distant.phase, approach.phase, align.phase, entry.phase, farExit.phase],
-    ['distant', 'approach', 'align', 'inside', 'exit']);
+  assert.deepEqual(
+    [distant.phase, approach.phase, align.phase, entry.phase, farExit.phase],
+    ['distant', 'approach', 'align', 'inside', 'exit'],
+  );
   assert.equal(distant.inside, false);
   assert.equal(align.inside, false);
   assert.equal(entry.inside, true);

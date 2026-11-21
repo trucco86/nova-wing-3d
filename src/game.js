@@ -6447,11 +6447,8 @@ export function createGame({
       const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
       world.setEuropaTunnel?.(
         cave
-          ? europaCaveApproachAt(
-              cave.o.position.z,
-              cave.o.userData.length,
-              player.position.z,
-            ).inside
+          ? europaCaveApproachAt(cave.o.position.z, cave.o.userData.length, player.position.z)
+              .inside
           : false,
       );
     }
@@ -7274,11 +7271,7 @@ export function createGame({
           ? (() => {
               const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
               return cave
-                ? europaCaveApproachAt(
-                    cave.o.position.z,
-                    cave.o.userData.length,
-                    player.position.z,
-                  )
+                ? europaCaveApproachAt(cave.o.position.z, cave.o.userData.length, player.position.z)
                 : null;
             })()
           : null,
