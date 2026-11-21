@@ -39,6 +39,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-vaulted-ceiling', EUROPA_CAVE_BUDGET.ceilingSpires],
     ['europa-cave-hanging-ice-stalactites', EUROPA_CAVE_BUDGET.crystalSpikes],
     ['europa-cave-monumental-entrance', EUROPA_CAVE_BUDGET.entranceRocks],
+    ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
   ];
   assert.equal(cavern.children.length, expected.length);
   const matrix = new T.Matrix4();
