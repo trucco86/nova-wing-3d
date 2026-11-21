@@ -55,6 +55,14 @@ test('QA174 opt-in stage 4 pauses real flight until all three access modules are
   assert.equal(request.complete(ids), false, 'the completion callback cannot be replayed');
   h.advance(0.1, 0.05);
   assert.equal(h.game.snapshot().sector, 4);
+  // A successful disembark must really reach the original reactor boss,
+  // rather than merely returning to an empty, unwinnable flight.
+  h.advance(11, 0.05);
+  const boss = h.game.snapshot();
+  assert.equal(boss.sector, 4);
+  assert.equal(boss.reactorAccess.completed, true);
+  assert.equal(boss.boss, true, 'the same reactor boss starts after the warning window');
+  assert.equal(h.elements.get('bossHUD').hidden, false);
 });
 
 test('QA174 legacy game and direct boss QA still run without a stage-4 renderer', (t) => {
