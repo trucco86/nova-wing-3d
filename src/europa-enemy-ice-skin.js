@@ -66,7 +66,13 @@ export function addEuropaEnemyIceSkin(enemy, { ground = false } = {}) {
       },
     ]),
   ];
-  skin.add(batch('europa-white-ice-armor', shellGeometry, frost, shell));
+  const armor = batch('europa-white-ice-armor', shellGeometry, frost, shell);
+  // White remains dominant, but restrained dark joints/outer wings prevent
+  // drones from vanishing against pale ice. Instance tint adds NO draw calls.
+  const shellTones = ['#ffffff', '#ecfbff', '#3f5c71', '#ecfbff', '#3f5c71'];
+  for (let i = 0; i < shellTones.length; i++) armor.setColorAt(i, new T.Color(shellTones[i]));
+  armor.instanceColor.needsUpdate = true;
+  skin.add(armor);
   const spikes = Array.from({ length: 10 }, (_, i) => {
     const side = i % 2 ? 1 : -1;
     const row = Math.floor(i / 2);
@@ -75,7 +81,7 @@ export function addEuropaEnemyIceSkin(enemy, { ground = false } = {}) {
       y: baseY + 0.55 * scale + (row % 2) * 0.2 * scale,
       z: (row - 2) * 0.85 * scale,
       w: 0.19 * scale,
-      h: (0.75 + (row % 3) * 0.3) * scale,
+      h: (1.02 + (row % 3) * 0.4) * scale,
       d: 0.2 * scale,
       roll: side * 0.3,
     };
