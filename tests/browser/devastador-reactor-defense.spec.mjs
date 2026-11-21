@@ -21,6 +21,16 @@ test('Devastador reactor boss opens without fake center column and renders wall 
   // Keep a genuine on-screen screenshot for human clearance/art QA.
   await page.waitForTimeout(250);
   await page.screenshot({ path: info.outputPath('devastador-reactor-clear-entrance.png') });
+  // Real gameplay progression, no synthetic 2D mock or visual stand-in.
+  // The wall robots are out of their recesses and have fired from real
+  // cannon muzzle sockets by the time this screenshot is captured.
+  expect(await page.evaluate(() => window.__novaBossQA.advance(7))).toBe(true);
+  const defense = await page.evaluate(() => window.__novaBossQA.snapshot());
+  expect(defense.defense?.fired).toBeGreaterThanOrEqual(1);
+  expect(defense.defense?.visible).toBe(4);
+  expect(defense.defense?.online).toEqual([0, 1, 2, 3]);
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: info.outputPath('devastador-wall-sentinels-deployed.png') });
   expect(errors).toEqual([]);
 });
 
