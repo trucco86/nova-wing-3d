@@ -1,17 +1,10 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu, clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { prepareAndroidWeb } from '../../tools/android.mjs';
 
-// Gameplay E2E must cross the new mission briefing before making
-// assertions about bombs, HUD, touch controls, flight or pause.
-async function confirmCampaignPreflight(page) {
-  const campaign = page.locator('#campaignMap');
-  if (await campaign.isVisible()) {
-    await expect(page.locator('#mapLaunch')).toBeEnabled();
-    await page.locator('#mapLaunch').click();
-    await expect(campaign).toBeHidden();
-  }
-}
+// All gameplay E2E tests use the same real briefing and playable-launch
+// transition. Waiting for the scripted squad intro as part of a boost/input
+// assertion incorrectly reports input failures under software WebGL.
 
 test('WebGL starts, renders, plays and pauses without runtime errors', async ({ page }, info) => {
   // The software WebGL runner requires more than the Playwright 30s default
