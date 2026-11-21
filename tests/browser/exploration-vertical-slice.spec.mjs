@@ -31,6 +31,13 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   await expect(page.locator('#explorationDialogue')).toBeHidden();
   await expect(page.locator('#explorationChoices')).toBeHidden();
   await expect(page.locator('.exploration-map-signal')).toHaveCount(3);
+  // The disembark is part of Stage 04, but only the walking scene renders:
+  // neither the campaign clock nor the underlying flight should keep ticking.
+  const suspended = await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds);
+  await page.waitForTimeout(300);
+  expect((await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds))).toBe(
+    suspended,
+  );
 
   for (const [x, z, district, modules] of [
     [-38, -18, 'LABORATÓRIO DE SINAIS', 1],
