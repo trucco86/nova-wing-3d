@@ -90,3 +90,38 @@ export function addEuropaEnemyIceSkin(enemy, { ground = false } = {}) {
   enemy.add(skin);
   return skin;
 }
+
+
+// The shared enemy fighter template uses a red/pink hostile palette. Its
+// white crystalline overlay alone left a largely red silhouette on mobile.
+// Recolor ONLY Europa's boost pursuers by replacing their materials with
+// cached cloned frost variants, never mutating shared enemy/player materials.
+const pursuitPaints = new WeakMap();
+export function frostEuropaPursuitFighter(root) {
+  if (!root) return null;
+  let materials = 0;
+  root.traverse((part) => {
+    const original = part.material;
+    if (!original?.color || Array.isArray(original)) return;
+    let frozen = pursuitPaints.get(original);
+    if (!frozen) {
+      frozen = original.clone();
+      const brightness = original.color.r + original.color.g + original.color.b;
+      if (original.isSpriteMaterial || part.name === 'flame') {
+        frozen.color.set('#86e9ff');
+      } else if (brightness < 0.34) {
+        frozen.color.set('#465c70');
+      } else if (original.isMeshBasicMaterial) {
+        frozen.color.set('#acecff');
+      } else {
+        frozen.color.set('#e7f7ff');
+      }
+      if (frozen.emissive) frozen.emissive.set('#346f86');
+      pursuitPaints.set(original, frozen);
+    }
+    part.material = frozen;
+    materials++;
+  });
+  root.userData.europaPursuitFrostPalette = true;
+  return materials;
+}
