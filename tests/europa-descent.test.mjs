@@ -83,7 +83,11 @@ test('camera follows one controlled glacial descent and settles without a cut at
 test('Europa uses exactly one celestial globe and raises the same ice scenery continuously', () => {
   const vista = createDestinationVista(5);
   const globe = vista.getObjectByName('destination-celestial-body');
-  assert.match(globe.material.fragmentShader, /smoothIceNoise/, 'Europa moon uses smooth icy terrain');
+  assert.match(
+    globe.material.fragmentShader,
+    /smoothIceNoise/,
+    'Europa moon uses smooth icy terrain',
+  );
   assert.doesNotMatch(
     globe.material.fragmentShader,
     /noise3\(vLocal\*\.07\)/,
