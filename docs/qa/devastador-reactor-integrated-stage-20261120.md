@@ -49,3 +49,11 @@
   da fase 04, após a defesa do reator; não existe uma fase independente.
 - Faltam a conclusão dos testes Playwright sobre este commit e a revisão
   de gameplay em dispositivo físico antes do merge.
+
+## Polimento visual do desembarque
+
+- Câmera de seguimento a cerca de 6 m de altura e 11,8 m de distância, olhando adiante do piloto, para reduzir excesso de piso no enquadramento de celular. VISTA panorâmica continua elevada e independente.
+- Estruturas da Devastador adicionadas no campo de visão de entrada: nervuras de hangar, pórticos de pressão, baias de manutenção, iluminação e guias de piso. Todas são instâncias decorativas, sem novos colisores nem interrupção da jornada.
+- Minimap mostra somente os três módulos do reator, sem marcador de NPC da versão antiga. Átrio e arquivos agora usam a identificação Devastador.
+- Testes registram capturas de QA 390×844 e 844×390, além da verificação de ângulo, distância e FOV da câmera de seguimento.
+- Revisar as capturas reais e a velocidade de renderização em aparelho físico antes de homologar como arte final.
