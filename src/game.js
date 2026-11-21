@@ -41,10 +41,7 @@ import {
 import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
-import {
-  addEuropaEnemyIceSkin,
-  frostEuropaPursuitFighter,
-} from './europa-enemy-ice-skin.js';
+import { addEuropaEnemyIceSkin, frostEuropaPursuitFighter } from './europa-enemy-ice-skin.js';
 import {
   SECTORS,
   PILOTS,

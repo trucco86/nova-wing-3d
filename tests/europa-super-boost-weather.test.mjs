@@ -9,10 +9,7 @@ import {
   createEuropaSurface,
   updateEuropaSurface,
 } from '../src/europa-surface.js';
-import {
-  addEuropaEnemyIceSkin,
-  frostEuropaPursuitFighter,
-} from '../src/europa-enemy-ice-skin.js';
+import { addEuropaEnemyIceSkin, frostEuropaPursuitFighter } from '../src/europa-enemy-ice-skin.js';
 import { fighter } from '../src/visuals.js';
 
 test('Europa super boost makes the moon grow and approach while consuming no scripted input', () => {

@@ -91,7 +91,6 @@ export function addEuropaEnemyIceSkin(enemy, { ground = false } = {}) {
   return skin;
 }
 
-
 // The shared enemy fighter template uses a red/pink hostile palette. Its
 // white crystalline overlay alone left a largely red silhouette on mobile.
 // Recolor ONLY Europa's boost pursuers by replacing their materials with
@@ -111,8 +110,7 @@ export function frostEuropaPursuitFighter(root) {
       // brightness is only ~0.32. Hue recognition MUST precede the dark
       // joint threshold or the red fuselage mistakenly becomes slate.
       const warmHostile =
-        original.color.r > original.color.g * 1.4 &&
-        original.color.r > original.color.b * 1.3;
+        original.color.r > original.color.g * 1.4 && original.color.r > original.color.b * 1.3;
       if (original.isSpriteMaterial || part.name === 'flame') {
         frozen.color.set('#86e9ff');
       } else if (warmHostile) {
