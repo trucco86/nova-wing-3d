@@ -48,3 +48,5 @@ jobs:
 # QA169 retry: early full canyon reveal and Medium snow test contracts corrected
 
 # QA169 art follow-up: make pursuers white and boost lasers cyan, double visible flakes
+
+# QA169 retry: classify red fuselage hue before dark-joint threshold in linear RGB
