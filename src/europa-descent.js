@@ -40,7 +40,8 @@ export function europaDescentAt(seconds) {
     // Energy, damage, scoring and player input remain under game control.
     approachBoost: seconds < 6,
     approachProgress: approach,
-    approachBoostVisual: seconds < 6 ? smooth(seconds / 0.9) * (1 - smooth((seconds - 5.1) / 0.9)) : 0,
+    approachBoostVisual:
+      seconds < 6 ? smooth(seconds / 0.9) * (1 - smooth((seconds - 5.1) / 0.9)) : 0,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
     terrainVisible: seconds >= 8,

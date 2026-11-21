@@ -111,7 +111,9 @@ test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall 
   await page.screenshot({ path: info.outputPath('qa168-europa-frozen-cathedral-cave.png') });
 });
 
-test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital fade', async ({ page }, info) => {
+test('QA168 Europa: automatic boost advances the moon before the 8s icy orbital fade', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   if (info.project.name === 'mobile') await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?qaSurface=5');

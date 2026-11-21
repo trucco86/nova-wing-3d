@@ -50,7 +50,10 @@ test('automatic super boost draws only one deterministic white speed-streak batc
   updateDestinationVista(root, 5, 8);
   assert.equal(streaks.visible, false);
   assert.equal(globe.visible, false);
-  assert.equal(createDestinationVista(4).getObjectByName('europa-orbital-super-boost-streaks'), undefined);
+  assert.equal(
+    createDestinationVista(4).getObjectByName('europa-orbital-super-boost-streaks'),
+    undefined,
+  );
 });
 
 test('three bounded weather windows add snow without hiding the whole Europa mission', () => {
@@ -60,7 +63,11 @@ test('three bounded weather windows add snow without hiding the whole Europa mis
     assert.equal(weather.active, false);
     assert.equal(weather.intensity, 0);
   }
-  for (const [second, phase] of [[28, 'light-snow'], [53, 'ice-squall'], [75, 'light-snow']]) {
+  for (const [second, phase] of [
+    [28, 'light-snow'],
+    [53, 'ice-squall'],
+    [75, 'light-snow'],
+  ]) {
     const weather = europaWeatherAt(second);
     assert.equal(weather.phase, phase);
     assert.equal(weather.active, true);
