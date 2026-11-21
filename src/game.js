@@ -67,6 +67,7 @@ import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
+import { europaDescentAt } from './europa-descent.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
@@ -4121,8 +4122,14 @@ export function createGame({
       if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
+    // Europa's six-second approach uses a free cinematic super boost.
+    // Never require a held key on mobile or drain the pilot's stored boost.
+    const europaAutoBoost =
+      dynamicFlight && sectorIndex === 5 && !boss && europaDescentAt(elapsed).approachBoost;
     const wasBoosting = boosting;
-    boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    boosting = (boostHeld && !boostNeedsRelease && energy > 5) || europaAutoBoost;
+    if (dynamicFlight && sectorIndex === 5)
+      document.body.classList.toggle('orbital-super-boost', europaAutoBoost);
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / transformDuration;
@@ -4149,7 +4156,7 @@ export function createGame({
       shipModule.rotation.z = 0;
     }
     const energyBeforeBoost = energy;
-    energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
+    energy = clamp(energy + dt * (europaAutoBoost ? 15 : boosting ? -28 : robotMode ? 7 : 15), 0, 100);
     if (dynamicFlight && sectorIndex === 0) {
       const beforeLaunch = orbitalLaunchSequence.snapshot().phase;
       const launchState = orbitalLaunchSequence.advance({
@@ -4193,9 +4200,10 @@ export function createGame({
       : 1;
     const superBoost =
       dynamicFlight &&
-      sectorIndex === 0 &&
-      orbitalLaunchSequence.snapshot().phase === 'boost' &&
-      boosting;
+      (europaAutoBoost ||
+        (sectorIndex === 0 &&
+          orbitalLaunchSequence.snapshot().phase === 'boost' &&
+          boosting));
     const speed =
       (superBoost ? 114 : boosting ? 90 : 48) *
       (1 + Math.min(30, stage()) * 0.02) *
