@@ -14,6 +14,11 @@ test('ten campaign sectors use distinct sky and accent palettes without altering
     return sky + ':' + accent;
   });
   assert.equal(new Set(signatures).size, 10);
+  assert.equal(
+    SECTORS[5].duration,
+    135,
+    'Europa specifically receives the extra cryogenic-cavern traversal and robot encounters',
+  );
   assert.deepEqual(
     SECTORS.map(({ duration }) => duration),
     [145, 107, 82, 88, 88, 135, 92, 98, 98, 150],
