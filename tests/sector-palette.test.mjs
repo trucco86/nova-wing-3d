@@ -4,7 +4,7 @@ import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { createWorld } from '../src/visuals.js';
 
-test('ten campaign sectors use distinct sky and accent palettes without altering the campaign', () => {
+test('ten campaign sectors preserve distinct palettes and the two approved stage-duration exceptions', () => {
   assert.equal(SECTORS.length, 10);
   const signatures = SECTORS.map(({ sky, accent, duration }) => {
     assert.match(sky, /^#[0-9a-f]{6}$/i);
