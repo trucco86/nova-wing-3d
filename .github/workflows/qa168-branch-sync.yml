@@ -1,0 +1,35 @@
+name: QA168 temporary Europa boost and weather sync
+on:
+  push:
+    branches: [feat/alien-worlds-visual-identity-20261120]
+permissions:
+  contents: write
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/alien-worlds-visual-identity-20261120
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Format only authored boost, weather and regression changes
+        run: npx prettier --write src/europa-descent.js src/destination-arrival.js src/destination-vista.js src/europa-surface.js src/europa-enemy-ice-skin.js src/game.js tests/europa-super-boost-weather.test.mjs tests/dynamic-scene.js tests/browser/qa168-alien-worlds.spec.mjs
+      - name: Run focused Europe VFX and transition regressions
+        run: node --test tests/europa-super-boost-weather.test.mjs tests/europa-descent.test.mjs tests/europa-surface.test.mjs tests/europa-ice-cavern-and-enemies.test.mjs
+      - name: Rebuild candidate HTML for QA preview
+        run: npm run build
+      - name: Commit source and generated bundle to isolated branch only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/europa-descent.js src/destination-arrival.js src/destination-vista.js src/europa-surface.js src/europa-enemy-ice-skin.js src/game.js tests/europa-super-boost-weather.test.mjs tests/dynamic-scene.js tests/browser/qa168-alien-worlds.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(Europa): sync visible super boost and episodic snowfall into QA preview"
+            git push origin HEAD:feat/alien-worlds-visual-identity-20261120
+          fi
