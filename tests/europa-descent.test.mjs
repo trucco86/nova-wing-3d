@@ -83,6 +83,12 @@ test('camera follows one controlled glacial descent and settles without a cut at
 test('Europa uses exactly one celestial globe and raises the same ice scenery continuously', () => {
   const vista = createDestinationVista(5);
   const globe = vista.getObjectByName('destination-celestial-body');
+  assert.match(globe.material.fragmentShader, /smoothIceNoise/, 'Europa moon uses smooth icy terrain');
+  assert.doesNotMatch(
+    globe.material.fragmentShader,
+    /noise3\(vLocal\*\.07\)/,
+    'raw cellular metal tiles must not reappear on the icy moon',
+  );
   const iceParticles = vista.getObjectByName('europa-fissure-entry-ice');
   assert.ok(iceParticles?.isPoints, 'one low-cost glacial debris effect replaces generic reentry');
   assert.equal(iceParticles.userData.visualOnly, true);
