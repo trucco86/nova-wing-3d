@@ -4,8 +4,8 @@ import { test, expect } from '@playwright/test';
 async function openMidstageReactor(page) {
   await page.goto('/');
   await openMenu(page, 'central');
-  const accepted = await page.evaluate(() => window.__novaExploreQA?.startStageReactorQA());
-  expect(accepted, 'Stage 04 QA must start the live reactor stage, not a second phase').toBe(true);
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerReactorQA').click();
   await expect(page.locator('#explorationOverlay')).toBeVisible();
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
   await expect(page.locator('#explorationTitle')).toContainText('ACESSO AO REATOR');
@@ -156,7 +156,8 @@ test('the Five Cats pilot selected in the hangar disembarks in the stage-04 reac
   await page.locator('#pilot-bob').click();
   await expect(page.locator('#squadSelection')).toHaveAttribute('data-pilot', 'bob');
   await openMenu(page, 'central');
-  expect(await page.evaluate(() => window.__novaExploreQA.startStageReactorQA())).toBe(true);
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerReactorQA').click();
   expect((await page.evaluate(() => window.__novaExploreQA.snapshot())).pilotModel).toBe(
     'orbit9-player-bob',
   );
