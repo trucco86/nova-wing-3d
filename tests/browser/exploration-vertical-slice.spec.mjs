@@ -10,6 +10,11 @@ async function openMidstageReactor(page) {
   await expect(page.locator('#explorationViewport canvas')).toBeVisible();
   await expect(page.locator('#explorationTitle')).toContainText('ACESSO AO REATOR');
   await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 0/3');
+  await expect(page.locator('#exploreScan')).toHaveText('ATIVAR');
+  await expect(page.locator('#exploreScan')).toHaveAttribute(
+    'aria-label',
+    'Ativar módulo do reator',
+  );
   const game = await page.evaluate(() => window.__novaExploreQA.snapshot().game);
   expect(game.sector).toBe(4);
   expect(game.state).toBe('reactor-access');
