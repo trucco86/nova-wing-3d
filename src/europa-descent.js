@@ -44,10 +44,14 @@ export function europaDescentAt(seconds) {
       seconds < 6 ? smooth(seconds / 0.9) * (1 - smooth((seconds - 5.1) / 0.9)) : 0,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
-    terrainVisible: seconds >= 8,
+    // Simulation advances in 50ms steps, so a screenshot targeting exactly
+    // 8s can land at 7.999999...; preload the canyon behind the ice veil.
+    terrainVisible: seconds >= 7.4,
     // Small camera-relative lift shows the glacier horizon at 8s without
     // a sudden ground pop. Floor reaches its gameplay height by 20s.
-    terrainLift: seconds >= 20 ? 0 : -65 * (1 - smooth((seconds - 6) / 14)),
+    // Higher early horizon makes the approach readable inside the blue mist.
+    // The floor reaches its unchanged gameplay elevation at 20 seconds.
+    terrainLift: seconds >= 20 ? 0 : -35 * (1 - smooth((seconds - 6) / 14)),
     planetOpacity,
     // The moon must visibly grow WHILE the automatic super boost is active.
     // Previously growth started after the boost had already stopped.
