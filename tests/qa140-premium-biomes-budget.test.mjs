@@ -71,7 +71,8 @@ test('QA140: Europa glacial geometry retains vertex and draw budget', () => {
   const root = createEuropaSurface();
   assert.equal(root.children.length, 4);
   const snow = root.getObjectByName('europa-windborne-ice-snow');
-  assert.equal(snow.geometry.getAttribute('position').count, 84);
+  assert.equal(snow.geometry.getAttribute('position').count, 180);
+  assert.equal(root.children.length, 4, 'no new WebGL draw batches for the blizzard');
   root.getObjectByName = () => {
     throw new Error('no per-frame scene searches');
   };

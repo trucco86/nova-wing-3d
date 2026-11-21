@@ -24,7 +24,8 @@ test('Venus, Europa, Neptune and Titan establish a planet without placing it ins
       assert.ok(globe.scale.x > 1, 'Europa approaches before leaving the scene');
       const crossing = updateDestinationVista(vista, index, 20);
       assert.equal(crossing.globeOpacity, 0);
-      assert.ok(crossing.reveal > 0 && crossing.haze > 0);
+      assert.equal(crossing.reveal, 1, 'Europa glacier must already be revealed at 20s');
+      assert.equal(crossing.haze, 0, 'Europa mist clears before 12s');
     } else {
       assert.equal(
         globe.visible,

@@ -125,7 +125,11 @@ test('QA119: Europa ridges have five physical colour bands and keep the same two
   updateEuropaSurface(root, 26, true, true);
   assert.equal(root.visible, true);
   updateEuropaSurface(root, 27, true, false);
-  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, false);
+  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, true);
+  assert.ok(
+    root.getObjectByName('europa-windborne-ice-snow').material.opacity < 0.45,
+    'Medium renders visible snow using the existing one-draw particle batch',
+  );
   updateEuropaSurface(root, 90, false, false);
   assert.equal(root.visible, false, 'tunnel and boss suppression are preserved');
   root.traverse((node) => {

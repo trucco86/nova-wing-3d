@@ -23,8 +23,9 @@ test('Europa moon disappears exactly at orbit handoff behind a dense ice mist cu
       'no planet persists after orbital entry: ' + t,
     );
   }
-  assert.ok(europaDescentAt(12).iceMist > 0.95);
-  assert.ok(europaDescentAt(16).iceMist > 0.9);
+  assert.ok(europaDescentAt(7.6).iceMist > 0.95, 'brief glacial curtain in orbit');
+  assert.ok(europaDescentAt(12).iceMist < 0.01, 'no prolonged empty fog');
+  assert.equal(europaDescentAt(16).iceMist, 0, 'crisp canyon after reveal');
   assert.equal(europaDescentAt(25).iceMist, 0);
   assert.equal(europaDescentAt(25).combatReady, true);
   // Cinematic boost is automatic during the approach and ends at orbit.
