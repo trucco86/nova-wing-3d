@@ -83,3 +83,16 @@ export function orbit9StickAxes(dx, dy, radius) {
   const angle = Math.atan2(dy, dx);
   return { x: Math.cos(angle) * normalized, z: Math.sin(angle) * normalized };
 }
+
+// A world-axis stick feels inverted after the player orbits the camera.
+// Map screen-right and screen-forward into world X/Z using the camera's
+// *rendered* yaw so the cat keeps moving in the direction of the thumb.
+export function orbit9CameraRelativeAxes(x, z, yaw = 0) {
+  if (![x, z, yaw].every(Number.isFinite)) return { x: 0, z: 0 };
+  const cos = Math.cos(yaw);
+  const sin = Math.sin(yaw);
+  return {
+    x: x * cos + z * sin,
+    z: z * cos - x * sin,
+  };
+}
