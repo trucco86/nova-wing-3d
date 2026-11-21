@@ -4430,8 +4430,7 @@ export function createGame({
         europaIceCoating.visible = europaCryoStacks > 0;
         explode(player.position, 8, 0x9af0ff, false);
         if (europaCryoStacks > 0) {
-          $('attackWarning').textContent =
-            'GELO NA NAVE · GIROS RESTANTES: ' + europaCryoStacks;
+          $('attackWarning').textContent = 'GELO NA NAVE · GIROS RESTANTES: ' + europaCryoStacks;
         } else {
           $('attackWarning').textContent = '';
           message('CROSTA DE GELO REMOVIDA · CONTROLES RESTAURADOS', 'christopher');
@@ -6325,12 +6324,7 @@ export function createGame({
       ) {
         const shieldBeforeCryo = hp;
         hit(b.spell === 'fire' ? 14 : b.spell === 'cryo' ? 8 : 10);
-        if (
-          sectorIndex === 5 &&
-          dynamicFlight &&
-          b.spell === 'cryo' &&
-          hp < shieldBeforeCryo
-        ) {
+        if (sectorIndex === 5 && dynamicFlight && b.spell === 'cryo' && hp < shieldBeforeCryo) {
           europaCryoStacks = europaCryoHit(europaCryoStacks);
           europaCryoHits++;
           europaCryoNextThaw = elapsed + EUROPA_CRYO_THAW_SECONDS;

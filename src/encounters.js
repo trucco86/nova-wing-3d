@@ -1,10 +1,7 @@
 import * as T from 'three';
 import { addGroundEnemyDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
-import {
-  createEuropaIceCavern,
-  EUROPA_CAVE_LENGTH,
-} from './europa-ice-cavern.js';
+import { createEuropaIceCavern, EUROPA_CAVE_LENGTH } from './europa-ice-cavern.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
@@ -444,8 +441,7 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           const right = gap + 15;
           solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
           solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
-          for (const x of [left, right])
-            g.add(box(0.5, 35, 5.5, hazard, x, 13, z));
+          for (const x of [left, right]) g.add(box(0.5, 35, 5.5, hazard, x, 13, z));
           const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
           arrow.rotation.z = gap > 0 ? -Math.PI / 2 : Math.PI / 2;
           arrow.position.set(gap, 30, z + 3);
