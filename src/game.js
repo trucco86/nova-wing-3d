@@ -2564,12 +2564,13 @@ export function createGame({
     touchFire = touchBoost = false;
     let accepted = false;
     try {
-      accepted = onReactorAccessRequested({
-        sector: 3,
-        modules: DEVASTADOR_ACCESS_MODULES,
-        complete: finishReactorAccess,
-        abort: abortReactorAccess,
-      }) === true;
+      accepted =
+        onReactorAccessRequested({
+          sector: 3,
+          modules: DEVASTADOR_ACCESS_MODULES,
+          complete: finishReactorAccess,
+          abort: abortReactorAccess,
+        }) === true;
     } catch (error) {
       // An unavailable exploration renderer must not crash or silently soft-lock the campaign.
       console.error('Devastador reactor access:', error);
