@@ -41,7 +41,10 @@ import {
 import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
-import { addEuropaEnemyIceSkin } from './europa-enemy-ice-skin.js';
+import {
+  addEuropaEnemyIceSkin,
+  frostEuropaPursuitFighter,
+} from './europa-enemy-ice-skin.js';
 import {
   SECTORS,
   PILOTS,
@@ -2074,6 +2077,8 @@ export function createGame({
       fire: shotMaterials[2],
       arcane: shotMaterials[3],
       ice: europaIceShotMaterial,
+      normalHalo: halo(0xff4265, 2.6, 0.8).material,
+      iceHalo: halo('#86e9ff', 2.6, 0.8).material,
     },
     bossMaterials: bossShotMaterials,
     createHalo: () => halo(0xff4265, 2.6, 0.8),
@@ -2419,7 +2424,10 @@ export function createGame({
     if (kind !== 'walker' && !airborneRobot) {
       const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
       for (const side of [-1, 1]) {
-        const muzzle = new T.Mesh(muzzleGeometry, muzzleMaterial);
+        const muzzle = new T.Mesh(
+          muzzleGeometry,
+          assignedSlot?.europaPursuit ? europaIceShotMaterial : muzzleMaterial,
+        );
         muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
         muzzle.position.set(
           side * (ground ? 1.8 : 2.7),
@@ -2429,6 +2437,7 @@ export function createGame({
         mount.add(muzzle);
       }
     }
+    if (assignedSlot?.europaPursuit) frostEuropaPursuitFighter(o);
     if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground)) {
       addEuropaEnemyIceSkin(o, { ground });
     }
