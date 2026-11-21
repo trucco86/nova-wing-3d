@@ -62,7 +62,10 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
       matrix.decompose(position, rotation, scale);
       if (name.includes('natural-ice-arch')) {
         assert.ok(position.z <= 0 && position.z >= -12, 'arch frames cave mouth');
-        assert.ok(position.y - scale.y > 38, 'arch stays above playable tunnel');
+        assert.ok(
+          position.y - scale.y >= 33 && position.y - scale.y < 39,
+          'natural arch conceals the flat collider without closing the 64-unit flight lane',
+        );
         assert.ok(Math.abs(position.x) < 33, 'arch has organic span over entrance');
       } else if (name.includes('entrance')) {
         assert.ok(position.z <= 7 && position.z >= -10, 'cave entrance frames the opening');
@@ -92,6 +95,20 @@ test('Europa reuses existing 520-unit collision tunnel, including the breakable 
   assert.equal(tunnel.userData.europaBreach, true);
   assert.ok(tunnel.getObjectByName('europa-tunnel-breach-panel'));
   assert.ok(tunnel.getObjectByName('europa-tunnel-falling-debris'));
+  const roof = tunnel.getObjectByName('europa-cavern-physical-roof-hidden-under-ice');
+  assert.ok(roof?.isMesh, 'same physical ceiling has an authored visual cover');
+  assert.equal(roof.visible, false, 'no rectangle across cave mouth');
+  assert.ok(
+    tunnel.userData.solids.some(
+      (solid) =>
+        solid.center.y === 38.5 &&
+        solid.center.z === -260 &&
+        solid.half.x === 36 &&
+        solid.half.y === 1.5 &&
+        solid.half.z === 260,
+    ),
+    'full-size original roof collider remains intact',
+  );
   assert.equal(cave.userData.visualOnly, true);
   const standard = createObstacle('tunnel', 'standard');
   assert.equal(standard.getObjectByName('europa-cathedral-ice-cavern'), undefined);
