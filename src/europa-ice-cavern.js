@@ -1,17 +1,18 @@
 import * as T from 'three';
 
-// A single 520-unit frozen cavern replaces Europa's anonymous industrial
-// tunnel skin. Gameplay collision boxes, breach panel and projectile blocking
-// still belong exclusively to the pre-existing tunnel obstacle.
-export const EUROPA_CAVE_LENGTH = 520;
+// The extended ice gorge is entirely physical: the visual rock skin and
+// authoritative walls, roof, deck and gates share the same 940-unit depth.
+export const EUROPA_CAVE_LENGTH = 940;
+export const EUROPA_CAVE_GATE_DEPTHS = Object.freeze([-110, -260, -410, -610, -810]);
 export const EUROPA_CAVE_BUDGET = Object.freeze({
-  wallRocks: 38,
-  ceilingSpires: 22,
-  crystalSpikes: 36,
+  wallRocks: 70,
+  ceilingSpires: 41,
+  crystalSpikes: 66,
   entranceRocks: 10,
   archstones: 13,
   exteriorCliffs: 16,
-  gateFacets: 72,
+  approachFjord: 24,
+  gateFacets: EUROPA_CAVE_GATE_DEPTHS.length * 24,
 });
 
 const rng = (i) => {
@@ -193,6 +194,30 @@ export function createEuropaIceCavern() {
       };
     },
   );
+  // Distant fjord silhouettes appear several seconds ahead of the true
+  // cave mouth. They travel with the same physical tunnel, so the approach
+  // grows naturally rather than spawning a portal in front of the player.
+  addBatch(
+    root,
+    'europa-cave-distant-fjord-approach',
+    new T.DodecahedronGeometry(1, 0),
+    rock,
+    EUROPA_CAVE_BUDGET.approachFjord,
+    (i) => {
+      const side = i % 2 ? 1 : -1;
+      const row = Math.floor(i / 2);
+      const height = 46 + rng(i + 333) * 45;
+      return {
+        x: side * (86 + rng(i + 343) * 22 + row * 1.1),
+        y: -7 + height * 0.43,
+        z: 70 + row * 33,
+        w: 15 + rng(i + 353) * 13,
+        h: height,
+        d: 20 + rng(i + 363) * 22,
+        yaw: (rng(i + 373) - 0.5) * 0.45,
+      };
+    },
+  );
   // Break up the repetitive square gate surfaces with shallow crystalline
   // facets. These shards sit on the EXISTING physical gate solids, so the
   // collision opening, breakable right wall and projectile checks stay exact.
@@ -227,7 +252,7 @@ export function createEuropaIceCavern() {
       return {
         x: min + ((col + 0.5) * width) / 3,
         y: -1.5 + row * 10.5 + (rng(i + 123) - 0.5) * 1.4,
-        z: -107 - gate * 150,
+        z: EUROPA_CAVE_GATE_DEPTHS[gate] + 3,
         w: width / 6,
         h: 5.9 + rng(i + 137) * 1.5,
         d: 3.3,
@@ -236,5 +261,44 @@ export function createEuropaIceCavern() {
       };
     },
   );
+  // Low-cost optical flow: one Points draw with time-based movement along
+  // the walls. Near-field flecks add a readable speed cue to the fixed camera.
+  const count = 96;
+  const positions = new Float32Array(count * 3);
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position', new T.BufferAttribute(positions, 3));
+  const flecks = new T.Points(
+    geometry,
+    new T.PointsMaterial({
+      color: '#d9f9ff',
+      size: 2.5,
+      transparent: true,
+      opacity: 0.64,
+      depthWrite: false,
+      sizeAttenuation: true,
+      blending: T.AdditiveBlending,
+    }),
+  );
+  flecks.name = 'europa-cave-optical-flow-ice';
+  flecks.userData.visualOnly = true;
+  flecks.frustumCulled = false;
+  root.add(flecks);
+  updateEuropaIceCavernMotion(root, 0, 48);
   return root;
+}
+
+export function updateEuropaIceCavernMotion(root, seconds, speed = 48) {
+  if (!Number.isFinite(seconds) || seconds < 0 || !Number.isFinite(speed) || speed < 0)
+    throw new RangeError('Invalid Europa cave optical flow');
+  const flecks = root?.getObjectByName('europa-cave-optical-flow-ice');
+  if (!flecks) return false;
+  const attr = flecks.geometry.getAttribute('position');
+  for (let i = 0; i < attr.count; i++) {
+    const side = i % 2 ? 1 : -1;
+    const z = 45 - ((i * 41 + seconds * speed * 0.82) % (EUROPA_CAVE_LENGTH + 80));
+    const wobble = Math.sin(seconds * 3.4 + i * 0.78) * 1.6;
+    attr.setXYZ(i, side * (18 + rng(i + 404) * 13) + wobble, 4 + rng(i + 412) * 27, z);
+  }
+  attr.needsUpdate = true;
+  return true;
 }
