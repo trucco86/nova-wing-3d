@@ -27,6 +27,34 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
   });
 }
 
+// Authored snow is episodic to avoid a continuous grey blur over combat.
+// Three fixed windows cover canyon entry, a mid-route squall and pre-boss ice.
+const EUROPA_SNOW_WINDOWS = Object.freeze([
+  { start: 25, end: 39, intensity: 0.52 },
+  { start: 47, end: 62, intensity: 0.95 },
+  { start: 71, end: 84, intensity: 0.64 },
+]);
+const smoothSnow = (v) => {
+  const t = Math.max(0, Math.min(1, v));
+  return t * t * (3 - 2 * t);
+};
+export function europaWeatherAt(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa weather time');
+  for (const window of EUROPA_SNOW_WINDOWS) {
+    if (seconds < window.start || seconds >= window.end) continue;
+    const fadeIn = smoothSnow((seconds - window.start) / 2);
+    const fadeOut = smoothSnow((window.end - seconds) / 2);
+    const intensity = window.intensity * Math.min(fadeIn, fadeOut);
+    return {
+      intensity,
+      active: intensity > 0.05,
+      phase: window.intensity > 0.9 ? 'ice-squall' : 'light-snow',
+      wind: Math.sin(seconds * 0.31) * (1.8 + intensity * 5),
+    };
+  }
+  return { intensity: 0, active: false, phase: 'clear', wind: 0 };
+}
+
 const europaSurfaceParts = new WeakMap();
 const europaCanyonParts = new WeakMap();
 
@@ -203,10 +231,17 @@ export function updateEuropaSurface(root, time, visible, highQuality = true) {
     europaSurfaceParts.set(root, snow);
   }
   if (snow) {
-    snow.visible = Boolean(visible && highQuality);
+    const weather = europaWeatherAt(time);
+    snow.visible = Boolean(visible && highQuality && weather.active);
     if (snow.visible) {
-      // Simulation-time drift remains pause/reset deterministic.
-      snow.position.set(Math.sin(time * 0.19) * 7, 0, 0);
+      // One existing Points draw, with wind and snowfall driven by mission
+      // seconds. Medium keeps the optional layer disabled for mobile FPS.
+      snow.material.opacity = 0.21 + weather.intensity * 0.48;
+      snow.position.set(
+        Math.sin(time * 0.19) * 7 + weather.wind,
+        Math.sin(time * 0.23) * 2,
+        -Math.min(25, (time % 8) * 3),
+      );
     }
   }
 }
