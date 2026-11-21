@@ -2642,7 +2642,7 @@ export function createGame({
       developerScenario?.encounter !== 'stage'
     )
       return false;
-    elapsed = Math.max(elapsed, current().duration * 0.74);
+    elapsed = Math.max(elapsed, current().duration * DEVASTADOR_ACCESS_THRESHOLD);
     for (const e of enemies) dispose(e.o);
     enemies = [];
     subDone = true;
