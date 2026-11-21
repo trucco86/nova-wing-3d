@@ -32,8 +32,9 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
 const EUROPA_SNOW_WINDOWS = Object.freeze([
   // The surface blizzard starts during descent and continues into combat.
   { start: 10, end: 40, intensity: 0.92 },
-  { start: 47, end: 62, intensity: 0.95 },
-  { start: 71, end: 84, intensity: 0.64 },
+  { start: 47, end: 67, intensity: 0.95 },
+  { start: 72, end: 96, intensity: 0.67 },
+  { start: 103, end: 128, intensity: 0.88 },
 ]);
 const smoothSnow = (v) => {
   const t = Math.max(0, Math.min(1, v));
