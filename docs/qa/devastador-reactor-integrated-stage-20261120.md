@@ -83,7 +83,7 @@
 - Sentinelas ligadas aos quatro reguladores elétricos do núcleo: desligar/destruir um regulador desliga seu sentinela para o restante da luta.
 - O reator alterna duas salvas dos robôs com um pulso triplo do núcleo. Cada ataque informa e trava a posição do jogador antes do disparo; movimento lateral e BOOST servem como defesa. Os projéteis usam a mesma física de colisão e dano da campanha.
 - Não usar o mesmo modelo nem movimento de robôs de fases normais. Não adicionar uma nova fase, spawn de inimigo solto, teleporte ou save separado.
-- Som de tiro da nave e do robô refeito em quatro assinaturas curtas e alternadas, com máximo quatro vozes por tiro. Aviso, disparo dos robôs e pulso energético têm sons próprios, criados por síntese, sem sample de terceiros.
+- Tiros da nave e do robô agora alternam o perfil anterior validado com duas assinaturas curtas novas que utilizam no máximo quatro vozes cada. Aviso, disparo dos robôs e pulso energético têm efeitos próprios de síntese, sem samples de terceiros.
 - A saída do núcleo não muda: a vitória exige destruir os oito sistemas de sabotagem e então o núcleo central.
 
 ### Aceite objetivo
@@ -100,5 +100,5 @@
 ### Evidência técnica 21/11/2026
 
 - O script de QA executou 18 testes específicos, todos aprovados, incluindo ataque real por projéteis, sentinelas associadas aos reguladores de energia, origem dos canhões, cancelamento de ataque, entrada sem coluna e quatro assinaturas novas de tiro.
-- Formatação e build HTML sincronizado foram corrigidos na branch da PR. A próxima execução da CI e do Playwright valida a versão v1.27.159 consolidada.
+- Build HTML sincronizado e validado no run 44881310233: `npm run validate` completo aprovado com 987 testes e nenhum erro; os seis arquivos de áudio preexistentes também preservaram seus contratos. A QA em navegador terá nova evidência dos sentinelas já abertos após o aviso.
 - A inspeção artística das capturas e o teste de som em aparelho físico ainda são pendências. Não publicar sem validar.
