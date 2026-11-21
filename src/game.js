@@ -2242,11 +2242,11 @@ export function createGame({
       cue(
         robotMode
           ? shotVolley % 3 === 0
-            ? 'mechaShotAlt'
-            : 'mechaShot'
+            ? 'mechaShot'
+            : 'mechaShotAlt'
           : shotVolley % 3 === 0
-            ? 'shotAlt'
-            : 'shot',
+            ? 'shot'
+            : 'shotAlt',
       );
     } else sound(900 + weapon * 110);
     shotCd = dynamicFlight
