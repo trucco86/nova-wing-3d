@@ -1509,22 +1509,7 @@
           </div>
           <small>AZUL: PISTAS · VERDE: COLETADAS · BRANCO: JOGADOR</small>
         </aside>
-        <div class="exploration-camera-tools" aria-label="Controles da câmera de exploração">
-          <button id="exploreCameraLeft" type="button" aria-label="Girar câmera à esquerda">
-            ◀
-          </button>
-          <button
-            id="exploreCameraZoom"
-            type="button"
-            aria-label="Alternar câmera panorâmica"
-            aria-pressed="false"
-          >
-            VISTA
-          </button>
-          <button id="exploreCameraRight" type="button" aria-label="Girar câmera à direita">
-            ▶
-          </button>
-        </div>
+
       </div>
       <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
       <div
@@ -1550,6 +1535,29 @@
       </div>
       <footer class="exploration-controls">
         <div
+          class="exploration-camera-tools"
+          role="group"
+          aria-label="Órbita da câmera e giro 360 do personagem, junto ao analógico"
+        >
+          <button id="exploreCameraLeft" type="button" aria-label="Orbitar câmera à esquerda">
+            ◀
+          </button>
+          <button id="exploreCameraRight" type="button" aria-label="Orbitar câmera à direita">
+            ▶
+          </button>
+          <button id="exploreSpin" type="button" aria-label="Girar personagem 360 graus">
+            360°
+          </button>
+          <button
+            id="exploreCameraZoom"
+            type="button"
+            aria-label="Alternar câmera panorâmica"
+            aria-pressed="false"
+          >
+            VISTA
+          </button>
+        </div>
+        <div
           id="exploreStick"
           class="exploration-stick"
           role="group"
@@ -1566,7 +1574,7 @@
           </button>
         </div>
         <small
-          >WASD / SETAS OU ANALÓGICO · SHIFT / BOOST PARA CORRER · Q R CÂMERA · C VISTA · E
+          >WASD / ANALÓGICO RELATIVO À CÂMERA · SHIFT / BOOST · Q R ORBITAR · 360° GIRAR · C VISTA · E
           INTERAGIR · QA SEM SAVE</small
         >
       </footer>
