@@ -116,6 +116,7 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
         'exploreCameraLeft',
         'exploreCameraRight',
         'exploreCameraZoom',
+        'exploreSpin',
       ].map(get);
     });
     for (const rect of sizes) {
@@ -134,7 +135,9 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
       'exploreBoost',
       'exploreScan',
       'exploreCameraLeft',
+      'exploreCameraRight',
       'exploreCameraZoom',
+      'exploreSpin',
     ]) {
       const isTopmost = await page.locator('#' + id).evaluate((button) => {
         const rect = button.getBoundingClientRect();
@@ -146,6 +149,17 @@ test('Orbit-9 QA exploration resets on exit and controls remain reachable on pho
       });
       expect(isTopmost, id + ' must not be covered by the 3D canvas').toBe(true);
     }
+    // Orbit and 360 sit next to the left thumb, immediately above the
+    // analog, as in the ship's orbit UI. No HUD collision on phone rotations.
+    const docking = await page.evaluate(() => {
+      const rect = (selector) => {
+        const b = document.querySelector(selector).getBoundingClientRect();
+        return { left: b.left, right: b.right, top: b.top, bottom: b.bottom };
+      };
+      return { rail: rect('.exploration-camera-tools'), stick: rect('#exploreStick') };
+    });
+    expect(Math.abs(docking.rail.left - docking.stick.left)).toBeLessThan(16);
+    expect(docking.rail.bottom).toBeLessThanOrEqual(docking.stick.top - 4);
     await page.evaluate(() => window.__novaExploreQA.moveTo(-38, -18));
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('1/3');
@@ -332,5 +346,55 @@ test('Orbit-9 walks with animated legs, analog thumb input and the same BOOST ge
   await expect
     .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().boosting))
     .toBe(false);
+  await page.locator('#exploreExit').click();
+});
+
+test('Orbit-9 movement stays screen-relative after camera orbit and 360° is beside the stick', async ({
+  page,
+}) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await openMenu(page, 'central');
+  await page.locator('#developerPanel summary').click();
+  await page.locator('#developerExplore').click();
+  const initial = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(420);
+  await page.keyboard.up('KeyW');
+  const forward = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(forward.player.z).toBeLessThan(initial.player.z - 1);
+  // Seven orbit steps of PI/7 point the camera at the opposite side of the
+  // cat. Forward in SCREEN space is now +Z in the static station coordinates.
+  for (let i = 0; i < 7; i++) await page.locator('#exploreCameraRight').click();
+  await expect
+    .poll(
+      () =>
+        page.evaluate(
+          () => Math.abs(Math.abs(window.__novaExploreQA.snapshot().cameraVisualYaw) - Math.PI),
+        ),
+      { timeout: 4000 },
+    )
+    .toBeLessThan(0.12);
+  const fromBack = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(420);
+  await page.keyboard.up('KeyW');
+  const facingOtherWay = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(facingOtherWay.player.z).toBeGreaterThan(fromBack.player.z + 1);
+  // A 360 spin is a character animation; the camera, quest and position are
+  // unchanged. It must be reachable on the same left-hand control cluster.
+  const spin = page.locator('#exploreSpin');
+  await expect(spin).toBeVisible();
+  await spin.click();
+  expect((await page.evaluate(() => window.__novaExploreQA.snapshot())).spinning).toBe(true);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().spinning), {
+      timeout: 3000,
+    })
+    .toBe(false);
+  const finished = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(finished.player.z).toBeCloseTo(facingOtherWay.player.z, 1);
+  expect(finished.quest.clues).toHaveLength(0);
   await page.locator('#exploreExit').click();
 });
