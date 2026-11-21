@@ -9,6 +9,7 @@ export const EUROPA_CAVE_BUDGET = Object.freeze({
   ceilingSpires: 22,
   crystalSpikes: 36,
   entranceRocks: 10,
+  gateFacets: 36,
 });
 
 const rng = (i) => {
@@ -133,13 +134,53 @@ export function createEuropaIceCavern() {
       const side = i % 2 ? 1 : -1;
       const row = Math.floor(i / 2);
       return {
-        x: side * (43 + row * 3),
-        y: 17 + row * 5,
-        z: 7 - row * 4,
+        x: side * (42 + row * 1.5),
+        y: 14 + row * 4,
+        z: -row * 2.5,
         w: 8 + row,
         h: 14 - row * 0.8,
         d: 10 + row,
         yaw: side * (row % 2 ? 0.19 : -0.11),
+      };
+    },
+  );
+  // Break up the repetitive square gate surfaces with shallow crystalline
+  // facets. These shards sit on the EXISTING physical gate solids, so the
+  // collision opening, breakable right wall and projectile checks stay exact.
+  addBatch(
+    root,
+    'europa-cave-faceted-gate-skin',
+    new T.DodecahedronGeometry(1, 0),
+    new T.MeshStandardMaterial({
+      color: '#9bd4e7',
+      roughness: 0.28,
+      metalness: 0.1,
+      flatShading: true,
+      emissive: '#277896',
+      emissiveIntensity: 0.34,
+    }),
+    EUROPA_CAVE_BUDGET.gateFacets,
+    (i) => {
+      const gate = Math.floor(i / 12);
+      const side = Math.floor((i % 12) / 6) === 0 ? -1 : 1;
+      const row = i % 6;
+      const gap = gate % 2 ? -9 : 9;
+      const left = gap - 15;
+      const right = gap + 15;
+      const min = side < 0 ? -32 : right;
+      const max = side < 0 ? left : 32;
+      const margin = Math.min(2.5, (max - min) * 0.22);
+      const center = (min + max) * 0.5;
+      const offset = (rng(i + 94) - 0.5) * (max - min) * 0.55;
+      return {
+        x: Math.max(min + margin, Math.min(max - margin, center + offset)),
+        y: -1 + row * 6.1 + (rng(i + 123) - 0.5) * 3,
+        z: -107 - gate * 150,
+        w: Math.min(2.8, (max - min) * 0.23),
+        h: 2.1 + (i % 3) * 0.7,
+        d: 1.4,
+        yaw: rng(i + 141) * 0.9,
+        roll: (rng(i + 149) - 0.5) * 0.4,
       };
     },
   );
