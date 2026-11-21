@@ -263,8 +263,9 @@ export function createAlienArchitecture(theme, quality = 'high') {
         // masonry remains strictly left of the x +/-72 combat corridor.
         x: -108,
         y: 43,
-        // One stable approach: visible as an objective, not a looping prop.
-        z: -750,
+        // Europa's real landmark starts in the distant canyon, approaches
+        // with forward flight and passes the camera once. No frozen tower.
+        z: -980,
         width: 40,
         height: 116,
         depth: 59,
@@ -287,13 +288,15 @@ export function setAlienArchitectureQuality(root, quality) {
 const FAR_DEPTH = -1700;
 const DEPTH_SPAN = 1825;
 const PARALLAX_RATE = 0.22;
-const HERO_APPROACH_RATE = 0.065;
-const HERO_NEAR_DEPTH = -450;
+// The old 0.065x rate and -450 clamp glued Europa's tower to the screen
+// throughout most of the level. Let this unique landmark pass the camera
+// once while the other biomes retain the original distant parallax.
+const EUROPA_HERO_APPROACH_RATE = 0.38;
+const HERO_EXIT_DEPTH = 160;
 
-// Background ruins may loop after leaving the camera, but a unique mission
-// landmark must NEVER wrap into empty space or vanish at a random moment.
-// Keep the Europa hero vault progressively readable in the middle of flight
-// until the separate boss arena transition explicitly hides its entire site.
+// Background ruins loop after leaving the camera. Europa's singular hero
+// structure NEVER wraps: it approaches visibly, passes beside the spacecraft
+// and leaves behind the camera, instead of remaining frozen at z=-450.
 // Only instance translations change: no extra draws or allocations per frame.
 export function updateAlienArchitecture(root, travel) {
   if (!root || !Number.isFinite(travel)) return;
@@ -305,8 +308,8 @@ export function updateAlienArchitecture(root, travel) {
     for (let i = 0; i < base.length; i++) {
       if (mesh.userData.heroLandmark) {
         matrices[i * 16 + 14] = Math.min(
-          HERO_NEAR_DEPTH,
-          base[i] + Math.max(0, travel) * HERO_APPROACH_RATE,
+          HERO_EXIT_DEPTH,
+          base[i] + Math.max(0, travel) * EUROPA_HERO_APPROACH_RATE,
         );
       } else {
         const distance = base[i] + advanced - FAR_DEPTH;
