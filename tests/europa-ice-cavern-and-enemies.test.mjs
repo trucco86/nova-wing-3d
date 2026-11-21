@@ -53,7 +53,12 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     for (let i = 0; i < count; i++) {
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(position, rotation, scale);
-      assert.ok(position.z < 0 && position.z >= -550);
+      if (name.includes('entrance')) {
+        assert.ok(position.z <= 7 && position.z >= -10, 'cave entrance frames the opening');
+        assert.ok(Math.abs(position.x) - scale.x > 30, 'entrance must remain outside the safe passage');
+      } else {
+        assert.ok(position.z < 0 && position.z >= -550);
+      }
       if (name.includes('wall'))
         assert.ok(Math.abs(position.x) - scale.x > 30, 'wall must not hide tunnel opening');
       if (name.includes('ceiling'))
