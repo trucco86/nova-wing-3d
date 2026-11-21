@@ -6437,21 +6437,24 @@ export function createGame({
       else document.body.classList.remove('boosting');
       for (let f of player.userData.flames) {
         f.material.color.set(
-          boostVisible
-            ? stage() >= 16
-              ? '#f8ffff'
-              : stage() >= 12
-                ? '#d995ff'
-                : stage() >= 8
-                  ? '#ffd15e'
-                  : '#ff9a35'
-            : '#78eaff',
+          europaAutoBoost
+            ? '#e5faff'
+            : boostVisible
+              ? stage() >= 16
+                ? '#f8ffff'
+                : stage() >= 12
+                  ? '#d995ff'
+                  : stage() >= 8
+                    ? '#ffd15e'
+                    : '#ff9a35'
+              : '#78eaff',
         );
         f.scale.set(
-          boostVisible ? 1.7 : 1,
-          boostTrailLength(stage(), boostVisible) * (boostVisible ? 1.65 : 1) +
+          europaAutoBoost ? 2.05 : boostVisible ? 1.7 : 1,
+          boostTrailLength(stage(), boostVisible) *
+            (europaAutoBoost ? 2.1 : boostVisible ? 1.65 : 1) +
             Math.sin(visualTime * 30) * 0.12,
-          boostVisible ? 1.7 : 1,
+          europaAutoBoost ? 2.05 : boostVisible ? 1.7 : 1,
         );
         f.position.z = 2.3 + 1.7 * f.scale.y;
       }
