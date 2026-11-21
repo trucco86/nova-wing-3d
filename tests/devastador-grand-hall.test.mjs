@@ -23,6 +23,18 @@ test('reactor hall is truly monumental, with wall clearance outside the entire 3
   assert.ok(hall.getObjectByName('devastador-grand-hall-vaulted-ceiling'));
   assert.ok(hall.getObjectByName('devastador-grand-hall-deep-service-floor'));
   assert.ok(hall.getObjectByName('hall-open-hangar-throat-gantry'));
+  // The original index-0 centerline gantry was a giant fake obstacle between
+  // player and reactor without a collider. Entry must remain optically open.
+  const entryPillars = hall.children.filter((o) => o.name === 'hall-entrance-giant-pillar');
+  assert.equal(entryPillars.length, 2, 'only flanking support columns belong in entrance');
+  assert.ok(entryPillars.every((o) => Math.abs(o.position.x) > 60));
+  const centerlineObstacles = hall.children.filter(
+    (o) =>
+      ['hall-entrance-giant-pillar', 'hall-overhead-beam'].includes(o.name) &&
+      Math.abs(o.position.x) < 15 &&
+      o.position.z > 180,
+  );
+  assert.equal(centerlineObstacles.length, 0, 'no fake non-collidable pillar in front of reactor');
   for (const group of hall.userData.facilities) {
     const radial = Math.hypot(group.position.x, group.position.z);
     assert.ok(radial >= 220, 'entire facility must hug outer chamber ring');
