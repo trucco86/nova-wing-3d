@@ -819,6 +819,8 @@ export function installOrbit9ExplorationPreview(
           game: {
             state: game.snapshot?.().state,
             sector: game.snapshot?.().sector,
+            seconds: game.snapshot?.().seconds,
+            arena: game.snapshot?.().arena,
             reactorAccess: game.snapshot?.().reactorAccess,
           },
           player: { x: playerX, z: playerZ },
