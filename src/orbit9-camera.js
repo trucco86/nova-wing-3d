@@ -77,9 +77,7 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   return {
     eye: {
       x: clamp(x + dx * fraction, ORBIT9_BOUNDS.minX - 2, ORBIT9_BOUNDS.maxX + 2),
-      y: survey
-        ? 25 * (0.5 + 0.5 * fraction)
-        : (portrait ? 7.1 : 6.1) * (0.7 + 0.3 * fraction),
+      y: survey ? 25 * (0.5 + 0.5 * fraction) : (portrait ? 7.1 : 6.1) * (0.7 + 0.3 * fraction),
       z: clamp(
         z + dz * fraction,
         ORBIT9_BOUNDS.minZ - 2,
