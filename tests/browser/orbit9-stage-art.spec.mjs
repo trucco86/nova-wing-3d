@@ -35,6 +35,15 @@ test('Orbit-9 Stage 04 visual pass renders all four distinct carrier districts w
   ]) {
     await page.setViewportSize(viewportSize);
     await page.waitForTimeout(120);
+    // Developer teleport snaps the camera immediately after the responsive
+    // resize, making the visual framing deterministic under software WebGL.
+    expect(await page.evaluate(() => window.__novaExploreQA.moveTo(0, 12))).toBe(true);
+    const camera = await page.evaluate(() => window.__novaExploreQA.snapshot().cameraEye);
+    if (viewportSize.width < viewportSize.height) {
+      expect(camera.z).toBeGreaterThan(25);
+    } else {
+      expect(camera.z).toBeLessThanOrEqual(22);
+    }
     await page.screenshot({
       path: info.outputPath('devastador-hangar-entry-' + viewportSize.width + '.png'),
     });
