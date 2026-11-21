@@ -9,7 +9,8 @@ export const EUROPA_CAVE_BUDGET = Object.freeze({
   ceilingSpires: 22,
   crystalSpikes: 36,
   entranceRocks: 10,
-  gateFacets: 36,
+  archstones: 13,
+  gateFacets: 72,
 });
 
 const rng = (i) => {
@@ -144,6 +145,28 @@ export function createEuropaIceCavern() {
       };
     },
   );
+  // A jagged, layered arch closes the square roof silhouette at the mouth.
+  // These stones are high above the playable 64-unit opening, and are only
+  // visual decoration. They never change the 520-unit tunnel's hitboxes.
+  addBatch(
+    root,
+    'europa-cave-natural-ice-arch',
+    new T.IcosahedronGeometry(1, 0),
+    ceiling,
+    EUROPA_CAVE_BUDGET.archstones,
+    (i) => {
+      const x = -31 + (i * 62) / (EUROPA_CAVE_BUDGET.archstones - 1);
+      return {
+        x,
+        y: 44 + 7 * (1 - Math.abs(x) / 32) + rng(i + 161) * 1.5,
+        z: -3 - rng(i + 171) * 6,
+        w: 4.5 + rng(i + 181) * 1.2,
+        h: 5.4 + rng(i + 191) * 0.6,
+        d: 8 + rng(i + 201) * 3,
+        roll: (rng(i + 211) - 0.5) * 0.4,
+      };
+    },
+  );
   // Break up the repetitive square gate surfaces with shallow crystalline
   // facets. These shards sit on the EXISTING physical gate solids, so the
   // collision opening, breakable right wall and projectile checks stay exact.
@@ -161,9 +184,9 @@ export function createEuropaIceCavern() {
     }),
     EUROPA_CAVE_BUDGET.gateFacets,
     (i) => {
-      const gate = Math.floor(i / 12);
-      const side = Math.floor((i % 12) / 6) === 0 ? -1 : 1;
-      const row = i % 6;
+      const gate = Math.floor(i / 24);
+      const side = Math.floor((i % 24) / 12) === 0 ? -1 : 1;
+      const row = i % 12;
       const gap = gate % 2 ? -9 : 9;
       const left = gap - 15;
       const right = gap + 15;
@@ -174,7 +197,7 @@ export function createEuropaIceCavern() {
       const offset = (rng(i + 94) - 0.5) * (max - min) * 0.55;
       return {
         x: Math.max(min + margin, Math.min(max - margin, center + offset)),
-        y: -1 + row * 6.1 + (rng(i + 123) - 0.5) * 3,
+        y: -1 + (row % 6) * 6.1 + (rng(i + 123) - 0.5) * 3,
         z: -107 - gate * 150,
         w: Math.min(2.8, (max - min) * 0.23),
         h: 2.1 + (i % 3) * 0.7,
