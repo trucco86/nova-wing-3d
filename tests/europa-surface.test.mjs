@@ -10,25 +10,20 @@ import {
   updateEuropaSurface,
 } from '../src/europa-surface.js';
 
-test('Europa keeps the moon until the icy floor appears, with no empty orbit/descent gap', () => {
+test('Europa replaces moon with ice mist on orbit entry, without empty transition frames', () => {
   const early = europaSurfaceAt(9);
   assert.equal(early.orbitalVisible, true);
   assert.equal(early.groundVisible, false);
   const surface = europaSurfaceAt(26);
   assert.equal(surface.orbitalVisible, false);
-  assert.equal(europaSurfaceAt(18).orbitalVisible, true, 'moon must remain while ice first rises');
+  assert.equal(europaSurfaceAt(18).orbitalVisible, false, 'moon exits before glacial descent');
   assert.ok(europaSurfaceAt(18).groundVisible, 'surface is already coming into view');
-  assert.ok(
-    destinationArrivalAt(5, 18).globeOpacity > 0,
-    'globe and surface overlap during handoff',
-  );
+  assert.equal(destinationArrivalAt(5, 18).globeOpacity, 0);
+  assert.ok(destinationArrivalAt(5, 12).haze > 0.9, 'frozen mist must mask the orbit handoff');
   assert.equal(surface.groundVisible, true);
   assert.ok(surface.frostDensity > early.frostDensity);
   assert.equal(europaSurfaceAt(26, true).groundVisible, false);
-  assert.ok(
-    destinationArrivalAt(5, 20).globeOpacity > 0,
-    'moon fades DURING descent, not before it',
-  );
+  assert.equal(destinationArrivalAt(5, 20).globeOpacity, 0);
   assert.equal(destinationArrivalAt(5, 26).globeOpacity, 0);
   assert.equal(
     destinationArrivalAt(4, 20).globeOpacity,
@@ -52,7 +47,7 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   assert.equal(destination.visible, true, 'actual Europa approach remains on-screen');
   assert.equal(surface.visible, false);
   world.setDestinationArrival(19);
-  assert.equal(destination.visible, true, 'planet should not vanish before terrain exists');
+  assert.equal(destination.visible, false, 'planet disappears before the tunnel/fissure entry');
   assert.equal(surface.visible, true, 'glaciers rise before planetary fade');
   assert.ok(surface.position.y < 0 && surface.position.y > -240, 'continuous terrain lift');
   world.setDestinationArrival(26);
