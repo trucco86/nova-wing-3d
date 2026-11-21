@@ -19,11 +19,12 @@ test('Venus, Europa, Neptune and Titan establish a planet without placing it ins
     assert.equal(destinationArrivalAt(index, 0).globeOpacity, 1);
     updateDestinationVista(vista, index, 14);
     if (index === 5) {
-      assert.equal(globe.visible, true, 'Europa moon must remain during fissure approach');
+      assert.equal(globe.visible, false, 'Europa moon must vanish at orbital transition');
       assert.ok(globe.position.x > -150 && globe.position.x < 0, 'moon stays within camera');
-      assert.ok(globe.scale.x > 1, 'Europa grows as the ship approaches');
+      assert.ok(globe.scale.x > 1, 'Europa approaches before leaving the scene');
       const crossing = updateDestinationVista(vista, index, 20);
-      assert.ok(crossing.globeOpacity > 0 && crossing.reveal > 0);
+      assert.equal(crossing.globeOpacity, 0);
+      assert.ok(crossing.reveal > 0 && crossing.haze > 0);
     } else {
       assert.equal(
         globe.visible,
