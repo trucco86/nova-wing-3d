@@ -51,6 +51,12 @@ test('moon disappears at orbit handoff and the ice fog masks every intermediate 
   assert.equal(europaDescentAt(25).terrainReveal, 1);
   assert.equal(europaDescentAt(25).terrainLift, 0);
   assert.equal(europaSurfaceAt(7).groundVisible, false);
+  assert.equal(europaSurfaceAt(7.39).groundVisible, false);
+  assert.equal(europaSurfaceAt(7.95).groundVisible, true);
+  assert.ok(
+    europaDescentAt(8).terrainLift > -35,
+    'the near-glacier horizon must already be lifted into the view at 8s',
+  );
   for (const t of [8, 9, 10, 11, 12, 16]) {
     assert.equal(europaSurfaceAt(t).groundVisible, true, 'glacier must exist under veil at ' + t);
     assert.ok(europaDescentAt(t).terrainLift > -65, 'glacier horizon begins close enough to read');
