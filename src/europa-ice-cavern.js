@@ -49,7 +49,7 @@ export function createEuropaIceCavern() {
   root.name = 'europa-cathedral-ice-cavern';
   root.userData.visualOnly = true;
   const rock = new T.MeshStandardMaterial({
-    color: '#b4d5ed',
+    color: '#7fa9bd',
     roughness: 0.68,
     metalness: 0.03,
     flatShading: true,
@@ -57,7 +57,7 @@ export function createEuropaIceCavern() {
     emissiveIntensity: 0.13,
   });
   const ceiling = new T.MeshStandardMaterial({
-    color: '#89afca',
+    color: '#517f9f',
     roughness: 0.52,
     metalness: 0.07,
     flatShading: true,
@@ -65,12 +65,12 @@ export function createEuropaIceCavern() {
     emissiveIntensity: 0.1,
   });
   const crystal = new T.MeshStandardMaterial({
-    color: '#e6faff',
+    color: '#b5e7f7',
     roughness: 0.2,
     metalness: 0.11,
     flatShading: true,
     emissive: '#5ad9ff',
-    emissiveIntensity: 0.42,
+    emissiveIntensity: 0.31,
   });
   // The cliff skin is uneven and rooted into the existing left/right walls.
   addBatch(
