@@ -4,7 +4,7 @@ export const ORBIT9_PLAYER_RADIUS = 1.65;
 export const ORBIT9_SPAWN = Object.freeze({ x: 0, z: 12 });
 
 export const ORBIT9_DISTRICTS = Object.freeze([
-  Object.freeze({ id: 'central', name: 'ÁTRIO DA ESTAÇÃO', x: 0, z: -38, width: 112, depth: 116 }),
+  Object.freeze({ id: 'central', name: 'ÁTRIO DA DEVASTADOR', x: 0, z: -38, width: 112, depth: 116 }),
   Object.freeze({
     id: 'science',
     name: 'LABORATÓRIO DE SINAIS',
@@ -16,7 +16,7 @@ export const ORBIT9_DISTRICTS = Object.freeze([
   Object.freeze({ id: 'reactor', name: 'PRAÇA DO REATOR', x: 34, z: -56, width: 43, depth: 65 }),
   Object.freeze({
     id: 'archive',
-    name: 'ARQUIVOS DA ORBITA',
+    name: 'ARQUIVOS DA DEVASTADOR',
     x: -33,
     z: -81,
     width: 42,
