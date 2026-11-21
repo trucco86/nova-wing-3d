@@ -1,0 +1,98 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { harness } from './harness.mjs';
+import { DEVASTADOR_ACCESS_MODULES } from '../src/devastador-reactor-access.js';
+
+const ids = DEVASTADOR_ACCESS_MODULES.map(({ id }) => id);
+
+test('QA174 opt-in stage 4 pauses real flight until all three access modules are activated', (t) => {
+  let request = null;
+  let calls = 0;
+  const h = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+    onReactorAccessRequested(context) {
+      calls++;
+      request = context;
+      return true;
+    },
+  });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
+  const initial = h.game.snapshot();
+  assert.equal(initial.sector, 4);
+  assert.equal(initial.boss, false);
+  assert.equal(h.game.enterReactorAccessForQA(), true);
+  assert.equal(calls, 1);
+  assert.equal(request.sector, 3);
+  assert.deepEqual(request.modules.map(({ id }) => id), ids);
+  let s = h.game.snapshot();
+  assert.equal(s.state, 'reactor-access');
+  assert.equal(s.reactorAccess.started, true);
+  assert.equal(s.reactorAccess.completed, false);
+  const frozenSeconds = s.seconds;
+  h.advance(3, 0.1);
+  s = h.game.snapshot();
+  assert.equal(s.seconds, frozenSeconds, 'the stage clock stays frozen while exploring');
+  assert.equal(s.sector, 4, 'disembark is not an extra sector');
+  assert.equal(s.boss, false);
+  assert.equal(request.complete(ids.slice(0, 2)), false, 'two activated modules cannot bypass');
+  assert.equal(request.complete([ids[0], ids[0], ids[2]]), false, 'duplicate ids cannot bypass');
+  assert.equal(request.complete([ids[0], ids[1], 'unauthorized']), false);
+  assert.equal(h.game.snapshot().state, 'reactor-access');
+  assert.equal(request.complete(ids), true);
+  s = h.game.snapshot();
+  assert.equal(s.state, 'playing');
+  assert.equal(s.sector, 4);
+  assert.equal(s.reactorAccess.started, false);
+  assert.equal(s.reactorAccess.completed, true);
+  assert.equal(s.weapon, initial.weapon);
+  assert.equal(s.credits, initial.credits);
+  assert.deepEqual(s.loadout, initial.loadout);
+  assert.equal(request.complete(ids), false, 'the completion callback cannot be replayed');
+  h.advance(0.1, 0.05);
+  assert.equal(h.game.snapshot().sector, 4);
+});
+
+test('QA174 legacy game and direct boss QA still run without a stage-4 renderer', (t) => {
+  const h = harness({ hostname: 'dev.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
+  assert.equal(h.game.enterReactorAccessForQA(), false);
+  h.advance(1, 0.1);
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.deepEqual(h.game.snapshot().reactorAccess, {
+    started: false,
+    completed: false,
+    required: ids,
+  });
+  const boss = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+    onReactorAccessRequested() {
+      throw new Error('Direct boss QA must not attempt to enter the exploration scene');
+    },
+  });
+  t.after(() => boss.close());
+  assert.equal(boss.game.startDeveloperScenario(3, 'boss'), true);
+  assert.equal(boss.game.snapshot().boss, true);
+  assert.equal(boss.game.enterReactorAccessForQA(), false);
+});
+
+test('QA174 renderer rejection cannot trap the pilot in the reactor-access state', (t) => {
+  let calls = 0;
+  const h = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+    onReactorAccessRequested() {
+      calls++;
+      return false;
+    },
+  });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
+  assert.equal(h.game.enterReactorAccessForQA(), false);
+  assert.equal(calls, 1);
+  assert.equal(h.game.snapshot().state, 'playing');
+  assert.equal(h.game.snapshot().reactorAccess.completed, false);
+});
