@@ -42,9 +42,9 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   const destination = scene.getObjectByName('destination-celestial-body');
   const surface = scene.getObjectByName('europa-frozen-surface');
   assert.ok(ground && globe && destination && surface);
-  world.setDestinationArrival(10);
+  world.setDestinationArrival(7);
   assert.equal(globe.visible, false, 'legacy generic orbital globe must not duplicate Europa');
-  assert.equal(destination.visible, true, 'actual Europa approach remains on-screen');
+  assert.equal(destination.visible, true, 'Europa moon is just fading at orbit entry');
   assert.equal(surface.visible, false);
   world.setDestinationArrival(19);
   assert.equal(destination.visible, false, 'planet disappears before the tunnel/fissure entry');
