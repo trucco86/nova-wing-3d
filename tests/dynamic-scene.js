@@ -80,6 +80,21 @@ window.fixture = {
   game,
   advance,
   renderStats: () => (lastRenderStats ? { ...lastRenderStats } : null),
+  europaCavernState() {
+    const root = lastScene?.getObjectByName('europa-cathedral-ice-cavern');
+    const tunnel = root?.parent;
+    return root
+      ? {
+          visible: root.visible,
+          visualOnly: root.userData.visualOnly,
+          batches: root.children.map((o) => ({ name: o.name, count: o.count ?? 0 })),
+          breachPanel: Boolean(tunnel?.getObjectByName('europa-tunnel-breach-panel')),
+          length: tunnel?.userData.length ?? null,
+          renderCalls: lastRenderStats?.calls ?? 0,
+        }
+      : null;
+  },
+
   alienWorldState(theme) {
     if (!lastScene) return null;
     const site = lastScene.getObjectByName('alien-architecture-' + theme);
