@@ -54,7 +54,7 @@ function makeStriker(side, materials) {
   return { node, upper, forearm, elbow, hand, talons, impact, side };
 }
 
-function poseStriker(striker, target, state, kind, reach, charge) {
+function poseStriker(striker, target, state, kind, reach, charge, time, recovery = 0, operational = true) {
   const { side, upper, forearm, elbow, hand, talons, impact } = striker;
   const shoulder = new T.Vector3(side * 22, 4, 8);
   const rest = new T.Vector3(side * 40, -14, 36);
@@ -67,8 +67,24 @@ function poseStriker(striker, target, state, kind, reach, charge) {
   const contact = quake
     ? new T.Vector3(target.x, target.y - 3, target.z - 3)
     : new T.Vector3(target.x + side * 6.5, target.y, target.z - 3);
-  const end = rest.clone().lerp(prepared, state === 'windup' ? 0.42 + charge * 0.58 : 1);
-  if (state === 'attack') end.lerp(contact, reach);
+  // Never toggle off a Colossus limb between beats: it is physical anatomy,
+  // not a projectile effect. Windup, contact and recovery share the same
+  // articulated chain, with no instant teleport into its shoulder.
+  const end = rest.clone();
+  if (!operational) {
+    // Destroyed generator: the linked claw hangs limp but does not vanish.
+    end.y -= 12;
+    end.z -= 6;
+  } else if (state === 'windup') {
+    end.lerp(prepared, smooth(charge));
+  } else if (state === 'attack') {
+    end.copy(prepared).lerp(contact, reach);
+  } else if (state === 'recovery') {
+    end.copy(prepared).lerp(rest, smooth(recovery));
+  } else {
+    end.y += Math.sin(time * 0.8 + side) * 1.4;
+    end.z += Math.sin(time * 0.54 + side) * 1.1;
+  }
 
   const joint = shoulder.clone().lerp(end, 0.47);
   joint.x += side * (quake ? 13 : 22);
@@ -88,7 +104,7 @@ function poseStriker(striker, target, state, kind, reach, charge) {
     finger.rotation.y = -offset * (state === 'attack' ? 0.32 * reach : -0.16);
     finger.rotation.x = quake ? -reach * 0.15 : 0;
   });
-  impact.visible = state === 'attack' && reach > 0.91;
+  impact.visible = operational && state === 'attack' && reach > 0.91;
   // The transient is attached to the exact visible contact tip, not the body.
   impact.scale.setScalar(impact.visible ? 0.75 + 0.45 * reach : 0.01);
   striker.userData = { target: contact.clone(), reach };
@@ -187,7 +203,10 @@ export function animateEuropaAttackVfx(
   cycle = 0,
 ) {
   if (!root || !Number.isFinite(time)) return;
+  // Ice impact FX is transient; the two claw assemblies are NOT transient.
   const live = state === 'windup' || state === 'attack';
+  const beat = Math.max(0, time - 8) % 12; // Colossus uses the 12s boss tactic cycle
+  const recovery = clamp01((beat - 3.6) / 2.4);
   const quakeOn = live && kind === 'ice-quake';
   const pincerOn = live && kind === 'cryo-pincer';
   const striking = state === 'attack';
@@ -201,11 +220,23 @@ export function animateEuropaAttackVfx(
   const strikingArm = generators[preferredArm] !== false ? preferredArm : 1 - preferredArm;
 
   for (let i = 0; i < arms.length; i++) {
-    const enabled = generators[i] !== false;
-    const active = enabled && (pincerOn || (quakeOn && i === strikingArm));
-    arms[i].visible = active;
-    if (active) poseStriker(strikers[i], aim, state, kind, reach, charge);
-    else strikers[i].impact.visible = false;
+    const operational = generators[i] !== false;
+    const attackingArm = operational &&
+      ((kind === 'cryo-pincer') || (kind === 'ice-quake' && i === strikingArm));
+    // Keep both meshes/real claws visible throughout maneuver and recovery.
+    // An inactive or broken arm returns to an idle/damaged resting pose.
+    arms[i].visible = true;
+    poseStriker(
+      strikers[i],
+      aim,
+      attackingArm ? state : 'maneuver',
+      attackingArm ? kind : null,
+      attackingArm ? reach : 0,
+      attackingArm ? charge : 0,
+      time,
+      recovery,
+      operational,
+    );
   }
   for (const [i, shard] of shards.entries()) {
     shard.visible = quakeOn;
