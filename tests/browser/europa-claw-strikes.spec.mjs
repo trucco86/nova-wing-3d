@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('stage 6 Colossus physically extends claws to the latched ship lane, then switches to overhead hammer', async ({
   page,
-}) => {
+}, info) => {
   test.setTimeout(110000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -46,6 +46,10 @@ test('stage 6 Colossus physically extends claws to the latched ship lane, then s
         expect(claw.flash).toBe(true);
       }
     }
+    if (state === 'attack' || state === 'recovery' || state === 'maneuver')
+      await page.screenshot({
+        path: info.outputPath('qa172-colossus-' + kind + '-' + state + '.png'),
+      });
     samples.push(snapshot);
   }
   expect(samples[0].bossZ).toBeCloseTo(samples[1].bossZ, 1);
