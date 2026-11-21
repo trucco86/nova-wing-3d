@@ -12,6 +12,18 @@ const PLANET_VERT =
 const PLANET_FRAG = `varying vec3 vLocal;varying vec3 vNormal;
 uniform vec3 darkTint;uniform vec3 lightTint;uniform float alpha;uniform float kind;uniform float drift;
 float noise3(vec3 v){return fract(sin(dot(floor(v),vec3(127.1,311.7,74.7)))*43758.5453);}
+// Europa uses smoothly interpolated crystalline terrain, not the raw
+// cell hash that produced large, square metallic tiles on the approach moon.
+float smoothIceNoise(vec3 p){
+ vec3 i=floor(p), f=fract(p);
+ f=f*f*(3.-2.*f);
+ float a=noise3(i), b=noise3(i+vec3(1.,0.,0.));
+ float c=noise3(i+vec3(0.,1.,0.)), d=noise3(i+vec3(1.,1.,0.));
+ float e=noise3(i+vec3(0.,0.,1.)), g=noise3(i+vec3(1.,0.,1.));
+ float h=noise3(i+vec3(0.,1.,1.)), j=noise3(i+vec3(1.,1.,1.));
+ return mix(mix(mix(a,b,f.x),mix(c,d,f.x),f.y),
+            mix(mix(e,g,f.x),mix(h,j,f.x),f.y),f.z);
+}
 void main(){
  vec3 n=normalize(vLocal);
  // Layered latitude currents give giant-gas planets local variation without textures.
@@ -20,10 +32,13 @@ void main(){
  float mid=sin(n.y*138.+sin(n.x*27.+n.z*13.)*3.)*.5+.5;
  float micro=sin(n.y*310.+sin(n.x*39.+n.z*52.)*4.)*.5+.5;
  float cloud=sin(n.y*24.+sin(n.x*19.+drift*.012)*2.7+n.z*11.)*.5+.5;
- float grain=(noise3(vLocal*.23)-.5)*.075;
+ float iceWorld=kind>1.5 && kind<2.5 ? smoothIceNoise(n*13.) : 0.;
+ float grain=kind>1.5 && kind<2.5
+   ? (iceWorld-.5)*.03
+   : (noise3(vLocal*.23)-.5)*.075;
  float surface=kind<.5 ? broad*.63+mid*.19+cloud*.18 :
  kind<1.5 ? cloud*.74+broad*.18+mid*.08 :
- kind<2.5 ? abs(sin(n.x*39.+n.z*25.))*.3+noise3(vLocal*.07)*.68 :
+ kind<2.5 ? .24+iceWorld*.52+(sin(n.x*67.+n.z*41.+n.y*21.)*.5+.5)*.11 :
  kind<3.5 ? cloud*.35+broad*.47+mid*.18 :
  kind<4.5 ? broad*.56+mid*.29+micro*.15 : cloud*.70+broad*.3;
  vec3 c=mix(darkTint,lightTint,clamp(surface+grain,0.,1.));
@@ -33,8 +48,10 @@ void main(){
    c=mix(c,vec3(.65,.19,.12),oval*step(.25,n.z)*.91);
  }
  if(kind>1.5 && kind<2.5){
-   float crack=1.-smoothstep(.025,.13,abs(sin(n.x*37.+n.z*23.+sin(n.y*16.)*3.)));
-   c=mix(c,vec3(.16,.32,.42),crack*.42);
+   // Soft fractured icy crust with non-grid tectonic seams. No blocky UVs.
+   float fault=sin(n.x*28.+n.z*22.+sin(n.y*16.+n.z*11.)*3.+iceWorld*2.6);
+   float crack=1.-smoothstep(.024,.13,abs(fault));
+   c=mix(c,vec3(.24,.43,.53),crack*.43);
  }
  if(kind>2.5 && kind<3.5){
    vec2 storm=(n.xy-vec2(-.25,.22))*vec2(3.3,3.8);
