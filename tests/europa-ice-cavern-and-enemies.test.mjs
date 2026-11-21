@@ -45,6 +45,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-hanging-ice-stalactites', EUROPA_CAVE_BUDGET.crystalSpikes],
     ['europa-cave-monumental-entrance', EUROPA_CAVE_BUDGET.entranceRocks],
     ['europa-cave-natural-ice-arch', EUROPA_CAVE_BUDGET.archstones],
+    ['europa-cave-exterior-glacial-cliffs', EUROPA_CAVE_BUDGET.exteriorCliffs],
     ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
   ];
   assert.equal(cavern.children.length, expected.length);
@@ -60,7 +61,10 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     for (let i = 0; i < count; i++) {
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(position, rotation, scale);
-      if (name.includes('natural-ice-arch')) {
+      if (name.includes('exterior-glacial-cliffs')) {
+        assert.ok(Math.abs(position.x) - scale.x > 55, 'fjord stays outside flight');
+        assert.ok(position.z >= -170 && position.z <= 24, 'fjord frames cave mouth');
+      } else if (name.includes('natural-ice-arch')) {
         assert.ok(position.z <= 0 && position.z >= -12, 'arch frames cave mouth');
         assert.ok(
           position.y - scale.y >= 33 && position.y - scale.y < 39,
@@ -98,6 +102,15 @@ test('Europa reuses existing 520-unit collision tunnel, including the breakable 
   const roof = tunnel.getObjectByName('europa-cavern-physical-roof-hidden-under-ice');
   assert.ok(roof?.isMesh, 'same physical ceiling has an authored visual cover');
   assert.equal(roof.visible, false, 'no rectangle across cave mouth');
+  for (const name of [
+    'europa-cave-hidden-left-wall-collider',
+    'europa-cave-hidden-right-near-collider',
+    'europa-cave-hidden-right-far-collider',
+  ]) {
+    const wall = tunnel.getObjectByName(name);
+    assert.ok(wall?.isMesh, 'physical wall must remain: ' + name);
+    assert.equal(wall.visible, false, 'side wall slab must be replaced by rock skin');
+  }
   assert.ok(
     tunnel.userData.solids.some(
       (solid) =>
