@@ -63,3 +63,4 @@
 - Paisagem: mantém a aproximação da câmera e o enquadramento dos pórticos da Devastador.
 - Retrato: recua a câmera e amplia o campo de visão para reduzir a proporção do gato na tela. O piso cosmético do hangar foi estendido para sustentar esse recuo sem mostrar vazio.
 - Validação Node local da CI de sincronização: 12/12 testes específicos de câmera, locomoção, geografia e reator aprovados. Capturas finais e a suíte geral devem ser conferidas no commit de QA atualizado.
+- A face do reator agora tem aros de energia e lâminas de refrigeração iluminadas sobre o colisor existente, com animação própria e nenhuma alteração de colisão.
