@@ -98,19 +98,24 @@ export function createDevastadorGrandHall() {
         a,
       );
     }
-    createBox(
-      hall,
-      isEntrance ? 'hall-entrance-giant-pillar' : 'hall-structural-column',
-      chrome,
-      x,
-      20,
-      z,
-      13,
-      215,
-      17,
-      a,
-    );
-    createBox(hall, 'hall-overhead-beam', plate, x * 0.83, 119, z * 0.83, 13, 11, 62, a);
+    // i=0 was a 215-unit fake central pillar directly in the entry
+    // line of sight. It had no collision and occluded the reactor boss.
+    // Keep the two real flanking gantries (i=1, i=19), leave x=0 open.
+    if (i !== 0)
+      createBox(
+        hall,
+        isEntrance ? 'hall-entrance-giant-pillar' : 'hall-structural-column',
+        chrome,
+        x,
+        20,
+        z,
+        13,
+        215,
+        17,
+        a,
+      );
+    if (i !== 0)
+      createBox(hall, 'hall-overhead-beam', plate, x * 0.83, 119, z * 0.83, 13, 11, 62, a);
   }
   const entrance = createBox(
     hall,
@@ -234,23 +239,25 @@ export function createDevastadorGrandHall() {
 
   // Instanced strips + armor fasteners give the walls industrial scale on mobile.
   // The renderer sees only two extra draw calls, not 200 individual bolts.
-  const fastener = new T.InstancedMesh(geo, chrome, 160);
+  // Remove instanced surface bolts/bus bars from the central open throat,
+  // rather than leaving a visually solid but non-colliding obstruction.
+  const fastener = new T.InstancedMesh(geo, chrome, 152);
   fastener.name = 'hall-structural-fasteners-instanced';
-  const cable = new T.InstancedMesh(geo, blue, 100);
+  const cable = new T.InstancedMesh(geo, blue, 95);
   cable.name = 'hall-perimeter-energy-traces-instanced';
   const helper = new T.Object3D();
-  for (let i = 0; i < 160; i++) {
-    const a = ((i % 20) / 20) * Math.PI * 2;
+  for (let i = 0; i < 152; i++) {
+    const a = (((i % 19) + 1) / 20) * Math.PI * 2;
     const radial = 238;
-    helper.position.set(Math.sin(a) * radial, -45 + Math.floor(i / 20) * 22, Math.cos(a) * radial);
+    helper.position.set(Math.sin(a) * radial, -45 + Math.floor(i / 19) * 22, Math.cos(a) * radial);
     helper.rotation.set(0, a, 0);
     helper.scale.set(3, 5.2, 1.4);
     helper.updateMatrix();
     fastener.setMatrixAt(i, helper.matrix);
   }
-  for (let i = 0; i < 100; i++) {
-    const a = ((i % 20) / 20) * Math.PI * 2;
-    helper.position.set(Math.sin(a) * 230, -52 + Math.floor(i / 20) * 26, Math.cos(a) * 230);
+  for (let i = 0; i < 95; i++) {
+    const a = (((i % 19) + 1) / 20) * Math.PI * 2;
+    helper.position.set(Math.sin(a) * 230, -52 + Math.floor(i / 19) * 26, Math.cos(a) * 230);
     helper.rotation.set(0, a, 0);
     helper.scale.set(37, 1.3, 1.4);
     helper.updateMatrix();

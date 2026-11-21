@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.157 — QA171: correção do eixo de entrada no reator da fase 4
+
+- Remove a coluna visual de 215 unidades que não tinha colisão e atravessava a nave na entrada da arena; mantém estruturas reais nas laterais.
+- Retira também a viga e os detalhes instanciados sobre o eixo aberto, sem mudar física, alvos, mecânicas ou sequência das fases.
+- Adiciona regressão em Node sobre a geometria real da entrada e Playwright para capturas frontal e de flanco, em desktop e mobile.
+- Exclui propositalmente a exploração e as três ativações dos módulos da PR #418; requer homologação visual e CI final antes de publicação.
+
 ## 1.27.156 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.

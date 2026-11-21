@@ -133,6 +133,9 @@ test('missing WebGL presents an honest, non-interactive error', async ({ page })
 });
 
 test('checkpoint restores the final sector with independent music control', async ({ page }) => {
+  // GitHub Actions software WebGL reached 29.5s in a passing release run;
+  // retain all checkpoint/music assertions with headroom for slower CI runners.
+  test.setTimeout(120000);
   await page.addInitScript(() =>
     localStorage.setItem(
       'nova-wing-3d-v1',
