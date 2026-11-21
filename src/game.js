@@ -223,6 +223,11 @@ import { createPetPickup } from './pet-visuals.js';
 import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
+import {
+  DEVASTADOR_ACCESS_MODULES,
+  shouldEnterDevastadorReactorAccess,
+  reactorModulesComplete,
+} from './devastador-reactor-access.js';
 import { developerLabLoadout } from './developer-lab.js';
 import { CINEMATICS, cinematicBeat, cinematicDuration } from './cinematics.js';
 import { createCinematicStage } from './cinematic-stage.js';
@@ -280,6 +285,9 @@ export function createGame({
   nativeLifecycle = false,
   onStageStarted = () => {},
   onStageFinished = () => {},
+  // The live Stage-04 gate is wired by main.js to the same exploration renderer.
+  // Headless game-only fixtures omit it and retain the original stage harness.
+  onReactorAccessRequested = null,
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
@@ -831,6 +839,8 @@ export function createGame({
     reactorGridSeconds = 0,
     reactorGridCompleted = false,
     reactorGridWave = 0,
+    reactorAccessStarted = false,
+    reactorAccessComplete = false,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () =>
@@ -1667,6 +1677,8 @@ export function createGame({
     reactorGridSeconds = 0;
     reactorGridCompleted = false;
     reactorGridWave = 0;
+    reactorAccessStarted = false;
+    reactorAccessComplete = false;
     specialCd = barrier = stasis = berserk = bossHitPulse = 0;
     weakpointEvidence = [];
     podsDetached = false;
@@ -2562,7 +2574,85 @@ export function createGame({
       });
     });
   }
+  // Same Stage 04, no new sector / score / save. The player disembarks before
+  // reaching the reactor. Every activated switch belongs to this mission run.
+  function startReactorAccess() {
+    if (
+      typeof onReactorAccessRequested !== 'function' ||
+      reactorAccessStarted ||
+      reactorAccessComplete ||
+      state !== 'playing' ||
+      sectorIndex !== 3
+    ) return false;
+    releaseControls();
+    touchFire = touchBoost = false;
+    const accepted = onReactorAccessRequested({
+      sector: 3,
+      modules: DEVASTADOR_ACCESS_MODULES,
+      complete: finishReactorAccess,
+      abort: abortReactorAccess,
+    });
+    if (!accepted) {
+      message('ACESSO AO REATOR INDISPONÍVEL · VERIFIQUE OS CONTROLES DA MISSÃO');
+      return false;
+    }
+    reactorAccessStarted = true;
+    state = 'reactor-access';
+    music?.pause();
+    mechaEngine?.silence();
+    $('bossIncoming').hidden = true;
+    $('strategyControls').hidden = true;
+    message('DEVASTADOR · ATIVE OS 3 MÓDULOS PARA ACESSAR O NÚCLEO', 'calvin');
+    return true;
+  }
+
+  function finishReactorAccess(activated) {
+    if (state !== 'reactor-access' || !reactorModulesComplete(activated)) return false;
+    reactorAccessComplete = true;
+    reactorAccessStarted = false;
+    state = 'playing';
+    elapsed = Math.max(elapsed, current().duration - 3.8);
+    bossWarned = false;
+    bossWarningTime = 0;
+    releaseControls();
+    invuln = Math.max(invuln, 4);
+    music?.resume();
+    $('strategyControls').hidden = !dynamicFlight;
+    message('OS 3 MÓDULOS FORAM ATIVADOS · NÚCLEO EXPOSTO · PREPARE-SE!', 'bia');
+    return true;
+  }
+
+  function abortReactorAccess() {
+    if (state !== 'reactor-access') return false;
+    reactorAccessStarted = false;
+    state = 'playing';
+    // The regular pause menu offers RESUME / RESTART / EXIT. Resuming the
+    // stage reopens the still-locked gate, never skips straight to its boss.
+    pause();
+    return true;
+  }
+
+  function enterReactorAccessForQA() {
+    if (
+      !developerAvailable || !developerSession || sectorIndex !== 3 ||
+      state !== 'playing' || developerScenario?.encounter !== 'stage'
+    ) return false;
+    elapsed = Math.max(elapsed, current().duration * 0.74);
+    for (const e of enemies) dispose(e.o);
+    enemies = [];
+    subDone = true;
+    subbossClearedAt = elapsed;
+    return startReactorAccess();
+  }
+
   function makeBoss() {
+    // The Devastador core cannot be exposed before all three internal
+    // access modules are active. Direct boss QA is deliberately isolated.
+    if (
+      dynamicFlight && sectorIndex === 3 &&
+      typeof onReactorAccessRequested === 'function' && !reactorAccessComplete &&
+      !(developerSession && developerScenario?.encounter === 'boss')
+    ) return;
     if (dynamicFlight && sectorIndex === 2) {
       journey = advanceJourney(journey, 'arenaReached');
       asteroidInterior.setPhase(journey.phase);
@@ -5072,7 +5162,24 @@ export function createGame({
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
+    if (shouldEnterDevastadorReactorAccess({
+      sector: sectorIndex,
+      elapsed,
+      duration: current().duration,
+      completed: reactorAccessComplete,
+      active: reactorAccessStarted,
+      boss: !!boss,
+      subbossActive: activeSubboss,
+      encounter: developerSession ? developerScenario?.encounter : 'stage',
+      dynamicFlight: dynamicFlight && typeof onReactorAccessRequested === 'function',
+    })) {
+      if (startReactorAccess()) return;
+    }
     const bossBlocked =
+      (dynamicFlight && sectorIndex === 3 &&
+        typeof onReactorAccessRequested === 'function' &&
+        !reactorAccessComplete &&
+        !(developerSession && developerScenario?.encounter === 'boss')) ||
       activeSubboss ||
       obstacles.some((o) => o.o.userData.kind === 'tunnel') ||
       (dynamicFlight &&
@@ -6851,6 +6958,7 @@ export function createGame({
     selectShipColor,
     nextSector,
     startDeveloperScenario,
+    enterReactorAccessForQA,
     snapshot: () => ({
       state,
       developerAvailable,
@@ -6873,6 +6981,11 @@ export function createGame({
       },
       missionCameraSeconds: reactorGridSeconds,
       missionHazardWave: reactorGridWave,
+      reactorAccess: {
+        started: reactorAccessStarted,
+        completed: reactorAccessComplete,
+        required: DEVASTADOR_ACCESS_MODULES.map(({ id }) => id),
+      },
       bossIntent: bossIntent ? { ...bossIntent } : null,
       tactics: { energy: tacticEnergy, scanTime, impactTime, ...(boss ? tactics() : {}) },
       coreAngle: dynamicFlight && boss ? tactics().heading : 0,
