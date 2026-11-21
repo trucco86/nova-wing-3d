@@ -147,7 +147,7 @@ test('alien architecture flies past slowly and wraps only behind the horizon wit
   assert.doesNotThrow(() => updateAlienArchitecture(root, Number.NaN));
 });
 
-test('unique Europa hero vault never loops away from the player\u0027s scenic objective', () => {
+test('Europa unique tower approaches the ship, passes once, and never loops back onscreen', () => {
   const root = createAlienArchitecture('ice');
   const vault = root.getObjectByName('europa-sunken-alien-vault-hero');
   assert.ok(vault?.userData.heroLandmark);
@@ -157,18 +157,20 @@ test('unique Europa hero vault never loops away from the player\u0027s scenic ob
     return new T.Vector3().setFromMatrixPosition(matrix);
   };
   const initial = where();
-  assert.equal(initial.z, -750);
-  updateAlienArchitecture(root, 4000);
+  assert.equal(initial.z, -980);
+  updateAlienArchitecture(root, 400);
   const approaching = where();
-  assert.ok(approaching.z > initial.z && approaching.z < -450);
+  assert.ok(approaching.z > initial.z && approaching.z < -750);
   assert.equal(approaching.x, initial.x);
   assert.equal(approaching.y, initial.y);
-  updateAlienArchitecture(root, 12000);
-  assert.equal(where().z, -450, 'hero vault remains at readable middle-depth');
+  updateAlienArchitecture(root, 1200);
+  assert.ok(where().z > approaching.z, 'tower approaches camera with world travel');
+  updateAlienArchitecture(root, 3000);
+  assert.equal(where().z, 160, 'unique tower passes behind the camera, not frozen in view');
   updateAlienArchitecture(root, 48000);
-  assert.equal(where().z, -450, 'unique mission landmark never wraps behind fog');
+  assert.equal(where().z, 160, 'tower never loops or reappears in the same stage');
   updateAlienArchitecture(root, 0);
-  assert.equal(where().z, -750, 'reset begins an identical approach');
+  assert.equal(where().z, -980, 'replay restores the original distant approach');
   assert.equal(vault.count, 1);
   assert.equal(vault.userData.visualOnly, true);
 });
