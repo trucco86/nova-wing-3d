@@ -13,10 +13,10 @@ import { createWorld } from '../src/visuals.js';
 import { SECTORS } from '../src/campaign.js';
 
 test('Europa moon disappears exactly at orbit handoff behind a dense ice mist curtain', () => {
-  for (let t = 0; t < 9; t += 0.5) assert.equal(europaDescentAt(t).planetOpacity, 1);
-  assert.ok(europaDescentAt(10.5).planetOpacity > 0);
-  assert.ok(europaDescentAt(10.5).planetOpacity < 1);
-  for (let t = 12; t <= 25; t += 0.25) {
+  for (let t = 0; t <= 6; t += 0.5) assert.equal(europaDescentAt(t).planetOpacity, 1);
+  assert.ok(europaDescentAt(7).planetOpacity > 0);
+  assert.ok(europaDescentAt(7).planetOpacity < 1);
+  for (let t = 8; t <= 25; t += 0.25) {
     assert.equal(
       europaDescentAt(t).planetOpacity,
       0,
