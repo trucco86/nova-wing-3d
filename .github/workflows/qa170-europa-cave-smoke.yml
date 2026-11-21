@@ -33,3 +33,5 @@ jobs:
           path: |
             test-results/
             playwright-report/
+
+# Final WebGL screenshots: cavern grows naturally and Marvin no longer occludes entrance
