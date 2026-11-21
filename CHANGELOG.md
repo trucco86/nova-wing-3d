@@ -1,5 +1,21 @@
 # Histórico
 
+## 1.27.156 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.155 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.154 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
+## 1.27.153 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.152 — QA158: menos draw calls potenciais no centro urbano
 
 - Batching dos seis suportes estáticos de holofotes por bloco de cidade com `InstancedMesh`, preservando geometrias, materiais, matrizes, feixes e lâmpadas animados.
