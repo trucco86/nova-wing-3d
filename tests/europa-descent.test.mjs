@@ -50,6 +50,17 @@ test('moon disappears at orbit handoff and the ice fog masks every intermediate 
   assert.equal(europaDescentAt(25).planetOpacity, 0);
   assert.equal(europaDescentAt(25).terrainReveal, 1);
   assert.equal(europaDescentAt(25).terrainLift, 0);
+  assert.equal(europaSurfaceAt(7).groundVisible, false);
+  for (const t of [8, 9, 10, 11, 12, 16]) {
+    assert.equal(europaSurfaceAt(t).groundVisible, true, 'glacier must exist under veil at ' + t);
+    assert.ok(europaDescentAt(t).terrainLift > -65, 'glacier horizon begins close enough to read');
+  }
+  for (let t = 7; t < 25; t += 0.5) {
+    assert.ok(
+      europaDescentAt(t + 0.5).terrainLift >= europaDescentAt(t).terrainLift,
+      'same continuous canyon must never sink back below orbit at ' + t,
+    );
+  }
 });
 
 test('camera follows one controlled glacial descent and settles without a cut at combat unlock', () => {
