@@ -16,8 +16,11 @@ test('city and asteroid keep fractured moons; Europa has a separate arrival moon
   const sky = scene.getObjectByName('launch-earth-horizon');
   for (let sector = 0; sector < 10; sector++) {
     world.setSector(SECTORS[sector], sector);
-    assert.equal(globe.visible, sector === 0 || sector === 2,
-      'legacy generic moon must not duplicate the Europa arrival object');
+    assert.equal(
+      globe.visible,
+      sector === 0 || sector === 2,
+      'legacy generic moon must not duplicate the Europa arrival object',
+    );
     if (sector === 5) {
       const moon = scene.getObjectByName('destination-celestial-body');
       assert.ok(moon, 'Europa moon remains a unique dedicated cinematic vista');
