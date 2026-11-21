@@ -158,6 +158,10 @@ import {
   sabotageTargetOpen,
   sabotageRadarTarget,
 } from './devastador-sabotage.js';
+import {
+  createDevastadorDefenseState,
+  advanceDevastadorDefense,
+} from './devastador-reactor-defense.js';
 import { animatePremiumMecha } from './mecha-premium.js';
 import { createMechaDashTrail } from './mecha-dash-trail.js';
 import {
@@ -842,6 +846,8 @@ export function createGame({
     reactorGridWave = 0,
     reactorAccessStarted = false,
     reactorAccessComplete = false,
+    reactorDefense = createDevastadorDefenseState(),
+    shotVolley = 0,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () =>
@@ -1680,6 +1686,8 @@ export function createGame({
     reactorGridWave = 0;
     reactorAccessStarted = false;
     reactorAccessComplete = false;
+    reactorDefense = createDevastadorDefenseState();
+    shotVolley = 0;
     specialCd = barrier = stasis = berserk = bossHitPulse = 0;
     weakpointEvidence = [];
     podsDetached = false;
@@ -2227,8 +2235,14 @@ export function createGame({
         ),
       );
     }
-    if (dynamicFlight) cue(robotMode ? 'mechaShot' : 'shot');
-    else sound(900 + weapon * 110);
+    if (dynamicFlight) {
+      // Rotate distinct original cannon transients to avoid a constant
+      // descending beep during sustained fire. No extra simultaneous voices.
+      shotVolley++;
+      cue(robotMode
+        ? shotVolley % 3 === 0 ? 'mechaShotAlt' : 'mechaShot'
+        : shotVolley % 3 === 0 ? 'shotAlt' : 'shot');
+    } else sound(900 + weapon * 110);
     shotCd = dynamicFlight
       ? mechaShotCooldown(
           firingCooldown(selectedWeapon().cadence / (1 + Math.min(30, stage()) * 0.035), rapid) *
@@ -2681,6 +2695,7 @@ export function createGame({
     // Preserve the already warmed GPU model; rebuilding on boss arrival
     // causes stutter and defeats the stage-loading shader prewarm.
     const bossUsesSabotageCore = dynamicFlight && sectorIndex === 3;
+    reactorDefense = createDevastadorDefenseState();
     if (bossUsesSabotageCore && preparedBoss) disposeBoss(preparedBoss);
     boss = bossUsesSabotageCore
       ? createDevastadorSabotageCore()
@@ -5612,6 +5627,63 @@ export function createGame({
       }
       bossCombat.update(hostileDt);
       const combatPhase = bossCombat.phase;
+      if (dynamicFlight && boss.userData.sabotage) {
+        const next = advanceDevastadorDefense(reactorDefense, {
+          age: bossCombat.age,
+          phase: combatPhase,
+          parts: boss.userData.parts,
+          playerX: player.position.x,
+          playerY: player.position.y,
+          playerZ: player.position.z,
+        });
+        reactorDefense = next.state;
+        if (next.event?.type === 'warning') {
+          cue('reactorWarning');
+          message(
+            next.event.kind === 'sentinels'
+              ? 'ALERTA · ROBÔS SENTINELAS EMERGINDO DAS PAREDES · DESVIE!'
+              : 'ALERTA · REATOR CARREGANDO PULSO DE PLASMA · AFASTE-SE!',
+          );
+        } else if (next.event?.type === 'fire') {
+          boss.updateMatrixWorld(true);
+          const target = new T.Vector3(
+            next.event.target.x,
+            next.event.target.y,
+            next.event.target.z,
+          );
+          if (next.event.kind === 'sentinels') {
+            for (const index of next.event.indices) {
+              const sentinel = boss.userData.sentinels[index];
+              if (!sentinel || boss.userData.parts[index].hp <= 0) continue;
+              // Fire from two large visible arm cannons. Direction latches
+              // at warning, so strafing and BOOST genuinely avoid the salvo.
+              for (const { muzzle, side } of sentinel.arms) {
+                const origin = muzzle.getWorldPosition(new T.Vector3());
+                bullet(
+                  origin,
+                  target.clone().add(new T.Vector3(side * 5.5, side * 3, 0)),
+                  'fire',
+                  sectorIndex,
+                );
+              }
+            }
+            cue('reactorVolley');
+          } else {
+            const origin = boss.userData.coreMuzzle.getWorldPosition(new T.Vector3());
+            for (const offset of [-12, 0, 12]) {
+              bullet(
+                origin,
+                target.clone().add(new T.Vector3(offset, offset === 0 ? 0 : 5, 0)),
+                'arcane',
+                sectorIndex,
+              );
+            }
+            cue('reactorPulse');
+          }
+        } else if (next.event?.type === 'cancel') {
+          message('DEFESA INTERROMPIDA · SISTEMA DE ENERGIA DESATIVADO');
+        }
+      }
       if (music?.snapshot().mode !== (combatPhase === 3 ? 'enraged' : 'boss'))
         music?.start(sectorIndex, combatPhase === 3 ? 'enraged' : 'boss');
       let radarPlan = null;
@@ -5876,7 +5948,11 @@ export function createGame({
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
       const sabotagePhase = boss.userData.sabotage
-        ? updateDevastadorSabotageCore(boss, { orbit: orbitAngle, time: bossCombat.age })
+        ? updateDevastadorSabotageCore(boss, {
+            orbit: orbitAngle,
+            time: bossCombat.age,
+            defense: reactorDefense,
+          })
         : null;
       const openGenerator = boss.userData.parts.findIndex(
         (p, i) => p.hp > 0 && (!dynamicFlight || bossTargetOpen(i)),
@@ -5978,8 +6054,18 @@ export function createGame({
                 'COROA IMPERIAL',
               ][sectorIndex]
             : '';
-      if (boss.userData.sabotage)
-        $('attackWarning').textContent = 'SABOTAGEM · ' + sabotagePhase.label;
+      if (boss.userData.sabotage) {
+        const armed = reactorDefense.armed;
+        $('attackWarning').textContent = armed
+          ? armed.kind === 'sentinels'
+            ? '⚠ ROBÔS SENTINELAS · CANHÕES DAS PAREDES CARREGANDO'
+            : '⚠ PULSO DO REATOR · DESVIE DA ZONA MARCADA'
+          : 'SABOTAGEM · ' + sabotagePhase.label;
+        $('attackWarning').setAttribute?.(
+          'data-severity',
+          armed ? 'danger' : 'info',
+        );
+      }
       if (dynamicFlight && !boss.userData.sabotage && !physicalWarning && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
@@ -7135,6 +7221,13 @@ export function createGame({
       sabotage: boss?.userData.sabotage
         ? {
             ...sabotagedSystem(boss.userData.parts),
+            defense: {
+              ...reactorDefense,
+              online: boss.userData.sentinels
+                .filter((s) => boss.userData.parts[s.index].hp > 0)
+                .map((s) => s.index),
+              visible: boss.userData.sentinels.filter((s) => s.upper.visible).length,
+            },
             visual: boss.userData.reactorVisual,
             orbit: {
               angle: orbitAngle,
