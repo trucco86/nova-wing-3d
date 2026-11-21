@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { openMenu } from './menu-navigation.mjs';
 
-test('Devastador reactor boss opens without fake center column and renders wall sentinels', async ({ page }, info) => {
+test('Devastador reactor boss opens without fake center column and renders wall sentinels', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
