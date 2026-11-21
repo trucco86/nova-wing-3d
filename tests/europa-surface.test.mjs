@@ -62,7 +62,13 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
 
   assert.equal(world.setEuropaTunnel(true), true);
   assert.equal(ground.visible, false, 'avoid z-fighting with physical -7 tunnel floor');
-  assert.equal(surface.visible, false, 'avoid foreground intersecting tunnel walls');
+  assert.equal(
+    surface.visible,
+    true,
+    'keep distant cliff skyline during tunnel but hide global coplanar ground',
+  );
+  assert.equal(scene.getObjectByName('europa-canyon-grounded-cliffs')?.visible, true);
+  assert.ok(scene.getObjectByName('europa-blue-crevasse-ridges')?.isInstancedMesh);
   world.setDestinationArrival(31);
   assert.equal(ground.visible, false, 'arrival update must not restore coplanar ground');
   assert.equal(world.setEuropaTunnel(false), false);
