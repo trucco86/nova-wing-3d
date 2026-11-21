@@ -775,14 +775,18 @@ export function installOrbit9ExplorationPreview(
     });
   }
 
+  function startStageReactorQA() {
+    if (!qaAllowed || active || game.snapshot?.().state !== 'menu') return false;
+    return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
+  }
+  if (qaAllowed && $('developerReactorQA'))
+    listen($('developerReactorQA'), 'click', startStageReactorQA);
+
   // Developer-only teleport/inspection API supports deterministic browser QA.
   // It grants no rank, save, mission victory or privileged backend actions.
   if (qaAllowed)
     window.__novaExploreQA = Object.freeze({
-      startStageReactorQA() {
-        if (active || game.snapshot?.().state !== 'menu') return false;
-        return game.startDeveloperScenario(3, 'stage') && game.enterReactorAccessForQA();
-      },
+      startStageReactorQA,
       moveTo(x, z) {
         if (!active || !Number.isFinite(x) || !Number.isFinite(z)) return false;
         if (
