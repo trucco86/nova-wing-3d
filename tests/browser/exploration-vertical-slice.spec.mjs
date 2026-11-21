@@ -169,10 +169,12 @@ test('the cat moves relative to the orbital camera before unlocking the core', a
   await openMidstageReactor(page);
   const before = await page.evaluate(() => window.__novaExploreQA.snapshot());
   await page.keyboard.down('KeyW');
-  await page.waitForTimeout(380);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().player.z), {
+      timeout: 5000,
+    })
+    .toBeLessThan(before.player.z - 0.5);
   await page.keyboard.up('KeyW');
-  const forward = await page.evaluate(() => window.__novaExploreQA.snapshot());
-  expect(forward.player.z).toBeLessThan(before.player.z - 0.5);
   for (let i = 0; i < 7; i++) await page.locator('#exploreCameraRight').click();
   await expect
     .poll(
@@ -185,9 +187,13 @@ test('the cat moves relative to the orbital camera before unlocking the core', a
     .toBeLessThan(0.12);
   const reverse = await page.evaluate(() => window.__novaExploreQA.snapshot());
   await page.keyboard.down('KeyW');
-  await page.waitForTimeout(380);
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().player.z), {
+      timeout: 5000,
+    })
+    .toBeGreaterThan(reverse.player.z + 0.5);
   await page.keyboard.up('KeyW');
-  const moved = await page.evaluate(() => window.__novaExploreQA.snapshot());
-  expect(moved.player.z).toBeGreaterThan(reverse.player.z + 0.5);
-  expect(moved.game.reactorAccess.completed).toBe(false);
+  expect(
+    (await page.evaluate(() => window.__novaExploreQA.snapshot())).game.reactorAccess.completed,
+  ).toBe(false);
 });
