@@ -83,7 +83,7 @@ for (const { index, theme, label } of destinations) {
   });
 }
 
-test('QA168 Europa: live 520-unit frozen cave, ice spikes and destructible wall are visible on mobile', async ({
+test('QA168 Europa: long 940-unit frozen cave approaches naturally with visible ice optical flow', async ({
   page,
 }, info) => {
   test.setTimeout(120000);
