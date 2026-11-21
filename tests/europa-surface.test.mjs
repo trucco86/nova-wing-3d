@@ -50,7 +50,13 @@ test('Europa tunnel owns its floor: no two coplanar surfaces, glacial vista retu
   world.setDestinationArrival(19);
   assert.equal(destination.visible, false, 'planet disappears before the tunnel/fissure entry');
   assert.equal(surface.visible, true, 'glaciers rise before planetary fade');
-  assert.ok(surface.position.y < 0 && surface.position.y > -240, 'continuous terrain lift');
+  assert.equal(surface.position.y, 0, 'glacier is fully revealed before 19s');
+  world.setDestinationArrival(11);
+  assert.ok(
+    surface.position.y < 0 && surface.position.y > -35,
+    'the same canyon rises continuously through the short ice curtain',
+  );
+  world.setDestinationArrival(19);
   world.setDestinationArrival(26);
   assert.equal(globe.visible, false, 'the legacy orb remains hidden for this entire journey');
   assert.equal(destination.visible, false, 'distant second globe must also be gone');
@@ -113,7 +119,11 @@ test('frozen surface detail stays outside flight corridor with bounded mobile dr
   updateEuropaSurface(root, 29, true, false);
   assert.equal(root.getObjectByName('europa-canyon-crystal-violet').visible, false);
   assert.equal(root.getObjectByName('europa-canyon-crystal-cyan').visible, true);
-  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, false);
+  assert.equal(root.getObjectByName('europa-windborne-ice-snow').visible, true);
+  assert.ok(
+    root.getObjectByName('europa-windborne-ice-snow').material.opacity < 0.45,
+    'medium retains affordable translucent snow with the existing single Points draw',
+  );
   updateEuropaSurface(root, 29, false, false);
   assert.equal(root.visible, false);
   root.traverse((node) => {
