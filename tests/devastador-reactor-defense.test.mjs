@@ -149,12 +149,19 @@ test('stage-04 QA boss produces real wall-defense projectiles and exposes live s
   assert.equal(snapshot.bossIntent, null, 'generic boss AI remains disabled');
 });
 
-test('shot SFX avoid six-voice long arcade beeps and have distinct reactor cues', () => {
-  for (const cue of ['shot', 'shotAlt', 'mechaShot', 'mechaShotAlt']) {
+test('alternative shot SFX use only four voices, with distinct reactor warnings', () => {
+  for (const cue of ['shotAlt', 'mechaShotAlt']) {
     const sound = AUDIO_CUES[cue];
     assert.ok(sound, cue);
     assert.ok(sound.tones.length + (sound.noises?.length ?? 0) <= 4, cue);
     assert.ok(Math.max(...sound.tones.map((t) => t.duration)) <= 0.25, cue);
+  }
+  assert.notDeepEqual(AUDIO_CUES.shot.tones, AUDIO_CUES.shotAlt.tones);
+  assert.notDeepEqual(AUDIO_CUES.mechaShot.tones, AUDIO_CUES.mechaShotAlt.tones);
+  for (const cue of ['shot', 'mechaShot']) {
+    // The established acoustic baseline is kept as one of three shots.
+    assert.ok(AUDIO_CUES[cue].tones.length + AUDIO_CUES[cue].noises.length <= 6);
+    assert.ok(AUDIO_CUES[cue].cooldown >= 0.08);
   }
   for (const cue of ['reactorWarning', 'reactorVolley', 'reactorPulse']) {
     assert.ok(AUDIO_CUES[cue].tones.length >= 2, cue);
