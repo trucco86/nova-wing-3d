@@ -40,3 +40,12 @@
 - Os testes gerais de BOOST e disparo agora encerram a abertura antes de testar comandos, usando o fluxo compartilhado de início da missão.
 - A patente ilustrada é conferida independentemente da capitalização do texto localizado.
 - A homologação depende do Playwright focado, dos seis shards gerais e da revisão do aparelho físico, não apenas dos testes Node.
+
+## Evidência da candidata de integração
+
+- Build gerado e reproduzível; validação integral aprovada no job
+  [44848119005](https://github.com/trucco86/nova-wing-3d/actions/runs/44848119005).
+- Referência atual: v1.27.158. Entrada de desembarque por volta dos 55s
+  da fase 04, após a defesa do reator; não existe uma fase independente.
+- Faltam a conclusão dos testes Playwright sobre este commit e a revisão
+  de gameplay em dispositivo físico antes do merge.
