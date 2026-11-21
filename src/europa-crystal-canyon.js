@@ -128,14 +128,17 @@ function instanced(root, name, geometry, material, count, position) {
   mesh.userData.visualOnly = true;
   mesh.frustumCulled = false;
   const t = new T.Object3D();
+  const originalDepth = new Float32Array(count);
   for (let i = 0; i < count; i++) {
     const p = position(i);
+    originalDepth[i] = p.z;
     t.position.set(p.x, p.y, p.z);
     t.rotation.set(0, p.yaw ?? 0, p.roll ?? 0);
     t.scale.set(p.w, p.h, p.d);
     t.updateMatrix();
     mesh.setMatrixAt(i, t.matrix);
   }
+  mesh.userData.authoredDepth = originalDepth;
   mesh.instanceMatrix.needsUpdate = true;
   root.add(mesh);
   return mesh;
@@ -340,4 +343,45 @@ export function setEuropaCrystalCanyonQuality(root, quality = 'high') {
   for (const child of root.children) {
     if (child.userData.highOnly) child.visible = quality === 'high';
   }
+}
+
+// Europa's canyon is WORLD SPACE, not a static sky painting. Real flight moves
+// each ice landmark toward/behind the camera, with different depth rates to
+// preserve parallax. Batched decorations recycle only once well behind the
+// player. The unique architectural gate must never respawn.
+const CANYON_FAR = -1900;
+const CANYON_NEAR = 160;
+const CANYON_SPAN = CANYON_NEAR - CANYON_FAR;
+export function europaCanyonDepth(base, travel, speed = 0.6) {
+  if (![base, travel, speed].every(Number.isFinite) || speed < 0 || travel < 0)
+    throw new RangeError('Invalid Europa canyon travel');
+  const z = base + travel * speed;
+  return z < CANYON_NEAR ? z : CANYON_FAR + ((z - CANYON_FAR) % CANYON_SPAN);
+}
+export function updateEuropaCrystalCanyonMotion(root, travel) {
+  if (!root || !Number.isFinite(travel) || travel < 0) return false;
+  for (const mesh of root.children) {
+    const depth = mesh.userData.authoredDepth;
+    if (!mesh.isInstancedMesh || !depth) continue;
+    const speed =
+      mesh.userData.layer === 'frozen-clouds'
+        ? 0.27
+        : mesh.userData.layer === 'architecture'
+          ? 0.48
+          : mesh.userData.layer === 'crystals'
+            ? 0.72
+            : 0.59;
+    const matrices = mesh.instanceMatrix.array;
+    for (let i = 0; i < depth.length; i++)
+      matrices[i * 16 + 14] = europaCanyonDepth(depth[i], travel, speed);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  const gateway = root.getObjectByName('europa-canyon-distant-alien-gateway');
+  if (gateway) {
+    // A distinct destination flies past ONCE, not stuck at the horizon nor
+    // recreated after the camera passes it.
+    gateway.position.z = Math.min(160, -610 + travel * 0.42);
+  }
+  root.userData.motionTravel = travel;
+  return true;
 }
