@@ -37,3 +37,5 @@ jobs:
           path: |
             test-results/
             playwright-report/
+
+# QA172 final review: export Colossus pincer, recovery, and hammer frames
