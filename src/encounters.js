@@ -274,13 +274,23 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       // modify the authoritative 520-unit solids, hitboxes or breach opening.
       const frostWall = europaCavern ? metal('#537e9b', 0.07, 0.76) : dark;
       const frostDeck = europaCavern ? metal('#779db9', 0.05, 0.64) : armor;
-      solid(4, 44, 520, -34, 15, -260, frostWall);
+      const leftWall = solid(4, 44, 520, -34, 15, -260, frostWall);
+      if (europaCavern) {
+        // The solid collider remains authoritative, but flat industrial
+        // rectangles are visually replaced by the overlapping ice rock skin.
+        leftWall.name = 'europa-cave-hidden-left-wall-collider';
+        leftWall.visible = false;
+      }
       if (variant === 'europa') {
         // One authored breach in the *right* wall. The actual collision wall
         // is split, so opening the panel is physically traversable rather
         // than a cosmetic explosion over an invisible solid.
-        solid(4, 44, 200, 34, 15, -100, frostWall);
-        solid(4, 44, 280, 34, 15, -380, frostWall);
+        const nearWall = solid(4, 44, 200, 34, 15, -100, frostWall);
+        const farWall = solid(4, 44, 280, 34, 15, -380, frostWall);
+        nearWall.name = 'europa-cave-hidden-right-near-collider';
+        farWall.name = 'europa-cave-hidden-right-far-collider';
+        nearWall.visible = false;
+        farWall.visible = false;
         const panel = box(4, 44, 40, frostWall, 34, 15, -220);
         panel.name = 'europa-tunnel-breach-panel';
         g.add(panel);
