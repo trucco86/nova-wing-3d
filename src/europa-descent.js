@@ -50,7 +50,7 @@ export function europaDescentAt(seconds) {
     planetOpacity,
     // The moon must visibly grow WHILE the automatic super boost is active.
     // Previously growth started after the boost had already stopped.
-    planetScale: 0.74 + approach * 0.8 + orbit * 0.07 + entry * 0.03,
+    planetScale: 0.74 + approach * 0.78 + orbit * 0.07 + entry * 0.03,
     planetZ: -920 + approach * 205,
     // Keep the moon in the camera at approach, then let the ice floor become
     // the primary point of reference without a screen-filling planet.
