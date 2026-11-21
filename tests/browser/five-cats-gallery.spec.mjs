@@ -49,7 +49,7 @@ test('pilot portraits and insignia artwork work on mobile without obscuring the 
   await expect(page.locator('#pilot-bob .cat-avatar')).toBeVisible();
   await page.locator('#pilot-bob').click();
   // Rank titles are localized in title case. The badge identity, not casing,
-// is what the user sees and what this test must verify.
+  // is what the user sees and what this test must verify.
   await expect(page.locator('#pilotRankInsignia')).toContainText(/recruta|cadete|aspirante/i);
   expect(
     await page
