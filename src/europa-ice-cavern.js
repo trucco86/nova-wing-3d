@@ -73,7 +73,7 @@ export function createEuropaIceCavern() {
       const side = i % 2 ? 1 : -1;
       const z = -14 - Math.floor(i / 2) * 27;
       return {
-        x: side * (37 + rng(i + 7) * 3),
+        x: side * (47 + rng(i + 7) * 3),
         y: 13 + rng(i + 9) * 8,
         z,
         w: 7 + rng(i + 23) * 6,
@@ -91,7 +91,7 @@ export function createEuropaIceCavern() {
     EUROPA_CAVE_BUDGET.ceilingSpires,
     (i) => ({
       x: (rng(i + 45) - 0.5) * 57,
-      y: 44 + rng(i + 48) * 2,
+      y: 53 + rng(i + 48) * 2,
       z: -23 - i * 23,
       w: 13 + rng(i + 51) * 7,
       h: 10 + rng(i + 54) * 4,
@@ -108,7 +108,7 @@ export function createEuropaIceCavern() {
     (i) => {
       const side = i % 2 ? 1 : -1;
       return {
-        x: side * (25 + rng(i + 70) * 5),
+        x: side * (36 + rng(i + 70) * 3),
         y: 34 - rng(i + 73) * 2,
         z: -22 - Math.floor(i / 2) * 28,
         w: 2.3 + rng(i + 76) * 1.8,
