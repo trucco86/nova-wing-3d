@@ -51,3 +51,5 @@ jobs:
             git commit -m 'build(europa): sync camera-safe claws and focused WebGL QA'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
+
+# QA173 retest: orbit-aware near-camera claw scaling after integrated WebGL gate
