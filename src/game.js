@@ -798,6 +798,7 @@ export function createGame({
     groundWave = 0,
     tunnelDone = false,
     europaTunnelCrossingLast = false,
+    europaCaveSentinelWave = 0,
     respawnTime = 0,
     totalTime = 0,
     music = null,
@@ -1713,6 +1714,7 @@ export function createGame({
     groundWave = 0;
     tunnelDone = sectorIndex === 1;
     europaTunnelCrossingLast = false;
+    europaCaveSentinelWave = 0;
     bossVolley = 0;
     collapseBurst = 0;
     pausedFrom = 'playing';
@@ -4627,6 +4629,22 @@ export function createGame({
     }
     europaTunnelCrossingLast = europaTunnelCrossing;
     if (dynamicFlight && sectorIndex === 5) world.setEuropaTunnel?.(europaTunnelCrossing);
+    // Two bounded cave beats keep this long stage playable. These are real
+    // ice-skinned hover robots with pooled cryogenic eye lasers, not sprites
+    // or static turrets. They enter only after the camera is safely INSIDE.
+    if (europaTunnelCrossing && spawnEncounters && !boss && europaCaveApproach) {
+      const depth = -europaCaveApproach.distance;
+      if (europaCaveSentinelWave === 0 && depth >= 355) {
+        europaCaveSentinelWave = 1;
+        enemy('hover-walker', { x: -13, y: 15, phase: 0.5 });
+        enemy('hover-walker', { x: 14, y: 18, phase: 2.7 });
+        message('CATEDRAL GLACIAL · DRONES CRIOGÊNICOS À FRENTE', 'bob');
+      } else if (europaCaveSentinelWave === 1 && depth >= 980) {
+        europaCaveSentinelWave = 2;
+        enemy('hover-walker', { x: 0, y: 17, phase: 1.6 });
+        message('FENDA PROFUNDA · LASERS DE GELO · USE GIRO PARA LIMPAR', 'christopher');
+      }
+    }
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
     // Exactly three physical, damageable ice fighters approach during the
     // automatic boost. Their cyan shots reuse actual swept projectile
@@ -7426,6 +7444,7 @@ export function createGame({
             }
           : null,
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
+      europaCaveSentinels: europaCaveSentinelWave,
       europaCryo: {
         stacks: europaCryoStacks,
         hits: europaCryoHits,
