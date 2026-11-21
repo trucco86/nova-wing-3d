@@ -145,6 +145,21 @@ window.fixture = {
       canyon: canyon
         ? {
             visible: Boolean(frozenSurface?.visible && canyon.visible),
+            travel: canyon.userData.motionTravel ?? 0,
+            gatewayDepth:
+              canyon.getObjectByName('europa-canyon-distant-alien-gateway')?.position.z ?? null,
+            cliffDepth: (() => {
+              const cliff = canyon.getObjectByName('europa-canyon-grounded-cliffs');
+              if (!cliff) return null;
+              cliff.getMatrixAt(0, matrix);
+              return matrix.elements[14];
+            })(),
+            crystalDepth: (() => {
+              const crystal = canyon.getObjectByName('europa-canyon-crystal-cyan');
+              if (!crystal) return null;
+              crystal.getMatrixAt(0, matrix);
+              return matrix.elements[14];
+            })(),
             cyanCount: canyon.getObjectByName('europa-canyon-crystal-cyan')?.count ?? 0,
             violetVisible: canyon.getObjectByName('europa-canyon-crystal-violet')?.visible ?? false,
             cliffs: canyon.getObjectByName('europa-canyon-grounded-cliffs')?.count ?? 0,
