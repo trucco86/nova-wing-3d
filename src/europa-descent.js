@@ -32,6 +32,9 @@ export function europaDescentAt(seconds) {
   return Object.freeze({
     phase,
     seconds,
+    // Automatic cinematic super boost only during the initial approach.
+    // Energy, damage, scoring and player input remain under game control.
+    approachBoost: seconds < 6,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
     terrainVisible: seconds >= 11.5,
