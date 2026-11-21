@@ -12574,3 +12574,103 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
     bottom: calc(115px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Orbit-9 QA: mirror the ship's orbit rail immediately above the LEFT stick.
+   All three rotation actions are reachable with the moving thumb; Vista stays
+   in the same cluster. Never put camera controls at the upper screen corner. */
+#explorationOverlay .exploration-camera-tools {
+  position: absolute;
+  top: auto;
+  left: max(12px, env(safe-area-inset-left, 0px));
+  bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + clamp(92px, 26vw, 116px) + 12px);
+  z-index: 8;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid #3b98a57a;
+  border-radius: 12px;
+  background: #061c2bc4;
+  pointer-events: auto;
+}
+#explorationOverlay .exploration-camera-tools::before {
+  content: 'ÓRBITA';
+  position: absolute;
+  left: 5px;
+  top: -15px;
+  color: #a0e7e8;
+  font: 800 9px/1 Arial, sans-serif;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+#explorationOverlay .exploration-camera-tools button {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  width: 43px;
+  height: 42px;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 9px;
+  padding: 5px;
+  font-size: 12px;
+  touch-action: manipulation;
+  opacity: 0.9;
+}
+#explorationOverlay .exploration-camera-tools #exploreSpin {
+  width: 51px;
+  border-color: #d6c59b;
+  background: #564a2ac9;
+  color: #ffedb4;
+  font-size: 12px;
+}
+#explorationOverlay .exploration-camera-tools #exploreSpin.pressed {
+  border-color: #ffe7a0;
+  background: #98733c;
+  color: #fff;
+}
+#explorationOverlay .exploration-camera-tools #exploreCameraZoom {
+  width: 53px;
+  min-width: 0;
+  font-size: 10px;
+}
+#explorationOverlay .exploration-status {
+  bottom: calc(197px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 650px), (max-height: 520px) {
+  #explorationOverlay .exploration-camera-tools {
+    top: auto;
+    left: max(8px, env(safe-area-inset-left, 0px));
+    bottom: calc(max(7px, env(safe-area-inset-bottom, 0px)) + clamp(86px, 23vw, 106px) + 12px);
+    gap: 3px;
+    padding: 3px;
+  }
+  #explorationOverlay .exploration-camera-tools button {
+    width: 39px;
+    height: 39px;
+    min-width: 0;
+    min-height: 0;
+    padding: 4px;
+  }
+  #explorationOverlay .exploration-camera-tools #exploreSpin {
+    width: 49px;
+  }
+  #explorationOverlay .exploration-camera-tools #exploreCameraZoom {
+    width: 49px;
+  }
+  #explorationOverlay .exploration-status {
+    bottom: calc(183px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-width: 360px) {
+  #explorationOverlay .exploration-camera-tools button {
+    width: 36px;
+    height: 38px;
+  }
+  #explorationOverlay .exploration-camera-tools #exploreSpin {
+    width: 46px;
+  }
+  #explorationOverlay .exploration-camera-tools #exploreCameraZoom {
+    width: 45px;
+  }
+}
