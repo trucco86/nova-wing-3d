@@ -286,6 +286,9 @@ export function installOrbit9ExplorationPreview(
       return mesh;
     };
     makeBox(112, 1.4, 126, steel, 0, -0.9, -41);
+    // The portrait follow camera is pulled back beyond the old deck edge.
+    // Extend only the cosmetic landing floor so no unbuilt void enters view.
+    makeBox(112, 1.4, 28, steel, 0, -0.9, 29);
     // Connected free-roam districts replace the former mandatory corridor.
     const districtMats = [mat('#193c4c'), mat('#37404d'), mat('#283b43')];
     ORBIT9_DISTRICTS.slice(1).forEach((district, i) => {
@@ -293,6 +296,7 @@ export function installOrbit9ExplorationPreview(
     });
     for (const side of [-1, 1]) {
       makeBox(2, 9, 128, dark, side * 58, 4, -41);
+      makeBox(2, 9, 28, dark, side * 58, 4, 29);
       for (let n = 0; n < 10; n++) {
         const z = 9 - n * 11;
         makeBox(2, 17, 3, steel, side * 57, 8, z);
@@ -388,7 +392,10 @@ export function installOrbit9ExplorationPreview(
     facingYaw = Math.PI;
     pilot.rotation.y = facingYaw;
     scene.add(pilot);
-    const initialCamera = orbit9CameraPose(playerX, playerZ, cameraState);
+    const initialCamera = orbit9CameraPose(playerX, playerZ, {
+      ...cameraState,
+      aspect: viewport.clientWidth / Math.max(1, viewport.clientHeight),
+    });
     camera.position.set(initialCamera.eye.x, initialCamera.eye.y, initialCamera.eye.z);
     camera.lookAt(initialCamera.aim.x, initialCamera.aim.y, initialCamera.aim.z);
     mapSignals.replaceChildren();
@@ -485,6 +492,7 @@ export function installOrbit9ExplorationPreview(
     const pose = orbit9CameraPose(playerX, playerZ, {
       yaw: cameraYawVisual,
       mode: cameraState.mode,
+      aspect: camera.aspect,
     });
     cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
     camera.position.lerp(cameraGoal, Math.min(1, dt * 9));
@@ -799,7 +807,10 @@ export function installOrbit9ExplorationPreview(
         // camera across dozens of meters through the station's physical walls.
         // Snapping immediately also makes screenshots of each district reliable.
         cameraYawVisual = cameraState.yaw;
-        const pose = orbit9CameraPose(playerX, playerZ, cameraState);
+        const pose = orbit9CameraPose(playerX, playerZ, {
+          ...cameraState,
+          aspect: camera?.aspect,
+        });
         cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
         cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
         camera?.position.copy(cameraGoal);
