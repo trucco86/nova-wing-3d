@@ -7225,6 +7225,8 @@ export function createGame({
                             visible: arm.node.visible,
                             contact: arm.hand.getWorldPosition(new T.Vector3()).toArray(),
                             flash: arm.impact.visible,
+                            visualScale: arm.hand.scale.x,
+                            flashRadius: arm.userData.flashRadius ?? 0,
                           })) ?? [],
                     }
                   : null,
