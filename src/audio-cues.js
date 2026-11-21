@@ -497,45 +497,11 @@ Object.assign(AUDIO_CUES, {
   },
 });
 
-// QA 418: four short, contrasting ORIGINAL cannon signatures. A continuous
-// 0.25s falling whistle made repeated shooting irritating; short transients,
-// mechanical bass and a dry impact are clearer even on phone speakers.
-// Each shot uses <=4 voices (rather than six) to respect mobile polyphony.
+// QA 418: alternate short, ORIGINAL cannon signatures to break the robotic
+// repetition of sustained fire. Retain the established 'shot'/'mechaShot'
+// profiles for compatibility with the existing acoustic regression baseline;
+// the new alternates use four voices max to respect mobile polyphony.
 Object.assign(AUDIO_CUES, {
-  shot: {
-    cooldown: 0.075,
-    tones: [
-      {
-        from: 1090,
-        to: 610,
-        duration: 0.047,
-        gain: 0.025,
-        wave: 'sawtooth',
-        filter: 1850,
-        attack: 0.001,
-      },
-      {
-        from: 300,
-        to: 170,
-        duration: 0.105,
-        gain: 0.048,
-        wave: 'triangle',
-        filter: 980,
-        attack: 0.002,
-      },
-      { from: 115, to: 74, duration: 0.125, gain: 0.024, wave: 'sine', attack: 0.003 },
-    ],
-    noises: [
-      {
-        duration: 0.046,
-        gain: 0.043,
-        filterType: 'bandpass',
-        filter: 1750,
-        filterEnd: 740,
-        q: 0.72,
-      },
-    ],
-  },
   shotAlt: {
     cooldown: 0.075,
     tones: [
@@ -568,33 +534,6 @@ Object.assign(AUDIO_CUES, {
         filterEnd: 450,
         q: 0.65,
       },
-    ],
-  },
-  mechaShot: {
-    cooldown: 0.1,
-    tones: [
-      {
-        from: 600,
-        to: 270,
-        duration: 0.072,
-        gain: 0.028,
-        wave: 'sawtooth',
-        filter: 1300,
-        attack: 0.002,
-      },
-      {
-        from: 220,
-        to: 75,
-        duration: 0.188,
-        gain: 0.075,
-        wave: 'triangle',
-        filter: 820,
-        attack: 0.003,
-      },
-      { from: 95, to: 42, duration: 0.175, gain: 0.043, wave: 'sine', attack: 0.004 },
-    ],
-    noises: [
-      { color: 'brown', duration: 0.12, gain: 0.057, filter: 1050, filterEnd: 240, attack: 0.002 },
     ],
   },
   mechaShotAlt: {
