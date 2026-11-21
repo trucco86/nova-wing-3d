@@ -3,7 +3,7 @@
 ## Sequência jogável única
 
 1. A fase 04 começa com o voo, aproximação e combates da Devastador.
-2. Após 74% da duração prevista e sem subchefe ativo, o voo é suspenso para o desembarque no interior da mesma nave.
+2. Após aproximadamente 62% da fase (cerca de 55 segundos), depois da defesa do reator e sem subchefe ativo, o voo é suspenso para o desembarque no interior da mesma nave.
 3. O piloto selecionado percorre os distritos com caminhada, joystick, BOOST, giro 360 e órbita já existentes.
 4. Os três módulos passam a ser Circuitos, Refrigeração e Motores, ativados individualmente com feedback e minimapa.
 5. Somente após as três ativações é possível acessar o reator.
