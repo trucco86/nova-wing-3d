@@ -6456,14 +6456,24 @@ export function createGame({
       const kind =
         sectorIndex === 7
           ? saturnHazard
-          : space
-            ? kinds[Math.floor(elapsed / 8) % kinds.length]
-            : Math.floor(elapsed / 8) % 2
-              ? 'gantry'
-              : 'reactor';
+          : dynamicFlight && sectorIndex === 5
+            ? Math.floor(elapsed / 8) % 2
+              ? 'ice-crag'
+              : 'ice-spire'
+            : space
+              ? kinds[Math.floor(elapsed / 8) % kinds.length]
+              : Math.floor(elapsed / 8) % 2
+                ? 'gantry'
+                : 'reactor';
       const o = obstaclePool.acquire(kind);
       o.position.set(
-        kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
+        kind === 'gantry'
+          ? 0
+          : kind === 'ice-crag' || kind === 'ice-spire'
+            ? rnd(-22, 22)
+            : kind === 'reactor'
+              ? rnd(-20, 20)
+              : rnd(-10, 10),
         kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
         -230,
       );
