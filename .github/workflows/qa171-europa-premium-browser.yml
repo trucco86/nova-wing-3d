@@ -1,0 +1,35 @@
+name: QA171 Europa premium ice robot browser proof
+on:
+  push:
+    branches:
+      - feat/alien-worlds-visual-identity-20261120
+    paths:
+      - .github/workflows/qa171-europa-premium-browser.yml
+permissions:
+  contents: read
+jobs:
+  real-webgl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [mobile, desktop]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npx playwright install chromium
+      - name: Ice robot encounters, no bars and 1500-unit cave in actual canvas
+        run: npx playwright test tests/browser/qa168-alien-worlds.spec.mjs --project=${{ matrix.target }} --grep 'QA171 Europa|QA168 Europa: long 1500' --workers=1 --retries=0
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: qa171-ice-premium-${{ matrix.target }}-${{ github.sha }}
+          path: |
+            test-results/
+            playwright-report/
