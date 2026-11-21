@@ -64,3 +64,9 @@
 - Retrato: recua a câmera e amplia o campo de visão para reduzir a proporção do gato na tela. O piso cosmético do hangar foi estendido para sustentar esse recuo sem mostrar vazio.
 - Validação Node local da CI de sincronização: 12/12 testes específicos de câmera, locomoção, geografia e reator aprovados. Capturas finais e a suíte geral devem ser conferidas no commit de QA atualizado.
 - A face do reator agora tem aros de energia e lâminas de refrigeração iluminadas sobre o colisor existente, com animação própria e nenhuma alteração de colisão.
+
+## Checagem do reator energizado
+
+- O núcleo exibe anel emissivo frontal animado e refrigeração mecânica detalhada, sem substituir o obstáculo físico existente.
+- O teste específico de arte confirma dois elementos individuais de energia, instâncias de blindagem, ausência de novos colisores e animação determinística, com 9/9 verificações aprovadas na preparação da candidata.
+- Revisão final das capturas em paisagem e retrato é obrigatória antes de homologar o aspecto visual.
