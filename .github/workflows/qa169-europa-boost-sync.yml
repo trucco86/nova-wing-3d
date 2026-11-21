@@ -44,3 +44,5 @@ jobs:
           fi
 
 # QA169 retry: interceptor activation boundary now asserted (lint-clean)
+
+# QA169 retry: early full canyon reveal and Medium snow test contracts corrected
