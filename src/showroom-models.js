@@ -63,6 +63,8 @@ export function createShowroomPilot(id, uniform = 0, earnedMedals = 0) {
   ];
   g.userData.uniformGrade = grade;
   g.userData.medalCount = medalCount;
+  // Keep Five Cats identity stable when the same model disembarks from the ship.
+  g.userData.artIdentity = profile.id;
   g.name = 'pilot-model-' + profile.id;
   const material = (color, metalness = 0.1, roughness = 0.65) =>
     new T.MeshStandardMaterial({ color, metalness, roughness });
