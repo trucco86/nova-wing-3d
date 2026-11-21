@@ -9,7 +9,11 @@ import {
   createEuropaSurface,
   updateEuropaSurface,
 } from '../src/europa-surface.js';
-import { addEuropaEnemyIceSkin } from '../src/europa-enemy-ice-skin.js';
+import {
+  addEuropaEnemyIceSkin,
+  frostEuropaPursuitFighter,
+} from '../src/europa-enemy-ice-skin.js';
+import { fighter } from '../src/visuals.js';
 
 test('Europa super boost makes the moon grow and approach while consuming no scripted input', () => {
   const before = europaDescentAt(0);
@@ -126,4 +130,19 @@ test('Europa enemies keep white crystalline silhouettes with localized dark cont
   assert.ok(white.g > dark.g * 1.4);
   assert.equal(armor.userData.visualOnly, true);
   assert.equal(spikes.userData.visualOnly, true);
+});
+
+test('white ice pursuit paint replaces red fuselage and pink engine glow without changing shared fighter assets', () => {
+  const ordinary = fighter(true, 0);
+  const pursuer = fighter(true, 0);
+  const defaultHull = ordinary.getObjectByName('ship-fuselage');
+  const iceHull = pursuer.getObjectByName('ship-fuselage');
+  const original = defaultHull.material.color.getHex();
+  assert.ok(frostEuropaPursuitFighter(pursuer) > 0);
+  assert.equal(iceHull.material.color.getHex(), new T.Color('#e7f7ff').getHex());
+  assert.equal(defaultHull.material.color.getHex(), original, 'other enemies retain own palette');
+  assert.notEqual(iceHull.material, defaultHull.material, 'shared red material is never mutated');
+  assert.equal(pursuer.userData.europaPursuitFrostPalette, true);
+  const thrust = pursuer.getObjectByName('flame');
+  assert.equal(thrust.material.color.getHex(), new T.Color('#86e9ff').getHex());
 });
