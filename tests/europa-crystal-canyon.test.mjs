@@ -14,7 +14,11 @@ test('Europa crystal canyon has authored cliffs, cyan/violet shards and rooted a
   const root = createEuropaCrystalCanyon();
   assert.equal(root.name, 'europa-premium-crystal-canyon');
   assert.equal(root.userData.visualOnly, true);
-  assert.equal(root.children.length, 6, 'four batches, one landmark group and one frozen cloud layer');
+  assert.equal(
+    root.children.length,
+    6,
+    'four batches, one landmark group and one frozen cloud layer',
+  );
   assert.ok(root.getObjectByName('europa-frozen-cloud-banks')?.isInstancedMesh);
   const quantities = [
     ['europa-canyon-grounded-cliffs', EUROPA_CANYON_BUDGET.cliffInstances],

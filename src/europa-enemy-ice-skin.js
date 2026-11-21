@@ -48,8 +48,22 @@ export function addEuropaEnemyIceSkin(enemy, { ground = false } = {}) {
   const shell = [
     { x: 0, y: baseY + (ground ? 6 : 0.1), z: 0, w: 1.7 * scale, h: 0.6 * scale, d: 2.2 * scale },
     ...[-1, 1].flatMap((side) => [
-      { x: side * scale * 1.7, y: baseY + 0.3, z: -0.5, w: 1.1 * scale, h: 0.4 * scale, d: 1.6 * scale },
-      { x: side * scale * 2.7, y: baseY + 0.2, z: 0.5, w: 0.85 * scale, h: 0.33 * scale, d: 1.3 * scale },
+      {
+        x: side * scale * 1.7,
+        y: baseY + 0.3,
+        z: -0.5,
+        w: 1.1 * scale,
+        h: 0.4 * scale,
+        d: 1.6 * scale,
+      },
+      {
+        x: side * scale * 2.7,
+        y: baseY + 0.2,
+        z: 0.5,
+        w: 0.85 * scale,
+        h: 0.33 * scale,
+        d: 1.3 * scale,
+      },
     ]),
   ];
   skin.add(batch('europa-white-ice-armor', shellGeometry, frost, shell));

@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { europaDescentAt } from '../src/europa-descent.js';
-import { EUROPA_CAVE_BUDGET, EUROPA_CAVE_LENGTH, createEuropaIceCavern } from '../src/europa-ice-cavern.js';
+import {
+  EUROPA_CAVE_BUDGET,
+  EUROPA_CAVE_LENGTH,
+  createEuropaIceCavern,
+} from '../src/europa-ice-cavern.js';
 import { addEuropaEnemyIceSkin } from '../src/europa-enemy-ice-skin.js';
 import { createObstacle } from '../src/encounters.js';
 import { createWorld } from '../src/visuals.js';
@@ -13,7 +17,11 @@ test('Europa moon disappears exactly at orbit handoff behind a dense ice mist cu
   assert.ok(europaDescentAt(10.5).planetOpacity > 0);
   assert.ok(europaDescentAt(10.5).planetOpacity < 1);
   for (let t = 12; t <= 25; t += 0.25) {
-    assert.equal(europaDescentAt(t).planetOpacity, 0, 'no planet persists after orbital entry: ' + t);
+    assert.equal(
+      europaDescentAt(t).planetOpacity,
+      0,
+      'no planet persists after orbital entry: ' + t,
+    );
   }
   assert.ok(europaDescentAt(12).iceMist > 0.95);
   assert.ok(europaDescentAt(16).iceMist > 0.9);
@@ -45,9 +53,12 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
       mesh.getMatrixAt(i, matrix);
       matrix.decompose(position, rotation, scale);
       assert.ok(position.z < 0 && position.z >= -550);
-      if (name.includes('wall')) assert.ok(Math.abs(position.x) - scale.x > 30, 'wall must not hide tunnel opening');
-      if (name.includes('ceiling')) assert.ok(position.y - scale.y >= 38, 'roof must not hang into traversable volume');
-      if (name.includes('stalactites')) assert.ok(Math.abs(position.x) - scale.x > 30, 'spikes must avoid flight corridor');
+      if (name.includes('wall'))
+        assert.ok(Math.abs(position.x) - scale.x > 30, 'wall must not hide tunnel opening');
+      if (name.includes('ceiling'))
+        assert.ok(position.y - scale.y >= 38, 'roof must not hang into traversable volume');
+      if (name.includes('stalactites'))
+        assert.ok(Math.abs(position.x) - scale.x > 30, 'spikes must avoid flight corridor');
     }
   }
 });
@@ -88,7 +99,10 @@ test('Europa fighters and ground patrols receive white armor and crystalline spi
     assert.deepEqual(enemy.position, originalPosition);
     assert.deepEqual(enemy.scale, originalScale);
     assert.equal(enemy.userData.solids, undefined);
-    assert.equal(skin.getObjectByName('europa-white-ice-armor').material.color.getHexString(), 'f4fbff');
+    assert.equal(
+      skin.getObjectByName('europa-white-ice-armor').material.color.getHexString(),
+      'f4fbff',
+    );
   }
   assert.equal(addEuropaEnemyIceSkin(null), null);
 });

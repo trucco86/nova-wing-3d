@@ -374,14 +374,15 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       solid(72, 3, 520, 0, 38.5, -260, frostWall);
       // Preserve the original industrial ribs only in other biomes. The
       // Europa cave gets one natural faceted skin instead of neon columns.
-      if (!europaCavern) for (let z = 0; z >= -520; z -= 40) {
-        for (const s of [-1, 1]) {
-          g.add(box(2, 40, 2, armor, s * 31, 15, z));
-          g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
+      if (!europaCavern)
+        for (let z = 0; z >= -520; z -= 40) {
+          for (const s of [-1, 1]) {
+            g.add(box(2, 40, 2, armor, s * 31, 15, z));
+            g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
+          }
+          g.add(box(64, 2, 3, armor, 0, 36, z));
+          g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
         }
-        g.add(box(64, 2, 3, armor, 0, 36, z));
-        g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
-      }
       if (europaCavern) g.add(createEuropaIceCavern());
       for (let i = 0; i < 3; i++) {
         const gap = i % 2 ? -9 : 9,

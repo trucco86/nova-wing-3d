@@ -1939,8 +1939,7 @@ export function createWorld(scene, random = Math.random, dynamicFlight = false) 
       terrainMat.uniforms.launchGroundAlpha.value = ice.surface;
       scene.fog.color.lerp(new T.Color(ice.fogTint), ice.surface * 0.87);
       scene.fog.density =
-        T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface) +
-        state.haze * 0.006;
+        T.MathUtils.lerp(scene.fog.density, ice.frostDensity, ice.surface) + state.haze * 0.006;
       // Mist is a transition curtain, not permanent blur in the playable
       // canyon. The fog clears completely as the ship leaves the fissure.
       updateEuropaSurface(
