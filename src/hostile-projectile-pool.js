@@ -33,7 +33,9 @@ export function createHostileProjectilePool({
     let shot = idle.pop();
     if (!shot) {
       const mesh = new T.Mesh(geometry, materials.normal);
-      mesh.add(createHalo());
+      const aura = createHalo();
+      aura.name = 'hostile-projectile-halo';
+      mesh.add(aura);
       const trail = new T.Mesh(trailGeometry, materials.fire);
       trail.name = 'hostile-projectile-streak';
       trail.position.z = -2.2;
@@ -69,6 +71,9 @@ export function createHostileProjectilePool({
       shot.tether.visible = false;
       scene.add(shot.tether);
     }
+    const aura = shot.o.getObjectByName('hostile-projectile-halo');
+    if (aura && materials.normalHalo && materials.iceHalo)
+      aura.material = spell === 'ice' ? materials.iceHalo : materials.normalHalo;
     shot.o.material = themed
       ? bossMaterials[bossIndex]
       : spell === 'ice' && materials.ice
