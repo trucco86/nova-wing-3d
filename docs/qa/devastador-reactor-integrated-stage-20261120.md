@@ -75,3 +75,24 @@
 
 - O teleporte do cenário de teste sincroniza as dimensões da câmera antes de fotografar após rotação de tela, evitando capturas com a distância do layout anterior.
 - A orientação não muda a progressão, os módulos nem a posição física do piloto. O teste inclui as duas resoluções 390×844 e 844×390.
+
+## V1.27.159, combate ativo do reator
+
+- Entrada da arena: coluna central sem colisão removida. Os dois apoios laterais permanecem. Os parafusos e as linhas luminosas instanciadas foram retirados do centro do vão.
+- Quatro robôs sentinelas exclusivos, sem pernas, presos às paredes por suportes hidráulicos. Cada busto possui cabeça, ombros e dois canhões reais articulados.
+- Sentinelas ligadas aos quatro reguladores elétricos do núcleo: desligar/destruir um regulador desliga seu sentinela para o restante da luta.
+- O reator alterna duas salvas dos robôs com um pulso triplo do núcleo. Cada ataque informa e trava a posição do jogador antes do disparo; movimento lateral e BOOST servem como defesa. Os projéteis usam a mesma física de colisão e dano da campanha.
+- Não usar o mesmo modelo nem movimento de robôs de fases normais. Não adicionar uma nova fase, spawn de inimigo solto, teleporte ou save separado.
+- Som de tiro da nave e do robô refeito em quatro assinaturas curtas e alternadas, com máximo quatro vozes por tiro. Aviso, disparo dos robôs e pulso energético têm sons próprios, criados por síntese, sem sample de terceiros.
+- A saída do núcleo não muda: a vitória exige destruir os oito sistemas de sabotagem e então o núcleo central.
+
+### Aceite objetivo
+
+- [ ] Ao entrar no reator, nenhuma coluna falsa bloqueia o centro da tela.
+- [ ] Quatro sentinelas de busto aparecem fisicamente nas paredes; não atravessam paredes ou se locomovem pelo ar.
+- [ ] Sentinelas carregam e disparam do braço; os disparos podem acertar e tirar vida.
+- [ ] O alerta é anterior ao disparo e o jogador consegue evitar o ponto de impacto com movimento.
+- [ ] A terceira sequência é o pulso energético do núcleo; os ataques não ficam repetindo uma única animação.
+- [ ] A destruição de cada circuito cancela o respectivo robô e a destruição dos restantes encerra as ofensivas.
+- [ ] Testes Node, áudio, Desktop/Mobile Playwright, build reproduzível e validação física em dispositivo antes da produção.
+- [ ] A PR continua Draft e nunca faz merge ou deploy de produção sem aprovação.
