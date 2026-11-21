@@ -58,6 +58,11 @@ const mobileRpg = installMobileRpgAccordion({ game });
 // Developer/QA game mode. No persistent exploration save is introduced.
 const exploration = installOrbit9ExplorationPreview(game);
 reactorAccessStage = exploration;
+const destroyWithStage = game.destroy.bind(game);
+game.destroy = () => {
+  exploration.destroy();
+  destroyWithStage();
+};
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -76,7 +81,6 @@ if (!Capacitor.isNativePlatform()) {
     compactMenu.destroy();
     mobileRpg.destroy();
     showroom.destroy();
-    exploration.destroy();
     destroy();
   };
 }
