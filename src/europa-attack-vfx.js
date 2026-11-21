@@ -208,7 +208,6 @@ export function animateEuropaAttackVfx(
   const beat = Math.max(0, time - 8) % 12; // Colossus uses the 12s boss tactic cycle
   const recovery = clamp01((beat - 3.6) / 2.4);
   const quakeOn = live && kind === 'ice-quake';
-  const pincerOn = live && kind === 'cryo-pincer';
   const striking = state === 'attack';
   const pulse = 0.78 + Math.sin(time * 7) * 0.22;
   const strength = 1 + Math.max(0, Math.min(2, phase - 1)) * 0.1;
