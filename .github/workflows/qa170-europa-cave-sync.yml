@@ -42,3 +42,5 @@ jobs:
             git commit -m 'build(europa): sync distant fjord and long physical ice cave'
             git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
+
+# Retry after correcting a deterministic value-equality assertion
