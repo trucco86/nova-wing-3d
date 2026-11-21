@@ -10,6 +10,7 @@ export const EUROPA_CAVE_BUDGET = Object.freeze({
   crystalSpikes: 36,
   entranceRocks: 10,
   archstones: 13,
+  exteriorCliffs: 16,
   gateFacets: 72,
 });
 
@@ -164,6 +165,29 @@ export function createEuropaIceCavern() {
         h: 4.6 + rng(i + 191) * 0.7,
         d: 8 + rng(i + 201) * 3,
         roll: (rng(i + 211) - 0.5) * 0.4,
+      };
+    },
+  );
+  // The exterior must read as a glacial fissure, not a doorway floating in
+  // outer space. One batched row of natural cliffs surrounds the cave mouth.
+  // This skyline remains outside the 64-unit corridor and has no hitboxes.
+  addBatch(
+    root,
+    'europa-cave-exterior-glacial-cliffs',
+    new T.DodecahedronGeometry(1, 0),
+    rock,
+    EUROPA_CAVE_BUDGET.exteriorCliffs,
+    (i) => {
+      const side = i % 2 ? 1 : -1;
+      const height = 48 + rng(i + 231) * 55;
+      return {
+        x: side * (103 + rng(i + 221) * 60),
+        y: -7 + height * 0.46,
+        z: 24 - Math.floor(i / 2) * 26,
+        w: 18 + rng(i + 227) * 24,
+        h: height,
+        d: 29 + rng(i + 233) * 21,
+        yaw: (rng(i + 239) - 0.5) * 0.55,
       };
     },
   );
