@@ -30,7 +30,8 @@ export function europaSurfaceAt(seconds, tunnelActive = false) {
 // Authored snow is episodic to avoid a continuous grey blur over combat.
 // Three fixed windows cover canyon entry, a mid-route squall and pre-boss ice.
 const EUROPA_SNOW_WINDOWS = Object.freeze([
-  { start: 25, end: 39, intensity: 0.52 },
+  // The surface blizzard starts during descent and continues into combat.
+  { start: 10, end: 40, intensity: 0.92 },
   { start: 47, end: 62, intensity: 0.95 },
   { start: 71, end: 84, intensity: 0.64 },
 ]);
@@ -179,9 +180,16 @@ export function createEuropaSurface() {
   const coords = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const side = i % 2 ? -1 : 1;
-    coords[i * 3] = side * (57 + hash(i * 13) * 200);
-    coords[i * 3 + 1] = -3 + hash(i * 31) * 78;
-    coords[i * 3 + 2] = -90 - hash(i * 47) * 1250;
+    // Most flakes cross the visible chase-camera lane, not only cliffs.
+    // Everything here remains purely visual, without collision volumes.
+    const foreground = i < 60;
+    coords[i * 3] = foreground
+      ? (hash(i * 13 + 1) - 0.5) * 170
+      : side * (95 + hash(i * 13) * 165);
+    coords[i * 3 + 1] = -2 + hash(i * 31) * 78;
+    coords[i * 3 + 2] = foreground
+      ? -45 - hash(i * 47) * 330
+      : -270 - hash(i * 47) * 1020;
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(coords, 3));
@@ -191,7 +199,7 @@ export function createEuropaSurface() {
       color: '#ecfbff',
       transparent: true,
       opacity: 0.53,
-      size: 2.4,
+      size: 2.9,
       sizeAttenuation: false,
       depthWrite: false,
     }),
@@ -232,11 +240,14 @@ export function updateEuropaSurface(root, time, visible, highQuality = true) {
   }
   if (snow) {
     const weather = europaWeatherAt(time);
-    snow.visible = Boolean(visible && highQuality && weather.active);
+    // Reuse the same existing 84-particle draw in Medium with lower alpha.
+    snow.visible = Boolean(visible && weather.active);
     if (snow.visible) {
       // One existing Points draw, with wind and snowfall driven by mission
       // seconds. Medium keeps the optional layer disabled for mobile FPS.
-      snow.material.opacity = 0.21 + weather.intensity * 0.48;
+      snow.material.opacity = highQuality
+        ? 0.20 + weather.intensity * 0.48
+        : 0.10 + weather.intensity * 0.26;
       snow.position.set(
         Math.sin(time * 0.19) * 7 + weather.wind,
         Math.sin(time * 0.23) * 2,
