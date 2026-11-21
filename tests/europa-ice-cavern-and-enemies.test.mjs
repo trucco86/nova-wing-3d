@@ -202,3 +202,24 @@ test('Europa fighters and ground patrols receive white armor and crystalline spi
   }
   assert.equal(addEuropaEnemyIceSkin(null), null);
 });
+
+test('Europa has natural breakable ice geology, never industrial bridge bars', () => {
+  assert.equal(SECTORS[5].duration, 135, 'full glacier mission has extended pacing');
+  for (const kind of ['ice-crag', 'ice-spire']) {
+    const obstacle = createObstacle(kind);
+    assert.equal(obstacle.userData.kind, kind);
+    assert.ok(obstacle.userData.solids.length >= 1);
+    assert.ok(
+      obstacle.getObjectByName(
+        kind === 'ice-crag' ? 'europa-ice-natural-crag' : 'europa-ice-natural-spire',
+      )?.isMesh,
+      'real glacial hazard has a distinct visible silhouette',
+    );
+  }
+  const cave = createObstacle('tunnel', 'europa');
+  assert.equal(cave.userData.length, 1500);
+  assert.equal(cave.getObjectByName('europa-cave-faceted-gate-skin'), undefined);
+  assert.equal(cave.userData.solids.length, 6, 'no central artificial gate collision volumes');
+  const legacy = createObstacle('tunnel', 'standard');
+  assert.ok(legacy.userData.solids.length > cave.userData.solids.length);
+});
