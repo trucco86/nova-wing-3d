@@ -7,6 +7,7 @@ import {
   asteroidBossPortraitFov,
 } from '../src/asteroid-boss-framing.js';
 import { createFlightCamera } from '../src/flight.js';
+import { bossMeleePose } from '../src/boss-combat-ai.js';
 
 test('QA166: the real portrait combat lens widens only for the boss view', () => {
   assert.equal(asteroidBossPortraitFov(390 / 844), ASTEROID_BOSS_PORTRAIT_FOV);
@@ -37,4 +38,33 @@ test('QA166: combat camera transitions smoothly without moving the fighter or mo
   rig.update(2, player, 0, false, { bank: 0, ascent: 0 }, ASTEROID_BOSS_PORTRAIT_FOV);
   assert.ok(camera.fov >= 73 && camera.fov <= 75, 'cockpit keeps its original lens');
   assert.deepEqual(player.toArray(), [0, 10, 9]);
+});
+
+
+test('QA166.1: drill crosscut and other non-charge attacks never fake zoom by moving the entire boss', () => {
+  const attacking = (kind) => bossMeleePose({ kind, warning: 2.2 }, 'attack', 0.7);
+  for (const kind of [
+    'drill-crosscut',
+    'claw-swipe',
+    'tentacle-grab',
+    'tentacle-sweep',
+    'cryo-pincer',
+    'hammer-slam',
+    'ice-quake',
+    'orion-gravity-pulse',
+    'hydra-two-head-crossfire',
+    'reactor-vent',
+  ]) {
+    const pose = attacking(kind);
+    assert.equal(pose.lunge, 0, kind + ' must animate limbs or VFX without an entire boss body rush');
+    assert.equal(pose.track, 0, kind + ' must not pull the full body toward the locked pilot');
+  }
+  const crosscut = attacking('drill-crosscut');
+  assert.ok(crosscut.claw > 0, 'drill crosscut retains its articulated attack animation');
+  for (const kind of ['bite', 'drill-ram', 'plasma-dive', 'rok-ram', 'stingray-sting']) {
+    const pose = attacking(kind);
+    assert.ok(pose.lunge > 0, kind + ' keeps a genuine short-range body rush');
+    assert.ok(pose.track > 0, kind + ' preserves the windup-locked direction');
+  }
+  assert.equal(bossMeleePose({ kind: 'drill-crosscut', warning: 2.2 }, 'windup', 0.4).lunge, 0);
 });
