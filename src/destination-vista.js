@@ -113,6 +113,7 @@ function partsForVista(root) {
       rim: globe.getObjectByName('destination-celestial-limb'),
       mist: root.getObjectByName('destination-entry-mist'),
       iceParticles: root.getObjectByName('europa-fissure-entry-ice'),
+      speedStreaks: root.getObjectByName('europa-orbital-super-boost-streaks'),
     };
     vistaParts.set(root, parts);
   }
@@ -284,7 +285,41 @@ export function createDestinationVista(index) {
     iceParticles.userData.visualOnly = true;
     root.add(iceParticles);
   }
-  vistaParts.set(root, { globe, rim, mist, iceParticles });
+  let speedStreaks = null;
+  if (index === 5) {
+    // The engine already applies free automatic boost to the Europa approach.
+    // One draw of 76 velocity lines makes that acceleration visibly connected
+    // to the shrinking camera distance, without spawning per-frame geometry.
+    const streaks = new Float32Array(76 * 6);
+    const seed = (v) => {
+      const n = Math.sin(v * 27.37 + 8.73) * 41737.17;
+      return n - Math.floor(n);
+    };
+    for (let i = 0; i < 76; i++) {
+      const x = (seed(i + 1) - 0.5) * 250;
+      const y = (seed(i + 99) - 0.5) * 155;
+      const z = -160 - seed(i + 201) * 280;
+      streaks.set([x, y, z, x * 1.025, y * 1.025, z + 15 + seed(i + 317) * 30], i * 6);
+    }
+    const lines = new T.BufferGeometry();
+    lines.setAttribute('position', new T.BufferAttribute(streaks, 3));
+    speedStreaks = new T.LineSegments(
+      lines,
+      new T.LineBasicMaterial({
+        color: '#d6f5ff',
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        fog: false,
+        blending: T.AdditiveBlending,
+      }),
+    );
+    speedStreaks.name = 'europa-orbital-super-boost-streaks';
+    speedStreaks.frustumCulled = false;
+    speedStreaks.userData.visualOnly = true;
+    root.add(speedStreaks);
+  }
+  vistaParts.set(root, { globe, rim, mist, iceParticles, speedStreaks });
   updateDestinationVista(root, index, 0);
   return root;
 }
@@ -292,14 +327,14 @@ export function createDestinationVista(index) {
 export function updateDestinationVista(root, index, seconds) {
   const state = destinationArrivalAt(index, seconds);
   if (!state || !root) return state;
-  const { globe, rim, mist, iceParticles } = partsForVista(root);
+  const { globe, rim, mist, iceParticles, speedStreaks } = partsForVista(root);
   const visible = state.globeOpacity > 0.01;
   globe.visible = visible;
   globe.scale.setScalar(state.globeScale);
   // Europa follows its unique moon-to-fissure trajectory. The camera sees
   // the actual arriving moon, not a generic second orb far off-screen.
   if (index === 5) {
-    globe.position.set(state.globeX, state.globeY, -920);
+    globe.position.set(state.globeX, state.globeY, state.globeZ);
   }
   // Saturn remains within the narrow portrait viewport during ring combat.
   const groundDestination = index === 4 || index === 5 || index === 6 || index === 9;
@@ -318,6 +353,12 @@ export function updateDestinationVista(root, index, seconds) {
   globe.material.uniforms.alpha.value = state.globeOpacity;
   globe.material.uniforms.drift.value = seconds;
   rim.material.uniforms.alpha.value = state.globeOpacity * 0.8;
+  if (speedStreaks) {
+    speedStreaks.visible = state.approachBoostVisual > 0.02;
+    speedStreaks.material.opacity = state.approachBoostVisual * 0.63;
+    // Simulation time only: pause, replay and seeking produce identical speed.
+    speedStreaks.position.z = Math.min(6, seconds) * 54;
+  }
   if (iceParticles) {
     iceParticles.visible = state.haze > 0.01;
     iceParticles.material.opacity = state.haze * 0.46;
