@@ -370,8 +370,8 @@ test('Orbit-9 movement stays screen-relative after camera orbit and 360° is bes
   await expect
     .poll(
       () =>
-        page.evaluate(
-          () => Math.abs(Math.abs(window.__novaExploreQA.snapshot().cameraVisualYaw) - Math.PI),
+        page.evaluate(() =>
+          Math.abs(Math.abs(window.__novaExploreQA.snapshot().cameraVisualYaw) - Math.PI),
         ),
       { timeout: 4000 },
     )

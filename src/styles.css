@@ -12600,7 +12600,9 @@ body.in-mission #pilotHudAvatar[data-pilot='jenifer'] {
   left: 5px;
   top: -15px;
   color: #a0e7e8;
-  font: 800 9px/1 Arial, sans-serif;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
   letter-spacing: 1px;
   pointer-events: none;
 }
