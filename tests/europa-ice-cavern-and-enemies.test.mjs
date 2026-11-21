@@ -5,7 +5,9 @@ import { europaDescentAt } from '../src/europa-descent.js';
 import {
   EUROPA_CAVE_BUDGET,
   EUROPA_CAVE_LENGTH,
+  EUROPA_CAVE_GATE_DEPTHS,
   createEuropaIceCavern,
+  updateEuropaIceCavernMotion,
 } from '../src/europa-ice-cavern.js';
 import { addEuropaEnemyIceSkin } from '../src/europa-enemy-ice-skin.js';
 import { createObstacle } from '../src/encounters.js';
@@ -39,7 +41,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
   const cavern = createEuropaIceCavern();
   assert.equal(cavern.name, 'europa-cathedral-ice-cavern');
   assert.equal(cavern.userData.visualOnly, true);
-  assert.equal(EUROPA_CAVE_LENGTH, 520);
+  assert.equal(EUROPA_CAVE_LENGTH, 940);
   const expected = [
     ['europa-cave-sculpted-wall', EUROPA_CAVE_BUDGET.wallRocks],
     ['europa-cave-vaulted-ceiling', EUROPA_CAVE_BUDGET.ceilingSpires],
@@ -47,9 +49,23 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
     ['europa-cave-monumental-entrance', EUROPA_CAVE_BUDGET.entranceRocks],
     ['europa-cave-natural-ice-arch', EUROPA_CAVE_BUDGET.archstones],
     ['europa-cave-exterior-glacial-cliffs', EUROPA_CAVE_BUDGET.exteriorCliffs],
+    ['europa-cave-distant-fjord-approach', EUROPA_CAVE_BUDGET.approachFjord],
     ['europa-cave-faceted-gate-skin', EUROPA_CAVE_BUDGET.gateFacets],
   ];
-  assert.equal(cavern.children.length, expected.length);
+  assert.equal(cavern.children.length, expected.length + 1, 'the only additional draw is optical flow');
+  const flow = cavern.getObjectByName('europa-cave-optical-flow-ice');
+  assert.ok(flow?.isPoints && flow.userData.visualOnly);
+  assert.equal(flow.geometry.getAttribute('position').count, 96);
+  const initialFlow = [...flow.geometry.getAttribute('position').array.slice(0, 18)];
+  updateEuropaIceCavernMotion(cavern, 1, 68);
+  const nextFlow = [...flow.geometry.getAttribute('position').array.slice(0, 18)];
+  assert.notDeepEqual(nextFlow, initialFlow, 'ice moves while the camera keeps ship centered');
+  updateEuropaIceCavernMotion(cavern, 1, 68);
+  assert.deepEqual(
+    [...flow.geometry.getAttribute('position').array.slice(0, 18)],
+    nextFlow,
+    'pause/replay cannot move optical-flow ice',
+  );
   const matrix = new T.Matrix4();
   const position = new T.Vector3();
   const scale = new T.Vector3();
@@ -65,6 +81,9 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
       if (name.includes('exterior-glacial-cliffs')) {
         assert.ok(Math.abs(position.x) - scale.x > 55, 'fjord stays outside flight');
         assert.ok(position.z >= -260 && position.z <= -28, 'fjord remains behind cave mouth');
+      } else if (name.includes('distant-fjord-approach')) {
+        assert.ok(position.z >= 70 && position.z <= 433, 'fjord appears ahead of cave mouth');
+        assert.ok(Math.abs(position.x) - scale.x > 60, 'approach leaves safe 64-unit lane open');
       } else if (name.includes('natural-ice-arch')) {
         assert.ok(position.z <= 0 && position.z >= -12, 'arch frames cave mouth');
         assert.ok(
@@ -79,7 +98,7 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
           'entrance must remain outside the safe passage',
         );
       } else {
-        assert.ok(position.z < 0 && position.z >= -550);
+        assert.ok(position.z < 0 && position.z >= -970);
       }
       if (name.includes('wall'))
         assert.ok(Math.abs(position.x) - scale.x > 30, 'wall must not hide tunnel opening');
@@ -91,19 +110,20 @@ test('Europa cavern is a long readable frozen passage with geometry outside coll
   }
 });
 
-test('Europa reuses existing 520-unit collision tunnel, including the breakable ice wall', () => {
+test('Europa retains solid 940-unit cave with real roof, floor, five gates and breach panel', () => {
   const tunnel = createObstacle('tunnel', 'europa');
   const cave = tunnel.getObjectByName('europa-cathedral-ice-cavern');
   assert.ok(cave?.isGroup);
   assert.ok(tunnel.userData.solids.length > 6);
-  assert.equal(tunnel.userData.length, 520);
+  assert.equal(tunnel.userData.length, 940);
+  assert.deepEqual(EUROPA_CAVE_GATE_DEPTHS, [-110, -260, -410, -610, -810]);
   assert.equal(tunnel.userData.europaBreach, true);
   assert.ok(tunnel.getObjectByName('europa-tunnel-breach-panel'));
   assert.ok(tunnel.getObjectByName('europa-tunnel-falling-debris'));
   const roof = tunnel.getObjectByName('europa-cavern-physical-roof-hidden-under-ice');
   assert.ok(roof?.isMesh, 'same physical ceiling has an authored visual cover');
   assert.equal(roof.visible, false, 'no rectangle across cave mouth');
-  for (let gate = 0; gate < 3; gate++) {
+  for (let gate = 0; gate < EUROPA_CAVE_GATE_DEPTHS.length; gate++) {
     for (const side of ['left', 'right']) {
       const panel = tunnel.getObjectByName('europa-cave-hidden-' + side + '-gate-' + gate);
       assert.ok(panel?.isMesh, 'all six real gate colliders remain');
@@ -123,15 +143,16 @@ test('Europa reuses existing 520-unit collision tunnel, including the breakable 
     tunnel.userData.solids.some(
       (solid) =>
         solid.center.y === 38.5 &&
-        solid.center.z === -260 &&
+        solid.center.z === -470 &&
         solid.half.x === 36 &&
         solid.half.y === 1.5 &&
-        solid.half.z === 260,
+        solid.half.z === 470,
     ),
     'full-size original roof collider remains intact',
   );
   assert.equal(cave.userData.visualOnly, true);
   const standard = createObstacle('tunnel', 'standard');
+  assert.equal(standard.userData.length, 520, 'other sectors retain legacy tunnel length');
   assert.equal(standard.getObjectByName('europa-cathedral-ice-cavern'), undefined);
   const scene = new T.Scene();
   const world = createWorld(scene, () => 0.5, true);
