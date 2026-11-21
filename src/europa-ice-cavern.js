@@ -146,7 +146,7 @@ export function createEuropaIceCavern() {
     },
   );
   // A jagged, layered arch closes the square roof silhouette at the mouth.
-  // These stones are high above the playable 64-unit opening, and are only
+  // Their undersides closely follow the physical ceiling at y=37, and are only
   // visual decoration. They never change the 520-unit tunnel's hitboxes.
   addBatch(
     root,
@@ -158,10 +158,10 @@ export function createEuropaIceCavern() {
       const x = -31 + (i * 62) / (EUROPA_CAVE_BUDGET.archstones - 1);
       return {
         x,
-        y: 44 + 7 * (1 - Math.abs(x) / 32) + rng(i + 161) * 1.5,
+        y: 40 + 2.4 * (1 - Math.abs(x) / 32) + rng(i + 161) * 1.5,
         z: -3 - rng(i + 171) * 6,
         w: 4.5 + rng(i + 181) * 1.2,
-        h: 5.4 + rng(i + 191) * 0.6,
+        h: 4.6 + rng(i + 191) * 0.7,
         d: 8 + rng(i + 201) * 3,
         roll: (rng(i + 211) - 0.5) * 0.4,
       };
