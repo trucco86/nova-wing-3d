@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { addGroundEnemyDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
+import { createEuropaIceCavern } from './europa-ice-cavern.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
@@ -266,14 +267,19 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       solids.push({ center: new T.Vector3(x, y, z), half: new T.Vector3(w / 2, h / 2, d / 2) });
     };
     if (kind === 'tunnel') {
-      solid(4, 44, 520, -34, 15, -260, dark);
+      const europaCavern = variant === 'europa';
+      // Europa is carved ice, not an industrial metal corridor. Do not
+      // modify the authoritative 520-unit solids, hitboxes or breach opening.
+      const frostWall = europaCavern ? metal('#90bbd3', 0.07, 0.7) : dark;
+      const frostDeck = europaCavern ? metal('#779db9', 0.05, 0.64) : armor;
+      solid(4, 44, 520, -34, 15, -260, frostWall);
       if (variant === 'europa') {
         // One authored breach in the *right* wall. The actual collision wall
         // is split, so opening the panel is physically traversable rather
         // than a cosmetic explosion over an invisible solid.
-        solid(4, 44, 200, 34, 15, -100, dark);
-        solid(4, 44, 280, 34, 15, -380, dark);
-        const panel = box(4, 44, 40, dark, 34, 15, -220);
+        solid(4, 44, 200, 34, 15, -100, frostWall);
+        solid(4, 44, 280, 34, 15, -380, frostWall);
+        const panel = box(4, 44, 40, frostWall, 34, 15, -220);
         panel.name = 'europa-tunnel-breach-panel';
         g.add(panel);
         // Warning is attached to the inside face (x<32), slightly offset
@@ -361,12 +367,14 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           debris.add(chunk);
         }
         g.add(debris);
-      } else solid(4, 44, 520, 34, 15, -260, dark);
+      } else solid(4, 44, 520, 34, 15, -260, frostWall);
       // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
       // while its authored 520-unit tunnel owns the real flight floor.
-      solid(72, 3, 520, 0, -8.5, -260, armor);
-      solid(72, 3, 520, 0, 38.5, -260, dark);
-      for (let z = 0; z >= -520; z -= 40) {
+      solid(72, 3, 520, 0, -8.5, -260, frostDeck);
+      solid(72, 3, 520, 0, 38.5, -260, frostWall);
+      // Preserve the original industrial ribs only in other biomes. The
+      // Europa cave gets one natural faceted skin instead of neon columns.
+      if (!europaCavern) for (let z = 0; z >= -520; z -= 40) {
         for (const s of [-1, 1]) {
           g.add(box(2, 40, 2, armor, s * 31, 15, z));
           g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
@@ -374,6 +382,7 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         g.add(box(64, 2, 3, armor, 0, 36, z));
         g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
       }
+      if (europaCavern) g.add(createEuropaIceCavern());
       for (let i = 0; i < 3; i++) {
         const gap = i % 2 ? -9 : 9,
           z = -110 - i * 150;
