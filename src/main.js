@@ -27,7 +27,9 @@ let catRankUI;
 const sessionId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
 let runIndex = 0;
 let activeRunId = '';
+let reactorAccessStage = null;
 const game = createGame({
+  onReactorAccessRequested: (context) => reactorAccessStage?.openIntegrated(context) ?? false,
   nativeLifecycle: Capacitor.isNativePlatform(),
   onStageStarted: (event) => {
     activeRunId = sessionId + '-' + ++runIndex + '-' + event.sector;
@@ -52,6 +54,10 @@ const game = createGame({
 catRankUI = createCatRankUI({ document: globalThis.document, service: catService });
 const compactMenu = installCompactMenu();
 const mobileRpg = installMobileRpgAccordion({ game });
+// Part of the actual Stage-04 mission on web and native, not a separate
+// Developer/QA game mode. No persistent exploration save is introduced.
+const exploration = installOrbit9ExplorationPreview(game);
+reactorAccessStage = exploration;
 void installNativeShell(game).catch((error) => console.error('Native lifecycle:', error));
 
 if (!Capacitor.isNativePlatform()) {
@@ -61,7 +67,6 @@ if (!Capacitor.isNativePlatform()) {
     onRuntimeConfig: (config) => ranking?.setRuntimeConfig(config),
   });
   const showroom = installShowroom();
-  const exploration = installOrbit9ExplorationPreview(game);
   const destroy = game.destroy.bind(game);
   game.destroy = () => {
     destroyAuth();
