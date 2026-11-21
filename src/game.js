@@ -224,6 +224,7 @@ import { pickupStep } from './pickup-assist.js';
 import { createI18n } from './i18n.js';
 import { developerToolsAllowed, parseDeveloperScenario } from './developer-mode.js';
 import {
+  DEVASTADOR_ACCESS_THRESHOLD,
   DEVASTADOR_ACCESS_MODULES,
   shouldEnterDevastadorReactorAccess,
   reactorModulesComplete,
