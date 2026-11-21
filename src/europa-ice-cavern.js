@@ -2,17 +2,22 @@ import * as T from 'three';
 
 // The extended ice gorge is entirely physical: the visual rock skin and
 // authoritative walls, roof, deck and gates share the same 940-unit depth.
-export const EUROPA_CAVE_LENGTH = 940;
-export const EUROPA_CAVE_GATE_DEPTHS = Object.freeze([-110, -260, -410, -610, -810]);
+export const EUROPA_CAVE_LENGTH = 1500;
+// Europa is a natural glacial gorge, not an industrial slalom. The six
+// industrial bars/collision gates belong ONLY to the first-city mission.
+export const EUROPA_CAVE_GATE_DEPTHS = Object.freeze([]);
 export const EUROPA_CAVE_BUDGET = Object.freeze({
-  wallRocks: 70,
-  ceilingSpires: 41,
-  crystalSpikes: 66,
+  wallRocks: 114,
+  ceilingSpires: 66,
+  crystalSpikes: 108,
   entranceRocks: 10,
   archstones: 13,
   exteriorCliffs: 16,
   approachFjord: 24,
-  gateFacets: EUROPA_CAVE_GATE_DEPTHS.length * 24,
+  frozenWaterfall: 18,
+  naturalPillars: 22,
+  buriedRuins: 14,
+  iceVeins: 52,
 });
 
 const rng = (i) => {
@@ -76,7 +81,7 @@ export function createEuropaIceCavern() {
     EUROPA_CAVE_BUDGET.wallRocks,
     (i) => {
       const side = i % 2 ? 1 : -1;
-      const z = -14 - Math.floor(i / 2) * 27;
+      const z = -14 - Math.floor(i / 2) * 26;
       return {
         x: side * (47 + rng(i + 7) * 3),
         y: 13 + rng(i + 9) * 8,
@@ -97,7 +102,7 @@ export function createEuropaIceCavern() {
     (i) => ({
       x: (rng(i + 45) - 0.5) * 57,
       y: 53 + rng(i + 48) * 2,
-      z: -23 - i * 23,
+      z: -23 - i * 22,
       w: 13 + rng(i + 51) * 7,
       h: 10 + rng(i + 54) * 4,
       d: 16 + rng(i + 57) * 4,
@@ -115,7 +120,7 @@ export function createEuropaIceCavern() {
       return {
         x: side * (36 + rng(i + 70) * 3),
         y: 34 - rng(i + 73) * 2,
-        z: -22 - Math.floor(i / 2) * 28,
+        z: -22 - Math.floor(i / 2) * 27,
         w: 2.3 + rng(i + 76) * 1.8,
         h: 8 + rng(i + 79) * 6,
         d: 2.1 + rng(i + 82) * 1.3,
@@ -218,48 +223,89 @@ export function createEuropaIceCavern() {
       };
     },
   );
-  // Break up the repetitive square gate surfaces with shallow crystalline
-  // facets. These shards sit on the EXISTING physical gate solids, so the
-  // collision opening, breakable right wall and projectile checks stay exact.
+  // Three distinct moments of the physical gorge: long lateral frozen falls
+  // near the mouth, a crystalline cathedral in the middle and close-spaced
+  // rock fins deeper inside. These are visuals only and keep the central
+  // 64-unit collision-free flight lane open for ship and mecha.
   addBatch(
     root,
-    'europa-cave-faceted-gate-skin',
-    new T.DodecahedronGeometry(1, 0),
-    new T.MeshStandardMaterial({
-      color: '#9bd4e7',
-      roughness: 0.28,
-      metalness: 0.1,
-      flatShading: true,
-      emissive: '#277896',
-      emissiveIntensity: 0.34,
-    }),
-    EUROPA_CAVE_BUDGET.gateFacets,
+    'europa-cave-frozen-waterfalls',
+    new T.ConeGeometry(1, 1, 6),
+    crystal,
+    EUROPA_CAVE_BUDGET.frozenWaterfall,
     (i) => {
-      const gate = Math.floor(i / 24);
-      const side = Math.floor((i % 24) / 12) === 0 ? -1 : 1;
-      // Twelve interlocking facets on each collision panel: three columns
-      // by four rows. They form a legible solid-looking frozen barricade
-      // instead of a small decal on a visible rectangular concrete wall.
-      const slot = i % 12;
-      const col = slot % 3;
-      const row = Math.floor(slot / 3);
-      const gap = gate % 2 ? -9 : 9;
-      const left = gap - 15;
-      const right = gap + 15;
-      const min = side < 0 ? -32 : right;
-      const max = side < 0 ? left : 32;
-      const width = max - min;
+      const side = i % 2 ? 1 : -1;
+      const section = Math.floor(i / 2);
       return {
-        x: min + ((col + 0.5) * width) / 3,
-        y: -1.5 + row * 10.5 + (rng(i + 123) - 0.5) * 1.4,
-        z: EUROPA_CAVE_GATE_DEPTHS[gate] + 3,
-        w: width / 6,
-        h: 5.9 + rng(i + 137) * 1.5,
-        d: 3.3,
-        yaw: (rng(i + 141) - 0.5) * 0.14,
-        roll: (rng(i + 149) - 0.5) * 0.16,
+        x: side * (46 + rng(i + 501) * 5),
+        y: 18 + rng(i + 511) * 6,
+        z: -75 - section * 89,
+        w: 5.5 + rng(i + 521) * 4,
+        h: 22 + rng(i + 531) * 13,
+        d: 5 + rng(i + 541) * 3,
+        pitch: Math.PI + (rng(i + 551) - 0.5) * 0.12,
       };
     },
+  );
+  addBatch(
+    root,
+    'europa-cave-cathedral-crystal-pillars',
+    new T.IcosahedronGeometry(1, 0),
+    crystal,
+    EUROPA_CAVE_BUDGET.naturalPillars,
+    (i) => {
+      const side = i % 2 ? 1 : -1;
+      const row = Math.floor(i / 2);
+      return {
+        x: side * (41 + rng(i + 561) * 6),
+        y: 12 + rng(i + 571) * 9,
+        z: -350 - row * 77,
+        w: 5 + rng(i + 581) * 5,
+        h: 20 + rng(i + 591) * 15,
+        d: 8 + rng(i + 601) * 5,
+        roll: (rng(i + 611) - 0.5) * 0.27,
+      };
+    },
+  );
+  addBatch(
+    root,
+    'europa-cave-buried-alien-ruins',
+    new T.OctahedronGeometry(1, 0),
+    new T.MeshStandardMaterial({
+      color: '#507e95',
+      roughness: 0.39,
+      metalness: 0.24,
+      flatShading: true,
+      emissive: '#175977',
+      emissiveIntensity: 0.34,
+    }),
+    EUROPA_CAVE_BUDGET.buriedRuins,
+    (i) => ({
+      x: (i % 2 ? 1 : -1) * (61 + rng(i + 621) * 15),
+      y: 10 + rng(i + 631) * 8,
+      z: -520 - Math.floor(i / 2) * 127,
+      w: 9 + rng(i + 641) * 4,
+      h: 14 + rng(i + 651) * 10,
+      d: 7 + rng(i + 661) * 4,
+      yaw: rng(i + 671) * 0.5,
+    }),
+  );
+  // Fine cyan fissures on the inner cliff walls. No copy-pasted crossbars.
+  addBatch(
+    root,
+    'europa-cave-luminous-ice-veins',
+    new T.IcosahedronGeometry(1, 0),
+    new T.MeshBasicMaterial({ color: '#8feaff', transparent: true, opacity: 0.32 }),
+    EUROPA_CAVE_BUDGET.iceVeins,
+    (i) => ({
+      x: (i % 2 ? 1 : -1) * (40 + rng(i + 681) * 8),
+      y: 7 + rng(i + 691) * 23,
+      z: -60 - Math.floor(i / 2) * 56,
+      w: 0.5 + rng(i + 701) * 1.2,
+      h: 6 + rng(i + 711) * 9,
+      d: 1.8 + rng(i + 721) * 3,
+      roll: (rng(i + 731) - 0.5) * 0.4,
+    }),
   );
   // Low-cost optical flow: one Points draw with time-based movement along
   // the walls. Near-field flecks add a readable speed cue to the fixed camera.
