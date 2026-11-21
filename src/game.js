@@ -68,6 +68,13 @@ import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
 import { europaDescentAt } from './europa-descent.js';
+import {
+  EUROPA_CRYO_THAW_SECONDS,
+  europaCryoHit,
+  europaCryoRoll,
+  europaCryoMovement,
+  europaCryoBoost,
+} from './europa-cryo.js';
 import { updateEuropaIceCavernMotion } from './europa-ice-cavern.js';
 import { EUROPA_CAVE_SPAWN_Z, europaCaveApproachAt } from './europa-cave-approach.js';
 import {
@@ -642,6 +649,7 @@ export function createGame({
     // Ship barrel roll and robot lateral dash are mutually exclusive moves.
     roll = rollAngle = 0;
     marsPendingRoll = false;
+    europaCryoPendingRoll = false;
     rollHeld = false;
     dashRemaining = dashCooldown = 0;
     syncDodgeControl();
@@ -649,6 +657,10 @@ export function createGame({
       $('attackWarning').textContent = robotMode
         ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
         : 'AREIA NOS CANHÕES · GIROS: ' + marsCleanse;
+    } else if (europaCryoStacks > 0) {
+      $('attackWarning').textContent = robotMode
+        ? 'GELO NA ARMADURA · VOLTE À NAVE PARA GIRAR'
+        : 'LASER CONGELANTE · GIROS RESTANTES: ' + europaCryoStacks;
     }
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
@@ -684,6 +696,29 @@ export function createGame({
   );
   barrierVisual.visible = false;
   player.add(barrierVisual);
+  // The real ice laser leaves thin, readable translucent frost on the craft.
+  // Only its appearance changes: this group has no collision or target nodes.
+  const europaIceCoating = new T.Group();
+  europaIceCoating.name = 'europa-ship-frost-coating';
+  europaIceCoating.userData.visualOnly = true;
+  const europaFrostMaterial = new T.MeshBasicMaterial({
+    color: '#b2f1ff',
+    transparent: true,
+    opacity: 0.46,
+    depthWrite: false,
+    side: T.DoubleSide,
+  });
+  const europaFrostGeometry = new T.OctahedronGeometry(1, 0);
+  for (let i = 0; i < 8; i++) {
+    const frost = new T.Mesh(europaFrostGeometry, europaFrostMaterial);
+    frost.position.set((i % 2 ? 1 : -1) * (2 + (i % 4) * 1.2), 1 + (i % 3), -2 + (i % 4));
+    frost.rotation.set(i * 0.23, i * 0.37, i * 0.19);
+    frost.scale.set(0.6, 0.85 + (i % 3) * 0.25, 0.8);
+    frost.userData.visualOnly = true;
+    europaIceCoating.add(frost);
+  }
+  europaIceCoating.visible = false;
+  player.add(europaIceCoating);
   const marsDust = dynamicFlight ? createMarsDustCoating() : null;
   if (marsDust) player.add(marsDust);
   const warpStreaks = dynamicFlight ? createWarpStreaks() : null;
@@ -791,6 +826,10 @@ export function createGame({
     marsStormPhase = 'clear',
     marsCleanse = 0,
     marsPendingRoll = false,
+    europaCryoStacks = 0,
+    europaCryoPendingRoll = false,
+    europaCryoNextThaw = 0,
+    europaCryoHits = 0,
     marsStormDamageCooldown = 0,
     warpDeparture = false,
     victoryRadioBeat = -1,
@@ -1616,6 +1655,11 @@ export function createGame({
     marsStormPhase = 'clear';
     marsCleanse = 0;
     marsPendingRoll = false;
+    europaCryoStacks = 0;
+    europaCryoPendingRoll = false;
+    europaCryoNextThaw = 0;
+    europaCryoHits = 0;
+    europaIceCoating.visible = false;
     setMarsDustCoating(marsDust);
     updateWarpStreaks(warpStreaks, false, 0, player.position);
     marsBossAltitude = null;
@@ -2016,9 +2060,10 @@ export function createGame({
     if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
-    rollCd = marsCleanse > 0 ? 0.72 : 1.6;
-    // Only a completed ship barrel roll removes Mars dust; a robot dash does not.
+    rollCd = marsCleanse > 0 || europaCryoStacks > 0 ? 0.72 : 1.6;
+    // A robot dash never counts as a 360-degree cleansing ship roll.
     marsPendingRoll = marsCleanse > 0;
+    europaCryoPendingRoll = sectorIndex === 5 && europaCryoStacks > 0;
     sound(230, 0.25, 'sine');
     return true;
   }
@@ -2427,7 +2472,7 @@ export function createGame({
       for (const side of [-1, 1]) {
         const muzzle = new T.Mesh(
           muzzleGeometry,
-          assignedSlot?.europaPursuit ? europaIceShotMaterial : muzzleMaterial,
+          dynamicFlight && sectorIndex === 5 ? europaIceShotMaterial : muzzleMaterial,
         );
         muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
         muzzle.position.set(
@@ -2438,7 +2483,8 @@ export function createGame({
         mount.add(muzzle);
       }
     }
-    if (assignedSlot?.europaPursuit) frostEuropaPursuitFighter(o);
+    if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground))
+      frostEuropaPursuitFighter(o);
     if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground)) {
       addEuropaEnemyIceSkin(o, { ground });
     }
@@ -4151,6 +4197,14 @@ export function createGame({
         stick.y;
     rollHeld =
       !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
+    if (sectorIndex === 5 && europaCryoStacks > 0 && elapsed >= europaCryoNextThaw) {
+      europaCryoStacks = europaCryoRoll(europaCryoStacks);
+      europaCryoNextThaw = elapsed + EUROPA_CRYO_THAW_SECONDS;
+      europaIceCoating.visible = europaCryoStacks > 0;
+      if (!europaCryoStacks) $('attackWarning').textContent = '';
+    }
+    dx *= sectorIndex === 5 ? europaCryoMovement(europaCryoStacks) : 1;
+    dy *= sectorIndex === 5 ? europaCryoMovement(europaCryoStacks) : 1;
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -4246,7 +4300,8 @@ export function createGame({
       (superBoost ? 114 : boosting ? 90 : 48) *
       (1 + Math.min(30, stage()) * 0.02) *
       profileSpeed *
-      progressionSpeed(stage());
+      progressionSpeed(stage()) *
+      (sectorIndex === 5 ? europaCryoBoost(europaCryoStacks) : 1);
     lastFlightSpeed = speed;
     const holding = keys.has('Space') || touchFire;
     if (holding && marsCleanse === 0) {
@@ -4367,6 +4422,19 @@ export function createGame({
       roll = Math.max(0, roll - dt);
       rollAngle = Math.PI * 2 * (1 - roll / 0.65);
       player.rotation.z = rollAngle;
+      if (roll === 0 && europaCryoPendingRoll) {
+        europaCryoPendingRoll = false;
+        europaCryoStacks = europaCryoRoll(europaCryoStacks);
+        europaIceCoating.visible = europaCryoStacks > 0;
+        explode(player.position, 8, 0x9af0ff, false);
+        if (europaCryoStacks > 0) {
+          $('attackWarning').textContent =
+            'GELO NA NAVE · GIROS RESTANTES: ' + europaCryoStacks;
+        } else {
+          $('attackWarning').textContent = '';
+          message('CROSTA DE GELO REMOVIDA · CONTROLES RESTAURADOS', 'christopher');
+        }
+      }
       if (roll === 0 && marsPendingRoll) {
         marsPendingRoll = false;
         marsCleanse = Math.max(0, marsCleanse - 1);
@@ -5450,7 +5518,12 @@ export function createGame({
           const eyes = hostileMuzzles(e);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
-          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          for (const eye of eyes)
+            bullet(
+              eye,
+              player.position.clone(),
+              sectorIndex === 5 && dynamicFlight ? 'cryo' : 'eye-ray',
+            );
           fireGroundRobotEyes(e.o, e.age);
         } else
           for (const offset of introductorySubboss || e.europaPursuit
@@ -5465,7 +5538,11 @@ export function createGame({
                 hostileMuzzles(e)[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
-              e.europaPursuit ? 'ice' : (e.subbossTactic?.spell ?? ''),
+              e.europaPursuit
+                ? 'ice'
+                : sectorIndex === 5 && dynamicFlight && e.kind === 'fighter'
+                  ? 'cryo'
+                  : (e.subbossTactic?.spell ?? ''),
             );
             if (e.europaPursuit) europaPursuitShotsFired++;
           }
@@ -6228,7 +6305,24 @@ export function createGame({
           previousPlayer,
         )
       ) {
-        hit(b.spell === 'fire' ? 14 : 10);
+        const shieldBeforeCryo = hp;
+        hit(b.spell === 'fire' ? 14 : b.spell === 'cryo' ? 8 : 10);
+        if (
+          sectorIndex === 5 &&
+          dynamicFlight &&
+          b.spell === 'cryo' &&
+          hp < shieldBeforeCryo
+        ) {
+          europaCryoStacks = europaCryoHit(europaCryoStacks);
+          europaCryoHits++;
+          europaCryoNextThaw = elapsed + EUROPA_CRYO_THAW_SECONDS;
+          europaIceCoating.visible = true;
+          $('attackWarning').setAttribute?.('data-severity', 'warning');
+          $('attackWarning').textContent =
+            'LASER CONGELANTE · GIRE A NAVE ' + europaCryoStacks + 'X PARA QUEBRAR O GELO';
+          if (europaCryoHits === 1)
+            message('GELO NAS ASAS · EXECUTE UM GIRO DE 360° COM Q OU GIRO', 'christopher');
+        }
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       } else if (
@@ -7332,6 +7426,13 @@ export function createGame({
             }
           : null,
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
+      europaCryo: {
+        stacks: europaCryoStacks,
+        hits: europaCryoHits,
+        frostVisible: europaIceCoating.visible,
+        speedMultiplier: europaCryoMovement(europaCryoStacks),
+        awaitingCompletedRoll: europaCryoPendingRoll,
+      },
       europaPursuit: {
         active: sectorIndex === 5 && elapsed < EUROPA_PURSUIT_END_SECONDS,
         interceptors: enemies.filter((target) => !target.dead && !!target.europaPursuit).length,
@@ -7378,6 +7479,8 @@ export function createGame({
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
       europaIceShotMaterial.dispose();
+      europaFrostGeometry.dispose();
+      europaFrostMaterial.dispose();
       upgradedShotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
       barrierVisual.geometry.dispose();
