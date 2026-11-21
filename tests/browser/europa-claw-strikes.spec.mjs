@@ -44,6 +44,8 @@ test('stage 6 Colossus physically extends claws to the latched ship lane, then s
         expect(Math.abs(claw.contact[1] - strike.target[1])).toBeLessThan(14);
         expect(Math.abs(claw.contact[2] - snapshot.playerDepth)).toBeLessThan(35);
         expect(claw.flash).toBe(true);
+        expect(claw.visualScale).toBeLessThanOrEqual(0.38);
+        expect(claw.flashRadius).toBeLessThan(0.45);
       }
     }
     if (state === 'attack' || state === 'recovery' || state === 'maneuver')
