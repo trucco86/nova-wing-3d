@@ -117,7 +117,7 @@ test('the real Europa mission reveals the canyon after descent, hides it in tunn
   assert.equal(surface.visible, true);
   assert.ok(scene.fog.density < 0.0016, 'distance clarity must improve over old grey haze');
   const ground = scene.getObjectByName('launch-ground');
-  assert.ok(ground.material.fragmentShader.includes('fissure'));
+  assert.ok(ground.material.fragmentShader.includes('cracked'));
   assert.ok(ground.material.fragmentShader.includes('channel'));
   assert.ok(ground.material.fragmentShader.includes('fractureWarp'));
   assert.ok(ground.material.fragmentShader.includes('veinA'));
