@@ -25,14 +25,14 @@ jobs:
       - run: npm ci
       - name: Format and validate physical cave approach
         run: |
-          npx prettier --write src/europa-ice-cavern.js src/europa-cave-approach.js src/encounters.js src/game.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/browser/qa168-alien-worlds.spec.mjs
+          npx prettier --write src/europa-ice-cavern.js src/europa-cave-approach.js src/encounters.js src/game.js src/marvin-rival.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/developer-scenarios.test.mjs tests/browser/qa168-alien-worlds.spec.mjs
           npm run lint
-          node --test tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/europa-surface.test.mjs tests/europa-descent.test.mjs
+          node --test tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/europa-surface.test.mjs tests/europa-descent.test.mjs tests/developer-scenarios.test.mjs
           npm run build
           npm run build:check
       - name: Commit only formatted cave sources and built HTML into draft branch
         run: |
-          git add -- index.html src/europa-ice-cavern.js src/europa-cave-approach.js src/encounters.js src/game.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/browser/qa168-alien-worlds.spec.mjs
+          git add -- index.html src/europa-ice-cavern.js src/europa-cave-approach.js src/encounters.js src/game.js src/marvin-rival.js tests/europa-ice-cavern-and-enemies.test.mjs tests/europa-cave-approach.test.mjs tests/developer-scenarios.test.mjs tests/browser/qa168-alien-worlds.spec.mjs
           git diff --cached --check
           if git diff --cached --quiet; then
             echo 'Cave build and test fixture already synchronized'
@@ -44,3 +44,5 @@ jobs:
           fi
 
 # Retry after correcting a deterministic value-equality assertion
+
+# QA170 final: Marvin does not cover the real cave and old QA developer contract updated
