@@ -21,33 +21,33 @@ export function europaDescentAt(seconds) {
           : seconds < EUROPA_TOUCHDOWN_SECONDS
             ? 'descent'
             : 'surface';
-  // Terrain begins coming into sight before the moon globe fades, avoiding
-  // the old blank interval from t=12s until roughly t=18s.
-  const terrainReveal = smooth((seconds - 14) / 11);
-  const planetOpacity = 1 - smooth((seconds - 17) / 8);
+  // At orbit handoff the moon leaves the shot completely, as on Mars.
+  // A dense but short blue/white ice curtain masks the descent into the fissure.
+  const terrainReveal = smooth((seconds - 12) / 13);
+  const planetOpacity = 1 - smooth((seconds - 9) / 3);
   const orbit = smooth((seconds - 6) / 6);
   const entry = smooth((seconds - 12) / 7);
-  const iceMist = smooth((seconds - 12) / 4) * (1 - smooth((seconds - 19.5) / 5.5));
+  const iceMist = smooth((seconds - 9) / 3) * (1 - smooth((seconds - 20) / 5));
   const cameraDive = smooth((seconds - 12) / 4) * (1 - smooth((seconds - 20) / 5));
   return Object.freeze({
     phase,
     seconds,
     combatReady: seconds >= EUROPA_TOUCHDOWN_SECONDS,
     terrainReveal,
-    terrainVisible: seconds >= 14.5,
+    terrainVisible: seconds >= 13.5,
     terrainLift: terrainReveal === 1 ? 0 : -240 * (1 - terrainReveal),
     planetOpacity,
     planetScale: 0.74 + orbit * 0.55 + entry * 0.34,
     // Keep the moon in the camera at approach, then let the ice floor become
     // the primary point of reference without a screen-filling planet.
-    planetX: -24 - 112 * smooth((seconds - 13) / 12),
-    planetY: 105 + 40 * terrainReveal,
+    planetX: -24 - 68 * smooth((seconds - 9) / 3),
+    planetY: 105 + 22 * smooth((seconds - 9) / 3),
     iceMist,
     starOpacity: 0.75 * (1 - smooth((seconds - 12) / 12)),
     cameraAscent: cameraDive === 0 ? 0 : -0.32 * cameraDive,
     label: {
       space: 'EUROPA À VISTA · APROXIMAÇÃO',
-      orbit: 'ÓRBITA DE EUROPA · FENDA GLACIAL IDENTIFICADA',
+      orbit: 'ÓRBITA DE EUROPA · PREPARAR MERGULHO NA FENDA',
       entry: 'ENTRANDO NA FENDA · CRISTAIS À FRENTE',
       descent: 'DESCIDA CONTROLADA · CÂNION CONGELADO',
       surface: 'EUROPA · CÂNION CRISTALINO · COMBATE',
