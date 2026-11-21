@@ -87,7 +87,10 @@ if (!Capacitor.isNativePlatform() && game.snapshot().developerAvailable) {
         seconds > 9
       )
         return false;
-      for (let tick = 0; tick < Math.round(seconds * 60); tick++) game.step(1 / 60);
+      // QA screenshot sampling uses the same 100ms integration step as the
+      // existing Node harness. 60Hz software-WebGL stepping blocked browser
+      // screenshots for minutes without increasing gameplay test coverage.
+      for (let tick = 0; tick < Math.round(seconds * 10); tick++) game.step(0.1);
       return true;
     },
   });
