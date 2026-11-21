@@ -1,7 +1,11 @@
 import * as T from 'three';
 import { addGroundEnemyDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
-import { createEuropaIceCavern } from './europa-ice-cavern.js';
+import {
+  createEuropaIceCavern,
+  EUROPA_CAVE_LENGTH,
+  EUROPA_CAVE_GATE_DEPTHS,
+} from './europa-ice-cavern.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
@@ -270,11 +274,13 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
     };
     if (kind === 'tunnel') {
       const europaCavern = variant === 'europa';
-      // Europa is carved ice, not an industrial metal corridor. Do not
-      // modify the authoritative 520-unit solids, hitboxes or breach opening.
+      // Europa alone doubles the real collision tunnel, not only the
+      // visual mesh. The other planets keep the original 520-unit corridor.
+      const caveLength = europaCavern ? EUROPA_CAVE_LENGTH : 520;
+      const caveCenter = -caveLength / 2;
       const frostWall = europaCavern ? metal('#537e9b', 0.07, 0.76) : dark;
       const frostDeck = europaCavern ? metal('#779db9', 0.05, 0.64) : armor;
-      const leftWall = solid(4, 44, 520, -34, 15, -260, frostWall);
+      const leftWall = solid(4, 44, caveLength, -34, 15, caveCenter, frostWall);
       if (europaCavern) {
         // The solid collider remains authoritative, but flat industrial
         // rectangles are visually replaced by the overlapping ice rock skin.
@@ -286,7 +292,8 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         // is split, so opening the panel is physically traversable rather
         // than a cosmetic explosion over an invisible solid.
         const nearWall = solid(4, 44, 200, 34, 15, -100, frostWall);
-        const farWall = solid(4, 44, 280, 34, 15, -380, frostWall);
+        const farLength = caveLength - 240;
+        const farWall = solid(4, 44, farLength, 34, 15, -240 - farLength / 2, frostWall);
         nearWall.name = 'europa-cave-hidden-right-near-collider';
         farWall.name = 'europa-cave-hidden-right-far-collider';
         nearWall.visible = false;
@@ -380,10 +387,9 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
         }
         g.add(debris);
       } else solid(4, 44, 520, 34, 15, -260, frostWall);
-      // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
-      // while its authored 520-unit tunnel owns the real flight floor.
-      solid(72, 3, 520, 0, -8.5, -260, frostDeck);
-      const roof = solid(72, 3, 520, 0, 38.5, -260, frostWall);
+      // The exact physical deck and roof cover the entire extended cave.
+      solid(72, 3, caveLength, 0, -8.5, caveCenter, frostDeck);
+      const roof = solid(72, 3, caveLength, 0, 38.5, caveCenter, frostWall);
       if (europaCavern) {
         // Retain the EXACT roof collider; show the sculpted cave vault instead
         // of a rectangular beam across the entire entrance and 520-unit route.
@@ -402,9 +408,9 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
         }
       if (europaCavern) g.add(createEuropaIceCavern());
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < (europaCavern ? EUROPA_CAVE_GATE_DEPTHS.length : 3); i++) {
         const gap = i % 2 ? -9 : 9,
-          z = -110 - i * 150;
+          z = europaCavern ? EUROPA_CAVE_GATE_DEPTHS[i] : -110 - i * 150;
         // A 30-unit opening, tall enough to evade without scraping the ceiling.
         const left = gap - 15,
           right = gap + 15;
@@ -550,7 +556,18 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       }
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
-    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
+    g.userData = {
+      solids,
+      kind,
+      length:
+        kind === 'tunnel'
+          ? variant === 'europa'
+            ? EUROPA_CAVE_LENGTH
+            : 520
+          : kind === 'carrier'
+            ? 45
+            : 18,
+    };
     templates.set(key, g);
   }
   const template = templates.get(key),
