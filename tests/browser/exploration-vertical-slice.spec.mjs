@@ -262,7 +262,10 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
 
     // Return to the unobstructed upper corridor before crossing the hall.
     // The core at (0,-44) must remain solid, not be walked through.
-    await walk('KeyS', 'z', -18, false);
+    // Cross via the northern open aisle: the research pillar at (-22,-44)
+    // blocks a direct westward crossing when keyboard/camera drift lowers Z.
+    // Keep the test on real walking controls, without QA teleportation.
+    await walk('KeyS', 'z', 8, false);
     // Precision walking near the archive: BOOST with Playwright's default
     // 1-second polling can overshoot the small interaction radius by 10m+.
     await page.keyboard.up('Shift');
