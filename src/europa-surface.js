@@ -1,28 +1,66 @@
 import * as T from 'three';
-
-const smooth = (value) => {
-  const v = Math.max(0, Math.min(1, value));
-  return v * v * (3 - 2 * v);
-};
+import { europaDescentAt } from './europa-descent.js';
+import {
+  createEuropaCrystalCanyon,
+  setEuropaCrystalCanyonQuality,
+  updateEuropaCrystalCanyonMotion,
+  europaCanyonDepth,
+} from './europa-crystal-canyon.js';
 
 // Europe is a grounded frozen world after its fissure descent, not a second
 // orbital globe. Keep the ice-floor swap deterministic in game time.
 export function europaSurfaceAt(seconds, tunnelActive = false) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa arrival time');
-  const surface = smooth((seconds - 16) / 7);
-  const orbital = 1 - smooth((seconds - 14.5) / 2.5);
+  const descent = europaDescentAt(seconds);
+  const surface = descent.terrainReveal;
+  // Planetary approach remains visible until the ice scenery has visibly
+  // emerged; do not strand the player in black space for 5+ seconds.
+  const orbital = descent.planetOpacity;
   return Object.freeze({
     surface,
     orbitalVisible: orbital > 0.01,
     orbitalOpacity: orbital,
-    frostDensity: 0.00135 + surface * 0.00135,
-    fogTint: '#b3d5e0',
-    groundVisible: surface > 0.07 && !tunnelActive,
+    terrainLift: descent.terrainLift,
+    // Clear, layered night-blue frost rather than a white-grey blurred wall.
+    frostDensity: 0.001 + surface * 0.00038,
+    fogTint: '#355b78',
+    groundVisible: descent.terrainVisible && surface > 0.01 && !tunnelActive,
     tunnelActive: Boolean(tunnelActive),
   });
 }
 
+// Authored snow is episodic to avoid a continuous grey blur over combat.
+// Three fixed windows cover canyon entry, a mid-route squall and pre-boss ice.
+const EUROPA_SNOW_WINDOWS = Object.freeze([
+  // The surface blizzard starts during descent and continues into combat.
+  { start: 10, end: 40, intensity: 0.92 },
+  { start: 47, end: 67, intensity: 0.95 },
+  { start: 72, end: 96, intensity: 0.67 },
+  { start: 103, end: 128, intensity: 0.88 },
+]);
+const smoothSnow = (v) => {
+  const t = Math.max(0, Math.min(1, v));
+  return t * t * (3 - 2 * t);
+};
+export function europaWeatherAt(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid Europa weather time');
+  for (const window of EUROPA_SNOW_WINDOWS) {
+    if (seconds < window.start || seconds >= window.end) continue;
+    const fadeIn = smoothSnow((seconds - window.start) / 2);
+    const fadeOut = smoothSnow((window.end - seconds) / 2);
+    const intensity = window.intensity * Math.min(fadeIn, fadeOut);
+    return {
+      intensity,
+      active: intensity > 0.05,
+      phase: window.intensity > 0.9 ? 'ice-squall' : 'light-snow',
+      wind: Math.sin(seconds * 0.31) * (1.8 + intensity * 5),
+    };
+  }
+  return { intensity: 0, active: false, phase: 'clear', wind: 0 };
+}
+
 const europaSurfaceParts = new WeakMap();
+const europaCanyonParts = new WeakMap();
 
 const hash = (n) => {
   const t = Math.sin(n * 127.12 + 11.47) * 43758.5453;
@@ -110,16 +148,18 @@ export function createEuropaSurface() {
     emissive: '#31596a',
     emissiveIntensity: 0.045,
   });
-  const floe = new T.IcosahedronGeometry(1, 0);
+  // Broad eroded shelves replace rounded placeholder boulders.
+  const floe = new T.CylinderGeometry(0.84, 1.12, 0.42, 7, 1);
   const shard = createEuropaGlacialRidgeGeometry();
   const dummy = new T.Object3D();
   for (const [name, count, geo, mat, center] of [
-    ['europa-fractured-ice-shelves', 32, floe, ice, 105],
-    ['europa-blue-crevasse-ridges', 26, shard, blue, 175],
+    ['europa-fractured-ice-shelves', 18, floe, ice, 151],
+    ['europa-blue-crevasse-ridges', 18, shard, blue, 188],
   ]) {
     const mesh = new T.InstancedMesh(geo, mat, count);
     mesh.name = name;
     mesh.userData.visualOnly = true;
+    const authoredDepth = new Float32Array(count);
     for (let i = 0; i < count; i++) {
       const side = i % 2 ? 1 : -1;
       const h = (name.includes('ridges') ? 28 : 7) + hash(i * 19) * 32;
@@ -132,7 +172,9 @@ export function createEuropaSurface() {
       dummy.scale.set(12 + hash(i * 13) * 31, h, 18 + hash(i * 23) * 45);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
+      authoredDepth[i] = dummy.position.z;
     }
+    mesh.userData.authoredDepth = authoredDepth;
     mesh.instanceMatrix.needsUpdate = true;
     mesh.frustumCulled = false;
     root.add(mesh);
@@ -140,13 +182,16 @@ export function createEuropaSurface() {
 
   // Wind-blown ice crystals sit in the distant two side lanes. Points are
   // cheaper than dozens of transparent billboards on Medium/mobile.
-  const count = 84;
+  const count = 180;
   const coords = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const side = i % 2 ? -1 : 1;
-    coords[i * 3] = side * (57 + hash(i * 13) * 200);
-    coords[i * 3 + 1] = -3 + hash(i * 31) * 78;
-    coords[i * 3 + 2] = -90 - hash(i * 47) * 1250;
+    // Most flakes cross the visible chase-camera lane, not only cliffs.
+    // Everything here remains purely visual, without collision volumes.
+    const foreground = i < 138;
+    coords[i * 3] = foreground ? (hash(i * 13 + 1) - 0.5) * 170 : side * (95 + hash(i * 13) * 165);
+    coords[i * 3 + 1] = -2 + hash(i * 31) * 78;
+    coords[i * 3 + 2] = foreground ? -45 - hash(i * 47) * 330 : -270 - hash(i * 47) * 1020;
   }
   const geometry = new T.BufferGeometry();
   geometry.setAttribute('position', new T.BufferAttribute(coords, 3));
@@ -156,7 +201,7 @@ export function createEuropaSurface() {
       color: '#ecfbff',
       transparent: true,
       opacity: 0.53,
-      size: 2.4,
+      size: 2.9,
       sizeAttenuation: false,
       depthWrite: false,
     }),
@@ -165,6 +210,11 @@ export function createEuropaSurface() {
   snow.userData.visualOnly = true;
   root.add(snow);
   europaSurfaceParts.set(root, snow);
+  // New frozen canyon and ruins share the surface's existing boss/tunnel
+  // visibility contract. No extra shadows, hitboxes, textures or postpasses.
+  const canyon = createEuropaCrystalCanyon();
+  root.add(canyon);
+  europaCanyonParts.set(root, canyon);
   root.visible = false;
   return root;
 }
@@ -172,6 +222,17 @@ export function createEuropaSurface() {
 export function updateEuropaSurface(root, time, visible, highQuality = true) {
   if (!root) return;
   root.visible = Boolean(visible);
+  // Mirror Mars's ground-rise transition: the same glacier comes into view
+  // continuously while the orbital globe fades. No sudden scene swap.
+  root.position.y = europaDescentAt(time).terrainLift;
+  // Reuse a cached reference to avoid scene traversal on every rendered
+  // frame. Cloned scenes get a one-time lookup into their own subtree.
+  let canyon = europaCanyonParts.get(root);
+  if (!canyon) {
+    canyon = root.getObjectByName('europa-premium-crystal-canyon');
+    if (canyon) europaCanyonParts.set(root, canyon);
+  }
+  setEuropaCrystalCanyonQuality(canyon, highQuality ? 'high' : 'medium');
   // The inactive glacier and Medium mode do not calculate invisible VFX
   // or walk the scene hierarchy. WeakMap keeps cloned worlds recoverable.
   let snow = europaSurfaceParts.get(root);
@@ -180,10 +241,40 @@ export function updateEuropaSurface(root, time, visible, highQuality = true) {
     europaSurfaceParts.set(root, snow);
   }
   if (snow) {
-    snow.visible = Boolean(visible && highQuality);
+    const weather = europaWeatherAt(time);
+    // Reuse the same existing 84-particle draw in Medium with lower alpha.
+    snow.visible = Boolean(visible && weather.active);
     if (snow.visible) {
-      // Simulation-time drift remains pause/reset deterministic.
-      snow.position.set(Math.sin(time * 0.19) * 7, 0, 0);
+      // One existing Points draw, with wind and snowfall driven by mission
+      // seconds. Medium keeps the optional layer disabled for mobile FPS.
+      snow.material.opacity = highQuality
+        ? 0.2 + weather.intensity * 0.48
+        : 0.1 + weather.intensity * 0.26;
+      snow.position.set(
+        Math.sin(time * 0.19) * 7 + weather.wind,
+        Math.sin(time * 0.23) * 2,
+        -Math.min(25, (time % 8) * 3),
+      );
     }
   }
+}
+
+// Deterministic glacier scenery translation on every playing frame. The
+// original static ice shelves made Europa resemble a stationary painting
+// while the game's tunnel obstacle continued moving. Use the SAME flight
+// travel across all depth layers, so pause and reset are reproducible.
+export function updateEuropaSurfaceTravel(root, travel) {
+  if (!root || !Number.isFinite(travel) || travel < 0) return false;
+  for (const mesh of root.children) {
+    if (!mesh.isInstancedMesh || !mesh.userData.authoredDepth) continue;
+    const matrices = mesh.instanceMatrix.array;
+    const authoredDepth = mesh.userData.authoredDepth;
+    for (let i = 0; i < authoredDepth.length; i++)
+      matrices[i * 16 + 14] = europaCanyonDepth(authoredDepth[i], travel, 0.55);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  const canyon =
+    europaCanyonParts.get(root) ?? root.getObjectByName('europa-premium-crystal-canyon');
+  updateEuropaCrystalCanyonMotion(canyon, travel);
+  return true;
 }

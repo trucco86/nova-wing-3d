@@ -182,7 +182,16 @@ export function createMarvinRival(scene) {
       state = null;
       root.visible = false;
     },
-    update({ sector, elapsed, duration, bossActive = false, player, fire, notify }) {
+    update({
+      sector,
+      elapsed,
+      duration,
+      bossActive = false,
+      suspended = false,
+      player,
+      fire,
+      notify,
+    }) {
       if (sector !== lastSector) {
         lastSector = sector;
         lastVolley = -1;
@@ -191,6 +200,11 @@ export function createMarvinRival(scene) {
         hp = 135;
       }
       const arc = MARVIN_ARC[sector];
+      if (suspended) {
+        state = { active: false, phase: 'cave-transit', type: arc?.type ?? 'none', shoot: false };
+        root.visible = false;
+        return state;
+      }
       state = marvinBeatAt(sector, elapsed, duration, bossActive, retreat);
       if (
         arc &&

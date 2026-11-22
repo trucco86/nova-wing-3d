@@ -4,7 +4,7 @@ import * as T from 'three';
 import { SECTORS } from '../src/campaign.js';
 import { createWorld } from '../src/visuals.js';
 
-test('ten campaign sectors use distinct sky and accent palettes without altering the campaign', () => {
+test('ten campaign sectors preserve distinct palettes and the two approved stage-duration exceptions', () => {
   assert.equal(SECTORS.length, 10);
   const signatures = SECTORS.map(({ sky, accent, duration }) => {
     assert.match(sky, /^#[0-9a-f]{6}$/i);
@@ -14,10 +14,15 @@ test('ten campaign sectors use distinct sky and accent palettes without altering
     return sky + ':' + accent;
   });
   assert.equal(new Set(signatures).size, 10);
+  assert.equal(
+    SECTORS[5].duration,
+    135,
+    'Europa specifically receives the extra cryogenic-cavern traversal and robot encounters',
+  );
   assert.deepEqual(
     SECTORS.map(({ duration }) => duration),
-    [145, 107, 82, 88, 88, 92, 92, 98, 98, 150],
-    'preserve missions 1–9 exactly; the requested final Marvin chase is longer',
+    [145, 107, 82, 88, 88, 135, 92, 98, 98, 150],
+    'only the requested Europa glacier stage and final Marvin chase are extended',
   );
 });
 

@@ -43,7 +43,9 @@ function makeStriker(side, materials) {
     hand.add(knuckle);
     talons.push(knuckle);
   }
-  const impact = new T.Mesh(new T.SphereGeometry(8, 10, 8), materials.flash);
+  // Small contact spark: the previous radius-8 glow projected as a giant
+  // opaque disc over the pilot when the claw reached camera depth.
+  const impact = new T.Mesh(new T.SphereGeometry(3.5, 10, 8), materials.flash);
   impact.name = 'europa-claw-contact-flash';
   impact.position.z = 17;
   hand.add(impact);
@@ -54,7 +56,17 @@ function makeStriker(side, materials) {
   return { node, upper, forearm, elbow, hand, talons, impact, side };
 }
 
-function poseStriker(striker, target, state, kind, reach, charge) {
+function poseStriker(
+  striker,
+  target,
+  state,
+  kind,
+  reach,
+  charge,
+  time,
+  recovery = 0,
+  operational = true,
+) {
   const { side, upper, forearm, elbow, hand, talons, impact } = striker;
   const shoulder = new T.Vector3(side * 22, 4, 8);
   const rest = new T.Vector3(side * 40, -14, 36);
@@ -67,8 +79,24 @@ function poseStriker(striker, target, state, kind, reach, charge) {
   const contact = quake
     ? new T.Vector3(target.x, target.y - 3, target.z - 3)
     : new T.Vector3(target.x + side * 6.5, target.y, target.z - 3);
-  const end = rest.clone().lerp(prepared, state === 'windup' ? 0.42 + charge * 0.58 : 1);
-  if (state === 'attack') end.lerp(contact, reach);
+  // Never toggle off a Colossus limb between beats: it is physical anatomy,
+  // not a projectile effect. Windup, contact and recovery share the same
+  // articulated chain, with no instant teleport into its shoulder.
+  const end = rest.clone();
+  if (!operational) {
+    // Destroyed generator: the linked claw hangs limp but does not vanish.
+    end.y -= 12;
+    end.z -= 6;
+  } else if (state === 'windup') {
+    end.lerp(prepared, smooth(charge));
+  } else if (state === 'attack') {
+    end.copy(prepared).lerp(contact, reach);
+  } else if (state === 'recovery') {
+    end.copy(prepared).lerp(rest, smooth(recovery));
+  } else {
+    end.y += Math.sin(time * 0.8 + side) * 1.4;
+    end.z += Math.sin(time * 0.54 + side) * 1.1;
+  }
 
   const joint = shoulder.clone().lerp(end, 0.47);
   joint.x += side * (quake ? 13 : 22);
@@ -78,6 +106,18 @@ function poseStriker(striker, target, state, kind, reach, charge) {
   segment(forearm, joint, end);
   elbow.position.copy(joint);
   hand.position.copy(end);
+  // The claw is close to the player during contact. Keep its world-space
+  // target and damage timing unchanged, but taper the visible geometry as
+  // it approaches the camera so the Colossus and targeting reticle remain
+  // readable instead of two screen-filling claws/glows.
+  // A rotated/orbiting boss changes the claw's local Z even while the tip
+  // lands at the same player-world depth. Also use the STRIKE reach to keep
+  // both sides camera-safe at contact regardless of boss heading.
+  const cameraNear = Math.max(smooth((end.z - 73) / 92), state === 'attack' ? reach : 0);
+  hand.scale.setScalar(1 - 0.72 * cameraNear);
+  forearm.scale.x = 1 - 0.53 * cameraNear;
+  forearm.scale.y = 1 - 0.53 * cameraNear;
+  elbow.scale.setScalar(1 - 0.45 * cameraNear);
   hand.rotation.set(
     quake ? -0.18 - reach * 0.45 : 0.03,
     side * (quake ? 0.05 : 0.15 + reach * 0.18),
@@ -88,10 +128,15 @@ function poseStriker(striker, target, state, kind, reach, charge) {
     finger.rotation.y = -offset * (state === 'attack' ? 0.32 * reach : -0.16);
     finger.rotation.x = quake ? -reach * 0.15 : 0;
   });
-  impact.visible = state === 'attack' && reach > 0.91;
+  impact.visible = operational && state === 'attack' && reach > 0.91;
   // The transient is attached to the exact visible contact tip, not the body.
-  impact.scale.setScalar(impact.visible ? 0.75 + 0.45 * reach : 0.01);
-  striker.userData = { target: contact.clone(), reach };
+  impact.scale.setScalar(impact.visible ? 0.42 - 0.25 * cameraNear : 0.01);
+  striker.userData = {
+    target: contact.clone(),
+    reach,
+    visualScale: hand.scale.x,
+    flashRadius: impact.visible ? 3.5 * impact.scale.x * hand.scale.x : 0,
+  };
 }
 
 // The visual-only ice shock and segmented arms reuse shared geometries and
@@ -187,9 +232,11 @@ export function animateEuropaAttackVfx(
   cycle = 0,
 ) {
   if (!root || !Number.isFinite(time)) return;
+  // Ice impact FX is transient; the two claw assemblies are NOT transient.
   const live = state === 'windup' || state === 'attack';
+  const beat = Math.max(0, time - 8) % 12; // Colossus uses the 12s boss tactic cycle
+  const recovery = clamp01((beat - 3.6) / 2.4);
   const quakeOn = live && kind === 'ice-quake';
-  const pincerOn = live && kind === 'cryo-pincer';
   const striking = state === 'attack';
   const pulse = 0.78 + Math.sin(time * 7) * 0.22;
   const strength = 1 + Math.max(0, Math.min(2, phase - 1)) * 0.1;
@@ -201,11 +248,23 @@ export function animateEuropaAttackVfx(
   const strikingArm = generators[preferredArm] !== false ? preferredArm : 1 - preferredArm;
 
   for (let i = 0; i < arms.length; i++) {
-    const enabled = generators[i] !== false;
-    const active = enabled && (pincerOn || (quakeOn && i === strikingArm));
-    arms[i].visible = active;
-    if (active) poseStriker(strikers[i], aim, state, kind, reach, charge);
-    else strikers[i].impact.visible = false;
+    const operational = generators[i] !== false;
+    const attackingArm =
+      operational && (kind === 'cryo-pincer' || (kind === 'ice-quake' && i === strikingArm));
+    // Keep both meshes/real claws visible throughout maneuver and recovery.
+    // An inactive or broken arm returns to an idle/damaged resting pose.
+    arms[i].visible = true;
+    poseStriker(
+      strikers[i],
+      aim,
+      attackingArm ? state : 'maneuver',
+      attackingArm ? kind : null,
+      attackingArm ? reach : 0,
+      attackingArm ? charge : 0,
+      time,
+      recovery,
+      operational,
+    );
   }
   for (const [i, shard] of shards.entries()) {
     shard.visible = quakeOn;
@@ -215,12 +274,14 @@ export function animateEuropaAttackVfx(
       shard.rotation.z = (i % 2 ? -1 : 1) * (striking ? 0.32 : 0.17);
     }
   }
-  shock.opacity = quakeOn ? Math.min(0.9, (striking ? 0.84 : 0.48) * pulse * strength) : 0;
+  shock.opacity = quakeOn ? Math.min(0.7, (striking ? 0.62 : 0.41) * pulse * strength) : 0;
   quake.visible = quakeOn;
   if (quakeOn) {
-    quake.position.set(aim.x, aim.y - 19, aim.z - 12);
+    // Ice quake is a danger telegraph behind the craft, not a giant
+    // camera-attached white arc that hides the Colossus at contact.
+    quake.position.set(aim.x, aim.y - 19, aim.z - 52);
     quake.rotation.z = time * 0.65;
-    quake.scale.x = (striking ? 1.4 : 0.8) * strength;
-    quake.scale.y = (striking ? 0.8 : 0.42) * strength;
+    quake.scale.x = (striking ? 0.82 : 0.62) * strength;
+    quake.scale.y = (striking ? 0.48 : 0.33) * strength;
   }
 }

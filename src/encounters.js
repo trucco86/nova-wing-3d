@@ -1,6 +1,7 @@
 import * as T from 'three';
 import { addGroundEnemyDetail } from './premium-model-details.js';
 import { createEnemyIdentityDetail } from './enemy-premium-identity.js';
+import { createEuropaIceCavern, EUROPA_CAVE_LENGTH } from './europa-ice-cavern.js';
 import { box, metal, glowMaterial } from './visuals.js';
 export const isGroundSector = (sector) => ['city', 'ocean', 'ice', 'mars'].includes(sector.theme);
 const armor = metal('#4a6772', 0.8, 0.32),
@@ -262,18 +263,38 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
     const g = new T.Group(),
       solids = [];
     const solid = (w, h, d, x, y, z, material = armor) => {
-      g.add(box(w, h, d, material, x, y, z));
+      const mesh = box(w, h, d, material, x, y, z);
+      g.add(mesh);
       solids.push({ center: new T.Vector3(x, y, z), half: new T.Vector3(w / 2, h / 2, d / 2) });
+      return mesh;
     };
     if (kind === 'tunnel') {
-      solid(4, 44, 520, -34, 15, -260, dark);
+      const europaCavern = variant === 'europa';
+      // Europa alone doubles the real collision tunnel, not only the
+      // visual mesh. The other planets keep the original 520-unit corridor.
+      const caveLength = europaCavern ? EUROPA_CAVE_LENGTH : 520;
+      const caveCenter = -caveLength / 2;
+      const frostWall = europaCavern ? metal('#537e9b', 0.07, 0.76) : dark;
+      const frostDeck = europaCavern ? metal('#779db9', 0.05, 0.64) : armor;
+      const leftWall = solid(4, 44, caveLength, -34, 15, caveCenter, frostWall);
+      if (europaCavern) {
+        // The solid collider remains authoritative, but flat industrial
+        // rectangles are visually replaced by the overlapping ice rock skin.
+        leftWall.name = 'europa-cave-hidden-left-wall-collider';
+        leftWall.visible = false;
+      }
       if (variant === 'europa') {
         // One authored breach in the *right* wall. The actual collision wall
         // is split, so opening the panel is physically traversable rather
         // than a cosmetic explosion over an invisible solid.
-        solid(4, 44, 200, 34, 15, -100, dark);
-        solid(4, 44, 280, 34, 15, -380, dark);
-        const panel = box(4, 44, 40, dark, 34, 15, -220);
+        const nearWall = solid(4, 44, 200, 34, 15, -100, frostWall);
+        const farLength = caveLength - 240;
+        const farWall = solid(4, 44, farLength, 34, 15, -240 - farLength / 2, frostWall);
+        nearWall.name = 'europa-cave-hidden-right-near-collider';
+        farWall.name = 'europa-cave-hidden-right-far-collider';
+        nearWall.visible = false;
+        farWall.visible = false;
+        const panel = box(4, 44, 40, frostWall, 34, 15, -220);
         panel.name = 'europa-tunnel-breach-panel';
         g.add(panel);
         // Warning is attached to the inside face (x<32), slightly offset
@@ -361,33 +382,71 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
           debris.add(chunk);
         }
         g.add(debris);
-      } else solid(4, 44, 520, 34, 15, -260, dark);
-      // Deck upper face is y=-7. Europa hides the coplanar 4 km world plane
-      // while its authored 520-unit tunnel owns the real flight floor.
-      solid(72, 3, 520, 0, -8.5, -260, armor);
-      solid(72, 3, 520, 0, 38.5, -260, dark);
-      for (let z = 0; z >= -520; z -= 40) {
-        for (const s of [-1, 1]) {
-          g.add(box(2, 40, 2, armor, s * 31, 15, z));
-          g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
+      } else solid(4, 44, 520, 34, 15, -260, frostWall);
+      // A continuous gradient on the EXACT same physical deck fades from
+      // the dark exterior surface to bright cathedral ice over 260 units.
+      // This eliminates the abrupt black-to-white ground cut at the handoff
+      // while leaving all ship and projectile collision unchanged.
+      const deck = solid(72, 3, caveLength, 0, -8.5, caveCenter, frostDeck);
+      if (europaCavern) {
+        const geometry = new T.BoxGeometry(72, 3, caveLength, 1, 1, 60);
+        const coordinates = geometry.getAttribute('position');
+        const colors = new Float32Array(coordinates.count * 3);
+        const exterior = new T.Color('#0c2237');
+        const interior = new T.Color('#72acc5');
+        const tint = new T.Color();
+        for (let i = 0; i < coordinates.count; i++) {
+          const progress = Math.max(0, Math.min(1, (caveLength / 2 - coordinates.getZ(i)) / 260));
+          const smooth = progress * progress * (3 - 2 * progress);
+          tint.copy(exterior).lerp(interior, smooth);
+          colors[i * 3] = tint.r;
+          colors[i * 3 + 1] = tint.g;
+          colors[i * 3 + 2] = tint.b;
         }
-        g.add(box(64, 2, 3, armor, 0, 36, z));
-        g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
+        geometry.setAttribute('color', new T.BufferAttribute(colors, 3));
+        deck.geometry = geometry;
+        deck.material = frostDeck.clone();
+        deck.material.vertexColors = true;
+        deck.material.color.set('#ffffff');
+        deck.name = 'europa-cave-continuous-ice-floor';
+        deck.userData.transitionDepth = 260;
       }
-      for (let i = 0; i < 3; i++) {
-        const gap = i % 2 ? -9 : 9,
-          z = -110 - i * 150;
-        // A 30-unit opening, tall enough to evade without scraping the ceiling.
-        const left = gap - 15,
-          right = gap + 15;
-        solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z);
-        solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z);
-        for (const x of [left, right]) g.add(box(0.5, 35, 5.5, hazard, x, 13, z));
-        const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
-        arrow.rotation.z = gap > 0 ? -Math.PI / 2 : Math.PI / 2;
-        arrow.position.set(gap, 30, z + 3);
-        g.add(arrow);
+      const roof = solid(72, 3, caveLength, 0, 38.5, caveCenter, frostWall);
+      if (europaCavern) {
+        // Retain the EXACT roof collider; show the sculpted cave vault instead
+        // of a rectangular beam across the entire entrance and 520-unit route.
+        roof.name = 'europa-cavern-physical-roof-hidden-under-ice';
+        roof.visible = false;
       }
+      // Preserve the original industrial ribs only in other biomes. The
+      // Europa cave gets one natural faceted skin instead of neon columns.
+      if (!europaCavern)
+        for (let z = 0; z >= -520; z -= 40) {
+          for (const s of [-1, 1]) {
+            g.add(box(2, 40, 2, armor, s * 31, 15, z));
+            g.add(box(0.4, 24, 0.6, cyan, s * 29.8, 17, z + 1.1));
+          }
+          g.add(box(64, 2, 3, armor, 0, 36, z));
+          g.add(box(18, 0.3, 3, cyan, 0, 34.8, z));
+        }
+      if (europaCavern) g.add(createEuropaIceCavern());
+      // The industrial slalom belongs to city/standard tunnels only.
+      // Europa's natural glacier has no crossbars, arrows, fake barricades
+      // or their corresponding collision boxes along the center lane.
+      if (!europaCavern)
+        for (let i = 0; i < 3; i++) {
+          const gap = i % 2 ? -9 : 9;
+          const z = -110 - i * 150;
+          const left = gap - 15;
+          const right = gap + 15;
+          solid(left + 32, 43, 5, (-32 + left) / 2, 14.5, z, frostWall);
+          solid(32 - right, 43, 5, (right + 32) / 2, 14.5, z, frostWall);
+          for (const x of [left, right]) g.add(box(0.5, 35, 5.5, hazard, x, 13, z));
+          const arrow = new T.Mesh(new T.ConeGeometry(2, 4, 3), cyan);
+          arrow.rotation.z = gap > 0 ? -Math.PI / 2 : Math.PI / 2;
+          arrow.position.set(gap, 30, z + 3);
+          g.add(arrow);
+        }
     } else if (kind === 'carrier') {
       // Derelict ship: hull, bridge and two wings with escapable upper corridor.
       solid(36, 11, 42, 0, 14, 0, armor);
@@ -443,6 +502,35 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       uplink.position.set(0, 27.7, 0);
       g.add(uplink);
       g.add(box(4, 0.4, 7, red, 0, 18.7, 0));
+    } else if (kind === 'ice-crag' || kind === 'ice-spire') {
+      // Europa has geological hazards, not first-stage construction gantries.
+      // Their visible volumes match a bounded pair of real collision hulls.
+      const monolith = kind === 'ice-spire';
+      const ice = new T.MeshStandardMaterial({
+        color: monolith ? '#b4e6f2' : '#85c5d9',
+        roughness: 0.31,
+        metalness: 0.08,
+        flatShading: true,
+        emissive: '#276e8c',
+        emissiveIntensity: 0.18,
+      });
+      const bulk = new T.Mesh(new T.IcosahedronGeometry(1, 0), ice);
+      bulk.name = monolith ? 'europa-ice-natural-spire' : 'europa-ice-natural-crag';
+      bulk.position.set(0, monolith ? 8.5 : 3.5, 0);
+      bulk.scale.set(monolith ? 5 : 9, monolith ? 15 : 9, monolith ? 6 : 11);
+      g.add(bulk);
+      solids.push({
+        center: new T.Vector3(0, monolith ? 8.5 : 3.5, 0),
+        half: new T.Vector3(monolith ? 5 : 9, monolith ? 15 : 9, monolith ? 6 : 11),
+      });
+      for (const side of [-1, 1]) {
+        const shard = new T.Mesh(new T.ConeGeometry(2, monolith ? 12 : 8, 5), ice);
+        shard.position.set(side * (monolith ? 4.2 : 7), monolith ? 12 : 7, side * 2);
+        shard.rotation.z = side * 0.17;
+        shard.userData.visualOnly = true;
+        g.add(shard);
+      }
+      g.userData.biome = 'europa-natural-ice';
     } else if (kind === 'ice-meteor') {
       // Saturn: icy, faceted rocks in the actual flight corridor.
       // A conservative bounding box encloses the visible object; unlike the
@@ -514,7 +602,18 @@ export function createObstacle(kind = 'gantry', variant = 'standard') {
       }
       g.add(box(12, 1, 18, cyan, 0, 11.5));
     }
-    g.userData = { solids, kind, length: kind === 'tunnel' ? 520 : kind === 'carrier' ? 45 : 18 };
+    g.userData = {
+      solids,
+      kind,
+      length:
+        kind === 'tunnel'
+          ? variant === 'europa'
+            ? EUROPA_CAVE_LENGTH
+            : 520
+          : kind === 'carrier'
+            ? 45
+            : 18,
+    };
     templates.set(key, g);
   }
   const template = templates.get(key),

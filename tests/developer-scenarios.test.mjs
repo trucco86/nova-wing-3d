@@ -75,8 +75,11 @@ test('Europa QA tunnel can be launched and restarted without changing campaign s
   assert.equal(snap.tunnel, true);
   assert.equal(snap.europaTunnel[0].panelVisible, true);
   assert.equal(snap.europaTunnel[0].remainingSolidPanels, 1);
-  assert.equal(snap.europaSurface.tunnelActive, true);
-  assert.equal(snap.europaSurface.groundVisible, false);
+  assert.equal(snap.europaCaveApproach.phase, 'distant');
+  assert.ok(snap.europaCaveApproach.distance > 900);
+  assert.equal(snap.europaCaveApproach.length, 1500);
+  assert.equal(snap.europaSurface.tunnelActive, false, 'keep world floor until actual entry');
+  assert.equal(snap.europaSurface.groundVisible, true);
   h.game.pause();
   h.elements.get('pauseRestart').onclick();
   h.elements.get('pauseConfirmOk').onclick();
