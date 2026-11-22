@@ -198,7 +198,7 @@ import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.j
 import { SQUAD_SPECIALS } from './five-cats-squad.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
-import { bossEncounterGate } from './encounter-separation.js';
+import { bossEncounterGate, SUBBOSS_BOSS_RECOVERY_SECONDS } from './encounter-separation.js';
 import { FIGHTER_ROLES, fighterMotion, fighterAdvance, fighterAimOffsets } from './enemy-roles.js';
 import { fighterWaveAt } from './sector-waves.js';
 import {
@@ -2595,9 +2595,19 @@ export function createGame({
     reactorAccessComplete = true;
     reactorAccessStarted = false;
     state = 'playing';
-    elapsed = Math.max(elapsed, current().duration - 3.8);
-    bossWarned = false;
+    // Three activated modules are the final reactor gate. The existing boss
+    // begins its long-range approach on the next flight frame, without a
+    // redundant empty segment or a second artificial warning countdown.
+    elapsed = Math.max(elapsed, current().duration);
+    bossWarned = true;
     bossWarningTime = 0;
+    // Exploring the station already separated this beat from the midstage
+    // encounter, even though mission time was frozen during disembark.
+    subDone = true;
+    subbossClearedAt = Math.min(
+      subbossClearedAt ?? elapsed,
+      elapsed - SUBBOSS_BOSS_RECOVERY_SECONDS,
+    );
     releaseControls();
     invuln = Math.max(invuln, 4);
     music?.resume();
