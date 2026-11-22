@@ -216,7 +216,7 @@ jobs:
           exit 1
 
   production-rollback:
-    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.production-smoke.result == 'success' && needs.production-smoke.result == 'failure' }}
+    if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.pages.result == 'success' && needs.production-smoke.result == 'failure' }}
     needs: [pages, production-smoke]
     runs-on: ubuntu-latest
     timeout-minutes: 12
@@ -267,7 +267,7 @@ jobs:
     if: >-
       ${{ always() && github.ref == 'refs/heads/main'
           && github.event_name != 'pull_request'
-          && needs.pages.result == 'success'
+          && needs.production-smoke.result == 'success'
           && (vars.NOVA_BUILD_NATIVE != 'true'
               || (needs.android.result == 'success' && needs.ios.result == 'success')) }}
     needs: [production-smoke, android, ios]
