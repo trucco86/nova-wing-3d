@@ -8,7 +8,7 @@ try {
   const response = await page.goto(base + '?smoke=' + Date.now(), { waitUntil: 'domcontentloaded', timeout: 30000 });
   if (!response?.ok()) throw new Error('Game HTTP status: ' + response?.status());
   // Retry on CDN propagation and asynchronous WebGL initialization.
-  await page.waitForFunction(() => document.querySelectorAll('canvas').length > 0, { timeout: 15000 }).catch(() => {});
+  await page.waitForFunction(() => document.querySelectorAll('canvas').length > 0, null, { timeout: 15000 }).catch(() => {});
   await page.waitForTimeout(1500);
   const state = await page.evaluate(() => ({
     title: document.title,
