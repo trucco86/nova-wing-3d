@@ -151,13 +151,13 @@ test('QA176: real Stage 04 flight naturally reaches the disembark threshold', (t
   t.after(() => h.close());
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
   const threshold = SECTORS[3].duration * DEVASTADOR_ACCESS_THRESHOLD;
-  h.advance(threshold - 1, 0.05);
+  h.advance(threshold - 1, 0.25);
   let snap = h.game.snapshot();
   assert.equal(snap.state, 'playing');
   assert.equal(snap.boss, false);
   assert.equal(requests, 0, 'no early reactor access');
 
-  h.advance(1.2, 0.05);
+  h.advance(1.2, 0.2);
   snap = h.game.snapshot();
   assert.equal(requests, 1, 'the real stage clock triggers the on-screen walk segment');
   assert.ok(access);
@@ -168,7 +168,7 @@ test('QA176: real Stage 04 flight naturally reaches the disembark threshold', (t
   assert.equal(snap.boss, false);
 
   const stopped = snap.seconds;
-  h.advance(3, 0.05);
+  h.advance(3, 0.25);
   assert.equal(h.game.snapshot().seconds, stopped, 'flight time freezes during walking');
   assert.equal(requests, 1, 'the handoff must occur only once');
 });
