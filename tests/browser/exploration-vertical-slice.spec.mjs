@@ -235,7 +235,7 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     try {
       const position = expect.poll(
         () => page.evaluate((field) => window.__novaExploreQA.snapshot().player[field], axis),
-        { timeout: 40000 },
+        { timeout: 40000, intervals: [50, 80, 100] },
       );
       if (decreasing) await position.toBeLessThanOrEqual(target);
       else await position.toBeGreaterThanOrEqual(target);
@@ -263,8 +263,26 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     // Return to the unobstructed upper corridor before crossing the hall.
     // The core at (0,-44) must remain solid, not be walked through.
     await walk('KeyS', 'z', -18, false);
+    // Precision walking near the archive: BOOST with Playwright's default
+    // 1-second polling can overshoot the small interaction radius by 10m+.
+    await page.keyboard.up('Shift');
     await walk('KeyA', 'x', -36, true);
     await walk('KeyW', 'z', -80, true);
+    // If a slow renderer/runner overshoots the target, correct on foot using
+    // the SAME player controls. Do not use the privileged QA teleport.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const { x, z } = await page.evaluate(() => window.__novaExploreQA.snapshot().player);
+      if (Math.hypot(x + 37, z + 82) < 5) break;
+      if (x < -41) await walk('KeyD', 'x', -38, false);
+      else if (x > -33) await walk('KeyA', 'x', -36, true);
+      if (z < -86) await walk('KeyS', 'z', -83, false);
+      else if (z > -78) await walk('KeyW', 'z', -81, true);
+    }
+    const archive = await page.evaluate(() => window.__novaExploreQA.snapshot().player);
+    expect(
+      Math.hypot(archive.x + 37, archive.z + 82),
+      'the pilot must physically reach the archive module: ' + JSON.stringify(archive),
+    ).toBeLessThan(8.5);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 3/3');
