@@ -40,16 +40,13 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
     for (let i = 0; i < 850; i++) {
       advance(0.05, { renderAfter: false });
       const current = game.snapshot();
-      if (current.europaCaveApproach?.inside && current.europaSurface.tunnelActive)
-        return current;
+      if (current.europaCaveApproach?.inside && current.europaSurface.tunnelActive) return current;
       if (!current.tunnel) break;
     }
     return game.snapshot();
   });
   expect(entry.tunnel, 'the real long cave remains present during entry').toBe(true);
-  expect(entry.europaCaveApproach?.inside, 'the pilot must physically enter the mouth').toBe(
-    true,
-  );
+  expect(entry.europaCaveApproach?.inside, 'the pilot must physically enter the mouth').toBe(true);
   expect(entry.europaSurface.tunnelActive).toBe(true);
   expect(entry.europaSurface.groundVisible).toBe(false);
   expect(entry.europaTunnel[0].breached).toBe(false);

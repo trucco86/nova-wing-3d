@@ -12011,9 +12011,11 @@ body.in-mission:has(#bossHUD:not([hidden]))
     /* The RPG drawer ends at approximately y=148px on landscape. Place the
        alert rail after that control and before the thumb-control footer. */
     top: max(151px, calc(env(safe-area-inset-top, 0px) + 136px));
-    left: max(14px, env(safe-area-inset-left, 0px));
+    /* The orbit controls occupy x=14..212 in short landscape.
+       Keep the alert box alongside, not directly on top of those buttons. */
+    left: max(236px, calc(env(safe-area-inset-left, 0px) + 220px));
     right: auto;
-    width: min(236px, 28vw);
+    width: min(220px, 26vw);
     max-height: min(11vh, 42px);
   }
 }
