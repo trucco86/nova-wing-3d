@@ -35,6 +35,7 @@ test('QA177: reactor boss HUD has separate mission, HP and radio lanes in all vi
     { width: 1366, height: 768 },
     { width: 844, height: 390 },
     { width: 390, height: 844 },
+    { width: 320, height: 568 },
   ]) {
     await page.setViewportSize(viewport);
     const layout = await page.evaluate(() => {
@@ -59,6 +60,7 @@ test('QA177: reactor boss HUD has separate mission, HP and radio lanes in all vi
         pilot: grab('#hud .status'),
         score: grab('#hud .rightHUD'),
         orbit: grab('#orbitControls'),
+        strategy: grab('#strategyControls'),
         viewport: { width: innerWidth, height: innerHeight },
       };
     });
@@ -72,7 +74,7 @@ test('QA177: reactor boss HUD has separate mission, HP and radio lanes in all vi
     for (const name of ['notices', 'pilot', 'score']) {
       expect(intersects(layout.boss, layout[name]), 'boss HP must not overlap ' + name).toBe(false);
     }
-    for (const name of ['pilot', 'score', 'orbit']) {
+    for (const name of ['pilot', 'score', 'orbit', 'strategy']) {
       expect(
         intersects(layout.notices, layout[name]),
         'the alert and radio lane must not overlap ' + name,

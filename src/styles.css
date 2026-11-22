@@ -11963,3 +11963,41 @@ body.in-mission:has(#bossHUD:not([hidden]))
     max-height: min(29vh, 90px);
   }
 }
+
+
+/* QA178: boss warning lane stays above the aiming horizon at every viewport.
+   Preserve side-by-side boss HP and alerts without masking RPG, score or
+   thumb targets. Previously portrait started at 272px and landscape at
+   218px, pushing warning/impact labels into the central game corridor. */
+@media (max-width: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(154px, calc(env(safe-area-inset-top, 0px) + 136px));
+  }
+
+  /* Chromium desktop-sized to portrait must use the same bounded boss card
+     as touch devices, otherwise the legacy 84% width overflows the screen. */
+  body.in-mission #bossHUD:not([hidden]) {
+    position: fixed;
+    top: max(178px, calc(env(safe-area-inset-top, 0px) + 160px));
+    left: auto;
+    right: max(9px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+    width: clamp(100px, 30vw, 142px);
+    padding: 5px 6px;
+    border: 1px solid #eaa2b16e;
+    border-radius: 9px;
+    background: #140c20db;
+    z-index: 27;
+  }
+}
+@media (min-width: 551px) and (max-height: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    /* The RPG drawer ends at approximately y=148px on landscape. Place the
+       alert rail after that control and before the thumb-control footer. */
+    top: max(151px, calc(env(safe-area-inset-top, 0px) + 136px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: min(236px, 28vw);
+    max-height: min(11vh, 42px);
+  }
+}
