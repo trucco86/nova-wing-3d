@@ -53,8 +53,12 @@ test('QA174 opt-in stage 4 pauses real flight until all three access modules are
   assert.equal(s.credits, initial.credits);
   assert.deepEqual(s.loadout, initial.loadout);
   assert.equal(request.complete(ids), false, 'the completion callback cannot be replayed');
-  h.advance(0.1, 0.05);
+  // The same reactor must initialize on the first real flight frame after
+  // the 3/3 handoff, regardless of frame-rate or a previously frozen clock.
+  h.advance(0.05, 0.05);
   assert.equal(h.game.snapshot().sector, 4);
+  assert.equal(h.game.snapshot().boss, true, 'boss entry must not wait for a second timer');
+  assert.equal(h.elements.get('bossHUD').hidden, false);
   // A successful disembark must really reach the original reactor boss,
   // rather than merely returning to an empty, unwinnable flight.
   h.advance(11, 0.05);
