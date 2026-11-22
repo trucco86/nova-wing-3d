@@ -1,0 +1,73 @@
+name: Release Train Auto Merge (low risk)
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+  checks: read
+  actions: read
+concurrency:
+  group: release-train-automerge
+  cancel-in-progress: false
+jobs:
+  safe-auto-merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Evaluate only eligible PRs; fail closed
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Do not enable any merge until GitHub confirms main protection and
+          # required checks. Missing or inaccessible protection = no merges.
+          protection=$(gh api "repos/$REPO/branches/main/protection" 2>/dev/null) || {
+            echo "Branch protection not accessible: no auto-merge."
+            exit 0
+          }
+          echo "$protection" | jq -e '
+            .required_status_checks != null and
+            (.required_status_checks.contexts | length > 0) and
+            .enforce_admins.enabled == true and
+            .required_pull_request_reviews != null
+          ' >/dev/null || {
+            echo "Protection policy incomplete: no auto-merge."
+            exit 0
+          }
+          gh api --paginate "repos/$REPO/pulls?state=open&per_page=100" |
+            jq -s -r 'add[] | select(.draft == false and .base.ref == "main") | .number' |
+            while read -r number; do
+              echo "Inspecting PR #$number"
+              # Never trust labels or title alone. Inspect the actual diff.
+              files=$(gh api --paginate "repos/$REPO/pulls/$number/files?per_page=100")
+              count=$(echo "$files" | jq 'length')
+              if [ "$count" -eq 0 ] || [ "$count" -gt 10 ]; then
+                echo "Skip: unexpected file count"
+                continue
+              fi
+              if ! echo "$files" | jq -e 'all(.[]; .status != "removed" and (.filename | test("^docs/.*\\.md$|^README\\.md$")))' >/dev/null; then
+                echo "Skip: not documentation-only"
+                continue
+              fi
+              pr=$(gh api "repos/$REPO/pulls/$number")
+              sha=$(echo "$pr" | jq -r '.head.sha')
+              mergeable=$(echo "$pr" | jq -r '.mergeable')
+              if [ "$mergeable" != "true" ]; then
+                echo "Skip: conflicts or mergeability pending"
+                continue
+              fi
+              # Exact head SHA must have a successful PR CI workflow.
+              runs=$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$sha&event=pull_request&per_page=50")
+              if ! echo "$runs" | jq -e --arg sha "$sha" 'any(.workflow_runs[]; .head_sha == $sha and .conclusion == "success")' >/dev/null; then
+                echo "Skip: CI not successful for exact SHA"
+                continue
+              fi
+              # The GitHub merge API enforces branch protection and reviews.
+              # Do not bypass protection, and do not force merge.
+              echo "Attempting protected merge of docs-only PR #$number"
+              gh pr merge "$number" --repo "$REPO" --squash --auto || echo "Merge deferred/blocked by GitHub protection."
+            done
