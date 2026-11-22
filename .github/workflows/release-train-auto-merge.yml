@@ -4,7 +4,7 @@ on:
     - cron: '17 * * * *'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   checks: read
   actions: read
@@ -69,5 +69,5 @@ jobs:
               # The GitHub merge API enforces branch protection and reviews.
               # Do not bypass protection, and do not force merge.
               echo "Attempting protected merge of docs-only PR #$number"
-              gh pr merge "$number" --repo "$REPO" --squash --auto || echo "Merge deferred/blocked by GitHub protection."
+              gh pr merge "$number" --repo "$REPO" --squash --auto --match-head-commit "$sha" || echo "Merge deferred/blocked by GitHub protection."
             done
