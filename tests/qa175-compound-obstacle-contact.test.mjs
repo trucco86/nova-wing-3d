@@ -38,12 +38,18 @@ test('QA175: Europa breach panel blocks the ship until it is physically destroye
   const resolve = createObstacleShipResolver();
   const start = new Vector3(27, 15, -220);
   const blocked = new Vector3(39, 15, -220);
-  assert.equal(tunnel.userData.solids.some((volume) => volume.breachPanel), true);
+  assert.equal(
+    tunnel.userData.solids.some((volume) => volume.breachPanel),
+    true,
+  );
   assert.equal(resolve(start, blocked, tunnel), true, 'intact panel blocks crossing');
   assert.equal(outsideSolids(blocked, tunnel), true);
 
   assert.equal(openEuropaTunnelBreach(tunnel), true, 'breach removes the actual collider');
-  assert.equal(tunnel.userData.solids.some((volume) => volume.breachPanel), false);
+  assert.equal(
+    tunnel.userData.solids.some((volume) => volume.breachPanel),
+    false,
+  );
   const through = new Vector3(39, 15, -220);
   assert.equal(resolve(start, through, tunnel), false, 'destroyed panel has no ghost collision');
   assert.deepEqual(through.toArray(), [39, 15, -220], 'free opening does not teleport the pilot');
