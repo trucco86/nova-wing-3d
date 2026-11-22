@@ -55,13 +55,35 @@ test('QA175: Europa breach panel blocks the ship until it is physically destroye
   assert.deepEqual(through.toArray(), [39, 15, -220], 'free opening does not teleport the pilot');
 });
 
-test('QA175: boosted approach to compound baffles cannot leave the ship embedded', () => {
-  for (const variant of ['standard', 'europa']) {
+test('QA175: boosted travel resolves real standard baffles and Europa solid ice walls', () => {
+  const routes = [
+    {
+      variant: 'standard',
+      // Only the industrial tunnel has the old offset baffle at z=-110.
+      previous: new Vector3(-25, 12, -95),
+      next: new Vector3(-25, 12, -119),
+    },
+    {
+      variant: 'europa',
+      // QA171 deliberately removed the five industrial bars from Europa.
+      // Sweep across the ACTUAL left glacial wall of the 1500-unit cave.
+      // This is the solid collision that remains after the premium redesign.
+      previous: new Vector3(-29, 12, -180),
+      next: new Vector3(-41, 12, -180),
+    },
+  ];
+  for (const { variant, previous, next } of routes) {
     const tunnel = createObstacle('tunnel', variant);
     const resolve = createObstacleShipResolver();
-    const previous = new Vector3(-25, 12, -95);
-    const next = new Vector3(-25, 12, -119);
-    assert.equal(resolve(previous, next, tunnel, 15), true, variant + ' moving baffle');
+    if (variant === 'europa') {
+      assert.ok(tunnel.userData.length >= 1500, 'the authored premium cave stays long');
+      assert.equal(
+        outsideSolids(new Vector3(0, 12, -180), tunnel),
+        true,
+        'Europa central path has no obsolete industrial bars',
+      );
+    }
+    assert.equal(resolve(previous, next, tunnel, 15), true, variant + ' physical wall contact');
     assert.equal(outsideSolids(next, tunnel), true, variant + ' final ship position is safe');
     assert.ok(next.distanceTo(previous) < 50, variant + ' correction cannot teleport');
   }
