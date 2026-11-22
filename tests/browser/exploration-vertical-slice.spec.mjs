@@ -218,3 +218,73 @@ test('the cat moves relative to the orbital camera before unlocking the core', a
     (await page.evaluate(() => window.__novaExploreQA.snapshot())).game.reactorAccess.completed,
   ).toBe(false);
 });
+
+test('Stage 04 walks to all three reactor modules without QA teleport and reaches the boss', async ({
+  page,
+}, info) => {
+  test.setTimeout(210000);
+  const failures = [];
+  page.on('pageerror', (error) => failures.push(error.message));
+  await openMidstageReactor(page);
+  const initial = await page.evaluate(() => window.__novaExploreQA.snapshot().player);
+
+  // Drive the actual keyboard event handlers and measured per-frame walking
+  // physics. The developer-only moveTo/teleport method is never invoked.
+  async function walk(key, axis, target, decreasing) {
+    await page.keyboard.down(key);
+    try {
+      const position = expect.poll(
+        () => page.evaluate((field) => window.__novaExploreQA.snapshot().player[field], axis),
+        { timeout: 40000 },
+      );
+      if (decreasing) await position.toBeLessThanOrEqual(target);
+      else await position.toBeGreaterThanOrEqual(target);
+    } finally {
+      await page.keyboard.up(key);
+    }
+  }
+
+  await page.keyboard.down('Shift');
+  try {
+    // Keep a corridor above the solid pillars and reactor core, then follow
+    // safe side corridors to the signal laboratory and reactor plaza.
+    await walk('KeyW', 'z', -18, true);
+    await walk('KeyA', 'x', -35, true);
+    await expect(page.locator('#exploreScan')).toBeEnabled();
+    await page.locator('#exploreScan').click();
+    await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 1/3');
+
+    await walk('KeyD', 'x', 38, false);
+    await walk('KeyW', 'z', -54, true);
+    await expect(page.locator('#exploreScan')).toBeEnabled();
+    await page.locator('#exploreScan').click();
+    await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 2/3');
+
+    // Return to the unobstructed upper corridor before crossing the hall.
+    // The core at (0,-44) must remain solid, not be walked through.
+    await walk('KeyS', 'z', -18, false);
+    await walk('KeyA', 'x', -36, true);
+    await walk('KeyW', 'z', -80, true);
+    await expect(page.locator('#exploreScan')).toBeEnabled();
+    await page.locator('#exploreScan').click();
+    await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 3/3');
+  } finally {
+    await page.keyboard.up('Shift');
+  }
+
+  const walked = await page.evaluate(() => window.__novaExploreQA.snapshot());
+  expect(walked.player).not.toEqual(initial);
+  expect(walked.quest.clues).toHaveLength(3);
+  expect(walked.game.state).toBe('reactor-access');
+  await page.screenshot({ path: info.outputPath('devastador-three-modules-real-walk.png') });
+  await page.locator('#exploreLaunchCombat').click();
+  await expect(page.locator('#explorationOverlay')).toBeHidden();
+  await expect
+    .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.boss), {
+      timeout: 40000,
+    })
+    .toBe(true);
+  await expect(page.locator('#bossHUD')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('devastador-boss-after-real-walk.png') });
+  expect(failures).toEqual([]);
+});
