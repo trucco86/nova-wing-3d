@@ -1,0 +1,104 @@
+name: Production Release (approved lot)
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Exact validated commit SHA on main"
+        required: true
+        type: string
+      approval:
+        description: "Type APPROVE-PRODUCTION to authorize this release lot"
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: nova-wing-production-release
+  cancel-in-progress: false
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify explicit approval, exact main SHA and green push CI
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_SHA: ${{ inputs.commit_sha }}
+          APPROVAL: ${{ inputs.approval }}
+        run: |
+          set -euo pipefail
+          test "$APPROVAL" = "APPROVE-PRODUCTION" || { echo "Explicit approval phrase missing"; exit 1; }
+          test "${{ github.ref }}" = "refs/heads/main" || { echo "Dispatch must target main"; exit 1; }
+          git fetch origin main
+          actual=$(git rev-parse origin/main)
+          test "$REQUESTED_SHA" = "$actual" || { echo "Requested SHA is not current main"; exit 1; }
+          test "$(git rev-parse HEAD)" = "$actual" || { echo "Checkout mismatch"; exit 1; }
+          runs=$(gh api "repos/${{ github.repository }}/actions/workflows/ci.yml/runs?head_sha=$actual&event=push&per_page=30")
+          echo "$runs" | jq -e --arg sha "$actual" '[.workflow_runs[] | select(.head_sha == $sha and .event == "push" and .conclusion == "success")] | length > 0' || { echo "No successful main push CI for exact SHA"; exit 1; }
+          version=$(node -p "require('./package.json').version")
+          test -f "releases/v$version.md" || { echo "Missing release notes"; exit 1; }
+          test "$(node -p "require('./package.json').releaseChannel || 'all'")" = "web" || { echo "Native release requires separate reviewed workflow"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+  pages:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - name: Prepare public files
+        run: |
+          set -euo pipefail
+          mkdir public-site
+          cp index.html .nojekyll LICENSE docs/THREE-LICENSE.txt public-site/
+          mkdir -p public-site/control-center
+          cp docs/control-center/index.html public-site/control-center/index.html
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: public-site
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
+  release:
+    needs: [gate, pages]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.commit_sha }}
+      - name: Publish approved web release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.gate.outputs.version }}
+          SHA: ${{ inputs.commit_sha }}
+        run: |
+          set -euo pipefail
+          tag="v$VERSION"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            existing=$(gh release view "$tag" --json targetCommitish --jq .targetCommitish)
+            test "$existing" = "$SHA" || { echo "Tag $tag already exists with different target: $existing"; exit 1; }
+            echo "Existing release for approved SHA preserved."
+          else
+            gh release create "$tag" --target "$SHA" --title "Nova Wing 3D $tag" --notes-file "releases/$tag.md"
+          fi
