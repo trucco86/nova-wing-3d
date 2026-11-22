@@ -11907,7 +11907,6 @@ body.intermission-active #shop #nextSector {
   }
 }
 
-
 /* QA177: reactor boss owns the center HUD lane. Mission-title text is redundant
    once the actual boss HP is on screen. Alerts/radio move to a dedicated side
    lane so they never print through the boss name, health bar or instructions. */

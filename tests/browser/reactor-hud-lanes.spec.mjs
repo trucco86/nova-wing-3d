@@ -70,9 +70,7 @@ test('QA177: reactor boss HUD has separate mission, HP and radio lanes in all vi
     expect(layout.boss.visible, 'boss HP must remain visible').toBe(true);
     expect(layout.mission.visible, 'sector title is redundant during boss HP').toBe(false);
     for (const name of ['notices', 'pilot', 'score']) {
-      expect(intersects(layout.boss, layout[name]), 'boss HP must not overlap ' + name).toBe(
-        false,
-      );
+      expect(intersects(layout.boss, layout[name]), 'boss HP must not overlap ' + name).toBe(false);
     }
     for (const name of ['pilot', 'score', 'orbit']) {
       expect(
