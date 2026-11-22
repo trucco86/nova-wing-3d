@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { chromium } from '@playwright/test';
 const base = (process.env.NOVA_PRODUCTION_URL || 'https://trucco86.github.io/nova-wing-3d/').replace(/\/?$/, '/');
 const browser = await chromium.launch({ headless: true, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const errors = [];
