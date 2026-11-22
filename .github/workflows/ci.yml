@@ -196,24 +196,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
-      - name: Verify published game and assets
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - name: Browser smoke on published production
         env:
-          BASE_URL: https://trucco86.github.io/nova-wing-3d
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          # GitHub Pages CDN can lag behind deploy; retry before declaring failure.
-          for attempt in $(seq 1 12); do
-            if curl -fLsS --retry 2 --max-time 15 -H 'Cache-Control: no-cache' "$BASE_URL/?ci=$EXPECTED_SHA-$attempt" -o /tmp/nova-index.html \
-               && grep -qiE 'nova.?wing|<canvas|three' /tmp/nova-index.html \
-               && curl -fLsS --max-time 15 "$BASE_URL/control-center/?ci=$EXPECTED_SHA-$attempt" -o /tmp/nova-control.html; then
-              echo "Production HTTP smoke passed on attempt $attempt"
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Production smoke failed after retries"
-          exit 1
+          NOVA_PRODUCTION_URL: https://trucco86.github.io/nova-wing-3d/
+        run: node tools/production-smoke.mjs
 
   production-rollback:
     if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.pages.result == 'success' && needs.production-smoke.result == 'failure' }}
