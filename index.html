@@ -12008,15 +12008,17 @@ body.in-mission:has(#bossHUD:not([hidden]))
 }
 @media (min-width: 551px) and (max-height: 550px) {
   body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
-    /* The RPG drawer ends at approximately y=148px on landscape. Place the
-       alert rail after that control and before the thumb-control footer. */
+    /* Short landscape: the orbit and RPG controls own the left third,
+       while the boss HP is central and the radar owns the right edge.
+       Reserve a short readable lane between boss HP and radar; placing
+       notices at x=236 crossed the large orbit/RPG wrapper and boss art. */
     top: max(151px, calc(env(safe-area-inset-top, 0px) + 136px));
-    /* The orbit controls occupy x=14..212 in short landscape.
-       Keep the alert box alongside, not directly on top of those buttons. */
-    left: max(236px, calc(env(safe-area-inset-left, 0px) + 220px));
-    right: auto;
-    width: min(220px, 26vw);
+    left: auto;
+    right: max(130px, env(safe-area-inset-right, 0px));
+    transform: none;
+    width: min(190px, 28vw, calc(100vw - 365px));
     max-height: min(11vh, 42px);
+    overflow: hidden;
   }
 }
 
