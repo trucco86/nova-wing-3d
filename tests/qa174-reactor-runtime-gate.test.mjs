@@ -131,3 +131,41 @@ test('QA175 a renderer exception fails closed to the pause menu without bypassin
   assert.equal(snap.reactorAccess.completed, false);
   assert.equal(h.elements.get('pauseMenu').hidden, false);
 });
+
+test('QA176: real Stage 04 flight naturally reaches the disembark threshold', (t) => {
+  let requests = 0;
+  let access = null;
+  const h = harness({
+    hostname: 'dev.nova-wing-preview.pages.dev',
+    spawnEncounters: false,
+    onReactorAccessRequested(context) {
+      requests++;
+      access = context;
+      return true;
+    },
+  });
+  t.after(() => h.close());
+  assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
+  const duration = 88;
+  const threshold = duration * 0.62;
+  h.advance(threshold - 1, 0.05);
+  let snap = h.game.snapshot();
+  assert.equal(snap.state, 'playing');
+  assert.equal(snap.boss, false);
+  assert.equal(requests, 0, 'no early reactor access');
+
+  h.advance(1.2, 0.05);
+  snap = h.game.snapshot();
+  assert.equal(requests, 1, 'the real stage clock triggers the on-screen walk segment');
+  assert.ok(access);
+  assert.equal(snap.sector, 4, 'the walk does not create an extra campaign sector');
+  assert.equal(snap.state, 'reactor-access');
+  assert.equal(snap.reactorAccess.started, true);
+  assert.equal(snap.reactorAccess.completed, false);
+  assert.equal(snap.boss, false);
+
+  const stopped = snap.seconds;
+  h.advance(3, 0.05);
+  assert.equal(h.game.snapshot().seconds, stopped, 'flight time freezes during walking');
+  assert.equal(requests, 1, 'the handoff must occur only once');
+});
