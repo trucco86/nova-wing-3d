@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { harness } from './harness.mjs';
-import { DEVASTADOR_ACCESS_MODULES } from '../src/devastador-reactor-access.js';
+import {
+  DEVASTADOR_ACCESS_MODULES,
+  DEVASTADOR_ACCESS_THRESHOLD,
+} from '../src/devastador-reactor-access.js';
+import { SECTORS } from '../src/campaign.js';
 
 const ids = DEVASTADOR_ACCESS_MODULES.map(({ id }) => id);
 
@@ -146,8 +150,7 @@ test('QA176: real Stage 04 flight naturally reaches the disembark threshold', (t
   });
   t.after(() => h.close());
   assert.equal(h.game.startDeveloperScenario(3, 'stage'), true);
-  const duration = 88;
-  const threshold = duration * 0.62;
+  const threshold = SECTORS[3].duration * DEVASTADOR_ACCESS_THRESHOLD;
   h.advance(threshold - 1, 0.05);
   let snap = h.game.snapshot();
   assert.equal(snap.state, 'playing');
