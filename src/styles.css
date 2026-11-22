@@ -11964,7 +11964,6 @@ body.in-mission:has(#bossHUD:not([hidden]))
   }
 }
 
-
 /* QA178: boss warning lane stays above the aiming horizon at every viewport.
    Preserve side-by-side boss HP and alerts without masking RPG, score or
    thumb targets. Previously portrait started at 272px and landscape at
