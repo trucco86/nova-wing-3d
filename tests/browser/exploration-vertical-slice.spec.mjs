@@ -266,13 +266,16 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     // blocks a direct westward crossing when keyboard/camera drift lowers Z.
     // Keep the test on real walking controls, without QA teleportation.
     await walk('KeyS', 'z', 8, false);
-    // Precision walking near the archive: BOOST with Playwright's default
-    // 1-second polling can overshoot the small interaction radius by 10m+.
-    await page.keyboard.up('Shift');
+    // The open northern aisle is 74m wide. Do not disable sprint for the
+    // entire crossing: low-FPS WebGL runners otherwise time out with the
+    // avatar still moving, rather than detecting a real collision.
+    // All steps still use actual keyboard inputs and physical contact.
     await walk('KeyA', 'x', -36, true);
-    // The physical archive alcove has a solid lip around z≈-79. Forcing
-    // z<=-80 deadlocks a legitimate collision boundary. Enter the module
-    // interaction radius, then verify the REAL scan button is enabled.
+    // Cross the long unobstructed western aisle while sprinting. The
+    // archive's physical lip is near z=-79, so slow down for its final 8m
+    // instead of overstepping the module's 8.5m activation radius.
+    await walk('KeyW', 'z', -70, true);
+    await page.keyboard.up('Shift');
     await walk('KeyW', 'z', -78.5, true);
     // If a slow renderer/runner overshoots the target, correct on foot using
     // the SAME player controls. Do not use the privileged QA teleport.
