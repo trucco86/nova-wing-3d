@@ -890,8 +890,8 @@
                 >Atalho QA: escolhe evolução 13 e Berserk. Ative e repita o poder pelo botão no HUD
                 da fase. Escolha o setor e o chefe acima.</small
               >
-              <button id="developerExplore" type="button" hidden>
-                EXPLORAR ÓRBITA-9 · PROTÓTIPO 3D
+              <button id="developerReactorQA" type="button" hidden>
+                TESTAR ACESSO AO REATOR · FASE 04
               </button>
               <small
                 >QA · Sem pontuação no ranking. Para voltar, use Pausar → Sair → Confirmar.</small
@@ -1337,23 +1337,39 @@
       hidden
       role="dialog"
       aria-modal="true"
-      aria-label="Exploração da estação Órbita-9, protótipo Developer QA"
+      aria-label="Desembarque na Devastador, ativação dos três módulos antes do reator"
     >
       <header class="exploration-toprail">
         <div>
-          <span class="eyebrow">FIVE CATS UNIVERSE · DEV / QA</span>
-          <h2>SINAIS DE ÓRBITA-9</h2>
-          <p id="explorationObjective">INVESTIGUE OS SINAIS MISTERIOSOS</p>
+          <span class="eyebrow" id="explorationEyebrow">FASE 04 · DESEMBARQUE</span>
+          <h2 id="explorationTitle">DEVASTADOR · ACESSO AO REATOR</h2>
+          <p id="explorationObjective">ATIVE OS 3 MÓDULOS PARA EXPOR O NÚCLEO</p>
         </div>
-        <strong id="explorationProgress">ÓRBITA-9 · PISTAS 0/3</strong>
-        <button id="exploreExit" type="button">SAIR / VOLTAR</button>
+        <strong id="explorationProgress">DEVASTADOR · MÓDULOS 0/3</strong>
+        <button id="exploreExit" type="button">PAUSAR / MENU</button>
       </header>
-      <div
-        id="explorationViewport"
-        class="exploration-viewport"
-        aria-label="Cena 3D explorável"
-      ></div>
+      <div id="explorationViewport" class="exploration-viewport" aria-label="Cena 3D explorável">
+        <aside class="exploration-mini-map" aria-label="Mapa de exploração da estação Órbita-9">
+          <strong id="explorationDistrict">ÁTRIO DA ESTAÇÃO</strong>
+          <div class="exploration-map-grid" role="img" aria-label="Sua posição e pistas na estação">
+            <span id="explorationMapSignals" aria-hidden="true"></span>
+            <span id="explorationMapPlayer" aria-hidden="true"></span>
+          </div>
+          <small>AZUL: PISTAS · VERDE: COLETADAS · BRANCO: JOGADOR</small>
+        </aside>
+      </div>
       <div id="explorationStatus" role="status" aria-live="polite" class="exploration-status"></div>
+      <div
+        id="explorationDialogue"
+        hidden
+        class="exploration-dialogue"
+        role="region"
+        aria-label="Diálogo com o sobrevivente"
+      >
+        <strong id="exploreDialogueSpeaker">SOBREVIVENTE</strong>
+        <p id="exploreDialogueText"></p>
+        <button id="exploreDialogueNext" type="button">CONTINUAR</button>
+      </div>
       <div
         id="explorationChoices"
         hidden
@@ -1365,21 +1381,50 @@
         <button id="exploreChoiceHidden" type="button">ABRIR ROTA CLANDESTINA</button>
       </div>
       <footer class="exploration-controls">
-        <div class="exploration-directional" aria-label="Controles de deslocamento">
-          <button id="exploreMoveUp" type="button" aria-label="Avançar">▲</button>
-          <button id="exploreMoveLeft" type="button" aria-label="Ir à esquerda">◀</button>
-          <button id="exploreMoveDown" type="button" aria-label="Recuar">▼</button>
-          <button id="exploreMoveRight" type="button" aria-label="Ir à direita">▶</button>
+        <div
+          class="exploration-camera-tools"
+          role="group"
+          aria-label="Órbita da câmera e giro 360 do personagem, junto ao analógico"
+        >
+          <button id="exploreCameraLeft" type="button" aria-label="Orbitar câmera à esquerda">
+            ◀
+          </button>
+          <button id="exploreCameraRight" type="button" aria-label="Orbitar câmera à direita">
+            ▶
+          </button>
+          <button id="exploreSpin" type="button" aria-label="Girar personagem 360 graus">
+            360°
+          </button>
+          <button
+            id="exploreCameraZoom"
+            type="button"
+            aria-label="Alternar câmera panorâmica"
+            aria-pressed="false"
+          >
+            VISTA
+          </button>
+        </div>
+        <div
+          id="exploreStick"
+          class="exploration-stick"
+          role="group"
+          aria-label="Direcional analógico para o desembarque na Devastador"
+        >
+          <div id="exploreNub" aria-hidden="true"></div>
         </div>
         <div class="exploration-actions">
-          <button id="exploreScan" type="button" disabled>SCAN · PISTA</button>
-          <button id="exploreTalk" type="button" disabled>INTERAGIR · NPC</button>
+          <button id="exploreBoost" type="button" aria-label="BOOST: correr">BOOST</button>
+          <button id="exploreScan" type="button" aria-label="Ativar módulo do reator" disabled>
+            ATIVAR
+          </button>
+          <button id="exploreTalk" type="button" hidden disabled>INTERAGIR · NPC</button>
           <button id="exploreLaunchCombat" type="button" hidden>
-            INICIAR COMBATE DESBLOQUEADO ↗
+            ENTRAR NO REATOR · ENFRENTAR O NÚCLEO
           </button>
         </div>
         <small
-          >WASD / SETAS PARA ANDAR · E PARA INVESTIGAR · ESC PARA SAIR · QA SEM SAVE/RANKING</small
+          >WASD / ANALÓGICO RELATIVO À CÂMERA · SHIFT / BOOST · Q R ORBITAR · 360° GIRAR · C VISTA ·
+          E INTERAGIR · FASE 04 · MESMO PROGRESSO DA MISSÃO</small
         >
       </footer>
     </section>

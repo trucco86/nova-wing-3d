@@ -27,7 +27,12 @@ let catRankUI;
 const sessionId = globalThis.crypto?.randomUUID?.() ?? String(Date.now());
 let runIndex = 0;
 let activeRunId = '';
+let reactorAccessStage = null;
 const game = createGame({
+  // Native continues legacy flight until the separate exploration renderer is installed.
+  onReactorAccessRequested: Capacitor.isNativePlatform()
+    ? null
+    : (context) => reactorAccessStage?.openIntegrated(context) ?? false,
   nativeLifecycle: Capacitor.isNativePlatform(),
   onStageStarted: (event) => {
     activeRunId = sessionId + '-' + ++runIndex + '-' + event.sector;
@@ -62,6 +67,7 @@ if (!Capacitor.isNativePlatform()) {
   });
   const showroom = installShowroom();
   const exploration = installOrbit9ExplorationPreview(game);
+  reactorAccessStage = exploration;
   const destroy = game.destroy.bind(game);
   game.destroy = () => {
     destroyAuth();
