@@ -1,5 +1,9 @@
 # Histórico
 
+## 1.27.159 — Candidata em preparação
+
+- Candidata não homologada; preencher entregas e evidências antes da publicação.
+
 ## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
 - Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.
