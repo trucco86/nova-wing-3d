@@ -270,7 +270,10 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     // 1-second polling can overshoot the small interaction radius by 10m+.
     await page.keyboard.up('Shift');
     await walk('KeyA', 'x', -36, true);
-    await walk('KeyW', 'z', -80, true);
+    // The physical archive alcove has a solid lip around z≈-79. Forcing
+    // z<=-80 deadlocks a legitimate collision boundary. Enter the module
+    // interaction radius, then verify the REAL scan button is enabled.
+    await walk('KeyW', 'z', -78.5, true);
     // If a slow renderer/runner overshoots the target, correct on foot using
     // the SAME player controls. Do not use the privileged QA teleport.
     for (let attempt = 0; attempt < 4; attempt++) {
