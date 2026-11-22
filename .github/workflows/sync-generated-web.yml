@@ -30,6 +30,7 @@ on:
       - perf/qa160-boss-rival-hitbox-allocations-20261119
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
+      - integration/qa177-reactor-hud-europa-contact-20261122
 permissions:
   contents: write
   actions: write
@@ -91,6 +92,9 @@ jobs:
       - name: Prepare QA162 moving obstacle contact release
         if: github.ref_name == 'fix/qa162-moving-obstacle-ship-contact-20261119'
         run: npm run release:prepare -- 1.27.156
+      - name: Prepare QA177 integrated 1.27.159 metadata
+        if: github.ref_name == 'integration/qa177-reactor-hud-europa-contact-20261122'
+        run: npm run release:prepare -- 1.27.159
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -125,6 +129,11 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa162-moving-obstacle-ship-contact-20261119" ]; then
             git add -u
             git add -- releases/v1.27.156.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "integration/qa177-reactor-hud-europa-contact-20261122" ]; then
+            # Preserve both the Stage 4 and Europa sources; do not transplant
+            # the obsolete 1.27.159 distribution from the QA175 branch.
+            git add -u -- . ':(exclude).github/workflows/sync-generated-web.yml'
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
