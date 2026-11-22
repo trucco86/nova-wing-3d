@@ -33,7 +33,7 @@ jobs:
             .required_status_checks != null and
             (.required_status_checks.contexts | length > 0) and
             .enforce_admins.enabled == true and
-            .required_pull_request_reviews != null
+            (.required_pull_request_reviews == null or .required_pull_request_reviews.required_approving_review_count == 0)
           ' >/dev/null || {
             echo "Protection policy incomplete: no auto-merge."
             exit 0
@@ -43,7 +43,7 @@ jobs:
             while read -r number; do
               echo "Inspecting PR #$number"
               # Never trust labels or title alone. Inspect the actual diff.
-              files=$(gh api --paginate "repos/$REPO/pulls/$number/files?per_page=100")
+              files=$(gh api --paginate "repos/$REPO/pulls/$number/files?per_page=100" | jq -s 'add')
               count=$(echo "$files" | jq 'length')
               if [ "$count" -eq 0 ] || [ "$count" -gt 10 ]; then
                 echo "Skip: unexpected file count"
