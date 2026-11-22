@@ -30,6 +30,7 @@ on:
       - perf/qa160-boss-rival-hitbox-allocations-20261119
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
+      - integration/qa175-reactor-full-vertical-slice-20261121
 permissions:
   contents: write
   actions: write
@@ -125,6 +126,9 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa162-moving-obstacle-ship-contact-20261119" ]; then
             git add -u
             git add -- releases/v1.27.156.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "integration/qa175-reactor-full-vertical-slice-20261121" ]; then
+            git add -u
           fi
           # QA137: keep source/contract formatting synced with the built artifact.
           if [ "${GITHUB_REF_NAME}" = "fix/qa137-mobile-rpg-accordion-hud-20261115" ]; then
