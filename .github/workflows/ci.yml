@@ -208,7 +208,6 @@ jobs:
           NOVA_PRODUCTION_URL: https://trucco86.github.io/nova-wing-3d/
         run: node tools/production-smoke.mjs
 
-
   production-checkpoint:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: production-smoke
