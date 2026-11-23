@@ -169,3 +169,26 @@ test('enclosed rear wall and complete roof are present; camera never points thro
   intro.destroy();
   assert.equal(scene.getObjectByName('first-stage-launch-bay'), undefined);
 });
+
+test('exterior runway parallax continues after the gate and fades before live gameplay', () => {
+  const scene = new T.Scene();
+  const camera = new T.PerspectiveCamera(60);
+  const intro = createFirstStageLaunchIntro(scene, camera);
+  intro.reset(true, 'bob');
+  const lights = intro.root.getObjectByName('launch-exterior-flight-lights');
+  const beacons = intro.root.getObjectByName('launch-exterior-approach-beacons');
+  assert.ok(lights?.isInstancedMesh && lights.count >= 16);
+  assert.ok(beacons?.isInstancedMesh && beacons.count >= 10);
+  assert.equal(lights.userData.visualOnly, true);
+  intro.update(3);
+  const inFlight = intro.root.position.z;
+  const initialOpacity = lights.material.opacity;
+  assert.ok(inFlight > 50, 'the outside markers must travel past the real fighter');
+  intro.update(5.8);
+  assert.ok(intro.root.position.z > inFlight);
+  assert.ok(lights.material.opacity < initialOpacity, 'exterior guides fade before the handoff');
+  intro.update(6.5);
+  assert.ok(lights.material.opacity < 0.001);
+  intro.finish();
+  intro.destroy();
+});
