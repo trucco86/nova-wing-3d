@@ -2,6 +2,7 @@ import * as T from 'three';
 import { saturnPassageAt } from './saturn-ring-passage.js';
 import { createPremiumLandmarkHull } from './premium-landmark-hulls.js';
 import { createPremiumAtmosphericGeometry } from './premium-atmospheric-geology.js';
+import { createEuropaGlacialRidgeGeometry } from './europa-surface.js';
 
 // Authored landmarks outside the flight corridor. Draw calls stay bounded by
 // InstancedMesh; these never participate in collision, targeting or scoring.
@@ -301,12 +302,20 @@ export function createDestinationLandmarks(index) {
   } else if (index === 5) {
     const ice = makeInstanced(
       index,
-      54,
-      new T.ConeGeometry(1, 1, 6),
-      materialFor(index),
+      38,
+      createEuropaGlacialRidgeGeometry(),
+      new T.MeshStandardMaterial({
+        color: '#ffffff',
+        vertexColors: true,
+        roughness: 0.59,
+        metalness: 0.05,
+        flatShading: true,
+        emissive: '#1e4052',
+        emissiveIntensity: 0.065,
+      }),
       'europa-fractured-glacial-spires',
       (i) => {
-        const x = (i % 2 ? 1 : -1) * (85 + hash(i * 3) * 175);
+        const x = (i % 2 ? 1 : -1) * (158 + hash(i * 3) * 155);
         const h = 12 + hash(i * 11) * 65;
         return {
           position: [x, h * 0.43 - 8, -130 - i * 30],
@@ -373,7 +382,7 @@ export function createDestinationLandmarks(index) {
   // layer; close-up props stay lateral to the actual gameplay corridor.
   const additions = {
     4: ['venus-volcanic-ridge-masses', 26],
-    5: ['europa-glacier-fault-walls', 24],
+    5: ['europa-glacier-fault-walls', 16],
     6: ['neptune-organic-hive-towers', 28],
     9: ['titan-fortress-perimeter-towers', 28],
   };
@@ -386,12 +395,22 @@ export function createDestinationLandmarks(index) {
           ? createPremiumAtmosphericGeometry('venus-volcanic-vent')
           : index === 6
             ? createPremiumAtmosphericGeometry('neptune-hive-tower')
-            : new T.BoxGeometry(1, 1, 1);
+            : createEuropaGlacialRidgeGeometry();
     const layer = makeInstanced(
       index,
       count,
       shape,
-      materialFor(index),
+      index === 5
+        ? new T.MeshStandardMaterial({
+            color: '#ffffff',
+            vertexColors: true,
+            roughness: 0.65,
+            metalness: 0.05,
+            flatShading: true,
+            emissive: '#1c3548',
+            emissiveIntensity: 0.05,
+          })
+        : materialFor(index),
       name,
       (i) => {
         const side = i % 2 ? 1 : -1;

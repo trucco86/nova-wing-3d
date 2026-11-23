@@ -63,7 +63,7 @@ export const SECTORS = [
     theme: 'ice',
     accent: '#9feeff',
     sky: '#28527d',
-    duration: 92,
+    duration: 135,
     brief:
       'Europa, lua de Júpiter: pouse nas geleiras, cruze fissuras e enfrente o colosso glacial.',
   },

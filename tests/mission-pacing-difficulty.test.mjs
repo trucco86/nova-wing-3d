@@ -12,7 +12,7 @@ import {
 import { harness } from './harness.mjs';
 import { loadSettings, storeSettings } from '../src/ui-preferences.js';
 
-test('all ten missions are slightly longer, without changing the campaign size', () => {
+test('ten missions retain pacing except the requested longer Europa cave and Marvin finale', () => {
   assert.equal(SECTORS.length, 10);
   const previous = [130, 70, 70, 75, 75, 80, 80, 85, 85, 90];
   SECTORS.forEach((sector, i) => {
@@ -25,6 +25,14 @@ test('all ten missions are slightly longer, without changing the campaign size',
         sector.duration,
         27 + 80,
         'Mars has a separate 27s orbital entry before 80s ground combat',
+      );
+      return;
+    }
+    if (i === 5) {
+      assert.equal(
+        sector.duration,
+        135,
+        'Europa deliberately expands the glacial canyon, 1500-unit cave and ice combat',
       );
       return;
     }

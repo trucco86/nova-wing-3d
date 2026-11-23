@@ -1,4 +1,5 @@
 import { saturnPassageAt } from './saturn-ring-passage.js';
+import { europaDescentAt } from './europa-descent.js';
 
 // The authored 10-sector itinerary: Earth and Mars keep their bespoke
 // transitions; asteroid traversal is already controlled by stage-journey.
@@ -85,6 +86,28 @@ export function destinationArrivalAt(index, seconds) {
   if (!Number.isFinite(seconds) || seconds < 0) throw new RangeError('Invalid destination time');
   const profile = DESTINATION_PROFILES[index];
   if (!profile) return null;
+  // Dedicated Mars-style cinematic continuity: no 12-18 second empty gap.
+  if (index === 5) {
+    const ice = europaDescentAt(seconds);
+    return {
+      phase: ice.phase === 'surface' ? 'arena' : ice.phase,
+      combatReady: ice.combatReady,
+      reveal: ice.terrainReveal,
+      haze: ice.iceMist,
+      seconds,
+      keepGlobe: false,
+      globeOpacity: ice.planetOpacity,
+      globeScale: ice.planetScale,
+      globeX: ice.planetX,
+      globeY: ice.planetY,
+      globeZ: ice.planetZ,
+      approachBoostVisual: ice.approachBoostVisual,
+      cameraAscent: ice.cameraAscent,
+      starOpacity: ice.starOpacity,
+      terrainLift: ice.terrainLift,
+      label: ice.label,
+    };
+  }
   // Saturn is an orbital battle, not another compulsory atmosphere/ship entry.
   // Enter the ice-ring region with the planet already visible, and unlock
   // encounters after a short orienting beat. All other journeys stay intact.
@@ -104,6 +127,7 @@ export function destinationArrivalAt(index, seconds) {
       label: passage.label,
     };
   }
+  const groundDestination = PLANETARY_SECTORS.includes(index);
   const phase =
     seconds < 6
       ? 'space'
@@ -127,13 +151,20 @@ export function destinationArrivalAt(index, seconds) {
     // as distant scenery; ground destinations reveal their own terrain.
     // Europa is a landing, not an orbit battle: the celestial globe must
     // disappear BEFORE the frozen ground fully occupies the viewport.
+    // A planet can establish the approach, but it must not fill the screen
+    // after the player enters an atmosphere or lands on its surface.
+    // Orion is a gravity anomaly, not another planetary globe.
     globeOpacity:
-      index === 5
-        ? 1 - smooth((seconds - 14.5) / 2.5)
-        : profile.keepGlobe
-          ? 1 - 0.28 * reveal
-          : 1 - smooth((seconds - 16) / 9),
-    globeScale: 0.74 + smooth((seconds - 3) / 15) * 1.52 - reveal * (profile.keepGlobe ? 1.2 : 0),
+      index === 8
+        ? 0
+        : groundDestination
+          ? 1 - smooth((seconds - 8) / 4)
+          : profile.keepGlobe
+            ? 1 - 0.28 * reveal
+            : 1 - smooth((seconds - 16) / 9),
+    globeScale: groundDestination
+      ? 0.58 + smooth((seconds - 3) / 10) * 0.32
+      : 0.74 + smooth((seconds - 3) / 15) * 1.52 - reveal * (profile.keepGlobe ? 1.2 : 0),
     label:
       phase === 'space'
         ? profile.location + ' À VISTA · APROXIMAÇÃO'

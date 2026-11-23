@@ -76,12 +76,12 @@ test('world hides Europa near-field props but retains remote icy ridges during b
   const landmarks = scene.getObjectByName('destination-landmarks');
   const living = scene.getObjectByName('world-living-depth-ice');
   assert.ok(crystals && landmarks && living);
-  // Sixty real crystals remain present, but are submitted as one GPU
-  // instanced batch instead of sixty independent draw calls.
+  // QA168 intentionally reduces repetitive glacial ridges from 60 to 40
+  // and keeps them in one GPU batch; boss mode must still hide the batch.
   assert.equal(crystals.children.length, 1, 'preserve glacial ridge field in one GPU batch');
   const icyRidges = crystals.children[0];
   assert.ok(icyRidges.isInstancedMesh && icyRidges.userData.visualOnly);
-  assert.equal(icyRidges.count, 60, 'preserve all sixty crystals before the boss');
+  assert.equal(icyRidges.count, 40, 'preserve the 40 authored ridges before the boss');
   const floor = -83;
   const arena = world.setEuropaBossArena(true, floor);
   assert.equal(arena.active, true);

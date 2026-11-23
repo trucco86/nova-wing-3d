@@ -41,6 +41,7 @@ import {
 import { createArcade, drawArcade } from './arcade.js';
 import { isGameKey, protectFlightSurface } from './input.js';
 import * as T from 'three';
+import { addEuropaEnemyIceSkin, frostEuropaPursuitFighter } from './europa-enemy-ice-skin.js';
 import {
   SECTORS,
   PILOTS,
@@ -67,6 +68,22 @@ import { initialJourney, advanceJourney, journeyPhaseAt } from './stage-journey.
 import { saturnObstacleKindAt } from './saturn-ring-passage.js';
 import { advanceOmegaRearResponse, chaseOmegaOffset } from './omega-hunt.js';
 import { ARRIVAL_SECONDS } from './destination-arrival.js';
+import { europaDescentAt } from './europa-descent.js';
+import {
+  EUROPA_CRYO_THAW_SECONDS,
+  europaCryoHit,
+  europaCryoRoll,
+  europaCryoMovement,
+  europaCryoBoost,
+} from './europa-cryo.js';
+import { updateEuropaIceCavernMotion } from './europa-ice-cavern.js';
+import { EUROPA_CAVE_SPAWN_Z, europaCaveApproachAt } from './europa-cave-approach.js';
+import {
+  EUROPA_PURSUIT_START_SECONDS,
+  EUROPA_PURSUIT_END_SECONDS,
+  EUROPA_PURSUIT_SLOTS,
+  europaPursuitAt,
+} from './europa-pursuit.js';
 import { MARS_TOUCHDOWN_SECONDS } from './mars-descent.js';
 import { marsSandstormAt, createMarsDustCoating, setMarsDustCoating } from './mars-sandstorm.js';
 import { marsBossAltitudeConstraint } from './mars-boss-ground.js';
@@ -646,6 +663,7 @@ export function createGame({
     // Ship barrel roll and robot lateral dash are mutually exclusive moves.
     roll = rollAngle = 0;
     marsPendingRoll = false;
+    europaCryoPendingRoll = false;
     rollHeld = false;
     dashRemaining = dashCooldown = 0;
     syncDodgeControl();
@@ -653,6 +671,10 @@ export function createGame({
       $('attackWarning').textContent = robotMode
         ? 'AREIA NOS CANHÕES · VOLTE À NAVE PARA 3 GIROS'
         : 'AREIA NOS CANHÕES · GIROS: ' + marsCleanse;
+    } else if (europaCryoStacks > 0) {
+      $('attackWarning').textContent = robotMode
+        ? 'GELO NA ARMADURA · VOLTE À NAVE PARA GIRAR'
+        : 'LASER CONGELANTE · GIROS RESTANTES: ' + europaCryoStacks;
     }
     if (!robotMode) resetMechaLock();
     robot.visible = robotMode;
@@ -688,6 +710,29 @@ export function createGame({
   );
   barrierVisual.visible = false;
   player.add(barrierVisual);
+  // The real ice laser leaves thin, readable translucent frost on the craft.
+  // Only its appearance changes: this group has no collision or target nodes.
+  const europaIceCoating = new T.Group();
+  europaIceCoating.name = 'europa-ship-frost-coating';
+  europaIceCoating.userData.visualOnly = true;
+  const europaFrostMaterial = new T.MeshBasicMaterial({
+    color: '#b2f1ff',
+    transparent: true,
+    opacity: 0.46,
+    depthWrite: false,
+    side: T.DoubleSide,
+  });
+  const europaFrostGeometry = new T.OctahedronGeometry(1, 0);
+  for (let i = 0; i < 8; i++) {
+    const frost = new T.Mesh(europaFrostGeometry, europaFrostMaterial);
+    frost.position.set((i % 2 ? 1 : -1) * (2 + (i % 4) * 1.2), 1 + (i % 3), -2 + (i % 4));
+    frost.rotation.set(i * 0.23, i * 0.37, i * 0.19);
+    frost.scale.set(0.6, 0.85 + (i % 3) * 0.25, 0.8);
+    frost.userData.visualOnly = true;
+    europaIceCoating.add(frost);
+  }
+  europaIceCoating.visible = false;
+  player.add(europaIceCoating);
   const marsDust = dynamicFlight ? createMarsDustCoating() : null;
   if (marsDust) player.add(marsDust);
   const warpStreaks = dynamicFlight ? createWarpStreaks() : null;
@@ -766,6 +811,8 @@ export function createGame({
     groundCd = 5,
     groundWave = 0,
     tunnelDone = false,
+    europaTunnelCrossingLast = false,
+    europaCaveSentinelWave = 0,
     respawnTime = 0,
     totalTime = 0,
     music = null,
@@ -788,9 +835,16 @@ export function createGame({
     ringWave = 0,
     stageIntroTime = 0,
     marsArrivalPhase = 'space',
+    europaArrivalPhase = 'space',
+    europaPursuitSpawned = false,
+    europaPursuitShotsFired = 0,
     marsStormPhase = 'clear',
     marsCleanse = 0,
     marsPendingRoll = false,
+    europaCryoStacks = 0,
+    europaCryoPendingRoll = false,
+    europaCryoNextThaw = 0,
+    europaCryoHits = 0,
     marsStormDamageCooldown = 0,
     warpDeparture = false,
     victoryRadioBeat = -1,
@@ -1612,9 +1666,17 @@ export function createGame({
     world.setSector(current(), sectorIndex);
     journey = initialJourney(sectorIndex);
     marsArrivalPhase = 'space';
+    europaArrivalPhase = 'space';
+    europaPursuitSpawned = false;
+    europaPursuitShotsFired = 0;
     marsStormPhase = 'clear';
     marsCleanse = 0;
     marsPendingRoll = false;
+    europaCryoStacks = 0;
+    europaCryoPendingRoll = false;
+    europaCryoNextThaw = 0;
+    europaCryoHits = 0;
+    europaIceCoating.visible = false;
     setMarsDustCoating(marsDust);
     updateWarpStreaks(warpStreaks, false, 0, player.position);
     marsBossAltitude = null;
@@ -1669,6 +1731,8 @@ export function createGame({
     groundCd = dynamicFlight && sectorIndex === 0 ? 3.6 : 5;
     groundWave = 0;
     tunnelDone = sectorIndex === 1;
+    europaTunnelCrossingLast = false;
+    europaCaveSentinelWave = 0;
     bossVolley = 0;
     collapseBurst = 0;
     pausedFrom = 'playing';
@@ -2016,9 +2080,10 @@ export function createGame({
     if (rollCd > 0) return;
     roll = 0.65;
     rollAngle = 0;
-    rollCd = marsCleanse > 0 ? 0.72 : 1.6;
-    // Only a completed ship barrel roll removes Mars dust; a robot dash does not.
+    rollCd = marsCleanse > 0 || europaCryoStacks > 0 ? 0.72 : 1.6;
+    // A robot dash never counts as a 360-degree cleansing ship roll.
     marsPendingRoll = marsCleanse > 0;
+    europaCryoPendingRoll = sectorIndex === 5 && europaCryoStacks > 0;
     sound(230, 0.25, 'sine');
     return true;
   }
@@ -2069,10 +2134,18 @@ export function createGame({
   const shotMaterials = ARSENAL.map((w) => glowMaterial(w.color, 3));
   const bossShotMaterials = BOSS_WEAPON_COLORS.map((color) => glowMaterial(color, 3.8));
   const pilotPatternReader = createPilotPatternReader();
+  const europaIceShotMaterial = glowMaterial('#8feaff', 3.2);
   const hostileShotPool = createHostileProjectilePool({
     scene,
     geometry: orbGeo,
-    materials: { normal: enemyOrbMat, fire: shotMaterials[2], arcane: shotMaterials[3] },
+    materials: {
+      normal: enemyOrbMat,
+      fire: shotMaterials[2],
+      arcane: shotMaterials[3],
+      ice: europaIceShotMaterial,
+      normalHalo: halo(0xff4265, 2.6, 0.8).material,
+      iceHalo: halo('#86e9ff', 2.6, 0.8).material,
+    },
     bossMaterials: bossShotMaterials,
     createHalo: () => halo(0xff4265, 2.6, 0.8),
     maxRetained: 96,
@@ -2387,7 +2460,15 @@ export function createGame({
     }
     const elite = !ground && kind !== 'fighter';
     o.scale.setScalar(
-      ground || kind === 'subboss' ? 1 : elite ? 1.6 : tacticalFighter ? 1.3 : 0.65,
+      assignedSlot?.europaCaveSentinel
+        ? 0.76
+        : ground || kind === 'subboss'
+          ? 1
+          : elite
+            ? 1.6
+            : tacticalFighter
+              ? 1.3
+              : 0.65,
     );
     o.rotation.y = ground || kind === 'subboss' ? 0 : Math.PI;
     const x =
@@ -2411,12 +2492,16 @@ export function createGame({
     );
     if (assignedSlot?.europaBreach)
       o.position.set(52, 20, assignedSlot.europaBreach.position.z - 220);
+    if (assignedSlot?.europaPursuit) o.position.z = -130;
     // All enemy projectiles originate at visible physical sockets.
     // Walker and hover walker reuse their two articulated eye emitters.
     if (kind !== 'walker' && !airborneRobot) {
       const mount = ground ? (o.getObjectByName('turret') ?? o) : o;
       for (const side of [-1, 1]) {
-        const muzzle = new T.Mesh(muzzleGeometry, muzzleMaterial);
+        const muzzle = new T.Mesh(
+          muzzleGeometry,
+          dynamicFlight && sectorIndex === 5 ? europaIceShotMaterial : muzzleMaterial,
+        );
         muzzle.name = side < 0 ? 'enemy-muzzle-left' : 'enemy-muzzle-right';
         muzzle.position.set(
           side * (ground ? 1.8 : 2.7),
@@ -2425,6 +2510,11 @@ export function createGame({
         );
         mount.add(muzzle);
       }
+    }
+    if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground))
+      frostEuropaPursuitFighter(o);
+    if (dynamicFlight && sectorIndex === 5 && (kind === 'fighter' || ground)) {
+      addEuropaEnemyIceSkin(o, { ground });
     }
     if (kind === 'walker' || airborneRobot) o.userData.combatState = 'deploying';
     if (airborneRobot) {
@@ -2458,15 +2548,22 @@ export function createGame({
     const initialCooldown = rnd(1, 3);
     enemies.push({
       o,
-      role: tacticalFighter ? FIGHTER_ROLES[roleIndex] : null,
+      role: tacticalFighter && !assignedSlot?.europaPursuit ? FIGHTER_ROLES[roleIndex] : null,
       arrivalIndex: assignedSlot?.arrivalIndex ?? 0,
       europaBreach: assignedSlot?.europaBreach ?? null,
+      europaPursuit: assignedSlot?.europaPursuit ?? null,
       subbossTactic,
       attackGlow,
       x,
       y,
       phase,
-      cd: tacticalFighter ? 1.2 : subbossTactic ? 1.6 : initialCooldown,
+      cd: assignedSlot?.europaPursuit
+        ? 0.65 + assignedSlot.europaPursuit.slot * 0.3
+        : tacticalFighter
+          ? 1.2
+          : subbossTactic
+            ? 1.6
+            : initialCooldown,
       life:
         kind === 'subboss'
           ? dynamicFlight
@@ -3282,7 +3379,7 @@ export function createGame({
         // and spawn rules run during the normal campaign. No mock scene.
         elapsed = Math.min(current().duration - 16, ARRIVAL_SECONDS + 10);
         const crossing = createObstacle('tunnel', 'europa');
-        crossing.position.z = -230;
+        crossing.position.z = EUROPA_CAVE_SPAWN_Z;
         scene.add(crossing);
         obstacles.push({
           o: crossing,
@@ -3290,7 +3387,9 @@ export function createGame({
           hp: breakableHullHealth(crossing.userData.kind),
         });
         world.setDestinationArrival?.(elapsed);
-        world.setEuropaTunnel?.(true);
+        // QA intentionally starts at the far approach, then advances the
+        // exact same real tunnel until physical entry and exit.
+        world.setEuropaTunnel?.(false);
       } else {
         elapsed = current().duration + 0.1;
         if (sectorIndex === 2) {
@@ -4229,6 +4328,14 @@ export function createGame({
         stick.y;
     rollHeld =
       !robotMode && (rollPointerId !== null || [...rollKeys].some((code) => keys.has(code)));
+    if (sectorIndex === 5 && europaCryoStacks > 0 && elapsed >= europaCryoNextThaw) {
+      europaCryoStacks = europaCryoRoll(europaCryoStacks);
+      europaCryoNextThaw = elapsed + EUROPA_CRYO_THAW_SECONDS;
+      europaIceCoating.visible = europaCryoStacks > 0;
+      if (!europaCryoStacks) $('attackWarning').textContent = '';
+    }
+    dx *= sectorIndex === 5 ? europaCryoMovement(europaCryoStacks) : 1;
+    dy *= sectorIndex === 5 ? europaCryoMovement(europaCryoStacks) : 1;
     const boostHeld = boostRequested();
     if (!boostHeld) boostNeedsRelease = false;
     if (boostHeld && energy <= 5 && !boostNeedsRelease) {
@@ -4236,8 +4343,14 @@ export function createGame({
       if (sectorIndex !== 0 || orbitalLaunchSequence.snapshot().phase !== 'atmosphere')
         message('IMPULSO ESGOTADO / SOLTE SHIFT OU BOOST PARA REARMAR');
     }
+    // Europa's six-second approach uses a free cinematic super boost.
+    // Never require a held key on mobile or drain the pilot's stored boost.
+    const europaAutoBoost =
+      dynamicFlight && sectorIndex === 5 && !boss && europaDescentAt(elapsed).approachBoost;
     const wasBoosting = boosting;
-    boosting = boostHeld && !boostNeedsRelease && energy > 5;
+    boosting = (boostHeld && !boostNeedsRelease && energy > 5) || europaAutoBoost;
+    if (dynamicFlight && sectorIndex === 5)
+      document.body.classList.toggle('orbital-super-boost', europaAutoBoost);
     if (dynamicFlight && boosting && !wasBoosting) cue('boostIgnition');
     if (robotMode) animateMechPower(robot, elapsed, boosting, stage(), { x: dx, y: dy }, dt);
     const unfoldProgress = robotTransition / transformDuration;
@@ -4264,7 +4377,11 @@ export function createGame({
       shipModule.rotation.z = 0;
     }
     const energyBeforeBoost = energy;
-    energy = clamp(energy + dt * (boosting ? -28 : robotMode ? 7 : 15), 0, 100);
+    energy = clamp(
+      energy + dt * (europaAutoBoost ? 15 : boosting ? -28 : robotMode ? 7 : 15),
+      0,
+      100,
+    );
     if (dynamicFlight && sectorIndex === 0) {
       const beforeLaunch = orbitalLaunchSequence.snapshot().phase;
       const launchState = orbitalLaunchSequence.advance({
@@ -4308,14 +4425,14 @@ export function createGame({
       : 1;
     const superBoost =
       dynamicFlight &&
-      sectorIndex === 0 &&
-      orbitalLaunchSequence.snapshot().phase === 'boost' &&
-      boosting;
+      (europaAutoBoost ||
+        (sectorIndex === 0 && orbitalLaunchSequence.snapshot().phase === 'boost' && boosting));
     const speed =
       (superBoost ? 114 : boosting ? 90 : 48) *
       (1 + Math.min(30, stage()) * 0.02) *
       profileSpeed *
-      progressionSpeed(stage());
+      progressionSpeed(stage()) *
+      (sectorIndex === 5 ? europaCryoBoost(europaCryoStacks) : 1);
     lastFlightSpeed = speed;
     const holding = keys.has('Space') || touchFire;
     if (holding && marsCleanse === 0) {
@@ -4436,6 +4553,18 @@ export function createGame({
       roll = Math.max(0, roll - dt);
       rollAngle = Math.PI * 2 * (1 - roll / 0.65);
       player.rotation.z = rollAngle;
+      if (roll === 0 && europaCryoPendingRoll) {
+        europaCryoPendingRoll = false;
+        europaCryoStacks = europaCryoRoll(europaCryoStacks);
+        europaIceCoating.visible = europaCryoStacks > 0;
+        explode(player.position, 8, 0x9af0ff, false);
+        if (europaCryoStacks > 0) {
+          $('attackWarning').textContent = 'GELO NA NAVE · GIROS RESTANTES: ' + europaCryoStacks;
+        } else {
+          $('attackWarning').textContent = '';
+          message('CROSTA DE GELO REMOVIDA · CONTROLES RESTAURADOS', 'christopher');
+        }
+      }
       if (roll === 0 && marsPendingRoll) {
         marsPendingRoll = false;
         marsCleanse = Math.max(0, marsCleanse - 1);
@@ -4490,6 +4619,25 @@ export function createGame({
       dynamicFlight ? route : undefined,
       dynamicFlight && sectorIndex === 5 && boss ? europaBossPortraitFov(camera.aspect) : null,
     );
+    // Cave approach and wind turbulence act on the CAMERA only, not on
+    // the physical pilot hull, stick direction or collision calculations.
+    const approachingCave =
+      dynamicFlight && sectorIndex === 5
+        ? obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach)
+        : null;
+    if (approachingCave && cameraMode !== 'cockpit') {
+      const motion = europaCaveApproachAt(
+        approachingCave.o.position.z,
+        approachingCave.o.userData.length,
+        player.position.z,
+      );
+      const flutter = motion.cameraIntensity;
+      camera.position.x += Math.sin(elapsed * 8.1) * 0.18 * flutter;
+      camera.position.y += Math.sin(elapsed * 6.4) * 0.11 * flutter;
+      // A subtle aerodynamic bank sells the climb without overriding
+      // controls or the camera's existing roll/steering integration.
+      if (flutter > 0) camera.rotateZ(Math.sin(elapsed * 3.2) * flutter * 0.002);
+    }
     // Keep a true solid in the game world but render the nearby underside
     // translucent when it would eclipse the pilot and the gameplay corridor.
     if (dynamicFlight) world.updateCityCameraOcclusion(camera.position, player.position, dt);
@@ -4584,12 +4732,71 @@ export function createGame({
     // Europa's real tunnel deck is the only visible floor during traversal.
     // The global ice terrain is coplanar with its top face (-7): rendering
     // both caused z-fighting and severe ground flicker on mobile.
-    const europaTunnelCrossing =
-      dynamicFlight &&
-      sectorIndex === 5 &&
-      obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel');
+    const europaCaveObstacle =
+      dynamicFlight && sectorIndex === 5
+        ? obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach)
+        : null;
+    const europaCaveApproach = europaCaveObstacle
+      ? europaCaveApproachAt(
+          europaCaveObstacle.o.position.z,
+          europaCaveObstacle.o.userData.length,
+          player.position.z,
+        )
+      : null;
+    // The glacial portal grows visibly in the far distance while the normal
+    // world floor remains intact. Only hand over the deck on actual approach.
+    const europaTunnelCrossing = !!europaCaveApproach?.inside;
+    if (europaTunnelCrossing && !europaTunnelCrossingLast) {
+      // The flight corridor is now physically occupied. Do not allow
+      // existing fighters/projectiles to overlap its rock colliders.
+      for (const e of enemies) dispose(e.o);
+      enemies = [];
+      for (const shot of hostile) hostileShotPool.release(shot);
+      hostile = [];
+      message('EUROPA · ENTRANDO NA CAVERNA GLACIAL', 'christopher');
+    }
+    europaTunnelCrossingLast = europaTunnelCrossing;
     if (dynamicFlight && sectorIndex === 5) world.setEuropaTunnel?.(europaTunnelCrossing);
+    // Two bounded cave beats keep this long stage playable. These are real
+    // ice-skinned hover robots with pooled cryogenic eye lasers, not sprites
+    // or static turrets. They enter only after the camera is safely INSIDE.
+    if (europaTunnelCrossing && spawnEncounters && !boss && europaCaveApproach) {
+      const depth = -europaCaveApproach.distance;
+      if (europaCaveSentinelWave === 0 && depth >= 110) {
+        europaCaveSentinelWave = 1;
+        enemy('hover-walker', { x: -13, y: 15, phase: 0.5, europaCaveSentinel: true });
+        enemy('hover-walker', { x: 14, y: 18, phase: 2.7, europaCaveSentinel: true });
+        message('CATEDRAL GLACIAL · DRONES CRIOGÊNICOS À FRENTE', 'bob');
+      } else if (europaCaveSentinelWave === 1 && depth >= 730) {
+        europaCaveSentinelWave = 2;
+        enemy('hover-walker', { x: 0, y: 17, phase: 1.6, europaCaveSentinel: true });
+        message('FENDA PROFUNDA · LASERS DE GELO · USE GIRO PARA LIMPAR', 'christopher');
+      }
+    }
     const arrivalTransit = marsTransit || (!!destinationArrival && !destinationArrival.combatReady);
+    // Exactly three physical, damageable ice fighters approach during the
+    // automatic boost. Their cyan shots reuse actual swept projectile
+    // collision and difficulty, not a decorative fake animation.
+    if (
+      dynamicFlight &&
+      spawnEncounters &&
+      sectorIndex === 5 &&
+      !boss &&
+      !europaPursuitSpawned &&
+      elapsed >= EUROPA_PURSUIT_START_SECONDS &&
+      elapsed < EUROPA_PURSUIT_END_SECONDS
+    ) {
+      europaPursuitSpawned = true;
+      for (let slot = 0; slot < EUROPA_PURSUIT_SLOTS; slot++) {
+        const chase = europaPursuitAt(elapsed, slot, player.position.x, player.position.y);
+        enemy('fighter', {
+          x: chase.x,
+          y: chase.y,
+          europaPursuit: { slot },
+        });
+      }
+      message('EUROPA · CAÇAS CRISTALINOS PERSEGUINDO · DESVIE DOS DISPAROS', 'christopher');
+    }
     const sandstorm = marsArrival?.storm;
     if (sandstorm && sandstorm.phase !== marsStormPhase) {
       const previousStorm = marsStormPhase;
@@ -4625,6 +4832,25 @@ export function createGame({
         : 'TEMPESTADE DE AREIA · VENTO LATERAL';
     } else if (sectorIndex === 1 && marsCleanse === 0 && !boss && !sandstorm?.active) {
       $('attackWarning').textContent = '';
+    }
+    // Match Mars's clean, one-time mission beats during Europa entry.
+    // A smooth transition never spams HUD text or hides the reticle.
+    if (
+      dynamicFlight &&
+      sectorIndex === 5 &&
+      destinationArrival &&
+      destinationArrival.phase !== europaArrivalPhase
+    ) {
+      europaArrivalPhase = destinationArrival.phase;
+      const europaAnnouncements = {
+        orbit: ['ÓRBITA DE EUROPA · FENDA GLACIAL LOCALIZADA', 'bob'],
+        entry: ['DESCIDA NA FENDA · FRAGMENTOS DE GELO À FRENTE', 'christopher'],
+        descent: ['CÂNION CRISTALINO À VISTA · MANTENHA A FORMAÇÃO', 'bia'],
+        arena: ['EUROPA · CÂNION CONGELADO · COMBATE LIBERADO', 'bob'],
+      };
+      const beat = europaAnnouncements[destinationArrival.phase];
+      if (beat) message(beat[0], beat[1]);
+      if (destinationArrival.phase === 'arena') invuln = Math.max(invuln, 2.5);
     }
     if (marsArrival && marsArrival.phase !== marsArrivalPhase) {
       marsArrivalPhase = marsArrival.phase;
@@ -4687,7 +4913,13 @@ export function createGame({
       );
       if (destinationArrival && !boss) {
         route.label = destinationArrival.label;
-        if (destinationArrival.phase === 'entry') route.ascent -= 0.16 * destinationArrival.haze;
+        if (sectorIndex === 5) {
+          // Mars-style continuous camera dip through the glacial fissure.
+          // Do not combine generic route movement with the descent twice.
+          route.ascent = destinationArrival.cameraAscent;
+        } else if (destinationArrival.phase === 'entry') {
+          route.ascent -= 0.16 * destinationArrival.haze;
+        }
       }
       if (marsArrival && !boss) {
         route.label = marsArrival.label;
@@ -4754,6 +4986,10 @@ export function createGame({
         elapsed,
         duration: current().duration,
         bossActive: !!boss,
+        // Marvin remains part of the campaign, but cannot cover the
+        // fissure entrance or attack inside its navigable choke points.
+        suspended:
+          sectorIndex === 5 && obstacles.some(({ o, life }) => life > 0 && o.userData.europaBreach),
         player: player.position,
         fire: spawnEncounters ? (origin, target, element) => bullet(origin, target, element) : null,
         notify: (line, speaker) => message(line, speaker),
@@ -5115,20 +5351,13 @@ export function createGame({
         'tunnel',
         dynamicFlight && sectorIndex === 5 ? 'europa' : 'standard',
       );
-      o.position.z = -230;
+      o.position.z = dynamicFlight && sectorIndex === 5 ? EUROPA_CAVE_SPAWN_Z : -230;
       scene.add(o);
       obstacles.push({ o, life: 1, hp: breakableHullHealth(o.userData.kind) });
       if (dynamicFlight && sectorIndex === 5) {
-        // No fighter is allowed to phase through a solid frozen wall. Clear
-        // only this staged transit and stop spawning until the tunnel passes.
-        // A future breach encounter must physically remove its wall collision
-        // and play falling debris BEFORE allowing an enemy inside.
-        for (const e of enemies) dispose(e.o);
-        enemies = [];
-        for (const shot of hostile) hostileShotPool.release(shot);
-        hostile = [];
-        world.setEuropaTunnel?.(true);
-        message('FENDA GLACIAL · TÚNEL PROTEGIDO · SIGA A ABERTURA');
+        // Stage the real, collidable portal hundreds of units away. There is
+        // no geometry or scene swap near the player's nose.
+        message('EUROPA · FENDA GLACIAL NO HORIZONTE', 'christopher');
       } else message('TÚNEL INDUSTRIAL / SIGA AS SETAS E ELIMINE A DEFESA TERRESTRE');
     }
     const activeSubboss = enemies.some((e) => !e.dead && e.kind === 'subboss');
@@ -5266,6 +5495,13 @@ export function createGame({
 
     for (let e of enemies) {
       if (e.dead) continue;
+      if (e.europaPursuit && elapsed >= EUROPA_PURSUIT_END_SECONDS) {
+        // Chasers disengage before descent; combat and collisions after
+        // the transition retain their existing pacing.
+        dispose(e.o);
+        e.dead = true;
+        continue;
+      }
       e.age += hostileDt;
       if (dynamicFlight) {
         e.chilled = Math.max(0, e.chilled - dt);
@@ -5281,7 +5517,16 @@ export function createGame({
         if (e.kind === 'subboss')
           e.combatPhase = e.life > e.maxLife * 0.65 ? 1 : e.life > e.maxLife * 0.3 ? 2 : 3;
       }
-      if (e.role) {
+      if (e.europaPursuit) {
+        const chase = europaPursuitAt(
+          elapsed,
+          e.europaPursuit.slot,
+          player.position.x,
+          player.position.y,
+        );
+        e.o.position.set(chase.x, chase.y, chase.z);
+        e.o.rotation.z = chase.bank;
+      } else if (e.role) {
         const approachAge = fighterArrivalAge(sectorIndex, e.age, e.arrivalIndex);
         const flightStep = approachAge > 0 ? hostileDt : 0;
         e.o.position.z = fighterAdvance(e.o.position.z, approachAge, flightStep, speed);
@@ -5301,7 +5546,7 @@ export function createGame({
                   ? speed
                   : 6
                 : speed + 12);
-      if (!e.subbossTactic) {
+      if (!e.subbossTactic && !e.europaPursuit) {
         e.o.position.x = e.ground
           ? e.x + (e.airborneRobot ? Math.sin(e.age * 0.85 + e.phase) * 4 : 0)
           : e.kind === 'base'
@@ -5329,7 +5574,7 @@ export function createGame({
             part.scale.y = 0.72 + Math.sin(e.age * 16 + e.phase) * 0.25;
         });
       }
-      if (e.role) {
+      if (e.role && !e.europaPursuit) {
         const motion = fighterMotion(
           e.role,
           e.age,
@@ -5428,6 +5673,7 @@ export function createGame({
       if (
         e.cd <= 0 &&
         e.o.position.z < -15 &&
+        (!e.europaPursuit || europaPursuitAt(elapsed, e.europaPursuit.slot).fire) &&
         (!e.role || fighterMayFireAtDepth(sectorIndex, e.o.position.z)) &&
         (!(e.kind === 'walker' || e.airborneRobot) ||
           robotEyeBurstReady(e.age, e.o.position.z, e.cd))
@@ -5438,23 +5684,34 @@ export function createGame({
           const eyes = hostileMuzzles(e);
           // Every hostile projectile comes from a visible red eye, not an
           // arbitrary offset under the body. Genuine collision is unchanged.
-          for (const eye of eyes) bullet(eye, player.position.clone(), 'eye-ray');
+          for (const eye of eyes)
+            bullet(
+              eye,
+              player.position.clone(),
+              sectorIndex === 5 && dynamicFlight ? 'cryo' : 'eye-ray',
+            );
           fireGroundRobotEyes(e.o, e.age);
         } else
-          for (const offset of introductorySubboss
+          for (const offset of introductorySubboss || e.europaPursuit
             ? [0]
             : e.role
               ? fighterAimOffsets(e.role)
               : e.subbossTactic
                 ? e.subbossTactic.aim
-                : [0])
+                : [0]) {
             bullet(
               hostileMuzzles(e)[Math.abs(Math.round(offset)) % 2] ??
                 hostileMuzzles(e)[0] ??
                 e.o.position.clone(),
               player.position.clone().add(new T.Vector3(offset, 0, 0)),
-              e.subbossTactic?.spell ?? '',
+              e.europaPursuit
+                ? 'ice'
+                : sectorIndex === 5 && dynamicFlight && e.kind === 'fighter'
+                  ? 'cryo'
+                  : (e.subbossTactic?.spell ?? ''),
             );
+            if (e.europaPursuit) europaPursuitShotsFired++;
+          }
         if (e.attackGlow) e.attackGlow.visible = false;
         if (e.kind === 'subboss' && !introductorySubboss)
           for (const target of encounterPattern(
@@ -5469,15 +5726,17 @@ export function createGame({
               e.subbossTactic?.spell ?? '',
             );
         e.cd =
-          (e.kind === 'subboss'
-            ? dynamicFlight
-              ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
-              : 1.5
-            : e.role
-              ? 1.8
-              : e.kind === 'walker' || e.airborneRobot
-                ? 2.9 - (e.variant % 3) * 0.18
-                : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
+          (e.europaPursuit
+            ? 1.65
+            : e.kind === 'subboss'
+              ? dynamicFlight
+                ? subbossCooldown(sectorIndex, e.combatPhase) * (introductorySubboss ? 1.5 : 1)
+                : 1.5
+              : e.role
+                ? 1.8
+                : e.kind === 'walker' || e.airborneRobot
+                  ? 2.9 - (e.variant % 3) * 0.18
+                  : 2.3) * (dynamicFlight ? difficultyProfile(settings.difficulty).shotDelay : 1);
       }
       if (
         crossesSolid(
@@ -5817,7 +6076,7 @@ export function createGame({
         // target. Dodging changes the player's position, NOT the latched aim.
         // Transforming the point to boss-local space also preserves orbit.
         const europaTarget =
-          sectorIndex === 5 && bossIntent && ['windup', 'attack'].includes(tactics().state)
+          sectorIndex === 5 && bossIntent
             ? boss.worldToLocal(
                 new T.Vector3(bossIntent.targetX, bossIntent.targetY, player.position.z - 7),
               )
@@ -6173,6 +6432,11 @@ export function createGame({
       }
     }
     for (let b of hostile) {
+      if (dynamicFlight && sectorIndex === 5 && elapsed >= 6.3 && b.spell === 'ice') {
+        // No lingering ice bullets through the fog or onto the surface.
+        b.life = 0;
+        continue;
+      }
       const from = b.previousPosition.copy(b.o.position);
       b.age += hostileDt;
       if (b.spell === 'arcane' && b.age < 0.8)
@@ -6208,7 +6472,19 @@ export function createGame({
           previousPlayer,
         )
       ) {
-        hit(b.spell === 'fire' ? 14 : 10);
+        const shieldBeforeCryo = hp;
+        hit(b.spell === 'fire' ? 14 : b.spell === 'cryo' ? 8 : 10);
+        if (sectorIndex === 5 && dynamicFlight && b.spell === 'cryo' && hp < shieldBeforeCryo) {
+          europaCryoStacks = europaCryoHit(europaCryoStacks);
+          europaCryoHits++;
+          europaCryoNextThaw = elapsed + EUROPA_CRYO_THAW_SECONDS;
+          europaIceCoating.visible = true;
+          $('attackWarning').setAttribute?.('data-severity', 'warning');
+          $('attackWarning').textContent =
+            'LASER CONGELANTE · GIRE A NAVE ' + europaCryoStacks + 'X PARA QUEBRAR O GELO';
+          if (europaCryoHits === 1)
+            message('GELO NAS ASAS · EXECUTE UM GIRO DE 360° COM Q OU GIRO', 'christopher');
+        }
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       } else if (
@@ -6330,14 +6606,24 @@ export function createGame({
       const kind =
         sectorIndex === 7
           ? saturnHazard
-          : space
-            ? kinds[Math.floor(elapsed / 8) % kinds.length]
-            : Math.floor(elapsed / 8) % 2
-              ? 'gantry'
-              : 'reactor';
+          : dynamicFlight && sectorIndex === 5
+            ? Math.floor(elapsed / 8) % 2
+              ? 'ice-crag'
+              : 'ice-spire'
+            : space
+              ? kinds[Math.floor(elapsed / 8) % kinds.length]
+              : Math.floor(elapsed / 8) % 2
+                ? 'gantry'
+                : 'reactor';
       const o = obstaclePool.acquire(kind);
       o.position.set(
-        kind === 'gantry' ? 0 : kind === 'reactor' ? rnd(-20, 20) : rnd(-10, 10),
+        kind === 'gantry'
+          ? 0
+          : kind === 'ice-crag' || kind === 'ice-spire'
+            ? rnd(-22, 22)
+            : kind === 'reactor'
+              ? rnd(-20, 20)
+              : rnd(-10, 10),
         kind === 'satellite' || kind === 'debris' ? rnd(-3, 3) : 0,
         -230,
       );
@@ -6349,6 +6635,12 @@ export function createGame({
       if (obstacle.life <= 0) continue;
       const travel = speed * dt;
       obstacle.o.position.z += travel;
+      if (dynamicFlight && sectorIndex === 5 && obstacle.o.userData.europaBreach)
+        updateEuropaIceCavernMotion(
+          obstacle.o.getObjectByName('europa-cathedral-ice-cavern'),
+          elapsed,
+          speed,
+        );
       if (dynamicFlight && sectorIndex === 0 && obstacle.o.userData.kind === 'city-hanging-train')
         animateCityHangingTrainObstacle(obstacle.o, elapsed);
       if (sectorIndex === 5 && dynamicFlight && obstacle.o.userData.europaBreach) {
@@ -6437,10 +6729,15 @@ export function createGame({
           arr.splice(i, 1);
         }
     enemies = enemies.filter((e) => !e.dead);
-    if (dynamicFlight && sectorIndex === 5)
+    if (dynamicFlight && sectorIndex === 5) {
+      const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
       world.setEuropaTunnel?.(
-        obstacles.some(({ o, life }) => life > 0 && o.userData.kind === 'tunnel'),
+        cave
+          ? europaCaveApproachAt(cave.o.position.z, cave.o.userData.length, player.position.z)
+              .inside
+          : false,
       );
+    }
     hud.text('shieldValue', Math.ceil(hp) + ' / ' + maxHp());
     hud.text('speedValue', String(Math.round(lastFlightSpeed * 10)));
     hud.style('shield', 'width', (hp / maxHp()) * 100 + '%');
@@ -6551,26 +6848,37 @@ export function createGame({
           toggleRobot();
         }
       }
+      // Render tick has its own lexical scope; read the exact cinematic
+      // interval instead of referencing updatePiloting()'s local variable.
+      const europaAutoBoost =
+        dynamicFlight &&
+        sectorIndex === 5 &&
+        !boss &&
+        state === 'playing' &&
+        europaDescentAt(elapsed).approachBoost;
       const boostVisible = boosting && ['playing', 'collapsing'].includes(state);
       if (boostVisible) document.body.classList.add('boosting');
       else document.body.classList.remove('boosting');
       for (let f of player.userData.flames) {
         f.material.color.set(
-          boostVisible
-            ? stage() >= 16
-              ? '#f8ffff'
-              : stage() >= 12
-                ? '#d995ff'
-                : stage() >= 8
-                  ? '#ffd15e'
-                  : '#ff9a35'
-            : '#78eaff',
+          europaAutoBoost
+            ? '#e5faff'
+            : boostVisible
+              ? stage() >= 16
+                ? '#f8ffff'
+                : stage() >= 12
+                  ? '#d995ff'
+                  : stage() >= 8
+                    ? '#ffd15e'
+                    : '#ff9a35'
+              : '#78eaff',
         );
         f.scale.set(
-          boostVisible ? 1.7 : 1,
-          boostTrailLength(stage(), boostVisible) * (boostVisible ? 1.65 : 1) +
+          europaAutoBoost ? 2.05 : boostVisible ? 1.7 : 1,
+          boostTrailLength(stage(), boostVisible) *
+            (europaAutoBoost ? 2.1 : boostVisible ? 1.65 : 1) +
             Math.sin(visualTime * 30) * 0.12,
-          boostVisible ? 1.7 : 1,
+          europaAutoBoost ? 2.05 : boostVisible ? 1.7 : 1,
         );
         f.position.z = 2.3 + 1.7 * f.scale.y;
       }
@@ -7083,6 +7391,8 @@ export function createGame({
                             visible: arm.node.visible,
                             contact: arm.hand.getWorldPosition(new T.Vector3()).toArray(),
                             flash: arm.impact.visible,
+                            visualScale: arm.hand.scale.x,
+                            flashRadius: arm.userData.flashRadius ?? 0,
                           })) ?? [],
                     }
                   : null,
@@ -7252,6 +7562,15 @@ export function createGame({
           phase: e.combatPhase,
         })),
       tunnel: obstacles.some((o) => o.o.userData.kind === 'tunnel'),
+      europaCaveApproach:
+        dynamicFlight && sectorIndex === 5
+          ? (() => {
+              const cave = obstacles.find(({ o, life }) => life > 0 && o.userData.europaBreach);
+              return cave
+                ? europaCaveApproachAt(cave.o.position.z, cave.o.userData.length, player.position.z)
+                : null;
+            })()
+          : null,
       europaTunnel:
         dynamicFlight && sectorIndex === 5
           ? obstacles
@@ -7305,6 +7624,20 @@ export function createGame({
             }
           : null,
       controls: { fire: touchFire, boost: touchBoost, stickX: stick.x, stickY: stick.y },
+      europaCaveSentinels: europaCaveSentinelWave,
+      europaCryo: {
+        stacks: europaCryoStacks,
+        hits: europaCryoHits,
+        frostVisible: europaIceCoating.visible,
+        speedMultiplier: europaCryoMovement(europaCryoStacks),
+        awaitingCompletedRoll: europaCryoPendingRoll,
+      },
+      europaPursuit: {
+        active: sectorIndex === 5 && elapsed < EUROPA_PURSUIT_END_SECONDS,
+        interceptors: enemies.filter((target) => !target.dead && !!target.europaPursuit).length,
+        shotsFired: europaPursuitShotsFired,
+        liveIceShots: hostile.filter((shot) => shot.life > 0 && shot.spell === 'ice').length,
+      },
       entities: {
         enemies: enemies.length,
         shots: shots.length,
@@ -7344,6 +7677,9 @@ export function createGame({
       player.userData.flames.forEach((f) => f.material.dispose());
       cockpit?.destroy();
       shotMaterials.forEach((m) => m.dispose());
+      europaIceShotMaterial.dispose();
+      europaFrostGeometry.dispose();
+      europaFrostMaterial.dispose();
       upgradedShotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
       barrierVisual.geometry.dispose();

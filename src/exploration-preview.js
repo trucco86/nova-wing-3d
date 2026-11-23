@@ -2,10 +2,17 @@ import * as T from 'three';
 import { developerToolsAllowed } from './developer-mode.js';
 import { DEVASTADOR_ACCESS_MODULES, reactorModulesComplete } from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
+import { createShipModule } from './visuals.js';
+import {
+  reactorCinematicPose,
+  reactorGateStatus,
+  REACTOR_ARRIVAL_SECONDS,
+} from './reactor-access-cinematic.js';
 import {
   createOrbit9WalkRig,
   orbit9StickAxes,
   orbit9CameraRelativeAxes,
+  createOrbit9MotionFilter,
 } from './orbit9-locomotion.js';
 import { createOrbit9StageArt, updateOrbit9StageArt } from './orbit9-stage-art.js';
 import {
@@ -13,6 +20,7 @@ import {
   orbit9RotateCamera,
   orbit9ToggleCameraMode,
   orbit9CameraPose,
+  orbit9CameraIntersectsSolid,
 } from './orbit9-camera.js';
 import { orbit9DialogueBeat, orbit9NextDialogue } from './orbit9-dialogue.js';
 import {
@@ -24,6 +32,7 @@ import {
   ORBIT9_SPAWN,
   orbit9Blocked,
   orbit9Move,
+  orbit9SimulationDelta,
   orbit9MapPoint,
   orbit9District,
 } from './orbit9-free-roam.js';
@@ -44,6 +53,7 @@ const RUN_MULTIPLIER = 1.65;
 const SPIN_SECONDS = 0.72;
 const CLUE_POSITIONS = ORBIT9_CLUE_POSITIONS;
 const SURVIVOR = ORBIT9_SURVIVOR;
+const DOCK_RETURN = Object.freeze({ x: 17, z: 12, radius: 13 });
 const $ = (id) => document.getElementById(id);
 
 export function installOrbit9ExplorationPreview(
@@ -55,6 +65,7 @@ export function installOrbit9ExplorationPreview(
   const qaAllowed = developerToolsAllowed(hostname);
   const viewport = $('explorationViewport');
   const objective = $('explorationObjective');
+  const gateBeat = $('explorationGateBeat');
   const progress = $('explorationProgress');
   const status = $('explorationStatus');
   const districtName = $('explorationDistrict');
@@ -83,7 +94,12 @@ export function installOrbit9ExplorationPreview(
   let camera = null;
   let pilot = null;
   let stageArt = null;
+  let dockingShip = null;
   let walkRig = null;
+  const motion = createOrbit9MotionFilter();
+  let cinematicPhase = 'none';
+  let cinematicStarted = 0;
+  let departureCameraStart = null;
   let facingYaw = Math.PI;
   let spinElapsed = -1;
   const stickInput = { x: 0, z: 0, pointerId: null };
@@ -97,6 +113,7 @@ export function installOrbit9ExplorationPreview(
   let playerZ = ORBIT9_SPAWN.z;
   const cameraGoal = new T.Vector3();
   const cameraTarget = new T.Vector3();
+  const cameraAimSmooth = new T.Vector3();
   let cameraState = orbit9CameraState();
   let cameraYawVisual = 0;
   let cameraPointer = null;
@@ -119,6 +136,26 @@ export function installOrbit9ExplorationPreview(
     status.textContent = message;
     status.hidden = false;
     statusUntil = elapsed + 4.5;
+  }
+
+  function endArrival(force = false) {
+    if (cinematicPhase !== 'arrival') return;
+    if (!force && (performance.now() - cinematicStarted) / 1000 < REACTOR_ARRIVAL_SECONDS) return;
+    cinematicPhase = 'none';
+    root.dataset.reactorBeat = 'walk';
+    gateBeat.hidden = true;
+    if (pilot) pilot.visible = true;
+    // Park the selected real ship in the side docking bay. Leaving it on the
+    // center aisle would clip through the cat's head in third-person view.
+    dockingShip?.position.set(17, 3.3, 20);
+    // Resume from the real player camera, not the station-wide cinematic.
+    const pose = orbit9CameraPose(playerX, playerZ, {
+      ...cameraState,
+      aspect: camera?.aspect,
+    });
+    camera?.position.set(pose.eye.x, pose.eye.y, pose.eye.z);
+    cameraAimSmooth.set(pose.aim.x, pose.aim.y, pose.aim.z);
+    camera?.lookAt(cameraAimSmooth);
   }
 
   function near(x, z) {
@@ -155,26 +192,56 @@ export function installOrbit9ExplorationPreview(
       const position = CLUE_POSITIONS[ORBIT9_EVIDENCE.findIndex((e) => e.id === need[i].id)];
       return near(...position);
     });
+    const gate = reactorGateStatus(stats.found);
+    const dockDistance = Math.hypot(playerX - DOCK_RETURN.x, playerZ - DOCK_RETURN.z);
+    const nearest = need
+      .map(({ id }) => {
+        const idx = ORBIT9_EVIDENCE.findIndex((item) => item.id === id);
+        const [x, z] = CLUE_POSITIONS[idx];
+        return { id, distance: Math.hypot(x - playerX, z - playerZ) };
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
+    if (cinematicPhase !== 'none') {
+      gateBeat.hidden = false;
+      gateBeat.textContent =
+        cinematicPhase === 'departure'
+          ? 'PORTÃO ABERTO · NAVE RETORNANDO PELO TÚNEL INTERNO'
+          : gate.text;
+    }
     if (stats.found === stats.required) {
-      objective.textContent = 'TRÊS MÓDULOS ATIVOS · ACESSO AO NÚCLEO LIBERADO';
+      objective.textContent =
+        dockDistance <= DOCK_RETURN.radius
+          ? 'PORTÃO LIBERADO · EMBARQUE NA NAVE PARA ENTRAR NO REATOR'
+          : '3/3 ATIVADOS · VOLTE AO HANGAR (' + Math.round(dockDistance) + 'm)';
     } else if (closeClue) {
       const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === closeClue.id)?.name;
       objective.textContent = moduleName + ' · PRESSIONE ATIVAR / E';
-    } else {
-      objective.textContent = 'LOCALIZE E ATIVE CIRCUITOS, REFRIGERAÇÃO E MOTORES';
+    } else if (nearest) {
+      const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === nearest.id)?.name;
+      objective.textContent =
+        'SIGA O SINAL ' + moduleName + ' · ' + Math.round(nearest.distance) + 'm';
     }
-    scanButton.disabled = !closeClue;
+    scanButton.disabled = !closeClue || cinematicPhase !== 'none';
     talkButton.hidden = true;
     talkButton.disabled = true;
     launchCombat.hidden = stats.found !== stats.required;
+    launchCombat.disabled = cinematicPhase !== 'none' || dockDistance > DOCK_RETURN.radius;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
       beacon.core.material.emissive.set(acquired ? '#164841' : '#106a9a');
+      beacon.column.material.opacity = acquired ? 0.08 : 0.22;
+      const distance = Math.hypot(CLUE_POSITIONS[i][0] - playerX, CLUE_POSITIONS[i][1] - playerZ);
+      // No hidden mission objectives: the previous 65m cutoff made only
+      // module one visibly labeled near the hangar, even with three map pins.
+      // Keep distant labels legible but a little dimmer to protect gameplay.
+      beacon.label.material.opacity = acquired ? 0.35 : distance > 65 ? 0.8 : 1;
+      beacon.label.visible = true;
     });
   }
 
   function scan() {
+    endArrival();
     const idx = ORBIT9_EVIDENCE.findIndex(
       ({ id }, i) => !state.clues.includes(id) && near(...CLUE_POSITIONS[i]),
     );
@@ -186,9 +253,15 @@ export function installOrbit9ExplorationPreview(
     state = result.state;
     notification(
       result.accepted
-        ? 'MÓDULO ATIVADO · ' + DEVASTADOR_ACCESS_MODULES[idx].name
+        ? 'MÓDULO ATIVADO · ' +
+            DEVASTADOR_ACCESS_MODULES[idx].name +
+            ' · PORTÃO ' +
+            state.clues.length +
+            '/3'
         : 'MÓDULO JÁ ATIVADO.',
     );
+    if (result.accepted && state.clues.length === 3)
+      notification('PORTÃO DE SEGURANÇA LIBERADO · RETORNE À NAVE');
     updateUI();
   }
 
@@ -346,22 +419,80 @@ export function installOrbit9ExplorationPreview(
     // This is purely visual and leaves every existing interaction collider intact.
     stageArt = createOrbit9StageArt();
     scene.add(stageArt);
+    // The exact selectable flight chassis is also used in this short
+    // docking scene. Never replace it with a generic cinematic fighter.
+    const loadout = game.snapshot?.().loadout ?? {};
+    dockingShip = createShipModule(loadout.ship ?? 'nova7');
+    dockingShip.name = 'devastador-dock-ship-' + (loadout.ship ?? 'nova7');
+    const selectedPaint = String(loadout.color ?? '');
+    if (/^#[0-9a-f]{6}$/i.test(selectedPaint))
+      dockingShip.traverse((part) => {
+        if (part.isMesh && part.material?.userData?.paintModule) {
+          part.material = part.material.clone();
+          part.material.color.set(selectedPaint);
+        }
+      });
+    dockingShip.scale.setScalar(1.05);
+    dockingShip.position.set(0, 5, 18);
+    dockingShip.userData.visualOnly = true;
+    scene.add(dockingShip);
+    for (const side of [-1, 1]) {
+      const tunnelLight = new T.PointLight(side < 0 ? 0x5dd7ff : 0xff926a, 9, 56, 2);
+      tunnelLight.position.set(side * 15, 16, -16);
+      scene.add(tunnelLight);
+    }
     beacons = CLUE_POSITIONS.map(([x, z], i) => {
-      // An evidence marker must be beside the cat, not floating above its
-      // head and masquerading as blue fur in the third-person view. The
-      // gameplay clue coordinate stays exact; the display is a nearby prop.
-      const markerX = x + (i === 1 ? -3.4 : 3.4);
-      const markerZ = z - 3.2;
+      // The rendered activator and the real trigger must have EXACTLY the
+      // same location, otherwise the world contradicts the mini-map.
       const ring = new T.Mesh(new T.TorusGeometry(2.3, 0.22, 8, 28), line);
       ring.rotation.x = -Math.PI / 2;
-      ring.position.set(markerX, 0.4, markerZ);
+      ring.position.set(x, 0.22, z);
       scene.add(ring);
-      const core = new T.Mesh(new T.OctahedronGeometry(1.08, 1), mat('#55f2ff', '#106a9a'));
-      core.position.set(markerX, 4.9, markerZ);
+      // Flat illuminated pad, not an opaque pedestal that the pilot clips.
+      makeBox(3.2, 0.14, 3.2, line, x, 0.04, z);
+      const column = new T.Mesh(
+        new T.CylinderGeometry(0.44, 0.44, 12, 12, 1, true),
+        new T.MeshBasicMaterial({
+          color: '#41d9ff',
+          transparent: true,
+          opacity: 0.22,
+          depthWrite: false,
+          side: T.DoubleSide,
+        }),
+      );
+      column.position.set(x, 6.1, z);
+      scene.add(column);
+      const core = new T.Mesh(new T.OctahedronGeometry(1.25, 1), mat('#55f2ff', '#106a9a'));
+      core.position.set(x, 4.5, z);
       core.name = 'orbit9-clue-' + i;
       scene.add(core);
-      makeBox(3.2, 1.5, 3.2, dark, markerX, 0.7, markerZ);
-      return { core, ring };
+      // A numbered in-world label makes all three devices identifiable on
+      // phone screens; canvas textures stay local and are disposed on exit.
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0b2335';
+      ctx.fillRect(0, 0, 512, 128);
+      ctx.strokeStyle = '#65e3ff';
+      ctx.lineWidth = 7;
+      ctx.strokeRect(4, 4, 504, 120);
+      ctx.fillStyle = '#e2faff';
+      ctx.font = 'bold 35px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(i + 1 + '/3  ' + DEVASTADOR_ACCESS_MODULES[i].name, 256, 79, 480);
+      const label = new T.Sprite(
+        new T.SpriteMaterial({
+          map: new T.CanvasTexture(canvas),
+          transparent: true,
+          depthTest: false,
+        }),
+      );
+      label.name = 'reactor-module-label-' + (i + 1);
+      label.position.set(x, 13, z);
+      label.scale.set(13, 3.25, 1);
+      scene.add(label);
+      return { core, ring, column, label };
     });
     npc = new T.Group();
     const hologram = new T.Mesh(
@@ -397,7 +528,8 @@ export function installOrbit9ExplorationPreview(
       aspect: viewport.clientWidth / Math.max(1, viewport.clientHeight),
     });
     camera.position.set(initialCamera.eye.x, initialCamera.eye.y, initialCamera.eye.z);
-    camera.lookAt(initialCamera.aim.x, initialCamera.aim.y, initialCamera.aim.z);
+    cameraAimSmooth.set(initialCamera.aim.x, initialCamera.aim.y, initialCamera.aim.z);
+    camera.lookAt(cameraAimSmooth);
     mapSignals.replaceChildren();
     CLUE_POSITIONS.forEach(([x, z], i) => {
       const mark = document.createElement('span');
@@ -422,7 +554,7 @@ export function installOrbit9ExplorationPreview(
 
   function frame(stamp) {
     if (!active || !renderer) return;
-    const dt = Math.min(0.04, (stamp - (lastFrame || stamp)) / 1000);
+    const dt = orbit9SimulationDelta((stamp - (lastFrame || stamp)) / 1000);
     lastFrame = stamp;
     elapsed += dt;
     // Mission instructions stay in the top rail; transient notifications
@@ -431,7 +563,9 @@ export function installOrbit9ExplorationPreview(
       status.hidden = true;
       statusUntil = 0;
     }
-    const inputLocked = !dialoguePanel.hidden || !choicePanel.hidden;
+    // Movement stays locked until the tunnel arrival camera rail finishes.
+    // Early key or joystick input must never hard-cut the landing cinematic.
+    const inputLocked = cinematicPhase !== 'none' || !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
     const keyboardActive = keyX !== 0 || keyZ !== 0;
@@ -445,16 +579,13 @@ export function installOrbit9ExplorationPreview(
     const speed = WALK_SPEED * (boosting ? RUN_MULTIPLIER : 1);
     const previousX = playerX;
     const previousZ = playerZ;
-    const moved = orbit9Move(
-      playerX,
-      playerZ,
-      (moveX * speed * dt) / len,
-      (moveZ * speed * dt) / len,
-    );
+    const direction = motion.update(moveX / len, moveZ / len, dt);
+    const moved = orbit9Move(playerX, playerZ, direction.x * speed * dt, direction.z * speed * dt);
     playerX = moved.x;
     playerZ = moved.z;
     const actualX = playerX - previousX;
     const actualZ = playerZ - previousZ;
+    motion.stopBlockedAxes(actualX, actualZ, dt);
     const distanceTravelled = Math.hypot(actualX, actualZ);
     pilot.position.set(playerX, 1.92, playerZ);
     walkRig?.update({ distanceTravelled, dt, boost: boosting });
@@ -495,19 +626,46 @@ export function installOrbit9ExplorationPreview(
       aspect: camera.aspect,
     });
     cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
-    camera.position.lerp(cameraGoal, Math.min(1, dt * 9));
+    camera.position.lerp(cameraGoal, Math.min(1, dt * 8));
+    // Smoothed orbit transitions must not interpolate THROUGH opaque pillars.
+    if (orbit9CameraIntersectsSolid(camera.position)) camera.position.copy(cameraGoal);
     cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
-    camera.lookAt(cameraTarget);
+    cameraAimSmooth.lerp(cameraTarget, Math.min(1, dt * 10));
+    camera.lookAt(cameraAimSmooth);
     if (Math.abs(camera.fov - pose.fov) > 0.03) {
       camera.fov += (pose.fov - camera.fov) * Math.min(1, dt * 8);
       camera.updateProjectionMatrix();
     }
     for (const [i, beacon] of beacons.entries()) {
       beacon.core.rotation.y += dt * 0.8;
-      beacon.core.position.y = 4 + Math.sin(elapsed * 2 + i * 2) * 0.45;
+      beacon.core.position.y = 4.5 + Math.sin(elapsed * 2 + i * 2) * 0.45;
     }
     npc.children[0].scale.y = 1 + Math.sin(elapsed * 1.7) * 0.06;
-    updateOrbit9StageArt(stageArt, elapsed);
+    updateOrbit9StageArt(stageArt, elapsed, state.clues.length);
+    if (cinematicPhase === 'arrival' || cinematicPhase === 'departure') {
+      const seconds = Math.max(0, (stamp - cinematicStarted) / 1000);
+      const cinematic = reactorCinematicPose(
+        cinematicPhase === 'departure' ? 'departure' : 'arrival',
+        seconds,
+        departureCameraStart,
+      );
+      if (cinematic.complete) {
+        if (cinematicPhase === 'departure') {
+          close();
+          return;
+        }
+        endArrival();
+      } else {
+        pilot.visible = false;
+        dockingShip.visible = true;
+        dockingShip.position.set(cinematic.ship.x, cinematic.ship.y, cinematic.ship.z);
+        camera.position.set(cinematic.eye.x, cinematic.eye.y, cinematic.eye.z);
+        cameraAimSmooth.set(cinematic.aim.x, cinematic.aim.y, cinematic.aim.z);
+        camera.lookAt(cameraAimSmooth);
+        camera.fov = cinematic.fov;
+        camera.updateProjectionMatrix();
+      }
+    } else dockingShip.visible = true;
     renderer.render(scene, camera);
     updateUI();
     rafId = requestAnimationFrame(frame);
@@ -527,6 +685,10 @@ export function installOrbit9ExplorationPreview(
     cameraState = orbit9CameraState();
     cameraYawVisual = 0;
     cameraPointer = null;
+    motion.reset();
+    cinematicPhase = 'arrival';
+    departureCameraStart = null;
+    cinematicStarted = performance.now();
     held.clear();
     resetStick();
     boostTouchHeld = false;
@@ -536,11 +698,14 @@ export function installOrbit9ExplorationPreview(
     dialogueIndex = -1;
     root.hidden = false;
     root.dataset.mode = 'reactor-access';
+    root.dataset.reactorBeat = 'arrival';
+    gateBeat.hidden = false;
+    gateBeat.textContent = reactorGateStatus(0).text;
     $('explorationTitle').textContent = 'DEVASTADOR · ACESSO AO REATOR';
     $('explorationEyebrow').textContent = 'FASE 04 · DESEMBARQUE · REATOR';
     exitButton.textContent = 'PAUSAR / MENU';
     scanButton.textContent = 'ATIVAR';
-    launchCombat.textContent = 'ENTRAR NO REATOR · ENFRENTAR O NÚCLEO';
+    launchCombat.textContent = 'RETORNAR À NAVE · TÚNEL DO REATOR';
     talkButton.hidden = true;
     choicePanel.hidden = true;
     dialoguePanel.hidden = true;
@@ -555,7 +720,9 @@ export function installOrbit9ExplorationPreview(
       return false;
     }
     const pilotName = game.snapshot?.().loadout?.pilotName ?? 'FIVE CATS';
-    notification(pilotName + ': Ative os 3 módulos para liberar o núcleo da Devastador.');
+    notification(
+      pilotName + ': O PORTÃO DO REATOR ESTÁ BLOQUEADO. Ative os três módulos para abrir.',
+    );
     updateUI();
     rafId = requestAnimationFrame(frame);
     return true;
@@ -571,10 +738,16 @@ export function installOrbit9ExplorationPreview(
     spinElapsed = -1;
     spinButton.classList.remove('pressed');
     cameraPointer = null;
+    cinematicPhase = 'none';
+    departureCameraStart = null;
+    motion.reset();
+    gateBeat.hidden = true;
+    root.dataset.reactorBeat = 'none';
     dialogueIndex = -1;
     dialoguePanel.hidden = true;
     choicePanel.hidden = true;
     root.hidden = true;
+    for (const beacon of beacons) beacon.label.material.map?.dispose();
     beacons = [];
     mapSignals.replaceChildren();
     if (renderer) {
@@ -592,6 +765,7 @@ export function installOrbit9ExplorationPreview(
     renderer = scene = camera = pilot = npc = null;
     walkRig = null;
     stageArt = null;
+    dockingShip = null;
     rafId = 0;
     integratedRequest = null;
   }
@@ -601,11 +775,33 @@ export function installOrbit9ExplorationPreview(
       notification('ACESSO BLOQUEADO · ATIVE OS TRÊS MÓDULOS');
       return;
     }
+    if (Math.hypot(playerX - DOCK_RETURN.x, playerZ - DOCK_RETURN.z) > DOCK_RETURN.radius) {
+      notification('VOLTE À NAVE NO HANGAR ANTES DE ENTRAR NO REATOR.');
+      return;
+    }
     // Continue the SAME Stage 04 flight: the original reactor boss spawns
     // after the normal encounter warning. Never start a second QA scenario.
     const resumed = integratedRequest.complete([...state.clues]);
-    if (resumed) close();
-    else notification('NÃO FOI POSSÍVEL LIBERAR O NÚCLEO.');
+    if (resumed) {
+      // Keep the SAME actual enclosed 3D tunnel visible while the flight
+      // renderer resumes behind this full-screen overlay. This removes
+      // the momentary space skybox before the reactor boss becomes active.
+      departureCameraStart = {
+        eye: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        aim: { x: cameraAimSmooth.x, y: cameraAimSmooth.y, z: cameraAimSmooth.z },
+        fov: camera.fov,
+      };
+      cinematicPhase = 'departure';
+      cinematicStarted = performance.now();
+      motion.reset();
+      held.clear();
+      boostTouchHeld = false;
+      root.dataset.reactorBeat = 'departure';
+      launchCombat.disabled = true;
+      gateBeat.hidden = false;
+      gateBeat.textContent = 'PORTÃO ABERTO · ENTRANDO PELO TÚNEL DO REATOR';
+      updateUI();
+    } else notification('NÃO FOI POSSÍVEL LIBERAR O NÚCLEO.');
   }
 
   function leaveToPause() {
@@ -640,9 +836,12 @@ export function installOrbit9ExplorationPreview(
       ArrowRight: 'right',
     }[e.code];
     if (direction) {
+      if (cinematicPhase === 'departure') return;
+      endArrival();
       held.add(direction);
       e.preventDefault();
     } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+      endArrival();
       held.add('boost');
       e.preventDefault();
     } else if (e.code === 'KeyE' && !e.repeat) {
@@ -748,7 +947,8 @@ export function installOrbit9ExplorationPreview(
       'px)';
   }
   listen(stick, 'pointerdown', (event) => {
-    if (!active || stickInput.pointerId !== null) return;
+    if (!active || stickInput.pointerId !== null || cinematicPhase === 'departure') return;
+    endArrival();
     event.preventDefault();
     stickInput.pointerId = event.pointerId;
     stick.setPointerCapture?.(event.pointerId);
@@ -766,7 +966,8 @@ export function installOrbit9ExplorationPreview(
     });
   }
   listen(boostButton, 'pointerdown', (event) => {
-    if (!active) return;
+    if (!active || cinematicPhase === 'departure') return;
+    endArrival();
     event.preventDefault();
     boostTouchHeld = true;
     boostButton.classList.add('pressed');
@@ -803,8 +1004,10 @@ export function installOrbit9ExplorationPreview(
           orbit9Blocked(x, z)
         )
           return false;
+        endArrival(true);
         playerX = x;
         playerZ = z;
+        motion.reset();
         // Developer/QA teleport is not player movement. Never interpolate the
         // camera across dozens of meters through the station's physical walls.
         // Snapping immediately also makes screenshots of each district reliable.
@@ -818,6 +1021,7 @@ export function installOrbit9ExplorationPreview(
         });
         cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
         cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
+        cameraAimSmooth.copy(cameraTarget);
         camera?.position.copy(cameraGoal);
         camera?.lookAt(cameraTarget);
         updateUI();
@@ -845,10 +1049,23 @@ export function installOrbit9ExplorationPreview(
               }
             : null,
           gait: walkRig?.snapshot() ?? null,
+          moduleVisuals: beacons.map((beacon, i) => ({
+            id: DEVASTADOR_ACCESS_MODULES[i].id,
+            x: beacon.core.position.x,
+            z: beacon.core.position.z,
+            visible: beacon.label.visible,
+          })),
           stick: { x: stickInput.x, z: stickInput.z },
           boosting: held.has('boost') || boostTouchHeld,
           spinning: spinElapsed >= 0,
           cameraVisualYaw: cameraYawVisual,
+          cinematic: {
+            phase: cinematicPhase,
+            gate: reactorGateStatus(state.clues.length),
+            gateProgress: stageArt?.userData?.reactorGate?.progress ?? 0,
+            shipModel: dockingShip?.name ?? null,
+          },
+          motion: motion.snapshot(),
           district: orbit9District(playerX, playerZ).id,
           camera: { ...cameraState },
           cameraEye: camera

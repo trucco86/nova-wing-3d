@@ -6,12 +6,15 @@ import {
   ORBIT9_SURVIVOR,
   ORBIT9_DISTRICTS,
   ORBIT9_OBSTACLES,
+  ORBIT9_SCENERY_SOLIDS,
   ORBIT9_SPAWN,
   orbit9Blocked,
   orbit9Move,
+  orbit9SimulationDelta,
   orbit9District,
   orbit9MapPoint,
 } from '../src/orbit9-free-roam.js';
+import { orbit9CameraPose, orbit9CameraIntersectsSolid } from '../src/orbit9-camera.js';
 
 test('Orbit-9 offers three non-linear regions and reachable story landmarks', () => {
   assert.equal(ORBIT9_DISTRICTS.length, 4);
@@ -51,4 +54,85 @@ test('district minimap positions are normalized and never outside the overlay', 
   assert.equal(orbit9MapPoint(-56, -100).x, 0);
   assert.equal(orbit9MapPoint(56, 18).y, 100);
   assert.equal(orbit9MapPoint(500, 500).x, 100);
+});
+
+test('QA180 decorative carrier walls are solid, cannot be crossed by boost, and do not conceal mission modules', () => {
+  assert.equal(ORBIT9_SCENERY_SOLIDS.length, 13);
+  for (const [x, z] of [
+    [-50, -28],
+    [-51, -80],
+    [33.5, -36],
+    [-33.5, 10],
+  ]) {
+    assert.equal(orbit9Blocked(x, z), true, 'visible floor-height wall has a gameplay collider');
+  }
+  for (const [x, z] of ORBIT9_CLUE_POSITIONS) {
+    assert.equal(orbit9Blocked(x, z), false, 'module remains reachable after adding solid scenery');
+  }
+  const sweep = orbit9Move(0, -25, 0, -70);
+  assert.ok(sweep.z > -34, 'large movement cannot tunnel through the reactor core');
+  const consoleStop = orbit9Move(-44, -28, -15, 0);
+  assert.ok(consoleStop.x > -48.15, 'the cat cannot step through the science console');
+});
+
+test('QA180 camera remains outside low scenic walls even when the player stands next to one', () => {
+  const pose = orbit9CameraPose(-46, -28, { yaw: -Math.PI / 2, mode: 'follow', aspect: 16 / 9 });
+  assert.equal(pose.clipped, true, 'lens retracts before an opaque lab console');
+  assert.equal(orbit9CameraIntersectsSolid(pose.eye), false, 'lens never enters lab console');
+  assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 3, z: -28 }), true);
+  assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 20, z: -28 }), false);
+});
+
+test('QA181 all reactor objectives and the return dock are connected by traversable solid corridors', () => {
+  let player = { ...ORBIT9_SPAWN };
+  const waypoints = [
+    [0, -18],
+    [-35, -18], // CIRCUITOS within interaction radius
+    [43, -18],
+    [43, -54], // REFRIGERAÇÃO, east of maintenance rack
+    [43, -15],
+    [-43, -15],
+    [-43, -78.5],
+    [-37, -78.5], // MOTORES, archive
+    [-43, -78.5],
+    [-43, -15],
+    [12, -15],
+    [12, 11], // hangar ship docking bay
+  ];
+  for (const [x, z] of waypoints) {
+    const distance = Math.hypot(x - player.x, z - player.z);
+    const steps = Math.ceil(distance / 0.45);
+    for (let i = 0; i < steps; i++) {
+      player = orbit9Move(
+        player.x,
+        player.z,
+        (x - player.x) / (steps - i),
+        (z - player.z) / (steps - i),
+      );
+      assert.equal(orbit9Blocked(player.x, player.z), false);
+    }
+    assert.ok(
+      Math.hypot(x - player.x, z - player.z) < 0.08,
+      'P0 blocked corridor before waypoint (' + x + ',' + z + ')',
+    );
+  }
+  assert.ok(Math.hypot(player.x - 17, player.z - 12) < 13, 'return to fighter docking range');
+});
+
+test('QA182 low-FPS simulation keeps physical motion without tunneling or tab-resume jumps', () => {
+  assert.equal(orbit9SimulationDelta(0.016), 0.016);
+  assert.equal(orbit9SimulationDelta(0.04), 0.04);
+  assert.equal(orbit9SimulationDelta(0.5), 0.25);
+  assert.equal(orbit9SimulationDelta(Infinity), 0);
+  assert.equal(orbit9SimulationDelta(-1), 0);
+  // Two slow rendered frames should cover real walking distance instead
+  // of only 2 * 40ms. All contacts still pass through swept resolution.
+  let player = { x: 0, z: 12 };
+  for (let frame = 0; frame < 2; frame++) {
+    const dt = orbit9SimulationDelta(0.25);
+    player = orbit9Move(player.x, player.z, 0, -11 * dt);
+  }
+  assert.ok(player.z < 7, 'slow render FPS cannot freeze exploration locomotion');
+  const largeBoost = orbit9Move(0, -25, 0, -22 * orbit9SimulationDelta(0.5));
+  assert.ok(largeBoost.z > -34, 'one slow boost frame cannot cross the reactor wall');
 });

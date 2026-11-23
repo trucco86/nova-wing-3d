@@ -38,6 +38,35 @@ export function createOrbit9StageArt() {
     definitions[type].push({ x, y, z, w, h, d, ry });
   };
 
+  // The reactor gate is readable from the dock, not an arbitrary mission
+  // prompt. Steel lintels and red safety bars frame three lock indicators.
+  // They share existing GPU instanced finishes; no new invisible colliders.
+  for (const side of [-1, 1]) {
+    emit('armor', side * 11.3, 11, -31.5, 1.8, 19, 2.5);
+    emit('hazard', side * 10.15, 11.3, -30.6, 0.23, 17, 0.25);
+    emit('plating', side * 16, 17.9, -32, 7, 1.6, 3.1);
+  }
+  emit('hull', 0, 19.8, -31.5, 27, 2.6, 3.2);
+  emit('hazard', 0, 18, -30.7, 17, 0.35, 0.3);
+  for (let i = 0; i < 3; i++) {
+    emit('plating', -5.5 + i * 5.5, 21.5, -30.7, 4.2, 2.2, 0.5);
+  }
+  // This solid-backed terminus keeps the flight tunnel framed by steel
+  // rather than open stars while the camera follows the ship to the gate.
+  for (const z of [-29, -19, -9, 1, 11, 21, 31, 41]) {
+    for (const side of [-1, 1]) {
+      emit('armor', side * 20, 12, z, 1.1, 19.5, 2.2);
+      emit('cyan', side * 19.2, 12.7, z + 0.85, 0.25, 10.2, 0.18);
+      emit('conduit', side * 18.6, 19.8, z, 1.3, 1.2, 7);
+      emit('hazard', side * 17.4, 1.4, z, 1.3, 0.1, 0.8);
+    }
+    emit('plating', 0, 22, z, 42, 1.6, 2.2);
+    emit('cyan', 0, 20.7, z + 0.9, 13, 0.2, 0.22);
+    emit('amber', 0, 1.1, z, 7, 0.08, 0.3);
+  }
+  emit('hull', 0, 10, 44.0, 49, 22, 1.2);
+  emit('cyan', 0, 11.6, 43.28, 20, 0.25, 0.18);
+
   // Devastador arrival hangar: the landing view needs architectural depth
   // directly ahead, not only wall panels 55m to either side. Open-framed
   // pressure bulkheads preserve a clear CENTRAL navigation lane. Every part
@@ -63,7 +92,9 @@ export function createOrbit9StageArt() {
   // while the camera follows the cat. The structures sit outside the
   // entire x=-12..12 main walkable lane.
   for (const side of [-1, 1]) {
-    for (const z of [10, -6, -22]) {
+    // The rear bay is behind the science trigger, never on top of module 1.
+    // Positions match the solid architecture in orbit9-free-roam.js.
+    for (const z of [10, -6, -36]) {
       emit('hull', side * 33.5, 4.5, z, 8.5, 8, 8.3);
       emit('armor', side * 29.2, 5.6, z, 1.0, 9.5, 7.5);
       emit('glass', side * 28.6, 6.5, z, 0.26, 4.5, 5.3);
@@ -255,15 +286,57 @@ export function createOrbit9StageArt() {
   faceRing.receiveShadow = false;
   root.add(faceRing);
   root.userData.reactorFaceRing = faceRing;
+  // The three modules energize an actual moving double door in the 3D
+  // station, not merely a HUD counter. All five meshes are decorative.
+  const gateMaterial = new T.MeshStandardMaterial({
+    color: '#516c83',
+    metalness: 0.65,
+    roughness: 0.31,
+    emissive: '#172d45',
+    emissiveIntensity: 0.33,
+  });
+  const doors = [-1, 1].map((side) => {
+    const mesh = new T.Mesh(new T.BoxGeometry(6.7, 13.5, 0.8), gateMaterial);
+    mesh.name = side < 0 ? 'devastador-reactor-gate-left' : 'devastador-reactor-gate-right';
+    mesh.position.set(side * 3.38, 9.3, -31.28);
+    mesh.userData.visualOnly = true;
+    root.add(mesh);
+    return { mesh, side };
+  });
+  const locks = [0, 1, 2].map((i) => {
+    const mesh = new T.Mesh(
+      new T.BoxGeometry(2.0, 0.75, 0.28),
+      new T.MeshBasicMaterial({ color: '#fa755c', toneMapped: false }),
+    );
+    mesh.name = 'devastador-reactor-lock-' + (i + 1);
+    mesh.position.set((i - 1) * 5.5, 21.3, -30.3);
+    mesh.userData.visualOnly = true;
+    root.add(mesh);
+    return mesh;
+  });
+  root.userData.reactorGate = { doors, locks, unlockedAt: null, progress: 0, modules: 0 };
   root.userData.instanceCounts = Object.fromEntries(
     FORMATS.map((name) => [name, definitions[name].length]),
   );
   return root;
 }
 
-export function updateOrbit9StageArt(root, elapsed) {
+export function updateOrbit9StageArt(root, elapsed, activatedCount = 0) {
   if (!root?.userData?.diagnosticDial) return;
   const t = Number.isFinite(elapsed) ? elapsed : 0;
+  const gate = root.userData.reactorGate;
+  if (gate) {
+    const count = Math.max(0, Math.min(3, Math.trunc(activatedCount) || 0));
+    gate.modules = count;
+    gate.locks.forEach((mesh, i) => {
+      mesh.material.color.set(i < count ? '#73e8ff' : '#fa755c');
+    });
+    if (count === 3 && gate.unlockedAt === null) gate.unlockedAt = t;
+    const pct =
+      gate.unlockedAt === null ? 0 : Math.max(0, Math.min(1, (t - gate.unlockedAt) / 1.35));
+    gate.progress = pct * pct * (3 - 2 * pct);
+    for (const { mesh, side } of gate.doors) mesh.position.x = side * (3.38 + 8.4 * gate.progress);
+  }
   root.userData.diagnosticDial.rotation.z = t * 0.16;
   if (root.userData.reactorFaceRing) root.userData.reactorFaceRing.rotation.z = -t * 0.12;
 }

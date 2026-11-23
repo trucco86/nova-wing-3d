@@ -11906,3 +11906,179 @@ body.intermission-active #shop #nextSector {
     width: 45px;
   }
 }
+
+/* QA177: reactor boss owns the center HUD lane. Mission-title text is redundant
+   once the actual boss HP is on screen. Alerts/radio move to a dedicated side
+   lane so they never print through the boss name, health bar or instructions. */
+body.in-mission:has(#bossHUD:not([hidden])) #hud .mission {
+  visibility: hidden;
+}
+body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+  top: max(222px, calc(env(safe-area-inset-top, 0px) + 205px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  right: auto;
+  transform: none;
+  width: min(330px, calc(100vw - 32px));
+  max-height: min(24vh, 132px);
+  align-items: flex-start;
+}
+body.in-mission:has(#bossHUD:not([hidden])) #hudNotices > #comms.active {
+  max-width: 100%;
+}
+/* Do not pile a radio conversation on top of a critical attack/warning.
+   The radio DOM and message remain intact until a priority alert clears. */
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#criticalWarning:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#shieldWarning:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#bossIncoming:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#attackWarning:not(:empty):not([data-severity='info']))
+  > #comms.active {
+  display: none;
+}
+/* Portrait: boss HP and the warning stack occupy opposite side lanes;
+   preserve the central targeting corridor and all touch controls. */
+@media (max-width: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(272px, calc(env(safe-area-inset-top, 0px) + 246px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: min(196px, calc(100vw - 142px));
+    max-height: min(19vh, 86px);
+  }
+}
+/* Short landscape: place the radio/alerts below the left launch controls,
+   never across the central boss name and HP. */
+@media (min-width: 551px) and (max-height: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(218px, calc(env(safe-area-inset-top, 0px) + 196px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: min(245px, 32vw);
+    max-height: min(29vh, 90px);
+  }
+}
+
+/* QA178: boss warning lane stays above the aiming horizon at every viewport.
+   Preserve side-by-side boss HP and alerts without masking RPG, score or
+   thumb targets. Previously portrait started at 272px and landscape at
+   218px, pushing warning/impact labels into the central game corridor. */
+@media (max-width: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(154px, calc(env(safe-area-inset-top, 0px) + 136px));
+  }
+
+  /* Chromium desktop-sized to portrait must use the same bounded boss card
+     as touch devices, otherwise the legacy 84% width overflows the screen. */
+  body.in-mission #bossHUD:not([hidden]) {
+    position: fixed;
+    top: max(178px, calc(env(safe-area-inset-top, 0px) + 160px));
+    left: auto;
+    right: max(9px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+    width: clamp(100px, 30vw, 142px);
+    padding: 5px 6px;
+    border: 1px solid #eaa2b16e;
+    border-radius: 9px;
+    background: #140c20db;
+    z-index: 27;
+  }
+}
+@media (min-width: 551px) and (max-height: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    /* Short landscape: the orbit and RPG controls own the left third,
+       while the boss HP is central and the radar owns the right edge.
+       Reserve a short readable lane between boss HP and radar; placing
+       notices at x=236 crossed the large orbit/RPG wrapper and boss art. */
+    top: max(151px, calc(env(safe-area-inset-top, 0px) + 136px));
+    left: auto;
+    right: max(130px, env(safe-area-inset-right, 0px));
+    transform: none;
+    width: min(190px, 28vw, calc(100vw - 365px));
+    max-height: min(11vh, 42px);
+    overflow: hidden;
+  }
+}
+
+/* QA179: enclosed 3D docking / reactor tunnel. The WebGL scene, rather than
+   the starfield, owns both halves of the transfer. Status floats above the
+   model without stealing touch controls. */
+.exploration-viewport .exploration-gate-beat {
+  position: absolute;
+  z-index: 31;
+  top: clamp(94px, 18vh, 150px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(420px, calc(100vw - 34px));
+  padding: 9px 16px;
+  border: 1px solid #fa755c99;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #09121fe8, #142b3de5, #09121fe8);
+  color: #ffe4ca;
+  box-shadow:
+    0 0 26px #ff82552b,
+    inset 0 0 12px #ff825519;
+  font: 700 clamp(10px, 2.5vw, 13px)/1.4 monospace;
+  text-align: center;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.exploration-viewport .exploration-gate-beat[hidden] {
+  display: none;
+}
+.exploration-overlay[data-reactor-beat='departure'] .exploration-controls,
+.exploration-overlay[data-reactor-beat='departure'] .exploration-mini-map {
+  opacity: 0;
+  pointer-events: none;
+}
+.exploration-overlay[data-reactor-beat='departure'] .exploration-gate-beat {
+  color: #c4faff;
+  border-color: #73e8ff99;
+  box-shadow: 0 0 30px #73e8ff33;
+}
+@media (max-width: 550px) {
+  .exploration-viewport .exploration-gate-beat {
+    top: 90px;
+    padding: 7px 10px;
+    font-size: 10px;
+    max-width: calc(100vw - 24px);
+  }
+}
+
+/* QA182: portrait reactor HUD. QA181 390x844 screenshot showed the critical
+   warning directly over the left strategy/orbit controls (both at y~145).
+   Preserve the boss HP on the right, controls on the left and reserve a
+   separate left-side notification lane BELOW the control cluster. */
+@media (max-width: 550px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(250px, calc(env(safe-area-inset-top, 0px) + 230px));
+    max-height: min(18vh, 90px);
+  }
+}
+
+/* QA184: 320px portrait has less vertical room than 390px. The reactor
+   notices must clear the left strategy chip without pushing the priority
+   alert or hit-feedback below the top half of the gameplay. At 390px the
+   QA182 250px rail remains unchanged, where it clears the orbit controls. */
+@media (max-width: 360px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(220px, calc(env(safe-area-inset-top, 0px) + 200px));
+  }
+}
+
+/* QA185: 320px desktop emulation uses a fine pointer and keeps its orbit
+   overlay at y≈185–235. A shared QA184 220px alert rail intersects that
+   orbit overlay in the desktop Playwright project. Coarse/touch retains
+   the previously verified 220px placement needed for narrow-phone
+   emergency and hit-feedback thresholds. */
+@media (pointer: fine) and (max-width: 360px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(252px, calc(env(safe-area-inset-top, 0px) + 232px));
+  }
+}

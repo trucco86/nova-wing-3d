@@ -134,7 +134,9 @@ test('QA118: actual stage transitions use ambient grading and one distant-field 
     if (['asteroids', 'ice', 'nebula', 'sun'].includes(theme)) {
       const field = scene.getObjectByName('premium-instanced-' + theme + '-far-field');
       assert.ok(field?.isInstancedMesh, theme + ': one instanced field');
-      assert.equal(field.count, 60);
+      // Europa now has a unique hero vault instead of twenty redundant
+      // glacial ridges; all other themed far fields retain 60 instances.
+      assert.equal(field.count, theme === 'ice' ? 40 : 60);
       assert.equal(field.userData.visualOnly, true);
       const m = new T.Matrix4();
       for (let i = 0; i < field.count; i++) {

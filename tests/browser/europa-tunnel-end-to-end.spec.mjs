@@ -22,9 +22,35 @@ test('Europa ice tunnel breaks before a fighter enters, drops debris and returns
   expect(start.europaTunnel[0].panelVisible).toBe(true);
   expect(start.europaTunnel[0].warningVisible).toBe(false);
   expect(start.entities.enemies).toBe(0);
-  expect(start.europaSurface.tunnelActive).toBe(true);
-  expect(start.europaSurface.groundVisible).toBe(false);
+  // QA170+ spawns the cave far away. The outdoor surface stays visible
+  // until the moving physical opening reaches the player: an immediate
+  // tunnelActive=true would reproduce the old abrupt ground transition.
+  expect(start.europaCaveApproach.phase).toBe('distant');
+  expect(start.europaSurface.tunnelActive).toBe(false);
+  expect(start.europaSurface.groundVisible).toBe(true);
   expect(start.europaSurface.orbitalVisible).toBe(false);
+  await page.screenshot({
+    path: info.outputPath('europa-cave-distant-' + info.project.name + '.png'),
+  });
+
+  // Traverse the actual distant approach with the real game step. No
+  // developer teleport, mock state or forced world shader transition.
+  const entry = await page.evaluate(() => {
+    const { game, advance } = window.fixture;
+    for (let i = 0; i < 850; i++) {
+      advance(0.05, { renderAfter: false });
+      const current = game.snapshot();
+      if (current.europaCaveApproach?.inside && current.europaSurface.tunnelActive) return current;
+      if (!current.tunnel) break;
+    }
+    return game.snapshot();
+  });
+  expect(entry.tunnel, 'the real long cave remains present during entry').toBe(true);
+  expect(entry.europaCaveApproach?.inside, 'the pilot must physically enter the mouth').toBe(true);
+  expect(entry.europaSurface.tunnelActive).toBe(true);
+  expect(entry.europaSurface.groundVisible).toBe(false);
+  expect(entry.europaTunnel[0].breached).toBe(false);
+  await page.evaluate(() => window.fixture.advance(0, { renderAfter: true }));
   await page.screenshot({
     path: info.outputPath('europa-tunnel-intact-' + info.project.name + '.png'),
   });

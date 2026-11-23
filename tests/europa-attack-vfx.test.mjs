@@ -36,6 +36,15 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
       assert.ok(Math.abs(arm.hand.position.z - (aim.z - 3)) < 0.01);
       assert.ok(arm.forearm.scale.z > 35);
       assert.equal(arm.impact.visible, true, 'visible flash attaches to claw tip');
+      assert.ok(arm.hand.scale.x <= 0.34, 'camera-near claw stays compact to keep boss in frame');
+      assert.ok(
+        arm.forearm.scale.x <= 0.62,
+        'forearm tapers instead of covering the targeting lane',
+      );
+      assert.ok(
+        arm.userData.flashRadius < 0.35,
+        'hit flash cannot become a giant screen-filling disc',
+      );
     }
     // Telegraph and strike use the same point; any new dodge moves *pilot*,
     // not the arm's already committed target.
@@ -45,8 +54,25 @@ test('Colossus uses real visible segmented forearms and claws instead of crossin
         new T.Vector3(aim.x - 6.5, aim.y, aim.z - 3),
       ) < 0.01,
     );
-    animateEuropaAttackVfx(effect, 12, 3, 'maneuver', 'cryo-pincer');
-    assert.ok(effect.children.every((node) => !node.visible));
+    animateEuropaAttackVfx(effect, 12, 3, 'recovery', 'cryo-pincer', { claw: 0 }, aim);
+    assert.ok(
+      effect.userData.arms.every((node) => node.visible),
+      'claws remain attached while retracting',
+    );
+    const recovery = effect.userData.strikers.map((arm) => arm.hand.position.clone());
+    animateEuropaAttackVfx(effect, 13.6, 3, 'recovery', 'cryo-pincer', { claw: 0 }, aim);
+    for (const [i, arm] of effect.userData.strikers.entries()) {
+      assert.ok(arm.node.visible, 'limb must never blink off between attacks');
+      assert.ok(arm.hand.position.z < recovery[i].z, 'each claw retracts visibly into body');
+      assert.equal(arm.impact.visible, false, 'only strike flash may disappear');
+    }
+    animateEuropaAttackVfx(effect, 14.5, 3, 'maneuver', 'cryo-pincer');
+    assert.ok(
+      effect.userData.arms.every((node) => node.visible),
+      'idle claws remain part of Colossus',
+    );
+    assert.ok(effect.userData.shards.every((node) => !node.visible));
+    assert.equal(effect.userData.quake.visible, false);
   } finally {
     effect.traverse((node) => node.geometry?.dispose());
     effect.userData.materials.forEach((material) => material.dispose());
@@ -69,7 +95,7 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
       1,
     );
     const hammer = effect.userData.strikers[1];
-    assert.equal(effect.userData.strikers[0].node.visible, false);
+    assert.equal(effect.userData.strikers[0].node.visible, true, 'idle claw stays on the body');
     assert.equal(hammer.node.visible, true);
     assert.ok(hammer.hand.position.y > aim.y + 35, 'hammer visibly raises overhead');
     assert.ok(effect.userData.quake.visible);
@@ -88,7 +114,19 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
     assert.ok(hammer.hand.position.y < aim.y);
     assert.ok(hammer.hand.position.z > aim.z - 9, 'hammer reaches the targeted lane');
     assert.equal(hammer.impact.visible, true);
-    assert.equal(effect.userData.strikers[0].node.visible, false);
+    assert.ok(
+      effect.userData.quake.position.z <= aim.z - 45,
+      'ice-quake ring stays behind the ship and never fills the camera near-plane',
+    );
+    assert.ok(
+      effect.userData.quake.scale.x < 1.1,
+      'impact shock cannot hide the boss across the whole frame',
+    );
+    assert.equal(
+      effect.userData.strikers[0].node.visible,
+      true,
+      'non-striking hand remains attached',
+    );
     assert.ok(effect.userData.shards.every((shard) => shard.visible && shard.scale.y > 1));
 
     animateEuropaAttackVfx(
@@ -104,9 +142,10 @@ test('ice-quake is a distinct single-arm overhead hammer, while pincer closes wi
     );
     assert.equal(
       effect.userData.strikers[0].node.visible,
-      false,
-      'destroyed left module cannot strike',
+      true,
+      'destroyed module hangs limp instead of vanishing from the boss',
     );
+    assert.equal(effect.userData.strikers[0].impact.visible, false, 'damaged claw cannot hit');
     assert.equal(effect.userData.strikers[1].node.visible, true, 'surviving arm still attacks');
     assert.equal(effect.userData.quake.visible, false);
     assert.ok(effect.userData.shards.every((shard) => !shard.visible));
@@ -141,7 +180,7 @@ test('physical Colossus strike honors rotated world target without moving actual
       localAim,
     );
     assert.equal(fx.userData.strikers[0].node.visible, true);
-    assert.equal(fx.userData.strikers[1].node.visible, false);
+    assert.equal(fx.userData.strikers[1].node.visible, true, 'other claw must remain attached');
     animateBossSignature(
       boss,
       5,
@@ -175,6 +214,41 @@ test('physical Colossus strike honors rotated world target without moving actual
     const other = createBossModel(SECTORS[3], 3, true);
     assert.equal(other.getObjectByName('boss-europa-attack-vfx'), undefined);
     disposeBoss(other);
+  } finally {
+    disposeBoss(boss);
+  }
+});
+
+test('Colossus persistent claws and articulated joint recovery are deterministic across replay and sector', () => {
+  const boss = createBossModel(SECTORS[5], 5, true);
+  const effect = boss.getObjectByName('boss-europa-attack-vfx');
+  const aim = new T.Vector3(8, 17, 160);
+  try {
+    const positions = [];
+    for (const [clock, state] of [
+      [8.02, 'windup'],
+      [9.9, 'windup'],
+      [10.8, 'attack'],
+      [11.6, 'recovery'],
+      [13, 'recovery'],
+      [14.1, 'maneuver'],
+    ]) {
+      const claw = state === 'attack' ? 0.85 : clock < 8.1 ? 0.01 : 0.28;
+      animateEuropaAttackVfx(effect, clock, 2, state, 'cryo-pincer', { claw }, aim);
+      assert.equal(effect.userData.strikers.filter((arm) => arm.node.visible).length, 2);
+      assert.ok(
+        effect.userData.strikers.every(
+          (arm) => Number.isFinite(arm.forearm.scale.z) && arm.forearm.scale.z > 0,
+        ),
+      );
+      positions.push(effect.userData.strikers[0].hand.position.toArray());
+    }
+    const atRecovery = positions[4];
+    animateEuropaAttackVfx(effect, 13, 2, 'recovery', 'cryo-pincer', { claw: 0.25 }, aim);
+    assert.deepEqual(effect.userData.strikers[0].hand.position.toArray(), atRecovery);
+    assert.ok(positions[1][2] > positions[0][2], 'left arm raises before contact');
+    assert.ok(positions[4][2] < positions[3][2], 'physical claw retracts after contact');
+    assert.ok(positions[5][2] < positions[1][2], 'idle claw is close to its parent boss');
   } finally {
     disposeBoss(boss);
   }
