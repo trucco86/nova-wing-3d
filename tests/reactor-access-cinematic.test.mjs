@@ -55,3 +55,15 @@ test('QA179 motion eases acceleration/deceleration, resets and stops at actual c
   motion.reset();
   assert.deepEqual(motion.snapshot(), { x: 0, z: 0 });
 });
+
+test('QA183 low-FPS direction change does not slide sideways into reactor wall', () => {
+  const motion = createOrbit9MotionFilter();
+  for (let i = 0; i < 25; i++) motion.update(1, 0, 0.016);
+  // Simulate an overloaded WebGL runner: the real displacement step is 250ms.
+  // The motion filter must consume the SAME elapsed time, not 50ms.
+  const turned = motion.update(0, -1, 0.25);
+  assert.ok(Math.abs(turned.x) < 0.05, 'horizontal velocity decays immediately on turn');
+  assert.ok(turned.z < -0.95, 'forward velocity follows the new intended heading');
+  const sidewaysDrift = Math.abs(turned.x * 18 * 0.25);
+  assert.ok(sidewaysDrift < 0.23, 'no several-meter drift into the solid maintenance rack');
+});
