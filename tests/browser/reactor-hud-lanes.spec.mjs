@@ -23,7 +23,13 @@ test('QA177: reactor boss HUD has separate mission, HP and radio lanes in all vi
     await page.locator('#exploreScan').click();
   }
   await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 3/3');
+  // The launch is now physically gated to the fighter's dock. Visual HUD
+  // inspection can teleport, but must still respect the reboarding contract.
+  await expect(page.locator('#exploreLaunchCombat')).toBeDisabled();
+  expect(await page.evaluate(() => window.__novaExploreQA.moveTo(17, 12))).toBe(true);
+  await expect(page.locator('#exploreLaunchCombat')).toBeEnabled();
   await page.locator('#exploreLaunchCombat').click();
+  await expect(page.locator('#explorationOverlay')).toBeHidden({ timeout: 15000 });
   await expect
     .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.boss), {
       timeout: 30000,
