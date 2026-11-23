@@ -1,0 +1,50 @@
+name: QA185 narrow desktop HUD sync and focused validation
+on:
+  push:
+    branches:
+      - integration/qa178-europa-premium-all-improvements-20261122
+permissions:
+  contents: write
+concurrency:
+  group: qa185-reactor-hud
+  cancel-in-progress: false
+jobs:
+  sync-and-test:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/qa178-europa-premium-all-improvements-20261122
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Normalize source and rebuild HTML
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run format:check
+      - name: Commit only updated CSS and generated browser HTML
+        run: |
+          git add -- src/styles.css index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='nova-wing-qa-bot' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(QA185): synchronize narrow desktop HUD distribution'
+            git push origin HEAD:refs/heads/integration/qa178-europa-premium-all-improvements-20261122
+          fi
+      - run: npx playwright install --with-deps chromium
+      - name: Focused mobile and desktop HUD lanes
+        run: npx playwright test tests/browser/reactor-hud-lanes.spec.mjs tests/browser/mobile-alert-priority.spec.mjs tests/browser/mobile-hud-audit.spec.mjs --project=desktop --project=mobile --workers=1 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa185-browser-evidence
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
