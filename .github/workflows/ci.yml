@@ -208,6 +208,31 @@ jobs:
           NOVA_PRODUCTION_URL: https://trucco86.github.io/nova-wing-3d/
         run: node tools/production-smoke.mjs
 
+
+  production-checkpoint:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: production-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Record successful production SHA as immutable checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          # Never overwrite a checkpoint. A successful browser smoke is required.
+          tag="production-good-$SHA"
+          if gh api "repos/$REPO/git/ref/tags/$tag" >/dev/null 2>&1; then
+            echo "Checkpoint already exists"
+          else
+            gh api "repos/$REPO/git/refs" -f ref="refs/tags/$tag" -f sha="$SHA" >/dev/null
+            echo "Recorded healthy production: $tag"
+          fi
+
   production-rollback:
     if: ${{ always() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.pages.result == 'success' && needs.production-smoke.result == 'failure' }}
     needs: [pages, production-smoke]
@@ -223,7 +248,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Select previous tagged version; never revert source history
+      - name: Select last proven healthy production version
         env:
           FAILED_SHA: ${{ github.sha }}
         run: |
@@ -231,18 +256,19 @@ jobs:
           git fetch origin main --tags
           test "$(git rev-parse origin/main)" = "$FAILED_SHA" || { echo "Main advanced; skip stale rollback"; exit 1; }
           previous=""
+          # Checkpoints are created only after successful production browser smoke.
+          # GitHub's ref update is intentionally never used: checkpoints are immutable.
           while read -r tag; do
             sha=$(git rev-list -n 1 "$tag")
             if [ "$sha" != "$FAILED_SHA" ] && git merge-base --is-ancestor "$sha" "$FAILED_SHA"; then
               previous="$sha"
-              echo "Rollback source: $tag ($sha)"
+              echo "Healthy rollback checkpoint: $tag ($sha)"
               break
             fi
-          done < <(git tag -l 'v[0-9]*' --sort=-version:refname)
-          test -n "$previous" || { echo "No safe previous release tag; manual incident handling required"; exit 1; }
+          done < <(git tag -l 'production-good-*' --sort=-creatordate)
+          test -n "$previous" || { echo "No verified healthy checkpoint; cannot safely roll back"; exit 1; }
           git checkout --detach "$previous"
           test -f index.html && test -f docs/control-center/index.html
-          echo "$previous" > /tmp/rollback-sha
       - name: Prepare previous static build
         run: |
           set -euo pipefail
@@ -260,10 +286,10 @@ jobs:
     if: >-
       ${{ always() && github.ref == 'refs/heads/main'
           && github.event_name != 'pull_request'
-          && needs.production-smoke.result == 'success'
+          && needs.production-checkpoint.result == 'success'
           && (vars.NOVA_BUILD_NATIVE != 'true'
               || (needs.android.result == 'success' && needs.ios.result == 'success')) }}
-    needs: [production-smoke, android, ios]
+    needs: [production-checkpoint, android, ios]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
