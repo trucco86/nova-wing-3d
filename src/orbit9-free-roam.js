@@ -73,6 +73,13 @@ export const ORBIT9_CLUE_POSITIONS = Object.freeze([
 export const ORBIT9_SURVIVOR = Object.freeze([9, -92]);
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// Limit browser tab-resume jumps without slowing locomotion as the WebGL FPS
+// drops. The movement resolver uses swept substeps, so the actor cannot
+// tunnel through a wall even when one rendered frame represents 250 ms.
+export function orbit9SimulationDelta(frameSeconds) {
+  return Number.isFinite(frameSeconds) ? clamp(frameSeconds, 0, 0.25) : 0;
+}
 export function orbit9Blocked(x, z, radius = ORBIT9_PLAYER_RADIUS) {
   return ORBIT9_OBSTACLES.some(
     (solid) =>
