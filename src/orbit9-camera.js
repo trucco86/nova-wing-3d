@@ -67,8 +67,9 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
   const dz = desiredZ - z;
   for (const block of blocks) {
     const entry = segmentEntry(x, z, dx, dz, block);
-    // Never allow walls to entirely squeeze the camera into the player.
-    if (entry !== null) fraction = Math.min(fraction, Math.max(0.2, entry - 0.035));
+    // Keep the camera on the near side of the wall. The old 0.2 minimum
+    // pushed the lens INSIDE nearby consoles/pillars when the pilot stood close.
+    if (entry !== null) fraction = Math.min(fraction, Math.max(0, entry - 0.035));
   }
   // Never put the camera behind the built station when the pilot begins
   // near its south entrance. The deck only extends to z=22; unbounded
@@ -88,4 +89,15 @@ export function orbit9CameraPose(x, z, state, blocks = ORBIT9_OBSTACLES) {
     fov: survey ? 68 : portrait ? 59 : 52,
     clipped: fraction < 0.99,
   };
+}
+
+/** Camera-only occlusion check for interpolated frames, not player collision. */
+export function orbit9CameraIntersectsSolid(eye, blocks = ORBIT9_OBSTACLES) {
+  if (!eye || ![eye.x, eye.y, eye.z].every(Number.isFinite)) return true;
+  return blocks.some(
+    ({ x, z, halfX, halfZ, height }) =>
+      eye.y < height + 0.3 &&
+      Math.abs(eye.x - x) < halfX + 0.55 &&
+      Math.abs(eye.z - z) < halfZ + 0.55,
+  );
 }
