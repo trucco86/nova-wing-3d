@@ -12004,3 +12004,46 @@ body.in-mission:has(#bossHUD:not([hidden]))
     overflow: hidden;
   }
 }
+
+ 
+/* QA179: enclosed 3D docking / reactor tunnel. The WebGL scene, rather than
+   the starfield, owns both halves of the transfer. Status floats above the
+   model without stealing touch controls. */
+.exploration-viewport .exploration-gate-beat {
+  position: absolute;
+  z-index: 31;
+  top: clamp(94px, 18vh, 150px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(420px, calc(100vw - 34px));
+  padding: 9px 16px;
+  border: 1px solid #fa755c99;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #09121fe8, #142b3de5, #09121fe8);
+  color: #ffe4ca;
+  box-shadow: 0 0 26px #ff82552b, inset 0 0 12px #ff825519;
+  font: 700 clamp(10px, 2.5vw, 13px)/1.4 monospace;
+  text-align: center;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.exploration-viewport .exploration-gate-beat[hidden] { display: none; }
+.exploration-overlay[data-reactor-beat='departure'] .exploration-controls,
+.exploration-overlay[data-reactor-beat='departure'] .exploration-mini-map {
+  opacity: 0;
+  pointer-events: none;
+}
+.exploration-overlay[data-reactor-beat='departure'] .exploration-gate-beat {
+  color: #c4faff;
+  border-color: #73e8ff99;
+  box-shadow: 0 0 30px #73e8ff33;
+}
+@media (max-width: 550px) {
+  .exploration-viewport .exploration-gate-beat {
+    top: 90px;
+    padding: 7px 10px;
+    font-size: 10px;
+    max-width: calc(100vw - 24px);
+  }
+}

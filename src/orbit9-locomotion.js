@@ -96,3 +96,39 @@ export function orbit9CameraRelativeAxes(x, z, yaw = 0) {
     z: z * cos - x * sin,
   };
 }
+
+ 
+// A short acceleration/braking ramp prevents keyboard/virtual-stick movement
+// from jumping immediately to full velocity. It is input-relative, so the
+// actual collision resolver remains the authority for distance travelled.
+export function createOrbit9MotionFilter() {
+  let vx = 0;
+  let vz = 0;
+  return {
+    update(x, z, dt) {
+      const step = Math.max(0, Math.min(0.05, Number.isFinite(dt) ? dt : 0));
+      const goalX = Number.isFinite(x) ? x : 0;
+      const goalZ = Number.isFinite(z) ? z : 0;
+      const frequency = goalX === 0 && goalZ === 0 ? 18 : 15;
+      const weight = 1 - Math.exp(-step * frequency);
+      vx += (goalX - vx) * weight;
+      vz += (goalZ - vz) * weight;
+      if (Math.abs(vx) < 0.001) vx = 0;
+      if (Math.abs(vz) < 0.001) vz = 0;
+      return { x: vx, z: vz };
+    },
+    stopBlockedAxes(actualX, actualZ, dt) {
+      if (Number.isFinite(dt) && dt > 0) {
+        if (Math.abs(actualX) < 0.00001) vx = 0;
+        if (Math.abs(actualZ) < 0.00001) vz = 0;
+      }
+    },
+    reset() {
+      vx = 0;
+      vz = 0;
+    },
+    snapshot() {
+      return { x: vx, z: vz };
+    },
+  };
+}

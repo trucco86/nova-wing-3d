@@ -40,7 +40,7 @@ test('Orbit-9 art reuses Stage 04 Devastador armor, hazard and light language', 
     root.userData.instanceCounts.cyan >= 25,
     'arrival path and carrier gantries need recognizable light guides',
   );
-  assert.equal(root.children.filter((o) => o.isMesh && !o.isInstancedMesh).length, 2);
+  assert.equal(root.children.filter((o) => o.isMesh && !o.isInstancedMesh).length, 7);
   const dial = root.getObjectByName('orbit9-reactor-diagnostic-dial');
   const faceRing = root.getObjectByName('devastador-reactor-front-energy-ring');
   assert.ok(dial);
@@ -127,4 +127,25 @@ test('follow camera keeps the entrance deck visible and avoids giant foreground 
   assert.ok(reactor.eye.z < -38, 'foreground service modules should stay behind camera');
   const survey = orbit9CameraPose(39, -55, { yaw: 0, mode: 'survey' });
   assert.ok(survey.eye.y > reactor.eye.y, 'panoramic mode stays visibly elevated');
+});
+
+ 
+test('QA179 reactor gate has three physical-looking lock lamps and retractable visual door', () => {
+  const root = createOrbit9StageArt();
+  const gate = root.userData.reactorGate;
+  assert.ok(gate);
+  assert.equal(gate.doors.length, 2);
+  assert.equal(gate.locks.length, 3);
+  updateOrbit9StageArt(root, 1, 0);
+  assert.equal(gate.modules, 0);
+  assert.equal(gate.progress, 0);
+  updateOrbit9StageArt(root, 2, 1);
+  assert.equal(gate.locks[0].material.color.getHexString(), '73e8ff');
+  assert.equal(gate.locks[1].material.color.getHexString(), 'fa755c');
+  updateOrbit9StageArt(root, 3, 3);
+  assert.equal(gate.progress, 0);
+  updateOrbit9StageArt(root, 4.5, 3);
+  assert.equal(gate.progress, 1);
+  assert.ok(gate.doors[0].mesh.position.x < -11);
+  assert.ok(gate.doors[1].mesh.position.x > 11);
 });
