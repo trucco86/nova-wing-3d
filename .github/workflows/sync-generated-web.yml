@@ -30,6 +30,7 @@ on:
       - perf/qa160-boss-rival-hitbox-allocations-20261119
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
+      - fix/qa180-stage1-clean-launch-main-20261123
 permissions:
   contents: write
   actions: write
@@ -91,6 +92,9 @@ jobs:
       - name: Prepare QA162 moving obstacle contact release
         if: github.ref_name == 'fix/qa162-moving-obstacle-ship-contact-20261119'
         run: npm run release:prepare -- 1.27.156
+      - name: Prepare QA180 focused stage-one launch candidate
+        if: github.ref_name == 'fix/qa180-stage1-clean-launch-main-20261123'
+        run: npm run release:prepare -- 1.27.161
       - run: npm run format
       - run: npm run build
       - run: npm run validate
@@ -188,6 +192,10 @@ jobs:
             if [ -f releases/v1.27.150.md ]; then
               git add -- releases/v1.27.150.md
             fi
+          fi
+          if [ "${GITHUB_REF_NAME}" = "fix/qa180-stage1-clean-launch-main-20261123" ]; then
+            git add -u
+            git add -- releases/v1.27.161.md
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
