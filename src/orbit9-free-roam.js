@@ -32,12 +32,30 @@ export const ORBIT9_DISTRICTS = Object.freeze([
 ]);
 
 // Visual landmark bodies are physical, but decorations and clues are not.
+// Low, opaque scenery must share the same collision contract as its rendered
+// mesh. Pure data is reused by locomotion AND the follow camera; overhead
+// beams, thin floor decals and mission beacons deliberately stay non-solid.
+export const ORBIT9_SCENERY_SOLIDS = Object.freeze([
+  ...[-1, 1].flatMap((side) =>
+    [10, -6, -36].map((z) =>
+      Object.freeze({ id: `maintenance-${side}-${z}`, x: side * 33.5, z, halfX: 4.25, halfZ: 4.15, height: 8.5 }),
+    ),
+  ),
+  ...[-18, -28, -38].map((z) =>
+    Object.freeze({ id: `lab-console-${z}`, x: -50, z, halfX: 1.85, halfZ: 2.9, height: 6 }),
+  ),
+  ...[-72, -80, -88, -96].map((z) =>
+    Object.freeze({ id: `archive-bank-${z}`, x: -51, z, halfX: 2.45, halfZ: 2.85, height: 9.5 }),
+  ),
+]);
+
 export const ORBIT9_OBSTACLES = Object.freeze([
   Object.freeze({ id: 'core', x: 0, z: -44, halfX: 7.5, halfZ: 10, height: 15 }),
   Object.freeze({ id: 'research-pillar', x: -22, z: -44, halfX: 4.5, halfZ: 5, height: 8 }),
   Object.freeze({ id: 'reactor-pillar', x: 27, z: -40, halfX: 5, halfZ: 7, height: 10 }),
   Object.freeze({ id: 'cargo-west', x: -18, z: -72, halfX: 4.5, halfZ: 4.5, height: 6 }),
   Object.freeze({ id: 'cargo-east', x: 19, z: -70, halfX: 4.5, halfZ: 5, height: 6 }),
+  ...ORBIT9_SCENERY_SOLIDS,
 ]);
 
 export const ORBIT9_CLUE_POSITIONS = Object.freeze([
@@ -57,13 +75,18 @@ export function orbit9Blocked(x, z, radius = ORBIT9_PLAYER_RADIUS) {
 export function orbit9Move(x, z, dx, dz, radius = ORBIT9_PLAYER_RADIUS) {
   if (![x, z, dx, dz, radius].every(Number.isFinite) || radius < 0)
     return { x: ORBIT9_SPAWN.x, z: ORBIT9_SPAWN.z };
-  const nextX = clamp(x + dx, ORBIT9_BOUNDS.minX + radius, ORBIT9_BOUNDS.maxX - radius);
-  const nextZ = clamp(z + dz, ORBIT9_BOUNDS.minZ + radius, ORBIT9_BOUNDS.maxZ - radius);
-  // Slide independently along obstacles rather than sticking at corners.
-  let px = x;
-  let pz = z;
-  if (!orbit9Blocked(nextX, pz, radius)) px = nextX;
-  if (!orbit9Blocked(px, nextZ, radius)) pz = nextZ;
+  // Swept substeps prevent fast boost / frame hitch / direct QA motion from
+  // jumping through an entire wall when the final endpoint happens to be free.
+  const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.8));
+  let px = clamp(x, ORBIT9_BOUNDS.minX + radius, ORBIT9_BOUNDS.maxX - radius);
+  let pz = clamp(z, ORBIT9_BOUNDS.minZ + radius, ORBIT9_BOUNDS.maxZ - radius);
+  for (let i = 0; i < steps; i++) {
+    const nextX = clamp(px + dx / steps, ORBIT9_BOUNDS.minX + radius, ORBIT9_BOUNDS.maxX - radius);
+    const nextZ = clamp(pz + dz / steps, ORBIT9_BOUNDS.minZ + radius, ORBIT9_BOUNDS.maxZ - radius);
+    // Per-axis slide keeps diagonal motion working along solid surfaces.
+    if (!orbit9Blocked(nextX, pz, radius)) px = nextX;
+    if (!orbit9Blocked(px, nextZ, radius)) pz = nextZ;
+  }
   return { x: px, z: pz };
 }
 export function orbit9District(x, z) {
