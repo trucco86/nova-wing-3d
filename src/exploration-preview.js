@@ -212,24 +212,22 @@ export function installOrbit9ExplorationPreview(
       objective.textContent = moduleName + ' · PRESSIONE ATIVAR / E';
     } else if (nearest) {
       const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === nearest.id)?.name;
-      objective.textContent = 'SIGA O SINAL ' + moduleName + ' · ' + Math.round(nearest.distance) + 'm';
+      objective.textContent =
+        'SIGA O SINAL ' + moduleName + ' · ' + Math.round(nearest.distance) + 'm';
     }
     scanButton.disabled = !closeClue || cinematicPhase !== 'none';
     talkButton.hidden = true;
     talkButton.disabled = true;
     launchCombat.hidden = stats.found !== stats.required;
-    launchCombat.disabled =
-      cinematicPhase !== 'none' || dockDistance > DOCK_RETURN.radius;
+    launchCombat.disabled = cinematicPhase !== 'none' || dockDistance > DOCK_RETURN.radius;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
       beacon.core.material.emissive.set(acquired ? '#164841' : '#106a9a');
       beacon.column.material.opacity = acquired ? 0.08 : 0.22;
       beacon.label.material.opacity = acquired ? 0.35 : 1;
-      beacon.label.visible = acquired || Math.hypot(
-        CLUE_POSITIONS[i][0] - playerX,
-        CLUE_POSITIONS[i][1] - playerZ,
-      ) < 65;
+      beacon.label.visible =
+        acquired || Math.hypot(CLUE_POSITIONS[i][0] - playerX, CLUE_POSITIONS[i][1] - playerZ) < 65;
     });
   }
 
@@ -446,8 +444,11 @@ export function installOrbit9ExplorationPreview(
       const column = new T.Mesh(
         new T.CylinderGeometry(0.44, 0.44, 12, 12, 1, true),
         new T.MeshBasicMaterial({
-          color: '#41d9ff', transparent: true, opacity: 0.22,
-          depthWrite: false, side: T.DoubleSide,
+          color: '#41d9ff',
+          transparent: true,
+          opacity: 0.22,
+          depthWrite: false,
+          side: T.DoubleSide,
         }),
       );
       column.position.set(x, 6.1, z);
@@ -470,9 +471,13 @@ export function installOrbit9ExplorationPreview(
       ctx.fillStyle = '#e2faff';
       ctx.font = 'bold 35px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText((i + 1) + '/3  ' + DEVASTADOR_ACCESS_MODULES[i].name, 256, 79, 480);
+      ctx.fillText(i + 1 + '/3  ' + DEVASTADOR_ACCESS_MODULES[i].name, 256, 79, 480);
       const label = new T.Sprite(
-        new T.SpriteMaterial({ map: new T.CanvasTexture(canvas), transparent: true, depthTest: false }),
+        new T.SpriteMaterial({
+          map: new T.CanvasTexture(canvas),
+          transparent: true,
+          depthTest: false,
+        }),
       );
       label.name = 'reactor-module-label-' + (i + 1);
       label.position.set(x, 13, z);
@@ -552,11 +557,12 @@ export function installOrbit9ExplorationPreview(
     // Give the landing shot enough time to establish the tunnel before the
     // first sustained input takes over. A short key tap cannot delete it.
     if (
-      cinematicPhase === 'arrival' && elapsed >= 2.2 &&
+      cinematicPhase === 'arrival' &&
+      elapsed >= 2.2 &&
       (held.size > 0 || stickInput.pointerId !== null || boostTouchHeld)
-    ) endArrival();
-    const inputLocked =
-      cinematicPhase !== 'none' || !dialoguePanel.hidden || !choicePanel.hidden;
+    )
+      endArrival();
+    const inputLocked = cinematicPhase !== 'none' || !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
     const keyboardActive = keyX !== 0 || keyZ !== 0;

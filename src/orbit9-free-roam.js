@@ -38,7 +38,14 @@ export const ORBIT9_DISTRICTS = Object.freeze([
 export const ORBIT9_SCENERY_SOLIDS = Object.freeze([
   ...[-1, 1].flatMap((side) =>
     [10, -6, -36].map((z) =>
-      Object.freeze({ id: `maintenance-${side}-${z}`, x: side * 33.5, z, halfX: 4.25, halfZ: 4.15, height: 8.5 }),
+      Object.freeze({
+        id: `maintenance-${side}-${z}`,
+        x: side * 33.5,
+        z,
+        halfX: 4.25,
+        halfZ: 4.15,
+        height: 8.5,
+      }),
     ),
   ),
   ...[-18, -28, -38].map((z) =>

@@ -40,7 +40,9 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   const inWorld = await page.evaluate(() => window.__novaExploreQA.snapshot().moduleVisuals);
   expect(inWorld).toHaveLength(3);
   expect(inWorld.map(({ x, z }) => [x, z])).toEqual([
-    [-38, -18], [39, -55], [-37, -82],
+    [-38, -18],
+    [39, -55],
+    [-37, -82],
   ]);
   // The disembark is part of Stage 04, but only the walking scene renders:
   // neither the campaign clock nor the underlying flight should keep ticking.
@@ -55,7 +57,12 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   ]) {
     expect(await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z])).toBe(true);
     await expect(page.locator('#explorationDistrict')).toHaveText(district);
-    expect(await page.evaluate((i) => window.__novaExploreQA.snapshot().moduleVisuals[i].visible, modules - 1)).toBe(true);
+    expect(
+      await page.evaluate(
+        (i) => window.__novaExploreQA.snapshot().moduleVisuals[i].visible,
+        modules - 1,
+      ),
+    ).toBe(true);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS ' + modules + '/3');

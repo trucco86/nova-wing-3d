@@ -57,7 +57,12 @@ test('district minimap positions are normalized and never outside the overlay', 
 
 test('QA180 decorative carrier walls are solid, cannot be crossed by boost, and do not conceal mission modules', () => {
   assert.equal(ORBIT9_SCENERY_SOLIDS.length, 13);
-  for (const [x, z] of [[-50, -28], [-51, -80], [33.5, -36], [-33.5, 10]]) {
+  for (const [x, z] of [
+    [-50, -28],
+    [-51, -80],
+    [33.5, -36],
+    [-33.5, 10],
+  ]) {
     assert.equal(orbit9Blocked(x, z), true, 'visible floor-height wall has a gameplay collider');
   }
   for (const [x, z] of ORBIT9_CLUE_POSITIONS) {

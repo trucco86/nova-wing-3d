@@ -87,9 +87,10 @@ export function reactorCinematicPose(phase, seconds = 0, departureFrom = null) {
   const eye = rail(a.eye, b.eye, c.eye, progress);
   const aim = rail(a.aim, b.aim, c.aim, progress);
   const ship = rail(a.ship, b.ship, c.ship, progress);
-  const fov = progress <= 0.55
-    ? lerp(a.fov, b.fov, smoothstep(progress / 0.55))
-    : lerp(b.fov, c.fov, smoothstep((progress - 0.55) / 0.45));
+  const fov =
+    progress <= 0.55
+      ? lerp(a.fov, b.fov, smoothstep(progress / 0.55))
+      : lerp(b.fov, c.fov, smoothstep((progress - 0.55) / 0.45));
   return {
     phase: departure ? 'departure' : 'arrival',
     progress,
