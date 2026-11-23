@@ -135,7 +135,15 @@ export function createFirstStageLaunchIntro(scene, camera) {
     opacity: 0.9,
     toneMapped: false,
   });
-  const materials = [metal, panel, cyan, amber, glass, beamGlow, pulseAmber];
+  const exteriorCyan = new T.MeshBasicMaterial({
+    color: '#89eaff', transparent: true, opacity: 0.9,
+    depthWrite: false, toneMapped: false,
+  });
+  const exteriorAmber = new T.MeshBasicMaterial({
+    color: '#ffd290', transparent: true, opacity: 0.78,
+    depthWrite: false, toneMapped: false,
+  });
+  const materials = [metal, panel, cyan, amber, glass, beamGlow, pulseAmber, exteriorCyan, exteriorAmber];
   const meshes = [];
   const add = (name, size, at, material = metal) => {
     const mesh = new T.Mesh(new T.BoxGeometry(...size), material);
@@ -308,6 +316,27 @@ export function createFirstStageLaunchIntro(scene, camera) {
     add('launch-exterior-gate-beacon', [0.8, 12, 1.1], [side * 17.5, 3, -54.5], cyan);
     add('launch-exit-lane-marker', [1.25, 0.25, 4], [side * 12, -5.95, -55], amber);
   }
+  // Outside the gate, moving light references continue the launch trajectory.
+  // Without these markers the ship appears to stop once the hangar retreats.
+  // They are visual only, far from the player lane, and fade before gameplay.
+  repeat(
+    'launch-exterior-flight-lights',
+    [1.1, 0.14, 3.6],
+    [-82, -111, -140, -169, -198, -227, -256, -285].flatMap((z) => [
+      [-16, -5.45, z],
+      [16, -5.45, z],
+    ]),
+    exteriorCyan,
+  );
+  repeat(
+    'launch-exterior-approach-beacons',
+    [0.75, 4.5, 0.85],
+    [-84, -131, -178, -225, -272].flatMap((z) => [
+      [-27, 3.4, z],
+      [27, 3.4, z],
+    ]),
+    exteriorAmber,
+  );
   root.visible = false;
   scene.add(root);
   let active = false;
@@ -319,6 +348,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
       root.position.set(0, 0, 0);
       leftDoor.position.x = -4.5;
       rightDoor.position.x = 4.5;
+      exteriorCyan.opacity = 0.9;
+      exteriorAmber.opacity = 0.78;
     },
     update(seconds, aspect = 16 / 9) {
       if (!active) return firstStageLaunchAt(seconds, aspect);
@@ -329,6 +360,8 @@ export function createFirstStageLaunchIntro(scene, camera) {
       root.userData.shot = frame.shot;
       pulseAmber.opacity = 0.72 + 0.22 * Math.sin(frame.t * 9);
       beamGlow.opacity = 0.05 + 0.025 * frame.departure;
+      exteriorCyan.opacity = 0.9 * (1 - frame.handoff);
+      exteriorAmber.opacity = 0.78 * (1 - frame.handoff);
       camera.position.set(frame.camera.x, frame.camera.y, frame.camera.z);
       camera.lookAt(frame.camera.aimX, frame.camera.aimY, frame.camera.aimZ);
       camera.rotateZ(frame.camera.roll);
