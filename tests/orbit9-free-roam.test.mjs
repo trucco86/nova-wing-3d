@@ -81,3 +81,32 @@ test('QA180 camera remains outside low scenic walls even when the player stands 
   assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 3, z: -28 }), true);
   assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 20, z: -28 }), false);
 });
+
+test('QA181 all reactor objectives and the return dock are connected by traversable solid corridors', () => {
+  let player = { ...ORBIT9_SPAWN };
+  const waypoints = [
+    [0, -18],
+    [-35, -18], // CIRCUITOS within interaction radius
+    [43, -18],
+    [43, -54], // REFRIGERAÇÃO, east of maintenance rack
+    [43, -15],
+    [-43, -15],
+    [-43, -78.5],
+    [-37, -78.5], // MOTORES, archive
+    [-43, -78.5],
+    [-43, -15],
+    [12, -15],
+    [12, 11], // hangar ship docking bay
+  ];
+  for (const [x, z] of waypoints) {
+    const distance = Math.hypot(x - player.x, z - player.z);
+    const steps = Math.ceil(distance / 0.45);
+    for (let i = 0; i < steps; i++) {
+      player = orbit9Move(player.x, player.z, (x - player.x) / (steps - i), (z - player.z) / (steps - i));
+      assert.equal(orbit9Blocked(player.x, player.z), false);
+    }
+    assert.ok(Math.hypot(x - player.x, z - player.z) < 0.08,
+      'P0 blocked corridor before waypoint (' + x + ',' + z + ')');
+  }
+  assert.ok(Math.hypot(player.x - 17, player.z - 12) < 13, 'return to fighter docking range');
+});
