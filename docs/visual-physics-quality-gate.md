@@ -14,14 +14,14 @@
 
 ## Matriz mínima de inspeção
 
-| Contexto | Evidência exigida |
-| --- | --- |
-| Nave em corredor/túnel | Vídeo de aproximação, travessia, saída e colisão lateral |
-| Robô em exploração | Caminhar até cada objetivo, tocar paredes, contornar pilares e voltar |
-| Chefe/arena | Ataques de frente e de lado, órbita, pontos fracos e câmera sem obstrução persistente |
-| Obstáculos móveis | Colisão em velocidade normal e boost, sem atravessamento |
-| HUD e câmera | Capturas desktop e mobile nos momentos de maior densidade visual |
-| Transições | Vídeo antes/durante/depois, sem salto de geometria ou visão de fundo indevida |
+| Contexto               | Evidência exigida                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| Nave em corredor/túnel | Vídeo de aproximação, travessia, saída e colisão lateral                              |
+| Robô em exploração     | Caminhar até cada objetivo, tocar paredes, contornar pilares e voltar                 |
+| Chefe/arena            | Ataques de frente e de lado, órbita, pontos fracos e câmera sem obstrução persistente |
+| Obstáculos móveis      | Colisão em velocidade normal e boost, sem atravessamento                              |
+| HUD e câmera           | Capturas desktop e mobile nos momentos de maior densidade visual                      |
+| Transições             | Vídeo antes/durante/depois, sem salto de geometria ou visão de fundo indevida         |
 
 ## Protocolo do agente de validação visual
 
