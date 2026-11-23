@@ -30,3 +30,11 @@ Branch de integração específica, base original main v1.27.158, candidata prev
 - Recriada a distribuição web após a remoção do import obsoleto `formationPose`, com fonte e `index.html` sincronizados.
 - O teste adicional protege piloto Bob, nave Specter e cor Crimson após o botão PULAR DECOLAGEM.
 - Exigir CI completa no commit humano final, porque pushes originados por `github-actions[bot]` podem registrar checks não executados.
+
+## QA180.1 | Velocidade e continuidade externa
+
+- Adicionadas famílias InstancedMesh de balizas exteriores a partir do portão; elas percorrem o campo visual junto ao cenário, criando parallax mesmo com a nave em coordenadas físicas estáveis no rail shooter.
+- Os marcadores externos perdem opacidade conforme ocorre o handoff, sem desaparecer abruptamente no meio da aceleração.
+- A chama dos propulsores da nave protagonista aumenta durante a saída e volta ao estado padrão ao pular ou terminar a cinemática.
+- Novos testes fixam deslocamento de parallax, fade para zero e ausência de propulsão presa após o skip.
+- Aceite visual continua dependente de revisão das capturas e do gameplay real no preview PR #440.
