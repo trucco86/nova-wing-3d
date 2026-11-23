@@ -12071,3 +12071,14 @@ body.in-mission:has(#bossHUD:not([hidden]))
     top: max(220px, calc(env(safe-area-inset-top, 0px) + 200px));
   }
 }
+
+/* QA185: 320px desktop emulation uses a fine pointer and keeps its orbit
+   overlay at y≈185–235. A shared QA184 220px alert rail intersects that
+   orbit overlay in the desktop Playwright project. Coarse/touch retains
+   the previously verified 220px placement needed for narrow-phone
+   emergency and hit-feedback thresholds. */
+@media (pointer: fine) and (max-width: 360px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(252px, calc(env(safe-area-inset-top, 0px) + 232px));
+  }
+}
