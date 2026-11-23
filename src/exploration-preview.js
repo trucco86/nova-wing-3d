@@ -3,7 +3,7 @@ import { developerToolsAllowed } from './developer-mode.js';
 import { DEVASTADOR_ACCESS_MODULES, reactorModulesComplete } from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
 import { createShipModule } from './visuals.js';
-import { reactorCinematicPose, reactorGateStatus } from './reactor-access-cinematic.js';
+import { reactorCinematicPose, reactorGateStatus, REACTOR_ARRIVAL_SECONDS } from './reactor-access-cinematic.js';
 import {
   createOrbit9WalkRig,
   orbit9StickAxes,
@@ -134,7 +134,8 @@ export function installOrbit9ExplorationPreview(
   }
 
   function endArrival(force = false) {
-    if (cinematicPhase !== 'arrival' || (!force && elapsed < 2.2)) return;
+    if (cinematicPhase !== 'arrival') return;
+    if (!force && (performance.now() - cinematicStarted) / 1000 < REACTOR_ARRIVAL_SECONDS) return;
     cinematicPhase = 'none';
     root.dataset.reactorBeat = 'walk';
     gateBeat.hidden = true;
@@ -554,14 +555,8 @@ export function installOrbit9ExplorationPreview(
       status.hidden = true;
       statusUntil = 0;
     }
-    // Give the landing shot enough time to establish the tunnel before the
-    // first sustained input takes over. A short key tap cannot delete it.
-    if (
-      cinematicPhase === 'arrival' &&
-      elapsed >= 2.2 &&
-      (held.size > 0 || stickInput.pointerId !== null || boostTouchHeld)
-    )
-      endArrival();
+    // Movement stays locked until the tunnel arrival camera rail finishes.
+    // Early key or joystick input must never hard-cut the landing cinematic.
     const inputLocked = cinematicPhase !== 'none' || !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
