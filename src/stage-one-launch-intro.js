@@ -42,9 +42,17 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   const views = [
     // Wider stage establishment: the fully enclosed hangar is visible as a
     // long tunnel instead of reading as a flat wall behind the wingmates.
-    { eye: [portrait ? 0 : 4.8 * squeeze, 7.4, 31 + portraitCameraOffset], aim: [0, 5.6, -43], fov: 74 },
+    {
+      eye: [portrait ? 0 : 4.8 * squeeze, 7.4, 31 + portraitCameraOffset],
+      aim: [0, 5.6, -43],
+      fov: 74,
+    },
     // Zoom/dolly-in through the open gate, still looking forward, not a cut.
-    { eye: [portrait ? 0 : 2.6 * squeeze, 8.2, 35 + portraitCameraOffset], aim: [0, 5.8, -67], fov: 62 },
+    {
+      eye: [portrait ? 0 : 2.6 * squeeze, 8.2, 35 + portraitCameraOffset],
+      aim: [0, 5.8, -67],
+      fov: 62,
+    },
     // Exact approved chase camera: preserve the original gameplay handoff.
     { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
   ];

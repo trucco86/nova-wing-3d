@@ -53,26 +53,44 @@ test('stage-one departure has readable hangar, gate crossing and approach on des
     await expect(page.locator('#touch')).toBeHidden();
     for (const selector of ['#cameraView', '#pilotSwitch', '#pilotName', '#loadout'])
       await expect(page.locator(selector)).toBeHidden();
-    await page.screenshot({ path: info.outputPath('launch-' + shot + '-' + Math.round(t * 10) + '.png') });
+    await page.screenshot({
+      path: info.outputPath('launch-' + shot + '-' + Math.round(t * 10) + '.png'),
+    });
   }
   await page.evaluate(() => window.fixture.advance(1.5));
   await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
   await expect(page.locator('#launchSkip')).toBeHidden();
 });
 
-test('portrait hangar launch keeps escort composition inside the camera and combat UI hidden', async ({ page }, info) => {
+test('portrait hangar launch keeps escort composition inside the camera and combat UI hidden', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/__dynamic.html?sector=0&intro=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
-  for (const [at, label] of [[0.4, 'hangar'], [2.2, 'gate'], [5.3, 'approach']]) {
-    await page.evaluate((t) => window.fixture.advance(t), at - (label === 'hangar' ? 0 : label === 'gate' ? 0.4 : 2.2));
+  for (const [at, label] of [
+    [0.4, 'hangar'],
+    [2.2, 'gate'],
+    [5.3, 'approach'],
+  ]) {
+    await page.evaluate(
+      (t) => window.fixture.advance(t),
+      at - (label === 'hangar' ? 0 : label === 'gate' ? 0.4 : 2.2),
+    );
     const state = await page.evaluate(() => window.fixture.game.snapshot());
     expect(state.fiveCats.visible).toHaveLength(4);
     expect(state.fiveCats.playerIsLeader).toBe(true);
     expect(state.seconds).toBe(0);
     await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
-    for (const selector of ['#cameraView', '#pilotSwitch', '#pilotName', '#loadout', '#hud', '#touch'])
+    for (const selector of [
+      '#cameraView',
+      '#pilotSwitch',
+      '#pilotName',
+      '#loadout',
+      '#hud',
+      '#touch',
+    ])
       await expect(page.locator(selector)).toBeHidden();
     await page.screenshot({ path: info.outputPath('portrait-' + label + '.png') });
   }

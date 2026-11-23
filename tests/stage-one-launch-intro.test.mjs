@@ -146,7 +146,11 @@ test('enclosed rear wall and complete roof are present; camera never points thro
   assert.ok(rear.geometry.parameters.height >= 29);
   assert.ok(roof.position.y >= 20, 'roof must leave camera headroom');
   const leftDoor = intro.root.getObjectByName('launch-door-left');
-  assert.equal(leftDoor.geometry.parameters.width, 18, 'gate must close the full-width launch lane');
+  assert.equal(
+    leftDoor.geometry.parameters.width,
+    18,
+    'gate must close the full-width launch lane',
+  );
   assert.equal(leftDoor.position.x, -9);
   const before = leftDoor.position.x;
   intro.update(0.4);
