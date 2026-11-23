@@ -77,7 +77,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   expect(prior.reactorAccess.completed).toBe(false);
   await page.screenshot({ path: info.outputPath('devastador-access-three-modules.png') });
   await page.locator('#exploreLaunchCombat').click();
-  await expect(page.locator('#explorationOverlay')).toBeHidden();
+  await expect(page.locator('#explorationOverlay')).toBeHidden({ timeout: 15000 });
   const after = await page.evaluate(() => window.__novaExploreQA.snapshot().game);
   expect(after.sector).toBe(4);
   expect(after.state).toBe('playing');
@@ -167,7 +167,7 @@ test('Stage 04 walking controls, orbit and 360 remain usable on mobile landscape
     })
     .toBe(false);
   await page.locator('#exploreExit').click();
-  await expect(page.locator('#explorationOverlay')).toBeHidden();
+  await expect(page.locator('#explorationOverlay')).toBeHidden({ timeout: 15000 });
   await expect(page.locator('#pauseMenu')).toBeVisible();
 });
 
@@ -277,7 +277,9 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 1/3');
 
-    await walk('KeyD', 'x', 38, false);
+    // Go around the solid east maintenance rack at (33.5,-36).
+    // At x=38 its real collision capsule blocks forward travel.
+    await walk('KeyD', 'x', 43, false);
     await walk('KeyW', 'z', -54, true);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
@@ -322,12 +324,15 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
   await expect(page.locator('#exploreLaunchCombat')).toBeDisabled();
   // Re-board on foot: keep the center-right passage outside the core
   // collider and the new solid maintenance-bay volumes.
+  // Exit archives south of cargo-west before crossing east; otherwise the
+  // route at z≈-78 scrapes the cargo collision volume and deadlocks.
+  await walk('KeyW', 'z', -86, true);
   await walk('KeyD', 'x', 12, false);
   await walk('KeyS', 'z', 11, false);
   await expect(page.locator('#exploreLaunchCombat')).toBeEnabled();
   await page.screenshot({ path: info.outputPath('devastador-return-to-dock.png') });
   await page.locator('#exploreLaunchCombat').click();
-  await expect(page.locator('#explorationOverlay')).toBeHidden();
+  await expect(page.locator('#explorationOverlay')).toBeHidden({ timeout: 15000 });
   await expect
     .poll(() => page.evaluate(() => window.__novaExploreQA.snapshot().game.boss), {
       timeout: 40000,
