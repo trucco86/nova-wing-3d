@@ -6,12 +6,14 @@ import {
   ORBIT9_SURVIVOR,
   ORBIT9_DISTRICTS,
   ORBIT9_OBSTACLES,
+  ORBIT9_SCENERY_SOLIDS,
   ORBIT9_SPAWN,
   orbit9Blocked,
   orbit9Move,
   orbit9District,
   orbit9MapPoint,
 } from '../src/orbit9-free-roam.js';
+import { orbit9CameraPose, orbit9CameraIntersectsSolid } from '../src/orbit9-camera.js';
 
 test('Orbit-9 offers three non-linear regions and reachable story landmarks', () => {
   assert.equal(ORBIT9_DISTRICTS.length, 4);
@@ -51,4 +53,26 @@ test('district minimap positions are normalized and never outside the overlay', 
   assert.equal(orbit9MapPoint(-56, -100).x, 0);
   assert.equal(orbit9MapPoint(56, 18).y, 100);
   assert.equal(orbit9MapPoint(500, 500).x, 100);
+});
+
+test('QA180 decorative carrier walls are solid, cannot be crossed by boost, and do not conceal mission modules', () => {
+  assert.equal(ORBIT9_SCENERY_SOLIDS.length, 13);
+  for (const [x, z] of [[-50, -28], [-51, -80], [33.5, -36], [-33.5, 10]]) {
+    assert.equal(orbit9Blocked(x, z), true, 'visible floor-height wall has a gameplay collider');
+  }
+  for (const [x, z] of ORBIT9_CLUE_POSITIONS) {
+    assert.equal(orbit9Blocked(x, z), false, 'module remains reachable after adding solid scenery');
+  }
+  const sweep = orbit9Move(0, -25, 0, -70);
+  assert.ok(sweep.z > -34, 'large movement cannot tunnel through the reactor core');
+  const consoleStop = orbit9Move(-44, -28, -15, 0);
+  assert.ok(consoleStop.x > -48.15, 'the cat cannot step through the science console');
+});
+
+test('QA180 camera remains outside low scenic walls even when the player stands next to one', () => {
+  const pose = orbit9CameraPose(-46, -28, { yaw: -Math.PI / 2, mode: 'follow', aspect: 16 / 9 });
+  assert.equal(pose.clipped, true, 'lens retracts before an opaque lab console');
+  assert.equal(orbit9CameraIntersectsSolid(pose.eye), false, 'lens never enters lab console');
+  assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 3, z: -28 }), true);
+  assert.equal(orbit9CameraIntersectsSolid({ x: -50, y: 20, z: -28 }), false);
 });
