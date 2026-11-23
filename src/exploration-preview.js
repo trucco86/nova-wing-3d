@@ -93,6 +93,7 @@ export function installOrbit9ExplorationPreview(
   const motion = createOrbit9MotionFilter();
   let cinematicPhase = 'none';
   let cinematicStarted = 0;
+  let departureCameraStart = null;
   let facingYaw = Math.PI;
   let spinElapsed = -1;
   const stickInput = { x: 0, z: 0, pointerId: null };
@@ -634,6 +635,7 @@ export function installOrbit9ExplorationPreview(
       const cinematic = reactorCinematicPose(
         cinematicPhase === 'departure' ? 'departure' : 'arrival',
         seconds,
+        departureCameraStart,
       );
       if (cinematic.complete) {
         if (cinematicPhase === 'departure') {
@@ -673,6 +675,7 @@ export function installOrbit9ExplorationPreview(
     cameraPointer = null;
     motion.reset();
     cinematicPhase = 'arrival';
+    departureCameraStart = null;
     cinematicStarted = performance.now();
     held.clear();
     resetStick();
@@ -724,6 +727,7 @@ export function installOrbit9ExplorationPreview(
     spinButton.classList.remove('pressed');
     cameraPointer = null;
     cinematicPhase = 'none';
+    departureCameraStart = null;
     motion.reset();
     gateBeat.hidden = true;
     root.dataset.reactorBeat = 'none';
@@ -770,6 +774,11 @@ export function installOrbit9ExplorationPreview(
       // Keep the SAME actual enclosed 3D tunnel visible while the flight
       // renderer resumes behind this full-screen overlay. This removes
       // the momentary space skybox before the reactor boss becomes active.
+      departureCameraStart = {
+        eye: { x: camera.position.x, y: camera.position.y, z: camera.position.z },
+        aim: { x: cameraAimSmooth.x, y: cameraAimSmooth.y, z: cameraAimSmooth.z },
+        fov: camera.fov,
+      };
       cinematicPhase = 'departure';
       cinematicStarted = performance.now();
       motion.reset();
