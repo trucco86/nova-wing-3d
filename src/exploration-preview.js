@@ -47,6 +47,7 @@ const RUN_MULTIPLIER = 1.65;
 const SPIN_SECONDS = 0.72;
 const CLUE_POSITIONS = ORBIT9_CLUE_POSITIONS;
 const SURVIVOR = ORBIT9_SURVIVOR;
+const DOCK_RETURN = Object.freeze({ x: 17, z: 12, radius: 13 });
 const $ = (id) => document.getElementById(id);
 
 export function installOrbit9ExplorationPreview(
@@ -130,8 +131,8 @@ export function installOrbit9ExplorationPreview(
     statusUntil = elapsed + 4.5;
   }
 
-  function endArrival() {
-    if (cinematicPhase !== 'arrival') return;
+  function endArrival(force = false) {
+    if (cinematicPhase !== 'arrival' || (!force && elapsed < 2.2)) return;
     cinematicPhase = 'none';
     root.dataset.reactorBeat = 'walk';
     gateBeat.hidden = true;
@@ -184,6 +185,14 @@ export function installOrbit9ExplorationPreview(
       return near(...position);
     });
     const gate = reactorGateStatus(stats.found);
+    const dockDistance = Math.hypot(playerX - DOCK_RETURN.x, playerZ - DOCK_RETURN.z);
+    const nearest = need
+      .map(({ id }) => {
+        const idx = ORBIT9_EVIDENCE.findIndex((item) => item.id === id);
+        const [x, z] = CLUE_POSITIONS[idx];
+        return { id, distance: Math.hypot(x - playerX, z - playerZ) };
+      })
+      .sort((a, b) => a.distance - b.distance)[0];
     if (cinematicPhase !== 'none') {
       gateBeat.hidden = false;
       gateBeat.textContent =
@@ -192,22 +201,33 @@ export function installOrbit9ExplorationPreview(
           : gate.text;
     }
     if (stats.found === stats.required) {
-      objective.textContent = 'PORTÃO LIBERADO · RETORNE À NAVE PELO TÚNEL';
+      objective.textContent =
+        dockDistance <= DOCK_RETURN.radius
+          ? 'PORTÃO LIBERADO · EMBARQUE NA NAVE PARA ENTRAR NO REATOR'
+          : '3/3 ATIVADOS · VOLTE AO HANGAR (' + Math.round(dockDistance) + 'm)';
     } else if (closeClue) {
       const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === closeClue.id)?.name;
       objective.textContent = moduleName + ' · PRESSIONE ATIVAR / E';
-    } else {
-      objective.textContent = 'LOCALIZE E ATIVE CIRCUITOS, REFRIGERAÇÃO E MOTORES';
+    } else if (nearest) {
+      const moduleName = DEVASTADOR_ACCESS_MODULES.find(({ id }) => id === nearest.id)?.name;
+      objective.textContent = 'SIGA O SINAL ' + moduleName + ' · ' + Math.round(nearest.distance) + 'm';
     }
-    scanButton.disabled = !closeClue || cinematicPhase === 'departure';
+    scanButton.disabled = !closeClue || cinematicPhase !== 'none';
     talkButton.hidden = true;
     talkButton.disabled = true;
     launchCombat.hidden = stats.found !== stats.required;
-    launchCombat.disabled = cinematicPhase === 'departure';
+    launchCombat.disabled =
+      cinematicPhase !== 'none' || dockDistance > DOCK_RETURN.radius;
     beacons.forEach((beacon, i) => {
       const acquired = state.clues.includes(ORBIT9_EVIDENCE[i].id);
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
       beacon.core.material.emissive.set(acquired ? '#164841' : '#106a9a');
+      beacon.column.material.opacity = acquired ? 0.08 : 0.22;
+      beacon.label.material.opacity = acquired ? 0.35 : 1;
+      beacon.label.visible = acquired || Math.hypot(
+        CLUE_POSITIONS[i][0] - playerX,
+        CLUE_POSITIONS[i][1] - playerZ,
+      ) < 65;
     });
   }
 
@@ -413,21 +433,50 @@ export function installOrbit9ExplorationPreview(
       scene.add(tunnelLight);
     }
     beacons = CLUE_POSITIONS.map(([x, z], i) => {
-      // An evidence marker must be beside the cat, not floating above its
-      // head and masquerading as blue fur in the third-person view. The
-      // gameplay clue coordinate stays exact; the display is a nearby prop.
-      const markerX = x + (i === 1 ? -3.4 : 3.4);
-      const markerZ = z - 3.2;
+      // The rendered activator and the real trigger must have EXACTLY the
+      // same location, otherwise the world contradicts the mini-map.
       const ring = new T.Mesh(new T.TorusGeometry(2.3, 0.22, 8, 28), line);
       ring.rotation.x = -Math.PI / 2;
-      ring.position.set(markerX, 0.4, markerZ);
+      ring.position.set(x, 0.22, z);
       scene.add(ring);
-      const core = new T.Mesh(new T.OctahedronGeometry(1.08, 1), mat('#55f2ff', '#106a9a'));
-      core.position.set(markerX, 4.9, markerZ);
+      // Flat illuminated pad, not an opaque pedestal that the pilot clips.
+      makeBox(3.2, 0.14, 3.2, line, x, 0.04, z);
+      const column = new T.Mesh(
+        new T.CylinderGeometry(0.44, 0.44, 12, 12, 1, true),
+        new T.MeshBasicMaterial({
+          color: '#41d9ff', transparent: true, opacity: 0.22,
+          depthWrite: false, side: T.DoubleSide,
+        }),
+      );
+      column.position.set(x, 6.1, z);
+      scene.add(column);
+      const core = new T.Mesh(new T.OctahedronGeometry(1.25, 1), mat('#55f2ff', '#106a9a'));
+      core.position.set(x, 4.5, z);
       core.name = 'orbit9-clue-' + i;
       scene.add(core);
-      makeBox(3.2, 1.5, 3.2, dark, markerX, 0.7, markerZ);
-      return { core, ring };
+      // A numbered in-world label makes all three devices identifiable on
+      // phone screens; canvas textures stay local and are disposed on exit.
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0b2335';
+      ctx.fillRect(0, 0, 512, 128);
+      ctx.strokeStyle = '#65e3ff';
+      ctx.lineWidth = 7;
+      ctx.strokeRect(4, 4, 504, 120);
+      ctx.fillStyle = '#e2faff';
+      ctx.font = 'bold 35px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText((i + 1) + '/3  ' + DEVASTADOR_ACCESS_MODULES[i].name, 256, 79, 480);
+      const label = new T.Sprite(
+        new T.SpriteMaterial({ map: new T.CanvasTexture(canvas), transparent: true, depthTest: false }),
+      );
+      label.name = 'reactor-module-label-' + (i + 1);
+      label.position.set(x, 13, z);
+      label.scale.set(13, 3.25, 1);
+      scene.add(label);
+      return { core, ring, column, label };
     });
     npc = new T.Group();
     const hologram = new T.Mesh(
@@ -498,8 +547,14 @@ export function installOrbit9ExplorationPreview(
       status.hidden = true;
       statusUntil = 0;
     }
+    // Give the landing shot enough time to establish the tunnel before the
+    // first sustained input takes over. A short key tap cannot delete it.
+    if (
+      cinematicPhase === 'arrival' && elapsed >= 2.2 &&
+      (held.size > 0 || stickInput.pointerId !== null || boostTouchHeld)
+    ) endArrival();
     const inputLocked =
-      cinematicPhase === 'departure' || !dialoguePanel.hidden || !choicePanel.hidden;
+      cinematicPhase !== 'none' || !dialoguePanel.hidden || !choicePanel.hidden;
     const keyX = Number(held.has('right')) - Number(held.has('left'));
     const keyZ = Number(held.has('down')) - Number(held.has('up'));
     const keyboardActive = keyX !== 0 || keyZ !== 0;
@@ -570,7 +625,7 @@ export function installOrbit9ExplorationPreview(
     }
     for (const [i, beacon] of beacons.entries()) {
       beacon.core.rotation.y += dt * 0.8;
-      beacon.core.position.y = 4 + Math.sin(elapsed * 2 + i * 2) * 0.45;
+      beacon.core.position.y = 4.5 + Math.sin(elapsed * 2 + i * 2) * 0.45;
     }
     npc.children[0].scale.y = 1 + Math.sin(elapsed * 1.7) * 0.06;
     updateOrbit9StageArt(stageArt, elapsed, state.clues.length);
@@ -676,6 +731,7 @@ export function installOrbit9ExplorationPreview(
     dialoguePanel.hidden = true;
     choicePanel.hidden = true;
     root.hidden = true;
+    for (const beacon of beacons) beacon.label.material.map?.dispose();
     beacons = [];
     mapSignals.replaceChildren();
     if (renderer) {
@@ -701,6 +757,10 @@ export function installOrbit9ExplorationPreview(
   function launchMission() {
     if (!integratedRequest || !reactorModulesComplete(state.clues)) {
       notification('ACESSO BLOQUEADO · ATIVE OS TRÊS MÓDULOS');
+      return;
+    }
+    if (Math.hypot(playerX - DOCK_RETURN.x, playerZ - DOCK_RETURN.z) > DOCK_RETURN.radius) {
+      notification('VOLTE À NAVE NO HANGAR ANTES DE ENTRAR NO REATOR.');
       return;
     }
     // Continue the SAME Stage 04 flight: the original reactor boss spawns
@@ -923,7 +983,7 @@ export function installOrbit9ExplorationPreview(
           orbit9Blocked(x, z)
         )
           return false;
-        endArrival();
+        endArrival(true);
         playerX = x;
         playerZ = z;
         motion.reset();
