@@ -10,6 +10,7 @@ import {
   ORBIT9_SPAWN,
   orbit9Blocked,
   orbit9Move,
+  orbit9SimulationDelta,
   orbit9District,
   orbit9MapPoint,
 } from '../src/orbit9-free-roam.js';
@@ -116,4 +117,22 @@ test('QA181 all reactor objectives and the return dock are connected by traversa
     );
   }
   assert.ok(Math.hypot(player.x - 17, player.z - 12) < 13, 'return to fighter docking range');
+});
+
+test('QA182 low-FPS simulation keeps physical motion without tunneling or tab-resume jumps', () => {
+  assert.equal(orbit9SimulationDelta(0.016), 0.016);
+  assert.equal(orbit9SimulationDelta(0.04), 0.04);
+  assert.equal(orbit9SimulationDelta(0.5), 0.25);
+  assert.equal(orbit9SimulationDelta(Infinity), 0);
+  assert.equal(orbit9SimulationDelta(-1), 0);
+  // Two slow rendered frames should cover real walking distance instead
+  // of only 2 * 40ms. All contacts still pass through swept resolution.
+  let player = { x: 0, z: 12 };
+  for (let frame = 0; frame < 2; frame++) {
+    const dt = orbit9SimulationDelta(0.25);
+    player = orbit9Move(player.x, player.z, 0, -11 * dt);
+  }
+  assert.ok(player.z < 7, 'slow render FPS cannot freeze exploration locomotion');
+  const largeBoost = orbit9Move(0, -25, 0, -22 * orbit9SimulationDelta(0.5));
+  assert.ok(largeBoost.z > -34, 'one slow boost frame cannot cross the reactor wall');
 });
