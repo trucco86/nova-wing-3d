@@ -3,7 +3,11 @@ import { developerToolsAllowed } from './developer-mode.js';
 import { DEVASTADOR_ACCESS_MODULES, reactorModulesComplete } from './devastador-reactor-access.js';
 import { createShowroomPilot } from './showroom-models.js';
 import { createShipModule } from './visuals.js';
-import { reactorCinematicPose, reactorGateStatus, REACTOR_ARRIVAL_SECONDS } from './reactor-access-cinematic.js';
+import {
+  reactorCinematicPose,
+  reactorGateStatus,
+  REACTOR_ARRIVAL_SECONDS,
+} from './reactor-access-cinematic.js';
 import {
   createOrbit9WalkRig,
   orbit9StickAxes,
