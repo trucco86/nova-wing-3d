@@ -16,6 +16,7 @@ import {
   orbit9RotateCamera,
   orbit9ToggleCameraMode,
   orbit9CameraPose,
+  orbit9CameraIntersectsSolid,
 } from './orbit9-camera.js';
 import { orbit9DialogueBeat, orbit9NextDialogue } from './orbit9-dialogue.js';
 import {
@@ -617,6 +618,8 @@ export function installOrbit9ExplorationPreview(
     });
     cameraGoal.set(pose.eye.x, pose.eye.y, pose.eye.z);
     camera.position.lerp(cameraGoal, Math.min(1, dt * 8));
+    // Smoothed orbit transitions must not interpolate THROUGH opaque pillars.
+    if (orbit9CameraIntersectsSolid(camera.position)) camera.position.copy(cameraGoal);
     cameraTarget.set(pose.aim.x, pose.aim.y, pose.aim.z);
     cameraAimSmooth.lerp(cameraTarget, Math.min(1, dt * 10));
     camera.lookAt(cameraAimSmooth);
@@ -1037,6 +1040,12 @@ export function installOrbit9ExplorationPreview(
               }
             : null,
           gait: walkRig?.snapshot() ?? null,
+          moduleVisuals: beacons.map((beacon, i) => ({
+            id: DEVASTADOR_ACCESS_MODULES[i].id,
+            x: beacon.core.position.x,
+            z: beacon.core.position.z,
+            visible: beacon.label.visible,
+          })),
           stick: { x: stickInput.x, z: stickInput.z },
           boosting: held.has('boost') || boostTouchHeld,
           spinning: spinElapsed >= 0,
