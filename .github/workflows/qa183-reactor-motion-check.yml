@@ -1,0 +1,51 @@
+name: QA183 deterministic reactor-movement smoke
+on:
+  push:
+    branches:
+      - integration/qa178-europa-premium-all-improvements-20261122
+permissions:
+  contents: write
+concurrency:
+  group: qa183-reactor-motion
+  cancel-in-progress: false
+jobs:
+  repair-and-check:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/qa178-europa-premium-all-improvements-20261122
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Reconcile formatted physics and deterministic HTML bundle
+        run: |
+          npm run format
+          npm run build
+          npm run build:check
+          npm run format:check
+          node --test tests/reactor-access-cinematic.test.mjs tests/orbit9-free-roam.test.mjs
+      - name: Commit QA183 build on QA branch only
+        run: |
+          git add -- src/orbit9-locomotion.js tests/reactor-access-cinematic.test.mjs index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='nova-wing-qa-bot' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(QA183): sync low-FPS reactor movement bundle'
+            git push origin HEAD:refs/heads/integration/qa178-europa-premium-all-improvements-20261122
+          fi
+      - run: npx playwright install --with-deps chromium
+      - name: One real on-foot desktop reactor journey without QA teleports
+        run: npx playwright test tests/browser/exploration-vertical-slice.spec.mjs --project=desktop --grep "walks to all three reactor modules" --workers=1 --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa183-walk-evidence
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
