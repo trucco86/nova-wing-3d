@@ -136,14 +136,30 @@ export function createFirstStageLaunchIntro(scene, camera) {
     toneMapped: false,
   });
   const exteriorCyan = new T.MeshBasicMaterial({
-    color: '#89eaff', transparent: true, opacity: 0.9,
-    depthWrite: false, toneMapped: false,
+    color: '#89eaff',
+    transparent: true,
+    opacity: 0.9,
+    depthWrite: false,
+    toneMapped: false,
   });
   const exteriorAmber = new T.MeshBasicMaterial({
-    color: '#ffd290', transparent: true, opacity: 0.78,
-    depthWrite: false, toneMapped: false,
+    color: '#ffd290',
+    transparent: true,
+    opacity: 0.78,
+    depthWrite: false,
+    toneMapped: false,
   });
-  const materials = [metal, panel, cyan, amber, glass, beamGlow, pulseAmber, exteriorCyan, exteriorAmber];
+  const materials = [
+    metal,
+    panel,
+    cyan,
+    amber,
+    glass,
+    beamGlow,
+    pulseAmber,
+    exteriorCyan,
+    exteriorAmber,
+  ];
   const meshes = [];
   const add = (name, size, at, material = metal) => {
     const mesh = new T.Mesh(new T.BoxGeometry(...size), material);
