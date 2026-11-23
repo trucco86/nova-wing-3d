@@ -125,6 +125,16 @@ test('selected pilot persists through the clean hangar launch and explicit skip'
   assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
 });
 
+test('takeoff visibly ramps selected fighter thrusters then resets when skipped', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(3.1);
+  assert.ok(h.game.snapshot().boostVisual.length > 1.1);
+  h.elements.get('launchSkip').onclick();
+  assert.equal(h.game.snapshot().boostVisual.length, 1);
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
