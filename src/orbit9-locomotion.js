@@ -105,7 +105,10 @@ export function createOrbit9MotionFilter() {
   let vz = 0;
   return {
     update(x, z, dt) {
-      const step = Math.max(0, Math.min(0.05, Number.isFinite(dt) ? dt : 0));
+      // The actor uses up to 250ms of real time at low render FPS.
+      // Applying only 50ms to acceleration left several meters of sideways
+      // drift when changing direction, pushing the cat behind solid racks.
+      const step = Math.max(0, Math.min(0.25, Number.isFinite(dt) ? dt : 0));
       const goalX = Number.isFinite(x) ? x : 0;
       const goalZ = Number.isFinite(z) ? z : 0;
       const frequency = goalX === 0 && goalZ === 0 ? 18 : 15;
