@@ -92,7 +92,9 @@ export function createOrbit9StageArt() {
   // while the camera follows the cat. The structures sit outside the
   // entire x=-12..12 main walkable lane.
   for (const side of [-1, 1]) {
-    for (const z of [10, -6, -22]) {
+    // The rear bay is behind the science trigger, never on top of module 1.
+    // Positions match the solid architecture in orbit9-free-roam.js.
+    for (const z of [10, -6, -36]) {
       emit('hull', side * 33.5, 4.5, z, 8.5, 8, 8.3);
       emit('armor', side * 29.2, 5.6, z, 1.0, 9.5, 7.5);
       emit('glass', side * 28.6, 6.5, z, 0.26, 4.5, 5.3);
