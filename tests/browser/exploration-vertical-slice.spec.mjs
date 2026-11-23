@@ -324,9 +324,11 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
   await expect(page.locator('#exploreLaunchCombat')).toBeDisabled();
   // Re-board on foot: keep the center-right passage outside the core
   // collider and the new solid maintenance-bay volumes.
-  // Exit archives south of cargo-west before crossing east; otherwise the
-  // route at z≈-78 scrapes the cargo collision volume and deadlocks.
-  await walk('KeyW', 'z', -86, true);
+  // Leave the archive through the broad WEST aisle, cross the OPEN north
+  // corridor, then reach the hangar. Never squeeze through the narrow gap
+  // between the reactor core and the cargo-east collision capsule.
+  await walk('KeyA', 'x', -43, true);
+  await walk('KeyS', 'z', -15, false);
   await walk('KeyD', 'x', 12, false);
   await walk('KeyS', 'z', 11, false);
   await expect(page.locator('#exploreLaunchCombat')).toBeEnabled();
