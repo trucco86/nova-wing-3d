@@ -12062,7 +12062,6 @@ body.in-mission:has(#bossHUD:not([hidden]))
   }
 }
 
-
 /* QA184: 320px portrait has less vertical room than 390px. The reactor
    notices must clear the left strategy chip without pushing the priority
    alert or hit-feedback below the top half of the gameplay. At 390px the
