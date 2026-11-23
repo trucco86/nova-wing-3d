@@ -98,6 +98,33 @@ test('stage-one hangar uses real player ship plus four escorts without advancing
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
 });
 
+test('selected pilot persists through the clean hangar launch and explicit skip', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.selectPilot('bob');
+  h.game.selectShip('specter');
+  h.game.selectShipColor('crimson');
+  h.game.start();
+  h.advance(0.5);
+  const during = h.game.snapshot();
+  assert.equal(during.loadout.pilot, 'bob');
+  assert.equal(during.loadout.ship, 'specter');
+  assert.equal(during.loadout.color, 'crimson');
+  assert.equal(during.fiveCats.playerIsLeader, true);
+  assert.equal(during.fiveCats.visible.length, 4);
+  assert.ok(during.fiveCats.visible.every(({ pilot }) => pilot !== 'bob'));
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), true);
+  h.elements.get('launchSkip').onclick();
+  const after = h.game.snapshot();
+  assert.equal(after.fiveCats.intro, 0);
+  assert.equal(after.loadout.pilot, 'bob');
+  assert.equal(after.loadout.ship, 'specter');
+  assert.equal(after.loadout.color, 'crimson');
+  assert.equal(h.elements.get('launchSkip').hidden, true);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
