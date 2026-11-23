@@ -17,6 +17,8 @@ test('Five Cats launches real player fighter with four escorts from enclosed han
   await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
   await expect(page.locator('#hud')).toBeHidden();
   await expect(page.locator('#touch')).toBeHidden();
+  for (const selector of ['#cameraView', '#pilotSwitch', '#pilotName', '#loadout'])
+    await expect(page.locator(selector)).toBeHidden();
   await expect(page.locator('#launchSkip')).toBeVisible();
   await page.screenshot({ path: info.outputPath('bia-five-cats-formation-mobile.png') });
   await page.evaluate(() => window.fixture.advance(5.6));
@@ -35,6 +37,7 @@ test('stage-one departure has readable hangar, gate crossing and approach on des
   let previous = 0;
   for (const [t, shot] of [
     [0.4, 'hangar'],
+    [2.1, 'exit'],
     [2.6, 'exit'],
     [5.3, 'approach'],
   ]) {
@@ -48,7 +51,9 @@ test('stage-one departure has readable hangar, gate crossing and approach on des
     expect(state.fiveCats.visibleTagCount).toBe(0);
     await expect(page.locator('#hud')).toBeHidden();
     await expect(page.locator('#touch')).toBeHidden();
-    await page.screenshot({ path: info.outputPath('launch-' + shot + '.png') });
+    for (const selector of ['#cameraView', '#pilotSwitch', '#pilotName', '#loadout'])
+      await expect(page.locator(selector)).toBeHidden();
+    await page.screenshot({ path: info.outputPath('launch-' + shot + '-' + Math.round(t * 10) + '.png') });
   }
   await page.evaluate(() => window.fixture.advance(1.5));
   await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
