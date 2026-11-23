@@ -102,11 +102,18 @@ test('QA181 all reactor objectives and the return dock are connected by traversa
     const distance = Math.hypot(x - player.x, z - player.z);
     const steps = Math.ceil(distance / 0.45);
     for (let i = 0; i < steps; i++) {
-      player = orbit9Move(player.x, player.z, (x - player.x) / (steps - i), (z - player.z) / (steps - i));
+      player = orbit9Move(
+        player.x,
+        player.z,
+        (x - player.x) / (steps - i),
+        (z - player.z) / (steps - i),
+      );
       assert.equal(orbit9Blocked(player.x, player.z), false);
     }
-    assert.ok(Math.hypot(x - player.x, z - player.z) < 0.08,
-      'P0 blocked corridor before waypoint (' + x + ',' + z + ')');
+    assert.ok(
+      Math.hypot(x - player.x, z - player.z) < 0.08,
+      'P0 blocked corridor before waypoint (' + x + ',' + z + ')',
+    );
   }
   assert.ok(Math.hypot(player.x - 17, player.z - 12) < 13, 'return to fighter docking range');
 });
