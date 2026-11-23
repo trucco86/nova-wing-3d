@@ -12061,3 +12061,14 @@ body.in-mission:has(#bossHUD:not([hidden]))
     max-height: min(18vh, 90px);
   }
 }
+
+
+/* QA184: 320px portrait has less vertical room than 390px. The reactor
+   notices must clear the left strategy chip without pushing the priority
+   alert or hit-feedback below the top half of the gameplay. At 390px the
+   QA182 250px rail remains unchanged, where it clears the orbit controls. */
+@media (max-width: 360px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(220px, calc(env(safe-area-inset-top, 0px) + 200px));
+  }
+}
