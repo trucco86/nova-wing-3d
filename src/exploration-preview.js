@@ -230,9 +230,12 @@ export function installOrbit9ExplorationPreview(
       beacon.core.material.color.set(acquired ? '#478a84' : '#55f2ff');
       beacon.core.material.emissive.set(acquired ? '#164841' : '#106a9a');
       beacon.column.material.opacity = acquired ? 0.08 : 0.22;
-      beacon.label.material.opacity = acquired ? 0.35 : 1;
-      beacon.label.visible =
-        acquired || Math.hypot(CLUE_POSITIONS[i][0] - playerX, CLUE_POSITIONS[i][1] - playerZ) < 65;
+      const distance = Math.hypot(CLUE_POSITIONS[i][0] - playerX, CLUE_POSITIONS[i][1] - playerZ);
+      // No hidden mission objectives: the previous 65m cutoff made only
+      // module one visibly labeled near the hangar, even with three map pins.
+      // Keep distant labels legible but a little dimmer to protect gameplay.
+      beacon.label.material.opacity = acquired ? 0.35 : distance > 65 ? 0.8 : 1;
+      beacon.label.visible = true;
     });
   }
 
