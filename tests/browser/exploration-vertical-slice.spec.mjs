@@ -207,6 +207,8 @@ test('the Five Cats pilot selected in the hangar disembarks in the stage-04 reac
 test('the cat moves relative to the orbital camera before unlocking the core', async ({ page }) => {
   test.setTimeout(90000);
   await openMidstageReactor(page);
+  // Gameplay begins only after the full tunnel landing camera move.
+  await expect(page.locator('#explorationOverlay')).toHaveAttribute('data-reactor-beat', 'walk', { timeout: 10000 });
   const before = await page.evaluate(() => window.__novaExploreQA.snapshot());
   await page.keyboard.down('KeyW');
   await expect
