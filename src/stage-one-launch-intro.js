@@ -34,15 +34,17 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
   const departure = ease((t - 1.6) / 2.8);
   const handoff = ease((t - 4.4) / 2.1);
   const squeeze = Math.max(0.46, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
+  const portrait = squeeze < 0.75;
+  const portraitCameraOffset = portrait ? 9 : 0;
   const shot = FIRST_STAGE_SHOTS.reduce((current, entry) => (t >= entry.at ? entry : current)).name;
   // All camera poses face THROUGH the same hangar gate. Avoid disorienting
   // frontal cuts and interpolate both camera position and look-at direction.
   const views = [
     // Wider stage establishment: the fully enclosed hangar is visible as a
     // long tunnel instead of reading as a flat wall behind the wingmates.
-    { eye: [4.8 * squeeze, 7.4, 31], aim: [0, 5.6, -43], fov: 74 },
+    { eye: [portrait ? 0 : 4.8 * squeeze, 7.4, 31 + portraitCameraOffset], aim: [0, 5.6, -43], fov: 74 },
     // Zoom/dolly-in through the open gate, still looking forward, not a cut.
-    { eye: [2.6 * squeeze, 8.2, 35], aim: [0, 5.8, -67], fov: 62 },
+    { eye: [portrait ? 0 : 2.6 * squeeze, 8.2, 35 + portraitCameraOffset], aim: [0, 5.8, -67], fov: 62 },
     // Exact approved chase camera: preserve the original gameplay handoff.
     { eye: [0, 12, 43], aim: [0, 7, -90], fov: 60 },
   ];
@@ -83,7 +85,8 @@ export function firstStageLaunchAt(seconds, aspect = 16 / 9) {
 export function firstStageLaunchWingPose(slot, seconds, aspect = 16 / 9) {
   const s = firstStageLaunchAt(seconds, aspect);
   const wing = Math.abs(slot);
-  const squeeze = Math.max(0.48, Math.min(1, Number.isFinite(aspect) ? aspect : 1));
+  const validAspect = Number.isFinite(aspect) ? aspect : 1;
+  const squeeze = validAspect < 0.75 ? Math.max(0.32, validAspect * 0.8) : Math.min(1, validAspect);
   const release = s.handoff * s.handoff;
   return {
     x: slot * (6.2 + 1.1 * s.departure) * squeeze + Math.sign(slot) * release * 28 * squeeze,
