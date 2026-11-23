@@ -38,3 +38,16 @@ Branch de integração específica, base original main v1.27.158, candidata prev
 - A chama dos propulsores da nave protagonista aumenta durante a saída e volta ao estado padrão ao pular ou terminar a cinemática.
 - Novos testes fixam deslocamento de parallax, fade para zero e ausência de propulsão presa após o skip.
 - Aceite visual continua dependente de revisão das capturas e do gameplay real no preview PR #440.
+
+## QA180.2 | Auditoria perceptiva e correções dos screenshots Playwright
+
+A captura da candidata anterior revelou quatro regressões reais mesmo com CI 6/6:
+
+1. O teto opaco ocupava o topo do enquadramento e escondia a profundidade do hangar.
+2. Os caças de escolta estavam próximos demais da câmera e eram cortados pelas laterais.
+3. A passagem pelo portão não era legível na captura de saída. As folhas deixavam a pista parcialmente aberta no primeiro quadro.
+4. Os controles `#cameraView`, `#pilotSwitch` e a indicação de vidas `#pilotName` vazavam durante a cinemática.
+
+Correções: câmera inicial mais baixa e centrada, telhado elevado e iluminado, porta frontal de largura completa, travelling ligeiramente mais lento pelo portão, formação compacta e mais distante, recolhimento para fora do eixo visual e CSS ocultando os comandos que faltavam. Para telas em retrato, a câmera recua e centraliza a composição.
+
+A revisão agora captura **quatro momentos** (0,4; 2,1; 2,6; 5,3 s) no navegador e mais três em retrato. Os testes automatizados verificam flags, geometria e elementos ocultos, mas a aprovação definitiva exige inspeção perceptiva das imagens e do gameplay. Não promover à produção apenas por CI verde.
