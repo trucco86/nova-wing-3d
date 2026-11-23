@@ -195,7 +195,9 @@ import {
 } from './combat-progression.js';
 import { createFiveCatsSquad } from './five-cats-runtime.js';
 import { renderRadioSpeaker, renderCinematicPortrait } from './radio-portraits.js';
-import { SQUAD_SPECIALS } from './five-cats-squad.js';
+import { SQUAD_SPECIALS, SQUAD_INTRO_DURATION } from './five-cats-squad.js';
+import { CINEMATIC_FLEET } from './cinematic-formation.js';
+import { createFirstStageLaunchIntro } from './stage-one-launch-intro.js';
 import { combatFeedback } from './combat-feedback.js';
 import { shouldWarnBoss } from './boss-telegraph.js';
 import { bossEncounterGate, SUBBOSS_BOSS_RECOVERY_SECONDS } from './encounter-separation.js';
@@ -358,6 +360,7 @@ export function createGame({
     arcadeDone = false;
   const world = createWorld(scene, random, dynamicFlight),
     post = postProcessor(renderer, scene, camera, { coarsePointer: coarsePointer.matches });
+  const firstStageIntro = dynamicFlight ? createFirstStageLaunchIntro(scene, camera) : null;
   let lastFrameCost = { drawCalls: null, triangles: null, postPasses: 0 };
   post.resize(innerWidth, innerHeight);
   const dashTrail = createMechaDashTrail(scene);
@@ -453,8 +456,21 @@ export function createGame({
         createWing(pilot) {
           const wing = fighter();
           wing.name = 'five-cats-wingman-' + pilot.id;
-          wing.userData.paint?.forEach((material) => material.color.set(pilot.color));
-          wing.scale.setScalar(1.1);
+          const identity = CINEMATIC_FLEET.find(({ id }) => id === pilot.id);
+          const model = createShipModule(identity?.model ?? 'nova7');
+          const palette = shipColorAt(identity?.color ?? 'polar');
+          // The same fighter and ship-module geometry as the real playable craft.
+          // Wingmates keep their own established ship models and paint.
+          scaleFighterVisual(wing, 1.02);
+          model.scale.setScalar(1.02);
+          model.traverse((part) => {
+            if (part.material?.userData.paintModule) part.material.color.set(palette.color);
+          });
+          wing.userData.paint?.forEach((material) =>
+            material.color.set(material.userData.paintAccent ? palette.accent : palette.color),
+          );
+          wing.userData.launchModule = model;
+          wing.add(model);
           return wing;
         },
         fireFrom(origin, target, damage, element, charged, source = 'squad-support') {
@@ -1623,7 +1639,9 @@ export function createGame({
     asteroidInterior?.reset(sectorIndex === 2);
     marvinRival?.reset();
     asteroidWallCooldown = 0;
-    squad?.begin(sectorIndex === 0 && enableSquadIntro && !skipSquadIntro);
+    const showLaunch = sectorIndex === 0 && enableSquadIntro && !skipSquadIntro;
+    squad?.begin(showLaunch);
+    firstStageIntro?.reset(showLaunch, pilotLoadout.pilot);
     skipSquadIntro = false;
     lastStage = -1;
     elapsed = 0;
@@ -1709,7 +1727,9 @@ export function createGame({
     settingsOpen = false;
     document.body.classList[current().theme === 'city' ? 'add' : 'remove']('city-bright');
     document.body.classList.add('in-mission', 'stage-intro');
-    stageIntroTime = 3;
+    document.body.classList.toggle('launch-cinematic', showLaunch);
+    $('launchSkip').hidden = !showLaunch;
+    stageIntroTime = firstStageIntro?.active ? SQUAD_INTRO_DURATION : 3;
     pickupFeedbackTime = 0;
     $('pickupFlash').hidden = true;
     $('aimReticle').hidden = true;
@@ -3050,6 +3070,11 @@ export function createGame({
     $('resultLabel').textContent = win ? 'MISSÃO CUMPRIDA' : 'TENTE NOVAMENTE';
   }
   function clearWorld() {
+    if (firstStageIntro?.active) {
+      firstStageIntro.finish();
+      document.body.classList.remove('launch-cinematic');
+      $('launchSkip').hidden = true;
+    }
     prepareGeneration++;
     bossShadersWarm = false;
     if (preparedBoss) {
@@ -3328,6 +3353,17 @@ export function createGame({
     } else if (state === 'playing' && appActive) music?.resume();
     return rpgTacticalPaused;
   }
+  function skipStageOneLaunch() {
+    if (state !== 'playing' || !firstStageIntro?.active || !(squad?.snapshot().intro > 0))
+      return false;
+    squad.skipIntro();
+    firstStageIntro.finish();
+    flightCamera.reset(player.position);
+    stageIntroTime = 0;
+    document.body.classList.remove('stage-intro', 'launch-cinematic');
+    $('launchSkip').hidden = true;
+    return true;
+  }
   function pause() {
     $('strategyDrawer').open = false;
     setRpgTacticalPaused(false);
@@ -3336,6 +3372,7 @@ export function createGame({
       pausedFrom = state;
       releaseControls();
       state = 'paused';
+      $('launchSkip').hidden = true;
       $('bossIncoming').hidden = true;
       music?.pause();
       mechaEngine?.silence();
@@ -3355,6 +3392,7 @@ export function createGame({
     } else if (state === 'paused' && !settingsOpen && !confirmation) {
       resumeAudio();
       state = pausedFrom;
+      $('launchSkip').hidden = !(state === 'playing' && squad?.snapshot().intro > 0);
       $('bossIncoming').hidden = state !== 'playing' || bossWarningTime <= 0;
       $('pauseMenu').hidden = true;
       $('strategyControls').hidden = !dynamicFlight || state !== 'playing';
@@ -3393,7 +3431,7 @@ export function createGame({
     settingsOpen = false;
     stageIntroTime = 0;
     setIntermissionUI(false);
-    document.body.classList.remove('in-mission', 'stage-intro', 'city-bright');
+    document.body.classList.remove('in-mission', 'stage-intro', 'launch-cinematic', 'city-bright');
     document.body.classList.add('menu');
     for (const id of [
       'pauseMenu',
@@ -3935,6 +3973,7 @@ export function createGame({
   if (!dynamicFlight) $('nextSector').textContent = 'SALTAR PARA O PRÓXIMO SETOR ↗';
   $('mapBack').onclick = backToShop;
   $('mapLaunch').onclick = nextSector;
+  $('launchSkip').onclick = skipStageOneLaunch;
   for (const k of Object.keys(SHOP)) $('buy' + k).onclick = () => buy(k);
   $('equipScatter').onclick = equipScatter;
   $('music').onclick = () => {
@@ -4571,6 +4610,15 @@ export function createGame({
         pilot: pilotLoadout.pilot,
         aspect: camera.aspect,
       });
+      const remaining = squad.snapshot().intro;
+      if (remaining > 0) firstStageIntro?.update(SQUAD_INTRO_DURATION - remaining, camera.aspect);
+      else {
+        firstStageIntro?.finish();
+        $('launchSkip').hidden = true;
+        document.body.classList.remove('launch-cinematic', 'stage-intro');
+        stageIntroTime = 0;
+        flightCamera.reset(player.position);
+      }
       return;
     }
     elapsed += dt;
@@ -7346,6 +7394,7 @@ export function createGame({
       shotMaterials.forEach((m) => m.dispose());
       upgradedShotMaterials.forEach((m) => m.dispose());
       squad?.destroy();
+      firstStageIntro?.destroy();
       barrierVisual.geometry.dispose();
       barrierVisual.material.dispose();
       marsDust?.geometry.dispose();
