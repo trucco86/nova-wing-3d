@@ -33,14 +33,17 @@ export function reactorCinematicPose(phase, seconds = 0) {
   // Both camera rails remain INSIDE the Devastador physical corridor.
   // No space skybox, portal flash or unbuilt station exterior is visible.
   const z = departure ? lerp(29, -11, t) : lerp(38, 21, t);
-  const shipZ = departure ? lerp(14, -25, t) : lerp(18, 13, t);
+  // The ship lands off-axis in an actual maintenance bay, never on top of
+  // the newly disembarked cat. On departure it rejoins the centerline.
+  const shipX = departure ? lerp(17, 0, t) : lerp(0, 17, t);
+  const shipZ = departure ? lerp(20, -25, t) : lerp(18, 20, t);
   return {
     phase: departure ? 'departure' : 'arrival',
     progress,
     complete: progress >= 1,
-    eye: { x: lerp(0.9, 0, t), y: departure ? 8.1 : lerp(9.3, 8.2, t), z },
-    aim: { x: 0, y: departure ? 8.6 : 10.8, z: departure ? shipZ - 16 : -32.1 },
-    ship: { x: 0, y: departure ? lerp(3.9, 5.5, t) : lerp(5.1, 3.3, t), z: shipZ },
+    eye: { x: departure ? lerp(7, 0, t) : lerp(0.9, 0, t), y: departure ? 8.1 : lerp(9.3, 8.2, t), z },
+    aim: { x: departure ? lerp(8, 0, t) : 0, y: departure ? 8.6 : 10.8, z: departure ? shipZ - 16 : -32.1 },
+    ship: { x: shipX, y: departure ? lerp(3.9, 5.5, t) : lerp(5.1, 3.3, t), z: shipZ },
     fov: departure ? lerp(55, 48, t) : lerp(50, 54, t),
   };
 }
