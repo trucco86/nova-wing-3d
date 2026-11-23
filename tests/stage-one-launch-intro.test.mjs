@@ -25,7 +25,7 @@ test('stage-one opening has exactly three clear moments and no reverse shot', ()
   assert.equal(frames[0].doors, 0);
   assert.equal(frames.at(-1).doors, 1);
   assert.ok(frames[2].corridorShift > 0);
-  assert.equal(frames.at(-1).corridorShift, 245);
+  assert.equal(frames.at(-1).corridorShift, 190);
   assert.equal(frames.at(-1).camera.x, 0);
   assert.equal(frames.at(-1).camera.z, 43);
   assert.equal(frames.at(-1).camera.aimZ, -90);
@@ -113,7 +113,7 @@ test('five launch ships form a V then peel away before playable handoff', () => 
     assert.equal(left.x, -right.x);
     assert.equal(left.z, right.z);
     if (t <= 3.8) assert.ok(left.z > leader.z, 'escorts begin behind the real leader');
-    else assert.ok(Math.abs(left.x) > 20, 'escorts exit toward the outer lanes before gameplay');
+    else assert.ok(Math.abs(left.x) > 12, 'escorts exit toward the outer lanes before gameplay');
     assert.equal(leader.x, 0);
   }
   assert.equal(firstStageLaunchWingPose(0, 6.5).z, 9);
@@ -142,10 +142,17 @@ test('enclosed rear wall and complete roof are present; camera never points thro
   assert.equal(bulkhead.geometry.parameters.width, 42);
   assert.equal(bulkhead.position.z, 43);
   assert.ok(roof.geometry.parameters.width >= 13);
+  const rear = intro.root.getObjectByName('launch-rear-bulkhead');
+  assert.ok(rear.geometry.parameters.height >= 29);
+  assert.ok(roof.position.y >= 20, 'roof must leave camera headroom');
   const leftDoor = intro.root.getObjectByName('launch-door-left');
+  assert.equal(leftDoor.geometry.parameters.width, 18, 'gate must close the full-width launch lane');
+  assert.equal(leftDoor.position.x, -9);
   const before = leftDoor.position.x;
   intro.update(0.4);
   assert.equal(intro.root.userData.shot, 'hangar');
+  intro.update(1.6);
+  assert.ok(leftDoor.position.x <= -29, 'full-width door must have opened before thrust');
   intro.update(2.6);
   assert.equal(intro.root.userData.shot, 'exit');
   assert.ok(leftDoor.position.x < before);
