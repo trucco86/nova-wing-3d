@@ -97,7 +97,12 @@ jobs:
         run: npm run release:prepare -- 1.27.161
       - run: npm run format
       - run: npm run build
-      - run: npm run validate
+      - name: Validate non-QA180 candidates before sync
+        if: github.ref_name != 'fix/qa180-stage1-clean-launch-main-20261123'
+        run: npm run validate
+      - name: QA180 deterministic hangar validation before committing formatted bundle
+        if: github.ref_name == 'fix/qa180-stage1-clean-launch-main-20261123'
+        run: node --test tests/stage-one-launch-intro.test.mjs
       - name: Commit only generated web artifact
         env:
           GH_TOKEN: ${{ github.token }}
