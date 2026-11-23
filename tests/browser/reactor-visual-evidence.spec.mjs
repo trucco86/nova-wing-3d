@@ -36,10 +36,13 @@ test('Stage 04 reactor modules stay actionable and visible in desktop/mobile UI'
     const rect = await action.boundingBox();
     expect(rect).not.toBeNull();
     // This checks the actionable DOM target, not 3D line-of-sight.
-    const hit = await page.evaluate(({ x, y }) => {
-      const element = document.elementFromPoint(x, y);
-      return Boolean(element?.closest('#exploreScan'));
-    }, { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+    const hit = await page.evaluate(
+      ({ x, y }) => {
+        const element = document.elementFromPoint(x, y);
+        return Boolean(element?.closest('#exploreScan'));
+      },
+      { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
+    );
     expect(hit, 'an overlay must not intercept the activation control').toBe(true);
     await page.screenshot({
       path: info.outputPath('reactor-module-' + (index + 1) + '-visual-evidence.png'),
