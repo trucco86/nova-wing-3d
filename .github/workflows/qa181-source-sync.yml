@@ -1,0 +1,36 @@
+name: QA181 one-shot source bundle and format reconciliation
+on:
+  push:
+    branches:
+      - integration/qa178-europa-premium-all-improvements-20261122
+permissions:
+  contents: write
+concurrency:
+  group: qa181-source-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/qa178-europa-premium-all-improvements-20261122
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Normalize QA181 sources and regenerate browser game
+        run: |
+          npm run format
+          npm run build
+      - name: Commit deterministic QA output only
+        run: |
+          git add -- src/exploration-preview.js tests/orbit9-free-roam.test.mjs tests/browser/exploration-vertical-slice.spec.mjs tests/browser/reactor-hud-lanes.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='nova-wing-qa-bot' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(QA181): format final fixes and synchronize distribution'
+            git push origin HEAD:refs/heads/integration/qa178-europa-premium-all-improvements-20261122
+          fi
