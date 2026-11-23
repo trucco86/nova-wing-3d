@@ -1,0 +1,36 @@
+name: QA180 temporary format and bundle sync
+on:
+  push:
+    branches:
+      - integration/qa178-europa-premium-all-improvements-20261122
+permissions:
+  contents: write
+concurrency:
+  group: qa180-source-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: github.repository == 'trucco86/nova-wing-3d' && github.ref == 'refs/heads/integration/qa178-europa-premium-all-improvements-20261122'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: integration/qa178-europa-premium-all-improvements-20261122
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Apply project formatter and deterministic distribution bundle
+        run: |
+          npm run format
+          npm run build
+      - name: Commit generated files to QA branch only
+        run: |
+          git add -- src/exploration-preview.js src/orbit9-free-roam.js src/orbit9-camera.js src/orbit9-stage-art.js src/reactor-access-cinematic.js tests/orbit9-free-roam.test.mjs tests/browser/exploration-vertical-slice.spec.mjs index.html
+          if ! git diff --cached --quiet; then
+            git -c user.name='nova-wing-qa-bot' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'chore(QA180): synchronize final reactor cinematic and generated bundle'
+            git push origin HEAD:refs/heads/integration/qa178-europa-premium-all-improvements-20261122
+          fi
