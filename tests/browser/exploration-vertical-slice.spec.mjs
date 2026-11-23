@@ -36,6 +36,12 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   await expect(page.locator('#explorationDialogue')).toBeHidden();
   await expect(page.locator('#explorationChoices')).toBeHidden();
   await expect(page.locator('.exploration-map-signal')).toHaveCount(3);
+  // Three labeled devices must exist in the 3D world, not only on the map.
+  const inWorld = await page.evaluate(() => window.__novaExploreQA.snapshot().moduleVisuals);
+  expect(inWorld).toHaveLength(3);
+  expect(inWorld.map(({ x, z }) => [x, z])).toEqual([
+    [-38, -18], [39, -55], [-37, -82],
+  ]);
   // The disembark is part of Stage 04, but only the walking scene renders:
   // neither the campaign clock nor the underlying flight should keep ticking.
   const suspended = await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds);
@@ -49,11 +55,17 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
   ]) {
     expect(await page.evaluate(([a, b]) => window.__novaExploreQA.moveTo(a, b), [x, z])).toBe(true);
     await expect(page.locator('#explorationDistrict')).toHaveText(district);
+    expect(await page.evaluate((i) => window.__novaExploreQA.snapshot().moduleVisuals[i].visible, modules - 1)).toBe(true);
     await expect(page.locator('#exploreScan')).toBeEnabled();
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS ' + modules + '/3');
   }
   await expect(page.locator('#exploreLaunchCombat')).toBeVisible();
+  await expect(page.locator('#exploreLaunchCombat')).toBeDisabled();
+  // Returning to the REAL fighter docking bay is required, not instant
+  // re-entry from the remote archive.
+  expect(await page.evaluate(() => window.__novaExploreQA.moveTo(17, 12))).toBe(true);
+  await expect(page.locator('#exploreLaunchCombat')).toBeEnabled();
   const prior = await page.evaluate(() => window.__novaExploreQA.snapshot().game);
   expect(prior.reactorAccess.completed).toBe(false);
   await page.screenshot({ path: info.outputPath('devastador-access-three-modules.png') });
@@ -260,23 +272,15 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     await page.locator('#exploreScan').click();
     await expect(page.locator('#explorationProgress')).toContainText('MÓDULOS 2/3');
 
-    // Return to the unobstructed upper corridor before crossing the hall.
-    // The core at (0,-44) must remain solid, not be walked through.
-    // Cross via the northern open aisle: the research pillar at (-22,-44)
-    // blocks a direct westward crossing when keyboard/camera drift lowers Z.
-    // Keep the test on real walking controls, without QA teleportation.
-    await walk('KeyS', 'z', 8, false);
-    // The open northern aisle is 74m wide. Do not disable sprint for the
-    // entire crossing: low-FPS WebGL runners otherwise time out with the
-    // avatar still moving, rather than detecting a real collision.
-    // All steps still use actual keyboard inputs and physical contact.
-    await walk('KeyA', 'x', -36, true);
-    // Cross the long unobstructed western aisle while sprinting. The
-    // archive's physical lip is near z=-79, so slow down for its final 8m
-    // instead of overstepping the module's 8.5m activation radius.
+    // Maintenance bays are now PHYSICAL. Route east of the racks, cross
+    // between corridors at z=-15, then use the western aisle to archives.
+    await walk('KeyD', 'x', 43, false);
+    await walk('KeyS', 'z', -15, false);
+    await walk('KeyA', 'x', -43, true);
     await walk('KeyW', 'z', -70, true);
     await page.keyboard.up('Shift');
     await walk('KeyW', 'z', -78.5, true);
+    await walk('KeyD', 'x', -37, false);
     // If a slow renderer/runner overshoots the target, correct on foot using
     // the SAME player controls. Do not use the privileged QA teleport.
     for (let attempt = 0; attempt < 4; attempt++) {
@@ -304,6 +308,13 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
   expect(walked.quest.clues).toHaveLength(3);
   expect(walked.game.state).toBe('reactor-access');
   await page.screenshot({ path: info.outputPath('devastador-three-modules-real-walk.png') });
+  await expect(page.locator('#exploreLaunchCombat')).toBeDisabled();
+  // Re-board on foot: keep the center-right passage outside the core
+  // collider and the new solid maintenance-bay volumes.
+  await walk('KeyD', 'x', 12, false);
+  await walk('KeyS', 'z', 11, false);
+  await expect(page.locator('#exploreLaunchCombat')).toBeEnabled();
+  await page.screenshot({ path: info.outputPath('devastador-return-to-dock.png') });
   await page.locator('#exploreLaunchCombat').click();
   await expect(page.locator('#explorationOverlay')).toBeHidden();
   await expect
