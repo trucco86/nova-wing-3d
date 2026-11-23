@@ -41,8 +41,16 @@ export function reactorCinematicPose(phase, seconds = 0) {
     phase: departure ? 'departure' : 'arrival',
     progress,
     complete: progress >= 1,
-    eye: { x: departure ? lerp(7, 0, t) : lerp(0.9, 0, t), y: departure ? 8.1 : lerp(9.3, 8.2, t), z },
-    aim: { x: departure ? lerp(8, 0, t) : 0, y: departure ? 8.6 : 10.8, z: departure ? shipZ - 16 : -32.1 },
+    eye: {
+      x: departure ? lerp(7, 0, t) : lerp(0.9, 0, t),
+      y: departure ? 8.1 : lerp(9.3, 8.2, t),
+      z,
+    },
+    aim: {
+      x: departure ? lerp(8, 0, t) : 0,
+      y: departure ? 8.6 : 10.8,
+      z: departure ? shipZ - 16 : -32.1,
+    },
     ship: { x: shipX, y: departure ? lerp(3.9, 5.5, t) : lerp(5.1, 3.3, t), z: shipZ },
     fov: departure ? lerp(55, 48, t) : lerp(50, 54, t),
   };

@@ -34,7 +34,10 @@ test('QA179 3D arrival and reboarding remain INSIDE the same carrier tunnel, not
   assert.equal(gate.complete, true);
   for (const pose of [intro, dock, departure, gate]) {
     assert.ok(pose.eye.z >= -12 && pose.eye.z <= 40, 'camera stays in authored corridor');
-    assert.ok(pose.aim.z >= -46 && pose.aim.z <= 7, 'camera points inside the built docking corridor');
+    assert.ok(
+      pose.aim.z >= -46 && pose.aim.z <= 7,
+      'camera points inside the built docking corridor',
+    );
     assert.ok(pose.ship.z >= -25 && pose.ship.z <= 20);
   }
 });
