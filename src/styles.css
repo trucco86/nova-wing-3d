@@ -12050,3 +12050,14 @@ body.in-mission:has(#bossHUD:not([hidden]))
     max-width: calc(100vw - 24px);
   }
 }
+
+/* QA182: portrait reactor HUD. QA181 390x844 screenshot showed the critical
+   warning directly over the left strategy/orbit controls (both at y~145).
+   Preserve the boss HP on the right, controls on the left and reserve a
+   separate left-side notification lane BELOW the control cluster. */
+@media (max-width: 550px) and (min-height: 551px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(250px, calc(env(safe-area-inset-top, 0px) + 230px));
+    max-height: min(18vh, 90px);
+  }
+}
