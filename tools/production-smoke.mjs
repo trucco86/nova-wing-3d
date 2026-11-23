@@ -35,3 +35,5 @@ try {
   if (!control?.ok()) throw new Error('Control Center HTTP status: ' + control?.status());
   console.log('Production smoke passed:', JSON.stringify(state));
 } finally {
+  await browser.close();
+}
