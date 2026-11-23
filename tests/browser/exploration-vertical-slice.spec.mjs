@@ -44,6 +44,7 @@ test('Stage 04 activates three modules before resuming the SAME reactor boss enc
     [39, -55],
     [-37, -82],
   ]);
+  expect(inWorld.every((module) => module.visible)).toBe(true);
   // The disembark is part of Stage 04, but only the walking scene renders:
   // neither the campaign clock nor the underlying flight should keep ticking.
   const suspended = await page.evaluate(() => window.__novaExploreQA.snapshot().game.seconds);
