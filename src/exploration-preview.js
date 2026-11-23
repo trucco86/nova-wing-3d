@@ -136,6 +136,9 @@ export function installOrbit9ExplorationPreview(
     root.dataset.reactorBeat = 'walk';
     gateBeat.hidden = true;
     if (pilot) pilot.visible = true;
+    // Park the selected real ship in the side docking bay. Leaving it on the
+    // center aisle would clip through the cat's head in third-person view.
+    dockingShip?.position.set(17, 3.3, 20);
     // Resume from the real player camera, not the station-wide cinematic.
     const pose = orbit9CameraPose(playerX, playerZ, {
       ...cameraState,
