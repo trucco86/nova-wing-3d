@@ -1,6 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reactorCinematicPose, reactorGateStatus, REACTOR_ARRIVAL_SECONDS, REACTOR_DEPARTURE_SECONDS } from '../src/reactor-access-cinematic.js';
+import {
+  reactorCinematicPose,
+  reactorGateStatus,
+  REACTOR_ARRIVAL_SECONDS,
+  REACTOR_DEPARTURE_SECONDS,
+} from '../src/reactor-access-cinematic.js';
 import { createOrbit9MotionFilter } from '../src/orbit9-locomotion.js';
 
 test('QA179 gate reports lock and three distinct module states before the boss', () => {

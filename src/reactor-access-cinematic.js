@@ -18,9 +18,10 @@ export function reactorGateStatus(activated = 0) {
   return {
     activated: count,
     locked: count !== REACTOR_GATE_MODULES,
-    text: count === REACTOR_GATE_MODULES
-      ? 'PORTÃO LIBERADO · RETORNE À NAVE · TÚNEL DO REATOR'
-      : 'PORTÃO BLOQUEADO · ATIVE OS 3 MÓDULOS (' + count + '/3)',
+    text:
+      count === REACTOR_GATE_MODULES
+        ? 'PORTÃO LIBERADO · RETORNE À NAVE · TÚNEL DO REATOR'
+        : 'PORTÃO BLOQUEADO · ATIVE OS 3 MÓDULOS (' + count + '/3)',
   };
 }
 

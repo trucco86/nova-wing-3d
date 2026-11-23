@@ -330,7 +330,8 @@ export function updateOrbit9StageArt(root, elapsed, activatedCount = 0) {
       mesh.material.color.set(i < count ? '#73e8ff' : '#fa755c');
     });
     if (count === 3 && gate.unlockedAt === null) gate.unlockedAt = t;
-    const pct = gate.unlockedAt === null ? 0 : Math.max(0, Math.min(1, (t - gate.unlockedAt) / 1.35));
+    const pct =
+      gate.unlockedAt === null ? 0 : Math.max(0, Math.min(1, (t - gate.unlockedAt) / 1.35));
     gate.progress = pct * pct * (3 - 2 * pct);
     for (const { mesh, side } of gate.doors) mesh.position.x = side * (3.38 + 8.4 * gate.progress);
   }

@@ -129,7 +129,6 @@ test('follow camera keeps the entrance deck visible and avoids giant foreground 
   assert.ok(survey.eye.y > reactor.eye.y, 'panoramic mode stays visibly elevated');
 });
 
- 
 test('QA179 reactor gate has three physical-looking lock lamps and retractable visual door', () => {
   const root = createOrbit9StageArt();
   const gate = root.userData.reactorGate;

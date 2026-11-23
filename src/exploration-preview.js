@@ -221,8 +221,11 @@ export function installOrbit9ExplorationPreview(
     state = result.state;
     notification(
       result.accepted
-        ? 'MÓDULO ATIVADO · ' + DEVASTADOR_ACCESS_MODULES[idx].name +
-          ' · PORTÃO ' + state.clues.length + '/3'
+        ? 'MÓDULO ATIVADO · ' +
+            DEVASTADOR_ACCESS_MODULES[idx].name +
+            ' · PORTÃO ' +
+            state.clues.length +
+            '/3'
         : 'MÓDULO JÁ ATIVADO.',
     );
     if (result.accepted && state.clues.length === 3)
@@ -508,12 +511,7 @@ export function installOrbit9ExplorationPreview(
     const previousX = playerX;
     const previousZ = playerZ;
     const direction = motion.update(moveX / len, moveZ / len, dt);
-    const moved = orbit9Move(
-      playerX,
-      playerZ,
-      direction.x * speed * dt,
-      direction.z * speed * dt,
-    );
+    const moved = orbit9Move(playerX, playerZ, direction.x * speed * dt, direction.z * speed * dt);
     playerX = moved.x;
     playerZ = moved.z;
     const actualX = playerX - previousX;
@@ -649,7 +647,9 @@ export function installOrbit9ExplorationPreview(
       return false;
     }
     const pilotName = game.snapshot?.().loadout?.pilotName ?? 'FIVE CATS';
-    notification(pilotName + ': O PORTÃO DO REATOR ESTÁ BLOQUEADO. Ative os três módulos para abrir.');
+    notification(
+      pilotName + ': O PORTÃO DO REATOR ESTÁ BLOQUEADO. Ative os três módulos para abrir.',
+    );
     updateUI();
     rafId = requestAnimationFrame(frame);
     return true;

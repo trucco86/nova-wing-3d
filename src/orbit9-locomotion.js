@@ -97,7 +97,6 @@ export function orbit9CameraRelativeAxes(x, z, yaw = 0) {
   };
 }
 
- 
 // A short acceleration/braking ramp prevents keyboard/virtual-stick movement
 // from jumping immediately to full velocity. It is input-relative, so the
 // actual collision resolver remains the authority for distance travelled.
