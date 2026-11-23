@@ -27,6 +27,9 @@ test('QA179 3D arrival and reboarding remain INSIDE the same carrier tunnel, not
   const departure = reactorCinematicPose('departure', 0);
   const gate = reactorCinematicPose('departure', REACTOR_DEPARTURE_SECONDS);
   assert.ok(departure.ship.z > gate.ship.z);
+  assert.equal(dock.ship.x, 17, 'docked fighter stays off the walking lane');
+  assert.equal(departure.ship.x, 17, 'reboarding starts from the same side bay');
+  assert.equal(gate.ship.x, 0, 'fighter returns to the centerline inside the tunnel');
   assert.ok(departure.eye.z > gate.eye.z);
   assert.equal(gate.complete, true);
   for (const pose of [intro, dock, departure, gate]) {
