@@ -3,7 +3,6 @@ import {
   SQUAD_PILOTS,
   SQUAD_INTRO_DURATION,
   SQUAD_SPECIALS,
-  formationPose,
   allySortieFlightAt,
   allySortieFlightPose,
   overdriveWingPose,
