@@ -103,6 +103,10 @@ export function createFiveCatsSquad({
   let overdriveAge = 0,
     overdriveExit = 0;
   let beam = null;
+  function resetLaunchThrusters() {
+    for (const flame of player.userData.flames ?? []) flame.scale.y = 1;
+  }
+
   function stopBeam() {
     if (!beam) return;
     for (const mesh of beam) {
@@ -131,12 +135,14 @@ export function createFiveCatsSquad({
     reset();
     intro = firstSector ? SQUAD_INTRO_DURATION : 0;
     player.visible = true;
+    resetLaunchThrusters();
   }
   function skipIntro() {
     if (intro <= 0) return false;
     intro = 0;
     introBeat = '';
     player.visible = true;
+    resetLaunchThrusters();
     formationStatus.hidden = true;
     wings.forEach(({ mesh, label }) => {
       mesh.visible = false;
@@ -200,6 +206,10 @@ export function createFiveCatsSquad({
     if (intro > 0) {
       const t = SQUAD_INTRO_DURATION - intro;
       const launch = firstStageLaunchAt(t, aspect);
+      // As the gate recedes, the selected fighter visibly accelerates.
+      // The physical player position and controls remain unchanged.
+      for (const flame of player.userData.flames ?? [])
+        flame.scale.y = 1 + launch.departure * (1 - launch.handoff) * 1.6;
       introPilot = pilot;
       if (introBeat !== launch.beat) {
         introBeat = launch.beat;
@@ -239,6 +249,7 @@ export function createFiveCatsSquad({
       intro = Math.max(0, intro - dt);
       if (intro === 0) {
         player.visible = true;
+        resetLaunchThrusters();
         formationStatus.hidden = true;
         wings.forEach(({ mesh, label }) => {
           mesh.visible = false;
