@@ -83,7 +83,10 @@ test('stage-one hangar uses real player ship plus four escorts without advancing
   h.advance(1);
   const first = h.game.snapshot();
   assert.equal(first.fiveCats.visible.length, 4);
-  assert.equal(first.fiveCats.visible.some((p) => p.pilot === 'bia'), false);
+  assert.equal(
+    first.fiveCats.visible.some((p) => p.pilot === 'bia'),
+    false,
+  );
   assert.equal(first.fiveCats.playerIsLeader, true);
   assert.equal(first.fiveCats.visibleTagCount, 0);
   assert.ok(first.seconds < 0.02);

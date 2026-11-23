@@ -11907,7 +11907,6 @@ body.intermission-active #shop #nextSector {
   }
 }
 
-
 /* QA168: stage-one hangar cinematics must contain ONLY the actual ships,
    their sealed bay and the optional SKIP button. No battle tags or input HUD. */
 body.launch-cinematic
@@ -11963,4 +11962,3 @@ body.launch-cinematic #launchSkip:not([hidden]) {
 #launchSkip[hidden] {
   display: none !important;
 }
-

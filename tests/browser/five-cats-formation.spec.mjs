@@ -26,12 +26,18 @@ test('Five Cats launches real player fighter with four escorts from enclosed han
   expect(await page.evaluate(() => window.fixture.game.snapshot().seconds)).toBeGreaterThan(0.5);
 });
 
-test('stage-one departure has readable hangar, gate crossing and approach on desktop/mobile', async ({ page }, info) => {
+test('stage-one departure has readable hangar, gate crossing and approach on desktop/mobile', async ({
+  page,
+}, info) => {
   test.setTimeout(120000);
   await page.goto('/__dynamic.html?sector=0&intro=1');
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   let previous = 0;
-  for (const [t, shot] of [[0.4, 'hangar'], [2.6, 'exit'], [5.3, 'approach']]) {
+  for (const [t, shot] of [
+    [0.4, 'hangar'],
+    [2.6, 'exit'],
+    [5.3, 'approach'],
+  ]) {
     await page.evaluate((delta) => window.fixture.advance(delta), t - previous);
     previous = t;
     const state = await page.evaluate(() => window.fixture.game.snapshot());
