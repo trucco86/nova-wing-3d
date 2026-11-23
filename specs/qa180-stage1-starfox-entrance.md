@@ -24,3 +24,9 @@ A versão principal ainda executava a animação antiga de cinco naves substitut
 ## Política
 
 Branch de integração específica, base original main v1.27.158, candidata prevista 1.27.161. Reconciliar versão se a PR #431 for integrada antes. **Draft, sem merge, sem publicação em produção até aprovação.**
+
+## Integração contínua
+
+- Recriada a distribuição web após a remoção do import obsoleto `formationPose`, com fonte e `index.html` sincronizados.
+- O teste adicional protege piloto Bob, nave Specter e cor Crimson após o botão PULAR DECOLAGEM.
+- Exigir CI completa no commit humano final, porque pushes originados por `github-actions[bot]` podem registrar checks não executados.
