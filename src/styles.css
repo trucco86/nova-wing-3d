@@ -11906,3 +11906,60 @@ body.intermission-active #shop #nextSector {
     width: 45px;
   }
 }
+
+/* QA177: reactor boss owns the center HUD lane. Mission-title text is redundant
+   once the actual boss HP is on screen. Alerts/radio move to a dedicated side
+   lane so they never print through the boss name, health bar or instructions. */
+body.in-mission:has(#bossHUD:not([hidden])) #hud .mission {
+  visibility: hidden;
+}
+body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+  top: max(222px, calc(env(safe-area-inset-top, 0px) + 205px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  right: auto;
+  transform: none;
+  width: min(330px, calc(100vw - 32px));
+  max-height: min(24vh, 132px);
+  align-items: flex-start;
+}
+body.in-mission:has(#bossHUD:not([hidden])) #hudNotices > #comms.active {
+  max-width: 100%;
+}
+/* Do not pile a radio conversation on top of a critical attack/warning.
+   The radio DOM and message remain intact until a priority alert clears. */
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#criticalWarning:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#shieldWarning:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#bossIncoming:not([hidden]))
+  > #comms.active,
+body.in-mission:has(#bossHUD:not([hidden]))
+  #hudNotices:has(#attackWarning:not(:empty):not([data-severity='info']))
+  > #comms.active {
+  display: none;
+}
+/* Portrait: boss HP and the warning stack occupy opposite side lanes;
+   preserve the central targeting corridor and all touch controls. */
+@media (max-width: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(272px, calc(env(safe-area-inset-top, 0px) + 246px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: min(196px, calc(100vw - 142px));
+    max-height: min(19vh, 86px);
+  }
+}
+/* Short landscape: place the radio/alerts below the left launch controls,
+   never across the central boss name and HP. */
+@media (min-width: 551px) and (max-height: 550px) {
+  body.in-mission:has(#bossHUD:not([hidden])) #hudNotices {
+    top: max(218px, calc(env(safe-area-inset-top, 0px) + 196px));
+    left: max(14px, env(safe-area-inset-left, 0px));
+    right: auto;
+    width: min(245px, 32vw);
+    max-height: min(29vh, 90px);
+  }
+}
