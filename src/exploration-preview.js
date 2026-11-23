@@ -32,6 +32,7 @@ import {
   ORBIT9_SPAWN,
   orbit9Blocked,
   orbit9Move,
+  orbit9SimulationDelta,
   orbit9MapPoint,
   orbit9District,
 } from './orbit9-free-roam.js';
@@ -553,7 +554,7 @@ export function installOrbit9ExplorationPreview(
 
   function frame(stamp) {
     if (!active || !renderer) return;
-    const dt = Math.min(0.04, (stamp - (lastFrame || stamp)) / 1000);
+    const dt = orbit9SimulationDelta((stamp - (lastFrame || stamp)) / 1000);
     lastFrame = stamp;
     elapsed += dt;
     // Mission instructions stay in the top rail; transient notifications
