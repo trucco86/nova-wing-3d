@@ -75,18 +75,20 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
   }
 });
 
-test('new mission shows Bia-led formation before gameplay clock starts', (t) => {
+test('stage-one hangar uses real player ship plus four escorts without advancing mission clock', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   assert.ok(h.game.snapshot().fiveCats.intro > 0);
   h.advance(1);
   const first = h.game.snapshot();
-  assert.equal(first.fiveCats.visible.length, 5);
-  assert.equal(first.fiveCats.visible.find((p) => p.pilot === 'bia').x, 0);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.equal(first.fiveCats.visible.some((p) => p.pilot === 'bia'), false);
+  assert.equal(first.fiveCats.playerIsLeader, true);
+  assert.equal(first.fiveCats.visibleTagCount, 0);
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
-  h.advance(4.1);
+  h.advance(5.6);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.fiveCats.visible.length, 0);
@@ -97,7 +99,7 @@ test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immed
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(6.6);
   const before = h.game.snapshot().strategy.arcana;
   h.key('KeyY');
   assert.ok(h.game.snapshot().fiveCats.plasmaTime > 0);
@@ -113,7 +115,7 @@ test('O launches Five Cats overdrive with actual wingman meshes and cooldown', (
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(6.6);
   h.key('KeyO');
   assert.ok(h.game.snapshot().fiveCats.overdriveTime > 0);
   h.advance(0.1);
