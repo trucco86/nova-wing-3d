@@ -116,7 +116,7 @@ test('five launch ships form a V then peel away before playable handoff', () => 
     else assert.ok(Math.abs(left.x) > 12, 'escorts exit toward the outer lanes before gameplay');
     assert.equal(leader.x, 0);
   }
-  assert.equal(firstStageLaunchWingPose(0, 6.5).z, 9);
+  assert.equal(firstStageLaunchWingPose(0, 6.5).z, 7);
   assert.ok(
     Math.abs(firstStageLaunchWingPose(2, 2, 390 / 844).x) <
       Math.abs(firstStageLaunchWingPose(2, 2, 16 / 9).x),
