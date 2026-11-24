@@ -89,8 +89,10 @@ test('stage-one hangar uses real player ship plus four escorts without advancing
   );
   assert.equal(first.fiveCats.playerIsLeader, true);
   assert.equal(first.fiveCats.visibleTagCount, 0);
-  assert.ok(first.fiveCats.visible.every(({ scale }) => scale > 0.6 && scale < 0.85),
-    'escorts remain smaller than the selected playable fighter');
+  assert.ok(
+    first.fiveCats.visible.every(({ scale }) => scale > 0.6 && scale < 0.85),
+    'escorts remain smaller than the selected playable fighter',
+  );
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
   h.advance(5.6);
