@@ -45,11 +45,7 @@ export function summarizeGameplayObservations(reports) {
     missing.length > 0 ||
     observed.some((item) => item.status === 'BLOCKED') ||
     observed.some((item) => item.checks === 0 || item.checkpoints === 0);
-  const status = blocked
-    ? 'BLOCKED'
-    : findings.length
-      ? 'FINDINGS'
-      : 'OBSERVED_OK';
+  const status = blocked ? 'BLOCKED' : findings.length ? 'FINDINGS' : 'OBSERVED_OK';
   const signature = [
     status,
     ...missing.map((id) => 'missing:' + id),
@@ -86,8 +82,7 @@ export function gameplaySummaryMarkdown(summary) {
   ];
   for (const item of summary.observed) {
     lines.push(
-      '| ' + item.id + ' | ' + item.status + ' | ' + item.checks +
-        ' | ' + item.checkpoints + ' |',
+      '| ' + item.id + ' | ' + item.status + ' | ' + item.checks + ' | ' + item.checkpoints + ' |',
     );
   }
   for (const id of summary.missing) lines.push('| ' + id + ' | AUSENTE | 0 | 0 |');

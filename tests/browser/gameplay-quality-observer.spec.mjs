@@ -19,8 +19,7 @@ for (const scenario of scenarios) {
     let error = null;
     page.on('pageerror', (event) => errors.push(event.message));
     const snapshot = () => page.evaluate(() => window.fixture.game.snapshot());
-    const advance = (seconds) =>
-      page.evaluate((time) => window.fixture.advance(time), seconds);
+    const advance = (seconds) => page.evaluate((time) => window.fixture.advance(time), seconds);
     const check = (id, ok, expected, observed) => {
       checks.push({ id, ok: Boolean(ok), expected, observed });
     };
@@ -108,20 +107,10 @@ for (const scenario of scenarios) {
         });
         const flank = await capture('reactor-flank');
         const angle = flank.strategy.orbitAngle;
-        check(
-          'orbit',
-          Math.abs(angle - entry.strategy.orbitAngle) > 1,
-          'angle delta > 1',
-          angle,
-        );
+        check('orbit', Math.abs(angle - entry.strategy.orbitAngle) > 1, 'angle delta > 1', angle);
       } else {
         const panel = initial.europaTunnel?.[0];
-        check(
-          'intact-panel',
-          panel?.remainingSolidPanels === 1,
-          1,
-          panel?.remainingSolidPanels,
-        );
+        check('intact-panel', panel?.remainingSolidPanels === 1, 1, panel?.remainingSolidPanels);
         await page.evaluate(() => {
           const { game, advance } = window.fixture;
           for (let i = 0; i < 1400; i++) {
