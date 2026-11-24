@@ -28,6 +28,8 @@ export function summarizeGameplayObservations(reports) {
         status: report.status,
         checks: report.checks?.length ?? 0,
         checkpoints: report.checkpoints?.length ?? 0,
+        clip: report.video?.file ?? null,
+        triggers: report.video?.triggers ?? [],
       });
       if (report.status === 'BLOCKED') {
         findings.push({ id, check: 'executor', detail: report.error || 'Blocked' });
@@ -45,6 +47,7 @@ export function summarizeGameplayObservations(reports) {
     missing.length > 0 ||
     observed.some((item) => !['OBSERVED_OK', 'FINDINGS'].includes(item.status)) ||
     observed.some((item) => item.checks === 0 || item.checkpoints === 0) ||
+    observed.some((item) => item.status === 'FINDINGS' && !item.clip) ||
     observed.some(
       (item) => item.status === 'FINDINGS' && !findings.some((finding) => finding.id === item.id),
     );
@@ -80,15 +83,15 @@ export function gameplaySummaryMarkdown(summary) {
     '**Achados:** ' + summary.findings.length,
     '**Homologação humana:** pendente',
     '',
-    '| Jornada | Estado | Checagens | Capturas |',
-    '| --- | --- | ---: | ---: |',
+    '| Jornada | Estado | Checagens | Capturas | Vídeo para revisão |',
+    '| --- | --- | ---: | ---: | --- |',
   ];
   for (const item of summary.observed) {
     lines.push(
-      '| ' + item.id + ' | ' + item.status + ' | ' + item.checks + ' | ' + item.checkpoints + ' |',
+      '| ' + item.id + ' | ' + item.status + ' | ' + item.checks + ' | ' + item.checkpoints + ' | ' + (item.clip ?? 'Não necessário') + ' |',
     );
   }
-  for (const id of summary.missing) lines.push('| ' + id + ' | AUSENTE | 0 | 0 |');
+  for (const id of summary.missing) lines.push('| ' + id + ' | AUSENTE | 0 | 0 | Ausente |');
   if (summary.findings.length) {
     lines.push('', '## Achados para triagem', '');
     for (const item of summary.findings) {
