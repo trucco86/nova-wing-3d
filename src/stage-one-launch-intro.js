@@ -97,9 +97,9 @@ export function firstStageLaunchWingPose(slot, seconds, aspect = 16 / 9) {
   const squeeze = validAspect < 0.75 ? Math.max(0.32, validAspect * 0.8) : Math.min(1, validAspect);
   const release = s.handoff * s.handoff;
   return {
-    x: slot * (6.2 + 1.1 * s.departure) * squeeze + Math.sign(slot) * release * 28 * squeeze,
+    x: slot * (5.3 + 0.9 * s.departure) * squeeze + Math.sign(slot) * release * 28 * squeeze,
     y: 6 + wing * 0.65 + s.departure * 2.4 * (1 - s.handoff) + release * wing * 7,
-    z: 9 + wing * 2.4 - s.departure * wing * 2 - release * wing * 50,
+    z: 7 + wing * 1.8 - s.departure * wing * 1.6 - release * wing * 50,
     bank: -slot * (0.02 + 0.13 * s.departure + 0.35 * release),
   };
 }
@@ -267,12 +267,12 @@ export function createFirstStageLaunchIntro(scene, camera) {
   );
   repeat(
     'launch-side-gantry-rail',
-    [0.21, 2.2, 91],
+    [0.19, 0.42, 91],
     [
       [-17.4, 7.2, -8],
       [17.4, 7.2, -8],
     ],
-    amber,
+    panel,
   );
   repeat(
     'launch-side-deck-glass',
