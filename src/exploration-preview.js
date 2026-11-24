@@ -88,6 +88,7 @@ export function installOrbit9ExplorationPreview(
   let spinElapsed = -1;
   const stickInput = { x: 0, z: 0, pointerId: null };
   let boostTouchHeld = false;
+  let qaBlurCount = 0;
   let beacons = [];
   let npc = null;
   let rafId = 0;
@@ -718,6 +719,7 @@ export function installOrbit9ExplorationPreview(
   listen(window, 'keyup', keyUp);
   listen(window, 'resize', resize);
   listen(window, 'blur', () => {
+    qaBlurCount++;
     held.clear();
     resetStick();
     boostTouchHeld = false;
@@ -847,6 +849,14 @@ export function installOrbit9ExplorationPreview(
           gait: walkRig?.snapshot() ?? null,
           stick: { x: stickInput.x, z: stickInput.z },
           boosting: held.has('boost') || boostTouchHeld,
+          input: {
+            held: [...held],
+            locked: !dialoguePanel.hidden || !choicePanel.hidden,
+            blurCount: qaBlurCount,
+            frameStamp: lastFrame,
+            documentVisible: document.visibilityState === 'visible',
+            physicallyBlocked: orbit9Blocked(playerX, playerZ),
+          },
           spinning: spinElapsed >= 0,
           cameraVisualYaw: cameraYawVisual,
           district: orbit9District(playerX, playerZ).id,
