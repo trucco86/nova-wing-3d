@@ -37,6 +37,7 @@ for (const scenario of scenarios) {
     const recordedVideo = page.video();
     const recordingStartedAt = Date.now();
     const reviewEvents = [];
+    const reviews = [];
     const markReview = (id) =>
       reviewEvents.push({
         id,
@@ -139,6 +140,13 @@ for (const scenario of scenarios) {
           advance(0);
         });
         const flank = await capture('reactor-flank');
+        // Functional orbit can pass while animation, camera occlusion and
+        // framing remain subjective. Request a real clip for human review.
+        reviews.push({
+          id: 'reactor-orbit-framing',
+          reason: 'Validate camera composition and visibility during boss orbit',
+        });
+        markReview('reactor-orbit-framing');
         const angle = flank.strategy.orbitAngle;
         check('orbit', Math.abs(angle - entry.strategy.orbitAngle) > 1, 'angle delta > 1', angle);
       } else {
@@ -175,6 +183,7 @@ for (const scenario of scenarios) {
       checks,
       checkpoints,
       error,
+      reviews,
     });
     const reportDirectory = join('artifacts', 'gameplay-observer');
     await mkdir(reportDirectory, { recursive: true });
