@@ -64,3 +64,7 @@ Atualização visual:
 - Adicionadas verificações automáticas de proporções do rail e das escoltas. O teste que dependia de `z=9` foi atualizado para a posição física ajustada `z=7`.
 
 **Checkpoint técnico:** o workflow de sincronização gerou `index.html` no SHA `c39a216b`. O CI completo e as novas capturas devem ser avaliados no SHA humano subsequente antes do aceite. O preview/PR permanece isolado, sem produção nem merge.
+
+## Gate final de integração
+
+Aprovação técnica isolada não substitui a revisão das imagens de desktop e celular. Manter o PR em draft até o aceite explícito da experiência e confirmação de CI verde no mesmo SHA.
