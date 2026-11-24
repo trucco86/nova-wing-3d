@@ -40,6 +40,10 @@ test('findings produce a deterministic, deduplicable advisory signature', () => 
   const input = reports();
   input[0].status = 'FINDINGS';
   input[0].findings = [{ id: 'steering', ok: false, observed: 0 }];
+  input[0].video = {
+    file: 'city-desktop-review.mp4',
+    triggers: ['steering'],
+  };
   const first = summarizeGameplayObservations(input);
   input[0].findings[0].observed = 0.4;
   const second = summarizeGameplayObservations(input);
@@ -58,5 +62,12 @@ test('unknown status or empty findings fail closed', () => {
   input[0].status = 'UNKNOWN';
   assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
   input[0].status = 'FINDINGS';
+  assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
+});
+
+test('a finding without a review video is blocked rather than silently approved', () => {
+  const input = reports();
+  input[0].status = 'FINDINGS';
+  input[0].findings = [{ id: 'collision', ok: false }];
   assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
 });
