@@ -239,6 +239,31 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
       );
       if (decreasing) await position.toBeLessThanOrEqual(target);
       else await position.toBeGreaterThanOrEqual(target);
+    } catch (error) {
+      // Report the actual physical position and rendered camera orientation,
+      // so a slow runner is distinguishable from a solid collision or input drift.
+      const snapshot = await page
+        .evaluate(() => {
+          const qa = window.__novaExploreQA.snapshot();
+          return {
+            player: qa.player,
+            cameraYaw: qa.cameraVisualYaw,
+            boosting: qa.boosting,
+            district: qa.district,
+          };
+        })
+        .catch(() => null);
+      throw new Error(
+        'Real walking stalled for ' +
+          key +
+          ' toward ' +
+          axis +
+          '=' +
+          target +
+          ': ' +
+          JSON.stringify(snapshot),
+        { cause: error },
+      );
     } finally {
       await page.keyboard.up(key);
     }
@@ -266,8 +291,14 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
     // blocks a direct westward crossing when keyboard/camera drift lowers Z.
     // Keep the test on real walking controls, without QA teleportation.
     await walk('KeyS', 'z', 8, false);
-    // Precision walking near the archive: BOOST with Playwright's default
-    // 1-second polling can overshoot the small interaction radius by 10m+.
+    // The northern aisle is clear of every physical obstacle. Keep BOOST for
+    // the long, unobstructed crossing; disabling it early can turn a safe
+    // traversal into a wall-clock timeout on a heavily loaded CI renderer.
+    const aisle = await page.evaluate(() => window.__novaExploreQA.snapshot().player);
+    expect(aisle.z).toBeGreaterThanOrEqual(8);
+    await walk('KeyA', 'x', -32, true);
+    // Use normal walking speed for the final meters near the archive so
+    // polling does not overshoot the small physical interaction radius.
     await page.keyboard.up('Shift');
     await walk('KeyA', 'x', -36, true);
     await walk('KeyW', 'z', -80, true);
