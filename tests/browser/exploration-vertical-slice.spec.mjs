@@ -231,42 +231,51 @@ test('Stage 04 walks to all three reactor modules without QA teleport and reache
   // Drive the actual keyboard event handlers and measured per-frame walking
   // physics. The developer-only moveTo/teleport method is never invoked.
   async function walk(key, axis, target, decreasing) {
-    await page.keyboard.down(key);
-    try {
-      const position = expect.poll(
-        () => page.evaluate((field) => window.__novaExploreQA.snapshot().player[field], axis),
-        { timeout: 40000, intervals: [50, 80, 100] },
-      );
-      if (decreasing) await position.toBeLessThanOrEqual(target);
-      else await position.toBeGreaterThanOrEqual(target);
-    } catch (error) {
-      // Report the actual physical position and rendered camera orientation,
-      // so a slow runner is distinguishable from a solid collision or input drift.
-      const snapshot = await page
-        .evaluate(() => {
-          const qa = window.__novaExploreQA.snapshot();
-          return {
-            player: qa.player,
-            cameraYaw: qa.cameraVisualYaw,
-            boosting: qa.boosting,
-            district: qa.district,
-          };
-        })
-        .catch(() => null);
-      throw new Error(
-        'Real walking stalled for ' +
-          key +
-          ' toward ' +
-          axis +
-          '=' +
-          target +
-          ': ' +
-          JSON.stringify(snapshot),
-        { cause: error },
-      );
-    } finally {
-      await page.keyboard.up(key);
+    // Long keyboard.down calls are fragile when CI briefly blurs the window:
+    // the game intentionally clears held input on blur. Re-arm real keyboard
+    // events every 6 world units, without invoking privileged movement APIs.
+    const reached = (value) => (decreasing ? value <= target : value >= target);
+    const snapshot = () => page.evaluate(() => window.__novaExploreQA.snapshot());
+    let consecutiveStalls = 0;
+    for (let segment = 0; segment < 90; segment++) {
+      const before = await snapshot();
+      const from = before.player[axis];
+      if (reached(from)) return;
+      const distance = Math.min(6, Math.abs(from - target));
+      const waypoint = from + (decreasing ? -distance : distance);
+      await page.keyboard.down(key);
+      let timedOut = false;
+      try {
+        const position = expect.poll(
+          () => page.evaluate((field) => window.__novaExploreQA.snapshot().player[field], axis),
+          { timeout: 5500, intervals: [80, 120, 180] },
+        );
+        if (decreasing) await position.toBeLessThanOrEqual(waypoint);
+        else await position.toBeGreaterThanOrEqual(waypoint);
+      } catch {
+        timedOut = true;
+      } finally {
+        await page.keyboard.up(key);
+      }
+      const after = await snapshot();
+      if (reached(after.player[axis])) return;
+      const gained = (after.player[axis] - from) * (decreasing ? -1 : 1);
+      if (gained < 0.5) {
+        consecutiveStalls++;
+        // Recover once from a lost keydown/blur, but never ignore a physical
+        // obstruction, stalled game loop or permanently locked input.
+        if (consecutiveStalls >= 2)
+          throw new Error(
+            'Real walking blocked after input re-arm: ' +
+              JSON.stringify({ key, axis, target, from, timedOut, before, after }),
+          );
+      } else {
+        consecutiveStalls = 0;
+      }
     }
+    throw new Error(
+      'Real walking did not reach ' + axis + '=' + target + ' in 90 real input segments',
+    );
   }
 
   await page.keyboard.down('Shift');
