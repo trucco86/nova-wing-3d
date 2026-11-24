@@ -30,6 +30,7 @@ export function summarizeGameplayObservations(reports) {
         checkpoints: report.checkpoints?.length ?? 0,
         clip: report.video?.file ?? null,
         triggers: report.video?.triggers ?? [],
+        reviews: report.reviews ?? [],
       });
       if (report.status === 'BLOCKED') {
         findings.push({ id, check: 'executor', detail: report.error || 'Blocked' });
@@ -45,17 +46,25 @@ export function summarizeGameplayObservations(reports) {
   }
   const blocked =
     missing.length > 0 ||
-    observed.some((item) => !['OBSERVED_OK', 'FINDINGS'].includes(item.status)) ||
+    observed.some((item) => !['OBSERVED_OK', 'FINDINGS', 'REVIEW_REQUIRED'].includes(item.status)) ||
     observed.some((item) => item.checks === 0 || item.checkpoints === 0) ||
-    observed.some((item) => item.status === 'FINDINGS' && !item.clip) ||
+    observed.some((item) => ['FINDINGS', 'REVIEW_REQUIRED'].includes(item.status) && !item.clip) ||
+    observed.some((item) => item.status === 'REVIEW_REQUIRED' && item.reviews.length === 0) ||
     observed.some(
       (item) => item.status === 'FINDINGS' && !findings.some((finding) => finding.id === item.id),
     );
-  const status = blocked ? 'BLOCKED' : findings.length ? 'FINDINGS' : 'OBSERVED_OK';
+  const status = blocked
+    ? 'BLOCKED'
+    : findings.length
+      ? 'FINDINGS'
+      : observed.some((item) => item.status === 'REVIEW_REQUIRED')
+        ? 'REVIEW_REQUIRED'
+        : 'OBSERVED_OK';
   const signature = [
     status,
     ...missing.map((id) => 'missing:' + id),
     ...findings.map((item) => item.id + ':' + item.check),
+    ...observed.flatMap((item) => item.reviews.map((review) => item.id + ':review:' + review.id)),
   ]
     .sort()
     .join('|');
@@ -81,6 +90,7 @@ export function gameplaySummaryMarkdown(summary) {
     '**Estado:** ' + summary.status,
     '**Cenários recebidos:** ' + summary.received + '/' + summary.expected,
     '**Achados:** ' + summary.findings.length,
+    '**Revisões visuais:** ' + summary.observed.reduce((total, item) => total + item.reviews.length, 0),
     '**Homologação humana:** pendente',
     '',
     '| Jornada | Estado | Checagens | Capturas | Vídeo para revisão |',
@@ -102,6 +112,14 @@ export function gameplaySummaryMarkdown(summary) {
     );
   }
   for (const id of summary.missing) lines.push('| ' + id + ' | AUSENTE | 0 | 0 | Ausente |');
+  if (summary.observed.some((item) => item.reviews.length)) {
+    lines.push('', '## Comportamentos aguardando revisão visual', '');
+    for (const item of summary.observed) {
+      for (const review of item.reviews) {
+        lines.push('- ' + item.id + ': ' + review.id + ' (' + review.reason + ')');
+      }
+    }
+  }
   if (summary.findings.length) {
     lines.push('', '## Achados para triagem', '');
     for (const item of summary.findings) {
