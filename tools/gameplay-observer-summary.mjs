@@ -88,7 +88,17 @@ export function gameplaySummaryMarkdown(summary) {
   ];
   for (const item of summary.observed) {
     lines.push(
-      '| ' + item.id + ' | ' + item.status + ' | ' + item.checks + ' | ' + item.checkpoints + ' | ' + (item.clip ?? 'Não necessário') + ' |',
+      '| ' +
+        item.id +
+        ' | ' +
+        item.status +
+        ' | ' +
+        item.checks +
+        ' | ' +
+        item.checkpoints +
+        ' | ' +
+        (item.clip ?? 'Não necessário') +
+        ' |',
     );
   }
   for (const id of summary.missing) lines.push('| ' + id + ' | AUSENTE | 0 | 0 | Ausente |');
