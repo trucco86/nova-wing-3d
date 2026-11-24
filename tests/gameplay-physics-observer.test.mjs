@@ -54,7 +54,10 @@ test('persistent inconsistent fade is separate from physical penetration', () =>
   const samples = [0, 1, 2].map((t) => sample(t, 4, changes));
   const result = inspectCityPhysics(samples);
   assert.equal(result.status, 'FINDINGS');
-  assert.deepEqual(result.findings.map((finding) => finding.rule), ['NW-R002']);
+  assert.deepEqual(
+    result.findings.map((finding) => finding.rule),
+    ['NW-R002'],
+  );
 });
 
 test('malformed, frozen or incomplete telemetry fails closed', () => {
