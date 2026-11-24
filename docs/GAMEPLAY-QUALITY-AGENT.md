@@ -28,3 +28,19 @@ Pré-homologação observacional. A aprovação da experiência final e a autori
 ## Próximas etapas
 
 Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e vídeo, verificação de colisão por telemetria, comparação com baseline aprovada, agregação no Control Center e notificação deduplicada. Depois de medir falsos positivos, avaliar gate objetivo obrigatório. Não afirmar que essas capacidades já estão implementadas.
+
+## Observabilidade recorrente (candidata, requer merge)
+
+- O workflow `.github/workflows/gameplay-observer.yml` permite execução manual e agenda uma rodada nos dias úteis, às 12:00 UTC (09:00 Brasília). **Não estará ativo na agenda enquanto esta PR estiver em draft.** A agenda opera na branch padrão após merge, não sobre o site publicado em produção.
+- O Playwright observa o motor WebGL real em quatro cenários com fixture de QA, nos projetos desktop e mobile. É uma amostra determinística, não uma campanha completa, nem um agente multimodal autônomo.
+- Cada observação gera `artifacts/gameplay-observer/<cenário>-<dispositivo>.json` e capturas anexas; o consolidado exige oito relatórios, registrando `OBSERVED_OK`, `FINDINGS` ou `BLOCKED`.
+- O resultado é **consultivo**, não aprova merge, qualidade subjetiva ou publicação. Relatórios ausentes ou execução incompleta são `BLOCKED` e fazem o workflow falhar. Achados de regra objetiva ficam disponíveis para triagem.
+- Apenas na execução agendada, `FINDINGS` ou `BLOCKED` podem criar ou atualizar um issue `[Gameplay Observer] Divergências para triagem`. A assinatura dos achados evita notificações repetidas para o mesmo conjunto. O issue não é fechado automaticamente, e não há mudanças automáticas no código.
+- A rotina não integra ainda visualização no Control Center, vídeo contínuo, julgamentos multimodais de ritmo/estética ou telemetria de FPS e colisão em aparelho físico. Esses recursos requerem baselines, critérios de aceitação e validação específica.
+
+### Critérios de promoção
+
+1. Quality e seis shards browser aprovados no SHA final.
+2. Relatórios dos oito cenários completos e capturas inspecionadas.
+3. Conferir manualmente falsos positivos, interação real e a abertura/fase 4 afetadas por PRs paralelos.
+4. Aprovação explícita do mantenedor para merge. Nada dispara deploy de produção a partir do workflow de observabilidade.
