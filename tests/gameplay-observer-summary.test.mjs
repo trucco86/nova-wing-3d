@@ -71,3 +71,25 @@ test('a finding without a review video is blocked rather than silently approved'
   input[0].findings = [{ id: 'collision', ok: false }];
   assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
 });
+
+test('manual review is advisory, retains clip evidence and a stable signature', () => {
+  const input = reports();
+  input[0].status = 'REVIEW_REQUIRED';
+  input[0].reviews = [{ id: 'reactor-orbit-framing', reason: 'Check visibility' }];
+  input[0].video = { file: 'reactor-desktop-review.mp4', triggers: ['reactor-orbit-framing'] };
+  const summary = summarizeGameplayObservations(input);
+  assert.equal(summary.status, 'REVIEW_REQUIRED');
+  assert.equal(summary.findings.length, 0);
+  assert.equal(summary.received, 8);
+  assert.equal(summary.observed[0].clip, 'reactor-desktop-review.mp4');
+  assert.equal(summary.humanApproval, 'PENDING');
+  assert.equal(summary.releaseAuthorized, false);
+  assert.ok(summary.signature.includes('review:reactor-orbit-framing'));
+});
+
+test('review without playable clip metadata fails closed', () => {
+  const input = reports();
+  input[0].status = 'REVIEW_REQUIRED';
+  input[0].reviews = [{ id: 'framing', reason: 'Manual check' }];
+  assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
+});
