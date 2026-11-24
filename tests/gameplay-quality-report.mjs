@@ -1,4 +1,12 @@
-export function gameplayReport({ scenario, project, viewport, commit, checks, checkpoints, error }) {
+export function gameplayReport({
+  scenario,
+  project,
+  viewport,
+  commit,
+  checks,
+  checkpoints,
+  error,
+}) {
   const findings = checks.filter((check) => !check.ok);
   const incomplete = !checks.length || !checkpoints.length;
   return {
