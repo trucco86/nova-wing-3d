@@ -43,8 +43,13 @@ export function summarizeGameplayObservations(reports) {
   }
   const blocked =
     missing.length > 0 ||
-    observed.some((item) => item.status === 'BLOCKED') ||
-    observed.some((item) => item.checks === 0 || item.checkpoints === 0);
+    observed.some((item) => !['OBSERVED_OK', 'FINDINGS'].includes(item.status)) ||
+    observed.some((item) => item.checks === 0 || item.checkpoints === 0) ||
+    observed.some(
+      (item) =>
+        item.status === 'FINDINGS' &&
+        !findings.some((finding) => finding.id === item.id),
+    );
   const status = blocked ? 'BLOCKED' : findings.length ? 'FINDINGS' : 'OBSERVED_OK';
   const signature = [
     status,
