@@ -132,12 +132,20 @@ for (const scenario of scenarios) {
         const entry = await capture('reactor-entry');
         const radius = entry.sabotage?.hall?.clearOrbitRadius;
         check('arena', entry.boss && radius === 190, 'boss and clear radius 190', radius);
-        await page.evaluate(() => {
+        // Record visible WebGL frames during orbit, not a single teleport-like
+        // before/after screenshot. The short video must show actual camera motion.
+        await page.evaluate(async () => {
           const { game, advance } = window.fixture;
           game.orbit(1);
-          advance(2, { renderAfter: false });
-          game.orbit(0);
-          advance(0);
+          try {
+            for (let frame = 0; frame < 12; frame++) {
+              advance(1 / 6);
+              await new Promise((resolve) => setTimeout(resolve, 160));
+            }
+          } finally {
+            game.orbit(0);
+            advance(0);
+          }
         });
         const flank = await capture('reactor-flank');
         // Functional orbit can pass while animation, camera occlusion and
