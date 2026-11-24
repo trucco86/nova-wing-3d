@@ -5,6 +5,8 @@ import { mkdtemp, rm, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
+import ffmpegBinary from '@ffmpeg-installer/ffmpeg';
+import ffprobeBinary from '@ffprobe-installer/ffprobe';
 import {
   GAMEPLAY_CLIP_MAX_SECONDS,
   gameplayClipRange,
@@ -35,7 +37,7 @@ test('a real WebM recording becomes a short playable MP4 for human review', asyn
     const source = join(dir, 'source.webm');
     const destination = join(dir, 'review.mp4');
     await run(
-      'ffmpeg',
+      ffmpegBinary.path,
       [
         '-hide_banner',
         '-loglevel',
@@ -63,7 +65,7 @@ test('a real WebM recording becomes a short playable MP4 for human review', asyn
     assert.ok(clip.durationSeconds <= GAMEPLAY_CLIP_MAX_SECONDS);
     assert.ok((await stat(destination)).size > 1500);
     const { stdout } = await run(
-      'ffprobe',
+      ffprobeBinary.path,
       [
         '-v',
         'error',
