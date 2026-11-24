@@ -88,7 +88,7 @@ export function createFiveCatsSquad({
     mesh.visible = false;
     const label = addFiveCatsIffTag(mesh, pilot);
     scene.add(mesh);
-    return { pilot, mesh, label };
+    return { pilot, mesh, label, baseScale: mesh.scale.clone() };
   });
   let intro = 0;
   let introBeat = '';
@@ -124,9 +124,10 @@ export function createFiveCatsSquad({
     plasmaClock = overdriveClock = supportClock = 0;
     overdriveAge = overdriveExit = 0;
     stopBeam();
-    wings.forEach(({ mesh, label }) => {
+    wings.forEach(({ mesh, label, baseScale }) => {
       mesh.visible = false;
       label.visible = true;
+      mesh.scale.copy(baseScale);
     });
     status.hidden = true;
     formationStatus.hidden = true;
@@ -144,9 +145,10 @@ export function createFiveCatsSquad({
     player.visible = true;
     resetLaunchThrusters();
     formationStatus.hidden = true;
-    wings.forEach(({ mesh, label }) => {
+    wings.forEach(({ mesh, label, baseScale }) => {
       mesh.visible = false;
       label.visible = true;
+      mesh.scale.copy(baseScale);
     });
     return true;
   }
@@ -253,9 +255,10 @@ export function createFiveCatsSquad({
         player.visible = true;
         resetLaunchThrusters();
         formationStatus.hidden = true;
-        wings.forEach(({ mesh, label }) => {
+        wings.forEach(({ mesh, label, baseScale }) => {
           mesh.visible = false;
           label.visible = true;
+          mesh.scale.copy(baseScale);
         });
         notify('FIVE CATS · DECOLAGEM COMPLETA · INICIAR MISSÃO');
       }
