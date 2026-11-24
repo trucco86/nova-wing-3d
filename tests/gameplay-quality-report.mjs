@@ -17,13 +17,14 @@ export function gameplayReport({
     project,
     viewport,
     commit: commit || null,
-    status: error || incomplete
-      ? 'BLOCKED'
-      : findings.length
-        ? 'FINDINGS'
-        : reviews.length
-          ? 'REVIEW_REQUIRED'
-          : 'OBSERVED_OK',
+    status:
+      error || incomplete
+        ? 'BLOCKED'
+        : findings.length
+          ? 'FINDINGS'
+          : reviews.length
+            ? 'REVIEW_REQUIRED'
+            : 'OBSERVED_OK',
     checks,
     checkpoints,
     findings,

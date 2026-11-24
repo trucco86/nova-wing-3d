@@ -46,7 +46,9 @@ export function summarizeGameplayObservations(reports) {
   }
   const blocked =
     missing.length > 0 ||
-    observed.some((item) => !['OBSERVED_OK', 'FINDINGS', 'REVIEW_REQUIRED'].includes(item.status)) ||
+    observed.some(
+      (item) => !['OBSERVED_OK', 'FINDINGS', 'REVIEW_REQUIRED'].includes(item.status),
+    ) ||
     observed.some((item) => item.checks === 0 || item.checkpoints === 0) ||
     observed.some((item) => ['FINDINGS', 'REVIEW_REQUIRED'].includes(item.status) && !item.clip) ||
     observed.some((item) => item.status === 'REVIEW_REQUIRED' && item.reviews.length === 0) ||
@@ -90,7 +92,8 @@ export function gameplaySummaryMarkdown(summary) {
     '**Estado:** ' + summary.status,
     '**Cenários recebidos:** ' + summary.received + '/' + summary.expected,
     '**Achados:** ' + summary.findings.length,
-    '**Revisões visuais:** ' + summary.observed.reduce((total, item) => total + item.reviews.length, 0),
+    '**Revisões visuais:** ' +
+      summary.observed.reduce((total, item) => total + item.reviews.length, 0),
     '**Homologação humana:** pendente',
     '',
     '| Jornada | Estado | Checagens | Capturas | Vídeo para revisão |',
