@@ -51,3 +51,15 @@ A captura da candidata anterior revelou quatro regressões reais mesmo com CI 6/
 Correções: câmera inicial mais baixa e centrada, telhado elevado e iluminado, porta frontal de largura completa, travelling ligeiramente mais lento pelo portão, formação compacta e mais distante, recolhimento para fora do eixo visual e CSS ocultando os comandos que faltavam. Para telas em retrato, a câmera recua e centraliza a composição.
 
 A revisão agora captura **quatro momentos** (0,4; 2,1; 2,6; 5,3 s) no navegador e mais três em retrato. Os testes automatizados verificam flags, geometria e elementos ocultos, mas a aprovação definitiva exige inspeção perceptiva das imagens e do gameplay. Não promover à produção apenas por CI verde.
+
+## QA180.3 | Revisão das capturas de 23/11 e novos gates
+
+A execução Playwright anterior (Quality + 6/6 aprovado) foi inspecionada em 1366×768, 844×390 e 390×844. A composição melhorou, mas os prints ainda mostravam galeria em laranja contínuo demasiado dominante e escoltas maiores que o caça escolhido.
+
+Atualização visual:
+- Substituída a longa faixa laranja de galeria de 2,2 por detalhe discreto de 0,42 unidade, com material estrutural escuro; o piso continua com referências de orientação.
+- Corrigido o espaçamento frontal/lateral das quatro escoltas e suas escalas somente na cinemática. A nave verdadeira, selecionada pelo jogador, continua em destaque e no centro.
+- Salva a escala original de cada wingman e restaura esse valor ao finalizar, pular ou resetar o lançamento, evitando efeitos colaterais sobre o Overdrive e o suporte na fase.
+- Adicionadas verificações automáticas de proporções do rail e das escoltas. O teste que dependia de `z=9` foi atualizado para a posição física ajustada `z=7`.
+
+**Checkpoint técnico:** o workflow de sincronização gerou `index.html` no SHA `c39a216b`. O CI completo e as novas capturas devem ser avaliados no SHA humano subsequente antes do aceite. O preview/PR permanece isolado, sem produção nem merge.
