@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { createGameplayReviewClip } from '../../tools/gameplay-observer-video.mjs';
 import { gameplayReport } from '../gameplay-quality-report.mjs';
 
 const scenarios = [
@@ -11,17 +13,48 @@ const scenarios = [
 ];
 
 for (const scenario of scenarios) {
-  test('gameplay observer: ' + scenario.name, async ({ page }, info) => {
-    test.setTimeout(120000);
+  test('gameplay observer: ' + scenario.name, async ({ browser }, info) => {
+    test.setTimeout(150000);
+    const viewport = info.project.use.viewport ?? { width: 1366, height: 768 };
+    const tempDir = await mkdtemp(join(tmpdir(), 'nova-gameplay-video-'));
+    // A dedicated context records every real WebGL frame, but only a short
+    // anomaly clip is kept. Healthy runs discard their source recordings.
+    const context = await browser.newContext({
+      baseURL: info.project.use.baseURL ?? 'http://127.0.0.1:4173',
+      viewport,
+      isMobile: Boolean(info.project.use.isMobile),
+      hasTouch: Boolean(info.project.use.hasTouch),
+      deviceScaleFactor: info.project.use.deviceScaleFactor ?? 1,
+      recordVideo: {
+        dir: tempDir,
+        size: {
+          width: Math.min(960, viewport.width),
+          height: Math.min(540, viewport.height),
+        },
+      },
+    });
+    const page = await context.newPage();
+    const recordedVideo = page.video();
+    const recordingStartedAt = Date.now();
+    const reviewEvents = [];
+    const markReview = (id) =>
+      reviewEvents.push({
+        id,
+        eventSeconds: (Date.now() - recordingStartedAt) / 1000,
+      });
     const checks = [];
     const checkpoints = [];
     const errors = [];
     let error = null;
-    page.on('pageerror', (event) => errors.push(event.message));
+    page.on('pageerror', (event) => {
+      errors.push(event.message);
+      markReview('runtime-error');
+    });
     const snapshot = () => page.evaluate(() => window.fixture.game.snapshot());
     const advance = (seconds) => page.evaluate((time) => window.fixture.advance(time), seconds);
     const check = (id, ok, expected, observed) => {
       checks.push({ id, ok: Boolean(ok), expected, observed });
+      if (!ok) markReview(id);
     };
     const capture = async (name) => {
       const state = await snapshot();
@@ -131,6 +164,7 @@ for (const scenario of scenarios) {
       }
     } catch (failure) {
       error = String(failure);
+      markReview('executor-error');
     }
     check('runtime-errors', errors.length === 0, [], errors);
     const report = gameplayReport({
@@ -142,9 +176,41 @@ for (const scenario of scenarios) {
       checkpoints,
       error,
     });
-    const reportBody = JSON.stringify(report, null, 2);
     const reportDirectory = join('artifacts', 'gameplay-observer');
     await mkdir(reportDirectory, { recursive: true });
+    try {
+      await context.close();
+      if (report.status !== 'OBSERVED_OK') {
+        const file = scenario.name + '-' + info.project.name + '-review.mp4';
+        const target = join(reportDirectory, file);
+        const clip = await createGameplayReviewClip({
+          source: await recordedVideo.path(),
+          destination: target,
+          eventSeconds: reviewEvents[0]?.eventSeconds,
+        });
+        report.video = {
+          file,
+          durationSeconds: clip.durationSeconds,
+          startSeconds: clip.startSeconds,
+          triggers: [...new Set(reviewEvents.map((event) => event.id))],
+          context: 'Short excerpt from real WebGL Playwright recording',
+        };
+        await info.attach('gameplay-review.mp4', {
+          path: target,
+          contentType: 'video/mp4',
+        });
+      }
+    } catch (videoFailure) {
+      // Missing video evidence must never be interpreted as a clean observation.
+      report.status = 'BLOCKED';
+      report.error = [report.error, 'Video evidence failed: ' + String(videoFailure)]
+        .filter(Boolean)
+        .join(' | ');
+    } finally {
+      await context.close().catch(() => {});
+      await rm(tempDir, { recursive: true, force: true });
+    }
+    const reportBody = JSON.stringify(report, null, 2);
     await writeFile(
       join(reportDirectory, scenario.name + '-' + info.project.name + '.json'),
       reportBody + '\n',
