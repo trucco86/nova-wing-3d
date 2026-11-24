@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { gameplayReport } from '../gameplay-quality-report.mjs';
 
 const scenarios = [
@@ -17,7 +19,8 @@ for (const scenario of scenarios) {
     let error = null;
     page.on('pageerror', (event) => errors.push(event.message));
     const snapshot = () => page.evaluate(() => window.fixture.game.snapshot());
-    const advance = (seconds) => page.evaluate((time) => window.fixture.advance(time), seconds);
+    const advance = (seconds) =>
+      page.evaluate((time) => window.fixture.advance(time), seconds);
     const check = (id, ok, expected, observed) => {
       checks.push({ id, ok: Boolean(ok), expected, observed });
     };
@@ -50,7 +53,11 @@ for (const scenario of scenarios) {
           const stick = await page.locator('#stick').boundingBox();
           if (!stick) throw new Error('Joystick not visible');
           const touch = await page.context().newCDPSession(page);
-          const point = { x: stick.x + stick.width / 2, y: stick.y + stick.height / 2, id: 1 };
+          const point = {
+            x: stick.x + stick.width / 2,
+            y: stick.y + stick.height / 2,
+            id: 1,
+          };
           try {
             await touch.send('Input.dispatchTouchEvent', {
               type: 'touchStart',
@@ -62,7 +69,10 @@ for (const scenario of scenarios) {
             });
             await advance(2.65);
           } finally {
-            await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            await touch.send('Input.dispatchTouchEvent', {
+              type: 'touchEnd',
+              touchPoints: [],
+            });
             await touch.detach();
           }
         } else {
@@ -98,10 +108,20 @@ for (const scenario of scenarios) {
         });
         const flank = await capture('reactor-flank');
         const angle = flank.strategy.orbitAngle;
-        check('orbit', Math.abs(angle - entry.strategy.orbitAngle) > 1, 'angle delta > 1', angle);
+        check(
+          'orbit',
+          Math.abs(angle - entry.strategy.orbitAngle) > 1,
+          'angle delta > 1',
+          angle,
+        );
       } else {
         const panel = initial.europaTunnel?.[0];
-        check('intact-panel', panel?.remainingSolidPanels === 1, 1, panel?.remainingSolidPanels);
+        check(
+          'intact-panel',
+          panel?.remainingSolidPanels === 1,
+          1,
+          panel?.remainingSolidPanels,
+        );
         await page.evaluate(() => {
           const { game, advance } = window.fixture;
           for (let i = 0; i < 1400; i++) {
@@ -113,7 +133,12 @@ for (const scenario of scenarios) {
         });
         const breach = await capture('tunnel-breach');
         const breached = breach.europaTunnel?.[0];
-        check('breach', breached?.breached && breached?.debrisVisible, 'breach and debris', breached);
+        check(
+          'breach',
+          breached?.breached && breached?.debrisVisible,
+          'breach and debris',
+          breached,
+        );
       }
     } catch (failure) {
       error = String(failure);
@@ -128,8 +153,15 @@ for (const scenario of scenarios) {
       checkpoints,
       error,
     });
+    const reportBody = JSON.stringify(report, null, 2);
+    const reportDirectory = join('artifacts', 'gameplay-observer');
+    await mkdir(reportDirectory, { recursive: true });
+    await writeFile(
+      join(reportDirectory, scenario.name + '-' + info.project.name + '.json'),
+      reportBody + '\n',
+    );
     await info.attach('gameplay-quality.json', {
-      body: Buffer.from(JSON.stringify(report, null, 2)),
+      body: Buffer.from(reportBody),
       contentType: 'application/json',
     });
     expect(report.status, report.error || 'observer execution').not.toBe('BLOCKED');
