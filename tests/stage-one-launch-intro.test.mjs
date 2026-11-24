@@ -145,6 +145,12 @@ test('enclosed rear wall and complete roof are present; camera never points thro
   const rear = intro.root.getObjectByName('launch-rear-bulkhead');
   assert.ok(rear.geometry.parameters.height >= 29);
   assert.ok(roof.position.y >= 20, 'roof must leave camera headroom');
+  const gantryRails = intro.root.getObjectByName('launch-side-gantry-rail');
+  assert.ok(gantryRails?.isInstancedMesh);
+  const railMatrix = new T.Matrix4();
+  gantryRails.getMatrixAt(0, railMatrix);
+  const railScale = new T.Vector3().setFromMatrixScale(railMatrix);
+  assert.ok(railScale.y < 0.5, 'gantry rails must not appear as giant orange bands');
   const leftDoor = intro.root.getObjectByName('launch-door-left');
   assert.equal(
     leftDoor.geometry.parameters.width,
