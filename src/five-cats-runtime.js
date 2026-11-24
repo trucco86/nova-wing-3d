@@ -375,6 +375,7 @@ export function createFiveCatsSquad({
           x: mesh.position.x,
           y: mesh.position.y,
           z: mesh.position.z,
+          scale: mesh.scale.x,
         })),
     }),
     destroy() {
