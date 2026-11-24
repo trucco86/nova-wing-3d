@@ -1,0 +1,27 @@
+name: QA444 one-time style sync
+on:
+  push:
+    branches: [feat/gameplay-quality-agent-observer]
+permissions:
+  contents: write
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prettier --write tools/gameplay-observer-summary.mjs tests/gameplay-quality-report.mjs
+      - name: Commit formatted files only
+        run: |
+          git add -- tools/gameplay-observer-summary.mjs tests/gameplay-quality-report.mjs
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'style(QA444): normalize review-required report and summary'
+          git push origin "HEAD:${GITHUB_REF_NAME}"
