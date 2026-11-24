@@ -1,0 +1,121 @@
+[
+  {
+    "id": "NW-R001",
+    "area": "city",
+    "severity": "P0",
+    "rule": "A nave não atravessa sólidos móveis nem colide com volumes invisíveis; flancos livres continuam acessíveis.",
+    "node": [
+      "tests/city-solid-collision.test.mjs",
+      "tests/qa162-moving-obstacle-ship-contact.test.mjs"
+    ],
+    "browser": [
+      "tests/browser/city-free-flight.spec.mjs"
+    ],
+    "review": "Inspecionar impacto, desvio e ausência de clipping."
+  },
+  {
+    "id": "NW-R002",
+    "area": "city",
+    "severity": "P1",
+    "rule": "Obstrução de câmera deve ser tratada sem remover a solidez física.",
+    "node": [],
+    "browser": [
+      "tests/browser/qa101-camera-occlusion.spec.mjs"
+    ],
+    "review": "Verificar legibilidade da nave em movimento."
+  },
+  {
+    "id": "NW-R003",
+    "area": "mars",
+    "severity": "P1",
+    "rule": "Aproximação, atmosfera, superfície e tempestade mantêm identidade e continuidade.",
+    "node": [],
+    "browser": [
+      "tests/browser/mars-premium-stage.spec.mjs"
+    ],
+    "review": "Analisar fluidez e sensação de voo em vídeo."
+  },
+  {
+    "id": "NW-R004",
+    "area": "reactor",
+    "severity": "P0",
+    "rule": "A arena do reator permite órbita e não tem coluna fantasma bloqueando a entrada.",
+    "node": [],
+    "browser": [
+      "tests/browser/qa-reactor-clear-entry.spec.mjs"
+    ],
+    "review": "Confirmar campo visual e geometria durante aproximação."
+  },
+  {
+    "id": "NW-R005",
+    "area": "reactor",
+    "severity": "P0",
+    "rule": "No fluxo de acesso habilitado, três módulos distintos devem ser ativados antes do chefe; não aceitar duplicatas ou bypass.",
+    "node": [
+      "tests/qa174-reactor-runtime-gate.test.mjs"
+    ],
+    "browser": [],
+    "review": "Teste de caminhada real sem teleporte e visibilidade dos módulos ainda exigem validação; acompanhar PR #442."
+  },
+  {
+    "id": "NW-R006",
+    "area": "europa",
+    "severity": "P0",
+    "rule": "A abertura do túnel precisa remover o painel sólido e manter continuidade física e visual.",
+    "node": [
+      "tests/qa162-moving-obstacle-ship-contact.test.mjs"
+    ],
+    "browser": [
+      "tests/browser/europa-tunnel-end-to-end.spec.mjs"
+    ],
+    "review": "Validar novo túnel glacial na candidata #431; não assumir equivalência com a main."
+  },
+  {
+    "id": "NW-R007",
+    "area": "europa",
+    "severity": "P1",
+    "rule": "A descida elimina o globo orbital e apresenta superfície congelada sem duplicação.",
+    "node": [],
+    "browser": [
+      "tests/browser/europa-surface-transition.spec.mjs"
+    ],
+    "review": "Avaliar neblina, transição e paralaxe."
+  },
+  {
+    "id": "NW-R008",
+    "area": "bosses",
+    "severity": "P1",
+    "rule": "Ataques físicos têm intenção legível e assinatura distinta; apêndices atingem a região ameaçada.",
+    "node": [],
+    "browser": [
+      "tests/browser/unique-boss-patterns.spec.mjs",
+      "tests/browser/europa-claw-strikes.spec.mjs",
+      "tests/browser/boss-combat-qa-chain.spec.mjs"
+    ],
+    "review": "Avaliar repetição, impacto e desaparecimento de garras; não confundir câmera com ataque."
+  },
+  {
+    "id": "NW-R009",
+    "area": "mobile",
+    "severity": "P1",
+    "rule": "HUD e controles não se sobrepõem e comandos de giro/dash continuam acessíveis.",
+    "node": [],
+    "browser": [
+      "tests/browser/mobile-hud-audit.spec.mjs",
+      "tests/browser/mobile-stick-hitbox.spec.mjs",
+      "tests/browser/hero-dash-mobile.spec.mjs"
+    ],
+    "review": "Validar iPhone físico em portrait e landscape."
+  },
+  {
+    "id": "NW-R010",
+    "area": "intro",
+    "severity": "P1",
+    "rule": "A introdução encerra de forma limpa e mantém a entrada na missão.",
+    "node": [],
+    "browser": [
+      "tests/browser/five-cats-cinematic-v12725.spec.mjs"
+    ],
+    "review": "A nova abertura estilo Star Fox, nave selecionada, hangar fechado e HUD oculto dependem da PR #440; não considerar cobertos pelo teste histórico."
+  }
+]
