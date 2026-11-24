@@ -9,7 +9,16 @@ const sample = (seconds, x = 0, changes = {}) => ({
   player: { x, y: 0 },
   playerDepth: 0,
   cityPhysicalSolids: [
-    { kind: 'wall', active: true, x: 0, y: 0, z: 0, halfX: 2, halfY: 2, halfZ: 2 },
+    {
+      kind: 'wall',
+      active: true,
+      x: 0,
+      y: 0,
+      z: 0,
+      halfX: 2,
+      halfY: 2,
+      halfZ: 2,
+    },
   ],
   cityCameraOcclusion: [],
   ...changes,
