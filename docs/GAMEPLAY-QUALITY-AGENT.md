@@ -20,6 +20,7 @@ Pré-homologação observacional. A aprovação da experiência final e a autori
 
 - `OBSERVED_OK`: apenas os critérios amostrados passaram.
 - `FINDINGS`: suspeitas objetivas para triagem, com valores observados e esperados.
+- `REVIEW_REQUIRED`: regra funcional aprovada, mas há um comportamento que exige parecer visual humano; **não equivale a bug comprovado nem a aprovação**. Inclui motivo, gatilho e MP4 curto.
 - `BLOCKED`: erro do executor, cenário incompleto ou evidência ausente; nunca equivale a aprovação.
 - Toda execução registra commit CI (quando disponível), cenário, projeto, viewport, comandos e checkpoints; a homologação humana fica pendente.
 - Erros do executor falham o teste após anexar diagnóstico. Achados observacionais não alteram os gates de regressão existentes.
@@ -36,7 +37,7 @@ Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e 
 - Cada observação gera `artifacts/gameplay-observer/<cenário>-<dispositivo>.json` e capturas anexas; o consolidado exige oito relatórios, registrando `OBSERVED_OK`, `FINDINGS` ou `BLOCKED`.
 - O resultado é **consultivo**, não aprova merge, qualidade subjetiva ou publicação. Relatórios ausentes ou execução incompleta são `BLOCKED` e fazem o workflow falhar. Achados de regra objetiva ficam disponíveis para triagem.
 - Apenas na execução agendada, `FINDINGS` ou `BLOCKED` podem criar ou atualizar um issue `[Gameplay Observer] Divergências para triagem`. A assinatura dos achados evita notificações repetidas para o mesmo conjunto. O issue não é fechado automaticamente, e não há mudanças automáticas no código.
-- Em caso de `FINDINGS` ou `BLOCKED`, o executor grava apenas um **clipe MP4 curto, de até 12 segundos**, extraído da filmagem WebGL real feita pelo Playwright. O recorte tenta incluir até sete segundos anteriores ao primeiro alerta. O vídeo é anexado ao teste e ao pacote de evidências sob `artifacts/gameplay-observer/<fase>-<dispositivo>-review.mp4`. Se a conversão ou a gravação falhar, o relatório permanece `BLOCKED`. As gravações brutas de cenários sem anomalias são descartadas.
+- Em caso de `FINDINGS`, `REVIEW_REQUIRED` ou `BLOCKED`, o executor grava apenas um **clipe MP4 curto, de até 12 segundos**, extraído da filmagem WebGL real feita pelo Playwright. O recorte tenta incluir até sete segundos anteriores ao primeiro alerta. O vídeo é anexado ao teste e ao pacote de evidências sob `artifacts/gameplay-observer/<fase>-<dispositivo>-review.mp4`. Se a conversão ou a gravação falhar, o relatório permanece `BLOCKED`. As gravações brutas de cenários sem anomalias são descartadas.
 - Para revisar: abra a execução GitHub Actions, baixe o artefato `gameplay-observer-evidence` (rotina agendada) ou o artefato `browser-evidence-<shard>` (CI de PR), e reproduza o MP4 junto com o relatório JSON. A issue de alerta aponta para a execução; a publicação direta de vídeos reproduzíveis no Control Center ainda é futura.
 - **Limitação:** o clipe de até 12 segundos contém os frames registrados no navegador, não representa gravação de gameplay integral nem FPS nativo do dispositivo; o instante do alerta é aproximado quando a simulação avança em tempo acelerado.
 - A rotina não integra ainda visualização no Control Center, vídeo contínuo, julgamentos multimodais de ritmo/estética ou telemetria de FPS e colisão em aparelho físico. Esses recursos requerem baselines, critérios de aceitação e validação específica.
@@ -47,3 +48,7 @@ Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e 
 2. Relatórios dos oito cenários completos e capturas inspecionadas.
 3. Conferir manualmente falsos positivos, interação real e a abertura/fase 4 afetadas por PRs paralelos.
 4. Aprovação explícita do mantenedor para merge. Nada dispara deploy de produção a partir do workflow de observabilidade.
+
+### Primeira validação visual assistida
+
+O cenário **Reator** solicita revisão da composição de câmera durante a órbita do chefe, mesmo quando as verificações numéricas passam. O teste percorre doze quadros renderizados com intervalo real no navegador para que o MP4 mostre movimento e não apenas dois screenshots. O relatório identifica a revisão como `reactor-orbit-framing`. Essa revisão consultiva nunca é classificada automaticamente como defeito confirmado.
