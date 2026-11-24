@@ -2,24 +2,24 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { inspectCityPhysics } from '../tools/gameplay-physics-observer.mjs';
 
+const wall = {
+  kind: 'wall',
+  active: true,
+  x: 0,
+  y: 0,
+  z: 0,
+  halfX: 2,
+  halfY: 2,
+  halfZ: 2,
+};
+
 const sample = (seconds, x = 0, changes = {}) => ({
   seconds,
   sector: 1,
   state: 'playing',
   player: { x, y: 0 },
   playerDepth: 0,
-  cityPhysicalSolids: [
-    {
-      kind: 'wall',
-      active: true,
-      x: 0,
-      y: 0,
-      z: 0,
-      halfX: 2,
-      halfY: 2,
-      halfZ: 2,
-    },
-  ],
+  cityPhysicalSolids: [{ ...wall }],
   cityCameraOcclusion: [],
   ...changes,
 });
@@ -48,11 +48,10 @@ test('inactive decoration alone does not establish physics coverage', () => {
 });
 
 test('persistent inconsistent fade is separate from physical penetration', () => {
-  const samples = [0, 1, 2].map((t) =>
-    sample(t, 4, {
-      cityCameraOcclusion: [{ tile: 'city', kind: 'bridge', fade: 0.8, opacity: 1 }],
-    }),
-  );
+  const changes = {
+    cityCameraOcclusion: [{ tile: 'city', kind: 'bridge', fade: 0.8, opacity: 1 }],
+  };
+  const samples = [0, 1, 2].map((t) => sample(t, 4, changes));
   const result = inspectCityPhysics(samples);
   assert.equal(result.status, 'FINDINGS');
   assert.deepEqual(result.findings.map((finding) => finding.rule), ['NW-R002']);
