@@ -30,3 +30,20 @@ test('executor error or missing observations cannot be interpreted as success', 
   assert.equal(gameplayReport({ ...input, checks: [] }).status, 'BLOCKED');
   assert.equal(gameplayReport({ ...input, checkpoints: [] }).status, 'BLOCKED');
 });
+
+test('human review request is explicit without presenting it as an observed bug', () => {
+  const report = gameplayReport({
+    ...input,
+    reviews: [
+      {
+        id: 'reactor-orbit-framing',
+        reason: 'Visual camera composition requires a human decision',
+      },
+    ],
+  });
+  assert.equal(report.status, 'REVIEW_REQUIRED');
+  assert.equal(report.findings.length, 0);
+  assert.equal(report.reviews.length, 1);
+  assert.equal(report.humanApproval, 'PENDING');
+  assert.equal(report.releaseAuthorized, false);
+});
