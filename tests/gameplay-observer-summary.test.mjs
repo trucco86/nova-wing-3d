@@ -52,3 +52,11 @@ test('duplicate identifiers are rejected, not silently overwritten', () => {
   const data = reports();
   assert.throws(() => summarizeGameplayObservations([...data, data[0]]));
 });
+
+test('unknown status or empty findings fail closed', () => {
+  const input = reports();
+  input[0].status = 'UNKNOWN';
+  assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
+  input[0].status = 'FINDINGS';
+  assert.equal(summarizeGameplayObservations(input).status, 'BLOCKED');
+});
