@@ -1,5 +1,7 @@
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import ffmpegBinary from '@ffmpeg-installer/ffmpeg';
+import ffprobeBinary from '@ffprobe-installer/ffprobe';
 
 const run = promisify(execFile);
 export const GAMEPLAY_CLIP_MAX_SECONDS = 12;
@@ -26,7 +28,7 @@ export function gameplayClipRange(
 export async function createGameplayReviewClip({ source, destination, eventSeconds }) {
   if (!source || !destination) throw new Error('Source and destination are required');
   const { stdout } = await run(
-    'ffprobe',
+    ffprobeBinary.path,
     [
       '-v',
       'error',
@@ -41,7 +43,7 @@ export async function createGameplayReviewClip({ source, destination, eventSecon
   const duration = Number(stdout.trim());
   const range = gameplayClipRange(duration, eventSeconds);
   await run(
-    'ffmpeg',
+    ffmpegBinary.path,
     [
       '-hide_banner',
       '-loglevel',
