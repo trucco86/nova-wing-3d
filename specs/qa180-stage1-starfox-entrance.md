@@ -57,6 +57,7 @@ A revisão agora captura **quatro momentos** (0,4; 2,1; 2,6; 5,3 s) no navegador
 A execução Playwright anterior (Quality + 6/6 aprovado) foi inspecionada em 1366×768, 844×390 e 390×844. A composição melhorou, mas os prints ainda mostravam galeria em laranja contínuo demasiado dominante e escoltas maiores que o caça escolhido.
 
 Atualização visual:
+
 - Substituída a longa faixa laranja de galeria de 2,2 por detalhe discreto de 0,42 unidade, com material estrutural escuro; o piso continua com referências de orientação.
 - Corrigido o espaçamento frontal/lateral das quatro escoltas e suas escalas somente na cinemática. A nave verdadeira, selecionada pelo jogador, continua em destaque e no centro.
 - Salva a escala original de cada wingman e restaura esse valor ao finalizar, pular ou resetar o lançamento, evitando efeitos colaterais sobre o Overdrive e o suporte na fase.
