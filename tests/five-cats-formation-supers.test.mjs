@@ -139,6 +139,24 @@ test('takeoff visibly ramps selected fighter thrusters then resets when skipped'
   assert.equal(h.game.snapshot().boostVisual.length, 1);
 });
 
+test('intro-only wing scale is restored before normal squad gameplay', (t) => {
+  let wing = null;
+  const h = harness({
+    spawnEncounters: false,
+    enableSquadIntro: true,
+    observeScene(scene) {
+      wing ??= scene.getObjectByName('five-cats-wingman-bob');
+    },
+  });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(1);
+  assert.ok(wing, 'real Bob wing model must exist in the squad scene');
+  assert.ok(wing.scale.x < 0.85, 'launch-only framing keeps escorts smaller');
+  h.elements.get('launchSkip').onclick();
+  assert.ok(wing.scale.x > 0.9, 'skip restores normal gameplay size');
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
