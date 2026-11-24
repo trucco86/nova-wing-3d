@@ -240,7 +240,9 @@ export function createFiveCatsSquad({
         mesh.visible = slot !== undefined;
         if (!mesh.visible) return; // Active pilot is the real gameplay ship in the center.
         const pose = firstStageLaunchWingPose(slot, t, aspect);
-        mesh.scale.setScalar(aspect < 0.75 ? 0.93 : 1.0);
+        // Escorts must frame the selected player's full-size fighter, not overpower it.
+        // Outer ships are slightly smaller to keep every wing inside the screen.
+        mesh.scale.setScalar((aspect < 0.75 ? 0.76 : 0.82) - (Math.abs(slot) - 1) * 0.1);
         mesh.position.set(player.position.x + pose.x, pose.y, pose.z);
         mesh.rotation.z = pose.bank;
       });
