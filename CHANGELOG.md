@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.162 — QA182: novo passe de áudio de combate
+
+- Tiros da nave e do robô com transientes mecânicos mais fortes, médios mais legíveis e caudas menos acumulativas.
+- Teste de rajadas por WebAudio offline real, com WAV e métricas de pico, vozes e mute.
+- Candidata em validação; homologação sonora humana pendente.
+
 ## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
 - Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.
