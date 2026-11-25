@@ -53,7 +53,6 @@ Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e 
 
 O cenário **Reator** solicita revisão da composição de câmera durante a órbita do chefe, mesmo quando as verificações numéricas passam. O teste percorre doze quadros renderizados com intervalo real no navegador para que o MP4 mostre movimento e não apenas dois screenshots. O relatório identifica a revisão como `reactor-orbit-framing`. Essa revisão consultiva nunca é classificada automaticamente como defeito confirmado.
 
-
 ## Integração dos detectores de física
 
 A candidata reúne as PRs #444, #446, o contrato visual e a memória de regressões com o detector swept. As seis rotas urbanas dos perfis de direção passam pelo detector de penetração, consistência de fade e atravessamento entre amostras. Cada rota registra as posições e os colliders e fornece MP4 curto quando há achado ou bloqueio. O tempo do clipe é aproximado; a captura final não representa necessariamente o instante da ocorrência. A execução agendada exige 14 relatórios. Os detectores são consultivos e limitados à cidade, e a integração exige CI próprio e calibração visual. Ver [detector de física](GAMEPLAY-PHYSICS-OBSERVER.md) e [detector swept](GAMEPLAY-SWEPT-OBSERVER.md).
