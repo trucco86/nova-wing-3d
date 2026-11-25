@@ -280,7 +280,9 @@ export function createGame({
             if (weak) return weak.mesh.getWorldPosition(new T.Vector3());
             if (bossCombat?.coreOpen && boss.userData.parts.every((p) => p.hp <= 0))
               return boss.userData.core.getWorldPosition(new T.Vector3());
-            return null;
+            // Squad abilities should not silently whiff whenever shielded
+            // generators rotate away. Press the hull for chip damage instead.
+            return boss.position.clone();
           }
           const target = enemies.find((e) => !e.dead);
           return target ? target.o.position.clone().add(new T.Vector3(0, target.hitY, 0)) : null;
