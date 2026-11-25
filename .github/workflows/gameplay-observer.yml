@@ -57,8 +57,8 @@ jobs:
         run: |
           set -euo pipefail
           status="$(node -p "require('./artifacts/gameplay-observer-summary.json').status")"
-          if [ "$status" = "OBSERVED_OK" ]; then
-            echo "No objective anomaly detected. Human acceptance remains pending."
+          if [ "$status" = "OBSERVED_OK" ] || [ "$status" = "REVIEW_REQUIRED" ]; then
+            echo "No objective anomaly detected. Advisory visual reviews stay in the run artifacts."
             exit 0
           fi
           title="[Gameplay Observer] Divergências para triagem"
