@@ -1,3 +1,5 @@
+import { inspectBossPatterns } from './gameplay-boss-pattern-observer.mjs';
+
 export function summarizeEncounter(samples) {
   const valid = samples.filter(
     (sample) => Number.isFinite(sample.age) && Number.isFinite(sample.shield),
@@ -22,6 +24,7 @@ export function summarizeEncounter(samples) {
     threatenedSamples: threatened.length,
     guidedSamples: guided.length,
     inputSamples: valid.filter((sample) => sample.input?.length).length,
+    patterns: inspectBossPatterns(samples),
     humanApproval: 'PENDING',
   };
 }
