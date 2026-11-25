@@ -313,7 +313,7 @@ export function fighter(enemy = false, variant = -1) {
       inner.rotation.x = Math.PI / 2;
       inner.position.set(s * 1.04, -0.13, 3.25);
       g.add(inner);
-      const aura = halo(enemy ? '#ff3468' : '#39bfff', 3.6, 0.75);
+      const aura = halo(enemy ? '#ff3468' : '#39bfff', enemy ? 3.6 : 2.55, enemy ? 0.75 : 0.48);
       aura.position.set(s * 1.04, -0.13, 2.9);
       g.add(aura);
       const ridge = box(1.3, 0.44, 2.8, accent, s * 2.15, 0.21, 0.3);

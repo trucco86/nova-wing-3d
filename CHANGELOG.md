@@ -1,5 +1,11 @@
 # Histórico
 
+## 1.27.163 — QA183: acabamento traseiro da NOVA-7
+
+- Painéis térmicos traseiros, juntas mecânicas e indicadores embutidos nos três batches existentes.
+- Halo da nave reduzido para preservar leitura das turbinas sem mudar propulsão.
+- Candidata em preparação; CI e comparação visual pendentes.
+
 ## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
 - Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.
