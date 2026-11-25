@@ -4223,7 +4223,7 @@ export function createGame({
         z: r.o.position.z,
       })),
       rolling: roll > 0,
-      player: { x: player.position.x, y: player.position.y },
+      player: { x: player.position.x, y: player.position.y, z: player.position.z },
       camera: {
         x: camera.position.x,
         y: camera.position.y,
