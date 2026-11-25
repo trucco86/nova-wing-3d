@@ -430,6 +430,31 @@ export function createBossModel(sector, index = 0, tactical = false) {
 }
 /** Boss-only procedural choreography. Reuses authored geometry and freezes
  * with the simulation clock; never moves the actual generator hit volumes. */
+/** Physical attacks animate existing joints instead of spawning a random bullet
+ * fan. The boss director owns collision and telegraph windows.
+ */
+export function animateBossMelee(g, kind, pose = 0) {
+  if (!g) return;
+  const power = Math.max(0, Math.min(1, pose));
+  if (kind === 'bite' && g.userData.jaw)
+    g.userData.jaw.rotation.x = power * 0.88;
+  if (kind === 'tentacle')
+    g.userData.organic?.forEach((limb, i) => {
+      limb.rotation.z = (i % 2 ? -1 : 1) * power * 0.82;
+      limb.rotation.x = power * 0.38;
+    });
+  if (kind === 'claw') {
+    const left = g.getObjectByName('signature-mech-left-arm');
+    const right = g.getObjectByName('signature-mech-right-arm');
+    if (left) left.rotation.x = -power * 0.9;
+    if (right) right.rotation.x = power * 0.9;
+  }
+  if (kind === 'drill') {
+    const bit = g.getObjectByName('signature-drill-bit');
+    if (bit) bit.position.z += power * 11;
+  }
+}
+
 export function animateBossSignature(g, index, time, phase = 1, attackState = 'maneuver') {
   const pose = bossSignaturePose(index, time, phase, attackState);
   if (!pose || !g) return null;
