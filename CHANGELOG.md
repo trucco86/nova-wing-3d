@@ -7,7 +7,6 @@
 - Mantidos escudo de 12 s, estase de 11 s, supers de 8/10 s e câmera manual estável da linha 1.27.158.
 - Preparar e homologar em PR preview antes de qualquer promoção.
 
-
 ## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
 - Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.

@@ -2750,17 +2750,14 @@ export function createGame({
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
     const squadSuper = source === 'squad-plasma' || source === 'squad-overdrive';
     const spendDamage = (value, chargedShot) =>
-      squadSuper
-        ? bossCombat.spendSquadSpecial(value)
-        : bossCombat.spend(value, chargedShot);
+      squadSuper ? bossCombat.spendSquadSpecial(value) : bossCombat.spend(value, chargedShot);
     if (hitZone === 'hull' && boss.userData.sabotage) return 0;
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
       // Team supers break down more exterior armor while the generator locks
       // remain fully enforced. Ordinary gunfire preserves its existing cap.
-      const hullRatio =
-        bossDamageMultipliers('hull', parts.length) * (squadSuper ? 3.6 : 1);
+      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? 3.6 : 1);
       const chip = spendDamage(amount * 0.75, charged) * hullRatio;
       const floor = bossCombat.max * (parts.length > 0 ? (squadSuper ? 0.55 : 0.72) : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));

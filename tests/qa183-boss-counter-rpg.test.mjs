@@ -42,7 +42,10 @@ test('dodging Marvin bite triggers an actual counterattack bonus window', (t) =>
   h.key('KeyD', false);
   const avoided = h.game.snapshot();
   assert.equal(avoided.shield, prior, 'bite is avoided by moving away from marked zone');
-  assert.ok(avoided.strategy.bossCounterTime > 0, 'missed physical strike gives a real counter window');
+  assert.ok(
+    avoided.strategy.bossCounterTime > 0,
+    'missed physical strike gives a real counter window',
+  );
   h.advance(4.7, 0.1);
   assert.equal(h.game.snapshot().strategy.bossCounterTime, 0, 'counter expires in simulation time');
 });
