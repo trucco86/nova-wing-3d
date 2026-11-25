@@ -1,4 +1,9 @@
-import { openMenu, clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
+import {
+  openMenu,
+  clickMenu,
+  confirmCampaignPreflight,
+  enterGameplayAfterLaunch,
+} from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 
 test('selected language covers menu, hangar, campaign, and live pause labels', async ({ page }) => {
@@ -17,6 +22,7 @@ test('selected language covers menu, hangar, campaign, and live pause labels', a
   await expect(page.locator('#cinematicCaption')).toContainText('Five Cats');
   await page.locator('#cinematicSkip').click();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   await expect(page.locator('#stage')).toContainText('CITY OF MACHINES');
   await page.locator('#pause').click();
   await expect(page.locator('#pauseTitle')).toContainText('MISSION PAUSED');
@@ -37,6 +43,7 @@ test('sight follows the actual forward shot axis in chase and cockpit views', as
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   const reticle = page.locator('#aimReticle');
   await expect(reticle).toBeVisible({ timeout: 20000 });
   const before = await reticle.evaluate((el) => ({

@@ -1,4 +1,4 @@
-import { openMenu, clickMenu } from './menu-navigation.mjs';
+import { openMenu, clickMenu, enterGameplayAfterLaunch } from './menu-navigation.mjs';
 import { test, expect } from '@playwright/test';
 import { prepareAndroidWeb } from '../../tools/android.mjs';
 
@@ -30,6 +30,7 @@ test('WebGL starts, renders, plays and pauses without runtime errors', async ({ 
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   await expect(page.locator('#menu')).toBeHidden();
   await expect(page.locator('#music')).toBeHidden();
   await expect(page.locator('.brand-mini')).toBeHidden();
@@ -297,6 +298,7 @@ test('boost streaks follow keyboard or touch input and disappear on pause', asyn
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   if (info.project.name === 'mobile') {
     const bounds = await page.locator('#boostTouch').boundingBox();
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
@@ -364,6 +366,7 @@ test('offline Android interface protects controls from cutout and gesture insets
   await expect(page.locator('#cinematic')).toHaveCSS('pointer-events', 'auto');
   await page.locator('#cinematicSkip').tap();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   await expect(page.locator('#touch')).toBeVisible();
   const viewport = page.viewportSize();
   const safe = await page.locator('#interface').boundingBox();
@@ -400,6 +403,7 @@ test('holding Space never activates focused browser-page buttons or selects HUD 
   await clickMenu(page, '#start');
   await page.locator('#cinematicSkip').click();
   await confirmCampaignPreflight(page);
+  await enterGameplayAfterLaunch(page);
   await page.locator('#pause').focus();
   const label = await page.locator('#pause').textContent();
   await page.keyboard.down('Space');

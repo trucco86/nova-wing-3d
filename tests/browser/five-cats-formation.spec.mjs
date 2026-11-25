@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { clickMenu, confirmCampaignPreflight } from './menu-navigation.mjs';
 
 test('Five Cats launches real player fighter with four escorts from enclosed hangar', async ({
   page,
@@ -125,4 +126,28 @@ test('Plasma Titan and Five Cats Overdrive fire physical shots without covering 
   expect(overdrive.visible).toHaveLength(4);
   await expect(page.locator('#squadSuperStatus')).toBeVisible();
   await page.screenshot({ path: info.outputPath('five-cats-overdrive-mobile.png') });
+});
+
+test('public story skip starts the hangar launch before allowing gameplay', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/');
+  await clickMenu(page, '#start');
+  await expect(page.locator('#cinematic')).toBeVisible();
+  await page.locator('#cinematicSkip').click();
+  await confirmCampaignPreflight(page);
+  await expect(page.locator('body')).toHaveClass(/launch-cinematic/);
+  await expect(page.locator('#launchSkip')).toBeVisible();
+  await expect(page.locator('#hud')).toBeHidden();
+  await expect(page.locator('#touch')).toBeHidden();
+  await page.screenshot({ path: info.outputPath('public-story-skip-hangar.png') });
+  await page.locator('#launchSkip').click();
+  await expect(page.locator('body')).not.toHaveClass(/launch-cinematic/);
+  await expect(page.locator('#launchSkip')).toBeHidden();
+  await expect(page.locator('#pause')).toBeVisible();
+  await expect(page.locator('#aimReticle')).toBeVisible({ timeout: 20000 });
+  if (info.project.name === 'mobile') await expect(page.locator('#touch')).toBeVisible();
+  await page.locator('#pause').click();
+  await expect(page.locator('#pauseMenu')).toBeVisible();
 });
