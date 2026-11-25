@@ -147,10 +147,11 @@ export function createFiveCatsSquad({
       plasmaClock -= dt;
       if (plasmaClock <= 0) {
         // Damage goes through the standard shot collision/occlusion path.
+        const aim = opponent();
         fireFrom(
           player.position.clone().add(new T.Vector3(0, 0, -3)),
-          new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
-          14 * power,
+          aim ?? new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
+          34 * power,
           'fire',
           true,
         );
@@ -178,7 +179,7 @@ export function createFiveCatsSquad({
         if (enemy)
           for (const { pilot: p, mesh } of wings) {
             if (p.id !== pilot)
-              fireFrom(mesh.position.clone(), enemy.clone(), 8 * power, 'arcane', false);
+              fireFrom(mesh.position.clone(), enemy.clone(), 24 * power, 'arcane', false);
           }
         overdriveClock = SQUAD_SPECIALS.overdrive.pulseInterval;
       }
