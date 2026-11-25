@@ -24,3 +24,7 @@ Preservar a PR #447 e integrar posteriormente ao seu relatório e vídeo, após 
 ## Observação de repetição de ataques
 
 O relatório passa a contar janelas que contêm tanto aviso quanto ataque, e não cada frame repetido do mesmo golpe. A heurística inicial sinaliza três ataques iguais em ciclos consecutivos somente com ao menos quatro janelas completas. Com exposição menor, registra `INSUFFICIENT_EXPOSURE`. Esses limiares são hipóteses de calibração, não regras de design aprovadas. A coleta atual de 30 segundos pode ser insuficiente; uma futura sessão mais longa deve validar a diversidade sem alterar a física ou o escudo do jogador. O detector não avalia a animação do ataque, dificuldade, diversão ou qualidade do enquadramento.
+
+## Sonda de HUD no Reator
+
+A observação experimental amostra rótulos reais de pontos fracos, nome, estado e aviso durante a órbita. Mede a interseção dos retângulos de DOM em relação ao menor rótulo. Pelo menos 20% de interseção por três amostras consecutivas gera candidato consultivo com screenshot e coordenadas. Limiares iniciais sujeitos a calibração. Retângulos de elementos não comprovam sobreposição dos glifos, oclusão 3D, ordem de pintura ou legibilidade; elementos sobrepostos intencionalmente precisam ser excluídos após revisão. O teste em desktop e mobile ainda precisa ser executado.
