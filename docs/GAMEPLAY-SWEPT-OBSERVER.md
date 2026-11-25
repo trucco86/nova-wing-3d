@@ -10,4 +10,4 @@ Limites: depende da ordem estável dos colliders urbanos e de interpolação lin
 
 `node --test tests/gameplay-swept-observer.test.mjs`
 
-Sete testes unitários executados localmente. Integrar ao relatório Playwright e calibrar em WebGL após o CI da PR #446, sem transformar candidatos em gates obrigatórios automaticamente.
+Sete testes unitários executados localmente. Integrado ao roteiro Playwright na candidata consolidada; a execução e calibração WebGL do novo SHA ainda estão pendentes. Não transformar candidatos em gates obrigatórios automaticamente.
