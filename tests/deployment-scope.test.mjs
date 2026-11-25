@@ -53,7 +53,7 @@ test('unknown push history fails open rather than silently skipping production',
   assert.equal(decide(['tools/foo.mjs'], { beforeSha: '' }).deploy, true);
   assert.equal(decide(['tools/foo.mjs'], { currentSha: '' }).deploy, true);
   assert.equal(decide(['tools/foo.mjs'], { diffAvailable: false }).deploy, true);
-  assert.equal(decide(['tools/foo.mjs'], { beforeSha: '0'.repeat(40) }).deploy, false);
+  assert.equal(decide(['tools/foo.mjs'], { beforeSha: '0'.repeat(40) }).deploy, true);
 });
 
 test('manually dispatched workflow can publish an unchanged site intentionally', () => {
