@@ -1,5 +1,13 @@
 # Histórico
 
+## 1.27.159 — Contra-ataque por esquiva e supers de equipe mais fortes (candidata QA183)
+
+- Desviar de golpes físicos abre 4,5 s de contra-ataque (+35% dano em alvos vulneráveis e +0,5 energia tática). Golpes cancelados por armas destruídas não concedem bônus.
+- Plasma Titan / Five Cats Overdrive desbastam melhor a carcaça sem atravessar bloqueios de geradores e núcleo.
+- Mantidos escudo de 12 s, estase de 11 s, supers de 8/10 s e câmera manual estável da linha 1.27.158.
+- Preparar e homologar em PR preview antes de qualquer promoção.
+
+
 ## 1.27.158 — QA175: desembarque 3D integrado à fase 4
 
 - Incorpora a exploração da Devastador na própria missão 04, sem setor adicional, save ou ranking de exploração.
