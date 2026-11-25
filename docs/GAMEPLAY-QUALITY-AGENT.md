@@ -32,7 +32,7 @@ Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e 
 
 ## Observabilidade recorrente (candidata, requer merge)
 
-- O workflow `.github/workflows/gameplay-observer.yml` permite execução manual e agenda uma rodada nos dias úteis, às 12:00 UTC (09:00 Brasília). **Não estará ativo na agenda enquanto esta PR estiver em draft.** A agenda opera na branch padrão após merge, não sobre o site publicado em produção.
+- O workflow `.github/workflows/gameplay-observer.yml` permite execução manual e agenda uma rodada nos dias úteis, às 12:00 UTC (09:00 Brasília). **Não estará ativo na agenda antes do merge na branch padrão**, independentemente do status de draft. A agenda opera na branch padrão após merge, não sobre o site publicado em produção.
 - O Playwright observa o motor WebGL real em quatro cenários com fixture de QA, nos projetos desktop e mobile. É uma amostra determinística, não uma campanha completa, nem um agente multimodal autônomo.
 - Cada observação gera `artifacts/gameplay-observer/<cenário>-<dispositivo>.json` e capturas anexas; o consolidado exige oito relatórios, registrando `OBSERVED_OK`, `FINDINGS` ou `BLOCKED`.
 - O resultado é **consultivo**, não aprova merge, qualidade subjetiva ou publicação. Relatórios ausentes ou execução incompleta são `BLOCKED` e fazem o workflow falhar. Achados de regra objetiva ficam disponíveis para triagem.
@@ -41,6 +41,14 @@ Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e 
 - Para revisar: abra a execução GitHub Actions, baixe o artefato `gameplay-observer-evidence` (rotina agendada) ou o artefato `browser-evidence-<shard>` (CI de PR), e reproduza o MP4 junto com o relatório JSON. A issue de alerta aponta para a execução; a publicação direta de vídeos reproduzíveis no Control Center ainda é futura.
 - **Limitação:** o clipe de até 12 segundos contém os frames registrados no navegador, não representa gravação de gameplay integral nem FPS nativo do dispositivo; o instante do alerta é aproximado quando a simulação avança em tempo acelerado.
 - A rotina não integra ainda visualização no Control Center, vídeo contínuo, julgamentos multimodais de ritmo/estética ou telemetria de FPS e colisão em aparelho físico. Esses recursos requerem baselines, critérios de aceitação e validação específica.
+
+### Publicação desacoplada da observabilidade
+
+- A CI completa continua obrigatória a cada push na `main`. O job `delivery-scope` apenas decide se a publicação no GitHub Pages é necessária, comparando o commit anterior e o atual.
+- Para habilitar o agente sem republicar o jogo, somente diferenças em testes, ferramentas, dependências, especificações ou workflow não acionam `pages`: as versões dos arquivos públicos permanecem idênticas.
+- Qualquer mudança em `index.html`, `.nojekyll`, `LICENSE`, `docs/THREE-LICENSE.txt` ou `docs/control-center/index.html` mantém o deploy normal, com smoke test, checkpoint e rollback.
+- Um histórico de push desconhecido ou `workflow_dispatch` manual mantém o deploy habilitado por segurança. A decisão é validada por testes em `tests/deployment-scope.test.mjs`.
+- A proteção de publicação **não** é autorização de merge. O mantenedor continua a controlar quando a mudança de observabilidade entra na `main`. A revisão de release segue obrigatória para alterações que afetem o jogo.
 
 ### Critérios de promoção
 
