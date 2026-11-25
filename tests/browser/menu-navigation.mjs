@@ -43,3 +43,13 @@ export async function confirmCampaignPreflight(page) {
     await map.waitFor({ state: 'hidden' });
   }
 }
+
+/** Tests of gameplay, not the departure itself, use the public skip action.
+ * Story skip and launch skip are separate actions. Never send combat input
+ * until the launch has ended and the real HUD is available.
+ */
+export async function enterGameplayAfterLaunch(page) {
+  const launch = page.locator('#launchSkip');
+  if (await launch.isVisible()) await launch.click();
+  await page.locator('body.in-mission:not(.launch-cinematic)').waitFor({ state: 'attached' });
+}

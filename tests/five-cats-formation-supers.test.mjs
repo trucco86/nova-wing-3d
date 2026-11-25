@@ -75,29 +75,104 @@ test('specials require gameplay, sufficient energy and elapsed cooldown', () => 
   }
 });
 
-test('new mission shows Bia-led formation before gameplay clock starts', (t) => {
+test('stage-one hangar uses real player ship plus four escorts without advancing mission clock', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
   assert.ok(h.game.snapshot().fiveCats.intro > 0);
   h.advance(1);
   const first = h.game.snapshot();
-  assert.equal(first.fiveCats.visible.length, 5);
-  assert.equal(first.fiveCats.visible.find((p) => p.pilot === 'bia').x, 0);
+  assert.equal(first.fiveCats.visible.length, 4);
+  assert.equal(
+    first.fiveCats.visible.some((p) => p.pilot === 'bia'),
+    false,
+  );
+  assert.equal(first.fiveCats.playerIsLeader, true);
+  assert.equal(first.fiveCats.visibleTagCount, 0);
+  assert.ok(
+    first.fiveCats.visible.every(({ scale }) => scale > 0.6 && scale < 0.85),
+    'escorts remain smaller than the selected playable fighter',
+  );
   assert.ok(first.seconds < 0.02);
   assert.equal(h.elements.get('squadFormationStatus').hidden, false);
-  h.advance(4.1);
+  h.advance(5.6);
   const ended = h.game.snapshot();
   assert.equal(ended.fiveCats.intro, 0);
   assert.equal(ended.fiveCats.visible.length, 0);
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
 });
 
+test('skipping the story cinematic still plays the stage-one hangar launch', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, false, 'story cinematic should open');
+  h.elements.get('cinematicSkip').onclick();
+  assert.ok(h.game.snapshot().fiveCats.intro > 0, 'story skip must not skip hangar takeoff');
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), true);
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+});
+
+test('selected pilot persists through the clean hangar launch and explicit skip', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.selectPilot('bob');
+  h.game.selectShip('specter');
+  h.game.selectShipColor('crimson');
+  h.game.start();
+  h.advance(0.5);
+  const during = h.game.snapshot();
+  assert.equal(during.loadout.pilot, 'bob');
+  assert.equal(during.loadout.ship, 'specter');
+  assert.equal(during.loadout.color, 'crimson');
+  assert.equal(during.fiveCats.playerIsLeader, true);
+  assert.equal(during.fiveCats.visible.length, 4);
+  assert.ok(during.fiveCats.visible.every(({ pilot }) => pilot !== 'bob'));
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), true);
+  h.elements.get('launchSkip').onclick();
+  const after = h.game.snapshot();
+  assert.equal(after.fiveCats.intro, 0);
+  assert.equal(after.loadout.pilot, 'bob');
+  assert.equal(after.loadout.ship, 'specter');
+  assert.equal(after.loadout.color, 'crimson');
+  assert.equal(h.elements.get('launchSkip').hidden, true);
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), false);
+});
+
+test('takeoff visibly ramps selected fighter thrusters then resets when skipped', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(3.1);
+  assert.ok(h.game.snapshot().boostVisual.length > 1.1);
+  h.elements.get('launchSkip').onclick();
+  assert.equal(h.game.snapshot().boostVisual.length, 1);
+});
+
+test('intro-only wing scale is restored before normal squad gameplay', (t) => {
+  let wing = null;
+  const h = harness({
+    spawnEncounters: false,
+    enableSquadIntro: true,
+    observeScene(scene) {
+      wing ??= scene.getObjectByName('five-cats-wingman-bob');
+    },
+  });
+  t.after(() => h.close());
+  h.game.start();
+  h.advance(1);
+  assert.ok(wing, 'real Bob wing model must exist in the squad scene');
+  assert.ok(wing.scale.x < 0.85, 'launch-only framing keeps escorts smaller');
+  h.elements.get('launchSkip').onclick();
+  assert.ok(wing.scale.x > 0.9, 'skip restores normal gameplay size');
+});
+
 test('Y triggers physical plasma barrage, spends arcana; cooldown prevents immediate repeat', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(6.6);
   const before = h.game.snapshot().strategy.arcana;
   h.key('KeyY');
   assert.ok(h.game.snapshot().fiveCats.plasmaTime > 0);
@@ -113,7 +188,7 @@ test('O launches Five Cats overdrive with actual wingman meshes and cooldown', (
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
   h.game.start();
-  h.advance(5.1);
+  h.advance(6.6);
   h.key('KeyO');
   assert.ok(h.game.snapshot().fiveCats.overdriveTime > 0);
   h.advance(0.1);
