@@ -58,6 +58,11 @@ export function stagePerspectiveAt(index, seconds, duration, boss = false) {
   if (boss || !Number.isFinite(duration) || duration <= 0 || !Number.isFinite(seconds))
     return 'chase';
   const progress = Math.max(0, Math.min(1, seconds / duration));
+  // Only scripted encounters with a control-aware tactical arena may enter
+  // an overhead view. A purely time-based overhead cut breaks ship visibility
+  // and turns vertical steering into unintelligible altitude changes.
+  if (index === 7 && progress >= 0.42 && progress < 0.54) return 'overhead';
   const windows = SHOT_WINDOWS[index] ?? [];
-  return windows.find(({ from, to }) => progress >= from && progress < to)?.shot ?? 'chase';
+  const selected = windows.find(({ from, to }) => progress >= from && progress < to)?.shot;
+  return selected === 'overhead' ? 'chase' : (selected ?? 'chase');
 }
