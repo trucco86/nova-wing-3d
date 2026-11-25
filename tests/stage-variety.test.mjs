@@ -23,8 +23,12 @@ test('sector-directed perspective changes are bounded and preserve boss readabil
     assert.equal(stagePerspectiveAt(i, 0, 100), 'chase');
     assert.equal(stagePerspectiveAt(i, 100, 100), 'chase');
     assert.equal(stagePerspectiveAt(i, 35, 100, true), 'chase');
-    assert.ok(sequence.some((mode) => mode !== 'chase'));
+    if (![1, 3, 5].includes(i))
+      assert.ok(sequence.some((mode) => mode !== 'chase'));
+    if (i !== 7) assert.ok(sequence.every((mode) => mode !== 'overhead'));
   }
-  assert.ok(signatures.size >= 8, 'each environment should have a different shot language');
+  assert.ok(signatures.size >= 8, 'retain authored shots without arbitrary overhead cuts');
+  assert.equal(stagePerspectiveAt(7, 47, 100), 'overhead');
+  assert.equal(stagePerspectiveAt(7, 47, 100, true), 'chase');
   assert.equal(stagePerspectiveAt(3, 30, 0), 'chase');
 });
