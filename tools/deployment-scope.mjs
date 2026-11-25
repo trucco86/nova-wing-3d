@@ -41,8 +41,7 @@ export function decidePagesDeployment({
 }
 
 export function evaluateGitHubDelivery(env = process.env) {
-  const { GITHUB_EVENT_NAME: eventName, NOVA_BEFORE_SHA: beforeSha, GITHUB_SHA: currentSha } =
-    env;
+  const { GITHUB_EVENT_NAME: eventName, NOVA_BEFORE_SHA: beforeSha, GITHUB_SHA: currentSha } = env;
   let changedFiles = [];
   let diffAvailable = true;
   if (eventName === 'push' && validCommit(beforeSha) && validCommit(currentSha)) {
