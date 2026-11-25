@@ -113,7 +113,9 @@ import {
   encounterPattern,
   SUBBOSS_NAMES,
   animateBossSignature,
+  animateBossMelee,
 } from './bosses.js';
+import { bossMeleeDecision, bossMeleeMotion, bossMeleeConnect } from './boss-behavior.js';
 import { bossSignatureVolley } from './boss-signature.js';
 import { createBossCombat } from './combat.js';
 import { bossAttackProgram, bossDamageMultipliers } from './boss-director.js';
@@ -457,6 +459,7 @@ export function createGame({
     impactTime = 0,
     impactConfirmed = false,
     lastSpecialCycle = -1,
+    lastMeleeCycle = -1,
     pickupFeedbackTime = 0;
   const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
   const relativeOrbit = () => orbitAngle - (dynamicFlight && boss ? tactics().heading : 0);
@@ -994,6 +997,7 @@ export function createGame({
     tacticEnergy = scanTime = impactTime = 0;
     impactConfirmed = false;
     lastSpecialCycle = -1;
+    lastMeleeCycle = -1;
     specialCd = barrier = stasis = 0;
     podsDetached = false;
     podMode = 'docked';
@@ -1662,6 +1666,7 @@ export function createGame({
     orbitAngle = 0;
     scanTime = 0;
     lastSpecialCycle = -1;
+    lastMeleeCycle = -1;
     bossHp = bossCombat.max;
     boss = createBossModel(current(), sectorIndex, dynamicFlight);
     for (const e of enemies) dispose(e.o);
@@ -3420,7 +3425,35 @@ export function createGame({
         const targetAngle = (point < 0 ? 0 : point === 0 ? -Math.PI / 3 : Math.PI / 3) + t.heading;
         $('radarWeak').hidden = scanTime <= 0;
         $('radarWeak').style.transform = 'rotate(' + targetAngle + 'rad)';
-        if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle) {
+        // Boss chooses between physical strike and ranged pressure based on
+        // the player's actual distance/orbital position, not random spray.
+        const meleeChoice = bossMeleeDecision(sectorIndex, {
+          phase: combatPhase,
+          cycle: t.cycle,
+          playerDistance: Math.hypot(player.position.x - t.x, player.position.y - t.y),
+          flank: !inDanger(orbitAngle, t),
+        });
+        const meleeActive = !!meleeChoice?.engage && bossCombat.age >= 8;
+        const beat = Math.max(0, bossCombat.age - 8) % t.period;
+        const meleeMotion = bossMeleeMotion(t.state, (beat - 2.2) / 1.4);
+        if (meleeActive) {
+          // Camera and orbit stay on their proven rig. A physical lunge
+          // approaches the pilot while contact still requires proximity.
+          boss.position.z += meleeMotion.lunge * 57;
+          if (meleeMotion.striking && t.cycle !== lastMeleeCycle) {
+            lastMeleeCycle = t.cycle;
+            if (bossMeleeConnect({
+              player: player.position,
+              boss: { x: boss.position.x, y: boss.position.y, z: boss.position.z - meleeMotion.lunge * 57 },
+              reach: meleeChoice.reach,
+              lunge: meleeMotion.lunge,
+            })) {
+              hit(meleeChoice.damage * (1 + (combatPhase - 1) * 0.16));
+              shake = Math.max(shake, 0.28);
+            }
+          }
+        }
+        if (bossCombat.age >= 3 && t.state === 'attack' && t.cycle !== lastSpecialCycle && !meleeActive) {
           lastSpecialCycle = t.cycle;
           const dangerous = inDanger(orbitAngle, t);
           const signature = bossSignatureVolley(
@@ -3466,6 +3499,17 @@ export function createGame({
       boss.userData.jaw.rotation.x = Math.sin(elapsed * 2) * 0.12;
       if (dynamicFlight) {
         animateBossSignature(boss, sectorIndex, bossCombat.age, combatPhase, tactics().state);
+        const melee = bossMeleeDecision(sectorIndex, {
+          phase: combatPhase,
+          cycle: tactics().cycle,
+          playerDistance: Math.hypot(player.position.x - boss.position.x, player.position.y - boss.position.y),
+          flank: !inDanger(orbitAngle, tactics()),
+        });
+        if (melee?.engage && bossCombat.age >= 8) {
+          const attackBeat = Math.max(0, bossCombat.age - 8) % tactics().period;
+          const pose = bossMeleeMotion(tactics().state, (attackBeat - 2.2) / 1.4);
+          animateBossMelee(boss, melee.kind, pose.pose);
+        }
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
@@ -3518,8 +3562,19 @@ export function createGame({
               boss.userData.parts.map((part) => part.hp > 0),
             )?.name
           : null;
-      $('attackWarning').textContent = signatureWarning
-        ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
+      const closeStrike = dynamicFlight
+        ? bossMeleeDecision(sectorIndex, {
+            phase: combatPhase,
+            cycle: tactics().cycle,
+            playerDistance: Math.hypot(player.position.x - boss.position.x, player.position.y - boss.position.y),
+            flank: !inDanger(orbitAngle, tactics()),
+          })
+        : null;
+      $('attackWarning').textContent =
+        closeStrike?.engage && tactics().state === 'windup'
+          ? '⚠ ' + closeStrike.name + ' · DESVIE DAS GARRAS / MORDIDA'
+          : signatureWarning
+            ? '⚠ ' + signatureWarning + ' · MUDE DE POSIÇÃO'
         : bossCd < 0.65
           ? '⚠ ' +
             [
@@ -3538,7 +3593,7 @@ export function createGame({
       if (dynamicFlight && bossCd < 0.65)
         $('attackWarning').textContent +=
           (bossVolley + 1) % 3 === 0 ? ' · ORBES ARCANOS' : ' · PLASMA';
-      if (bossCd <= 0 && bossCombat.age >= 3) {
+      if (bossCd <= 0 && bossCombat.age >= 3 && !(closeStrike?.engage && tactics().state === 'attack')) {
         bossVolley++;
         const program = bossAttackProgram(sectorIndex, combatPhase, bossVolley);
         if (dynamicFlight) {
