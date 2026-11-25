@@ -97,16 +97,16 @@ Object.assign(AUDIO_CUES, {
     cooldown: 0.088,
     tones: [
       {
-        from: 1080,
-        to: 490,
+        from: 890,
+        to: 370,
         duration: 0.035,
-        gain: 0.028,
+        gain: 0.019,
         wave: 'sawtooth',
-        filter: 1850,
+        filter: 1200,
         attack: 0.002,
       },
       {
-        from: 350,
+        from: 330,
         to: 175,
         duration: 0.148,
         gain: 0.078,
@@ -151,12 +151,12 @@ Object.assign(AUDIO_CUES, {
     cooldown: 0.125,
     tones: [
       {
-        from: 810,
+        from: 780,
         to: 290,
         duration: 0.064,
         gain: 0.041,
         wave: 'sawtooth',
-        filter: 1720,
+        filter: 1550,
         attack: 0.002,
       },
       {
