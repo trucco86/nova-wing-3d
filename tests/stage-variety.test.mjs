@@ -13,22 +13,14 @@ test('ten visually independent destinations, Earth only at launch and no univers
   assert.throws(() => stageVisualAt(10), RangeError);
 });
 
-test('sector-directed perspective changes are bounded and preserve boss readability', () => {
-  const signatures = new Set();
-  for (let i = 0; i < 10; i++) {
-    const sequence = [0.05, 0.18, 0.26, 0.35, 0.46, 0.56, 0.68, 0.85, 0.99].map((part) =>
-      stagePerspectiveAt(i, part * 100, 100),
-    );
-    signatures.add(sequence.join(','));
-    assert.equal(stagePerspectiveAt(i, 0, 100), 'chase');
-    assert.equal(stagePerspectiveAt(i, 100, 100), 'chase');
-    assert.equal(stagePerspectiveAt(i, 35, 100, true), 'chase');
-    if (![1, 3, 5].includes(i))
-      assert.ok(sequence.some((mode) => mode !== 'chase'));
-    if (i !== 7) assert.ok(sequence.every((mode) => mode !== 'overhead'));
+test('camera changes are mission mechanics, never arbitrary time cuts', () => {
+  for (let sector = 0; sector < 10; sector++) {
+    for (const progress of [0, 0.15, 0.25, 0.35, 0.47, 0.7, 0.99]) {
+      const shot = stagePerspectiveAt(sector, progress * 100, 100);
+      if (sector === 7 && progress === 0.47) assert.equal(shot, 'overhead');
+      else assert.equal(shot, 'chase', 'noninteractive cut in sector ' + sector);
+    }
+    assert.equal(stagePerspectiveAt(sector, 47, 100, true), 'chase');
   }
-  assert.ok(signatures.size >= 8, 'retain authored shots without arbitrary overhead cuts');
-  assert.equal(stagePerspectiveAt(7, 47, 100), 'overhead');
-  assert.equal(stagePerspectiveAt(7, 47, 100, true), 'chase');
-  assert.equal(stagePerspectiveAt(3, 30, 0), 'chase');
+  assert.equal(stagePerspectiveAt(7, 47, 0), 'chase');
 });
