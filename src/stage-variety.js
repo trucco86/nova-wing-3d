@@ -33,36 +33,12 @@ export function stageVisualAt(index) {
 
 // Automatic *short* camera windows. These augment, but never override, the
 // player's manually selected cockpit or distant-combat camera.
-const SHOT_WINDOWS = Object.freeze(
-  [
-    [{ from: 0.2, to: 0.34, shot: 'side' }],
-    [{ from: 0.32, to: 0.53, shot: 'overhead' }],
-    [
-      { from: 0.08, to: 0.23, shot: 'combat' },
-      { from: 0.41, to: 0.57, shot: 'side' },
-    ],
-    [{ from: 0.24, to: 0.44, shot: 'overhead' }],
-    [{ from: 0.16, to: 0.38, shot: 'side' }],
-    [{ from: 0.37, to: 0.59, shot: 'overhead' }],
-    [{ from: 0.29, to: 0.5, shot: 'side' }],
-    [
-      { from: 0.12, to: 0.29, shot: 'combat' },
-      { from: 0.45, to: 0.58, shot: 'overhead' },
-    ],
-    [{ from: 0.2, to: 0.39, shot: 'side' }],
-    [{ from: 0.33, to: 0.53, shot: 'combat' }],
-  ].map((windows) => Object.freeze(windows.map((w) => Object.freeze(w)))),
-);
-
+// Deliberate transition only: fleet broadside needs a top-down X/Z tactical
+// corridor. Other sectors retain pilot-selected cameras until mechanics justify
+// a new view (not arbitrary percentage-of-level cuts).
 export function stagePerspectiveAt(index, seconds, duration, boss = false) {
   if (boss || !Number.isFinite(duration) || duration <= 0 || !Number.isFinite(seconds))
     return 'chase';
   const progress = Math.max(0, Math.min(1, seconds / duration));
-  // Only scripted encounters with a control-aware tactical arena may enter
-  // an overhead view. A purely time-based overhead cut breaks ship visibility
-  // and turns vertical steering into unintelligible altitude changes.
-  if (index === 7 && progress >= 0.42 && progress < 0.54) return 'overhead';
-  const windows = SHOT_WINDOWS[index] ?? [];
-  const selected = windows.find(({ from, to }) => progress >= from && progress < to)?.shot;
-  return selected === 'overhead' ? 'chase' : (selected ?? 'chase');
+  return index === 7 && progress >= 0.42 && progress < 0.54 ? 'overhead' : 'chase';
 }
