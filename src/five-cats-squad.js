@@ -10,8 +10,8 @@ export const SQUAD_PILOTS = [
 ];
 
 export const SQUAD_SPECIALS = {
-  plasma: { cost: 75, cooldown: 15, duration: 2.5, pulseInterval: 0.14 },
-  overdrive: { cost: 90, cooldown: 30, duration: 3.5, pulseInterval: 0.28 },
+  plasma: { cost: 75, cooldown: 22, duration: 6, pulseInterval: 0.16 },
+  overdrive: { cost: 90, cooldown: 38, duration: 8, pulseInterval: 0.32 },
 };
 
 /** Symmetrical five-ship V with Bia in the center and forward. */
