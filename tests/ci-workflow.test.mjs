@@ -46,7 +46,21 @@ test('release quality checks committed output before rebuilding; browser shards 
     '${{ matrix.shard }}/6',
     'all six shards must use the same total for non-overlapping full-suite coverage',
   );
-  assert.equal(ci.jobs.pages.needs, 'browser', 'production Pages is gated by browser results');
+  assert.deepEqual(
+    ci.jobs.pages.needs,
+    ['browser', 'delivery-scope'],
+    'production Pages must require both browser success and delivery eligibility',
+  );
+  assert.match(
+    ci.jobs.pages.if,
+    /needs\.delivery-scope\.outputs\.deploy == 'true'/,
+    'production Pages must be skipped for unchanged web artifacts',
+  );
+  assert.equal(ci.jobs['delivery-scope'].outputs.deploy, '${{ steps.evaluate.outputs.deploy }}');
+  assert.ok(
+    commands(ci.jobs['delivery-scope']).includes('node tools/deployment-scope.mjs'),
+    'delivery-scope must execute the tested deployment decision',
+  );
   assert.deepEqual(ci.jobs.browser.needs, ['quality', 'browser-shard']);
 });
 
