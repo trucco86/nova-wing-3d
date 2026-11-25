@@ -5714,13 +5714,15 @@ export function createGame({
         $('battleRadar').style.background = radarPlan ? '#071b20' : radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
         $('tacticState').textContent =
-          t.state === 'windup'
-            ? '⚠ ' + t.name
-            : t.vulnerable
-              ? 'CONTRA-ATAQUE'
-              : inDanger(orbitAngle, t)
-                ? 'RISCO'
-                : 'COBERTURA';
+          bossCounterTime > 0
+            ? 'CONTRA-ATAQUE ' + Math.ceil(bossCounterTime) + 's · +35% DANO'
+            : t.state === 'windup'
+              ? '⚠ ' + t.name
+              : t.vulnerable
+                ? 'CONTRA-ATAQUE'
+                : inDanger(orbitAngle, t)
+                  ? 'RISCO'
+                  : 'COBERTURA';
         const objective = bossRadarTarget(
           sectorIndex,
           boss.userData.parts,
