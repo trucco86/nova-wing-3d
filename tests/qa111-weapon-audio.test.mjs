@@ -203,3 +203,13 @@ test('QA115: normal shot uses a shorter filtered attack and a warm mechanical bo
   assert.ok(release.tones.find((t) => t.wave === 'sawtooth').gain <= 0.035);
   assert.ok(release.tones.some((t) => t.wave === 'sine' && t.duration >= 0.5));
 });
+
+test('QA182: stronger attack without increasing sustained low-frequency rebound', () => {
+  const shot = AUDIO_CUES.shot;
+  assert.ok(shot.noises[0].gain >= 0.09);
+  assert.ok(shot.noises[0].duration <= 0.04);
+  assert.ok(shot.tones[1].filter >= 1200);
+  assert.ok(shot.tones[3].gain <= 0.035);
+  assert.ok(AUDIO_CUES.mechaShot.tones[1].gain > shot.tones[1].gain);
+  assert.ok(AUDIO_CUES.mechaShot.cooldown > shot.cooldown);
+});

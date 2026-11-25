@@ -234,3 +234,58 @@ effectsButton.onclick = async () => {
     document.body.dataset.effectsReady = 'error';
   }
 };
+
+const burstButton = document.createElement('button');
+burstButton.id = 'renderWeaponBurst';
+burstButton.textContent = 'Renderizar rajadas';
+const burstResult = document.createElement('output');
+burstResult.id = 'weaponBurstMetrics';
+const burstAudio = document.createElement('audio');
+burstAudio.controls = true;
+const burstLink = document.createElement('a');
+burstLink.id = 'weaponBurstDownload';
+burstLink.textContent = 'Baixar rajadas';
+burstLink.download = 'nova-wing-weapon-burst.wav';
+burstLink.hidden = true;
+document.body.append(burstButton, burstResult, burstAudio, burstLink);
+burstButton.onclick = async () => {
+  burstButton.disabled = true;
+  let cues;
+  let shipShots = 0;
+  let robotShots = 0;
+  let maxVoices = 0;
+  try {
+    const buffer = await renderTimeline(8, (context) => {
+      cues = createAudioCues(context);
+      return (tick) => {
+        if (tick >= 3 && tick < 63 && tick % 3 === 0) {
+          if (cues.play('shot')) shipShots++;
+        }
+        if (tick >= 90 && tick < 150 && tick % 4 === 2) {
+          if (cues.play('mechaShot')) robotShots++;
+        }
+        if (tick === 165) cues.play('plasmaRelease');
+        if (tick === 195) cues.setEnabled(false);
+        maxVoices = Math.max(maxVoices, cues.snapshot().voices);
+      };
+    });
+    const metrics = {
+      ...measure(buffer, 0, 8),
+      shipShots,
+      robotShots,
+      maxVoices,
+      ship: measure(buffer, 0.1, 2.1),
+      robot: measure(buffer, 3, 5),
+      plasma: measure(buffer, 5.5, 6.3),
+      mute: measure(buffer, 6.7, 8),
+    };
+    cues.destroy();
+    burstResult.textContent = JSON.stringify(metrics);
+    expose(buffer, burstAudio, burstLink);
+    document.body.dataset.weaponBurstReady = 'true';
+  } catch (error) {
+    cues?.destroy();
+    burstResult.textContent = error.stack;
+    document.body.dataset.weaponBurstReady = 'error';
+  }
+};
