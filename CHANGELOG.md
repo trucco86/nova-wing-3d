@@ -1,5 +1,14 @@
 # Histórico
 
+## 1.27.8 — Boss Combat AI, câmera funcional e RPG rebalanceado (candidata)
+
+- Reação de chefes a distância, ângulo e fase; mordida, garras, tentáculos e investida física com telegraph, colisão e esquiva.
+- Remoção dos cortes automáticos sem propósito; câmera superior restrita à batalha tática da frota, controles X/Z e nave dentro do enquadramento.
+- Barreira ~10s, Estase ~9s, Plasma Titan ~6s e Five Cats ~8s; maior impacto com orçamento de dano exclusivo e contagem de duração.
+- Mundo aberto e desmembramento físico de chefes continuam planejados, não implementados.
+- Candidata isolada sobre PR #140; não promover antes de testes e homologação.
+
+
 ## 1.27.7 — Ataques exclusivos de chefes (candidata isolada)
 
 - Perfurador, Colosso Glacial, Hidra e Marvin com poses e salvas especiais; armas/baterias variam conforme geradores destruídos.
