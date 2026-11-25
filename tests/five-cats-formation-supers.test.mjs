@@ -102,6 +102,17 @@ test('stage-one hangar uses real player ship plus four escorts without advancing
   assert.equal(h.elements.get('squadFormationStatus').hidden, true);
 });
 
+test('skipping the story cinematic still plays the stage-one hangar launch', (t) => {
+  const h = harness({ spawnEncounters: false, enableSquadIntro: true });
+  t.after(() => h.close());
+  h.elements.get('start').onclick();
+  assert.equal(h.elements.get('cinematic').hidden, false, 'story cinematic should open');
+  h.elements.get('cinematicSkip').onclick();
+  assert.ok(h.game.snapshot().fiveCats.intro > 0, 'story skip must not skip hangar takeoff');
+  assert.equal(h.document.body.classList.contains('launch-cinematic'), true);
+  assert.equal(h.elements.get('launchSkip').hidden, false);
+});
+
 test('selected pilot persists through the clean hangar launch and explicit skip', (t) => {
   const h = harness({ spawnEncounters: false, enableSquadIntro: true });
   t.after(() => h.close());
