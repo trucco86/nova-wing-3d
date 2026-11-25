@@ -133,7 +133,19 @@ if (workflow) {
     workflow.permissions?.contents === 'read',
     'CI must have read-only contents permission',
   );
-  requireThat(workflow.jobs?.pages?.needs === 'browser', 'Pages requires the browser gate');
+  const pagesNeeds = workflow.jobs?.pages?.needs;
+  requireThat(
+    Array.isArray(pagesNeeds) && pagesNeeds.includes('browser'),
+    'Pages requires the browser gate',
+  );
+  requireThat(
+    Array.isArray(pagesNeeds) && pagesNeeds.includes('delivery-scope'),
+    'Pages requires the safe delivery-scope gate',
+  );
+  requireThat(
+    workflow.jobs?.pages?.if?.includes("needs.delivery-scope.outputs.deploy == 'true'"),
+    'Pages must skip publication if public web assets are unchanged',
+  );
   requireThat(!workflow.on?.pull_request_target, 'No privileged PR trigger');
   requireThat(workflow.jobs?.quality && workflow.jobs?.browser, 'Missing quality/browser gate');
   requireThat(workflow.jobs?.android?.needs === 'quality', 'Android requires the quality gate');
