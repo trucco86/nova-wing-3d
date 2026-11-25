@@ -41,6 +41,6 @@ export function bossMeleeConnect({ player, boss, reach, lunge }) {
   if (!player || !boss || !Number.isFinite(reach)) return false;
   return (
     Math.hypot(player.x - boss.x, player.y - boss.y) <= reach &&
-    Math.abs(player.z - (boss.z + 57 * clamp(lunge, 0, 1))) <= 43
+    Math.abs(player.z - (boss.z + 57 * clamp(lunge, 0, 1))) <= 53
   );
 }
