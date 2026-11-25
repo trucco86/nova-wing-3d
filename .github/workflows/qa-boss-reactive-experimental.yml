@@ -34,6 +34,11 @@ jobs:
       - name: Verify formatting
         if: always()
         run: npm run format:check
+      - name: Show exact formatting patch on failure
+        if: failure()
+        run: |
+          npm run format
+          git diff -- src tools tests specs docs skills .github
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

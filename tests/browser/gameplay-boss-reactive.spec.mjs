@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { writeFile } from 'node:fs/promises';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -114,10 +115,18 @@ for (const encounter of [
     const passive = await runEncounter(page, info, encounter.sector, false);
     const reactive = await runEncounter(page, info, encounter.sector, true);
     const comparison = compareEncounters(passive.metrics, reactive.metrics);
-    await info.attach('boss-comparison.json', {
-      body: Buffer.from(JSON.stringify({ encounter, passive, reactive, comparison }, null, 2)),
-      contentType: 'application/json',
-    });
+    const evidence = { encounter, project: info.project.name, passive, reactive, comparison };
+    const path = info.outputPath('boss-comparison.json');
+    await writeFile(path, JSON.stringify(evidence, null, 2) + '\n');
+    await info.attach('boss-comparison.json', { path, contentType: 'application/json' });
+    console.log(
+      'BOSS_COMPARISON ' +
+        JSON.stringify({
+          encounter: encounter.name,
+          project: info.project.name,
+          ...comparison,
+        }),
+    );
     expect(passive.errors).toEqual([]);
     expect(reactive.errors).toEqual([]);
     expect(passive.metrics.attackWindows, 'passive physical warnings').toBeGreaterThan(0);
