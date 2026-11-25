@@ -1,0 +1,44 @@
+name: QA boss reactive experimental
+on:
+  push:
+    branches:
+      - feat/gameplay-boss-dodge-policy
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-boss-reactive-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Run policy and encounter metrics unit tests
+        run: node --test tests/gameplay-boss-dodge-policy.test.mjs tests/gameplay-boss-encounter-metrics.test.mjs
+      - run: npm run build:check
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Compare real desktop and mobile boss encounters
+        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs
+      - name: Verify formatting
+        if: always()
+        run: npm run format:check
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: boss-reactive-experimental-evidence
+          retention-days: 14
+          path: |
+            test-results/
+            playwright-report/
