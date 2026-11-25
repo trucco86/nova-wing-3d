@@ -5,6 +5,9 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
   let age = 0,
     budget = 0,
     chargeBudget = 0,
+    // Dedicated capped channel: cinematic squad supers should matter, without
+    // bypassing generator locks or enabling a one-frame boss kill.
+    specialBudget = 120,
     hp = max;
   return {
     max,
@@ -12,6 +15,7 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
       age += dt;
       chargeBudget = Math.min(rate * 2, chargeBudget + dt * rate * 0.3);
       budget = Math.min(rate * burstSeconds, budget + dt * rate);
+      specialBudget = Math.min(240, specialBudget + dt * 155);
     },
     spend(amount, charged = false) {
       if (age < 3 || !Number.isFinite(amount) || amount <= 0) return 0;
@@ -22,6 +26,12 @@ export function createBossCombat(index = 0, burstSeconds = 0.3) {
       }
       const dealt = Math.min(amount, budget);
       budget -= dealt;
+      return dealt;
+    },
+    spendSpecial(amount) {
+      if (age < 3 || !Number.isFinite(amount) || amount <= 0) return 0;
+      const dealt = Math.min(amount, specialBudget);
+      specialBudget -= dealt;
       return dealt;
     },
     damage(amount) {
