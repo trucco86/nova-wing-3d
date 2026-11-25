@@ -137,7 +137,7 @@ export function createFiveCatsSquad({
     status.hidden = plasmaTime <= 0 && overdriveTime <= 0;
     if (plasmaTime > 0) {
       plasmaTime = Math.max(0, plasmaTime - dt);
-      status.textContent = 'PLASMA TITAN · ENERGIA CONCENTRADA';
+      status.textContent = 'PLASMA TITAN · FEIXE ATIVO ' + Math.ceil(plasmaTime) + 's';
       const length = Math.max(5, Math.min(150, obstacleRange?.() ?? 150));
       for (const [i, mesh] of beam.entries()) {
         mesh.scale.y = length;
@@ -161,7 +161,7 @@ export function createFiveCatsSquad({
     }
     if (overdriveTime > 0) {
       overdriveTime = Math.max(0, overdriveTime - dt);
-      status.textContent = 'FIVE CATS OVERDRIVE · COMBATE EM FORMAÇÃO';
+      status.textContent = 'FIVE CATS OVERDRIVE · FORMAÇÃO ' + Math.ceil(overdriveTime) + 's';
       overdriveClock -= dt;
       wings.forEach(({ pilot: p, mesh }) => {
         mesh.visible = p.id !== pilot;
