@@ -24,3 +24,7 @@ A autorização do usuário determina publicação e alterações remotas. Açõ
 ## Evidências
 
 `artifacts/validation.json` registra commit, digest da fonte, comandos e resultados. Relatórios são locais/artefatos da CI, não fonte de verdade editável para substituir testes. Quando um gate não puder rodar, descreva o bloqueio e deixe o status pendente. A proteção de merge depende das regras efetivamente configuradas no GitHub.
+
+## Pré-homologação de gameplay
+
+Para mudança de física, câmera, controles, combate, fases ou HUD, aplique a [skill Gameplay Quality](skills/nova-wing-gameplay-quality/SKILL.md). Execute o cenário observacional aplicável e entregue o relatório do SHA candidato com os gates existentes. A ausência de achados não homologa a experiência. A aprovação humana e a autorização de produção continuam obrigatórias.

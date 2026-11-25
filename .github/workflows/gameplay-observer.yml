@@ -1,0 +1,86 @@
+name: Gameplay Observer (advisory)
+
+on:
+  schedule:
+    # Weekdays, 09:00 Brazil (UTC-3). Cron uses UTC and may run late.
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gameplay-observer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Run four scene and three physics scenarios on desktop and mobile
+        id: journeys
+        continue-on-error: true
+        run: npm run test:browser -- gameplay-quality-observer.spec.mjs gameplay-physics-observer.spec.mjs
+      - name: Summarize observations and missing evidence
+        if: always()
+        run: node tools/gameplay-observer-summary.mjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: gameplay-observer-evidence
+          retention-days: 14
+          path: |
+            artifacts/gameplay-observer/
+            artifacts/gameplay-observer-summary.json
+            artifacts/gameplay-observer-summary.md
+            test-results/
+            playwright-report/
+      - name: Open or update deduplicated scheduled advisory
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(node -p "require('./artifacts/gameplay-observer-summary.json').status")"
+          if [ "$status" = "OBSERVED_OK" ]; then
+            echo "No objective anomaly detected. Human acceptance remains pending."
+            exit 0
+          fi
+          title="[Gameplay Observer] Divergências para triagem"
+          signature="$(node -p "require('./artifacts/gameplay-observer-summary.json').signature")"
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 --json number,title --jq '.[] | select(.title == "[Gameplay Observer] Divergências para triagem") | .number' | head -n 1)"
+          {
+            printf '<!-- gameplay-observer-signature:%s -->\n' "$signature"
+            printf 'Execução: https://github.com/%s/actions/runs/%s\n\n' "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID"
+            cat artifacts/gameplay-observer-summary.md
+          } > /tmp/gameplay-observer-advisory.md
+          if [ -n "$existing" ]; then
+            prior="$(gh issue view "$existing" --repo "$GITHUB_REPOSITORY" --json body --jq .body)"
+            if [[ "$prior" == *"gameplay-observer-signature:$signature"* ]]; then
+              echo "Same finding signature; skip repeated notification."
+              exit 0
+            fi
+            gh issue edit "$existing" --repo "$GITHUB_REPOSITORY" --body-file /tmp/gameplay-observer-advisory.md
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body-file /tmp/gameplay-observer-advisory.md
+          fi
+      - name: Fail on incomplete observation, not on consultative findings
+        if: always()
+        run: |
+          node -e "const s=require('./artifacts/gameplay-observer-summary.json');process.exit(s.status==='BLOCKED'?1:0)"
+          test "${{ steps.journeys.outcome }}" != "failure"
