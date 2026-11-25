@@ -13,7 +13,8 @@ export const PUBLISHED_WEB_FILES = Object.freeze([
   'docs/control-center/index.html',
 ]);
 
-const validCommit = (sha) => typeof sha === 'string' && /^[0-9a-f]{40}$/i.test(sha);
+const validCommit = (sha) =>
+  typeof sha === 'string' && /^[0-9a-f]{40}$/i.test(sha) && !/^0+$/.test(sha);
 
 export function decidePagesDeployment({
   eventName,
