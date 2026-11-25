@@ -161,9 +161,30 @@ jobs:
             artifacts/ios/*.json
             artifacts/ios/*.log
 
-  pages:
+  delivery-scope:
+    # GitHub Pages is a public publication. Keep full CI on every push, but
+    # publish only when the files copied into public-site actually changed.
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    needs: browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      deploy: ${{ steps.evaluate.outputs.deploy }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Detect published-site changes (fail open on unknown history)
+        id: evaluate
+        env:
+          NOVA_BEFORE_SHA: ${{ github.event.before }}
+        run: node tools/deployment-scope.mjs
+
+  pages:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && needs.delivery-scope.outputs.deploy == 'true'
+    needs: [browser, delivery-scope]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
