@@ -8,9 +8,9 @@ test('NOVA-7 adds premium flush surface layers within the original combat silhou
   const ship = fighter();
   const finish = ship.getObjectByName('nova7-premium-airframe');
   for (const [name, count] of [
-    ['nova7-step-panel-finish', 8],
-    ['nova7-machined-seams', 10],
-    ['nova7-recessed-navigation-leds', 6],
+    ['nova7-step-panel-finish', 14],
+    ['nova7-machined-seams', 18],
+    ['nova7-recessed-navigation-leds', 8],
   ]) {
     const layer = finish.getObjectByName(name);
     assert.ok(layer?.isInstancedMesh, 'micro-details must be a single GPU batch: ' + name);
@@ -60,4 +60,30 @@ test('mobile layout keeps a physical seventh LOCK button, modest opacity, large 
   assert.match(source, /opacity: 0\.55;/);
   assert.match(source, /env\(safe-area-inset-bottom, 0px\)/);
   assert.match(source, /touch-action: none;/);
+});
+
+test('QA183: rear heat shields retain three paint batches and stay within airframe limits', () => {
+  const ship = fighter();
+  const finish = ship.getObjectByName('nova7-premium-airframe');
+  const batches = finish.children.filter((part) => part.isInstancedMesh);
+  assert.equal(batches.length, 3);
+  const matrix = new T.Matrix4();
+  const position = new T.Vector3();
+  for (const batch of batches) {
+    for (let i = 0; i < batch.count; i++) {
+      batch.getMatrixAt(i, matrix);
+      position.setFromMatrixPosition(matrix);
+      assert.ok(Math.abs(position.x) <= 3.8);
+      assert.ok(position.z <= 2.5);
+    }
+  }
+  const plates = finish.getObjectByName('nova7-step-panel-finish');
+  let rear = 0;
+  for (let i = 0; i < plates.count; i++) {
+    plates.getMatrixAt(i, matrix);
+    if (position.setFromMatrixPosition(matrix).z >= 1.45) rear++;
+  }
+  assert.equal(rear, 6);
+  assert.equal(ship.userData.flames.length, 2);
+  assert.equal(fighter(true).getObjectByName('nova7-step-panel-finish'), undefined);
 });
