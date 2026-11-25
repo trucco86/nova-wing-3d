@@ -2712,6 +2712,8 @@ export function createGame({
         else if (launchState.phase === 'orbit') message('ÓRBITA ALCANÇADA · TERRA À VISTA');
       }
     }
+    const tacticalOverhead =
+      dynamicFlight && !boss && flightCamera.getShot() === 'overhead';
     const profileSpeed = dynamicFlight
       ? activePilot().bonuses.speed *
         (1 + activeShip().stats.agility * 0.08) *
@@ -2752,11 +2754,24 @@ export function createGame({
       -flightLimit(),
       flightLimit(),
     );
-    player.position.y = clamp(
-      player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
-      -1,
-      dynamicFlight ? 46 : 23,
-    );
+    if (tacticalOverhead) {
+      // Tactical fleet crossfire: stick up/down moves FORWARD/BACK along Z,
+      // giving the overhead perspective actual full-screen 2D movement.
+      player.position.z = clamp(
+        player.position.z - dy * dt * 28 * profileSpeed,
+        -16,
+        22,
+      );
+      player.position.y = T.MathUtils.lerp(player.position.y, 9, Math.min(1, dt * 4));
+    } else {
+      player.position.y = clamp(
+        player.position.y + dy * dt * 20 * (1 + Math.min(30, stage()) * 0.03) * profileSpeed,
+        -1,
+        dynamicFlight ? 46 : 23,
+      );
+      if (dynamicFlight)
+        player.position.z = T.MathUtils.lerp(player.position.z, 9, Math.min(1, dt * 3));
+    }
     asteroidWallCooldown = Math.max(0, asteroidWallCooldown - dt);
     if (dynamicFlight && sectorIndex === 2) {
       const wall = asteroidInterior.constrain(player.position);
@@ -2896,7 +2911,8 @@ export function createGame({
       const directedShot = stagePerspectiveAt(sectorIndex, elapsed, current().duration, !!boss);
       flightCamera.setShot(directedShot);
       if (directedShot === 'side') route.label += ' · VISTA LATERAL';
-      if (directedShot === 'overhead') route.label += ' · VISÃO SUPERIOR';
+      if (directedShot === 'overhead')
+        route.label = 'FROTA · ARENA TÁTICA · DIREÇÕES MOVEM X/Z';
       if (directedShot === 'combat') route.label += ' · PLANO ABERTO';
       routeRenderer.update(route);
       world.setAscent(Math.min(1, elapsed / current().duration), sectorIndex === 2);
