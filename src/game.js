@@ -3727,14 +3727,14 @@ export function createGame({
     $('cinematicProgress').style.width =
       (Math.min(1, cinematic.elapsed / cinematic.duration) * 100).toFixed(1) + '%';
   }
-  function finishCinematic(skipSquad = false) {
+  function finishCinematic() {
     if (!cinematic) return;
     const playMission = cinematic.playMission;
     cinematic = null;
     cinematicStage?.destroy();
     cinematicStage = null;
     $('cinematic').hidden = true;
-    if (playMission) start(false, null, skipSquad);
+    if (playMission) start(false, null, false);
     else $('menu').hidden = false;
   }
   function advanceCinematic(dt) {
@@ -3883,7 +3883,7 @@ export function createGame({
   $('continue').onclick = () => start(true);
   $('menuMusic').onclick = beginMenuTheme;
   $('watchIntro').onclick = () => beginCinematic(false);
-  $('cinematicSkip').onclick = () => finishCinematic(true);
+  $('cinematicSkip').onclick = () => finishCinematic();
   $('optionsFromMenu').onclick = openSettings;
   $('pauseOptions').onclick = openSettings;
   $('pauseTabControls').onclick = () => showPausePanel('controls');
@@ -4043,7 +4043,7 @@ export function createGame({
     if (cinematic) {
       if (['Enter', 'Space', 'Escape'].includes(e.code)) {
         e.preventDefault?.();
-        finishCinematic(true);
+        finishCinematic();
       }
       return;
     }
