@@ -19,9 +19,10 @@ export function createFlightCamera(camera, wideFlight = false) {
       return;
     }
     if (shot === 'overhead') {
-      // Top-down tactical reveal: shorter than a full-level camera override.
-      targetEye.set(player.x, player.y + 75, player.z + 28);
-      targetAim.set(player.x, player.y + route.ascent * 9, -74);
+      // Tactical arena: lock the ship in the lower-middle of the viewport.
+      // The arena uses horizontal X and forward/back Z input, not altitude Y.
+      targetEye.set(player.x, player.y + 66, player.z + 13);
+      targetAim.set(player.x, player.y, player.z - 15);
       return;
     }
     if (shot === 'cockpit') {
@@ -84,7 +85,7 @@ export function createFlightCamera(camera, wideFlight = false) {
             shot === 'side'
               ? 39
               : shot === 'overhead'
-                ? 10
+                ? 6
                 : Math.min(
                     shot === 'combat' ? 29 : 19,
                     camera.aspect * (shot === 'combat' ? 20 : 10),
