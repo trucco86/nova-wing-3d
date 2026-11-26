@@ -10,7 +10,8 @@ export function developerToolsAllowed(hostname, native = false) {
     // Dedicated branch alias used by the stage-4, boss and Berserk QA preview.
     host === 'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev' ||
     // Approved QA build and its stable branch alias; never enable PROD.
-    host === '52fd04c6.nova-wing-preview.pages.dev' ||
+    // Immutable Cloudflare deployment IDs on the dedicated preview project.
+    /^[a-f0-9]{8}\.nova-wing-preview\.pages\.dev$/.test(host) ||
     host === 'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev' ||
     host === 'feat-planetary-journeys-2026.nova-wing-preview.pages.dev' ||
     host === 'feat-planetary-visual-polish.nova-wing-preview.pages.dev' ||
