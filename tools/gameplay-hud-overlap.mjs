@@ -62,7 +62,11 @@ export function inspectHudOverlap(samples, { threshold = 0.2, consecutive = 3 } 
   }
   return {
     status:
-      covered < consecutive ? 'INSUFFICIENT_EXPOSURE' : findings.length ? 'FINDINGS' : 'OBSERVED_OK',
+      covered < consecutive
+        ? 'INSUFFICIENT_EXPOSURE'
+        : findings.length
+          ? 'FINDINGS'
+          : 'OBSERVED_OK',
     covered,
     findings,
     humanApproval: 'PENDING',
