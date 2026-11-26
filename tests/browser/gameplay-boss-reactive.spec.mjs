@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
+import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -10,7 +11,7 @@ import {
   compareEncounters,
 } from '../../tools/gameplay-boss-encounter-metrics.mjs';
 
-async function runEncounter(page, info, sector, reactive) {
+async function runEncounter(page, info, sector, reactive, active = false) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
@@ -23,11 +24,15 @@ async function runEncounter(page, info, sector, reactive) {
   const stick = mobile ? await page.locator('#stick').boundingBox() : null;
   let pressed = [];
   let touching = false;
+  let firing = false;
+  const fireButton = mobile && active ? await page.locator('#fireTouch').boundingBox() : null;
+  const limit = active ? 240 : 120;
   try {
     if (mobile && !stick) throw new Error('Missing mobile joystick');
+    if (mobile && active && !fireButton) throw new Error('Missing mobile fire control');
     // Separate fixture executions start at the same authored encounter.
     // Only the reactive route consumes the visible radar guide.
-    for (let i = 0; i <= 120; i++) {
+    for (let i = 0; i <= limit; i++) {
       const state = await page.evaluate(() => {
         const s = window.fixture.game.snapshot();
         const radar = document.getElementById('battleRadar');
@@ -36,6 +41,9 @@ async function runEncounter(page, info, sector, reactive) {
         return {
           age: s.bossAge,
           shield: s.shield,
+          bossHp: s.bossHp,
+          shots: s.entities.shots,
+          coreOpen: s.coreOpen,
           player: s.player,
           state: s.state,
           boss: s.boss,
@@ -48,10 +56,19 @@ async function runEncounter(page, info, sector, reactive) {
         };
       });
       if (!state.boss || state.state !== 'playing') break;
-      const decision = reactive ? dodgeDecision(state) : { x: 0, y: 0, reason: 'passive' };
+      const decision = active
+        ? combatDecision(state)
+        : reactive
+          ? dodgeDecision(state)
+          : { x: 0, y: 0, reason: 'passive' };
       const keys = dodgeKeys(decision);
       samples.push({ ...state, decision, input: keys });
-      if (i === 120) break;
+      if (i === limit) break;
+      if (active && firing && !decision.fire) {
+        if (mobile) await page.mouse.up();
+        else await page.keyboard.up('Space');
+        firing = false;
+      }
       if (touch) {
         if (touching) {
           await touch.send('Input.dispatchTouchEvent', {
@@ -86,14 +103,28 @@ async function runEncounter(page, info, sector, reactive) {
         }
         pressed = keys;
       }
+      if (active && decision.fire && !firing) {
+        if (mobile) {
+          await page.mouse.move(
+            fireButton.x + fireButton.width / 2,
+            fireButton.y + fireButton.height / 2,
+          );
+          await page.mouse.down();
+        } else await page.keyboard.down('Space');
+        firing = true;
+      }
       await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
-    const label = reactive ? 'reactive' : 'passive';
+    const label = active ? 'active' : reactive ? 'reactive' : 'passive';
     const path = info.outputPath(label + '-boss.png');
     await page.screenshot({ path });
     await info.attach(label + '-checkpoint', { path, contentType: 'image/png' });
   } finally {
+    if (firing) {
+      if (mobile) await page.mouse.up();
+      else await page.keyboard.up('Space');
+    }
     for (const key of pressed) await page.keyboard.up(key);
     if (touch) {
       if (touching) {
@@ -135,3 +166,31 @@ for (const encounter of [
     expect(comparison.releaseAuthorized).toBe(false);
   });
 }
+
+test('active Rok pilot alternates visible dodge cues and real fire input', async ({
+  page,
+}, info) => {
+  test.setTimeout(180000);
+  const run = await runEncounter(page, info, 0, true, true);
+  const actions = run.samples.slice(0, -1).map((sample) => sample.decision.action);
+  const observed = {
+    project: info.project.name,
+    actionCounts: Object.fromEntries(
+      [...new Set(actions)].map((action) => [action, actions.filter((a) => a === action).length]),
+    ),
+    maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
+    bossHpStart: run.samples[0]?.bossHp ?? null,
+    bossHpEnd: run.samples.at(-1)?.bossHp ?? null,
+    metrics: run.metrics,
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('active-boss-pilot.json');
+  await writeFile(path, JSON.stringify({ observed, samples: run.samples }, null, 2) + '\n');
+  await info.attach('active-boss-pilot', { path, contentType: 'application/json' });
+  console.log('ACTIVE_BOSS_PILOT ' + JSON.stringify(observed));
+  expect(run.errors).toEqual([]);
+  expect(observed.maxShots, 'real player projectiles').toBeGreaterThan(0);
+  expect(actions).toContain('dodge');
+  expect(actions).toContain('fire-recovery');
+  expect(observed.releaseAuthorized).toBe(false);
+});
