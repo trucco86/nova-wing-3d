@@ -135,7 +135,7 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { AUDIO_CUES, createAudioCues } from './audio-cues.js';
-import { createAudioLab } from './audio-lab.js';
+import { AUDIO_LAB_KEYS, AUDIO_LAB_VARIANTS, audioLabCandidate, createAudioLab } from './audio-lab.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { createPhaseFrameAudit, stageOneAuditPhase } from './phase-frame-audit.js';
@@ -3802,6 +3802,48 @@ export function createGame({
   $('developerPanel').hidden = !developerAvailable;
   $('menuQA').hidden = !developerAvailable;
   $('developerSessionTag').hidden = true;
+  if (developerAvailable && $('developerPanel').appendChild) {
+    const panel = document.createElement('details');
+    panel.id = 'qaAudioLab';
+    const summary = document.createElement('summary');
+    summary.textContent = 'AUDIO LAB · QA';
+    panel.appendChild(summary);
+    const effect = document.createElement('select');
+    effect.setAttribute('aria-label', 'Efeito sonoro');
+    const variant = document.createElement('select');
+    variant.setAttribute('aria-label', 'Variação sonora');
+    for (const key of AUDIO_LAB_KEYS) {
+      const option = document.createElement('option');
+      option.value = key; option.textContent = key; effect.appendChild(option);
+    }
+    AUDIO_LAB_VARIANTS.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = String(index); option.textContent = name; variant.appendChild(option);
+    });
+    const status = document.createElement('p');
+    status.setAttribute('aria-live', 'polite');
+    const listen = document.createElement('button');
+    listen.type = 'button'; listen.textContent = 'OUVIR';
+    listen.onclick = async () => {
+      if (!developerAvailable || !appActive || !unlockAudio()) return;
+      try {
+        await audioCtx.resume();
+        const played = audioCues.play(effect.value, { preview: audioLabCandidate(AUDIO_CUES[effect.value], Number(variant.value)) });
+        status.textContent = played ? 'Reproduzindo' : 'Áudio indisponível ou em intervalo';
+      } catch { status.textContent = 'Áudio indisponível'; }
+    };
+    const apply = document.createElement('button');
+    apply.type = 'button'; apply.textContent = 'TESTAR NO COMBATE';
+    apply.onclick = () => {
+      if (audioLab.select(effect.value, Number(variant.value))) status.textContent = 'Selecionado para sessão QA: ' + JSON.stringify(audioLab.snapshot());
+    };
+    effect.onchange = () => { variant.value = String(audioLab.snapshot()[effect.value] ?? 0); };
+    const reset = document.createElement('button');
+    reset.type = 'button'; reset.textContent = 'RESTAURAR ORIGINAIS';
+    reset.onclick = () => { audioLab.reset(); variant.value = '0'; status.textContent = 'Originais restaurados'; };
+    for (const node of [effect, variant, listen, apply, reset, status]) panel.appendChild(node);
+    $('developerPanel').appendChild(panel);
+  }
   if (developerAvailable) {
     // Test harnesses and first-load mobile browsers share safe defaults.
     for (const [id, value] of [
