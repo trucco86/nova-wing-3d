@@ -3,13 +3,17 @@ import {
   SQUAD_PILOTS,
   SQUAD_INTRO_DURATION,
   SQUAD_SPECIALS,
-  formationPose,
   allySortieFlightAt,
   allySortieFlightPose,
   overdriveWingPose,
   ALLY_SORTIE_FLIGHT,
   canActivateSquadSpecial,
 } from './five-cats-squad.js';
+import {
+  firstStageLaunchAt,
+  firstStageLaunchWingPose,
+  firstStageWingSlots,
+} from './stage-one-launch-intro.js';
 
 // World-space IFF tags attach to the ally ships, never to enemy fighters and
 // never to the HUD center. Green and readable even in the city neon skyline.
@@ -84,9 +88,11 @@ export function createFiveCatsSquad({
     mesh.visible = false;
     const label = addFiveCatsIffTag(mesh, pilot);
     scene.add(mesh);
-    return { pilot, mesh, label };
+    return { pilot, mesh, label, baseScale: mesh.scale.clone() };
   });
   let intro = 0;
+  let introBeat = '';
+  let introPilot = null;
   let plasmaTime = 0,
     overdriveTime = 0,
     plasmaCooldown = 0,
@@ -97,6 +103,10 @@ export function createFiveCatsSquad({
   let overdriveAge = 0,
     overdriveExit = 0;
   let beam = null;
+  function resetLaunchThrusters() {
+    for (const flame of player.userData.flames ?? []) flame.scale.y = 1;
+  }
+
   function stopBeam() {
     if (!beam) return;
     for (const mesh of beam) {
@@ -108,12 +118,16 @@ export function createFiveCatsSquad({
   }
   function reset() {
     intro = 0;
+    introBeat = '';
+    introPilot = null;
     plasmaTime = overdriveTime = plasmaCooldown = overdriveCooldown = 0;
     plasmaClock = overdriveClock = supportClock = 0;
     overdriveAge = overdriveExit = 0;
     stopBeam();
-    wings.forEach(({ mesh }) => {
+    wings.forEach(({ mesh, label, baseScale }) => {
       mesh.visible = false;
+      label.visible = true;
+      mesh.scale.copy(baseScale);
     });
     status.hidden = true;
     formationStatus.hidden = true;
@@ -121,7 +135,22 @@ export function createFiveCatsSquad({
   function begin(firstSector) {
     reset();
     intro = firstSector ? SQUAD_INTRO_DURATION : 0;
-    player.visible = !intro;
+    player.visible = true;
+    resetLaunchThrusters();
+  }
+  function skipIntro() {
+    if (intro <= 0) return false;
+    intro = 0;
+    introBeat = '';
+    player.visible = true;
+    resetLaunchThrusters();
+    formationStatus.hidden = true;
+    wings.forEach(({ mesh, label, baseScale }) => {
+      mesh.visible = false;
+      label.visible = true;
+      mesh.scale.copy(baseScale);
+    });
+    return true;
   }
   function activate(kind, energy) {
     const cooldown = kind === 'plasma' ? plasmaCooldown : overdriveCooldown;
@@ -178,34 +207,60 @@ export function createFiveCatsSquad({
     overdriveCooldown = Math.max(0, overdriveCooldown - dt);
     if (intro > 0) {
       const t = SQUAD_INTRO_DURATION - intro;
-      wings.forEach(({ pilot: p, mesh }) => {
-        const pose = formationPose(p.slot, t);
-        const side = p.slot < 0 ? -1 : 1;
-        const entering = 1 - Math.min(1, Math.max(0, t / 0.9));
-        const leaving = Math.min(1, Math.max(0, (t - SQUAD_INTRO_DURATION + 1.3) / 1.3));
-        const smoothLeave = leaving * leaving * (3 - 2 * leaving);
-        mesh.visible = true;
-        const portrait = aspect < 0.75;
-        mesh.scale.setScalar(portrait ? 0.93 : 1.1);
-        mesh.position.set(
-          player.position.x +
-            pose.x * (portrait ? 0.53 : 1) +
-            side * (110 * entering + 145 * smoothLeave),
-          pose.y + 28 * entering + 72 * smoothLeave,
-          player.position.z + pose.z - (portrait ? 12 : 0) - 230 * entering - 260 * smoothLeave,
-        );
-        mesh.rotation.z = pose.bank - side * (0.5 * entering + 0.78 * smoothLeave);
+      const launch = firstStageLaunchAt(t, aspect);
+      // As the gate recedes, the selected fighter visibly accelerates.
+      // The physical player position and controls remain unchanged.
+      for (const flame of player.userData.flames ?? [])
+        flame.scale.y = 1 + launch.departure * (1 - launch.handoff) * 1.6;
+      introPilot = pilot;
+      if (introBeat !== launch.beat) {
+        introBeat = launch.beat;
+        if (launch.beat === 'exit') cue('boostIgnition');
+      }
+      const captions = {
+        pt: {
+          hangar: 'HANGAR · PREPARAR DECOLAGEM',
+          exit: 'FIVE CATS · SAÍDA DO HANGAR',
+          approach: 'EM DIREÇÃO À MISSÃO',
+        },
+        en: {
+          hangar: 'HANGAR · PREPARE TO LAUNCH',
+          exit: 'FIVE CATS · LEAVING THE HANGAR',
+          approach: 'HEADING TO THE MISSION',
+        },
+        es: {
+          hangar: 'HANGAR · PREPARAR DESPEGUE',
+          exit: 'FIVE CATS · SALIENDO DEL HANGAR',
+          approach: 'RUMBO A LA MISIÓN',
+        },
+      };
+      formationStatus.textContent = (captions[getLanguage()] ?? captions.pt)[launch.beat];
+      const slots = new Map(firstStageWingSlots(pilot).map(({ id, slot }) => [id, slot]));
+      wings.forEach(({ pilot: p, mesh, label }) => {
+        label.visible = false; // No oversized IFF tags during the opening cinematic.
+        const slot = slots.get(p.id);
+        mesh.visible = slot !== undefined;
+        if (!mesh.visible) return; // Active pilot is the real gameplay ship in the center.
+        const pose = firstStageLaunchWingPose(slot, t, aspect);
+        // Escorts must frame the selected player's full-size fighter, not overpower it.
+        // Outer ships are slightly smaller to keep every wing inside the screen.
+        mesh.scale.setScalar((aspect < 0.75 ? 0.76 : 0.82) - (Math.abs(slot) - 1) * 0.1);
+        mesh.position.set(player.position.x + pose.x, pose.y, pose.z);
+        mesh.rotation.z = pose.bank;
       });
-      player.visible = false;
+      player.visible = true;
       formationStatus.hidden = false;
       intro = Math.max(0, intro - dt);
       if (intro === 0) {
         player.visible = true;
+        resetLaunchThrusters();
         formationStatus.hidden = true;
-        wings.forEach(({ mesh }) => {
+        wings.forEach(({ mesh, label, baseScale }) => {
           mesh.visible = false;
+          label.visible = true;
+          mesh.scale.copy(baseScale);
         });
-        notify('FIVE CATS · FORMAÇÃO DESFEITA · INICIAR MISSÃO');
+        notify('FIVE CATS · DECOLAGEM COMPLETA · INICIAR MISSÃO');
       }
       return { intro: true, energySpent: 0 };
     }
@@ -301,11 +356,16 @@ export function createFiveCatsSquad({
   return {
     begin,
     reset,
+    skipIntro,
     activate,
     update,
     stopBeam,
     snapshot: () => ({
       intro,
+      introPilot,
+      launchShot: intro > 0 ? firstStageLaunchAt(SQUAD_INTRO_DURATION - intro).shot : null,
+      playerIsLeader: intro > 0 && player.visible,
+      visibleTagCount: wings.filter(({ mesh, label }) => mesh.visible && label.visible).length,
       plasmaTime,
       overdriveTime,
       overdriveExit,
@@ -318,12 +378,17 @@ export function createFiveCatsSquad({
           x: mesh.position.x,
           y: mesh.position.y,
           z: mesh.position.z,
+          scale: mesh.scale.x,
         })),
     }),
     destroy() {
       reset();
       wings.forEach(({ mesh }) => {
         scene.remove(mesh);
+        mesh.userData.launchModule?.traverse((part) => {
+          part.geometry?.dispose();
+          if (part.material?.userData.paintModule) part.material.dispose();
+        });
         mesh.userData.paint?.forEach((material) => material.dispose());
         mesh.userData.flames?.forEach((flame) => flame.material.dispose());
       });

@@ -11,11 +11,12 @@ import {
   compareEncounters,
 } from '../../tools/gameplay-boss-encounter-metrics.mjs';
 
-async function runEncounter(page, info, sector, reactive, active = false) {
+async function runEncounter(page, info, sector, reactive, active = false, tactical = false) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
+  const specialEvents = [];
   const errors = [];
   const onError = (error) => errors.push(error.message);
   page.on('pageerror', onError);
@@ -44,6 +45,9 @@ async function runEncounter(page, info, sector, reactive, active = false) {
           bossHp: s.bossHp,
           shots: s.entities.shots,
           coreOpen: s.coreOpen,
+          plasmaReady: !document.getElementById('plasmaTitan').disabled,
+          overdriveReady: !document.getElementById('fiveCatsOverdrive').disabled,
+          specialActive: (s.fiveCats?.plasmaTime ?? 0) > 0 || (s.fiveCats?.overdriveTime ?? 0) > 0,
           player: s.player,
           state: s.state,
           boss: s.boss,
@@ -57,7 +61,7 @@ async function runEncounter(page, info, sector, reactive, active = false) {
       });
       if (!state.boss || state.state !== 'playing') break;
       const decision = active
-        ? combatDecision(state)
+        ? combatDecision(state, { tactical })
         : reactive
           ? dodgeDecision(state)
           : { x: 0, y: 0, reason: 'passive' };
@@ -103,6 +107,25 @@ async function runEncounter(page, info, sector, reactive, active = false) {
         }
         pressed = keys;
       }
+      if (decision.special) {
+        const before = await page.evaluate(() => window.fixture.game.snapshot().strategy.arcana);
+        if (mobile) {
+          const drawer = page.locator('#strategyDrawer');
+          if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+          const category = page.locator('[data-rpg-category="specials"]');
+          if (await category.isVisible()) await category.click();
+          const power = page.locator(decision.special === 'plasma' ? '#plasmaTitan' : '#fiveCatsOverdrive');
+          await expect(power).toBeVisible();
+          await expect(power).toBeEnabled();
+          await power.click();
+          if ((await drawer.getAttribute('open')) !== null) await drawer.locator('summary').click();
+        } else await page.keyboard.press(decision.special === 'plasma' ? 'KeyY' : 'KeyO');
+        const after = await page.evaluate(() => {
+          const s = window.fixture.game.snapshot();
+          return { arcana: s.strategy.arcana, plasma: s.fiveCats.plasmaTime, overdrive: s.fiveCats.overdriveTime };
+        });
+        specialEvents.push({ age: state.age, special: decision.special, before, ...after });
+      }
       if (active && decision.fire && !firing) {
         if (mobile) {
           await page.mouse.move(
@@ -116,7 +139,7 @@ async function runEncounter(page, info, sector, reactive, active = false) {
       await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
-    const label = active ? 'active' : reactive ? 'reactive' : 'passive';
+    const label = tactical ? 'tactical' : active ? 'active' : reactive ? 'reactive' : 'passive';
     const path = info.outputPath(label + '-boss.png');
     await page.screenshot({ path });
     await info.attach(label + '-checkpoint', { path, contentType: 'image/png' });
@@ -134,7 +157,7 @@ async function runEncounter(page, info, sector, reactive, active = false) {
     }
     page.off('pageerror', onError);
   }
-  return { samples, errors, metrics: summarizeEncounter(samples) };
+  return { samples, errors, specialEvents, metrics: summarizeEncounter(samples) };
 }
 
 for (const encounter of [
@@ -193,4 +216,38 @@ test('active Rok pilot alternates visible dodge cues and real fire input', async
   expect(actions).toContain('dodge');
   expect(actions).toContain('fire-recovery');
   expect(observed.releaseAuthorized).toBe(false);
+});
+
+test('Rok tactical pilot compares team specials with ordinary fire on the same build', async ({
+  page,
+}, info) => {
+  test.setTimeout(240000);
+  const baseline = await runEncounter(page, info, 0, true, true);
+  const tactical = await runEncounter(page, info, 0, true, true, true);
+  const result = (run) => ({
+    bossHpStart: run.samples[0]?.bossHp ?? null,
+    bossHpEnd: run.samples.at(-1)?.bossHp ?? null,
+    shieldLoss: run.metrics.shieldLoss,
+    observedSeconds: run.metrics.observedSeconds,
+    specialEvents: run.specialEvents,
+  });
+  const report = {
+    project: info.project.name,
+    baseline: result(baseline),
+    tactical: result(tactical),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('tactical-boss-comparison.json');
+  await writeFile(path, JSON.stringify({ report, baseline, tactical }, null, 2) + '\n');
+  await info.attach('tactical-boss-comparison', { path, contentType: 'application/json' });
+  console.log('TACTICAL_BOSS_COMPARISON ' + JSON.stringify(report));
+  expect(baseline.errors).toEqual([]);
+  expect(tactical.errors).toEqual([]);
+  expect(baseline.specialEvents).toHaveLength(0);
+  expect(tactical.specialEvents.length, 'real power activation').toBeGreaterThan(0);
+  for (const event of tactical.specialEvents) {
+    expect(event.arcana).toBeLessThan(event.before);
+    expect(event.special === 'plasma' ? event.plasma : event.overdrive).toBeGreaterThan(0);
+  }
+  expect(report.releaseAuthorized).toBe(false);
 });

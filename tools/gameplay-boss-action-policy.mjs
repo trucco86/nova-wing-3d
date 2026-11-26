@@ -1,8 +1,11 @@
 import { dodgeDecision } from './gameplay-boss-dodge-policy.mjs';
 
-// Conservative first combat policy. Attack only outside an indicated danger zone.
-// Uses the same visible radar guidance as the dodge policy; no hidden damage oracle.
-export function combatDecision(state) {
+// Read public radar and the availability of the player's own special controls.
+// Never modify damage, target positions, cooldowns or energy.
+export function combatDecision(state, { tactical = false } = {}) {
+  if (state.state !== 'playing' || !state.boss) {
+    return { x: 0, y: 0, reason: 'inactive', fire: false, action: 'idle' };
+  }
   const move = dodgeDecision(state);
   if (move.x || move.y) return { ...move, fire: false, action: 'dodge' };
   if (
@@ -13,8 +16,10 @@ export function combatDecision(state) {
     return { ...move, fire: false, action: 'observe-danger' };
   }
   if (state.phase === 'approach') return { ...move, fire: false, action: 'observe-approach' };
-  if (state.state !== 'playing' || !state.boss) {
-    return { ...move, fire: false, action: 'idle' };
+  if (tactical && state.phase === 'recovery' && !state.specialActive) {
+    const special =
+      state.plasmaReady === true ? 'plasma' : state.overdriveReady === true ? 'overdrive' : null;
+    if (special) return { ...move, fire: false, action: 'special-' + special, special };
   }
   return {
     ...move,

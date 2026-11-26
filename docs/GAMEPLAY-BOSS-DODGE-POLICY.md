@@ -32,3 +32,7 @@ A observação experimental amostra rótulos reais de pontos fracos, nome, estad
 ## Primeiro piloto ofensivo
 
 O piloto experimental alterna disparos reais (Space ou botão de tiro) e esquivas orientadas pelo radar. Em perigo físico com direção desconhecida, espera em vez de assumir uma trajetória segura. Em recuperação, volta a disparar. Uma rota de até 60 segundos simulados contra Rok em desktop e mobile registra decisões, quantidade de projéteis e HP do chefe, além das métricas de exposição. Não usa API de dano nem altera a física. Não implementa mira automática, especiais, transformação, vitória integral ou bônus de contra-ataque da candidata QA184. Este teste ainda requer execução, e a duração não garante cobertura de todos os ataques.
+
+## Comparação tática QA sobre v1.27.161
+
+Branch reconciliada com main 00cf08c (produção v1.27.161). O experimento compara duas rotas de até 60 segundos no mesmo build: tiro e esquiva, versus tiro, esquiva e poder de equipe disponível durante recuperação do chefe. Desktop usa atalhos Y/O; mobile abre o menu RPG e clica no controle real. A ativação exige redução de arcana e temporizador positivo. Sem reset de cooldown, invulnerabilidade ou aumento de dano. Registra HP, escudo, exposição e ativações. O resultado não prova vitória, nem avalia a alteração de supers/contra-ataque da QA184 ainda não publicada. CI e calibração pendentes.
