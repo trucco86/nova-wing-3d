@@ -13,7 +13,13 @@ test('phase audit isolates stalls and ignores pause and phase boundaries', () =>
   a.sample(1000, 'ascent', true);
   a.sample(1020, 'ascent', true);
   a.stop();
-  assert.deepEqual(a.report().map(p => [p.name,p.frames,p.stalls,p.p95]), [['city',2,1,120],['ascent',2,0,20]]);
-  assert.equal(stageOneAuditPhase(0,false,0.5),'ascent');
-  assert.equal(stageOneAuditPhase(0,false,1),'space');
+  assert.deepEqual(
+    a.report().map((p) => [p.name, p.frames, p.stalls, p.p95]),
+    [
+      ['city', 2, 1, 120],
+      ['ascent', 2, 0, 20],
+    ],
+  );
+  assert.equal(stageOneAuditPhase(0, false, 0.5), 'ascent');
+  assert.equal(stageOneAuditPhase(0, false, 1), 'space');
 });

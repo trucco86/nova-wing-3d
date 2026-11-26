@@ -3570,7 +3570,8 @@ export function createGame({
       '\n' +
       formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
     for (const p of phaseFrameAudit.report()) {
-      $('auditReadout').textContent += `\n${p.name}: ${p.frames} frames | ${p.fps} FPS | p95 ${p.p95} ms | peak ${p.peak} ms | >100 ms: ${p.stalls}`;
+      $('auditReadout').textContent +=
+        `\n${p.name}: ${p.frames} frames | ${p.fps} FPS | p95 ${p.p95} ms | peak ${p.peak} ms | >100 ms: ${p.stalls}`;
     }
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
@@ -3608,7 +3609,7 @@ export function createGame({
       // A single FPS report must never combine two manually selected
       // render presets. Invalidate both samplers before changing quality.
       frameAudit.clear();
-    phaseFrameAudit.clear();
+      phaseFrameAudit.clear();
       renderCostAudit.clear();
       gpuMemoryAudit.clear();
       gpuMemoryAuditRecording = false;
@@ -6907,7 +6908,11 @@ export function createGame({
       appActive && !document.hidden && state === 'playing' && !rpgTacticalPaused;
     frameAudit.sample(time, renderingFlight);
     if (phaseFrameAudit.isActive()) {
-      phaseFrameAudit.sample(time, stageOneAuditPhase(sectorIndex, cinematic, orbitalLaunchSequence.snapshot().amount), renderingFlight);
+      phaseFrameAudit.sample(
+        time,
+        stageOneAuditPhase(sectorIndex, cinematic, orbitalLaunchSequence.snapshot().amount),
+        renderingFlight,
+      );
     }
     const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
     if (nextBudget) applyRenderBudget(nextBudget);
@@ -7398,7 +7403,7 @@ export function createGame({
       running = false;
       cancelObstacleWarmup();
       frameAudit.clear();
-    phaseFrameAudit.clear();
+      phaseFrameAudit.clear();
       renderCostAudit.clear();
       gpuMemoryAudit.clear();
       gpuMemoryAuditRecording = false;
