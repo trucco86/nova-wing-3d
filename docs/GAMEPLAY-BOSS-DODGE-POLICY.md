@@ -40,3 +40,7 @@ Branch reconciliada com main 00cf08c (produção v1.27.161). O experimento compa
 ## Sonda de mira pelos indicadores visíveis
 
 Experimento isolado em branch derivada, para não cancelar a rodada tática em curso. O piloto lê exclusivamente os anchors CSS do retículo e dos dois rótulos visíveis com estado open, normaliza o erro pela largura e altura da tela e ajusta a direção antes de disparar. Tolerância inicial de 3,5% por eixo; esquiva e especiais têm precedência. A/B de até 60 segundos contra Rok com poderes desabilitados em ambas as rotas; registra vida do núcleo, integridade combinada, partes restantes, disparos, cobertura de alvos e correções. Como os marcadores podem estar projetados em profundidades diferentes, alinhamento 2D não prova acerto e o limiar precisa de calibração. Não usa posições 3D ocultas, dano direto ou alteração de runtime. CI e resultados pendentes.
+
+## Tentativa autônoma prolongada
+
+Duas rotas de até 240 segundos simulados no mesmo build: tática com poderes, pods e robô; e a mesma política com mira pelos rótulos. Cada controle de equipamento é acionado uma vez em recuperação segura, por teclado ou touch, e exige evidência do estado real. A rota para ao sair de playing, sem reviver, ajustar dano ou forçar o HP. BOSS_DEFEATED exige HP zero e estado de vitória/colapso; TIME_LIMIT e INTERRUPTED nunca equivalem a vitória. A fixture usa o loadout isolado do laboratório QA, não prova uma vitória com equipamento inicial da campanha. As políticas permanecem experimentais; comparar integridade e escudo, não apenas contagem de tiros.

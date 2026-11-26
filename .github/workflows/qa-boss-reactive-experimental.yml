@@ -14,7 +14,7 @@ concurrency:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -25,12 +25,12 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Run policy and encounter metrics unit tests
-        run: node --test tests/gameplay-boss-dodge-policy.test.mjs tests/gameplay-boss-encounter-metrics.test.mjs tests/gameplay-boss-pattern-observer.test.mjs tests/gameplay-hud-overlap.test.mjs tests/gameplay-boss-action-policy.test.mjs tests/gameplay-boss-visible-aim.test.mjs
+        run: node --test tests/gameplay-boss-dodge-policy.test.mjs tests/gameplay-boss-encounter-metrics.test.mjs tests/gameplay-boss-pattern-observer.test.mjs tests/gameplay-hud-overlap.test.mjs tests/gameplay-boss-action-policy.test.mjs tests/gameplay-boss-visible-aim.test.mjs tests/gameplay-boss-equipment-policy.test.mjs
       - run: npm run build:check
       - run: npm run build
       - run: npx playwright install chromium
       - name: Compare real desktop and mobile boss encounters
-        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'Rok visible aim pilot'
+        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'Rok extended autonomous attempt'
       - name: Apply formatter to experimental source and print exact diff
         if: always()
         run: |

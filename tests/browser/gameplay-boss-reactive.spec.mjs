@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
+import { equipmentDecision } from '../../tools/gameplay-boss-equipment-policy.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -20,12 +21,15 @@ async function runEncounter(
   active = false,
   tactical = false,
   aimed = false,
+  extended = false,
 ) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
   const specialEvents = [];
+  const equipmentEvents = [];
+  let terminal = null;
   const errors = [];
   const onError = (error) => errors.push(error.message);
   page.on('pageerror', onError);
@@ -36,7 +40,7 @@ async function runEncounter(
   let touching = false;
   let firing = false;
   const fireButton = mobile && active ? await page.locator('#fireTouch').boundingBox() : null;
-  const limit = active ? 240 : 120;
+  const limit = extended ? 960 : active ? 240 : 120;
   try {
     if (mobile && !stick) throw new Error('Missing mobile joystick');
     if (mobile && active && !fireButton) throw new Error('Missing mobile fire control');
@@ -62,6 +66,11 @@ async function runEncounter(
         };
         return {
           age: s.bossAge,
+          energy: s.energy,
+          pods: s.pods,
+          podsDetached: s.podsDetached,
+          robot: s.mecha.active,
+          lives: s.lives,
           shield: s.shield,
           bossHp: s.bossHp,
           bossIntegrity: s.bossIntegrity,
@@ -88,6 +97,7 @@ async function runEncounter(
           guide: guide.hidden ? null : guide.textContent,
         };
       });
+      terminal = state;
       if (!state.boss || state.state !== 'playing') break;
       let decision = active
         ? combatDecision(state, { tactical })
@@ -96,6 +106,9 @@ async function runEncounter(
           : { x: 0, y: 0, reason: 'passive' };
       const aim = aimed ? visibleAim(state.screen) : null;
       if (aim) decision = applyVisibleAim(decision, aim);
+      if (extended) {
+        decision = equipmentDecision(state, decision, equipmentEvents.map((event) => event.control));
+      }
       const keys = dodgeKeys(decision);
       samples.push({ ...state, aim, decision, input: keys });
       if (i === limit) break;
@@ -138,6 +151,18 @@ async function runEncounter(
         }
         pressed = keys;
       }
+      if (decision.equipment) {
+        if (mobile) {
+          const button = page.locator(decision.equipment === 'pods' ? '#podsTouch' : '#robotTouch');
+          await expect(button).toBeVisible();
+          await button.tap();
+        } else await page.keyboard.press(decision.equipment === 'pods' ? 'KeyV' : 'KeyT');
+        const after = await page.evaluate(() => {
+          const s = window.fixture.game.snapshot();
+          return { robot: s.mecha.active, podsDetached: s.podsDetached, energy: s.energy };
+        });
+        equipmentEvents.push({ age: state.age, control: decision.equipment, ...after });
+      }
       if (decision.special) {
         const before = await page.evaluate(() => window.fixture.game.snapshot().strategy.arcana);
         if (mobile) {
@@ -176,7 +201,11 @@ async function runEncounter(
       await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
-    const label = aimed
+    const label = extended
+      ? aimed
+        ? 'extended-aimed'
+        : 'extended-tactical'
+      : aimed
       ? 'aimed'
       : tactical
         ? 'tactical'
@@ -202,7 +231,7 @@ async function runEncounter(
     }
     page.off('pageerror', onError);
   }
-  return { samples, errors, specialEvents, metrics: summarizeEncounter(samples) };
+  return { samples, errors, specialEvents, equipmentEvents, terminal, metrics: summarizeEncounter(samples) };
 }
 
 for (const encounter of [
@@ -333,5 +362,54 @@ test('Rok visible aim pilot compares targeting with ordinary fire', async ({ pag
   expect(report.aimed.observedTargets, 'visible weakpoint coverage').toBeGreaterThan(0);
   expect(report.aimed.aimAdjustments, 'actual corrective steering').toBeGreaterThan(0);
   expect(report.aimed.maxShots, 'real projectiles fired').toBeGreaterThan(0);
+  expect(report.releaseAuthorized).toBe(false);
+});
+
+test('Rok extended autonomous attempt compares tactical equipment with and without aim', async ({
+  page,
+}, info) => {
+  test.setTimeout(720000);
+  const tactical = await runEncounter(page, info, 0, true, true, true, false, true);
+  const combined = await runEncounter(page, info, 0, true, true, true, true, true);
+  const measure = (run) => {
+    const final = run.terminal;
+    const victory =
+      final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
+    return {
+      outcome: victory ? 'BOSS_DEFEATED' : final?.state === 'playing' ? 'TIME_LIMIT' : 'INTERRUPTED',
+      finalState: final?.state ?? null,
+      bossHp: final?.bossHp ?? null,
+      bossParts: final?.bossParts ?? null,
+      shield: final?.shield ?? null,
+      lives: final?.lives ?? null,
+      seconds: run.metrics.observedSeconds,
+      initialLoadout: {
+        pods: run.samples[0]?.pods,
+        shield: run.samples[0]?.shield,
+        lives: run.samples[0]?.lives,
+      },
+      equipmentEvents: run.equipmentEvents,
+      specialEvents: run.specialEvents,
+      attackPatterns: run.metrics.patterns,
+    };
+  };
+  const report = {
+    project: info.project.name,
+    tactical: measure(tactical),
+    combined: measure(combined),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('extended-rok-comparison.json');
+  await writeFile(path, JSON.stringify({ report, tactical, combined }, null, 2) + '\n');
+  await info.attach('extended-rok-comparison', { path, contentType: 'application/json' });
+  console.log('EXTENDED_ROK_COMPARISON ' + JSON.stringify(report));
+  for (const run of [tactical, combined]) {
+    expect(run.errors).toEqual([]);
+    expect(run.specialEvents.length).toBeGreaterThan(0);
+    expect(run.equipmentEvents.some((event) => event.control === 'pods' && event.podsDetached)).toBe(true);
+    expect(run.equipmentEvents.some((event) => event.control === 'robot' && event.robot)).toBe(true);
+    expect(run.terminal).not.toBeNull();
+  }
+  // A time limit is an observed non-victory, not a test pass of boss completion.
   expect(report.releaseAuthorized).toBe(false);
 });
