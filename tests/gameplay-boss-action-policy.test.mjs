@@ -37,7 +37,16 @@ test('tactical pilot only spends a ready team power during safe recovery', () =>
   const ready = { ...state, phase: 'recovery', plasmaReady: true, overdriveReady: true };
   assert.equal(combatDecision(ready, { tactical: true }).special, 'plasma');
   assert.equal(combatDecision(ready).special, undefined);
-  assert.equal(combatDecision({ ...ready, plasmaReady: false }, { tactical: true }).special, 'overdrive');
-  assert.equal(combatDecision({ ...ready, specialActive: true }, { tactical: true }).special, undefined);
-  assert.equal(combatDecision({ ...ready, phase: 'attack', danger: true }, { tactical: true }).fire, false);
+  assert.equal(
+    combatDecision({ ...ready, plasmaReady: false }, { tactical: true }).special,
+    'overdrive',
+  );
+  assert.equal(
+    combatDecision({ ...ready, specialActive: true }, { tactical: true }).special,
+    undefined,
+  );
+  assert.equal(
+    combatDecision({ ...ready, phase: 'attack', danger: true }, { tactical: true }).fire,
+    false,
+  );
 });

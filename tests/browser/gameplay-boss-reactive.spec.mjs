@@ -12,7 +12,15 @@ import {
   compareEncounters,
 } from '../../tools/gameplay-boss-encounter-metrics.mjs';
 
-async function runEncounter(page, info, sector, reactive, active = false, tactical = false, aimed = false) {
+async function runEncounter(
+  page,
+  info,
+  sector,
+  reactive,
+  active = false,
+  tactical = false,
+  aimed = false,
+) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
@@ -44,7 +52,9 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
           const node = document.getElementById(id);
           return {
             id,
-            visible: !node.hidden && node.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
+            visible:
+              !node.hidden &&
+              node.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
             x: Number.parseFloat(node.style.left),
             y: Number.parseFloat(node.style.top),
             state: node.getAttribute('data-state'),
@@ -56,7 +66,12 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
           bossHp: s.bossHp,
           bossIntegrity: s.bossIntegrity,
           bossParts: s.bossParts,
-          screen: { width: window.innerWidth, height: window.innerHeight, reticle: marker('aimReticle'), cues: [marker('weakCue0'), marker('weakCue1')] },
+          screen: {
+            width: window.innerWidth,
+            height: window.innerHeight,
+            reticle: marker('aimReticle'),
+            cues: [marker('weakCue0'), marker('weakCue1')],
+          },
           shots: s.entities.shots,
           coreOpen: s.coreOpen,
           plasmaReady: !document.getElementById('plasmaTitan').disabled,
@@ -130,7 +145,9 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
           if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
           const category = page.locator('[data-rpg-category="specials"]');
           if (await category.isVisible()) await category.click();
-          const power = page.locator(decision.special === 'plasma' ? '#plasmaTitan' : '#fiveCatsOverdrive');
+          const power = page.locator(
+            decision.special === 'plasma' ? '#plasmaTitan' : '#fiveCatsOverdrive',
+          );
           await expect(power).toBeVisible();
           await expect(power).toBeEnabled();
           await power.click();
@@ -138,7 +155,11 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
         } else await page.keyboard.press(decision.special === 'plasma' ? 'KeyY' : 'KeyO');
         const after = await page.evaluate(() => {
           const s = window.fixture.game.snapshot();
-          return { arcana: s.strategy.arcana, plasma: s.fiveCats.plasmaTime, overdrive: s.fiveCats.overdriveTime };
+          return {
+            arcana: s.strategy.arcana,
+            plasma: s.fiveCats.plasmaTime,
+            overdrive: s.fiveCats.overdriveTime,
+          };
         });
         specialEvents.push({ age: state.age, special: decision.special, before, ...after });
       }
@@ -155,7 +176,15 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
       await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
-    const label = aimed ? 'aimed' : tactical ? 'tactical' : active ? 'active' : reactive ? 'reactive' : 'passive';
+    const label = aimed
+      ? 'aimed'
+      : tactical
+        ? 'tactical'
+        : active
+          ? 'active'
+          : reactive
+            ? 'reactive'
+            : 'passive';
     const path = info.outputPath(label + '-boss.png');
     await page.screenshot({ path });
     await info.attach(label + '-checkpoint', { path, contentType: 'image/png' });
@@ -283,7 +312,9 @@ test('Rok visible aim pilot compares targeting with ordinary fire', async ({ pag
     partsStart: run.samples[0]?.bossParts ?? null,
     partsEnd: run.samples.at(-1)?.bossParts ?? null,
     maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
-    aimAdjustments: run.samples.slice(0, -1).filter((sample) => sample.decision.action === 'aim-weakpoint').length,
+    aimAdjustments: run.samples
+      .slice(0, -1)
+      .filter((sample) => sample.decision.action === 'aim-weakpoint').length,
     aligned: run.samples.filter((sample) => sample.aim?.status === 'aligned').length,
     observedTargets: run.samples.filter((sample) => sample.aim?.id).length,
   });

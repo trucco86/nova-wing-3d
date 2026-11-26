@@ -8,7 +8,12 @@ const screen = (cues) => ({ width: 1000, height: 600, reticle, cues });
 
 test('selects nearest visible open weakpoint, ignoring armor and hidden labels', () => {
   const result = visibleAim(
-    screen([cue('armor', 500, 300, 'armored'), cue('hidden', 500, 300, 'open', false), cue('far', 900, 400), cue('near', 580, 250)]),
+    screen([
+      cue('armor', 500, 300, 'armored'),
+      cue('hidden', 500, 300, 'open', false),
+      cue('far', 900, 400),
+      cue('near', 580, 250),
+    ]),
   );
   assert.equal(result.id, 'near');
   assert.equal(result.status, 'adjust');
@@ -27,7 +32,10 @@ test('screen downward movement maps to negative game Y', () => {
 });
 
 test('unavailable or armored targets do not invent a trajectory', () => {
-  assert.equal(visibleAim(screen([cue('armor', 510, 310, 'armored')])).status, 'no-visible-open-target');
+  assert.equal(
+    visibleAim(screen([cue('armor', 510, 310, 'armored')])).status,
+    'no-visible-open-target',
+  );
   assert.equal(visibleAim({ ...screen([]), width: 0 }).status, 'unavailable');
   assert.equal(visibleAim({ ...screen([]), reticle: { visible: false } }).status, 'unavailable');
 });
