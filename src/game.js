@@ -137,6 +137,7 @@ import {
 import { createAudioCues } from './audio-cues.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
+import { createPhaseFrameAudit, stageOneAuditPhase } from './phase-frame-audit.js';
 import { prewarmSceneShaders } from './scene-prewarm.js';
 import { scheduleIdlePrewarm } from './obstacle-idle-prewarm.js';
 import {
@@ -292,6 +293,7 @@ export function createGame({
 } = {}) {
   const { innerWidth, innerHeight, devicePixelRatio = 1 } = window;
   const frameAudit = createFrameAudit();
+  const phaseFrameAudit = createPhaseFrameAudit();
   const renderCostAudit = createRenderCostAudit();
   const gpuMemoryAudit = createGpuMemoryAudit();
   let gpuMemoryAuditRecording = false;
@@ -3191,6 +3193,7 @@ export function createGame({
     flightCamera.setMode(cameraMode);
     flightCamera.reset(player.position);
     frameAudit.clear();
+    phaseFrameAudit.clear();
     renderCostAudit.clear();
     frameAuditContext = null;
     pausePanel = 'controls';
@@ -3602,6 +3605,7 @@ export function createGame({
       // A single FPS report must never combine two manually selected
       // render presets. Invalidate both samplers before changing quality.
       frameAudit.clear();
+    phaseFrameAudit.clear();
       renderCostAudit.clear();
       gpuMemoryAudit.clear();
       gpuMemoryAuditRecording = false;
@@ -3901,6 +3905,7 @@ export function createGame({
       version: $('gameVersion').textContent.trim(),
     };
     frameAudit.start();
+    phaseFrameAudit.start();
     renderCostAudit.start();
     gpuMemoryAudit.clear();
     gpuMemoryAuditRecording = true;
@@ -3911,6 +3916,7 @@ export function createGame({
   $('auditStop').onclick = () => {
     if (state !== 'paused') return;
     frameAudit.stop();
+    phaseFrameAudit.stop();
     renderCostAudit.stop();
     captureGpuMemory('audit-stop');
     gpuMemoryAuditRecording = false;
@@ -6897,6 +6903,7 @@ export function createGame({
     const renderingFlight =
       appActive && !document.hidden && state === 'playing' && !rpgTacticalPaused;
     frameAudit.sample(time, renderingFlight);
+    phaseFrameAudit.sample(time, stageOneAuditPhase(sectorIndex, cinematic, orbitalLaunchSequence.snapshot().amount), renderingFlight);
     const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
     if (nextBudget) applyRenderBudget(nextBudget);
     const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
@@ -7386,6 +7393,7 @@ export function createGame({
       running = false;
       cancelObstacleWarmup();
       frameAudit.clear();
+    phaseFrameAudit.clear();
       renderCostAudit.clear();
       gpuMemoryAudit.clear();
       gpuMemoryAuditRecording = false;
