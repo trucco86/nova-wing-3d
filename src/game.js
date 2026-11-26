@@ -28,6 +28,7 @@ import { chooseBossIntent, bossMeleeHit, bossMeleePose } from './boss-combat-ai.
 import { createPilotPatternReader, adaptiveFighterRole } from './pilot-pattern.js';
 import { hostileShotHitsShip } from './hostile-hit.js';
 import { bossRadarPlan, renderBossRadar } from './boss-radar.js';
+import { europaClawContactHit } from './europa-attack-vfx.js';
 import { SKINS, readCosmetics, skinPurchase } from './customization.js';
 import {
   PILOT_PROFILES,
@@ -5698,46 +5699,6 @@ export function createGame({
             plume.material.opacity = Math.min(0.95, 0.36 + intensity * 0.46);
           }
         }
-        if (
-          t.state === 'attack' &&
-          bossIntent &&
-          bossIntent.kind !== 'barrage' &&
-          !bossMeleeResolved &&
-          attackAge >= 2.2 + 0.7 // Resolve once at the visible strike apex.
-        ) {
-          bossMeleeResolved = true;
-          if (
-            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
-            (bossIntent.kind !== 'reactor-vent' ||
-              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
-            // A destroyed Hydra head immediately cancels its paired beam,
-            // never landing invisible damage from an already broken gun.
-            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
-              boss.userData.parts.every((part) => part.hp > 0)) &&
-            bossMeleeHit(bossIntent, {
-              x: player.position.x,
-              y: player.position.y,
-              orbit: relativeOrbit(),
-            })
-          ) {
-            hit(bossIntent.damage);
-            explode(player.position.clone(), 8, 0xff8060);
-            cue('armorHit');
-          } else {
-            const disarmed = boss.userData.parts.every((part) => part.hp === 0);
-            if (!disarmed) {
-              // Real tactical consequence: an accurately dodged physical strike
-              // opens a short damage window, instead of the boss simply looping.
-              bossCounterTime = 4.5;
-              tacticEnergy = Math.min(3, tacticEnergy + 0.5);
-            }
-            message(
-              disarmed
-                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
-                : 'ESQUIVA PERFEITA · CONTRA-ATAQUE 4s · DANO +35%',
-            );
-          }
-        }
         // The tactical arrow points to the actual animated signature weapon
         // when it exists, instead of always pretending the attack comes from
         // the center of the boss. This does not change collision or targeting.
@@ -5895,6 +5856,49 @@ export function createGame({
           sectorIndex === 5 ? bossIntent : null,
           europaTarget,
         );
+        if (
+          t.state === 'attack' &&
+          bossIntent &&
+          bossIntent.kind !== 'barrage' &&
+          !bossMeleeResolved &&
+          poseAge >= 2.2 + 0.7 // Resolve once at the visible strike apex.
+        ) {
+          bossMeleeResolved = true;
+          if (
+            !bossBatteryPlan(boss.userData.parts.map((p) => p.hp > 0)).suppressMelee &&
+            (bossIntent.kind !== 'reactor-vent' ||
+              boss.userData.parts[bossIntent.ventSide < 0 ? 0 : 1]?.hp > 0) &&
+            // A destroyed Hydra head immediately cancels its paired beam,
+            // never landing invisible damage from an already broken gun.
+            (bossIntent.kind !== 'hydra-two-head-crossfire' ||
+              boss.userData.parts.every((part) => part.hp > 0)) &&
+            bossMeleeHit(bossIntent, {
+              x: player.position.x,
+              y: player.position.y,
+              orbit: relativeOrbit(),
+            }) &&
+            (sectorIndex !== 5 ||
+              bossIntent.kind !== 'cryo-pincer' ||
+              europaClawContactHit(boss.getObjectByName('boss-europa-attack-vfx'), player.position))
+          ) {
+            hit(bossIntent.damage);
+            explode(player.position.clone(), 8, 0xff8060);
+            cue('armorHit');
+          } else {
+            const disarmed = boss.userData.parts.every((part) => part.hp === 0);
+            if (!disarmed) {
+              // Real tactical consequence: an accurately dodged physical strike
+              // opens a short damage window, instead of the boss simply looping.
+              bossCounterTime = 4.5;
+              tacticEnergy = Math.min(3, tacticEnergy + 0.5);
+            }
+            message(
+              disarmed
+                ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
+                : 'ESQUIVA PERFEITA · CONTRA-ATAQUE 4s · DANO +35%',
+            );
+          }
+        }
       }
       boss.userData.core.scale.setScalar(1 + Math.sin(visualTime * 5) * 0.07);
       const remaining = boss.userData.parts.filter((p) => p.hp > 0).length;
