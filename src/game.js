@@ -3569,6 +3569,9 @@ export function createGame({
         : '') +
       '\n' +
       formatGpuMemoryAudit(gpuMemoryAudit.report(), { language: settings.language });
+    for (const p of phaseFrameAudit.report()) {
+      $('auditReadout').textContent += `\n${p.name}: ${p.frames} frames | ${p.fps} FPS | p95 ${p.p95} ms | peak ${p.peak} ms | >100 ms: ${p.stalls}`;
+    }
     $('auditStart').disabled = result.active;
     $('auditStop').disabled = !result.active;
     $('auditCopy').disabled = result.frames === 0;
@@ -6903,7 +6906,9 @@ export function createGame({
     const renderingFlight =
       appActive && !document.hidden && state === 'playing' && !rpgTacticalPaused;
     frameAudit.sample(time, renderingFlight);
-    phaseFrameAudit.sample(time, stageOneAuditPhase(sectorIndex, cinematic, orbitalLaunchSequence.snapshot().amount), renderingFlight);
+    if (phaseFrameAudit.isActive()) {
+      phaseFrameAudit.sample(time, stageOneAuditPhase(sectorIndex, cinematic, orbitalLaunchSequence.snapshot().amount), renderingFlight);
+    }
     const nextBudget = adaptiveGraphics.sample(time, renderingFlight);
     if (nextBudget) applyRenderBudget(nextBudget);
     const dt = Math.min((time - last) / 1000, cinematic ? 1 : 0.035);
