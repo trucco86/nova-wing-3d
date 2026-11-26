@@ -27,7 +27,7 @@ export function createPhaseFrameAudit() {
       return [{ name, frames: b.count, fps: Math.round(1000 * b.count / b.sum), p95, peak: Math.round(b.peak), stalls: b.stalls }];
     });
   }
-  return { clear, start() { clear(); active = true; }, stop() { active = false; last = previous = null; }, sample, report };
+  return { clear, isActive: () => active, start() { clear(); active = true; }, stop() { active = false; last = previous = null; }, sample, report };
 }
 export function stageOneAuditPhase(sector, cinematic, ascent) {
   if (sector !== 0) return 'other';
