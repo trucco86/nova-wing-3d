@@ -3841,7 +3841,15 @@ export function createGame({
     const reset = document.createElement('button');
     reset.type = 'button'; reset.textContent = 'RESTAURAR ORIGINAIS';
     reset.onclick = () => { audioLab.reset(); variant.value = '0'; status.textContent = 'Originais restaurados'; };
-    for (const node of [effect, variant, listen, apply, reset, status]) panel.appendChild(node);
+    const exportChoice = document.createElement('button');
+    exportChoice.type = 'button'; exportChoice.textContent = 'COPIAR ESCOLHAS';
+    exportChoice.onclick = async () => {
+      try {
+        await window.navigator.clipboard.writeText(JSON.stringify(audioLab.snapshot(), null, 2));
+        status.textContent = 'Escolhas copiadas';
+      } catch { status.textContent = JSON.stringify(audioLab.snapshot()); }
+    };
+    for (const node of [effect, variant, listen, apply, reset, exportChoice, status]) panel.appendChild(node);
     $('developerPanel').appendChild(panel);
   }
   if (developerAvailable) {
