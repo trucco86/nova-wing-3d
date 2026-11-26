@@ -134,7 +134,8 @@ import {
   firstSubbossObstacleQuiet,
   firstSubbossWarmup,
 } from './difficulty.js';
-import { createAudioCues } from './audio-cues.js';
+import { AUDIO_CUES, createAudioCues } from './audio-cues.js';
+import { createAudioLab } from './audio-lab.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { createPhaseFrameAudit, stageOneAuditPhase } from './phase-frame-audit.js';
@@ -343,6 +344,7 @@ export function createGame({
   const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
   const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
+  const audioLab = createAudioLab(developerAvailable, AUDIO_CUES);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
   scene.add(camera);
   const cockpit = dynamicFlight ? createCockpit(camera) : null;
@@ -1811,7 +1813,7 @@ export function createGame({
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
       if (!music) music = createMusic(audioCtx);
-      if (!audioCues) audioCues = createAudioCues(audioCtx);
+      if (!audioCues) audioCues = createAudioCues(audioCtx, { resolveCue: name => audioLab.resolve(name, developerSession) });
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
@@ -7034,10 +7036,12 @@ export function createGame({
     nextSector,
     startDeveloperScenario,
     enterReactorAccessForQA,
+    selectQaAudio: (key, index) => developerAvailable && audioLab.select(key, index),
     snapshot: () => ({
       state,
       developerAvailable,
       developerSession,
+      audioLab: developerAvailable ? audioLab.snapshot() : null,
       developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,
