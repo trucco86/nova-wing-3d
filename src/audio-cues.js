@@ -677,8 +677,8 @@ export function createAudioCues(context, { resolveCue = name => AUDIO_CUES[name]
     smooth(chargeLoop.hissGain.gain, 0.0012 + 0.0031 * p);
   }
 
-  function play(name, { enabled: allowed = true, active = true } = {}) {
-    const cue = resolveCue(name);
+  function play(name, { enabled: allowed = true, active = true, preview = null } = {}) {
+    const cue = preview ?? resolveCue(name);
     if (
       !cue ||
       destroyed ||
