@@ -672,9 +672,9 @@ export function createAudioCues(context) {
     smooth(chargeLoop.flux.frequency, 148 + 63 * p);
     smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
     smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
-    smooth(chargeLoop.bassGain.gain, 0.004 + 0.007 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.0025 + 0.005 * p);
-    smooth(chargeLoop.hissGain.gain, 0.0015 + 0.004 * p);
+    smooth(chargeLoop.bassGain.gain, 0.0032 + 0.0055 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.002 + 0.0039 * p);
+    smooth(chargeLoop.hissGain.gain, 0.0012 + 0.0031 * p);
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {

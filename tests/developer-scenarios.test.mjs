@@ -91,8 +91,8 @@ test('Europa QA tunnel can be launched and restarted without changing campaign s
   );
 });
 
-test('public and HML hosts refuse QA navigation, including direct API calls', (t) => {
-  const h = harness({ hostname: 'hml.nova-wing-preview.pages.dev' });
+test('public hosts refuse QA navigation, including direct API calls', (t) => {
+  const h = harness({ hostname: 'trucco86.github.io' });
   t.after(() => h.close());
   assert.equal(h.elements.get('developerPanel').hidden, true);
   assert.equal(h.game.startDeveloperScenario(4, 'boss'), false);
@@ -100,3 +100,35 @@ test('public and HML hosts refuse QA navigation, including direct API calls', (t
   assert.equal(h.game.snapshot().state, 'menu');
   assert.equal(h.game.snapshot().developerSession, false);
 });
+
+for (const hostname of [
+  'hml.nova-wing-preview.pages.dev',
+  'integration-qa184-unified-ho.nova-wing-preview.pages.dev',
+]) {
+  test('isolated QA boss launch never saves or ranks: ' + hostname, (t) => {
+    let writes = 0;
+    let started = 0;
+    let finished = 0;
+    const h = harness({
+      hostname,
+      storage: {
+        getItem: () => null,
+        setItem() {
+          writes++;
+        },
+      },
+      spawnEncounters: false,
+      onStageStarted: () => started++,
+      onStageFinished: () => finished++,
+    });
+    t.after(() => h.close());
+    assert.equal(h.elements.get('menuQA').hidden, false);
+    assert.equal(h.game.startDeveloperScenario(9, 'boss'), true);
+    assert.equal(h.game.snapshot().developerSession, true);
+    assert.equal(h.game.snapshot().boss, true);
+    assert.equal(h.game.snapshot().sector, 10);
+    assert.equal(writes, 0);
+    assert.equal(started, 0);
+    assert.equal(finished, 0);
+  });
+}

@@ -2,9 +2,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { developerToolsAllowed, parseDeveloperScenario } from '../src/developer-mode.js';
 
-test('developer menu is restricted to isolated DEV/PR and local browser hosts', () => {
+test('developer menu is restricted to isolated DEV/HML/PR and local browser hosts', () => {
   for (const host of [
     'dev.nova-wing-preview.pages.dev',
+    'hml.nova-wing-preview.pages.dev',
+    'integration-qa184-unified-ho.nova-wing-preview.pages.dev',
     'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev',
     'pr-134.nova-wing-preview.pages.dev',
     '52fd04c6.nova-wing-preview.pages.dev',
@@ -23,7 +25,9 @@ test('developer menu is restricted to isolated DEV/PR and local browser hosts', 
     assert.equal(developerToolsAllowed(host), true, host);
   for (const host of [
     'nova-wing-preview.pages.dev',
-    'hml.nova-wing-preview.pages.dev',
+    'trucco86.github.io',
+    'hml.nova-wing-preview.pages.dev.evil.com',
+    'integration-qa184-unified-ho.nova-wing-preview.pages.dev.evil.com',
     '52fd04c6.nova-wing-preview.pages.dev.evil.com',
     'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev.evil.com',
     'some-other-preview.nova-wing-preview.pages.dev',
@@ -44,6 +48,7 @@ test('developer menu is restricted to isolated DEV/PR and local browser hosts', 
   ])
     assert.equal(developerToolsAllowed(host), false, String(host));
   assert.equal(developerToolsAllowed('dev.nova-wing-preview.pages.dev', true), false);
+  assert.equal(developerToolsAllowed('hml.nova-wing-preview.pages.dev', true), false);
 });
 
 test('developer QA scenarios accept only real campaign sectors and known encounters', () => {

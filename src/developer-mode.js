@@ -1,18 +1,20 @@
 // Developer QA is a local scenario launcher, never a privileged/admin API.
-// Excluded from production and HML by an exact hostname allowlist.
+// Restricted to isolated QA environments; never available in production.
 export function developerToolsAllowed(hostname, native = false) {
   if (native || typeof hostname !== 'string') return false;
   const host = hostname.toLowerCase();
   return (
     host === 'dev.nova-wing-preview.pages.dev' ||
+    host === 'hml.nova-wing-preview.pages.dev' ||
+    host === 'integration-qa184-unified-ho.nova-wing-preview.pages.dev' ||
     // Dedicated branch alias used by the stage-4, boss and Berserk QA preview.
     host === 'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev' ||
-    // Approved QA build and its stable branch alias; never enable HML or PROD.
+    // Approved QA build and its stable branch alias; never enable PROD.
     host === '52fd04c6.nova-wing-preview.pages.dev' ||
     host === 'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev' ||
     host === 'feat-planetary-journeys-2026.nova-wing-preview.pages.dev' ||
     host === 'feat-planetary-visual-polish.nova-wing-preview.pages.dev' ||
-    // Strictly this integrated QA alias; production and HML remain blocked.
+    // Strictly this integrated QA alias; production remains blocked.
     host === 'integration-boss-worlds-qa-2.nova-wing-preview.pages.dev' ||
     // Only the verified rival/mothership candidate is allowed to launch QA stages.
     host === 'feat-mothership-marvin-rival.nova-wing-preview.pages.dev' ||
