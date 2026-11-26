@@ -4,8 +4,13 @@ export const AUDIO_CUES = {
   plasmaTitan: {
     cooldown: 1,
     tones: [
-      { from: 130, to: 40, duration: 0.9, gain: 0.048, wave: 'sawtooth' },
-      { from: 540, to: 120, duration: 0.48, gain: 0.035, wave: 'triangle' },
+      { from: 920, to: 280, duration: 0.09, gain: 0.032, wave: 'sawtooth', filter: 1600 },
+      { from: 310, to: 85, duration: 0.72, gain: 0.092, wave: 'triangle', filter: 1100 },
+      { from: 115, to: 38, duration: 0.95, gain: 0.085, wave: 'sine', attack: 0.008 },
+    ],
+    noises: [
+      { duration: 0.12, gain: 0.11, filterType: 'bandpass', filter: 2200, filterEnd: 580 },
+      { color: 'brown', delay: 0.04, duration: 0.85, gain: 0.095, filter: 950, filterEnd: 145 },
     ],
   },
   fiveCatsOverdrive: {
@@ -667,9 +672,9 @@ export function createAudioCues(context) {
     smooth(chargeLoop.flux.frequency, 148 + 63 * p);
     smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
     smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
-    smooth(chargeLoop.bassGain.gain, 0.003 + 0.0048 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.0018 + 0.003 * p);
-    smooth(chargeLoop.hissGain.gain, 0.001 + 0.0025 * p);
+    smooth(chargeLoop.bassGain.gain, 0.004 + 0.007 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.0025 + 0.005 * p);
+    smooth(chargeLoop.hissGain.gain, 0.0015 + 0.004 * p);
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {
