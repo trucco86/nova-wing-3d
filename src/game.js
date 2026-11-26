@@ -135,7 +135,12 @@ import {
   firstSubbossWarmup,
 } from './difficulty.js';
 import { AUDIO_CUES, createAudioCues } from './audio-cues.js';
-import { AUDIO_LAB_KEYS, AUDIO_LAB_VARIANTS, audioLabCandidate, createAudioLab } from './audio-lab.js';
+import {
+  AUDIO_LAB_KEYS,
+  AUDIO_LAB_VARIANTS,
+  audioLabCandidate,
+  createAudioLab,
+} from './audio-lab.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { createPhaseFrameAudit, stageOneAuditPhase } from './phase-frame-audit.js';
@@ -1813,7 +1818,10 @@ export function createGame({
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
       if (!music) music = createMusic(audioCtx);
-      if (!audioCues) audioCues = createAudioCues(audioCtx, { resolveCue: name => audioLab.resolve(name, developerSession) });
+      if (!audioCues)
+        audioCues = createAudioCues(audioCtx, {
+          resolveCue: (name) => audioLab.resolve(name, developerSession),
+        });
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
@@ -3814,42 +3822,64 @@ export function createGame({
     variant.setAttribute('aria-label', 'Variação sonora');
     for (const key of AUDIO_LAB_KEYS) {
       const option = document.createElement('option');
-      option.value = key; option.textContent = key; effect.appendChild(option);
+      option.value = key;
+      option.textContent = key;
+      effect.appendChild(option);
     }
     AUDIO_LAB_VARIANTS.forEach((name, index) => {
       const option = document.createElement('option');
-      option.value = String(index); option.textContent = name; variant.appendChild(option);
+      option.value = String(index);
+      option.textContent = name;
+      variant.appendChild(option);
     });
     const status = document.createElement('p');
     status.setAttribute('aria-live', 'polite');
     const listen = document.createElement('button');
-    listen.type = 'button'; listen.textContent = 'OUVIR';
+    listen.type = 'button';
+    listen.textContent = 'OUVIR';
     listen.onclick = async () => {
       if (!developerAvailable || !appActive || !unlockAudio()) return;
       try {
         await audioCtx.resume();
-        const played = audioCues.play(effect.value, { preview: audioLabCandidate(AUDIO_CUES[effect.value], Number(variant.value)) });
+        const played = audioCues.play(effect.value, {
+          preview: audioLabCandidate(AUDIO_CUES[effect.value], Number(variant.value)),
+        });
         status.textContent = played ? 'Reproduzindo' : 'Áudio indisponível ou em intervalo';
-      } catch { status.textContent = 'Áudio indisponível'; }
+      } catch {
+        status.textContent = 'Áudio indisponível';
+      }
     };
     const apply = document.createElement('button');
-    apply.type = 'button'; apply.textContent = 'TESTAR NO COMBATE';
+    apply.type = 'button';
+    apply.textContent = 'TESTAR NO COMBATE';
     apply.onclick = () => {
-      if (audioLab.select(effect.value, Number(variant.value))) status.textContent = 'Selecionado para sessão QA: ' + JSON.stringify(audioLab.snapshot());
+      if (audioLab.select(effect.value, Number(variant.value)))
+        status.textContent = 'Selecionado para sessão QA: ' + JSON.stringify(audioLab.snapshot());
     };
-    effect.onchange = () => { variant.value = String(audioLab.snapshot()[effect.value] ?? 0); };
+    effect.onchange = () => {
+      variant.value = String(audioLab.snapshot()[effect.value] ?? 0);
+    };
     const reset = document.createElement('button');
-    reset.type = 'button'; reset.textContent = 'RESTAURAR ORIGINAIS';
-    reset.onclick = () => { audioLab.reset(); variant.value = '0'; status.textContent = 'Originais restaurados'; };
+    reset.type = 'button';
+    reset.textContent = 'RESTAURAR ORIGINAIS';
+    reset.onclick = () => {
+      audioLab.reset();
+      variant.value = '0';
+      status.textContent = 'Originais restaurados';
+    };
     const exportChoice = document.createElement('button');
-    exportChoice.type = 'button'; exportChoice.textContent = 'COPIAR ESCOLHAS';
+    exportChoice.type = 'button';
+    exportChoice.textContent = 'COPIAR ESCOLHAS';
     exportChoice.onclick = async () => {
       try {
         await window.navigator.clipboard.writeText(JSON.stringify(audioLab.snapshot(), null, 2));
         status.textContent = 'Escolhas copiadas';
-      } catch { status.textContent = JSON.stringify(audioLab.snapshot()); }
+      } catch {
+        status.textContent = JSON.stringify(audioLab.snapshot());
+      }
     };
-    for (const node of [effect, variant, listen, apply, reset, exportChoice, status]) panel.appendChild(node);
+    for (const node of [effect, variant, listen, apply, reset, exportChoice, status])
+      panel.appendChild(node);
     $('developerPanel').appendChild(panel);
   }
   if (developerAvailable) {
