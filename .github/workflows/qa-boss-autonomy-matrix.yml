@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        sector: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        sector: [1, 2, 3]
     env:
       NOVA_QA_BOSS_SECTOR: ${{ matrix.sector }}
     steps:
@@ -33,11 +33,17 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: node --test tests/gameplay-boss-orbit-policy.test.mjs
       - run: npm run build:check
       - run: npm run build
       - run: npx playwright install chromium
       - name: Run one boss on desktop and mobile
         run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'autonomous matrix'
+      - name: Check formatting and print fix if needed
+        if: always()
+        run: |
+          npm run format
+          git diff --exit-code
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:

@@ -52,3 +52,7 @@ Execução 45805708133 (SHA 8c9edbc): quatro vitórias reais, HP zero, partes ze
 ## Matriz exploratória dos nove chefes restantes
 
 A branch isolada feat/gameplay-boss-autonomy-matrix usa a política combinada que venceu Rok, com o mesmo limite de 240 segundos simulados. Executa os setores 2 a 10 em desktop e mobile, em nove jobs independentes (até três em paralelo, sem fail-fast). Cada cenário começa em um encontro real pelo laboratório QA, não pela campanha. Registra HP, partes, integridade, escudo, vidas, ações e padrões. TIME_LIMIT e INTERRUPTED são resultados sem vitória, não aprovação. O workflow é consultivo e não autoriza produção. A política específica de cada chefe será calibrada a partir dos resultados.
+
+## Segunda rodada: órbita, scan e reparo
+
+A primeira matriz (45831499483) executou 18 cenários sem erro de navegador, mas nenhum venceu: oito pararam na primeira perda de vida e dez no limite de 240s. A maioria ficou com as baterias intactas. A nova política usa a direção do radar orbital quando visível, busca em órbita no modo físico sem ler o ângulo oculto, aciona scan quando não há alvo conhecido e reparo abaixo de 65% do escudo inicial quando disponível. A precisão é usada em recuperação com ponto fraco exposto. Nenhuma ação durante ameaça física supera a esquiva; comandos são reais, inclusive botões mobile. Primeira calibração nos setores 2, 3 e 4; compara integridade, vidas e ações com a matriz anterior. Não altera motor, armamento ou recursos. Não prova vitória antes do resultado.
