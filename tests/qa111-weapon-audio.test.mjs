@@ -214,7 +214,6 @@ test('QA182: stronger attack without increasing sustained low-frequency rebound'
   assert.ok(AUDIO_CUES.mechaShot.cooldown > shot.cooldown);
 });
 
-
 test('QA182: Plasma Titan has distinct layered impact within the voice budget', () => {
   const titan = AUDIO_CUES.plasmaTitan;
   assert.equal(titan.tones.length + titan.noises.length, 5);
@@ -224,7 +223,10 @@ test('QA182: Plasma Titan has distinct layered impact within the voice budget', 
   const { context, events } = fakeAudio();
   const cues = createAudioCues(context);
   cues.setCharge({ active: true, progress: 1 });
-  const gains = events.params.filter((v) => v[0] === 'target').slice(-3).map((v) => v[1]);
+  const gains = events.params
+    .filter((v) => v[0] === 'target')
+    .slice(-3)
+    .map((v) => v[1]);
   assert.ok(gains[0] >= 0.01 && gains.every((v) => v <= 0.012));
   cues.setCharge({ active: false });
   assert.equal(cues.play('plasmaTitan'), true);
