@@ -48,3 +48,7 @@ Duas rotas de até 240 segundos simulados no mesmo build: tática com poderes, p
 ## Evidência de vitória contra Rok
 
 Execução 45805708133 (SHA 8c9edbc): quatro vitórias reais, HP zero, partes zero, estado collapsing e três vidas restantes. Desktop tático 102s/escudo 80; combinado 93s/90. Mobile tático 99,25s/80; combinado 99s/80. Loadout inicial QA: três pods, escudo 202, três vidas. Trinta testes unitários e dois testes browser passaram; CI bloqueado apenas por formatação. O contrato da sonda de Rok passa a exigir vitória nas duas rotas, sem alterar o motor. Ainda não é vitória de campanha nem aprovação de outros chefes.
+
+## Matriz exploratória dos nove chefes restantes
+
+A branch isolada feat/gameplay-boss-autonomy-matrix usa a política combinada que venceu Rok, com o mesmo limite de 240 segundos simulados. Executa os setores 2 a 10 em desktop e mobile, em nove jobs independentes (até três em paralelo, sem fail-fast). Cada cenário começa em um encontro real pelo laboratório QA, não pela campanha. Registra HP, partes, integridade, escudo, vidas, ações e padrões. TIME_LIMIT e INTERRUPTED são resultados sem vitória, não aprovação. O workflow é consultivo e não autoriza produção. A política específica de cada chefe será calibrada a partir dos resultados.

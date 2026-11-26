@@ -1,0 +1,48 @@
+name: QA autonomous boss matrix
+on:
+  push:
+    branches:
+      - feat/gameplay-boss-autonomy-matrix
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-autonomy-matrix-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  encounters:
+    if: github.repository == 'trucco86/nova-wing-3d'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        sector: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    env:
+      NOVA_QA_BOSS_SECTOR: ${{ matrix.sector }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:check
+      - run: npm run build
+      - run: npx playwright install chromium
+      - name: Run one boss on desktop and mobile
+        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'autonomous matrix'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: autonomy-sector-${{ matrix.sector }}
+          retention-days: 14
+          path: |
+            test-results/
+            playwright-report/

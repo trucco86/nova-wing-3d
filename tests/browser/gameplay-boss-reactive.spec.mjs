@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
+import { SECTORS } from '../../src/campaign.js';
 import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
 import { equipmentDecision } from '../../tools/gameplay-boss-equipment-policy.mjs';
@@ -433,3 +434,54 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
   expect(report.combined.outcome).toBe('BOSS_DEFEATED');
   expect(report.releaseAuthorized).toBe(false);
 });
+
+// Opt-in exploratory matrix. A non-victory is reported, not mistaken for
+// a regression pass or a release authorization. No production gate expansion.
+const matrixSector = process.env.NOVA_QA_BOSS_SECTOR;
+if (/^[1-9]$/.test(matrixSector ?? '')) {
+  const sector = Number(matrixSector);
+  test('autonomous matrix: ' + SECTORS[sector].boss, async ({ page }, info) => {
+    test.setTimeout(720000);
+    const run = await runEncounter(page, info, sector, true, true, true, true, true);
+    const final = run.terminal;
+    const victory = final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
+    const report = {
+      sector: sector + 1,
+      boss: SECTORS[sector].boss,
+      project: info.project.name,
+      outcome: victory
+        ? 'BOSS_DEFEATED'
+        : final?.state === 'playing'
+          ? 'TIME_LIMIT'
+          : 'INTERRUPTED',
+      initial: {
+        bossHp: run.samples[0]?.bossHp ?? null,
+        shield: run.samples[0]?.shield ?? null,
+        pods: run.samples[0]?.pods ?? null,
+        lives: run.samples[0]?.lives ?? null,
+      },
+      final: {
+        state: final?.state ?? null,
+        bossHp: final?.bossHp ?? null,
+        bossParts: final?.bossParts ?? null,
+        integrity: final?.bossIntegrity ?? null,
+        shield: final?.shield ?? null,
+        lives: final?.lives ?? null,
+      },
+      seconds: run.metrics.observedSeconds,
+      specialEvents: run.specialEvents,
+      equipmentEvents: run.equipmentEvents,
+      attackPatterns: run.metrics.patterns,
+      errors: run.errors,
+      humanApproval: 'PENDING',
+      releaseAuthorized: false,
+    };
+    const path = info.outputPath('autonomous-matrix-result.json');
+    await writeFile(path, JSON.stringify({ report, run }, null, 2) + '\n');
+    await info.attach('autonomous-matrix-result', { path, contentType: 'application/json' });
+    console.log('AUTONOMOUS_MATRIX ' + JSON.stringify(report));
+    expect(run.samples.length, 'real encounter exposure').toBeGreaterThan(0);
+    expect(run.terminal).not.toBeNull();
+    expect(run.errors).toEqual([]);
+  });
+}
