@@ -31,6 +31,7 @@ on:
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - fix/qa180-stage1-clean-launch-main-20261123
+      - integration/qa184-unified-homologation
 permissions:
   contents: write
   actions: write
@@ -95,6 +96,9 @@ jobs:
       - name: Prepare QA180 focused stage-one launch candidate
         if: github.ref_name == 'fix/qa180-stage1-clean-launch-main-20261123'
         run: npm run release:prepare -- 1.27.161
+      - name: Prepare QA184 integrated candidate
+        if: github.ref_name == 'integration/qa184-unified-homologation'
+        run: npm run release:prepare -- 1.27.164
       - run: npm run format
       - run: npm run build
       - name: Validate non-QA180 candidates before sync
@@ -202,6 +206,10 @@ jobs:
             git add -u
             git add -- releases/v1.27.161.md
           fi
+          if [ "${GITHUB_REF_NAME}" = "integration/qa184-unified-homologation" ]; then
+            git add -u
+            git add -- releases/v1.27.164.md
+          fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
             exit 0
@@ -216,6 +224,6 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
-          if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ]; then
+          if [ "${GITHUB_REF_NAME}" = "integration/qa138-146-on-qa140-20261115" ] || [ "${GITHUB_REF_NAME}" = "integration/qa184-unified-homologation" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
           fi
