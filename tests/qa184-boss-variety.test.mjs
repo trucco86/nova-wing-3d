@@ -20,5 +20,9 @@ test('repeated early attacks vary and destroyed reactor hardware stays disabled'
     const next = chooseBossIntent({ ...args, previousKind: first.kind });
     assert.notEqual(next.kind, first.kind, String(sector));
   }
-  assert.equal(chooseBossIntent({ sector: 3, cycle: 1, generators: [false, false], previousKind: 'barrage' }).kind, 'barrage');
+  assert.equal(
+    chooseBossIntent({ sector: 3, cycle: 1, generators: [false, false], previousKind: 'barrage' })
+      .kind,
+    'barrage',
+  );
 });
