@@ -26,3 +26,9 @@ test('repeated early attacks vary and destroyed reactor hardware stays disabled'
     'barrage',
   );
 });
+
+test('strike apex matches the combat timeline', () => {
+  const pose = bossMeleePose({ kind: 'cryo-pincer', warning: 2.2 }, 'attack', 0.7);
+  assert.ok(pose.claw > 0.8);
+  assert.equal(bossMeleePose({ kind: 'cryo-pincer', warning: 2.2 }, 'windup', 2.2).lunge, 0);
+});
