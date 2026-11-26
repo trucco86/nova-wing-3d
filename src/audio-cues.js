@@ -4,8 +4,13 @@ export const AUDIO_CUES = {
   plasmaTitan: {
     cooldown: 1,
     tones: [
-      { from: 130, to: 40, duration: 0.9, gain: 0.048, wave: 'sawtooth' },
-      { from: 540, to: 120, duration: 0.48, gain: 0.035, wave: 'triangle' },
+      { from: 920, to: 280, duration: 0.09, gain: 0.032, wave: 'sawtooth', filter: 1600 },
+      { from: 310, to: 85, duration: 0.72, gain: 0.092, wave: 'triangle', filter: 1100 },
+      { from: 115, to: 38, duration: 0.95, gain: 0.085, wave: 'sine', attack: 0.008 },
+    ],
+    noises: [
+      { duration: 0.12, gain: 0.11, filterType: 'bandpass', filter: 2200, filterEnd: 580 },
+      { color: 'brown', delay: 0.04, duration: 0.85, gain: 0.095, filter: 950, filterEnd: 145 },
     ],
   },
   fiveCatsOverdrive: {
@@ -91,58 +96,59 @@ Object.assign(AUDIO_CUES, {
   // Three sonic layers: a brief metallic snap, a mid-range cannon body,
   // and a small-speaker-friendly bass punch. Short noise tails prevent
   // the repeated pulse from reading as a vintage laser beep.
-  // QA115: fast, dry pulse. The mechanical body speaks in the midrange;
-  // the attack is a short filtered click, not a descending arcade whistle.
+  // QA182: stronger mechanical transient and midrange pressure, with less
+  // sustained bass accumulation in rapid volleys. Keep the filtered, dry character.
   shot: {
     cooldown: 0.088,
     tones: [
       {
         from: 890,
         to: 370,
-        duration: 0.041,
-        gain: 0.017,
+        duration: 0.035,
+        gain: 0.019,
         wave: 'sawtooth',
-        filter: 1150,
+        filter: 1200,
         attack: 0.002,
       },
       {
-        from: 280,
-        to: 135,
-        duration: 0.155,
-        gain: 0.062,
+        from: 330,
+        to: 175,
+        duration: 0.148,
+        gain: 0.078,
         wave: 'triangle',
-        filter: 920,
+        filter: 1450,
         attack: 0.003,
       },
-      { from: 108, to: 57, duration: 0.18, gain: 0.034, wave: 'sine', attack: 0.003 },
+      { from: 126, to: 64, duration: 0.16, gain: 0.032, wave: 'sine', attack: 0.003 },
       {
-        from: 215,
+        from: 205,
         to: 95,
-        delay: 0.068,
-        duration: 0.25,
-        gain: 0.058,
+        delay: 0.042,
+        duration: 0.24,
+        gain: 0.031,
         wave: 'triangle',
-        filter: 740,
+        filter: 820,
         attack: 0.007,
       },
     ],
     noises: [
       {
-        duration: 0.036,
-        gain: 0.058,
+        duration: 0.034,
+        gain: 0.094,
         filterType: 'bandpass',
-        filter: 1500,
-        filterEnd: 740,
-        q: 0.65,
+        filter: 2250,
+        filterEnd: 920,
+        q: 0.7,
+        attack: 0.002,
       },
       {
         color: 'brown',
-        delay: 0.014,
-        duration: 0.142,
-        gain: 0.054,
-        filter: 550,
-        filterEnd: 190,
-        attack: 0.01,
+        delay: 0.012,
+        duration: 0.125,
+        gain: 0.039,
+        filter: 720,
+        filterEnd: 220,
+        attack: 0.006,
       },
     ],
   },
@@ -150,35 +156,36 @@ Object.assign(AUDIO_CUES, {
     cooldown: 0.125,
     tones: [
       {
-        from: 680,
-        to: 230,
-        duration: 0.076,
-        gain: 0.034,
+        from: 780,
+        to: 290,
+        duration: 0.064,
+        gain: 0.041,
         wave: 'sawtooth',
-        filter: 1320,
+        filter: 1550,
         attack: 0.002,
       },
       {
-        from: 285,
-        to: 76,
-        duration: 0.275,
-        gain: 0.079,
+        from: 320,
+        to: 82,
+        duration: 0.26,
+        gain: 0.089,
         wave: 'triangle',
-        filter: 900,
+        filter: 1250,
         attack: 0.003,
       },
-      { from: 102, to: 40, duration: 0.29, gain: 0.059, wave: 'sine', attack: 0.006 },
+      { from: 116, to: 43, duration: 0.29, gain: 0.064, wave: 'sine', attack: 0.006 },
     ],
     noises: [
       {
-        duration: 0.046,
-        gain: 0.078,
+        duration: 0.045,
+        gain: 0.097,
         filterType: 'bandpass',
-        filter: 1600,
-        filterEnd: 450,
-        q: 0.64,
+        filter: 2050,
+        filterEnd: 510,
+        q: 0.7,
+        attack: 0.002,
       },
-      { color: 'brown', delay: 0.024, duration: 0.22, gain: 0.071, filter: 720, filterEnd: 160 },
+      { color: 'brown', delay: 0.02, duration: 0.19, gain: 0.065, filter: 820, filterEnd: 160 },
     ],
   },
   mechaImpact: {
@@ -665,9 +672,9 @@ export function createAudioCues(context) {
     smooth(chargeLoop.flux.frequency, 148 + 63 * p);
     smooth(chargeLoop.fluxFilter.frequency, 350 + 315 * p);
     smooth(chargeLoop.hissFilter.frequency, 530 + 490 * p);
-    smooth(chargeLoop.bassGain.gain, 0.003 + 0.0048 * p);
-    smooth(chargeLoop.fluxGain.gain, 0.0018 + 0.003 * p);
-    smooth(chargeLoop.hissGain.gain, 0.001 + 0.0025 * p);
+    smooth(chargeLoop.bassGain.gain, 0.004 + 0.007 * p);
+    smooth(chargeLoop.fluxGain.gain, 0.0025 + 0.005 * p);
+    smooth(chargeLoop.hissGain.gain, 0.0015 + 0.004 * p);
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {
