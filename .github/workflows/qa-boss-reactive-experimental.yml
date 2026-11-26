@@ -2,13 +2,13 @@ name: QA boss reactive experimental
 on:
   push:
     branches:
-      - feat/gameplay-boss-dodge-policy
+      - feat/gameplay-boss-visible-aim
 
 permissions:
   contents: read
 
 concurrency:
-  group: qa-boss-reactive-${{ github.ref }}
+  group: qa-boss-visible-aim-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -25,15 +25,18 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Run policy and encounter metrics unit tests
-        run: node --test tests/gameplay-boss-dodge-policy.test.mjs tests/gameplay-boss-encounter-metrics.test.mjs tests/gameplay-boss-pattern-observer.test.mjs tests/gameplay-hud-overlap.test.mjs tests/gameplay-boss-action-policy.test.mjs
+        run: node --test tests/gameplay-boss-dodge-policy.test.mjs tests/gameplay-boss-encounter-metrics.test.mjs tests/gameplay-boss-pattern-observer.test.mjs tests/gameplay-hud-overlap.test.mjs tests/gameplay-boss-action-policy.test.mjs tests/gameplay-boss-visible-aim.test.mjs
       - run: npm run build:check
       - run: npm run build
       - run: npx playwright install chromium
       - name: Compare real desktop and mobile boss encounters
-        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs gameplay-hud-overlap.spec.mjs
-      - name: Verify formatting
+        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'Rok visible aim pilot'
+      - name: Apply formatter to experimental source and print exact diff
         if: always()
-        run: npm run format:check
+        run: |
+          npm run format
+          git diff -- src tools tests specs docs skills .github
+          git diff --exit-code
       - name: Show exact formatting patch on failure
         if: failure()
         run: |

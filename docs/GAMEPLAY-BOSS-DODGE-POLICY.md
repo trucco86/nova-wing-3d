@@ -36,3 +36,7 @@ O piloto experimental alterna disparos reais (Space ou botão de tiro) e esquiva
 ## Comparação tática QA sobre v1.27.161
 
 Branch reconciliada com main 00cf08c (produção v1.27.161). O experimento compara duas rotas de até 60 segundos no mesmo build: tiro e esquiva, versus tiro, esquiva e poder de equipe disponível durante recuperação do chefe. Desktop usa atalhos Y/O; mobile abre o menu RPG e clica no controle real. A ativação exige redução de arcana e temporizador positivo. Sem reset de cooldown, invulnerabilidade ou aumento de dano. Registra HP, escudo, exposição e ativações. O resultado não prova vitória, nem avalia a alteração de supers/contra-ataque da QA184 ainda não publicada. CI e calibração pendentes.
+
+## Sonda de mira pelos indicadores visíveis
+
+Experimento isolado em branch derivada, para não cancelar a rodada tática em curso. O piloto lê exclusivamente os anchors CSS do retículo e dos dois rótulos visíveis com estado open, normaliza o erro pela largura e altura da tela e ajusta a direção antes de disparar. Tolerância inicial de 3,5% por eixo; esquiva e especiais têm precedência. A/B de até 60 segundos contra Rok com poderes desabilitados em ambas as rotas; registra vida do núcleo, integridade combinada, partes restantes, disparos, cobertura de alvos e correções. Como os marcadores podem estar projetados em profundidades diferentes, alinhamento 2D não prova acerto e o limiar precisa de calibração. Não usa posições 3D ocultas, dano direto ou alteração de runtime. CI e resultados pendentes.

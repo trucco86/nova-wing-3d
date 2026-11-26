@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
+import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -11,7 +12,7 @@ import {
   compareEncounters,
 } from '../../tools/gameplay-boss-encounter-metrics.mjs';
 
-async function runEncounter(page, info, sector, reactive, active = false, tactical = false) {
+async function runEncounter(page, info, sector, reactive, active = false, tactical = false, aimed = false) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
@@ -39,10 +40,23 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
         const radar = document.getElementById('battleRadar');
         const guide = document.getElementById('radarGuide');
         const danger = guide.getAttribute('data-danger');
+        const marker = (id) => {
+          const node = document.getElementById(id);
+          return {
+            id,
+            visible: !node.hidden && node.checkVisibility({ opacityProperty: true, visibilityProperty: true }),
+            x: Number.parseFloat(node.style.left),
+            y: Number.parseFloat(node.style.top),
+            state: node.getAttribute('data-state'),
+          };
+        };
         return {
           age: s.bossAge,
           shield: s.shield,
           bossHp: s.bossHp,
+          bossIntegrity: s.bossIntegrity,
+          bossParts: s.bossParts,
+          screen: { width: window.innerWidth, height: window.innerHeight, reticle: marker('aimReticle'), cues: [marker('weakCue0'), marker('weakCue1')] },
           shots: s.entities.shots,
           coreOpen: s.coreOpen,
           plasmaReady: !document.getElementById('plasmaTitan').disabled,
@@ -60,13 +74,15 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
         };
       });
       if (!state.boss || state.state !== 'playing') break;
-      const decision = active
+      let decision = active
         ? combatDecision(state, { tactical })
         : reactive
           ? dodgeDecision(state)
           : { x: 0, y: 0, reason: 'passive' };
+      const aim = aimed ? visibleAim(state.screen) : null;
+      if (aim) decision = applyVisibleAim(decision, aim);
       const keys = dodgeKeys(decision);
-      samples.push({ ...state, decision, input: keys });
+      samples.push({ ...state, aim, decision, input: keys });
       if (i === limit) break;
       if (active && firing && !decision.fire) {
         if (mobile) await page.mouse.up();
@@ -139,7 +155,7 @@ async function runEncounter(page, info, sector, reactive, active = false, tactic
       await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
-    const label = tactical ? 'tactical' : active ? 'active' : reactive ? 'reactive' : 'passive';
+    const label = aimed ? 'aimed' : tactical ? 'tactical' : active ? 'active' : reactive ? 'reactive' : 'passive';
     const path = info.outputPath(label + '-boss.png');
     await page.screenshot({ path });
     await info.attach(label + '-checkpoint', { path, contentType: 'image/png' });
@@ -249,5 +265,42 @@ test('Rok tactical pilot compares team specials with ordinary fire on the same b
     expect(event.arcana).toBeLessThan(event.before);
     expect(event.special === 'plasma' ? event.plasma : event.overdrive).toBeGreaterThan(0);
   }
+  expect(report.releaseAuthorized).toBe(false);
+});
+
+test('Rok visible aim pilot compares targeting with ordinary fire', async ({ page }, info) => {
+  test.setTimeout(240000);
+  // Do not introduce special powers into this A/B: isolate the aim heuristic.
+  const baseline = await runEncounter(page, info, 0, true, true);
+  const aimed = await runEncounter(page, info, 0, true, true, false, true);
+  const measure = (run) => ({
+    seconds: run.metrics.observedSeconds,
+    shieldLoss: run.metrics.shieldLoss,
+    bossHpStart: run.samples[0]?.bossHp ?? null,
+    bossHpEnd: run.samples.at(-1)?.bossHp ?? null,
+    integrityStart: run.samples[0]?.bossIntegrity ?? null,
+    integrityEnd: run.samples.at(-1)?.bossIntegrity ?? null,
+    partsStart: run.samples[0]?.bossParts ?? null,
+    partsEnd: run.samples.at(-1)?.bossParts ?? null,
+    maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
+    aimAdjustments: run.samples.slice(0, -1).filter((sample) => sample.decision.action === 'aim-weakpoint').length,
+    aligned: run.samples.filter((sample) => sample.aim?.status === 'aligned').length,
+    observedTargets: run.samples.filter((sample) => sample.aim?.id).length,
+  });
+  const report = {
+    project: info.project.name,
+    baseline: measure(baseline),
+    aimed: measure(aimed),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('visible-aim-comparison.json');
+  await writeFile(path, JSON.stringify({ report, baseline, aimed }, null, 2) + '\n');
+  await info.attach('visible-aim-comparison', { path, contentType: 'application/json' });
+  console.log('VISIBLE_AIM_COMPARISON ' + JSON.stringify(report));
+  expect(baseline.errors).toEqual([]);
+  expect(aimed.errors).toEqual([]);
+  expect(report.aimed.observedTargets, 'visible weakpoint coverage').toBeGreaterThan(0);
+  expect(report.aimed.aimAdjustments, 'actual corrective steering').toBeGreaterThan(0);
+  expect(report.aimed.maxShots, 'real projectiles fired').toBeGreaterThan(0);
   expect(report.releaseAuthorized).toBe(false);
 });
