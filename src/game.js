@@ -5703,7 +5703,7 @@ export function createGame({
           bossIntent &&
           bossIntent.kind !== 'barrage' &&
           !bossMeleeResolved &&
-          attackAge >= 2.72
+          attackAge >= 2.2 + 0.7 // Resolve once at the visible strike apex.
         ) {
           bossMeleeResolved = true;
           if (
