@@ -222,12 +222,22 @@ test('QA182: Plasma Titan has distinct layered impact within the voice budget', 
   assert.ok([...titan.tones, ...titan.noises].every((layer) => layer.gain < 0.2));
   const { context, events } = fakeAudio();
   const cues = createAudioCues(context);
+  const chargeGains = () =>
+    events.params
+      .filter((v) => v[0] === 'target')
+      .slice(-3)
+      .map((v) => v[1]);
+  cues.setCharge({ active: true, progress: 0 });
+  const initial = chargeGains();
   cues.setCharge({ active: true, progress: 1 });
-  const gains = events.params
-    .filter((v) => v[0] === 'target')
-    .slice(-3)
-    .map((v) => v[1]);
-  assert.ok(gains[0] >= 0.01 && gains.every((v) => v <= 0.012));
+  const gains = chargeGains();
+  // Preserve the quiet QA115 charge envelope; Titan impact is a separate cue.
+  const expected = [0.0087, 0.0059, 0.0043];
+  assert.equal(gains.length, expected.length);
+  gains.forEach((gain, i) => {
+    assert.ok(Math.abs(gain - expected[i]) < 1e-9);
+    assert.ok(gain > initial[i] && gain <= 0.012);
+  });
   cues.setCharge({ active: false });
   assert.equal(cues.play('plasmaTitan'), true);
   assert.ok(cues.snapshot().voices <= 32);
