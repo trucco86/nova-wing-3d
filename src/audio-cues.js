@@ -506,7 +506,7 @@ Object.assign(AUDIO_CUES, {
 
 const LIMIT = 32;
 
-export function createAudioCues(context) {
+export function createAudioCues(context, { resolveCue = name => AUDIO_CUES[name] } = {}) {
   const output = context.createGain();
   const bus = context.createGain();
   output.gain.value = 0.7;
@@ -678,7 +678,7 @@ export function createAudioCues(context) {
   }
 
   function play(name, { enabled: allowed = true, active = true } = {}) {
-    const cue = AUDIO_CUES[name];
+    const cue = resolveCue(name);
     if (
       !cue ||
       destroyed ||
