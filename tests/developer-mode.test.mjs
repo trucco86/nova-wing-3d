@@ -10,6 +10,8 @@ test('developer menu is restricted to isolated DEV/HML/PR and local browser host
     'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev',
     'pr-134.nova-wing-preview.pages.dev',
     '52fd04c6.nova-wing-preview.pages.dev',
+    '92518e91.nova-wing-preview.pages.dev',
+    'pr-456.nova-wing-preview.pages.dev',
     'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev',
     'feat-planetary-visual-polish.nova-wing-preview.pages.dev',
     'integration-boss-worlds-qa-2.nova-wing-preview.pages.dev',
@@ -31,6 +33,9 @@ test('developer menu is restricted to isolated DEV/HML/PR and local browser host
     '52fd04c6.nova-wing-preview.pages.dev.evil.com',
     'feat-mars-43-sand-fog-no-rin.nova-wing-preview.pages.dev.evil.com',
     'some-other-preview.nova-wing-preview.pages.dev',
+    '92518e91.nova-wing-preview.pages.dev.evil.com',
+    '92518e9.nova-wing-preview.pages.dev',
+    '92518e9g.nova-wing-preview.pages.dev',
     'feat-stage4-orbit-and-living.nova-wing-preview.pages.dev.evil.com',
     'stage4-orbit-and-living.nova-wing-preview.pages.dev',
     'feat-planetary-visual-polish.nova-wing-preview.pages.dev.evil.com',
@@ -49,6 +54,7 @@ test('developer menu is restricted to isolated DEV/HML/PR and local browser host
     assert.equal(developerToolsAllowed(host), false, String(host));
   assert.equal(developerToolsAllowed('dev.nova-wing-preview.pages.dev', true), false);
   assert.equal(developerToolsAllowed('hml.nova-wing-preview.pages.dev', true), false);
+  assert.equal(developerToolsAllowed('92518e91.nova-wing-preview.pages.dev', true), false);
 });
 
 test('developer QA scenarios accept only real campaign sectors and known encounters', () => {
@@ -97,4 +103,13 @@ test('the published stage-4 QA alias exposes the real scenario menu but producti
   assert.equal(prod.game.snapshot().developerAvailable, false);
   assert.equal(prod.elements.get('menuQA').hidden, true);
   assert.equal(prod.elements.get('developerPanel').hidden, true);
+});
+
+test('immutable QA deployment exposes scenario selection', async (t) => {
+  const { harness } = await import('./harness.mjs');
+  const qa = harness({ hostname: '92518e91.nova-wing-preview.pages.dev', spawnEncounters: false });
+  t.after(() => qa.close());
+  assert.equal(qa.game.snapshot().developerAvailable, true);
+  assert.equal(qa.elements.get('menuQA').hidden, false);
+  assert.equal(qa.elements.get('developerPanel').hidden, false);
 });
