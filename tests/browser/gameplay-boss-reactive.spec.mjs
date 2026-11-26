@@ -107,7 +107,11 @@ async function runEncounter(
       const aim = aimed ? visibleAim(state.screen) : null;
       if (aim) decision = applyVisibleAim(decision, aim);
       if (extended) {
-        decision = equipmentDecision(state, decision, equipmentEvents.map((event) => event.control));
+        decision = equipmentDecision(
+          state,
+          decision,
+          equipmentEvents.map((event) => event.control),
+        );
       }
       const keys = dodgeKeys(decision);
       samples.push({ ...state, aim, decision, input: keys });
@@ -206,14 +210,14 @@ async function runEncounter(
         ? 'extended-aimed'
         : 'extended-tactical'
       : aimed
-      ? 'aimed'
-      : tactical
-        ? 'tactical'
-        : active
-          ? 'active'
-          : reactive
-            ? 'reactive'
-            : 'passive';
+        ? 'aimed'
+        : tactical
+          ? 'tactical'
+          : active
+            ? 'active'
+            : reactive
+              ? 'reactive'
+              : 'passive';
     const path = info.outputPath(label + '-boss.png');
     await page.screenshot({ path });
     await info.attach(label + '-checkpoint', { path, contentType: 'image/png' });
@@ -231,7 +235,14 @@ async function runEncounter(
     }
     page.off('pageerror', onError);
   }
-  return { samples, errors, specialEvents, equipmentEvents, terminal, metrics: summarizeEncounter(samples) };
+  return {
+    samples,
+    errors,
+    specialEvents,
+    equipmentEvents,
+    terminal,
+    metrics: summarizeEncounter(samples),
+  };
 }
 
 for (const encounter of [
@@ -373,10 +384,13 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
   const combined = await runEncounter(page, info, 0, true, true, true, true, true);
   const measure = (run) => {
     const final = run.terminal;
-    const victory =
-      final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
+    const victory = final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
     return {
-      outcome: victory ? 'BOSS_DEFEATED' : final?.state === 'playing' ? 'TIME_LIMIT' : 'INTERRUPTED',
+      outcome: victory
+        ? 'BOSS_DEFEATED'
+        : final?.state === 'playing'
+          ? 'TIME_LIMIT'
+          : 'INTERRUPTED',
       finalState: final?.state ?? null,
       bossHp: final?.bossHp ?? null,
       bossParts: final?.bossParts ?? null,
@@ -406,10 +420,16 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
   for (const run of [tactical, combined]) {
     expect(run.errors).toEqual([]);
     expect(run.specialEvents.length).toBeGreaterThan(0);
-    expect(run.equipmentEvents.some((event) => event.control === 'pods' && event.podsDetached)).toBe(true);
-    expect(run.equipmentEvents.some((event) => event.control === 'robot' && event.robot)).toBe(true);
+    expect(
+      run.equipmentEvents.some((event) => event.control === 'pods' && event.podsDetached),
+    ).toBe(true);
+    expect(run.equipmentEvents.some((event) => event.control === 'robot' && event.robot)).toBe(
+      true,
+    );
     expect(run.terminal).not.toBeNull();
   }
-  // A time limit is an observed non-victory, not a test pass of boss completion.
+  // Rok is a proven regression contract for this isolated QA loadout.
+  expect(report.tactical.outcome).toBe('BOSS_DEFEATED');
+  expect(report.combined.outcome).toBe('BOSS_DEFEATED');
   expect(report.releaseAuthorized).toBe(false);
 });

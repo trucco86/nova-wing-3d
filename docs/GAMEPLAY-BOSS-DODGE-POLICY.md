@@ -44,3 +44,7 @@ Experimento isolado em branch derivada, para não cancelar a rodada tática em c
 ## Tentativa autônoma prolongada
 
 Duas rotas de até 240 segundos simulados no mesmo build: tática com poderes, pods e robô; e a mesma política com mira pelos rótulos. Cada controle de equipamento é acionado uma vez em recuperação segura, por teclado ou touch, e exige evidência do estado real. A rota para ao sair de playing, sem reviver, ajustar dano ou forçar o HP. BOSS_DEFEATED exige HP zero e estado de vitória/colapso; TIME_LIMIT e INTERRUPTED nunca equivalem a vitória. A fixture usa o loadout isolado do laboratório QA, não prova uma vitória com equipamento inicial da campanha. As políticas permanecem experimentais; comparar integridade e escudo, não apenas contagem de tiros.
+
+## Evidência de vitória contra Rok
+
+Execução 45805708133 (SHA 8c9edbc): quatro vitórias reais, HP zero, partes zero, estado collapsing e três vidas restantes. Desktop tático 102s/escudo 80; combinado 93s/90. Mobile tático 99,25s/80; combinado 99s/80. Loadout inicial QA: três pods, escudo 202, três vidas. Trinta testes unitários e dois testes browser passaram; CI bloqueado apenas por formatação. O contrato da sonda de Rok passa a exigir vitória nas duas rotas, sem alterar o motor. Ainda não é vitória de campanha nem aprovação de outros chefes.
