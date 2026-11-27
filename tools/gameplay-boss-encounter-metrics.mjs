@@ -28,6 +28,13 @@ function normalizedPlayerPosition(sample) {
 
 // One record per observed physical attack cycle. Only the player's own
 // normalized position and public radar instructions are retained.
+function summarizeReactionTime(samples) {
+  const firstDanger = samples.find((sample) => sample.danger === true);
+  if (!firstDanger) return null;
+  const firstDodge = samples.find((sample) => sample.age >= firstDanger.age && sample.decision?.action === 'dodge');
+  return firstDodge ? Number((firstDodge.age - firstDanger.age).toFixed(3)) : null;
+}
+
 export function summarizeAttackWindows(samples) {
   const windows = [];
   let current = null;
@@ -48,14 +55,17 @@ export function summarizeAttackWindows(samples) {
       typeof sample.kind === 'string' &&
       Number.isInteger(sample.cycle);
     if (!active) {
+      if (current) current.after = sample;
       current = null;
       continue;
     }
     if (!current || current.cycle !== sample.cycle || current.kind !== sample.kind) {
+      if (current) current.after = sample;
       current = {
         cycle: sample.cycle,
         kind: sample.kind,
         samples: [],
+        after: null,
       };
       windows.push(current);
     }
@@ -65,6 +75,8 @@ export function summarizeAttackWindows(samples) {
   const details = windows.map((window) => {
     const first = window.samples[0];
     const last = window.samples.at(-1);
+    const endSample = window.after;
+    const metricEnd = endSample ?? last;
     const phases = [...new Set(window.samples.map((sample) => sample.phase))];
     const positions = window.samples.map(normalizedPlayerPosition).filter(Boolean);
     const directions = [
@@ -102,35 +114,40 @@ export function summarizeAttackWindows(samples) {
       endAge: last.age,
       durationSeconds: Number((last.age - first.age).toFixed(3)),
       complete: phases.includes('windup') && phases.includes('attack'),
+      boundaryObserved: Boolean(endSample),
+      censored: !endSample,
       phases,
       radarDirections: directions,
       dangerSamples: window.samples.filter((sample) => sample.danger === true).length,
+      reactionTimeSeconds: summarizeReactionTime(window.samples),
       actions,
       inputKeys: [...inputs].sort(),
       fireInputs: [...fireInputs].sort(),
       controlSurfaces: [...controlSurfaces].sort(),
       dodgeDurationSeconds: Number(dodgeDurationSeconds.toFixed(3)),
       playerPositionStart: positions[0] ?? null,
-      playerPositionEnd: positions.at(-1) ?? null,
+      playerPositionEnd: normalizedPlayerPosition(metricEnd) ?? positions.at(-1) ?? null,
       playerPath: window.samples
         .map((sample) => ({
           age: sample.age,
           phase: sample.phase,
           action: sample.decision?.action ?? 'unspecified',
+          input: sample.input ?? [],
+          fireInput: sample.fireInput ?? null,
           position: normalizedPlayerPosition(sample),
         }))
         .filter((sample) => sample.position !== null),
       shieldStart: first.shield ?? null,
-      shieldEnd: last.shield ?? null,
+      shieldEnd: metricEnd.shield ?? null,
       shieldDelta:
-        Number.isFinite(first.shield) && Number.isFinite(last.shield)
-          ? Number((last.shield - first.shield).toFixed(3))
+        endSample && Number.isFinite(first.shield) && Number.isFinite(endSample.shield)
+          ? Number((endSample.shield - first.shield).toFixed(3))
           : null,
       livesStart: first.lives ?? null,
-      livesEnd: last.lives ?? null,
+      livesEnd: metricEnd.lives ?? null,
       livesLost:
-        Number.isFinite(first.lives) && Number.isFinite(last.lives)
-          ? first.lives - last.lives
+        endSample && Number.isFinite(first.lives) && Number.isFinite(endSample.lives)
+          ? first.lives - endSample.lives
           : null,
       samples: window.samples.length,
       positionCoverage: positions.length / window.samples.length,
