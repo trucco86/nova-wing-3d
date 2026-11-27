@@ -617,7 +617,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     const bombEvents = [];
     const specialEvents = [];
     const multiLockEvents = [];
-    let current = initial;
+    let current;
     let previous = null;
     let touching = false;
     let robotUsed = false;
