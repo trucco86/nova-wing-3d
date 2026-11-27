@@ -138,8 +138,8 @@ test('attack telemetry marks incomplete windows and blocks unordered clocks', as
 
 test('attack telemetry includes recovery boundary damage and player input correlation', () => {
   const samples = [
-    { age: 1, mode: 'physical', phase: 'windup', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'observe-danger' }, input: [], fireInput: null },
-    { age: 1.25, mode: 'physical', phase: 'attack', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'dodge' }, input: ['KeyD'], fireInput: 'Space' },
+    { age: 1, mode: 'physical', phase: 'windup', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'observe-danger' }, input: [], fireInput: null, player: { x: -5, y: 0 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
+    { age: 1.25, mode: 'physical', phase: 'attack', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'dodge' }, input: ['KeyD'], fireInput: 'Space', player: { x: 0, y: 2.5 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
     { age: 1.5, mode: 'orbital', phase: 'recovery', shield: 80, lives: 2, player: { x: 0, y: 0 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
   ];
   const window = summarizeEncounter(samples).attackWindowTelemetry.windows[0];
