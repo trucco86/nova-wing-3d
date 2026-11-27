@@ -231,7 +231,16 @@ function movingHazardImpact(solid, state, previous, playerDepth, clearanceZ = CL
   };
 }
 
-function candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred, clearance) {
+function candidateScore(
+  candidate,
+  state,
+  previous,
+  solids,
+  threats,
+  playerDepth,
+  preferred,
+  clearance,
+) {
   const player = state.player;
   let score =
     Math.abs(candidate.x - preferred.x) * 0.7 +
@@ -384,7 +393,8 @@ export function campaignFlight(state, previous = null) {
       state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
     transform:
-      subboss || (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
+      subboss ||
+      (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
         ? state.mecha?.active
           ? null
           : (state.energy ?? 0) >= 15

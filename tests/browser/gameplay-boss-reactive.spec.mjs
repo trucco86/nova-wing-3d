@@ -645,7 +645,8 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
           },
         });
       }
-      const damage = previous && current.shield < previous.shield ? previous.shield - current.shield : 0;
+      const damage =
+        previous && current.shield < previous.shield ? previous.shield - current.shield : 0;
       if (damage > 0) {
         damageEvents.push({
           seconds: current.seconds,

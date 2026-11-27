@@ -365,9 +365,7 @@ test('asteroid pilot predicts moving course solids and chooses a clear corridor 
       phase: 'interior',
       course: {
         offset: -10,
-        obstacles: [
-          { kind: 'rock', x: 0, y: 10, baseZ: -30, z: -40, hx: 8, hy: 8, hz: 12 },
-        ],
+        obstacles: [{ kind: 'rock', x: 0, y: 10, baseZ: -30, z: -40, hx: 8, hy: 8, hz: 12 }],
       },
     },
     asteroidHull: { current: { x: 2, y: 2.5, z: 2 } },
@@ -381,9 +379,7 @@ test('asteroid pilot predicts moving course solids and chooses a clear corridor 
       phase: 'interior',
       course: {
         offset: 0,
-        obstacles: [
-          { kind: 'rock', x: 0, y: 10, baseZ: -30, z: -30, hx: 8, hy: 8, hz: 12 },
-        ],
+        obstacles: [{ kind: 'rock', x: 0, y: 10, baseZ: -30, z: -30, hx: 8, hy: 8, hz: 12 }],
       },
     },
     asteroidHull: { current: { x: 2, y: 2.5, z: 2 } },
