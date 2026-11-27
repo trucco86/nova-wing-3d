@@ -2701,7 +2701,7 @@ export function createGame({
     }
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
-    bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
+    bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3, combatValue('bossHealth'));
     orbitAngle = 0;
     $('strategyDrawer').open = false;
     scanTime = 0;
@@ -3951,6 +3951,11 @@ export function createGame({
     combatTitle.textContent = 'COMBAT LAB · QA';
     combatPanel.appendChild(combatTitle);
     const inputs = [];
+    const bossPanel = document.createElement('details');
+    bossPanel.id = 'qaBossLab';
+    const bossTitle = document.createElement('summary');
+    bossTitle.textContent = 'BOSS LAB · QA';
+    bossPanel.appendChild(bossTitle);
     for (const [key, field] of Object.entries(COMBAT_LAB_FIELDS)) {
       const label = document.createElement('label');
       label.textContent = key + ' ';
@@ -3966,7 +3971,7 @@ export function createGame({
       };
       inputs.push([input, field]);
       label.appendChild(input);
-      combatPanel.appendChild(label);
+      (key.startsWith('boss') ? bossPanel : combatPanel).appendChild(label);
     }
     const combatReset = document.createElement('button');
     combatReset.type = 'button';
@@ -3977,6 +3982,7 @@ export function createGame({
     };
     combatPanel.appendChild(combatReset);
     $('developerPanel').appendChild(combatPanel);
+    $('developerPanel').appendChild(bossPanel);
   }
   if (developerAvailable) {
     // Test harnesses and first-load mobile browsers share safe defaults.
@@ -6232,7 +6238,7 @@ export function createGame({
               bullet(origin, target, program.type, sectorIndex);
             }
           }
-          bossCd = program.cadence * batteryPlan.cadenceMultiplier;
+          bossCd = program.cadence * batteryPlan.cadenceMultiplier * combatValue('bossRangedCooldown');
         } else {
           const origin = bossMuzzle(0);
           for (const target of encounterPattern(
