@@ -340,6 +340,7 @@ test('asteroid pilot stays inside the cavern wall envelope and enters robot mode
     sector: 3,
     player: { x: 0, y: 10 },
     mecha: { active: false, lockEnabled: false },
+    energy: 100,
     asteroidInterior: {
       phase: 'transition',
       course: { offset: 0, obstacles: [] },
