@@ -31,6 +31,7 @@ on:
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - fix/qa180-stage1-clean-launch-main-20261123
+      - feat/gameplay-campaign-pilot
 permissions:
   contents: write
   actions: write
@@ -201,6 +202,11 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa180-stage1-clean-launch-main-20261123" ]; then
             git add -u
             git add -- releases/v1.27.161.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/gameplay-campaign-pilot" ]; then
+            # The campaign pilot adds QA telemetry and its browser/unit evidence.
+            # Keep formatter output and the generated web artifact in sync.
+            git add -u
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
