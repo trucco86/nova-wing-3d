@@ -49,7 +49,6 @@ test('missing inputs or different durations cannot prove a dodge advantage', () 
   assert.equal(compareEncounters(passive, short).shieldLossDifference, null);
 });
 
-
 test('attack telemetry captures normalized player movement, radar, commands and damage per window', async () => {
   const samples = [
     {
