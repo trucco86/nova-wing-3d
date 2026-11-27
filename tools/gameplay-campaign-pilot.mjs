@@ -190,6 +190,16 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
     const overlapY =
       solid.halfY + CLEARANCE_Y + 2 - Math.abs(playerAtImpactY - impact.y);
     if (overlapX > 0 && overlapY > 0) score += 1800 + overlapX * overlapY * 5;
+
+    // When impact is imminent, the safe lane may be unreachable before contact.
+    // Still commit toward a lane that clears the obstacle after the immediate hit.
+    const eventualOverlapX =
+      solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
+    const eventualOverlapY =
+      solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
+    if (eventualOverlapX > 0 && eventualOverlapY > 0) {
+      score += 650 + eventualOverlapX * eventualOverlapY * 2;
+    }
   }
 
   for (const threat of threats) {
