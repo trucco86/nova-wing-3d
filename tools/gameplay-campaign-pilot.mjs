@@ -89,9 +89,7 @@ function incomingThreats(state, previous, playerDepth) {
         const prior = priorShots[i];
         if (!finitePoint(prior)) continue;
         const distance =
-          (shot[0] - prior[0]) ** 2 +
-          (shot[1] - prior[1]) ** 2 +
-          (shot[2] - prior[2]) ** 2;
+          (shot[0] - prior[0]) ** 2 + (shot[1] - prior[1]) ** 2 + (shot[2] - prior[2]) ** 2;
         if (distance < nearestDistance) {
           nearestDistance = distance;
           nearest = prior;
@@ -243,9 +241,11 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
   for (const threat of threats) {
     const timeToImpact = clamp(threat.timeToImpact ?? 0.8, 0.15, 2.4);
     const playerAtImpactX =
-      player.x + clamp(candidate.x - player.x, -PLAYER_SPEED_X * timeToImpact, PLAYER_SPEED_X * timeToImpact);
+      player.x +
+      clamp(candidate.x - player.x, -PLAYER_SPEED_X * timeToImpact, PLAYER_SPEED_X * timeToImpact);
     const playerAtImpactY =
-      player.y + clamp(candidate.y - player.y, -PLAYER_SPEED_Y * timeToImpact, PLAYER_SPEED_Y * timeToImpact);
+      player.y +
+      clamp(candidate.y - player.y, -PLAYER_SPEED_Y * timeToImpact, PLAYER_SPEED_Y * timeToImpact);
     const overlapX = threat.radiusX + 2 - Math.abs(playerAtImpactX - threat.x);
     const overlapY = threat.radiusY + 2 - Math.abs(playerAtImpactY - threat.y);
     if (overlapX > 0 && overlapY > 0) score += 1500 + overlapX * overlapY * 4;
