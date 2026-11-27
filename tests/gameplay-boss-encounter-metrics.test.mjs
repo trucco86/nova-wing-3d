@@ -138,9 +138,45 @@ test('attack telemetry marks incomplete windows and blocks unordered clocks', as
 
 test('attack telemetry includes recovery boundary damage and player input correlation', () => {
   const samples = [
-    { age: 1, mode: 'physical', phase: 'windup', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'observe-danger' }, input: [], fireInput: null, player: { x: -5, y: 0 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
-    { age: 1.25, mode: 'physical', phase: 'attack', kind: 'ice-quake', cycle: 1, danger: true, shield: 100, lives: 3, decision: { action: 'dodge' }, input: ['KeyD'], fireInput: 'Space', player: { x: 0, y: 2.5 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
-    { age: 1.5, mode: 'orbital', phase: 'recovery', shield: 80, lives: 2, player: { x: 0, y: 0 }, flightBounds: { horizontal: 10, minY: -5, maxY: 5 } },
+    {
+      age: 1,
+      mode: 'physical',
+      phase: 'windup',
+      kind: 'ice-quake',
+      cycle: 1,
+      danger: true,
+      shield: 100,
+      lives: 3,
+      decision: { action: 'observe-danger' },
+      input: [],
+      fireInput: null,
+      player: { x: -5, y: 0 },
+      flightBounds: { horizontal: 10, minY: -5, maxY: 5 },
+    },
+    {
+      age: 1.25,
+      mode: 'physical',
+      phase: 'attack',
+      kind: 'ice-quake',
+      cycle: 1,
+      danger: true,
+      shield: 100,
+      lives: 3,
+      decision: { action: 'dodge' },
+      input: ['KeyD'],
+      fireInput: 'Space',
+      player: { x: 0, y: 2.5 },
+      flightBounds: { horizontal: 10, minY: -5, maxY: 5 },
+    },
+    {
+      age: 1.5,
+      mode: 'orbital',
+      phase: 'recovery',
+      shield: 80,
+      lives: 2,
+      player: { x: 0, y: 0 },
+      flightBounds: { horizontal: 10, minY: -5, maxY: 5 },
+    },
   ];
   const window = summarizeEncounter(samples).attackWindowTelemetry.windows[0];
   assert.equal(window.boundaryObserved, true);
@@ -155,7 +191,18 @@ test('attack telemetry includes recovery boundary damage and player input correl
 });
 
 test('attack telemetry measures immediate reaction and separates consecutive cycles', () => {
-  const base = (age, cycle, phase, danger, action) => ({ age, mode: 'physical', phase, kind: 'ice-quake', cycle, danger, shield: 100, lives: 3, decision: { action }, input: [] });
+  const base = (age, cycle, phase, danger, action) => ({
+    age,
+    mode: 'physical',
+    phase,
+    kind: 'ice-quake',
+    cycle,
+    danger,
+    shield: 100,
+    lives: 3,
+    decision: { action },
+    input: [],
+  });
   const result = summarizeEncounter([
     base(1, 1, 'windup', true, 'dodge'),
     base(1.25, 1, 'attack', true, 'fire'),
@@ -171,8 +218,28 @@ test('attack telemetry measures immediate reaction and separates consecutive cyc
 
 test('attack telemetry leaves final window censored without inventing end deltas', () => {
   const result = summarizeEncounter([
-    { age: 1, mode: 'physical', phase: 'windup', kind: 'cryo-pincer', cycle: 4, shield: 100, lives: 3, decision: { action: 'observe-danger' }, danger: true },
-    { age: 1.25, mode: 'physical', phase: 'attack', kind: 'cryo-pincer', cycle: 4, shield: 90, lives: 3, decision: { action: 'fire' }, danger: false },
+    {
+      age: 1,
+      mode: 'physical',
+      phase: 'windup',
+      kind: 'cryo-pincer',
+      cycle: 4,
+      shield: 100,
+      lives: 3,
+      decision: { action: 'observe-danger' },
+      danger: true,
+    },
+    {
+      age: 1.25,
+      mode: 'physical',
+      phase: 'attack',
+      kind: 'cryo-pincer',
+      cycle: 4,
+      shield: 90,
+      lives: 3,
+      decision: { action: 'fire' },
+      danger: false,
+    },
   ]).attackWindowTelemetry.windows[0];
   assert.equal(result.censored, true);
   assert.equal(result.boundaryObserved, false);

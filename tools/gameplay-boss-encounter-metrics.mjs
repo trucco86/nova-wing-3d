@@ -31,7 +31,9 @@ function normalizedPlayerPosition(sample) {
 function summarizeReactionTime(samples) {
   const firstDanger = samples.find((sample) => sample.danger === true);
   if (!firstDanger) return null;
-  const firstDodge = samples.find((sample) => sample.age >= firstDanger.age && sample.decision?.action === 'dodge');
+  const firstDodge = samples.find(
+    (sample) => sample.age >= firstDanger.age && sample.decision?.action === 'dodge',
+  );
   return firstDodge ? Number((firstDodge.age - firstDanger.age).toFixed(3)) : null;
 }
 

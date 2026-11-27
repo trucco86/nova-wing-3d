@@ -79,4 +79,3 @@ A coleta agora agrega cada ciclo físico observado em um registro: padrão, cicl
 ### Semântica de fechamento e reação
 
 Cada janela registra a primeira amostra observada após a fase física ativa como boundary. Dano e perda de vida ocorridos nessa transição entram no delta da janela anterior. Janelas sem boundary são marcadas como censuradas: o último valor observado permanece visível, mas deltas finais não são inferidos. A latência de reação é medida do primeiro alerta de perigo até a primeira decisão de esquiva; ausência de esquiva ou de alerta retorna `null`. O caminho do jogador preserva input e fire input por amostra para permitir correlação temporal. Essas métricas continuam descritivas e não alteram decisões do agente nem regras do jogo.
-
