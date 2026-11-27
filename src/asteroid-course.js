@@ -188,6 +188,18 @@ export function createAsteroidCourse(scene, enabled = true) {
         recovering,
         complete: !enabled || offset > 2000,
         solids: ASTEROID_COURSE.length,
+        obstacles: active()
+          ? ASTEROID_COURSE.map((rock) => ({
+              kind: rock.kind,
+              x: rock.x,
+              y: rock.y,
+              baseZ: rock.z,
+              z: rock.z + offset,
+              hx: rock.hx,
+              hy: rock.hy,
+              hz: rock.hz,
+            }))
+          : [],
       };
     },
     destroy() {

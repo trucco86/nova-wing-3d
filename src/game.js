@@ -370,6 +370,8 @@ export function createGame({
   const marvinRival = dynamicFlight ? createMarvinRival(scene) : null;
   let journey = initialJourney(0);
   let asteroidWallCooldown = 0;
+  let asteroidWallContacts = 0;
+  let asteroidCourseContacts = 0;
   const buildingMat = metal('#173344');
   const green = glowMaterial('#64ffe4', 4),
     enemyOrbMat = glowMaterial('#ff5065', 3);
@@ -432,7 +434,9 @@ export function createGame({
       player.scale.x,
     );
   }
-  function asteroidImpact() {
+  function asteroidImpact(source = 'wall') {
+    if (source === 'course') asteroidCourseContacts++;
+    else asteroidWallContacts++;
     if (asteroidWallCooldown > 0) return;
     asteroidWallCooldown = 1.25;
     hit(12);
@@ -1639,6 +1643,8 @@ export function createGame({
     asteroidInterior?.reset(sectorIndex === 2);
     marvinRival?.reset();
     asteroidWallCooldown = 0;
+    asteroidWallContacts = 0;
+    asteroidCourseContacts = 0;
     const showLaunch = sectorIndex === 0 && enableSquadIntro && !skipSquadIntro;
     squad?.begin(showLaunch);
     firstStageIntro?.reset(showLaunch, pilotLoadout.pilot);
@@ -4460,7 +4466,7 @@ export function createGame({
       if (wall.collided) {
         player.position.x = wall.x;
         player.position.y = wall.y;
-        asteroidImpact();
+        asteroidImpact('wall');
       }
     }
     if (dashStart) dashTrail.emit(dashStart, player.position);
@@ -4509,7 +4515,7 @@ export function createGame({
       }
       const contact = asteroidInterior.course.constrain(previousPlayer, player.position, half);
       player.position.set(contact.x, contact.y, contact.z);
-      if (contact.collided) asteroidImpact();
+      if (contact.collided) asteroidImpact('course');
     }
     // Keep transformation and flight-mech readable even during the initial
     // invulnerability flicker. Damage protection is unchanged; ordinary ship
@@ -6587,7 +6593,7 @@ export function createGame({
               ? undefined
               : asteroidPilotHalf(pendingAsteroidTransform),
         });
-        if (contact?.collided) asteroidImpact();
+        if (contact?.collided) asteroidImpact('course');
         if (
           pendingAsteroidTransform !== null &&
           !asteroidInterior.course.overlaps(
@@ -7063,6 +7069,15 @@ export function createGame({
       orbitalLaunch: orbitalLaunchSequence.snapshot(),
       journey: { ...journey },
       asteroidInterior: asteroidInterior?.snapshot() ?? null,
+      asteroidWallContacts,
+      asteroidCourseContacts,
+      asteroidHull: dynamicFlight
+        ? {
+            ship: projectPilotHull(asteroidShipHull, player.rotation, player.scale.x),
+            robot: projectPilotHull(asteroidRobotHull, player.rotation, player.scale.x),
+            current: asteroidPilotHalf(),
+          }
+        : null,
       marvinRival: marvinRival?.snapshot() ?? null,
       arcade: arcade?.snapshot() ?? null,
       cosmetics: { skin: cosmetics.skin, owned: [...cosmetics.owned] },

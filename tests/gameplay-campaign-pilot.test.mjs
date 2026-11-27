@@ -333,3 +333,72 @@ test('shop plan adds scatter only from sector five onward', () => {
   assert.ok(!early.priorities.includes('scatter'));
   assert.ok(late.priorities.includes('scatter'));
 });
+
+test('asteroid pilot stays inside the cavern wall envelope and enters robot mode for the narrow course', () => {
+  const action = campaignFlight({
+    ...state,
+    sector: 3,
+    player: { x: 0, y: 10 },
+    mecha: { active: false, lockEnabled: false },
+    asteroidInterior: {
+      phase: 'transition',
+      course: { offset: 0, obstacles: [] },
+    },
+    asteroidHull: {
+      ship: { x: 5, y: 4, z: 2 },
+      robot: { x: 2.2, y: 3, z: 1.8 },
+      current: { x: 5, y: 4, z: 2 },
+    },
+  });
+  assert.equal(action.transform, 'robot');
+  assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
+});
+
+test('asteroid pilot predicts moving course solids and chooses a clear corridor lane', () => {
+  const previous = {
+    ...state,
+    sector: 3,
+    seconds: 10,
+    player: { x: 0, y: 10 },
+    asteroidInterior: {
+      phase: 'interior',
+      course: {
+        offset: -10,
+        obstacles: [
+          { kind: 'rock', x: 0, y: 10, baseZ: -30, z: -40, hx: 8, hy: 8, hz: 12 },
+        ],
+      },
+    },
+    asteroidHull: { current: { x: 2, y: 2.5, z: 2 } },
+  };
+  const current = {
+    ...state,
+    sector: 3,
+    seconds: 11,
+    player: { x: 0, y: 10 },
+    asteroidInterior: {
+      phase: 'interior',
+      course: {
+        offset: 0,
+        obstacles: [
+          { kind: 'rock', x: 0, y: 10, baseZ: -30, z: -30, hx: 8, hy: 8, hz: 12 },
+        ],
+      },
+    },
+    asteroidHull: { current: { x: 2, y: 2.5, z: 2 } },
+  };
+  const action = campaignFlight(current, previous);
+  assert.equal(action.reason, 'evade-asteroid-course');
+  assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
+  assert.ok(action.x !== 0 || action.y !== 0);
+});
+
+test('asteroid pilot returns to ship after the cavern escape phase', () => {
+  const action = campaignFlight({
+    ...state,
+    sector: 3,
+    mecha: { active: true, lockEnabled: false },
+    asteroidInterior: { phase: 'escape', course: { offset: 2100, obstacles: [] } },
+  });
+  assert.equal(action.transform, 'ship');
+});

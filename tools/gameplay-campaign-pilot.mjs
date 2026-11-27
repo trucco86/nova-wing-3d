@@ -36,16 +36,51 @@ function normalizeSolid(solid) {
   };
 }
 
-function visibleSolids(state) {
+function visibleSolids(state, previous) {
+  const course = state.asteroidInterior?.course;
+  if (state.sector === 3 && course?.obstacles?.length) {
+    const previousOffset = previous?.asteroidInterior?.course?.offset;
+    return course.obstacles
+      .map((rock) =>
+        normalizeSolid({
+          kind: 'asteroid-' + rock.kind,
+          active: true,
+          solid: true,
+          center: [rock.x, rock.y, rock.z],
+          half: [rock.hx, rock.hy, rock.hz],
+          previous: [
+            rock.x,
+            rock.y,
+            rock.baseZ + (Number.isFinite(previousOffset) ? previousOffset : course.offset),
+          ],
+        }),
+      )
+      .filter(Boolean);
+  }
   const source = state.cityHazardSolids?.length
     ? state.cityHazardSolids
     : [...(state.cityPhysicalSolids ?? []), ...(state.cityFallingSolids ?? [])];
   return source.map(normalizeSolid).filter(Boolean);
 }
 
+function pilotClearance(state) {
+  const hull = state.sector === 3 ? state.asteroidHull?.current : null;
+  if (hull && Number.isFinite(hull.x) && Number.isFinite(hull.y) && Number.isFinite(hull.z)) {
+    return { x: hull.x, y: hull.y, z: hull.z };
+  }
+  return { x: CLEARANCE_X, y: CLEARANCE_Y, z: CLEARANCE_Z };
+}
+
 function preferredLane(state) {
   const phase = state.orbitalLaunch?.phase ?? 'city';
+  const asteroidPhase = state.asteroidInterior?.phase;
   const seconds = Number.isFinite(state.seconds) ? state.seconds : 0;
+  if (state.sector === 3 && ['approach', 'transition', 'interior'].includes(asteroidPhase)) {
+    return { x: 0, y: 10 };
+  }
+  if (state.sector === 3 && asteroidPhase === 'escape') {
+    return { x: Math.sin(seconds * 0.12) * 12, y: 10 + Math.sin(seconds * 0.18) * 8 };
+  }
   if (phase === 'city' || phase === 'boost') return { x: 0, y: 10 };
   const orbital = phase === 'orbit';
   return {
@@ -164,7 +199,7 @@ function incomingThreats(state, previous, playerDepth) {
   return threats;
 }
 
-function movingHazardImpact(solid, state, previous, playerDepth) {
+function movingHazardImpact(solid, state, previous, playerDepth, clearanceZ = CLEARANCE_Z) {
   const front = solid.z + solid.halfZ;
   const back = solid.z - solid.halfZ;
   if (front < playerDepth - APPROACH_HORIZON || back > playerDepth + 12) return null;
@@ -178,14 +213,14 @@ function movingHazardImpact(solid, state, previous, playerDepth) {
   const vy = (solid.y - solid.previousY) / elapsed;
   const vz = (solid.z - solid.previousZ) / elapsed;
   if (vz <= 1.5) {
-    if (front < playerDepth - 36 || back > playerDepth + CLEARANCE_Z) return null;
+    if (front < playerDepth - 36 || back > playerDepth + clearanceZ) return null;
     return { time: 0.35, x: solid.x, y: solid.y };
   }
 
   const time =
-    front < playerDepth - CLEARANCE_Z
-      ? (playerDepth - CLEARANCE_Z - front) / vz
-      : back <= playerDepth + CLEARANCE_Z
+    front < playerDepth - clearanceZ
+      ? (playerDepth - clearanceZ - front) / vz
+      : back <= playerDepth + clearanceZ
         ? 0.35
         : Infinity;
   if (!Number.isFinite(time) || time > HAZARD_HORIZON_SECONDS || time < 0) return null;
@@ -196,7 +231,7 @@ function movingHazardImpact(solid, state, previous, playerDepth) {
   };
 }
 
-function candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred) {
+function candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred, clearance) {
   const player = state.player;
   let score =
     Math.abs(candidate.x - preferred.x) * 0.7 +
@@ -210,11 +245,11 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
   }
 
   for (const solid of solids) {
-    const impact = movingHazardImpact(solid, state, previous, playerDepth);
+    const impact = movingHazardImpact(solid, state, previous, playerDepth, clearance.z);
     if (!impact) continue;
     if (impact.time === null) {
-      const overlapX = solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
-      const overlapY = solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
+      const overlapX = solid.halfX + clearance.x - Math.abs(candidate.x - impact.x);
+      const overlapY = solid.halfY + clearance.y - Math.abs(candidate.y - impact.y);
       if (overlapX > 0 && overlapY > 0) score += 1200 + overlapX * overlapY * 4;
       continue;
     }
@@ -225,14 +260,14 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
     const travelY = PLAYER_SPEED_Y * impact.time;
     const playerAtImpactX = player.x + clamp(candidate.x - player.x, -travelX, travelX);
     const playerAtImpactY = player.y + clamp(candidate.y - player.y, -travelY, travelY);
-    const overlapX = solid.halfX + CLEARANCE_X + 2.5 - Math.abs(playerAtImpactX - impact.x);
-    const overlapY = solid.halfY + CLEARANCE_Y + 2 - Math.abs(playerAtImpactY - impact.y);
+    const overlapX = solid.halfX + clearance.x + 2.5 - Math.abs(playerAtImpactX - impact.x);
+    const overlapY = solid.halfY + clearance.y + 2 - Math.abs(playerAtImpactY - impact.y);
     if (overlapX > 0 && overlapY > 0) score += 1800 + overlapX * overlapY * 5;
 
     // When impact is imminent, the safe lane may be unreachable before contact.
     // Still commit toward a lane that clears the obstacle after the immediate hit.
-    const eventualOverlapX = solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
-    const eventualOverlapY = solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
+    const eventualOverlapX = solid.halfX + clearance.x - Math.abs(candidate.x - impact.x);
+    const eventualOverlapY = solid.halfY + clearance.y - Math.abs(candidate.y - impact.y);
     if (eventualOverlapX > 0 && eventualOverlapY > 0) {
       score += 650 + eventualOverlapX * eventualOverlapY * 2;
     }
@@ -261,6 +296,10 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
 
 function selectSafeTarget(state, previous) {
   const player = state.player;
+  const clearance = pilotClearance(state);
+  const asteroidPhase = state.asteroidInterior?.phase;
+  const confinedToCavern =
+    state.sector === 3 && ['approach', 'transition', 'interior', 'escape'].includes(asteroidPhase);
   const bounds = state.flightBounds ?? {};
   const xLimit = Math.max(8, (bounds.horizontal ?? 72) - 8);
   const minY = (bounds.minY ?? -1) + 3;
@@ -270,13 +309,14 @@ function selectSafeTarget(state, previous) {
   const xs = unique([player.x, preferred.x, ...X_LANES].map((x) => clamp(x, -xLimit, xLimit)));
   const ys = unique([player.y, preferred.y, ...Y_LANES].map((y) => clamp(y, minY, maxY)));
   const playerDepth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
-  const solids = visibleSolids(state);
+  const solids = visibleSolids(state, previous);
   const threats = incomingThreats(state, previous, playerDepth);
   let selected = { x: clamp(0, -xLimit, xLimit), y: clamp(10, minY, maxY) };
   let best = Infinity;
 
   for (const x of xs) {
     for (const y of ys) {
+      if (confinedToCavern && Math.hypot(x, y - 10) > 24) continue;
       const candidate = { x, y };
       const score = candidateScore(
         candidate,
@@ -286,6 +326,7 @@ function selectSafeTarget(state, previous) {
         threats,
         playerDepth,
         preferred,
+        clearance,
       );
       if (score < best) {
         best = score;
@@ -331,7 +372,9 @@ export function campaignFlight(state, previous = null) {
     reason: threats.length
       ? 'evade-visible-threat'
       : solids.length
-        ? 'evade-city-hazard'
+        ? state.sector === 3
+          ? 'evade-asteroid-course'
+          : 'evade-city-hazard'
         : phase === 'orbit'
           ? 'maintain-evasive-orbit'
           : 'maintain-safe-lane',
@@ -340,15 +383,16 @@ export function campaignFlight(state, previous = null) {
       Number.isFinite(state.shield) &&
       state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
-    transform: subboss
-      ? state.mecha?.active
-        ? null
-        : (state.energy ?? 0) >= 15
-          ? 'robot'
-          : null
-      : state.mecha?.active
-        ? 'ship'
-        : null,
+    transform:
+      subboss || (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
+        ? state.mecha?.active
+          ? null
+          : (state.energy ?? 0) >= 15
+            ? 'robot'
+            : null
+        : state.mecha?.active
+          ? 'ship'
+          : null,
     multiLock: subboss && state.mecha?.active === true && state.mecha.lockEnabled !== true,
     special,
   };

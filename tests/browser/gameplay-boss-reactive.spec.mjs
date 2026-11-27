@@ -586,6 +586,8 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
   const stepSeconds = 0.25;
   const maxSteps = Math.ceil(((SECTORS[sectorIndex]?.duration ?? 150) + 160) / stepSeconds);
   const phases = new Set();
+  const stages = [];
+  const damageEvents = [];
   const repairs = [];
   const bombs = [];
   const specials = [];
@@ -617,6 +619,36 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
     for (let step = 0; step < maxSteps; step++) {
       const current = { ...(await snapshot()), initialShield };
       if (current.state !== 'playing' || current.boss) break;
+      if (step % 12 === 0) {
+        stages.push({
+          seconds: current.seconds,
+          phase: current.orbitalLaunch?.phase ?? 'city',
+          asteroidPhase: current.asteroidInterior?.phase ?? null,
+          asteroidOffset: current.asteroidInterior?.course?.offset ?? null,
+          asteroidBlocked: current.asteroidInterior?.course?.blocked ?? false,
+          asteroidRecovering: current.asteroidInterior?.course?.recovering ?? false,
+          asteroidSolids: current.asteroidInterior?.course?.obstacles?.length ?? 0,
+          asteroidWallContacts: current.asteroidWallContacts ?? 0,
+          asteroidCourseContacts: current.asteroidCourseContacts ?? 0,
+          asteroidHull: current.asteroidHull ?? null,
+          shield: current.shield,
+          lives: current.lives,
+          player: current.player,
+          action: actionSummary(campaignFlight(current, previous)),
+        });
+      }
+      const damage = previous && current.shield < previous.shield ? previous.shield - current.shield : 0;
+      if (damage > 0) {
+        damageEvents.push({
+          seconds: current.seconds,
+          damage,
+          player: current.player,
+          asteroidPhase: current.asteroidInterior?.phase ?? null,
+          asteroidWallContacts: current.asteroidWallContacts ?? 0,
+          asteroidCourseContacts: current.asteroidCourseContacts ?? 0,
+          asteroidBlocked: current.asteroidInterior?.course?.blocked ?? false,
+        });
+      }
       const action = campaignFlight(current, previous);
       const phase = current.orbitalLaunch?.phase ?? 'city';
       if (!phases.has(phase)) {
@@ -789,6 +821,8 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
             ? 'LIFE_LOST'
             : 'APPROACH_INCOMPLETE',
     phases: [...phases],
+    stages,
+    damageEvents,
     repairs,
     bombs,
     specials,
@@ -808,6 +842,10 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
       armor: final.armor,
       pods: final.pods,
       bombs: final.bombs,
+      asteroidWallContacts: final.asteroidWallContacts ?? 0,
+      asteroidCourseContacts: final.asteroidCourseContacts ?? 0,
+      asteroidInterior: final.asteroidInterior,
+      asteroidHull: final.asteroidHull,
     },
   };
 }
@@ -1234,6 +1272,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       if (await launch.isVisible()) await launch.click();
       const stage = await runCampaignStage(page, info, sectorIndex, snapshot, mobile);
       progression.push(stage);
+      console.log('CAMPAIGN_STAGE ' + JSON.stringify(stage));
       expect(stage.outcome, 'sector ' + (sectorIndex + 1) + ' must be cleared').toBe(
         'STAGE_CLEARED',
       );
