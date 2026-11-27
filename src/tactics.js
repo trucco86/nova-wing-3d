@@ -33,8 +33,9 @@ export const BOSS_TACTICS = [
   { name: 'PULSO DO VAZIO', motion: 'spin', angle: Math.PI, arc: 1.5, period: 8, color: '#cd70ff' },
   { name: 'ECLIPSE', motion: 'spin', angle: 0, arc: 1.65, period: 9, color: '#ffce70' },
 ];
-export function bossTacticsAt(index, age, phase = 1) {
-  const profile = BOSS_TACTICS[index % BOSS_TACTICS.length];
+export function bossTacticsAt(index, age, phase = 1, intervalScale = 1) {
+  const baseline = BOSS_TACTICS[index % BOSS_TACTICS.length];
+  const profile = { ...baseline, period: 6 + (baseline.period - 6) * intervalScale };
   const time = Math.max(0, age - 8),
     cycle = Math.floor(time / profile.period);
   const beat = time % profile.period;

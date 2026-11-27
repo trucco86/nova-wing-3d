@@ -82,6 +82,7 @@ export function createFiveCatsSquad({
   status,
   formationStatus,
   getLanguage = () => 'pt',
+  combatValue = () => 1,
 }) {
   const wings = SQUAD_PILOTS.map((pilot) => {
     const mesh = createWing(pilot);
@@ -164,7 +165,7 @@ export function createFiveCatsSquad({
     )
       return false;
     if (kind === 'plasma') {
-      plasmaTime = SQUAD_SPECIALS.plasma.duration;
+      plasmaTime = SQUAD_SPECIALS.plasma.duration * combatValue('plasmaDuration');
       plasmaCooldown = SQUAD_SPECIALS.plasma.cooldown;
       plasmaClock = 0;
       beam = [3.5, 1.4].map((radius, i) => {
@@ -185,7 +186,7 @@ export function createFiveCatsSquad({
       cue('plasmaTitan');
       notify('PLASMA TITAN · SUPERFEIXE INICIADO');
     } else {
-      overdriveTime = SQUAD_SPECIALS.overdrive.duration;
+      overdriveTime = SQUAD_SPECIALS.overdrive.duration * combatValue('overdriveDuration');
       overdriveCooldown = SQUAD_SPECIALS.overdrive.cooldown;
       overdriveClock = 0;
       overdriveAge = overdriveExit = 0;
@@ -287,7 +288,7 @@ export function createFiveCatsSquad({
           origin,
           lockedTarget ??
             new T.Vector3(player.position.x, player.position.y, player.position.z - 200),
-          66 * power,
+          66 * power * combatValue('plasmaDamage'),
           'fire',
           true,
           'squad-plasma',
@@ -324,7 +325,7 @@ export function createFiveCatsSquad({
               fireFrom(
                 mesh.position.clone(),
                 enemy.clone(),
-                48 * power,
+                48 * power * combatValue('overdriveDamage'),
                 'arcane',
                 false,
                 'squad-overdrive',

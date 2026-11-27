@@ -108,7 +108,8 @@ import {
   updateEuropaTunnelBreach,
   isGroundSector,
 } from './encounters.js';
-import { createMusic } from './audio.js';
+import { COMBAT_LAB_FIELDS, createCombatLab } from './combat-lab.js';
+import { createMusic, MUSIC_LAB_VARIANTS } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
@@ -134,7 +135,13 @@ import {
   firstSubbossObstacleQuiet,
   firstSubbossWarmup,
 } from './difficulty.js';
-import { createAudioCues } from './audio-cues.js';
+import { AUDIO_CUES, createAudioCues } from './audio-cues.js';
+import {
+  AUDIO_LAB_KEYS,
+  AUDIO_LAB_VARIANTS,
+  audioLabCandidate,
+  createAudioLab,
+} from './audio-lab.js';
 import { createMechaThrusterAudio } from './mecha-thruster-audio.js';
 import { updateMechaPose, resetMechaPose, selectMechaTarget } from './mecha-motion.js';
 import { createPhaseFrameAudit, stageOneAuditPhase } from './phase-frame-audit.js';
@@ -342,7 +349,11 @@ export function createGame({
   camera.lookAt(0, 7, -50);
   const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
+  let qaMusicVariant = 0;
   const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
+  const audioLab = createAudioLab(developerAvailable, AUDIO_CUES);
+  const combatLab = createCombatLab(developerAvailable);
+  const combatValue = (key) => combatLab.resolve(key, developerSession);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
   scene.add(camera);
   const cockpit = dynamicFlight ? createCockpit(camera) : null;
@@ -454,6 +465,7 @@ export function createGame({
   const reflexBoost = createReflexBoost();
   const squad = dynamicFlight
     ? createFiveCatsSquad({
+        combatValue,
         scene,
         player,
         createWing(pilot) {
@@ -851,7 +863,13 @@ export function createGame({
     reactorAccessStarted = false,
     reactorAccessComplete = false,
     pickupFeedbackTime = 0;
-  const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
+  const tactics = () =>
+    bossTacticsAt(
+      sectorIndex,
+      bossCombat?.age ?? 0,
+      bossCombat?.phase ?? 1,
+      combatValue('bossMeleeInterval'),
+    );
   const relativeOrbit = () =>
     boss?.userData.sabotage
       ? orbitAngle
@@ -952,8 +970,9 @@ export function createGame({
     arcana -= spell.cost;
     if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
-    if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
-    if (strategy.special === 2) stasis = spell.duration;
+    if (strategy.special === 0)
+      barrier = spell.duration * combatValue('shieldDuration') + rank('defense') * 0.1;
+    if (strategy.special === 2) stasis = spell.duration * combatValue('stasisDuration');
     if (strategy.special === 3) {
       berserk = spell.duration;
       message('BERSERK ATIVO · POTÊNCIA +60% · CADÊNCIA +25%');
@@ -1810,8 +1829,14 @@ export function createGame({
       configurePlaybackAudioSession(window.navigator);
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
-      if (!music) music = createMusic(audioCtx);
-      if (!audioCues) audioCues = createAudioCues(audioCtx);
+      if (!music)
+        music = createMusic(audioCtx, {
+          resolveVariant: () => (developerAvailable && developerSession ? qaMusicVariant : 0),
+        });
+      if (!audioCues)
+        audioCues = createAudioCues(audioCtx, {
+          resolveCue: (name) => audioLab.resolve(name, developerSession),
+        });
       music.setEnabled(musicOn);
       music.setVolume(settings.master * settings.music);
       audioCues.setVolume(settings.master * settings.sfx);
@@ -2683,7 +2708,7 @@ export function createGame({
     }
     bossWarningTime = 0;
     $('bossIncoming').hidden = true;
-    bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3);
+    bossCombat = createBossCombat(sectorIndex, dynamicFlight ? 1 : 0.3, combatValue('bossHealth'));
     orbitAngle = 0;
     $('strategyDrawer').open = false;
     scanTime = 0;
@@ -2780,7 +2805,8 @@ export function createGame({
       // Generators must still be destroyed and the exposed core gets the final blow.
       // Team supers break down more exterior armor while the generator locks
       // remain fully enforced. Ordinary gunfire preserves its existing cap.
-      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? 3.6 : 1);
+      const hullRatio =
+        bossDamageMultipliers('hull', parts.length) * (squadSuper ? combatValue('superDamage') : 1);
       const chip = spendDamage(amount * 0.75, charged) * hullRatio;
       const floor = bossCombat.max * (parts.length > 0 ? (squadSuper ? 0.55 : 0.72) : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
@@ -2794,7 +2820,7 @@ export function createGame({
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
         (tactics().vulnerable ? 1.5 : 1) *
-        (bossCounterTime > 0 ? 1.35 : 1);
+        (bossCounterTime > 0 ? combatValue('counterDamage') : 1);
     let part = target
       ? parts.find((p) =>
           dynamicFlight
@@ -2817,7 +2843,9 @@ export function createGame({
       if (dealt > 0) bossHitPulse = 0.5;
       part.hp = Math.max(
         0,
-        part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
+        part.hp -
+          (dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1)) /
+            combatValue('bossWeakpointResistance'),
       );
 
       if (part.hp === 0) {
@@ -3800,6 +3828,180 @@ export function createGame({
   $('developerPanel').hidden = !developerAvailable;
   $('menuQA').hidden = !developerAvailable;
   $('developerSessionTag').hidden = true;
+  if (developerAvailable && $('developerPanel').appendChild) {
+    const panel = document.createElement('details');
+    panel.id = 'qaAudioLab';
+    const summary = document.createElement('summary');
+    summary.textContent = 'AUDIO LAB · QA';
+    panel.appendChild(summary);
+    const effect = document.createElement('select');
+    effect.setAttribute('aria-label', 'Efeito sonoro');
+    const variant = document.createElement('select');
+    variant.setAttribute('aria-label', 'Variação sonora');
+    for (const key of AUDIO_LAB_KEYS) {
+      const option = document.createElement('option');
+      option.value = key;
+      option.textContent = key;
+      effect.appendChild(option);
+    }
+    AUDIO_LAB_VARIANTS.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = name;
+      variant.appendChild(option);
+    });
+    const status = document.createElement('p');
+    status.setAttribute('aria-live', 'polite');
+    const listen = document.createElement('button');
+    listen.type = 'button';
+    listen.textContent = 'OUVIR';
+    listen.onclick = async () => {
+      if (!developerAvailable || !appActive || !unlockAudio()) return;
+      try {
+        await audioCtx.resume();
+        const played = audioCues.play(effect.value, {
+          preview: audioLabCandidate(AUDIO_CUES[effect.value], Number(variant.value)),
+        });
+        status.textContent = played ? 'Reproduzindo' : 'Áudio indisponível ou em intervalo';
+      } catch {
+        status.textContent = 'Áudio indisponível';
+      }
+    };
+    const apply = document.createElement('button');
+    apply.type = 'button';
+    apply.textContent = 'TESTAR NO COMBATE';
+    apply.onclick = () => {
+      if (audioLab.select(effect.value, Number(variant.value)))
+        status.textContent = 'Selecionado para sessão QA: ' + JSON.stringify(audioLab.snapshot());
+    };
+    effect.onchange = () => {
+      variant.value = String(audioLab.snapshot()[effect.value] ?? 0);
+    };
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.textContent = 'RESTAURAR ORIGINAIS';
+    reset.onclick = () => {
+      audioLab.reset();
+      qaMusicVariant = 0;
+      musicVariant.value = '0';
+      variant.value = '0';
+      status.textContent = 'Originais restaurados';
+    };
+    const exportChoice = document.createElement('button');
+    exportChoice.type = 'button';
+    exportChoice.textContent = 'COPIAR ESCOLHAS';
+    exportChoice.onclick = async () => {
+      try {
+        await window.navigator.clipboard.writeText(
+          JSON.stringify(
+            { effects: audioLab.snapshot(), music: qaMusicVariant, combat: combatLab.snapshot() },
+            null,
+            2,
+          ),
+        );
+        status.textContent = 'Escolhas copiadas';
+      } catch {
+        status.textContent = JSON.stringify(audioLab.snapshot());
+      }
+    };
+    for (const node of [effect, variant, listen, apply, reset, exportChoice, status])
+      panel.appendChild(node);
+    const musicVariant = document.createElement('select');
+    musicVariant.setAttribute('aria-label', 'Trilha experimental');
+    MUSIC_LAB_VARIANTS.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = name;
+      musicVariant.appendChild(option);
+    });
+    musicVariant.onchange = () => {
+      qaMusicVariant = Number(musicVariant.value);
+      status.textContent =
+        'Trilha selecionada para combate QA: ' + MUSIC_LAB_VARIANTS[qaMusicVariant];
+    };
+    panel.appendChild(musicVariant);
+    const audition = document.createElement('button');
+    audition.type = 'button';
+    audition.textContent = 'OUVIR TRILHA (12s)';
+    let auditionTimer = null;
+    let auditionScore = null;
+    const stopAudition = () => {
+      if (auditionTimer !== null) window.clearInterval(auditionTimer);
+      auditionTimer = null;
+      auditionScore?.destroy();
+      auditionScore = null;
+      audition.textContent = 'OUVIR TRILHA (12s)';
+      if (appActive && state === 'menu' && menuThemePlaying) music?.resume();
+    };
+    panel.addEventListener('toggle', () => {
+      if (!panel.open) stopAudition();
+    });
+    audition.onclick = async () => {
+      if (auditionScore) {
+        stopAudition();
+        return;
+      }
+      if (!developerAvailable || !panel.open || !appActive || state !== 'menu' || !unlockAudio())
+        return;
+      await audioCtx.resume();
+      if (!developerAvailable || !panel.open || !appActive || state !== 'menu') return;
+      music?.pause();
+      const choice = Number(musicVariant.value);
+      auditionScore = createMusic(audioCtx, { resolveVariant: () => choice });
+      auditionScore.setVolume(settings.master * settings.music);
+      auditionScore.start(Number($('developerSector').value) || 0, 'sector');
+      audition.textContent = 'PARAR TRILHA';
+      let elapsed = 0;
+      auditionTimer = window.setInterval(() => {
+        if (!developerAvailable || !panel.open || !appActive || state !== 'menu' || elapsed >= 12) {
+          stopAudition();
+          return;
+        }
+        auditionScore.update(0.05);
+        elapsed += 0.05;
+      }, 50);
+    };
+    panel.appendChild(audition);
+    $('developerPanel').appendChild(panel);
+    const combatPanel = document.createElement('details');
+    combatPanel.id = 'qaCombatLab';
+    const combatTitle = document.createElement('summary');
+    combatTitle.textContent = 'COMBAT LAB · QA';
+    combatPanel.appendChild(combatTitle);
+    const inputs = [];
+    const bossPanel = document.createElement('details');
+    bossPanel.id = 'qaBossLab';
+    const bossTitle = document.createElement('summary');
+    bossTitle.textContent = 'BOSS LAB · QA';
+    bossPanel.appendChild(bossTitle);
+    for (const [key, field] of Object.entries(COMBAT_LAB_FIELDS)) {
+      const label = document.createElement('label');
+      label.textContent = key + ' ';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = String(field.min);
+      input.max = String(field.max);
+      input.step = String(field.step);
+      input.value = String(field.base);
+      input.onchange = () => {
+        if (!combatLab.select(key, Number(input.value)))
+          input.value = String(combatLab.resolve(key, true));
+      };
+      inputs.push([input, field]);
+      label.appendChild(input);
+      (key.startsWith('boss') ? bossPanel : combatPanel).appendChild(label);
+    }
+    const combatReset = document.createElement('button');
+    combatReset.type = 'button';
+    combatReset.textContent = 'RESTAURAR COMBATE';
+    combatReset.onclick = () => {
+      combatLab.reset();
+      for (const [input, field] of inputs) input.value = String(field.base);
+    };
+    combatPanel.appendChild(combatReset);
+    $('developerPanel').appendChild(combatPanel);
+    $('developerPanel').appendChild(bossPanel);
+  }
   if (developerAvailable) {
     // Test harnesses and first-load mobile browsers share safe defaults.
     for (const [id, value] of [
@@ -5899,7 +6101,7 @@ export function createGame({
             if (!disarmed) {
               // Real tactical consequence: an accurately dodged physical strike
               // opens a short damage window, instead of the boss simply looping.
-              bossCounterTime = 4.5;
+              bossCounterTime = combatValue('counterSeconds');
               tacticEnergy = Math.min(3, tacticEnergy + 0.5);
             }
             message(
@@ -6054,7 +6256,8 @@ export function createGame({
               bullet(origin, target, program.type, sectorIndex);
             }
           }
-          bossCd = program.cadence * batteryPlan.cadenceMultiplier;
+          bossCd =
+            program.cadence * batteryPlan.cadenceMultiplier * combatValue('bossRangedCooldown');
         } else {
           const origin = bossMuzzle(0);
           for (const target of encounterPattern(
@@ -7034,10 +7237,12 @@ export function createGame({
     nextSector,
     startDeveloperScenario,
     enterReactorAccessForQA,
+    selectQaAudio: (key, index) => developerAvailable && audioLab.select(key, index),
     snapshot: () => ({
       state,
       developerAvailable,
       developerSession,
+      audioLab: developerAvailable ? audioLab.snapshot() : null,
       developerScenario: developerSession ? { ...developerScenario } : null,
       settings: { ...settings },
       pauseDialog: !$('pauseMenu').hidden,

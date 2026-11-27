@@ -151,3 +151,28 @@ test('Phobos and Deimos remain in front of the Mars orbital globe and persist du
   world.setMarsDescent(31);
   assert.equal(worldScene.getObjectByName('mars-moon-phobos').visible, false);
 });
+
+test('Mars includes both distinct rovers with visual-only hardware and scrolling lifecycle', async () => {
+  const { updateMarsPremium, updateMarsArrival } = await import('../src/mars-premium.js');
+  const root = createMarsPremium();
+  const curiosity = root.getObjectByName('mars-curiosity-rover');
+  const perseverance = root.getObjectByName('mars-perseverance-rover');
+  assert.ok(curiosity && perseverance, 'both rover missions are present');
+  assert.notDeepEqual(curiosity.position.toArray(), perseverance.position.toArray());
+  assert.equal(curiosity.getObjectByName('curiosity-mastcam-stereo-head')?.isMesh, true);
+  assert.equal(perseverance.getObjectByName('perseverance-supercam-head')?.isMesh, true);
+  assert.equal(perseverance.getObjectByName('perseverance-rotary-percussive-drill')?.isMesh, true);
+  for (const rover of [curiosity, perseverance]) {
+    assert.equal(rover.userData.visualOnly, true);
+    assert.equal(rover.userData.marsChunk, true);
+    rover.traverse((part) => assert.notEqual(part.userData.hitbox, true));
+  }
+  const startZ = perseverance.position.z;
+  updateMarsPremium(root, 24);
+  assert.notEqual(perseverance.position.z, startZ, 'Perseverance follows the existing surface scroll');
+  updateMarsArrival(root, 23);
+  assert.equal(root.getObjectByName('mars-surface-scene').visible, true);
+  assert.equal(perseverance.visible, true);
+  assert.ok(root.getObjectByName('mars-moon-phobos'));
+  assert.ok(root.getObjectByName('mars-moon-deimos'));
+});
