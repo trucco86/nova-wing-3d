@@ -48,3 +48,7 @@ Duas rotas de até 240 segundos simulados no mesmo build: tática com poderes, p
 ## Evidência de vitória contra Rok
 
 Execução 45805708133 (SHA 8c9edbc): quatro vitórias reais, HP zero, partes zero, estado collapsing e três vidas restantes. Desktop tático 102s/escudo 80; combinado 93s/90. Mobile tático 99,25s/80; combinado 99s/80. Loadout inicial QA: três pods, escudo 202, três vidas. Trinta testes unitários e dois testes browser passaram; CI bloqueado apenas por formatação. O contrato da sonda de Rok passa a exigir vitória nas duas rotas, sem alterar o motor. Ainda não é vitória de campanha nem aprovação de outros chefes.
+
+## Expansão para Colossus (Europa)
+
+O run 45831261557 confirmou novamente as quatro vitórias de Rok no SHA 043839e, com build, formatação e testes verdes. A sonda adicional usa o mesmo executor de controles reais, agora no setor 5, com duas políticas (tática e tática com mira) em desktop e mobile. Limite de 240 segundos simulados por rota. Registra HP inicial/final, escudo, vidas, projéteis, padrões de ataque, poderes, equipamento e estado terminal; anexa JSON e screenshots. A sonda exige execução real sem erro de página, mas não exige vitória antes de estabelecer a baseline. TIME_LIMIT e INTERRUPTED não equivalem a vitória. A fixture ainda utiliza equipamento de QA e não mede desempenho em dispositivo físico, nem campanha integral. Resultado de Colossus pendente; nenhuma autorização de release.

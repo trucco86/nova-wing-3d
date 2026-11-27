@@ -433,3 +433,57 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
   expect(report.combined.outcome).toBe('BOSS_DEFEATED');
   expect(report.releaseAuthorized).toBe(false);
 });
+
+test('Colossus extended autonomous attempt compares tactical equipment with and without aim', async ({
+  page,
+}, info) => {
+  test.setTimeout(720000);
+  const tactical = await runEncounter(page, info, 5, true, true, true, false, true);
+  const aimed = await runEncounter(page, info, 5, true, true, true, true, true);
+  const measure = (run) => {
+    const final = run.terminal;
+    const initial = run.samples[0];
+    const victory = final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
+    return {
+      outcome: victory
+        ? 'BOSS_DEFEATED'
+        : final?.state === 'playing'
+          ? 'TIME_LIMIT'
+          : 'INTERRUPTED',
+      finalState: final?.state ?? null,
+      bossHpStart: initial?.bossHp ?? null,
+      bossHpEnd: final?.bossHp ?? null,
+      shieldStart: initial?.shield ?? null,
+      shieldEnd: final?.shield ?? null,
+      livesStart: initial?.lives ?? null,
+      livesEnd: final?.lives ?? null,
+      seconds: run.metrics.observedSeconds,
+      maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
+      attackWindows: run.metrics.attackWindows,
+      attackPatterns: run.metrics.patterns,
+      equipmentEvents: run.equipmentEvents,
+      specialEvents: run.specialEvents,
+    };
+  };
+  const report = {
+    encounter: 'Colossus',
+    sector: 5,
+    project: info.project.name,
+    tactical: measure(tactical),
+    aimed: measure(aimed),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('extended-colossus-comparison.json');
+  await writeFile(path, JSON.stringify({ report, tactical, aimed }, null, 2) + '\n');
+  await info.attach('extended-colossus-comparison', { path, contentType: 'application/json' });
+  console.log('EXTENDED_COLOSSUS_COMPARISON ' + JSON.stringify(report));
+  for (const run of [tactical, aimed]) {
+    expect(run.errors).toEqual([]);
+    expect(run.terminal).not.toBeNull();
+    expect(run.samples.length, 'observed gameplay').toBeGreaterThan(1);
+    expect(run.samples[0].bossHp, 'live boss at start').toBeGreaterThan(0);
+    expect(run.samples.some((sample) => sample.shots > 0), 'real projectiles').toBe(true);
+  }
+  // This is an exploratory run, not a victory gate; a timeout remains a timeout.
+  expect(report.releaseAuthorized).toBe(false);
+});
