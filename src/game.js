@@ -3933,14 +3933,18 @@ export function createGame({
       audition.textContent = 'OUVIR TRILHA (12s)';
       if (appActive && state === 'menu' && menuThemePlaying) music?.resume();
     };
+    panel.addEventListener('toggle', () => {
+      if (!panel.open) stopAudition();
+    });
     audition.onclick = async () => {
       if (auditionScore) {
         stopAudition();
         return;
       }
-      if (!developerAvailable || !appActive || state !== 'menu' || !unlockAudio()) return;
+      if (!developerAvailable || !panel.open || !appActive || state !== 'menu' || !unlockAudio())
+        return;
       await audioCtx.resume();
-      if (!appActive || state !== 'menu') return;
+      if (!developerAvailable || !panel.open || !appActive || state !== 'menu') return;
       music?.pause();
       const choice = Number(musicVariant.value);
       auditionScore = createMusic(audioCtx, { resolveVariant: () => choice });
@@ -3949,7 +3953,7 @@ export function createGame({
       audition.textContent = 'PARAR TRILHA';
       let elapsed = 0;
       auditionTimer = window.setInterval(() => {
-        if (!appActive || state !== 'menu' || elapsed >= 12 || panel.hidden) {
+        if (!developerAvailable || !panel.open || !appActive || state !== 'menu' || elapsed >= 12) {
           stopAudition();
           return;
         }
