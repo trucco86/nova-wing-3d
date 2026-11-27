@@ -75,4 +75,3 @@ Os padrões observados foram `ice-quake` e `cryo-pincer`. Na rota mobile tática
 ### Telemetria por janela de ataque
 
 A coleta agora agrega cada ciclo físico observado em um registro: padrão, ciclo, início/fim/duração, fases de aviso e ataque, direção do radar visível, ações e teclas enviadas, tempo de esquiva, posição inicial/final do jogador normalizada pelos limites de voo, variação de escudo e vidas. A posição do chefe não é usada. Janelas incompletas e amostras sem limites de voo permanecem explicitamente incompletas ou sem posição; não são preenchidas por inferência. A telemetria é evidência para análise, não uma política adaptativa nem um gate de release.
-
