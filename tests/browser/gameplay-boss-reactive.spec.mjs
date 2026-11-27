@@ -597,6 +597,13 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     expect(initial.weapon).toBe(1);
     expect(initial.pods).toBe(0);
     expect(initial.credits).toBe(0);
+    const launchButton = page.locator('#launchSkip');
+    const launchSkipped = await launchButton.isVisible();
+    if (launchSkipped) await launchButton.click();
+    await page.locator('body.in-mission:not(.launch-cinematic)').waitFor({ state: 'attached' });
+    expect(
+      await page.locator('body').evaluate((body) => body.classList.contains('launch-cinematic')),
+    ).toBe(false);
     const mobile = info.project.name === 'mobile';
     const touch = mobile ? await page.context().newCDPSession(page) : null;
     const center = async (id) => {
@@ -617,7 +624,6 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     const bombEvents = [];
     const specialEvents = [];
     const multiLockEvents = [];
-    let current;
     let previous = null;
     let touching = false;
     let robotUsed = false;
@@ -626,7 +632,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
 
     try {
       for (let i = 0; i < 2400; i++) {
-        current = await snapshot();
+        const current = await snapshot();
         if (current.state !== 'playing' || current.boss) break;
         const action = campaignFlight(current, previous);
         const impactDelta = (current.cityImpactCount ?? 0) - (previous?.cityImpactCount ?? 0);
@@ -652,7 +658,6 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
             });
           }
         }
-        current.pilotTarget = action.target;
         const phase = current.orbitalLaunch?.phase ?? 'city';
         if (!phases.has(phase)) {
           phases.add(phase);
@@ -794,7 +799,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
           }
         }
         await page.evaluate(() => window.fixture.advance(0.15, { renderAfter: false }));
-        previous = current;
+        previous = { ...current, pilotTarget: action.target };
       }
     } finally {
       for (const key of pressed) await page.keyboard.up(key);
@@ -803,9 +808,9 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       if (touch) await touch.detach();
     }
 
-    current = await snapshot();
+    const encounterStart = await snapshot();
     let combat = null;
-    if (current.boss && current.state === 'playing') {
+    if (encounterStart.boss && encounterStart.state === 'playing') {
       combat = await runEncounter(page, info, 0, true, true, true, true, true, true, true);
       if (combat.terminal?.state === 'collapsing') {
         await page.evaluate(() => window.fixture.advance(25));
@@ -843,6 +848,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         cityImpactCount: final.cityImpactCount,
       },
       phases: [...phases],
+      launchSkipped,
       stages,
       collisionEvents,
       combat: combat

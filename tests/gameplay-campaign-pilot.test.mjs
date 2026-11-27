@@ -43,6 +43,27 @@ test('pilot selects a stable central lane instead of sweeping across the city', 
   assert.equal(action.boost, false);
 });
 
+test('pilot uses a controlled lateral orbit outside the city', () => {
+  const action = campaignFlight({
+    ...state,
+    seconds: 35,
+    player: { x: 0, y: 10 },
+    orbitalLaunch: { phase: 'orbit' },
+  });
+  assert.notEqual(action.target.x, 0);
+  assert.ok(Math.abs(action.target.x) <= 22);
+});
+
+test('pilot evades nearby hostile projectiles before velocity can be inferred', () => {
+  const action = campaignFlight({
+    ...state,
+    player: { x: 0, y: 10 },
+    hostilePositions: [[0, 10, -20]],
+  });
+  assert.ok(action.x !== 0 || action.y !== 0);
+  assert.notDeepEqual(action.target, { x: 0, y: 10 });
+});
+
 test('pilot avoids active visible city solids using their real collision footprint', () => {
   const action = campaignFlight({
     ...state,

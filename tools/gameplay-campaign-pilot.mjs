@@ -43,6 +43,17 @@ function visibleSolids(state) {
   return source.map(normalizeSolid).filter(Boolean);
 }
 
+function preferredLane(state) {
+  const phase = state.orbitalLaunch?.phase ?? 'city';
+  const seconds = Number.isFinite(state.seconds) ? state.seconds : 0;
+  if (phase === 'city' || phase === 'boost') return { x: 0, y: 10 };
+  const orbital = phase === 'orbit';
+  return {
+    x: Math.sin(seconds * (orbital ? 0.22 : 0.18)) * (orbital ? 22 : 14),
+    y: 10 + Math.sin(seconds * (orbital ? 0.42 : 0.32)) * (orbital ? 7 : 4),
+  };
+}
+
 function incomingThreats(state, previous, playerDepth) {
   const threats = [];
   const player = state.player;
@@ -61,6 +72,24 @@ function incomingThreats(state, previous, playerDepth) {
       radiusY: 12,
       reason: 'recent-city-impact',
     });
+  }
+
+
+  for (const shot of state.hostilePositions ?? []) {
+    if (
+      finitePoint(shot) &&
+      shot[2] < playerDepth + 8 &&
+      shot[2] > playerDepth - 55 &&
+      Math.hypot(shot[0] - player.x, shot[1] - player.y) < 34
+    ) {
+      threats.push({
+        x: shot[0],
+        y: shot[1],
+        radiusX: 13,
+        radiusY: 11,
+        reason: 'nearby-hostile-projectile',
+      });
+    }
   }
 
   const elapsed = state.seconds - (previous?.seconds ?? state.seconds);
@@ -146,12 +175,12 @@ function movingHazardImpact(solid, state, previous, playerDepth) {
   };
 }
 
-function candidateScore(candidate, state, previous, solids, threats, playerDepth) {
+function candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred) {
   const player = state.player;
   let score =
-    Math.abs(candidate.x) * 0.6 +
-    Math.abs(candidate.y - 10) * 0.6 +
-    (Math.abs(candidate.x - player.x) + Math.abs(candidate.y - player.y)) * 0.25;
+    Math.abs(candidate.x - preferred.x) * 0.7 +
+    Math.abs(candidate.y - preferred.y) * 0.7 +
+    (Math.abs(candidate.x - player.x) + Math.abs(candidate.y - player.y)) * 0.22;
 
   const previousTarget = previous?.pilotTarget;
   if (previousTarget && Number.isFinite(previousTarget.x) && Number.isFinite(previousTarget.y)) {
@@ -203,8 +232,9 @@ function selectSafeTarget(state, previous) {
   const minY = (bounds.minY ?? -1) + 3;
   const maxY = (bounds.maxY ?? 46) - 3;
   const unique = (values) => [...new Set(values.map((value) => Number(value.toFixed(1))))];
-  const xs = unique([player.x, ...X_LANES].map((x) => clamp(x, -xLimit, xLimit)));
-  const ys = unique([player.y, ...Y_LANES].map((y) => clamp(y, minY, maxY)));
+  const preferred = preferredLane(state);
+  const xs = unique([player.x, preferred.x, ...X_LANES].map((x) => clamp(x, -xLimit, xLimit)));
+  const ys = unique([player.y, preferred.y, ...Y_LANES].map((y) => clamp(y, minY, maxY)));
   const playerDepth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
   const solids = visibleSolids(state);
   const threats = incomingThreats(state, previous, playerDepth);
@@ -214,7 +244,7 @@ function selectSafeTarget(state, previous) {
   for (const x of xs) {
     for (const y of ys) {
       const candidate = { x, y };
-      const score = candidateScore(candidate, state, previous, solids, threats, playerDepth);
+      const score = candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred);
       if (score < best) {
         best = score;
         selected = candidate;
@@ -260,7 +290,9 @@ export function campaignFlight(state, previous = null) {
       ? 'evade-visible-threat'
       : solids.length
         ? 'evade-city-hazard'
-        : 'maintain-safe-lane',
+        : phase === 'orbit'
+          ? 'maintain-evasive-orbit'
+          : 'maintain-safe-lane',
     bomb: subboss && (state.bombs ?? 0) > 0,
     transform: subboss
       ? state.mecha?.active

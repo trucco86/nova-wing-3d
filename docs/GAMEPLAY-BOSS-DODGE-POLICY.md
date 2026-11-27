@@ -70,3 +70,7 @@ Próxima rodada: repetir os três chefes como regressão obrigatória no laborat
 ## Primeira fase sem equipamento de laboratório
 
 Branch isolada feat/gameplay-campaign-pilot. A fixture freshCampaign=1 usa start(false) e não injeta save, créditos, armas ou pods. Habilita intro e ondas reais. O piloto tenta navegar do hangar até Rok com voo, disparos e boost reais; não chama coleta, dano, teleporte ou skip de chefe. Se alcançar o encontro, reutiliza a mesma instância da campanha e seus recursos conquistados. Só STAGE_CLEARED com estado shop significa primeira fase completa. Perda da primeira vida ou limite de tempo são resultados exploratórios. O teste ainda não prova campanha integral, nem equivalência ao navegador público em tempo real.
+
+## Fresh-campaign pilot
+
+The pilot enters live gameplay through the visible launch-skip control, never through a boss or stage skip. It uses the QA snapshot's actual city collision geometry as an instrumented navigation sensor, predicts moving hazards, reacts to nearby hostile projectiles, and follows a controlled lateral orbit after the city section. Acceptance requires a real transition to the shop after Rok is defeated with the initial loadout; a respawn or browser-only success is not a stage clear.
