@@ -7032,7 +7032,16 @@ export function createGame({
       shotPower: shots[0]?.damage ?? 0,
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
-      hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      hostilePositions: hostile
+        .map((b) => b.o.position.toArray())
+        .sort((a, b) => {
+          const distance = (point) =>
+            (point[0] - player.position.x) ** 2 +
+            (point[1] - player.position.y) ** 2 +
+            (point[2] - player.position.z) ** 2;
+          return distance(a) - distance(b);
+        })
+        .slice(0, 24),
       // Snapshot-only evidence lets browser QA verify a visible effect without
       // changing the real projectile's collision, timing or position.
       bossShotLinks: hostile

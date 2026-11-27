@@ -98,6 +98,17 @@ test('pilot ignores inactive and already-passed city solids', () => {
   assert.equal(action.y, 0);
 });
 
+test('pilot detects a nearby projectile beyond the first five observed shots', () => {
+  const irrelevant = Array.from({ length: 5 }, (_, index) => [80 + index * 5, 40, -20]);
+  const action = campaignFlight({
+    ...state,
+    player: { x: 0, y: 10 },
+    hostilePositions: [...irrelevant, [0, 10, -20]],
+  });
+  assert.ok(action.x !== 0 || action.y !== 0);
+  assert.notDeepEqual(action.target, { x: 0, y: 10 });
+});
+
 test('pilot predicts incoming hostile projectiles and leaves their impact lane', () => {
   const previous = {
     seconds: 10,

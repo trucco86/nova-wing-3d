@@ -70,54 +70,77 @@ function incomingThreats(state, previous, playerDepth) {
       y: previousPlayer.y,
       radiusX: 16,
       radiusY: 12,
+      timeToImpact: 0.35,
       reason: 'recent-city-impact',
     });
   }
 
-  for (const shot of state.hostilePositions ?? []) {
-    if (
-      finitePoint(shot) &&
-      shot[2] < playerDepth + 8 &&
-      shot[2] > playerDepth - 55 &&
-      Math.hypot(shot[0] - player.x, shot[1] - player.y) < 34
-    ) {
-      threats.push({
-        x: shot[0],
-        y: shot[1],
-        radiusX: 13,
-        radiusY: 11,
-        reason: 'nearby-hostile-projectile',
-      });
-    }
-  }
-
   const elapsed = state.seconds - (previous?.seconds ?? state.seconds);
   const priorShots = previous?.hostilePositions ?? [];
-  if (elapsed > 0 && elapsed <= 1.25 && priorShots.length) {
-    for (const shot of state.hostilePositions ?? []) {
-      if (!finitePoint(shot)) continue;
-      let nearest = null;
-      let nearestDistance = Infinity;
-      for (const prior of priorShots) {
+  const matchedPrior = new Set();
+  for (const shot of state.hostilePositions ?? []) {
+    if (!finitePoint(shot)) continue;
+    let nearest = null;
+    let nearestIndex = -1;
+    let nearestDistance = Infinity;
+    if (elapsed > 0 && elapsed <= 1.25) {
+      for (let i = 0; i < priorShots.length; i++) {
+        if (matchedPrior.has(i)) continue;
+        const prior = priorShots[i];
         if (!finitePoint(prior)) continue;
         const distance =
-          (shot[0] - prior[0]) ** 2 + (shot[1] - prior[1]) ** 2 + (shot[2] - prior[2]) ** 2;
+          (shot[0] - prior[0]) ** 2 +
+          (shot[1] - prior[1]) ** 2 +
+          (shot[2] - prior[2]) ** 2;
         if (distance < nearestDistance) {
           nearestDistance = distance;
           nearest = prior;
+          nearestIndex = i;
         }
       }
-      if (!nearest || nearestDistance > 35 ** 2) continue;
+    }
+
+    let predicted = null;
+    if (nearest && nearestIndex >= 0 && nearestDistance <= 35 ** 2) {
+      matchedPrior.add(nearestIndex);
       const vx = (shot[0] - nearest[0]) / elapsed;
       const vy = (shot[1] - nearest[1]) / elapsed;
       const vz = (shot[2] - nearest[2]) / elapsed;
-      if (vz <= 1.5) continue;
-      const timeToPlayer = (playerDepth - shot[2]) / vz;
-      if (timeToPlayer <= 0 || timeToPlayer > 2.4) continue;
-      const x = shot[0] + vx * timeToPlayer;
-      const y = shot[1] + vy * timeToPlayer;
-      if (Math.abs(x - player.x) > 28 || Math.abs(y - player.y) > 22) continue;
-      threats.push({ x, y, radiusX: 9.5, radiusY: 8.5, reason: 'incoming-projectile' });
+      if (vz > 1.5) {
+        const timeToImpact = (playerDepth - shot[2]) / vz;
+        if (timeToImpact > 0 && timeToImpact <= 2.4) {
+          const x = shot[0] + vx * timeToImpact;
+          const y = shot[1] + vy * timeToImpact;
+          if (Math.abs(x - player.x) <= 38 && Math.abs(y - player.y) <= 30) {
+            predicted = { x, y, timeToImpact };
+          }
+        }
+      }
+    }
+
+    const nearby =
+      shot[2] < playerDepth + 8 &&
+      shot[2] > playerDepth - 55 &&
+      Math.hypot(shot[0] - player.x, shot[1] - player.y) < 40;
+    if (predicted) {
+      threats.push({
+        x: predicted.x,
+        y: predicted.y,
+        radiusX: 12.5,
+        radiusY: 10.5,
+        timeToImpact: predicted.timeToImpact,
+        reason: 'incoming-projectile',
+      });
+    } else if (nearby) {
+      const depth = playerDepth - shot[2];
+      threats.push({
+        x: shot[0],
+        y: shot[1],
+        radiusX: 13.5,
+        radiusY: 11.5,
+        timeToImpact: depth > 0 ? clamp(depth / 48, 0.15, 1.2) : 0.2,
+        reason: 'nearby-hostile-projectile',
+      });
     }
   }
 
@@ -135,6 +158,7 @@ function incomingThreats(state, previous, playerDepth) {
         y: target.y,
         radiusX: 12,
         radiusY: 10,
+        timeToImpact: 0.9,
         reason: 'visible-enemy-windup',
       });
     }
@@ -217,9 +241,20 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
   }
 
   for (const threat of threats) {
-    const overlapX = threat.radiusX - Math.abs(candidate.x - threat.x);
-    const overlapY = threat.radiusY - Math.abs(candidate.y - threat.y);
-    if (overlapX > 0 && overlapY > 0) score += 900 + overlapX * overlapY * 3;
+    const timeToImpact = clamp(threat.timeToImpact ?? 0.8, 0.15, 2.4);
+    const playerAtImpactX =
+      player.x + clamp(candidate.x - player.x, -PLAYER_SPEED_X * timeToImpact, PLAYER_SPEED_X * timeToImpact);
+    const playerAtImpactY =
+      player.y + clamp(candidate.y - player.y, -PLAYER_SPEED_Y * timeToImpact, PLAYER_SPEED_Y * timeToImpact);
+    const overlapX = threat.radiusX + 2 - Math.abs(playerAtImpactX - threat.x);
+    const overlapY = threat.radiusY + 2 - Math.abs(playerAtImpactY - threat.y);
+    if (overlapX > 0 && overlapY > 0) score += 1500 + overlapX * overlapY * 4;
+
+    const eventualOverlapX = threat.radiusX - Math.abs(candidate.x - threat.x);
+    const eventualOverlapY = threat.radiusY - Math.abs(candidate.y - threat.y);
+    if (eventualOverlapX > 0 && eventualOverlapY > 0) {
+      score += 450 + eventualOverlapX * eventualOverlapY * 2;
+    }
   }
   return score;
 }

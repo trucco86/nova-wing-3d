@@ -618,6 +618,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     const phases = new Set();
     const stages = [];
     const collisionEvents = [];
+    const damageEvents = [];
     const pressed = new Set();
     const specialUsed = new Set();
     const transformEvents = [];
@@ -635,6 +636,25 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         const current = await snapshot();
         if (current.state !== 'playing' || current.boss) break;
         const action = campaignFlight(current, previous);
+        const shieldDamage =
+          previous && Number.isFinite(previous.shield) && current.shield < previous.shield
+            ? previous.shield - current.shield
+            : 0;
+        if (shieldDamage > 0) {
+          damageEvents.push({
+            seconds: current.seconds,
+            damage: shieldDamage,
+            player: current.player,
+            hostilePositions: (current.hostilePositions ?? []).map((point) => [...point]),
+            targets: (current.targets ?? []).map((target) => ({
+              kind: target.kind,
+              x: target.x,
+              y: target.y,
+              z: target.z,
+              charging: target.charging,
+            })),
+          });
+        }
         const impactDelta = (current.cityImpactCount ?? 0) - (previous?.cityImpactCount ?? 0);
         if (impactDelta > 0) {
           const event = {
@@ -851,6 +871,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       launchSkipped,
       stages,
       collisionEvents,
+      damageEvents,
       combat: combat
         ? {
             outcome: combat.terminal?.state,
