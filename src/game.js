@@ -970,7 +970,8 @@ export function createGame({
     arcana -= spell.cost;
     if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
-    if (strategy.special === 0) barrier = spell.duration * combatValue('shieldDuration') + rank('defense') * 0.1;
+    if (strategy.special === 0)
+      barrier = spell.duration * combatValue('shieldDuration') + rank('defense') * 0.1;
     if (strategy.special === 2) stasis = spell.duration * combatValue('stasisDuration');
     if (strategy.special === 3) {
       berserk = spell.duration;
@@ -2804,7 +2805,8 @@ export function createGame({
       // Generators must still be destroyed and the exposed core gets the final blow.
       // Team supers break down more exterior armor while the generator locks
       // remain fully enforced. Ordinary gunfire preserves its existing cap.
-      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? combatValue('superDamage') : 1);
+      const hullRatio =
+        bossDamageMultipliers('hull', parts.length) * (squadSuper ? combatValue('superDamage') : 1);
       const chip = spendDamage(amount * 0.75, charged) * hullRatio;
       const floor = bossCombat.max * (parts.length > 0 ? (squadSuper ? 0.55 : 0.72) : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
@@ -3891,7 +3893,11 @@ export function createGame({
     exportChoice.onclick = async () => {
       try {
         await window.navigator.clipboard.writeText(
-          JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant, combat: combatLab.snapshot() }, null, 2),
+          JSON.stringify(
+            { effects: audioLab.snapshot(), music: qaMusicVariant, combat: combatLab.snapshot() },
+            null,
+            2,
+          ),
         );
         status.textContent = 'Escolhas copiadas';
       } catch {
@@ -6246,7 +6252,8 @@ export function createGame({
               bullet(origin, target, program.type, sectorIndex);
             }
           }
-          bossCd = program.cadence * batteryPlan.cadenceMultiplier * combatValue('bossRangedCooldown');
+          bossCd =
+            program.cadence * batteryPlan.cadenceMultiplier * combatValue('bossRangedCooldown');
         } else {
           const origin = bossMuzzle(0);
           for (const target of encounterPattern(
