@@ -465,6 +465,7 @@ export function createGame({
   const reflexBoost = createReflexBoost();
   const squad = dynamicFlight
     ? createFiveCatsSquad({
+        combatValue,
         scene,
         player,
         createWing(pilot) {
