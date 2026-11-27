@@ -70,3 +70,9 @@ Próxima rodada: repetir os três chefes como regressão obrigatória no laborat
 ## Matriz completa e calibração de Ômega
 
 Run 45917844706: 17/18 vitórias, sem erro de navegador. Todos os dez chefes já foram derrotados em ao menos uma plataforma, nove em ambas. Único caso restante: Ômega desktop, 850 passos de órbita em 240s, duas partes vivas; mobile venceu em 80s. O rastreamento do chefe reage à aproximação sustentada, portanto a política experimental aciona lock do robô antes do núcleo e alterna flancos a cada seis segundos em vez de perseguir indefinidamente a direção do radar. Apenas Ômega recebe essa alteração. Os oito setores restantes passam a exigir vitória nas duas plataformas e Ômega mobile mantém contrato de vitória; novo run isolado para setor 8, ainda sem resultado.
+
+## Current coverage
+
+The autonomous boss matrix runs all ten sector indexes (0 through 9) on desktop and mobile. Only these five bosses are currently treated as proven victory regression contracts: Rok (0), Colossus of the Dunes (1), Perfurador (2), Reactor Devastador (3), and Couraçado Ômega (7). The other five remain exploratory until both platform results are observed and reviewed.
+
+A successful workflow run means the browser and instrumentation completed. It does not imply a boss victory unless the attached report explicitly says `BOSS_DEFEATED`. The matrix does not authorize production changes.

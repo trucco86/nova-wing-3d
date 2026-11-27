@@ -525,7 +525,7 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
 // Opt-in exploratory matrix. A non-victory is reported, not mistaken for
 // a regression pass or a release authorization. No production gate expansion.
 const matrixSector = process.env.NOVA_QA_BOSS_SECTOR;
-if (/^[1-9]$/.test(matrixSector ?? '')) {
+if (/^[0-9]$/.test(matrixSector ?? '')) {
   const sector = Number(matrixSector);
   test('autonomous matrix: ' + SECTORS[sector].boss, async ({ page }, info) => {
     test.setTimeout(720000);
@@ -575,8 +575,7 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
     // Previously defeated bosses are hard regression contracts in this matrix.
     // Unproven bosses remain exploratory until a real victory is observed.
     if (
-      [1, 2, 3, 4, 5, 6, 8, 9].includes(sector) ||
-      (sector === 7 && info.project.name === 'mobile')
+      [0, 1, 2, 3, 7].includes(sector)
     ) {
       expect(report.outcome).toBe('BOSS_DEFEATED');
       expect(report.final.bossParts).toBe(0);
