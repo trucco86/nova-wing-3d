@@ -108,7 +108,7 @@ import {
   updateEuropaTunnelBreach,
   isGroundSector,
 } from './encounters.js';
-import { createMusic } from './audio.js';
+import { createMusic, MUSIC_LAB_VARIANTS } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
 import { loadSettings, storeSettings, readSettings, uiText } from './ui-preferences.js';
@@ -348,6 +348,7 @@ export function createGame({
   camera.lookAt(0, 7, -50);
   const flightCamera = createFlightCamera(camera, !nativeLifecycle);
   const dynamicFlight = !nativeLifecycle;
+  let qaMusicVariant = 0;
   const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
   const audioLab = createAudioLab(developerAvailable, AUDIO_CUES);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
@@ -1817,7 +1818,10 @@ export function createGame({
       configurePlaybackAudioSession(window.navigator);
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       void audioCtx.resume?.().catch?.(() => {});
-      if (!music) music = createMusic(audioCtx);
+      if (!music)
+        music = createMusic(audioCtx, {
+          resolveVariant: () => (developerAvailable && developerSession ? qaMusicVariant : 0),
+        });
       if (!audioCues)
         audioCues = createAudioCues(audioCtx, {
           resolveCue: (name) => audioLab.resolve(name, developerSession),
@@ -3864,6 +3868,8 @@ export function createGame({
     reset.textContent = 'RESTAURAR ORIGINAIS';
     reset.onclick = () => {
       audioLab.reset();
+      qaMusicVariant = 0;
+      musicVariant.value = '0';
       variant.value = '0';
       status.textContent = 'Originais restaurados';
     };
@@ -3872,7 +3878,7 @@ export function createGame({
     exportChoice.textContent = 'COPIAR ESCOLHAS';
     exportChoice.onclick = async () => {
       try {
-        await window.navigator.clipboard.writeText(JSON.stringify(audioLab.snapshot(), null, 2));
+        await window.navigator.clipboard.writeText(JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant }, null, 2));
         status.textContent = 'Escolhas copiadas';
       } catch {
         status.textContent = JSON.stringify(audioLab.snapshot());
@@ -3880,6 +3886,19 @@ export function createGame({
     };
     for (const node of [effect, variant, listen, apply, reset, exportChoice, status])
       panel.appendChild(node);
+    const musicVariant = document.createElement('select');
+    musicVariant.setAttribute('aria-label', 'Trilha experimental');
+    MUSIC_LAB_VARIANTS.forEach((name, index) => {
+      const option = document.createElement('option');
+      option.value = String(index);
+      option.textContent = name;
+      musicVariant.appendChild(option);
+    });
+    musicVariant.onchange = () => {
+      qaMusicVariant = Number(musicVariant.value);
+      status.textContent = 'Trilha selecionada para combate QA: ' + MUSIC_LAB_VARIANTS[qaMusicVariant];
+    };
+    panel.appendChild(musicVariant);
     $('developerPanel').appendChild(panel);
   }
   if (developerAvailable) {
