@@ -74,7 +74,6 @@ function incomingThreats(state, previous, playerDepth) {
     });
   }
 
-
   for (const shot of state.hostilePositions ?? []) {
     if (
       finitePoint(shot) &&
@@ -244,7 +243,15 @@ function selectSafeTarget(state, previous) {
   for (const x of xs) {
     for (const y of ys) {
       const candidate = { x, y };
-      const score = candidateScore(candidate, state, previous, solids, threats, playerDepth, preferred);
+      const score = candidateScore(
+        candidate,
+        state,
+        previous,
+        solids,
+        threats,
+        playerDepth,
+        preferred,
+      );
       if (score < best) {
         best = score;
         selected = candidate;
