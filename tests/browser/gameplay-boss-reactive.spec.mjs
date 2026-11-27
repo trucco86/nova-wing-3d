@@ -619,6 +619,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
     for (let step = 0; step < maxSteps; step++) {
       const current = { ...(await snapshot()), initialShield };
       if (current.state !== 'playing' || current.boss) break;
+      const action = campaignFlight(current, previous);
       if (step % 12 === 0) {
         stages.push({
           seconds: current.seconds,
@@ -634,7 +635,14 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
           shield: current.shield,
           lives: current.lives,
           player: current.player,
-          action: actionSummary(campaignFlight(current, previous)),
+          action: {
+            x: action.x,
+            y: action.y,
+            reason: action.reason,
+            transform: action.transform,
+            repair: action.repair,
+            bomb: action.bomb,
+          },
         });
       }
       const damage = previous && current.shield < previous.shield ? previous.shield - current.shield : 0;
@@ -649,7 +657,6 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
           asteroidBlocked: current.asteroidInterior?.course?.blocked ?? false,
         });
       }
-      const action = campaignFlight(current, previous);
       const phase = current.orbitalLaunch?.phase ?? 'city';
       if (!phases.has(phase)) {
         phases.add(phase);
