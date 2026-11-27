@@ -60,14 +60,16 @@ export function musicEnergyProfile(mode = 'sector', sector = 0) {
 export const MUSIC_LAB_VARIANTS = ['Original', 'Assault', 'Orchestral', 'Stealth', 'Retro', 'Epic'];
 
 export function musicLabProfile(index = 0) {
-  return [
-    { tempo: 1, gain: 1, motif: 0 },
-    { tempo: 1.12, gain: 1.04, motif: 1 },
-    { tempo: 0.91, gain: 1.08, motif: 2 },
-    { tempo: 0.82, gain: 0.78, motif: 3 },
-    { tempo: 1.06, gain: 0.92, motif: 4 },
-    { tempo: 0.97, gain: 1.12, motif: 1 },
-  ][index] ?? { tempo: 1, gain: 1, motif: 0 };
+  return (
+    [
+      { tempo: 1, gain: 1, motif: 0 },
+      { tempo: 1.12, gain: 1.04, motif: 1 },
+      { tempo: 0.91, gain: 1.08, motif: 2 },
+      { tempo: 0.82, gain: 0.78, motif: 3 },
+      { tempo: 1.06, gain: 0.92, motif: 4 },
+      { tempo: 0.97, gain: 1.12, motif: 1 },
+    ][index] ?? { tempo: 1, gain: 1, motif: 0 }
+  );
 }
 
 export function createMusic(context, { resolveVariant = () => 0 } = {}) {
