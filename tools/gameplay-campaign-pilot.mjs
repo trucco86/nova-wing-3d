@@ -41,7 +41,7 @@ function normalizeSolid(solid) {
 }
 
 function visibleSolids(state) {
-  const source = Array.isArray(state.cityHazardSolids)
+  const source = state.cityHazardSolids?.length
     ? state.cityHazardSolids
     : [...(state.cityPhysicalSolids ?? []), ...(state.cityFallingSolids ?? [])];
   return source.map(normalizeSolid).filter(Boolean);
