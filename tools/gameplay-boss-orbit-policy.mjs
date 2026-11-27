@@ -38,6 +38,26 @@ export function orbitalDecision(state, decision, initialShield) {
       orbit: delta !== null && delta < -0.2 ? -1 : 1,
     };
   }
+  if (state.bossParts === 0) {
+    // HUD vulnerability, explicit front-facing instruction and the robot's
+    // public lock indicator are the only core guidance used here.
+    if (state.robot && !state.lockEnabled && state.lockReady) {
+      return { ...stop, action: 'enable-lock', utility: 'lock' };
+    }
+    if (state.bossText?.includes('ORBITE PARA A FRENTE')) {
+      return { ...stop, action: 'orbit-core', orbit: 1 };
+    }
+    if (state.bossText?.includes('FOGO NO REATOR') && !state.lockVisible) {
+      return { ...stop, action: 'orbit-reactor-core', orbit: 1 };
+    }
+    if (state.coreVulnerable) {
+      if (decision.special) return decision;
+      if (state.precisionReady && state.phase === 'recovery') {
+        return { ...stop, action: 'core-precision', utility: 'precision' };
+      }
+      return { ...stop, fire: true, action: 'fire-core' };
+    }
+  }
   if (decision.special) return decision;
   if (open && state.precisionReady && state.phase === 'recovery') {
     return { ...stop, action: 'precision', utility: 'precision' };

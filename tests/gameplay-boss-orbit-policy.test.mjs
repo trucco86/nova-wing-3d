@@ -41,3 +41,29 @@ test('open weakpoint preserves attack or uses available precision', () => {
   assert.equal(orbitalDecision(open, fire, 202), fire);
   assert.equal(orbitalDecision({ ...open, precisionReady: true }, fire, 202).utility, 'precision');
 });
+
+test('core finisher enables the real robot lock and follows front-facing instructions', () => {
+  const core = { ...state, bossParts: 0, robot: true, lockReady: true };
+  assert.equal(orbitalDecision(core, fire, 202).utility, 'lock');
+  const locked = { ...core, lockEnabled: true };
+  assert.equal(
+    orbitalDecision({ ...locked, bossText: 'ORBITE PARA A FRENTE' }, fire, 202).action,
+    'orbit-core',
+  );
+  assert.equal(
+    orbitalDecision({ ...locked, coreVulnerable: true }, fire, 202).action,
+    'fire-core',
+  );
+  assert.equal(
+    orbitalDecision({ ...locked, bossText: 'FOGO NO REATOR' }, fire, 202).action,
+    'orbit-reactor-core',
+  );
+  assert.equal(
+    orbitalDecision(
+      { ...locked, bossText: 'FOGO NO REATOR', lockVisible: true, coreVulnerable: true },
+      fire,
+      202,
+    ).action,
+    'fire-core',
+  );
+});

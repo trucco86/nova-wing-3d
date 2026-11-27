@@ -76,6 +76,13 @@ async function runEncounter(
           return match ? Number(match[1]) : null;
         };
         return {
+          bossText: document.getElementById('bossState').textContent,
+          coreVulnerable:
+            s.bossParts === 0 &&
+            document.getElementById('bossHUD').getAttribute('data-vulnerable') === 'true',
+          lockReady: !document.getElementById('lockTouch').hidden,
+          lockEnabled: s.mecha.lockEnabled,
+          lockVisible: marker('mechaLockReticle').visible,
           playerAngle: angle('radarPlayer'),
           targetAngle: angle('radarWeak'),
           targetVisible: angle('radarWeak') !== null,
@@ -187,7 +194,14 @@ async function runEncounter(
         });
         equipmentEvents.push({ age: state.age, control: decision.equipment, ...after });
       }
-      if (decision.utility) {
+      if (decision.utility === 'lock') {
+        if (mobile) {
+          await expect(page.locator('#lockTouch')).toBeVisible();
+          await page.locator('#lockTouch').tap();
+        } else await page.keyboard.press('KeyN');
+        const enabled = await page.evaluate(() => window.fixture.game.snapshot().mecha.lockEnabled);
+        utilityEvents.push({ action: 'lock', age: state.age, enabled });
+      } else if (decision.utility) {
         const ids = { scan: 'scanBoss', repair: 'repairPulse', precision: 'precisionShot' };
         const shortcuts = { scan: 'KeyI', repair: 'KeyR', precision: 'KeyK' };
         if (mobile) {
