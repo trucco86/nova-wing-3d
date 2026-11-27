@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - feat/gameplay-boss-autonomy-matrix
+      - feat/gameplay-boss-visible-aim
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
