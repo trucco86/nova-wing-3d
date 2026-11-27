@@ -354,11 +354,12 @@ export function campaignFlight(state, previous = null) {
   };
 }
 
-
 export function campaignShopPlan(state) {
   const completedSector = Number.isInteger(state.sector)
     ? state.sector
-    : (Number.isInteger(state.sectorIndex) ? state.sectorIndex + 1 : 1);
+    : Number.isInteger(state.sectorIndex)
+      ? state.sectorIndex + 1
+      : 1;
   const nextSector = clamp(completedSector + 1, 2, 10);
   const progress = Math.max(0, nextSector - 2);
   const targets = {
@@ -371,7 +372,11 @@ export function campaignShopPlan(state) {
     scatterOwned: nextSector >= 5,
   };
   const priorities = [];
-  if (Number.isFinite(state.shield) && Number.isFinite(state.maxShield) && state.shield < state.maxShield) {
+  if (
+    Number.isFinite(state.shield) &&
+    Number.isFinite(state.maxShield) &&
+    state.shield < state.maxShield
+  ) {
     priorities.push('repair');
   }
   if ((state.weapon ?? 1) < targets.weapon) priorities.push('weapon');

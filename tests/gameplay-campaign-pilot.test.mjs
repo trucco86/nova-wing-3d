@@ -260,7 +260,6 @@ test('pilot predicts a moving city hazard before it reaches the ship', () => {
   assert.ok(action.x !== 0 || action.y !== 0);
 });
 
-
 test('shop plan repairs first and buys a balanced loadout for sector two', () => {
   const plan = campaignShopPlan({
     sector: 1,

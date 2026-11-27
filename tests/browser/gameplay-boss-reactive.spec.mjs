@@ -580,8 +580,6 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
   });
 }
 
-
-
 async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
   const initial = await snapshot();
   const initialShield = initial.maxShield ?? initial.shield;
@@ -754,12 +752,16 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
         }
       }
 
-      await page.evaluate((seconds) => window.fixture.advance(seconds, { renderAfter: false }), stepSeconds);
+      await page.evaluate(
+        (seconds) => window.fixture.advance(seconds, { renderAfter: false }),
+        stepSeconds,
+      );
       previous = { ...current, pilotTarget: action.target };
     }
   } finally {
     for (const key of pressed) await page.keyboard.up(key);
-    if (touching) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    if (touching)
+      await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     if (touch) await touch.detach();
   }
 
@@ -772,17 +774,20 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
     }
   }
   const final = await snapshot();
-  await page.screenshot({ path: info.outputPath('campaign-sector-' + (sectorIndex + 1) + '-final.png') });
+  await page.screenshot({
+    path: info.outputPath('campaign-sector-' + (sectorIndex + 1) + '-final.png'),
+  });
   return {
     sector: sectorIndex + 1,
     boss: SECTORS[sectorIndex]?.boss?.name ?? SECTORS[sectorIndex]?.boss ?? 'unknown',
-    outcome: final.state === 'shop' && combat?.terminal?.state === 'collapsing'
-      ? 'STAGE_CLEARED'
-      : combat
-        ? 'BOSS_REACHED'
-        : final.state === 'respawning'
-          ? 'LIFE_LOST'
-          : 'APPROACH_INCOMPLETE',
+    outcome:
+      final.state === 'shop' && combat?.terminal?.state === 'collapsing'
+        ? 'STAGE_CLEARED'
+        : combat
+          ? 'BOSS_REACHED'
+          : final.state === 'respawning'
+            ? 'LIFE_LOST'
+            : 'APPROACH_INCOMPLETE',
     phases: [...phases],
     repairs,
     bombs,
@@ -1183,7 +1188,11 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         const button = page.locator('#buy' + item);
         for (let attempt = 0; attempt < 5; attempt++) {
           const current = await snapshot();
-          if (reached(current, item) || !(await button.isVisible()) || !(await button.isEnabled())) {
+          if (
+            reached(current, item) ||
+            !(await button.isVisible()) ||
+            !(await button.isEnabled())
+          ) {
             break;
           }
           await button.click();
@@ -1207,7 +1216,10 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
 
     const progression = [];
     const firstShop = await buyUpgrades();
-    expect(firstShop.purchases.length, 'first shop should buy at least one real upgrade').toBeGreaterThan(0);
+    expect(
+      firstShop.purchases.length,
+      'first shop should buy at least one real upgrade',
+    ).toBeGreaterThan(0);
     progression.push({ completedSector: 1, shop: firstShop });
 
     for (const sectorIndex of [1, 2]) {
@@ -1222,7 +1234,9 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       if (await launch.isVisible()) await launch.click();
       const stage = await runCampaignStage(page, info, sectorIndex, snapshot, mobile);
       progression.push(stage);
-      expect(stage.outcome, 'sector ' + (sectorIndex + 1) + ' must be cleared').toBe('STAGE_CLEARED');
+      expect(stage.outcome, 'sector ' + (sectorIndex + 1) + ' must be cleared').toBe(
+        'STAGE_CLEARED',
+      );
       if (sectorIndex < 2) {
         const shop = await buyUpgrades();
         progression.push({ completedSector: sectorIndex + 1, shop });
