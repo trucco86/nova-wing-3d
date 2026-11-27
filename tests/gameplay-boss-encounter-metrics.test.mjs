@@ -248,3 +248,31 @@ test('attack telemetry leaves final window censored without inventing end deltas
   assert.equal(result.livesLost, null);
   assert.equal(result.reactionTimeSeconds, null);
 });
+
+test('encounter metrics deduplicate damage events and attribute boss projectile hits', () => {
+  const projectile = {
+    id: 1,
+    type: 'boss-projectile',
+    bossIndex: 5,
+    spell: 'arcane',
+    damage: 10,
+  };
+  const melee = {
+    id: 2,
+    type: 'boss-melee',
+    attackKind: 'ice-quake',
+    damage: 28,
+  };
+  const result = summarizeEncounter([
+    { age: 1, shield: 100, damageEvents: [projectile] },
+    { age: 1.25, shield: 90, damageEvents: [projectile, melee] },
+  ]);
+  assert.equal(result.damageEvents.length, 2);
+  assert.deepEqual(result.damageBySource, {
+    'boss-projectile': { hits: 1, damage: 10 },
+    'boss-melee': { hits: 1, damage: 28 },
+  });
+  assert.equal(result.bossProjectileHits, 1);
+  assert.equal(result.bossProjectileDamage, 10);
+  assert.equal(result.bossMeleeHits, 1);
+});

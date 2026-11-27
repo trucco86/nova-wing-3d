@@ -79,3 +79,12 @@ A coleta agora agrega cada ciclo físico observado em um registro: padrão, cicl
 ### Semântica de fechamento e reação
 
 Cada janela registra a primeira amostra observada após a fase física ativa como boundary. Dano e perda de vida ocorridos nessa transição entram no delta da janela anterior. Janelas sem boundary são marcadas como censuradas: o último valor observado permanece visível, mas deltas finais não são inferidos. A latência de reação é medida do primeiro alerta de perigo até a primeira decisão de esquiva; ausência de esquiva ou de alerta retorna `null`. O caminho do jogador preserva input e fire input por amostra para permitir correlação temporal. Essas métricas continuam descritivas e não alteram decisões do agente nem regras do jogo.
+
+### Diagnóstico de dano fora das janelas físicas
+
+O artefato do run 46055098649 repetiu o padrão nas quatro rotas prolongadas: 20 reduções de escudo por rota, todas de 10 pontos; 17 a 18 ocorreram em `maneuver` e as demais em `recovery`. Em todas as amostras de impacto, o agente não enviava comando de movimento. As janelas físicas monitoradas continuaram completas, sem variação de escudo dentro delas.
+
+O código do setor 5 configura a salva do Colossus como arcana, e o caminho de colisão aplica 10 pontos a projéteis que não são de fogo. A correspondência é forte, mas a atribuição ainda precisa ser confirmada por evento. A nova telemetria registra origem do dano, índice do chefe, tipo do projétil, idade, posição e velocidade no impacto, ciclo/fase do chefe e texto do aviso visível. A instrumentação existe apenas no snapshot de QA e não altera colisão, dano, invulnerabilidade, escudo ou física.
+
+**Próxima etapa:** confirmar a origem de cada impacto e, então, testar evasão de salvas usando apenas avisos e projéteis visíveis ao jogador. Não promover uma política nova antes de demonstrar redução reproduzível de dano sem sacrificar a capacidade de derrotar o chefe.
+

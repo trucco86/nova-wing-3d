@@ -169,6 +169,34 @@ export function summarizeAttackWindows(samples) {
   };
 }
 
+function summarizeDamageEvents(samples) {
+  const unique = new Map();
+  for (const sample of samples) {
+    for (const event of sample.damageEvents ?? []) {
+      if (Number.isInteger(event.id)) unique.set(event.id, event);
+    }
+  }
+  const events = [...unique.values()].sort((a, b) => a.id - b.id);
+  const bySource = {};
+  for (const event of events) {
+    const source = event.type ?? 'unknown';
+    const current = bySource[source] ?? { hits: 0, damage: 0 };
+    current.hits++;
+    current.damage = Number((current.damage + (Number(event.damage) || 0)).toFixed(3));
+    bySource[source] = current;
+  }
+  const bossProjectiles = events.filter((event) => event.type === 'boss-projectile');
+  return {
+    events,
+    bySource,
+    bossProjectileHits: bossProjectiles.length,
+    bossProjectileDamage: Number(
+      bossProjectiles.reduce((total, event) => total + (Number(event.damage) || 0), 0).toFixed(3),
+    ),
+    bossMeleeHits: events.filter((event) => event.type === 'boss-melee').length,
+  };
+}
+
 export function summarizeEncounter(samples) {
   const valid = samples.filter(
     (sample) => Number.isFinite(sample.age) && Number.isFinite(sample.shield),
@@ -182,6 +210,7 @@ export function summarizeEncounter(samples) {
   const windows = new Set(active.map((sample) => sample.cycle));
   const first = valid[0];
   const last = valid.at(-1);
+  const damage = summarizeDamageEvents(samples);
   return {
     validSamples: valid.length,
     observedSeconds: first && last ? last.age - first.age : 0,
@@ -195,6 +224,11 @@ export function summarizeEncounter(samples) {
     inputSamples: valid.filter((sample) => sample.input?.length).length,
     patterns: inspectBossPatterns(samples),
     attackWindowTelemetry: summarizeAttackWindows(samples),
+    damageEvents: damage.events,
+    damageBySource: damage.bySource,
+    bossProjectileHits: damage.bossProjectileHits,
+    bossProjectileDamage: damage.bossProjectileDamage,
+    bossMeleeHits: damage.bossMeleeHits,
     humanApproval: 'PENDING',
   };
 }

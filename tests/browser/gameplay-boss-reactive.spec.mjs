@@ -27,6 +27,7 @@ async function runEncounter(
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
+  const seenDamageEventIds = new Set();
   const specialEvents = [];
   const equipmentEvents = [];
   let terminal = null;
@@ -96,10 +97,20 @@ async function runEncounter(
           mode: radar.getAttribute('data-mode'),
           danger: danger === 'true' ? true : danger === 'false' ? false : null,
           guide: guide.hidden ? null : guide.textContent,
+          attackWarning: document.getElementById('attackWarning')?.textContent?.trim() ?? '',
+          damageEvents: s.damageEvents ?? [],
         };
       });
+      const freshDamageEvents = (state.damageEvents ?? []).filter(
+        (event) => !seenDamageEventIds.has(event.id),
+      );
+      for (const event of freshDamageEvents) seenDamageEventIds.add(event.id);
+      const observedState = { ...state, damageEvents: freshDamageEvents };
       terminal = state;
-      if (!state.boss || state.state !== 'playing') break;
+      if (!state.boss || state.state !== 'playing') {
+        if (freshDamageEvents.length) samples.push(observedState);
+        break;
+      }
       let decision = active
         ? combatDecision(state, { tactical })
         : reactive
@@ -116,7 +127,7 @@ async function runEncounter(
       }
       const keys = dodgeKeys(decision);
       samples.push({
-        ...state,
+        ...observedState,
         aim,
         decision,
         input: keys,
