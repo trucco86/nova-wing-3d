@@ -60,3 +60,9 @@ A primeira matriz (45831499483) executou 18 cenários sem erro de navegador, mas
 ## Finalização do núcleo
 
 Rodada 45912164440: seis combates, sem perda de vida, todos os geradores destruídos. Marte e Perfurador restaram com 4,2% de integridade combinada (núcleo a 12% do HP inicial, piso de dano de casco); Reator ficou com 35% de integridade e núcleo intacto. A política anterior não orbitava depois de zerar geradores. Novo passo usa exclusivamente texto visível ORBITE PARA A FRENTE, atributo de estado do HUD vulnerável, lock real do robô e sinal FOGO NO REATOR. Quando disponível, aciona precisão na abertura. Sem alterar piso de dano, hitbox ou invulnerabilidade. O lock do Reator pode continuar limitado pelo arco de aquisição do motor; o teste deve separar ausência de lock e ausência de dano. Nenhuma vitória adicional declarada antes do CI.
+
+## Vitórias de Marte, Perfurador e Reator
+
+Run 45916686543, SHA c59e574: seis vitórias em seis cenários, todos com HP e geradores zerados, estado collapsing e três vidas. Marte: desktop 43,25s e mobile 46,5s, escudo 172/202. Perfurador: 37,5s em ambos, escudo 202/202. Reator: 44s desktop e 43,5s mobile, escudo 202/202. Todos acionaram lock real. Os testes de navegador passaram; a única falha do workflow foi a formatação de uma asserção unitária, corrigida com o patch exato do CI.
+
+Próxima rodada: repetir os três chefes como regressão obrigatória no laboratório e aplicar a mesma política aos seis restantes em desktop/mobile. Os setores 2, 3 e 4 devem terminar com núcleo e partes zerados e todas as vidas; setores 5 a 10 continuam exploratórios. Os resultados não provam passagem por fases completas nem equivalência ao equipamento da campanha. Não alterar jogabilidade para obter aprovação.

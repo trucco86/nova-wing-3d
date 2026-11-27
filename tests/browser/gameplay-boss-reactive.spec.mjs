@@ -568,5 +568,12 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
     expect(run.samples.length, 'real encounter exposure').toBeGreaterThan(0);
     expect(run.terminal).not.toBeNull();
     expect(run.errors).toEqual([]);
+    // Previously defeated bosses are hard regression contracts in this matrix.
+    // Unproven bosses remain exploratory until a real victory is observed.
+    if ([1, 2, 3].includes(sector)) {
+      expect(report.outcome).toBe('BOSS_DEFEATED');
+      expect(report.final.bossParts).toBe(0);
+      expect(report.final.lives).toBe(report.initial.lives);
+    }
   });
 }

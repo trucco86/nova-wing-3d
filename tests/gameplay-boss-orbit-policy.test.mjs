@@ -50,10 +50,7 @@ test('core finisher enables the real robot lock and follows front-facing instruc
     orbitalDecision({ ...locked, bossText: 'ORBITE PARA A FRENTE' }, fire, 202).action,
     'orbit-core',
   );
-  assert.equal(
-    orbitalDecision({ ...locked, coreVulnerable: true }, fire, 202).action,
-    'fire-core',
-  );
+  assert.equal(orbitalDecision({ ...locked, coreVulnerable: true }, fire, 202).action, 'fire-core');
   assert.equal(
     orbitalDecision({ ...locked, bossText: 'FOGO NO REATOR' }, fire, 202).action,
     'orbit-reactor-core',
