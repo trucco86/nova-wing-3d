@@ -1,4 +1,5 @@
 export const COMBAT_LAB_FIELDS = Object.freeze({
+  bossMeleeInterval: { base: 1, min: 0.8, max: 1.6, step: 0.1 },
   bossHealth: { base: 1, min: 0.5, max: 2, step: 0.1 },
   bossRangedCooldown: { base: 1, min: 0.6, max: 2, step: 0.1 },
   superDamage: { base: 3.6, min: 1, max: 6, step: 0.1 },
