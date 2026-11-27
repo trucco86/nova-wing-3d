@@ -5,7 +5,7 @@ export function orbitalDelta(player, target) {
   return Math.atan2(Math.sin(target - player), Math.cos(target - player));
 }
 
-export function orbitalDecision(state, decision, initialShield) {
+export function orbitalDecision(state, decision, initialShield, { omega = false } = {}) {
   if (
     state.state !== 'playing' ||
     !state.boss ||
@@ -22,6 +22,9 @@ export function orbitalDecision(state, decision, initialShield) {
   }
   if (decision.equipment) return decision;
   const open = state.screen?.cues?.some((cue) => cue.visible && cue.state === 'open');
+  if (omega && state.bossParts > 0 && state.robot && !state.lockEnabled && state.lockReady) {
+    return { ...stop, action: 'enable-flank-lock', utility: 'lock' };
+  }
   if (state.bossParts > 0 && !open) {
     if (!state.targetVisible && state.scanReady && !state.specialActive) {
       return { ...stop, action: 'scan', utility: 'scan' };
@@ -35,7 +38,15 @@ export function orbitalDecision(state, decision, initialShield) {
     return {
       ...stop,
       action: 'orbit-search',
-      orbit: delta !== null && delta < -0.2 ? -1 : 1,
+      // Omega counters sustained pursuit. Alternate a bounded sweep rather
+      // than chasing its moving radar marker forever. Calibrate empirically.
+      orbit: omega
+        ? Math.floor(state.age / 6) % 2 === 0
+          ? -1
+          : 1
+        : delta !== null && delta < -0.2
+          ? -1
+          : 1,
     };
   }
   if (state.bossParts === 0) {

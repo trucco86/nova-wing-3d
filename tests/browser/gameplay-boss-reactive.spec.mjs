@@ -139,7 +139,11 @@ async function runEncounter(
           equipmentEvents.map((event) => event.control),
         );
       }
-      if (orbital) decision = orbitalDecision(state, decision, samples[0]?.shield ?? state.shield);
+      if (orbital) {
+        decision = orbitalDecision(state, decision, samples[0]?.shield ?? state.shield, {
+          omega: sector === 7,
+        });
+      }
       const keys = dodgeKeys(decision);
       samples.push({ ...state, aim, decision, input: keys });
       if (i === limit) break;
@@ -570,7 +574,10 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
     expect(run.errors).toEqual([]);
     // Previously defeated bosses are hard regression contracts in this matrix.
     // Unproven bosses remain exploratory until a real victory is observed.
-    if ([1, 2, 3].includes(sector)) {
+    if (
+      [1, 2, 3, 4, 5, 6, 8, 9].includes(sector) ||
+      (sector === 7 && info.project.name === 'mobile')
+    ) {
       expect(report.outcome).toBe('BOSS_DEFEATED');
       expect(report.final.bossParts).toBe(0);
       expect(report.final.lives).toBe(report.initial.lives);

@@ -64,3 +64,13 @@ test('core finisher enables the real robot lock and follows front-facing instruc
     'fire-core',
   );
 });
+
+test('Omega enables real lock before core and alternates flank searches', () => {
+  const flank = { ...state, robot: true, lockReady: true, bossParts: 2 };
+  assert.equal(orbitalDecision(flank, fire, 202, { omega: true }).utility, 'lock');
+  const locked = { ...flank, lockEnabled: true, scanReady: false };
+  assert.equal(orbitalDecision({ ...locked, age: 12 }, fire, 202, { omega: true }).orbit, -1);
+  assert.equal(orbitalDecision({ ...locked, age: 18 }, fire, 202, { omega: true }).orbit, 1);
+  const danger = { ...locked, mode: 'physical', danger: true };
+  assert.equal(orbitalDecision(danger, fire, 202, { omega: true }), fire);
+});
