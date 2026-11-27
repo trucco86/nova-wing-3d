@@ -115,7 +115,14 @@ async function runEncounter(
         );
       }
       const keys = dodgeKeys(decision);
-      samples.push({ ...state, aim, decision, input: keys });
+      samples.push({
+        ...state,
+        aim,
+        decision,
+        input: keys,
+        fireInput: active && decision.fire ? (mobile ? 'FIRE_TOUCH' : 'Space') : null,
+        controlSurface: mobile ? 'touch-joystick' : 'keyboard',
+      });
       if (i === limit) break;
       if (active && firing && !decision.fire) {
         if (mobile) await page.mouse.up();

@@ -81,12 +81,16 @@ export function summarizeAttackWindows(samples) {
     ];
     const actions = {};
     const inputs = new Set();
+    const fireInputs = new Set();
+    const controlSurfaces = new Set();
     let dodgeDurationSeconds = 0;
     for (let index = 0; index < window.samples.length; index++) {
       const sample = window.samples[index];
       const action = sample.decision?.action ?? 'unspecified';
       actions[action] = (actions[action] ?? 0) + 1;
       for (const input of sample.input ?? []) inputs.add(input);
+      if (sample.fireInput) fireInputs.add(sample.fireInput);
+      if (sample.controlSurface) controlSurfaces.add(sample.controlSurface);
       const next = window.samples[index + 1];
       if (action === 'dodge' && next) {
         dodgeDurationSeconds += Math.max(0, next.age - sample.age);
@@ -104,9 +108,19 @@ export function summarizeAttackWindows(samples) {
       dangerSamples: window.samples.filter((sample) => sample.danger === true).length,
       actions,
       inputKeys: [...inputs].sort(),
+      fireInputs: [...fireInputs].sort(),
+      controlSurfaces: [...controlSurfaces].sort(),
       dodgeDurationSeconds: Number(dodgeDurationSeconds.toFixed(3)),
       playerPositionStart: positions[0] ?? null,
       playerPositionEnd: positions.at(-1) ?? null,
+      playerPath: window.samples
+        .map((sample) => ({
+          age: sample.age,
+          phase: sample.phase,
+          action: sample.decision?.action ?? 'unspecified',
+          position: normalizedPlayerPosition(sample),
+        }))
+        .filter((sample) => sample.position !== null),
       shieldStart: first.shield ?? null,
       shieldEnd: last.shield ?? null,
       shieldDelta: Number.isFinite(first.shield) && Number.isFinite(last.shield)
