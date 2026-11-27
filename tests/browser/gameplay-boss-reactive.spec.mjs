@@ -5,6 +5,7 @@ import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
 import { equipmentDecision } from '../../tools/gameplay-boss-equipment-policy.mjs';
 import { orbitalDecision } from '../../tools/gameplay-boss-orbit-policy.mjs';
+import { campaignFlight } from '../../tools/gameplay-campaign-pilot.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -25,8 +26,9 @@ async function runEncounter(
   aimed = false,
   extended = false,
   orbital = false,
+  reuseCampaign = false,
 ) {
-  await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
+  if (!reuseCampaign) await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
@@ -575,5 +577,144 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
       expect(report.final.bossParts).toBe(0);
       expect(report.final.lives).toBe(report.initial.lives);
     }
+  });
+}
+
+if (process.env.NOVA_QA_CAMPAIGN === '1') {
+  test('fresh campaign pilot: city to Rok without boss skip', async ({ page }, info) => {
+    test.setTimeout(720000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/__dynamic.html?sector=0&freshCampaign=1&intro=1&encounters=1');
+    await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
+    const snapshot = () =>
+      page.evaluate(() => ({
+        ...window.fixture.game.snapshot(),
+        launchCinematic: document.body.classList.contains('launch-cinematic'),
+      }));
+    const initial = await snapshot();
+    expect(initial.developerSession).toBe(false);
+    expect(initial.weapon).toBe(1);
+    expect(initial.pods).toBe(0);
+    expect(initial.credits).toBe(0);
+    const mobile = info.project.name === 'mobile';
+    const touch = mobile ? await page.context().newCDPSession(page) : null;
+    const center = async (id) => {
+      const b = await page.locator(id).boundingBox();
+      if (!b) throw new Error('Missing control ' + id);
+      return { x: b.x + b.width / 2, y: b.y + b.height / 2, radius: Math.min(b.width, b.height) * 0.4 };
+    };
+    const stages = [];
+    let current = initial;
+    let touching = false;
+    const phases = new Set();
+    const pressed = new Set();
+    try {
+      for (let i = 0; i < 660; i++) {
+        current = await snapshot();
+        if (current.boss || !['playing'].includes(current.state)) break;
+        const action = campaignFlight(current);
+        const phase = current.orbitalLaunch.phase;
+        if (!phases.has(phase)) {
+          phases.add(phase);
+          await page.evaluate(() => window.fixture.advance(0));
+          await page.screenshot({ path: info.outputPath('campaign-' + phase + '.png') });
+        }
+        if (i % 10 === 0) {
+          stages.push({
+            seconds: current.seconds,
+            phase,
+            shield: current.shield,
+            lives: current.lives,
+            credits: current.credits,
+            weapon: current.weapon,
+            player: current.player,
+            hits: current.hits,
+            action,
+          });
+        }
+        if (touch) {
+          if (touching) {
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+            touching = false;
+          }
+          const points = [];
+          if (action.fire) {
+            const fire = await center('#fireTouch');
+            points.push({ x: fire.x, y: fire.y, id: 2 });
+          }
+          if (action.boost) {
+            const boost = await center('#boostTouch');
+            points.push({ x: boost.x, y: boost.y, id: 3 });
+          }
+          if (action.x || action.y) {
+            const stick = await center('#stick');
+            points.push({ x: stick.x, y: stick.y, id: 1 });
+            const offset = dodgeTouchOffset(action, stick.radius);
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+            touching = true;
+            await touch.send('Input.dispatchTouchEvent', {
+              type: 'touchMove',
+              touchPoints: points.map((point) =>
+                point.id === 1 ? { ...point, x: point.x + offset.x, y: point.y + offset.y } : point,
+              ),
+            });
+          } else if (points.length) {
+            await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+            touching = true;
+          }
+        } else {
+          const keys = [...dodgeKeys(action)];
+          if (action.fire) keys.push('Space');
+          if (action.boost) keys.push('ShiftLeft');
+          for (const key of [...pressed]) {
+            if (!keys.includes(key)) {
+              await page.keyboard.up(key);
+              pressed.delete(key);
+            }
+          }
+          for (const key of keys) {
+            if (!pressed.has(key)) {
+              await page.keyboard.down(key);
+              pressed.add(key);
+            }
+          }
+        }
+        await page.evaluate(() => window.fixture.advance(0.5, { renderAfter: false }));
+      }
+    } finally {
+      for (const key of pressed) await page.keyboard.up(key);
+      if (touching) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      if (touch) await touch.detach();
+    }
+    current = await snapshot();
+    let combat = null;
+    if (current.boss && current.state === 'playing') {
+      combat = await runEncounter(page, info, 0, true, true, true, true, true, true, true);
+      if (combat.terminal?.state === 'collapsing') {
+        await page.evaluate(() => window.fixture.advance(25));
+      }
+    }
+    const final = await snapshot();
+    await page.evaluate(() => window.fixture.advance(0));
+    await page.screenshot({ path: info.outputPath('campaign-final.png') });
+    const report = {
+      project: info.project.name,
+      outcome: final.state === 'shop' ? 'STAGE_CLEARED' : combat ? 'BOSS_REACHED' : 'APPROACH_INCOMPLETE',
+      initial: { credits: initial.credits, weapon: initial.weapon, pods: initial.pods, shield: initial.shield },
+      final: { state: final.state, seconds: final.seconds, shield: final.shield, lives: final.lives, credits: final.credits, bossHp: final.bossHp },
+      phases: [...phases],
+      stages,
+      combat: combat ? { terminal: combat.terminal, metrics: combat.metrics, utilityEvents: combat.utilityEvents } : null,
+      errors,
+      releaseAuthorized: false,
+    };
+    const path = info.outputPath('campaign-first-stage.json');
+    await writeFile(path, JSON.stringify(report, null, 2) + '\n');
+    await info.attach('campaign-first-stage', { path, contentType: 'application/json' });
+    console.log('CAMPAIGN_FIRST_STAGE ' + JSON.stringify({ ...report, stages: stages.length, combat: combat ? { outcome: combat.terminal?.state, bossHp: combat.terminal?.bossHp } : null }));
+    expect(errors).toEqual([]);
+    expect(combat?.errors ?? []).toEqual([]);
+    expect(report.releaseAuthorized).toBe(false);
   });
 }
