@@ -482,7 +482,10 @@ test('Colossus extended autonomous attempt compares tactical equipment with and 
     expect(run.terminal).not.toBeNull();
     expect(run.samples.length, 'observed gameplay').toBeGreaterThan(1);
     expect(run.samples[0].bossHp, 'live boss at start').toBeGreaterThan(0);
-    expect(run.samples.some((sample) => sample.shots > 0), 'real projectiles').toBe(true);
+    expect(
+      run.samples.some((sample) => sample.shots > 0),
+      'real projectiles',
+    ).toBe(true);
   }
   // This is an exploratory run, not a victory gate; a timeout remains a timeout.
   expect(report.releaseAuthorized).toBe(false);
