@@ -863,7 +863,8 @@ export function createGame({
     reactorAccessStarted = false,
     reactorAccessComplete = false,
     pickupFeedbackTime = 0;
-  const tactics = () => bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1);
+  const tactics = () =>
+    bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1, combatValue('bossMeleeInterval'));
   const relativeOrbit = () =>
     boss?.userData.sabotage
       ? orbitAngle
