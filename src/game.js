@@ -864,7 +864,12 @@ export function createGame({
     reactorAccessComplete = false,
     pickupFeedbackTime = 0;
   const tactics = () =>
-    bossTacticsAt(sectorIndex, bossCombat?.age ?? 0, bossCombat?.phase ?? 1, combatValue('bossMeleeInterval'));
+    bossTacticsAt(
+      sectorIndex,
+      bossCombat?.age ?? 0,
+      bossCombat?.phase ?? 1,
+      combatValue('bossMeleeInterval'),
+    );
   const relativeOrbit = () =>
     boss?.userData.sabotage
       ? orbitAngle
@@ -2836,7 +2841,9 @@ export function createGame({
       if (dealt > 0) bossHitPulse = 0.5;
       part.hp = Math.max(
         0,
-        part.hp - dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1),
+        part.hp -
+          (dealt * (dynamicFlight ? bossDamageMultipliers('generator') : 1)) /
+            combatValue('bossWeakpointResistance'),
       );
 
       if (part.hp === 0) {
