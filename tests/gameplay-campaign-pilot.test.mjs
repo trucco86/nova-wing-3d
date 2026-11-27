@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { campaignFlight } from '../tools/gameplay-campaign-pilot.mjs';
+import { campaignFlight, campaignShopPlan } from '../tools/gameplay-campaign-pilot.mjs';
 
 const state = {
   state: 'playing',
@@ -258,4 +258,79 @@ test('pilot predicts a moving city hazard before it reaches the ship', () => {
   const action = campaignFlight(current, previous);
   assert.equal(action.reason, 'evade-city-hazard');
   assert.ok(action.x !== 0 || action.y !== 0);
+});
+
+
+test('shop plan repairs first and buys a balanced loadout for sector two', () => {
+  const plan = campaignShopPlan({
+    sector: 1,
+    shield: 35,
+    maxShield: 100,
+    weapon: 2,
+    armor: 0,
+    pods: 0,
+    bombs: 2,
+    volley: 0,
+    rapid: 0,
+    scatterOwned: false,
+  });
+  assert.equal(plan.nextSector, 2);
+  assert.deepEqual(plan.targets, {
+    weapon: 3,
+    armor: 1,
+    pods: 1,
+    bombs: 5,
+    volley: 0,
+    rapid: 0,
+    scatterOwned: false,
+  });
+  assert.deepEqual(plan.priorities, ['repair', 'weapon', 'armor', 'pods', 'bombPack']);
+});
+
+test('shop plan switches to single bombs when the pack cap has been crossed', () => {
+  const plan = campaignShopPlan({
+    sector: 5,
+    shield: 100,
+    maxShield: 100,
+    weapon: 4,
+    armor: 2,
+    pods: 2,
+    bombs: 6,
+    volley: 1,
+    rapid: 0,
+    scatterOwned: true,
+  });
+  assert.equal(plan.nextSector, 6);
+  assert.ok(plan.priorities.includes('bomb'));
+  assert.ok(!plan.priorities.includes('bombPack'));
+  assert.ok(plan.priorities.includes('rapid'));
+});
+
+test('shop plan adds scatter only from sector five onward', () => {
+  const early = campaignShopPlan({
+    sector: 2,
+    shield: 100,
+    maxShield: 100,
+    weapon: 3,
+    armor: 1,
+    pods: 1,
+    bombs: 5,
+    volley: 0,
+    rapid: 0,
+    scatterOwned: false,
+  });
+  const late = campaignShopPlan({
+    sector: 4,
+    shield: 100,
+    maxShield: 100,
+    weapon: 4,
+    armor: 2,
+    pods: 2,
+    bombs: 6,
+    volley: 1,
+    rapid: 0,
+    scatterOwned: false,
+  });
+  assert.ok(!early.priorities.includes('scatter'));
+  assert.ok(late.priorities.includes('scatter'));
 });

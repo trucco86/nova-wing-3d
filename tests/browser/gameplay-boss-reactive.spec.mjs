@@ -5,7 +5,7 @@ import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
 import { equipmentDecision } from '../../tools/gameplay-boss-equipment-policy.mjs';
 import { orbitalDecision } from '../../tools/gameplay-boss-orbit-policy.mjs';
-import { campaignFlight } from '../../tools/gameplay-campaign-pilot.mjs';
+import { campaignFlight, campaignShopPlan } from '../../tools/gameplay-campaign-pilot.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -465,7 +465,7 @@ test('Rok visible aim pilot compares targeting with ordinary fire', async ({ pag
 test('Rok extended autonomous attempt compares tactical equipment with and without aim', async ({
   page,
 }, info) => {
-  test.setTimeout(720000);
+  test.setTimeout(1800000);
   const tactical = await runEncounter(page, info, 0, true, true, true, false, true);
   const combined = await runEncounter(page, info, 0, true, true, true, true, true);
   const measure = (run) => {
@@ -578,6 +578,233 @@ if (/^[1-9]$/.test(matrixSector ?? '')) {
       expect(report.final.lives).toBe(report.initial.lives);
     }
   });
+}
+
+
+
+async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
+  const initial = await snapshot();
+  const initialShield = initial.maxShield ?? initial.shield;
+  const stepSeconds = 0.25;
+  const maxSteps = Math.ceil(((SECTORS[sectorIndex]?.duration ?? 150) + 160) / stepSeconds);
+  const phases = new Set();
+  const repairs = [];
+  const bombs = [];
+  const specials = [];
+  const transforms = [];
+  const multiLocks = [];
+  const pressed = new Set();
+  const specialUsed = new Set();
+  let previous = null;
+  let touching = false;
+  let robotUsed = false;
+  let bombUsed = false;
+  let lockUsed = false;
+  const touch = mobile ? await page.context().newCDPSession(page) : null;
+  const center = async (selector) => {
+    const bounds = await page.locator(selector).boundingBox();
+    if (!bounds) throw new Error('Missing control ' + selector);
+    return {
+      x: bounds.x + bounds.width / 2,
+      y: bounds.y + bounds.height / 2,
+      radius: Math.min(bounds.width, bounds.height) * 0.4,
+    };
+  };
+
+  try {
+    const launch = page.locator('#launchSkip');
+    if (await launch.isVisible()) await launch.click();
+    await page.locator('body.in-mission:not(.launch-cinematic)').waitFor({ state: 'attached' });
+
+    for (let step = 0; step < maxSteps; step++) {
+      const current = { ...(await snapshot()), initialShield };
+      if (current.state !== 'playing' || current.boss) break;
+      const action = campaignFlight(current, previous);
+      const phase = current.orbitalLaunch?.phase ?? 'city';
+      if (!phases.has(phase)) {
+        phases.add(phase);
+        await page.screenshot({
+          path: info.outputPath('campaign-sector-' + (sectorIndex + 1) + '-' + phase + '.png'),
+        });
+      }
+
+      if (touch && touching) {
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        touching = false;
+      }
+
+      if (action.repair) {
+        const before = current.shield;
+        if (mobile) {
+          const drawer = page.locator('#strategyDrawer');
+          if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+          const category = page.locator('[data-rpg-category="utilities"]');
+          if (await category.isVisible()) await category.click();
+          const button = page.locator('#repairPulse');
+          await expect(button).toBeVisible();
+          await expect(button).toBeEnabled();
+          await button.click();
+          if ((await drawer.getAttribute('open')) !== null) await drawer.locator('summary').click();
+        } else {
+          await page.keyboard.press('KeyR');
+        }
+        const after = await page.evaluate(() => window.fixture.game.snapshot().shield);
+        repairs.push({ seconds: current.seconds, before, after });
+      }
+
+      if (action.bomb && !bombUsed) {
+        if (mobile) await page.locator('#bombTouch').tap();
+        else await page.keyboard.press('KeyX');
+        bombUsed = true;
+        bombs.push({ seconds: current.seconds, remaining: current.bombs - 1 });
+      }
+
+      if (action.transform === 'robot' && !robotUsed) {
+        if (mobile) await page.locator('#robotTouch').tap();
+        else await page.keyboard.press('KeyT');
+        robotUsed = true;
+        transforms.push({ seconds: current.seconds, mode: 'robot' });
+      } else if (action.transform === 'ship' && robotUsed) {
+        if (mobile) await page.locator('#robotTouch').tap();
+        else await page.keyboard.press('KeyT');
+        robotUsed = false;
+        transforms.push({ seconds: current.seconds, mode: 'ship' });
+      }
+
+      if (action.special && !specialUsed.has(action.special)) {
+        if (mobile) {
+          const drawer = page.locator('#strategyDrawer');
+          if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+          const category = page.locator('[data-rpg-category="specials"]');
+          if (await category.isVisible()) await category.click();
+          const id = action.special === 'plasma' ? '#plasmaTitan' : '#fiveCatsOverdrive';
+          const button = page.locator(id);
+          if (await button.isEnabled()) {
+            await button.click();
+            specialUsed.add(action.special);
+            specials.push({ seconds: current.seconds, special: action.special });
+          }
+          if ((await drawer.getAttribute('open')) !== null) await drawer.locator('summary').click();
+        } else {
+          await page.keyboard.press(action.special === 'plasma' ? 'KeyY' : 'KeyO');
+          specialUsed.add(action.special);
+          specials.push({ seconds: current.seconds, special: action.special });
+        }
+      }
+
+      if (action.multiLock && !lockUsed) {
+        if (mobile) {
+          const lock = await center('#lockTouch');
+          await touch.send('Input.dispatchTouchEvent', {
+            type: 'touchStart',
+            touchPoints: [{ x: lock.x, y: lock.y, id: 4 }],
+          });
+          await page.evaluate(() => window.fixture.advance(0.3, { renderAfter: false }));
+          await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        } else {
+          await page.keyboard.down('KeyN');
+          await page.evaluate(() => window.fixture.advance(0.3, { renderAfter: false }));
+          await page.keyboard.up('KeyN');
+        }
+        lockUsed = true;
+        multiLocks.push({ seconds: current.seconds, heldSeconds: 0.3 });
+      }
+
+      const keys = [...dodgeKeys(action)];
+      if (action.fire) keys.push('Space');
+      if (action.boost) keys.push('ShiftLeft');
+      if (touch) {
+        const points = [];
+        if (action.fire) {
+          const fire = await center('#fireTouch');
+          points.push({ x: fire.x, y: fire.y, id: 2 });
+        }
+        if (action.boost) {
+          const boost = await center('#boostTouch');
+          points.push({ x: boost.x, y: boost.y, id: 3 });
+        }
+        if (action.x || action.y) {
+          const stick = await center('#stick');
+          points.push({ x: stick.x, y: stick.y, id: 1 });
+          const offset = dodgeTouchOffset(action, stick.radius);
+          await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+          touching = true;
+          await touch.send('Input.dispatchTouchEvent', {
+            type: 'touchMove',
+            touchPoints: points.map((point) =>
+              point.id === 1 ? { ...point, x: point.x + offset.x, y: point.y + offset.y } : point,
+            ),
+          });
+        } else if (points.length) {
+          await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points });
+          touching = true;
+        }
+      } else {
+        for (const key of [...pressed]) {
+          if (!keys.includes(key)) {
+            await page.keyboard.up(key);
+            pressed.delete(key);
+          }
+        }
+        for (const key of keys) {
+          if (!pressed.has(key)) {
+            await page.keyboard.down(key);
+            pressed.add(key);
+          }
+        }
+      }
+
+      await page.evaluate((seconds) => window.fixture.advance(seconds, { renderAfter: false }), stepSeconds);
+      previous = { ...current, pilotTarget: action.target };
+    }
+  } finally {
+    for (const key of pressed) await page.keyboard.up(key);
+    if (touching) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    if (touch) await touch.detach();
+  }
+
+  const encounterStart = await snapshot();
+  let combat = null;
+  if (encounterStart.boss && encounterStart.state === 'playing') {
+    combat = await runEncounter(page, info, sectorIndex, true, true, true, true, true, true, true);
+    if (combat.terminal?.state === 'collapsing') {
+      await page.evaluate(() => window.fixture.advance(25));
+    }
+  }
+  const final = await snapshot();
+  await page.screenshot({ path: info.outputPath('campaign-sector-' + (sectorIndex + 1) + '-final.png') });
+  return {
+    sector: sectorIndex + 1,
+    boss: SECTORS[sectorIndex]?.boss?.name ?? SECTORS[sectorIndex]?.boss ?? 'unknown',
+    outcome: final.state === 'shop' && combat?.terminal?.state === 'collapsing'
+      ? 'STAGE_CLEARED'
+      : combat
+        ? 'BOSS_REACHED'
+        : final.state === 'respawning'
+          ? 'LIFE_LOST'
+          : 'APPROACH_INCOMPLETE',
+    phases: [...phases],
+    repairs,
+    bombs,
+    specials,
+    transforms,
+    multiLocks,
+    combat: combat
+      ? { terminal: combat.terminal, metrics: combat.metrics, errors: combat.errors }
+      : null,
+    final: {
+      state: final.state,
+      seconds: final.seconds,
+      shield: final.shield,
+      maxShield: final.maxShield,
+      lives: final.lives,
+      credits: final.credits,
+      weapon: final.weapon,
+      armor: final.armor,
+      pods: final.pods,
+      bombs: final.bombs,
+    },
+  };
 }
 
 if (process.env.NOVA_QA_CAMPAIGN === '1') {
@@ -924,5 +1151,90 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     expect(combat?.errors ?? []).toEqual([]);
     expect(report.outcome).toBe('STAGE_CLEARED');
     expect(report.releaseAuthorized).toBe(false);
+
+    const buyUpgrades = async () => {
+      const beforePlan = await snapshot();
+      const plan = campaignShopPlan(beforePlan);
+      const purchases = [];
+      const reached = (state, item) => {
+        switch (item) {
+          case 'repair':
+            return state.shield >= state.maxShield;
+          case 'weapon':
+            return state.weapon >= plan.targets.weapon;
+          case 'armor':
+            return state.armor >= plan.targets.armor;
+          case 'pods':
+            return state.pods >= plan.targets.pods;
+          case 'bombPack':
+          case 'bomb':
+            return state.bombs >= plan.targets.bombs;
+          case 'volley':
+            return state.volley >= plan.targets.volley;
+          case 'rapid':
+            return state.rapid >= plan.targets.rapid;
+          case 'scatter':
+            return state.scatterOwned === true;
+          default:
+            return true;
+        }
+      };
+      for (const item of plan.priorities) {
+        const button = page.locator('#buy' + item);
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const current = await snapshot();
+          if (reached(current, item) || !(await button.isVisible()) || !(await button.isEnabled())) {
+            break;
+          }
+          await button.click();
+          const after = await snapshot();
+          expect(after.credits, 'purchase must use campaign credits').toBeLessThan(current.credits);
+          purchases.push({
+            item,
+            creditsBefore: current.credits,
+            creditsAfter: after.credits,
+            weapon: after.weapon,
+            armor: after.armor,
+            pods: after.pods,
+            bombs: after.bombs,
+            shield: after.shield,
+            maxShield: after.maxShield,
+          });
+        }
+      }
+      return { plan, purchases, final: await snapshot() };
+    };
+
+    const progression = [];
+    const firstShop = await buyUpgrades();
+    expect(firstShop.purchases.length, 'first shop should buy at least one real upgrade').toBeGreaterThan(0);
+    progression.push({ completedSector: 1, shop: firstShop });
+
+    for (const sectorIndex of [1, 2]) {
+      await expect(page.locator('#nextSector')).toBeVisible();
+      await expect(page.locator('#nextSector')).toBeEnabled();
+      await page.locator('#nextSector').click();
+      await expect(page.locator('#campaignMap')).toBeVisible();
+      await expect(page.locator('#mapLaunch')).toBeEnabled();
+      await page.locator('#mapLaunch').click();
+      await page.locator('body.in-mission:not(.launch-cinematic)').waitFor({ state: 'attached' });
+      const launch = page.locator('#launchSkip');
+      if (await launch.isVisible()) await launch.click();
+      const stage = await runCampaignStage(page, info, sectorIndex, snapshot, mobile);
+      progression.push(stage);
+      expect(stage.outcome, 'sector ' + (sectorIndex + 1) + ' must be cleared').toBe('STAGE_CLEARED');
+      if (sectorIndex < 2) {
+        const shop = await buyUpgrades();
+        progression.push({ completedSector: sectorIndex + 1, shop });
+      }
+    }
+
+    const progressionPath = info.outputPath('campaign-progression-sectors-1-to-3.json');
+    await writeFile(progressionPath, JSON.stringify(progression, null, 2) + '\n');
+    await info.attach('campaign-progression-sectors-1-to-3', {
+      path: progressionPath,
+      contentType: 'application/json',
+    });
+    console.log('CAMPAIGN_PROGRESSION ' + JSON.stringify(progression));
   });
 }

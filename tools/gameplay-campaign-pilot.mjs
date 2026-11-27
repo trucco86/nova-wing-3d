@@ -353,3 +353,35 @@ export function campaignFlight(state, previous = null) {
     special,
   };
 }
+
+
+export function campaignShopPlan(state) {
+  const completedSector = Number.isInteger(state.sector)
+    ? state.sector
+    : (Number.isInteger(state.sectorIndex) ? state.sectorIndex + 1 : 1);
+  const nextSector = clamp(completedSector + 1, 2, 10);
+  const progress = Math.max(0, nextSector - 2);
+  const targets = {
+    weapon: Math.min(6, 3 + Math.floor(progress / 2)),
+    armor: Math.min(4, 1 + Math.floor(progress / 2)),
+    pods: Math.min(3, 1 + Math.floor(progress / 2)),
+    bombs: Math.min(8, 5 + Math.floor(progress / 2)),
+    volley: Math.min(2, Math.floor(progress / 3)),
+    rapid: Math.min(2, Math.floor(progress / 4)),
+    scatterOwned: nextSector >= 5,
+  };
+  const priorities = [];
+  if (Number.isFinite(state.shield) && Number.isFinite(state.maxShield) && state.shield < state.maxShield) {
+    priorities.push('repair');
+  }
+  if ((state.weapon ?? 1) < targets.weapon) priorities.push('weapon');
+  if ((state.armor ?? 0) < targets.armor) priorities.push('armor');
+  if ((state.pods ?? 0) < targets.pods) priorities.push('pods');
+  if ((state.bombs ?? 0) < targets.bombs) {
+    priorities.push((state.bombs ?? 0) <= 5 ? 'bombPack' : 'bomb');
+  }
+  if ((state.volley ?? 0) < targets.volley) priorities.push('volley');
+  if ((state.rapid ?? 0) < targets.rapid) priorities.push('rapid');
+  if (targets.scatterOwned && state.scatterOwned !== true) priorities.push('scatter');
+  return { completedSector, nextSector, targets, priorities };
+}
