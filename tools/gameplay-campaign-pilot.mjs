@@ -14,12 +14,8 @@ const finitePoint = (point) =>
 
 function normalizeSolid(solid) {
   if (solid?.active !== true || solid.solid === false) return null;
-  const center = Array.isArray(solid.center)
-    ? solid.center
-    : [solid.x, solid.y, solid.z];
-  const half = Array.isArray(solid.half)
-    ? solid.half
-    : [solid.halfX, solid.halfY, solid.halfZ];
+  const center = Array.isArray(solid.center) ? solid.center : [solid.x, solid.y, solid.z];
+  const half = Array.isArray(solid.half) ? solid.half : [solid.halfX, solid.halfY, solid.halfZ];
   const previous = Array.isArray(solid.previous)
     ? solid.previous
     : [solid.previousX, solid.previousY, solid.previousZ];
@@ -77,9 +73,7 @@ function incomingThreats(state, previous, playerDepth) {
       for (const prior of priorShots) {
         if (!finitePoint(prior)) continue;
         const distance =
-          (shot[0] - prior[0]) ** 2 +
-          (shot[1] - prior[1]) ** 2 +
-          (shot[2] - prior[2]) ** 2;
+          (shot[0] - prior[0]) ** 2 + (shot[1] - prior[1]) ** 2 + (shot[2] - prior[2]) ** 2;
         if (distance < nearestDistance) {
           nearestDistance = distance;
           nearest = prior;
@@ -162,9 +156,7 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
   const previousTarget = previous?.pilotTarget;
   if (previousTarget && Number.isFinite(previousTarget.x) && Number.isFinite(previousTarget.y)) {
     score +=
-      (Math.abs(candidate.x - previousTarget.x) +
-        Math.abs(candidate.y - previousTarget.y)) *
-      0.75;
+      (Math.abs(candidate.x - previousTarget.x) + Math.abs(candidate.y - previousTarget.y)) * 0.75;
   }
 
   for (const solid of solids) {
@@ -181,22 +173,16 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
     // not where the target lane would be after an impossible instant move.
     const travelX = PLAYER_SPEED_X * impact.time;
     const travelY = PLAYER_SPEED_Y * impact.time;
-    const playerAtImpactX =
-      player.x + clamp(candidate.x - player.x, -travelX, travelX);
-    const playerAtImpactY =
-      player.y + clamp(candidate.y - player.y, -travelY, travelY);
-    const overlapX =
-      solid.halfX + CLEARANCE_X + 2.5 - Math.abs(playerAtImpactX - impact.x);
-    const overlapY =
-      solid.halfY + CLEARANCE_Y + 2 - Math.abs(playerAtImpactY - impact.y);
+    const playerAtImpactX = player.x + clamp(candidate.x - player.x, -travelX, travelX);
+    const playerAtImpactY = player.y + clamp(candidate.y - player.y, -travelY, travelY);
+    const overlapX = solid.halfX + CLEARANCE_X + 2.5 - Math.abs(playerAtImpactX - impact.x);
+    const overlapY = solid.halfY + CLEARANCE_Y + 2 - Math.abs(playerAtImpactY - impact.y);
     if (overlapX > 0 && overlapY > 0) score += 1800 + overlapX * overlapY * 5;
 
     // When impact is imminent, the safe lane may be unreachable before contact.
     // Still commit toward a lane that clears the obstacle after the immediate hit.
-    const eventualOverlapX =
-      solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
-    const eventualOverlapY =
-      solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
+    const eventualOverlapX = solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
+    const eventualOverlapY = solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
     if (eventualOverlapX > 0 && eventualOverlapY > 0) {
       score += 650 + eventualOverlapX * eventualOverlapY * 2;
     }
@@ -245,12 +231,8 @@ export function campaignFlight(state, previous = null) {
 
   const phase = state.orbitalLaunch?.phase ?? 'city';
   const { target, threats, solids } = selectSafeTarget(state, previous);
-  const x = Math.abs(state.player.x - target.x) > 3.8
-    ? Math.sign(target.x - state.player.x)
-    : 0;
-  const y = Math.abs(state.player.y - target.y) > 3.2
-    ? Math.sign(target.y - state.player.y)
-    : 0;
+  const x = Math.abs(state.player.x - target.x) > 3.8 ? Math.sign(target.x - state.player.x) : 0;
+  const y = Math.abs(state.player.y - target.y) > 3.2 ? Math.sign(target.y - state.player.y) : 0;
   const depth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
   const subboss = (state.targets ?? []).some(
     (enemy) =>

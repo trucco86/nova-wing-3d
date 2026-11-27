@@ -670,7 +670,8 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
             energy: current.energy,
             player: current.player,
             cityImpactCount: current.cityImpactCount,
-            activeCitySolids: current.cityPhysicalSolids?.filter((solid) => solid.active).length ?? 0,
+            activeCitySolids:
+              current.cityPhysicalSolids?.filter((solid) => solid.active).length ?? 0,
             activeCityHazards: current.cityHazardSolids?.length ?? 0,
             hostileProjectiles: current.hostilePositions?.length ?? 0,
             targets: current.targets?.length ?? 0,
@@ -705,7 +706,8 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         if (action.special && !specialUsed.has(action.special)) {
           if (mobile) {
             const drawer = page.locator('#strategyDrawer');
-            if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
+            if ((await drawer.getAttribute('open')) === null)
+              await drawer.locator('summary').click();
             const category = page.locator('[data-rpg-category="specials"]');
             if (await category.isVisible()) await category.click();
             const id = action.special === 'plasma' ? '#plasmaTitan' : '#fiveCatsOverdrive';
@@ -715,7 +717,8 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
               specialUsed.add(action.special);
               specialEvents.push({ seconds: current.seconds, special: action.special });
             }
-            if ((await drawer.getAttribute('open')) !== null) await drawer.locator('summary').click();
+            if ((await drawer.getAttribute('open')) !== null)
+              await drawer.locator('summary').click();
           } else {
             await page.keyboard.press(action.special === 'plasma' ? 'KeyY' : 'KeyO');
             specialUsed.add(action.special);
@@ -766,9 +769,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
             await touch.send('Input.dispatchTouchEvent', {
               type: 'touchMove',
               touchPoints: points.map((point) =>
-                point.id === 1
-                  ? { ...point, x: point.x + offset.x, y: point.y + offset.y }
-                  : point,
+                point.id === 1 ? { ...point, x: point.x + offset.x, y: point.y + offset.y } : point,
               ),
             });
           } else if (points.length) {
@@ -797,7 +798,8 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       }
     } finally {
       for (const key of pressed) await page.keyboard.up(key);
-      if (touching) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      if (touching)
+        await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
       if (touch) await touch.detach();
     }
 
