@@ -218,6 +218,9 @@ jobs:
           # following human-authored pull_request run; avoid duplicate bot CI.
           if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ] && [ "${GITHUB_REF_NAME}" != "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
             gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_NAME}" = "feat/gameplay-campaign-pilot" ]; then
+            gh workflow run qa-campaign-pilot.yml --ref "${GITHUB_REF_NAME}"
+          fi
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"

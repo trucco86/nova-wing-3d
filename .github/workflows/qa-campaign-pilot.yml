@@ -1,8 +1,5 @@
 name: QA fresh campaign pilot
 on:
-  push:
-    branches:
-      - feat/gameplay-campaign-pilot
   workflow_dispatch:
 
 permissions:
