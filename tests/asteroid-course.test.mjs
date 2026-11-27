@@ -42,6 +42,19 @@ test('flat wings stop at the visible fissure; banking permits recovery and trave
   course.destroy();
 });
 
+test('robot hull has a physically traversable central opening between the fissure banks', () => {
+  const robot = measurePilotHull(createFlyingRobot());
+  const half = projectPilotHull(robot, new T.Euler());
+  const fissures = ASTEROID_COURSE.filter((rock) => rock.kind === 'fissure');
+  assert.equal(fissures.length, 2);
+  const leftEdge = fissures[0].x + fissures[0].hx;
+  const rightEdge = fissures[1].x - fissures[1].hx;
+  const opening = rightEdge - leftEdge;
+  assert.ok(opening > half.x * 2 + 4, 'robot needs at least 2 units of clearance on each side');
+  const center = { x: 0, y: 10, z: 9 };
+  for (const fissure of fissures) assert.equal(rockSweep(center, center, fissure, half, 850), null);
+});
+
 test('boost cannot tunnel through rock at 30, 60 or 120 Hz', () => {
   const offsets = [];
   for (const hz of [30, 60, 120]) {
