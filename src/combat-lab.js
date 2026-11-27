@@ -2,6 +2,10 @@ export const COMBAT_LAB_FIELDS = Object.freeze({
   superDamage: { base: 3.6, min: 1, max: 6, step: 0.1 },
   counterDamage: { base: 1.35, min: 1, max: 2, step: 0.05 },
   counterSeconds: { base: 4.5, min: 2, max: 10, step: 0.5 },
+  plasmaDuration: { base: 1, min: 0.5, max: 2, step: 0.1 },
+  overdriveDuration: { base: 1, min: 0.5, max: 2, step: 0.1 },
+  plasmaDamage: { base: 1, min: 0.5, max: 2, step: 0.1 },
+  overdriveDamage: { base: 1, min: 0.5, max: 2, step: 0.1 },
   shieldDuration: { base: 1, min: 0.5, max: 2, step: 0.1 },
   stasisDuration: { base: 1, min: 0.5, max: 2, step: 0.1 },
 });
