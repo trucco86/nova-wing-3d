@@ -57,12 +57,12 @@ O run 45831261557 confirmou novamente as quatro vitórias de Rok no SHA 043839e,
 
 O job browser 140251107103 terminou verde. Os quatro cenários de comparação foram executados com controles reais de teclado/joystick e sem alterar dano ou física. O resultado é uma baseline de sobrevivência, não uma vitória:
 
-| Plataforma | Política | HP inicial → final | Escudo | Vidas | Tiros | Janelas |
-|---|---|---:|---:|---:|---:|---:|
-| Desktop | Tática | 3400 → 442,6 | 202 → 0 | 3 → 2 | 177 | 13 |
-| Desktop | Tática + mira | 3400 → 1308,6 | 202 → 0 | 3 → 2 | 118 | 10 |
-| Mobile | Tática | 3400 → 57,59 | 202 → 0 | 3 → 2 | 177 | 13 |
-| Mobile | Tática + mira | 3400 → 2448 | 202 → 0 | 3 → 2 | 118 | 10 |
+| Plataforma | Política      | HP inicial → final |  Escudo | Vidas | Tiros | Janelas |
+| ---------- | ------------- | -----------------: | ------: | ----: | ----: | ------: |
+| Desktop    | Tática        |       3400 → 442,6 | 202 → 0 | 3 → 2 |   177 |      13 |
+| Desktop    | Tática + mira |      3400 → 1308,6 | 202 → 0 | 3 → 2 |   118 |      10 |
+| Mobile     | Tática        |       3400 → 57,59 | 202 → 0 | 3 → 2 |   177 |      13 |
+| Mobile     | Tática + mira |        3400 → 2448 | 202 → 0 | 3 → 2 |   118 |      10 |
 
 Todas as rotas terminaram como `INTERRUPTED` durante respawn. Nenhuma satisfaz o contrato de vitória (`BOSS_DEFEATED`, HP zero e estado terminal de vitória/colapso). A rota mobile tática chegou perto de derrotar o chefe, mas não venceu. O teste prova execução prolongada da fixture, não campanha completa nem desempenho em hardware físico.
 
@@ -71,4 +71,3 @@ A mira automática piorou o resultado nesta amostra: deixou mais HP no chefe em 
 Os padrões observados foram `ice-quake` e `cryo-pincer`. Na rota mobile tática houve 13 janelas (11 `ice-quake`, 2 `cryo-pincer`), com maior sequência repetida de 3. O detector registrou `NW-R008` como `P1-candidate`, com aprovação humana `PENDING`. Isso é um sinal consultivo de repetição, não um bug confirmado nem evidência suficiente para alterar o design do chefe.
 
 **Próxima etapa:** instrumentar cada janela de ataque com posição normalizada do jogador, direção publicada pelo radar, comando e duração da esquiva, variação de escudo/vidas e padrão observado. Só depois comparar políticas adaptativas com repetições controladas. Preservar a restrição de não consultar coordenadas ocultas nem alterar o runtime do jogo.
-
