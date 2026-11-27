@@ -588,10 +588,14 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     await page.goto('/__dynamic.html?sector=0&freshCampaign=1&intro=1&encounters=1');
     await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
     const snapshot = () =>
-      page.evaluate(() => ({
-        ...window.fixture.game.snapshot(),
-        launchCinematic: document.body.classList.contains('launch-cinematic'),
-      }));
+      page.evaluate(() => {
+        const game = window.fixture.game.snapshot();
+        return {
+          ...game,
+          launchCinematic: document.body.classList.contains('launch-cinematic'),
+          repairReady: !document.getElementById('repairPulse').disabled,
+        };
+      });
     const initial = await snapshot();
     expect(initial.developerSession).toBe(false);
     expect(initial.weapon).toBe(1);
@@ -624,6 +628,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     const transformEvents = [];
     const bombEvents = [];
     const specialEvents = [];
+    const repairEvents = [];
     const multiLockEvents = [];
     let previous = null;
     let touching = false;
@@ -633,7 +638,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
 
     try {
       for (let i = 0; i < 2400; i++) {
-        const current = await snapshot();
+        const current = { ...(await snapshot()), initialShield: initial.shield };
         if (current.state !== 'playing' || current.boss) break;
         const action = campaignFlight(current, previous);
         const shieldDamage =
@@ -707,6 +712,27 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         if (touch && touching) {
           await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
           touching = false;
+        }
+
+        if (action.repair) {
+          const before = current.shield;
+          if (mobile) {
+            const drawer = page.locator('#strategyDrawer');
+            if ((await drawer.getAttribute('open')) === null)
+              await drawer.locator('summary').click();
+            const category = page.locator('[data-rpg-category="utilities"]');
+            if (await category.isVisible()) await category.click();
+            const button = page.locator('#repairPulse');
+            await expect(button).toBeVisible();
+            await expect(button).toBeEnabled();
+            await button.click();
+            if ((await drawer.getAttribute('open')) !== null)
+              await drawer.locator('summary').click();
+          } else {
+            await page.keyboard.press('KeyR');
+          }
+          const after = await page.evaluate(() => window.fixture.game.snapshot().shield);
+          repairEvents.push({ seconds: current.seconds, before, after });
         }
 
         if (action.bomb && !bombUsed) {
@@ -885,6 +911,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       bombEvents,
       transformEvents,
       specialEvents,
+      repairEvents,
       multiLockEvents,
       errors,
       releaseAuthorized: false,

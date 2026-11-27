@@ -74,3 +74,5 @@ Branch isolada feat/gameplay-campaign-pilot. A fixture freshCampaign=1 usa start
 ## Fresh-campaign pilot
 
 The pilot enters live gameplay through the visible launch-skip control, never through a boss or stage skip. It uses the QA snapshot's actual city collision geometry as an instrumented navigation sensor, predicts moving hazards, reacts to nearby hostile projectiles, and follows a controlled lateral orbit after the city section. Acceptance requires a real transition to the shop after Rok is defeated with the initial loadout; a respawn or browser-only success is not a stage clear.
+
+The campaign pilot also triggers the real repair utility when shield falls below 65% of the fresh-run baseline and the control is ready. The action is recorded with before/after shield values; it does not modify health directly.

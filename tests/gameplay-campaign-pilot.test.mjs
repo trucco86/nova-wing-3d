@@ -15,6 +15,9 @@ const state = {
   hostilePositions: [],
   targets: [],
   energy: 0,
+  shield: 100,
+  initialShield: 100,
+  repairReady: false,
   bombs: 0,
   mecha: { active: false, lockEnabled: false },
   strategy: { arcana: 0 },
@@ -141,6 +144,32 @@ test('pilot changes lane after a real city collision instead of repeating it', (
   };
   const action = campaignFlight(current, previous);
   assert.ok(action.x !== 0 || action.y !== 0);
+});
+
+test('pilot repairs the shield when the utility is ready and the threshold is crossed', () => {
+  const ready = campaignFlight({
+    ...state,
+    shield: 60,
+    initialShield: 100,
+    repairReady: true,
+  });
+  assert.equal(ready.repair, true);
+
+  const healthy = campaignFlight({
+    ...state,
+    shield: 80,
+    initialShield: 100,
+    repairReady: true,
+  });
+  assert.equal(healthy.repair, false);
+
+  const coolingDown = campaignFlight({
+    ...state,
+    shield: 40,
+    initialShield: 100,
+    repairReady: false,
+  });
+  assert.equal(coolingDown.repair, false);
 });
 
 test('pilot uses bombs, robot transformation, multi-lock and squad specials against a subboss', () => {

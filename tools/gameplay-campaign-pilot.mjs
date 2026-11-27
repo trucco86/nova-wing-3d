@@ -335,6 +335,10 @@ export function campaignFlight(state, previous = null) {
         : phase === 'orbit'
           ? 'maintain-evasive-orbit'
           : 'maintain-safe-lane',
+    repair:
+      state.repairReady === true &&
+      Number.isFinite(state.shield) &&
+      state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
     transform: subboss
       ? state.mecha?.active
