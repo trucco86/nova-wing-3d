@@ -57,7 +57,20 @@ export function musicEnergyProfile(mode = 'sector', sector = 0) {
   }
 }
 
-export function createMusic(context) {
+export const MUSIC_LAB_VARIANTS = ['Original', 'Assault', 'Orchestral', 'Stealth', 'Retro', 'Epic'];
+
+export function musicLabProfile(index = 0) {
+  return [
+    { tempo: 1, gain: 1, motif: 0 },
+    { tempo: 1.12, gain: 1.04, motif: 1 },
+    { tempo: 0.91, gain: 1.08, motif: 2 },
+    { tempo: 0.82, gain: 0.78, motif: 3 },
+    { tempo: 1.06, gain: 0.92, motif: 4 },
+    { tempo: 0.97, gain: 1.12, motif: 1 },
+  ][index] ?? { tempo: 1, gain: 1, motif: 0 };
+}
+
+export function createMusic(context, { resolveVariant = () => 0 } = {}) {
   let master,
     input,
     pool,
@@ -117,7 +130,11 @@ export function createMusic(context) {
   function beat() {
     const heavy = ['boss', 'enraged', 'collapse'].includes(mode);
     const track = heavy ? BOSS_TRACK : TRACKS[sector];
-    const { bpm, intensity, highPulse } = musicEnergyProfile(mode, sector);
+    const energy = musicEnergyProfile(mode, sector);
+    const arrangement = musicLabProfile(resolveVariant(mode, sector));
+    const bpm = energy.bpm * arrangement.tempo;
+    const intensity = energy.intensity * arrangement.gain;
+    const highPulse = energy.highPulse;
     const d = 60 / bpm / 4;
     const s = step % 16;
     const bar = Math.floor(step / 16) % 4;
@@ -208,7 +225,7 @@ export function createMusic(context) {
 
     // Distinct melody runs create a feeling of pursuit; the menu is a calmer
     // preview of the same original theme before the player starts the mission.
-    const melody = MOTIFS[sector % MOTIFS.length][s];
+    const melody = MOTIFS[(sector + arrangement.motif) % MOTIFS.length][s];
     const foreground = mode === 'menu' ? [0, 8].includes(s) : [0, 3, 6, 8, 11, 14].includes(s);
     if (melody !== null && foreground) {
       const tone = mode === 'victory' ? [0, 4, 7, 12][Math.floor(s / 4)] : root + melody;
