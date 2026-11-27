@@ -3878,7 +3878,9 @@ export function createGame({
     exportChoice.textContent = 'COPIAR ESCOLHAS';
     exportChoice.onclick = async () => {
       try {
-        await window.navigator.clipboard.writeText(JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant }, null, 2));
+        await window.navigator.clipboard.writeText(
+          JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant }, null, 2),
+        );
         status.textContent = 'Escolhas copiadas';
       } catch {
         status.textContent = JSON.stringify(audioLab.snapshot());
@@ -3896,9 +3898,48 @@ export function createGame({
     });
     musicVariant.onchange = () => {
       qaMusicVariant = Number(musicVariant.value);
-      status.textContent = 'Trilha selecionada para combate QA: ' + MUSIC_LAB_VARIANTS[qaMusicVariant];
+      status.textContent =
+        'Trilha selecionada para combate QA: ' + MUSIC_LAB_VARIANTS[qaMusicVariant];
     };
     panel.appendChild(musicVariant);
+    const audition = document.createElement('button');
+    audition.type = 'button';
+    audition.textContent = 'OUVIR TRILHA (12s)';
+    let auditionTimer = null;
+    let auditionScore = null;
+    const stopAudition = () => {
+      if (auditionTimer !== null) window.clearInterval(auditionTimer);
+      auditionTimer = null;
+      auditionScore?.destroy();
+      auditionScore = null;
+      audition.textContent = 'OUVIR TRILHA (12s)';
+      if (appActive && state === 'menu' && menuThemePlaying) music?.resume();
+    };
+    audition.onclick = async () => {
+      if (auditionScore) {
+        stopAudition();
+        return;
+      }
+      if (!developerAvailable || !appActive || state !== 'menu' || !unlockAudio()) return;
+      await audioCtx.resume();
+      if (!appActive || state !== 'menu') return;
+      music?.pause();
+      const choice = Number(musicVariant.value);
+      auditionScore = createMusic(audioCtx, { resolveVariant: () => choice });
+      auditionScore.setVolume(settings.master * settings.music);
+      auditionScore.start(Number($('developerSector').value) || 0, 'sector');
+      audition.textContent = 'PARAR TRILHA';
+      let elapsed = 0;
+      auditionTimer = window.setInterval(() => {
+        if (!appActive || state !== 'menu' || elapsed >= 12 || panel.hidden) {
+          stopAudition();
+          return;
+        }
+        auditionScore.update(0.05);
+        elapsed += 0.05;
+      }, 50);
+    };
+    panel.appendChild(audition);
     $('developerPanel').appendChild(panel);
   }
   if (developerAvailable) {
