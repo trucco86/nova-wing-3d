@@ -574,9 +574,7 @@ if (/^[0-9]$/.test(matrixSector ?? '')) {
     expect(run.errors).toEqual([]);
     // Previously defeated bosses are hard regression contracts in this matrix.
     // Unproven bosses remain exploratory until a real victory is observed.
-    if (
-      [0, 1, 2, 3, 7].includes(sector)
-    ) {
+    if ([0, 1, 2, 3, 7].includes(sector)) {
       expect(report.outcome).toBe('BOSS_DEFEATED');
       expect(report.final.bossParts).toBe(0);
       expect(report.final.lives).toBe(report.initial.lives);
