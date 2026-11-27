@@ -1,6 +1,10 @@
 const CLEARANCE_X = 6.5;
 const CLEARANCE_Y = 4.5;
+const CLEARANCE_Z = 3.2;
 const APPROACH_HORIZON = 220;
+const HAZARD_HORIZON_SECONDS = 3.2;
+const PLAYER_SPEED_X = 24;
+const PLAYER_SPEED_Y = 20;
 const X_LANES = [-48, -32, -16, 0, 16, 32, 48];
 const Y_LANES = [6, 10, 14, 18, 22, 26, 30, 34, 38, 42];
 
@@ -9,29 +13,38 @@ const finitePoint = (point) =>
   Array.isArray(point) && point.length >= 3 && point.every(Number.isFinite);
 
 function normalizeSolid(solid) {
-  if (solid?.active !== true) return null;
+  if (solid?.active !== true || solid.solid === false) return null;
   const center = Array.isArray(solid.center)
     ? solid.center
     : [solid.x, solid.y, solid.z];
   const half = Array.isArray(solid.half)
     ? solid.half
     : [solid.halfX, solid.halfY, solid.halfZ];
+  const previous = Array.isArray(solid.previous)
+    ? solid.previous
+    : [solid.previousX, solid.previousY, solid.previousZ];
   if (![...center, ...half].every(Number.isFinite)) return null;
+  const hasPrevious = previous.every(Number.isFinite);
   return {
+    kind: solid.kind ?? 'city-solid',
     x: center[0],
     y: center[1],
     z: center[2],
     halfX: Math.abs(half[0]),
     halfY: Math.abs(half[1]),
     halfZ: Math.abs(half[2]),
+    previousX: hasPrevious ? previous[0] : center[0],
+    previousY: hasPrevious ? previous[1] : center[1],
+    previousZ: hasPrevious ? previous[2] : center[2],
+    hasPrevious,
   };
 }
 
 function visibleSolids(state) {
-  return [
-    ...(state.cityPhysicalSolids ?? []),
-    ...(state.cityFallingSolids ?? []),
-  ].map(normalizeSolid).filter(Boolean);
+  const source = Array.isArray(state.cityHazardSolids)
+    ? state.cityHazardSolids
+    : [...(state.cityPhysicalSolids ?? []), ...(state.cityFallingSolids ?? [])];
+  return source.map(normalizeSolid).filter(Boolean);
 }
 
 function incomingThreats(state, previous, playerDepth) {
@@ -107,6 +120,38 @@ function incomingThreats(state, previous, playerDepth) {
   return threats;
 }
 
+function movingHazardImpact(solid, state, previous, playerDepth) {
+  const front = solid.z + solid.halfZ;
+  const back = solid.z - solid.halfZ;
+  if (front < playerDepth - APPROACH_HORIZON || back > playerDepth + 12) return null;
+
+  const elapsed = state.seconds - (previous?.seconds ?? state.seconds);
+  if (!solid.hasPrevious || elapsed <= 0 || elapsed > 1.25) {
+    return { time: null, x: solid.x, y: solid.y };
+  }
+
+  const vx = (solid.x - solid.previousX) / elapsed;
+  const vy = (solid.y - solid.previousY) / elapsed;
+  const vz = (solid.z - solid.previousZ) / elapsed;
+  if (vz <= 1.5) {
+    if (front < playerDepth - 36 || back > playerDepth + CLEARANCE_Z) return null;
+    return { time: 0.35, x: solid.x, y: solid.y };
+  }
+
+  const time =
+    front < playerDepth - CLEARANCE_Z
+      ? (playerDepth - CLEARANCE_Z - front) / vz
+      : back <= playerDepth + CLEARANCE_Z
+        ? 0.35
+        : Infinity;
+  if (!Number.isFinite(time) || time > HAZARD_HORIZON_SECONDS || time < 0) return null;
+  return {
+    time: clamp(time, 0.25, HAZARD_HORIZON_SECONDS),
+    x: solid.x + vx * time,
+    y: solid.y + vy * time,
+  };
+}
+
 function candidateScore(candidate, state, previous, solids, threats, playerDepth) {
   const player = state.player;
   let score =
@@ -119,16 +164,32 @@ function candidateScore(candidate, state, previous, solids, threats, playerDepth
     score +=
       (Math.abs(candidate.x - previousTarget.x) +
         Math.abs(candidate.y - previousTarget.y)) *
-      0.35;
+      0.75;
   }
 
   for (const solid of solids) {
-    const front = solid.z + solid.halfZ;
-    const back = solid.z - solid.halfZ;
-    if (front < playerDepth - APPROACH_HORIZON || back > playerDepth + 12) continue;
-    const overlapX = solid.halfX + CLEARANCE_X - Math.abs(candidate.x - solid.x);
-    const overlapY = solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - solid.y);
-    if (overlapX > 0 && overlapY > 0) score += 1200 + overlapX * overlapY * 4;
+    const impact = movingHazardImpact(solid, state, previous, playerDepth);
+    if (!impact) continue;
+    if (impact.time === null) {
+      const overlapX = solid.halfX + CLEARANCE_X - Math.abs(candidate.x - impact.x);
+      const overlapY = solid.halfY + CLEARANCE_Y - Math.abs(candidate.y - impact.y);
+      if (overlapX > 0 && overlapY > 0) score += 1200 + overlapX * overlapY * 4;
+      continue;
+    }
+
+    // Score where the ship can physically reach by the obstacle's arrival,
+    // not where the target lane would be after an impossible instant move.
+    const travelX = PLAYER_SPEED_X * impact.time;
+    const travelY = PLAYER_SPEED_Y * impact.time;
+    const playerAtImpactX =
+      player.x + clamp(candidate.x - player.x, -travelX, travelX);
+    const playerAtImpactY =
+      player.y + clamp(candidate.y - player.y, -travelY, travelY);
+    const overlapX =
+      solid.halfX + CLEARANCE_X + 2.5 - Math.abs(playerAtImpactX - impact.x);
+    const overlapY =
+      solid.halfY + CLEARANCE_Y + 2 - Math.abs(playerAtImpactY - impact.y);
+    if (overlapX > 0 && overlapY > 0) score += 1800 + overlapX * overlapY * 5;
   }
 
   for (const threat of threats) {
@@ -173,7 +234,7 @@ export function campaignFlight(state, previous = null) {
   }
 
   const phase = state.orbitalLaunch?.phase ?? 'city';
-  const { target, threats } = selectSafeTarget(state, previous);
+  const { target, threats, solids } = selectSafeTarget(state, previous);
   const x = Math.abs(state.player.x - target.x) > 3.8
     ? Math.sign(target.x - state.player.x)
     : 0;
@@ -203,7 +264,11 @@ export function campaignFlight(state, previous = null) {
     fire: true,
     boost: phase === 'boost',
     target,
-    reason: threats.length ? 'evade-visible-threat' : 'maintain-safe-lane',
+    reason: threats.length
+      ? 'evade-visible-threat'
+      : solids.length
+        ? 'evade-city-hazard'
+        : 'maintain-safe-lane',
     bomb: subboss && (state.bombs ?? 0) > 0,
     transform: subboss
       ? state.mecha?.active

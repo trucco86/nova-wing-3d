@@ -11,6 +11,7 @@ const state = {
   flightBounds: { horizontal: 72, minY: -1, maxY: 46 },
   cityPhysicalSolids: [],
   cityFallingSolids: [],
+  cityHazardSolids: [],
   hostilePositions: [],
   targets: [],
   energy: 0,
@@ -138,4 +139,62 @@ test('pilot uses bombs, robot transformation, multi-lock and squad specials agai
   });
   assert.equal(departure.transform, 'ship');
   assert.equal(departure.multiLock, false);
+});
+
+test('pilot avoids authoritative city hazards with their actual collision bounds', () => {
+  const action = campaignFlight({
+    ...state,
+    player: { x: 0, y: 10 },
+    cityHazardSolids: [
+      {
+        kind: 'falling-facade',
+        active: true,
+        solid: true,
+        x: 0,
+        y: 10,
+        z: -60,
+        halfX: 10,
+        halfY: 8,
+        halfZ: 12,
+        previousX: 0,
+        previousY: 10,
+        previousZ: -60,
+      },
+    ],
+  });
+  assert.notDeepEqual(action.target, { x: 0, y: 10 });
+  assert.equal(action.reason, 'evade-city-hazard');
+});
+
+test('pilot predicts a moving city hazard before it reaches the ship', () => {
+  const previous = {
+    ...state,
+    seconds: 10,
+    player: { x: 0, y: 10 },
+    pilotTarget: { x: 0, y: 10 },
+  };
+  const current = {
+    ...state,
+    seconds: 11,
+    player: { x: 0, y: 10 },
+    cityHazardSolids: [
+      {
+        kind: 'moving-train',
+        active: true,
+        solid: true,
+        x: 0,
+        y: 10,
+        z: -30,
+        halfX: 13,
+        halfY: 7,
+        halfZ: 21,
+        previousX: 0,
+        previousY: 10,
+        previousZ: -90,
+      },
+    ],
+  };
+  const action = campaignFlight(current, previous);
+  assert.equal(action.reason, 'evade-city-hazard');
+  assert.ok(action.x !== 0 || action.y !== 0);
 });

@@ -7279,6 +7279,23 @@ export function createGame({
       cityArchitecture: dynamicFlight && sectorIndex === 0 ? world.cityArchitectureSnapshot() : [],
       city35Details: dynamicFlight && sectorIndex === 0 ? world.city35DetailSnapshot() : [],
       cityPhysicalSolids: dynamicFlight && sectorIndex === 0 ? world.cityLocalSolidsSnapshot() : [],
+      cityHazardSolids:
+        dynamicFlight && sectorIndex === 0
+          ? world.cityHazards().map((solid) => ({
+              kind: solid.kind,
+              active: solid.active === true,
+              solid: solid.solid === true,
+              x: solid.center.x,
+              y: solid.center.y,
+              z: solid.center.z,
+              halfX: solid.half.x,
+              halfY: solid.half.y,
+              halfZ: solid.half.z,
+              previousX: solid.previousX ?? solid.center.x,
+              previousY: solid.previousY ?? solid.center.y,
+              previousZ: solid.previousZ ?? solid.center.z,
+            }))
+          : [],
       cityCameraOcclusion:
         dynamicFlight && sectorIndex === 0 ? world.cityCameraOcclusionSnapshot() : [],
       cityImpactCount,

@@ -610,6 +610,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     };
     const phases = new Set();
     const stages = [];
+    const collisionEvents = [];
     const pressed = new Set();
     const specialUsed = new Set();
     const transformEvents = [];
@@ -628,6 +629,29 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         current = await snapshot();
         if (current.state !== 'playing' || current.boss) break;
         const action = campaignFlight(current, previous);
+        const impactDelta = (current.cityImpactCount ?? 0) - (previous?.cityImpactCount ?? 0);
+        if (impactDelta > 0) {
+          const event = {
+            seconds: current.seconds,
+            delta: impactDelta,
+            player: current.player,
+            hazards: (current.cityHazardSolids ?? []).map((solid) => ({
+              kind: solid.kind,
+              x: solid.x,
+              y: solid.y,
+              z: solid.z,
+              halfX: solid.halfX,
+              halfY: solid.halfY,
+              halfZ: solid.halfZ,
+            })),
+          };
+          collisionEvents.push(event);
+          if (collisionEvents.length <= 4) {
+            await page.screenshot({
+              path: info.outputPath('city-impact-' + collisionEvents.length + '.png'),
+            });
+          }
+        }
         current.pilotTarget = action.target;
         const phase = current.orbitalLaunch?.phase ?? 'city';
         if (!phases.has(phase)) {
@@ -647,6 +671,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
             player: current.player,
             cityImpactCount: current.cityImpactCount,
             activeCitySolids: current.cityPhysicalSolids?.filter((solid) => solid.active).length ?? 0,
+            activeCityHazards: current.cityHazardSolids?.length ?? 0,
             hostileProjectiles: current.hostilePositions?.length ?? 0,
             targets: current.targets?.length ?? 0,
             action,
@@ -817,6 +842,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       },
       phases: [...phases],
       stages,
+      collisionEvents,
       combat: combat
         ? {
             outcome: combat.terminal?.state,
