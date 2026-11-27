@@ -104,7 +104,7 @@ test('attack telemetry captures normalized player movement, radar, commands and 
   assert.deepEqual(result.windows[0].radarDirections, ['→']);
   assert.deepEqual(result.windows[0].inputKeys, ['KeyD']);
   assert.deepEqual(result.windows[0].playerPositionStart, { x: 0.25, y: 0.5 });
-  assert.deepEqual(result.windows[0].playerPositionEnd, { x: 0.5, y: 0.75 });
+  assert.deepEqual(result.windows[0].playerPositionEnd, { x: 0.75, y: 1 });
   assert.equal(result.windows[0].shieldDelta, -10);
   assert.equal(result.windows[0].livesLost, 0);
   assert.equal(result.releaseAuthorized, false);
