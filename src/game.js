@@ -108,6 +108,7 @@ import {
   updateEuropaTunnelBreach,
   isGroundSector,
 } from './encounters.js';
+import { COMBAT_LAB_FIELDS, createCombatLab } from './combat-lab.js';
 import { createMusic, MUSIC_LAB_VARIANTS } from './audio.js';
 import { stageOneEncounterWindows, stageOneCombatDensity } from './stage-one-pacing.js';
 import { configurePlaybackAudioSession } from './audio-session.js';
@@ -351,6 +352,8 @@ export function createGame({
   let qaMusicVariant = 0;
   const developerAvailable = developerToolsAllowed(window.location?.hostname, nativeLifecycle);
   const audioLab = createAudioLab(developerAvailable, AUDIO_CUES);
+  const combatLab = createCombatLab(developerAvailable);
+  const combatValue = (key) => combatLab.resolve(key, developerSession);
   const routeRenderer = dynamicFlight ? createRouteRenderer(scene, camera) : null;
   scene.add(camera);
   const cockpit = dynamicFlight ? createCockpit(camera) : null;
@@ -960,8 +963,8 @@ export function createGame({
     arcana -= spell.cost;
     if (boss && stagePerformance) stagePerformance.primaryOnly = false;
     specialCd = dynamicFlight ? Math.max(9, spell.cooldown / (1 + rank('spirit') * 0.025)) : 8;
-    if (strategy.special === 0) barrier = spell.duration + rank('defense') * 0.1;
-    if (strategy.special === 2) stasis = spell.duration;
+    if (strategy.special === 0) barrier = spell.duration * combatValue('shieldDuration') + rank('defense') * 0.1;
+    if (strategy.special === 2) stasis = spell.duration * combatValue('stasisDuration');
     if (strategy.special === 3) {
       berserk = spell.duration;
       message('BERSERK ATIVO · POTÊNCIA +60% · CADÊNCIA +25%');
@@ -2794,7 +2797,7 @@ export function createGame({
       // Generators must still be destroyed and the exposed core gets the final blow.
       // Team supers break down more exterior armor while the generator locks
       // remain fully enforced. Ordinary gunfire preserves its existing cap.
-      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? 3.6 : 1);
+      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? combatValue('superDamage') : 1);
       const chip = spendDamage(amount * 0.75, charged) * hullRatio;
       const floor = bossCombat.max * (parts.length > 0 ? (squadSuper ? 0.55 : 0.72) : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
@@ -2808,7 +2811,7 @@ export function createGame({
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
         (tactics().vulnerable ? 1.5 : 1) *
-        (bossCounterTime > 0 ? 1.35 : 1);
+        (bossCounterTime > 0 ? combatValue('counterDamage') : 1);
     let part = target
       ? parts.find((p) =>
           dynamicFlight
@@ -3879,7 +3882,7 @@ export function createGame({
     exportChoice.onclick = async () => {
       try {
         await window.navigator.clipboard.writeText(
-          JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant }, null, 2),
+          JSON.stringify({ effects: audioLab.snapshot(), music: qaMusicVariant, combat: combatLab.snapshot() }, null, 2),
         );
         status.textContent = 'Escolhas copiadas';
       } catch {
@@ -3941,6 +3944,38 @@ export function createGame({
     };
     panel.appendChild(audition);
     $('developerPanel').appendChild(panel);
+    const combatPanel = document.createElement('details');
+    combatPanel.id = 'qaCombatLab';
+    const combatTitle = document.createElement('summary');
+    combatTitle.textContent = 'COMBAT LAB · QA';
+    combatPanel.appendChild(combatTitle);
+    const inputs = [];
+    for (const [key, field] of Object.entries(COMBAT_LAB_FIELDS)) {
+      const label = document.createElement('label');
+      label.textContent = key + ' ';
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.min = String(field.min);
+      input.max = String(field.max);
+      input.step = String(field.step);
+      input.value = String(field.base);
+      input.onchange = () => {
+        if (!combatLab.select(key, Number(input.value)))
+          input.value = String(combatLab.resolve(key, true));
+      };
+      inputs.push([input, field]);
+      label.appendChild(input);
+      combatPanel.appendChild(label);
+    }
+    const combatReset = document.createElement('button');
+    combatReset.type = 'button';
+    combatReset.textContent = 'RESTAURAR COMBATE';
+    combatReset.onclick = () => {
+      combatLab.reset();
+      for (const [input, field] of inputs) input.value = String(field.base);
+    };
+    combatPanel.appendChild(combatReset);
+    $('developerPanel').appendChild(combatPanel);
   }
   if (developerAvailable) {
     // Test harnesses and first-load mobile browsers share safe defaults.
@@ -6041,7 +6076,7 @@ export function createGame({
             if (!disarmed) {
               // Real tactical consequence: an accurately dodged physical strike
               // opens a short damage window, instead of the boss simply looping.
-              bossCounterTime = 4.5;
+              bossCounterTime = combatValue('counterSeconds');
               tacticEnergy = Math.min(3, tacticEnergy + 0.5);
             }
             message(
