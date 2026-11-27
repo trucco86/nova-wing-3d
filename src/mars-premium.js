@@ -258,6 +258,46 @@ function makeCuriosity() {
   rover.add(beacon);
   return rover;
 }
+function makePerseverance() {
+  const rover = new T.Group();
+  rover.name = 'mars-perseverance-rover';
+  rover.userData.visualOnly = true;
+  rover.userData.marsChunk = true;
+  rover.position.set(76, -3, -760);
+  rover.scale.setScalar(1.9);
+  box(rover, 'perseverance-central-chassis', hull, 0, 2.8, 0, 7.2, 1.8, 10.2);
+  box(rover, 'perseverance-multi-mission-radioisotope-generator', metal, 0, 3.8, 3.5, 3.2, 1.4, 2.4);
+  box(rover, 'perseverance-sample-cache-deck', dark, 0, 4.1, -2.1, 4.7, 0.7, 3.4);
+  // Six wheels and rocker-bogie suspension, kept visual-only like Curiosity.
+  for (const side of [-1, 1]) {
+    for (const axle of [-1, 0, 1]) {
+      const wheel = new T.Mesh(new T.CylinderGeometry(1.42, 1.42, 0.78, 14), dark);
+      wheel.rotation.z = Math.PI / 2;
+      wheel.position.set(side * 4.65, 0.5, axle * 3.45);
+      wheel.name = 'perseverance-wheel-' + (side < 0 ? 'left' : 'right') + '-' + axle;
+      rover.add(wheel);
+      box(rover, 'perseverance-rocker-bogie-link', metal,
+        side * 3.05, 1.45, axle * 2.35, 2.9, 0.34, 0.42);
+    }
+  }
+  box(rover, 'perseverance-remote-sensing-mast', metal, 0, 6.8, -2.6, 0.48, 5.2, 0.58);
+  box(rover, 'perseverance-supercam-head', hull, 0, 9.65, -3.2, 3.6, 1.25, 1.9);
+  for (const side of [-1, 1]) {
+    const lens = new T.Mesh(new T.CylinderGeometry(0.48, 0.48, 0.82, 12), glass);
+    lens.name = 'perseverance-supercam-optics';
+    lens.rotation.x = Math.PI / 2;
+    lens.position.set(side * 1.02, 9.7, -4.2);
+    rover.add(lens);
+  }
+  box(rover, 'perseverance-sample-coring-arm', metal, -3.5, 2.8, -4.2, 0.55, 0.5, 5.2);
+  box(rover, 'perseverance-rotary-percussive-drill', dark, -3.5, 2.8, -7.1, 1.2, 1.15, 1.5);
+  box(rover, 'perseverance-high-gain-antenna', hull, 2.8, 5.0, 3.2, 1.1, 0.25, 1.1);
+  const beacon = new T.Mesh(new T.SphereGeometry(0.36, 8, 6), marker);
+  beacon.name = 'perseverance-status-beacon';
+  beacon.position.set(2.9, 4.8, 2.1);
+  rover.add(beacon);
+  return rover;
+}
 export function createMarsPremium() {
   const root = new T.Group();
   root.name = 'mars-premium-desert';
@@ -274,6 +314,7 @@ export function createMarsPremium() {
   surface.add(createMarsMysteries());
   surface.add(createMarsSandstorm());
   surface.add(makeCuriosity());
+  surface.add(makePerseverance());
   root.add(surface);
   // Both moons remain independent real-world objects: visible in orbit and
   // above the landscape, never reusing the Earth's cracked moon.
