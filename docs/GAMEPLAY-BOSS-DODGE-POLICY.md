@@ -71,3 +71,8 @@ A mira automática piorou o resultado nesta amostra: deixou mais HP no chefe em 
 Os padrões observados foram `ice-quake` e `cryo-pincer`. Na rota mobile tática houve 13 janelas (11 `ice-quake`, 2 `cryo-pincer`), com maior sequência repetida de 3. O detector registrou `NW-R008` como `P1-candidate`, com aprovação humana `PENDING`. Isso é um sinal consultivo de repetição, não um bug confirmado nem evidência suficiente para alterar o design do chefe.
 
 **Próxima etapa:** instrumentar cada janela de ataque com posição normalizada do jogador, direção publicada pelo radar, comando e duração da esquiva, variação de escudo/vidas e padrão observado. Só depois comparar políticas adaptativas com repetições controladas. Preservar a restrição de não consultar coordenadas ocultas nem alterar o runtime do jogo.
+
+### Telemetria por janela de ataque
+
+A coleta agora agrega cada ciclo físico observado em um registro: padrão, ciclo, início/fim/duração, fases de aviso e ataque, direção do radar visível, ações e teclas enviadas, tempo de esquiva, posição inicial/final do jogador normalizada pelos limites de voo, variação de escudo e vidas. A posição do chefe não é usada. Janelas incompletas e amostras sem limites de voo permanecem explicitamente incompletas ou sem posição; não são preenchidas por inferência. A telemetria é evidência para análise, não uma política adaptativa nem um gate de release.
+

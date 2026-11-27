@@ -87,6 +87,7 @@ async function runEncounter(
           overdriveReady: !document.getElementById('fiveCatsOverdrive').disabled,
           specialActive: (s.fiveCats?.plasmaTime ?? 0) > 0 || (s.fiveCats?.overdriveTime ?? 0) > 0,
           player: s.player,
+          flightBounds: s.flightBounds,
           state: s.state,
           boss: s.boss,
           phase: s.tactics.state,
@@ -461,6 +462,7 @@ test('Colossus extended autonomous attempt compares tactical equipment with and 
       maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
       attackWindows: run.metrics.attackWindows,
       attackPatterns: run.metrics.patterns,
+      attackWindowTelemetry: run.metrics.attackWindowTelemetry,
       equipmentEvents: run.equipmentEvents,
       specialEvents: run.specialEvents,
     };
