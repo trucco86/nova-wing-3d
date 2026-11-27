@@ -1,6 +1,5 @@
 import { inspectBossPatterns } from './gameplay-boss-pattern-observer.mjs';
 
-
 function normalizedPlayerPosition(sample) {
   const player = sample.player;
   const bounds = sample.flightBounds;
@@ -123,14 +122,16 @@ export function summarizeAttackWindows(samples) {
         .filter((sample) => sample.position !== null),
       shieldStart: first.shield ?? null,
       shieldEnd: last.shield ?? null,
-      shieldDelta: Number.isFinite(first.shield) && Number.isFinite(last.shield)
-        ? Number((last.shield - first.shield).toFixed(3))
-        : null,
+      shieldDelta:
+        Number.isFinite(first.shield) && Number.isFinite(last.shield)
+          ? Number((last.shield - first.shield).toFixed(3))
+          : null,
       livesStart: first.lives ?? null,
       livesEnd: last.lives ?? null,
-      livesLost: Number.isFinite(first.lives) && Number.isFinite(last.lives)
-        ? first.lives - last.lives
-        : null,
+      livesLost:
+        Number.isFinite(first.lives) && Number.isFinite(last.lives)
+          ? first.lives - last.lives
+          : null,
       samples: window.samples.length,
       positionCoverage: positions.length / window.samples.length,
     };
