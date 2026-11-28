@@ -4,6 +4,7 @@ on:
     branches:
       - feat/gameplay-boss-visible-aim
       - feat/gameplay-agent-colossus-probe
+      - feat/colossus-probe-stacked
 
 permissions:
   contents: read
