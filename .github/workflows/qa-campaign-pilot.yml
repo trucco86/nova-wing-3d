@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/gameplay-campaign-pilot
+      - feat/campaign-pilot-stacked
   workflow_dispatch:
 
 permissions:
