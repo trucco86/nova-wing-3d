@@ -10,6 +10,8 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    // Campaign pilot runs produce a reviewable MP4 for desktop and mobile.
+    video: process.env.NOVA_QA_CAMPAIGN === '1' ? 'on' : 'off',
     launchOptions: {
       args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
     },

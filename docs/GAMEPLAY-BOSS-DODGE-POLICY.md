@@ -67,12 +67,16 @@ Run 45916686543, SHA c59e574: seis vitórias em seis cenários, todos com HP e g
 
 Próxima rodada: repetir os três chefes como regressão obrigatória no laboratório e aplicar a mesma política aos seis restantes em desktop/mobile. Os setores 2, 3 e 4 devem terminar com núcleo e partes zerados e todas as vidas; setores 5 a 10 continuam exploratórios. Os resultados não provam passagem por fases completas nem equivalência ao equipamento da campanha. Não alterar jogabilidade para obter aprovação.
 
-## Matriz completa e calibração de Ômega
+## Primeira fase sem equipamento de laboratório
 
-Run 45917844706: 17/18 vitórias, sem erro de navegador. Todos os dez chefes já foram derrotados em ao menos uma plataforma, nove em ambas. Único caso restante: Ômega desktop, 850 passos de órbita em 240s, duas partes vivas; mobile venceu em 80s. O rastreamento do chefe reage à aproximação sustentada, portanto a política experimental aciona lock do robô antes do núcleo e alterna flancos a cada seis segundos em vez de perseguir indefinidamente a direção do radar. Apenas Ômega recebe essa alteração. Os oito setores restantes passam a exigir vitória nas duas plataformas e Ômega mobile mantém contrato de vitória; novo run isolado para setor 8, ainda sem resultado.
+Branch isolada feat/gameplay-campaign-pilot. A fixture freshCampaign=1 usa start(false) e não injeta save, créditos, armas ou pods. Habilita intro e ondas reais. O piloto tenta navegar do hangar até Rok com voo, disparos e boost reais; não chama coleta, dano, teleporte ou skip de chefe. Se alcançar o encontro, reutiliza a mesma instância da campanha e seus recursos conquistados. Só STAGE_CLEARED com estado shop significa primeira fase completa. Perda da primeira vida ou limite de tempo são resultados exploratórios. O teste ainda não prova campanha integral, nem equivalência ao navegador público em tempo real.
 
-## Current coverage
+## Fresh-campaign pilot
 
-The autonomous boss matrix runs all ten sector indexes (0 through 9) on desktop and mobile. Only these five bosses are currently treated as proven victory regression contracts: Rok (0), Colossus of the Dunes (1), Perfurador (2), Reactor Devastador (3), and Couraçado Ômega (7). The other five remain exploratory until both platform results are observed and reviewed.
+The pilot enters live gameplay through the visible launch-skip control, never through a boss or stage skip. It uses the QA snapshot's actual city collision geometry as an instrumented navigation sensor, predicts moving hazards, reacts to nearby hostile projectiles, and follows a controlled lateral orbit after the city section. Acceptance requires a real transition to the shop after Rok is defeated with the initial loadout; a respawn or browser-only success is not a stage clear.
 
-A successful workflow run means the browser and instrumentation completed. It does not imply a boss victory unless the attached report explicitly says `BOSS_DEFEATED`. The matrix does not authorize production changes.
+The campaign pilot also triggers the real repair utility when shield falls below 65% of the fresh-run baseline and the control is ready. The action is recorded with before/after shield values; it does not modify health directly.
+
+## Campaign shop progression
+
+The shop policy prioritizes shield repair, then scales weapon, armor, pods and bombs with the next sector. Purchases are executed through the real shop buttons and must reduce campaign credits. The current validation extends the fresh run through sectors 1–3, preserving the save and loadout between sectors.
