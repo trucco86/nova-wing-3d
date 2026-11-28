@@ -262,7 +262,9 @@ function candidateScore(
       const overlapX = solid.halfX + clearance.x - Math.abs(candidate.x - impact.x);
       const overlapY = solid.halfY + clearance.y - Math.abs(candidate.y - impact.y);
       if (overlapX > 0 && overlapY > 0)
-        score += hardAsteroidCourse ? 100000 + overlapX * overlapY * 100 : 1200 + overlapX * overlapY * 4;
+        score += hardAsteroidCourse
+          ? 100000 + overlapX * overlapY * 100
+          : 1200 + overlapX * overlapY * 4;
       continue;
     }
 
@@ -275,7 +277,9 @@ function candidateScore(
     const overlapX = solid.halfX + clearance.x + 2.5 - Math.abs(playerAtImpactX - impact.x);
     const overlapY = solid.halfY + clearance.y + 2 - Math.abs(playerAtImpactY - impact.y);
     if (overlapX > 0 && overlapY > 0)
-      score += hardAsteroidCourse ? 100000 + overlapX * overlapY * 100 : 1800 + overlapX * overlapY * 5;
+      score += hardAsteroidCourse
+        ? 100000 + overlapX * overlapY * 100
+        : 1800 + overlapX * overlapY * 5;
 
     // When impact is imminent, the safe lane may be unreachable before contact.
     // Still commit toward a lane that clears the obstacle after the immediate hit.
