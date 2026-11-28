@@ -597,6 +597,9 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
   const specialUsed = new Set();
   let previous = null;
   let touching = false;
+  let rollButtonHeld = false;
+  let rollWasHeld = false;
+  const bankEvents = [];
   let robotUsed = false;
   let bombUsed = false;
   let lockUsed = false;
@@ -644,6 +647,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
             transform: action.transform,
             repair: action.repair,
             bomb: action.bomb,
+            rollHeld: action.rollHeld === true,
           },
         });
       }
@@ -750,7 +754,23 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
         multiLocks.push({ seconds: current.seconds, heldSeconds: 0.3 });
       }
 
+      if (action.rollHeld !== rollWasHeld) {
+        bankEvents.push({ seconds: current.seconds, held: action.rollHeld === true });
+        rollWasHeld = action.rollHeld === true;
+      }
+      if (touch) {
+        if (action.rollHeld && !rollButtonHeld) {
+          const roll = await center('#rollTouch');
+          await page.mouse.move(roll.x, roll.y);
+          await page.mouse.down();
+          rollButtonHeld = true;
+        } else if (!action.rollHeld && rollButtonHeld) {
+          await page.mouse.up();
+          rollButtonHeld = false;
+        }
+      }
       const keys = [...dodgeKeys(action)];
+      if (action.rollHeld && !touch) keys.push('KeyQ');
       if (action.fire) keys.push('Space');
       if (action.boost) keys.push('ShiftLeft');
       if (touch) {
@@ -798,10 +818,16 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
         (seconds) => window.fixture.advance(seconds, { renderAfter: false }),
         stepSeconds,
       );
+      if (action.rollHeld) {
+        const bankAngle = await page.evaluate(() => window.fixture.game.snapshot().bankAngle);
+        const event = bankEvents.at(-1);
+        if (event?.held) event.maxAbsBankAngle = Math.max(event.maxAbsBankAngle ?? 0, Math.abs(bankAngle ?? 0));
+      }
       previous = { ...current, pilotTarget: action.target };
     }
   } finally {
     for (const key of pressed) await page.keyboard.up(key);
+    if (rollButtonHeld) await page.mouse.up();
     if (touching)
       await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     if (touch) await touch.detach();
@@ -832,6 +858,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
             : 'APPROACH_INCOMPLETE',
     phases: [...phases],
     stages,
+    bankEvents,
     damageEvents,
     repairs,
     bombs,
@@ -1305,6 +1332,16 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
       expect(stage.outcome, 'sector ' + (sectorIndex + 1) + ' must be cleared').toBe(
         'STAGE_CLEARED',
       );
+      if (sectorIndex === 2) {
+        expect(
+          stage.bankEvents.some((event) => event.held),
+          'sector 3 must hold a ship bank through the fissure approach',
+        ).toBe(true);
+        expect(
+          stage.bankEvents.some((event) => event.held && event.maxAbsBankAngle > 0.05),
+          'sector 3 must produce a measurable physical bank angle',
+        ).toBe(true);
+      }
       if (sectorIndex < 2) {
         const shop = await buyUpgrades();
         progression.push({ completedSector: sectorIndex + 1, shop });
