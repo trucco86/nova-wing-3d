@@ -822,7 +822,10 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
         const bankAngle = await page.evaluate(() => window.fixture.game.snapshot().bankAngle);
         const event = bankEvents.at(-1);
         if (event?.held)
-          event.maxAbsBankAngle = Math.max(event.maxAbsBankAngle ?? 0, Math.abs(bankAngle ?? 0));
+          event.maxAbsBankAngle = Math.max(
+            event.maxAbsBankAngle ?? 0,
+            Math.abs(bankAngle ?? 0),
+          );
       }
       previous = { ...current, pilotTarget: action.target };
     }
