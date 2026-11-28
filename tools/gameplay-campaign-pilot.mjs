@@ -362,7 +362,7 @@ function selectSafeTarget(state, previous) {
       }
     }
   }
-  return { target: selected, threats, solids };
+  return { target: selected, threats, solids, fissureAhead };
 }
 
 export function campaignFlight(state, previous = null) {
@@ -371,7 +371,7 @@ export function campaignFlight(state, previous = null) {
   }
 
   const phase = state.orbitalLaunch?.phase ?? 'city';
-  const { target, threats, solids } = selectSafeTarget(state, previous);
+  const { target, threats, solids, fissureAhead } = selectSafeTarget(state, previous);
   const x = Math.abs(state.player.x - target.x) > 3.8 ? Math.sign(target.x - state.player.x) : 0;
   const y = Math.abs(state.player.y - target.y) > 3.2 ? Math.sign(target.y - state.player.y) : 0;
   const depth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
