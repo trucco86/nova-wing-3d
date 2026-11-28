@@ -30,17 +30,21 @@ Pré-homologação observacional. A aprovação da experiência final e a autori
 
 Adicionar perfis iniciante, agressivo e adversarial; coleta contínua, replay e vídeo, verificação de colisão por telemetria, comparação com baseline aprovada, agregação no Control Center e notificação deduplicada. Depois de medir falsos positivos, avaliar gate objetivo obrigatório. Não afirmar que essas capacidades já estão implementadas.
 
-## Observabilidade recorrente (candidata, requer merge)
+## Observabilidade recorrente (integrada à main)
 
 - O workflow `.github/workflows/gameplay-observer.yml` permite execução manual e agenda uma rodada nos dias úteis, às 12:00 UTC (09:00 Brasília). **A agenda só estará ativa após integração à branch padrão.** A agenda opera na branch padrão após merge, não sobre o site publicado em produção.
 - O Playwright observa o motor WebGL real em quatro cenários e três perfis de física com fixture de QA, nos projetos desktop e mobile. É uma amostra determinística, não uma campanha completa, nem um agente multimodal autônomo.
 - Cada observação gera `artifacts/gameplay-observer/<cenário>-<dispositivo>.json` e capturas anexas; o consolidado exige catorze relatórios, registrando `OBSERVED_OK`, `FINDINGS` ou `BLOCKED`.
 - O resultado é **consultivo**, não aprova merge, qualidade subjetiva ou publicação. Relatórios ausentes ou execução incompleta são `BLOCKED` e fazem o workflow falhar. Achados de regra objetiva ficam disponíveis para triagem.
-- Apenas na execução agendada, `FINDINGS` ou `BLOCKED` podem criar ou atualizar um issue `[Gameplay Observer] Divergências para triagem`. A assinatura dos achados evita notificações repetidas para o mesmo conjunto. O issue não é fechado automaticamente, e não há mudanças automáticas no código.
+- Apenas na execução agendada, `FINDINGS` ou `BLOCKED` podem criar ou atualizar um issue `[Gameplay Observer] Divergências para triagem`. Os casos exclusivamente em `REVIEW_REQUIRED` mantêm vídeos e relatórios, mas **não** abrem issue de bug sem achado objetivo. A assinatura dos achados evita notificações repetidas para o mesmo conjunto. O issue não é fechado automaticamente, e não há mudanças automáticas no código.
 - Em caso de `FINDINGS`, `REVIEW_REQUIRED` ou `BLOCKED`, o executor grava apenas um **clipe MP4 curto, de até 12 segundos**, extraído da filmagem WebGL real feita pelo Playwright. O recorte tenta incluir até sete segundos anteriores ao primeiro alerta. O vídeo é anexado ao teste e ao pacote de evidências sob `artifacts/gameplay-observer/<fase>-<dispositivo>-review.mp4`. Se a conversão ou a gravação falhar, o relatório permanece `BLOCKED`. As gravações brutas de cenários sem anomalias são descartadas.
 - Para revisar: abra a execução GitHub Actions, baixe o artefato `gameplay-observer-evidence` (rotina agendada) ou o artefato `browser-evidence-<shard>` (CI de PR), e reproduza o MP4 junto com o relatório JSON. A issue de alerta aponta para a execução; a publicação direta de vídeos reproduzíveis no Control Center ainda é futura.
 - **Limitação:** o clipe de até 12 segundos contém os frames registrados no navegador, não representa gravação de gameplay integral nem FPS nativo do dispositivo; o instante do alerta é aproximado quando a simulação avança em tempo acelerado.
 - A rotina não integra ainda visualização no Control Center, vídeo contínuo, julgamentos multimodais de ritmo/estética ou telemetria de FPS e colisão em aparelho físico. Esses recursos requerem baselines, critérios de aceitação e validação específica.
+
+### Controle de publicação independente
+
+O workflow `ci.yml` mantém Quality e os seis shards Playwright obrigatórios em todo push à `main`. O job `delivery-scope` compara o diff de Git para verificar se algum dos cinco arquivos efetivamente publicados em GitHub Pages mudou: `index.html`, `.nojekyll`, `LICENSE`, `docs/THREE-LICENSE.txt` ou `docs/control-center/index.html`. Se apenas testes, workflows, documentos ou ferramentas mudarem, o Pages não deve republicar a build idêntica. Uma execução manual permite republicar, e falhas no diff liberam o deploy por segurança. Essa regra **não** substitui autorização de merge ou dos gates de produção.
 
 ### Critérios de promoção
 
