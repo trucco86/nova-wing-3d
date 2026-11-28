@@ -34,7 +34,8 @@
     "ios:sync": "node tools/ios.mjs sync",
     "ios:open": "node tools/ios.mjs open",
     "ios:build": "node tools/ios.mjs build",
-    "ios:smoke": "node tools/ios-simulator-smoke.mjs"
+    "ios:smoke": "node tools/ios-simulator-smoke.mjs",
+    "gameplay:player": "node tools/run-gameplay-player.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.5.2",
