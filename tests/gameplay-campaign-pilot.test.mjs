@@ -334,7 +334,7 @@ test('shop plan adds scatter only from sector five onward', () => {
   assert.ok(late.priorities.includes('scatter'));
 });
 
-test('asteroid pilot stays inside the cavern wall envelope and enters robot mode for the narrow course', () => {
+test('asteroid pilot stays inside the cavern wall envelope without an unsupported robot transform', () => {
   const action = campaignFlight({
     ...state,
     sector: 3,
@@ -351,8 +351,84 @@ test('asteroid pilot stays inside the cavern wall envelope and enters robot mode
       current: { x: 5, y: 4, z: 2 },
     },
   });
-  assert.equal(action.transform, 'robot');
+  assert.equal(action.transform, null);
+  assert.equal(action.roll, false);
   assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
+});
+
+test('asteroid pilot holds ship banking from approach through the complete fissure crossing', () => {
+  const fissures = [-20.8, 20.8].map((x) => ({
+    kind: 'fissure',
+    x,
+    y: 10,
+    baseZ: -850,
+    z: -220,
+    hx: 18.2,
+    hy: 36,
+    hz: 18,
+  }));
+  const approach = campaignFlight({
+    ...state,
+    sector: 3,
+    player: { x: 0, y: 10 },
+    mecha: { active: false, lockEnabled: false },
+    playerDepth: 9,
+    asteroidInterior: {
+      phase: 'transition',
+      course: { offset: 630, obstacles: fissures },
+    },
+    asteroidHull: { current: { x: 5, y: 1.8, z: 4.9 } },
+  });
+  assert.equal(approach.roll, true);
+  assert.equal(approach.transform, null);
+  assert.deepEqual(approach.target, { x: 0, y: 10 });
+
+  const passed = campaignFlight({
+    ...state,
+    sector: 3,
+    player: { x: 0, y: 10 },
+    mecha: { active: false, lockEnabled: false },
+    playerDepth: 9,
+    asteroidInterior: {
+      phase: 'interior',
+      course: {
+        offset: 900,
+        obstacles: fissures.map((rock) => ({ ...rock, z: 50 })),
+      },
+    },
+    asteroidHull: { current: { x: 1.8, y: 5, z: 4.9 } },
+  });
+  assert.equal(passed.roll, false);
+});
+
+test('asteroid pilot returns to ship before banking if a previous action left robot mode active', () => {
+  const action = campaignFlight({
+    ...state,
+    sector: 3,
+    player: { x: 0, y: 10 },
+    mecha: { active: true, lockEnabled: false },
+    energy: 100,
+    playerDepth: 9,
+    asteroidInterior: {
+      phase: 'interior',
+      course: {
+        offset: 630,
+        obstacles: [-20.8, 20.8].map((x) => ({
+          kind: 'fissure',
+          x,
+          y: 10,
+          baseZ: -850,
+          z: -220,
+          hx: 18.2,
+          hy: 36,
+          hz: 18,
+        })),
+      },
+    },
+    asteroidHull: { current: { x: 4.9, y: 6, z: 2.9 } },
+  });
+  assert.equal(action.transform, 'ship');
+  assert.equal(action.roll, false);
 });
 
 test('asteroid pilot predicts moving course solids and chooses a clear corridor lane', () => {
