@@ -329,6 +329,15 @@ function selectSafeTarget(state, previous) {
   const ys = unique([player.y, preferred.y, ...Y_LANES].map((y) => clamp(y, minY, maxY)));
   const playerDepth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
   const solids = visibleSolids(state, previous);
+  const fissureAhead =
+    state.sector === 3 &&
+    ['transition', 'interior'].includes(asteroidPhase) &&
+    solids.some(
+      (solid) =>
+        solid.kind === 'asteroid-fissure' &&
+        solid.z + solid.halfZ < playerDepth + 12 &&
+        solid.z + solid.halfZ > playerDepth - APPROACH_HORIZON,
+    );
   const threats = incomingThreats(state, previous, playerDepth);
   let selected = { x: clamp(0, -xLimit, xLimit), y: clamp(10, minY, maxY) };
   let best = Infinity;
@@ -387,6 +396,7 @@ export function campaignFlight(state, previous = null) {
     y,
     fire: true,
     boost: phase === 'boost',
+    rollHeld: fissureAhead && state.mecha?.active !== true,
     target,
     reason: threats.length
       ? 'evade-visible-threat'
@@ -402,9 +412,12 @@ export function campaignFlight(state, previous = null) {
       Number.isFinite(state.shield) &&
       state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
-    transform:
-      subboss ||
-      (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
+    transform: fissureAhead
+      ? state.mecha?.active
+        ? 'ship'
+        : null
+      : subboss ||
+          (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
         ? state.mecha?.active
           ? null
           : (state.energy ?? 0) >= 15
