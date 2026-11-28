@@ -37,7 +37,7 @@ export async function observePlayerSurface(page, step, outputDir) {
           element.getAttribute('title') ||
           element.innerText ||
           element.value ||
-          '').trim().replace(/\\s+/g, ' ').slice(0, 120),
+          '').trim().replace(/\s+/g, ' ').slice(0, 120),
         disabled: Boolean(element.disabled),
       }));
     return {
@@ -112,7 +112,7 @@ export async function runPlayerSession({
 }) {
   if (!browser) throw new Error('A Playwright browser instance is required');
   if (typeof decide !== 'function') throw new Error('A player policy adapter is required');
-  if (!/^https?:\\/\\//.test(url || '')) throw new Error('Provide an absolute DEV or PR-preview URL');
+  if (!/^https?:\/\//.test(url || '')) throw new Error('Provide an absolute DEV or PR-preview URL');
   const parsed = new URL(url);
   if (/__dynamic|qa[A-Z_-]?/i.test(parsed.pathname + parsed.search)) {
     throw new Error('Player Runtime refuses QA fixture and diagnostic routes');
