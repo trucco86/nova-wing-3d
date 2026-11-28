@@ -78,7 +78,7 @@ test('robot retains its own wider physical envelope instead of inheriting the ba
   const robot = measurePilotHull(createFlyingRobot());
   const robotHalf = projectPilotHull(robot, new T.Euler());
   assert.ok(robotHalf.x > bank.x + 2);
-  assert.ok(robotHalf.y > bank.y + 2);
+  assert.ok(robotHalf.y > flat.y + 2);
   course.advance(850, pilot, robotHalf);
   assert.equal(course.overlaps(pilot, robotHalf), false);
   assert.equal(course.overlaps(pilot, bank), false);
