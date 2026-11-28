@@ -89,33 +89,6 @@ function preferredLane(state) {
   };
 }
 
-function shouldHoldFissureBank(state) {
-  const phase = state.asteroidInterior?.phase;
-  if (state.sector !== 3 || !['transition', 'interior'].includes(phase)) return false;
-  const obstacles = state.asteroidInterior?.course?.obstacles;
-  if (!Array.isArray(obstacles)) return false;
-  const playerDepth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
-  const clearance = pilotClearance(state);
-  return obstacles.some((rock) => {
-    if (
-      rock.kind !== 'fissure' ||
-      !Number.isFinite(rock.z) ||
-      !Number.isFinite(rock.hz) ||
-      rock.hz <= 0
-    ) {
-      return false;
-    }
-    const front = rock.z + rock.hz;
-    const back = rock.z - rock.hz;
-    // Start banking before the first visible choke and keep it until the
-    // complete rock envelope has passed the player's physical hull.
-    return (
-      front >= playerDepth - clearance.z - APPROACH_HORIZON &&
-      back <= playerDepth + clearance.z
-    );
-  });
-}
-
 function incomingThreats(state, previous, playerDepth) {
   const threats = [];
   const player = state.player;
@@ -286,7 +259,7 @@ function candidateScore(
     if (impact.time === null) {
       const overlapX = solid.halfX + clearance.x - Math.abs(candidate.x - impact.x);
       const overlapY = solid.halfY + clearance.y - Math.abs(candidate.y - impact.y);
-      if (overlapX > 0 && overlapY > 0) score += 1200 + overlapX * overlapY * 4;
+      if (overlapX > 0 && overlapY > 0) score += 100000 + overlapX * overlapY * 100;
       continue;
     }
 
@@ -298,14 +271,14 @@ function candidateScore(
     const playerAtImpactY = player.y + clamp(candidate.y - player.y, -travelY, travelY);
     const overlapX = solid.halfX + clearance.x + 2.5 - Math.abs(playerAtImpactX - impact.x);
     const overlapY = solid.halfY + clearance.y + 2 - Math.abs(playerAtImpactY - impact.y);
-    if (overlapX > 0 && overlapY > 0) score += 1800 + overlapX * overlapY * 5;
+    if (overlapX > 0 && overlapY > 0) score += 100000 + overlapX * overlapY * 100;
 
     // When impact is imminent, the safe lane may be unreachable before contact.
     // Still commit toward a lane that clears the obstacle after the immediate hit.
     const eventualOverlapX = solid.halfX + clearance.x - Math.abs(candidate.x - impact.x);
     const eventualOverlapY = solid.halfY + clearance.y - Math.abs(candidate.y - impact.y);
     if (eventualOverlapX > 0 && eventualOverlapY > 0) {
-      score += 650 + eventualOverlapX * eventualOverlapY * 2;
+      score += 50000 + eventualOverlapX * eventualOverlapY * 50;
     }
   }
 
@@ -380,10 +353,6 @@ export function campaignFlight(state, previous = null) {
 
   const phase = state.orbitalLaunch?.phase ?? 'city';
   const { target, threats, solids } = selectSafeTarget(state, previous);
-  const asteroidPhase = state.asteroidInterior?.phase;
-  const asteroidCorridor =
-    state.sector === 3 && ['transition', 'interior'].includes(asteroidPhase);
-  const roll = !state.mecha?.active && shouldHoldFissureBank(state);
   const x = Math.abs(state.player.x - target.x) > 3.8 ? Math.sign(target.x - state.player.x) : 0;
   const y = Math.abs(state.player.y - target.y) > 3.2 ? Math.sign(target.y - state.player.y) : 0;
   const depth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
@@ -423,20 +392,17 @@ export function campaignFlight(state, previous = null) {
       Number.isFinite(state.shield) &&
       state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
-    transform: subboss
-      ? state.mecha?.active
-        ? null
-        : (state.energy ?? 0) >= 15
-          ? 'robot'
-          : null
-      : asteroidCorridor
+    transform:
+      subboss ||
+      (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
         ? state.mecha?.active
-          ? 'ship'
-          : null
+          ? null
+          : (state.energy ?? 0) >= 15
+            ? 'robot'
+            : null
         : state.mecha?.active
           ? 'ship'
           : null,
-    roll,
     multiLock: subboss && state.mecha?.active === true && state.mecha.lockEnabled !== true,
     special,
   };
