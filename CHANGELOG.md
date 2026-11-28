@@ -1,5 +1,12 @@
 # Histórico
 
+## 1.27.162 — Contra-ataque por esquiva e supers de equipe mais fortes
+
+- Esquiva correta de ataque físico abre janela de contra-ataque de 4,5 s, com +35% de dano contra pontos vulneráveis e +0,5 energia tática.
+- Plasma Titan e Five Cats Overdrive causam 3,6× o dano de casco anterior contra carcaça reforçada, sem ignorar geradores ou núcleo.
+- Mantidas as durações de escudo (12 s), estase (11 s), Plasma Titan (8 s) e Five Cats Overdrive (10 s).
+- Candidata para validação automatizada e homologação humana antes da publicação.
+
 ## 1.27.161 — Candidata em preparação
 
 - Candidata não homologada; preencher entregas e evidências antes da publicação.
