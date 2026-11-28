@@ -89,6 +89,33 @@ function preferredLane(state) {
   };
 }
 
+function shouldHoldFissureBank(state) {
+  const phase = state.asteroidInterior?.phase;
+  if (state.sector !== 3 || !['transition', 'interior'].includes(phase)) return false;
+  const obstacles = state.asteroidInterior?.course?.obstacles;
+  if (!Array.isArray(obstacles)) return false;
+  const playerDepth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
+  const clearance = pilotClearance(state);
+  return obstacles.some((rock) => {
+    if (
+      rock.kind !== 'fissure' ||
+      !Number.isFinite(rock.z) ||
+      !Number.isFinite(rock.hz) ||
+      rock.hz <= 0
+    ) {
+      return false;
+    }
+    const front = rock.z + rock.hz;
+    const back = rock.z - rock.hz;
+    // Start banking before the first visible choke and keep it until the
+    // complete rock envelope has passed the player's physical hull.
+    return (
+      front >= playerDepth - clearance.z - APPROACH_HORIZON &&
+      back <= playerDepth + clearance.z
+    );
+  });
+}
+
 function incomingThreats(state, previous, playerDepth) {
   const threats = [];
   const player = state.player;
@@ -353,6 +380,10 @@ export function campaignFlight(state, previous = null) {
 
   const phase = state.orbitalLaunch?.phase ?? 'city';
   const { target, threats, solids } = selectSafeTarget(state, previous);
+  const asteroidPhase = state.asteroidInterior?.phase;
+  const asteroidCorridor =
+    state.sector === 3 && ['transition', 'interior'].includes(asteroidPhase);
+  const roll = !state.mecha?.active && shouldHoldFissureBank(state);
   const x = Math.abs(state.player.x - target.x) > 3.8 ? Math.sign(target.x - state.player.x) : 0;
   const y = Math.abs(state.player.y - target.y) > 3.2 ? Math.sign(target.y - state.player.y) : 0;
   const depth = Number.isFinite(state.playerDepth) ? state.playerDepth : 9;
@@ -392,17 +423,20 @@ export function campaignFlight(state, previous = null) {
       Number.isFinite(state.shield) &&
       state.shield < (state.initialShield ?? 202) * 0.65,
     bomb: subboss && (state.bombs ?? 0) > 0,
-    transform:
-      subboss ||
-      (state.sector === 3 && ['transition', 'interior'].includes(state.asteroidInterior?.phase))
+    transform: subboss
+      ? state.mecha?.active
+        ? null
+        : (state.energy ?? 0) >= 15
+          ? 'robot'
+          : null
+      : asteroidCorridor
         ? state.mecha?.active
-          ? null
-          : (state.energy ?? 0) >= 15
-            ? 'robot'
-            : null
+          ? 'ship'
+          : null
         : state.mecha?.active
           ? 'ship'
           : null,
+    roll,
     multiLock: subboss && state.mecha?.active === true && state.mecha.lockEnabled !== true,
     special,
   };
