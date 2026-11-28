@@ -188,6 +188,6 @@ export async function runPlayerSession({
     ],
   };
   const reportPath = join(sessionDir, 'session.json');
-  await writeFile(reportPath, JSON.stringify(report, null, 2) + '\\n');
+  await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
   return { ...report, reportPath };
 }
