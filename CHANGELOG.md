@@ -1,8 +1,11 @@
 # Histórico
 
-## 1.27.163 — Candidata em preparação
+## 1.27.163 — Sonda autônoma do Colossus
 
-- Candidata não homologada; preencher entregas e evidências antes da publicação.
+- Adiciona telemetria de dano, padrões e janelas de ataque para o Colossus.
+- Compara piloto tático com e sem mira visível em desktop e mobile.
+- Registra disparos, escudo, vidas e uso de equipamentos sem autorizar publicação.
+- Candidata interna, pendente de CI e homologação humana.
 
 ## 1.27.161 — Candidata em preparação
 
