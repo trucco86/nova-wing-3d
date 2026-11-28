@@ -31,6 +31,7 @@ on:
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - fix/qa180-stage1-clean-launch-main-20261123
+      - feat/boss-counterplay-fast-track-20261128
 permissions:
   contents: write
   actions: write
