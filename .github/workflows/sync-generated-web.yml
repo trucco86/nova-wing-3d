@@ -31,6 +31,8 @@ on:
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - fix/qa180-stage1-clean-launch-main-20261123
+      - feat/gameplay-campaign-pilot
+      - feat/campaign-pilot-stacked
 permissions:
   contents: write
   actions: write
@@ -51,6 +53,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Prepare Campaign Pilot release metadata
+        if: github.ref_name == 'feat/campaign-pilot-stacked'
+        run: npm run release:prepare -- 1.27.162
       - name: Prepare QA148 release metadata
         if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
         run: npm run release:prepare -- 1.27.144
@@ -202,6 +207,15 @@ jobs:
             git add -u
             git add -- releases/v1.27.161.md
           fi
+          if [ "${GITHUB_REF_NAME}" = "feat/gameplay-campaign-pilot" ]; then
+            # The campaign pilot adds QA telemetry and its browser/unit evidence.
+            # Keep formatter output and the generated web artifact in sync.
+            git add -u
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/campaign-pilot-stacked" ]; then
+            git add -u
+            git add -- releases/v1.27.162.md
+          fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
             exit 0
@@ -212,6 +226,9 @@ jobs:
           # following human-authored pull_request run; avoid duplicate bot CI.
           if [ "${GITHUB_REF_NAME}" != "perf/qa157-orbit-pod-hotpath-allocations-20261118" ] && [ "${GITHUB_REF_NAME}" != "perf/qa158-city32-searchlight-mount-batching-20261118" ]; then
             gh workflow run ci.yml --ref "${GITHUB_REF_NAME}"
+          if [ "${GITHUB_REF_NAME}" = "feat/gameplay-campaign-pilot" ]; then
+            gh workflow run qa-campaign-pilot.yml --ref "${GITHUB_REF_NAME}"
+          fi
           fi
           if [ "${GITHUB_REF_NAME}" = "feat/qa136-boss-learning-mars-combat-20261115" ]; then
             gh workflow run cloudflare-preview.yml --ref "${GITHUB_REF_NAME}"
