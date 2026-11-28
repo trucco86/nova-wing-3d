@@ -30,6 +30,7 @@ on:
       - perf/qa160-boss-rival-hitbox-allocations-20261119
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
+      - feat/gameplay-agent-colossus-probe
       - fix/qa180-stage1-clean-launch-main-20261123
 permissions:
   contents: write
