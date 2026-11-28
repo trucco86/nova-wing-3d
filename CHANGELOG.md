@@ -5,6 +5,7 @@
 - Adiciona jogador sintético para progressão de campanha, decisões de combate e compras.
 - Corrige a estratégia de aproximação da fissura do setor 3 com rolagem sustentada da nave.
 - Registra evidências de gameplay desktop/mobile e ângulo físico da manobra.
+- Mantém como follow-up a redução dos 45 contatos com limites externos da caverna observados no teste.
 - Candidata interna, pendente de CI final e homologação humana.
 
 ## 1.27.161 — Candidata em preparação
