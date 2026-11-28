@@ -915,6 +915,9 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
     let robotUsed = false;
     let bombUsed = false;
     let lockUsed = false;
+    let rollButtonHeld = false;
+    let rollWasHeld = false;
+    const bankEvents = [];
 
     try {
       for (let i = 0; i < 2400; i++) {
@@ -1076,6 +1079,20 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         }
 
         const keys = [...dodgeKeys(action)];
+        if (!mobile && action.rollHeld) keys.push('KeyQ');
+        if (action.rollHeld !== rollWasHeld) {
+          bankEvents.push({ seconds: current.seconds, held: action.rollHeld });
+          rollWasHeld = action.rollHeld;
+        }
+        if (mobile && action.rollHeld && !rollButtonHeld) {
+          const roll = await center('#rollTouch');
+          await page.mouse.move(roll.x, roll.y);
+          await page.mouse.down();
+          rollButtonHeld = true;
+        } else if (mobile && !action.rollHeld && rollButtonHeld) {
+          await page.mouse.up();
+          rollButtonHeld = false;
+        }
         if (action.fire) keys.push('Space');
         if (action.boost) keys.push('ShiftLeft');
         if (touch) {
@@ -1128,6 +1145,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         previous = { ...current, pilotTarget: action.target };
       }
     } finally {
+      if (rollButtonHeld) await page.mouse.up();
       for (const key of pressed) await page.keyboard.up(key);
       if (touching)
         await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
@@ -1190,6 +1208,7 @@ if (process.env.NOVA_QA_CAMPAIGN === '1') {
         : null,
       bombEvents,
       transformEvents,
+      bankEvents,
       specialEvents,
       repairEvents,
       multiLockEvents,
