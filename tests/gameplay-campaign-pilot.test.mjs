@@ -390,7 +390,11 @@ test('physical fissure clearance outranks multiple visible projectile threats', 
     ],
   };
   const action = campaignFlight(current, previous);
-  assert.equal(action.rollHeld, true, 'ship must stay banked while the fissure is in approach range');
+  assert.equal(
+    action.rollHeld,
+    true,
+    'ship must stay banked while the fissure is in approach range',
+  );
   assert.equal(action.transform, null, 'do not transform out of the ship during a fissure pass');
   assert.equal(action.reason, 'evade-visible-threat');
   assert.equal(action.target.x, 0, 'pilot must keep the robot inside the physical fissure gap');
@@ -432,7 +436,6 @@ test('asteroid pilot predicts moving course solids and chooses a clear corridor 
   assert.ok(action.x !== 0 || action.y !== 0);
 });
 
-
 test('asteroid pilot returns to ship before banking when already in robot mode', () => {
   const action = campaignFlight({
     ...state,
@@ -444,7 +447,9 @@ test('asteroid pilot returns to ship before banking when already in robot mode',
       phase: 'interior',
       course: {
         offset: 760,
-        obstacles: [{ kind: 'fissure', x: -29, y: 10, baseZ: -850, z: -90, hx: 18.2, hy: 36, hz: 18 }],
+        obstacles: [
+          { kind: 'fissure', x: -29, y: 10, baseZ: -850, z: -90, hx: 18.2, hy: 36, hz: 18 },
+        ],
       },
     },
     asteroidHull: { current: { x: 4.9, y: 6, z: 2.9 } },
