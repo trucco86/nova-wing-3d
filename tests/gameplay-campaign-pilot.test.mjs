@@ -334,7 +334,7 @@ test('shop plan adds scatter only from sector five onward', () => {
   assert.ok(late.priorities.includes('scatter'));
 });
 
-test('asteroid pilot does not transform before a fissure is visible', () => {
+test('asteroid pilot enters robot mode before the fissure enters approach range', () => {
   const action = campaignFlight({
     ...state,
     sector: 3,
@@ -351,7 +351,7 @@ test('asteroid pilot does not transform before a fissure is visible', () => {
       current: { x: 5, y: 4, z: 2 },
     },
   });
-  assert.equal(action.transform, null);
+  assert.equal(action.transform, 'robot');
   assert.equal(action.rollHeld, false);
   assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
 });
