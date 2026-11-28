@@ -31,14 +31,21 @@ test('real chassis projection swaps wing width for height without shrinking the 
   assert.ok(projectPilotHull(ship, new T.Euler(), 1.12).x > flat.x);
 });
 
-test('flat wings stop at the visible fissure; banking permits recovery and traversal', () => {
+test('the authored central fissure opening clears both ship and robot hulls', () => {
+  const robot = measurePilotHull(createFlyingRobot());
+  const robotHalf = projectPilotHull(robot, new T.Euler());
+  const fissures = ASTEROID_COURSE.filter((rock) => rock.kind === 'fissure');
+  const leftEdge = fissures[0].x + fissures[0].hx;
+  const rightEdge = fissures[1].x - fissures[1].hx;
+  const opening = rightEdge - leftEdge;
+  assert.ok(opening > flat.x * 2 + 4, 'ship requires physical clearance on both sides');
+  assert.ok(opening > robotHalf.x * 2 + 4, 'robot requires physical clearance on both sides');
   const { course } = setup();
-  assert.equal(course.advance(1000, pilot, flat).collided, true);
-  const stopped = course.snapshot().offset;
-  assert.ok(stopped > 800 && stopped < 850);
-  assert.equal(course.advance(10, pilot, flat).distance, 0);
-  assert.equal(course.advance(100, pilot, bank).collided, false);
-  assert.ok(course.snapshot().offset > stopped + 99);
+  assert.equal(course.advance(1000, pilot, flat).collided, false);
+  assert.ok(course.snapshot().offset > 999);
+  course.reset();
+  assert.equal(course.advance(1000, pilot, robotHalf).collided, false);
+  assert.ok(course.snapshot().offset > 999);
   course.destroy();
 });
 
@@ -66,13 +73,14 @@ test('boost cannot tunnel through rock at 30, 60 or 120 Hz', () => {
   assert.ok(Math.max(...offsets) - Math.min(...offsets) < 0.002);
 });
 
-test('robot cannot inherit ship banking clearance; transformation envelope is detectable', () => {
+test('robot retains its own wider physical envelope instead of inheriting the banked ship hull', () => {
   const { course } = setup();
   const robot = measurePilotHull(createFlyingRobot());
-  assert.equal(course.advance(850, pilot, projectPilotHull(robot, new T.Euler())).collided, true);
-  course.reset();
-  course.advance(850, pilot, bank);
-  assert.equal(course.overlaps(pilot, flat), true);
+  const robotHalf = projectPilotHull(robot, new T.Euler());
+  assert.ok(robotHalf.x > bank.x + 2);
+  assert.ok(robotHalf.y > bank.y + 2);
+  course.advance(850, pilot, robotHalf);
+  assert.equal(course.overlaps(pilot, robotHalf), false);
   assert.equal(course.overlaps(pilot, bank), false);
   course.destroy();
 });
@@ -82,7 +90,7 @@ test('lateral sweep stops at rock without teleport, and sliding away remains pos
   course.advance(850, pilot, bank);
   const contact = course.constrain(pilot, { ...pilot, x: 20 }, bank);
   assert.equal(contact.collided, true);
-  assert.ok(contact.x >= 0 && contact.x < 1);
+  assert.ok(contact.x > 8.8 && contact.x < 9.2);
   const recovery = course.constrain(contact, pilot, bank);
   assert.equal(recovery.collided, false);
   assert.equal(recovery.x, 0);
