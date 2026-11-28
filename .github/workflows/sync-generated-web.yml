@@ -31,6 +31,7 @@ on:
       - fix/qa161-city-solid-approach-face-20261119
       - fix/qa162-moving-obstacle-ship-contact-20261119
       - feat/gameplay-agent-colossus-probe
+      - feat/colossus-probe-stacked
       - fix/qa180-stage1-clean-launch-main-20261123
 permissions:
   contents: write
@@ -52,6 +53,9 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Prepare Colossus probe release metadata
+        if: github.ref_name == 'feat/colossus-probe-stacked'
+        run: npm run release:prepare -- 1.27.163
       - name: Prepare QA148 release metadata
         if: github.ref_name == 'feat/qa148-mars-storm-depth-20261115'
         run: npm run release:prepare -- 1.27.144
@@ -202,6 +206,10 @@ jobs:
           if [ "${GITHUB_REF_NAME}" = "fix/qa180-stage1-clean-launch-main-20261123" ]; then
             git add -u
             git add -- releases/v1.27.161.md
+          fi
+          if [ "${GITHUB_REF_NAME}" = "feat/colossus-probe-stacked" ]; then
+            git add -u
+            git add -- releases/v1.27.163.md
           fi
           if git diff --cached --quiet; then
             echo 'Generated web and scoped QA sources already synchronized.'
