@@ -77,7 +77,10 @@ try {
     timeout: 30000,
   });
   if (!control?.ok()) throw new Error('Control Center HTTP status: ' + control?.status());
-  console.log('Production smoke passed:', JSON.stringify({ ...state, mobileRpg: 'radial menu verified' }));
+  console.log(
+    'Production smoke passed:',
+    JSON.stringify({ ...state, mobileRpg: 'radial menu verified' }),
+  );
 } finally {
   await browser.close();
 }
