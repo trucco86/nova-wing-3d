@@ -1,0 +1,34 @@
+name: Sync QA generated HTML
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-and-sync:
+    if: github.ref == 'refs/heads/feat/audio-lab-qa'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: feat/audio-lab-qa
+          persist-credentials: true
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Format and generate
+        run: |
+          npm run format
+          npm run build
+      - name: Validate before syncing
+        run: npm run validate
+      - name: Commit only generated QA branch outputs
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html src/mars-premium.js tests/mars-descent.test.mjs
+          git diff --cached --quiet && exit 0
+          git commit -m "build: sync QA HTML and format Mars tests"
+          git push origin HEAD:refs/heads/feat/audio-lab-qa
