@@ -6,18 +6,21 @@ import { defeatBoss } from './combat-helper.mjs';
 import { SECTORS } from '../src/campaign.js';
 const params = new URLSearchParams(location.search);
 const sector = Number(params.get('sector') ?? 0);
-localStorage.setItem(
-  'nova-wing-3d-v1',
-  JSON.stringify({
-    version: 1,
-    sector,
-    credits: 650,
-    weapon: 0,
-    armor: 0,
-    pods: Number(params.get('pods') ?? 0),
-    strategy: { xp: Number(params.get('xp') ?? 0), arsenal: 0, special: 0 },
-  }),
-);
+const freshCampaign = params.get('freshCampaign') === '1';
+if (freshCampaign) localStorage.removeItem('nova-wing-3d-v1');
+else
+  localStorage.setItem(
+    'nova-wing-3d-v1',
+    JSON.stringify({
+      version: 1,
+      sector,
+      credits: 650,
+      weapon: 0,
+      armor: 0,
+      pods: Number(params.get('pods') ?? 0),
+      strategy: { xp: Number(params.get('xp') ?? 0), arsenal: 0, special: 0 },
+    }),
+  );
 let rendering = true,
   capture = true;
 let lastRenderStats = null;
@@ -248,6 +251,6 @@ if (qaTunnel !== null) {
 } else if (qaSector !== null) {
   if (!game.startDeveloperScenario(Number(qaSector), 'boss'))
     throw new Error('Developer/QA boss fixture unavailable');
-} else game.start(true);
+} else game.start(!freshCampaign);
 game.step(0);
 document.body.dataset.ready = 'true';

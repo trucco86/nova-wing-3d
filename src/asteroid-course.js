@@ -4,8 +4,8 @@ import * as T from 'three';
 // These boxes are the rendered rock itself, not invisible bounding volumes.
 export const ASTEROID_COURSE = Object.freeze(
   [
-    { x: -20.8, y: 10, z: -850, hx: 18.2, hy: 36, hz: 18, kind: 'fissure' },
-    { x: 20.8, y: 10, z: -850, hx: 18.2, hy: 36, hz: 18, kind: 'fissure' },
+    { x: -29, y: 10, z: -850, hx: 18.2, hy: 36, hz: 18, kind: 'fissure' },
+    { x: 29, y: 10, z: -850, hx: 18.2, hy: 36, hz: 18, kind: 'fissure' },
     { x: 0, y: 10, z: -1170, hx: 5, hy: 8, hz: 10, kind: 'fragment' },
     { x: -19, y: 5, z: -1410, hx: 7, hy: 12, hz: 8, kind: 'fragment' },
     { x: 19, y: 18, z: -1410, hx: 7, hy: 12, hz: 8, kind: 'fragment' },
@@ -188,6 +188,18 @@ export function createAsteroidCourse(scene, enabled = true) {
         recovering,
         complete: !enabled || offset > 2000,
         solids: ASTEROID_COURSE.length,
+        obstacles: active()
+          ? ASTEROID_COURSE.map((rock) => ({
+              kind: rock.kind,
+              x: rock.x,
+              y: rock.y,
+              baseZ: rock.z,
+              z: rock.z + offset,
+              hx: rock.hx,
+              hy: rock.hy,
+              hz: rock.hz,
+            }))
+          : [],
       };
     },
     destroy() {
