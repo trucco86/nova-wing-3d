@@ -435,7 +435,7 @@ export function createGame({
   function asteroidImpact() {
     if (asteroidWallCooldown > 0) return;
     asteroidWallCooldown = 1.25;
-    hit(12);
+    hit(12, 'asteroid-wall');
     cue('armorHit');
     shake = Math.max(shake, 0.25);
   }
@@ -723,6 +723,8 @@ export function createGame({
     rings = [],
     obstacles = [],
     boss = null;
+  let damageEventSequence = 0;
+  const damageEvents = [];
   // Shared muzzle meshes avoid per-spawn GPU resource leaks across long missions.
   const muzzleGeometry = new T.SphereGeometry(0.8, 8, 6);
   const muzzleMaterial = new T.MeshBasicMaterial({ color: '#ff695c', toneMapped: false });
@@ -1917,7 +1919,7 @@ export function createGame({
       particles.push(particlePool.wave(pos, color, 0.6));
     }
   }
-  function hit(d) {
+  function hit(d, source = 'unknown') {
     if (dynamicFlight && barrier > 0) return;
     if (
       state !== 'playing' ||
@@ -1929,7 +1931,29 @@ export function createGame({
     )
       return;
     const receivedDamage = d * (dynamicFlight ? difficultyProfile(settings.difficulty).damage : 1);
+    const shieldBefore = hp;
     hp = Math.max(0, hp - receivedDamage);
+    const details = typeof source === 'string' ? { type: source } : source;
+    damageEvents.push({
+      id: ++damageEventSequence,
+      age: bossCombat?.age ?? elapsed,
+      elapsed,
+      damage: receivedDamage,
+      shieldBefore,
+      shieldAfter: hp,
+      type: details.type ?? 'unknown',
+      bossIndex: details.bossIndex ?? null,
+      spell: details.spell ?? null,
+      projectileAge: details.projectileAge ?? null,
+      projectilePosition: details.projectilePosition ?? null,
+      projectileVelocity: details.projectileVelocity ?? null,
+      attackKind: details.attackKind ?? bossIntent?.kind ?? null,
+      phase: boss ? tactics().state : null,
+      cycle: boss ? tactics().cycle : null,
+      player: { x: player.position.x, y: player.position.y },
+      attackWarning: $('attackWarning')?.textContent?.trim() || null,
+    });
+    if (damageEvents.length > 32) damageEvents.shift();
     if (stagePerformance && receivedDamage > 0) {
       stagePerformance.damageTaken = true;
       stagePerformance.combo = 0;
@@ -4408,7 +4432,7 @@ export function createGame({
     marsStormDamageCooldown = Math.max(0, marsStormDamageCooldown - dt);
     if (storm?.hazard && marsStormDamageCooldown <= 0 && Math.sign(dx) !== -Math.sign(gustX)) {
       marsStormDamageCooldown = 3.2;
-      hit(6);
+      hit(6, 'mars-sandstorm');
       shake = Math.max(shake, 0.28);
       if (settings.vibration) haptics.pulse(70);
     }
@@ -5535,7 +5559,7 @@ export function createGame({
           e.half,
         )
       ) {
-        hit(22);
+        hit(22, 'enemy-collision');
         kill(e);
       }
       if (e.o.position.z > 40) {
@@ -5715,7 +5739,11 @@ export function createGame({
               orbit: relativeOrbit(),
             })
           ) {
-            hit(bossIntent.damage);
+            hit(bossIntent.damage, {
+              type: 'boss-melee',
+              attackKind: bossIntent.kind,
+              cycle: bossIntent.cycle,
+            });
             explode(player.position.clone(), 8, 0xff8060);
             cue('armorHit');
           } else {
@@ -6256,7 +6284,14 @@ export function createGame({
           previousPlayer,
         )
       ) {
-        hit(b.spell === 'fire' ? 14 : 10);
+        hit(b.spell === 'fire' ? 14 : 10, {
+          type: b.bossIndex >= 0 ? 'boss-projectile' : 'enemy-projectile',
+          bossIndex: b.bossIndex,
+          spell: b.spell,
+          projectileAge: b.age,
+          projectilePosition: b.o.position.toArray(),
+          projectileVelocity: b.v.toArray(),
+        });
         b.life = 0;
         if (roll > 0) explode(b.o.position, 5, 0x77ffff);
       } else if (
@@ -6457,7 +6492,7 @@ export function createGame({
           ),
         );
       }
-      if (collidedWithObstacle) hit(30);
+      if (collidedWithObstacle) hit(30, 'obstacle-collision');
       // Stop allied and hostile rounds at actual solid geometry, not after it.
       for (const b of [...shots, ...hostile]) {
         if (b.life <= 0 || !b.previousPosition) continue;
@@ -6689,7 +6724,7 @@ export function createGame({
             })
           ) {
             cityImpactCount++;
-            hit(26);
+            hit(26, 'city-hazard');
             shake = Math.max(shake, 0.28);
           }
           for (const shot of [...shots, ...hostile]) {
@@ -7033,6 +7068,9 @@ export function createGame({
       chargedPower: shots.find((s) => s.charged)?.damage ?? 0,
       shotDirections: shots.filter((b) => b.v).map((b) => b.v.toArray()),
       hostilePositions: hostile.slice(0, 5).map((b) => b.o.position.toArray()),
+      // QA-only damage provenance; it records accepted hits without changing
+      // the collision, damage, invulnerability or shield rules.
+      damageEvents: damageEvents.slice(-32),
       // Snapshot-only evidence lets browser QA verify a visible effect without
       // changing the real projectile's collision, timing or position.
       bossShotLinks: hostile

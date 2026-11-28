@@ -49,30 +49,41 @@ Duas rotas de até 240 segundos simulados no mesmo build: tática com poderes, p
 
 Execução 45805708133 (SHA 8c9edbc): quatro vitórias reais, HP zero, partes zero, estado collapsing e três vidas restantes. Desktop tático 102s/escudo 80; combinado 93s/90. Mobile tático 99,25s/80; combinado 99s/80. Loadout inicial QA: três pods, escudo 202, três vidas. Trinta testes unitários e dois testes browser passaram; CI bloqueado apenas por formatação. O contrato da sonda de Rok passa a exigir vitória nas duas rotas, sem alterar o motor. Ainda não é vitória de campanha nem aprovação de outros chefes.
 
-## Matriz exploratória dos nove chefes restantes
+## Expansão para Colossus (Europa)
 
-A branch isolada feat/gameplay-boss-autonomy-matrix usa a política combinada que venceu Rok, com o mesmo limite de 240 segundos simulados. Executa os setores 2 a 10 em desktop e mobile, em nove jobs independentes (até três em paralelo, sem fail-fast). Cada cenário começa em um encontro real pelo laboratório QA, não pela campanha. Registra HP, partes, integridade, escudo, vidas, ações e padrões. TIME_LIMIT e INTERRUPTED são resultados sem vitória, não aprovação. O workflow é consultivo e não autoriza produção. A política específica de cada chefe será calibrada a partir dos resultados.
+O run 45831261557 confirmou novamente as quatro vitórias de Rok no SHA 043839e, com build, formatação e testes verdes. A sonda adicional usa o mesmo executor de controles reais, agora no setor 5, com duas políticas (tática e tática com mira) em desktop e mobile. Limite de 240 segundos simulados por rota. Registra HP inicial/final, escudo, vidas, projéteis, padrões de ataque, poderes, equipamento e estado terminal; anexa JSON e screenshots. A sonda exige execução real sem erro de página, mas não exige vitória antes de estabelecer a baseline. TIME_LIMIT e INTERRUPTED não equivalem a vitória. A fixture ainda utiliza equipamento de QA e não mede desempenho em dispositivo físico, nem campanha integral. Resultado de Colossus pendente; nenhuma autorização de release.
 
-## Segunda rodada: órbita, scan e reparo
+### Baseline prolongada de Colossus: run 45920891792
 
-A primeira matriz (45831499483) executou 18 cenários sem erro de navegador, mas nenhum venceu: oito pararam na primeira perda de vida e dez no limite de 240s. A maioria ficou com as baterias intactas. A nova política usa a direção do radar orbital quando visível, busca em órbita no modo físico sem ler o ângulo oculto, aciona scan quando não há alvo conhecido e reparo abaixo de 65% do escudo inicial quando disponível. A precisão é usada em recuperação com ponto fraco exposto. Nenhuma ação durante ameaça física supera a esquiva; comandos são reais, inclusive botões mobile. Primeira calibração nos setores 2, 3 e 4; compara integridade, vidas e ações com a matriz anterior. Não altera motor, armamento ou recursos. Não prova vitória antes do resultado.
+O job browser 140251107103 terminou verde. Os quatro cenários de comparação foram executados com controles reais de teclado/joystick e sem alterar dano ou física. O resultado é uma baseline de sobrevivência, não uma vitória:
 
-## Finalização do núcleo
+| Plataforma | Política      | HP inicial → final |  Escudo | Vidas | Tiros | Janelas |
+| ---------- | ------------- | -----------------: | ------: | ----: | ----: | ------: |
+| Desktop    | Tática        |       3400 → 442,6 | 202 → 0 | 3 → 2 |   177 |      13 |
+| Desktop    | Tática + mira |      3400 → 1308,6 | 202 → 0 | 3 → 2 |   118 |      10 |
+| Mobile     | Tática        |       3400 → 57,59 | 202 → 0 | 3 → 2 |   177 |      13 |
+| Mobile     | Tática + mira |        3400 → 2448 | 202 → 0 | 3 → 2 |   118 |      10 |
 
-Rodada 45912164440: seis combates, sem perda de vida, todos os geradores destruídos. Marte e Perfurador restaram com 4,2% de integridade combinada (núcleo a 12% do HP inicial, piso de dano de casco); Reator ficou com 35% de integridade e núcleo intacto. A política anterior não orbitava depois de zerar geradores. Novo passo usa exclusivamente texto visível ORBITE PARA A FRENTE, atributo de estado do HUD vulnerável, lock real do robô e sinal FOGO NO REATOR. Quando disponível, aciona precisão na abertura. Sem alterar piso de dano, hitbox ou invulnerabilidade. O lock do Reator pode continuar limitado pelo arco de aquisição do motor; o teste deve separar ausência de lock e ausência de dano. Nenhuma vitória adicional declarada antes do CI.
+Todas as rotas terminaram como `INTERRUPTED` durante respawn. Nenhuma satisfaz o contrato de vitória (`BOSS_DEFEATED`, HP zero e estado terminal de vitória/colapso). A rota mobile tática chegou perto de derrotar o chefe, mas não venceu. O teste prova execução prolongada da fixture, não campanha completa nem desempenho em hardware físico.
 
-## Vitórias de Marte, Perfurador e Reator
+A mira automática piorou o resultado nesta amostra: deixou mais HP no chefe em desktop e, sobretudo, em mobile. Portanto, não deve ser promovida como melhoria geral nem habilitada por padrão. A política tática sem mira é a melhor baseline atual para continuar investigando Colossus, mas ainda precisa sobreviver e vencer de forma reproduzível.
 
-Run 45916686543, SHA c59e574: seis vitórias em seis cenários, todos com HP e geradores zerados, estado collapsing e três vidas. Marte: desktop 43,25s e mobile 46,5s, escudo 172/202. Perfurador: 37,5s em ambos, escudo 202/202. Reator: 44s desktop e 43,5s mobile, escudo 202/202. Todos acionaram lock real. Os testes de navegador passaram; a única falha do workflow foi a formatação de uma asserção unitária, corrigida com o patch exato do CI.
+Os padrões observados foram `ice-quake` e `cryo-pincer`. Na rota mobile tática houve 13 janelas (11 `ice-quake`, 2 `cryo-pincer`), com maior sequência repetida de 3. O detector registrou `NW-R008` como `P1-candidate`, com aprovação humana `PENDING`. Isso é um sinal consultivo de repetição, não um bug confirmado nem evidência suficiente para alterar o design do chefe.
 
-Próxima rodada: repetir os três chefes como regressão obrigatória no laboratório e aplicar a mesma política aos seis restantes em desktop/mobile. Os setores 2, 3 e 4 devem terminar com núcleo e partes zerados e todas as vidas; setores 5 a 10 continuam exploratórios. Os resultados não provam passagem por fases completas nem equivalência ao equipamento da campanha. Não alterar jogabilidade para obter aprovação.
+**Próxima etapa:** instrumentar cada janela de ataque com posição normalizada do jogador, direção publicada pelo radar, comando e duração da esquiva, variação de escudo/vidas e padrão observado. Só depois comparar políticas adaptativas com repetições controladas. Preservar a restrição de não consultar coordenadas ocultas nem alterar o runtime do jogo.
 
-## Matriz completa e calibração de Ômega
+### Telemetria por janela de ataque
 
-Run 45917844706: 17/18 vitórias, sem erro de navegador. Todos os dez chefes já foram derrotados em ao menos uma plataforma, nove em ambas. Único caso restante: Ômega desktop, 850 passos de órbita em 240s, duas partes vivas; mobile venceu em 80s. O rastreamento do chefe reage à aproximação sustentada, portanto a política experimental aciona lock do robô antes do núcleo e alterna flancos a cada seis segundos em vez de perseguir indefinidamente a direção do radar. Apenas Ômega recebe essa alteração. Os oito setores restantes passam a exigir vitória nas duas plataformas e Ômega mobile mantém contrato de vitória; novo run isolado para setor 8, ainda sem resultado.
+A coleta agora agrega cada ciclo físico observado em um registro: padrão, ciclo, início/fim/duração, fases de aviso e ataque, direção do radar visível, ações e teclas enviadas, tempo de esquiva, posição inicial/final do jogador normalizada pelos limites de voo, variação de escudo e vidas. A posição do chefe não é usada. Janelas incompletas e amostras sem limites de voo permanecem explicitamente incompletas ou sem posição; não são preenchidas por inferência. A telemetria é evidência para análise, não uma política adaptativa nem um gate de release.
 
-## Current coverage
+### Semântica de fechamento e reação
 
-The autonomous boss matrix runs all ten sector indexes (0 through 9) on desktop and mobile. Only these five bosses are currently treated as proven victory regression contracts: Rok (0), Colossus of the Dunes (1), Perfurador (2), Reactor Devastador (3), and Couraçado Ômega (7). The other five remain exploratory until both platform results are observed and reviewed.
+Cada janela registra a primeira amostra observada após a fase física ativa como boundary. Dano e perda de vida ocorridos nessa transição entram no delta da janela anterior. Janelas sem boundary são marcadas como censuradas: o último valor observado permanece visível, mas deltas finais não são inferidos. A latência de reação é medida do primeiro alerta de perigo até a primeira decisão de esquiva; ausência de esquiva ou de alerta retorna `null`. O caminho do jogador preserva input e fire input por amostra para permitir correlação temporal. Essas métricas continuam descritivas e não alteram decisões do agente nem regras do jogo.
 
-A successful workflow run means the browser and instrumentation completed. It does not imply a boss victory unless the attached report explicitly says `BOSS_DEFEATED`. The matrix does not authorize production changes.
+### Diagnóstico de dano fora das janelas físicas
+
+O artefato do run 46055098649 repetiu o padrão nas quatro rotas prolongadas: 20 reduções de escudo por rota, todas de 10 pontos; 17 a 18 ocorreram em `maneuver` e as demais em `recovery`. Em todas as amostras de impacto, o agente não enviava comando de movimento. As janelas físicas monitoradas continuaram completas, sem variação de escudo dentro delas.
+
+O código do setor 5 configura a salva do Colossus como arcana, e o caminho de colisão aplica 10 pontos a projéteis que não são de fogo. A correspondência é forte, mas a atribuição ainda precisa ser confirmada por evento. A nova telemetria registra origem do dano, índice do chefe, tipo do projétil, idade, posição e velocidade no impacto, ciclo/fase do chefe e texto do aviso visível. A instrumentação existe apenas no snapshot de QA e não altera colisão, dano, invulnerabilidade, escudo ou física.
+
+**Próxima etapa:** confirmar a origem de cada impacto e, então, testar evasão de salvas usando apenas avisos e projéteis visíveis ao jogador. Não promover uma política nova antes de demonstrar redução reproduzível de dano sem sacrificar a capacidade de derrotar o chefe.

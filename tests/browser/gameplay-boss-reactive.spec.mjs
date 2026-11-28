@@ -30,6 +30,7 @@ async function runEncounter(
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
+  const seenDamageEventIds = new Set();
   const specialEvents = [];
   const equipmentEvents = [];
   const utilityEvents = [];
@@ -113,6 +114,9 @@ async function runEncounter(
           overdriveReady: !document.getElementById('fiveCatsOverdrive').disabled,
           specialActive: (s.fiveCats?.plasmaTime ?? 0) > 0 || (s.fiveCats?.overdriveTime ?? 0) > 0,
           player: s.player,
+          flightBounds: s.flightBounds,
+          attackWarning: document.getElementById('attackWarning')?.textContent?.trim() ?? '',
+          damageEvents: s.damageEvents ?? [],
           state: s.state,
           boss: s.boss,
           phase: s.tactics.state,
@@ -123,8 +127,16 @@ async function runEncounter(
           guide: guide.hidden ? null : guide.textContent,
         };
       });
+      const freshDamageEvents = (state.damageEvents ?? []).filter(
+        (event) => !seenDamageEventIds.has(event.id),
+      );
+      for (const event of freshDamageEvents) seenDamageEventIds.add(event.id);
+      const observedState = { ...state, damageEvents: freshDamageEvents };
       terminal = state;
-      if (!state.boss || state.state !== 'playing') break;
+      if (!state.boss || state.state !== 'playing') {
+        if (freshDamageEvents.length) samples.push(observedState);
+        break;
+      }
       let decision = active
         ? combatDecision(state, { tactical })
         : reactive
@@ -145,7 +157,14 @@ async function runEncounter(
         });
       }
       const keys = dodgeKeys(decision);
-      samples.push({ ...state, aim, decision, input: keys });
+      samples.push({
+        ...observedState,
+        aim,
+        decision,
+        input: keys,
+        fireInput: active && decision.fire ? (mobile ? 'FIRE_TOUCH' : 'Space') : null,
+        controlSurface: mobile ? 'touch-joystick' : 'keyboard',
+      });
       if (i === limit) break;
       if (active && firing && !decision.fire) {
         if (mobile) await page.mouse.up();
@@ -581,3 +600,61 @@ if (/^[0-9]$/.test(matrixSector ?? '')) {
     }
   });
 }
+
+test('Colossus extended autonomous attempt compares tactical equipment with and without aim', async ({
+  page,
+}, info) => {
+  test.setTimeout(720000);
+  const tactical = await runEncounter(page, info, 5, true, true, true, false, true);
+  const aimed = await runEncounter(page, info, 5, true, true, true, true, true);
+  const measure = (run) => {
+    const final = run.terminal;
+    const initial = run.samples[0];
+    const victory = final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
+    return {
+      outcome: victory
+        ? 'BOSS_DEFEATED'
+        : final?.state === 'playing'
+          ? 'TIME_LIMIT'
+          : 'INTERRUPTED',
+      finalState: final?.state ?? null,
+      bossHpStart: initial?.bossHp ?? null,
+      bossHpEnd: final?.bossHp ?? null,
+      shieldStart: initial?.shield ?? null,
+      shieldEnd: final?.shield ?? null,
+      livesStart: initial?.lives ?? null,
+      livesEnd: final?.lives ?? null,
+      seconds: run.metrics.observedSeconds,
+      maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
+      attackWindows: run.metrics.attackWindows,
+      attackPatterns: run.metrics.patterns,
+      attackWindowTelemetry: run.metrics.attackWindowTelemetry,
+      equipmentEvents: run.equipmentEvents,
+      specialEvents: run.specialEvents,
+    };
+  };
+  const report = {
+    encounter: 'Colossus',
+    sector: 5,
+    project: info.project.name,
+    tactical: measure(tactical),
+    aimed: measure(aimed),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('extended-colossus-comparison.json');
+  await writeFile(path, JSON.stringify({ report, tactical, aimed }, null, 2) + '\n');
+  await info.attach('extended-colossus-comparison', { path, contentType: 'application/json' });
+  console.log('EXTENDED_COLOSSUS_COMPARISON ' + JSON.stringify(report));
+  for (const run of [tactical, aimed]) {
+    expect(run.errors).toEqual([]);
+    expect(run.terminal).not.toBeNull();
+    expect(run.samples.length, 'observed gameplay').toBeGreaterThan(1);
+    expect(run.samples[0].bossHp, 'live boss at start').toBeGreaterThan(0);
+    expect(
+      run.samples.some((sample) => sample.shots > 0),
+      'real projectiles',
+    ).toBe(true);
+  }
+  // This is an exploratory run, not a victory gate; a timeout remains a timeout.
+  expect(report.releaseAuthorized).toBe(false);
+});
