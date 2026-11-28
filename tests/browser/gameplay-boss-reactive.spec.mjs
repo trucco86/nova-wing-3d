@@ -597,6 +597,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
   const specialUsed = new Set();
   let previous = null;
   let touching = false;
+  let rollMouseDown = false;
   let robotUsed = false;
   let bombUsed = false;
   let lockUsed = false;
@@ -620,6 +621,15 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
       const current = { ...(await snapshot()), initialShield };
       if (current.state !== 'playing' || current.boss) break;
       const action = campaignFlight(current, previous);
+      if (mobile && action.roll && !rollMouseDown) {
+        const roll = await center('#rollTouch');
+        await page.mouse.move(roll.x, roll.y);
+        await page.mouse.down();
+        rollMouseDown = true;
+      } else if (mobile && !action.roll && rollMouseDown) {
+        await page.mouse.up();
+        rollMouseDown = false;
+      }
       if (step % 12 === 0) {
         stages.push({
           seconds: current.seconds,
@@ -632,6 +642,8 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
           asteroidWallContacts: current.asteroidWallContacts ?? 0,
           asteroidCourseContacts: current.asteroidCourseContacts ?? 0,
           asteroidHull: current.asteroidHull ?? null,
+          bankAngle: current.bankAngle ?? null,
+          pilotTarget: action.target ?? null,
           shield: current.shield,
           lives: current.lives,
           player: current.player,
@@ -640,6 +652,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
             y: action.y,
             reason: action.reason,
             transform: action.transform,
+            roll: action.roll === true,
             repair: action.repair,
             bomb: action.bomb,
           },
@@ -749,6 +762,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
       }
 
       const keys = [...dodgeKeys(action)];
+      if (action.roll) keys.push('KeyQ');
       if (action.fire) keys.push('Space');
       if (action.boost) keys.push('ShiftLeft');
       if (touch) {
@@ -800,6 +814,7 @@ async function runCampaignStage(page, info, sectorIndex, snapshot, mobile) {
     }
   } finally {
     for (const key of pressed) await page.keyboard.up(key);
+    if (rollMouseDown) await page.mouse.up();
     if (touching)
       await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
     if (touch) await touch.detach();
