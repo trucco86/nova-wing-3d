@@ -141,6 +141,10 @@ As linhas pontilhadas indicam integrações condicionais ou dependentes de confi
 > [!NOTE]
 > As versões podem variar entre ambientes. Um deploy bem-sucedido comprova publicação de um artefato específico, não aceite funcional. Consulte sempre o [registro de ambiente e o SHA](docs/DEPLOY-ENVIRONMENTS.md).
 
+## Qualidade de gameplay e evidências
+
+O Gameplay Quality Agent complementa os testes determinísticos com cenários de gameplay e registros de anomalias. A aprovação humana continua necessária para qualidade visual, balanceamento e fluidez. Consulte o [checklist de QA e evidências por release](docs/QA-RELEASE-EVIDENCE.md) para distinguir resultados automatizados, homologação e funcionalidades planejadas.
+
 ## Engenharia reproduzível
 
 **Pré-requisito:** Node.js 24 e npm. O jogo pode ser executado sem backend remoto; login e ranking online dependem de configuração separada.
