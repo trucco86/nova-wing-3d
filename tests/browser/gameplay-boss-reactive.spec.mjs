@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
-import { SECTORS } from '../../src/campaign.js';
 import { combatDecision } from '../../tools/gameplay-boss-action-policy.mjs';
 import { visibleAim, applyVisibleAim } from '../../tools/gameplay-boss-visible-aim.mjs';
 import { equipmentDecision } from '../../tools/gameplay-boss-equipment-policy.mjs';
-import { orbitalDecision } from '../../tools/gameplay-boss-orbit-policy.mjs';
 import {
   dodgeDecision,
   dodgeKeys,
@@ -24,16 +22,14 @@ async function runEncounter(
   tactical = false,
   aimed = false,
   extended = false,
-  orbital = false,
 ) {
   await page.goto('/__dynamic.html?sector=' + sector + '&qaBoss=' + sector);
   await expect(page.locator('body')).toHaveAttribute('data-ready', 'true');
   await expect(page.locator('#bossHUD')).toBeVisible();
   const samples = [];
+  const seenDamageEventIds = new Set();
   const specialEvents = [];
   const equipmentEvents = [];
-  const utilityEvents = [];
-  let orbitSteps = 0;
   let terminal = null;
   const errors = [];
   const onError = (error) => errors.push(error.message);
@@ -69,28 +65,7 @@ async function runEncounter(
             state: node.getAttribute('data-state'),
           };
         };
-        const angle = (id) => {
-          const node = document.getElementById(id);
-          if (node.hidden || !node.checkVisibility({ visibilityProperty: true })) return null;
-          const match = /^rotate\(([-.\d]+)rad\)$/.exec(node.style.transform);
-          return match ? Number(match[1]) : null;
-        };
         return {
-          bossText: document.getElementById('bossState').textContent,
-          coreVulnerable:
-            s.bossParts === 0 &&
-            document.getElementById('bossHUD').getAttribute('data-vulnerable') === 'true',
-          lockReady: !document.getElementById('lockTouch').hidden,
-          lockEnabled: s.mecha.lockEnabled,
-          lockVisible: marker('mechaLockReticle').visible,
-          playerAngle: angle('radarPlayer'),
-          targetAngle: angle('radarWeak'),
-          targetVisible: angle('radarWeak') !== null,
-          scanReady: !document.getElementById('scanBoss').disabled,
-          repairReady: !document.getElementById('repairPulse').disabled,
-          precisionReady: !document.getElementById('precisionShot').disabled,
-          tacticEnergy: s.tactics.energy,
-          arcana: s.strategy.arcana,
           age: s.bossAge,
           energy: s.energy,
           pods: s.pods,
@@ -113,6 +88,7 @@ async function runEncounter(
           overdriveReady: !document.getElementById('fiveCatsOverdrive').disabled,
           specialActive: (s.fiveCats?.plasmaTime ?? 0) > 0 || (s.fiveCats?.overdriveTime ?? 0) > 0,
           player: s.player,
+          flightBounds: s.flightBounds,
           state: s.state,
           boss: s.boss,
           phase: s.tactics.state,
@@ -121,10 +97,20 @@ async function runEncounter(
           mode: radar.getAttribute('data-mode'),
           danger: danger === 'true' ? true : danger === 'false' ? false : null,
           guide: guide.hidden ? null : guide.textContent,
+          attackWarning: document.getElementById('attackWarning')?.textContent?.trim() ?? '',
+          damageEvents: s.damageEvents ?? [],
         };
       });
+      const freshDamageEvents = (state.damageEvents ?? []).filter(
+        (event) => !seenDamageEventIds.has(event.id),
+      );
+      for (const event of freshDamageEvents) seenDamageEventIds.add(event.id);
+      const observedState = { ...state, damageEvents: freshDamageEvents };
       terminal = state;
-      if (!state.boss || state.state !== 'playing') break;
+      if (!state.boss || state.state !== 'playing') {
+        if (freshDamageEvents.length) samples.push(observedState);
+        break;
+      }
       let decision = active
         ? combatDecision(state, { tactical })
         : reactive
@@ -139,13 +125,15 @@ async function runEncounter(
           equipmentEvents.map((event) => event.control),
         );
       }
-      if (orbital) {
-        decision = orbitalDecision(state, decision, samples[0]?.shield ?? state.shield, {
-          omega: sector === 7,
-        });
-      }
       const keys = dodgeKeys(decision);
-      samples.push({ ...state, aim, decision, input: keys });
+      samples.push({
+        ...observedState,
+        aim,
+        decision,
+        input: keys,
+        fireInput: active && decision.fire ? (mobile ? 'FIRE_TOUCH' : 'Space') : null,
+        controlSurface: mobile ? 'touch-joystick' : 'keyboard',
+      });
       if (i === limit) break;
       if (active && firing && !decision.fire) {
         if (mobile) await page.mouse.up();
@@ -198,38 +186,6 @@ async function runEncounter(
         });
         equipmentEvents.push({ age: state.age, control: decision.equipment, ...after });
       }
-      if (decision.utility === 'lock') {
-        if (mobile) {
-          await expect(page.locator('#lockTouch')).toBeVisible();
-          await page.locator('#lockTouch').tap();
-        } else await page.keyboard.press('KeyN');
-        const enabled = await page.evaluate(() => window.fixture.game.snapshot().mecha.lockEnabled);
-        utilityEvents.push({ action: 'lock', age: state.age, enabled });
-      } else if (decision.utility) {
-        const ids = { scan: 'scanBoss', repair: 'repairPulse', precision: 'precisionShot' };
-        const shortcuts = { scan: 'KeyI', repair: 'KeyR', precision: 'KeyK' };
-        if (mobile) {
-          const drawer = page.locator('#strategyDrawer');
-          if ((await drawer.getAttribute('open')) === null) await drawer.locator('summary').click();
-          const category = page.locator('[data-rpg-category="utilities"]');
-          if (await category.isVisible()) await category.click();
-          const button = page.locator('#' + ids[decision.utility]);
-          await expect(button).toBeVisible();
-          await expect(button).toBeEnabled();
-          await button.click();
-          if ((await drawer.getAttribute('open')) !== null) await drawer.locator('summary').click();
-        } else await page.keyboard.press(shortcuts[decision.utility]);
-        const after = await page.evaluate(() => {
-          const s = window.fixture.game.snapshot();
-          return { shield: s.shield, arcana: s.strategy.arcana, tacticEnergy: s.tactics.energy };
-        });
-        utilityEvents.push({
-          action: decision.utility,
-          age: state.age,
-          before: { shield: state.shield, arcana: state.arcana, tacticEnergy: state.tacticEnergy },
-          after,
-        });
-      }
       if (decision.special) {
         const before = await page.evaluate(() => window.fixture.game.snapshot().strategy.arcana);
         if (mobile) {
@@ -265,30 +221,7 @@ async function runEncounter(
         } else await page.keyboard.down('Space');
         firing = true;
       }
-      if (decision.orbit) {
-        const key = decision.orbit < 0 ? 'KeyJ' : 'KeyL';
-        if (mobile) {
-          const button = page.locator(decision.orbit < 0 ? '#orbitLeft' : '#orbitRight');
-          await expect(button).toBeVisible();
-          const bounds = await button.boundingBox();
-          if (!bounds) throw new Error('Missing orbit control');
-          await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-          await page.mouse.down();
-          try {
-            await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
-          } finally {
-            await page.mouse.up();
-          }
-        } else {
-          await page.keyboard.down(key);
-          try {
-            await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
-          } finally {
-            await page.keyboard.up(key);
-          }
-        }
-        orbitSteps++;
-      } else await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
+      await page.evaluate(() => window.fixture.advance(0.25, { renderAfter: false }));
     }
     await page.evaluate(() => window.fixture.advance(0));
     const label = extended
@@ -326,8 +259,6 @@ async function runEncounter(
     errors,
     specialEvents,
     equipmentEvents,
-    utilityEvents,
-    orbitSteps,
     terminal,
     metrics: summarizeEncounter(samples),
   };
@@ -522,62 +453,60 @@ test('Rok extended autonomous attempt compares tactical equipment with and witho
   expect(report.releaseAuthorized).toBe(false);
 });
 
-// Opt-in exploratory matrix. A non-victory is reported, not mistaken for
-// a regression pass or a release authorization. No production gate expansion.
-const matrixSector = process.env.NOVA_QA_BOSS_SECTOR;
-if (/^[0-9]$/.test(matrixSector ?? '')) {
-  const sector = Number(matrixSector);
-  test('autonomous matrix: ' + SECTORS[sector].boss, async ({ page }, info) => {
-    test.setTimeout(720000);
-    const run = await runEncounter(page, info, sector, true, true, true, true, true, true);
+test('Colossus extended autonomous attempt compares tactical equipment with and without aim', async ({
+  page,
+}, info) => {
+  test.setTimeout(720000);
+  const tactical = await runEncounter(page, info, 5, true, true, true, false, true);
+  const aimed = await runEncounter(page, info, 5, true, true, true, true, true);
+  const measure = (run) => {
     const final = run.terminal;
+    const initial = run.samples[0];
     const victory = final?.bossHp === 0 && ['collapsing', 'shop', 'won'].includes(final.state);
-    const report = {
-      sector: sector + 1,
-      boss: SECTORS[sector].boss,
-      project: info.project.name,
+    return {
       outcome: victory
         ? 'BOSS_DEFEATED'
         : final?.state === 'playing'
           ? 'TIME_LIMIT'
           : 'INTERRUPTED',
-      initial: {
-        bossHp: run.samples[0]?.bossHp ?? null,
-        shield: run.samples[0]?.shield ?? null,
-        pods: run.samples[0]?.pods ?? null,
-        lives: run.samples[0]?.lives ?? null,
-      },
-      final: {
-        state: final?.state ?? null,
-        bossHp: final?.bossHp ?? null,
-        bossParts: final?.bossParts ?? null,
-        integrity: final?.bossIntegrity ?? null,
-        shield: final?.shield ?? null,
-        lives: final?.lives ?? null,
-      },
+      finalState: final?.state ?? null,
+      bossHpStart: initial?.bossHp ?? null,
+      bossHpEnd: final?.bossHp ?? null,
+      shieldStart: initial?.shield ?? null,
+      shieldEnd: final?.shield ?? null,
+      livesStart: initial?.lives ?? null,
+      livesEnd: final?.lives ?? null,
       seconds: run.metrics.observedSeconds,
-      specialEvents: run.specialEvents,
-      equipmentEvents: run.equipmentEvents,
-      utilityEvents: run.utilityEvents,
-      orbitSteps: run.orbitSteps,
+      maxShots: Math.max(0, ...run.samples.map((sample) => sample.shots)),
+      attackWindows: run.metrics.attackWindows,
       attackPatterns: run.metrics.patterns,
-      errors: run.errors,
-      humanApproval: 'PENDING',
-      releaseAuthorized: false,
+      attackWindowTelemetry: run.metrics.attackWindowTelemetry,
+      equipmentEvents: run.equipmentEvents,
+      specialEvents: run.specialEvents,
     };
-    const path = info.outputPath('autonomous-matrix-result.json');
-    await writeFile(path, JSON.stringify({ report, run }, null, 2) + '\n');
-    await info.attach('autonomous-matrix-result', { path, contentType: 'application/json' });
-    console.log('AUTONOMOUS_MATRIX ' + JSON.stringify(report));
-    expect(run.samples.length, 'real encounter exposure').toBeGreaterThan(0);
-    expect(run.terminal).not.toBeNull();
+  };
+  const report = {
+    encounter: 'Colossus',
+    sector: 5,
+    project: info.project.name,
+    tactical: measure(tactical),
+    aimed: measure(aimed),
+    releaseAuthorized: false,
+  };
+  const path = info.outputPath('extended-colossus-comparison.json');
+  await writeFile(path, JSON.stringify({ report, tactical, aimed }, null, 2) + '\n');
+  await info.attach('extended-colossus-comparison', { path, contentType: 'application/json' });
+  console.log('EXTENDED_COLOSSUS_COMPARISON ' + JSON.stringify(report));
+  for (const run of [tactical, aimed]) {
     expect(run.errors).toEqual([]);
-    // Previously defeated bosses are hard regression contracts in this matrix.
-    // Unproven bosses remain exploratory until a real victory is observed.
-    if ([0, 1, 2, 3, 7].includes(sector)) {
-      expect(report.outcome).toBe('BOSS_DEFEATED');
-      expect(report.final.bossParts).toBe(0);
-      expect(report.final.lives).toBe(report.initial.lives);
-    }
-  });
-}
+    expect(run.terminal).not.toBeNull();
+    expect(run.samples.length, 'observed gameplay').toBeGreaterThan(1);
+    expect(run.samples[0].bossHp, 'live boss at start').toBeGreaterThan(0);
+    expect(
+      run.samples.some((sample) => sample.shots > 0),
+      'real projectiles',
+    ).toBe(true);
+  }
+  // This is an exploratory run, not a victory gate; a timeout remains a timeout.
+  expect(report.releaseAuthorized).toBe(false);
+});

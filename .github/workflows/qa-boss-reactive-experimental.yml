@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/gameplay-boss-visible-aim
+      - feat/gameplay-agent-colossus-probe
 
 permissions:
   contents: read
@@ -30,7 +31,7 @@ jobs:
       - run: npm run build
       - run: npx playwright install chromium
       - name: Compare real desktop and mobile boss encounters
-        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'Rok extended autonomous attempt'
+        run: npm run test:browser -- gameplay-boss-reactive.spec.mjs --grep 'extended autonomous attempt'
       - name: Apply formatter to experimental source and print exact diff
         if: always()
         run: |

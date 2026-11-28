@@ -90,5 +90,6 @@ test('QA162: the running loop uses physical resolution only in 3D mode', async (
   const flightContact = source.slice(source.indexOf('let collidedWithObstacle;'));
   assert.ok(flightContact.includes('if (dynamicFlight) {'));
   assert.ok(flightContact.includes('resolveObstacleShipContact('));
-  assert.ok(flightContact.includes('if (collidedWithObstacle) hit(30);'));
+  const collisionDamage = "if (collidedWithObstacle) hit(30, 'obstacle-collision');";
+  assert.ok(flightContact.includes(collisionDamage));
 });
