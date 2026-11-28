@@ -31,23 +31,20 @@ function until(h, condition, seconds = 45) {
 }
 const offset = (h) => h.game.snapshot().asteroidInterior.course.offset;
 
-test('holding and releasing GIRO in the real game preserves hull clearance and pause', (t) => {
+test('robot traverses the authored fissure opening and pause preserves course progress', (t) => {
   const h = game(t);
-  until(h, (s) => s.asteroidInterior.course.blocked);
-  const stopped = offset(h);
-  h.key('KeyQ');
-  h.advance(0.6);
-  assert.ok(offset(h) > stopped + 20);
-  h.key('KeyQ', false);
-  h.advance(0.15);
-  assert.ok(h.game.snapshot().bankAngle < -1.4, 'rock prevents opening the wings inside the slit');
+  h.key('KeyT');
+  h.key('KeyT', false);
+  until(h, (s) => s.asteroidInterior.course.offset > 920);
+  const passedFissure = h.game.snapshot();
+  assert.equal(passedFissure.mecha.active, true);
+  assert.equal(passedFissure.asteroidInterior.course.blocked, false);
   h.game.pause();
   const paused = offset(h);
   h.advance(2);
   assert.equal(offset(h), paused);
   h.game.pause();
   h.advance(2);
-  assert.ok(Math.abs(h.game.snapshot().bankAngle) < 0.1);
   assert.ok(offset(h) > paused + 80);
 });
 
