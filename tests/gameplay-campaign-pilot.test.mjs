@@ -334,7 +334,7 @@ test('shop plan adds scatter only from sector five onward', () => {
   assert.ok(late.priorities.includes('scatter'));
 });
 
-test('asteroid pilot stays inside the cavern wall envelope and enters robot mode for the narrow course', () => {
+test('asteroid pilot does not transform before a fissure is visible', () => {
   const action = campaignFlight({
     ...state,
     sector: 3,
@@ -351,7 +351,8 @@ test('asteroid pilot stays inside the cavern wall envelope and enters robot mode
       current: { x: 5, y: 4, z: 2 },
     },
   });
-  assert.equal(action.transform, 'robot');
+  assert.equal(action.transform, null);
+  assert.equal(action.rollHeld, false);
   assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
 });
 
@@ -389,6 +390,8 @@ test('physical fissure clearance outranks multiple visible projectile threats', 
     ],
   };
   const action = campaignFlight(current, previous);
+  assert.equal(action.rollHeld, true, 'ship must stay banked while the fissure is in approach range');
+  assert.equal(action.transform, null, 'do not transform out of the ship during a fissure pass');
   assert.equal(action.reason, 'evade-visible-threat');
   assert.equal(action.target.x, 0, 'pilot must keep the robot inside the physical fissure gap');
   assert.equal(action.x, -1, 'real steering input must move the pilot toward the clear corridor');
@@ -427,6 +430,27 @@ test('asteroid pilot predicts moving course solids and chooses a clear corridor 
   assert.equal(action.reason, 'evade-asteroid-course');
   assert.ok(Math.hypot(action.target.x, action.target.y - 10) <= 24);
   assert.ok(action.x !== 0 || action.y !== 0);
+});
+
+
+test('asteroid pilot returns to ship before banking when already in robot mode', () => {
+  const action = campaignFlight({
+    ...state,
+    sector: 3,
+    seconds: 10,
+    player: { x: 0, y: 10 },
+    mecha: { active: true, lockEnabled: false },
+    asteroidInterior: {
+      phase: 'interior',
+      course: {
+        offset: 760,
+        obstacles: [{ kind: 'fissure', x: -29, y: 10, baseZ: -850, z: -90, hx: 18.2, hy: 36, hz: 18 }],
+      },
+    },
+    asteroidHull: { current: { x: 4.9, y: 6, z: 2.9 } },
+  });
+  assert.equal(action.transform, 'ship');
+  assert.equal(action.rollHeld, false, 'bank only after the ship transformation completes');
 });
 
 test('asteroid pilot returns to ship after the cavern escape phase', () => {
