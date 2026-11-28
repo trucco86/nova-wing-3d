@@ -5,6 +5,7 @@ import {
   enterGameplayAfterLaunch,
 } from '../tests/browser/menu-navigation.mjs';
 
+// Keep a live mobile RPG interaction in the release gate, not only a canvas check.
 const base = (
   process.env.NOVA_PRODUCTION_URL || 'https://trucco86.github.io/nova-wing-3d/'
 ).replace(/\/?$/, '/');
