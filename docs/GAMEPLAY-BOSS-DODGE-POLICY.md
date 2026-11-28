@@ -87,4 +87,3 @@ O artefato do run 46055098649 repetiu o padrão nas quatro rotas prolongadas: 20
 O código do setor 5 configura a salva do Colossus como arcana, e o caminho de colisão aplica 10 pontos a projéteis que não são de fogo. A correspondência é forte, mas a atribuição ainda precisa ser confirmada por evento. A nova telemetria registra origem do dano, índice do chefe, tipo do projétil, idade, posição e velocidade no impacto, ciclo/fase do chefe e texto do aviso visível. A instrumentação existe apenas no snapshot de QA e não altera colisão, dano, invulnerabilidade, escudo ou física.
 
 **Próxima etapa:** confirmar a origem de cada impacto e, então, testar evasão de salvas usando apenas avisos e projéteis visíveis ao jogador. Não promover uma política nova antes de demonstrar redução reproduzível de dano sem sacrificar a capacidade de derrotar o chefe.
-
