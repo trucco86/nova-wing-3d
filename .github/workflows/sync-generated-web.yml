@@ -116,6 +116,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
+          # Keep the production RPG smoke formatter output in the candidate commit.
           if [ "${GITHUB_REF_NAME}" = "integration/campaign-pilot-mainline-20261128" ]; then
             git add -- tools/production-smoke.mjs
           fi
