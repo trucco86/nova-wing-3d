@@ -114,6 +114,10 @@ function addHeroAirframeFinish(root, { armor, accent, emission }) {
       [side * 1.35, 0.35, -0.14, 0.34, 0.085, 0.8, side * 0.19],
       [side * 2.08, 0.34, 0.52, 0.44, 0.08, 0.65, side * 0.28],
       [side * 2.74, 0.29, 1.07, 0.29, 0.07, 0.43, side * 0.32],
+      // Rear-facing stepped heat shields, visible from the chase camera.
+      [side * 1.04, 0.37, 1.88, 0.57, 0.13, 0.62],
+      [side * 1.55, 0.27, 1.47, 0.37, 0.11, 0.61, side * 0.2],
+      [side * 2.85, 0.25, 1.55, 0.48, 0.09, 0.35, side * 0.25],
     );
     seams.push(
       [side * 0.93, 0.47, -0.55, 0.05, 0.05, 0.81],
@@ -121,11 +125,16 @@ function addHeroAirframeFinish(root, { armor, accent, emission }) {
       [side * 2.4, 0.39, 0.91, 0.065, 0.055, 0.46, side * 0.28],
       [side * 3.13, 0.28, 1.33, 0.05, 0.045, 0.25],
       [side * 1.05, 0.02, 2.18, 0.15, 0.15, 0.2],
+      [side * 0.78, 0.44, 1.85, 0.075, 0.065, 0.55],
+      [side * 1.3, 0.44, 1.85, 0.075, 0.065, 0.55],
+      [side * 1.04, 0.48, 1.76, 0.35, 0.04, 0.07],
+      [side * 1.04, 0.48, 1.96, 0.35, 0.04, 0.07],
     );
     leds.push(
       [side * 1.2, 0.49, 0.22, 0.09, 0.04, 0.44],
       [side * 2.61, 0.37, 1.04, 0.1, 0.045, 0.26],
       [side * 3.28, 0.29, 1.42, 0.14, 0.05, 0.12],
+      [side * 1.04, 0.43, 2.2, 0.24, 0.08, 0.055],
     );
   }
   finishBatch(root, 'nova7-step-panel-finish', armor, plating);

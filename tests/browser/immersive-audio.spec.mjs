@@ -104,3 +104,32 @@ test('real flight controls drive mechanical audio without extra contexts and sto
   expect(await page.evaluate(() => window.fixture.game.snapshot().audio.engineActive)).toBe(false);
   expect(await page.evaluate(() => window.audioContextCount)).toBe(1);
 });
+
+test('QA182 real rapid-fire mix preserves distinct audible bursts and headroom', async ({
+  page,
+}, info) => {
+  test.setTimeout(120000);
+  await page.goto('/__audio.html');
+  await page.locator('#renderWeaponBurst').click();
+  await expect(page.locator('body')).toHaveAttribute('data-weapon-burst-ready', 'true', {
+    timeout: 90000,
+  });
+  const metrics = JSON.parse(await page.locator('#weaponBurstMetrics').textContent());
+  expect(metrics.finite).toBe(true);
+  expect(metrics.peak).toBeLessThan(0.98);
+  expect(metrics.shipShots).toBe(20);
+  expect(metrics.robotShots).toBe(15);
+  expect(metrics.maxVoices).toBeLessThanOrEqual(32);
+  for (const segment of [metrics.ship, metrics.robot, metrics.plasma]) {
+    expect(segment.finite).toBe(true);
+    expect(segment.rms).toBeGreaterThan(0.001);
+  }
+  expect(metrics.mute.rms).toBeLessThan(0.00001);
+  const pending = page.waitForEvent('download');
+  await page.locator('#weaponBurstDownload').evaluate((anchor) => anchor.click());
+  await (await pending).saveAs(info.outputPath('nova-wing-weapon-burst.wav'));
+  await info.attach('weapon-burst-metrics', {
+    body: JSON.stringify(metrics, null, 2),
+    contentType: 'application/json',
+  });
+});

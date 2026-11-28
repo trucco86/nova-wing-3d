@@ -203,3 +203,43 @@ test('QA115: normal shot uses a shorter filtered attack and a warm mechanical bo
   assert.ok(release.tones.find((t) => t.wave === 'sawtooth').gain <= 0.035);
   assert.ok(release.tones.some((t) => t.wave === 'sine' && t.duration >= 0.5));
 });
+
+test('QA182: stronger attack without increasing sustained low-frequency rebound', () => {
+  const shot = AUDIO_CUES.shot;
+  assert.ok(shot.noises[0].gain >= 0.09);
+  assert.ok(shot.noises[0].duration <= 0.04);
+  assert.ok(shot.tones[1].filter >= 1200);
+  assert.ok(shot.tones[3].gain <= 0.035);
+  assert.ok(AUDIO_CUES.mechaShot.tones[1].gain > shot.tones[1].gain);
+  assert.ok(AUDIO_CUES.mechaShot.cooldown > shot.cooldown);
+});
+
+test('QA182: Plasma Titan has distinct layered impact within the voice budget', () => {
+  const titan = AUDIO_CUES.plasmaTitan;
+  assert.equal(titan.tones.length + titan.noises.length, 5);
+  assert.ok(titan.tones.some((t) => t.wave === 'sine' && t.duration >= 0.9));
+  assert.ok(titan.noises.some((n) => n.color === 'brown' && n.duration >= 0.8));
+  assert.ok([...titan.tones, ...titan.noises].every((layer) => layer.gain < 0.2));
+  const { context, events } = fakeAudio();
+  const cues = createAudioCues(context);
+  const chargeGains = () =>
+    events.params
+      .filter((v) => v[0] === 'target')
+      .slice(-3)
+      .map((v) => v[1]);
+  cues.setCharge({ active: true, progress: 0 });
+  const initial = chargeGains();
+  cues.setCharge({ active: true, progress: 1 });
+  const gains = chargeGains();
+  // Preserve the quiet QA115 charge envelope; Titan impact is a separate cue.
+  const expected = [0.0087, 0.0059, 0.0043];
+  assert.equal(gains.length, expected.length);
+  gains.forEach((gain, i) => {
+    assert.ok(Math.abs(gain - expected[i]) < 1e-9);
+    assert.ok(gain > initial[i] && gain <= 0.012);
+  });
+  cues.setCharge({ active: false });
+  assert.equal(cues.play('plasmaTitan'), true);
+  assert.ok(cues.snapshot().voices <= 32);
+  cues.destroy();
+});
