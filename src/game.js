@@ -824,7 +824,8 @@ export function createGame({
     barrier = 0,
     stasis = 0,
     berserk = 0,
-    bossHitPulse = 0;
+    bossHitPulse = 0,
+    bossCounterTime = 0;
   let weakpointEvidence = [];
   let evolution = null,
     evolutionStage = -1,
@@ -1666,6 +1667,7 @@ export function createGame({
     lastRangedCycle = bossIntentCycle = -1;
     bossMeleeResolved = false;
     bossIntent = null;
+    bossCounterTime = 0;
     pilotPatternReader.reset();
     renderBossRadar(document, null);
     reactorGridSeconds = 0;
@@ -1673,7 +1675,7 @@ export function createGame({
     reactorGridWave = 0;
     reactorAccessStarted = false;
     reactorAccessComplete = false;
-    specialCd = barrier = stasis = berserk = bossHitPulse = 0;
+    specialCd = barrier = stasis = berserk = bossHitPulse = bossCounterTime = 0;
     weakpointEvidence = [];
     podsDetached = false;
     podMode = 'docked';
@@ -2766,17 +2768,16 @@ export function createGame({
     if (stagePerformance && source !== 'weapon') stagePerformance.primaryOnly = false;
     boss.updateMatrixWorld(true);
     const parts = boss.userData.parts.filter((p) => p.hp > 0);
+    const squadSuper = source === 'squad-plasma' || source === 'squad-overdrive';
     const spendDamage = (value, chargedShot) =>
-      source === 'squad-plasma' || source === 'squad-overdrive'
-        ? bossCombat.spendSquadSpecial(value)
-        : bossCombat.spend(value, chargedShot);
+      squadSuper ? bossCombat.spendSquadSpecial(value) : bossCombat.spend(value, chargedShot);
     if (hitZone === 'hull' && boss.userData.sabotage) return 0;
     if (hitZone === 'hull' && dynamicFlight) {
       // Hull plating absorbs most damage but does not make ordinary hits meaningless.
       // Generators must still be destroyed and the exposed core gets the final blow.
-      const chip =
-        spendDamage(amount * 0.75, charged) * bossDamageMultipliers('hull', parts.length);
-      const floor = bossCombat.max * (parts.length > 0 ? 0.72 : 0.12);
+      const hullRatio = bossDamageMultipliers('hull', parts.length) * (squadSuper ? 3.6 : 1);
+      const chip = spendDamage(amount * 0.75, charged) * hullRatio;
+      const floor = bossCombat.max * (parts.length > 0 ? (squadSuper ? 0.55 : 0.72) : 0.12);
       const dealt = Math.min(chip, Math.max(0, bossCombat.hp - floor));
       bossCombat.damage(dealt);
       bossHp = bossCombat.hp;
@@ -2787,7 +2788,8 @@ export function createGame({
     if (dynamicFlight)
       amount =
         elementalDamage(amount, element, weaknessAt(sectorIndex, bossCombat.phase)) *
-        (tactics().vulnerable ? 1.5 : 1);
+        (tactics().vulnerable ? 1.5 : 1) *
+        (bossCounterTime > 0 ? 1.35 : 1);
     let part = target
       ? parts.find((p) =>
           dynamicFlight
@@ -4840,6 +4842,7 @@ export function createGame({
       specialCd = specialCd - dt < 1e-6 ? 0 : specialCd - dt;
       berserk = Math.max(0, berserk - dt);
       bossHitPulse = Math.max(0, bossHitPulse - dt);
+      bossCounterTime = Math.max(0, bossCounterTime - dt);
       if (berserk > 0) document.body.classList.add('berserk-active');
       else document.body.classList.remove('berserk-active');
       const team = squad?.snapshot();
@@ -5719,10 +5722,15 @@ export function createGame({
             explode(player.position.clone(), 8, 0xff8060);
             cue('armorHit');
           } else {
+            const disarmed = boss.userData.parts.every((part) => part.hp === 0);
+            if (!disarmed) {
+              bossCounterTime = 4.5;
+              tacticEnergy = Math.min(3, tacticEnergy + 0.5);
+            }
             message(
-              boss.userData.parts.every((part) => part.hp === 0)
+              disarmed
                 ? 'ARMAS DESTRUÍDAS · ATAQUE CANCELADO'
-                : 'ESQUIVA TÁTICA · ATAQUE DO CHEFE EVITADO',
+                : 'ESQUIVA PERFEITA · CONTRA-ATAQUE 4s · DANO +35%',
             );
           }
         }
@@ -5750,13 +5758,15 @@ export function createGame({
         $('battleRadar').style.background = radarPlan ? '#071b20' : radarGradient(t);
         $('radarPlayer').style.transform = 'rotate(' + orbitAngle + 'rad)';
         $('tacticState').textContent =
-          t.state === 'windup'
-            ? '⚠ ' + t.name
-            : t.vulnerable
-              ? 'CONTRA-ATAQUE'
-              : inDanger(orbitAngle, t)
-                ? 'RISCO'
-                : 'COBERTURA';
+          bossCounterTime > 0
+            ? 'CONTRA-ATAQUE ' + Math.ceil(bossCounterTime) + 's · +35% DANO'
+            : t.state === 'windup'
+              ? '⚠ ' + t.name
+              : t.vulnerable
+                ? 'CONTRA-ATAQUE'
+                : inDanger(orbitAngle, t)
+                  ? 'RISCO'
+                  : 'COBERTURA';
         const objective = bossRadarTarget(
           sectorIndex,
           boss.userData.parts,
@@ -7017,6 +7027,7 @@ export function createGame({
         barrier,
         stasis,
         berserk,
+        bossCounterTime,
         orbitAngle,
       },
       missionCameraSeconds: reactorGridSeconds,
